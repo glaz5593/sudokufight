@@ -16,7 +16,14 @@ export {
 } from './arsenalModel';
 export { ArsenalOverlay, type ArsenalOverlayProps, type ArsenalTargetInfo } from './ArsenalOverlay';
 export { ARSENAL_CONFIG, type ArsenalConfig } from './config';
-export { DragGhost, type DragGhostProps, LaunchRipple, type LaunchRippleProps } from './DragGhost';
+export {
+  DragGhost,
+  type DragGhostProps,
+  type GhostRoute,
+  LaunchRipple,
+  type LaunchRippleProps,
+  type RouteEnd,
+} from './DragGhost';
 export { TokenArt, type TokenArtProps } from './TokenArt';
 export { TokenCard, type TokenCardProps } from './TokenCard';
 export {

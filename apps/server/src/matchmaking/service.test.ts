@@ -7,6 +7,7 @@ import type { RankedMatchLink, RankedRoomHooks } from './ranked';
 import {
   DEFAULT_MATCHMAKING,
   type MatchGames,
+  type MatchmakingConfig,
   MatchmakingRefusal,
   MatchmakingService,
   type MatchSession,
@@ -64,9 +65,19 @@ interface SetupOptions {
   history?: Record<string, OpponentRecord[]>;
   ratingOption?: 'A' | 'B';
   failOpen?: boolean;
+  config?: Partial<MatchmakingConfig>;
+  /** The clock moves this much each time the service reads it (a busy server: no two reads alike). */
+  tickOnRead?: number;
 }
 
-function setup({ players = {}, history = {}, ratingOption = 'B', failOpen = false }: SetupOptions = {}) {
+function setup({
+  players = {},
+  history = {},
+  ratingOption = 'B',
+  failOpen = false,
+  config = {},
+  tickOnRead = 0,
+}: SetupOptions = {}) {
   const clock = new ManualClock(T0);
   const scheduler = new ManualScheduler(clock);
   const asked: [string, string][] = [];
@@ -113,11 +124,15 @@ function setup({ players = {}, history = {}, ratingOption = 'B', failOpen = fals
     },
     games,
     ratingOption,
-    now: () => clock.now(),
+    now: () => {
+      const t = clock.now();
+      if (tickOnRead) clock.advance(tickOnRead);
+      return t;
+    },
     scheduler,
     newId: () => `match-${++ids}`,
     log: quietLog(),
-    config: DEFAULT_MATCHMAKING,
+    config: { ...DEFAULT_MATCHMAKING, ...config },
   });
   const sessions = new Map<string, FakeSession>();
   /** A player joins the queue on a connection of their own. */
@@ -161,6 +176,20 @@ describe('searching', () => {
     ]);
   });
 
+  it('each `searching` is one instant: a new search at 0, its timeout whole, though the clock moves meanwhile', async () => {
+    const { join, advance, service } = setup({ tickOnRead: 1 });
+    const ana = await join('ana');
+    const first = ana.last('searching');
+    expect(first.elapsedMs).toBe(0);
+    expect(first.timeoutAt - first.serverTime).toBe(60 * S);
+    await advance(61 * S);
+    expect(ana.of('timeout')).toHaveLength(1);
+    service.keepSearching(ana.id);
+    const more = ana.last('searching');
+    expect(more.extended).toBe(true);
+    expect(more.timeoutAt - more.serverTime).toBe(DEFAULT_MATCHMAKING.extendedTimeoutMs);
+  });
+
   it("matches on the queue's rating key: B `fast`, A `fast-2p`", async () => {
     const b = setup();
     await b.join('ana');
@@ -170,8 +199,9 @@ describe('searching', () => {
     expect(a.asked).toEqual([['ana', 'fast-2p']]);
   });
 
-  it('refuses a bad queue, a closed one (3–4 players), a second search and a player without an account', async () => {
-    const { join } = setup();
+  it('refuses a bad queue, a closed one, a second search and a player without an account', async () => {
+    // A server may close queues (all are open by default since stage 10).
+    const { join } = setup({ config: { openPlayerCounts: [2] } });
     const refusal = (p: Promise<unknown>) =>
       p.then(
         () => null,
@@ -332,9 +362,27 @@ describe('a match', () => {
       expect(s.closed).toBe(true);
     }
     expect(service.pendingMatches).toBe(0);
-    // Out of matchmaking: free to search again.
+    // One ranked game at a time: no search while it runs.
+    expect(service.isPlaying('ana')).toBe(true);
+    await expect(join('ana')).rejects.toMatchObject({ error: 'alreadyQueued' });
+    // The room reports the game over (its result stored): free to search again.
+    room.link.over();
+    expect(service.isPlaying('ana')).toBe(false);
     await join('ana');
     expect(service.queued('fast-2p').map((t) => t.userId)).toEqual(['ana']);
+  });
+
+  it('a game whose room closes (it never ended: a shutdown, a failed start) frees its players too', async () => {
+    const { room, advance, service, join } = await found();
+    room.link.join('ana');
+    room.link.join('ben');
+    await advance(3000);
+    expect(service.isPlaying('ben')).toBe(true);
+    room.link.closed();
+    expect(service.isPlaying('ana')).toBe(false);
+    expect(service.isPlaying('ben')).toBe(false);
+    await join('ben');
+    expect(room.calls).toEqual(['countdown@5500', 'go']); // nothing more: the match was not called off
   });
 
   it('no cancelling after "found" [D32]; leaving matchmaking then does not stop the match', async () => {
@@ -454,5 +502,126 @@ describe('the ready check (spec §10, D37)', () => {
     room.link.leave('ben');
     await t.advance(3000);
     expect(room.calls).toEqual(['countdown@3500', 'go']);
+  });
+});
+
+describe('3 and 4 players (stage 10, spec §10)', () => {
+  it('the queues of 3 and 4 are open: nobody is refused, and a 3-player search waits', async () => {
+    const t = setup();
+    const ana = await t.join('ana', 'fast-3p');
+    const dan = await t.join('dan', 'hard-4p');
+    expect(ana.last('searching')).toMatchObject({ queueKey: 'fast-3p', range: 50 });
+    expect(dan.last('searching')).toMatchObject({ queueKey: 'hard-4p' });
+    expect(t.asked).toEqual([
+      ['ana', 'fast'],
+      ['dan', 'hard'],
+    ]);
+  });
+
+  it('a match of 3 forms only when the group is full; whoever is found waits for the rest', async () => {
+    const t = setup({ players: { ben: { rating: 1220, avatarId: 'av12' }, cyd: { rating: 1190 } } });
+    const ana = await t.join('ana', 'fast-3p');
+    t.clock.advance(S);
+    const ben = await t.join('ben', 'fast-3p');
+    await t.advance(5 * S);
+    // Two in range of each other, no third: no match yet, both keep searching.
+    expect(ana.of('found')).toEqual([]);
+    expect(t.service.queued('fast-3p').map((x) => x.userId)).toEqual(['ana', 'ben']);
+    const cyd = await t.join('cyd', 'fast-3p');
+    await t.advance(500);
+    const found = ana.last('found');
+    expect(found).toMatchObject({ matchId: 'match-1', queueKey: 'fast-3p', playerId: 'ana', rematch: false });
+    // Everyone, in seat order (the order of service), with their profiles; one room, a seat each.
+    expect(found.players.map((p) => [p.id, p.rating, p.avatarId])).toEqual([
+      ['ana', 1200, 'av07'],
+      ['ben', 1220, 'av12'],
+      ['cyd', 1190, 'av07'],
+    ]);
+    for (const s of [ben, cyd]) expect(s.last('found').players).toEqual(found.players);
+    const rooms = new Set([ana, ben, cyd].map((s) => s.last('found').reservation.roomId));
+    expect(rooms).toEqual(new Set(['ROOM1']));
+    expect(t.rooms[0]!.link.setup).toMatchObject({
+      queueKey: 'fast-3p',
+      playerCount: 3,
+      ratingKey: 'fast',
+      players: [
+        { userId: 'ana', rating: 1200 },
+        { userId: 'ben', rating: 1220 },
+        { userId: 'cyd', rating: 1190 },
+      ],
+    });
+    expect(t.service.queued('fast-3p')).toEqual([]);
+  });
+
+  it('the countdown waits for all (D37): GO only once the last of the 3 is in the room', async () => {
+    const t = setup();
+    const sessions = [];
+    for (const id of ['ana', 'ben', 'cyd']) sessions.push(await t.join(id, 'normal-3p'));
+    await t.advance(500);
+    const room = t.rooms[0]!;
+    room.link.join('ana');
+    room.link.join('ben');
+    expect(sessions[0]!.last('ready').ready).toEqual(['ana', 'ben']);
+    expect(room.calls).toEqual([]);
+    await t.advance(5 * S);
+    expect(sessions.every((s) => s.of('countdown').length === 0)).toBe(true);
+    room.link.join('cyd');
+    expect(room.calls).toEqual(['countdown@8500']);
+    await t.advance(3000);
+    expect(room.calls).toEqual(['countdown@8500', 'go']);
+    for (const s of sessions) expect(s.last('started')).toMatchObject({ roomId: 'ROOM1' });
+    expect(['ana', 'ben', 'cyd'].every((id) => t.service.isPlaying(id))).toBe(true);
+  });
+
+  it('a no-show in a match of 4: the three who came go back to the head of the queue, and meet a fourth', async () => {
+    const t = setup();
+    const four = [];
+    for (const id of ['ana', 'ben', 'cyd', 'dan']) {
+      four.push(await t.join(id, 'fast-4p'));
+      t.clock.advance(S);
+    }
+    await t.advance(500);
+    const room = t.rooms[0]!;
+    for (const id of ['ana', 'ben', 'cyd']) room.link.join(id);
+    await t.advance(10 * S);
+    const [ana, , , dan] = four;
+    expect(dan!.last('matchCancelled')).toMatchObject({
+      reason: 'noShow',
+      missing: ['dan'],
+      requeued: false,
+    });
+    expect(dan!.closed).toBe(true);
+    expect(ana!.last('matchCancelled')).toMatchObject({ missing: ['dan'], requeued: true });
+    expect(room.calls).toEqual(['cancel']);
+    const queue = t.service.queued('fast-4p');
+    expect(queue.map((x) => x.userId)).toEqual(['ana', 'ben', 'cyd']);
+    expect(queue.every((x) => x.priority)).toBe(true);
+
+    const eve = await t.join('eve', 'fast-4p');
+    await t.advance(500);
+    expect(eve.last('found').players.map((p) => p.id)).toEqual(['ana', 'ben', 'cyd', 'eve']);
+    expect(t.rooms[1]!.link.setup).toMatchObject({ playerCount: 4, queueKey: 'fast-4p' });
+  });
+
+  it('RATING_OPTION A: a 4-player game moves its own key (`hard-4p`)', async () => {
+    const t = setup({ ratingOption: 'A' });
+    for (const id of ['ana', 'ben', 'cyd', 'dan']) await t.join(id, 'hard-4p');
+    await t.advance(500);
+    expect(t.asked.every(([, key]) => key === 'hard-4p')).toBe(true);
+    expect(t.rooms[0]!.link.setup).toMatchObject({ ratingKey: 'hard-4p', playerCount: 4 });
+  });
+
+  it('a group forms only when every pair is in range; the far one waits', async () => {
+    const t = setup({ players: { far: { rating: 1500 } } });
+    const far = await t.join('far', 'fast-3p');
+    await t.join('ana', 'fast-3p');
+    await t.join('ben', 'fast-3p');
+    await t.advance(500);
+    expect(far.of('found')).toEqual([]);
+    expect(t.rooms).toEqual([]);
+    const cyd = await t.join('cyd', 'fast-3p');
+    await t.advance(500);
+    expect(cyd.last('found').players.map((p) => p.id)).toEqual(['ana', 'ben', 'cyd']);
+    expect(t.service.queued('fast-3p').map((x) => x.userId)).toEqual(['far']);
   });
 });

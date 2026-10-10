@@ -72,15 +72,18 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
     }, []),
   );
 
-  // "עוד סיבוב" (spec §4.3): the last setting; against a bot, with the bot's name ("· Pip").
+  // "עוד סיבוב" (spec §4.3): the last setting; against a bot, with the bot's name ("· Pip"); ranked, with the
+  // table's size (stage 9: a search in the same queue).
   const again = lastPlayOf(lastPlay, recent, botLevel);
   let againText: string | null = null;
   if (again) {
     const parts = { mode: t(`modes.${again.mode}.name`), type: t(`gameTypes.${again.gameType}.name`) };
     againText =
-      again.botLevel === undefined
-        ? t('again.subtitle', parts)
-        : t('again.subtitleBot', { ...parts, bot: ltr(botLevelInfo(again.botLevel).name) });
+      again.botLevel !== undefined
+        ? t('again.subtitleBot', { ...parts, bot: ltr(botLevelInfo(again.botLevel).name) })
+        : again.players !== undefined
+          ? t('again.subtitleRanked', { ...parts, players: t('match:players', { count: again.players }) })
+          : t('again.subtitle', parts);
   }
 
   const playAgain = async () => {

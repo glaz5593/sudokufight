@@ -30,6 +30,7 @@ function sdkClient(room = sdkRoom()) {
     create: jest.fn((_name: string, _options: object) => Promise.resolve(room)),
     joinById: jest.fn((_id: string, _options: object) => Promise.resolve(room)),
     reconnect: jest.fn((_token: string) => Promise.resolve(room)),
+    consumeSeatReservation: jest.fn((_reservation: object) => Promise.resolve(room)),
   } satisfies SdkClientLike;
   return { sdk, room };
 }
@@ -96,6 +97,20 @@ describe('createOnlineClient', () => {
     const client = createOnlineClient({ sdk, identity: async () => dev });
     await client.reconnect('ABC234:secret');
     expect(sdk.reconnect).toHaveBeenCalledWith('ABC234:secret');
+  });
+
+  it('takes a reserved seat in a ranked match room, asking no identity (stage 9)', async () => {
+    const { sdk, room } = sdkClient();
+    const identity = jest.fn(async () => dev);
+    const client = createOnlineClient({ sdk, identity });
+    const reservation = { name: 'game', roomId: 'ABC234', sessionId: 's1' };
+    const like = await client.consumeSeatReservation(reservation);
+    expect(sdk.consumeSeatReservation).toHaveBeenCalledWith(reservation);
+    expect(identity).not.toHaveBeenCalled();
+    expect(like.roomId).toBe('ABC234');
+    expect(room.reconnection.enabled).toBe(false);
+    sdk.consumeSeatReservation.mockRejectedValueOnce(sdkError('room "ABC234" not found', 522));
+    await expect(client.consumeSeatReservation(reservation)).rejects.toMatchObject({ code: 'notFound' });
   });
 
   it('makes an SDK client for the endpoint when none is given', async () => {

@@ -107,7 +107,6 @@ describe('settings (spec §4.1)', () => {
 describe('the tabs that come later', () => {
   it.each([
     ['/leaderboard', 'leaderboard', 'טבלת מובילים'],
-    ['/history', 'history', 'היסטוריה'],
     ['/achievements', 'achievements', 'הישגים'],
   ])('%s: a title, "בקרוב" and the navigation with its tab on', async (url, tab, title) => {
     await renderApp(url);
@@ -119,8 +118,8 @@ describe('the tabs that come later', () => {
 
   it('speak English too', async () => {
     await i18n.changeLanguage('en');
-    await renderApp('/history');
-    expect(screen.getByRole('header', { name: 'History' })).toBeTruthy();
+    await renderApp('/leaderboard');
+    expect(screen.getByRole('header', { name: 'Leaderboard' })).toBeTruthy();
     expect(screen.getByText('Coming soon')).toBeTruthy();
   });
 });

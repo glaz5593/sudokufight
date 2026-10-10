@@ -22,6 +22,7 @@ import {
 import {
   type ClientMessage,
   type ClientMessageType,
+  type MatchSeatReservation,
   PROTOCOL_VERSION,
   type ServerMessage,
   type ServerMessageType,
@@ -218,7 +219,7 @@ export class FakeTable implements OnlineClient {
   readonly tracked: { name: string; props: Record<string, unknown> }[] = [];
   readonly logs: string[] = [];
   readonly rooms: FakeRoom[] = [];
-  readonly calls: { kind: 'create' | 'join' | 'reconnect'; arg: unknown }[] = [];
+  readonly calls: { kind: 'create' | 'join' | 'reconnect' | 'reserved'; arg: unknown }[] = [];
   game: FakeGame | null = null;
   skewMs: number;
   oneWayMs: number;
@@ -293,6 +294,15 @@ export class FakeTable implements OnlineClient {
       const room = this.newRoom();
       this.welcomeBack(room);
       return room;
+    });
+  }
+
+  /** A ranked match's room (stage 9): the seat for this reservation, in the room with the table's code. */
+  consumeSeatReservation(reservation: MatchSeatReservation): Promise<RoomLike> {
+    this.calls.push({ kind: 'reserved', arg: reservation });
+    return this.respond(() => {
+      if (reservation.roomId !== CODE) throw sdkError(`room "${reservation.roomId}" not found`, 522);
+      return this.newRoom();
     });
   }
 

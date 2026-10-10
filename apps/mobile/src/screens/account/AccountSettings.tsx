@@ -8,6 +8,7 @@ import { toAuthError } from '../../auth/errors';
 import { ROUTES } from '../../auth/redirect';
 import { ltr } from '../../components/player';
 import { Button, ConfirmModal, RowButton, useToast } from '../../components/ui';
+import { track } from '../../services/analytics';
 import { cue } from '../../services/feedback';
 import { color, radius, space, text, tokens } from '../../theme';
 import { SectionLabel } from '../home/parts';
@@ -59,6 +60,8 @@ export function AccountSettings() {
     setError({});
     try {
       const { signInDeleted } = await deleteAccount(password);
+      // Spec §22: account_delete, once the account is gone from the server.
+      track('account_delete');
       setBusy(false);
       setStep(null);
       setPassword('');

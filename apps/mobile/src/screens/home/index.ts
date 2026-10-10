@@ -1,6 +1,7 @@
 /**
  * The home-level screens of work-plan stages 4–5: Home, "משחק חדש" (modes), "סוג משחק", the bot selection, the
- * settings, and the bottom-nav tabs that come later (placeholders). Routes in app/ render these.
+ * settings, and the bottom-nav tabs that come later (placeholders). Routes in app/ render these. Stage 9 opens
+ * ranked 2 players from here (startRankedAndOpen: the matchmaking screens are src/screens/match).
  */
 export { BotSelectScreen, type BotSelectScreenProps } from './BotSelectScreen';
 export { GameTypeScreen, type GameTypeScreenProps } from './GameTypeScreen';
@@ -13,11 +14,13 @@ export {
   DEFAULT_BOT_LEVEL,
   DEFAULT_GAME_TYPE,
   DEFAULT_MODE,
+  DEFAULT_RANKED_PLAYERS,
   gameTypeInfo,
   gameTypeInfos,
   type GameTypeInfo,
   HOME_RECENT_COUNT,
   isAvailable,
+  isOpenPlayerCount,
   isStartableMode,
   lastPlayOf,
   MODE_GROUPS,
@@ -27,6 +30,8 @@ export {
   type ModeOption,
   percentOf,
   playedAtText,
+  RANKED_TABLES_OPEN,
+  rankedRatingIn,
   type RecentOutcome,
   recentOutcome,
   secondsText,
@@ -46,4 +51,4 @@ export {
   type WinStats,
 } from './practiceStats';
 export { appVersion, SettingsScreen, type SettingsScreenProps } from './SettingsScreen';
-export { startAndOpen } from './startGame';
+export { MATCH_PATH, startAndOpen, startRankedAndOpen } from './startGame';

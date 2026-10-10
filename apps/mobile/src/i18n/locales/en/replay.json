@@ -1,0 +1,88 @@
+{
+  "title": "Replay",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Solo practice",
+    "bot": "Practice vs bot",
+    "ranked": "Ranked"
+  },
+  "back": "Back",
+  "loading": "Loading the game…",
+  "load": {
+    "missing": "We couldn't find this game",
+    "notFinished": "The game is still being saved on the server. Try again in a moment",
+    "offline": "No connection to the server. Ranked games load from the server",
+    "signedOut": "Sign in to watch a ranked game",
+    "unavailable": "We couldn't read this game",
+    "retry": "Try again",
+    "partial": "This game was cut short: the replay goes up to the last saved move"
+  },
+  "step": {
+    "counter": "Step {{number}} of {{total}}",
+    "clockLabel": "Game clock: {{clock}}"
+  },
+  "nav": {
+    "prev": "Previous step",
+    "next": "Next step",
+    "timeline": "Step timeline",
+    "timelineValue": "Step {{number}} of {{total}}, {{clock}}",
+    "timelineHint": "Swipe up or down to change step"
+  },
+  "narration": {
+    "start": "The game starts",
+    "select": "{{name}} · chooses {{cell}}",
+    "correct": "{{name}} · right in {{cell}} · {{delta}}",
+    "wrong": "{{name}} · wrong in {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · lets go of {{cell}}",
+      "timeout": "{{name}} · time ran out in {{cell}}"
+    },
+    "interference": "{{name}} · interferes with {{target}} · {{delta}}",
+    "disconnect": "{{name}} · disconnected",
+    "reconnect": "{{name}} · back in the game",
+    "surrender": "{{name}} · surrendered",
+    "endPractice": "{{name}} · ended the practice",
+    "abandon": "{{name}} · left the game",
+    "over": "The game is over",
+    "paused": "The game is frozen"
+  },
+  "explain": {
+    "title": "An explanation for every player",
+    "none": "No move by {{name}} yet",
+    "noneMe": "No move of mine yet",
+    "noneBody": "The explanation appears after the first move",
+    "status": {
+      "choosing": "Choosing",
+      "released": "Let go",
+      "correct": "Right",
+      "wrong": "Wrong"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} instead of {{answer}}",
+    "why": "Why {{digit}} doesn't fit: {{text}}",
+    "noLogic": "The answer: {{cell}} → {{digit}}",
+    "scoreLine": "The score",
+    "released": {
+      "cancel": "Choice cancelled",
+      "timeout": "Time ran out",
+      "switch": "Moved to another cell",
+      "mistake": "After a mistake",
+      "surrender": "Left the game",
+      "disconnect": "Disconnected",
+      "abandon": "Abandoned"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}"
+  },
+  "moments": {
+    "title": "Key moments",
+    "bestMove": "Best move",
+    "mistakes": "Mistakes · {{count}}",
+    "interferences": "Interferences · {{count}}",
+    "turningPoint": "Turning point",
+    "hint": "Jumps to that step"
+  },
+  "board": "The board at step {{number}}",
+  "me": "Me",
+  "unknown": "Player"
+}

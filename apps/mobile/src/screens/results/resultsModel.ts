@@ -13,10 +13,11 @@ import {
   type PlayerInfo,
   type PlayerStats,
   type PlayerStatus,
+  type RatingChange,
   statsFor,
 } from '@sudoku-fight/engine';
 
-import type { AvatarId } from '../../assets/avatars';
+import { type AvatarId, isAvatarId } from '../../assets/avatars';
 import { colorIndexFor } from '../../components/player';
 import type { PracticeGame, PracticeRepo } from '../../game/practiceRepo';
 import type { PracticeSession } from '../../game/session';
@@ -27,9 +28,10 @@ import { playerIdentity } from '../game/identity';
  * (work plan stage 7). The final score, the mistakes, the move of the game with its calculation, the time, the
  * correct moves, the average think time, and how it ended; with an opponent also the outcome (win, loss or
  * tie), the opponent's score and mistakes, and the game's awards. Practice never changes a rating (spec §6.6);
- * a ranked game's rating change comes with stage 9. Pure: it reads a saved game [D25] (or, when nothing could be
- * saved, or the game was on the server, the session that just ended). Every number comes from the engine (its
- * GameResult, or its own stats over the saved log); nothing is worked out here.
+ * a ranked game's rating change is the engine's (GameResult.ratingChanges): mine and each opponent's. A game
+ * of 3–4 players also gets the full ranking, for the podium (stage 11). Pure: it reads a saved game [D25] (or,
+ * when nothing could be saved, or the game was on the server, the session that just ended). Every number comes
+ * from the engine (its GameResult, or its own stats over the saved log); nothing is worked out here.
  */
 
 /** How a practice ended: the whole board, "סיום אימון", or the app went away mid-game. */
@@ -70,6 +72,33 @@ export interface OpponentResult {
   place: number | null;
   /** Surrendered or abandoned. */
   left: boolean;
+  /** Their rating change in a ranked game; null when there is none. */
+  rating: RatingResult | null;
+}
+
+/** A rating change (spec §11.2): before, after, and the difference, as the engine computed them. */
+export interface RatingResult {
+  before: number;
+  after: number;
+  delta: number;
+  /** Still in the first 10 games of this rating key: K counts double (spec §11.2). */
+  provisional: boolean;
+}
+
+/** A row of the full ranking of a 3–4 player game (spec §12: a podium and 4th place). */
+export interface RankingRow {
+  playerId: PlayerId;
+  /** Null: the screen's word for an unnamed player ("אני" for me). */
+  name: string | null;
+  avatar: AvatarId;
+  isBot: boolean;
+  isMe: boolean;
+  colorIndex: number;
+  place: number;
+  score: number;
+  mistakes: number;
+  left: boolean;
+  rating: RatingResult | null;
 }
 
 /** A game award (spec §12) and who won it; `value` is the engine's (points, mistakes, ms). */
@@ -93,6 +122,10 @@ export interface ResultsModel {
   place: number | null;
   /** In seat order. Empty for a solo practice. */
   opponents: OpponentResult[];
+  /** Everyone by place, me included: only for a finished game of 3–4 players (the podium). */
+  ranking: RankingRow[];
+  /** My rating change in a ranked game; null for practice, or a game that moved no rating. */
+  rating: RatingResult | null;
   awards: AwardResult[];
   score: number;
   mistakes: number;
@@ -189,17 +222,27 @@ const standingsOfState = (state: GameState): Standing[] =>
     status: p.status,
   }));
 
+/** Players' avatars by id, when the game knows them (a ranked match's profiles). */
+type AvatarsById = Readonly<Partial<Record<PlayerId, { avatarId?: string | null } | null>>>;
+
 /** The others' rows, my outcome and the awards (spec §12); nothing of it for a solo practice. */
 function versusOf(
   myId: PlayerId,
   standings: readonly Standing[],
   infos: readonly SeatedPlayer[] | null,
   result: GameResult | null,
-): Pick<ResultsModel, 'players' | 'outcome' | 'place' | 'opponents' | 'awards'> {
+  avatars: AvatarsById | null = null,
+): Pick<ResultsModel, 'players' | 'outcome' | 'place' | 'opponents' | 'awards' | 'ranking' | 'rating'> {
   const players = Math.max(1, standings.length, infos?.length ?? 0);
   const mine = standings.find((s) => s.playerId === myId);
   const seats = standings.map((s) => s.seat);
   const info = (id: PlayerId) => infos?.find((p) => p.id === id) ?? { id };
+  // A known avatar (a ranked opponent's own) before the default (a bot's by its level, else the empty one).
+  const avatarOf = (id: PlayerId, fallback: AvatarId): AvatarId => {
+    const own = avatars?.[id]?.avatarId;
+    return isAvatarId(own) ? own : fallback;
+  };
+  const ratingOf = (id: PlayerId) => ratingResult(result?.ratingChanges.find((c) => c.playerId === id));
 
   const opponents = standings
     .filter((s) => s.playerId !== myId)
@@ -209,13 +252,14 @@ function versusOf(
       return {
         playerId: s.playerId,
         name: who.name,
-        avatar: who.avatar,
+        avatar: avatarOf(s.playerId, who.avatar),
         isBot: who.isBot,
         colorIndex: colorIndexFor(s.seat, mine?.seat ?? null, seats),
         score: s.score,
         mistakes: s.mistakes,
         place: s.place,
         left: s.status !== 'active',
+        rating: ratingOf(s.playerId),
       };
     });
 
@@ -231,7 +275,40 @@ function versusOf(
     })),
     value: a.value,
   }));
-  return { players, outcome, place, opponents, awards };
+  // 3–4 players (spec §12): everyone by place, for the podium and the 4th row.
+  const ranking =
+    result && players >= 3
+      ? standings
+          .filter((s) => s.place !== null)
+          .sort((a, b) => a.place! - b.place! || a.seat - b.seat)
+          .map((s): RankingRow => {
+            const who = playerIdentity(info(s.playerId));
+            return {
+              playerId: s.playerId,
+              name: s.playerId === myId ? null : who.name,
+              avatar: avatarOf(s.playerId, who.avatar),
+              isBot: who.isBot,
+              isMe: s.playerId === myId,
+              colorIndex: colorIndexFor(s.seat, mine?.seat ?? null, seats),
+              place: s.place!,
+              score: s.score,
+              mistakes: s.mistakes,
+              left: s.status !== 'active',
+              rating: ratingOf(s.playerId),
+            };
+          })
+      : [];
+  return { players, outcome, place, opponents, awards, ranking, rating: ratingOf(myId) };
+}
+
+function ratingResult(change: RatingChange | undefined): RatingResult | null {
+  if (!change) return null;
+  return {
+    before: change.before,
+    after: change.after,
+    delta: change.delta,
+    provisional: change.provisional,
+  };
 }
 
 /**
@@ -285,8 +362,13 @@ export function resultsModel(game: PracticeGame, events: readonly GameEvent[] = 
   };
 }
 
-/** What the results need of a session that just ended: a practice's, or an online game's (OnlineSession). */
-export type ResultsSession = Pick<PracticeSession, 'id' | 'mode' | 'gameType' | 'playerId' | 'getView'>;
+/**
+ * What the results need of a session that just ended: a practice's, or an online game's (OnlineSession, whose
+ * `profiles` give a ranked match's opponents their own avatars).
+ */
+export type ResultsSession = Pick<PracticeSession, 'id' | 'mode' | 'gameType' | 'playerId' | 'getView'> & {
+  readonly profiles?: AvatarsById | null;
+};
 
 /**
  * The results of a session that just ended: a practice that could not be saved, or a ranked game (the server
@@ -304,7 +386,7 @@ export function sessionResultsModel(session: ResultsSession): ResultsModel | nul
     ...(p.name === null ? null : { name: p.name }),
     isBot: p.isBot,
   }));
-  const versus = versusOf(session.playerId, standingsOf(result), infos, result);
+  const versus = versusOf(session.playerId, standingsOf(result), infos, result, session.profiles ?? null);
   const end = endOf(session.mode, result, session.playerId);
   return {
     gameId: session.id,

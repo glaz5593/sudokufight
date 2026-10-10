@@ -1,6 +1,6 @@
 import { validateDisplayName } from '@sudoku-fight/protocol';
 import { router } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet, Text, type TextInput, View } from 'react-native';
 
@@ -14,6 +14,7 @@ import { Icon } from '../../components/Icon';
 import { Avatar, countryName, Flag, ltr } from '../../components/player';
 import { Button, useToast } from '../../components/ui';
 import { accountConfig } from '../../config/account';
+import { track } from '../../services/analytics';
 import { cue } from '../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { Field, FieldStatus, PasswordField } from './Field';
@@ -58,6 +59,9 @@ export function RegisterAccountScreen() {
   const passwordRef = useRef<TextInput>(null);
   const confirmRef = useRef<TextInput>(null);
 
+  // Spec §22: the registration's funnel, step by step.
+  useEffect(() => track('register_step', { step: 'account' }), []);
+
   const name = displayName.trim();
   const rules = passwordRules(password);
   const strength = passwordStrength(password);
@@ -96,6 +100,7 @@ export function RegisterAccountScreen() {
     cue('primaryPress');
     try {
       await signUpAndRegister(email.trim(), password, { displayName: name, avatarId, country });
+      track('register_complete');
     } catch (error) {
       setBusy(false);
       if (isAccountApiError(error)) {

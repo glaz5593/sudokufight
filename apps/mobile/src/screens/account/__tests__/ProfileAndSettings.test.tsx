@@ -12,6 +12,7 @@ import { AuthError } from '../../../auth/types';
 import { ltr } from '../../../components/player';
 import { useToast } from '../../../components/ui';
 import i18n from '../../../i18n';
+import { track } from '../../../services/analytics';
 import { renameDate } from '../EditProfileScreen';
 import { SplashScreen } from '../SplashScreen';
 import { renderAccount } from '../testing/accountTesting';
@@ -218,6 +219,10 @@ describe('Settings: the account (spec §3.3, §23)', () => {
     await waitFor(() => expect(useAuth.getState().status).toBe('signedOut'));
     expect(auth.server.users.size).toBe(0);
     expect(useToast.getState().current).toMatchObject({ variant: 'success', message: 'החשבון נמחק' });
+    // Spec §22: account_delete, once (the wrong password before it deleted nothing).
+    expect(jest.mocked(track).mock.calls.filter(([name]) => name === 'account_delete')).toEqual([
+      ['account_delete'],
+    ]);
   });
 
   it('the server unreachable: nothing is deleted, and the dialog says so', async () => {
@@ -236,6 +241,28 @@ describe('Settings: the account (spec §3.3, §23)', () => {
     );
     expect(useAuth.getState().status).toBe('ready');
     expect(auth.server.users.size).toBe(1);
+  });
+
+  it('the server still finds the sign-in too old: the dialog asks for the password again', async () => {
+    await signedIn();
+    await renderAccount('/settings');
+    auth.server.failNext('deleteMe', new AccountApiError('reauthRequired', 401, { error: 'reauthRequired' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'מחיקת חשבון' }));
+    await fireEvent.press(
+      within(await screen.findByTestId('delete-confirm')).getByTestId('delete-confirm-confirm'),
+    );
+    const ask = await screen.findByTestId('delete-password');
+    await fireEvent.changeText(within(ask).getByTestId('delete-password-input'), TEST_PLAYER.password);
+    await fireEvent.press(within(ask).getByTestId('delete-password-confirm'));
+    expect(await within(ask).findByTestId('delete-alert')).toHaveTextContent(
+      'כדי למחוק את החשבון צריך התחברות טרייה. כתוב שוב את הסיסמה ונסה שוב.',
+    );
+    expect(useAuth.getState().status).toBe('ready');
+    expect(auth.server.users.size).toBe(1);
+
+    await fireEvent.press(within(ask).getByTestId('delete-password-confirm'));
+    await waitFor(() => expect(useAuth.getState().status).toBe('signedOut'));
+    expect(auth.server.users.size).toBe(0);
   });
 
   it('speaks English too', async () => {

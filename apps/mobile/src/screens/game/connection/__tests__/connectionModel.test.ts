@@ -338,6 +338,17 @@ describe('connectionModel: a disconnected opponent (Opponent-Reconnecting)', () 
     });
   });
 
+  it('out of a game of 4 that froze for the last two (D36): no freeze screen, nobody wins by me', () => {
+    const DAN_INFO = { id: 'dan', name: 'Dan', rating: 1200, ratedGames: 30 };
+    const game = rankedGame([MOSHE_INFO, NINA_INFO, AIKO_INFO, DAN_INFO]);
+    game.surrender(AIKO);
+    game.disconnect(NINA);
+    expect(game.view().status).toBe('running'); // three still in: no freeze
+    game.surrender(ME);
+    expect(game.view().status).toBe('paused'); // two still in, one away
+    expect(connectionModel(game.view(), ONLINE, game.now())).toEqual({ kind: 'none' });
+  });
+
   it('shows nothing for a frozen game without anyone away (defensive)', () => {
     const game = rankedGame();
     const view: GameView = { ...game.view(), status: 'paused' };

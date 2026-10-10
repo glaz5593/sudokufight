@@ -4,9 +4,10 @@ import {
   type GameView,
   type InterferenceKind,
   type PlayerId,
+  type PlayerView,
 } from '@sudoku-fight/engine';
 
-import type { LeadModel } from '../../components/player';
+import { compactCardGap, compactCardWidth, type LeadModel } from '../../components/player';
 import type { FeedbackCue } from '../../services/feedback';
 import { motion } from '../../theme/motion';
 
@@ -102,21 +103,67 @@ export function endDelayMs(reason: EndReason | undefined, reduce: boolean): numb
 }
 
 // ---------------------------------------------------------------------------------------------------------
-// Two players (practice against a bot, spec §5.1, §9; later ranked)
+// Two players (practice against a bot, spec §5.1, §9; ranked), and three or four (ranked, work plan stage 10)
 
 /**
  * Which HUD the screen draws (spec §6.8): one player, the solo practice's card and the board's progress; two,
- * the pair of cards and the lead bar. Three or four (compact cards) arrive with work plan stage 10; until then
- * they get the pair, with the first opponent.
+ * the pair of cards and the lead bar; three or four, a row of compact cards (each with its current place) and
+ * the lead bar by place.
  */
-export type HudLayout = 'solo' | 'duel';
+export type HudLayout = 'solo' | 'duel' | 'group';
 
 export const hudLayoutOf = (view: Pick<GameView, 'players'>): HudLayout =>
-  view.players.length > 1 ? 'duel' : 'solo';
+  view.players.length > 2 ? 'group' : view.players.length > 1 ? 'duel' : 'solo';
+
+/**
+ * The cards' order (spec §6.8, components.md §7.1): me first, at the start edge, then everyone else by seat.
+ * It never changes during a game (places do not re-sort it), so an interference target never moves under the
+ * finger. A spectator (no `me`) sees the seats as they are.
+ */
+export function seatOrder(view: Pick<GameView, 'players' | 'me'>): PlayerView[] {
+  const bySeat = [...view.players].sort((a, b) => a.seat - b.seat);
+  const me = bySeat.find((p) => p.id === view.me);
+  return me ? [me, ...bySeat.filter((p) => p !== me)] : bySeat;
+}
+
+/** Everyone but me, by seat: the cards with ⚡ (spec §6.8). */
+export const opponentsOf = (view: Pick<GameView, 'players' | 'me'>): PlayerView[] =>
+  seatOrder(view).filter((p) => p.id !== view.me);
 
 /** The opponent the duel HUD shows: the first other player by seat. */
-export function opponentOf(view: Pick<GameView, 'players' | 'me'>): GameView['players'][number] | null {
-  return [...view.players].sort((a, b) => a.seat - b.seat).find((p) => p.id !== view.me) ?? null;
+export function opponentOf(view: Pick<GameView, 'players' | 'me'>): PlayerView | null {
+  return opponentsOf(view)[0] ?? null;
+}
+
+/**
+ * The widths of the compact cards in seat order (components.md §7.1): 114 · 114 · 114 for three players,
+ * 106 (mine) and 78 for the others with four, filling the design's 358-wide row with its gaps (8 and 6). A
+ * narrower row shrinks every card in proportion (the gaps stay), so the row never wraps and never pushes into
+ * the board; a wider one keeps the design's widths (the row spreads them out).
+ */
+export function groupCardWidths(count: number, rowWidth: number): number[] {
+  const widths = Array.from({ length: count }, (_, i) => compactCardWidth(count, i === 0));
+  const gaps = compactCardGap(count) * Math.max(0, count - 1);
+  const design = widths.reduce((a, w) => a + w, 0);
+  const scale = Math.min(1, Math.max(0, rowWidth - gaps) / design);
+  return widths.map((w) => Math.floor(w * scale));
+}
+
+/**
+ * Out of a game of 3–4 that goes on without me (spec §6.6, §6.7, D36): I surrendered (or the server gave me
+ * up after the grace), my place is fixed by the order of leaving, and the others play on. Null while I am in
+ * the game, once it is over, and in games of two (there a surrender ends the game).
+ */
+export interface OutOfGame {
+  how: 'surrendered' | 'abandoned';
+  place: number;
+}
+
+export function outOfGame(view: Pick<GameView, 'players' | 'me' | 'status'>): OutOfGame | null {
+  if (view.players.length < 3 || view.status === 'over') return null;
+  const me = view.players.find((p) => p.id === view.me);
+  if (!me || me.status === 'active') return null;
+  return { how: me.status, place: me.place };
 }
 
 /** A change of leader (spec §6.8, components.md §9.1): who leads now, by how much, and what it means to me. */

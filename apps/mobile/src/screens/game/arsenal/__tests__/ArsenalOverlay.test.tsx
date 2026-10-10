@@ -2,7 +2,7 @@
 import 'react-native-gesture-handler/jestSetup';
 
 import type { GameView, InterferenceKind, PlayerId } from '@sudoku-fight/engine';
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { useEffect, useState } from 'react';
 import { BackHandler, DeviceEventEmitter, Pressable, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView, State } from 'react-native-gesture-handler';
@@ -81,7 +81,11 @@ function Harness({
       <ArsenalOverlay
         arsenal={arsenal}
         view={view}
-        describe={() => ({ name: NAME, colorIndex: 1, avatarId: 'av49', country: 'DE' })}
+        describe={(id) =>
+          id === ME
+            ? { name: 'אני', colorIndex: 0, avatarId: 'av07' }
+            : { name: NAME, colorIndex: 1, avatarId: 'av49', country: 'DE' }
+        }
         showRoute={showRoute}
       />
     </GestureHandlerRootView>
@@ -370,9 +374,23 @@ describe('the drag launch (spec §7.3.2–4, Interference-Drag; D18: drag only)'
     await earn(g);
     await openFromBolt();
     await dragTo('cats', { x: 200, y: 500 }, { hold: true });
-    expect(screen.getByTestId('arsenal-ghost', hidden)).toHaveTextContent(
-      `חתולים · 2 נק׳אני ← ${isolate(NAME)}`,
-    );
+    const ghost = screen.getByTestId('arsenal-ghost', hidden);
+    expect(ghost).toHaveTextContent(`חתולים · 2 נק׳אני←${isolate(NAME)}`);
+    // The tag: from me (P1, ●) to the card it was opened from (its seat colour, ▲), both avatars.
+    const route = within(ghost).getByTestId('arsenal-route', hidden);
+    expect(within(route).getByTestId('arsenal-route-avatar-0', hidden)).toBeOnTheScreen();
+    expect(within(route).getByTestId('arsenal-route-avatar-1', hidden)).toBeOnTheScreen();
+    expect(within(route).getByTestId('glyph-circle', hidden)).toBeOnTheScreen();
+    expect(within(route).getByTestId('glyph-triangle', hidden)).toBeOnTheScreen();
+  });
+
+  it('2 players: no route tag on the ghost', async () => {
+    const { g } = await show();
+    await earn(g);
+    await openFromBolt();
+    await dragTo('cats', { x: 200, y: 500 }, { hold: true });
+    expect(screen.getByTestId('arsenal-ghost', hidden)).toBeOnTheScreen();
+    expect(screen.queryByTestId('arsenal-route', hidden)).not.toBeOnTheScreen();
   });
 
   it('if my score drops under the cost mid-drag, the drop does not launch', async () => {

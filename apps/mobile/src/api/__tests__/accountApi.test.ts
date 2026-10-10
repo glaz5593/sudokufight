@@ -218,6 +218,28 @@ describe('account API client (spec §18 HTTP API)', () => {
     expect((await failure(api(down.fetch).api.deleteMe())).code).toBe('unavailable');
   });
 
+  it('DELETE /v1/me: 401 reauthRequired is not retried with a refreshed token (it keeps the sign-in time)', async () => {
+    const stale = scripted({
+      status: 401,
+      body: { error: 'reauthRequired', message: 'Sign in again' },
+      headers: { 'WWW-Authenticate': 'Bearer error="insufficient_user_authentication", max_age=300' },
+    });
+    const { api: client, getToken } = api(stale.fetch);
+    const e = await failure(client.deleteMe());
+    expect(e).toMatchObject({ code: 'reauthRequired', status: 401 });
+    expect(stale.requests).toHaveLength(1);
+    expect(getToken.mock.calls).toEqual([[false]]);
+
+    // A plain 401 (an expired token) still gets its one refresh.
+    const expired = scripted({ status: 401, body: { error: 'unauthorized' } }, { status: 204 });
+    const second = api(expired.fetch);
+    await expect(second.api.deleteMe()).resolves.toBeUndefined();
+    expect(expired.requests.map((r) => r.init.headers.Authorization)).toEqual([
+      'Bearer tok',
+      'Bearer tok-fresh',
+    ]);
+  });
+
   it('an abort from the caller (a newer name to check) is passed through, not reported as offline', async () => {
     const controller = new AbortController();
     const hanging: AccountFetch = (_url, init) =>

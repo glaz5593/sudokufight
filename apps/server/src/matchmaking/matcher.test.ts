@@ -1,3 +1,4 @@
+import { createRng } from '@sudoku-fight/engine';
 import { type QueueKey } from '@sudoku-fight/protocol';
 
 import {
@@ -318,5 +319,47 @@ describe('MatchQueue', () => {
       extended: false,
       priority: false,
     });
+  });
+});
+
+describe('a ticket is matched once (stage 9 review: two matches never pull the same ticket)', () => {
+  it('random busy queues, round after round: groups are disjoint, full, mutually in range, and leave the queue', () => {
+    const rng = createRng(20261010);
+    const pick = (n: number) => Math.floor(rng.next() * n);
+    for (let trial = 0; trial < 40; trial++) {
+      const size = 2 + (trial % 3);
+      const { queue, add } = queueOf(size);
+      const players = 6 + pick(30);
+      for (let i = 0; i < players; i++) {
+        // Some history between neighbours, some keep-searching tickets, some back from a failed match.
+        const opponents = pick(3) === 0 ? met(`p${(i + 1) % players}`, `p${(i + 2) % players}`) : [];
+        add(`p${i}`, 1000 + pick(700), {
+          at: T0 - pick(70) * S,
+          opponents,
+          extended: pick(5) === 0,
+          priority: pick(8) === 0,
+        });
+      }
+      const seen = new Set<string>();
+      for (let r = 0; r < 12 && queue.size > 0; r++) {
+        const now = T0 + r * 5 * S;
+        const before = queue.list();
+        const { groups, timedOut } = queue.tick(now);
+        for (const g of groups) {
+          expect(g.tickets).toHaveLength(size);
+          for (const [i, a] of g.tickets.entries())
+            for (const b of g.tickets.slice(i + 1)) expect(inMutualRange(a, b, now)).toBe(true);
+        }
+        const out = [...groups.flatMap((g) => g.tickets), ...timedOut].map((x) => x.userId);
+        expect(new Set(out).size).toBe(out.length); // nobody twice in a round
+        for (const id of out) {
+          expect(seen.has(id)).toBe(false); // nor in two rounds
+          seen.add(id);
+          expect(queue.get(id)).toBeUndefined();
+          expect(before.some((x) => x.userId === id)).toBe(true);
+        }
+        expect(queue.size).toBe(before.length - out.length);
+      }
+    }
   });
 });

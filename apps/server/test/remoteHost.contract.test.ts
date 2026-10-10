@@ -103,6 +103,8 @@ function netOf(inner: OnlineClient): Net {
         tokens.push(token);
         return isDown ? offline() : inner.reconnect(token);
       },
+      consumeSeatReservation: (reservation) =>
+        isDown ? offline() : inner.consumeSeatReservation(reservation),
     },
   };
 }

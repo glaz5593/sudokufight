@@ -10,6 +10,7 @@ import {
   OPEN_QUEUE_PLAYER_COUNTS,
   parseQueueKey,
   QUEUE_KEYS,
+  QUEUE_PLAYER_COUNTS,
   queueKey,
   READY_TIMEOUT_MS,
 } from './index';
@@ -37,8 +38,9 @@ describe('queues (spec §10: one per game type and number of players)', () => {
     expect(QUEUE_KEYS.every(isQueueKey)).toBe(true);
   });
 
-  it('opens the 2-player queues only (3–4 players are stage 10)', () => {
-    expect(OPEN_QUEUE_PLAYER_COUNTS).toEqual([2]);
+  it('opens the queues of 2, 3 and 4 players (3–4 since stage 10)', () => {
+    expect(OPEN_QUEUE_PLAYER_COUNTS).toEqual([2, 3, 4]);
+    expect(OPEN_QUEUE_PLAYER_COUNTS).toEqual([...QUEUE_PLAYER_COUNTS]);
   });
 });
 

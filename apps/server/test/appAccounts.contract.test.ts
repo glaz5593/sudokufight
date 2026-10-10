@@ -366,6 +366,9 @@ describe('deleting the account (spec §3.3, §23), then registering again', () =
   });
 });
 
+/** These tests start a server of their own: on a loaded machine (the whole repo's tests) that takes seconds. */
+const BOOT_MS = 20_000;
+
 describe('production servers (the app sees these as the protocol says)', () => {
   async function http(overrides: Parameters<typeof testConfig>[0], projectId?: null) {
     const s = await startHttp({
@@ -378,56 +381,70 @@ describe('production servers (the app sees these as the protocol says)', () => {
     return s.url;
   }
 
-  it("production refuses the development sign-in's tokens: unauthorized; Firebase tokens work", async () => {
-    const base = await http({ nodeEnv: 'production' });
-    const dev = phone(base, { token: anaToken });
-    expect(await failure(dev.api.getMe())).toMatchObject({ code: 'unauthorized', status: 401 });
-    expect(
-      await failure(dev.api.createUser({ displayName: 'Dev_Prod', avatarId: 'av01', country: 'IL' })),
-    ).toMatchObject({ code: 'unauthorized' });
-    // The name check takes no token: a refused one is as good as none.
-    expect(await dev.api.nameAvailable('Dev_Prod')).toEqual({ available: true });
+  it(
+    "production refuses the development sign-in's tokens: unauthorized; Firebase tokens work",
+    async () => {
+      const base = await http({ nodeEnv: 'production' });
+      const dev = phone(base, { token: anaToken });
+      expect(await failure(dev.api.getMe())).toMatchObject({ code: 'unauthorized', status: 401 });
+      expect(
+        await failure(dev.api.createUser({ displayName: 'Dev_Prod', avatarId: 'av01', country: 'IL' })),
+      ).toMatchObject({ code: 'unauthorized' });
+      // The name check takes no token: a refused one is as good as none.
+      expect(await dev.api.nameAvailable('Dev_Prod')).toEqual({ available: true });
 
-    const ben = phone(base, {
-      token: await tokens.sign({ uid: 'fb-ben', email: 'ben@example.com' }, clock.now()),
-    });
-    expect(await ben.api.getMe()).toMatchObject({ displayName: 'Ben_Fb' });
-  });
+      const ben = phone(base, {
+        token: await tokens.sign({ uid: 'fb-ben', email: 'ben@example.com' }, clock.now()),
+      });
+      expect(await ben.api.getMe()).toMatchObject({ displayName: 'Ben_Fb' });
+    },
+    BOOT_MS,
+  );
 
-  it('production without FIREBASE_PROJECT_ID: disabled, which the app treats as "offline, try later"', async () => {
-    const base = await http({ nodeEnv: 'production', firebaseProjectId: null }, null);
-    const ben = phone(base, {
-      token: await tokens.sign({ uid: 'fb-ben', email: 'ben@example.com' }, clock.now()),
-    });
-    const error = await failure(ben.api.getMe());
-    expect(error).toMatchObject({ code: 'disabled', status: 503 });
-    expect(isOfflineError(error)).toBe(true);
-  });
+  it(
+    'production without FIREBASE_PROJECT_ID: disabled, which the app treats as "offline, try later"',
+    async () => {
+      const base = await http({ nodeEnv: 'production', firebaseProjectId: null }, null);
+      const ben = phone(base, {
+        token: await tokens.sign({ uid: 'fb-ben', email: 'ben@example.com' }, clock.now()),
+      });
+      const error = await failure(ben.api.getMe());
+      expect(error).toMatchObject({ code: 'disabled', status: 503 });
+      expect(isOfflineError(error)).toBe(true);
+    },
+    BOOT_MS,
+  );
 
-  it('rate limits: 429 tooManyRequests with the wait, for the name check and for writes', async () => {
-    const s = await startHttp({
-      config: testConfig(),
-      db: db.db,
-      now: clock.now,
-      tokens: tokens.verifier(clock.now),
-      accountLimits: {
-        ...DEFAULT_ACCOUNT_LIMITS,
-        names: { limit: 2, windowMs: 60_000 },
-        writes: { limit: 1, windowMs: 60_000 },
-      },
-    });
-    extraServers.push(s);
-    const ben = phone(s.url, {
-      token: await tokens.sign({ uid: 'fb-ben', email: 'ben@example.com' }, clock.now()),
-    });
-    await ben.api.nameAvailable('Name_One');
-    await ben.api.nameAvailable('Name_Two');
-    const names = await failure(ben.api.nameAvailable('Name_Three'));
-    expect(names).toMatchObject({ code: 'tooManyRequests', status: 429 });
-    expect(names.retryAfterMs).toBeGreaterThanOrEqual(1000);
-    expect(isOfflineError(names)).toBe(true);
+  it(
+    'rate limits: 429 tooManyRequests with the wait, for the name check and for writes',
+    async () => {
+      const s = await startHttp({
+        config: testConfig(),
+        db: db.db,
+        now: clock.now,
+        tokens: tokens.verifier(clock.now),
+        accountLimits: {
+          ...DEFAULT_ACCOUNT_LIMITS,
+          names: { limit: 2, windowMs: 60_000 },
+          writes: { limit: 1, windowMs: 60_000 },
+        },
+      });
+      extraServers.push(s);
+      const ben = phone(s.url, {
+        token: await tokens.sign({ uid: 'fb-ben', email: 'ben@example.com' }, clock.now()),
+      });
+      await ben.api.nameAvailable('Name_One');
+      await ben.api.nameAvailable('Name_Two');
+      const names = await failure(ben.api.nameAvailable('Name_Three'));
+      expect(names).toMatchObject({ code: 'tooManyRequests', status: 429 });
+      expect(names.retryAfterMs).toBeGreaterThanOrEqual(1000);
+      expect(isOfflineError(names)).toBe(true);
 
-    await ben.api.updateMe({ avatarId: 'av05' });
-    expect(await failure(ben.api.updateMe({ avatarId: 'av06' }))).toMatchObject({ code: 'tooManyRequests' });
-  });
+      await ben.api.updateMe({ avatarId: 'av05' });
+      expect(await failure(ben.api.updateMe({ avatarId: 'av06' }))).toMatchObject({
+        code: 'tooManyRequests',
+      });
+    },
+    BOOT_MS,
+  );
 });

@@ -78,7 +78,10 @@ import type { GameRecorder, RankedGames } from '../persistence';
  * client), rated, open to the match's players only, who come with seat reservations. Matchmaking runs the
  * ready check (D37: connected = ready): when everyone is in, phase 'countdown' (seats fixed, leaving is
  * abandonment [D32]; everyone gets a `countdown` with GO's time, 3… 2… 1…), then GO starts the game as above;
- * a no-show cancels the match and closes the room.
+ * a no-show cancels the match and closes the room. A drop in the countdown holds the seat as in the game: the
+ * game starts at GO with that player disconnected (the grace runs from then), and the reconnection token
+ * brings them back. When the game is over and its result stored, the room tells matchmaking, which refuses
+ * the players' searches until then (one ranked game at a time).
  *
  * Abuse: messages over a type's rate limit are dropped; too many malformed or over-the-limit messages and
  * the client is disconnected (for the game, a drop). Measures: every action's handling time goes to
@@ -156,7 +159,15 @@ interface Seat {
   name: string;
   /** The connection holding the seat; null while nobody does (left, or dropped for good). */
   sessionId: string | null;
+  /** Dropped before the game (a match's countdown, a rated game being set up), the seat held to come back. */
+  away?: boolean;
 }
+
+/**
+ * A seat dropped before its game is held until the game's grace would run out: the time to GO, the grace,
+ * and this much for the rated game's set-up (a database round trip) and the late comer.
+ */
+export const BEFORE_GAME_SLACK_MS = 5000;
 
 /** A refusal the client can act on: the message starts with a GameRoomError (protocol). */
 const refuse = (code: number, error: GameRoomError, text: string) =>
@@ -282,10 +293,11 @@ export abstract class GameRoom extends Room {
     const seat = this.seatOfSession(client.sessionId);
     if (!seat) return;
     if (this.phase === 'lobby') return this.leaveLobby(seat);
-    if (this.phase === 'over' || !this.game) {
+    if (this.phase === 'over') {
       seat.sessionId = null;
       return;
     }
+    if (!this.game) return this.holdSeatBeforeGame(client, seat);
     const result = this.game.disconnect(seat.playerId);
     if (result.rejected) {
       // Out of the game already (surrendered, abandoned): nothing to hold.
@@ -305,6 +317,7 @@ export abstract class GameRoom extends Room {
     this.kicked.delete(client.sessionId);
     const seat = this.seatOfSession(client.sessionId);
     if (!seat) return;
+    seat.away = false;
     this.deps.log.info(`[game ${this.code}] ${seat.playerId} reconnected`);
     this.welcomeBack(client, seat);
   }
@@ -319,6 +332,7 @@ export abstract class GameRoom extends Room {
     if (!seat) return;
     if (this.phase === 'lobby') return this.leaveLobby(seat);
     seat.sessionId = null;
+    seat.away = false;
     if (this.phase !== 'playing' || !this.game) return;
     // A seat with no connection is disconnected in the engine, whatever the way out: leaving after "found" is
     // abandonment [D32], so the grace runs and the player may rejoin by code meanwhile; and a reconnection
@@ -341,6 +355,24 @@ export abstract class GameRoom extends Room {
     this.closeTimer = null;
     if (this.opened) this.deps.metrics.roomClosed();
     this.opened = false;
+  }
+
+  /**
+   * Dropped in a match's countdown, or while a rated game is being set up: the seat is the player's from the
+   * countdown on [D32], and the game starts at GO without them (disconnected: their grace runs from the
+   * start, like a drop in the game). Colyseus holds the connection until that grace would run out, so the
+   * app comes back with its reconnection token as it would in the game (a rejoin by code works too).
+   */
+  private holdSeatBeforeGame(client: Client, seat: Seat): void {
+    seat.away = true;
+    const now = this.deps.now();
+    const graceMs = defaultRules('ranked', this.gameType, this.ruleOverrides).graceMs;
+    const toGoMs = Math.max(0, (this.goAt ?? now) - now);
+    const seconds = (toGoMs + graceMs + BEFORE_GAME_SLACK_MS + RECONNECT_SLACK_MS) / 1000;
+    this.deps.log.info(
+      `[game ${this.code}] ${seat.playerId} dropped before the game; ${seconds.toFixed(1)} s to come back`,
+    );
+    this.allowReconnection(client, seconds).catch(() => undefined);
   }
 
   // -- lobby ---------------------------------------------------------------------------------------------
@@ -382,8 +414,8 @@ export abstract class GameRoom extends Room {
     });
     if (!link) throw new RoomOptionsError(`no match ${matchId} waiting for a room`);
     this.match = link;
-    const { gameType, playerCount } = link.setup;
-    return { code: null, gameType, playerCount, rules: {}, rated: true };
+    const { gameType, playerCount, rules } = link.setup;
+    return { code: null, gameType, playerCount, rules, rated: true };
   }
 
   /**
@@ -498,8 +530,10 @@ export abstract class GameRoom extends Room {
       if (seat) this.sendSnapshot(client, seat.playerId);
     }
     this.game.start();
-    // Whoever left while a rated game was being set up is in it, disconnected: their grace starts now.
-    for (const seat of this.seats) if (seat.sessionId === null) this.game.disconnect(seat.playerId);
+    // Whoever left or dropped before the game (the countdown, a rated game being set up) is in it,
+    // disconnected: their grace starts now. A dropped seat may still come back with its reconnection token.
+    for (const seat of this.seats)
+      if (seat.sessionId === null || seat.away) this.game.disconnect(seat.playerId);
     this.deps.metrics.gameStarted();
     const who = this.seats.map((s) => s.playerId).join(', ');
     const rated = this.rated ? ' (rated)' : '';
@@ -512,6 +546,9 @@ export abstract class GameRoom extends Room {
     this.broadcastMessage({ type: 'events', events: events.map(toPublicEvent) });
     if (state.status !== 'over' || this.phase === 'over') return;
     this.phase = 'over';
+    // A match's players may search again once the result is stored, so the next search has the new rating.
+    const match = this.match;
+    if (match) void (this.recorder?.done ?? Promise.resolve()).then(() => match.over());
     // Only now (spec §21): for the replay.
     this.broadcastMessage({ type: 'solution', solution: state.config.puzzle.solution });
     // Nobody left to read the result: close now rather than after closeAfterGameMs.

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
@@ -8,6 +8,7 @@ import { registerProfile, signOut, useAuth } from '../../auth/authStore';
 import { ROUTES } from '../../auth/redirect';
 import { useRegistrationDraft } from '../../auth/registrationDraft';
 import { Button } from '../../components/ui';
+import { track } from '../../services/analytics';
 import { cue } from '../../services/feedback';
 import { space } from '../../theme';
 import { AvatarPicker } from './AvatarPicker';
@@ -49,6 +50,9 @@ export function RegisterFighterScreen() {
   const [shake, setShake] = useState(0);
   const [busy, setBusy] = useState(false);
 
+  // Spec §22: the registration's funnel, step by step.
+  useEffect(() => track('register_step', { step: 'fighter' }), []);
+
   const submit = async () => {
     if (busy) return;
     const nameOk = nameSubmittable(check.state);
@@ -69,6 +73,7 @@ export function RegisterFighterScreen() {
     setBusy(true);
     try {
       await registerProfile({ displayName: check.name, avatarId, country });
+      track('register_complete');
     } catch (error) {
       setBusy(false);
       if (isAccountApiError(error) && ['taken', 'blocked', 'invalidName'].includes(error.code)) {

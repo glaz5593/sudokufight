@@ -7,6 +7,7 @@ import type {
   HostUpdate,
   PlayerId,
 } from '@sudoku-fight/engine';
+import { type MatchSeatReservation, parseQueueKey, type QueueKey } from '@sudoku-fight/protocol';
 
 import type { OnlineError } from '../net/errors';
 import type { DevRoomOptions } from '../net/onlineClient';
@@ -29,8 +30,14 @@ import { gameEndProps, gameStartProps } from './analyticsProps';
  * fake server in tests).
  */
 
-/** How the session gets into its room: a new private room (dev, stage 7), or one by its code. */
-export type OnlineRequest = { kind: 'create'; options: DevRoomOptions } | { kind: 'join'; code: string };
+/**
+ * How the session gets into its room: a new private room (dev, stage 7), one by its code, or (stage 9) the
+ * seat matchmaking reserved for this player in a ranked match's room (net/matchmaking.ts, at "found").
+ */
+export type OnlineRequest =
+  | { kind: 'create'; options: DevRoomOptions }
+  | { kind: 'join'; code: string }
+  | { kind: 'match'; queueKey: QueueKey; matchId: string; reservation: MatchSeatReservation };
 
 /** The connection, as the game screen follows it. */
 export interface SessionConnection {
@@ -42,12 +49,28 @@ export interface SessionConnection {
 
 export type OnlineTrack = (name: 'game_start' | 'game_end', props: Record<string, string | number>) => void;
 
+/**
+ * A player's public profile beyond what the game's config says: their avatar and country. A ranked match has
+ * them from matchmaking's "found" (protocol MatchPlayer); the game screen and the results draw opponents with
+ * them (screens/game SessionProfile).
+ */
+export interface OnlineProfile {
+  /** protocol AvatarId, or av00. */
+  avatarId: string | null;
+  /** ISO alpha-2. */
+  country: string | null;
+}
+
+export type OnlineProfiles = Readonly<Partial<Record<PlayerId, OnlineProfile>>>;
+
 export interface OnlineSessionDeps {
   host: RemoteGameHost;
   request: OnlineRequest;
   track?: OnlineTrack;
   /** Where a failed create or join is reported (the host's `online` shows it too). */
   onError?: (error: OnlineError) => void;
+  /** The players' avatars and countries, when known before the game (a ranked match's "found"). */
+  profiles?: OnlineProfiles | null;
 }
 
 let sessions = 0;
@@ -64,6 +87,8 @@ export class OnlineSession {
   readonly connection: SessionConnection;
   /** Settles once the room is joined or refused (never rejects: the refusal is in `online`). */
   readonly ready: Promise<void>;
+  /** The players' avatars and countries by id (a ranked match's); null for a room by code. */
+  readonly profiles: OnlineProfiles | null;
 
   private started = false;
   private ended = false;
@@ -71,10 +96,11 @@ export class OnlineSession {
   private readonly unsubscribe: () => void;
   private readonly track: OnlineTrack | undefined;
 
-  constructor({ host, request, track, onError }: OnlineSessionDeps) {
+  constructor({ host, request, track, onError, profiles = null }: OnlineSessionDeps) {
     this.key = `online-${++sessions}`;
     this.host = host;
     this.request = request;
+    this.profiles = profiles;
     this.clock = host.clock;
     this.track = track;
     const self = this;
@@ -89,7 +115,12 @@ export class OnlineSession {
     };
     // Before any screen: the start and the end are counted however the screens come and go.
     this.unsubscribe = host.subscribe((update) => this.onUpdate(update));
-    const open = request.kind === 'create' ? host.create(request.options) : host.join(request.code);
+    const open =
+      request.kind === 'create'
+        ? host.create(request.options)
+        : request.kind === 'join'
+          ? host.join(request.code)
+          : host.enterReserved(request.reservation);
     this.ready = open.then(
       () => undefined,
       (error: OnlineError) => {
@@ -118,8 +149,14 @@ export class OnlineSession {
       this.host.game?.config.gameType ??
       this.host.online.lobby?.gameType ??
       (this.request.kind === 'create' ? this.request.options.gameType : undefined) ??
+      (this.request.kind === 'match' ? parseQueueKey(this.request.queueKey)?.gameType : undefined) ??
       'fast'
     );
+  }
+
+  /** The matchmaking queue a ranked match came from (stage 9); null for a room by code. */
+  get queueKey(): QueueKey | null {
+    return this.request.kind === 'match' ? this.request.queueKey : null;
   }
 
   /** A game is here: getView() works. */

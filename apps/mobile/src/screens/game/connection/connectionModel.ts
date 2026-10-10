@@ -295,8 +295,9 @@ export function connectionModel(
   // The snapshot of a reconnection comes before the engine's 'reconnect': for a moment I am still away in it.
   if (me && me.status === 'active' && !me.connected) return self('syncing', null, null);
 
-  // 5. The engine froze the game for an opponent (2 players, spec §16.2).
-  if (view.status === 'paused') {
+  // 5. The engine froze the game for an opponent (2 players still in, spec §16.2). Out of a game of 3–4 that
+  // froze for the last two (D36), nothing waits on me and nobody wins by me: no freeze screen, the cards say it.
+  if (view.status === 'paused' && me?.status !== 'surrendered' && me?.status !== 'abandoned') {
     const away = awayOpponent(view);
     if (away) {
       const remainingMs = away.graceEndsAt === null ? 0 : Math.max(0, away.graceEndsAt - now);

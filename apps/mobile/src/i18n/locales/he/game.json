@@ -32,6 +32,14 @@
     "footnote": "המשחק ממשיך ברקע",
     "dialog": "אישור סיום אימון"
   },
+  "out": {
+    "surrendered": "נכנעת · מקום {{place}}",
+    "abandoned": "יצאת מהמשחק · מקום {{place}}",
+    "goesOn": "המשחק ממשיך עד הסוף",
+    "label": "{{title}}. {{goesOn}}",
+    "home": "לבית",
+    "homeHint": "המשחק ממשיך בלעדיך. המקום שלך כבר נקבע"
+  },
   "connection": {
     "sep": ". ",
     "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
@@ -194,7 +202,11 @@
     "leadTheirs_many": "{{name}} מוביל ב־{{gap}} נקודות",
     "leadTheirs_other": "{{name}} מוביל ב־{{gap}} נקודות",
     "leadTie": "שוויון בניקוד",
-    "reaction": "{{name}} שלח תגובה {{emoji}}"
+    "reaction": "{{name}} שלח תגובה {{emoji}}",
+    "oppSurrendered": "{{name}} נכנע ויצא מהמשחק, מקום {{place}}",
+    "oppAbandoned": "{{name}} לא חזר בזמן ויצא מהמשחק, מקום {{place}}",
+    "hitOther": "{{from}} שלח {{kind}} אל {{name}}",
+    "outMine": "יצאת מהמשחק במקום {{place}}. המשחק ממשיך עד הסוף"
   },
   "interference": {
     "fireworks": "זיקוקים",
@@ -243,6 +255,7 @@
     "unavailable": "לא זמין",
     "ghost": "{{kind}} · {{cost}} נק׳",
     "route": "אני ← {{name}}",
+    "routeArrow": "←",
     "sent": "{{kind}} ← {{name}}",
     "drop": "שחרר כאן: שיגור {{kind}} אל {{name}}",
     "dropIdle": "גרור לכאן הפרעה מהארסנל כדי לשגר אל {{name}}",

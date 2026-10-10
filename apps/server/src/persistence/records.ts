@@ -1,5 +1,5 @@
 import type { GameConfig, GameEvent, GameState, PlayerId } from '@sudoku-fight/engine';
-import { eq, sql } from 'drizzle-orm';
+import { eq, isNull, sql } from 'drizzle-orm';
 
 import { FAST_THINKING, fastThinkingFlags, insertCheatFlags } from '../cheat';
 import type { CheatThresholds } from '../config';
@@ -22,6 +22,8 @@ import { applyRatingChanges, type RatingWrite } from '../ratings';
  * - While it runs (`appendGameEvents`): the engine's events, in small batches. All of them, as the engine
  *   made them: gameCreated carries the solution, which the server keeps for the replay and never sends to a
  *   client while the game runs (spec §21).
+ * - A restart (`endInterruptedGames`, at boot): a game still running when the server stopped is gone (it lived
+ *   in its room's memory); its row is ended as 'serverRestart', unrated.
  * - End (`recordGameEnd`), one transaction: ended_at and end_reason; each seat's final score, mistakes,
  *   place (§6.7: whoever surrendered or abandoned ranks after those still in, a normal loss [D32]), status
  *   and rating after; the ratings themselves (../ratings); the anomaly flags (../cheat). The games row is
@@ -135,6 +137,28 @@ export interface GameEndRecord {
   /** The whole log, for the anomaly check. */
   log: readonly GameEvent[];
   cheat: CheatThresholds;
+}
+
+/** The end_reason of a game cut short by a server restart. Not an engine EndReason: no result, no rating. */
+export const SERVER_RESTART = 'serverRestart';
+
+/**
+ * At boot, before any room opens: every game the database still has running was cut short when the server
+ * stopped (a deploy, a crash), because a game lives in its room, in the server's memory (spec §16.2). They are
+ * ended with end_reason 'serverRestart' and nothing else: no places or scores, no rating changes (game_players
+ * keep rating_before, rating_after stays null), no anomaly check; the events written so far stay for the admin
+ * site. The histories written at the start stay too (the players saw the puzzle and met each other).
+ *
+ * One server process per database (fly.toml: one machine), so at boot no other process plays them. Returns
+ * the ids of the games ended.
+ */
+export async function endInterruptedGames(db: Db, at: Date): Promise<string[]> {
+  const rows = await db
+    .update(games)
+    .set({ endedAt: at, endReason: SERVER_RESTART })
+    .where(isNull(games.endedAt))
+    .returning({ id: games.id });
+  return rows.map((r) => r.id);
 }
 
 export type EndOutcome = 'recorded' | 'alreadyRecorded';

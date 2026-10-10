@@ -11,6 +11,7 @@ import { ltr } from '../../../components/player';
 import { useToast } from '../../../components/ui';
 import { directionProblems } from '../../../components/ui/testing/layout';
 import i18n from '../../../i18n';
+import { track } from '../../../services/analytics';
 import { renderAccount } from '../testing/accountTesting';
 
 type Mocks = typeof import('../../home/testing/nativeMocks');
@@ -37,6 +38,7 @@ async function typeName(name: string, ms = 0) {
 }
 
 beforeEach(async () => {
+  jest.mocked(track).mockClear();
   await i18n.changeLanguage('he');
   auth = installTestAuth();
   await initAuth();
@@ -194,6 +196,11 @@ describe('Register step 1: "צור את הלוחם שלך" (spec §3.2)', () => 
     await fireEvent.press(screen.getByRole('button', { name: 'היכנס לזירה' }));
     await waitFor(() => expect(useAuth.getState().status).toBe('ready'));
     expect(useAuth.getState().me).toMatchObject({ displayName: 'Racer2', country: 'US', avatarId: 'av01' });
+    // Spec §22: the step, then the registration's end (once, after the taken name).
+    expect(jest.mocked(track).mock.calls).toEqual([
+      ['register_step', { step: 'fighter' }],
+      ['register_complete'],
+    ]);
   });
 
   it('speaks English too', async () => {
@@ -301,6 +308,9 @@ describe('Register step 2: the account (spec §3.2)', () => {
     await submit();
     await waitFor(() => expect(useAuth.getState().status).toBe('ready'));
     expect(useAuth.getState().me).toMatchObject({ displayName: 'MosheG', avatarId: 'av07', country: 'IL' });
+    // Spec §22: this step was seen, and the registration completed.
+    expect(track).toHaveBeenCalledWith('register_step', { step: 'account' });
+    expect(track).toHaveBeenLastCalledWith('register_complete');
     expect(useAuth.getState().user).toMatchObject({ email: 'moshe@example.com', emailVerified: false });
     expect(auth.server.users.size).toBe(1);
   });

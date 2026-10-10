@@ -5,14 +5,18 @@ import { serverEndpoint } from '../../src/config/server';
 import { useGameStore } from '../../src/game/gameStore';
 import { deviceHost } from '../../src/net/device';
 import { netIdentity } from '../../src/net/identity';
-import { DevOnlineScreen, useOnlineInfo } from '../../src/screens/game';
+import { DevOnlineScreen, type DevRoomPlayers, useOnlineInfo } from '../../src/screens/game';
 
 const { hostname, port, secure } = serverEndpoint;
 const address = `${secure ? 'wss' : 'ws'}://${hostname}:${port}`;
 
-/** A private room for 2 players (stage 7): the game screen shows its code while waiting. */
-const create = (gameType: GameType) => {
-  useGameStore.getState().startOnline({ kind: 'create', options: { gameType, playerCount: 2 } }, deviceHost);
+/**
+ * A private room for 2–4 players (stage 7; 3 and 4 with stage 10): the game screen shows its code while
+ * waiting, and the game starts once every seat is taken (two phones and two `npm run fake-client -- --code`
+ * fill a room of 4).
+ */
+const create = (gameType: GameType, playerCount: DevRoomPlayers) => {
+  useGameStore.getState().startOnline({ kind: 'create', options: { gameType, playerCount } }, deviceHost);
   router.push('/game');
 };
 

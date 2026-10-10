@@ -1,6 +1,7 @@
 import { type CellIndex, colOf, rowOf } from '@sudoku-fight/engine';
 
 import { boardGeometry } from '../../components/board';
+import { metrics } from '../../components/player/metrics';
 import { tokens } from '../../theme';
 
 /**
@@ -81,4 +82,29 @@ export function avatarCenterOf(cardRect: Rect, screenWidth: number): Point {
     x: onLeft ? cardRect.x + half : cardRect.x + cardRect.width - half,
     y: cardRect.y + card.headerHeight / 2,
   };
+}
+
+// The compact card's column (components.md §7.2): padding 7, avatar 34, name (mt 5, one line), rating (mt 2,
+// h 12), score row (mt 2, h 24). Its rows have fixed heights, so its parts are found from them.
+const compact = metrics.compact;
+const compactAvatar = tokens.size.avatar.compact.frame;
+const compactNameLine = tokens.type.plateNameCompact.lineHeight;
+const compactRatingLine = tokens.type.ratingCompact.lineHeight;
+
+/** The centre of a compact card's avatar (components.md §7.2): the top of its centred column. */
+export function compactAvatarCenterOf(cardRect: Rect): Point {
+  return { x: cardRect.x + cardRect.width / 2, y: cardRect.y + compact.paddingTop + compactAvatar / 2 };
+}
+
+/** Where a score chip lands on a compact card (motion.md `points.flight`): the middle of its score row. */
+export function compactScoreSlotOf(cardRect: Rect): Point {
+  const top =
+    compact.paddingTop +
+    compactAvatar +
+    compact.nameTop +
+    compactNameLine +
+    compact.ratingTop +
+    compactRatingLine +
+    compact.scoreTop;
+  return { x: cardRect.x + cardRect.width / 2, y: cardRect.y + top + compact.scoreRowHeight / 2 };
 }

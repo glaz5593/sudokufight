@@ -1,4 +1,5 @@
 import type { GameMode, GameType } from '@sudoku-fight/engine';
+import { router } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -9,21 +10,23 @@ import { Icon } from '../../components/Icon';
 import { formatScore, ltr, paletteAt, scoreText, signedText } from '../../components/player';
 import { Button, Spinner } from '../../components/ui';
 import { cue } from '../../services/feedback';
+import { useProfile } from '../../state/profile';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { formatClock, formatSeconds } from '../game/model';
 import type { ResultsLoad, ResultsModel } from './resultsModel';
-import { AwardsSection, OpponentsSection } from './ResultsVersus';
+import { AwardsSection, OpponentsSection, RankingSection, RatingSection } from './ResultsVersus';
 
 /**
  * The basic results of a game (spec §12; Results-Victory / Results-Defeat in direction C): the final score,
  * the mistakes, the move of the game with its calculation, the time, the correct moves and the average think
  * time, and how the game ended. Against a bot or online also the headline (ניצחון / הפסד / תיקו), the
  * opponent's row and the game's awards; a practice changes no rating (spec §6.6), and the screen says so. A
- * ranked game won because the opponent did not come back gets the "ניצחת בנטישה" tag (spec §12, §16.2); its
- * rating change comes with stage 9, and until then the screen says the rating does not change yet. A practice
- * is read from the saved game, so it works after an app restart too. Buttons: "משחק חדש" (the one gold action),
- * "צפייה חוזרת" (stage 11: disabled, "בקרוב") and "לבית".
+ * ranked game won because the opponent did not come back gets the "ניצחת בנטישה" tag (spec §12, §16.2), and
+ * a rated game shows my rating change counting from the old rating to the new one, and each opponent's. A game
+ * of 3–4 players shows the full ranking: a podium and the 4th place (Results-4P). Each award says what it is
+ * for. A practice is read from the saved game, so it works after an app restart too. Buttons: "משחק חדש" (the
+ * one gold action), "צפייה חוזרת" (stage 11: the game's replay) and "לבית".
  */
 export interface ResultsScreenProps {
   gameId: string;
@@ -34,6 +37,8 @@ export interface ResultsScreenProps {
    */
   onNewGame: (gameType: GameType, mode?: GameMode) => void;
   onHome: () => void;
+  /** "צפייה חוזרת": the game's replay (default: the /replay route, from the phone or the server). */
+  onReplay?: (gameId: string, mode: GameMode) => void;
   /** The game was just played here: a full board gets its fanfare (motion.md §7, "Win"). */
   celebrate?: boolean;
   testID?: string;
@@ -42,11 +47,19 @@ export interface ResultsScreenProps {
 const ME = paletteAt(0);
 const victory = tokens.motion.sequence.victory;
 
+/** The replay route: a practice from the phone's log, a ranked game from the server (spec §13). */
+export const openReplay = (gameId: string, mode: GameMode): void =>
+  router.push({
+    pathname: '/replay/[id]',
+    params: { id: gameId, source: mode === 'ranked' ? 'ranked' : 'practice' },
+  });
+
 export function ResultsScreen({
   gameId,
   load,
   onNewGame,
   onHome,
+  onReplay = openReplay,
   celebrate = false,
   testID = 'results',
 }: ResultsScreenProps) {
@@ -116,7 +129,14 @@ export function ResultsScreen({
   }
 
   return (
-    <ResultsBody model={model} onNewGame={onNewGame} onHome={onHome} padding={padding} testID={testID} />
+    <ResultsBody
+      model={model}
+      onNewGame={onNewGame}
+      onHome={onHome}
+      onReplay={onReplay}
+      padding={padding}
+      testID={testID}
+    />
   );
 }
 
@@ -124,16 +144,20 @@ function ResultsBody({
   model,
   onNewGame,
   onHome,
+  onReplay,
   padding,
   testID,
 }: {
   model: ResultsModel;
   onNewGame: (gameType: GameType, mode?: GameMode) => void;
   onHome: () => void;
+  onReplay: (gameId: string, mode: GameMode) => void;
   padding: { paddingTop: number; paddingBottom: number };
   testID: string;
 }) {
   const { t } = useTranslation('game');
+  const { t: th } = useTranslation('history');
+  const myAvatar = useProfile((s) => s.avatarId);
   const reduce = useReduceMotion();
   const enter = enteringFor(reduce);
   const none = t('results.stats.none');
@@ -215,9 +239,19 @@ function ResultsBody({
           </View>
         </Animated.View>
 
-        {model.opponents.length ? (
+        {model.ranking.length ? (
+          <Animated.View entering={enter.section(1)}>
+            <RankingSection ranking={model.ranking} myAvatar={myAvatar} />
+          </Animated.View>
+        ) : model.opponents.length ? (
           <Animated.View entering={enter.section(1)}>
             <OpponentsSection opponents={model.opponents} />
+          </Animated.View>
+        ) : null}
+
+        {model.rating ? (
+          <Animated.View entering={enter.section(1)}>
+            <RatingSection rating={model.rating} gameType={model.gameType} />
           </Animated.View>
         ) : null}
 
@@ -282,7 +316,7 @@ function ResultsBody({
           </Animated.View>
         ) : null}
 
-        {versus ? (
+        {versus && !model.rating ? (
           <Text style={[text('caption'), styles.muted, styles.centered]} testID="results-unrated">
             {ranked ? t('results.ratingSoon') : t('results.unrated')}
           </Text>
@@ -299,12 +333,12 @@ function ResultsBody({
       >
         <Button label={t('results.actions.newGame')} size="lg" onPress={newGame} testID="results-new-game" />
         <Button
-          label={t('results.actions.replay')}
+          label={th('results.replay')}
           icon="history"
           variant="secondary"
           size="md"
-          disabled
-          accessibilityHint={t('results.actions.replayHint')}
+          onPress={() => onReplay(model.gameId, model.mode)}
+          accessibilityHint={th('results.replayHint')}
           testID="results-replay"
         />
       </Animated.View>

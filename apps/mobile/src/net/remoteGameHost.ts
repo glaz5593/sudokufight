@@ -18,6 +18,7 @@ import {
   type ClientMessage,
   type GameHost,
   type LobbyPlayer,
+  type MatchSeatReservation,
   PROTOCOL_VERSION,
   SERVER_MESSAGE_TYPES,
   type ServerMessage,
@@ -54,6 +55,8 @@ import type { DevRoomOptions, OnlineClient, RoomLike } from './onlineClient';
  *   closes, the token is kept); back in the foreground it reconnects at once.
  * - Measures (spec §18): see NetMetrics; reconnect time is from starting to come back to the snapshot, sync
  *   time from the snapshot to the game being current again. A return is reported as track('reconnect').
+ * - Ranked matches (stage 9): enterReserved() takes the seat matchmaking reserved (net/matchmaking.ts); the
+ *   room's 3… 2… 1… shows as `online.startsAt`, and the game comes at GO like any other.
  *
  * Pure: the SDK is behind OnlineClient, and the clock, timers, AppState and analytics are injected, so the same
  * code runs in Jest against a fake room and in Node against the real server.
@@ -118,6 +121,11 @@ export interface OnlineInfo {
   hasGame: boolean;
   /** Server time when the latest return's snapshot came (the "back in the game" banner); null before any. */
   resyncedAt: number | null;
+  /**
+   * A ranked match's room (stage 9): GO, in the server's clock, once everyone is in and its 3… 2… 1… runs
+   * (protocol GameRoomCountdown); the snapshot follows at GO. Null (or absent) otherwise.
+   */
+  startsAt?: number | null;
 }
 
 /** What RemoteGameHost needs of React Native's AppState. */
@@ -239,6 +247,7 @@ export class RemoteGameHost implements GameHost {
   private run = 0;
   private lost: ReconnectInfo | null = null;
   private resyncedAt: number | null = null;
+  private startsAt: number | null = null;
   /** After a drop: when coming back started, and when its snapshot came. */
   private comingBack: { startedAt: number; snapshotAt: number | null } | null = null;
   private backgrounded = false;
@@ -276,6 +285,15 @@ export class RemoteGameHost implements GameHost {
   /** Joins the room with this code (as typed). */
   async join(code: string): Promise<void> {
     await this.enter(() => this.deps.client.join(code));
+  }
+
+  /**
+   * Takes the seat matchmaking reserved in a ranked match's room (stage 9, protocol matchmaking.ts `found`):
+   * being connected is being ready (D37). The room's countdown shows in `online.startsAt`, and the game comes
+   * at GO as in any room; a drop after that comes back by token or by the room's code, as in any game.
+   */
+  async enterReserved(reservation: MatchSeatReservation): Promise<void> {
+    await this.enter(() => this.deps.client.consumeSeatReservation(reservation));
   }
 
   private async enter(open: () => Promise<RoomLike>): Promise<void> {
@@ -457,6 +475,11 @@ export class RemoteGameHost implements GameHost {
           this.comingBack = null;
           this.setStatus('lobby');
         }
+        return;
+      case 'countdown':
+        // A ranked match's room: everyone is in, GO at startsAt (sent again to a player who comes back in it).
+        this.startsAt = m.startsAt;
+        this.notifyOnline();
         return;
       case 'snapshot':
         return this.onSnapshot(m);
@@ -877,6 +900,7 @@ export class RemoteGameHost implements GameHost {
       pendingCell: this.pending?.cell ?? null,
       hasGame: this.state !== null,
       resyncedAt: this.resyncedAt,
+      startsAt: this.startsAt,
     };
   }
 

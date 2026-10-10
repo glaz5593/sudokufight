@@ -7,9 +7,12 @@ import {
   botLevelOfGame,
   botOptions,
   DEFAULT_BOT_LEVEL,
+  DEFAULT_RANKED_PLAYERS,
   gameTypeInfos,
   isAvailable,
+  isOpenPlayerCount,
   isStartableMode,
+  rankedRatingIn,
   lastPlayOf,
   MODE_OPTIONS,
   percentOf,
@@ -37,15 +40,40 @@ describe('the modes (spec §5.1)', () => {
     ]);
   });
 
-  it('both practices are open in this build; ranked comes in stage 9', () => {
-    expect(AVAILABLE_MODES).toEqual(['solo', 'bot']);
-    expect(MODE_OPTIONS.filter((o) => isAvailable(o.key)).map((o) => o.key)).toEqual(['solo', 'bot']);
+  it('all five are open: the practices, ranked 2 players (stage 9), ranked 3 and 4 players (stage 10)', () => {
+    expect(AVAILABLE_MODES).toEqual(['ranked2', 'ranked3', 'ranked4', 'solo', 'bot']);
+    expect(MODE_OPTIONS.filter((o) => isAvailable(o.key)).map((o) => o.key)).toEqual([
+      'ranked2',
+      'ranked3',
+      'ranked4',
+      'solo',
+      'bot',
+    ]);
     expect([
       isStartableMode('solo'),
       isStartableMode('bot'),
       isStartableMode('ranked'),
       isStartableMode('x'),
-    ]).toEqual([true, true, false, false]);
+    ]).toEqual([true, true, true, false]);
+    expect([1, 2, 3, 4, 5].map(isOpenPlayerCount)).toEqual([false, true, true, true, false]);
+    expect(DEFAULT_RANKED_PLAYERS).toBe(2);
+  });
+
+  it('a ranked card shows my rating in the key of its queue (RATING_OPTION B or A, spec §11.1)', () => {
+    const entry = (key: string, rating: number) => ({
+      key,
+      rating,
+      games: 1,
+      provisional: true,
+      peak: rating,
+    });
+    const b = [entry('fast', 1240), entry('normal', 1287), entry('hard', 1200)];
+    expect(rankedRatingIn(b, 'normal')?.rating).toBe(1287);
+    const a = [entry('normal-2p', 1310), entry('normal-3p', 1190)];
+    expect(rankedRatingIn(a, 'normal')?.rating).toBe(1310);
+    expect(rankedRatingIn(a, 'normal', 3)?.rating).toBe(1190);
+    expect(rankedRatingIn(a, 'fast')).toBeNull();
+    expect(rankedRatingIn(null, 'fast')).toBeNull();
   });
 });
 
@@ -131,7 +159,28 @@ describe('a saved practice in the recent list', () => {
     });
     expect(lastPlayOf(null, recent)).toEqual({ mode: 'solo', gameType: 'hard' });
     expect(lastPlayOf(null, [])).toBeNull();
-    expect(lastPlayOf({ mode: 'ranked', gameType: 'fast' }, recent)).toBeNull();
+  });
+
+  it('"עוד סיבוב" after a ranked game searches the same queue, while its table is open (stages 9–10)', () => {
+    const recent = [{ mode: 'solo' as const, gameType: 'hard' as const }];
+    expect(lastPlayOf({ mode: 'ranked', gameType: 'fast', players: 2 }, recent)).toEqual({
+      mode: 'ranked',
+      gameType: 'fast',
+      players: 2,
+    });
+    // A setting saved before the player count was kept: 2 players.
+    expect(lastPlayOf({ mode: 'ranked', gameType: 'hard' }, recent)).toEqual({
+      mode: 'ranked',
+      gameType: 'hard',
+      players: 2,
+    });
+    // 3 and 4 players too (stage 10); a table this build does not have is no "עוד סיבוב".
+    expect(lastPlayOf({ mode: 'ranked', gameType: 'fast', players: 4 }, recent)).toEqual({
+      mode: 'ranked',
+      gameType: 'fast',
+      players: 4,
+    });
+    expect(lastPlayOf({ mode: 'ranked', gameType: 'fast', players: 5 as unknown as 4 }, recent)).toBeNull();
   });
 
   it('"עוד סיבוב" against a bot comes with the level: the one played, the last chosen, or the default', () => {

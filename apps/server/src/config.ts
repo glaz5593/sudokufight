@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 
 import type { RatingOption } from '@sudoku-fight/engine';
+import { RECENT_SIGN_IN_MS } from '@sudoku-fight/protocol';
 import { z } from 'zod';
 
 /**
@@ -68,6 +69,11 @@ export interface ServerConfig {
   ratingOption: RatingOption;
   /** CHEAT_FAST_THINK_MS and CHEAT_FAST_THINK_MOVES (spec §21). */
   cheat: CheatThresholds;
+  /**
+   * ACCOUNT_DELETE_MAX_AUTH_AGE_MS: DELETE /v1/me wants a sign-in (the ID token's auth_time) at most this long
+   * ago, else 401 reauthRequired (default 5 minutes, Firebase's own rule for deleting a user).
+   */
+  accountDeleteMaxAuthAgeMs: number;
 }
 
 export class ConfigError extends Error {
@@ -148,6 +154,15 @@ const envSchema = z.object({
   CHEAT_FAST_THINK_MOVES: z.preprocess(
     unsetIfBlank,
     z.coerce.number().int().min(2).max(81).default(DEFAULT_CHEAT_THRESHOLDS.moves),
+  ),
+  ACCOUNT_DELETE_MAX_AUTH_AGE_MS: z.preprocess(
+    unsetIfBlank,
+    z.coerce
+      .number()
+      .int()
+      .min(1000)
+      .max(24 * 3600 * 1000)
+      .default(RECENT_SIGN_IN_MS),
   ),
 });
 
@@ -242,5 +257,6 @@ export function loadConfig(
     firebaseProjectId,
     ratingOption: e.RATING_OPTION,
     cheat: { thinkMs: e.CHEAT_FAST_THINK_MS, moves: e.CHEAT_FAST_THINK_MOVES },
+    accountDeleteMaxAuthAgeMs: e.ACCOUNT_DELETE_MAX_AUTH_AGE_MS,
   };
 }

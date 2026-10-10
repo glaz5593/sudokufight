@@ -76,16 +76,16 @@ describe('ResultsScreen against a bot (spec §12)', () => {
     const best = result.awards.find((a) => a.kind === 'bestMove')!;
     expect(screen.getByTestId('results-award-bestMove')).toHaveProp(
       'accessibilityLabel',
-      `המהלך הטוב ביותר: אני, ${ltr(formatScore(best.value))} נק׳`,
+      `המהלך הטוב ביותר: אני, ${ltr(formatScore(best.value))} נק׳. הניקוד הגבוה ביותר במהלך בודד`,
     );
     expect(screen.getByTestId('results-award-fewestMistakes')).toHaveProp(
       'accessibilityLabel',
-      'הכי מעט טעויות: Mr. Hoot, טעויות: 0',
+      'הכי מעט טעויות: Mr. Hoot, טעויות: 0. הכי מעט טעויות. בתיקו, הניקוד הגבוה יותר',
     );
     const fastest = result.awards.find((a) => a.kind === 'fastest')!;
     expect(screen.getByTestId('results-award-fastest')).toHaveProp(
       'accessibilityLabel',
-      `הכי מהיר: אני, ${formatSeconds(fastest.value)} ש׳ למהלך`,
+      `הכי מהיר: אני, ${formatSeconds(fastest.value)} ש׳ למהלך. זמן החשיבה הממוצע הנמוך ביותר למהלך נכון (לפחות 5 מהלכים)`,
     );
     expect(screen.getByTestId('results-unrated')).toHaveTextContent('אימון: אין שינוי בדירוג');
     expect(feedback.cue).not.toHaveBeenCalled();
@@ -187,7 +187,7 @@ describe('ResultsScreen against a bot, in English', () => {
     expect(screen.getByRole('header', { name: 'Game awards' })).toBeOnTheScreen();
     expect(screen.getByTestId('results-award-fewestMistakes')).toHaveProp(
       'accessibilityLabel',
-      'Fewest mistakes: Mr. Hoot, Mistakes: 0',
+      'Fewest mistakes: Mr. Hoot, Mistakes: 0. The fewest mistakes. On a tie, the higher score',
     );
     expect(screen.getByTestId('results-unrated')).toHaveTextContent('Practice: your rating does not change');
 

@@ -25,6 +25,7 @@ const botRow = {
   isBot: true,
   colorIndex: 1,
   left: false,
+  rating: null,
 };
 
 describe('resultsModel against a bot (spec §12)', () => {

@@ -180,7 +180,7 @@ describe('Home (spec §4.3)', () => {
     const app = await renderApp();
     await fireEvent.press(screen.getByRole('button', { name: 'הכל' }));
     expect(app.pathname()).toBe('/history');
-    expect(screen.getByTestId('placeholder-history')).toBeTruthy();
+    expect(screen.getByTestId('history')).toBeTruthy(); // stage 11: the real history tab
   });
 
   it('links to the dev screens in development builds only', async () => {

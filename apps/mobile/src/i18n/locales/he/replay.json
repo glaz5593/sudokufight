@@ -1,0 +1,88 @@
+{
+  "title": "צפייה חוזרת",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "אימון לבד",
+    "bot": "אימון מול בוט",
+    "ranked": "מדורג"
+  },
+  "back": "חזרה",
+  "loading": "טוען את המשחק…",
+  "load": {
+    "missing": "לא מצאנו את המשחק הזה",
+    "notFinished": "המשחק עוד נשמר בשרת. אפשר לנסות שוב בעוד רגע",
+    "offline": "אין חיבור לשרת. משחק מדורג נטען מהשרת",
+    "signedOut": "צריך להתחבר כדי לצפות במשחק מדורג",
+    "unavailable": "לא הצלחנו לקרוא את המשחק",
+    "retry": "לנסות שוב",
+    "partial": "המשחק נקטע באמצע: הצפייה מגיעה עד המהלך האחרון שנשמר"
+  },
+  "step": {
+    "counter": "שלב {{number}} מתוך {{total}}",
+    "clockLabel": "שעון משחק: {{clock}}"
+  },
+  "nav": {
+    "prev": "שלב קודם",
+    "next": "שלב הבא",
+    "timeline": "ציר השלבים",
+    "timelineValue": "שלב {{number}} מתוך {{total}}, {{clock}}",
+    "timelineHint": "החליקו למעלה או למטה כדי לעבור שלב"
+  },
+  "narration": {
+    "start": "המשחק מתחיל",
+    "select": "{{name}} · בחירה ב־{{cell}}",
+    "correct": "{{name}} · נכון ב־{{cell}} · {{delta}}",
+    "wrong": "{{name}} · טעות ב־{{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · ביטול הבחירה ב־{{cell}}",
+      "timeout": "{{name}} · הזמן נגמר ב־{{cell}}"
+    },
+    "interference": "{{name}} · הפרעה על {{target}} · {{delta}}",
+    "disconnect": "{{name}} · התנתקות",
+    "reconnect": "{{name}} · חזרה למשחק",
+    "surrender": "{{name}} · כניעה",
+    "endPractice": "{{name}} · סיום אימון",
+    "abandon": "{{name}} · נטישה",
+    "over": "המשחק נגמר",
+    "paused": "המשחק מוקפא"
+  },
+  "explain": {
+    "title": "הסבר לכל שחקן",
+    "none": "עוד אין מהלך של {{name}}",
+    "noneMe": "עוד אין לי מהלך",
+    "noneBody": "ההסבר יופיע אחרי המהלך הראשון",
+    "status": {
+      "choosing": "בבחירה",
+      "released": "שוחרר",
+      "correct": "נכון",
+      "wrong": "טעות"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} במקום {{answer}}",
+    "why": "למה {{digit}} לא מתאים: {{text}}",
+    "noLogic": "התשובה: {{cell}} → {{digit}}",
+    "scoreLine": "חישוב הניקוד",
+    "released": {
+      "cancel": "הבחירה בוטלה",
+      "timeout": "הזמן נגמר",
+      "switch": "עבר למשבצת אחרת",
+      "mistake": "אחרי טעות",
+      "surrender": "יצא מהמשחק",
+      "disconnect": "התנתקות",
+      "abandon": "נטישה"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}"
+  },
+  "moments": {
+    "title": "רגעי מפתח",
+    "bestMove": "המהלך הטוב ביותר",
+    "mistakes": "טעויות · {{count}}",
+    "interferences": "הפרעות · {{count}}",
+    "turningPoint": "נקודת המהפך",
+    "hint": "קופץ לשלב הזה"
+  },
+  "board": "הלוח בשלב {{number}}",
+  "me": "אני",
+  "unknown": "שחקן"
+}

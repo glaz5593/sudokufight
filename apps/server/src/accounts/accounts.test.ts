@@ -639,7 +639,7 @@ describe('DELETE /v1/me', () => {
     expect(await t.db.$count(users)).toBe(2);
   });
 
-  describe('needs a recent sign-in (RECENT_SIGN_IN_MS: 5 minutes, like Firebase)', () => {
+  describe('needs a fresh sign-in (ACCOUNT_DELETE_MAX_AUTH_AGE_MS: 5 minutes by default, like Firebase)', () => {
     /** A token issued now (a refresh) for a sign-in `ageMs` ago. */
     const signedInAgo = (uid: string, ageMs: number) =>
       tokens.sign(
@@ -655,8 +655,9 @@ describe('DELETE /v1/me', () => {
         token: await signedInAgo('uid-1', DAY + 60_000),
       });
       expect(stale.status).toBe(401);
+      // Not `unauthorized`: refreshing the token would not help (it keeps the sign-in time).
       expect(stale.body).toEqual({
-        error: 'unauthorized',
+        error: 'reauthRequired',
         message: 'Sign in again: deleting the account needs a sign-in within the last 5 minutes',
       });
       expect(stale.headers.get('www-authenticate')).toBe(
@@ -685,11 +686,38 @@ describe('DELETE /v1/me', () => {
       expect((await userRow(created.id))?.deletedAt).toEqual(new Date(NOW + DAY));
     });
 
-    it('development tokens have no sign-in time, and pass', async () => {
+    it('development tokens have no sign-in time, and pass (outside production)', async () => {
       const token = 'dev:dana_dev';
       expect((await api('POST', ACCOUNT_PATHS.users, { token, body: fighter() })).status).toBe(201);
       clock.advance(DAY);
       expect((await api('DELETE', ACCOUNT_PATHS.me, { token })).status).toBe(204);
+    });
+
+    it('the limit is the setting ACCOUNT_DELETE_MAX_AUTH_AGE_MS', async () => {
+      await start({ accountDeleteMaxAuthAgeMs: 60_000 });
+      const { body: created } = await register('uid-1');
+      const late = await api<AccountError>('DELETE', ACCOUNT_PATHS.me, {
+        token: await signedInAgo('uid-1', 90_000),
+      });
+      expect(late.status).toBe(401);
+      expect(late.body).toEqual({
+        error: 'reauthRequired',
+        message: 'Sign in again: deleting the account needs a sign-in within the last 1 minute',
+      });
+      expect(late.headers.get('www-authenticate')).toContain('max_age=60');
+      const fresh = await api('DELETE', ACCOUNT_PATHS.me, { token: await signedInAgo('uid-1', 30_000) });
+      expect(fresh.status).toBe(204);
+      expect((await userRow(created.id))?.deletedAt).not.toBeNull();
+    });
+
+    it('in production a token without a sign-in time never deletes (even if dev tokens were let in)', async () => {
+      await start({ nodeEnv: 'production' }, DEFAULT_ACCOUNT_LIMITS, true);
+      const token = 'dev:dana_dev';
+      const { body: created } = await api<Me>('POST', ACCOUNT_PATHS.users, { token, body: fighter() });
+      const res = await api<AccountError>('DELETE', ACCOUNT_PATHS.me, { token });
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('reauthRequired');
+      expect((await userRow(created.id))?.deletedAt).toBeNull();
     });
   });
 });

@@ -307,9 +307,14 @@ describe('deleting the account (spec §3.3, §23)', () => {
     const provider = auth.provider;
     const reauth = provider.reauthenticate.bind(provider);
     const del = provider.deleteUser.bind(provider);
+    const token = provider.getIdToken.bind(provider);
     provider.reauthenticate = async (p) => {
       order.push('reauthenticate');
       return reauth(p);
+    };
+    provider.getIdToken = async (force) => {
+      if (force) order.push('getIdToken(true)');
+      return token(force);
     };
     provider.deleteUser = async () => {
       order.push('deleteUser');
@@ -322,7 +327,7 @@ describe('deleting the account (spec §3.3, §23)', () => {
     };
 
     expect(await deleteAccount(TEST_PLAYER.password)).toEqual({ signInDeleted: true });
-    expect(order).toEqual(['reauthenticate', 'DELETE /v1/me', 'deleteUser']);
+    expect(order).toEqual(['reauthenticate', 'getIdToken(true)', 'DELETE /v1/me', 'deleteUser']);
     expect(state()).toMatchObject({ status: 'signedOut', me: null, user: null });
     expect(auth.storage.data.has(ME_CACHE_KEY)).toBe(false);
     expect(await auth.server.api.nameAvailable('Tester')).toEqual({ available: true });
@@ -334,6 +339,33 @@ describe('deleting the account (spec §3.3, §23)', () => {
     const auth = await installSignedInPlayer();
     await initAuth();
     expect(await rejection(deleteAccount('wrong1234'))).toBeInstanceOf(AuthError);
+    expect(auth.server.users.size).toBe(1);
+    expect(state().status).toBe('ready');
+  });
+
+  it('the server still finds the sign-in too old (401 reauthRequired): nothing is deleted, try again', async () => {
+    const auth = await installSignedInPlayer();
+    await initAuth();
+    auth.server.failNext('deleteMe', new AccountApiError('reauthRequired', 401, { error: 'reauthRequired' }));
+    expect(await rejection(deleteAccount(TEST_PLAYER.password))).toMatchObject({ code: 'reauthRequired' });
+    expect(auth.provider.currentUser()).not.toBeNull();
+    expect(auth.server.users.size).toBe(1);
+    expect(state().status).toBe('ready');
+    // The password again: a new re-authentication and a fresh token, and this time it goes through.
+    expect(await deleteAccount(TEST_PLAYER.password)).toEqual({ signInDeleted: true });
+    expect(auth.server.users.size).toBe(0);
+  });
+
+  it('the fresh token can’t be had (no connection): nothing is deleted', async () => {
+    const auth = await installSignedInPlayer();
+    await initAuth();
+    const token = auth.provider.getIdToken.bind(auth.provider);
+    auth.provider.getIdToken = async (force) => {
+      if (force) throw new AuthError('network');
+      return token(force);
+    };
+    expect(await rejection(deleteAccount(TEST_PLAYER.password))).toMatchObject({ code: 'network' });
+    expect(auth.server.calls).not.toContain('DELETE /v1/me');
     expect(auth.server.users.size).toBe(1);
     expect(state().status).toBe('ready');
   });

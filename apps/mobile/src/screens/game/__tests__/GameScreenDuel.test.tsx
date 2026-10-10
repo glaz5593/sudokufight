@@ -7,7 +7,7 @@ import { answerIn } from '../../../game/testing/practice';
 import i18n from '../../../i18n';
 import { useProfile } from '../../../state/profile';
 import { useSettings } from '../../../state/settings';
-import { GameScreen } from '../GameScreen';
+import { GameScreen, type GameSession } from '../GameScreen';
 import { isolateName } from '../hit';
 import { useReactionMutes } from '../reactions';
 import { type Duel, duel } from '../testing/duel';
@@ -104,6 +104,8 @@ describe('GameScreen against a bot (spec §6.8, §9)', () => {
     expect(screen.getByLabelText('אני · 0 נקודות · אין טעויות')).toBeOnTheScreen();
     expect(screen.getByLabelText('Mr. Hoot · 0 נקודות · חושב, אין טעויות, בוט, מחובר')).toBeOnTheScreen();
     expect(within(screen.getByTestId('card-opponent')).getByTestId('bot-chip', hidden)).toBeOnTheScreen();
+    // A practice has no profiles: no flags (a ranked match's come from "found").
+    expect(screen.queryAllByTestId(/^flag-/, hidden)).toEqual([]);
     expect(screen.getByLabelText('שוויון בניקוד')).toBeOnTheScreen();
     // Me first in the row: the start edge (the right in Hebrew).
     const row = screen.getByTestId('duel-hud');
@@ -138,6 +140,31 @@ describe('GameScreen against a bot (spec §6.8, §9)', () => {
     expect(
       within(screen.getByTestId(`cell-${cellName(g.cells[0]!)}`)).queryByTestId('cell-avatar', hidden),
     ).toBeNull();
+  });
+});
+
+describe('a ranked duel’s profiles (spec §6.8)', () => {
+  it('the opponent’s own avatar, and a flag on both cards, as the match gave them', async () => {
+    game = duel();
+    const s = game.session;
+    const opponent = s.getView().players.find((p) => p.id !== s.playerId)!.id;
+    const session: GameSession = {
+      id: s.id,
+      host: s.host,
+      clock: s.clock,
+      playerId: s.playerId,
+      getView: () => s.getView(),
+      subscribe: (listener) => s.subscribe(listener),
+      endPractice: () => s.endPractice(),
+      profiles: {
+        [s.playerId]: { avatarId: 'av05', country: 'IL' },
+        [opponent]: { avatarId: 'av12', country: 'DE' },
+      },
+    };
+    await render(<GameScreen session={session} onEnded={jest.fn()} />);
+    expect(avatarsIn(screen.getByTestId('card-opponent'))).toEqual(['av12']);
+    expect(within(screen.getByTestId('card-opponent')).getByTestId('flag-DE', hidden)).toBeTruthy();
+    expect(within(screen.getByTestId('card-me')).getByTestId('flag-IL', hidden)).toBeTruthy();
   });
 });
 

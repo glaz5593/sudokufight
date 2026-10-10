@@ -7,6 +7,7 @@ import {
   type GameMode,
   type GameType,
 } from '@sudoku-fight/engine';
+import type { QueuePlayerCount, RatingEntry } from '@sudoku-fight/protocol';
 
 import { type AvatarId, EMPTY_AVATAR, isAvatarId } from '../../assets/avatars';
 import type { Outcome } from '../../game/outcome';
@@ -47,21 +48,49 @@ export const MODE_OPTIONS: readonly ModeOption[] = [
 export const MODE_GROUPS: readonly ModeGroup[] = ['ranked', 'practice'];
 
 /**
- * The options that can be played in this build: the two practices. The ranked ones show "בקרוב" until
- * work-plan stage 9. Add a key here when its stage lands.
+ * The options that can be played in this build: all five (ranked 2 players since stage 9, 3 and 4 since stage
+ * 10). A setting: an option left out shows "בקרוב" (with its player count out of RANKED_TABLES_OPEN below).
  */
-export const AVAILABLE_MODES: readonly ModeKey[] = ['solo', 'bot'];
+export const AVAILABLE_MODES: readonly ModeKey[] = ['ranked2', 'ranked3', 'ranked4', 'solo', 'bot'];
 
 export const isAvailable = (key: ModeKey): boolean => AVAILABLE_MODES.includes(key);
 
 /** The mode of the game-type screen when the link names none (the results' "משחק חדש" keeps only the type). */
 export const DEFAULT_MODE: GameMode = 'solo';
 
-/** The modes the game-type screen can start: practices only, for now (against a bot, via the bot selection). */
-export const STARTABLE_MODES: readonly GameMode[] = ['solo', 'bot'];
+/**
+ * The modes the game-type screen can start: the practices (against a bot via the bot selection), and ranked
+ * (stage 9: the game type, then the matchmaking search).
+ */
+export const STARTABLE_MODES: readonly GameMode[] = ['solo', 'bot', 'ranked'];
 
 export const isStartableMode = (mode: unknown): mode is GameMode =>
   STARTABLE_MODES.includes(mode as GameMode);
+
+/**
+ * The ranked tables this app offers: 2 players (stage 9), 3 and 4 (stage 10). A setting, apart from the
+ * server's open queues (protocol OPEN_QUEUE_PLAYER_COUNTS): a server that closes a queue says `queueClosed`.
+ */
+export const RANKED_TABLES_OPEN: readonly QueuePlayerCount[] = [2, 3, 4];
+
+export const isOpenPlayerCount = (n: unknown): n is QueuePlayerCount =>
+  RANKED_TABLES_OPEN.includes(n as QueuePlayerCount);
+
+/** A ranked table when none is named: the first open one (2 players). */
+export const DEFAULT_RANKED_PLAYERS: QueuePlayerCount = RANKED_TABLES_OPEN[0] ?? 2;
+
+/**
+ * My rating for a ranked game of `type` at a table of `players` (spec §11.1): the key `normal-2p` under
+ * RATING_OPTION A, else `normal` (B, the default). Null when the account has neither (or no account).
+ */
+export function rankedRatingIn(
+  ratings: readonly RatingEntry[] | null,
+  type: GameType,
+  players: QueuePlayerCount = DEFAULT_RANKED_PLAYERS,
+): RatingEntry | null {
+  if (!ratings) return null;
+  return ratings.find((r) => r.key === `${type}-${players}p`) ?? ratings.find((r) => r.key === type) ?? null;
+}
 
 // ---------------------------------------------------------------------------------------------------------
 // Game types (spec §5.2) [D5]: board difficulty and pace together.
@@ -174,7 +203,8 @@ export function botLevelOfGame(game: Partial<Pick<PracticeGameRecord, 'opponents
 
 /**
  * The setting "עוד סיבוב" repeats: the one remembered, or else the newest saved game's. A bot practice comes
- * with its level: the one played, else the last one chosen (`botLevel`), else the default.
+ * with its level: the one played, else the last one chosen (`botLevel`), else the default. A ranked one comes
+ * with its number of players (a search in the same queue), while that table is open.
  */
 export function lastPlayOf(
   remembered: LastPlay | null,
@@ -187,6 +217,10 @@ export function lastPlayOf(
     remembered ??
     (newest ? { mode: newest.mode, gameType: newest.gameType, ...levelOf(botLevelOfGame(newest)) } : null);
   if (!play || !isStartableMode(play.mode)) return null;
+  if (play.mode === 'ranked') {
+    const players = play.players ?? DEFAULT_RANKED_PLAYERS;
+    return isOpenPlayerCount(players) ? { mode: 'ranked', gameType: play.gameType, players } : null;
+  }
   if (play.mode !== 'bot') return { mode: play.mode, gameType: play.gameType };
   return { mode: 'bot', gameType: play.gameType, botLevel: play.botLevel ?? botLevel ?? DEFAULT_BOT_LEVEL };
 }

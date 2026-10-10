@@ -6,6 +6,7 @@ import {
   isBotLevelId,
   isGameType,
 } from '@sudoku-fight/engine';
+import { QUEUE_PLAYER_COUNTS, type QueuePlayerCount } from '@sudoku-fight/protocol';
 import { getLocales } from 'expo-localization';
 import Storage from 'expo-sqlite/kv-store';
 import { create } from 'zustand';
@@ -24,6 +25,8 @@ export interface LastPlay {
   gameType: GameType;
   /** A practice against a bot: the bot's level (spec §9). */
   botLevel?: BotLevelId;
+  /** A ranked game (stage 9): how many players, so "עוד סיבוב" searches the same queue. */
+  players?: QueuePlayerCount;
 }
 
 export interface ProfileState {
@@ -60,16 +63,22 @@ const cleanName = (name: string | null): string | null => {
   return trimmed ? trimmed : null;
 };
 
+const isPlayerCount = (v: unknown): v is QueuePlayerCount =>
+  QUEUE_PLAYER_COUNTS.includes(v as QueuePlayerCount);
+
 const isLastPlay = (v: unknown): v is LastPlay =>
   typeof v === 'object' &&
   v !== null &&
   GAME_MODES.includes((v as LastPlay).mode) &&
   isGameType((v as LastPlay).gameType) &&
-  ((v as LastPlay).botLevel === undefined || isBotLevelId((v as LastPlay).botLevel));
+  ((v as LastPlay).botLevel === undefined || isBotLevelId((v as LastPlay).botLevel)) &&
+  ((v as LastPlay).players === undefined || isPlayerCount((v as LastPlay).players));
 
-/** Only what a LastPlay holds: the level only with a bot. */
-function lastPlayOf({ mode, gameType, botLevel }: LastPlay): LastPlay {
-  return mode === 'bot' && botLevel !== undefined ? { mode, gameType, botLevel } : { mode, gameType };
+/** Only what a LastPlay holds: the level only with a bot, the number of players only when ranked. */
+function lastPlayOf({ mode, gameType, botLevel, players }: LastPlay): LastPlay {
+  if (mode === 'bot' && botLevel !== undefined) return { mode, gameType, botLevel };
+  if (mode === 'ranked' && players !== undefined) return { mode, gameType, players };
+  return { mode, gameType };
 }
 
 type ProfileData = Pick<ProfileState, 'name' | 'avatarId' | 'country' | 'lastPlay' | 'botLevel'>;

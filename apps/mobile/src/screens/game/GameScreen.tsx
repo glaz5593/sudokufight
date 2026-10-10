@@ -8,7 +8,7 @@ import {
   type PlayerId,
   type PlayerView,
 } from '@sudoku-fight/engine';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   BackHandler,
@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { type AvatarId, isAvatarId } from '../../assets/avatars';
 import { Board, type BoardFlash, boardModel, CancelSelection, Keypad } from '../../components/board';
 import { WarpFrame } from '../../components/interference';
 import {
@@ -65,11 +66,14 @@ import {
   boardSide,
   cellCenter,
   centerOf,
+  compactAvatarCenterOf,
+  compactScoreSlotOf,
   type Point,
   type Rect,
   scoreSlotOf,
   within,
 } from './geometry';
+import { GroupHud } from './GroupHud';
 import { HitLayer, hitOf } from './hit';
 import { identityOf } from './identity';
 import {
@@ -79,6 +83,8 @@ import {
   leadShift,
   MOVE_TIMELINE,
   opponentOf,
+  outOfGame,
+  seatOrder,
   soloStats,
   staleAt,
 } from './model';
@@ -86,6 +92,7 @@ import { connectionStatusOf } from './online/connectionStatus';
 import { DevMetricsToggle } from './online/DevMetricsToggle';
 import type { NetMetricsSource } from './online/NetMetricsPanel';
 import { useOnlineInfo } from './online/useOnlineInfo';
+import { OutStrip } from './OutStrip';
 import { REACTION_MS, type ReactionFloat, ReactionLayer, withFloat } from './ReactionLayer';
 import { CardMenu, ReactionPicker, useReactions } from './reactions';
 import { SoloHud } from './SoloHud';
@@ -118,7 +125,27 @@ import { useLiveAnnouncer } from './useLiveAnnouncer';
  * the board locked, "the opponent left" (whose "לתוצאות" the results wait for), and the connection error. While
  * it blocks, the content is hidden from screen readers, back opens nothing, and open dialogs and trays close.
  * The end is "כניעה" with the ranked confirmation (spec §6.6) instead of "סיום אימון".
+ *
+ * Three or four players (work plan stage 10; spec §6.6–§6.8, §7.3; Game-3P, Game-4P, Interference-Target): one
+ * row of compact cards (GroupHud) in a fixed order, me first and then the others by seat, each with its current
+ * place (#1–#4); the lead bar by place with the leader's shape. Every opponent's lock shows on the board with
+ * that player's avatar in their colour, and every opponent's card has its own ⚡: the arsenal opens aimed at
+ * that card, which is the one drop zone (the others dim), and the ghost carries the route "אני ← NinaVolt" with
+ * both avatars, so the wrong opponent can't be hit. A hit between two others shows on the target's card (and
+ * is said). A player who surrenders or does not come back [D36] is out: dimmed, with a fixed place (out players
+ * rank after everyone still in, the first out last, spec §6.7), no ⚡, and their solved cells keep their colour.
+ * My own surrender takes me out the same way, and the game goes on: I stay and watch it to the end (the board
+ * and the keypad take nothing, the out strip says my place), and the results open when it ends, with the full
+ * ranking; online, "לבית" on that strip leaves now instead (the server keeps my place).
  */
+
+/** What a game's config does not say about a player: their avatar and country (an online match's profiles). */
+export interface SessionProfile {
+  /** An avatar id (protocol AvatarId, or av00); anything else falls back to the player's default. */
+  avatarId?: string | null;
+  /** ISO alpha-2. */
+  country?: string | null;
+}
 
 /**
  * What the screen needs of a game session: PracticeSession has it all, and so does OnlineSession, which adds the
@@ -130,6 +157,12 @@ export type GameSession = Pick<
 > & {
   /** An online game's connection (work plan stage 7); a practice has none. */
   readonly connection?: SessionConnection;
+  /**
+   * The other players' public profiles by id (a ranked match's "found": avatar and country), for their cards,
+   * their locks on the board and the arsenal. Without one, a bot's avatar comes from its level, anyone else's
+   * is the empty avatar.
+   */
+  readonly profiles?: Readonly<Partial<Record<PlayerId, SessionProfile | null>>> | null;
 };
 
 export interface GameScreenProps {
@@ -231,21 +264,34 @@ export function GameScreen({
   // its 5 s, not 6 (and a new lock its 8).
   const now = Math.max(ticked, readAt);
   const layout = hudLayoutOf(view);
+  const group = layout === 'group';
   const me = view.players.find((p) => p.id === view.me) ?? null;
   const mySeat = me?.seat ?? null;
   const opponent = layout === 'duel' ? opponentOf(view) : null;
   const opponentIdentity = useMemo(() => (opponent ? identityOf(view, opponent.id) : null), [view, opponent]);
+  // 3–4 players: out of a game that goes on (my surrender, D36), I watch it to the end.
+  const out = outOfGame(view);
 
   const [pendingCell, setPendingCell] = useState<CellIndex | null>(null);
   // Online, the host knows which select the server has not answered yet (spec §18: shown at once as pending).
   const shownPending = online ? online.pendingCell : pendingCell;
-  const avatars = useMemo(
-    () => ({
-      ...(me ? { [me.id]: myAvatar } : null),
-      ...(opponent && opponentIdentity ? { [opponent.id]: opponentIdentity.avatar } : null),
-    }),
-    [me, myAvatar, opponent, opponentIdentity],
-  );
+  // Everyone's avatar (their cards, their locks on the board, the arsenal): mine from my profile, the others'
+  // from the session's profiles (a ranked match), else a bot's by its level.
+  const profiles = session.profiles ?? null;
+  const players = view.players;
+  const avatars = useMemo(() => {
+    const map: Partial<Record<PlayerId, AvatarId>> = {};
+    for (const p of players) {
+      const own = profiles?.[p.id]?.avatarId;
+      map[p.id] = p.id === view.me ? myAvatar : isAvatarId(own) ? own : identityOf({ players }, p.id).avatar;
+    }
+    return map;
+  }, [players, view.me, myAvatar, profiles]);
+  const countries = useMemo(() => {
+    const map: Partial<Record<PlayerId, string | null>> = {};
+    for (const [id, p] of Object.entries(profiles ?? {})) map[id] = p?.country ?? null;
+    return map;
+  }, [profiles]);
   const board = useMemo(
     () => boardModel(view, mySeat, now, { pendingCell: shownPending, avatars }),
     [view, mySeat, now, shownPending, avatars],
@@ -285,6 +331,20 @@ export function GameScreen({
         : null,
     [view, opponent, mySeat, now, theirName, shown],
   );
+  // 3–4 players: every card, mine first, then the others by seat (an order that never changes, spec §6.8).
+  const groupCards = useMemo<CardModel[] | null>(() => {
+    if (!group) return null;
+    return seatOrder(view).map((p) => {
+      const model = cardModel(view, p.id, mySeat, now);
+      return {
+        ...model,
+        name: p.id === view.me ? myName : nameOf(p.id),
+        score: shown(p),
+        // Out of the game (D36): nothing to react with any more (the engine takes no action from me).
+        mine: model.mine && p.status !== 'active' ? { ...model.mine, reactionReady: false } : model.mine,
+      };
+    });
+  }, [group, view, mySeat, now, myName, nameOf, shown]);
   const lead = useMemo(() => {
     const model = leadModel(view, mySeat);
     if (!model.leader) return model;
@@ -413,9 +473,11 @@ export function GameScreen({
 
   /** Where a move's chip lands: the delta slot beside the mover's score. */
   const targetOf = (playerId: PlayerId): Point | null => {
-    if (latest.current.layout === 'duel') {
+    const shownLayout = latest.current.layout;
+    if (shownLayout !== 'solo') {
       const rect = cardRect(playerId);
-      return rect ? scoreSlotOf(rect) : null;
+      if (!rect) return null;
+      return shownLayout === 'group' ? compactScoreSlotOf(rect) : scoreSlotOf(rect);
     }
     const { hud, target } = layouts.current;
     return hud && target ? centerOf(within(hud, target)) : null;
@@ -487,7 +549,7 @@ export function GameScreen({
 
   /** A change of leader (components.md §9.1, §11.6): said, and cued when it is mine, as the count lands. */
   const checkLead = (shownView: GameView) => {
-    if (hudLayoutOf(shownView) !== 'duel') return;
+    if (hudLayoutOf(shownView) === 'solo') return;
     const lead = leadModel(shownView, latest.current.mySeat);
     const shift = leadShift(leader.current, lead, shownView.me);
     if (!shift) return;
@@ -577,6 +639,24 @@ export function GameScreen({
       }
     }
   };
+  /**
+   * 3–4 players (spec §6.6, §6.7, D36): someone surrendered or did not come back, and is out with a fixed place;
+   * the game goes on. Said in the live region (the card shows it: dimmed, "נכנע", its place).
+   */
+  const sayExits = (update: HostUpdate) => {
+    if (update.kind !== 'events' || hudLayoutOf(update.view) !== 'group') return;
+    for (const e of update.events) {
+      if (e.type !== 'playerSurrendered' && e.type !== 'playerAbandoned') continue;
+      const place = update.view.players.find((p) => p.id === e.playerId)?.place ?? 0;
+      if (e.playerId === update.view.me) announce(t('live.outMine', { place }));
+      else {
+        const key = e.type === 'playerSurrendered' ? 'live.oppSurrendered' : 'live.oppAbandoned';
+        announce(t(key, { name: nameOf(e.playerId), place }));
+      }
+    }
+  };
+  const onUpdate = useEffectEvent(sayExits);
+  useEffect(() => session.subscribe((update) => onUpdate(update)), [session]);
   useGameEffects(session, (effects, update) => {
     for (const e of effects) onEffect(e, update);
     checkLead(update.view);
@@ -605,7 +685,12 @@ export function GameScreen({
   /** A reaction rises from its sender's card (spec §8), the newest three at most. */
   const float = (seq: number, playerId: PlayerId, emoji: string) => {
     const rect = cardRect(playerId);
-    const from = rect ? avatarCenterOf(rect, windowWidth) : { x: windowWidth / 2, y: insets.top };
+    const compact = latest.current.layout === 'group';
+    const from = rect
+      ? compact
+        ? compactAvatarCenterOf(rect)
+        : avatarCenterOf(rect, windowWidth)
+      : { x: windowWidth / 2, y: insets.top };
     const next: ReactionFloat = { id: seq, emoji, from, playerId };
     setFloats((list) => withFloat(list, next));
     later(REACTION_MS, () => setFloats((list) => list.filter((x) => x !== next)));
@@ -630,6 +715,11 @@ export function GameScreen({
         if (e.byMe) notifySent({ kind: e.interference, targetName: nameOf(e.targetId), cost: e.cost });
         // On me: the hit layer plays it (cue, rumble, banner, the live region's lines), from the view.
         if (e.onMe) setHitEvent({ seq: e.seq, cost: e.cost });
+        // Between two others (3–4 players, spec §7.4): the chip on the target's card, and a line said.
+        if (!e.onMe && !e.byMe) {
+          const kind = t(`interference.${e.interference}`);
+          announce(t('live.hitOther', { from: nameOf(e.fromId), kind, name: nameOf(e.targetId) }));
+        }
         return;
       case 'interferenceEnded':
         if (e.onMe) setHitEvent(null);
@@ -649,22 +739,33 @@ export function GameScreen({
   // accessibilityViewIsModal; Android needs the screen's content hidden).
   const overlayOpen = arsenalOpen || reactions.pickerOpen || reactions.menuFor !== null;
   const opponentId = opponent?.id ?? null;
+  // ⚡ on a card: the arsenal aimed at THAT card (3–4 players: each opponent's card has its own, spec §7.3.5).
+  const onInterfereAt = useCallback(
+    (targetId: PlayerId) => {
+      closePicker();
+      closeMenu();
+      toggleArsenal(targetId);
+    },
+    [closePicker, closeMenu, toggleArsenal],
+  );
   const onInterfere = useCallback(() => {
-    if (opponentId === null) return;
-    closePicker();
-    closeMenu();
-    toggleArsenal(opponentId);
-  }, [opponentId, closePicker, closeMenu, toggleArsenal]);
+    if (opponentId !== null) onInterfereAt(opponentId);
+  }, [opponentId, onInterfereAt]);
   // While it is open, ⚡ reads "סגירת ארסנל ההפרעות" whatever its state: it closes it.
   const onInterfereBlocked = useCallback(
     (state: InterferenceModel) => (arsenalOpen ? closeArsenal() : explainBlocked(state)),
     [arsenalOpen, closeArsenal, explainBlocked],
   );
+  const onInterfereBlockedAt = useCallback(
+    (_targetId: PlayerId, state: InterferenceModel) => onInterfereBlocked(state),
+    [onInterfereBlocked],
+  );
   const onReactions = useCallback(() => {
     closeArsenal();
     togglePicker();
   }, [closeArsenal, togglePicker]);
-  const opponentMuted = opponentId !== null && reactions.isMuted(opponentId);
+  const { isMuted } = reactions;
+  const opponentMuted = opponentId !== null && isMuted(opponentId);
   const opponentMenu = useMemo(
     () => ({
       muted: opponentMuted,
@@ -675,7 +776,18 @@ export function GameScreen({
     }),
     [opponentMuted, opponentId, arsenalOpen, openMenu],
   );
-  /** Who a player is in the arsenal's header (the view has no avatars or countries). */
+  // 3–4 players: every opponent's card has its menu (mute their reactions, D19).
+  const menuOf = useCallback(
+    (id: PlayerId) => ({
+      muted: isMuted(id),
+      onOpen: () => {
+        if (!arsenalOpen) openMenu(id);
+      },
+    }),
+    [isMuted, openMenu, arsenalOpen],
+  );
+  const menuFor = reactions.menuFor;
+  /** Who a player is in the arsenal's header and on the ghost's route (the view has no avatars or countries). */
   const describe = useCallback(
     (id: PlayerId): ArsenalTargetInfo => {
       const p = view.players.find((x) => x.id === id);
@@ -684,9 +796,10 @@ export function GameScreen({
         name: nameOf(id),
         colorIndex: p ? colorIndexFor(p.seat, mySeat, seats) : 1,
         avatarId: avatars[id] ?? identityOf(view, id).avatar,
+        country: countries[id] ?? null,
       };
     },
-    [view, nameOf, mySeat, avatars],
+    [view, nameOf, mySeat, avatars, countries],
   );
 
   // A game that was already over when the screen opened goes straight to its results (unless the opponent's
@@ -758,7 +871,10 @@ export function GameScreen({
   useLayoutEffect(() => {
     back.current = () => {
       if (connection.kind === 'error') onHome?.();
-      else if (playing && !blocked) setConfirmOpen(true);
+      // Out of a game that goes on (3–4 players): nothing to give up any more; online, back leaves it.
+      else if (out) {
+        if (isOnline) onHome?.();
+      } else if (playing && !blocked) setConfirmOpen(true);
     };
   });
   useEffect(() => {
@@ -793,7 +909,7 @@ export function GameScreen({
         myAvatar,
         opponentName: duel.opponent.name,
         opponentScore: shown(duel.opponent),
-        opponentAvatar: opponentIdentity?.avatar,
+        opponentAvatar: avatars[duel.opponent.id],
         opponentColorIndex: colorIndexFor(
           duel.opponent.seat,
           mySeat,
@@ -820,7 +936,9 @@ export function GameScreen({
                 me={myCard}
                 opponent={duel.theirCard}
                 myAvatar={myAvatar}
-                opponentAvatar={opponentIdentity?.avatar}
+                opponentAvatar={avatars[duel.opponent.id]}
+                myCountry={countries[me.id] ?? null}
+                opponentCountry={countries[duel.opponent.id] ?? null}
                 myDelta={deltas[me.id] ?? null}
                 opponentDelta={deltas[duel.opponent.id] ?? null}
                 onSurrender={openConfirm}
@@ -832,6 +950,27 @@ export function GameScreen({
                 opponentDrop={arsenal.cardProps(duel.opponent.id, theirName)}
                 opponentRef={arsenal.cardRef(duel.opponent.id)}
                 opponentMenu={opponentMenu}
+                onCardLayout={onCardLayout}
+                onLayout={onHudLayout}
+                style={styles.gutter}
+              />
+              <LeadBar model={lead} style={[styles.gutter, styles.progress]} testID="lead-bar" />
+            </>
+          ) : groupCards ? (
+            <>
+              <GroupHud
+                cards={groupCards}
+                avatars={avatars}
+                countries={countries}
+                deltas={deltas}
+                onSurrender={openConfirm}
+                onReactions={out ? undefined : onReactions}
+                reactionsExpanded={reactions.pickerOpen}
+                onInterfere={onInterfereAt}
+                onInterfereBlocked={onInterfereBlockedAt}
+                dropOf={arsenal.cardProps}
+                cardRef={arsenal.cardRef}
+                menuOf={menuOf}
                 onCardLayout={onCardLayout}
                 onLayout={onHudLayout}
                 style={styles.gutter}
@@ -858,22 +997,41 @@ export function GameScreen({
               />
             </>
           )}
-          <LockStrip
-            model={lock}
-            nudgeKey={nudge}
-            style={[styles.gutter, styles.strip]}
-            testID="lock-strip"
-          />
+          {out ? (
+            <OutStrip
+              out={out}
+              onLeave={isOnline ? onHome : undefined}
+              style={[styles.gutter, styles.strip]}
+            />
+          ) : (
+            <LockStrip
+              model={lock}
+              nudgeKey={nudge}
+              style={[styles.gutter, styles.strip]}
+              testID="lock-strip"
+            />
+          )}
           <View style={styles.room} onLayout={onRoomLayout} testID="board-room">
             <View onLayout={onBoardLayout} testID="board-slot">
               {/* What a warp tilts when it plays on the board alone [D35]. */}
               <WarpFrame hit={hit} now={now} clock={session.clock} region="board">
-                <Board model={board} width={side} onCellPress={onCellPress} flashes={flashes} />
+                {/* Out of the game (D36): the board is there to watch; it takes nothing. */}
+                <Board
+                  model={board}
+                  width={side}
+                  onCellPress={out ? undefined : onCellPress}
+                  flashes={flashes}
+                />
               </WarpFrame>
             </View>
           </View>
           <View style={styles.keypad}>
-            <Keypad model={board.keypad} onDigit={onDigit} onIdlePress={onIdlePress} width={side} />
+            <Keypad
+              model={board.keypad}
+              onDigit={onDigit}
+              onIdlePress={out ? undefined : onIdlePress}
+              width={side}
+            />
           </View>
           <View style={styles.cancel}>
             <CancelSelection cell={board.myLock?.name ?? null} onPress={onCancel} />
@@ -885,7 +1043,7 @@ export function GameScreen({
       <ReactionLayer floats={floats} muted={reactions.muted} />
       {/* An interference on me (spec §7.4): its 5 s effect and banner, never touchable, play goes on under it. */}
       <HitLayer hit={hit} now={now} clock={session.clock} boardRect={boardRect} announce={announce} />
-      {duel ? (
+      {duel || groupCards ? (
         <>
           <ReactionPicker
             visible={reactions.pickerOpen}
@@ -894,12 +1052,15 @@ export function GameScreen({
             onPick={reactions.pick}
             onClose={closePicker}
           />
+          {/* An opponent card's menu (D19): under the card it was opened on. */}
           <CardMenu
-            visible={reactions.menuFor === duel.opponent.id}
-            anchor={cardRects[duel.opponent.id] ?? null}
-            name={theirName}
-            muted={opponentMuted}
-            onToggleMute={() => reactions.toggleMute(duel.opponent.id)}
+            visible={menuFor !== null && menuFor !== me.id}
+            anchor={menuFor === null ? null : (cardRects[menuFor] ?? null)}
+            name={menuFor === null ? theirName : nameOf(menuFor)}
+            muted={menuFor !== null && isMuted(menuFor)}
+            onToggleMute={() => {
+              if (menuFor !== null) reactions.toggleMute(menuFor);
+            }}
             onClose={closeMenu}
           />
         </>
@@ -937,7 +1098,7 @@ export function GameScreen({
         />
       )}
       {/* Over the board: the tray, and the token flying from it to the card (spec §7.3). */}
-      {duel ? <ArsenalOverlay arsenal={arsenal} view={view} describe={describe} /> : null}
+      {duel || groupCards ? <ArsenalOverlay arsenal={arsenal} view={view} describe={describe} /> : null}
       {/* Last, over everything: an online game's connection (spec §16.2, §16.3). */}
       {isOnline ? (
         <ConnectionLayer

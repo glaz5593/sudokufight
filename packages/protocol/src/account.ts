@@ -18,7 +18,7 @@ import { GAME_TYPES, ratingKey, type RatingOption } from '@sudoku-fight/engine';
  *   PATCH  /v1/me      UpdateMeRequest   → 200 Me    · 404 notRegistered · 409 renameTooSoon (nextRenameAt)
  *                                                      | taken · 400 invalidName · 422 blocked
  *   DELETE /v1/me                        → 204       · 404 notRegistered (already deleted: count it as done) ·
- *                                                      401 unauthorized when the sign-in is older than
+ *                                                      401 reauthRequired when the sign-in is older than
  *                                                      RECENT_SIGN_IN_MS (re-authenticate, then a fresh token)
  * Every route may answer:
  *   400 badRequest (malformed; `field` says which) · 401 unauthorized (no token, a bad or an expired one:
@@ -45,9 +45,11 @@ export const ACCOUNT_PATHS = {
 
 /**
  * DELETE /v1/me needs a sign-in (the token's `auth_time`) at most this long ago: 5 minutes, Firebase's own
- * rule for deleting a user. An older one is refused with 401 `unauthorized` and
+ * rule for deleting a user (the server's ACCOUNT_DELETE_MAX_AUTH_AGE_MS; this is its default). An older one is
+ * refused with 401 `reauthRequired` and
  * `WWW-Authenticate: Bearer error="insufficient_user_authentication", max_age=300` (RFC 9470). A refreshed
- * token keeps the old sign-in time: re-authenticate first. Development tokens have no sign-in time and pass.
+ * token keeps the old sign-in time: re-authenticate first, then getIdToken(true). Development tokens have no
+ * sign-in time: they pass outside production (where they are taken at all).
  */
 export const RECENT_SIGN_IN_MS = 5 * 60 * 1000;
 
@@ -256,6 +258,11 @@ export const ACCOUNT_ERROR_CODES = [
   'invalidName',
   /** 401: no token, or a bad or expired one. Refresh the ID token and try once more. */
   'unauthorized',
+  /**
+   * 401, DELETE /v1/me only: the sign-in is too old (RECENT_SIGN_IN_MS). A refreshed token does not help (it
+   * keeps the sign-in time): re-authenticate (the password again), then call with getIdToken(true).
+   */
+  'reauthRequired',
   /** 404: this sign-in has no account (never registered, or deleted). Go to registration. */
   'notRegistered',
   /** 404: no such route. */

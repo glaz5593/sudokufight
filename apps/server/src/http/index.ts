@@ -5,6 +5,7 @@ import { createAdminRouter, createAdminSiteRouter, findAdminSiteDir } from '../a
 import { type TokenVerifier, tokenVerifierFor } from '../auth/firebaseToken';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db';
+import { createHistoryRouter } from '../history';
 import { createTelemetryRouter, type TelemetryLimits } from '../telemetry/router';
 import { SAME_ORIGIN_PREFIXES } from './cors';
 import { jsonErrorHandler, notFound } from './errors';
@@ -69,6 +70,7 @@ export function configureHttp(app: Application, deps: HttpDeps): void {
   const tokens = deps.tokens ?? tokenVerifierFor(deps.config, deps.now);
   app.use(createTelemetryRouter({ ...deps, tokens }));
   app.use(createAccountsRouter({ ...deps, tokens }));
+  app.use(createHistoryRouter({ ...deps, tokens })); // GET /v1/me/games, /v1/games/:id/replay (stage 11)
   // The API first: it answers everything under /admin/api (404 included), so the site never does.
   app.use(createAdminRouter(deps));
   app.use(createAdminSiteRouter(deps.adminSiteDir === undefined ? findAdminSiteDir() : deps.adminSiteDir));

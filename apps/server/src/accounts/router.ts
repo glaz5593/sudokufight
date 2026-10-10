@@ -5,7 +5,6 @@ import {
   isAvatarId,
   isCountryCode,
   type NameAvailability,
-  RECENT_SIGN_IN_MS,
 } from '@sudoku-fight/protocol';
 import { json, type Request, type RequestHandler, type Response, Router } from 'express';
 import { z } from 'zod';
@@ -36,7 +35,8 @@ import {
  * Each request passes, in order: a per-IP limit (cheap, before anything is read); the accounts switch
  * (production without FIREBASE_PROJECT_ID: 503 `disabled`); the token (`Authorization: Bearer`, optional for
  * the name check); a per-account limit (per IP for an anonymous name check); the body (JSON, 2 KB at most).
- * DELETE /v1/me also wants a recent sign-in (RECENT_SIGN_IN_MS).
+ * DELETE /v1/me also wants a recent sign-in (ACCOUNT_DELETE_MAX_AUTH_AGE_MS, default protocol
+ * RECENT_SIGN_IN_MS).
  * Answers are never cached (`Cache-Control: no-store`): they are personal.
  */
 
@@ -61,7 +61,7 @@ export const DEFAULT_ACCOUNT_LIMITS: AccountLimits = {
 export const MAX_ACCOUNT_BODY_BYTES = 2048;
 
 export interface AccountsRouterDeps {
-  config: Pick<ServerConfig, 'ratingOption'>;
+  config: Pick<ServerConfig, 'ratingOption' | 'nodeEnv' | 'accountDeleteMaxAuthAgeMs'>;
   db: Db;
   now: () => number;
   tokens: TokenVerifier;
@@ -82,24 +82,33 @@ function unauthorized(res: Response, message: string, invalidToken: boolean): vo
   send(res, 401, { error: 'unauthorized', message });
 }
 
+type DeleteRules = Pick<ServerConfig, 'nodeEnv' | 'accountDeleteMaxAuthAgeMs'>;
+
 /**
- * Deleting the account needs a recent sign-in (protocol RECENT_SIGN_IN_MS: 5 minutes, Firebase's own rule):
- * the token's sign-in time, which a refreshed token keeps. RFC 9470's step-up answer says what is missing.
- * Development tokens have no sign-in time, and pass.
+ * Deleting the account needs a fresh sign-in (ACCOUNT_DELETE_MAX_AUTH_AGE_MS, default 5 minutes: Firebase's
+ * own rule): the token's sign-in time (auth_time), which a refreshed token keeps, so a phone left signed in
+ * for days can't delete the account without the password. A token with no sign-in time is a development
+ * token: taken as fresh outside production only (production refuses development tokens anyway; this keeps
+ * deletion closed to them should that ever change).
  */
-function signedInRecently(token: VerifiedToken, now: number): boolean {
-  return token.signedInAt === null || now - token.signedInAt <= RECENT_SIGN_IN_MS;
+function signedInRecently(token: VerifiedToken, now: number, rules: DeleteRules): boolean {
+  if (token.signedInAt === null) return token.kind === 'dev' && rules.nodeEnv !== 'production';
+  return now - token.signedInAt <= rules.accountDeleteMaxAuthAgeMs;
 }
 
-function signInAgain(res: Response): void {
+const howLong = (ms: number) =>
+  ms === 60_000 ? '1 minute' : ms % 60_000 === 0 ? `${ms / 60_000} minutes` : `${ms / 1000} seconds`;
+
+/** 401 reauthRequired, with RFC 9470's step-up answer saying what is missing. */
+function signInAgain(res: Response, maxAgeMs: number): void {
   res.set(
     'WWW-Authenticate',
     'Bearer error="insufficient_user_authentication", ' +
-      `error_description="A recent sign-in is required", max_age=${RECENT_SIGN_IN_MS / 1000}`,
+      `error_description="A recent sign-in is required", max_age=${Math.floor(maxAgeMs / 1000)}`,
   );
   send(res, 401, {
-    error: 'unauthorized',
-    message: `Sign in again: deleting the account needs a sign-in within the last ${RECENT_SIGN_IN_MS / 60_000} minutes`,
+    error: 'reauthRequired',
+    message: `Sign in again: deleting the account needs a sign-in within the last ${howLong(maxAgeMs)}`,
   });
 }
 
@@ -351,7 +360,7 @@ export function createAccountsRouter({
     limit(writes, accountKey),
     async (_req, res) => {
       const token = requiredToken(res);
-      if (!signedInRecently(token, now())) return signInAgain(res);
+      if (!signedInRecently(token, now(), config)) return signInAgain(res, config.accountDeleteMaxAuthAgeMs);
       const deleted = await deleteUser(db, token, now());
       if (!deleted)
         return send(res, 404, { error: 'notRegistered', message: 'no account (already deleted?)' });

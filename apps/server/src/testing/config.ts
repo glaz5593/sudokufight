@@ -1,3 +1,5 @@
+import { RECENT_SIGN_IN_MS } from '@sudoku-fight/protocol';
+
 import { DEFAULT_CHEAT_THRESHOLDS, type ServerConfig } from '../config';
 
 export const TEST_ADMIN_PASSWORD = 'test-admin-password';
@@ -25,6 +27,7 @@ export function testConfig(overrides: Partial<ServerConfig> = {}): ServerConfig 
     firebaseProjectId: TEST_FIREBASE_PROJECT_ID,
     ratingOption: 'B',
     cheat: DEFAULT_CHEAT_THRESHOLDS,
+    accountDeleteMaxAuthAgeMs: RECENT_SIGN_IN_MS,
     ...overrides,
   };
 }

@@ -7,6 +7,7 @@ import {
   GAME_ROOM_NAME,
   type GameRoomCreateOptions,
   type GameRoomRuleOverrides,
+  type MatchSeatReservation,
   normalizeRoomCode,
   type ServerMessage,
   type ServerMessageType,
@@ -16,7 +17,7 @@ import { OnlineError, onlineErrorOf } from './errors';
 
 /**
  * The way into the game server (stage 7): create a private room, join one by its code, come back with a
- * reconnection token. It hides the Colyseus SDK behind a small interface (RoomLike), so RemoteGameHost runs
+ * reconnection token; and (stage 9) take the seat matchmaking reserved in a ranked match's room. It hides the Colyseus SDK behind a small interface (RoomLike), so RemoteGameHost runs
  * on any of: the SDK on the phone, the SDK in a Node test against the real server, a fake in Jest.
  *
  * Who the player is comes from an IdentitySource, asked again on every join (a Firebase ID token expires
@@ -71,6 +72,11 @@ export interface OnlineClient {
   join(code: string): Promise<RoomLike>;
   /** Back into the seat the token holds, after a drop. */
   reconnect(token: string): Promise<RoomLike>;
+  /**
+   * Into a ranked match's room (stage 9): the seat matchmaking reserved for this player (protocol
+   * matchmaking.ts `found`). The reservation carries who it is, so no identity is asked.
+   */
+  consumeSeatReservation(reservation: MatchSeatReservation): Promise<RoomLike>;
 }
 
 /** The parts of an SDK Room used here. */
@@ -91,6 +97,7 @@ export interface SdkClientLike {
   create(roomName: string, options: object): Promise<SdkRoomLike>;
   joinById(roomId: string, options: object): Promise<SdkRoomLike>;
   reconnect(token: string): Promise<SdkRoomLike>;
+  consumeSeatReservation(reservation: MatchSeatReservation): Promise<SdkRoomLike>;
 }
 
 export interface OnlineClientOptions {
@@ -159,5 +166,7 @@ export function createOnlineClient({ endpoint, sdk, identity }: OnlineClientOpti
     },
 
     reconnect: (token) => call(() => client.reconnect(token)),
+
+    consumeSeatReservation: (reservation) => call(() => client.consumeSeatReservation(reservation)),
   };
 }

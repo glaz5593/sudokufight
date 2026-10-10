@@ -1,6 +1,23 @@
-import { PlaceholderScreen } from '../src/screens/home';
+import { router } from 'expo-router';
 
-/** /history : a bottom-nav tab; the history and replay come in work-plan stage 11. */
+import { type HistoryEntry, HistoryScreen } from '../src/screens/history';
+import { appHistoryDeps } from '../src/screens/history/appWiring';
+import { goToTab } from '../src/screens/home';
+import { useProfile } from '../src/state/profile';
+
+const openReplay = (entry: HistoryEntry) =>
+  router.push({ pathname: '/replay/[id]', params: { id: entry.id, source: entry.source } });
+
+/** /history: a bottom-nav tab (spec §14.1): every game, ranked and practice, each opening its replay. */
 export default function HistoryRoute() {
-  return <PlaceholderScreen tab="history" />;
+  const myAvatar = useProfile((s) => s.avatarId);
+  return (
+    <HistoryScreen
+      deps={appHistoryDeps}
+      onOpen={openReplay}
+      onPlay={() => router.push('/modes')}
+      onTab={(tab) => goToTab(tab, 'history')}
+      myAvatar={myAvatar}
+    />
+  );
 }

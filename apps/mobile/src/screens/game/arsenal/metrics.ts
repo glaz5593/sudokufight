@@ -59,6 +59,11 @@ export const arsenalMetrics = {
     aboveFinger: space[6],
     textStyle: rubikStyle(12, '700'),
     routeStyle: rubikStyle(11, '500'),
+    /** The 3–4 player route tag (spec §7.3.5): mini avatars (22, a 1.5 dp ring), shapes 7, gap 4. */
+    routeTop: space[2],
+    routeGap: space[2],
+    routeRing: 1.5,
+    routeGlyph: 7,
   },
   /** The launch ripple: a stroke ring out of the target card, 1 → 1.15, opacity .6 → 0, 480 ms. */
   ripple: { width: 2, from: 0.6, scale: 1.15, ms: 480 },

@@ -1,83 +1,174 @@
+import type { GameType } from '@sudoku-fight/engine';
+import type { RatingEntry } from '@sudoku-fight/protocol';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AvatarId } from '../../assets/avatars';
+import { useAuth } from '../../auth/authStore';
 import { Icon } from '../../components/Icon';
 import { Avatar, SeatGlyph } from '../../components/player';
+import { Button } from '../../components/ui';
+import { useConnectivityWatch } from '../../net/connectivity';
 import { cue } from '../../services/feedback';
 import { useProfile } from '../../state/profile';
 import { color, radius, size, space, text, tokens } from '../../theme';
-import { isAvailable, MODE_GROUPS, MODE_OPTIONS, type ModeGroup, type ModeOption } from './homeModel';
+import { Announcer } from '../game/connection/Announcer';
+import {
+  DEFAULT_GAME_TYPE,
+  isAvailable,
+  isOpenPlayerCount,
+  MODE_GROUPS,
+  MODE_OPTIONS,
+  type ModeGroup,
+  type ModeOption,
+  rankedRatingIn,
+} from './homeModel';
 import { goBack } from './navigation';
+import { OfflineBanner } from './OfflineBanner';
 import { Chip, GUTTER, ScreenHeader, SectionLabel } from './parts';
 
 /**
  * "משחק חדש" (spec §5.1, the Modes board in direction C): exactly five options, ranked 2 · 3 · 4 and the two
- * practices. Both practices are playable in this build: each opens the game type (a bot practice goes on to the
- * bot selection). The ranked ones show "בקרוב" and do nothing until work-plan stage 9.
+ * practices. The practices open the game type (a bot practice goes on to the bot selection); a ranked table
+ * (2 players since stage 9, 3 and 4 since stage 10) opens the game type of a ranked game, then the search,
+ * and shows my rating in that type, in its queue's rating key (spec §11.1: `normal`, or `normal-3p` under
+ * RATING_OPTION A). An option this build has not opened (homeModel AVAILABLE_MODES) says "בקרוב".
+ *
+ * No connection (spec §16.1; the Offline board): the app asks the server (GET /health, net/connectivity.ts)
+ * when the screen opens. Without an answer the ranked cards are dimmed with "דורש חיבור", the banner "אין
+ * חיבור לאינטרנט" shows, the practices say "זמין אופליין", and the bottom offers "עבור לאימון" and "בדוק
+ * שוב" ("עדיין אין חיבור · ניסיון 2" after another miss); meanwhile it checks again in the background, and
+ * the ranked cards come back with the connection.
  */
 export function ModesScreen() {
   const { t } = useTranslation('home');
+  const { t: tm } = useTranslation('match');
   const { top, bottom } = useSafeAreaInsets();
   const avatarId = useProfile((s) => s.avatarId);
   const lastPlay = useProfile((s) => s.lastPlay);
+  const ratings = useAuth((s) => s.me?.ratings ?? null);
+  const connectivity = useConnectivityWatch();
+  const offline = connectivity.status === 'offline';
+  const announcement = useConnectionLine(offline);
+  const rankedType: GameType = lastPlay?.mode === 'ranked' ? lastPlay.gameType : DEFAULT_GAME_TYPE;
 
   const open = (option: ModeOption) => {
-    if (!isAvailable(option.key)) return;
+    if (!isAvailable(option.key) || (offline && option.group === 'ranked')) return;
     cue('toggle');
     const gameType = lastPlay?.mode === option.mode ? lastPlay.gameType : undefined;
-    router.push({
-      pathname: '/game-type',
-      params: gameType ? { mode: option.mode, gameType } : { mode: option.mode },
-    });
+    const params: Record<string, string> = { mode: option.mode };
+    if (gameType) params.gameType = gameType;
+    if (option.mode === 'ranked') params.players = String(option.players);
+    router.push({ pathname: '/game-type', params });
+  };
+
+  const practice = () => {
+    cue('primaryPress');
+    router.push({ pathname: '/game-type', params: { mode: 'solo' } });
   };
 
   return (
     <View style={[styles.screen, { paddingTop: top }]}>
       <ScreenHeader title={t('modes.title')} onBack={goBack} style={styles.header} />
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottom + space[12] }]}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: (offline ? 0 : bottom) + space[12] }]}
+      >
+        {offline ? <OfflineBanner checking={connectivity.checking} /> : null}
         {MODE_GROUPS.map((group) => (
-          <Group key={group} group={group} avatarId={avatarId} onOpen={open} />
+          <Group
+            key={group}
+            group={group}
+            avatarId={avatarId}
+            offline={offline}
+            ratings={group === 'ranked' ? ratings : null}
+            rankedType={rankedType}
+            onOpen={open}
+          />
         ))}
-        <Text style={styles.footnote}>{t('modes.footnote')}</Text>
+        {offline ? null : <Text style={styles.footnote}>{t('modes.footnote')}</Text>}
       </ScrollView>
+      {offline ? (
+        <View style={[styles.footer, { paddingBottom: bottom + space[8] }]} testID="offline-actions">
+          <Button
+            label={tm('offline.practice')}
+            size="lg"
+            icon="target"
+            onPress={practice}
+            style={styles.stretch}
+            testID="go-practice"
+          />
+          <Button
+            label={connectivity.checking ? tm('offline.retrying') : tm('offline.retry')}
+            variant="ghost"
+            icon="refresh"
+            loading={connectivity.checking}
+            onPress={() => void connectivity.check()}
+            testID="check-again"
+          />
+          {!connectivity.checking && connectivity.failures > 1 ? (
+            <Text style={styles.stillOffline} testID="still-offline">
+              {tm('offline.stillOffline', { count: connectivity.failures })}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+      <Announcer line={announcement} testID="modes-live" />
     </View>
   );
 }
 
+/** What a screen reader hears as the connection goes: "no connection", then "back online". */
+function useConnectionLine(offline: boolean): string | null {
+  const { t } = useTranslation('match');
+  const [wasOffline, setWasOffline] = useState(false);
+  // Derived during render (no extra effect pass): once offline, a return is worth saying.
+  if (offline && !wasOffline) setWasOffline(true);
+  return offline ? t('offline.title') : wasOffline ? t('offline.back') : null;
+}
+
+interface CardContext {
+  avatarId: AvatarId;
+  offline: boolean;
+  /** My ratings (the account's), for the open ranked cards: each shows its own queue's. */
+  ratings: readonly RatingEntry[] | null;
+  rankedType: GameType;
+}
+
 function Group({
   group,
-  avatarId,
   onOpen,
-}: {
-  group: ModeGroup;
-  avatarId: AvatarId;
-  onOpen: (option: ModeOption) => void;
-}) {
+  ...context
+}: CardContext & { group: ModeGroup; onOpen: (option: ModeOption) => void }) {
   const { t } = useTranslation('home');
+  const { t: tm } = useTranslation('match');
   const options = MODE_OPTIONS.filter((o) => o.group === group);
   // The Modes board: the 2-player card across the width, then 3 and 4 side by side.
   const [wide, ...pair] = group === 'ranked' ? options : [];
+  const note = !context.offline
+    ? t(`modes.groups.${group}.note`)
+    : group === 'ranked'
+      ? tm('offline.rankedNote')
+      : tm('offline.practiceNote');
+  const card = (o: ModeOption, compact = false) => (
+    <ModeCard key={o.key} option={o} onPress={() => onOpen(o)} compact={compact} {...context} />
+  );
   return (
     <View style={styles.group}>
       <SectionLabel
-        icon={group === 'ranked' ? 'trophy' : 'target'}
+        icon={group === 'ranked' ? (context.offline ? 'lock' : 'trophy') : 'target'}
         title={t(`modes.groups.${group}.title`)}
-        note={t(`modes.groups.${group}.note`)}
+        note={note}
       />
       {wide ? (
         <>
-          <ModeCard option={wide} avatarId={avatarId} onPress={() => onOpen(wide)} />
-          <View style={styles.pair}>
-            {pair.map((o) => (
-              <ModeCard key={o.key} option={o} avatarId={avatarId} onPress={() => onOpen(o)} compact />
-            ))}
-          </View>
+          {card(wide)}
+          <View style={styles.pair}>{pair.map((o) => card(o, true))}</View>
         </>
       ) : (
-        options.map((o) => <ModeCard key={o.key} option={o} avatarId={avatarId} onPress={() => onOpen(o)} />)
+        options.map((o) => card(o))
       )}
     </View>
   );
@@ -86,23 +177,39 @@ function Group({
 function ModeCard({
   option,
   avatarId,
+  offline,
+  ratings,
+  rankedType,
   onPress,
   compact = false,
-}: {
-  option: ModeOption;
-  avatarId: AvatarId;
-  onPress: () => void;
-  compact?: boolean;
-}) {
+}: CardContext & { option: ModeOption; onPress: () => void; compact?: boolean }) {
   const { t } = useTranslation('home');
-  const available = isAvailable(option.key);
+  const { t: tm } = useTranslation('match');
+  const ranked = option.group === 'ranked';
+  const built = isAvailable(option.key);
+  // Spec §16.1: no connection, no ranked game (practice works offline).
+  const needsConnection = ranked && offline && built;
+  const available = built && !needsConnection;
   const title = t(`modes.${option.key}.title`);
   const tagline = t(`modes.${option.key}.tagline`);
-  const chips =
-    option.group === 'ranked'
-      ? [t('modes.chips.rated')]
-      : [t('modes.chips.unrated'), t('modes.chips.offline')];
-  const label = [t(`modes.${option.key}.label`), tagline, ...chips, available ? null : t('modes.soon')]
+  const typeName = t(`gameTypes.${rankedType}.name`);
+  const shownRating =
+    ranked && available && isOpenPlayerCount(option.players)
+      ? rankedRatingIn(ratings, rankedType, option.players)
+      : null;
+  const chips = ranked
+    ? [
+        shownRating
+          ? `${tm('modes.rating', { rating: shownRating.rating })}${t('player:sep')}${typeName}`
+          : t('modes.chips.rated'),
+      ]
+    : [t('modes.chips.unrated'), offline ? tm('offline.availableOffline') : t('modes.chips.offline')];
+  const label = [
+    t(`modes.${option.key}.label`),
+    tagline,
+    ...(shownRating ? [tm('modes.ratingLabel', { rating: shownRating.rating, type: typeName })] : chips),
+    needsConnection ? tm('offline.needsConnectionLabel') : built ? null : t('modes.soon'),
+  ]
     .filter(Boolean)
     .join(t('player:listSep'));
 
@@ -117,6 +224,7 @@ function ModeCard({
         styles.card,
         compact ? styles.cardCompact : styles.cardRow,
         available ? styles.cardAvailable : styles.cardSoon,
+        needsConnection && styles.cardOffline,
         pressed && styles.cardPressed,
       ]}
       testID={`mode-${option.key}`}
@@ -130,9 +238,13 @@ function ModeCard({
           {tagline}
         </Text>
         <View style={styles.chips}>
-          {available ? null : <Chip label={t('modes.soon')} testID={`soon-${option.key}`} />}
+          {needsConnection ? (
+            <OfflineChip label={tm('offline.needsConnection')} testID={`offline-${option.key}`} />
+          ) : built ? null : (
+            <Chip label={t('modes.soon')} testID={`soon-${option.key}`} />
+          )}
           {chips.map((c) => (
-            <Chip key={c} label={c} />
+            <Chip key={c} label={c} testID={shownRating ? `rating-${option.key}` : undefined} />
           ))}
         </View>
       </View>
@@ -140,6 +252,18 @@ function ModeCard({
         <Icon name="chevronForward" size={size.icon.chevron} color={color.iconFaint} />
       ) : null}
     </Pressable>
+  );
+}
+
+/** "דורש חיבור" with the lock (the Offline board). */
+function OfflineChip({ label, testID }: { label: string; testID?: string }) {
+  return (
+    <View style={styles.offlineChip} testID={testID}>
+      <Icon name="lock" size={space[7]} color={color.textMuted} />
+      <Text style={styles.offlineChipText} numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
   );
 }
 
@@ -163,6 +287,10 @@ function Leading({ option, avatarId }: { option: ModeOption; avatarId: AvatarId 
 
 /** The seat shapes on a ranked card: four fit in the 44 box. */
 const SEAT_GLYPH = 9;
+/** The Modes board's chips (22). */
+const CHIP_HEIGHT = 22;
+/** Offline: the ranked cards stay readable but plainly out of reach. */
+const OFFLINE_CARD_OPACITY = 0.6;
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
@@ -180,6 +308,7 @@ const styles = StyleSheet.create({
   cardCompact: { flex: 1, minWidth: 0, gap: space[6] },
   cardAvailable: { backgroundColor: color.surface },
   cardSoon: { backgroundColor: color.bg },
+  cardOffline: { borderStyle: 'dashed', opacity: OFFLINE_CARD_OPACITY },
   cardPressed: { backgroundColor: color.surface2 },
   leadBox: {
     width: size.touch,
@@ -203,4 +332,27 @@ const styles = StyleSheet.create({
   tagline: { ...text('caption'), color: color.textMuted },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space[3], marginTop: space[3] },
   footnote: { ...text('caption'), color: color.textMuted, textAlign: 'center' },
+  footer: {
+    paddingHorizontal: GUTTER.screen,
+    paddingTop: space[6],
+    gap: space[3],
+    alignItems: 'center',
+    borderTopWidth: tokens.border.hairline,
+    borderTopColor: color.border,
+    backgroundColor: color.bg,
+  },
+  stretch: { alignSelf: 'stretch' },
+  stillOffline: { ...text('caption'), color: color.textMuted, textAlign: 'center' },
+  offlineChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[2],
+    height: CHIP_HEIGHT,
+    paddingHorizontal: space[4],
+    borderRadius: radius.badge,
+    borderWidth: tokens.border.hairline,
+    borderColor: color.border,
+    backgroundColor: color.surface2,
+  },
+  offlineChipText: { ...text('micro'), color: color.textMuted },
 });

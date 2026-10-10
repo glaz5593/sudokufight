@@ -1,0 +1,76 @@
+{
+  "title": "History",
+  "filters": {
+    "label": "Filter the games",
+    "all": "All",
+    "ranked": "Ranked",
+    "practice": "Practice"
+  },
+  "loading": "Loading your games…",
+  "more": "More games",
+  "empty": {
+    "title": "No games here yet",
+    "body": "Every game is saved here to watch again: move after move, with why each number went where it did.",
+    "action": "Play your first game"
+  },
+  "notes": {
+    "practice": "Practice games don't change your rating, but you can watch them again too.",
+    "offline": "No connection to the server: showing the practice games on this phone only.",
+    "signedOut": "Ranked games show up here once you sign in.",
+    "rankedError": "We couldn't load your ranked games.",
+    "practiceUnavailable": "We couldn't read the practice games saved on this phone.",
+    "retry": "Try again"
+  },
+  "card": {
+    "mode": {
+      "ranked": "Ranked",
+      "solo": "Solo practice",
+      "bot": "Practice vs bot"
+    },
+    "outcome": {
+      "win": "Win",
+      "loss": "Loss",
+      "tie": "Tie",
+      "completed": "Board complete",
+      "ended": "Practice ended",
+      "interrupted": "Game cut short"
+    },
+    "place": "Place {{place}}",
+    "against": "vs {{count}} opponents",
+    "alone": "Alone",
+    "points": "{{score}} pts",
+    "unrated": "Unrated",
+    "rating": "Rating {{delta}}",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "replay": "Replay",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Opens the replay"
+  },
+  "results": {
+    "replay": "Replay",
+    "replayHint": "The game from the start, step by step, with every move explained",
+    "rating": {
+      "title": "Rating change · {{type}}",
+      "from": "from {{before}}",
+      "label": "Rating change: {{delta}}, from {{before}} to {{after}}",
+      "provisional": "Provisional rating: changes count double in your first 10 games"
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel": "{{name}} · {{score}} points · {{mistakes}} · rating {{delta}}",
+    "ranking": {
+      "title": "Final standings",
+      "place": "Place {{place}}",
+      "left": "Left the game",
+      "label": "Place {{place}}: {{name}} · {{score}} points · {{mistakes}}",
+      "labelRating": "Place {{place}}: {{name}} · {{score}} points · {{mistakes}} · rating {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "The most points for a single move",
+      "fewestMistakes": "The fewest mistakes. On a tie, the higher score",
+      "fastest": "The lowest average think time per correct move (at least 5 moves)",
+      "comeback": "A win after trailing by 15 points or more",
+      "mostPoints": "The most points from correct moves, before penalties"
+    }
+  }
+}

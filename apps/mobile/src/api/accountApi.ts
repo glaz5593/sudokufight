@@ -93,7 +93,11 @@ export interface AccountApi {
   getMe(): Promise<Me>;
   /** PATCH /v1/me: avatar and country any time [D21], the name once in 30 days [D20]. */
   updateMe(patch: UpdateMeRequest): Promise<Me>;
-  /** DELETE /v1/me. A 404 (already deleted) counts as done. */
+  /**
+   * DELETE /v1/me. A 404 (already deleted) counts as done. The server wants a recent sign-in (the token's
+   * auth_time): call it right after re-authenticating and getIdToken(true). A sign-in that is too old fails
+   * with 'reauthRequired' at once (no token refresh: it would keep the old sign-in time).
+   */
   deleteMe(): Promise<void>;
 }
 
@@ -183,7 +187,9 @@ export function createAccountApi(deps: AccountApiDeps): AccountApi {
 
     let result = await attempt(false);
     // An expired or revoked token: a fresh one, once (protocol: "refresh the token and try once more").
-    if (result.response.status === 401 && result.hadToken) result = await attempt(true);
+    // Not for reauthRequired: a refreshed token keeps the old sign-in time, only re-authenticating helps.
+    const reauth = errorBodyOf(result.data)?.error === 'reauthRequired';
+    if (result.response.status === 401 && result.hadToken && !reauth) result = await attempt(true);
     const { response, data } = result;
     if (response.status >= 200 && response.status < 300) return { status: response.status, data };
     const body = errorBodyOf(data);

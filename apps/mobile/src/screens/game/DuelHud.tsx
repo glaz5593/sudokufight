@@ -31,6 +31,9 @@ export interface DuelHudProps {
   opponent: CardModel;
   myAvatar?: AvatarId | null;
   opponentAvatar?: AvatarId | null;
+  /** The flags (spec §6.8), when the game knows the countries (a ranked match's profiles); ISO alpha-2. */
+  myCountry?: string | null;
+  opponentCountry?: string | null;
   myDelta?: ScoreDelta | null;
   opponentDelta?: ScoreDelta | null;
   /** "סיום אימון" (practice) or "כניעה" on my card: the screen asks first (spec §6.6). */
@@ -62,6 +65,8 @@ export function DuelHud({
   opponent,
   myAvatar,
   opponentAvatar,
+  myCountry = null,
+  opponentCountry = null,
   myDelta = null,
   opponentDelta = null,
   onSurrender,
@@ -92,6 +97,7 @@ export function DuelHud({
     <PlayerCard
       model={opponent}
       avatarId={opponentAvatar}
+      country={opponentCountry}
       side="end"
       delta={opponentDelta}
       onInterfere={onInterfere}
@@ -107,6 +113,7 @@ export function DuelHud({
         <PlayerCard
           model={me}
           avatarId={myAvatar}
+          country={myCountry}
           side="start"
           delta={myDelta}
           onSurrender={onSurrender}

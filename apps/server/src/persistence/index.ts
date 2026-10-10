@@ -8,6 +8,7 @@ export {
 } from './recorder';
 export {
   appendGameEvents,
+  endInterruptedGames,
   type EndOutcome,
   eventRow,
   type GameEndRecord,
@@ -16,6 +17,7 @@ export {
   recordGameEnd,
   recordGameStart,
   seatsOf,
+  SERVER_RESTART,
 } from './records';
 export {
   type RankedGames,

@@ -1,0 +1,205 @@
+import { type PlayerInfo, toView } from '@sudoku-fight/engine';
+import { act, render, screen } from '@testing-library/react-native';
+
+import { scoreText, signedText } from '../../../components/player';
+import i18n from '../../../i18n';
+import { useProfile } from '../../../state/profile';
+import { useSettings } from '../../../state/settings';
+import { configOf, fourPlayerGame, Table } from '../../replay/testing/games';
+import { type ResultsSession, sessionResultsModel } from '../resultsModel';
+import { ResultsScreen } from '../ResultsScreen';
+
+/**
+ * Stage 11 results (spec §12) for rated games, on real engine games: my rating change counting from the old
+ * rating to the new one (a jump under Reduced Motion), each opponent's change, the full ranking of a
+ * four-player game (a podium and the 4th place), and what each award means.
+ */
+
+jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock(
+  'react-native-safe-area-context',
+  () => jest.requireActual<{ default: object }>('react-native-safe-area-context/jest/mock').default,
+);
+jest.mock('../../../services/feedback', () => ({ cue: jest.fn() }));
+
+const hidden = { includeHiddenElements: true };
+
+const sessionOf = (table: Table, me: string): ResultsSession => ({
+  id: table.config.id,
+  mode: table.config.mode,
+  gameType: table.config.gameType,
+  playerId: me,
+  getView: () => toView(table.state, me, table.now),
+});
+
+/** Two rated players; `me` fills most of the board and wins. */
+function rankedDuel(): Table {
+  const players: PlayerInfo[] = [
+    { id: 'me', name: 'Moshe', rating: 1287, ratedGames: 12 },
+    { id: 'nina', name: 'NinaVolt', rating: 1305, ratedGames: 12 },
+  ];
+  const table = new Table(configOf('ranked', players, { id: 'duel' }));
+  let k = 0;
+  while (table.state.status === 'running') {
+    table.move(k % 4 === 3 ? 'nina' : 'me', table.empty()[0]!, 1_000);
+    k++;
+  }
+  return table;
+}
+
+async function show(table: Table, me: string, { fakeTimers = false } = {}) {
+  const model = sessionResultsModel(sessionOf(table, me))!;
+  await render(
+    <ResultsScreen
+      gameId={model.gameId}
+      load={async () => ({ kind: 'found', model })}
+      onNewGame={jest.fn()}
+      onHome={jest.fn()}
+    />,
+  );
+  await act(async () => {
+    if (fakeTimers) await Promise.resolve();
+    else await new Promise((r) => setImmediate(r));
+  });
+  return model;
+}
+
+beforeEach(async () => {
+  await i18n.changeLanguage('he');
+  useSettings.setState({ reduceMotion: 'on' });
+  useProfile.setState({ avatarId: 'av07' });
+});
+
+describe('a rated two-player game', () => {
+  const table = rankedDuel();
+  const result = table.state.result!;
+  const mine = result.ratingChanges.find((c) => c.playerId === 'me')!;
+  const hers = result.ratingChanges.find((c) => c.playerId === 'nina')!;
+
+  it('the model carries the engine’s rating changes, mine and the opponent’s', () => {
+    const model = sessionResultsModel(sessionOf(table, 'me'))!;
+    expect(mine.delta).toBeGreaterThan(0);
+    expect(model.rating).toEqual({
+      before: mine.before,
+      after: mine.after,
+      delta: mine.delta,
+      provisional: false,
+    });
+    expect(model.opponents[0]!.rating).toMatchObject({
+      before: hers.before,
+      after: hers.after,
+      delta: hers.delta,
+    });
+    expect(model.ranking).toEqual([]);
+  });
+
+  it('shows my new rating at once under Reduced Motion, with the change and the old rating', async () => {
+    await show(table, 'me');
+    expect(screen.getByTestId('results-rating-value', hidden)).toHaveTextContent(
+      String(Math.round(mine.after)),
+    );
+    expect(screen.getByTestId('results-rating')).toHaveProp(
+      'accessibilityLabel',
+      `שינוי דירוג: ${signedText(mine.delta)}, מ־${Math.round(mine.before)} ל־${Math.round(mine.after)}`,
+    );
+    expect(screen.getByTestId('results-rating-delta', hidden)).toHaveTextContent(signedText(mine.delta));
+    expect(screen.queryByTestId('results-unrated')).toBeNull();
+    // The opponent's row says how her rating moved.
+    expect(screen.getByTestId('results-opponent-nina')).toHaveProp(
+      'accessibilityLabel',
+      expect.stringContaining(`דירוג ${signedText(hers.delta)}`),
+    );
+    expect(screen.getByTestId('results-opponent-nina-rating', hidden)).toHaveTextContent(
+      `${Math.round(hers.before)} → ${Math.round(hers.after)}`,
+      { exact: false },
+    );
+  });
+
+  it('counts from the old rating to the new one when motion is on', async () => {
+    useSettings.setState({ reduceMotion: 'off' });
+    jest.useFakeTimers();
+    try {
+      await show(table, 'me', { fakeTimers: true });
+      expect(screen.getByTestId('results-rating-value', hidden)).toHaveTextContent(
+        String(Math.round(mine.before)),
+      );
+      // The count starts as the sections land (motion.md ratingCountAt), then runs for rewardMax.
+      await act(async () => {
+        jest.advanceTimersByTime(1_200);
+      });
+      await act(async () => {
+        jest.advanceTimersByTime(1_000);
+      });
+      expect(screen.getByTestId('results-rating-value', hidden)).toHaveTextContent(
+        String(Math.round(mine.after)),
+      );
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('every award says what it is for', async () => {
+    await show(table, 'me');
+    for (const a of result.awards)
+      expect(screen.getByTestId(`results-award-${a.kind}-definition`, hidden)).toHaveTextContent(/\S/);
+    expect(screen.getByTestId('results-award-bestMove-definition', hidden)).toHaveTextContent(
+      'הניקוד הגבוה ביותר במהלך בודד',
+    );
+  });
+
+  it('speaks English', async () => {
+    await i18n.changeLanguage('en');
+    await show(table, 'nina');
+    expect(screen.getByRole('header', { name: 'Defeat' })).toBeOnTheScreen();
+    expect(screen.getByTestId('results-rating')).toHaveProp(
+      'accessibilityLabel',
+      `Rating change: ${signedText(hers.delta)}, from ${Math.round(hers.before)} to ${Math.round(hers.after)}`,
+    );
+    expect(screen.getByRole('button', { name: 'Replay' })).toBeEnabled();
+  });
+});
+
+describe('a four-player game: the full ranking (spec §12)', () => {
+  const table = fourPlayerGame();
+  const result = table.state.result!;
+
+  it('puts everyone in the ranking by place, me included, with each one’s rating change', () => {
+    const model = sessionResultsModel(sessionOf(table, 'p2'))!;
+    expect(model.ranking.map((r) => [r.playerId, r.place])).toEqual(
+      result.ranking.map((r) => [r.playerId, r.place]),
+    );
+    expect(model.ranking.find((r) => r.isMe)).toMatchObject({ playerId: 'p2', colorIndex: 0 });
+    // Whoever left first ranks last (spec §6.7): p3 surrendered before p4 abandoned.
+    expect(model.ranking.find((r) => r.playerId === 'p4')).toMatchObject({ left: true, place: 3 });
+    expect(model.ranking.find((r) => r.playerId === 'p3')).toMatchObject({ left: true, place: 4 });
+    for (const r of model.ranking)
+      expect(r.rating?.delta).toBe(result.ratingChanges.find((c) => c.playerId === r.playerId)!.delta);
+  });
+
+  it('a ranked match’s opponents get their own avatars (the profiles from "found"); the rest keep the default', () => {
+    const plain = sessionResultsModel(sessionOf(table, 'p2'))!;
+    expect(plain.ranking.filter((r) => !r.isMe).every((r) => r.avatar === 'av00')).toBe(true);
+    const model = sessionResultsModel({
+      ...sessionOf(table, 'p2'),
+      profiles: { p1: { avatarId: 'av12' }, p3: { avatarId: 'av20' }, p4: { avatarId: 'nope' } },
+    })!;
+    const avatarOf = (id: string) => model.ranking.find((r) => r.playerId === id)!.avatar;
+    expect([avatarOf('p1'), avatarOf('p3'), avatarOf('p4')]).toEqual(['av12', 'av20', 'av00']);
+  });
+
+  it('draws a podium for the first three and a row for the 4th', async () => {
+    const model = await show(table, 'p2');
+    expect(screen.getByRole('header', { name: 'דירוג המשחק' })).toBeOnTheScreen();
+    const [first, second, third, fourth] = model.ranking;
+    for (const r of [first!, second!, third!])
+      expect(screen.getByTestId(`results-podium-${r.place}-${r.playerId}`)).toBeOnTheScreen();
+    expect(screen.getByTestId(`results-ranking-4-${fourth!.playerId}`)).toHaveProp(
+      'accessibilityLabel',
+      `מקום 4: P3 · ${scoreText(fourth!.score)} נקודות · יצא מהמשחק · דירוג ${signedText(fourth!.rating!.delta)}`,
+    );
+    // Me: "אני", in the podium or the 4th row.
+    expect(screen.getAllByLabelText(/^מקום \d: אני · /).length).toBe(1);
+    expect(screen.queryByTestId('results-opponents')).toBeNull();
+    expect(screen.getByTestId('results-rating')).toBeOnTheScreen();
+  });
+});

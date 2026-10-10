@@ -310,22 +310,26 @@ export interface DeleteOutcome {
  *
  * 1. Re-authenticate with the password. Proves it is the owner, and makes the provider's delete possible
  *    (it needs a recent sign-in). A wrong password stops here: nothing is deleted.
- * 2. DELETE /v1/me. The server is where the personal data and the name live: it marks deleted_at, makes the
- *    name anonymous (free again at once) and drops the email. A failure stops here: nothing is deleted, and
- *    the player can try again (the sign-in still works).
- * 3. Delete the sign-in (Firebase user), with one more try if it fails.
- * 4. Sign out on the phone, forget the saved profile → the login screen.
+ * 2. A fresh ID token (getIdToken(true)): the server checks the token's sign-in time (auth_time), and the
+ *    token the provider kept may predate step 1.
+ * 3. DELETE /v1/me with it. The server is where the personal data and the name live: it marks deleted_at,
+ *    makes the name anonymous (free again at once) and drops the email. A failure stops here: nothing is
+ *    deleted, and the player can try again (the sign-in still works). 401 'reauthRequired' (the server still
+ *    finds the sign-in too old) is one of these: the dialog asks for the password again.
+ * 4. Delete the sign-in (Firebase user), with one more try if it fails.
+ * 5. Sign out on the phone, forget the saved profile → the login screen.
  *
  * Why not Firebase first: if the server call then failed, the profile, the name and the email would stay on
  * the server with no way to sign in and delete them. This order can leave only a Firebase sign-in without a
- * profile (step 3 failing twice), which holds no game data: signing in with it again starts a fresh
+ * profile (step 4 failing twice), which holds no game data: signing in with it again starts a fresh
  * registration (protocol: the server forgets the uid). `signInDeleted: false` lets the screen say so.
  *
- * Throws AuthError (step 1) or AccountApiError (step 2).
+ * Throws AuthError (steps 1–2) or AccountApiError (step 3).
  */
 export async function deleteAccount(password: string): Promise<DeleteOutcome> {
   const { provider, api } = authDeps();
   await provider.reauthenticate(password);
+  await provider.getIdToken(true);
   await api.deleteMe();
   let signInDeleted = true;
   try {

@@ -142,3 +142,4 @@ export * from './telemetry';
 export * from './admin';
 export * from './account';
 export * from './matchmaking';
+export * from './history';

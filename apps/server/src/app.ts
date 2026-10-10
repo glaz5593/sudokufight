@@ -24,7 +24,7 @@ import {
   matchmakingIdentityVerifier,
   MatchmakingService,
 } from './matchmaking';
-import { rankedGames } from './persistence';
+import { endInterruptedGames, rankedGames } from './persistence';
 import { dbPuzzleSource, rankedPoolSizes } from './puzzles';
 import { EchoRoom } from './rooms/EchoRoom';
 import {
@@ -41,7 +41,8 @@ import {
  *   round-trip check, GET /health, and outside production GET /dev/metrics (action handling times); the
  *   `matchmaking` room (stage 9: src/matchmaking), whose matches open rated `game` rooms.
  * - Express (src/http): POST /v1/events (stage 7א), and the admin site next.
- * - The database (src/db): opened and migrated before the server listens, closed on shutdown.
+ * - The database (src/db): opened and migrated before the server listens, closed on shutdown. Ranked games
+ *   left running by the previous process are ended then (persistence endInterruptedGames: 'serverRestart').
  *
  * A factory, because defineServer() has side effects as soon as it runs (transport, matchmaker, and with
  * gracefullyShutdown the process signal handlers). Tests pass gracefullyShutdown: false.
@@ -193,6 +194,13 @@ export function createAppServer({
     // Colyseus runs these in order inside listen(): beforeListen, then express.
     beforeListen: async () => {
       database ??= await createDb(config);
+      // Games that were running when the server stopped are gone with their rooms: ended, unrated.
+      const interrupted = await endInterruptedGames(database.db, new Date(now()));
+      if (interrupted.length > 0)
+        console.warn(
+          `[server] ${interrupted.length} ranked game(s) cut short by the restart: ended as serverRestart, ` +
+            `no rating change (${interrupted.join(', ')})`,
+        );
       if (config.nodeEnv !== 'test') {
         const sizes = await rankedPoolSizes(database.db);
         const empty = Object.entries(sizes).filter(([, n]) => n === 0);

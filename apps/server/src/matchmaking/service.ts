@@ -3,6 +3,7 @@ import {
   type AvatarId,
   COUNTDOWN_MS,
   type CountryCode,
+  type GameRoomRuleOverrides,
   KEEP_SEARCHING_WINDOW_MS,
   MATCH_TIMEOUT_MS,
   type MatchCancelReason,
@@ -54,6 +55,10 @@ import type { RankedMatchLink, RankedMatchSetup, RankedRoomHooks, RankedRooms } 
  * A no-show before the game starts is not rated: there is no game yet (D37: the game starts only when
  * everyone is connected), and the others are requeued, not given a win (spec §10). Once the countdown runs
  * the seats are fixed, and leaving is abandonment, a normal loss [D32], through the game room's grace period.
+ *
+ * One ranked game at a time: from GO until its room reports the game over (and its result stored) or closes,
+ * a player's search is refused (`alreadyQueued`). A player who left their game is in it until the grace runs
+ * out (they may go back to it meanwhile), and their next search starts from their stored rating.
  */
 
 export interface StoredPlayer {
@@ -125,8 +130,13 @@ export interface MatchmakingConfig {
   extendedTimeoutMs: number;
   /** After a timeout, how long the connection waits for "keep searching". */
   keepSearchingWindowMs: number;
-  /** The queues open (2 players now; 3–4 in stage 10). */
+  /** The queues open (2, 3 and 4 players since stage 10; a server may close some: queueClosed). */
   openPlayerCounts: readonly QueuePlayerCount[];
+  /**
+   * Rule overrides for the match rooms' games, e.g. a short grace: tests and development only (the server's
+   * settings never set it, so production plays the default rules).
+   */
+  gameRules: GameRoomRuleOverrides;
 }
 
 export const DEFAULT_MATCHMAKING: MatchmakingConfig = {
@@ -137,6 +147,7 @@ export const DEFAULT_MATCHMAKING: MatchmakingConfig = {
   extendedTimeoutMs: MATCH_TIMEOUT_MS,
   keepSearchingWindowMs: KEEP_SEARCHING_WINDOW_MS,
   openPlayerCounts: OPEN_QUEUE_PLAYER_COUNTS,
+  gameRules: {},
 };
 
 export interface MatchmakingDeps {
@@ -197,6 +208,8 @@ export class MatchmakingService implements RankedRooms {
   private readonly bySession = new Map<string, Entry>();
   private readonly queues = new Map<QueueKey, MatchQueue>();
   private readonly matches = new Map<string, Match>();
+  /** Players whose ranked game runs (from GO until it is over or its room closes): user id → match id. */
+  private readonly playing = new Map<string, string>();
   private tickTimer: unknown = null;
   private closed = false;
 
@@ -224,6 +237,8 @@ export class MatchmakingService implements RankedRooms {
         'alreadyQueued',
         'this account is searching already, or its match has not started yet',
       );
+    if (this.playing.has(identity.userId))
+      throw new MatchmakingRefusal('alreadyQueued', 'this account is in a ranked game that has not ended');
     const entry: Entry = {
       userId: identity.userId,
       identity,
@@ -272,16 +287,22 @@ export class MatchmakingService implements RankedRooms {
     if (!entry || entry.phase !== 'timedOut' || entry.ticket === null) return;
     this.clearEntryTimer(entry);
     const t = entry.ticket;
-    this.search(entry, {
-      userId: t.userId,
-      rating: t.rating,
-      opponents: t.opponents,
-      enqueuedAt: t.enqueuedAt,
-      searchStart: t.searchStart,
-      deadline: this.now() + this.deps.config.extendedTimeoutMs,
-      extended: true,
-      priority: t.priority,
-    });
+    const now = this.now();
+    this.search(
+      entry,
+      {
+        userId: t.userId,
+        rating: t.rating,
+        opponents: t.opponents,
+        enqueuedAt: t.enqueuedAt,
+        searchStart: t.searchStart,
+        deadline: now + this.deps.config.extendedTimeoutMs,
+        extended: true,
+        priority: t.priority,
+      },
+      false,
+      now,
+    );
   }
 
   /** The connection is gone: a search ends; a pending match goes on without it [D32]. */
@@ -305,6 +326,7 @@ export class MatchmakingService implements RankedRooms {
     this.tickTimer = null;
     for (const entry of this.entries.values()) this.clearEntryTimer(entry);
     for (const match of this.matches.values()) this.clearMatchTimer(match);
+    this.playing.clear();
   }
 
   // -- for tests and diagnostics -------------------------------------------------------------------------
@@ -317,6 +339,11 @@ export class MatchmakingService implements RankedRooms {
   /** Matches found and not started or cancelled yet. */
   get pendingMatches(): number {
     return this.matches.size;
+  }
+
+  /** The player's ranked game runs (from GO until it is over): a search is refused meanwhile. */
+  isPlaying(userId: string): boolean {
+    return this.playing.has(userId);
   }
 
   // -- the matcher's rounds ------------------------------------------------------------------------------
@@ -333,7 +360,8 @@ export class MatchmakingService implements RankedRooms {
       for (const ticket of timedOut) this.timedOut(ticket, now);
       for (const ticket of queue.list()) {
         const entry = this.entries.get(ticket.userId);
-        if (entry && rangeOf(ticket, now, queue.config) !== entry.lastRange) this.sendSearching(entry);
+        if (entry && rangeOf(ticket, now, queue.config) !== entry.lastRange)
+          this.sendSearching(entry, false, now);
       }
     }
     this.ensureTicking();
@@ -362,17 +390,18 @@ export class MatchmakingService implements RankedRooms {
     return queue;
   }
 
-  private search(entry: Entry, ticket: NewTicket, requeued = false): void {
-    entry.ticket = this.queueFor(entry).add(ticket, this.now());
+  private search(entry: Entry, ticket: NewTicket, requeued = false, now = this.now()): void {
+    // One instant for the ticket and its message: a new search's time starts at 0, its timeout is whole.
+    entry.ticket = this.queueFor(entry).add(ticket, now);
     entry.phase = 'searching';
-    this.sendSearching(entry, requeued);
+    this.sendSearching(entry, requeued, now);
     this.ensureTicking();
   }
 
-  private sendSearching(entry: Entry, requeued = false): void {
+  /** `now`: the instant the message describes (its serverTime), the same one its range and times are at. */
+  private sendSearching(entry: Entry, requeued = false, now = this.now()): void {
     const t = entry.ticket;
     if (t === null || entry.session === null) return;
-    const now = this.now();
     const range = rangeOf(t, now, this.deps.config.matcher);
     entry.lastRange = range;
     entry.session.send({
@@ -526,6 +555,7 @@ export class MatchmakingService implements RankedRooms {
     if (match.state !== 'countdown') return;
     match.state = 'started';
     this.matches.delete(match.id);
+    for (const m of match.members) this.playing.set(m.userId, match.id);
     this.callHook(match, (h) => h.onGo());
     for (const m of match.members) {
       const session = m.session;
@@ -597,6 +627,7 @@ export class MatchmakingService implements RankedRooms {
       })),
       readyTimeoutMs: this.deps.config.readyTimeoutMs,
       countdownMs: this.deps.config.countdownMs,
+      rules: this.deps.config.gameRules,
     };
     const isMember = (userId: string) => match.members.some((m) => m.userId === userId);
     return {
@@ -613,14 +644,21 @@ export class MatchmakingService implements RankedRooms {
         if (match.state !== 'waiting' && match.state !== 'opening') return;
         if (match.ready.delete(userId)) this.sendReady(match);
       },
+      over: () => this.gameEnded(match),
       closed: () => {
-        if (match.state === 'started' || match.state === 'cancelled') return;
+        if (match.state === 'started') return this.gameEnded(match);
+        if (match.state === 'cancelled') return;
         // Gone before anyone could come (the room failed to open): nobody's fault.
         if (match.state === 'opening') return this.fail(match, 'error', []);
         const missing = match.members.filter((m) => !match.ready.has(m.userId)).map((m) => m.userId);
         this.fail(match, missing.length > 0 ? 'noShow' : 'error', missing);
       },
     };
+  }
+
+  /** The match's game is over (or its room gone): its players may search again. */
+  private gameEnded(match: Match): void {
+    for (const m of match.members) if (this.playing.get(m.userId) === match.id) this.playing.delete(m.userId);
   }
 
   // -- helpers -------------------------------------------------------------------------------------------

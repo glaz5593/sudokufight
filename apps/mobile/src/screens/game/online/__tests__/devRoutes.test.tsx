@@ -65,6 +65,20 @@ it('"צור חדר" starts an online game of the chosen type for 2 players and o
   expect(online?.online.closeReason).toBe('refused');
 });
 
+it('stage 10: a room of 4 players (two phones and two fake clients fill it)', async () => {
+  const app = await renderApp('/dev/online', routes);
+  await fireEvent.press(await screen.findByRole('button', { name: '4 שחקנים' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'צור חדר' }));
+  expect(app.pathname()).toBe('/game');
+  expect(useGameStore.getState().online?.request).toEqual({
+    kind: 'create',
+    options: { gameType: 'fast', playerCount: 4 },
+  });
+  await act(async () => {
+    await useGameStore.getState().online?.ready;
+  });
+});
+
 it('"הצטרף" joins the code as typed, normalized', async () => {
   await renderApp('/dev/online', routes);
   await fireEvent.changeText(await screen.findByTestId('dev-online-code'), 'abc 234');

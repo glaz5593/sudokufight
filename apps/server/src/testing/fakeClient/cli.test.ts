@@ -1,5 +1,5 @@
-import { FAKE_CLIENT_USAGE, type FakeClientCli, formatSummary, parseFakeClientArgs } from './cli';
-import type { FakeClientSummary } from './client';
+import { exitCodeOf, FAKE_CLIENT_USAGE, type FakeClientCli, formatSummary, parseFakeClientArgs } from './cli';
+import type { FakeClientSummary, FakeMatchSummary } from './client';
 
 const parse = (line: string) => parseFakeClientArgs(line.split(' ').filter(Boolean), () => 42);
 
@@ -82,6 +82,53 @@ describe('parseFakeClientArgs', () => {
     expect(run('--code XVGWGD').options.trouble).toBeUndefined();
   });
 
+  it('--queue: a ranked game with an account (dev token of --id by default), registered when new', () => {
+    const { options } = run('--queue fast-2p --name Ana --speed 20');
+    expect(options).toEqual({
+      url: 'ws://localhost:2567',
+      name: 'Ana',
+      id: 'fake-Ana',
+      queue: { queueKey: 'fast-2p' },
+      level: 3,
+      thinkScale: 0.05,
+      interfere: true,
+      react: true,
+      pingEveryMs: 1000,
+      verbose: false,
+    });
+    expect(options.code).toBeUndefined();
+    expect(options.create).toBeUndefined();
+  });
+
+  it('--queue with its own options', () => {
+    expect(
+      run('--queue normal-2p --token eyJ.abc.def --avatar av07 --country us --keep-searching').options.queue,
+    ).toEqual({
+      queueKey: 'normal-2p',
+      token: 'eyJ.abc.def',
+      avatarId: 'av07',
+      country: 'US',
+      keepSearching: true,
+    });
+    expect(run('--queue hard-2p --no-show').options.queue).toEqual({ queueKey: 'hard-2p', noShow: true });
+    // Any queue key is taken: the server says which queues are open (all of them since stage 10).
+    expect(run('--queue fast-4p').options.queue).toEqual({ queueKey: 'fast-4p' });
+    expect(run('--queue fast-2p --drop-in-countdown 1.5').options.trouble).toEqual({
+      dropInCountdownForMs: 1500,
+    });
+  });
+
+  it('stage 10: --account plays a room as an account; --rated makes a rated room (accounts only)', () => {
+    expect(run('--create --rated --players 4 --game-type normal').options).toMatchObject({
+      create: { gameType: 'normal', playerCount: 4, rated: true },
+      account: {},
+    });
+    expect(
+      run('--code XVGWGD --account --token eyJ.abc.def --avatar av07 --country us').options,
+    ).toMatchObject({ code: 'XVGWGD', account: { token: 'eyJ.abc.def', avatarId: 'av07', country: 'US' } });
+    expect(run('--code XVGWGD').options.account).toBeUndefined();
+  });
+
   it('a Hebrew name gets an id a dev user id can hold', () => {
     expect(run('--code XVGWGD --name משה').options.id).toBe('fake-___');
   });
@@ -110,6 +157,19 @@ describe('parseFakeClientArgs', () => {
     ['--name --create', '--name needs a value'],
     ['--create --json=yes', '--json takes no value'],
     ['--create ABC', 'unexpected argument'],
+    ['--queue fast', '--queue: one of fast-2p'],
+    ['--queue fast-5p', '--queue: one of'],
+    ['--queue fast-2p --code XVGWGD', 'not with --code or --create'],
+    ['--queue fast-2p --create', 'not with --code or --create'],
+    ['--code XVGWGD --token abc', '--token goes with --queue or --account'],
+    ['--code XVGWGD --rated', '--rated goes with --create'],
+    ['--queue fast-2p --account', '--queue plays as an account already'],
+    ['--code XVGWGD --keep-searching', '--keep-searching goes with --queue'],
+    ['--create --no-show', '--no-show goes with --queue'],
+    ['--create --drop-in-countdown 1', '--drop-in-countdown goes with --queue'],
+    ['--queue fast-2p --avatar av36', '--avatar'],
+    ['--queue fast-2p --country Israel', '--country'],
+    ['--queue fast-2p --no-show --drop-in-countdown 1', 'a no-show never gets to the countdown'],
   ])('refuses %j', (line, message) => {
     expect(error(line)).toContain(message);
   });
@@ -117,7 +177,19 @@ describe('parseFakeClientArgs', () => {
   it('--help and -h', () => {
     expect(parse('--help')).toEqual({ kind: 'help' });
     expect(parse('--code XVGWGD -h')).toEqual({ kind: 'help' });
-    for (const flag of ['--drop-after', '--surrender-after', '--leave-after', '--speed', '--level', '--json'])
+    for (const flag of [
+      '--drop-after',
+      '--surrender-after',
+      '--leave-after',
+      '--speed',
+      '--level',
+      '--json',
+      '--queue',
+      '--token',
+      '--keep-searching',
+      '--no-show',
+      '--drop-in-countdown',
+    ])
       expect(FAKE_CLIENT_USAGE).toContain(flag);
   });
 });
@@ -195,5 +267,119 @@ describe('formatSummary', () => {
       'PROBLEM: 1 seq gaps, 0 snapshots with the solution',
       'outcome: lostConnection (could not come back); room XVGWGD, level 3, seed 77',
     ]);
+  });
+});
+
+describe('a ranked run (--queue)', () => {
+  const match: FakeMatchSummary = {
+    queueKey: 'fast-2p',
+    ranges: [50, 75, 100],
+    searchedMs: 10_400,
+    timeouts: 0,
+    matchId: 'm-1',
+    rematch: false,
+    opponents: [
+      { id: 'u-ben', name: 'Ben', avatarId: 'av02', country: 'IL', rating: 1216, provisional: true },
+    ],
+    cancelled: null,
+    registered: false,
+    ratingBefore: { key: 'fast', rating: 1200, games: 0, provisional: true, peak: 1200 },
+    rating: { key: 'fast', before: 1200, after: 1233, delta: 33, provisional: true },
+    ratingAfter: { key: 'fast', rating: 1233, games: 1, provisional: true, peak: 1233 },
+  };
+  const summary: FakeClientSummary = {
+    playerId: 'u-ana',
+    name: 'Ana',
+    code: 'K7M2PQ',
+    outcome: 'over',
+    error: null,
+    endReason: 'boardComplete',
+    place: 1,
+    players: 2,
+    status: 'active',
+    score: 12,
+    mistakes: 0,
+    correct: 3,
+    ranking: null,
+    rtt: { count: 0, p50Ms: 0, p95Ms: 0, maxMs: 0 },
+    actions: { count: 0, p50Ms: 0, p95Ms: 0, maxMs: 0 },
+    actionsLost: 0,
+    clockOffsetMs: null,
+    resyncs: [],
+    solveMs: null,
+    solutionMatches: null,
+    seqGaps: 0,
+    duplicates: 0,
+    leaks: 0,
+    rejected: {},
+    level: 3,
+    seed: 5,
+    match,
+  };
+
+  it('prints the match, the rating by the result, and the rating before and after (GET /v1/me)', () => {
+    const ranking = [
+      { playerId: 'u-ana', seat: 0, place: 1, score: 12, mistakes: 0, correct: 3, status: 'active' as const },
+      { playerId: 'u-ben', seat: 1, place: 2, score: 4, mistakes: 1, correct: 1, status: 'active' as const },
+    ];
+    // The ranking by name (the ids are users.id).
+    expect(formatSummary({ ...summary, ranking })[4]).toBe('ranking: 1. Ana 12 (active), 2. Ben 4 (active)');
+    expect(formatSummary(summary).slice(0, 4)).toEqual([
+      'match fast-2p: vs Ben (1216, provisional) after 10.4 s, range ±50 to ±100',
+      'rating fast by the result: 1200 -> 1233 (+33, provisional: K doubled)',
+      'account signed in: fast 1200 (0 games, provisional); stored after the game: 1233 (1 game, provisional)',
+      'result: place 1 of 2 (boardComplete), score 12, 3 correct, 0 mistakes',
+    ]);
+  });
+
+  it('a search that timed out, and a match called off', () => {
+    const lonely: FakeClientSummary = {
+      ...summary,
+      outcome: 'timeout',
+      code: '',
+      place: null,
+      score: null,
+      endReason: null,
+      match: {
+        ...match,
+        ranges: [50, 75, 300],
+        searchedMs: 60_000,
+        timeouts: 1,
+        matchId: null,
+        opponents: [],
+        registered: true,
+        rating: null,
+        ratingAfter: null,
+      },
+    };
+    const lines = formatSummary(lonely);
+    expect(lines[0]).toBe('search fast-2p: no game after 60.0 s, range ±50 to ±300, 1 timeout');
+    expect(lines[1]).toBe('account registered now: fast 1200 (0 games, provisional)');
+    expect(lines.at(-1)).toBe('outcome: timeout; level 3, seed 5');
+
+    const off = formatSummary({
+      ...summary,
+      outcome: 'cancelled',
+      place: null,
+      ranking: null,
+      match: { ...match, cancelled: 'noShow', rating: null, ratingAfter: null },
+    });
+    expect(off.slice(0, 2)).toEqual([
+      'search fast-2p: no game after 10.4 s, range ±50 to ±100',
+      'the match vs Ben (1216, provisional) was called off (noShow)',
+    ]);
+  });
+
+  it('exit codes: 0 when it ended as asked', () => {
+    const queue = { queueKey: 'fast-2p' as const };
+    const code = (outcome: FakeClientSummary['outcome'], noShow = false) =>
+      exitCodeOf({ ...summary, outcome }, { url: 'ws://x', name: 'Ana', queue: { ...queue, noShow } });
+    expect(code('over')).toBe(0);
+    expect(code('left')).toBe(0);
+    expect(code('timeout')).toBe(0);
+    expect(code('cancelled', true)).toBe(0); // --no-show: the match was meant to fall through
+    expect(code('cancelled')).toBe(1); // this player missed the ready check
+    for (const outcome of ['error', 'lostConnection', 'closed', 'stopped'] as const)
+      expect(code(outcome)).toBe(1);
   });
 });

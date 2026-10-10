@@ -33,8 +33,11 @@ import {
   type MatchmakingServerMessage,
   type MatchPlayer,
   type MatchSeatReservation,
+  type Me,
   normalizeRoomCode,
+  parseQueueKey,
   type QueueKey,
+  type RatingEntry,
   SERVER_MESSAGE_TYPES,
   type ServerMessage,
 } from '@sudoku-fight/protocol';
@@ -73,15 +76,35 @@ export interface FakeClientTrouble {
   dropAfterMs?: number;
   /** …and come back with the reconnection token after this long (default 5000). */
   dropForMs?: number;
+  /**
+   * Ranked: drop the connection to the match's room as soon as its countdown starts (3… 2… 1…), and come
+   * back after this long. The seats are fixed by then [D32]: the game starts at GO either way, and the grace
+   * runs from then on.
+   */
+  dropInCountdownForMs?: number;
   /** Leave on purpose this long after the start, and never come back. */
   leaveAfterMs?: number;
   /** Surrender this long after the start. */
   surrenderAfterMs?: number;
 }
 
+/**
+ * An account to play a private room with (stage 10's tests: a rated room, `create: { rated: true }`, takes
+ * registered players only): signed in with its token, registered the first time, and in the room by that
+ * token instead of the development identity.
+ */
+export interface FakeAccountOptions {
+  /** Default: the development token of `id` (`dev:<id>`), which only a server outside production takes. */
+  token?: string;
+  /** For the registration when the token has no account yet; default av01. */
+  avatarId?: AvatarId;
+  /** Likewise; default IL. */
+  country?: CountryCode;
+}
+
 /** A ranked game (stage 9, spec §10): search in a matchmaking queue with an account. */
 export interface FakeQueueOptions {
-  /** fast-2p, normal-2p or hard-2p (3–4 players: stage 10). */
+  /** fast-2p … hard-4p (3–4 players since stage 10). */
   queueKey: QueueKey;
   /**
    * The account's ID token, for the game connections and the account routes alike. Default: the development
@@ -114,6 +137,8 @@ export interface FakeClientOptions {
   create?: Omit<GameRoomCreateOptions, 'private' | 'devUserId' | 'name'>;
   /** …or search for a ranked game (stage 9). */
   queue?: FakeQueueOptions;
+  /** With `code` or `create`: play the room as an account (a rated room needs one). */
+  account?: FakeAccountOptions;
   /** The bot level to play like (spec §9), default 3. */
   level?: BotLevelId;
   /** Think time multiplier: 1 is a person's pace (default), 0.02 fifty times faster. */
@@ -133,6 +158,8 @@ export interface FakeClientOptions {
   log?: (line: string) => void;
   /** Log every move of this player too. */
   verbose?: boolean;
+  /** Every update from the very first (onUpdate() after connect() may miss the first `searching`). */
+  onUpdate?: (update: FakeClientUpdate) => void;
 }
 
 /**
@@ -143,15 +170,7 @@ export interface FakeClientOptions {
  * a no-show). 'playing' while it is not done.
  */
 export type FakeOutcome =
-  | 'playing'
-  | 'over'
-  | 'left'
-  | 'lostConnection'
-  | 'closed'
-  | 'stopped'
-  | 'error'
-  | 'timeout'
-  | 'cancelled';
+  'playing' | 'over' | 'left' | 'lostConnection' | 'closed' | 'stopped' | 'error' | 'timeout' | 'cancelled';
 
 /** One return after a drop (spec §18: reconnect time and sync time). */
 export interface FakeResync {
@@ -169,17 +188,15 @@ export interface FakeResync {
   syncedAt: number;
 }
 
-/** The rating a ranked game moved, for this player. */
+/** The rating a ranked game moved for this player, as its result announced it (spec §11.2). */
 export interface FakeRatingChange {
   /** The rating key (RATING_OPTION B: `fast`; A: `fast-2p`). */
   key: string;
-  /** From the game's result (the engine's formula, spec §11.2). */
   before: number;
   after: number;
   delta: number;
+  /** K doubled: the key's first 10 games. */
   provisional: boolean;
-  /** The rating the server stored, read back after the game (GET /v1/me); null when it was not read. */
-  stored: number | null;
 }
 
 /** The ranked part of a run (queue mode). */
@@ -200,7 +217,15 @@ export interface FakeMatchSummary {
   cancelled: MatchCancelReason | null;
   /** The account was registered by this run (false: it had one). */
   registered: boolean;
+  /**
+   * The account's rating in the key this queue moves (RATING_OPTION B: `fast`; A: `fast-2p`), from
+   * GET /v1/me before the search.
+   */
+  ratingBefore: RatingEntry | null;
+  /** The game's result for this player; null without one. */
   rating: FakeRatingChange | null;
+  /** The same key read back after the game (GET /v1/me), once the server has stored it; else null. */
+  ratingAfter: RatingEntry | null;
 }
 
 export interface FakeClientSummary {
@@ -260,8 +285,17 @@ const seconds = (ms: number): string => `${(ms / 1000).toFixed(1)} s`;
 export const defaultFakeId = (name: string): string =>
   `fake-${name.replace(/[^A-Za-z0-9_-]/g, '_')}`.slice(0, 64);
 
+/** The grace after a drop when the game's rules are not known yet (spec §16.2, D4: 15 s). */
+const DEFAULT_GRACE_MS = 15_000;
+
 /** After a ranked game, how long to look for the stored rating (it is written in the background). */
 const STORED_RATING_WAIT_MS = 5000;
+
+/** The account's rating in the key a queue moves: `fast-2p` under RATING_OPTION A, else `fast` (B). */
+export function queueRatingOf(me: Me, queueKey: QueueKey): RatingEntry | null {
+  const gameType = parseQueueKey(queueKey)?.gameType;
+  return me.ratings.find((r) => r.key === queueKey) ?? me.ratings.find((r) => r.key === gameType) ?? null;
+}
 
 export class FakeClient {
   readonly mirror = new GameMirror();
@@ -291,6 +325,14 @@ export class FakeClient {
   private searchRoom: Room | null = null;
   /** The search's start on the server's clock (from the last `searching`). */
   private searchStart: number | null = null;
+  /** The match whose seat reservation is being used (a cancelled match's late seat is let go). */
+  private entering: string | null = null;
+  /** The match room's GO (its countdown started); null before. */
+  private countdownAt: number | null = null;
+  /** The drop at the countdown (trouble) happened already: a countdown sent again on return is not another. */
+  private droppedInCountdown = false;
+  /** Offline on purpose or by accident, and on the way back: the room being away is not the end. */
+  private returning = false;
   /** The game is over and the stored rating is being read before finishing. */
   private wrappingUp = false;
   private roomCode = '';
@@ -308,7 +350,7 @@ export class FakeClient {
   private constructor(
     private readonly opts: FakeClientOptions,
     playerId: string,
-    ranked: { origin: string; token: string; registered: boolean } | null,
+    ranked: { origin: string; token: string; registered: boolean; me: Me } | null,
   ) {
     this.name = opts.name;
     this.playerId = playerId;
@@ -317,6 +359,7 @@ export class FakeClient {
     this.rng = createRng(this.seed);
     this.sdk = new Client(opts.url);
     this.done = new Promise((resolve) => (this.resolveDone = resolve));
+    if (opts.onUpdate) this.listeners.add(opts.onUpdate);
     this.account = ranked && { origin: ranked.origin, token: ranked.token };
     this.match =
       opts.queue && ranked
@@ -330,7 +373,9 @@ export class FakeClient {
             opponents: [],
             cancelled: null,
             registered: ranked.registered,
+            ratingBefore: queueRatingOf(ranked.me, opts.queue.queueKey),
             rating: null,
+            ratingAfter: null,
           }
         : null;
   }
@@ -351,10 +396,26 @@ export class FakeClient {
         avatarId: opts.queue.avatarId ?? 'av01',
         country: opts.queue.country ?? 'IL',
       });
-      const client = new FakeClient(opts, me.id, { origin, token, registered });
-      const ratings = me.ratings.map((r) => `${r.key} ${r.rating}${r.provisional ? ' (provisional)' : ''}`);
-      client.log(`${registered ? 'registered' : 'signed in as'} ${me.displayName}: ${ratings.join(', ')}`);
+      const client = new FakeClient(opts, me.id, { origin, token, registered, me });
+      const before = queueRatingOf(me, opts.queue.queueKey);
+      const rating = before
+        ? `${before.key} ${before.rating} (${before.games} games${before.provisional ? ', provisional' : ''})`
+        : 'no rating in this queue';
+      client.log(`${registered ? 'registered' : 'signed in as'} ${me.displayName} (${me.id}): ${rating}`);
       await client.search();
+      return client;
+    }
+    if (opts.account) {
+      const origin = httpOrigin(opts.url);
+      const token = opts.account.token ?? devToken(opts.id ?? defaultFakeId(opts.name));
+      const { me, registered } = await signIn(origin, token, {
+        displayName: opts.name,
+        avatarId: opts.account.avatarId ?? 'av01',
+        country: opts.account.country ?? 'IL',
+      });
+      const client = new FakeClient(opts, me.id, { origin, token, registered, me });
+      client.log(`${registered ? 'registered' : 'signed in as'} ${me.displayName} (${me.id})`);
+      await client.join();
       return client;
     }
     const client = new FakeClient(opts, opts.id ?? defaultFakeId(opts.name), null);
@@ -429,7 +490,9 @@ export class FakeClient {
         ...this.match,
         ranges: [...this.match.ranges],
         opponents: [...this.match.opponents],
+        ratingBefore: this.match.ratingBefore && { ...this.match.ratingBefore },
         rating: this.match.rating && { ...this.match.rating },
+        ratingAfter: this.match.ratingAfter && { ...this.match.ratingAfter },
       },
     };
   }
@@ -443,13 +506,14 @@ export class FakeClient {
 
   private async join(): Promise<void> {
     let room: Room;
+    // An account comes in by its token; the room knows it by its users.id and display name.
+    if (this.account) this.sdk.auth.token = this.account.token;
     if (this.opts.create) {
-      const options: GameRoomCreateOptions = {
+      const options = {
         private: true,
-        devUserId: this.playerId,
-        name: this.name,
+        ...this.identity,
         ...this.opts.create,
-      };
+      } as GameRoomCreateOptions;
       room = await this.sdk.create(GAME_ROOM_NAME, options);
     } else {
       const code = normalizeRoomCode(this.opts.code ?? '');
@@ -488,15 +552,24 @@ export class FakeClient {
     if (this.ended) return;
     if (this.stage === 'over') return this.gameOver();
     if (this.stage === 'lobby' && this.match) {
-      // A match room closes before its game when the match is called off: matchmaking says what next.
-      if (this.searchRoom === null) this.finish('closed', `the match room closed before the game (${code})`);
+      if (code === CloseCode.CONSENTED) {
+        // A match room closes before its game when the match is called off: matchmaking says what next.
+        if (this.searchRoom === null)
+          this.finish('closed', `the match room closed before the game (${code})`);
+        return;
+      }
+      // Dropped before the game. Before the countdown the room gives the seat up at once (rejoin by code
+      // while the ready check runs); from the countdown on it holds it like a game's [D32].
+      this.log(`connection to the match's room lost (${code}); coming back`);
+      const retryForMs = this.countdownAt === null ? 0 : DEFAULT_GRACE_MS + 1000;
+      this.run(this.comeBack(token, performance.now(), retryForMs));
       return;
     }
     if (this.stage !== 'playing') return this.finish('error', `the server closed the connection (${code})`);
     if (code === CloseCode.CONSENTED) return this.finish('closed', 'the server closed the room');
     // Dropped (or disconnected by the server): come back while the seat is held.
     this.log(`connection lost (${code}); reconnecting`);
-    const graceMs = this.mirror.state?.config.rules.graceMs ?? 15_000;
+    const graceMs = this.mirror.state?.config.rules.graceMs ?? DEFAULT_GRACE_MS;
     this.run(this.comeBack(token, performance.now(), graceMs + 1000));
   }
 
@@ -505,6 +578,15 @@ export class FakeClient {
    * rejoin by code, which still shows how the game ended while the room lasts.
    */
   private async comeBack(token: string, downAt: number, retryForMs: number): Promise<void> {
+    this.returning = true;
+    try {
+      await this.tryComingBack(token, downAt, retryForMs);
+    } finally {
+      this.returning = false;
+    }
+  }
+
+  private async tryComingBack(token: string, downAt: number, retryForMs: number): Promise<void> {
     const mono = performance.now();
     const startedAt = Date.now();
     let room: Room | null = null;
@@ -586,11 +668,16 @@ export class FakeClient {
         info.cancelled = null;
         info.opponents = m.players.filter((p) => p.id !== this.playerId);
         info.searchedMs = this.searchStart === null ? null : m.serverTime - this.searchStart;
-        const vs = info.opponents.map((p) => `${p.name} (${p.rating}${p.provisional ? ', provisional' : ''})`);
+        const vs = info.opponents.map(
+          (p) => `${p.name} (${p.rating}${p.provisional ? ', provisional' : ''})`,
+        );
         const after = info.searchedMs === null ? '' : ` after ${seconds(info.searchedMs)}`;
         this.log(`found: vs ${vs.join(', ')}${m.rematch ? ' (a rematch)' : ''}${after}`);
         if (this.opts.queue?.noShow) this.log('not going to the game room (a no-show)');
-        else this.run(this.enterMatch(m.reservation));
+        else {
+          this.entering = m.matchId;
+          this.run(this.enterMatch(m.matchId, m.reservation));
+        }
         break;
       }
       case 'ready':
@@ -605,6 +692,8 @@ export class FakeClient {
       case 'matchCancelled': {
         info.cancelled = m.reason;
         const missing = m.missing.length ? `, missing ${m.missing.join(', ')}` : '';
+        this.entering = null;
+        this.countdownAt = null;
         this.leaveMatchRoom();
         if (m.requeued) {
           this.stage = 'searching';
@@ -621,13 +710,23 @@ export class FakeClient {
     this.emit({ kind: 'matchmaking', message: m });
   }
 
-  /** "Found": into the match's room with the seat reservation (D37: connected = ready). */
-  private async enterMatch(reservation: MatchSeatReservation): Promise<void> {
-    const room = await this.sdk.consumeSeatReservation(reservation);
-    if (this.ended) {
+  /**
+   * "Found": into the match's room with the seat reservation (D37: connected = ready). A match called off
+   * meanwhile is let go: its room is closing, and matchmaking has put this player back in the queue.
+   */
+  private async enterMatch(matchId: string, reservation: MatchSeatReservation): Promise<void> {
+    let room: Room;
+    try {
+      room = await this.sdk.consumeSeatReservation(reservation);
+    } catch (error) {
+      if (this.ended || this.entering !== matchId) return;
+      throw error;
+    }
+    if (this.ended || this.entering !== matchId) {
       void room.leave();
       return;
     }
+    this.entering = null;
     this.roomCode = room.roomId;
     this.stage = 'lobby';
     this.attach(room);
@@ -645,7 +744,7 @@ export class FakeClient {
   private onMatchmakingLeave(room: Room, code: number): void {
     if (room !== this.searchRoom) return;
     this.searchRoom = null;
-    if (this.ended) return;
+    if (this.ended || this.returning) return;
     // The server closes it at GO; from "found" on the match goes on without it [D32].
     if (this.stage === 'searching')
       return this.finish('error', `matchmaking closed the connection (${code})`);
@@ -659,7 +758,8 @@ export class FakeClient {
     if (!this.match || !change) return;
     const { gameType, players, rules } = state.config;
     const key = ratingKey(gameType, players.length, rules.rating.option);
-    this.match.rating = { ...change, key, stored: null };
+    const { before, after, delta, provisional } = change;
+    this.match.rating = { key, before, after, delta, provisional };
     const sign = change.delta >= 0 ? '+' : '';
     this.log(
       `rating ${key}: ${change.before} -> ${change.after} (${sign}${change.delta}` +
@@ -686,8 +786,8 @@ export class FakeClient {
         const me = await readMe(this.account!.origin, this.account!.token);
         const entry = me?.ratings.find((r) => r.key === rating.key);
         if (entry && entry.games > gamesBefore) {
-          rating.stored = entry.rating;
-          this.log(`the server stored ${rating.key} ${entry.rating} (${entry.games} games)`);
+          this.match!.ratingAfter = entry;
+          this.log(`the server stored ${rating.key} ${entry.rating} (${entry.games} game(s) in it)`);
           return;
         }
       } catch (error) {
@@ -709,10 +809,17 @@ export class FakeClient {
         this.log(`lobby ${m.code}: ${who} (${m.players.length}/${m.playerCount}, ${m.gameType})`);
         return;
       }
-      case 'countdown':
+      case 'countdown': {
+        this.countdownAt = m.startsAt;
         this.log(`everyone is in: 3... 2... 1... GO in ${seconds(m.startsAt - m.serverTime)}`);
         this.emit({ kind: 'countdown', startsAt: m.startsAt, serverTime: m.serverTime });
+        const forMs = this.opts.trouble?.dropInCountdownForMs;
+        if (forMs !== undefined && !this.droppedInCountdown) {
+          this.droppedInCountdown = true;
+          this.run(this.drop(forMs));
+        }
         return;
+      }
       case 'snapshot': {
         if (m.playerId !== this.playerId) throw new Error(`The server says I am ${m.playerId}`);
         this.mirror.snapshot(m.state, m.playerId);
@@ -897,14 +1004,20 @@ export class FakeClient {
   /** The connection drops (no goodbye), and comes back after `forMs` with the reconnection token. */
   private async drop(forMs: number): Promise<void> {
     const room = this.room;
-    if (room === null || this.ended || this.stage !== 'playing') return;
+    const inCountdown = this.stage === 'lobby' && this.countdownAt !== null;
+    if (room === null || this.ended || (this.stage !== 'playing' && !inCountdown)) return;
     const token = room.reconnectionToken;
-    this.log(`dropping the connection for ${seconds(forMs)}`);
+    this.log(`dropping the connection for ${seconds(forMs)}${inCountdown ? ' (in the countdown)' : ''}`);
     const downAt = performance.now();
     // Offline first: the closing room is no longer this.room, so its onLeave is not taken for a failure.
     this.offline();
-    await room.leave(false);
-    await this.sleep(forMs);
+    this.returning = true;
+    try {
+      await room.leave(false);
+      await this.sleep(forMs);
+    } finally {
+      this.returning = false;
+    }
     if (this.ended) return;
     await this.comeBack(token, downAt, 0);
   }

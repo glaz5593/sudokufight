@@ -32,6 +32,14 @@
     "footnote": "The game goes on in the background",
     "dialog": "Confirm ending the practice"
   },
+  "out": {
+    "surrendered": "You surrendered · place {{place}}",
+    "abandoned": "You are out · place {{place}}",
+    "goesOn": "The game goes on to the end",
+    "label": "{{title}}. {{goesOn}}",
+    "home": "Home",
+    "homeHint": "The game goes on without you. Your place is already set"
+  },
   "connection": {
     "sep": ". ",
     "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
@@ -194,7 +202,11 @@
     "leadTheirs_many": "{{name}} leads by {{gap}} points",
     "leadTheirs_other": "{{name}} leads by {{gap}} points",
     "leadTie": "Scores are tied",
-    "reaction": "{{name}} reacted {{emoji}}"
+    "reaction": "{{name}} reacted {{emoji}}",
+    "oppSurrendered": "{{name}} surrendered and is out, place {{place}}",
+    "oppAbandoned": "{{name}} did not come back in time and is out, place {{place}}",
+    "hitOther": "{{from}} sent {{kind}} to {{name}}",
+    "outMine": "You are out in place {{place}}. The game goes on to the end"
   },
   "interference": {
     "fireworks": "fireworks",
@@ -243,6 +255,7 @@
     "unavailable": "Unavailable",
     "ghost": "{{kind}} · {{cost}} pts",
     "route": "Me → {{name}}",
+    "routeArrow": "→",
     "sent": "{{kind}} → {{name}}",
     "drop": "Drop here: launch {{kind}} at {{name}}",
     "dropIdle": "Drag an interference here from the arsenal to launch it at {{name}}",

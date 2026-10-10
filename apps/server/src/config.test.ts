@@ -45,6 +45,7 @@ describe('loadConfig', () => {
       firebaseProjectId: null,
       ratingOption: 'B',
       cheat: { thinkMs: 1200, moves: 20 },
+      accountDeleteMaxAuthAgeMs: 300_000,
     });
     expect(DEFAULT_PGLITE_DIR).toBe(path.resolve(__dirname, '..', '.data', 'pglite'));
     // The dev password comes with a loud warning.
@@ -243,6 +244,18 @@ describe('loadConfig', () => {
       expect(
         issuesOf({ CHEAT_FAST_THINK_MS: '0', CHEAT_FAST_THINK_MOVES: '1' }).map((i) => i.split(':')[0]),
       ).toEqual(['CHEAT_FAST_THINK_MS', 'CHEAT_FAST_THINK_MOVES']);
+    });
+
+    it('ACCOUNT_DELETE_MAX_AUTH_AGE_MS: deleting an account wants a sign-in this fresh (default 5 minutes)', () => {
+      expect(load({}).config.accountDeleteMaxAuthAgeMs).toBe(300_000);
+      expect(load({ ACCOUNT_DELETE_MAX_AUTH_AGE_MS: '120000' }).config.accountDeleteMaxAuthAgeMs).toBe(
+        120_000,
+      );
+      expect(load({ ACCOUNT_DELETE_MAX_AUTH_AGE_MS: ' ' }).config.accountDeleteMaxAuthAgeMs).toBe(300_000);
+      for (const bad of ['0', '999', '86400001', '1.5', 'soon'])
+        expect(issuesOf({ ACCOUNT_DELETE_MAX_AUTH_AGE_MS: bad })[0]).toMatch(
+          /^ACCOUNT_DELETE_MAX_AUTH_AGE_MS: /,
+        );
     });
   });
 

@@ -26,7 +26,15 @@ import {
 import { dbPuzzleSource } from '../puzzles';
 import { createTestDb, NEARLY_DONE, PUZZLE, type TestDb } from '../testing';
 import { addAccounts, addPuzzles, recordingLog, T0, tableFor, type TestAccount } from '../testing/ranked';
-import { type RankedGames, rankedGames, recordGameEnd, type RecordOutcome, seatsOf } from '.';
+import {
+  endInterruptedGames,
+  type RankedGames,
+  rankedGames,
+  recordGameEnd,
+  type RecordOutcome,
+  seatsOf,
+  SERVER_RESTART,
+} from '.';
 
 /**
  * Stage 9: ranked games stored and rated (spec §11, §19, §20, §21), on PGlite. Games are played by the real
@@ -439,6 +447,45 @@ describe('recording is idempotent: a retry never counts a game twice', () => {
     expect(await t.db.select().from(gameEvents)).toHaveLength(table.game.events.length);
   });
 
+  it('a failure in the middle of the end (the ratings): all of it rolls back, and the retry counts it once', async () => {
+    let failed = false;
+    const flaky = Object.create(t.db) as Db;
+    // The end's transaction: games ended and the seats written, then the connection dies on the ratings.
+    flaky.transaction = (async (fn: Parameters<Db['transaction']>[0]) =>
+      t.db.transaction(async (tx) => {
+        const midway = new Proxy(tx, {
+          get(target, prop) {
+            const value: unknown = Reflect.get(target, prop, target);
+            if (prop !== 'insert' || typeof value !== 'function') return value;
+            return (table: unknown) => {
+              if (table === ratings && !failed) {
+                failed = true;
+                throw new Error('connection reset in the middle of the transaction');
+              }
+              return (value as (t: unknown) => unknown).call(target, table);
+            };
+          },
+        });
+        return fn(midway);
+      })) as Db['transaction'];
+    const { ranked, log } = await setup({ db: flaky });
+    const { recorder, table } = await newGame(ranked, ['ana', 'ben']);
+    for (const cell of NEARLY_CELLS) table.move('ana', cell);
+    expect(await recorder.done).toEqual({ ok: true, outcome: 'recorded' });
+    expect(failed).toBe(true);
+    expect(log.lines.filter((l) => l.includes('end failed (try 1 of 3)'))).toHaveLength(1);
+    // Once: the games row, the seats and the ratings of the second try only.
+    expect(await rating('ana', 'fast')).toMatchObject({ rating: 1304, games: 13 });
+    expect(await rating('ben', 'fast')).toMatchObject({ rating: 1288, games: 13 });
+    expect((await seatsRows('g1')).map((s) => [s.ratingBefore, s.ratingAfter, s.place])).toEqual([
+      [1287, 1304, 1],
+      [1305, 1288, 2],
+    ]);
+    const [game] = await t.db.select().from(games).where(eq(games.id, 'g1'));
+    expect(game).toMatchObject({ endReason: 'boardComplete', endedAt: new Date(table.game.state.endedAt!) });
+    expect(await t.db.select().from(gameEvents)).toHaveLength(table.game.events.length);
+  });
+
   it('a database that stays away: the end is given up on after the last try, and logged', async () => {
     const broken = Object.create(t.db) as Db;
     broken.transaction = () => Promise.reject(new Error('down'));
@@ -495,6 +542,56 @@ describe('anomaly flags (spec §21)', () => {
   it('a normal pace is not flagged', async () => {
     await fastGame(undefined, 1300);
     expect(await t.db.select().from(cheatFlags)).toEqual([]);
+  });
+});
+
+describe('a server restart: the games it cut short (stage 9 review)', () => {
+  it('ends every game still running as serverRestart, unrated; finished games are left as they are', async () => {
+    const { ranked } = await setup();
+    // g1: finished and rated.
+    const first = await newGame(ranked, ['ana', 'ben'], { id: 'g1' });
+    for (const cell of NEARLY_CELLS) first.table.move('ana', cell);
+    await first.recorder.done;
+    // g2: running when the server stopped: its start and some events are stored, no end.
+    const second = await newGame(ranked, ['ana', 'ben'], { id: 'g2' });
+    second.table.move('ben', NEARLY_CELLS[0]!);
+    await second.recorder.flush();
+    const before = await t.db.select().from(ratings).orderBy(asc(ratings.userId), asc(ratings.ratingKey));
+
+    const at = new Date(T0 + 3_600_000);
+    expect(await endInterruptedGames(t.db, at)).toEqual(['g2']);
+    const rows = await t.db.select().from(games).orderBy(asc(games.id));
+    expect(rows.map((g) => [g.id, g.endReason, g.endedAt?.getTime()])).toEqual([
+      ['g1', 'boardComplete', first.table.game.state.endedAt],
+      ['g2', SERVER_RESTART, at.getTime()],
+    ]);
+    // Nobody's rating moved, and the seats have no result.
+    expect(await t.db.select().from(ratings).orderBy(asc(ratings.userId), asc(ratings.ratingKey))).toEqual(
+      before,
+    );
+    expect((await seatsRows('g2')).map((s) => [s.status, s.place, s.ratingBefore, s.ratingAfter])).toEqual([
+      ['active', null, 1304, null],
+      ['active', null, 1288, null],
+    ]);
+    // What was written stays, for the admin site.
+    expect((await t.db.select().from(gameEvents).where(eq(gameEvents.gameId, 'g2'))).length).toBeGreaterThan(
+      0,
+    );
+    // Again (the next boot): nothing left to end.
+    expect(await endInterruptedGames(t.db, at)).toEqual([]);
+    second.recorder.close();
+    expect(await second.recorder.done).toMatchObject({ ok: false, unfinished: true });
+  });
+
+  it('an end that comes after the restart ended the row is not written over it, and rates nobody', async () => {
+    const { ranked } = await setup();
+    const { recorder, table } = await newGame(ranked, ['ana', 'ben']);
+    await recorder.flush();
+    await endInterruptedGames(t.db, new Date(T0 + 1000));
+    for (const cell of NEARLY_CELLS) table.move('ana', cell);
+    // The row is ended already: the late end is not written over it, and no rating moves.
+    expect(await recorder.done).toEqual({ ok: true, outcome: 'alreadyRecorded' });
+    expect(await rating('ana', 'fast')).toMatchObject({ rating: 1287, games: 12 });
   });
 });
 

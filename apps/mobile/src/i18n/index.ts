@@ -8,25 +8,44 @@ import enBoard from './locales/en/board.json';
 import enCommon from './locales/en/common.json';
 import enDev from './locales/en/dev.json';
 import enGame from './locales/en/game.json';
+import enHistory from './locales/en/history.json';
 import enHome from './locales/en/home.json';
+import enMatch from './locales/en/match.json';
 import enPlayer from './locales/en/player.json';
+import enReplay from './locales/en/replay.json';
 import enUi from './locales/en/ui.json';
 import heAccount from './locales/he/account.json';
 import heBoard from './locales/he/board.json';
 import heCommon from './locales/he/common.json';
 import heDev from './locales/he/dev.json';
 import heGame from './locales/he/game.json';
+import heHistory from './locales/he/history.json';
 import heHome from './locales/he/home.json';
+import heMatch from './locales/he/match.json';
 import hePlayer from './locales/he/player.json';
+import heReplay from './locales/he/replay.json';
 import heUi from './locales/he/ui.json';
 
 /**
  * Translations (CLAUDE.md: no hard-coded UI strings; spec §22: Hebrew first, and English). Every string goes
- * through t(). One file per area (namespace): common, ui, player, board, home, game, account, dev.
+ * through t(). One file per area (namespace): common, ui, player, board, home, game, account, dev, replay,
+ * history (stage 11) and match (stage 9: matchmaking).
  */
 export const LANGUAGES = ['he', 'en'] as const;
 export type Language = (typeof LANGUAGES)[number];
-export const NAMESPACES = ['common', 'ui', 'player', 'board', 'home', 'game', 'account', 'dev'] as const;
+export const NAMESPACES = [
+  'common',
+  'ui',
+  'player',
+  'board',
+  'home',
+  'game',
+  'account',
+  'dev',
+  'replay',
+  'history',
+  'match',
+] as const;
 
 export const resources = {
   he: {
@@ -38,6 +57,9 @@ export const resources = {
     game: heGame,
     account: heAccount,
     dev: heDev,
+    replay: heReplay,
+    history: heHistory,
+    match: heMatch,
   },
   en: {
     common: enCommon,
@@ -48,6 +70,9 @@ export const resources = {
     game: enGame,
     account: enAccount,
     dev: enDev,
+    replay: enReplay,
+    history: enHistory,
+    match: enMatch,
   },
 } as const;
 

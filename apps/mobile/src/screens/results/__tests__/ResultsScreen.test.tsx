@@ -120,14 +120,17 @@ describe('ResultsScreen (solo practice, spec §12)', () => {
     }
   });
 
-  it('the buttons: a new game of the same type, home, and the replay that is not here yet', async () => {
+  it('the buttons: a new game of the same type, home, and the replay of this game (stage 11)', async () => {
     const game = await endedPractice();
-    const { onNewGame, onHome } = await show(fromDisk(game), game.session.id);
+    const onReplay = jest.fn();
+    const { onNewGame, onHome } = await show(fromDisk(game), game.session.id, { onReplay });
     await fireEvent.press(screen.getByRole('button', { name: 'משחק חדש' }));
     expect(onNewGame).toHaveBeenCalledWith('fast');
-    const replay = screen.getByRole('button', { name: 'צפייה חוזרת · בקרוב' });
-    expect(replay).toBeDisabled();
-    expect(replay).toHaveProp('accessibilityHint', 'הצפייה החוזרת תגיע בגרסה הבאה');
+    const replay = screen.getByRole('button', { name: 'צפייה חוזרת' });
+    expect(replay).toBeEnabled();
+    expect(replay).toHaveProp('accessibilityHint', 'המשחק מההתחלה, שלב אחרי שלב, עם הסבר לכל מהלך');
+    await fireEvent.press(replay);
+    expect(onReplay).toHaveBeenCalledWith(game.session.id, 'solo');
     await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
     expect(onHome).toHaveBeenCalledTimes(1);
   });
@@ -141,7 +144,7 @@ describe('ResultsScreen (solo practice, spec §12)', () => {
     expect(screen.getByLabelText('Mistakes: 1')).toBeOnTheScreen();
     expect(screen.getByLabelText('Avg. think time: 2.5 s')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'New game' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Replay · coming soon' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Replay' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Home' })).toBeOnTheScreen();
   });
 

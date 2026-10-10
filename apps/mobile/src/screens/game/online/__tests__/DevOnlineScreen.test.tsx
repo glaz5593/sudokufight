@@ -42,14 +42,28 @@ describe('DevOnlineScreen', () => {
     expect(screen.getByTestId('dev-online-server')).toHaveTextContent('שרת: ⁦ws://192.168.1.20:2567⁩');
     expect(screen.getByTestId('dev-online-identity')).toHaveTextContent('אתה: ⁦MosheG⁩');
     expect(screen.getByText('מזהה פיתוח: ⁦dev-1234⁩')).toBeOnTheScreen();
-    expect(screen.getByText('2 שחקנים')).toBeOnTheScreen();
+    expect(screen.getByText('מספר שחקנים')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: '2 שחקנים' })).toBeSelected();
 
     await fireEvent.press(screen.getByRole('button', { name: 'צור חדר' }));
-    expect(p.onCreate).toHaveBeenLastCalledWith('fast');
+    expect(p.onCreate).toHaveBeenLastCalledWith('fast', 2);
     await fireEvent.press(screen.getByRole('button', { name: 'קשה' }));
     expect(screen.getByRole('button', { name: 'קשה' })).toBeSelected();
     await fireEvent.press(screen.getByRole('button', { name: 'צור חדר' }));
-    expect(p.onCreate).toHaveBeenLastCalledWith('hard');
+    expect(p.onCreate).toHaveBeenLastCalledWith('hard', 2);
+  });
+
+  it('stage 10: rooms of 3 and of 4 players', async () => {
+    const p = await show();
+    await fireEvent.press(screen.getByRole('button', { name: '3 שחקנים' }));
+    expect(screen.getByRole('button', { name: '3 שחקנים' })).toBeSelected();
+    expect(screen.getByRole('button', { name: '2 שחקנים' })).not.toBeSelected();
+    await fireEvent.press(screen.getByRole('button', { name: 'צור חדר' }));
+    expect(p.onCreate).toHaveBeenLastCalledWith('fast', 3);
+    await fireEvent.press(screen.getByRole('button', { name: '4 שחקנים' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'רגיל' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'צור חדר' }));
+    expect(p.onCreate).toHaveBeenLastCalledWith('normal', 4);
   });
 
   it('joins by code as typed (case, spaces and dashes don’t matter); a bad code says why', async () => {

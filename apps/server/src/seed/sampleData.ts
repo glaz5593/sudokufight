@@ -59,7 +59,7 @@ export const SAMPLE_VERSIONS: readonly (readonly [string, number])[] = [
 /**
  * Screens by the names the app reports them in screen_view: their route patterns (apps/mobile/app, named by
  * the app's services/telemetry/screens.ts), so sample data and real reports are the same screens in the admin
- * site. The matchmaking, replay and profile screens come in later stages (SAMPLE_FUTURE_SCREENS):
+ * site. The matchmaking and profile screens come in later stages (SAMPLE_FUTURE_SCREENS):
  * the patterns their routes will most likely have. The splash screen is native, never a screen_view.
  */
 export const SAMPLE_SCREENS = {
@@ -82,7 +82,7 @@ export const SAMPLE_SCREENS = {
 } as const;
 export type SampleScreen = (typeof SAMPLE_SCREENS)[keyof typeof SAMPLE_SCREENS];
 /** The screens of SAMPLE_SCREENS that the app does not have yet. */
-export const SAMPLE_FUTURE_SCREENS: readonly SampleScreen[] = ['/match-search', '/replay/[id]', '/profile'];
+export const SAMPLE_FUTURE_SCREENS: readonly SampleScreen[] = ['/match-search', '/profile'];
 const S = SAMPLE_SCREENS;
 
 export interface SamplePuzzle {

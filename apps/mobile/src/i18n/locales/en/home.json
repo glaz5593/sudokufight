@@ -37,7 +37,8 @@
   "again": {
     "title": "One more round",
     "subtitle": "{{mode}} · {{type}}",
-    "subtitleBot": "{{mode}} · {{type}} · {{bot}}"
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
   },
   "start": {
     "failed": "Couldn't start the game. Try again."
@@ -132,13 +133,19 @@
     "title": "Game type",
     "note": {
       "solo": "Unrated. The board comes from the puzzles on this phone, without repeating one you played recently.",
-      "bot": "Unrated. The board comes from the puzzles on this phone, without repeating one you played recently. Next, you choose your opponent."
+      "bot": "Unrated. The board comes from the puzzles on this phone, without repeating one you played recently. Next, you choose your opponent.",
+      "ranked": "Rated. An opponent near your rating, a board from the server's pool you haven't played, and the same board for both of you.",
+      "rankedGroup": "Rated. Opponents near your rating, a board from the server's pool you haven't played, and the same board for everyone. The game starts when the table is full."
     },
     "start": {
       "solo": "Start practice",
-      "bot": "Choose opponent"
+      "bot": "Choose opponent",
+      "ranked": "Find an opponent",
+      "rankedGroup": "Find opponents"
     },
     "startHint": "Starts a {{type}} practice",
+    "rankedHint": "Looks for an opponent for a ranked {{type}} game",
+    "rankedGroupHint": "Looks for opponents for a ranked {{type}} game",
     "lockTime": "Time per cell",
     "board": "Board",
     "duration": "Est. length",

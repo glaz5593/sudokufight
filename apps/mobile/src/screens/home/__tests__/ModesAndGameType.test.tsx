@@ -40,20 +40,27 @@ afterEach(() => {
 });
 
 describe('"משחק חדש" (spec §5.1)', () => {
-  it('offers exactly five modes; both practices are open, the three ranked ones say "בקרוב"', async () => {
+  it('offers exactly five modes, all open: ranked 2 · 3 · 4 and the two practices (stages 9–10)', async () => {
     await renderApp('/modes');
     expect(screen.getByRole('header', { name: 'משחק חדש' })).toBeTruthy();
     const keys = ['ranked2', 'ranked3', 'ranked4', 'solo', 'bot'];
     const cards = keys.map((k) => screen.getByTestId(`mode-${k}`));
     expect(cards).toHaveLength(5);
-    expect(cards.map((c) => c.props.accessibilityState.disabled)).toEqual([true, true, true, false, false]);
-    for (const k of ['ranked2', 'ranked3', 'ranked4'])
-      expect(screen.getByTestId(`soon-${k}`)).toHaveTextContent('בקרוב');
-    expect(screen.queryByTestId('soon-solo')).toBeNull();
-    expect(screen.queryByTestId('soon-bot')).toBeNull();
+    expect(cards.map((c) => c.props.accessibilityState.disabled)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
+    for (const k of keys) expect(screen.queryByTestId(`soon-${k}`)).toBeNull();
     expect(screen.getByTestId('mode-ranked2')).toHaveProp(
       'accessibilityLabel',
-      'מדורג · 2 שחקנים, אחד על אחד · אותו לוח, דירוג, בקרוב',
+      'מדורג · 2 שחקנים, אחד על אחד · אותו לוח, דירוג',
+    );
+    expect(screen.getByTestId('mode-ranked4')).toHaveProp(
+      'accessibilityLabel',
+      'מדורג · 4 שחקנים, כולם נגד כולם, דירוג',
     );
     expect(screen.getByTestId('mode-solo')).toHaveProp(
       'accessibilityLabel',
@@ -66,11 +73,21 @@ describe('"משחק חדש" (spec §5.1)', () => {
     expect(directionProblems(screen.getByTestId('mode-solo'))).toEqual([]);
   });
 
-  it('a mode that is not built yet does nothing', async () => {
+  it('ranked 3 and 4 players open the game type of their table (stage 10)', async () => {
     const app = await renderApp('/modes');
-    await fireEvent.press(screen.getByTestId('mode-ranked2'));
+    await fireEvent.press(screen.getByTestId('mode-ranked3'));
+    expect(app.pathname()).toBe('/game-type');
+    expect(app.searchParams()).toEqual({ mode: 'ranked', players: '3' });
+    expect(screen.getByText('מדורג · 3 שחקנים')).toBeOnTheScreen();
+    expect(screen.getByText(/יריבים קרובים לדירוג שלך.*המשחק מתחיל כשהשולחן מלא/)).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'מצא יריבים' })).toHaveProp(
+      'accessibilityHint',
+      'מחפש יריבים למשחק מדורג רגיל',
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'חזרה' }));
     await fireEvent.press(screen.getByTestId('mode-ranked4'));
-    expect(app.pathname()).toBe('/modes');
+    expect(app.searchParams()).toEqual({ mode: 'ranked', players: '4' });
+    expect(screen.getByText('מדורג · 4 שחקנים')).toBeOnTheScreen();
   });
 
   it('practice against a bot opens the game type of a bot practice, the last bot game type preselected', async () => {
@@ -110,7 +127,7 @@ describe('"משחק חדש" (spec §5.1)', () => {
       'accessibilityLabel',
       'Solo practice, At your own pace, Unrated, Works offline',
     );
-    expect(screen.getAllByText('Soon')).toHaveLength(3);
+    expect(screen.queryByText('Soon')).toBeNull();
   });
 });
 
@@ -177,9 +194,11 @@ describe('"סוג משחק" (spec §5.2)', () => {
     expect(screen.getByTestId('type-hard')).toHaveProp('accessibilityState', { checked: true });
   });
 
-  it('a mode it cannot start goes back to the modes', async () => {
-    const app = await renderApp('/game-type?mode=ranked&gameType=fast');
+  it('a mode it cannot start, or a ranked table there is none of, goes back to the modes', async () => {
+    const app = await renderApp('/game-type?mode=ranked&gameType=fast&players=5');
     expect(app.pathname()).toBe('/modes');
+    const other = await renderApp('/game-type?mode=online&gameType=fast');
+    expect(other.pathname()).toBe('/modes');
   });
 
   it('for a bot practice, the button goes on to the bot selection with the chosen type; nothing starts yet', async () => {

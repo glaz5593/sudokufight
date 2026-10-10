@@ -22,6 +22,7 @@ import { setAuthDeps, useAuth } from '../auth/authStore';
 import { installTestAuth, type TestAuth } from '../auth/testing/testAuth';
 import { memoryDb, type SqlJsDb } from '../game/testing/sqlJsDb';
 import i18n from '../i18n';
+import { track } from '../services/analytics';
 import { useProfile } from '../state/profile';
 import { useSettings } from '../state/settings';
 
@@ -78,6 +79,10 @@ const type = (testID: string, text: string) => fireEvent.changeText(screen.getBy
 
 let auth: TestAuth;
 
+/** The registration funnel's analytics (spec §22: register_step{step}, register_complete), in order. */
+const funnel = () =>
+  jest.mocked(track).mock.calls.filter(([name]) => name === 'register_step' || name === 'register_complete');
+
 async function wait(ms: number) {
   await act(async () => {
     jest.advanceTimersByTime(ms);
@@ -120,6 +125,7 @@ beforeEach(async () => {
   useSettings.setState({ language: 'he', reduceMotion: 'off', sound: true, haptics: true });
   useProfile.setState({ name: null, avatarId: 'av00', country: null, lastPlay: null, botLevel: null });
   auth = installTestAuth();
+  jest.mocked(track).mockClear();
 });
 
 afterEach(() => {
@@ -140,6 +146,12 @@ describe('accounts, end to end (work plan stage 8 "סיום")', () => {
 
     // ---- register ----
     await register(nav, 'MosheG', 'moshe@example.com');
+    // Spec §22: each step once as it opens, and the completion once.
+    expect(funnel()).toEqual([
+      ['register_step', { step: 'fighter' }],
+      ['register_step', { step: 'account' }],
+      ['register_complete'],
+    ]);
     expect(useAuth.getState()).toMatchObject({
       status: 'ready',
       me: { displayName: 'MosheG', avatarId: 'av02', country: 'IL' },
@@ -227,5 +239,7 @@ describe('accounts, end to end (work plan stage 8 "סיום")', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'היכנס לזירה' }));
     await waitFor(() => expect(app.getPathname()).toBe('/'));
     expect(await screen.findByTestId('profile-name')).toHaveTextContent('Halfway');
+    // Resumed at step 1, finished there: no account step.
+    expect(funnel()).toEqual([['register_step', { step: 'fighter' }], ['register_complete']]);
   });
 });

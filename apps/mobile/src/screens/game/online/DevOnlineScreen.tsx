@@ -16,8 +16,8 @@ export interface DevOnlineScreenProps {
   serverAddress: string;
   /** Who this phone joins as (asked once; a token is never shown). */
   identity: () => Promise<NetIdentity>;
-  /** "צור חדר": a private room of this game type for 2 players; the game screen shows its code. */
-  onCreate: (gameType: GameType) => void;
+  /** "צור חדר": a private room of this game type for 2–4 players; the game screen shows its code. */
+  onCreate: (gameType: GameType, playerCount: DevRoomPlayers) => void;
   /** "הצטרף", with the code normalized (protocol normalizeRoomCode). */
   onJoin: (code: string) => void;
   /** The online game already open, if any: its line and "חזרה למשחק". */
@@ -29,11 +29,15 @@ export interface DevOnlineScreenProps {
   testID?: string;
 }
 
+/** The sizes of a private room (protocol: 2–4; stage 10 adds 3 and 4). */
+export const DEV_ROOM_PLAYERS = [2, 3, 4] as const;
+export type DevRoomPlayers = (typeof DEV_ROOM_PLAYERS)[number];
+
 type Who = { kind: 'loading' } | { kind: 'dev'; name: string; id: string } | { kind: 'account' } | null;
 
 /**
  * /dev/online (development builds, work plan stage 7): the way into the game server before matchmaking
- * (stage 9). Create a private room (a game type, 2 players) and the game screen shows its code to share, or
+ * (stage 9). Create a private room (a game type, 2–4 players) and the game screen shows its code to share, or
  * type a code (LTR, any case, spaces and dashes are fine) and join it. It also shows which server and which
  * identity this phone uses (the dev identity until the account is wired in, stage 8), and links to the network
  * measures. The phone talks to the server only through the game store's online session.
@@ -53,6 +57,7 @@ export function DevOnlineScreen({
   const { t: tGame } = useTranslation('game');
   const insets = useSafeAreaInsets();
   const [gameType, setGameType] = useState<GameType>('fast');
+  const [players, setPlayers] = useState<DevRoomPlayers>(2);
   const [typed, setTyped] = useState('');
   const [badCode, setBadCode] = useState(false);
   const [who, setWho] = useState<Who>({ kind: 'loading' });
@@ -158,12 +163,26 @@ export function DevOnlineScreen({
               />
             ))}
           </View>
-          <Text style={styles.faint}>{t('online.players')}</Text>
+          <Text style={styles.label}>{t('online.players')}</Text>
+          <View style={styles.chips} accessibilityRole="radiogroup">
+            {DEV_ROOM_PLAYERS.map((n) => (
+              <Button
+                key={n}
+                label={t('online.playerCount', { n })}
+                variant="secondary"
+                size="modal"
+                selected={n === players}
+                onPress={() => setPlayers(n)}
+                style={styles.chip}
+                testID={`dev-online-players-${n}`}
+              />
+            ))}
+          </View>
           <Button
             label={t('online.create')}
             size="lg"
             accessibilityHint={t('online.createHint')}
-            onPress={() => onCreate(gameType)}
+            onPress={() => onCreate(gameType, players)}
             testID="dev-online-create"
           />
         </View>

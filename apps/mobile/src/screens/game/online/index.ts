@@ -6,7 +6,12 @@
 export { connectionStatusOf, refusalOf } from './connectionStatus';
 export { DevMetricsToggle, type DevMetricsToggleProps } from './DevMetricsToggle';
 export { DevMetricsScreen, type DevMetricsScreenProps } from './DevMetricsScreen';
-export { DevOnlineScreen, type DevOnlineScreenProps } from './DevOnlineScreen';
+export {
+  DEV_ROOM_PLAYERS,
+  DevOnlineScreen,
+  type DevOnlineScreenProps,
+  type DevRoomPlayers,
+} from './DevOnlineScreen';
 export {
   NetMetricsPanel,
   type NetMetricsPanelProps,

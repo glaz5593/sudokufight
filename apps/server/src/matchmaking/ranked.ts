@@ -1,5 +1,5 @@
 import type { GameType } from '@sudoku-fight/engine';
-import type { QueueKey } from '@sudoku-fight/protocol';
+import type { GameRoomRuleOverrides, QueueKey } from '@sudoku-fight/protocol';
 
 /**
  * The contract between matchmaking and the ranked game room (stage 9, spec §10, D37).
@@ -8,6 +8,7 @@ import type { QueueKey } from '@sudoku-fight/protocol';
  * client: the room's onCreate claims the match by its id, which is single use and known only to the server.
  * The room then holds the match's players (and nobody else), and reports to matchmaking:
  * - join / leave: a player connected or left before the countdown (D37: connected = ready);
+ * - over: the game is over and its result stored; its players may search again;
  * - closed: the room was disposed.
  * Matchmaking answers through the hooks:
  * - onCountdown: everyone is in. From now the seats are fixed: leaving is abandonment [D32].
@@ -46,6 +47,8 @@ export interface RankedMatchSetup {
   /** Every player must connect within this; the room holds the seats a little longer. */
   readyTimeoutMs: number;
   countdownMs: number;
+  /** Rule overrides for the game (MatchmakingConfig.gameRules: tests and development; none in production). */
+  rules: GameRoomRuleOverrides;
 }
 
 export interface RankedRoomHooks {
@@ -63,7 +66,12 @@ export interface RankedMatchLink {
   join(userId: string): void;
   /** The player left before the countdown. */
   leave(userId: string): void;
-  /** The room is gone. */
+  /**
+   * The game is over and its result stored (or given up on): its players may search again. Until then (from
+   * GO) matchmaking refuses them: one ranked game at a time.
+   */
+  over(): void;
+  /** The room is gone (before GO: the match is off; after: as over()). */
   closed(): void;
 }
 

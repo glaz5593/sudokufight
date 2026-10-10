@@ -312,11 +312,11 @@ describe('matchmaking', () => {
       expect(await refusal(stranger.joinOrCreate(MATCHMAKING_ROOM_NAME, { queueKey: 'fast-2p' }))).toBe(
         'unauthenticated',
       );
-      expect(await refusal(search(gil.client, 'fast-3p').then((s) => s.room))).toBe('queueClosed');
       expect(await refusal(search(gil.client, 'fast').then((s) => s.room))).toBe('badQueue');
-      // One search per account.
-      const first = await search(gil.client, 'hard-2p');
-      await first.message('searching');
+      expect(await refusal(search(gil.client, 'fast-5p').then((s) => s.room))).toBe('badQueue');
+      // One search per account. The 3–4 player queues are open (stage 10).
+      const first = await search(gil.client, 'fast-3p');
+      expect(await first.message('searching')).toMatchObject({ queueKey: 'fast-3p' });
       expect(await refusal(search(gil.client, 'hard-2p').then((s) => s.room))).toBe('alreadyQueued');
       await leave(first);
     } finally {

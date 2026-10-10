@@ -66,7 +66,10 @@ export interface ArsenalOverlayProps {
   describe: (playerId: PlayerId) => ArsenalTargetInfo;
   /** The open tokens [D17]; default from ARSENAL_CONFIG. */
   unlocked?: readonly InterferenceKind[];
-  /** The route "אני ← NinaVolt" on the ghost (spec §7.3.5). Default: in games of 3–4 players. */
+  /**
+   * The route tag "אני ← NinaVolt" with both avatars on the ghost (spec §7.3.5): `describe(view.me)` is its
+   * start. Default: in games of 3–4 players.
+   */
   showRoute?: boolean;
   testID?: string;
 }
@@ -303,7 +306,11 @@ export function ArsenalOverlay({
 
   if (!mounted && !ripple && !carried) return null;
 
-  const routeTo = (showRoute ?? view.players.length > 2) ? targetName : null;
+  // 3–4 players: from me to the card it was opened from (spec §7.3.5), both avatars.
+  const route =
+    (showRoute ?? view.players.length > 2) && target !== null && view.me !== null
+      ? { from: describe(view.me), to: target }
+      : null;
   const showTray = (mounted || visible) && model !== null && target !== null;
 
   return (
@@ -396,7 +403,7 @@ export function ArsenalOverlay({
       >
         {ripple ? <LaunchRipple zone={ripple} onDone={onRippleDone} /> : null}
         {carried ? (
-          <DragGhost kind={carried.kind} cost={carried.cost} routeTo={routeTo} drag={drag} reduce={reduce} />
+          <DragGhost kind={carried.kind} cost={carried.cost} route={route} drag={drag} reduce={reduce} />
         ) : null}
       </View>
 

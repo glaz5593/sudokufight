@@ -9,6 +9,8 @@ export {
   type Outcome,
   type PracticeEnd,
   type RankedEnd,
+  type RankingRow,
+  type RatingResult,
   type ResultsLoad,
   resultsModel,
   type ResultsModel,
@@ -17,4 +19,4 @@ export {
   sessionResultsModel,
 } from './resultsModel';
 export { ResultsScreen, type ResultsScreenProps } from './ResultsScreen';
-export { AwardsSection, OpponentsSection } from './ResultsVersus';
+export { AwardsSection, OpponentsSection, RankingSection, RatingSection } from './ResultsVersus';

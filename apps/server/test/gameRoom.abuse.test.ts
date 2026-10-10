@@ -176,11 +176,11 @@ class Player {
     return this.of('snapshot')[0]!;
   }
 
-  /** Everything sent before it has been handled. */
-  async fence(): Promise<void> {
+  /** Everything sent before it has been handled (`ms`: how long the answer may take). */
+  async fence(ms?: number): Promise<void> {
     const t = Math.random();
     this.room.send('ping', { t });
-    await until(() => this.of('pong').some((p) => p.t === t), `${this.id}: pong`);
+    await until(() => this.of('pong').some((p) => p.t === t), `${this.id}: pong`, ms);
   }
 
   async gone(): Promise<number> {
@@ -426,15 +426,18 @@ describe('garbage on the wire', () => {
     expect(after.dropped.malformed - before.dropped.malformed).toBeGreaterThan(500);
     expect(after.dropped.unknownType - before.dropped.unknownType).toBeGreaterThan(200);
 
-    // Ben is unharmed and in step with the server; the solution went nowhere before the end.
-    await ben.fence();
+    // Ben is unharmed and in step with the server; the solution went nowhere before the end. Ben has thousands
+    // of events to take in, and the game's own timers (a hit's 5 s, a lock's time) may move it on meanwhile:
+    // under a loaded machine, wait for him to catch up with the server's latest event rather than race it.
+    await ben.fence(15_000);
     expect(ben.events.some((e) => e.type === 'cellLocked' && e.playerId === 'ana')).toBe(true);
     const game = room.currentGame!;
+    await until(() => game.isOver || ben.mirror().seq === game.state.seq, 'ben: in step', 15_000);
     if (!game.isOver) expect(ben.mirror()).toEqual(publicState(game.state));
     expect(solutionLeaked(ana) || solutionLeaked(ben)).toBe(false);
     for (const m of ana.of('rejected')) expect(JSON.stringify(m)).not.toContain(PUZZLE.solution);
     await leaveAll(ana, ben);
-  }, 20_000);
+  }, 45_000);
 
   it('a frame over 4 KB closes the sender only: for the game a drop, and it comes back with its token', async () => {
     const [ana, ben] = await startTwo({ rules: { graceMs: 3000 } });

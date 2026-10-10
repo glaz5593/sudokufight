@@ -2,8 +2,10 @@ import type { GameMode, GameType } from '@sudoku-fight/engine';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
+import { refreshMe } from '../../src/auth/authStore';
 import { useGameStore } from '../../src/game/gameStore';
 import { practiceStorageOrNull } from '../../src/game/storage';
+import { DEFAULT_RANKED_PLAYERS, isOpenPlayerCount, startRankedAndOpen } from '../../src/screens/home';
 import { loadOnlineResults, loadPracticeResults, ResultsScreen } from '../../src/screens/results';
 
 /**
@@ -19,8 +21,15 @@ const load = (id: string) => {
   });
 };
 
-/** Leaving the results ends the game's flow: the store lets go of the finished session. */
-const leave = () => useGameStore.getState().clear();
+/**
+ * Leaving the results ends the game's flow: the store lets go of the finished session. After a ranked game
+ * the account's ratings are read again (GET /v1/me), so Home and the modes show the new ones.
+ */
+const leave = () => {
+  const ranked = useGameStore.getState().online?.host.game?.config.mode === 'ranked';
+  useGameStore.getState().clear();
+  if (ranked) void refreshMe();
+};
 
 const goHome = () => {
   leave();
@@ -28,11 +37,22 @@ const goHome = () => {
 };
 
 /**
- * The game-type screen with this game's type; a practice against a bot keeps its mode. After an online game
- * (only private rooms until matchmaking, stage 9): the dev room screen in development builds, else the modes.
+ * "משחק חדש": the game-type screen with this game's type; a practice against a bot keeps its mode. After a
+ * ranked game from matchmaking (stage 9): a new search in the same queue (the same type and number of
+ * players). After a dev room's game (stage 7): the dev room screen in development builds, else the modes.
  */
 const newGame = (gameType: GameType, mode?: GameMode) => {
+  const online = useGameStore.getState().online;
+  const fromQueue = mode === 'ranked' && online?.queueKey !== null && online?.queueKey !== undefined;
+  const seats = online?.host.game?.config.players.length ?? DEFAULT_RANKED_PLAYERS;
   leave();
+  if (fromQueue) {
+    startRankedAndOpen(
+      { gameType, players: isOpenPlayerCount(seats) ? seats : DEFAULT_RANKED_PLAYERS },
+      'replace',
+    );
+    return;
+  }
   if (mode === 'ranked') router.dismissTo(__DEV__ ? '/dev/online' : '/modes');
   else router.dismissTo({ pathname: '/game-type', params: mode ? { gameType, mode } : { gameType } });
 };

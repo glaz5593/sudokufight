@@ -65,8 +65,11 @@ export function parseQueueKey(key: unknown): QueueSpec | null {
 
 export const isQueueKey = (v: unknown): v is QueueKey => parseQueueKey(v) !== null;
 
-/** The queues open now: 2 players. 3–4 players come with stage 10 (the server refuses them: `queueClosed`). */
-export const OPEN_QUEUE_PLAYER_COUNTS: readonly QueuePlayerCount[] = [2];
+/**
+ * The queues open now: 2, 3 and 4 players (3–4 since stage 10). For 3–4 a match forms only when the group is full
+ * (spec §10): whoever is waiting waits, up to the search's timeout. A server may still close some (`queueClosed`).
+ */
+export const OPEN_QUEUE_PLAYER_COUNTS: readonly QueuePlayerCount[] = [2, 3, 4];
 
 // ---------------------------------------------------------------------------------------------------------
 // The rating range [D6] and the timings
@@ -250,9 +253,12 @@ export const MATCHMAKING_ERRORS = [
   'unauthenticated',
   /** The join options name no queue (`queueKey`). */
   'badQueue',
-  /** That queue is not open yet (3–4 players: stage 10). */
+  /** That queue is not open on this server (or the server is shutting down). */
   'queueClosed',
-  /** This account is searching already (another device), or its match has not started yet. */
+  /**
+   * This account is searching already (another device), its match has not started yet, or its ranked game
+   * has not ended (one ranked game at a time).
+   */
   'alreadyQueued',
 ] as const;
 export type MatchmakingError = (typeof MATCHMAKING_ERRORS)[number];
