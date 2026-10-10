@@ -6,12 +6,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { AvatarId } from '../../assets/avatars';
 import { Icon } from '../../components/Icon';
 import { Avatar, leagueProgress, ltr } from '../../components/player';
-import { BottomNav, type NavTab, RowButton } from '../../components/ui';
+import {
+  BottomNav,
+  type NavTab,
+  RowButton,
+  SkeletonCard,
+  SkeletonGroup,
+  StateView,
+} from '../../components/ui';
 import type { ProgressStatus } from '../../progress/progressStore';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { Chip, SectionLabel } from '../home/parts';
 import { groupDigits, xpText, type ProgressT } from '../player/playerCardModel';
-import { Note, Panel, ProgressBar, StateMessage } from './parts';
+import { Note, Panel, ProgressBar } from './parts';
 import { interferenceCollection, leagueLadder, levelView, provisionalGames, xpRules } from './progressModel';
 
 /**
@@ -94,14 +101,22 @@ export function ProgressScreen({
             <LeaguePanel progress={progress} />
           </>
         ) : status === 'loading' || status === 'idle' ? (
-          <StateMessage loading title={t('common.loading')} testID="progress-loading" />
+          // Loading.dc.html: the level and league panels hold their place while they load.
+          <SkeletonGroup label={t('common.loading')} style={styles.skeleton} testID="progress-loading">
+            <SkeletonCard avatar={BADGE} lines={3} bar />
+            <SkeletonCard avatar={0} lines={2} bar />
+          </SkeletonGroup>
         ) : (
-          <StateMessage
-            icon="wifiOff"
-            title={t('common.offlineTitle')}
-            body={t('progress.offlineBody')}
-            action={{ label: t('common.retry'), onPress: onRetry, testID: 'progress-retry' }}
-            testID="progress-offline"
+          // Spec §16.3: no connection, or the server failed; a plain explanation and "נסה שוב".
+          <StateView
+            tone="danger"
+            icon={status === 'offline' ? 'wifiOff' : 'alert'}
+            title={status === 'offline' ? t('common.offlineTitle') : t('common.errorTitle')}
+            body={status === 'offline' ? t('progress.offlineBody') : t('common.errorBody')}
+            actions={[
+              { label: t('common.retry'), icon: 'refresh', onPress: onRetry, testID: 'progress-retry' },
+            ]}
+            testID={status === 'offline' ? 'progress-offline' : 'progress-error'}
           />
         )}
 
@@ -253,6 +268,7 @@ const styles = StyleSheet.create({
     gap: space[8],
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
+  skeleton: { gap: space[8] },
   pending: {
     flexDirection: 'row',
     alignItems: 'center',

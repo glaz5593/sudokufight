@@ -654,7 +654,13 @@ const samePlayer = (a: CellPlayer | null, b: CellPlayer | null) =>
 const sameLock = (a: CellLock | null, b: CellLock | null) =>
   a === b || (!!a && !!b && a.seconds === b.seconds && a.paused === b.paused && a.urgent === b.urgent);
 
-/** Two cell models draw the same (a new model every second must not redraw 81 cells). */
+const sameDigits = (a: readonly Digit[], b: readonly Digit[]) =>
+  a === b || (a.length === b.length && a.every((d, k) => d === b[k]));
+
+/**
+ * Two cell models draw the same (a new model on every countdown tick must not redraw 81 cells). Runs 81 times
+ * a tick (the board's memo too), so it allocates nothing.
+ */
 export function sameCell(a: CellModel, b: CellModel): boolean {
   return (
     a === b ||
@@ -664,7 +670,7 @@ export function sameCell(a: CellModel, b: CellModel): boolean {
       a.alt === b.alt &&
       a.interactive === b.interactive &&
       a.cooldown === b.cooldown &&
-      a.wrong.join() === b.wrong.join() &&
+      sameDigits(a.wrong, b.wrong) &&
       samePlayer(a.player, b.player) &&
       sameLock(a.lock, b.lock))
   );

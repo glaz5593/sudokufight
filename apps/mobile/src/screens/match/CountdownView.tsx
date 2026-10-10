@@ -29,8 +29,8 @@ export interface CountdownViewProps {
  * board hidden behind the count (it appears for everyone at once at GO), and each digit slamming in with a
  * thin P1 ring growing out of it (motion.md `countdown.digit`; reduced motion: the digits cross-fade, no
  * ring). After GO, "GO!" holds until the board is here. A screen reader hears each step once. Two players
- * stand across a "VS"; a table of 3–4 (stage 10) is a row of small columns in the game's order (me first, then
- * the others by seat), so four names fit on a phone.
+ * stand across a "VS", me at the start edge as my card sits in the game; a table of 3–4 (stage 10) is a row of
+ * small columns in the game's order (me first, then the others by seat), so four names fit on a phone.
  */
 export function CountdownView({ model: m, reduce, testID = 'match-countdown' }: CountdownViewProps) {
   const { t } = useTranslation('match');
@@ -40,8 +40,8 @@ export function CountdownView({ model: m, reduce, testID = 'match-countdown' }: 
   const others = m.seats.filter((s) => !s.isMe);
   const me = m.seats.find((s) => s.isMe);
   const group = m.seats.length > 2;
-  // Two: the opponent, VS, me. Three or four: the game's order, me first.
-  const strip = me ? (group ? [me, ...others] : [...others, me]) : others;
+  // The game's order, me first at the start edge (Match-Countdown; spec §6.8): two across a VS, or 3–4 in a row.
+  const strip = me ? [me, ...others] : others;
   const go = m.step === 'go';
   const line = go
     ? t('countdown.goLabel')

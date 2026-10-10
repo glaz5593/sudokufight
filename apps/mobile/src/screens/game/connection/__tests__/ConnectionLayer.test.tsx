@@ -102,7 +102,7 @@ describe('ConnectionLayer', () => {
     expect(shown()).toEqual(['connection-error']);
     await fireEvent.press(screen.getByRole('button', { name: 'נסה שוב' }));
     await fireEvent.press(screen.getByRole('button', { name: 'עבור לאימון' }));
-    await fireEvent.press(screen.getByRole('button', { name: 'חזרה לבית' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
     expect([h.onRetry, h.onPractice, h.onHome].map((f) => f.mock.calls.length)).toEqual([1, 1, 1]);
   });
 

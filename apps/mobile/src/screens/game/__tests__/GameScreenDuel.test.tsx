@@ -98,14 +98,22 @@ afterEach(() => {
 
 describe('GameScreen against a bot (spec §6.8, §9)', () => {
   it('two cards, me at the start; the lead bar; no solo HUD; the cards’ actions as the view says', async () => {
+    useProfile.setState({ country: 'IL' });
     await show();
     expect(screen.queryByTestId('solo-hud')).toBeNull();
     expect(screen.queryByTestId('board-progress')).toBeNull();
     expect(screen.getByLabelText('אני · 0 נקודות · אין טעויות')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Mr. Hoot · 0 נקודות · חושב, אין טעויות, בוט, מחובר')).toBeOnTheScreen();
-    expect(within(screen.getByTestId('card-opponent')).getByTestId('bot-chip', hidden)).toBeOnTheScreen();
-    // A practice has no profiles: no flags (a ranked match's come from "found").
-    expect(screen.queryAllByTestId(/^flag-/, hidden)).toEqual([]);
+    expect(
+      screen.getByLabelText('Mr. Hoot · 0 נקודות · חושב, אין טעויות, בוט, רמה 3, מתקדם, מחובר'),
+    ).toBeOnTheScreen();
+    const theirs = within(screen.getByTestId('card-opponent'));
+    expect(theirs.getByTestId('bot-chip', hidden)).toBeOnTheScreen();
+    // The bot's level under its name, where a player's rating would be (Game-Bot: "בוט · חד"; spec §9).
+    expect(theirs.getByTestId('card-opponent-bot-level', hidden)).toHaveTextContent('3 · מתקדם');
+    expect(screen.queryByTestId('card-me-bot-level', hidden)).toBeNull();
+    // A practice has no profiles: my flag is my profile's (Game-Bot board); the bot has none.
+    expect(screen.queryAllByTestId(/^flag-/, hidden).map((f) => f.props.testID)).toEqual(['flag-IL']);
+    expect(within(screen.getByTestId('card-me')).getByTestId('flag-IL', hidden)).toBeTruthy();
     expect(screen.getByLabelText('שוויון בניקוד')).toBeOnTheScreen();
     // Me first in the row: the start edge (the right in Hebrew).
     const row = screen.getByTestId('duel-hud');
@@ -128,7 +136,7 @@ describe('GameScreen against a bot (spec §6.8, §9)', () => {
     expect(avatarsIn(within(cell).getByTestId('cell-avatar', hidden))).toEqual(['av49']);
     expect(avatarsIn(screen.getByTestId('card-opponent'))).toEqual(['av49']);
     expect(
-      screen.getByLabelText(`Mr. Hoot · 0 נקודות · בוחר ${name}, אין טעויות, בוט, מחובר`),
+      screen.getByLabelText(`Mr. Hoot · 0 נקודות · בוחר ${name}, אין טעויות, בוט, רמה 3, מתקדם, מחובר`),
     ).toBeOnTheScreen();
   });
 
@@ -221,7 +229,7 @@ describe('the bot’s moves (spec §6.4, §6.5; motion.md §4.2: in its colour, 
     expect(theirScore()).toHaveTextContent(scoreText(-1));
     expect(screen.getByTestId('card-opponent-delta', hidden)).toHaveTextContent(signedText(-1));
     expect(
-      screen.getByLabelText(`Mr. Hoot · ${scoreText(-1)} נקודה · חושב, טעות אחת, בוט, מחובר`),
+      screen.getByLabelText(`Mr. Hoot · ${scoreText(-1)} נקודה · חושב, טעות אחת, בוט, רמה 3, מתקדם, מחובר`),
     ).toBeOnTheScreen();
     // Its mistake is silent; the bot at −1 puts me in the lead (0), and that one is mine: cued and said.
     expect(cues()).toEqual(['leadTake']);
@@ -518,7 +526,7 @@ describe('in English', () => {
     const g = await show();
     expect(screen.getByLabelText('Me · 0 points · No mistakes')).toBeOnTheScreen();
     expect(
-      screen.getByLabelText('Mr. Hoot · 0 points · Thinking, No mistakes, Bot, Online'),
+      screen.getByLabelText('Mr. Hoot · 0 points · Thinking, No mistakes, Bot, Level 3, Advanced, Online'),
     ).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'End practice' })).toBeEnabled();
     expect(screen.getByTestId('board')).toHaveStyle({ direction: 'ltr' });

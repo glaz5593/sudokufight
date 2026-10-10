@@ -175,6 +175,19 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
     expect(screen.getByLabelText(/תחת הפרעה, 4 שניות$/)).toBeTruthy();
   });
 
+  it('a bot says its level in the rating’s place (Game-Bot), drawn and spoken after "בוט"', async () => {
+    const view = withPlayer(twoPlayerView({ mode: 'bot' }), 'nina', { isBot: true, rating: null });
+    const level = { text: '3 · מתקדם', label: 'רמה 3, מתקדם' };
+    await render(<PlayerCard model={nina(view)} botLevel={level} testID="bot" />);
+    expect(screen.getByTestId('bot-bot-level', hidden)).toHaveTextContent('3 · מתקדם');
+    expect(screen.getByLabelText(/, בוט, רמה 3, מתקדם, מחובר$/)).toBeTruthy();
+
+    // Not a bot, or a player with a rating: the level is not drawn (the rating is).
+    await render(<PlayerCard model={nina()} botLevel={level} testID="player" />);
+    expect(screen.queryByTestId('player-bot-level', hidden)).toBeNull();
+    expect(screen.getByLabelText(/דירוג 1305, מחוברת?$/)).toBeTruthy();
+  });
+
   it('becomes the drop target with a "גרור לכאן" chip, or dims when another card is', async () => {
     await render(<PlayerCard model={nina()} dropTarget dropLabel="שחרר כאן: שיגור זיקוקים אל NinaVolt" />);
     expect(screen.getByTestId('drop-zone')).toBeTruthy();

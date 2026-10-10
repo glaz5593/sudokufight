@@ -379,14 +379,14 @@ describe('ranked games, end to end (work plan stages 9–10)', () => {
     // ---- searching: the range, widened by the server every 5 s (spec §10, D6) ----
     await server(() => mm.searching());
     expect(screen.getByRole('header')).toHaveTextContent('מחפש יריב…');
-    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('1150–1250');
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦1150–1250⁩');
     await pass(5000, 250);
     expect(screen.getByTestId('match-search-elapsed')).toHaveTextContent('0:05');
     await server(() => mm.searching({ elapsedMs: 5000 }));
-    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('1125–1275');
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦1125–1275⁩');
     await pass(5000, 250);
     await server(() => mm.searching({ elapsedMs: 10_000 }));
-    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('1100–1300');
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦1100–1300⁩');
     expect(screen.getByTestId('match-search-elapsed')).toHaveTextContent('0:10');
 
     // ---- found: the VS, both players, ready once in the match's room (D37) ----
@@ -495,7 +495,7 @@ describe('ranked games, end to end (work plan stages 9–10)', () => {
     await server(() => mm.searching({ elapsedMs: 65_000, extended: true }));
     expect(screen.getByRole('header')).toHaveTextContent('מחפש יריב…');
     expect(screen.getByText('בלי הגבלת טווח: הטווח ממשיך להתרחב')).toBeOnTheScreen();
-    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('825–1575');
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦825–1575⁩');
     await pass(55_000, 1000);
     await server(() => mm.timeout({ elapsedMs: 120_000, range: 625, extended: true }));
     expect(eventsOf('matchmaking_wait')).toEqual([
@@ -562,7 +562,7 @@ describe('ranked games, end to end (work plan stages 9–10)', () => {
     expect(screen.getAllByTestId('empty-seat')).toHaveLength(3);
     await pass(20_000, 1000);
     await server(() => mm.searching({ elapsedMs: 20_000 }));
-    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('1050–1350');
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦1050–1350⁩');
 
     // ---- found: all four, me first, then the others by seat ----
     await server(() => mm.found({ players: four }));

@@ -63,7 +63,7 @@ describe('Home with an account (stage 8)', () => {
     }
     expect(card).toHaveProp(
       'accessibilityLabel',
-      'הכרטיס שלי: MosheG, ישראל, דירוג זמני: 10 המשחקים הראשונים, דירוג מהיר 1200, זמני, ' +
+      'כרטיס השחקן שלי: MosheG, ישראל, דירוג זמני: 10 המשחקים הראשונים, דירוג מהיר 1200, זמני, ' +
         'דירוג רגיל 1200, זמני, דירוג קשה 1200, זמני, 0 משחקים',
     );
     expect(card).toHaveProp('accessibilityRole', 'button');

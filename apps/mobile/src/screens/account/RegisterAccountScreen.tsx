@@ -149,7 +149,14 @@ export function RegisterAccountScreen() {
             <Text style={styles.ready}>{t('account.fighterReady')}</Text>
           </View>
         </View>
-        <LinkButton label={t('account.edit')} onPress={backToFighter} testID="account-edit-fighter" />
+        <LinkButton
+          label={t('account.edit')}
+          accessibilityLabel={t('account.editLabel')}
+          icon="edit"
+          tone="muted"
+          onPress={backToFighter}
+          testID="account-edit-fighter"
+        />
       </View>
 
       <View style={styles.titles}>
@@ -266,7 +273,8 @@ const styles = StyleSheet.create({
     padding: space[6],
     borderRadius: radius.card,
     borderWidth: tokens.border.hairline,
-    borderColor: color.border,
+    // Me, in my P1 colour (the board's frame around "הלוחם מוכן").
+    borderColor: color.players[0]!.ring,
     backgroundColor: color.surface,
   },
   fighterText: { flex: 1, minWidth: 0, alignItems: 'flex-start', gap: space[2] },

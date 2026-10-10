@@ -36,6 +36,8 @@ export interface DuelHudProps {
   opponentCountry?: string | null;
   myDelta?: ScoreDelta | null;
   opponentDelta?: ScoreDelta | null;
+  /** A bot opponent's level under its name (Game-Bot), drawn and said; null for anyone else. */
+  opponentBotLevel?: { text: string; label: string } | null;
   /** "סיום אימון" (practice) or "כניעה" on my card: the screen asks first (spec §6.6). */
   onSurrender: () => void;
   /** My card's reactions button: opens or closes my picker (spec §8). */
@@ -69,6 +71,7 @@ export function DuelHud({
   opponentCountry = null,
   myDelta = null,
   opponentDelta = null,
+  opponentBotLevel = null,
   onSurrender,
   onReactions,
   reactionsExpanded = false,
@@ -100,6 +103,7 @@ export function DuelHud({
       country={opponentCountry}
       side="end"
       delta={opponentDelta}
+      botLevel={opponentBotLevel}
       onInterfere={onInterfere}
       onInterfereBlocked={onInterfereBlocked}
       {...opponentDrop}

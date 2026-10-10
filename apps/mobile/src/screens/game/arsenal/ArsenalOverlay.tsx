@@ -39,6 +39,7 @@ import {
   relativeTo,
   scrimPieces,
 } from './arsenalModel';
+import { COMING_ROW_MIN_WINDOW, ComingRow } from './ComingRow';
 import { ARSENAL_CONFIG } from './config';
 import { DragGhost, LaunchRipple } from './DragGhost';
 import { useDragValues } from './drag';
@@ -88,7 +89,8 @@ const PER_MS = 1 / 1000;
  * Opened from ⚡ on an opponent's card, it rises as a tray (240 ms; reduced motion: a 200 ms fade) over a scrim
  * with a hole: the card it was opened from stays above the scrim, framed as the one drop zone, and the other
  * cards dim (the screen spreads `arsenal.cardProps`). The tray says the next cost and the ones after it, my
- * score after paying, and holds the tokens with their live previews. A token is launched only by dragging it
+ * score after paying, and holds the tokens with their live previews; at its foot, "נפתחות בהמשך" with the
+ * interferences after V1 (ComingRow). A token is launched only by dragging it
  * onto that card (D18): the ghost follows the finger on the UI thread, the zone lights up while the finger is
  * over it, and letting go there launches (`onLaunch`, once), shrinks the token into the card with a ripple and
  * closes the tray (200 ms). Let go anywhere else and it flies back; nothing is charged. A tap only explains.
@@ -390,6 +392,7 @@ export function ArsenalOverlay({
                 {dragKind ? t('arsenal.cancelHint') : t('arsenal.hint', { name: isolate(targetName) })}
               </Text>
             </View>
+            {windowSize.height >= COMING_ROW_MIN_WINDOW ? <ComingRow testID={`${testID}-coming`} /> : null}
           </Animated.View>
         </>
       ) : null}

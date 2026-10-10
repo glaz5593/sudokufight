@@ -1,5 +1,5 @@
 import { AVATAR_IDS, type AvatarId } from '@sudoku-fight/protocol';
-import { useEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -31,6 +31,7 @@ export function AvatarPicker({
   onChange,
   level = null,
   meta = AVATAR_META,
+  caption,
   testID = 'avatar-picker',
 }: {
   /** Null: none chosen yet (an account made outside the app): the stage shows the empty avatar. */
@@ -40,6 +41,8 @@ export function AvatarPicker({
   level?: number | null;
   /** Each avatar's unlockLevel (the catalog's by default). */
   meta?: Readonly<Record<string, AvatarMeta>>;
+  /** On the stage under the chosen avatar (Register-Fighter: my flag and name). */
+  caption?: ReactNode;
   testID?: string;
 }) {
   const { t } = useTranslation('account');
@@ -79,15 +82,18 @@ export function AvatarPicker({
           style={styles.flip}
           testID={`${testID}-prev`}
         />
-        <View style={styles.spot}>
-          <Avatar
-            avatarId={value}
-            size="profile"
-            colorIndex={0}
-            backdrop={color.surface}
-            label={chosen < 0 ? t('fighter.chooseAvatar') : t('fighter.selectedAvatar', { n: index + 1 })}
-            testID={`${testID}-selected`}
-          />
+        <View style={styles.center}>
+          <View style={styles.spot}>
+            <Avatar
+              avatarId={value}
+              size="profile"
+              colorIndex={0}
+              backdrop={color.surface}
+              label={chosen < 0 ? t('fighter.chooseAvatar') : t('fighter.selectedAvatar', { n: index + 1 })}
+              testID={`${testID}-selected`}
+            />
+          </View>
+          {caption}
         </View>
         <IconButton
           icon="chevronForward"
@@ -185,6 +191,7 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     backgroundColor: color.bg,
   },
+  center: { flexShrink: 1, alignItems: 'center', gap: space[6] },
   flip: { transform: [{ scaleX: -1 }] },
   header: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   headerText: { ...text('label'), color: color.textMuted },

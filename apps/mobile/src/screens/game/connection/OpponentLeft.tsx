@@ -5,11 +5,12 @@ import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AvatarId } from '../../../assets/avatars';
+import { Icon } from '../../../components/Icon';
 import { Avatar } from '../../../components/player/Avatar';
 import { signedText } from '../../../components/player/format';
 import type { Gender } from '../../../components/player/wording';
 import { Button } from '../../../components/ui/Button';
-import { color, radius, space, text, tokens } from '../../../theme';
+import { color, radius, size, space, text, tokens } from '../../../theme';
 import { useReduceMotion } from '../../../theme/motion';
 import { Announcer } from './Announcer';
 import type { OpponentLeftModel } from './connectionModel';
@@ -34,9 +35,10 @@ export interface OpponentLeftProps {
 /**
  * The opponent did not come back in time (spec §16.2: "במשחק של 2 שחקנים היריב מנצח, ורואה את המסך 'יריב
  * נטש' עם כפתור 'לתוצאות'"; design Opponent-Left in C's look). Over the finished game: the opponent's avatar,
- * grey, "הזמן נגמר · 15 שניות בלי חיבור", "NinaVolt עזב את המשחק", "ניצחת בנטישה" landing in gold (motion.md
- * `sf-slam` → C; reduced motion: a fade), my rating change when the game was rated, the final scores, and
- * "לתוצאות" (the one primary) with "לבית".
+ * grey with the exit badge, "הזמן נגמר · 15 שניות בלי חיבור", "NinaVolt עזב את המשחק", "ניצחת בנטישה"
+ * landing in gold (motion.md `sf-slam` → C; reduced motion: a fade), my rating change (the star chip) when the
+ * game was rated, the final scores, and "לתוצאות" (the one primary, with the trophy) over "לבית" (the
+ * secondary outline, with the house), as on the board.
  *
  * Screen readers: a modal; it is announced once and the focus starts on "לתוצאות".
  */
@@ -75,14 +77,25 @@ export function OpponentLeft({
     >
       <View style={styles.scrim} />
       <Animated.View style={[styles.card, enter]} testID={`${testID}-card`}>
-        <Avatar
-          avatarId={opponentAvatar}
-          size="home"
-          colorIndex={m.colorIndex}
-          presence="left"
-          backdrop={color.surface}
-          inactive
-        />
+        <View>
+          <Avatar
+            avatarId={opponentAvatar}
+            size="home"
+            colorIndex={m.colorIndex}
+            presence="left"
+            backdrop={color.surface}
+            inactive
+          />
+          {/* The board's exit badge on the avatar's corner: they left (not only grey). Decorative. */}
+          <View
+            style={styles.exitBadge}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            testID={`${testID}-exit`}
+          >
+            <Icon name="logout" size={EXIT_GLYPH} color={color.text} />
+          </View>
+        </View>
         <Text style={styles.timeUp}>{t('connection.left.timeUp', { seconds: m.graceSeconds })}</Text>
         <Text style={styles.title} accessibilityRole="header" testID={`${testID}-title`}>
           {title}
@@ -97,6 +110,7 @@ export function OpponentLeft({
             style={styles.rating}
             testID={`${testID}-rating`}
           >
+            <Icon name="star" size={size.icon.inline - space[2]} color={color.accent} />
             <Text style={styles.ratingDelta}>{signedText(m.ratingDelta)}</Text>
             <Text style={styles.ratingWord}>{t('connection.left.rating')}</Text>
             <View style={styles.dot} />
@@ -122,13 +136,17 @@ export function OpponentLeft({
             onPress={onResults}
             variant="primary"
             size="lg"
+            icon="trophy"
             style={styles.primary}
             testID={`${testID}-results`}
           />
           <Button
             label={t('connection.left.home')}
             onPress={onHome}
-            variant="ghost"
+            variant="secondary"
+            size="md"
+            icon="home"
+            style={styles.primary}
             testID={`${testID}-home`}
           />
         </View>
@@ -138,7 +156,24 @@ export function OpponentLeft({
   );
 }
 
+/** The exit badge on the opponent's avatar (Opponent-Left: a 32 circle, its glyph 16). */
+const EXIT_BADGE = space[12];
+const EXIT_GLYPH = space[8];
+
 const styles = StyleSheet.create({
+  exitBadge: {
+    position: 'absolute',
+    bottom: -space[4],
+    end: -space[4],
+    width: EXIT_BADGE,
+    height: EXIT_BADGE,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: tokens.border.hairline,
+    borderColor: color.textMuted,
+    backgroundColor: color.bg,
+  },
   root: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',

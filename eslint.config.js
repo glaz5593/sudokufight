@@ -116,6 +116,12 @@ module.exports = defineConfig([
     languageOptions: { sourceType: 'commonjs', globals: globals.node },
   },
   {
+    // The monorepo's Node scripts (scripts/i18n-check.mjs): ES modules.
+    files: ['scripts/**/*.mjs'],
+    extends: [js.configs.recommended],
+    languageOptions: { sourceType: 'module', globals: globals.node },
+  },
+  {
     // The app's Node-side config files and the Jest setup.
     files: ['apps/mobile/*.{js,cjs}', 'apps/mobile/jest.setup.ts', 'apps/mobile/src/net/ws-shim.js'],
     languageOptions: { globals: { ...globals.node, ...globals.jest } },

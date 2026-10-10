@@ -6,7 +6,6 @@ import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-n
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Board, type BoardFlash, boardModel } from '../../components/board';
-import { Icon } from '../../components/Icon';
 import {
   cardModels,
   compactCardGap,
@@ -15,7 +14,7 @@ import {
   PlayerCardCompact,
   signedText,
 } from '../../components/player';
-import { Button, Spinner } from '../../components/ui';
+import { Button, Spinner, StateView } from '../../components/ui';
 import { color, size, space, text, tokens } from '../../theme';
 import { formatClock } from '../game/model';
 import { ScreenHeader } from '../home/parts';
@@ -88,26 +87,24 @@ export function ReplayScreen({ gameId, load, onBack, now = Date.now, testID = 'r
             </Text>
           </>
         ) : (
-          <>
-            <Icon
-              name={result.kind === 'offline' ? 'wifiOff' : 'alert'}
-              size={size.icon.nav}
-              color={color.textMuted}
-            />
-            <Text style={[text('sheetTitle'), styles.strong, styles.centered]} accessibilityRole="header">
-              {t(`load.${result.kind}`)}
-            </Text>
-            {result.kind === 'missing' ? null : (
-              <Button
-                label={t('load.retry')}
-                icon="refresh"
-                variant="secondary"
-                size="md"
-                onPress={() => setAttempt((a) => a + 1)}
-                testID={`${testID}-retry`}
-              />
-            )}
-          </>
+          // Spec §16.3: a failure to reach the server is said as it appears, with "לנסות שוב".
+          <StateView
+            tone={result.kind === 'offline' || result.kind === 'unavailable' ? 'danger' : 'neutral'}
+            icon={result.kind === 'offline' ? 'wifiOff' : result.kind === 'missing' ? 'history' : 'alert'}
+            title={t(`load.${result.kind}`)}
+            actions={
+              result.kind === 'missing'
+                ? []
+                : [
+                    {
+                      label: t('load.retry'),
+                      icon: 'refresh',
+                      onPress: () => setAttempt((a) => a + 1),
+                      testID: `${testID}-retry`,
+                    },
+                  ]
+            }
+          />
         )}
       </View>
     </View>
@@ -264,10 +261,13 @@ function ReplayBody({
             onPress={() => go(index - 1)}
             testID={`${testID}-prev`}
           />
-          <StepButton
-            direction="next"
+          {/* Replay.dc.html: "שלב הבא" is the screen's one gold action; "שלב קודם" the outline beside it. */}
+          <Button
+            label={t('nav.next')}
+            size="md"
             disabled={index >= total - 1}
             onPress={() => go(index + 1)}
+            style={styles.next}
             testID={`${testID}-next`}
           />
         </View>
@@ -354,6 +354,8 @@ const styles = StyleSheet.create({
     backgroundColor: color.bg,
   },
   nav: { flexDirection: 'row', gap: space[4] },
+  /** Replay.dc.html: "שלב קודם" 140 and "שלב הבא" the rest of the row, about 2 : 3. */
+  next: { flex: 1.5 },
   strong: { color: color.text },
   muted: { color: color.textMuted },
   centered: { textAlign: 'center' },

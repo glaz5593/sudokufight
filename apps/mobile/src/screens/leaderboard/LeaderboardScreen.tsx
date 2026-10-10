@@ -8,9 +8,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ProgressApi } from '../../api/progressApi';
 import type { AvatarId } from '../../assets/avatars';
 import { Avatar, leagueProgress } from '../../components/player';
-import { BottomNav, Button, type NavTab, Spinner } from '../../components/ui';
-import { color, radius, space, text, tokens } from '../../theme';
-import { Note, ProgressBar, Segmented, StateMessage } from '../progress/parts';
+import {
+  BottomNav,
+  Button,
+  type NavTab,
+  Skeleton,
+  SkeletonGroup,
+  SkeletonLine,
+  SkeletonRows,
+  Spinner,
+  StateView,
+} from '../../components/ui';
+import { color, radius, size, space, text, tokens } from '../../theme';
+import { Note, ProgressBar, Segmented } from '../progress/parts';
 import { provisionalGames } from '../progress/progressModel';
 import { type FeedSnapshot, LeaderboardFeed } from './leaderboardFeed';
 import {
@@ -114,6 +124,7 @@ export function LeaderboardScreen({
 
   const board = snap.tab === tab && snap.players === players ? snap.board : null;
   const status = snap.tab === tab && snap.players === players ? snap.status : 'loading';
+  const code = snap.tab === tab && snap.players === players ? snap.code : null;
 
   const more = () => {
     if (loadingMore || refreshing || !board?.nextCursor || tab === 'friends') return;
@@ -200,51 +211,46 @@ export function LeaderboardScreen({
   let empty: ReactElement | null = null;
   if (data.length === 0 && podium.length === 0) {
     if (!board && status === 'loading')
-      empty = <StateMessage loading title={t('common.loading')} testID="leaderboard-loading" />;
-    else if (!board && status === 'offline')
-      empty = (
-        <StateMessage
-          icon="wifiOff"
-          title={t('common.offlineTitle')}
-          body={t('common.offlineBody')}
-          action={{ label: t('common.retry'), onPress: retry, testID: 'leaderboard-retry' }}
-          testID="leaderboard-offline"
-        />
-      );
+      empty = <LeaderboardSkeleton label={t('common.loading')} podium={!friends} />;
     else if (!board && status === 'signedOut')
+      empty = <StateView icon="leaderboard" title={t('common.signedOut')} testID="leaderboard-signed-out" />;
+    else if (!board) {
+      // Spec §16.3: a plain explanation, "נסה שוב", and the small code for support.
+      const offline = status === 'offline';
       empty = (
-        <StateMessage icon="leaderboard" title={t('common.signedOut')} testID="leaderboard-signed-out" />
-      );
-    else if (!board)
-      empty = (
-        <StateMessage
-          icon="alert"
-          title={t('common.errorTitle')}
-          action={{ label: t('common.retry'), onPress: retry, testID: 'leaderboard-retry' }}
-          testID="leaderboard-error"
+        <StateView
+          tone="danger"
+          icon={offline ? 'wifiOff' : 'alert'}
+          title={offline ? t('common.offlineTitle') : t('common.errorTitle')}
+          body={offline ? t('common.offlineBody') : t('common.errorBody')}
+          code={code}
+          actions={[
+            { label: t('common.retry'), icon: 'refresh', onPress: retry, testID: 'leaderboard-retry' },
+          ]}
+          testID={offline ? 'leaderboard-offline' : 'leaderboard-error'}
         />
       );
-    else if (friends)
+    } else if (friends)
       empty = (
-        <StateMessage
+        <StateView
           icon="leaderboard"
           title={t('friends.emptyTitle')}
           body={t('friends.emptyBody')}
-          action={
+          actions={[
             inviteUrl
               ? { label: t('friends.invite'), icon: 'share', onPress: invite, testID: 'leaderboard-invite' }
-              : { label: t('leaderboard.play'), onPress: onPlay, testID: 'leaderboard-empty-play' }
-          }
+              : { label: t('leaderboard.play'), onPress: onPlay, testID: 'leaderboard-empty-play' },
+          ]}
           testID="leaderboard-friends-empty"
         />
       );
     else
       empty = (
-        <StateMessage
+        <StateView
           icon="leaderboard"
           title={t('leaderboard.emptyTitle')}
           body={t('leaderboard.emptyBody')}
-          action={{ label: t('leaderboard.play'), onPress: onPlay, testID: 'leaderboard-empty-play' }}
+          actions={[{ label: t('leaderboard.play'), onPress: onPlay, testID: 'leaderboard-empty-play' }]}
           testID="leaderboard-empty"
         />
       );
@@ -299,6 +305,29 @@ export function LeaderboardScreen({
   );
 }
 
+/**
+ * The table while its first page loads (Loading.dc.html; motion.md `skeleton`): the podium's three columns
+ * (2nd, 1st, 3rd) and rows, pulsing; still under reduced motion. The friends tab has no podium.
+ */
+function LeaderboardSkeleton({ label, podium }: { label: string; podium: boolean }) {
+  return (
+    <SkeletonGroup label={label} style={styles.skeleton} testID="leaderboard-loading">
+      {podium ? (
+        <View style={styles.podiumSkeleton}>
+          {SKELETON_STEPS.map((step, i) => (
+            <View key={i} style={styles.podiumColumn}>
+              <Skeleton circle height={size.touch} />
+              <SkeletonLine width="70%" />
+              <Skeleton height={step} rounded={radius.md} />
+            </View>
+          ))}
+        </View>
+      ) : null}
+      <SkeletonRows count={5} />
+    </SkeletonGroup>
+  );
+}
+
 /** My league, and the way to the next one (spec §11.3); "בדירוג זמני" until a key is settled. */
 function MyLeagueCard({ myLeague }: { myLeague: LeaderboardScreenProps['myLeague'] }) {
   const { t } = useTranslation('progress');
@@ -338,6 +367,8 @@ function MyLeagueCard({ myLeague }: { myLeague: LeaderboardScreenProps['myLeague
 }
 
 const DOT = space[5];
+/** The podium placeholder's steps in screen order (2nd, 1st, 3rd), as the podium draws them. */
+const SKELETON_STEPS = [space[13], space[15], space[11]] as const;
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
@@ -358,6 +389,9 @@ const styles = StyleSheet.create({
   leagueLine: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
   leagueDot: { width: DOT, height: DOT, borderRadius: DOT / 2 },
   more: { paddingVertical: space[8], alignItems: 'center' },
+  skeleton: { gap: space[8] },
+  podiumSkeleton: { flexDirection: 'row', alignItems: 'flex-end', gap: space[4], paddingTop: space[6] },
+  podiumColumn: { flex: 1, minWidth: 0, alignItems: 'center', gap: space[3] },
   inviteCard: {
     flexDirection: 'row',
     alignItems: 'center',

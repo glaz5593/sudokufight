@@ -7,7 +7,6 @@ import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
-  ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
@@ -20,6 +19,7 @@ import { serverEndpoint } from '../config/server';
 import { type EchoStatus, useEchoRtt } from '../net/useEchoRtt';
 import { useHelloStore } from '../state/helloStore';
 import { color, radius, space, text } from '../theme';
+import { reduceMotionFlag, useReduceMotion } from '../theme/motion';
 
 /**
  * Stage 0: the end-to-end check. The cell name comes from @sudoku-fight/engine (a workspace package in
@@ -38,12 +38,14 @@ export function HelloScreen({ onOpenDesignSystem }: HelloScreenProps = {}) {
   const taps = useHelloStore((s) => s.taps);
   const tap = useHelloStore((s) => s.tap);
   const echo = useEchoRtt(serverEndpoint);
+  const reduce = useReduceMotion();
   const scale = useSharedValue(1);
   const bounce = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }] }));
 
   const onPress = () => {
     tap();
-    const spring = { reduceMotion: ReduceMotion.System };
+    // The app's setting, not only the phone's (theme/motion.ts): reduced, the circle stays still.
+    const spring = { reduceMotion: reduceMotionFlag(reduce) };
     scale.set(withSequence(withSpring(1.15, spring), withSpring(1, spring)));
     void Haptics.selectionAsync();
   };

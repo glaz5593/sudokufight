@@ -22,7 +22,7 @@ import { Announcer } from '../game/connection/Announcer';
 import { useEnter, usePulse } from '../game/connection/motion';
 import { clockText, type MatchScreenModel } from './matchModel';
 import { metrics } from './metrics';
-import { HeaderChip, joinSentences, RangeBar } from './parts';
+import { HeaderChip, joinSentences, RangeBar, rangeText } from './parts';
 
 type SearchModel = Extract<MatchScreenModel, { kind: 'search' }>;
 
@@ -90,8 +90,9 @@ export function SearchView({ model: m, reduce, onCancel, testID = 'match-search'
                 accessibilityLabel={t('search.rangeLabel', { low: m.range.low, high: m.range.high })}
               >
                 <Text style={styles.rangeTitle}>{t('search.rangeTitle')}</Text>
+                {/* Isolated (Match-Search: dir=ltr), so the lower rating stays first in a Hebrew line. */}
                 <Text style={styles.rangeValue} testID={`${testID}-range-value`}>
-                  {`${m.range.low}–${m.range.high}`}
+                  {rangeText(m.range)}
                 </Text>
               </View>
               <RangeBar range={m.range} />

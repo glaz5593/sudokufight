@@ -211,7 +211,12 @@ function LockCard({
   const { t } = useTranslation('game');
   const lost = m.phase === 'lost';
   const done = m.phase === 'synced';
-  const title = lost ? t('connection.self.lockedTitle') : t('connection.self.syncingTitle');
+  // Self-Reconnecting: "הלוח נעול עד שתחזור", then "מסנכרן…", then "הכל סונכרן" as the card fades out.
+  const title = lost
+    ? t('connection.self.lockedTitle')
+    : done
+      ? t('connection.self.syncedTitle')
+      : t('connection.self.syncingTitle');
   const sub = lost ? t('connection.self.lockedSub') : t('connection.self.savedSub');
   const items = m.syncItems.map((item) => t(`connection.self.item.${item}`));
   const label = sentences([title, sub, items.join(t('listSep'))], t);

@@ -11,7 +11,7 @@
   },
   "profile": {
     "defaultName": "שחקן",
-    "label": "הכרטיס שלי: {{name}}",
+    "label": "כרטיס השחקן שלי: {{name}}",
     "noRating": "עוד אין דירוג",
     "ratingTitle": "דירוג",
     "none": "—",
@@ -151,6 +151,7 @@
     "duration": "משך משוער",
     "seconds": "{{seconds}} ש׳",
     "minutes": "{{range}} דק׳",
+    "yourRating": "הדירוג שלך",
     "cardLabel": "{{name}}. {{technique}}. זמן למשבצת {{seconds}}, לוח {{difficulty}}, משך משוער {{from}} עד {{to}} דקות",
     "botHint": "בחירת בוט למשחק {{type}}"
   },
@@ -175,6 +176,11 @@
     },
     "language": "שפה",
     "languageHint": "החלפת שפה מפעילה מחדש את האפליקציה.",
+    "languageConfirm": {
+      "title": "להחליף את השפה ל־{{language}}?",
+      "body": "האפליקציה תופעל מחדש, כדי שכל המסכים יוצגו בכיוון של השפה החדשה.",
+      "confirm": "החלפה והפעלה מחדש"
+    },
     "languages": {
       "he": "עברית",
       "en": "English"

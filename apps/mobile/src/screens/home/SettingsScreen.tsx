@@ -1,10 +1,11 @@
 import { ENGINE_VERSION } from '@sudoku-fight/engine';
 import Constants from 'expo-constants';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ConfirmModal } from '../../components/ui';
 import type { Language } from '../../i18n';
 import { cue } from '../../services/feedback';
 import { type ReduceMotionSetting, useSettings } from '../../state/settings';
@@ -20,8 +21,8 @@ const LANGUAGES: readonly Language[] = ['he', 'en'];
 /**
  * "הגדרות" (spec §4.1; no board yet, built in direction C with the design-system pieces): sound, haptics,
  * reduced motion and language, kept in the persisted settings store. A language that flips the layout direction
- * restarts the app (the root layout does it). Stage 8 adds the account: edit profile, sign out, and delete the
- * account (spec §3.3, §23: deletion inside the app).
+ * restarts the app (the root layout does it), so the switch asks first (work plan stage 13). Stage 8 adds the
+ * account: edit profile, sign out, and delete the account (spec §3.3, §23: deletion inside the app).
  */
 /** The app's version from its config (app.json), or null where the config is not embedded. */
 export const appVersion = (): string | null => Constants.expoConfig?.version ?? null;
@@ -38,6 +39,8 @@ export function SettingsScreen({ version = appVersion() }: SettingsScreenProps) 
   const haptics = useSettings((s) => s.haptics);
   const reduceMotion = useSettings((s) => s.reduceMotion);
   const language = useSettings((s) => s.language);
+  // The language the player tapped, until they confirm the restart (kept while the dialog closes).
+  const [switchTo, setSwitchTo] = useState<{ language: Language; asking: boolean } | null>(null);
 
   // The cue comes after the change, so it follows the new setting: turning sound on is heard, turning it off is not.
   const changed =
@@ -86,7 +89,7 @@ export function SettingsScreen({ version = appVersion() }: SettingsScreenProps) 
             label={t('settings.language')}
             options={LANGUAGES.map((value) => ({ value, label: t(`settings.languages.${value}`) }))}
             value={language}
-            onChange={changed(useSettings.getState().setLanguage)}
+            onChange={(value) => setSwitchTo({ language: value, asking: true })}
             testID="setting-language"
           />
         </Section>
@@ -99,6 +102,24 @@ export function SettingsScreen({ version = appVersion() }: SettingsScreenProps) 
           </Text>
         ) : null}
       </ScrollView>
+
+      {/* The new direction needs a restart (the root layout does it once the setting changes). */}
+      <ConfirmModal
+        visible={switchTo?.asking ?? false}
+        placement="center"
+        icon="refresh"
+        title={t('settings.languageConfirm.title', {
+          language: switchTo ? t(`settings.languages.${switchTo.language}`) : '',
+        })}
+        body={t('settings.languageConfirm.body')}
+        confirmLabel={t('settings.languageConfirm.confirm')}
+        onConfirm={() => {
+          if (switchTo) changed(useSettings.getState().setLanguage)(switchTo.language);
+          setSwitchTo((s) => s && { ...s, asking: false });
+        }}
+        onCancel={() => setSwitchTo((s) => s && { ...s, asking: false })}
+        testID="language-confirm"
+      />
     </View>
   );
 }

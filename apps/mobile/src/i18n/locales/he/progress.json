@@ -12,6 +12,7 @@
     "offlineTitle": "אין חיבור לשרת",
     "offlineBody": "הטבלה תתעדכן כשיחזור החיבור.",
     "errorTitle": "משהו השתבש",
+    "errorBody": "השרת לא הצליח לענות כרגע. נסה שוב בעוד רגע.",
     "signedOut": "צריך להתחבר כדי לראות את זה",
     "players_one": "שחקן אחד",
     "players_two": "{{count}} שחקנים",
@@ -45,6 +46,7 @@
     "meNone": "עוד אין לך דירוג בטבלה הזו",
     "play": "שחק",
     "playHint": "שחק משחק מדורג כדי להיכנס לטבלה",
+    "climbHint": "שחק כדי לטפס בטבלה",
     "emptyTitle": "עוד אין כאן אף אחד",
     "emptyBody": "שחק משחק מדורג ותהיה הראשון בטבלה."
   },
@@ -117,7 +119,8 @@
     "formLabel": "התוצאות האחרונות, מהחדשה: {{list}}",
     "replayHint": "פתיחת הצפייה החוזרת",
     "openOf": "כרטיס השחקן של {{name}}",
-    "achievementsTitle": "הישגים מובילים"
+    "achievementsTitle": "הישגים מובילים",
+    "allAchievements": "כל ההישגים"
   },
   "achievements": {
     "title": "הישגים",

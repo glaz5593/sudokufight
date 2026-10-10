@@ -102,7 +102,9 @@ describe('ResultsScreen, ranked', () => {
     await settle();
     expect(screen.getByRole('header', { name: 'ניצחון!' })).toBeOnTheScreen();
     expect(screen.getByTestId('results-abandon-win')).toHaveTextContent('ניצחת בנטישה');
-    expect(screen.getByText('משחק מדורג · מהיר')).toBeOnTheScreen();
+    // Results-Victory: the mode, the type and the number of players; my place (spec §12 "מקום סופי").
+    expect(screen.getByText('משחק מדורג · מהיר · 2 שחקנים')).toBeOnTheScreen();
+    expect(screen.getByTestId('results-place')).toHaveTextContent('מקום 1 מתוך 2');
     expect(screen.getByTestId('results-end')).toHaveTextContent('איך זה נגמר: היריב איבד חיבור ולא חזר בזמן');
     expect(screen.getByTestId('results-unrated')).toHaveTextContent('חדר פרטי: הדירוג עוד לא מתעדכן');
     expect(screen.queryByText('האימון הזה לא נשמר במכשיר')).toBeNull();
@@ -126,7 +128,8 @@ describe('ResultsScreen, ranked', () => {
     await render(<ResultsScreen gameId="online-1" load={load} onNewGame={jest.fn()} onHome={jest.fn()} />);
     await settle();
     expect(screen.getByRole('header', { name: 'Defeat' })).toBeOnTheScreen();
-    expect(screen.getByText('Ranked game · Fast')).toBeOnTheScreen();
+    expect(screen.getByText('Ranked game · Fast · 2 players')).toBeOnTheScreen();
+    expect(screen.getByTestId('results-place')).toHaveTextContent('Place 2 of 2');
     expect(screen.getByTestId('results-unrated')).toHaveTextContent("Private room: ratings don't change yet");
     session.close();
   });

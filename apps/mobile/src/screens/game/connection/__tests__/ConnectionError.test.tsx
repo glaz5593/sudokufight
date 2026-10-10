@@ -83,7 +83,7 @@ describe('ConnectionError (Hebrew)', () => {
     expect(screen.getByTestId('connection-error-retry-shadow')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'נסה שוב' }));
     await fireEvent.press(screen.getByRole('button', { name: 'עבור לאימון' }));
-    await fireEvent.press(screen.getByRole('button', { name: 'חזרה לבית' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
     expect(h.onRetry).toHaveBeenCalledTimes(1);
     expect(h.onPractice).toHaveBeenCalledTimes(1);
     expect(h.onHome).toHaveBeenCalledTimes(1);
@@ -156,7 +156,7 @@ describe('ConnectionError (English)', () => {
     expect(screen.getByTestId('connection-error-code')).toHaveAccessibleName(
       'Error code: ERR_SOCKET_TIMEOUT · 504',
     );
-    for (const name of ['Try again', 'Go to practice', 'Back to home']) {
+    for (const name of ['Try again', 'Go to practice', 'Home']) {
       expect(screen.getByRole('button', { name })).toBeOnTheScreen();
     }
   });

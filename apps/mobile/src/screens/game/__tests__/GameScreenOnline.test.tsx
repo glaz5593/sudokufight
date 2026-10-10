@@ -303,7 +303,7 @@ describe('in the game', () => {
     expect(screen.getByText('החיבור לשרת המשחק אבד ולא הצלחנו לחזור אליו.')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'נסה שוב' }));
     expect(g.onRetry).toHaveBeenCalled();
-    await fireEvent.press(screen.getByRole('button', { name: 'חזרה לבית' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
     expect(g.onHome).toHaveBeenCalledTimes(1);
     await pressBack();
     expect(g.onHome).toHaveBeenCalledTimes(2);

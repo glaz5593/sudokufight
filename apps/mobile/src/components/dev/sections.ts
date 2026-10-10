@@ -7,6 +7,7 @@ import { ColorSection } from './ColorSection';
 import { HudSection } from './HudSection';
 import { AvatarSection } from './IdentitySection';
 import { NavSection, OverlaySection, ToastSection } from './OverlaySection';
+import { FieldSection, RowSection, StateSection } from './StateSection';
 import { TypeSection } from './TypeSection';
 
 /**
@@ -24,8 +25,11 @@ export const DS_SECTIONS = [
   { key: 'board', Component: BoardSection },
   { key: 'keypad', Component: KeypadSection },
   { key: 'toasts', Component: ToastSection },
+  { key: 'screenStates', Component: StateSection },
   { key: 'overlays', Component: OverlaySection },
+  { key: 'rows', Component: RowSection },
   { key: 'nav', Component: NavSection },
+  { key: 'fields', Component: FieldSection },
 ] as const satisfies readonly { key: string; Component: ComponentType }[];
 
 export type DsSectionKey = (typeof DS_SECTIONS)[number]['key'];

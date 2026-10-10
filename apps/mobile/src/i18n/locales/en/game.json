@@ -5,6 +5,10 @@
   "subtitle": "{{title}} · {{type}}",
   "me": "Me",
   "opponent": "Opponent",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "Level {{level}}, {{title}}"
+  },
   "listSep": ", ",
   "type": {
     "fast": "Fast",
@@ -43,6 +47,12 @@
   "connection": {
     "sep": ". ",
     "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "lead": {
+      "mine": "You lead",
+      "theirs": "{{name}} leads",
+      "theirs_female": "{{name}} leads",
+      "tie": "Tie"
+    },
     "frozen": {
       "title": "Game frozen",
       "timers": "All timers stopped",
@@ -80,6 +90,7 @@
       "lockedTitle": "The board is locked until you're back",
       "lockedSub": "When the connection is back we'll sync:",
       "syncingTitle": "Syncing…",
+      "syncedTitle": "All synced",
       "savedSub": "The game is saved on the server and goes on from the same point",
       "item": {
         "board": "Board",
@@ -136,7 +147,7 @@
       "retry": "Try again",
       "practice": "Go to practice",
       "practiceNote": "Practice alone or against a bot works without a connection",
-      "home": "Back to home"
+      "home": "Home"
     },
     "surrender": {
       "chip": "Surrender",
@@ -175,6 +186,7 @@
     },
     "connecting": {
       "title": "Entering the game",
+      "board": "Loading the board…",
       "step": {
         "server": "Connecting to the game server…",
         "room": "Entering the room…",
@@ -246,6 +258,8 @@
     "info": "Each interference lasts {{seconds}} seconds · launch by dragging only",
     "hint": "Drag onto {{name}}'s card to launch",
     "cancelHint": "Release outside the zone to cancel",
+    "comingTitle": "Coming later",
+    "comingLabel": "Coming later: {{names}}. Coming soon",
     "tapHint": "Drag onto {{name}} — a tap doesn't launch",
     "dragging": "Dragging…",
     "cost": "{{cost}} pts",
@@ -327,6 +341,10 @@
       "tie": "Draw"
     },
     "abandonWin": "Won by abandonment",
+    "placeTitle": "Place {{place}}!",
+    "placeOf": "Place {{place}} of {{total}}",
+    "outOf": "out of {{players}}",
+    "header": "{{title}} · {{type}} · {{players}}",
     "end": {
       "label": "How it ended",
       "completed": "You filled the whole board",

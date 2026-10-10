@@ -25,5 +25,9 @@
     "secondsLeft_one": "1 second left",
     "secondsLeft_two": "{{count}} seconds left",
     "secondsLeft_other": "{{count}} seconds left"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "Error code: {{code}}"
   }
 }

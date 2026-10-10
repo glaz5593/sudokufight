@@ -10,12 +10,12 @@ import type { AvatarId } from '../../assets/avatars';
 import { useAuth } from '../../auth/authStore';
 import { Icon } from '../../components/Icon';
 import { Avatar, SeatGlyph } from '../../components/player';
-import { Button } from '../../components/ui';
 import { useConnectivityWatch } from '../../net/connectivity';
 import { cue } from '../../services/feedback';
 import { useProfile } from '../../state/profile';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { Announcer } from '../game/connection/Announcer';
+import { isolateName } from '../game/hit/hitModel';
 import {
   DEFAULT_GAME_TYPE,
   isAvailable,
@@ -27,7 +27,7 @@ import {
   rankedRatingIn,
 } from './homeModel';
 import { goBack } from './navigation';
-import { OfflineBanner } from './OfflineBanner';
+import { OfflineActions, OfflineBanner } from './OfflineBanner';
 import { Chip, GUTTER, ScreenHeader, SectionLabel } from './parts';
 
 /**
@@ -45,11 +45,14 @@ import { Chip, GUTTER, ScreenHeader, SectionLabel } from './parts';
  */
 export function ModesScreen() {
   const { t } = useTranslation('home');
-  const { t: tm } = useTranslation('match');
   const { top, bottom } = useSafeAreaInsets();
   const avatarId = useProfile((s) => s.avatarId);
   const lastPlay = useProfile((s) => s.lastPlay);
   const ratings = useAuth((s) => s.me?.ratings ?? null);
+  // Who is playing, at the end of the header (the Modes board): the account's name, else the phone's.
+  const accountName = useAuth((s) => s.me?.displayName ?? null);
+  const localName = useProfile((s) => s.name);
+  const myName = accountName ?? localName;
   const connectivity = useConnectivityWatch();
   const offline = connectivity.status === 'offline';
   const announcement = useConnectionLine(offline);
@@ -72,7 +75,12 @@ export function ModesScreen() {
 
   return (
     <View style={[styles.screen, { paddingTop: top }]}>
-      <ScreenHeader title={t('modes.title')} onBack={goBack} style={styles.header} />
+      <ScreenHeader
+        title={t('modes.title')}
+        onBack={goBack}
+        end={<Me name={myName} avatarId={avatarId} />}
+        style={styles.header}
+      />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: (offline ? 0 : bottom) + space[12] }]}
       >
@@ -91,31 +99,32 @@ export function ModesScreen() {
         {offline ? null : <Text style={styles.footnote}>{t('modes.footnote')}</Text>}
       </ScrollView>
       {offline ? (
-        <View style={[styles.footer, { paddingBottom: bottom + space[8] }]} testID="offline-actions">
-          <Button
-            label={tm('offline.practice')}
-            size="lg"
-            icon="target"
-            onPress={practice}
-            style={styles.stretch}
-            testID="go-practice"
-          />
-          <Button
-            label={connectivity.checking ? tm('offline.retrying') : tm('offline.retry')}
-            variant="ghost"
-            icon="refresh"
-            loading={connectivity.checking}
-            onPress={() => void connectivity.check()}
-            testID="check-again"
-          />
-          {!connectivity.checking && connectivity.failures > 1 ? (
-            <Text style={styles.stillOffline} testID="still-offline">
-              {tm('offline.stillOffline', { count: connectivity.failures })}
-            </Text>
-          ) : null}
-        </View>
+        <OfflineActions
+          checking={connectivity.checking}
+          failures={connectivity.failures}
+          onPractice={practice}
+          onCheck={() => void connectivity.check()}
+          bottom={bottom}
+        />
       ) : null}
       <Announcer line={announcement} testID="modes-live" />
+    </View>
+  );
+}
+
+/**
+ * Me, at the end of the header (the Modes board): my name (isolated, in its own direction) and my avatar in P1's
+ * frame. Read as the name; the avatar next to it is decorative.
+ */
+function Me({ name, avatarId }: { name: string | null; avatarId: AvatarId }) {
+  return (
+    <View style={styles.me} testID="modes-me">
+      {name ? (
+        <Text style={styles.meName} numberOfLines={1}>
+          {isolateName(name)}
+        </Text>
+      ) : null}
+      <Avatar avatarId={avatarId} size="compact" colorIndex={0} testID="modes-me-avatar" />
     </View>
   );
 }
@@ -295,6 +304,8 @@ const OFFLINE_CARD_OPACITY = 0.6;
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
   header: { paddingHorizontal: GUTTER.screen },
+  me: { flexDirection: 'row', alignItems: 'center', gap: space[4], flexShrink: 1, minWidth: 0 },
+  meName: { ...text('label'), color: color.textMuted, flexShrink: 1 },
   content: { paddingHorizontal: GUTTER.screen, paddingTop: space[6], gap: space[10] },
   group: { gap: space[6] },
   pair: { flexDirection: 'row', gap: space[6] },
@@ -332,17 +343,6 @@ const styles = StyleSheet.create({
   tagline: { ...text('caption'), color: color.textMuted },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space[3], marginTop: space[3] },
   footnote: { ...text('caption'), color: color.textMuted, textAlign: 'center' },
-  footer: {
-    paddingHorizontal: GUTTER.screen,
-    paddingTop: space[6],
-    gap: space[3],
-    alignItems: 'center',
-    borderTopWidth: tokens.border.hairline,
-    borderTopColor: color.border,
-    backgroundColor: color.bg,
-  },
-  stretch: { alignSelf: 'stretch' },
-  stillOffline: { ...text('caption'), color: color.textMuted, textAlign: 'center' },
   offlineChip: {
     flexDirection: 'row',
     alignItems: 'center',

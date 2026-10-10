@@ -28,6 +28,8 @@ jobs:
         env:
           CI: 'true'
       - run: npm run typecheck
+      - name: Translations (every key in Hebrew and English; unused keys are warnings)
+        run: npm run i18n:check
       - run: npm test -- --ci
       - name: The server bundles
         run: npm run build -w @sudoku-fight/server

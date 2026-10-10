@@ -67,9 +67,10 @@
     "loading": "Loading the arena…",
     "tipLabel": "Tip",
     "tips": {
-      "lock": "A cell you pick is locked to you alone, for a few seconds.",
+      "lock": "A cell you pick is locked to you alone: {{seconds}} seconds in a {{type}} game.",
       "hard": "A harder move is worth more points.",
-      "mistake": "A mistake costs points, so think before you type.",
+      "mistake": "Mistakes cost more and more: each one costs double the last.",
+      "mistakeCapped": "Mistakes cost more and more: each one costs double the last, up to {{cap}} points.",
       "drag": "Send an interference by dragging it onto your opponent's card."
     },
     "errorTitle": "We couldn't load your fighter",
@@ -83,7 +84,8 @@
     "forgot": "Forgot password",
     "submit": "Sign in",
     "noAccount": "No account yet?",
-    "register": "Sign up"
+    "register": "Sign up",
+    "arenaSpot": "Your spot"
   },
   "forgot": {
     "title": "Forgot password",

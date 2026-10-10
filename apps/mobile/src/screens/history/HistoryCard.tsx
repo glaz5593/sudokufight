@@ -3,7 +3,16 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { AvatarId } from '../../assets/avatars';
 import { Icon } from '../../components/Icon';
-import { Avatar, displayName, Flag, formatScore, ltr, scoreText, signedText } from '../../components/player';
+import {
+  Avatar,
+  displayName,
+  Flag,
+  formatScore,
+  ltr,
+  paletteAt,
+  scoreText,
+  signedText,
+} from '../../components/player';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { dayOf, type HistoryEntry, type HistoryOutcome, shortDate } from './historyModel';
 
@@ -38,6 +47,9 @@ export interface HistoryCardProps {
 
 const PLAYER_ACTION = 'player:';
 
+/** The isolate marks `ltr` wraps with: "84.5 : 62" is drawn in parts (mine in P1) but stays LTR in Hebrew. */
+const [OPEN, CLOSE] = [...ltr('')] as [string, string];
+
 export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: HistoryCardProps) {
   const { t, i18n } = useTranslation('history');
   const { t: tProgress } = useTranslation('progress');
@@ -56,11 +68,15 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
           .filter(Boolean)
           .join(' · ')
       : t('card.alone');
+  const duel =
+    e.myScore !== null && opponent && e.opponentScore !== null
+      ? { mine: formatScore(e.myScore), theirs: formatScore(e.opponentScore) }
+      : null;
   const score =
     e.myScore === null
       ? '—'
-      : opponent && e.opponentScore !== null
-        ? ltr(`${formatScore(e.myScore)} : ${formatScore(e.opponentScore)}`)
+      : duel
+        ? ltr(`${duel.mine} : ${duel.theirs}`)
         : t('card.points', { score: scoreText(e.myScore) });
   const rating =
     e.source === 'practice' ? t('card.unrated') : e.ratingDelta === null ? null : signedText(e.ratingDelta);
@@ -146,8 +162,23 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
         </Text>
       </View>
       <View style={styles.end}>
-        <Text style={[text('scoreSm'), styles.strong]} testID={`history-card-${e.id}-score`}>
-          {score}
+        {/* History.dc.html: my score in my colour (me is always P1), the opponent's muted. */}
+        <Text
+          style={[text('scoreSm'), e.myScore === null ? styles.strong : duel ? styles.muted : styles.me]}
+          testID={`history-card-${e.id}-score`}
+        >
+          {duel ? (
+            <>
+              {OPEN}
+              <Text style={styles.me} testID={`history-card-${e.id}-my-score`}>
+                {duel.mine}
+              </Text>
+              {` : ${duel.theirs}`}
+              {CLOSE}
+            </>
+          ) : (
+            score
+          )}
         </Text>
         {rating === null ? null : (
           <Text
@@ -194,6 +225,7 @@ const styles = StyleSheet.create({
   end: { alignItems: 'flex-end', gap: space[1] },
   strong: { color: color.text },
   muted: { color: color.textMuted },
+  me: { color: paletteAt(0).ring },
   success: { color: color.success },
   accent: { color: color.accent },
   open: { alignItems: 'center', gap: space[1] },

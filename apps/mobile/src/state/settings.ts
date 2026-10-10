@@ -1,8 +1,19 @@
 import Storage from 'expo-sqlite/kv-store';
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 
 import { deviceLanguage, type Language } from '../i18n';
+
+/**
+ * Read and written synchronously (work plan stage 13). The settings are in the store from the first render,
+ * so the root layout never applies the device's language and direction before the player's (which would
+ * restart the app into the wrong one), and a language change is on disk before the app restarts for it.
+ */
+export const syncSettingsStorage: StateStorage = {
+  getItem: (name) => Storage.getItemSync(name),
+  setItem: (name, value) => Storage.setItemSync(name, value),
+  removeItem: (name) => void Storage.removeItemSync(name),
+};
 
 /**
  * The player's settings on this phone (spec §4.1 "Settings": sound, haptics, language, reduced motion).
@@ -36,7 +47,7 @@ export const useSettings = create<SettingsState>()(
     {
       name: 'settings',
       version: 1,
-      storage: createJSONStorage(() => Storage),
+      storage: createJSONStorage(() => syncSettingsStorage),
       partialize: ({ language, sound, haptics, reduceMotion }) => ({
         language,
         sound,

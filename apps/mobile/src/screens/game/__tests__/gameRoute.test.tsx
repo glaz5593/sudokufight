@@ -111,7 +111,7 @@ describe('an online game', () => {
     expect(g.session.getView().players.find((p) => p.id === OPP)?.status).toBe('surrendered');
   });
 
-  it('"חזרה לבית" on a refusal leaves for Home; "נסה שוב" joins again', async () => {
+  it('"לבית" on a refusal leaves for Home; "נסה שוב" joins again', async () => {
     const table = new FakeTable();
     table.offline = true;
     const g = {
@@ -127,7 +127,7 @@ describe('an online game', () => {
     expect(screen.getByTestId('connection-error')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'נסה שוב' }));
     expect(retry).toHaveBeenCalled();
-    await fireEvent.press(screen.getByRole('button', { name: 'חזרה לבית' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
     expect(router.dismissTo).toHaveBeenCalledWith('/');
     retry.mockRestore();
   });

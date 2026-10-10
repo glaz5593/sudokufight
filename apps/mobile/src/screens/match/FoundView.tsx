@@ -28,9 +28,10 @@ export interface FoundViewProps {
  * השחקנים מוכנים · המשחק מתחיל", whether we met lately, and that there is no cancelling from here [D32]. A
  * screen reader hears who was found.
  *
- * Two players face each other across the VS. A table of 3–4 (stage 10, "נמצאו יריבים!") is a grid of two
- * columns in the game's order (me first, then the others by seat, as their cards will sit, spec §6.8), each
- * in their colour and shape, the last one centred when there are three.
+ * Two players face each other across the VS, me at the start edge (right in Hebrew, left in English) as on
+ * Match-Found and as my card sits in the game (spec §6.8, components.md §3.1). A table of 3–4 (stage 10,
+ * "נמצאו יריבים!") is a grid of two columns in the game's order (me first, then the others by seat, as their
+ * cards will sit), each in their colour and shape, the last one centred when there are three.
  */
 export function FoundView({ model: m, reduce, testID = 'match-found' }: FoundViewProps) {
   const { t } = useTranslation('match');
@@ -71,14 +72,14 @@ export function FoundView({ model: m, reduce, testID = 'match-found' }: FoundVie
           </Animated.Text>
 
           {pair ? (
-            <View style={styles.versus}>
-              <SeatTile seat={pair.opponent} showReady={badges} reduce={reduce} />
+            <View style={styles.versus} testID={`${testID}-pair`}>
+              <SeatTile seat={pair.me} showReady={badges} reduce={reduce} />
               <Animated.View style={slam} testID={`${testID}-vs`}>
                 <View style={styles.vs}>
                   <Text style={styles.vsText}>{t('player:vs')}</Text>
                 </View>
               </Animated.View>
-              <SeatTile seat={pair.me} showReady={badges} reduce={reduce} />
+              <SeatTile seat={pair.opponent} showReady={badges} reduce={reduce} />
             </View>
           ) : (
             <View style={styles.grid} testID={`${testID}-grid`}>

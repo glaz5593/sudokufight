@@ -10,6 +10,7 @@ import {
   cardLabel,
   DeltaLabel,
   formatScore,
+  Flag,
   ltr,
   MistakesText,
   paletteAt,
@@ -34,6 +35,8 @@ export interface SoloHudProps {
   /** My card; its score is the one to show now (held back while a chip flies to it). */
   card: CardModel;
   delta: ScoreDelta | null;
+  /** My flag (Game-Solo), ISO alpha-2; none when unknown. */
+  country?: string | null;
   gameType: GameType;
   stats: SoloStats;
   avatarId?: AvatarId | null;
@@ -51,6 +54,7 @@ const row = tokens.layout.game.playerCard;
 export function SoloHud({
   card,
   delta,
+  country = null,
   gameType,
   stats,
   avatarId,
@@ -112,6 +116,7 @@ export function SoloHud({
               <Text style={[text('playerName'), styles.name]} numberOfLines={1}>
                 {card.name}
               </Text>
+              <Flag country={country} size="game" decorative />
             </View>
             <Text style={[text('caption'), styles.muted]} numberOfLines={1} testID={`${testID}-title`}>
               {t('subtitle', { title: t('title'), type: t(`type.${gameType}`) })}

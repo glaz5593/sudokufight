@@ -21,7 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '../../auth/authStore';
 import { type PasswordRules, type PasswordStrength, strengthLevel } from '../../auth/password';
-import { Icon } from '../../components/Icon';
+import { Icon, type IconName } from '../../components/Icon';
 import { SeatGlyph } from '../../components/player';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, reduceMotionFlag, useReduceMotion } from '../../theme/motion';
@@ -281,31 +281,45 @@ export function PasswordChecklist({ rules, testID }: { rules: PasswordRules; tes
   );
 }
 
-/** A text button of 44 (ghost look) that is a link: "שכחתי סיסמה", "הרשמה", the terms. */
+/**
+ * A text button of 44 (ghost look) that is a link: "הרשמה" and the terms in gold; "שכחתי סיסמה" and the
+ * fighter's "עריכה" in the muted tone (the Login and Register-Account boards), so gold stays with the one
+ * main way on.
+ */
 export function LinkButton({
   label,
   onPress,
   hint,
   role = 'button',
+  tone = 'accent',
+  icon,
+  accessibilityLabel,
   testID,
 }: {
   label: string;
   onPress: () => void;
   hint?: string;
   role?: 'button' | 'link';
+  tone?: 'accent' | 'muted';
+  /** Before the label ("✎ עריכה"). */
+  icon?: IconName;
+  /** What a screen reader says, when the short visible label needs more ("עריכה" → "עריכת הלוחם"). */
+  accessibilityLabel?: string;
   testID?: string;
 }) {
+  const tint = tone === 'muted' ? color.textMuted : color.accent;
   return (
     <Pressable
       accessibilityRole={role}
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={hint}
       onPress={onPress}
       hitSlop={space[2]}
       style={({ pressed }) => [styles.link, pressed && styles.pressed]}
       testID={testID}
     >
-      <Text style={styles.linkText}>{label}</Text>
+      {icon ? <Icon name={icon} size={size.icon.inline} color={tint} /> : null}
+      <Text style={[styles.linkText, { color: tint }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -402,31 +416,43 @@ const styles = StyleSheet.create({
   rule: { flexDirection: 'row', alignItems: 'center', gap: space[3] },
   ruleText: { ...text('caption'), color: color.textMuted },
   ruleMet: { color: color.text },
-  link: { minHeight: size.touch, justifyContent: 'center', paddingHorizontal: space[2] },
-  linkText: { ...text('buttonSm'), color: color.accent },
+  link: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[2],
+    minHeight: size.touch,
+    paddingHorizontal: space[2],
+  },
+  linkText: { ...text('buttonSm') },
 });
 
-/** The wordmark (Dir-C-Home's "SUDOKU FIGHT", the Hebrew name under it) and the four seat shapes. */
-export function Brand({ testID }: { testID?: string }) {
-  const { t } = useTranslation('home');
+/**
+ * The wordmark (Dir-C-Home's "SUDOKU FIGHT", the Hebrew name under it) and the four seat shapes: the Splash.
+ * `compact`: the wordmark alone, as Login's board has it over its arena. In English the name under the
+ * wordmark would only repeat it, so it shows in Hebrew only (as on Home and Home-EN).
+ */
+export function Brand({ compact = false, testID }: { compact?: boolean; testID?: string }) {
+  const { t, i18n } = useTranslation('home');
   return (
     <View
       style={brand.wrap}
       accessible
-      accessibilityRole="header"
+      accessibilityRole={compact ? 'image' : 'header'}
       accessibilityLabel={t('brand.name')}
       testID={testID}
     >
-      <View style={brand.glyphs}>
-        {[0, 1, 2, 3].map((i) => (
-          <SeatGlyph key={i} colorIndex={i} size={space[7]} />
-        ))}
-      </View>
+      {compact ? null : (
+        <View style={brand.glyphs}>
+          {[0, 1, 2, 3].map((i) => (
+            <SeatGlyph key={i} colorIndex={i} size={space[7]} />
+          ))}
+        </View>
+      )}
       <Text style={brand.wordmark} numberOfLines={1}>
         <Text style={brand.start}>{t('brand.wordStart')}</Text>{' '}
         <Text style={brand.end}>{t('brand.wordEnd')}</Text>
       </Text>
-      <Text style={brand.sub}>{t('brand.sub')}</Text>
+      {compact || i18n.dir() !== 'rtl' ? null : <Text style={brand.sub}>{t('brand.sub')}</Text>}
     </View>
   );
 }

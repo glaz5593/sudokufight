@@ -56,4 +56,5 @@ export {
   useContentWidth,
 } from './Primitives';
 export { DS_SECTIONS, type DsSectionKey } from './sections';
+export { FieldSection, RowSection, StateSection } from './StateSection';
 export { TypeSection } from './TypeSection';

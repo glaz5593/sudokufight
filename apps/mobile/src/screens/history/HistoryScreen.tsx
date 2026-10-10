@@ -4,9 +4,8 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AvatarId } from '../../assets/avatars';
-import { Icon } from '../../components/Icon';
-import { BottomNav, Button, type NavTab, Spinner } from '../../components/ui';
-import { color, radius, size, space, text, tokens } from '../../theme';
+import { BottomNav, Button, type NavTab, SkeletonGroup, SkeletonRows, StateView } from '../../components/ui';
+import { color, radius, space, text, tokens } from '../../theme';
 import { HistoryCard } from './HistoryCard';
 import { type HistoryDeps, HistoryLoader, type HistorySnapshot } from './historyLoader';
 import { HISTORY_FILTERS, type HistoryEntry, type HistoryFilter, PAGE_SIZE } from './historyModel';
@@ -16,6 +15,10 @@ import { HISTORY_FILTERS, type HistoryEntry, type HistoryFilter, PAGE_SIZE } fro
  * from the server merged with the practices on this phone, 20 more at a time; filters "הכל · מדורג · אימון";
  * each card opens the replay. Offline (or signed out) the practices still show, with a note. Empty: "עוד אין
  * משחקים כאן" and "שחק את המשחק הראשון".
+ *
+ * Stage 13 (spec §16.3, §4.1 "מצבי שגיאה"): while a page loads, the cards' skeleton (Loading.dc.html); when
+ * nothing shows because a source failed (no connection, the server's error, the phone's database), that
+ * failure is the screen's state, with "נסה שוב" and the small support code, never "no games yet".
  */
 
 export interface HistoryScreenProps {
@@ -82,14 +85,18 @@ export function HistoryScreen({
     if (!busy && shown?.hasMore) run(() => loader.more());
   };
 
+  const failure = shown ? failureOf(shown) : null;
+  const reload = () => run(() => loader.reload());
+
   const notes: { key: string; text: string; retry?: boolean }[] = [];
   if (shown && filter !== 'practice') {
-    if (shown.ranked === 'offline') notes.push({ key: 'offline', text: t('notes.offline'), retry: true });
+    if (shown.ranked === 'offline' && failure !== 'offline')
+      notes.push({ key: 'offline', text: t('notes.offline'), retry: true });
     if (shown.ranked === 'signedOut') notes.push({ key: 'signedOut', text: t('notes.signedOut') });
-    if (shown.ranked === 'error')
+    if (shown.ranked === 'error' && failure !== 'error')
       notes.push({ key: 'rankedError', text: t('notes.rankedError'), retry: true });
   }
-  if (shown && !shown.practiceOk && filter !== 'ranked')
+  if (shown && !shown.practiceOk && filter !== 'ranked' && failure !== 'practice')
     notes.push({ key: 'practiceUnavailable', text: t('notes.practiceUnavailable'), retry: true });
   if (filter === 'practice') notes.push({ key: 'practice', text: t('notes.practice') });
 
@@ -119,7 +126,7 @@ export function HistoryScreen({
             <Button
               label={t('notes.retry')}
               variant="ghost"
-              onPress={() => run(() => loader.reload())}
+              onPress={reload}
               testID={`history-retry-${n.key}`}
             />
           ) : null}
@@ -128,25 +135,44 @@ export function HistoryScreen({
     </View>
   );
 
-  const empty = shown ? (
-    <View style={styles.empty} testID="history-empty">
-      <View style={styles.emptyIcon}>
-        <Icon name="history" size={size.icon.nav} color={color.textMuted} />
-      </View>
-      <Text style={[text('sheetTitle'), styles.strong, styles.centered]} accessibilityRole="header">
-        {t('empty.title')}
-      </Text>
-      <Text style={[text('bodyLong'), styles.muted, styles.centered]}>{t('empty.body')}</Text>
-      <Button label={t('empty.action')} size="md" onPress={onPlay} testID="history-play" />
-    </View>
-  ) : (
-    <View style={styles.empty} testID="history-loading">
-      <Spinner color={color.textMuted} />
-      <Text style={[text('body'), styles.muted]} accessibilityLiveRegion="polite">
-        {t('loading')}
-      </Text>
-    </View>
-  );
+  let empty;
+  if (!shown)
+    empty = (
+      <SkeletonGroup label={t('loading')} testID="history-loading">
+        <SkeletonRows count={SKELETON_ROWS} />
+      </SkeletonGroup>
+    );
+  else if (failure)
+    // Spec §16.3: a plain explanation, "נסה שוב", and the small code for support.
+    empty = (
+      <StateView
+        tone="danger"
+        icon={failure === 'offline' ? 'wifiOff' : 'alert'}
+        title={t(`states.${failure}Title`)}
+        body={t(`states.${failure}Body`)}
+        code={failure === 'practice' ? null : shown.rankedCode}
+        actions={[
+          {
+            label: t('notes.retry'),
+            icon: 'refresh',
+            onPress: reload,
+            loading: busy,
+            testID: 'history-retry',
+          },
+        ]}
+        testID={`history-${failure}`}
+      />
+    );
+  else
+    empty = (
+      <StateView
+        icon="history"
+        title={t('empty.title')}
+        body={t('empty.body')}
+        actions={[{ label: t('empty.action'), variant: 'primary', onPress: onPlay, testID: 'history-play' }]}
+        testID="history-empty"
+      />
+    );
 
   const at = now();
   return (
@@ -187,6 +213,22 @@ export function HistoryScreen({
   );
 }
 
+/** Cards in the loading skeleton: what fills a phone's screen under the filters. */
+const SKELETON_ROWS = 6;
+
+/**
+ * Why a filter shows nothing because of a failure, not because there is nothing: the server's games could not
+ * be read (offline, or its error) and the phone has none to show for this filter; or the phone's database
+ * could not be read. Null when the list is just empty, or has cards.
+ */
+function failureOf(snap: HistorySnapshot): 'offline' | 'error' | 'practice' | null {
+  if (snap.entries.length > 0) return null;
+  if (snap.filter !== 'practice' && (snap.ranked === 'offline' || snap.ranked === 'error'))
+    return snap.ranked;
+  if (snap.filter !== 'ranked' && !snap.practiceOk) return 'practice';
+  return null;
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
   content: {
@@ -207,16 +249,6 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface2,
   },
   noteText: { flex: 1 },
-  empty: { alignItems: 'center', gap: space[6], paddingVertical: space[12] },
-  emptyIcon: {
-    width: size.touch + space[6],
-    height: size.touch + space[6],
-    borderRadius: radius.xl,
-    backgroundColor: color.surface2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   strong: { color: color.text },
   muted: { color: color.textMuted },
-  centered: { textAlign: 'center' },
 });

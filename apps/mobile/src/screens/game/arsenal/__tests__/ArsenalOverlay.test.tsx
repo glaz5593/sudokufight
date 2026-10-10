@@ -275,6 +275,19 @@ describe('the arsenal (spec §7.3.1, Arsenal)', () => {
     });
     expect(cues()).toEqual(['nudge']);
   });
+
+  it('ends with "נפתחות בהמשך": the four after V1, locked and "בקרוב" (Arsenal, Interference-Target)', async () => {
+    const { g } = await show();
+    await earn(g);
+    await openFromBolt();
+    const coming = screen.getByTestId('arsenal-coming');
+    expect(coming).toHaveAccessibleName('נפתחות בהמשך: דיו, רעידת אדמה, ערפל, בועות. בקרוב');
+    for (const kind of ['ink', 'earthquake', 'fog', 'bubbles']) {
+      expect(within(coming).getByTestId(`arsenal-coming-${kind}`, hidden)).toBeOnTheScreen();
+    }
+    // Never a token: nothing there can be dragged.
+    expect(screen.queryByTestId('arsenal-token-ink')).not.toBeOnTheScreen();
+  });
 });
 
 describe('the drag launch (spec §7.3.2–4, Interference-Drag; D18: drag only)', () => {

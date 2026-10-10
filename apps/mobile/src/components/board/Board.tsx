@@ -1,11 +1,11 @@
 import type { CellIndex } from '@sudoku-fight/engine';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { color, space, text, tokens } from '../../theme';
 import type { BoardModel } from './boardModel';
-import { Cell, type CellFlash } from './Cell';
+import { Cell, type CellFlash, sameCell } from './Cell';
 import { boardGeometry, cellHitSlop, cornerOf, px } from './geometry';
 import { boardLabel } from './labels';
 
@@ -37,7 +37,7 @@ const THREE = [0, 1, 2] as const;
 const NINE = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
 const ROW_LETTERS = 'ABCDEFGHI';
 
-export function Board({
+function BoardView({
   model,
   width,
   onCellPress,
@@ -150,6 +150,45 @@ export function Board({
     </View>
   );
 }
+
+type LockNames = Pick<BoardModel, 'myLock' | 'otherLocks'>;
+
+/** The locks as the board's label and rails read them: the cells and who holds them, not the seconds. */
+const sameLockNames = (a: LockNames, b: LockNames): boolean =>
+  a.myLock?.cell === b.myLock?.cell &&
+  a.otherLocks.length === b.otherLocks.length &&
+  a.otherLocks.every(
+    (lock, k) =>
+      lock.cell === b.otherLocks[k]!.cell &&
+      lock.player.id === b.otherLocks[k]!.player.id &&
+      lock.player.name === b.otherLocks[k]!.player.name,
+  );
+
+/**
+ * Two boards that draw the same. The game screen makes a new model on every countdown tick (4 a second,
+ * spec §22: 55 fps); the board redraws only when a cell does (a digit, a lock, a lock's whole seconds), and then
+ * only that cell's memoised Cell renders.
+ */
+export function sameBoardProps(a: BoardProps, b: BoardProps): boolean {
+  if (
+    a.width !== b.width ||
+    a.onCellPress !== b.onCellPress ||
+    a.flashes !== b.flashes ||
+    a.showCoordinates !== b.showCoordinates ||
+    a.testID !== b.testID
+  )
+    return false;
+  if (a.model === b.model) return true;
+  const cells = a.model.cells;
+  const next = b.model.cells;
+  return (
+    cells.length === next.length &&
+    cells.every((cell, k) => sameCell(cell, next[k]!)) &&
+    sameLockNames(a.model, b.model)
+  );
+}
+
+export const Board = memo(BoardView, sameBoardProps);
 
 /** Thickness of a coordinate rail. */
 const RAIL = space[8];

@@ -41,6 +41,11 @@ export interface PlayerCardProps extends PlayerCardActions {
   side?: 'start' | 'end';
   /** The last score change, for the "+3.5" slot. */
   delta?: ScoreDelta | null;
+  /**
+   * A bot's level (Game-Bot: "בוט · חד"), in the rating's place under the name, as the bot has no rating:
+   * `text` drawn ("3 · מתקדם"), `label` said after "בוט" ("רמה 3, מתקדם").
+   */
+  botLevel?: { text: string; label: string } | null;
   /** Keep the delta on screen instead of fading it (design-system page). */
   persistentDelta?: boolean;
   /** Another card is the drop target (§3.4). */
@@ -70,6 +75,7 @@ export function PlayerCard({
   gender,
   side,
   delta = null,
+  botLevel = null,
   persistentDelta = false,
   dimmed = false,
   dropTarget = false,
@@ -97,7 +103,7 @@ export function PlayerCard({
         <View
           accessible
           accessibilityRole="text"
-          accessibilityLabel={cardLabel(model, t, { gender })}
+          accessibilityLabel={cardLabel(model, t, { gender, botLevel: botLevel?.label })}
           accessibilityHint={dropTarget ? dropLabel : undefined}
           testID={testID ? `${testID}-summary` : undefined}
         >
@@ -123,7 +129,15 @@ export function PlayerCard({
                 </View>
                 <Flag country={country} size="game" decorative />
               </View>
-              {model.rating === null ? null : <Rating value={model.rating} size="card" decorative />}
+              {model.rating !== null ? (
+                <Rating value={model.rating} size="card" decorative />
+              ) : model.isBot && botLevel ? (
+                <View style={styles.levelChip} testID={testID ? `${testID}-bot-level` : undefined}>
+                  <Text style={[text('micro'), styles.levelText]} numberOfLines={1}>
+                    {botLevel.text}
+                  </Text>
+                </View>
+              ) : null}
             </View>
           </View>
 
@@ -201,6 +215,18 @@ const styles = StyleSheet.create({
   nameRow: { alignItems: 'center', gap: metrics.card.nameGap, flexShrink: 1, minWidth: 0 },
   glyphName: { alignItems: 'center', gap: metrics.card.glyphGap, flexShrink: 1, minWidth: 0 },
   name: { color: color.text, flexShrink: 1 },
+  // The bot's level: a small flat chip (as BotSelect's), short enough to fit under the name with it (44).
+  levelChip: {
+    height: metrics.card.levelChipHeight,
+    paddingHorizontal: metrics.card.levelChipPaddingX,
+    justifyContent: 'center',
+    borderRadius: tokens.radius.xs,
+    borderWidth: tokens.border.hairline,
+    borderColor: color.border,
+    backgroundColor: color.surface2,
+    maxWidth: '100%',
+  },
+  levelText: { color: color.textMuted },
   scoreRow: {
     height: card.scoreRowHeight,
     marginTop: card.scoreRowTop,

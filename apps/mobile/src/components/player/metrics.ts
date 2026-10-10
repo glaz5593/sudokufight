@@ -105,6 +105,9 @@ export const metrics = {
     hitChipOffset: -6,
     scoreRowGap: tokens.layout.game.playerCard.scoreGap,
     ratingStyle: tekoStyle(16),
+    /** A bot's level under its name (Game-Bot), as tall as the provisional chip. */
+    levelChipHeight: 18,
+    levelChipPaddingX: 5,
   },
   /** §3.3: the activity timer ring (2P) and §7.2 (compact, with seconds inside). */
   timerRing: { card: 14, compact: 16, stroke: 2, secondsStyle: tekoStyle(11) },

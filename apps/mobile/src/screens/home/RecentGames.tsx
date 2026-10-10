@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Icon, type IconName } from '../../components/Icon';
 import { Avatar, type GameResultKind, ltr, scoreText } from '../../components/player';
+import { SkeletonGroup, SkeletonRows } from '../../components/ui';
 import type { PracticeGameRecord } from '../../game/practiceRepo';
 import type { PracticeHistoryState } from '../../state/practiceHistory';
 import { color, radius, size, space, text, tokens } from '../../theme';
@@ -36,11 +38,15 @@ export interface RecentGamesProps {
 /**
  * "משחקים אחרונים" on Home (spec §4.3): the newest practices saved on this phone [D25], each opening its
  * results. Interrupted games are listed too, marked. A game against a bot shows the bot's avatar with the
- * result badge (Dir-C-Home), and reads "ניצחון מול Pip". Nothing shows while the first read is under way, so
- * the empty state never flashes before the games arrive.
+ * result badge (Dir-C-Home), and reads "ניצחון מול Pip". While the first read is under way the rows show as a
+ * skeleton (Loading.dc.html, stage 13), so the empty state never flashes before the games arrive; a later
+ * read (Home back in view) keeps what is there.
  */
 export function RecentGames({ games, status, onOpen }: RecentGamesProps) {
   const { t } = useTranslation('home');
+  // Derived during render (no extra effect pass): once read, a new read shows no skeleton.
+  const [read, setRead] = useState(status === 'ready');
+  if (status === 'ready' && !read) setRead(true);
   if (status === 'unavailable') {
     return (
       <Text style={styles.note} testID="recent-unavailable">
@@ -49,7 +55,14 @@ export function RecentGames({ games, status, onOpen }: RecentGamesProps) {
     );
   }
   if (!games.length) {
-    if (status !== 'ready') return null;
+    if (status !== 'ready') {
+      if (read) return null;
+      return (
+        <SkeletonGroup label={t('history:loading')} testID="recent-loading">
+          <SkeletonRows count={RECENT_SKELETON_ROWS} trailing />
+        </SkeletonGroup>
+      );
+    }
     return (
       <View style={styles.empty} testID="recent-empty">
         <Text style={styles.emptyTitle}>{t('recent.emptyTitle')}</Text>
@@ -141,6 +154,9 @@ function RecentRow({ game, onPress }: { game: PracticeGameRecord; onPress: () =>
     </Pressable>
   );
 }
+
+/** Rows in the loading skeleton: as many as Home shows. */
+const RECENT_SKELETON_ROWS = 3;
 
 const styles = StyleSheet.create({
   list: { gap: space[4] },

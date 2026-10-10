@@ -29,13 +29,19 @@ export interface MatchErrorViewProps {
 
 /** Failures that are the connection's: no answer, or it dropped. */
 const CONNECTION: readonly MatchmakingFailureCode[] = ['network', 'lost'];
+/**
+ * Failures another search can't get past (stage 13): nobody signed in, or a queue the server doesn't have.
+ * "חפש שוב" is left out, and "עבור לאימון" becomes the one primary.
+ */
+const FINAL: readonly MatchmakingFailureCode[] = ['signedOut', 'badQueue'];
 
 /**
  * The search could not go on (spec §16.3, §4.1 "מצבי שגיאה … Matchmaking"; Connection-Error's look): no
  * answer from the server, a connection lost while searching, a match whose room this phone did not reach in
  * time, or the server's refusal (a search or a ranked game already running on another device, a closed
  * queue, no sign-in). A plain explanation, the small support code, then "חפש שוב", "עבור לאימון" (practice
- * works offline) and "חזרה לבית".
+ * works offline) and "חזרה לבית". A failure no new search can fix (signed out, an unknown queue) offers no
+ * "חפש שוב".
  */
 export function MatchErrorView({
   model: m,
@@ -51,6 +57,7 @@ export function MatchErrorView({
   const connection = CONNECTION.includes(m.code);
   const title = connection ? t('error.offlineTitle') : t('error.title');
   const body = t(`error.body.${m.code}`);
+  const canRetry = !FINAL.includes(m.code);
 
   return (
     <View style={styles.root} testID={testID}>
@@ -85,19 +92,22 @@ export function MatchErrorView({
             <Text style={styles.codeText}>{m.supportCode}</Text>
           </View>
           <View style={styles.actions}>
-            <Button
-              label={t('error.retry')}
-              onPress={onRetry}
-              size="lg"
-              icon="refresh"
-              style={styles.stretch}
-              testID={`${testID}-retry`}
-            />
+            {canRetry ? (
+              <Button
+                label={t('error.retry')}
+                onPress={onRetry}
+                size="lg"
+                icon="refresh"
+                style={styles.stretch}
+                testID={`${testID}-retry`}
+              />
+            ) : null}
             <Button
               label={t('error.practice')}
               onPress={onPractice}
-              variant="secondary"
-              size="md"
+              variant={canRetry ? 'secondary' : 'primary'}
+              size={canRetry ? 'md' : 'lg'}
+              icon={canRetry ? undefined : 'target'}
               style={styles.stretch}
               testID={`${testID}-practice`}
             />

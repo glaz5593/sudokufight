@@ -172,9 +172,26 @@ function ResultsBody({
   const versus = model.players > 1;
   // A full board against someone was filled by both: "the board filled up", not "you filled it".
   const reason = versus && model.end === 'completed' ? t('results.end.full') : t(`results.end.${model.end}`);
-  const title = model.outcome ? t(`results.outcome.${model.outcome}`) : t(`results.title.${model.end}`);
+  // Results-4P: behind the winner in a game of 3–4 the headline is the place ("מקום 2!"), not "הפסד".
+  const placeTitle = model.outcome === 'loss' && model.players >= 3 && model.place !== null;
+  const title = placeTitle
+    ? t('results.placeTitle', { place: model.place })
+    : model.outcome
+      ? t(`results.outcome.${model.outcome}`)
+      : t(`results.title.${model.end}`);
+  // Spec §12 "מקום סופי": "מקום 1 מתוך 2" (Results-Victory), or "מתוך 4 שחקנים" under "מקום 2!" (Results-4P).
+  const players = t('progress:common.players', { count: model.players });
+  const placeLine =
+    model.place === null
+      ? null
+      : placeTitle
+        ? t('results.outOf', { players })
+        : t('results.placeOf', { place: model.place, total: model.players });
   const ranked = model.mode === 'ranked';
   const modeTitle = ranked ? t('titleRanked') : model.mode === 'bot' ? t('titleBot') : t('title');
+  const header = versus
+    ? t('results.header', { title: modeTitle, type: t(`type.${model.gameType}`), players })
+    : t('subtitle', { title: modeTitle, type: t(`type.${model.gameType}`) });
   const gold = model.outcome ? model.outcome === 'win' : model.end === 'completed';
   const newGame = () => (versus ? onNewGame(model.gameType, model.mode) : onNewGame(model.gameType));
 
@@ -207,8 +224,8 @@ function ResultsBody({
             onPress={onHome}
             testID="results-home"
           />
-          <Text style={[text('caption'), styles.muted]} numberOfLines={1}>
-            {t('subtitle', { title: modeTitle, type: t(`type.${model.gameType}`) })}
+          <Text style={[text('caption'), styles.muted, styles.shrink]} numberOfLines={1}>
+            {header}
           </Text>
         </View>
 
@@ -220,9 +237,20 @@ function ResultsBody({
           >
             {title}
           </Text>
-          {model.abandonWin ? (
-            <View style={styles.tag} testID="results-abandon-win">
-              <Text style={[text('badge'), styles.tagText]}>{t('results.abandonWin')}</Text>
+          {placeLine || model.abandonWin ? (
+            <View style={styles.tags}>
+              {placeLine ? (
+                <View style={[styles.tag, model.place === 1 ? null : styles.tagPlain]} testID="results-place">
+                  <Text style={[text('badge'), model.place === 1 ? styles.tagText : styles.strong]}>
+                    {placeLine}
+                  </Text>
+                </View>
+              ) : null}
+              {model.abandonWin ? (
+                <View style={styles.tag} testID="results-abandon-win">
+                  <Text style={[text('badge'), styles.tagText]}>{t('results.abandonWin')}</Text>
+                </View>
+              ) : null}
             </View>
           ) : null}
           <Text style={[text('body'), styles.muted, styles.centered]} testID="results-end">
@@ -342,7 +370,13 @@ function ResultsBody({
         entering={enter.actions}
         style={[styles.actions, { paddingBottom: padding.paddingBottom }]}
       >
-        <Button label={t('results.actions.newGame')} size="lg" onPress={newGame} testID="results-new-game" />
+        <Button
+          label={t('results.actions.newGame')}
+          size="md"
+          onPress={newGame}
+          style={styles.action}
+          testID="results-new-game"
+        />
         <Button
           label={th('results.replay')}
           icon="history"
@@ -350,6 +384,7 @@ function ResultsBody({
           size="md"
           onPress={() => onReplay(model.gameId, model.mode)}
           accessibilityHint={th('results.replayHint')}
+          style={styles.action}
           testID="results-replay"
         />
       </Animated.View>
@@ -429,6 +464,7 @@ const styles = StyleSheet.create({
   titleBlock: { alignItems: 'center', gap: space[4] },
   title: { color: color.text, textAlign: 'center' },
   titleDone: { color: color.accent },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space[3] },
   tag: {
     paddingHorizontal: space[6],
     paddingVertical: space[2],
@@ -437,7 +473,9 @@ const styles = StyleSheet.create({
     borderWidth: tokens.border.hairline,
     borderColor: color.accent,
   },
+  tagPlain: { backgroundColor: color.surface2, borderColor: color.border },
   tagText: { color: color.accent },
+  shrink: { flexShrink: 1 },
   centered: { textAlign: 'center' },
   muted: { color: color.textMuted },
   strong: { color: color.text },
@@ -469,7 +507,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     backgroundColor: color.surface2,
   },
+  // Results-Victory / -Defeat / -4P: "משחק חדש" and "צפייה חוזרת" side by side; on a narrow phone or with a
+  // large font the second one wraps to its own line instead of cutting its label.
   actions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: tokens.layout.gutterHome,
     paddingTop: space[6],
     gap: space[6],
@@ -477,4 +519,5 @@ const styles = StyleSheet.create({
     borderTopColor: color.border,
     backgroundColor: color.bg,
   },
+  action: { flexGrow: 1, flexBasis: 'auto' },
 });

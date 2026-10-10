@@ -59,7 +59,8 @@ describe('ResultsScreen against a bot (spec §12)', () => {
     await show(fromDisk(game), game.id);
 
     expect(screen.getByRole('header', { name: 'ניצחון!' })).toBeOnTheScreen();
-    expect(screen.getByText('אימון מול בוט · מהיר')).toBeOnTheScreen();
+    expect(screen.getByText('אימון מול בוט · מהיר · 2 שחקנים')).toBeOnTheScreen();
+    expect(screen.getByTestId('results-place')).toHaveTextContent('מקום 1 מתוך 2');
     expect(screen.getByTestId('results-end')).toHaveTextContent('איך זה נגמר: הלוח התמלא');
     expect(screen.getByLabelText(`ניקוד סופי: ${scoreText(me.score)} נקודות`)).toBeOnTheScreen();
     expect(screen.getByLabelText('טעויות: 1')).toBeOnTheScreen();
@@ -177,7 +178,8 @@ describe('ResultsScreen against a bot, in English', () => {
     const won = await wonDuel();
     await show(fromDisk(won), won.id);
     expect(screen.getByRole('header', { name: 'Victory!' })).toBeOnTheScreen();
-    expect(screen.getByText('Practice vs bot · Fast')).toBeOnTheScreen();
+    expect(screen.getByText('Practice vs bot · Fast · 2 players')).toBeOnTheScreen();
+    expect(screen.getByTestId('results-place')).toHaveTextContent('Place 1 of 2');
     expect(screen.getByTestId('results-end')).toHaveTextContent('How it ended: The board filled up');
     expect(screen.getByRole('header', { name: 'Opponent' })).toBeOnTheScreen();
     expect(screen.getByTestId(`results-opponent-${BOT.id}`)).toHaveProp(

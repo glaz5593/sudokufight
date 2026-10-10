@@ -79,14 +79,15 @@ export function activityPhrase(a: Activity, t: PlayerT, gender?: Gender): string
 /**
  * The card's group label (components.md §3.6, §7.4): "MosheG · 55 נקודות · טעות אחת", then the rating, the
  * connection and an interference, e.g. "NinaVolt · 39.5 נקודות · בוחר A8, טעות אחת, דירוג 1305, מחובר".
- * Compact cards add the place: "Aiko_M · מקום 1 · 39 נקודות · בוחר D4".
+ * Compact cards add the place: "Aiko_M · מקום 1 · 39 נקודות · בוחר D4". A bot's card can say its level after
+ * "בוט" ("בוט, רמה 3, מתקדם").
  */
 export function cardLabel(
   m: CardModel,
   t: PlayerT,
-  opts: { gender?: Gender; compact?: boolean } = {},
+  opts: { gender?: Gender; compact?: boolean; botLevel?: string } = {},
 ): string {
-  const { gender, compact = false } = opts;
+  const { gender, compact = false, botLevel } = opts;
   const sep = t('sep');
   const list = t('listSep');
   const head = [displayName(m, t)];
@@ -101,6 +102,7 @@ export function cardLabel(
     extras.push(mistakesLong(m.mistakes, t));
   }
   if (m.isBot) extras.push(t('bot'));
+  if (m.isBot && botLevel) extras.push(botLevel);
   if (m.rating !== null) extras.push(t('rating.label', { value: Math.round(m.rating) }));
   // My own connection shows as a banner, and "left" / "reconnecting" are already the activity phrase.
   if (!m.isMe && m.presence === 'online' && m.out === null) extras.push(presenceText(m.presence, t, gender));

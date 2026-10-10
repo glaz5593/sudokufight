@@ -1,11 +1,12 @@
 import { cellName, ManualClock, ManualScheduler } from '@sudoku-fight/engine';
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 
 import { formatScore, ltr, scoreText, signedText } from '../../../components/player';
 import { puzzleById } from '../../../game/offlinePool';
 import { type PracticeSession, startPractice } from '../../../game/session';
 import { answerIn, emptyCellsOf, smallPool, wrongIn } from '../../../game/testing/practice';
 import i18n from '../../../i18n';
+import { useProfile } from '../../../state/profile';
 import { useSettings } from '../../../state/settings';
 import { GameScreen } from '../GameScreen';
 
@@ -97,6 +98,18 @@ describe('GameScreen (solo practice)', () => {
     expect(screen.getByTestId('keypad')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'ביטול בחירה' })).toBeDisabled();
     expect(feedback.preloadCues).toHaveBeenCalledTimes(1);
+  });
+
+  it('my flag sits by my name, from my profile (Game-Solo); none when the phone has no country', async () => {
+    useProfile.setState({ country: 'IL' });
+    await show();
+    expect(within(screen.getByTestId('solo-hud-summary')).getByTestId('flag-IL', hidden)).toBeTruthy();
+    // Decorative: the card's label is unchanged.
+    expect(screen.getByLabelText('אני · 0 נקודות · אין טעויות')).toBeOnTheScreen();
+    running?.close();
+    useProfile.setState({ country: null });
+    await show();
+    expect(screen.queryAllByTestId(/^flag-/, hidden)).toEqual([]);
   });
 
   it('a tap locks the cell: the lock strip shows it, with the selection cue', async () => {

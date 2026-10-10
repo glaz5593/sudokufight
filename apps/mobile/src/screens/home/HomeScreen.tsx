@@ -9,16 +9,19 @@ import { refreshMe, useAuth } from '../../auth/authStore';
 import { ltr } from '../../components/player';
 import { BottomNav, Button, IconButton, RowButton, useToast } from '../../components/ui';
 import { useGameStore } from '../../game/gameStore';
+import { useConnectivityWatch } from '../../net/connectivity';
 import { refreshMyProgress } from '../../progress/appProgress';
 import { useMyCard, useMyProgress } from '../../progress/hooks';
 import { cue } from '../../services/feedback';
 import { VerifyBanner } from '../account/VerifyEmailScreen';
+import { Announcer } from '../game/connection/Announcer';
 import { openPlayerCard } from '../player/navigation';
 import { usePracticeHistory } from '../../state/practiceHistory';
 import { useProfile } from '../../state/profile';
 import { color, size, space, text, tokens } from '../../theme';
 import { HOME_RECENT_COUNT, lastPlayOf } from './homeModel';
 import { goToTab } from './navigation';
+import { OfflineBanner } from './OfflineBanner';
 import { GUTTER } from './parts';
 import { usePracticeStats } from './practiceStats';
 import { ProfileCard } from './ProfileCard';
@@ -45,6 +48,10 @@ export interface HomeScreenProps {
  * Home opens offline); pressing it opens the profile. Until the email is verified, a banner under the card
  * leads to /verify-email [D22]. Without an account profile (tests of the home screens alone) the card falls
  * back to the local profile.
+ *
+ * Stage 13 (spec §16.1): Home asks the server too (net/connectivity.ts). Without an answer the banner "אין
+ * חיבור לאינטרנט" shows under the card, and a ranked "עוד סיבוב" is dimmed with "דורש חיבור"; the app checks
+ * again in the background, and both go when the connection is back.
  */
 export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
   const { t, i18n } = useTranslation('home');
@@ -72,6 +79,8 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
   const winRate = myStats ? myStats.winRate : practiceWinRate;
   const streak = myStats ? (myStats.games > 0 ? myStats.streak : null) : practiceStreak;
   const [starting, setStarting] = useState(false);
+  const connectivity = useConnectivityWatch();
+  const offline = connectivity.status === 'offline';
 
   useFocusEffect(
     useCallback(() => {
@@ -96,9 +105,13 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
           ? t('again.subtitleRanked', { ...parts, players: t('match:players', { count: again.players }) })
           : t('again.subtitle', parts);
   }
+  // Spec §16.1: a ranked game needs the connection.
+  const againBlocked = offline && again?.mode === 'ranked';
+  if (againText && againBlocked)
+    againText = `${againText}${t('player:sep')}${t('match:offline.needsConnection')}`;
 
   const playAgain = async () => {
-    if (!again || starting) return;
+    if (!again || starting || againBlocked) return;
     cue('primaryPress');
     setStarting(true);
     const ok = await startAndOpen(again, 'push');
@@ -150,6 +163,11 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
           />
         </View>
         <VerifyBanner style={styles.verify} />
+        {offline ? (
+          <View style={styles.offline}>
+            <OfflineBanner checking={connectivity.checking} testID="home-offline" />
+          </View>
+        ) : null}
 
         <Button
           label={t('play')}
@@ -170,6 +188,7 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
             subtitle={againText}
             onPress={() => void playAgain()}
             loading={starting}
+            disabled={againBlocked}
             style={styles.again}
             testID="play-again"
           />
@@ -229,6 +248,8 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
         ) : null}
       </ScrollView>
       <BottomNav active="home" onSelect={(tab) => goToTab(tab, 'home')} testID="nav" />
+      {/* Spec §16.1: losing the connection is said to screen readers, not only drawn (the banner). */}
+      <Announcer line={offline ? t('match:offline.title') : null} testID="home-live" />
     </View>
   );
 }
@@ -262,6 +283,7 @@ const styles = StyleSheet.create({
   brandSub: { ...text('brandSub'), color: color.textMuted },
   card: { marginTop: HOME.profileCardTop },
   verify: { marginTop: space[6] },
+  offline: { marginTop: space[6] },
   play: { marginTop: HOME.ctaTop },
   again: { marginTop: HOME.rowButtonTop },
   recentHeader: {

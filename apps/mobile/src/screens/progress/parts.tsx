@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { Icon, type IconName } from '../../components/Icon';
-import { Button, Spinner } from '../../components/ui';
+import { Button, Spinner, type StateAction, type StateTone, StateView } from '../../components/ui';
 import { color, radius, size, space, text, tokens } from '../../theme';
 
 /**
@@ -48,53 +48,47 @@ export function ProgressBar({
   );
 }
 
-/** A whole-screen (or whole-list) state: loading, empty, offline, an error. */
+/**
+ * A whole-screen (or whole-list) state: empty, offline, an error (the shared StateView, stage 13), or a short
+ * wait with a spinner. Lists and cards show their skeleton while they load instead.
+ */
 export function StateMessage({
   icon,
   title,
   body,
   action,
   loading = false,
+  tone,
+  code,
   testID,
 }: {
   icon?: IconName;
   title: string;
   body?: string;
-  action?: { label: string; onPress: () => void; icon?: IconName; testID?: string };
+  action?: StateAction;
   loading?: boolean;
+  tone?: StateTone;
+  code?: string | null;
   testID?: string;
 }) {
+  if (!loading)
+    return (
+      <StateView
+        icon={icon ?? 'alert'}
+        title={title}
+        body={body}
+        tone={tone}
+        code={code}
+        actions={action ? [action] : []}
+        testID={testID}
+      />
+    );
   return (
     <View style={styles.state} testID={testID}>
-      {loading ? (
-        <Spinner color={color.textMuted} />
-      ) : icon ? (
-        <View style={styles.stateIcon}>
-          <Icon name={icon} size={size.icon.nav} color={color.textMuted} />
-        </View>
-      ) : null}
-      <Text
-        style={[
-          text(loading ? 'body' : 'sheetTitle'),
-          loading ? styles.muted : styles.strong,
-          styles.centered,
-        ]}
-        accessibilityRole={loading ? undefined : 'header'}
-        accessibilityLiveRegion={loading ? 'polite' : undefined}
-      >
+      <Spinner color={color.textMuted} />
+      <Text style={[text('body'), styles.muted, styles.centered]} accessibilityLiveRegion="polite">
         {title}
       </Text>
-      {body ? <Text style={[text('bodyLong'), styles.muted, styles.centered]}>{body}</Text> : null}
-      {action ? (
-        <Button
-          label={action.label}
-          icon={action.icon}
-          variant="secondary"
-          size="md"
-          onPress={action.onPress}
-          testID={action.testID}
-        />
-      ) : null}
     </View>
   );
 }
@@ -208,20 +202,10 @@ export function Segmented<K extends string | number>({
   );
 }
 
-const STATE_ICON = size.touch + space[6];
-
 const styles = StyleSheet.create({
   track: { width: '100%', backgroundColor: color.progress.track, overflow: 'hidden' },
   fill: { height: '100%' },
   state: { alignItems: 'center', gap: space[6], paddingVertical: space[12], paddingHorizontal: space[8] },
-  stateIcon: {
-    width: STATE_ICON,
-    height: STATE_ICON,
-    borderRadius: radius.xl,
-    backgroundColor: color.surface2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   note: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -256,7 +240,6 @@ const styles = StyleSheet.create({
   segmentOn: { borderColor: color.accent, backgroundColor: color.accentSubtle },
   segmentPressed: { backgroundColor: color.pressedOverlay },
   segmentTextOn: { color: color.accent },
-  strong: { color: color.text },
   muted: { color: color.textMuted },
   centered: { textAlign: 'center' },
 });

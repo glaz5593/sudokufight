@@ -13,6 +13,12 @@ import { PlayerCardScreen } from '../../src/screens/player';
 const openReplay = (gameId: string) =>
   router.push({ pathname: '/replay/[id]', params: { id: gameId, source: 'ranked' } });
 
+/**
+ * "כל ההישגים": the achievements tab. Back to it when the card was opened from there, else in the card's place,
+ * so the stack never loops (tab → card → tab) or grows (screens/home/navigation.ts).
+ */
+const openAchievements = () => router.dismissTo('/achievements');
+
 /** Mine is saved on the phone, so it opens offline next time (and Home shows its numbers). */
 const keepMine = (card: PlayerCard) => {
   const owner = currentOwner();
@@ -43,6 +49,7 @@ export default function PlayerRoute() {
       onBack={goBack}
       onEditProfile={() => router.push(ROUTES.editProfile)}
       onOpenReplay={openReplay}
+      onOpenAchievements={openAchievements}
       onLoaded={keepMine}
     />
   );

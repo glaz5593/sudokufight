@@ -151,6 +151,7 @@
     "duration": "Est. length",
     "seconds": "{{seconds}} s",
     "minutes": "{{range}} min",
+    "yourRating": "Your rating",
     "cardLabel": "{{name}}. {{technique}}. {{seconds}} per cell, {{difficulty}} board, about {{from}} to {{to}} minutes",
     "botHint": "Choose a bot for a {{type}} game"
   },
@@ -175,6 +176,11 @@
     },
     "language": "Language",
     "languageHint": "Changing the language restarts the app.",
+    "languageConfirm": {
+      "title": "Switch the language to {{language}}?",
+      "body": "The app restarts, so every screen shows in the new language's direction.",
+      "confirm": "Switch and restart"
+    },
     "languages": {
       "he": "עברית",
       "en": "English"

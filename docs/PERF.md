@@ -1,0 +1,179 @@
+# ביצועים: זמן פתיחה וגודל האפליקציה (שלב 13)
+
+הסעיף "ביצועים" בשלב 13 (`docs/02-WORK-PLAN.md`), מול הדרישות באפיון, סעיף 22:
+- פתיחה תוך פחות מ־2 שניות.
+- לפחות 55fps באנימציות, ב־Release build בטלפון Android בינוני.
+
+המדידות כאן נעשו במחשב: ‏`expo export` של Android ו־Jest.
+המדידה בטלפון היא הצעד של משה, והיא מפורטת בסעיף "מדידה במכשיר" למטה.
+
+## סיכום: לפני ואחרי
+
+| מדד | לפני | אחרי |
+|---|---|---|
+| קוד ה־JS ב־Android (Hermes bytecode) | 5.82 MB | 5.76 MB (‎−52 KB) |
+| גופנים שה־bundle מוסיף ל־APK | 2.01 MB (7 קבצים) | 0 |
+| קבצים שרצים לפני המסך הראשון | 284 (1.98 MB קוד מקור) | 277 (1.65 MB) |
+| רינדור מקשים ב־5 שניות של נעילה | 180 | 0 |
+| רינדור הלוח ב־5 שניות של נעילה | 20 | 5 |
+
+הערות לטבלה:
+- **קוד ה־JS:** ירדו 54 KB של קוד פיתוח, כלומר מסך מערכת העיצוב ומסך Hello. באותו זמן נוספו כ־7 KB מחלקים אחרים של שלב 13 (מצבי טעינה ושגיאה).
+- **גופנים:** ששת הגופנים עדיין באפליקציה, פעם אחת (1.14 MB). אותם מטמיע ה־plugin של `expo-font` שב־`app.json`. בפירוט בסעיף 1–2 למטה.
+- **קבצים לפני המסך הראשון:** ‏`app/_layout.tsx` ו־`app/index.tsx`, וכל מה שהם מייבאים.
+- **רינדור ב־5 שניות של נעילה:** ‏`GameScreenRenders.test.tsx`, משחק לבד וגם מול בוט.
+  - ‏`commits` של המסך: 20, גם לפני וגם אחרי. הספירה לאחור מתעדכנת 4 פעמים בשנייה.
+  - משבצות: 5 (ו־10 מול בוט), גם לפני וגם אחרי. רק המשבצת הנעולה מתעדכנת, פעם בשנייה.
+
+## מדידה
+
+### גודל ה־bundle (במחשב)
+
+מתוך `apps\mobile`:
+
+```
+npx expo export --platform android --output-dir %TEMP%\sf-perf --source-maps --dump-assetmap
+npm run perf:bundle -- %TEMP%\sf-perf --json %TEMP%\sf-perf.json
+```
+
+- ב־Expo 57 הדגל הוא `--source-maps`. ‏`--dump-sourcemap` הוא השם הישן, ועדיין עובד.
+- **‏`scripts/bundle-report.mjs`** קורא את ה־source map, בלי תלויות. הוא מדפיס:
+  - את גודל ה־bundle.
+  - את 30 החבילות והתיקיות הגדולות, ואת 30 הקבצים הגדולים.
+  - את הנכסים: גופנים, צלילים, SVG ותמונות.
+- ב־Hermes, ה־map מייחס רק את ה־bytecode עצמו (3.2 MB מתוך 5.8). טבלאות המחרוזות וה־JSON לא מיוחסים, למשל מאגר הלוחות.
+- **השוואה לריצה קודמת:** ‏`--compare <json קודם>` מוסיף לכל שורה את ההפרש.
+
+הגדולים ב־bundle (אחרי):
+
+| חבילה או תיקייה | KB |
+|---|---|
+| react-native | 461 |
+| expo-router | 347 |
+| react-native-reanimated | 312 |
+| @shopify/react-native-skia, ו־react-reconciler שלו | 150 + 120 |
+| `src/screens/game` | 138 |
+| @colyseus/schema, ‏@colyseus/sdk, ‏msgpackr | 113 + 84 + 42 |
+| expo | 103 |
+| react-native-svg | 96 |
+| react-native-gesture-handler | 64 |
+| @expo/ui (ה־toolbar של expo-router ב־Android) | 53 |
+
+### רינדורים במסך המשחק (Jest)
+
+```
+npx jest apps/mobile/src/screens/game/__tests__/GameScreenRenders.test.tsx --selectProjects mobile
+```
+
+הבדיקה מדפיסה את הספירות, ונכשלת אם הן עוברות את הגבול:
+- `commits`: עד 22.
+- משבצות: עד 6, ומול בוט עד 12.
+- מקשים: 0.
+- לוח: עד 6, ומול בוט עד 12.
+
+### מדידה במכשיר (משה)
+
+**זמן פתיחה.** היעד: המסך הראשון האמיתי תוך פחות מ־2 שניות, מהפעלה קרה.
+
+1. **ב־Development Build** (לכיוון בלבד, כי build פיתוח איטי יותר):
+   - בטרמינל של Metro מופיעה פעם אחת בכל הפעלה השורה `[startup] first screen: 1234 ms after the app started (JS: 640 ms)`.
+2. **ב־Release** (המספר שקובע). בונים עם `EXPO_PUBLIC_STARTUP_LOG=1`, ואז השורה נכתבת גם ב־release:
+   - **ב־EAS:** מוסיפים ב־`eas.json`, בפרופיל `preview`, את `"env": { "EXPO_PUBLIC_STARTUP_LOG": "1" }`, ובונים עם `eas build -p android --profile preview`.
+   - **במחשב:** ‏`set EXPO_PUBLIC_STARTUP_LOG=1` ואז `npx expo run:android --variant release`.
+     - לפני כן בודקים שיש מקום בכונן C. בונים ABI אחד: `-PreactNativeArchitectures=arm64-v8a`.
+   - מתקינים, מחברים את הטלפון ב־USB, ומריצים:
+     ```
+     adb logcat -c
+     adb shell am force-stop com.mosheg.sudokufight
+     adb shell am start -W -n com.mosheg.sudokufight/.MainActivity
+     adb logcat -d -s ReactNativeJS | findstr startup
+     ```
+   - ‏`am start -W` מדפיס `TotalTime`: הזמן עד הפריים הראשון, כלומר מסך הפתיחה של המערכת.
+   - שורת `[startup]` נותנת את הזמן עד המסך הראשון האמיתי (הבית, או מסך הכניסה). **היא זו שצריכה להיות פחות מ־2000 ms.**
+   - חוזרים 5 פעמים, ולוקחים את החציון.
+
+**‏55fps.**
+- **ב־Development Build:** תפריט המפתחים ← "Perf Monitor". מוצגים fps של UI ושל JS בזמן משחק, נעילה והפרעה.
+- **ב־Release:**
+  1. ‏`adb shell dumpsys gfxinfo com.mosheg.sudokufight reset`.
+  2. משחקים דקה: נעילות, טעויות, הפרעה, ותגובות.
+  3. ‏`adb shell dumpsys gfxinfo com.mosheg.sudokufight`.
+  - בשורה `Janky frames` צריך להופיע אחוז קטן, עד 5%.
+
+## מה השתנה
+
+1. **גופן Material Symbols ‏(948 KB) הוצא.**
+   - ‏expo-router מייבא ב־Android, דרך `expo-symbols`, את הגופן בשביל האייקונים של Native Tabs.
+   - באפליקציה אין Native Tabs ואין `SymbolView`. לכן `metro.config.js` מפנה את החבילה לקובץ ריק: ‏`src/theme/no-material-symbols.js`.
+   - **‏`metroConfig.test.ts`** בודק את ההפניה, ונכשל אם מישהו מתחיל להשתמש ב־Native Tabs או ב־`SymbolView`. במקרה כזה מוחקים את השורה.
+2. **הגופנים כבר לא נשלחים פעמיים ב־Android (‎−1.14 MB).**
+   - ה־plugin של `expo-font` מטמיע את ששת הקבצים, וב־Android שם המשפחה הוא שם הקובץ: `Rubik_700Bold`.
+   - לכן ב־release build של Android, ‏`src/theme/fonts.ts` לא טוען אותם שוב. התנאי נקבע בזמן הבנייה, ו־Metro משמיט את הקבצים.
+   - **ב־iOS הגופנים עדיין נטענים בזמן ריצה,** כי שם הגופן המוטמע הוא שם ה־PostScript (`Rubik-Bold`), לא שם הקובץ. כך גם ב־builds של פיתוח.
+   - **‏`appFonts.test.ts`** בודק ששתי הרשימות זהות: ששת המשקלים שבשימוש, והקבצים ב־`app.json`.
+3. **קוד הפיתוח לא נכנס ל־release.**
+   - ‏`app/dev/design-system.tsx` ו־`app/dev/hello.tsx` טוענים את המסכים שלהם רק מאחורי `__DEV__`.
+   - כך יצאו מה־bundle ‏`src/components/dev`, ‏`DesignSystemScreen`, ‏`HelloScreen`, ‏`helloStore` ו־`useEchoRtt` (54 KB).
+4. **לפני המסך הראשון רצים רק הגופנים, השפה והכיוון שלה, ומצב ההתחברות.**
+   - שלושה דברים עוברים לרגע שבו המסך הראשון כבר מוצג וה־JS פנוי (`requestIdleCallback`):
+     - דיווחי השימוש (‏telemetry).
+     - סנכרון ה־XP של אימונים, וקריאת ההתקדמות.
+     - פתיחת מסד האימונים.
+   - כל אחד מהם מחכה לדיסק או לרשת, והמסך הראשון לא צריך אף אחד מהם.
+   - אם המסך הראשון לא מגיע, למשל Splash שנשאר על "נסה שוב", הם מתחילים אחרי 3 שניות.
+   - האירוע `app_open` נשמר בזיכרון עד אז, ולא הולך לאיבוד.
+   - הקוד: `src/services/startup.ts` ו־`app/_layout.tsx`.
+   - ב־release ה־Splash מחכה רק להתחברות: הגופנים מוטמעים ומוכנים מיד.
+5. **מאגר הלוחות לאופליין (300 KB של JSON) נקרא בשימוש הראשון,** כלומר בתחילת אימון, ולא בפתיחת האפליקציה (`src/game/offlinePool.ts`).
+6. **הבית מייבא את הקובץ של המסך עצמו,** ולא את `screens/home/index`.
+   - כך מסכי ההגדרות, המצבים, סוג המשחק ובחירת הבוט, וגם `AccountSettings`, לא נטענים לפני המסך הראשון.
+7. **מסך המשחק:**
+   - ‏`Keypad` ו־`Key` עטופים ב־`memo`.
+   - ‏`Board` עטוף ב־`memo`, עם השוואה של המשבצות (`sameBoardProps`).
+   - ‏`sameCell` כבר לא יוצר מחרוזות. הוא רץ 81 פעם בכל עדכון של הספירה לאחור.
+   - התוצאה: בכל עדכון של הספירה לאחור נבנים מחדש רק הדברים שמציגים זמן.
+8. **שורת זמן הפתיחה** (`logFirstScreen`), כמו שמתואר בסעיף "מדידה במכשיר".
+
+**בדיקות חדשות:**
+- **‏`src/__tests__/startupGraph.test.ts`:**
+  - עובר על כל מה שנטען לפני המסך הראשון, ונכשל אם נכנס לשם אחד מאלה: Skia, ‏Colyseus, ‏Firebase, מאגר הלוחות, מסך המשחק, ה־Replay, קוד הפיתוח, או מסכי ההגדרות והמצבים.
+  - מוודא שהמאגר נקרא רק בשימוש הראשון.
+  - הכלי: `src/testing/importGraph.ts`. מה שנטען בתוך פונקציה לא נספר, כי הוא רץ רק כשקוראים לה.
+- **‏`GameScreenRenders.test.tsx`:** ספירת הרינדורים.
+- **‏`appFonts.test.ts` ו־`metroConfig.test.ts`.**
+- **‏`src/services/__tests__/startup.test.ts`.**
+
+## מה נבדק ולא שונה, ולמה
+
+- **תלויות שלא בשימוש:** אף אחת לא הוסרה.
+  - ‏`expo-dev-client`: ה־Development Build.
+  - ‏`expo-linking` ו־`react-native-screens`: תלויות של expo-router.
+  - ‏`expo-system-ui`: צבע הרקע ו־`userInterfaceStyle` ב־Android.
+  - ‏`expo-build-properties`: ‏plugin בזמן בנייה.
+  - **‏`react-dom`:** תלות אופציונלית של expo-router ל־web. היא לא נכנסת ל־bundle של הטלפון, ולכן הסרה לא חוסכת כלום ב־APK. היא גם דורשת `npm install`. **ההחלטה של משה.**
+- **‏Colyseus SDK:** כבר נטען רק כשמתחילים משחק מקוון (`net/device` ו־`net/matchmakingDevice` נטענים בעצלות). ‏`startupGraph.test.ts` שומר שזה יישאר כך.
+- **‏Skia:** לא נטען בפתיחת האפליקציה, והבדיקה שומרת על כך. הוא נטען עם מסך המשחק, וזה בכוונה:
+  - טעינה בהפרעה הראשונה הייתה עוצרת את ה־JS בדיוק כשהאפקט מתחיל.
+  - הדרישה היא 55fps באנימציות.
+- **המנוע:** האפליקציה מייבאת את `@sudoku-fight/engine` כולו, כ־73 KB.
+  - אין בו עבודה כבדה בטעינה, רק 27 יחידות של הלוח.
+  - רק בדרך למסך הראשון יש כ־20 קבצים שמייבאים ממנו. מעבר לייבוא חלקי היה נוגע בכולם, בשביל חיסכון של מילישניות.
+- **30 צלילי ה־WAV הזמניים (341 KB):**
+  - בטעינה הם רק נרשמים כמספרי נכס. נגן נוצר רק בשימוש הראשון, או ב־preload של מסך המשחק.
+  - **הערה לצלילים הסופיים:** בפורמט m4a או ogg הם יהיו קטנים פי 5–10 מ־WAV.
+- **התרגומים:** שתי השפות נטענות (154 KB של JSON), והשפה הלא פעילה לא בשימוש.
+  - טעינה עצלה דורשת לשנות את מבנה `src/i18n`, בשביל חיסכון קטן. לא נעשה.
+- **חבילות צד שלישי:** אי אפשר לשנות בלי patch.
+  - ‏`semver`: בדיקת הגרסה של Reanimated, ‏21 KB.
+  - ‏`whatwg-url-minimum`: ה־URL של Expo.
+  - ‏`@expo/ui`: ה־toolbar של expo-router ב־Android, ‏53 KB.
+- **‏`av19.svg` שוקל 57 KB, פי 7 משאר האווטרים.**
+  - אפשר להקטין אותו עם svgo, אחרי בדיקת הרישיון של האווטרים.
+
+## מה נשאר במסך המשחק
+
+- בזמן שטיימר רץ, `GameScreen` מתעדכן 4 פעמים בשנייה (`useNow`, ‏250 ms).
+- כרטיסי השחקנים, פס הנעילה וה־HUD נבנים מחדש בכל עדכון. הלוח והמקלדת כבר לא.
+- **המועמד הבא לשיפור:** ‏`TimerRing` מתחיל מחדש את האנימציה שלו בכל עדכון, כי `remainingMs` משתנה.
+  - אפשר להתחיל מחדש רק כשיש סטייה מהזמן הצפוי.
+  - שווה לעשות את זה אם המדידה בטלפון תראה ירידה מתחת ל־55fps.

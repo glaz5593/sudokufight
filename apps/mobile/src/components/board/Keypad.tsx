@@ -1,5 +1,5 @@
 import type { Digit } from '@sudoku-fight/engine';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
@@ -26,7 +26,7 @@ export interface KeypadProps {
   testID?: string;
 }
 
-export function Keypad({ model, onDigit, onIdlePress, width = size.board, testID = 'keypad' }: KeypadProps) {
+function KeypadView({ model, onDigit, onIdlePress, width = size.board, testID = 'keypad' }: KeypadProps) {
   // keypad.arm / keypad.idle: the whole row fades between .55 and 1 in 240 ms (opacity only, so reduced motion too).
   const target = model.enabled ? 1 : tokens.opacity.keypadIdle;
   const opacity = useSharedValue(target);
@@ -44,15 +44,40 @@ export function Keypad({ model, onDigit, onIdlePress, width = size.board, testID
   );
 }
 
-function Key({
-  model,
-  onDigit,
-  onIdlePress,
-}: {
+/** Two keys that draw the same: the game screen makes a new model on every countdown tick (4 a second). */
+export const sameKey = (a: KeyModel, b: KeyModel): boolean =>
+  a === b ||
+  (a.digit === b.digit && a.remaining === b.remaining && a.state === b.state && a.disabled === b.disabled);
+
+/**
+ * Memoised (spec §22, 55 fps): a lock's countdown re-renders the game screen 4 times a second, and the keys
+ * don't change with it. Pass stable `onDigit` / `onIdlePress` functions.
+ */
+export const Keypad = memo(
+  KeypadView,
+  (a, b) =>
+    a.model.enabled === b.model.enabled &&
+    a.model.keys.length === b.model.keys.length &&
+    a.model.keys.every((key, k) => sameKey(key, b.model.keys[k]!)) &&
+    a.onDigit === b.onDigit &&
+    a.onIdlePress === b.onIdlePress &&
+    a.width === b.width &&
+    a.testID === b.testID,
+);
+
+interface KeyProps {
   model: KeyModel;
   onDigit: (digit: Digit) => void;
   onIdlePress?: (digit: Digit) => void;
-}) {
+}
+
+/** One key; only the key whose count or state changed redraws (a placed digit changes one count). */
+const Key = memo(
+  KeyView,
+  (a, b) => sameKey(a.model, b.model) && a.onDigit === b.onDigit && a.onIdlePress === b.onIdlePress,
+);
+
+function KeyView({ model, onDigit, onIdlePress }: KeyProps) {
   const { t } = useTranslation('board');
   const { digit, state } = model;
   const armed = state === 'armed';

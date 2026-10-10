@@ -73,6 +73,22 @@ describe('"משחק חדש" (spec §5.1)', () => {
     expect(directionProblems(screen.getByTestId('mode-solo'))).toEqual([]);
   });
 
+  it('the header ends with me, as on the Modes board: my name (isolated) and my avatar', async () => {
+    useProfile.setState({ name: 'MosheG', avatarId: 'av07' });
+    await renderApp('/modes');
+    const me = screen.getByTestId('modes-me');
+    expect(me).toHaveTextContent('⁨MosheG⁩');
+    expect(within(me).getByTestId('modes-me-avatar', { includeHiddenElements: true })).toBeTruthy();
+    expect(directionProblems(screen.getByTestId('modes-me'))).toEqual([]);
+
+    // No name yet (before the fighter is made): the avatar alone.
+    await act(async () => useProfile.setState({ name: null }));
+    expect(screen.getByTestId('modes-me')).toHaveTextContent('');
+    expect(
+      within(screen.getByTestId('modes-me')).getByTestId('modes-me-avatar', { includeHiddenElements: true }),
+    ).toBeTruthy();
+  });
+
   it('ranked 3 and 4 players open the game type of their table (stage 10)', async () => {
     const app = await renderApp('/modes');
     await fireEvent.press(screen.getByTestId('mode-ranked3'));

@@ -68,7 +68,7 @@ describe('Home (spec §4.3)', () => {
     expect(await screen.findByTestId('recent-empty')).toHaveTextContent(/עוד אין משחקים כאן/);
 
     const card = screen.getByTestId('profile-card');
-    expect(card).toHaveProp('accessibilityLabel', 'הכרטיס שלי: שחקן, ישראל, עוד אין דירוג, 0 משחקים');
+    expect(card).toHaveProp('accessibilityLabel', 'כרטיס השחקן שלי: שחקן, ישראל, עוד אין דירוג, 0 משחקים');
     expect(screen.getByTestId('profile-name')).toHaveTextContent('שחקן');
     expect(within(card).getByTestId('stat-games')).toHaveTextContent('0משחקים');
     expect(within(card).getByTestId('rating-normal')).toHaveTextContent('רגיל—');
@@ -274,7 +274,7 @@ describe('Home with practices against a bot (stage 5)', () => {
     expect(within(card).getByTestId('stat-games')).toHaveTextContent('3משחקים');
     expect(card).toHaveProp(
       'accessibilityLabel',
-      'הכרטיס שלי: שחקן, ישראל, עוד אין דירוג, 3 משחקים, 50% ניצחונות, בלי רצף ניצחונות',
+      'כרטיס השחקן שלי: שחקן, ישראל, עוד אין דירוג, 3 משחקים, 50% ניצחונות, בלי רצף ניצחונות',
     );
   });
 

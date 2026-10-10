@@ -21,6 +21,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { type AvatarId, isAvatarId } from '../../assets/avatars';
+import { useAuth } from '../../auth/authStore';
 import { Board, type BoardFlash, boardModel, CancelSelection, Keypad } from '../../components/board';
 import { WarpFrame } from '../../components/interference';
 import {
@@ -66,6 +67,7 @@ import {
   holdsResults,
   RankedSurrender,
 } from './connection';
+import { surrenderRatingDelta } from './connection/surrenderEstimate';
 import { DuelHud } from './DuelHud';
 import { type Flight, FlightLayer } from './FlightLayer';
 import {
@@ -234,6 +236,10 @@ export function GameScreen({
   const { width: windowWidth } = useWindowDimensions();
   const host = session.host;
   const myAvatar = useProfile((s) => s.avatarId);
+  // My flag on my card (spec §6.8; Game-Solo, Game-Bot): the phone's profile when the game has none of mine.
+  const myCountry = useProfile((s) => s.country);
+  // My ratings, for the surrender's estimated rating change (Surrender board, components.md §14.1).
+  const myRatings = useAuth((s) => s.me?.ratings ?? null);
   // An online game's connection (work plan stage 7); null for a practice.
   const online = useOnlineInfo(session.connection);
   const isOnline = online !== null;
@@ -297,8 +303,9 @@ export function GameScreen({
   const countries = useMemo(() => {
     const map: Partial<Record<PlayerId, string | null>> = {};
     for (const [id, p] of Object.entries(profiles ?? {})) map[id] = p?.country ?? null;
+    if (view.me !== null && map[view.me] === undefined) map[view.me] = myCountry;
     return map;
-  }, [profiles]);
+  }, [profiles, view.me, myCountry]);
   const board = useMemo(
     () => boardModel(view, mySeat, now, { pendingCell: shownPending, avatars }),
     [view, mySeat, now, shownPending, avatars],
@@ -323,6 +330,13 @@ export function GameScreen({
   const shown = useCallback((p: PlayerView) => held[p.id] ?? p.score, [held]);
   const myName = t('me');
   const theirName = opponentIdentity?.name ?? t('opponent');
+  // A bot's level on its card (Game-Bot: "בוט · חד"; the levels of spec §9).
+  const botLevel = opponentIdentity?.botLevel ?? null;
+  const opponentBotLevel = useMemo(() => {
+    if (botLevel === null) return null;
+    const words = { level: botLevel, title: t(`home:botSelect.levels.${botLevel}.title`) };
+    return { text: t('botLevel.tag', words), label: t('botLevel.label', words) };
+  }, [botLevel, t]);
   const nameOf = useCallback(
     (id: PlayerId) => (id === view.me ? myName : (identityOf(view, id).name ?? t('opponent'))),
     [view, myName, t],
@@ -951,6 +965,7 @@ export function GameScreen({
                 opponentCountry={countries[duel.opponent.id] ?? null}
                 myDelta={deltas[me.id] ?? null}
                 opponentDelta={deltas[duel.opponent.id] ?? null}
+                opponentBotLevel={opponentBotLevel}
                 onSurrender={openConfirm}
                 onReactions={onReactions}
                 reactionsExpanded={reactions.pickerOpen}
@@ -992,6 +1007,7 @@ export function GameScreen({
               <SoloHud
                 card={myCard}
                 delta={deltas[me.id] ?? null}
+                country={countries[me.id] ?? null}
                 gameType={view.gameType}
                 stats={stats}
                 avatarId={myAvatar}
@@ -1087,6 +1103,7 @@ export function GameScreen({
         <RankedSurrender
           visible={confirmOpen}
           players={view.players.length}
+          ratingDelta={surrenderRatingDelta(view, myRatings)}
           summary={surrenderSummary}
           onConfirm={confirmEnd}
           onCancel={closeConfirm}

@@ -8,6 +8,7 @@ import { Text } from 'react-native';
 import RootLayout from '../../../../app/_layout';
 import { installSignedInPlayer } from '../../../auth/testing/testAuth';
 import { track } from '../../analytics';
+import { IDLE_TIMEOUT_MS } from '../../startup';
 import { startTelemetry } from '..';
 import { screenOf } from '../screens';
 
@@ -77,6 +78,10 @@ describe('the root layout', () => {
   it('starts telemetry once, then reports each screen entered by its pattern', async () => {
     await renderRouter(ROUTES, { initialUrl: '/' });
     await screen.findByTestId('screen-home');
+    // Spec §22 (open in under 2 s): it starts once the first screen is up and the JS thread is idle.
+    await act(async () => {
+      jest.advanceTimersByTime(IDLE_TIMEOUT_MS);
+    });
     expect(startTelemetry).toHaveBeenCalledTimes(1);
     expect(track).toHaveBeenCalledWith('app_open');
     expect(screenViews()).toEqual(['/']);

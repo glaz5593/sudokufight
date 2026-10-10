@@ -24,6 +24,12 @@ jest.mock('../../../services/feedback', () => ({ cue: jest.fn() }));
 
 const cues = jest.mocked(cue);
 
+/** The players of a 2-player table in the order they are drawn: the VS tiles (`seat`) or the countdown's (`mini`). */
+const seatIds = (prefix: 'seat' | 'mini') =>
+  screen
+    .getAllByTestId(new RegExp(`^${prefix}-(me|opp)$`))
+    .map((el) => String(el.props.testID).slice(prefix.length + 1));
+
 let env: Setup;
 let backs: jest.SpyInstance;
 
@@ -103,7 +109,7 @@ describe('Searching (Match-Search)', () => {
     expect(screen.getByTestId('match-search-elapsed')).toHaveTextContent('0:00');
     expect(screen.getByTestId('match-search-radar')).toHaveAccessibleName('הדירוג שלי 1287');
     expect(screen.getByTestId('match-search-radar-rating')).toHaveTextContent('1287');
-    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('1237–1337');
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦1237–1337⁩');
     expect(styleOf(screen.getByTestId('match-search-range-value'))).toMatchObject({
       writingDirection: 'ltr',
     });
@@ -118,7 +124,7 @@ describe('Searching (Match-Search)', () => {
     expect(screen.getByTestId('match-search-elapsed')).toHaveTextContent('0:14');
     expect(screen.getByTestId('match-search-elapsed')).toHaveAccessibleName('זמן חיפוש 0:14');
     await server(() => mm.searching({ elapsedMs: 15_000 }));
-    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('1162–1412');
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦1162–1412⁩');
     // The range is shown as it widens, not said again every 5 s.
     expect(env.announced()).toEqual(['מחפש יריב בטווח דירוג 1237 עד 1337']);
   });
@@ -198,7 +204,7 @@ describe('Nobody found (Match-Timeout)', () => {
     await server(() => mm.searching({ elapsedMs: 60_000, extended: true }));
     expect(screen.getByRole('header')).toHaveTextContent('מחפש יריב…');
     expect(screen.getByText('בלי הגבלת טווח: הטווח ממשיך להתרחב')).toBeOnTheScreen();
-    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('937–1637');
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦937–1637⁩');
   });
 
   it('"שחק מול בוט בינתיים" and "חזרה לבית" leave the queue first', async () => {
@@ -230,6 +236,8 @@ describe('Found (Match-Found) and 3-2-1-GO (Match-Countdown)', () => {
     expect(cues).toHaveBeenCalledWith('matchFound');
     expect(screen.getByRole('header')).toHaveTextContent('נמצא יריב!');
     expect(screen.getByTestId('match-found-vs')).toHaveTextContent('VS');
+    // Me at the start edge, across the VS from the opponent (Match-Found; my card's side in the game, §6.8).
+    expect(seatIds('seat')).toEqual(['me', 'opp']);
     expect(screen.getByTestId('seat-opp')).toHaveTextContent(/NinaVolt/);
     expect(screen.getByTestId('seat-opp')).toHaveTextContent(/1305/);
     expect(screen.getByTestId('seat-opp')).toHaveTextContent(/זמני/);
@@ -270,6 +278,9 @@ describe('Found (Match-Found) and 3-2-1-GO (Match-Countdown)', () => {
     await server(() => void mm.countdown(3000));
     const text = () => screen.getByTestId('match-countdown-step-text');
     expect(text()).toHaveTextContent('3');
+    // The two players as the game will seat them: me first (Match-Countdown), then VS and the opponent.
+    expect(seatIds('mini')).toEqual(['me', 'opp']);
+    expect(screen.getByTestId('match-countdown-players')).toHaveTextContent(/VS/);
     expect(screen.getByText('התכוננו…')).toBeOnTheScreen();
     expect(screen.getByText('הלוח ייחשף לשניכם באותו רגע')).toBeOnTheScreen();
     expect(screen.getByTestId('ghost-board')).toHaveAccessibleName('הלוח, מוסתר עד תחילת המשחק');

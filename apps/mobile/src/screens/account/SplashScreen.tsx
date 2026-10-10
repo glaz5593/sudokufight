@@ -1,3 +1,5 @@
+import { defaultRules, THINK_TIME_MS } from '@sudoku-fight/engine';
+import type { TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -16,6 +18,23 @@ import { Brand, DevModeBadge } from './parts';
 const TIPS = ['lock', 'hard', 'mistake', 'drag'] as const;
 /** A new tip every few seconds while the arena loads. */
 export const TIP_MS = 4_000;
+
+/**
+ * A tip's words. The numbers come from the rules, not the copy (the Splash board's "12 שניות במשחק רגיל"
+ * is the normal game's think time [D2]; "כל טעות כפולה מהקודמת" says the cap too once [D14] sets one).
+ */
+export function splashTip(t: TFunction<'account'>, tip: (typeof TIPS)[number]): string {
+  if (tip === 'lock')
+    return t('splash.tips.lock', {
+      seconds: THINK_TIME_MS.normal / 1000,
+      type: t('home:gameTypes.normal.name'),
+    });
+  if (tip === 'mistake') {
+    const cap = defaultRules('ranked', 'normal').mistakePenaltyCap;
+    return cap === null ? t('splash.tips.mistake') : t('splash.tips.mistakeCapped', { cap });
+  }
+  return t(`splash.tips.${tip}`);
+}
 
 /**
  * The Splash (spec §4.1 #1, §4.2: "Splash → logged in → Home / not logged in → Login"), in direction C: the
@@ -120,7 +139,7 @@ export function SplashScreen() {
               <Text style={styles.tipChipText}>{t('splash.tipLabel')}</Text>
             </View>
             <Text style={styles.tipText} accessibilityLiveRegion="none" testID="splash-tip">
-              {t(`splash.tips.${TIPS[tip]!}`)}
+              {splashTip(t, TIPS[tip]!)}
             </Text>
           </View>
         </View>

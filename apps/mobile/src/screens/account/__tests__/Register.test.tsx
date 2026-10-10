@@ -145,7 +145,11 @@ describe('Register step 1: "צור את הלוחם שלך" (spec §3.2)', () => 
     await fireEvent.press(within(sheet).getByTestId('country-option-IL'));
     expect(useRegistrationDraft.getState().country).toBe('IL');
     await waitFor(() => expect(screen.getByRole('button', { name: 'מדינה: ישראל' })).toBeOnTheScreen());
-    expect(screen.getByTestId('flag-IL', hidden)).toBeTruthy();
+    // The preview's flag follows (so does the name tag's on the stage).
+    expect(within(screen.getByTestId('fighter-preview')).getByTestId('flag-IL', hidden)).toBeTruthy();
+    expect(
+      within(screen.getByTestId('fighter-name-tag', hidden)).getByTestId('flag-IL', hidden),
+    ).toBeTruthy();
   });
 
   it('"המשך" needs a good name and a country; then step 2', async () => {

@@ -142,6 +142,35 @@ describe('ranked 2 players (stage 9)', () => {
     expect(useGameStore.getState().match).toBeNull();
   });
 
+  it('the ranked game type shows my rating in each type, as the GameType board ("הדירוג שלך")', async () => {
+    fakeWiring();
+    await renderApp('/game-type?mode=ranked&players=2', routes);
+    expect(screen.getByTestId('type-normal-rating')).toHaveTextContent(/^הדירוג שלך1287$/);
+    // The first 10 games in a type are provisional (spec §11.2).
+    expect(screen.getByTestId('type-fast-rating')).toHaveTextContent(/^הדירוג שלך1240זמני$/);
+    expect(screen.getByRole('radio', { name: /^רגיל\./ })).toHaveProp(
+      'accessibilityLabel',
+      expect.stringMatching(/, הדירוג שלך במשחק רגיל: 1287$/),
+    );
+    expect(screen.getByRole('radio', { name: /^מהיר\./ })).toHaveProp(
+      'accessibilityLabel',
+      expect.stringMatching(/, הדירוג שלך במשחק מהיר: 1240, זמני$/),
+    );
+
+    // A practice has no rating to show.
+    await renderApp('/game-type?mode=solo', routes);
+    expect(screen.queryByTestId('type-normal-rating')).toBeNull();
+
+    // English.
+    await i18n.changeLanguage('en');
+    await renderApp('/game-type?mode=ranked&players=2', routes);
+    expect(screen.getByTestId('type-hard-rating')).toHaveTextContent(/^Your rating1200Provisional$/);
+    expect(screen.getByRole('radio', { name: /^Normal\./ })).toHaveProp(
+      'accessibilityLabel',
+      expect.stringMatching(/, Your Normal rating is 1287$/),
+    );
+  });
+
   it('an unverified email gets the verification screen instead of a search [D22]', async () => {
     fakeWiring();
     signIn(false);

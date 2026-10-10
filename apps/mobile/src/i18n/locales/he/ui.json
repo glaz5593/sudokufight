@@ -25,5 +25,9 @@
     "secondsLeft_one": "נותרה שנייה אחת",
     "secondsLeft_two": "נותרו {{count}} שניות",
     "secondsLeft_other": "נותרו {{count}} שניות"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "קוד שגיאה: {{code}}"
   }
 }

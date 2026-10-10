@@ -11,7 +11,22 @@ export { IconButton, type IconButtonProps } from './IconButton';
 export { RowButton, type RowButtonProps } from './RowButton';
 export { Scrim, type ScrimProps } from './Scrim';
 export { dragClosesSheet, Sheet, type SheetProps } from './Sheet';
+export {
+  Skeleton,
+  SKELETON_OPACITY,
+  SkeletonCard,
+  type SkeletonCardProps,
+  SkeletonGroup,
+  type SkeletonGroupProps,
+  SkeletonLine,
+  type SkeletonProps,
+  SkeletonRows,
+  type SkeletonRowsProps,
+  SkeletonTiles,
+} from './Skeleton';
 export { Spinner, type SpinnerProps } from './Spinner';
+export { type StateAction, type StateTone, StateView, type StateViewProps, SupportCode } from './StateView';
+export { supportCodeOf } from './stateModel';
 export {
   realToastTimer,
   Toast,

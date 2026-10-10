@@ -5,6 +5,10 @@
   "subtitle": "{{title}} · {{type}}",
   "me": "אני",
   "opponent": "היריב",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "רמה {{level}}, {{title}}"
+  },
   "listSep": ", ",
   "type": {
     "fast": "מהיר",
@@ -43,6 +47,12 @@
   "connection": {
     "sep": ". ",
     "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "lead": {
+      "mine": "אתה מוביל",
+      "theirs": "{{name}} מוביל",
+      "theirs_female": "{{name}} מובילה",
+      "tie": "שוויון"
+    },
     "frozen": {
       "title": "המשחק מוקפא",
       "timers": "כל הטיימרים עצורים",
@@ -80,6 +90,7 @@
       "lockedTitle": "הלוח נעול עד שתחזור",
       "lockedSub": "כשהחיבור יחזור נסנכרן:",
       "syncingTitle": "מסנכרן…",
+      "syncedTitle": "הכל סונכרן",
       "savedSub": "המשחק נשמר בשרת וממשיך מאותה נקודה",
       "item": {
         "board": "לוח",
@@ -136,7 +147,7 @@
       "retry": "נסה שוב",
       "practice": "עבור לאימון",
       "practiceNote": "אימון לבד ומול בוט עובדים גם בלי חיבור",
-      "home": "חזרה לבית"
+      "home": "לבית"
     },
     "surrender": {
       "chip": "כניעה",
@@ -175,6 +186,7 @@
     },
     "connecting": {
       "title": "בכניסה למשחק",
+      "board": "טוען לוח…",
       "step": {
         "server": "מתחבר לשרת המשחק…",
         "room": "נכנס לחדר…",
@@ -246,6 +258,8 @@
     "info": "כל הפרעה נמשכת {{seconds}} שניות · שיגור בגרירה בלבד",
     "hint": "גרור אל הכרטיס של {{name}} כדי לשגר",
     "cancelHint": "שחרור מחוץ לאזור מבטל",
+    "comingTitle": "נפתחות בהמשך",
+    "comingLabel": "נפתחות בהמשך: {{names}}. בקרוב",
     "tapHint": "גרור אל {{name}} — הקשה לא משגרת",
     "dragging": "בגרירה…",
     "cost": "{{cost}} נק׳",
@@ -327,6 +341,10 @@
       "tie": "תיקו"
     },
     "abandonWin": "ניצחת בנטישה",
+    "placeTitle": "מקום {{place}}!",
+    "placeOf": "מקום {{place}} מתוך {{total}}",
+    "outOf": "מתוך {{players}}",
+    "header": "{{title}} · {{type}} · {{players}}",
     "end": {
       "label": "איך זה נגמר",
       "completed": "מילאת את כל הלוח",

@@ -12,6 +12,7 @@
     "offlineTitle": "No connection to the server",
     "offlineBody": "The leaderboard updates when the connection is back.",
     "errorTitle": "Something went wrong",
+    "errorBody": "The server couldn't answer just now. Try again in a moment.",
     "signedOut": "Sign in to see this",
     "players_one": "1 player",
     "players_two": "{{count}} players",
@@ -45,6 +46,7 @@
     "meNone": "You have no rating in this table yet",
     "play": "Play",
     "playHint": "Play a ranked game to join the table",
+    "climbHint": "Play to climb the table",
     "emptyTitle": "Nobody here yet",
     "emptyBody": "Play a ranked game and be the first on the board."
   },
@@ -117,7 +119,8 @@
     "formLabel": "Recent results, newest first: {{list}}",
     "replayHint": "Opens the replay",
     "openOf": "{{name}}'s player card",
-    "achievementsTitle": "Top achievements"
+    "achievementsTitle": "Top achievements",
+    "allAchievements": "All achievements"
   },
   "achievements": {
     "title": "Achievements",

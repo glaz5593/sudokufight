@@ -147,8 +147,9 @@ export function LeaderboardRow({
 }
 
 /**
- * My row, pinned at the bottom (spec §14.2: "#214 · MosheG · 1287"); while I have no rating in this tab, a
- * line saying so and "שחק".
+ * My row, pinned at the bottom (spec §14.2: "#214 · MosheG · 1287"), with "שחק" beside it (Leaderboard.dc.html:
+ * the screen's one gold action, "play to climb"); while I have no rating in this tab, a line saying so and
+ * "שחק".
  */
 export function PinnedMe({
   me,
@@ -160,26 +161,32 @@ export function PinnedMe({
   onPlay: () => void;
 }) {
   const { t } = useTranslation('progress');
+  const play = (label: string) => (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPlay}
+      style={({ pressed }) => [styles.play, pressed && styles.pressed]}
+      testID="leaderboard-play"
+    >
+      <Text style={[text('buttonSm'), styles.onAccent]}>{t('leaderboard.play')}</Text>
+    </Pressable>
+  );
   if (me) {
     return (
-      <View style={styles.pinned} testID="leaderboard-me">
-        <LeaderboardRow entry={me} mine onOpen={onOpen} testID="leaderboard-me-row" />
+      <View style={[styles.pinned, styles.pinnedRow]} testID="leaderboard-me">
+        <View style={styles.grow}>
+          <LeaderboardRow entry={me} mine onOpen={onOpen} testID="leaderboard-me-row" />
+        </View>
+        {play(t('leaderboard.climbHint'))}
       </View>
     );
   }
   return (
-    <View style={[styles.pinned, styles.pinnedEmpty]} testID="leaderboard-me-none">
+    <View style={[styles.pinned, styles.pinnedRow, styles.pinnedEmpty]} testID="leaderboard-me-none">
       <SeatGlyph colorIndex={0} size={GLYPH} />
       <Text style={[text('caption'), styles.muted, styles.grow]}>{t('leaderboard.meNone')}</Text>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('leaderboard.playHint')}
-        onPress={onPlay}
-        style={({ pressed }) => [styles.play, pressed && styles.pressed]}
-        testID="leaderboard-play"
-      >
-        <Text style={[text('buttonSm'), styles.onAccent]}>{t('leaderboard.play')}</Text>
-      </Pressable>
+      {play(t('leaderboard.playHint'))}
     </View>
   );
 }
@@ -238,7 +245,8 @@ const styles = StyleSheet.create({
     borderTopWidth: tokens.border.hairline,
     borderTopColor: color.border,
   },
-  pinnedEmpty: { flexDirection: 'row', alignItems: 'center', gap: space[4], minHeight: size.listRow },
+  pinnedRow: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
+  pinnedEmpty: { minHeight: size.listRow },
   play: {
     minHeight: size.touch,
     minWidth: size.touch,

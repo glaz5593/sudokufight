@@ -12,6 +12,7 @@ import { Button } from '../../components/ui';
 import { cue } from '../../services/feedback';
 import { color, space, text } from '../../theme';
 import { Field, PasswordField } from './Field';
+import { LoginArena } from './LoginArena';
 import { errorMessage } from './messages';
 import { AccentTitle, AccountScreen, Brand, DevModeBadge, FormAlert, LinkButton } from './parts';
 
@@ -87,7 +88,9 @@ export function LoginScreen() {
       }
     >
       <DevModeBadge />
-      <Brand />
+      {/* The board: the wordmark alone, over the rivals around the empty seat. */}
+      <Brand compact />
+      <LoginArena />
       <View style={styles.titles}>
         <AccentTitle i18nKey="login.title" label={t('login.titleLabel')} />
         <Text style={styles.subtitle}>{t('login.subtitle')}</Text>
@@ -133,6 +136,7 @@ export function LoginScreen() {
         <View style={styles.forgotRow}>
           <LinkButton
             label={t('login.forgot')}
+            tone="muted"
             onPress={() =>
               router.push({
                 pathname: ROUTES.forgotPassword,

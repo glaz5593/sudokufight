@@ -14,6 +14,7 @@ import {
   mistakesShort,
   paletteAt,
   scoreText,
+  SeatGlyph,
   signedText,
 } from '../../components/player';
 import { useCountUp } from '../../components/player/anim';
@@ -108,9 +109,12 @@ export function OpponentsSection({
           >
             <Avatar avatarId={o.avatar} size="compact" colorIndex={o.colorIndex} bot={o.isBot} />
             <View style={styles.who}>
-              <Text style={[text('playerName'), styles.strong]} numberOfLines={1}>
-                {name}
-              </Text>
+              <View style={styles.nameRow}>
+                <SeatGlyph colorIndex={o.colorIndex} size={GLYPH} />
+                <Text style={[text('playerName'), styles.strong, styles.shrink]} numberOfLines={1}>
+                  {name}
+                </Text>
+              </View>
               <Text style={[text('caption'), styles.muted]} numberOfLines={1}>
                 {o.left ? t('results.opponents.left') : mistakes}
               </Text>
@@ -150,6 +154,8 @@ export function OpponentsSection({
 const PODIUM_ORDER = [1, 0, 2] as const;
 /** Heights of the podium steps by position (1st highest), from the spacing scale: the design has no token. */
 const STEP_HEIGHT = [space[15], space[13], space[11]] as const;
+/** The seat shape before each name (● ▲ ■ ◆): who is who never depends on the colour alone (spec §22). */
+const GLYPH = space[5];
 
 export function RankingSection({
   ranking,
@@ -206,9 +212,12 @@ export function RankingSection({
                 bot={r.isBot}
                 inactive={r.left}
               />
-              <Text style={[text('label'), styles.strong]} numberOfLines={1}>
-                {nameOf(r)}
-              </Text>
+              <View style={styles.nameRow}>
+                <SeatGlyph colorIndex={r.colorIndex} size={GLYPH} />
+                <Text style={[text('label'), styles.strong, styles.shrink]} numberOfLines={1}>
+                  {nameOf(r)}
+                </Text>
+              </View>
               <Text style={[text('rating'), { color: palette.ring }]}>{scoreText(r.score)}</Text>
               {delta(r)}
               <View
@@ -240,9 +249,12 @@ export function RankingSection({
             inactive={r.left}
           />
           <View style={styles.who}>
-            <Text style={[text('playerName'), styles.strong]} numberOfLines={1}>
-              {nameOf(r)}
-            </Text>
+            <View style={styles.nameRow}>
+              <SeatGlyph colorIndex={r.colorIndex} size={GLYPH} />
+              <Text style={[text('playerName'), styles.strong, styles.shrink]} numberOfLines={1}>
+                {nameOf(r)}
+              </Text>
+            </View>
             <Text style={[text('caption'), styles.muted]} numberOfLines={1}>
               {detailOf(r)}
             </Text>
@@ -424,6 +436,8 @@ const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', gap: space[3] },
   row: { flexDirection: 'row', alignItems: 'center', gap: space[6], minHeight: size.touch },
   who: { flex: 1, minWidth: 0, gap: space[1], alignItems: 'flex-start' },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: space[2], maxWidth: '100%' },
+  shrink: { flexShrink: 1 },
   strong: { color: color.text },
   muted: { color: color.textMuted },
   faint: { color: color.textFaint },

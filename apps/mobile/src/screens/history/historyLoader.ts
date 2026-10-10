@@ -1,6 +1,7 @@
 import type { GameResult } from '@sudoku-fight/engine';
 import type { HistoryGame } from '@sudoku-fight/protocol';
 
+import { supportCodeOf } from '../../components/ui/stateModel';
 import type { PracticeGameRecord, PracticeRepo } from '../../game/practiceRepo';
 import { HISTORY_OFFLINE_CODES, type HistoryApi, isHistoryApiError } from './historyApi';
 import {
@@ -27,6 +28,8 @@ export interface HistorySnapshot {
   /** More cards can come ("עוד משחקים"). */
   hasMore: boolean;
   ranked: RankedStatus;
+  /** Why the ranked games could not be read, for support (spec §16.3: "unavailable-503"); null when they could. */
+  rankedCode: string | null;
   /** False when the practice database could not be read. */
   practiceOk: boolean;
 }
@@ -43,6 +46,7 @@ export class HistoryLoader {
   private cursor: string | null = null;
   private rankedDone: boolean;
   private rankedStatus: RankedStatus;
+  private rankedCode: string | null = null;
 
   private practice: PracticeGameRecord[] = [];
   private practiceDone = false;
@@ -79,6 +83,7 @@ export class HistoryLoader {
     this.cursor = null;
     this.rankedDone = this.deps.ranked === null;
     this.rankedStatus = this.deps.ranked === null ? 'signedOut' : 'ok';
+    this.rankedCode = null;
     this.practice = [];
     this.practiceDone = false;
     this.practiceOk = true;
@@ -101,6 +106,7 @@ export class HistoryLoader {
         this.rankedDone = page.nextCursor === null;
       } catch (error) {
         this.rankedDone = true;
+        this.rankedCode = supportCodeOf(error);
         this.rankedStatus = !isHistoryApiError(error)
           ? 'error'
           : HISTORY_OFFLINE_CODES.includes(error.code) || error.code === 'unexpected'
@@ -147,6 +153,7 @@ export class HistoryLoader {
       entries: merged.slice(0, this.count),
       hasMore: merged.length > this.count || sourcesLeft,
       ranked: this.rankedStatus,
+      rankedCode: this.rankedStatus === 'ok' ? null : this.rankedCode,
       practiceOk: this.practiceOk,
     };
   }

@@ -7,7 +7,10 @@ import { color, space, text } from '../../../theme';
 import { ScoreLine, type ScoreLineData } from './ScoreLine';
 import { MARK, splitMarked } from './wording';
 
-/** The 2-player score line under the question (components.md §14.1 "Score summary"). */
+/**
+ * The 2-player score line under the question (components.md §14.1 "Score summary"; Surrender: who leads and by
+ * how much in the middle, and the lead bar under it).
+ */
 export type SurrenderSummary = ScoreLineData;
 
 export interface RankedSurrenderProps {
@@ -75,7 +78,7 @@ export function RankedSurrender({
       testID={testID}
     >
       {duel && summary ? (
-        <ScoreLine {...summary} style={styles.summary} testID={`${testID}-summary`} />
+        <ScoreLine {...summary} showLead style={styles.summary} testID={`${testID}-summary`} />
       ) : null}
     </ConfirmModal>
   );

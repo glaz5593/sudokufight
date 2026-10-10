@@ -65,7 +65,51 @@
     "nav": {
       "title": "Bottom navigation",
       "note": "Each tab active (section 16)."
+    },
+    "screenStates": {
+      "title": "Empty, error and loading",
+      "note": "The empty state, no connection and connection error with a support code, and the loading skeleton (spec 4.1 and 16.3)."
+    },
+    "rows": {
+      "title": "Rows",
+      "note": "Cards with an avatar, not tables: a history row, a leaderboard row, my row (pinned) and their skeleton."
+    },
+    "fields": {
+      "title": "Fields",
+      "note": "The account screens' fields: plain, email, password, error and disabled."
     }
+  },
+  "screenStates": {
+    "emptyCaption": "Empty",
+    "emptyTitle": "No games yet",
+    "emptyBody": "Your first game will show up here.",
+    "play": "Play",
+    "offlineCaption": "No connection, with a support code",
+    "offlineTitle": "No internet connection",
+    "offlineBody": "Ranked games need a connection. You can practice alone or against a bot.",
+    "retry": "Try again",
+    "practice": "Go to practice",
+    "errorCaption": "Connection error, with a support code",
+    "errorTitle": "The game server didn't answer",
+    "errorBody": "You're online, but the server didn't answer. Try again in a moment.",
+    "skeletonCaption": "Loading skeleton",
+    "loading": "Loading…",
+    "rules": "Empty: a quiet picture, a short title, one sentence and one action. Error: a plain explanation, \"Try again\" and a small code. Loading: a skeleton of the same shape that pulses slowly, and stands still with reduced motion on."
+  },
+  "rows": {
+    "history": "History row",
+    "leader": "Leaderboard row",
+    "me": "My row · pinned at the bottom",
+    "skeleton": "A row while it loads"
+  },
+  "fields": {
+    "name": "Display name",
+    "email": "Email",
+    "password": "Password",
+    "nameError": "Display name · error",
+    "taken": "That name is taken",
+    "disabled": "Disabled",
+    "note": "Tap a field to see its focus state. Email and password are always left to right."
   },
   "states": {
     "default": "Default",

@@ -19,10 +19,11 @@ export interface ConnectingViewProps {
 }
 
 /**
- * Entering an online game (design Loading, its steps in C's look): "בכניסה למשחק", a spinner, the step
- * ("מתחבר לשרת המשחק…", "נכנס לחדר…", "מסנכרן ניקוד וטיימרים…") and three step marks. One progress bar for
- * screen readers ("טעינת המשחק, שלב 2 מתוך 3"), and each step is announced. Reduced motion: the spinner
- * stands still and the step text only fades.
+ * Entering an online game (design Loading, its game card in C's look): "בכניסה למשחק" over a card titled "טוען
+ * לוח…", the progress as three step marks across the card, and under it a small spinner with the step
+ * ("מתחבר לשרת המשחק…", "נכנס לחדר…", "מסנכרן ניקוד וטיימרים…"). One progress bar for screen readers ("טעינת
+ * המשחק, שלב 2 מתוך 3"), and each step is announced. Reduced motion: the spinner stands still and the step text
+ * only fades. (The board's players, mini board and tip need the match's data, which this step doesn't have.)
  */
 export function ConnectingView({ model, onCancel, testID = 'connecting' }: ConnectingViewProps) {
   const { t } = useTranslation('game');
@@ -44,18 +45,25 @@ export function ConnectingView({ model, onCancel, testID = 'connecting' }: Conne
         testID={`${testID}-progress`}
       >
         <Text style={styles.title}>{t('connection.connecting.title')}</Text>
-        <Spinner color={color.accent} size={metrics.banner.icon} stroke={tokens.border.lockRing} />
-        <Animated.Text style={[styles.step, tick]} testID={`${testID}-step`}>
-          {step}
-        </Animated.Text>
-        <View style={styles.marks}>
-          {CONNECTING_STEPS.map((s, k) => (
-            <View
-              key={s}
-              style={[styles.mark, k < index && styles.markDone, k === index && styles.markNow]}
-              testID={`${testID}-mark-${s}`}
-            />
-          ))}
+        <View style={styles.card} testID={`${testID}-card`}>
+          <Text style={styles.board} testID={`${testID}-board`}>
+            {t('connection.connecting.board')}
+          </Text>
+          <View style={styles.marks}>
+            {CONNECTING_STEPS.map((s, k) => (
+              <View
+                key={s}
+                style={[styles.mark, k < index && styles.markDone, k === index && styles.markNow]}
+                testID={`${testID}-mark-${s}`}
+              />
+            ))}
+          </View>
+          <View style={styles.stepRow}>
+            <Spinner color={color.accent} size={size.icon.inline} stroke={tokens.border.lockRing} />
+            <Animated.Text style={[styles.step, tick]} numberOfLines={2} testID={`${testID}-step`}>
+              {step}
+            </Animated.Text>
+          </View>
         </View>
       </View>
       {onCancel ? (
@@ -81,13 +89,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.layout.gutterHome,
     backgroundColor: color.bg,
   },
-  column: { alignItems: 'center', gap: space[6] },
+  column: { alignSelf: 'stretch', alignItems: 'center', gap: space[4] },
   title: { ...text('label'), color: color.textMuted },
-  step: { ...text('sheetTitle'), color: color.text, textAlign: 'center' },
-  marks: { flexDirection: 'row', gap: space[3] },
+  card: {
+    alignSelf: 'stretch',
+    gap: space[6],
+    padding: space[8],
+    borderRadius: radius.xxl,
+    borderWidth: tokens.border.hairline,
+    borderColor: color.border,
+    backgroundColor: color.surface,
+  },
+  board: { ...text('h1'), color: color.text },
+  stepRow: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
+  step: { ...text('label'), color: color.text, flexShrink: 1 },
+  marks: { flexDirection: 'row', gap: space[2] },
   mark: {
-    width: space[10],
-    height: size.dominanceBar.height,
+    flex: 1,
+    height: metrics.dot.size,
     borderRadius: radius.bar,
     backgroundColor: color.border,
   },

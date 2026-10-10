@@ -15,10 +15,18 @@ import {
   SeatGlyph,
   signedText,
 } from '../../components/player';
-import { IconButton } from '../../components/ui';
+import {
+  Button,
+  IconButton,
+  SkeletonCard,
+  SkeletonGroup,
+  SkeletonTiles,
+  StateView,
+  supportCodeOf,
+} from '../../components/ui';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { ScreenHeader, SectionLabel } from '../home/parts';
-import { Note, Panel, ProgressBar, StateMessage } from '../progress/parts';
+import { Note, Panel, ProgressBar } from '../progress/parts';
 import {
   dateText,
   deltaText,
@@ -59,6 +67,8 @@ export interface PlayerCardScreenProps {
   onEditProfile?: () => void;
   /** A result of mine opens its replay (another player's games are not mine to replay). */
   onOpenReplay?: (gameId: string) => void;
+  /** Mine: "כל ההישגים" next to the achievements opens the achievements screen (the Profile board). */
+  onOpenAchievements?: () => void;
   /** A card came from the server (mine is saved for offline). */
   onLoaded?: (card: PlayerCard) => void;
   testID?: string;
@@ -83,6 +93,7 @@ export function PlayerCardScreen({
   onBack,
   onEditProfile,
   onOpenReplay,
+  onOpenAchievements,
   onLoaded,
   testID = 'player-card',
 }: PlayerCardScreenProps) {
@@ -92,6 +103,8 @@ export function PlayerCardScreen({
   const mine = myId !== null && playerId === myId;
   const [card, setCard] = useState<PlayerCard | null>(mine ? cached : null);
   const [status, setStatus] = useState<CardLoadStatus>(load ? 'loading' : 'signedOut');
+  /** The last failure's support code (spec §16.3). */
+  const [code, setCode] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const loaded = useRef(onLoaded);
   useEffect(() => {
@@ -109,7 +122,9 @@ export function PlayerCardScreen({
         loaded.current?.(next);
       },
       (error: unknown) => {
-        if (live) setStatus(statusOf(error));
+        if (!live) return;
+        setStatus(statusOf(error));
+        setCode(supportCodeOf(error));
       },
     );
     return () => {
@@ -142,19 +157,23 @@ export function PlayerCardScreen({
 
   if (!card) {
     let body;
-    if (status === 'loading')
-      body = <StateMessage loading title={t('common.loading')} testID="player-card-loading" />;
+    if (status === 'loading') body = <CardSkeleton label={t('common.loading')} />;
     else if (status === 'notFound')
-      body = <StateMessage icon="alert" title={t('card.notFound')} testID="player-card-not-found" />;
+      body = <StateView icon="alert" title={t('card.notFound')} testID="player-card-not-found" />;
     else if (status === 'signedOut')
-      body = <StateMessage icon="alert" title={t('common.signedOut')} testID="player-card-signed-out" />;
+      body = <StateView icon="alert" title={t('common.signedOut')} testID="player-card-signed-out" />;
     else
+      // Spec §16.3: a plain explanation, "נסה שוב", and the small code for support.
       body = (
-        <StateMessage
+        <StateView
+          tone="danger"
           icon={status === 'offline' ? 'wifiOff' : 'alert'}
           title={status === 'offline' ? t('common.offlineTitle') : t('common.errorTitle')}
-          body={status === 'offline' ? t('card.offlineBody') : undefined}
-          action={{ label: t('common.retry'), onPress: retry, testID: 'player-card-retry' }}
+          body={status === 'offline' ? t('card.offlineBody') : t('common.errorBody')}
+          code={code}
+          actions={[
+            { label: t('common.retry'), icon: 'refresh', onPress: retry, testID: 'player-card-retry' },
+          ]}
           testID={status === 'offline' ? 'player-card-offline' : 'player-card-error'}
         />
       );
@@ -295,7 +314,19 @@ export function PlayerCardScreen({
           language={i18n.language}
         />
 
-        <SectionLabel title={t('card.achievementsTitle')} />
+        <View style={styles.sectionRow}>
+          <View style={styles.grow}>
+            <SectionLabel title={t('card.achievementsTitle')} />
+          </View>
+          {mine && onOpenAchievements ? (
+            <Button
+              variant="ghost"
+              label={t('card.allAchievements')}
+              onPress={onOpenAchievements}
+              testID="player-card-all-achievements"
+            />
+          ) : null}
+        </View>
         {card.achievements.length === 0 ? (
           <View style={styles.soon} testID="player-card-achievements-empty">
             <Icon name="trophy" size={size.icon.card} color={color.textMuted} />
@@ -324,6 +355,21 @@ export function PlayerCardScreen({
         )}
       </ScrollView>
     </View>
+  );
+}
+
+/**
+ * Another player's card while it loads (Loading.dc.html; motion.md `skeleton`): the identity panel, the
+ * rating tiles and the stats, pulsing; still under reduced motion.
+ */
+function CardSkeleton({ label }: { label: string }) {
+  return (
+    <SkeletonGroup label={label} style={styles.skeleton} testID="player-card-loading">
+      <SkeletonCard lines={3} />
+      <SkeletonTiles count={3} />
+      <SkeletonTiles count={4} height={space[15]} />
+      <SkeletonTiles count={4} height={space[15]} />
+    </SkeletonGroup>
   );
 }
 
@@ -464,6 +510,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
   content: { paddingHorizontal: tokens.layout.gutterGame, paddingTop: space[4], gap: space[8] },
   identity: { gap: space[8] },
+  skeleton: { gap: space[8] },
   identityRow: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
   identityText: { flex: 1, minWidth: 0, alignItems: 'flex-start', gap: space[4] },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: space[3], maxWidth: '100%' },
@@ -534,6 +581,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface,
   },
   grow: { flex: 1, minWidth: 0 },
+  sectionRow: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
   shrink: { flexShrink: 1 },
   strong: { color: color.text },
   muted: { color: color.textMuted },

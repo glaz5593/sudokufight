@@ -21,6 +21,14 @@
     "practiceUnavailable": "We couldn't read the practice games saved on this phone.",
     "retry": "Try again"
   },
+  "states": {
+    "offlineTitle": "No connection to the server",
+    "offlineBody": "Your ranked games load when the connection is back. Practice games on this phone show here even offline.",
+    "errorTitle": "We couldn't load your games",
+    "errorBody": "The server didn't answer properly. Try again in a moment.",
+    "practiceTitle": "We couldn't read your practice games",
+    "practiceBody": "The practice games saved on this phone didn't open. Try again, and if it keeps happening, restart the app."
+  },
   "card": {
     "mode": {
       "ranked": "Ranked",

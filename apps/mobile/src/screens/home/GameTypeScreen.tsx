@@ -1,18 +1,28 @@
 import type { GameMode, GameType } from '@sudoku-fight/engine';
-import type { QueuePlayerCount } from '@sudoku-fight/protocol';
+import type { QueuePlayerCount, RatingEntry } from '@sudoku-fight/protocol';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAuth } from '../../auth/authStore';
 import { Icon } from '../../components/Icon';
-import { ltr } from '../../components/player';
+import { ltr, Rating } from '../../components/player';
 import { Button, useToast } from '../../components/ui';
+import { useConnectivityWatch } from '../../net/connectivity';
 import { cue } from '../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../theme';
-import { DEFAULT_RANKED_PLAYERS, type GameTypeInfo, gameTypeInfos, thinkSeconds } from './homeModel';
+import { Announcer } from '../game/connection/Announcer';
+import {
+  DEFAULT_RANKED_PLAYERS,
+  type GameTypeInfo,
+  gameTypeInfos,
+  rankedRatingIn,
+  thinkSeconds,
+} from './homeModel';
 import { goBack } from './navigation';
+import { OfflineActions, OfflineBanner } from './OfflineBanner';
 import { GUTTER, ScreenHeader } from './parts';
 import { startAndOpen, startRankedAndOpen } from './startGame';
 
@@ -32,6 +42,11 @@ export interface GameTypeScreenProps {
  * For a ranked game (stage 9) "מצא יריב" searches the queue of this type and table size (spec §4.2:
  * GameType → Matchmaking search); "back" from the search comes here. At a table of 3–4 (stage 10) it says
  * "מצא יריבים", and that the game starts when the table is full (spec §10).
+ *
+ * No connection before a ranked game (spec §16.1, stage 13): the server is asked as the screen opens (as on
+ * Modes); without an answer the banner "אין חיבור לאינטרנט" shows, the bottom offers "עבור לאימון" (a solo
+ * practice of the chosen type) and "בדוק שוב" instead of the search, and the app checks again in the
+ * background until the connection is back.
  */
 export function GameTypeScreen({
   mode,
@@ -39,9 +54,15 @@ export function GameTypeScreen({
   players = DEFAULT_RANKED_PLAYERS,
 }: GameTypeScreenProps) {
   const { t } = useTranslation('home');
+  const { t: tm } = useTranslation('match');
   const { top, bottom } = useSafeAreaInsets();
   const [selected, setSelected] = useState<GameType>(initialGameType);
   const [starting, setStarting] = useState(false);
+  // Ranked: my rating in each type, in this table's key (the GameType board's "הדירוג שלך"; spec §11.1).
+  const ratings = useAuth((s) => s.me?.ratings ?? null);
+  // Spec §16.1: a ranked game needs the connection (practice never does).
+  const connectivity = useConnectivityWatch(mode === 'ranked');
+  const offline = mode === 'ranked' && connectivity.status === 'offline';
   const infos = gameTypeInfos(mode);
   const typeName = t(`gameTypes.${selected}.name`);
   // The words of this mode: a ranked table of 3–4 looks for opponents, not one (stage 10).
@@ -54,7 +75,7 @@ export function GameTypeScreen({
   };
 
   const start = async () => {
-    if (starting) return;
+    if (starting || offline) return;
     cue('primaryPress');
     if (mode === 'bot') {
       router.push({ pathname: '/bot-select', params: { gameType: selected } });
@@ -70,6 +91,12 @@ export function GameTypeScreen({
     if (!ok) useToast.getState().show({ variant: 'error', message: t('start.failed') });
   };
 
+  /** Offline: "עבור לאימון", a solo practice of the type chosen here, in this screen's place. */
+  const practice = () => {
+    cue('primaryPress');
+    router.replace({ pathname: '/game-type', params: { mode: 'solo', gameType: selected } });
+  };
+
   return (
     <View style={[styles.screen, { paddingTop: top }]}>
       <ScreenHeader
@@ -79,40 +106,64 @@ export function GameTypeScreen({
         style={styles.header}
       />
       <ScrollView contentContainerStyle={styles.content}>
+        {offline ? <OfflineBanner checking={connectivity.checking} /> : null}
         <View accessibilityRole="radiogroup" accessibilityLabel={t('gameType.title')} style={styles.list}>
           {infos.map((info) => (
             <TypeCard
               key={info.gameType}
               info={info}
               checked={info.gameType === selected}
+              rating={mode === 'ranked' ? rankedRatingIn(ratings, info.gameType, players) : null}
               onPress={() => select(info.gameType)}
             />
           ))}
         </View>
         <Text style={styles.note}>{t(`gameType.note.${words}`)}</Text>
       </ScrollView>
-      <View style={[styles.footer, { paddingBottom: bottom + space[8] }]}>
-        <Button
-          label={t(`gameType.start.${words}`)}
-          size="lg"
-          loading={starting}
-          onPress={() => void start()}
-          accessibilityHint={t(
-            mode === 'bot'
-              ? 'gameType.botHint'
-              : mode === 'ranked'
-                ? `gameType.${words}Hint`
-                : 'gameType.startHint',
-            { type: typeName },
-          )}
-          testID="start"
+      {offline ? (
+        <OfflineActions
+          checking={connectivity.checking}
+          failures={connectivity.failures}
+          onPractice={practice}
+          onCheck={() => void connectivity.check()}
+          bottom={bottom}
         />
-      </View>
+      ) : (
+        <View style={[styles.footer, { paddingBottom: bottom + space[8] }]}>
+          <Button
+            label={t(`gameType.start.${words}`)}
+            size="lg"
+            loading={starting}
+            onPress={() => void start()}
+            accessibilityHint={t(
+              mode === 'bot'
+                ? 'gameType.botHint'
+                : mode === 'ranked'
+                  ? `gameType.${words}Hint`
+                  : 'gameType.startHint',
+              { type: typeName },
+            )}
+            testID="start"
+          />
+        </View>
+      )}
+      <Announcer line={offline ? tm('offline.title') : null} testID="game-type-live" />
     </View>
   );
 }
 
-function TypeCard({ info, checked, onPress }: { info: GameTypeInfo; checked: boolean; onPress: () => void }) {
+function TypeCard({
+  info,
+  checked,
+  rating,
+  onPress,
+}: {
+  info: GameTypeInfo;
+  checked: boolean;
+  /** Ranked: my rating in this type and table (null in practice, or before I have one). */
+  rating: RatingEntry | null;
+  onPress: () => void;
+}) {
   const { t } = useTranslation('home');
   const type = info.gameType;
   const seconds = thinkSeconds(info);
@@ -128,14 +179,24 @@ function TypeCard({ info, checked, onPress }: { info: GameTypeInfo; checked: boo
       value: t('gameType.minutes', { range: ltr(`${from}–${to}`) }),
     },
   ];
-  const label = t('gameType.cardLabel', {
-    name,
-    technique: t(`gameTypes.${type}.technique`),
-    seconds: t('player:seconds', { count: seconds }),
-    difficulty,
-    from,
-    to,
-  });
+  const ratingLabel = rating
+    ? t('match:modes.ratingLabel', { rating: Math.round(rating.rating), type: name })
+    : null;
+  const label = [
+    t('gameType.cardLabel', {
+      name,
+      technique: t(`gameTypes.${type}.technique`),
+      seconds: t('player:seconds', { count: seconds }),
+      difficulty,
+      from,
+      to,
+    }),
+    ratingLabel && rating?.provisional
+      ? t('player:rating.provisionalLabel', { label: ratingLabel })
+      : ratingLabel,
+  ]
+    .filter(Boolean)
+    .join(t('player:listSep'));
 
   return (
     <Pressable
@@ -150,14 +211,23 @@ function TypeCard({ info, checked, onPress }: { info: GameTypeInfo; checked: boo
       ]}
       testID={`type-${type}`}
     >
+      {/* The GameType board's order: the radio at the start, the type, and my rating at the end (ranked). */}
       <View style={styles.cardTop}>
+        <View style={[styles.radio, checked && styles.radioChecked]}>
+          {checked ? <Icon name="check" size={size.icon.inline} color={color.onAccent} /> : null}
+        </View>
         <View style={styles.names}>
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.technique}>{t(`gameTypes.${type}.technique`)}</Text>
         </View>
-        <View style={[styles.radio, checked && styles.radioChecked]}>
-          {checked ? <Icon name="check" size={size.icon.inline} color={color.onAccent} /> : null}
-        </View>
+        {rating ? (
+          <View style={styles.rating} testID={`type-${type}-rating`}>
+            <Text style={styles.factLabel} numberOfLines={1}>
+              {t('gameType.yourRating')}
+            </Text>
+            <Rating value={rating.rating} size="list" provisional={rating.provisional} decorative />
+          </View>
+        ) : null}
       </View>
       <View style={styles.facts}>
         {facts.map((f) => (
@@ -175,7 +245,7 @@ function TypeCard({ info, checked, onPress }: { info: GameTypeInfo; checked: boo
   );
 }
 
-/** The radio mark at the end of a card (GameType board): 24 round. */
+/** The radio mark at the start of a card (GameType board): 24 round. */
 const RADIO = 24;
 
 const styles = StyleSheet.create({
@@ -199,6 +269,7 @@ const styles = StyleSheet.create({
   cardPressed: { backgroundColor: color.surface },
   cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: space[6] },
   names: { flex: 1, minWidth: 0, alignItems: 'flex-start', gap: space[2] },
+  rating: { alignItems: 'flex-end', gap: space[2] },
   name: { ...text('h1'), color: color.text },
   technique: { ...text('caption'), color: color.textMuted },
   radio: {

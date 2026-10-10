@@ -17,7 +17,7 @@ export interface ConnectionLayerProps {
   model: ConnectionModel;
   /** Error: "נסה שוב". */
   onRetry: () => void;
-  /** Error and opponent-left: "לבית" / "חזרה לבית". */
+  /** Error and opponent-left: "לבית". */
   onHome: () => void;
   /** Opponent-left: "לתוצאות". */
   onResults: () => void;

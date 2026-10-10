@@ -14,6 +14,7 @@ import { SplashOverlay } from '../src/screens/account/SplashScreen';
 import { ErrorScreen } from '../src/screens/ErrorScreen';
 import { track } from '../src/services/analytics';
 import { restartApp } from '../src/services/restart';
+import { logFirstScreen, useAfterFirstScreen } from '../src/services/startup';
 import { startTelemetry } from '../src/services/telemetry';
 import { useScreenViews } from '../src/services/telemetry/useScreenViews';
 import { useSettings } from '../src/state/settings';
@@ -22,6 +23,8 @@ import { useAppFonts } from '../src/theme/fonts';
 import { motion, useReduceMotion } from '../src/theme/motion';
 
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
+// The saved language from the first frame (the settings are read synchronously), not the device's.
+void i18n.changeLanguage(useSettings.getState().language);
 
 export default function RootLayout() {
   const fontsReady = useAppFonts();
@@ -30,11 +33,11 @@ export default function RootLayout() {
   // Accounts (stage 8): who is signed in, and the screens their status allows (login, registration, Home).
   const { splash } = useAuthGate();
 
-  // Spec §27.1: usage reports to our server. Loads the events earlier runs left, sends them, and keeps sending.
-  useEffect(() => startTelemetry(), []);
-  // Stage 12 [D41]: the practice XP waiting on the phone goes to the server, and my progress is read, when a
-  // player is signed in (and again each time the app comes back to the foreground).
-  useEffect(() => startProgress(), []);
+  // Spec §22 (open in under 2 s): the work the first screen doesn't need starts once it is up (docs/PERF.md).
+  useAfterFirstScreen(fontsReady && !splash, startBackgroundWork);
+  useEffect(() => {
+    if (fontsReady && !splash) logFirstScreen();
+  }, [fontsReady, splash]);
   // Spec §22: one app_open per run.
   useEffect(() => track('app_open'), []);
   // Spec §27.1: a screen_view for each screen entered (its route pattern; not the dev tools).
@@ -48,15 +51,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsReady) void SplashScreen.hideAsync().catch(() => undefined);
-  }, [fontsReady]);
-
-  // The practice database [D25]: open it once per run, which marks games the last run left playing as
-  // interrupted. Nothing waits for it; a failure is logged, and practice then plays without saving.
-  useEffect(() => {
-    if (!fontsReady) return;
-    openPracticeStorage().catch((error: unknown) =>
-      console.warn('[practice] could not open the local database', error),
-    );
   }, [fontsReady]);
 
   if (!fontsReady) return null;
@@ -87,6 +81,26 @@ export default function RootLayout() {
       <ToastViewport />
     </GestureHandlerRootView>
   );
+}
+
+/**
+ * What waits for the first screen (spec §22: open in under 2 s): each waits on the disk or the network, and the
+ * first screen needs none of them. Returns what stops them.
+ */
+function startBackgroundWork(): () => void {
+  // Spec §27.1: usage reports to our server. Loads the events earlier runs left, sends them, and keeps sending.
+  // (track() queues in memory until then: app_open is not lost.)
+  startTelemetry();
+  // Stage 12 [D41]: the practice XP waiting on the phone goes to the server, and my progress is read, when a
+  // player is signed in (and again each time the app comes back to the foreground).
+  const stopProgress = startProgress();
+  // The practice database [D25]: open it once per run, which marks games the last run left playing as
+  // interrupted. Nothing waits for it (a screen that needs it first opens it itself, the same promise); a
+  // failure is logged, and practice then plays without saving.
+  openPracticeStorage().catch((error: unknown) =>
+    console.warn('[practice] could not open the local database', error),
+  );
+  return stopProgress;
 }
 
 /** A render error anywhere: recorded in Crashlytics, with a way to try again (stage 8). */
