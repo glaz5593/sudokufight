@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, type TextStyle, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Polygon } from 'react-native-svg';
 
 import { color, text } from '../../theme';
@@ -46,7 +46,12 @@ export function LeagueBadge({
 
   if (variant === 'text') {
     return (
-      <Text style={[text('body'), styles.muted, style]} accessibilityLabel={a11y} testID={`league-${league}`}>
+      // The badge takes a container style; as text it lays out the same way (Expo's web types widen ViewStyle).
+      <Text
+        style={[text('body'), styles.muted, style as StyleProp<TextStyle>]}
+        accessibilityLabel={a11y}
+        testID={`league-${league}`}
+      >
         {levelText ? `${name}${sep}${levelText}` : name}
       </Text>
     );

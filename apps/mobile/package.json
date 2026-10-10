@@ -12,12 +12,15 @@
     "doctor": "npx expo-doctor@latest",
     "tokens": "node scripts/gen-tokens.mjs",
     "pool": "node scripts/gen-offline-pool.mjs",
-    "perf:bundle": "node scripts/bundle-report.mjs"
+    "icons": "node scripts/gen-icons.mjs",
+    "perf:bundle": "node scripts/bundle-report.mjs",
+    "routes:types": "cross-env CI=true expo customize tsconfig.json"
   },
   "dependencies": {
     "@colyseus/sdk": "0.18.5",
     "@expo-google-fonts/rubik": "^0.4.2",
     "@expo-google-fonts/teko": "^0.4.1",
+    "@react-native-firebase/analytics": "26.4.0",
     "@react-native-firebase/app": "26.4.0",
     "@react-native-firebase/auth": "26.4.0",
     "@react-native-firebase/crashlytics": "26.4.0",
