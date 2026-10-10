@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Results Defeat — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-pop { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1)} }
+@keyframes sf-shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+@keyframes sf-slam { 0%{transform:scale(2.2) skewX(-9deg);opacity:0;filter:blur(6px)} 55%{transform:scale(.94) skewX(-9deg);opacity:1;filter:blur(0)} 100%{transform:scale(1) skewX(-9deg)} }
+@keyframes sf-shine { 0%{background-position:-160% 0} 100%{background-position:260% 0} }
+@keyframes sf-fill { 0%{transform:scaleX(0)} 100%{transform:scaleX(1)} }
+@keyframes sf-rise { 0%{transform:translateY(14px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+@keyframes sf-crack { 0%{transform:translate(0,0) rotate(0)} 100%{transform:translate(-4px,5px) rotate(-2deg)} }
+@keyframes sf-fade-in { 0%{opacity:0} 100%{opacity:1} }
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 1100px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 50% at 50% -10%, rgba(110,100,160,.22), transparent 60%), radial-gradient(80% 50% at 110% 110%, rgba(255,51,85,.08), transparent 60%), radial-gradient(80% 50% at -10% 100%, rgba(46,230,255,.06), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.02) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; left: -40px; top: 150px; width: 470px; height: 2px; z-index: 0; transform: rotate(-7deg); background: linear-gradient(90deg, rgba(255,51,85,0), rgba(255,51,85,.45) 40%, rgba(255,51,85,.45) 60%, rgba(255,51,85,0));"></div>
+  <div aria-hidden="true" style="position: absolute; left: 0; top: 96px; width: 390px; height: 120px; z-index: 0; background: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1.4px) 0 0 / 7px 7px; -webkit-mask-image: radial-gradient(60% 60% at 50% 50%, #000, transparent); mask-image: radial-gradient(60% 60% at 50% 50%, #000, transparent);"></div>
+
+  <div style="position: relative; z-index: 2; padding: 48px 16px 0;">
+
+    <div style="height: 44px; display: flex; align-items: center; justify-content: space-between;">
+      <a href="Home.dc.html" style="display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 6px; text-decoration: none; color: #a79fcb; font: 500 15px/1 Rubik, sans-serif;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"></path><path d="M6 9.5V20h12V9.5"></path><path d="M10 20v-5h4v5"></path></svg>
+        <span>לבית</span>
+      </a>
+      <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; box-sizing: border-box; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; color: #cfc8ee; font: 600 12px/1 Rubik, sans-serif; white-space: nowrap;">מדורג · רגיל · 2 שחקנים · <span dir="ltr" style="padding-right: 4px;">7:18</span></span>
+    </div>
+
+    <div style="margin-top: 10px; height: 96px; display: flex; justify-content: center; animation: sf-shake .3s ease-in-out .78s both;">
+      <div style="position: relative; width: 300px; height: 96px; transform: skewX(-9deg); animation: sf-slam .62s cubic-bezier(.34,1.56,.64,1) .15s both;">
+        <div style="position: absolute; inset: 0; box-sizing: border-box; border-radius: 12px; background: linear-gradient(160deg, #2b2547, #1b1533 70%); border: 2px solid #4b3f80; box-shadow: 0 6px 0 #07050f; display: flex; align-items: center; justify-content: center; clip-path: polygon(160px 0, 300px 0, 300px 96px, 158px 96px, 150px 71px, 166px 50px, 148px 29px);">
+          <h1 style="margin: 0; padding-top: 8px; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 96px; line-height: .9; letter-spacing: 0; color: #cfc8ee; text-shadow: 0 5px 0 #07050f;">הפסד</h1>
+        </div>
+        <div aria-hidden="true" style="position: absolute; inset: 0; box-sizing: border-box; border-radius: 12px; background: linear-gradient(160deg, #2b2547, #1b1533 70%); border: 2px solid #4b3f80; box-shadow: 0 6px 0 #07050f; display: flex; align-items: center; justify-content: center; clip-path: polygon(0 0, 160px 0, 148px 29px, 166px 50px, 150px 71px, 158px 96px, 0 96px); transform-origin: 160px 0; animation: sf-crack .35s cubic-bezier(.2,.8,.2,1) .78s both;">
+          <span style="padding-top: 8px; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 96px; line-height: .9; letter-spacing: 0; color: #cfc8ee; text-shadow: 0 5px 0 #07050f;">הפסד</span>
+        </div>
+        <svg width="300" height="96" viewBox="0 0 300 96" aria-hidden="true" style="position: absolute; left: 0; top: 0; overflow: visible; filter: drop-shadow(0 0 4px rgba(255,51,85,.8)); animation: sf-fade-in .2s linear .8s both;">
+          <polyline points="160,0 148,29 166,50 150,71 158,96" fill="none" stroke="#ff3355" stroke-width="1.6" stroke-linejoin="round"></polyline>
+          <polyline points="166,50 184,58 198,54" fill="none" stroke="#ff3355" stroke-width="1.1" stroke-linejoin="round" opacity=".7"></polyline>
+          <polyline points="148,29 134,21" fill="none" stroke="#ff3355" stroke-width="1.1" opacity=".7"></polyline>
+        </svg>
+      </div>
+    </div>
+
+    <div style="margin-top: 14px; padding: 10px 12px; border-radius: 16px; background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid #342a5e; box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08); animation: sf-rise .42s cubic-bezier(.2,.8,.2,1) .6s both;">
+      <div role="img" aria-label="ניקוד סופי: אני 41.5, NinaVolt 96.5" style="position: relative; height: 24px; transform: skewX(-9deg); border-radius: 5px; background: #0f0b1d; box-shadow: 0 3px 0 #07050f, inset 0 0 0 1px #342a5e;">
+        <div style="position: absolute; top: 0; bottom: 0; right: 0; width: 30%; border-radius: 0 5px 5px 0; background: linear-gradient(270deg, #8af5ff 0%, #2ee6ff 35%, #0098c2 100%); transform-origin: right center; animation: sf-fill .9s cubic-bezier(.2,.8,.2,1) .8s both;"></div>
+        <div style="position: absolute; top: 0; bottom: 0; left: 0; width: 70%; border-radius: 5px 0 0 5px; background: linear-gradient(90deg, #ffb46b 0%, #ff8a1f 45%, #c95600 100%); transform-origin: left center; animation: sf-fill .9s cubic-bezier(.2,.8,.2,1) .8s both;"></div>
+        <span style="position: absolute; top: -4px; bottom: -4px; left: 70%; width: 3px; margin-left: -1px; border-radius: 2px; background: #ffffff; box-shadow: 0 0 10px rgba(255,255,255,.9);"></span>
+        <span style="position: absolute; top: 0; right: 10px; height: 24px; display: flex; align-items: center; gap: 5px; transform: skewX(9deg);">
+          <svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="#04222b"></circle></svg>
+          <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: 1; padding-top: 3px; color: #04222b;">41.5</span>
+        </span>
+        <span style="position: absolute; top: 0; left: 10px; height: 24px; display: flex; align-items: center; gap: 5px; transform: skewX(9deg);">
+          <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: 1; padding-top: 3px; color: #2a1200;">96.5</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l8 15H4z" fill="#2a1200"></path></svg>
+        </span>
+      </div>
+
+      <div style="margin-top: 12px; height: 44px; box-sizing: border-box; padding: 0 6px; display: flex; align-items: center; gap: 10px;">
+        <span dir="ltr" style="flex: none; width: 14px; text-align: center; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 22px; line-height: 1; padding-top: 3px; color: #ffd23f;">1</span>
+        <div style="position: relative; flex: none; width: 36px; height: 36px; padding: 2px; box-sizing: border-box; border-radius: 10px; background: #ff8a1f; box-shadow: 0 3px 0 #c95600;">
+          <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="32" height="32" style="display: block; width: 32px; height: 32px; border-radius: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; top: -12px; left: 9px; transform: rotate(-10deg);"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" fill="#ffd23f" stroke="#07050f" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l8 15H4z" fill="#ff8a1f"></path></svg>
+            <span style="font: 600 14px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">NinaVolt</span>
+            <span style="font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 13px; line-height: 1;">🇩🇪</span>
+          </div>
+          <div style="margin-top: 5px; display: flex; align-items: center; gap: 3px;">
+            <span dir="ltr" style="display: inline-flex; align-items: center; height: 16px; padding: 2px 5px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.6); color: #ff6b84; font: 600 13px/1 Teko, sans-serif;">−1</span>
+            <span dir="ltr" style="display: inline-flex; align-items: center; height: 16px; padding: 2px 5px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.6); color: #ff6b84; font: 600 13px/1 Teko, sans-serif;">−2</span>
+            <span style="padding-right: 4px; font: 500 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">2 טעויות · 28 נכונים</span>
+          </div>
+        </div>
+        <div style="flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+          <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 26px; line-height: .9; font-variant-numeric: tabular-nums; color: #ff8a1f;">{{herScore}}</span>
+          <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 500; font-size: 14px; line-height: 1; color: #a79fcb;">1305 → 1320 <span style="color: #ffd23f;">+15</span></span>
+        </div>
+      </div>
+
+      <div style="margin-top: 6px; height: 44px; box-sizing: border-box; padding: 0 6px; display: flex; align-items: center; gap: 10px; border-radius: 10px; background: rgba(46,230,255,.07); box-shadow: inset 0 0 0 1px rgba(46,230,255,.35);">
+        <span dir="ltr" style="flex: none; width: 14px; text-align: center; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 22px; line-height: 1; padding-top: 3px; color: #c9d3e6;">2</span>
+        <div style="flex: none; width: 36px; height: 36px; padding: 2px; box-sizing: border-box; border-radius: 10px; background: #2ee6ff; box-shadow: 0 3px 0 #0098c2;">
+          <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="32" height="32" style="display: block; width: 32px; height: 32px; border-radius: 8px; filter: saturate(.7);">
+        </div>
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="#2ee6ff"></circle></svg>
+            <span style="font: 600 14px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">MosheG</span>
+            <span style="font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 13px; line-height: 1;">🇮🇱</span>
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #2ee6ff;">אני</span>
+          </div>
+          <div style="margin-top: 5px; display: flex; align-items: center; gap: 3px;">
+            <span dir="ltr" style="display: inline-flex; align-items: center; height: 16px; padding: 2px 5px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.6); color: #ff6b84; font: 600 13px/1 Teko, sans-serif;">−1</span>
+            <span dir="ltr" style="display: inline-flex; align-items: center; height: 16px; padding: 2px 5px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.6); color: #ff6b84; font: 600 13px/1 Teko, sans-serif;">−2</span>
+            <span dir="ltr" style="display: inline-flex; align-items: center; height: 16px; padding: 2px 5px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.6); color: #ff6b84; font: 600 13px/1 Teko, sans-serif;">−4</span>
+            <span dir="ltr" style="display: inline-flex; align-items: center; height: 16px; padding: 2px 5px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.24); border: 1px solid #ff3355; color: #ff8a9e; font: 600 13px/1 Teko, sans-serif;">−8</span>
+            <span style="padding-right: 4px; font: 500 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">15 נכונים</span>
+          </div>
+        </div>
+        <div style="flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+          <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 26px; line-height: .9; font-variant-numeric: tabular-nums; color: #2ee6ff;">{{myScore}}</span>
+          <span style="font: 500 11px/1 Rubik, sans-serif; color: #ff6b84; white-space: nowrap;">טעויות <span dir="ltr">−15</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid #4b3f80; box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08); animation: sf-rise .42s cubic-bezier(.2,.8,.2,1) .75s both;">
+      <div style="height: 24px; display: flex; align-items: center; justify-content: space-between;">
+        <span style="font: 600 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #a79fcb;">שינוי דירוג · רגיל</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 10px; box-sizing: border-box; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; color: #cfc8ee; font: 600 12px/1 Rubik, sans-serif; white-space: nowrap;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a79fcb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .5 2 1.5 3 2.5 3 0-3-1-5 0-8z"></path></svg>
+          <span>רצף 3 נעצר · שיא 7</span>
+        </span>
+      </div>
+      <div style="margin-top: 8px; height: 44px; display: flex; align-items: center; gap: 8px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg>
+        <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 50px; line-height: .9; padding-top: 6px; font-variant-numeric: tabular-nums; color: #ffd23f; text-shadow: 0 3px 0 #b37b00;">{{rating}}</span>
+        <span style="display: flex; align-items: baseline; gap: 4px; font: 500 12px/1 Rubik, sans-serif; color: #a79fcb;">מ־<span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 500; font-size: 18px; line-height: 1; text-decoration: line-through;">1287</span></span>
+        <span style="flex: 1 1 0;"></span>
+        <span style="display: block; animation: sf-pop .45s cubic-bezier(.34,1.56,.64,1) 2.25s both;">
+          <span style="display: flex; align-items: center; height: 40px; padding: 0 14px; box-sizing: border-box; border-radius: 10px; transform: skewX(-9deg); background: rgba(255,51,85,.14); border: 2px solid #ff3355; box-shadow: 0 4px 0 #07050f;">
+            <span dir="ltr" style="display: block; transform: skewX(9deg); font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 30px; line-height: 1; padding-top: 4px; color: #ff6b84;">−15</span>
+          </span>
+        </span>
+      </div>
+      <div style="margin-top: 8px; display: flex; align-items: flex-start; gap: 6px; font: 500 12px/1.4 Rubik, sans-serif; color: #cfc8ee;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3ff0a6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="M4 17l6-6 4 4 6-7"></path><path d="M14 8h6v6"></path></svg>
+        <span>מול דירוג גבוה יותר ירדת פחות. ניצחון אחד מחזיר הכל.</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: radial-gradient(80% 60% at 50% 30%, rgba(255,51,85,.08), transparent 70%), linear-gradient(160deg, #251d45, #1b1533); border: 2px solid rgba(255,51,85,.45); box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08); animation: sf-rise .42s cubic-bezier(.2,.8,.2,1) .9s both;">
+      <div style="height: 20px; display: flex; align-items: center; justify-content: space-between;">
+        <span style="display: flex; align-items: center; gap: 6px; font: 700 15px/1 Rubik, sans-serif; color: #f1eeff;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff3355" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path><circle cx="12" cy="12" r="2"></circle></svg>
+          <span>איפה זה התהפך</span>
+        </span>
+        <span dir="ltr" style="display: inline-flex; align-items: center; height: 20px; padding: 2px 8px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.6); font: 600 15px/1 Teko, sans-serif; color: #ff6b84;">3:21</span>
+      </div>
+
+      <div style="position: relative; margin-top: 10px; width: 326px; height: 100px;">
+        <svg width="326" height="100" viewBox="0 0 326 100" role="img" aria-label="ניקוד לאורך המשחק: הובלת עד 3:21, ואז NinaVolt עקפה ולא הסתכלה אחורה" style="display: block;">
+          <rect x="188.6" y="4" width="129.4" height="80" fill="rgba(46,230,255,.07)"></rect>
+          <line x1="36" y1="84" x2="318" y2="84" stroke="#342a5e" stroke-width="1.5"></line>
+          <line x1="36" y1="47" x2="318" y2="47" stroke="#342a5e" stroke-width="1" stroke-dasharray="2 4"></line>
+          <line x1="36" y1="10" x2="318" y2="10" stroke="#342a5e" stroke-width="1" stroke-dasharray="2 4"></line>
+          <polygon points="318.0,84.0 292.2,79.6 279.4,75.5 269.7,76.2 240.7,69.6 208.5,66.2 192.5,60.7 186.0,56.2 150.6,45.5 112.0,35.2 105.5,36.6 66.9,21.1 36.0,12.6 36,84" fill="rgba(255,138,31,.12)"></polygon>
+          <polygon points="318.0,84.0 298.7,78.5 284.5,74.8 266.5,70.7 253.6,72.2 215.0,61.8 210.5,64.8 192.5,59.6 188.6,65.5 150.6,61.8 105.5,57.4 66.9,54.8 36.0,53.3 36,84" fill="rgba(46,230,255,.12)"></polygon>
+          <polyline points="318.0,84.0 292.2,79.6 279.4,75.5 269.7,76.2 240.7,69.6 208.5,66.2 192.5,60.7 186.0,56.2 150.6,45.5 112.0,35.2 105.5,36.6 66.9,21.1 36.0,12.6" fill="none" stroke="#ff8a1f" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+          <polyline points="318.0,84.0 298.7,78.5 284.5,74.8 266.5,70.7 253.6,72.2 215.0,61.8 210.5,64.8 192.5,59.6 188.6,65.5 150.6,61.8 105.5,57.4 66.9,54.8 36.0,53.3" fill="none" stroke="#2ee6ff" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+          <line x1="188.6" y1="14" x2="188.6" y2="84" stroke="#ff3355" stroke-width="1.5" stroke-dasharray="3 3"></line>
+          <line x1="192.5" y1="59.6" x2="188.6" y2="65.5" stroke="#ff3355" stroke-width="3.5" stroke-linecap="round"></line>
+          <circle cx="188.6" cy="65.5" r="4.5" fill="#ff3355" stroke="#0f0b1d" stroke-width="2"></circle>
+          <circle cx="186.0" cy="56.2" r="4" fill="#ff8a1f" stroke="#0f0b1d" stroke-width="2"></circle>
+          <circle cx="36" cy="12.6" r="3.5" fill="#ff8a1f"></circle>
+          <circle cx="36" cy="53.3" r="3.5" fill="#2ee6ff"></circle>
+        </svg>
+        <span style="position: absolute; top: 8px; right: 10px; font: 600 10px/1 Rubik, sans-serif; color: #2ee6ff;">הובלת</span>
+        <span dir="ltr" style="position: absolute; top: 0; left: 174px; width: 30px; height: 15px; box-sizing: border-box; padding-top: 2px; border-radius: 4px; background: #ff3355; text-align: center; font: 600 13px/1 Teko, sans-serif; color: #ffffff;">H4</span>
+        <span dir="ltr" style="position: absolute; top: 5px; left: 0; width: 30px; text-align: right; font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">96.5</span>
+        <span dir="ltr" style="position: absolute; top: 46px; left: 0; width: 30px; text-align: right; font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">41.5</span>
+        <span dir="ltr" style="position: absolute; top: 88px; right: 4px; font: 500 12px/1 Teko, sans-serif; color: #a79fcb;">0:00</span>
+        <span dir="ltr" style="position: absolute; top: 88px; left: 22px; width: 28px; text-align: center; font: 500 12px/1 Teko, sans-serif; color: #a79fcb;">7:18</span>
+        <span dir="ltr" style="position: absolute; top: 88px; left: 174px; width: 30px; text-align: center; font: 600 12px/1 Teko, sans-serif; color: #ff6b84;">3:21</span>
+      </div>
+
+      <div style="margin-top: 10px; display: flex; align-items: flex-start; gap: 12px;">
+        <div style="flex: none; display: flex; align-items: flex-start; gap: 4px;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
+            <div dir="ltr" style="position: relative; width: 40px; height: 40px; box-sizing: border-box; border-radius: 6px; background: #fbfaff; box-shadow: inset 0 0 0 2px #ff3355;">
+              <span style="position: absolute; bottom: 2px; right: 4px; font: 700 10px/1 Rubik, sans-serif; color: #d10f37;">9</span>
+            </div>
+            <span dir="ltr" style="font: 600 15px/1 Teko, sans-serif; color: #ff6b84;">−8</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a79fcb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-top: 12px;"><path d="M15 5l-7 7 7 7"></path></svg>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
+            <div dir="ltr" style="position: relative; width: 40px; height: 40px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: #ffe6cf; box-shadow: inset 0 0 0 2px #ff8a1f; font: 600 22px/1 Rubik, sans-serif; color: #9a3f00;">
+              8
+              <svg width="7" height="7" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; top: 4px; left: 4px;"><path d="M12 4l8 15H4z" fill="#c95600"></path></svg>
+              <span style="position: absolute; bottom: 2px; right: 4px; font: 700 10px/1 Rubik, sans-serif; color: #d10f37;">9</span>
+            </div>
+            <span dir="ltr" style="font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">+6</span>
+          </div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="font: 700 14px/1.3 Rubik, sans-serif; color: #f1eeff;">תנודה של <span dir="ltr">14</span> נק׳ ב־<span dir="ltr">4</span> שניות</div>
+          <div style="margin-top: 3px; font: 400 12px/1.4 Rubik, sans-serif; color: #cfc8ee;">שמת 9 ב־<span dir="ltr">H4</span> <span dir="ltr">(−8)</span> ו־NinaVolt פתרה שם 8 <span dir="ltr">(+6)</span>. גם את 3 המשבצות האחרות שטעית בהן היא פתרה.</div>
+        </div>
+      </div>
+
+      <a href="Replay.dc.html" style="margin-top: 12px; display: flex; align-items: center; justify-content: center; height: 46px; box-sizing: border-box; border-radius: 10px; transform: skewX(-9deg); background: rgba(255,210,63,.10); border: 2px solid #ffd23f; box-shadow: 0 4px 0 #07050f; color: #ffd23f; text-decoration: none; font: 700 16px/1 Rubik, sans-serif;">
+        <span style="display: flex; align-items: center; gap: 8px; transform: skewX(9deg);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M10 8.5l5 3.5-5 3.5z"></path></svg>
+          <span>ראה איפה זה התהפך</span>
+        </span>
+      </a>
+    </div>
+
+    <div style="margin-top: 12px; display: flex; gap: 8px; animation: sf-rise .42s cubic-bezier(.2,.8,.2,1) 1.05s both;">
+      <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; height: 84px; padding: 10px 12px; border-radius: 14px; background: #1b1533; border: 2px solid rgba(46,230,255,.45); box-shadow: 0 4px 0 #07050f;">
+        <div style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">המהלך הטוב שלך</div>
+        <div style="margin-top: 8px; height: 40px; display: flex; align-items: center; gap: 8px;">
+          <div dir="ltr" style="position: relative; flex: none; width: 40px; height: 40px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: #d3f8ff; box-shadow: inset 0 0 0 2px #2ee6ff; font: 600 22px/1 Rubik, sans-serif; color: #006b8a;">
+            1
+            <span style="position: absolute; top: 4px; left: 4px; width: 6px; height: 6px; border-radius: 50%; background: #0098c2;"></span>
+          </div>
+          <div style="flex: 1 1 0; min-width: 0;">
+            <div style="display: flex; align-items: baseline; gap: 6px;">
+              <span dir="ltr" style="font: 600 19px/1 Teko, sans-serif; color: #f1eeff;">I4 → 1</span>
+              <span dir="ltr" style="font: 600 22px/1 Teko, sans-serif; color: #2ee6ff;">+7.5</span>
+            </div>
+            <div style="margin-top: 3px; font: 500 11px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;"><span dir="ltr">0:30</span> · פתיחה חזקה</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; height: 84px; padding: 10px 12px; border-radius: 14px; background: #1b1533; border: 2px solid rgba(255,138,31,.45); box-shadow: 0 4px 0 #07050f;">
+        <div style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">המהלך הטוב של NinaVolt</div>
+        <div style="margin-top: 8px; height: 40px; display: flex; align-items: center; gap: 8px;">
+          <div dir="ltr" style="position: relative; flex: none; width: 40px; height: 40px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: #ffe6cf; box-shadow: inset 0 0 0 2px #ff8a1f; font: 600 22px/1 Rubik, sans-serif; color: #9a3f00;">
+            8
+            <svg width="7" height="7" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; top: 4px; left: 4px;"><path d="M12 4l8 15H4z" fill="#c95600"></path></svg>
+            <span style="position: absolute; bottom: 2px; right: 4px; font: 700 10px/1 Rubik, sans-serif; color: #d10f37;">9</span>
+          </div>
+          <div style="flex: 1 1 0; min-width: 0;">
+            <div style="display: flex; align-items: baseline; gap: 6px;">
+              <span dir="ltr" style="font: 600 19px/1 Teko, sans-serif; color: #f1eeff;">H4 → 8</span>
+              <span dir="ltr" style="font: 600 22px/1 Teko, sans-serif; color: #ff8a1f;">+6</span>
+            </div>
+            <div style="margin-top: 3px; font: 500 11px/1.2 Rubik, sans-serif; color: #ff6b84; white-space: nowrap;"><span dir="ltr">3:25</span> · מהטעות שלך</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; box-sizing: border-box; padding: 28px 16px 24px; background: linear-gradient(180deg, rgba(15,11,29,0) 0%, rgba(15,11,29,.92) 30%, #0f0b1d 100%);">
+    <div style="height: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; font: 500 12.5px/1 Rubik, sans-serif; color: #a79fcb;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18"></path></svg>
+      <span>יריב חדש בטווח הדירוג שלך</span>
+    </div>
+    <a href="Modes.dc.html" style="position: relative; overflow: hidden; margin-top: 10px; display: flex; align-items: center; justify-content: center; height: 60px; padding: 0 28px; box-sizing: border-box; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); color: #1a1000; text-decoration: none; transform: skewX(-9deg); border-radius: 10px; box-shadow: 0 5px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6); font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 34px; line-height: 1;">
+      <span aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 70%) no-repeat; background-size: 40% 100%; animation: sf-shine 3.6s ease-in-out 2.8s infinite;"></span>
+      <span style="position: relative; display: block; transform: skewX(9deg);">נקמה? משחק חדש</span>
+    </a>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1100}}'>
+class Component extends DCLogic {
+  state = { ms: 99999 };
+
+  componentDidMount() {
+    this.t0 = Date.now();
+    this.setState({ ms: 0 });
+    this.timer = setInterval(() => {
+      const ms = Date.now() - this.t0;
+      if (ms >= 3000) {
+        clearInterval(this.timer);
+        this.timer = null;
+        this.setState({ ms: 99999 });
+        return;
+      }
+      this.setState({ ms: ms });
+    }, 33);
+  }
+
+  componentWillUnmount() {
+    if (this.timer) clearInterval(this.timer);
+    this.timer = null;
+  }
+
+  prog(ms, start, dur) {
+    const p = Math.max(0, Math.min(1, (ms - start) / dur));
+    return 1 - Math.pow(1 - p, 3);
+  }
+
+  half(v) {
+    const h = Math.round(v * 2) / 2;
+    return h % 1 === 0 ? String(h) : h.toFixed(1);
+  }
+
+  renderVals() {
+    // Final: MosheG 41.5 (4 mistakes: 1+2+4+8 = 15) vs NinaVolt 96.5 (2 mistakes: 1+2 = 3).
+    // Pairwise Elo, K = 32: E(1287 vs 1305) = 0.474 -> loss = 32 * (0 - 0.474) = -15.2 -> -15.
+    const ms = this.state.ms;
+    const ps = this.prog(ms, 700, 1100);
+    const pr = this.prog(ms, 1500, 750);
+    return {
+      myScore: this.half(41.5 * ps),
+      herScore: this.half(96.5 * ps),
+      rating: String(Math.round(1287 - 15 * pr))
+    };
+  }
+}
+</script>
+</body>
+</html>

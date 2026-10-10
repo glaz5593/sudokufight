@@ -1,0 +1,326 @@
+import {
+  applyAction,
+  createGame,
+  defaultRules,
+  type GameState,
+  parseCellName,
+  toView,
+} from '@sudoku-fight/engine';
+
+import { A8, F8, fourPlayerView, NOW, player, twoPlayerView, withPlayer } from '../__fixtures__/gameView';
+import {
+  barShares,
+  cardModel,
+  cardModels,
+  colorIndexFor,
+  leadModel,
+  lockModel,
+  mistakePips,
+  timeLeft,
+} from '../cardModel';
+
+describe('colorIndexFor: me is always P1, the others P2–P4 by seat (CLAUDE.md)', () => {
+  it('maps my seat to 0 wherever I sit', () => {
+    expect(colorIndexFor(2, 2, [0, 1, 2, 3])).toBe(0);
+    expect(colorIndexFor(0, 2, [0, 1, 2, 3])).toBe(1);
+    expect(colorIndexFor(1, 2, [0, 1, 2, 3])).toBe(2);
+    expect(colorIndexFor(3, 2, [0, 1, 2, 3])).toBe(3);
+  });
+
+  it('a spectator sees seats as they are', () => {
+    expect(colorIndexFor(1, null, [0, 1])).toBe(1);
+  });
+});
+
+describe('timeLeft', () => {
+  it('counts down a running timer and holds a stopped one', () => {
+    expect(timeLeft({ expiresAt: NOW + 4200, remainingMs: 99 }, NOW)).toBe(4200);
+    expect(timeLeft({ expiresAt: NOW - 10, remainingMs: 0 }, NOW)).toBe(0);
+    expect(timeLeft({ expiresAt: null, remainingMs: 3000 }, NOW)).toBe(3000);
+  });
+});
+
+describe('cardModel: the opponent', () => {
+  it('is "choosing A8" with its lock timer, in P2 colours', () => {
+    const m = cardModel(twoPlayerView(), 'nina', 0, NOW);
+    expect(m).toMatchObject({
+      isMe: false,
+      colorIndex: 1,
+      name: 'NinaVolt',
+      rating: 1305,
+      score: 39.5,
+      presence: 'online',
+      out: null,
+      mine: null,
+      interference: { kind: 'available', cost: 2 },
+    });
+    expect(m.activity).toEqual({
+      kind: 'locking',
+      cell: 'A8',
+      cellIndex: A8,
+      remainingMs: 9000,
+      totalMs: 12000,
+      secondsLeft: 9,
+      paused: false,
+      turn: false,
+    });
+  });
+
+  it('shows a stopped lock as paused, with the time it had left (§6.2.7)', () => {
+    const view = withPlayer(twoPlayerView(), 'nina', {
+      lock: { cell: A8, expiresAt: null, remainingMs: 4100 },
+    });
+    expect(cardModel(view, 'nina', 0, NOW).activity).toMatchObject({
+      paused: true,
+      remainingMs: 4100,
+      secondsLeft: 5,
+    });
+  });
+
+  it('a disconnected opponent shows the grace countdown, and the ⚡ gives way to it (§16.2)', () => {
+    let view = withPlayer(twoPlayerView(), 'nina', {
+      connected: false,
+      graceEndsAt: NOW + 11_300,
+      lock: null,
+    });
+    view = {
+      ...view,
+      status: 'paused',
+      interference: {
+        nextCost: 2,
+        missingPoints: 0,
+        targets: [{ playerId: 'nina', blockedBy: 'disconnected' }],
+      },
+    };
+    const m = cardModel(view, 'nina', 0, NOW);
+    expect(m.presence).toBe('reconnecting');
+    expect(m.activity).toEqual({ kind: 'reconnecting', secondsLeft: 12 });
+    expect(m.interference).toEqual({ kind: 'disconnected', cost: 2 });
+    // A second later the screen re-runs the model and the countdown moves on.
+    expect(cardModel(view, 'nina', 0, NOW + 1000).activity).toEqual({
+      kind: 'reconnecting',
+      secondsLeft: 11,
+    });
+  });
+
+  it('maps every interference block reason (§7.2) [D10, D11]', () => {
+    const target = (
+      blockedBy: 'out' | 'disconnected' | 'busy' | 'points' | 'notRunning' | null,
+      busyUntil?: number,
+    ) =>
+      cardModel(
+        twoPlayerView({
+          interference: {
+            nextCost: 8,
+            missingPoints: blockedBy === 'points' ? 3 : 0,
+            targets: [{ playerId: 'nina', blockedBy, ...(busyUntil === undefined ? null : { busyUntil }) }],
+          },
+        }),
+        'nina',
+        0,
+        NOW,
+      ).interference;
+
+    expect(target(null)).toEqual({ kind: 'available', cost: 8 });
+    expect(target('points')).toEqual({ kind: 'points', cost: 8, missing: 3 });
+    expect(target('busy', NOW + 3400)).toEqual({ kind: 'busy', cost: 8, secondsLeft: 4 });
+    expect(target('notRunning')).toEqual({ kind: 'notRunning', cost: 8 });
+    expect(target('disconnected')).toEqual({ kind: 'disconnected', cost: 8 });
+    expect(target('out')).toEqual({ kind: 'out', cost: 8 });
+  });
+
+  it('has no ⚡ when interferences are off or I cannot send any', () => {
+    expect(cardModel(twoPlayerView({ interference: null }), 'nina', 0, NOW).interference).toBeNull();
+  });
+
+  it('marks a player who left or surrendered (§6.7, D36)', () => {
+    const left = cardModel(
+      withPlayer(twoPlayerView(), 'nina', { status: 'abandoned', lock: null }),
+      'nina',
+      0,
+      NOW,
+    );
+    expect(left).toMatchObject({ presence: 'left', out: 'abandoned', activity: { kind: 'left' } });
+    const gaveUp = cardModel(withPlayer(twoPlayerView(), 'nina', { status: 'surrendered' }), 'nina', 0, NOW);
+    expect(gaveUp).toMatchObject({
+      presence: 'online',
+      out: 'surrendered',
+      activity: { kind: 'surrendered' },
+    });
+  });
+
+  it('carries an interference on the player for the hit chip (§7.4)', () => {
+    const view = withPlayer(twoPlayerView(), 'nina', {
+      hitBy: { fromId: 'moshe', kind: 'cats', expiresAt: NOW + 2500, remainingMs: 2500 },
+    });
+    expect(cardModel(view, 'nina', 0, NOW).hit).toEqual({
+      fromId: 'moshe',
+      kind: 'cats',
+      secondsLeft: 3,
+      paused: false,
+    });
+  });
+
+  it('thinks without a lock, and is quiet before the start and after the end', () => {
+    const free = withPlayer(twoPlayerView(), 'nina', { lock: null });
+    expect(cardModel(free, 'nina', 0, NOW).activity).toEqual({ kind: 'thinking' });
+    expect(cardModel({ ...free, status: 'over' }, 'nina', 0, NOW).activity).toEqual({ kind: 'idle' });
+  });
+
+  it("in the 'turns' model shows whose turn it is [D1]", () => {
+    const turns = twoPlayerView({
+      rules: { ...twoPlayerView().rules, turnModel: 'turns' },
+      turn: { playerId: 'nina', expiresAt: NOW + 5000, remainingMs: 5000 },
+    });
+    expect(cardModel(turns, 'nina', 0, NOW).activity).toMatchObject({ kind: 'locking', turn: true });
+    const noLock = withPlayer(turns, 'nina', { lock: null });
+    expect(cardModel(noLock, 'nina', 0, NOW).activity).toEqual({ kind: 'turn', secondsLeft: 5 });
+  });
+});
+
+describe('cardModel: me', () => {
+  it('is P1 with my own actions and no ⚡', () => {
+    const m = cardModel(twoPlayerView(), 'moshe', 0, NOW);
+    expect(m).toMatchObject({ isMe: true, colorIndex: 0, mistakes: 1, interference: null, isLeader: true });
+    expect(m.mine).toEqual({ practice: false, canSurrender: true, reactionReady: true });
+  });
+
+  it('calls it practice outside ranked games (§6.6) and waits out the reaction cooldown [D19]', () => {
+    const m = cardModel(twoPlayerView({ mode: 'bot', reactionReadyAt: NOW + 1500 }), 'moshe', 0, NOW);
+    expect(m.mine).toMatchObject({ practice: true, reactionReady: false });
+    expect(cardModel(twoPlayerView({ status: 'over' }), 'moshe', 0, NOW).mine?.canSurrender).toBe(false);
+  });
+
+  it('fails loudly for a player who is not in the game', () => {
+    expect(() => cardModel(twoPlayerView(), 'ghost', 0, NOW)).toThrow(RangeError);
+  });
+
+  it('keeps the seat order for every card (spec §6.8)', () => {
+    const models = cardModels(fourPlayerView(), 0, NOW);
+    expect(models.map((m) => m.seat)).toEqual([0, 1, 2, 3]);
+    expect(models.map((m) => m.place)).toEqual([3, 4, 2, 1]);
+  });
+});
+
+describe('mistakePips (§7.2)', () => {
+  it('shows the last two penalties and "×n" from five mistakes', () => {
+    expect(mistakePips(0)).toEqual({ overflow: null, penalties: [] });
+    expect(mistakePips(1)).toEqual({ overflow: null, penalties: [1] });
+    expect(mistakePips(2)).toEqual({ overflow: null, penalties: [1, 2] });
+    expect(mistakePips(4)).toEqual({ overflow: null, penalties: [4, 8] });
+    expect(mistakePips(5)).toEqual({ overflow: 5, penalties: [8, 16] });
+  });
+});
+
+describe('the lead bar (§9)', () => {
+  it('splits by score share, clamped to 6–94 %, and splits 0:0 evenly', () => {
+    expect(barShares([55, 39.5])).toEqual([55 / 94.5, 39.5 / 94.5]);
+    const [a, b] = barShares([100, 1]);
+    expect(a).toBeCloseTo(0.94);
+    expect(b).toBeCloseTo(0.06);
+    expect(barShares([-4, 10])).toEqual([0.06, 0.94]);
+    expect(barShares([0, 0])).toEqual([0.5, 0.5]);
+  });
+
+  it('keeps every one of four segments at 6 % or more, summing to 1', () => {
+    const s = barShares([39, 36.5, 30.5, 0]);
+    expect(Math.min(...s)).toBeCloseTo(0.06);
+    expect(s.reduce((x, y) => x + y, 0)).toBeCloseTo(1);
+  });
+
+  it('2 players: my segment first, under my card, and the leader by 15.5', () => {
+    const m = leadModel(twoPlayerView(), 0);
+    expect(m.segments.map((s) => [s.playerId, s.colorIndex])).toEqual([
+      ['moshe', 0],
+      ['nina', 1],
+    ]);
+    expect(m.splitShare).toBeCloseTo(55 / 94.5);
+    expect(m.leader).toEqual({ playerId: 'moshe', colorIndex: 0, name: 'MosheG', gap: 15.5 });
+    // Seen from NinaVolt's phone her segment comes first, and she is P1 there.
+    expect(leadModel(twoPlayerView(), 1).segments.map((s) => [s.playerId, s.colorIndex])).toEqual([
+      ['nina', 0],
+      ['moshe', 1],
+    ]);
+  });
+
+  it('a tie has no leader', () => {
+    let view = withPlayer(twoPlayerView(), 'nina', { score: 55, place: 1, isLeader: true });
+    expect(leadModel(view, 0).leader).toBeNull();
+    // Equal scores split by fewer mistakes still read as a tie on the bar.
+    view = withPlayer(view, 'nina', { isLeader: false, place: 2 });
+    expect(leadModel(view, 0).leader).toBeNull();
+  });
+
+  it('3–4 players: segments by place, the tag between 1st and 2nd', () => {
+    const m = leadModel(fourPlayerView(), 0);
+    expect(m.segments.map((s) => s.playerId)).toEqual(['aiko', 'santi', 'moshe', 'nina']);
+    expect(m.leader).toMatchObject({ playerId: 'aiko', colorIndex: 3, gap: 2.5 });
+    expect(m.splitShare).toBe(m.segments[0]!.share);
+  });
+});
+
+describe('lockModel (§10)', () => {
+  it('shows my cell, its seconds rounded up, and the think time from the rules', () => {
+    expect(lockModel(twoPlayerView(), NOW)).toEqual({
+      kind: 'locked',
+      cell: 'F8',
+      cellIndex: F8,
+      remainingMs: 6200,
+      totalMs: 12000,
+      secondsLeft: 7,
+      paused: false,
+      urgent: false,
+    });
+  });
+
+  it('turns urgent in the last 3 seconds, never while paused', () => {
+    expect(lockModel(twoPlayerView(), NOW + 3300)).toMatchObject({ secondsLeft: 3, urgent: true });
+    const paused = withPlayer(twoPlayerView(), 'moshe', {
+      lock: { cell: F8, expiresAt: null, remainingMs: 2000 },
+    });
+    expect(lockModel(paused, NOW)).toMatchObject({ paused: true, urgent: false, secondsLeft: 2 });
+  });
+
+  it('is empty without a lock, or for a spectator', () => {
+    expect(lockModel(withPlayer(twoPlayerView(), 'moshe', { lock: null }), NOW)).toEqual({ kind: 'none' });
+    expect(lockModel(twoPlayerView({ me: null }), NOW)).toEqual({ kind: 'none' });
+  });
+});
+
+describe('with the real engine', () => {
+  /** A valid solved grid: row r is the digits shifted by 3r + ⌊r/3⌋. */
+  const SOLUTION = Array.from({ length: 81 }, (_, i) => {
+    const r = Math.floor(i / 9);
+    const c = i % 9;
+    return ((r * 3 + Math.floor(r / 3) + c) % 9) + 1;
+  }).join('');
+  const GIVENS = SOLUTION.split('')
+    .map((d, i) => (i % 3 === 0 ? '0' : d))
+    .join('');
+
+  it('maps a fresh lock from toView()', () => {
+    const config = {
+      id: 'g',
+      mode: 'ranked' as const,
+      gameType: 'normal' as const,
+      puzzle: { id: 'p', givens: GIVENS, solution: SOLUTION },
+      players: [player({ id: 'a', seat: 0 }), player({ id: 'b', seat: 1 })].map((p) => ({
+        id: p.id,
+        name: p.id.toUpperCase(),
+        rating: 1200,
+      })),
+      rules: defaultRules('ranked', 'normal'),
+    };
+    let state: GameState = createGame(config, 0).state;
+    state = applyAction(state, { type: 'start' }, 0).state;
+    const cell = parseCellName('A1');
+    const locked = applyAction(state, { type: 'select', playerId: 'b', cell }, 1000);
+    expect(locked.rejected).toBeUndefined();
+    const view = toView(locked.state, 'a', 4000);
+
+    const nina = cardModel(view, 'b', 0, 4000);
+    expect(nina.activity).toMatchObject({ kind: 'locking', cell: 'A1', secondsLeft: 9, totalMs: 12000 });
+    expect(nina.interference).toEqual({ kind: 'points', cost: 2, missing: 2 });
+    expect(lockModel(view, 4000)).toEqual({ kind: 'none' });
+  });
+});

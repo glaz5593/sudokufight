@@ -1,0 +1,127 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "שחקן",
+  "bot": "בוט",
+  "vs": "VS",
+  "seconds_one": "שנייה אחת",
+  "seconds_two": "{{count}} שניות",
+  "seconds_many": "{{count}} שניות",
+  "seconds_other": "{{count}} שניות",
+  "points_one": "{{score}} נקודה",
+  "points_two": "{{score}} נקודות",
+  "points_many": "{{score}} נקודות",
+  "points_other": "{{score}} נקודות",
+  "place": "מקום {{place}}",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "מחובר",
+    "online_female": "מחוברת",
+    "reconnecting": "מתנתק",
+    "reconnecting_female": "מתנתקת",
+    "left": "נטש",
+    "left_female": "נטשה"
+  },
+  "result": {
+    "win": "ניצחון",
+    "loss": "הפסד",
+    "draw": "תיקו",
+    "winShort": "נ",
+    "lossShort": "ה",
+    "drawShort": "ת"
+  },
+  "flag": {
+    "label": "מדינה: {{country}}"
+  },
+  "rating": {
+    "label": "דירוג {{value}}",
+    "labelWithKey": "דירוג {{key}} {{value}}",
+    "provisional": "זמני",
+    "provisionalLabel": "{{label}}, זמני"
+  },
+  "league": {
+    "bronze": "ארד",
+    "silver": "כסף",
+    "gold": "זהב",
+    "diamond": "יהלום",
+    "legend": "אגדה",
+    "name": "ליגת {{league}}",
+    "level": "רמה {{level}}",
+    "levelAfter": "· רמה {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "אין טעויות",
+    "short_one": "{{count}} טעות",
+    "short_two": "{{count}} טעויות",
+    "short_many": "{{count}} טעויות",
+    "short_other": "{{count}} טעויות",
+    "long_zero": "אין טעויות",
+    "long_one": "טעות אחת",
+    "long_two": "שתי טעויות",
+    "long_many": "{{count}} טעויות",
+    "long_other": "{{count}} טעויות",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "בוחר",
+    "locking_female": "בוחרת",
+    "turn": "התור שלו",
+    "turn_female": "התור שלה",
+    "paused": "מושהה",
+    "thinking": "חושב",
+    "thinking_female": "חושבת",
+    "reconnecting": "מתנתק",
+    "reconnecting_female": "מתנתקת",
+    "left": "נטש",
+    "left_female": "נטשה",
+    "surrendered": "נכנע",
+    "surrendered_female": "נכנעה",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "תחת הפרעה, {{time}}",
+    "drop": "גרור לכאן"
+  },
+  "actions": {
+    "surrender": "כניעה",
+    "endPractice": "סיום אימון",
+    "reactions": "תגובות"
+  },
+  "interfere": {
+    "cost": "{{cost}} נק׳",
+    "unit": "נק׳",
+    "missing": "חסרות {{count}} נק׳",
+    "label": "הפרעה ל־{{name}} · עלות {{cost}} נק׳",
+    "labelMissing": "הפרעה ל־{{name}} · חסרות {{count}} נק׳",
+    "labelBusy": "הפרעה ל־{{name}} לא זמינה, כבר תחת הפרעה",
+    "labelNotRunning": "הפרעה ל־{{name}} לא זמינה כרגע",
+    "labelDisconnected": "בזמן ניתוק אין הפרעות",
+    "labelOut": "{{name}} כבר לא במשחק",
+    "close": "סגירת ארסנל ההפרעות"
+  },
+  "reconnect": {
+    "label": "ממתינים לחיבור מחדש, {{time}}"
+  },
+  "lead": {
+    "tie": "שוויון",
+    "label": "{{name}} מוביל ב־{{gap}} נקודות",
+    "label_female": "{{name}} מובילה ב־{{gap}} נקודות",
+    "tieLabel": "שוויון בניקוד"
+  },
+  "lock": {
+    "yourCell": "המשבצת שלך",
+    "paused": "מושהה",
+    "pick": "בחר משבצת",
+    "remaining_one": "נותרה שנייה אחת",
+    "remaining_two": "נותרו {{count}} שניות",
+    "remaining_many": "נותרו {{count}} שניות",
+    "remaining_other": "נותרו {{count}} שניות",
+    "label": "המשבצת שלך {{cell}}, {{remaining}}",
+    "labelPaused": "המשבצת שלך {{cell}}, הטיימר עצור",
+    "progress": "זמן שנותר למשבצת {{cell}}",
+    "released": "המשבצת שוחררה"
+  }
+}

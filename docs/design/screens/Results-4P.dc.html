@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Results 4P — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-pop { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1)} }
+@keyframes sf-slam { 0%{transform:scale(2.2) skewX(-9deg);opacity:0;filter:blur(6px)} 55%{transform:scale(.94) skewX(-9deg);opacity:1;filter:blur(0)} 100%{transform:scale(1) skewX(-9deg)} }
+@keyframes sf-shine { 0%{background-position:-160% 0} 100%{background-position:260% 0} }
+@keyframes sf-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+@keyframes sf-blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+@keyframes sf-rise { 0%{transform:translateY(14px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+@keyframes sf-grow { 0%{transform:scaleY(0)} 100%{transform:scaleY(1)} }
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 1100px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 60% at 50% -10%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 50% at 110% 110%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 50% at -10% 100%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; left: 85px; top: 150px; width: 220px; height: 330px; z-index: 0; background: linear-gradient(180deg, rgba(255,210,63,.22), rgba(255,210,63,0) 85%); clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);"></div>
+  <div aria-hidden="true" style="position: absolute; left: 0; top: 190px; width: 390px; height: 290px; z-index: 0; background: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.4px) 0 0 / 7px 7px; -webkit-mask-image: radial-gradient(60% 60% at 50% 60%, #000, transparent); mask-image: radial-gradient(60% 60% at 50% 60%, #000, transparent);"></div>
+
+  <div style="position: relative; z-index: 2; padding: 48px 16px 0;">
+
+    <div style="height: 44px; display: flex; align-items: center; justify-content: space-between;">
+      <a href="Home.dc.html" style="display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 6px; text-decoration: none; color: #a79fcb; font: 500 15px/1 Rubik, sans-serif;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"></path><path d="M6 9.5V20h12V9.5"></path><path d="M10 20v-5h4v5"></path></svg>
+        <span>לבית</span>
+      </a>
+      <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; box-sizing: border-box; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; color: #cfc8ee; font: 600 12px/1 Rubik, sans-serif; white-space: nowrap;">מדורג · רגיל · 4 שחקנים</span>
+    </div>
+
+    <div style="margin-top: 2px; height: 74px; display: flex; justify-content: center; align-items: flex-start;">
+      <h1 style="margin: 0; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 80px; line-height: .9; letter-spacing: 0; color: #e6ebf5; transform: skewX(-9deg); text-shadow: -2px -2px 0 #0098c2, 2px -2px 0 #0098c2, -2px 2px 0 #0098c2, 2px 2px 0 #0098c2, 0 7px 0 #07050f, 0 0 36px rgba(46,230,255,.35); animation: sf-slam .65s cubic-bezier(.34,1.56,.64,1) .15s both;">מקום 2!</h1>
+    </div>
+    <div style="margin-top: 2px; height: 16px; text-align: center; font: 500 14px/16px Rubik, sans-serif; color: #a79fcb;">מתוך 4 שחקנים · <span dir="ltr">8:05</span> דק׳</div>
+
+    <div style="position: relative; margin-top: 10px; height: 272px; display: flex; align-items: flex-end; gap: 8px;">
+
+      <div style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;">
+        <div style="position: relative; width: 58px; height: 58px; animation: sf-bob 3.4s ease-in-out 1.2s infinite;">
+          <div style="width: 58px; height: 58px; padding: 3px; box-sizing: border-box; border-radius: 16px; background: #2ee6ff; box-shadow: 0 4px 0 #0098c2, 0 0 22px rgba(46,230,255,.35);">
+            <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="52" height="52" style="display: block; width: 52px; height: 52px; border-radius: 13px;">
+          </div>
+          <span style="position: absolute; top: -8px; right: -12px; height: 18px; padding: 0 7px; box-sizing: border-box; display: inline-flex; align-items: center; border-radius: 999px; background: #2ee6ff; color: #04222b; font: 700 11px/1 Rubik, sans-serif; box-shadow: 0 2px 0 #0098c2;">אני</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; top: 4px; left: -16px; animation: sf-blink 1.8s ease-in-out infinite;"><path d="M12 2l2 8 8 2-8 2-2 8-2-8-8-2 8-2z" fill="#e6ebf5"></path></svg>
+          <svg width="9" height="9" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; bottom: 6px; right: -14px; animation: sf-blink 2.4s ease-in-out .6s infinite;"><path d="M12 2l2 8 8 2-8 2-2 8-2-8-8-2 8-2z" fill="#2ee6ff"></path></svg>
+        </div>
+        <div style="margin-top: 6px; height: 16px; max-width: 110px; display: flex; align-items: center; gap: 4px;">
+          <svg width="9" height="9" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><circle cx="12" cy="12" r="7" fill="#2ee6ff"></circle></svg>
+          <span style="min-width: 0; font: 600 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">MosheG</span>
+          <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇮🇱</span>
+        </div>
+        <div style="margin-top: 8px; width: 98px; height: 122px; transform-origin: bottom center; animation: sf-grow .5s cubic-bezier(.2,.8,.2,1) .55s both;">
+          <div style="width: 98px; height: 122px; box-sizing: border-box; border-radius: 10px 10px 4px 4px; transform: skewX(-9deg); background: linear-gradient(180deg, rgba(46,230,255,.34) 0%, rgba(27,21,51,.96) 62%, #1b1533 100%); border: 2px solid #2ee6ff; box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.2);">
+            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transform: skewX(9deg);">
+              <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 52px; line-height: .8; color: #c9d3e6; text-shadow: 0 3px 0 #07050f;">2</span>
+              <span style="display: flex; align-items: baseline; gap: 3px;"><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 26px; line-height: .9; font-variant-numeric: tabular-nums; color: #2ee6ff;">{{sMe}}</span><span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">נק׳</span></span>
+              <span style="display: flex; align-items: baseline; gap: 5px; white-space: nowrap;"><span style="font: 500 11px/1 Rubik, sans-serif; color: #cfc8ee;">2 טעויות</span><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: 1; color: #ffd23f;">+6</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;">
+        <div style="position: relative; width: 66px; height: 66px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; top: -25px; left: 17px; z-index: 2; filter: drop-shadow(0 3px 0 #07050f) drop-shadow(0 0 8px rgba(255,210,63,.7)); animation: sf-pop .5s cubic-bezier(.34,1.56,.64,1) .9s both;"><path transform="rotate(-8 12 12)" d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" fill="#ffd23f" stroke="#07050f" stroke-width="1.4" stroke-linejoin="round"></path></svg>
+          <div style="width: 66px; height: 66px; padding: 3px; box-sizing: border-box; border-radius: 18px; background: #e45cff; box-shadow: 0 4px 0 #9b1fbf, 0 0 0 2px rgba(255,210,63,.8), 0 0 28px rgba(255,210,63,.4);">
+            <img src="/_blob/cc52b43f5992c576549315006724b99f" alt="" width="60" height="60" style="display: block; width: 60px; height: 60px; border-radius: 15px;">
+          </div>
+        </div>
+        <div style="margin-top: 6px; height: 16px; max-width: 110px; display: flex; align-items: center; gap: 4px;">
+          <svg width="9" height="9" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><path d="M12 3l9 9-9 9-9-9z" fill="#e45cff"></path></svg>
+          <span style="min-width: 0; font: 600 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Aiko_M</span>
+          <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇯🇵</span>
+        </div>
+        <div style="margin-top: 8px; width: 98px; height: 150px; transform-origin: bottom center; animation: sf-grow .5s cubic-bezier(.2,.8,.2,1) .45s both;">
+          <div style="width: 98px; height: 150px; box-sizing: border-box; border-radius: 10px 10px 4px 4px; transform: skewX(-9deg); background: linear-gradient(180deg, rgba(228,92,255,.34) 0%, rgba(27,21,51,.96) 62%, #1b1533 100%); border-top: 3px solid #e45cff; box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.2);">
+            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transform: skewX(9deg);">
+              <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 64px; line-height: .8; color: #ffd23f; text-shadow: 0 3px 0 #b37b00, 0 0 18px rgba(255,210,63,.4);">1</span>
+              <span style="display: flex; align-items: baseline; gap: 3px;"><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 26px; line-height: .9; font-variant-numeric: tabular-nums; color: #f0a3ff;">{{sAiko}}</span><span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">נק׳</span></span>
+              <span style="display: flex; align-items: baseline; gap: 5px; white-space: nowrap;"><span style="font: 500 11px/1 Rubik, sans-serif; color: #cfc8ee;">1 טעות</span><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: 1; color: #ffd23f;">+15</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;">
+        <div style="width: 58px; height: 58px; padding: 3px; box-sizing: border-box; border-radius: 16px; background: #a8f03c; box-shadow: 0 4px 0 #5fa800;">
+          <img src="/_blob/d9a87df044aca7d23ac9093746e65889" alt="" width="52" height="52" style="display: block; width: 52px; height: 52px; border-radius: 13px;">
+        </div>
+        <div style="margin-top: 6px; height: 16px; max-width: 110px; display: flex; align-items: center; gap: 4px;">
+          <svg width="9" height="9" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><rect x="5" y="5" width="14" height="14" rx="2" fill="#a8f03c"></rect></svg>
+          <span style="min-width: 0; font: 600 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Santi.R</span>
+          <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇦🇷</span>
+        </div>
+        <div style="margin-top: 8px; width: 98px; height: 100px; transform-origin: bottom center; animation: sf-grow .5s cubic-bezier(.2,.8,.2,1) .65s both;">
+          <div style="width: 98px; height: 100px; box-sizing: border-box; border-radius: 10px 10px 4px 4px; transform: skewX(-9deg); background: linear-gradient(180deg, rgba(168,240,60,.30) 0%, rgba(27,21,51,.96) 62%, #1b1533 100%); border-top: 3px solid #a8f03c; box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.2);">
+            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transform: skewX(9deg);">
+              <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 42px; line-height: .8; color: #d08a52; text-shadow: 0 3px 0 #07050f;">3</span>
+              <span style="display: flex; align-items: baseline; gap: 3px;"><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 24px; line-height: .9; font-variant-numeric: tabular-nums; color: #a8f03c;">{{sSanti}}</span><span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">נק׳</span></span>
+              <span style="display: flex; align-items: baseline; gap: 5px; white-space: nowrap;"><span style="font: 500 11px/1 Rubik, sans-serif; color: #3ff0a6;">0 טעויות</span><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: 1; color: #ff6b84;">−4</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div aria-hidden="true" style="height: 10px; border-radius: 4px; transform: skewX(-9deg); background: linear-gradient(180deg, #4b3f80, #251d45); box-shadow: 0 4px 0 #07050f;"></div>
+
+    <div style="margin-top: 12px; animation: sf-rise .42s cubic-bezier(.2,.8,.2,1) .8s both;">
+      <div style="height: 60px; box-sizing: border-box; border-radius: 12px; transform: skewX(-9deg); background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid rgba(255,138,31,.45); box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08);">
+        <div style="height: 100%; box-sizing: border-box; padding: 0 14px; display: flex; align-items: center; gap: 10px; transform: skewX(9deg);">
+          <span dir="ltr" style="flex: none; width: 26px; text-align: center; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 28px; line-height: .9; padding-top: 4px; color: #a79fcb;">4</span>
+          <div style="flex: none; width: 40px; height: 40px; padding: 2px; box-sizing: border-box; border-radius: 11px; background: #ff8a1f; box-shadow: 0 3px 0 #c95600;">
+            <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="36" height="36" style="display: block; width: 36px; height: 36px; border-radius: 9px;">
+          </div>
+          <div style="flex: 1 1 0; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <svg width="9" height="9" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><path d="M12 4l8 15H4z" fill="#ff8a1f"></path></svg>
+              <span style="font: 600 14px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">NinaVolt</span>
+              <span style="font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 13px; line-height: 1;">🇩🇪</span>
+            </div>
+            <div style="margin-top: 5px; display: flex; align-items: center; gap: 3px;">
+              <span dir="ltr" style="display: inline-flex; align-items: center; height: 16px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.6); color: #ff6b84; font: 600 13px/1 Teko, sans-serif;">−1</span>
+              <span dir="ltr" style="display: inline-flex; align-items: center; height: 16px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.6); color: #ff6b84; font: 600 13px/1 Teko, sans-serif;">−2</span>
+              <span dir="ltr" style="display: inline-flex; align-items: center; height: 16px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.6); color: #ff6b84; font: 600 13px/1 Teko, sans-serif;">−4</span>
+              <span dir="ltr" style="display: inline-flex; align-items: center; height: 16px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 999px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.6); color: #ff6b84; font: 600 13px/1 Teko, sans-serif;">−8</span>
+            </div>
+          </div>
+          <span style="flex: none; display: flex; align-items: baseline; gap: 3px;"><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 28px; line-height: .9; font-variant-numeric: tabular-nums; color: #ff8a1f;">{{sNina}}</span><span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">נק׳</span></span>
+          <div style="flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+            <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .9; color: #ff6b84;">−17</span>
+            <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 500; font-size: 13px; line-height: 1; color: #a79fcb;">1305 → 1288</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 14px; padding: 12px 14px; border-radius: 16px; background: radial-gradient(90% 120% at 0% 0%, rgba(255,210,63,.12), transparent 60%), linear-gradient(160deg, #251d45, #1b1533); border: 2px solid rgba(255,210,63,.5); box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08); animation: sf-rise .42s cubic-bezier(.2,.8,.2,1) .95s both;">
+      <div style="height: 24px; display: flex; align-items: center; justify-content: space-between;">
+        <span style="font: 600 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #a79fcb;">שינוי דירוג · רגיל</span>
+        <span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">מחושב מול כל יריב בנפרד</span>
+      </div>
+      <div style="margin-top: 8px; height: 44px; display: flex; align-items: center; gap: 8px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg>
+        <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 50px; line-height: .9; padding-top: 6px; font-variant-numeric: tabular-nums; color: #ffd23f; text-shadow: 0 3px 0 #b37b00;">{{rating}}</span>
+        <span style="display: flex; align-items: baseline; gap: 4px; font: 500 12px/1 Rubik, sans-serif; color: #a79fcb;">מ־<span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 500; font-size: 18px; line-height: 1; text-decoration: line-through;">1287</span></span>
+        <span style="flex: 1 1 0;"></span>
+        <span style="display: block; animation: sf-pop .5s cubic-bezier(.34,1.56,.64,1) 2.3s both;">
+          <span style="display: flex; align-items: center; height: 40px; padding: 0 14px; box-sizing: border-box; border-radius: 10px; transform: skewX(-9deg); background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); box-shadow: 0 4px 0 #b37b00, 0 0 22px rgba(255,210,63,.45), inset 0 1px 0 rgba(255,255,255,.6);">
+            <span dir="ltr" style="display: block; transform: skewX(9deg); font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 32px; line-height: 1; padding-top: 4px; color: #1a1000;">+6</span>
+          </span>
+        </span>
+      </div>
+      <div style="margin-top: 10px; height: 44px; display: flex; gap: 6px;">
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 0 8px; display: flex; align-items: center; gap: 7px; border-radius: 10px; background: #0f0b1d; border: 1px solid #342a5e;">
+          <div style="flex: none; width: 28px; height: 28px; padding: 2px; box-sizing: border-box; border-radius: 8px; background: #e45cff;"><img src="/_blob/cc52b43f5992c576549315006724b99f" alt="" width="24" height="24" style="display: block; width: 24px; height: 24px; border-radius: 6px;"></div>
+          <div style="min-width: 0;">
+            <div style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Aiko_M</div>
+            <div dir="ltr" style="margin-top: 3px; text-align: right; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 19px; line-height: .9; color: #ff6b84;">−4.9</div>
+          </div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 0 8px; display: flex; align-items: center; gap: 7px; border-radius: 10px; background: #0f0b1d; border: 1px solid #342a5e;">
+          <div style="flex: none; width: 28px; height: 28px; padding: 2px; box-sizing: border-box; border-radius: 8px; background: #a8f03c;"><img src="/_blob/d9a87df044aca7d23ac9093746e65889" alt="" width="24" height="24" style="display: block; width: 24px; height: 24px; border-radius: 6px;"></div>
+          <div style="min-width: 0;">
+            <div style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Santi.R</div>
+            <div dir="ltr" style="margin-top: 3px; text-align: right; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 19px; line-height: .9; color: #ffd23f;">+5.1</div>
+          </div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 0 8px; display: flex; align-items: center; gap: 7px; border-radius: 10px; background: #0f0b1d; border: 1px solid #342a5e;">
+          <div style="flex: none; width: 28px; height: 28px; padding: 2px; box-sizing: border-box; border-radius: 8px; background: #ff8a1f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="24" height="24" style="display: block; width: 24px; height: 24px; border-radius: 6px;"></div>
+          <div style="min-width: 0;">
+            <div style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">NinaVolt</div>
+            <div dir="ltr" style="margin-top: 3px; text-align: right; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 19px; line-height: .9; color: #ffd23f;">+5.6</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 14px; height: 16px; display: flex; align-items: center; justify-content: space-between;">
+      <span style="font: 700 15px/1 Rubik, sans-serif; color: #f1eeff;">הישגי המשחק</span>
+      <span style="font: 500 12px/1 Rubik, sans-serif; color: #a79fcb;">אחד לכל שחקן</span>
+    </div>
+    <div style="margin-top: 8px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+
+      <div style="position: relative; overflow: hidden; height: 66px; box-sizing: border-box; padding: 0 10px; display: flex; align-items: center; gap: 10px; border-radius: 12px; background: linear-gradient(160deg, rgba(255,210,63,.16), rgba(255,210,63,.03) 70%), #1b1533; border: 1.5px solid rgba(255,210,63,.45); box-shadow: 0 4px 0 #07050f; animation: sf-pop .45s cubic-bezier(.34,1.56,.64,1) 1.4s both;">
+        <span aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.22) 50%, rgba(255,255,255,0) 70%) no-repeat; background-size: 60% 100%; animation: sf-shine 5s ease-in-out 2.6s infinite;"></span>
+        <div style="position: relative; flex: none; width: 36px; height: 36px; padding: 2px; box-sizing: border-box; border-radius: 10px; background: #e45cff;">
+          <img src="/_blob/cc52b43f5992c576549315006724b99f" alt="" width="32" height="32" style="display: block; width: 32px; height: 32px; border-radius: 8px;">
+          <span style="position: absolute; bottom: -6px; left: -6px; width: 20px; height: 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #ffd23f; border: 2px solid #1b1533; color: #1a1000;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path><path d="M12 13v4M8 21h8"></path></svg></span>
+        </div>
+        <div style="position: relative; min-width: 0;">
+          <div style="font: 700 12px/1 Rubik, sans-serif; color: #ffd23f; white-space: nowrap;">הכי הרבה נקודות</div>
+          <div style="margin-top: 5px; display: flex; align-items: baseline; gap: 6px;"><span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">Aiko_M</span><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 18px; line-height: .9; color: #f1eeff;">71.5</span></div>
+        </div>
+      </div>
+
+      <div style="position: relative; overflow: hidden; height: 66px; box-sizing: border-box; padding: 0 10px; display: flex; align-items: center; gap: 10px; border-radius: 12px; background: linear-gradient(160deg, rgba(46,230,255,.14), rgba(46,230,255,.02) 70%), #1b1533; border: 2px solid #2ee6ff; box-shadow: 0 4px 0 #07050f; animation: sf-pop .45s cubic-bezier(.34,1.56,.64,1) 1.55s both;">
+        <span aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.22) 50%, rgba(255,255,255,0) 70%) no-repeat; background-size: 60% 100%; animation: sf-shine 5s ease-in-out 2.8s infinite;"></span>
+        <div style="position: relative; flex: none; width: 36px; height: 36px; padding: 2px; box-sizing: border-box; border-radius: 10px; background: #2ee6ff;">
+          <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="32" height="32" style="display: block; width: 32px; height: 32px; border-radius: 8px;">
+          <span style="position: absolute; bottom: -6px; left: -6px; width: 20px; height: 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #ffd23f; border: 2px solid #1b1533; color: #1a1000;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17l6-6 4 4 6-7"></path><path d="M14 8h6v6"></path></svg></span>
+        </div>
+        <div style="position: relative; min-width: 0;">
+          <div style="font: 700 12px/1 Rubik, sans-serif; color: #ffd23f; white-space: nowrap;">קאמבק</div>
+          <div style="margin-top: 6px; font: 500 12px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">ממקום 3 למקום 2</div>
+        </div>
+      </div>
+
+      <div style="position: relative; overflow: hidden; height: 66px; box-sizing: border-box; padding: 0 10px; display: flex; align-items: center; gap: 10px; border-radius: 12px; background: linear-gradient(160deg, rgba(255,210,63,.16), rgba(255,210,63,.03) 70%), #1b1533; border: 1.5px solid rgba(255,210,63,.45); box-shadow: 0 4px 0 #07050f; animation: sf-pop .45s cubic-bezier(.34,1.56,.64,1) 1.7s both;">
+        <span aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.22) 50%, rgba(255,255,255,0) 70%) no-repeat; background-size: 60% 100%; animation: sf-shine 5s ease-in-out 3s infinite;"></span>
+        <div style="position: relative; flex: none; width: 36px; height: 36px; padding: 2px; box-sizing: border-box; border-radius: 10px; background: #a8f03c;">
+          <img src="/_blob/d9a87df044aca7d23ac9093746e65889" alt="" width="32" height="32" style="display: block; width: 32px; height: 32px; border-radius: 8px;">
+          <span style="position: absolute; bottom: -6px; left: -6px; width: 20px; height: 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #ffd23f; border: 2px solid #1b1533; color: #1a1000;"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="currentColor"></path></svg></span>
+        </div>
+        <div style="position: relative; min-width: 0;">
+          <div style="font: 700 12px/1 Rubik, sans-serif; color: #ffd23f; white-space: nowrap;">המהלך הטוב ביותר</div>
+          <div style="margin-top: 5px; display: flex; align-items: baseline; gap: 6px;"><span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">Santi.R</span><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 18px; line-height: .9; color: #f1eeff; white-space: nowrap;">F3 → 8 <span style="color: #ffd23f;">+8</span></span></div>
+        </div>
+      </div>
+
+      <div style="position: relative; overflow: hidden; height: 66px; box-sizing: border-box; padding: 0 10px; display: flex; align-items: center; gap: 10px; border-radius: 12px; background: linear-gradient(160deg, rgba(255,210,63,.16), rgba(255,210,63,.03) 70%), #1b1533; border: 1.5px solid rgba(255,210,63,.45); box-shadow: 0 4px 0 #07050f; animation: sf-pop .45s cubic-bezier(.34,1.56,.64,1) 1.85s both;">
+        <span aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.22) 50%, rgba(255,255,255,0) 70%) no-repeat; background-size: 60% 100%; animation: sf-shine 5s ease-in-out 3.2s infinite;"></span>
+        <div style="position: relative; flex: none; width: 36px; height: 36px; padding: 2px; box-sizing: border-box; border-radius: 10px; background: #ff8a1f;">
+          <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="32" height="32" style="display: block; width: 32px; height: 32px; border-radius: 8px;">
+          <span style="position: absolute; bottom: -6px; left: -6px; width: 20px; height: 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #ffd23f; border: 2px solid #1b1533; color: #1a1000;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+        </div>
+        <div style="position: relative; min-width: 0;">
+          <div style="font: 700 12px/1 Rubik, sans-serif; color: #ffd23f; white-space: nowrap;">הכי מהיר</div>
+          <div style="margin-top: 5px; display: flex; align-items: baseline; gap: 6px;"><span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">NinaVolt</span><span style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 18px; line-height: .9; color: #f1eeff; white-space: nowrap;"><span dir="ltr">3.4</span><span style="font: 500 11px/1 Rubik, sans-serif;">ש׳</span></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top: 12px; height: 58px; box-sizing: border-box; display: flex; align-items: stretch; border-radius: 12px; background: #1b1533; border: 2px solid #342a5e; box-shadow: 0 4px 0 #07050f; animation: sf-rise .42s cubic-bezier(.2,.8,.2,1) 1.1s both;">
+      <div style="flex: 1 1 0; min-width: 0; padding: 8px 10px 0; box-sizing: border-box;">
+        <div dir="ltr" style="text-align: right; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 26px; line-height: .9; color: #f1eeff;">8:05</div>
+        <div style="margin-top: 4px; font: 500 11px/1.1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">זמן משחק</div>
+      </div>
+      <div style="flex: 1 1 0; min-width: 0; padding: 8px 10px 0; box-sizing: border-box; border-right: 1px solid #342a5e;">
+        <div style="display: flex; align-items: baseline; gap: 5px;"><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 26px; line-height: .9; color: #f1eeff;">2</span><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 15px; line-height: 1; color: #ff6b84;">−3</span></div>
+        <div style="margin-top: 4px; font: 500 11px/1.1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">הטעויות שלך</div>
+      </div>
+      <div style="flex: 1.3 1 0; min-width: 0; padding: 8px 10px 0; box-sizing: border-box; border-right: 1px solid #342a5e;">
+        <div style="display: flex; align-items: baseline; gap: 6px;"><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 22px; line-height: .9; color: #f1eeff; white-space: nowrap;">F2 → 3</span><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 22px; line-height: .9; color: #2ee6ff;">+6</span></div>
+        <div style="margin-top: 6px; font: 500 11px/1.1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">המהלך הטוב שלך</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; box-sizing: border-box; padding: 34px 16px 24px; display: flex; gap: 12px; background: linear-gradient(180deg, rgba(15,11,29,0) 0%, rgba(15,11,29,.92) 34%, #0f0b1d 100%);">
+    <a href="Modes.dc.html" style="position: relative; overflow: hidden; flex: 1.6 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; height: 60px; padding: 0 20px; box-sizing: border-box; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); color: #1a1000; text-decoration: none; transform: skewX(-9deg); border-radius: 10px; box-shadow: 0 5px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6); font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 34px; line-height: 1;">
+      <span aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 70%) no-repeat; background-size: 50% 100%; animation: sf-shine 3.6s ease-in-out 3s infinite;"></span>
+      <span style="position: relative; display: block; transform: skewX(9deg);">משחק חדש</span>
+    </a>
+    <a href="Replay.dc.html" style="flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; height: 60px; box-sizing: border-box; background: #251d45; color: #f1eeff; border: 2px solid #4b3f80; border-radius: 10px; box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08); transform: skewX(-9deg); text-decoration: none; font: 600 16px/1 Rubik, sans-serif;">
+      <span style="display: flex; align-items: center; gap: 6px; transform: skewX(9deg); white-space: nowrap;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M10 8.5l5 3.5-5 3.5z"></path></svg>
+        <span>צפייה חוזרת</span>
+      </span>
+    </a>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1100}}'>
+class Component extends DCLogic {
+  state = { ms: 99999 };
+
+  componentDidMount() {
+    this.t0 = Date.now();
+    this.setState({ ms: 0 });
+    this.timer = setInterval(() => {
+      const ms = Date.now() - this.t0;
+      if (ms >= 3000) {
+        clearInterval(this.timer);
+        this.timer = null;
+        this.setState({ ms: 99999 });
+        return;
+      }
+      this.setState({ ms: ms });
+    }, 33);
+  }
+
+  componentWillUnmount() {
+    if (this.timer) clearInterval(this.timer);
+    this.timer = null;
+  }
+
+  prog(ms, start, dur) {
+    const p = Math.max(0, Math.min(1, (ms - start) / dur));
+    return 1 - Math.pow(1 - p, 3);
+  }
+
+  half(v) {
+    const h = Math.round(v * 2) / 2;
+    return h % 1 === 0 ? String(h) : h.toFixed(1);
+  }
+
+  renderVals() {
+    // Final ranking: Aiko_M 71.5, MosheG 66, Santi.R 58.5, NinaVolt 24.
+    // Multiplayer pairwise Elo, K = 32 / (N - 1) = 32 / 3 per pair:
+    // me vs Aiko (lost) -4.9, vs Santi (won) +5.1, vs Nina (won) +5.6 -> +5.8 -> +6 (1287 -> 1293).
+    // Aiko 1318 -> 1333 (+15), Santi 1271 -> 1267 (-4), Nina 1305 -> 1288 (-17). Sum = 0.
+    const ms = this.state.ms;
+    const ps = this.prog(ms, 750, 1100);
+    const pr = this.prog(ms, 1600, 700);
+    return {
+      sAiko: this.half(71.5 * ps),
+      sMe: this.half(66 * ps),
+      sSanti: this.half(58.5 * ps),
+      sNina: this.half(24 * ps),
+      rating: String(Math.round(1287 + 6 * pr))
+    };
+  }
+}
+</script>
+</body>
+</html>

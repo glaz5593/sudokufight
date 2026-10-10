@@ -1,0 +1,373 @@
+{
+  "link": {
+    "designSystem": "Design system",
+    "designSystemHint": "Development screen: every component in every state",
+    "online": "Online game",
+    "onlineHint": "Development screen: a private room with a code on the game server",
+    "metrics": "Network measures",
+    "metricsHint": "Development screen: the five network measures of the online game"
+  },
+  "screen": {
+    "title": "Design system",
+    "subtitle": "Direction C · Calm Night · development screen",
+    "close": "Close",
+    "englishSwitch": "English interface",
+    "languageHint": "The app reloads when the text direction changes",
+    "reduceMotion": "Reduce motion",
+    "index": "Screen sections",
+    "jumpTo": "Go to {{section}}"
+  },
+  "languages": {
+    "he": "עברית",
+    "en": "English"
+  },
+  "sections": {
+    "colors": {
+      "title": "Colours",
+      "note": "Each colour on the surface it is read on, with its contrast ratio. 4.5:1 for text, 3:1 for large text and marks."
+    },
+    "type": {
+      "title": "Type, spacing and icons",
+      "note": "Rubik for the interface and Teko for numbers. A 4-point grid."
+    },
+    "buttons": {
+      "title": "Buttons",
+      "note": "Primary, secondary, row, text, icon and danger, in every size and state (section 1)."
+    },
+    "identity": {
+      "title": "Avatars, flags, rating and league",
+      "note": "Every avatar size in the four player colours and the neutral frame, with its badges (sections 2, 4 and 5)."
+    },
+    "cards": {
+      "title": "Player cards",
+      "note": "The 2-player card in every state, and the compact cards for 3 and 4. Every state comes from a real engine game (sections 3, 7 and 8)."
+    },
+    "hud": {
+      "title": "Lead bar, lock strip and badges",
+      "note": "The lead bar for 2 and 3–4 players, my lock strip in each state, and the small badges (sections 6, 9 and 10)."
+    },
+    "board": {
+      "title": "Board",
+      "note": "Every cell state on one board, from a 4-player engine game (section 11). Always left to right."
+    },
+    "keypad": {
+      "title": "Keypad",
+      "note": "Armed, idle, a completed digit and a digit already tried (section 12). Always left to right."
+    },
+    "toasts": {
+      "title": "Toasts",
+      "note": "The five toast types (section 15)."
+    },
+    "overlays": {
+      "title": "Sheet and dialogs",
+      "note": "Sheet, surrender confirm, end practice and the centred dialog (sections 13 and 14)."
+    },
+    "nav": {
+      "title": "Bottom navigation",
+      "note": "Each tab active (section 16)."
+    }
+  },
+  "states": {
+    "default": "Default",
+    "disabled": "Disabled",
+    "loading": "Loading",
+    "selected": "Selected",
+    "expanded": "Open"
+  },
+  "colors": {
+    "groups": {
+      "ground": "Ground and surfaces",
+      "text": "Text",
+      "brand": "Brand and meaning",
+      "status": "Status and focus",
+      "board": "Board colours",
+      "league": "Leagues",
+      "players": "Players: colour and shape"
+    },
+    "grade": {
+      "text": "Fine for text",
+      "large": "Large text and marks only",
+      "decorative": "Decoration only"
+    },
+    "sample": "Aa",
+    "against": "On {{token}} · {{grade}}",
+    "swatchLabel": "{{token}}, {{value}}, contrast {{ratio}} on {{against}}, {{grade}}",
+    "playersNote": "I am always P1, cyan with a circle. Opponents get P2 to P4 in seat order, with a triangle, a square and a diamond.",
+    "me": "{{name}} · me",
+    "shapes": {
+      "circle": "circle",
+      "triangle": "triangle",
+      "square": "square",
+      "diamond": "diamond"
+    },
+    "digitSample": "5",
+    "secondsSample": "7",
+    "paletteLabel": "{{name}}, shape: {{shape}}, digit on tint {{digit}}, ring on ground {{ring}}",
+    "paletteRatios": "Digit {{digit}} · ring {{ring}} · lock edge {{edge}}"
+  },
+  "type": {
+    "title": "Type scale",
+    "sample": "Sudoku Fight · card",
+    "numberSample": "1287 · 39.5 · F8",
+    "spacing": "Spacing",
+    "radii": "Radii",
+    "icons": "Icons"
+  },
+  "buttons": {
+    "pressHint": "\"Pressed\" is live: press and hold any button to see it.",
+    "primary": "Primary",
+    "secondary": "Secondary",
+    "row": "Row button",
+    "ghost": "Text",
+    "icon": "Icon 44",
+    "danger": "Danger",
+    "caption": "{{size}} · {{state}}",
+    "play": "Play",
+    "retry": "Try again",
+    "chip": "Fast",
+    "again": "Another round",
+    "againSub": "Ranked · 2 players · normal",
+    "all": "All",
+    "cancelSelection": "Cancel selection",
+    "withIcon": "With icon",
+    "header": "In a header",
+    "settings": "Settings",
+    "reactions": "Reactions",
+    "surrender": "Surrender",
+    "surrenderYes": "Yes, surrender"
+  },
+  "avatars": {
+    "size": "{{size}} · {{px}}",
+    "neutral": "Neutral",
+    "badges": "Badges and states",
+    "online": "Online",
+    "reconnecting": "Reconnecting",
+    "left": "Left",
+    "bot": "Bot",
+    "empty": "No picture",
+    "labelled": "Alone, with a name",
+    "result": {
+      "win": "Win",
+      "loss": "Loss",
+      "draw": "Draw"
+    }
+  },
+  "identity": {
+    "flags": "Flags",
+    "flagSize": "{{size}}",
+    "ratings": "Rating",
+    "ratingSize": "{{size}}",
+    "ratingKey": "Normal",
+    "provisional": "Provisional",
+    "leagues": "Leagues",
+    "leaguesNote": "Each row: the text version (Home) and the version with the hexagon, for each tier."
+  },
+  "cards": {
+    "pair": "Card pair in a 2-player game",
+    "pairNote": "Tap ⚡ to open or close the arsenal, and tap reactions to open or close the picker.",
+    "opponent": "Opponent's card",
+    "mine": "My card",
+    "states": {
+      "thinking": "Thinking",
+      "locking": "Choosing a cell",
+      "hit": "Under interference",
+      "paused": "Paused (game frozen)",
+      "reconnecting": "Reconnecting",
+      "left": "Left",
+      "surrendered": "Surrendered",
+      "correct": "Correct move",
+      "unaffordable": "I am short of points",
+      "expanded": "Arsenal open",
+      "dropTarget": "Drop target",
+      "dropHover": "Finger over the target",
+      "dimmed": "Dimmed",
+      "bot": "Bot",
+      "default": "Default",
+      "wrong": "Mistake",
+      "sent": "I sent an interference",
+      "negative": "Negative score",
+      "cooldown": "Waiting between reactions",
+      "reactionsOpen": "Reaction picker open",
+      "selfReconnecting": "I am reconnecting",
+      "practice": "Practice against a bot"
+    },
+    "dropLabel": "Drop here: fireworks at {{name}}",
+    "compact3": "Compact · 3 players",
+    "compact4": "Compact · 4 players",
+    "compact4Out": "Compact · 4 players, one surrendered",
+    "interference": "Interference button",
+    "interferenceNote": "When the opponent disconnects or leaves the game, the button is not shown.",
+    "interferenceStates": {
+      "available": "Available",
+      "expanded": "Open",
+      "unaffordable": "Short of points",
+      "busy": "Opponent already under interference",
+      "notRunning": "Game not running"
+    }
+  },
+  "hud": {
+    "lead": "Lead bar",
+    "leadStates": {
+      "meLeading": "I lead",
+      "opponentLeading": "Opponent leads",
+      "tie": "Tie",
+      "negative": "Negative score",
+      "three": "3 players",
+      "four": "4 players"
+    },
+    "strip": "My lock strip",
+    "stripStates": {
+      "none": "No lock",
+      "locked": "Locked",
+      "urgent": "Last 3 seconds",
+      "paused": "Paused"
+    },
+    "nudge": "Nudge (as when a key is pressed without a cell)",
+    "badges": "Badges",
+    "vs": "VS",
+    "rank": "Place {{place}}",
+    "hitChip": "Under interference",
+    "reconnect": "Reconnecting",
+    "reconnectCompact": "Reconnecting, compact",
+    "timerRing": "{{name}} timer",
+    "timerRingPaused": "{{name}} timer, stopped"
+  },
+  "board": {
+    "note": "Tap an empty cell to see it waiting for the lock. Tap an opponent's lock to see \"taken\".",
+    "clock": "Game clock: {{seconds}} seconds",
+    "advance": "One second on",
+    "reset": "Reset",
+    "playCorrect": "Correct move",
+    "playWrong": "Mistake",
+    "playTaken": "Taken",
+    "coordinates": "Coordinate rails (off by default)",
+    "legend": "On the board: givens, cells solved by all four players, my lock (F8), opponents' locks (A8, and D4 stopped by an interference), and wrong digits on an empty cell, on a solved cell and under my lock.",
+    "closeUps": "Cells up close: states the board can't show at the same moment",
+    "cells": {
+      "myLock": "My lock",
+      "urgent": "My lock, last 3 seconds",
+      "paused": "My lock, stopped by an interference",
+      "pending": "Waiting for the lock",
+      "oppLock": "An opponent's lock"
+    }
+  },
+  "keypad": {
+    "armed": "I hold a lock",
+    "armedCaption": "Digit {{digit}} is complete, and one digit was already tried in the cell",
+    "cancelEnabled": "Cancel selection: enabled",
+    "idle": "No lock",
+    "idleCaption": "Pressing a key nudges \"Pick a cell\"",
+    "cancelDisabled": "Cancel selection: disabled"
+  },
+  "toasts": {
+    "variants": {
+      "success": "Success",
+      "warning": "Warning",
+      "error": "Error",
+      "connection": "Connection",
+      "info": "Info"
+    },
+    "success": "You're back in the game. Board and scores are in sync",
+    "warning": "Cell {{cell}} is released in 3 seconds",
+    "error": "Not enough points for the next interference ({{cost}} pts)",
+    "connection": "Opponent disconnecting…",
+    "info": "Fireworks → {{name}}",
+    "send": "Send a toast through the queue",
+    "sendNote": "Each tap sends the next type. Toasts arrive one after another at the top of the screen."
+  },
+  "overlays": {
+    "sheet": {
+      "caption": "Sheet (arsenal)",
+      "open": "Open the sheet",
+      "title": "Interference arsenal",
+      "subtitle": "Target: {{name}}",
+      "scrim": "Close the arsenal and return to the board",
+      "body": "Each interference lasts 5 seconds · launch by dragging only",
+      "rowTitle": "Fireworks",
+      "rowSub": "2 pts · drag onto the opponent's card",
+      "lockedTitle": "Cats",
+      "lockedSub": "Unlocks at level 18"
+    },
+    "surrender": {
+      "caption": "Surrender confirm",
+      "open": "Open the surrender confirm",
+      "chip": "Surrender",
+      "title": "Are you sure you want to surrender?",
+      "body": "The game counts as a loss · estimated rating change ",
+      "confirm": "Yes, surrender",
+      "footnote": "The game goes on in the background",
+      "label": "Confirm surrender"
+    },
+    "practice": {
+      "caption": "End practice",
+      "open": "Open end practice",
+      "title": "End the practice?",
+      "confirm": "Yes, end it"
+    },
+    "dialog": {
+      "caption": "Centred dialog",
+      "open": "Open the dialog",
+      "title": "No internet connection",
+      "body": "You can keep practising offline. Ranked games come back when the connection does.",
+      "confirm": "Go to practice",
+      "cancel": "Try again"
+    }
+  },
+  "nav": {
+    "active": "{{tab}} active"
+  },
+  "online": {
+    "title": "Online game",
+    "subtitle": "Development screen · private room with a code",
+    "close": "Close",
+    "server": "Server: {{address}}",
+    "identity": "You: {{name}}",
+    "identityId": "Development id: {{id}}",
+    "identityAccount": "Signed in: the server knows you by your account",
+    "createTitle": "New room",
+    "gameType": "Game type",
+    "players": "2 players",
+    "create": "Create room",
+    "createHint": "The room code to share shows once it is created",
+    "joinTitle": "Join a room",
+    "codeLabel": "Room code",
+    "codeHint": "6 characters: English letters and digits",
+    "badCode": "That is not a room code. 6 characters, no 0, O, 1, I or L",
+    "join": "Join",
+    "current": "Online game open",
+    "currentLine": "Room {{code}} · {{status}}",
+    "status": {
+      "connecting": "Connecting",
+      "lobby": "In the room, waiting for players",
+      "live": "Playing",
+      "reconnecting": "Reconnecting",
+      "closed": "Closed"
+    },
+    "backToGame": "Back to the game",
+    "metrics": "Network measures",
+    "noCode": "—"
+  },
+  "metrics": {
+    "title": "Network measures",
+    "subtitle": "The current online game · the last 200 samples of each measure",
+    "none": "No online game is open. Create or join a room on the \"Online game\" screen.",
+    "open": "Network measures",
+    "close": "Close the network measures",
+    "rtt": "Ping (round trip)",
+    "c2s": "Client → server",
+    "s2c": "Server → client",
+    "action": "Action update time",
+    "reconnect": "Reconnect time",
+    "sync": "Sync time",
+    "values": "p50 {{p50}} · p95 {{p95}} · max {{max}} ms",
+    "empty": "No samples yet",
+    "count": "{{count}} in the window · {{total}} in all",
+    "target": "p95 target: {{ms}} ms or less",
+    "offset": "Clock offset from the server: {{ms}} ms",
+    "offsetNone": "The clock is not synced yet",
+    "lost": "Actions without an answer: {{count}}",
+    "reports": "latency_sample reports sent: {{count}}",
+    "sep": ", ",
+    "chip": "ms"
+  }
+}

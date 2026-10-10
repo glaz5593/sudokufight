@@ -1,0 +1,38 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Game board",
+    "myLock": "your cell {{cell}}",
+    "otherLock": "{{cell}} locked by {{name}}"
+  },
+  "cell": {
+    "empty": "empty",
+    "given": "given",
+    "solvedByMe": "solved by you",
+    "solvedBy": "solved by {{name}}",
+    "lockedByMe": "locked by you",
+    "lockedBy": "locked by {{name}}",
+    "pending": "waiting for the lock",
+    "timerStopped": "timer stopped",
+    "seconds_one": "1 second",
+    "seconds_two": "{{count}} seconds",
+    "seconds_many": "{{count}} seconds",
+    "seconds_other": "{{count}} seconds",
+    "wrong": "wrong digits: {{digits}}",
+    "hintMyLock": "Pick a digit on the keypad",
+    "player": "Player {{n}}"
+  },
+  "keypad": {
+    "armed": "Digit {{digit}} · {{left}} left",
+    "idle": "Digit {{digit}}, {{left}} left, pick a cell first",
+    "complete": "Digit {{digit}}, {{left}} left",
+    "tried": "Digit {{digit}} · already tried in this cell"
+  },
+  "cancel": {
+    "label": "Cancel selection",
+    "withCell": "Cancel selection, {{cell}}"
+  }
+}

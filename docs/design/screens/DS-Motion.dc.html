@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>DS Motion — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-float-up { 0%{transform:translateY(6px) scale(.8);opacity:0} 15%{opacity:1;transform:translateY(0) scale(1.15)} 100%{transform:translateY(-46px) scale(1);opacity:0} }
+@keyframes sf-glow { 0%,100%{box-shadow:0 0 0 2px #2ee6ff,0 0 10px rgba(46,230,255,.45)} 50%{box-shadow:0 0 0 2px #2ee6ff,0 0 22px rgba(46,230,255,.8)} }
+@keyframes sf-ring { from{stroke-dashoffset:0} to{stroke-dashoffset:100} }
+@keyframes sf-shine { 0%{background-position:-160% 0} 100%{background-position:260% 0} }
+@keyframes sf-sweep { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+@keyframes sf-blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+@keyframes sf-shake-loop { 0%{transform:translateX(0)} 4%{transform:translateX(-5px)} 8%{transform:translateX(5px)} 12%{transform:translateX(-3px)} 16%{transform:translateX(3px)} 20%,100%{transform:translateX(0)} }
+@keyframes sf-flash-loop { 0%{box-shadow:inset 0 0 0 40px rgba(255,51,85,.55)} 20%,100%{box-shadow:inset 0 0 0 40px rgba(255,51,85,0)} }
+@keyframes sf-slam-loop { 0%{transform:scale(2.2) skewX(-9deg);opacity:0;filter:blur(6px)} 22%{transform:scale(.94) skewX(-9deg);opacity:1;filter:blur(0)} 40%,100%{transform:scale(1) skewX(-9deg);opacity:1} }
+@keyframes sf-pop-loop { 0%{transform:scale(.4);opacity:0} 40%,100%{transform:scale(1);opacity:1} }
+@keyframes sf-tap-loop { 0%,18%,100%{transform:translateY(0);box-shadow:0 4px 0 #07050f} 8%{transform:translateY(3px);box-shadow:0 1px 0 #07050f} }
+@keyframes sf-travel { 0%{transform:translateX(0)} 16%,50%{transform:translateX(-60px)} 66%,100%{transform:translateX(0)} }
+@keyframes sf-ease-demo { 0%,10%{transform:translateX(0)} 50%,60%{transform:translateX(-148px)} 100%{transform:translateX(0)} }
+@keyframes sf-drain { from{transform:scaleX(1)} to{transform:scaleX(0)} }
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 1440px; height: 1500px; position: relative; overflow: hidden; box-sizing: border-box; padding: 36px 48px 30px; display: flex; flex-direction: column; gap: 16px; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(55% 22% at 80% 0%, rgba(120,90,255,.30), transparent 70%), radial-gradient(45% 30% at 100% 100%, rgba(255,51,85,.12), transparent 60%), radial-gradient(45% 30% at 0% 100%, rgba(46,230,255,.09), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.022) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div style="position: absolute; top: 0; right: 0; width: 620px; height: 280px; background-image: radial-gradient(rgba(255,255,255,.08) 1px, transparent 1.4px); background-size: 7px 7px; -webkit-mask-image: linear-gradient(210deg, #000 10%, transparent 75%); mask-image: linear-gradient(210deg, #000 10%, transparent 75%);"></div>
+  <div style="position: absolute; top: 132px; right: -60px; width: 640px; height: 54px; transform: rotate(-9deg); background: linear-gradient(90deg, rgba(255,51,85,0), rgba(255,51,85,.22) 30%, rgba(255,210,63,.24) 70%, rgba(255,210,63,0));"></div>
+
+  <!-- ===== ROW 1 · TITLE + TOKENS ===== -->
+  <div style="position: relative; flex: 0 0 236px; height: 236px; display: flex; gap: 16px;">
+
+    <div style="flex: 0 0 480px; display: flex; flex-direction: column; justify-content: center; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="display: inline-block; padding: 5px 14px; background: #ffd23f; color: #1a1000; font: 700 13px/1 Rubik, sans-serif; letter-spacing: .04em; transform: skewX(-9deg); border-radius: 4px; box-shadow: 0 3px 0 #b37b00;"><span style="display: block; transform: skewX(9deg);">מערכת עיצוב · תנועה</span></span>
+        <span style="font: 600 15px/1 Teko, sans-serif; letter-spacing: .1em; color: #a79fcb;">DESIGN SYSTEM V1 · 3/3</span>
+      </div>
+      <div dir="ltr" style="text-align: right; height: 78px; white-space: nowrap; font: 600 98px/.8 Teko, Rubik, sans-serif; letter-spacing: .02em;"><span style="display: inline-block; transform: skewX(-9deg); color: transparent; background: linear-gradient(100deg, #f1eeff 0%, #f1eeff 42%, #ffd23f 50%, #f1eeff 58%, #f1eeff 100%); background-size: 260% 100%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 5px 0 #07050f); animation: sf-shine 3.2s linear infinite; animation-play-state: {{ps}};">MOTION</span></div>
+      <div style="font: 700 38px/.9 Karantina, Teko, sans-serif; color: #ffd23f;">תנועה היא חלק מהחוויה, לא תוספת</div>
+      <div style="display: flex; align-items: flex-end; gap: 12px; margin-top: 4px;">
+        <div style="flex: 1 1 0; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 8px; font: 500 14px/1.3 Rubik, sans-serif; color: #cfc8ee;"><span style="flex: 0 0 18px; height: 18px; border-radius: 5px; background: #251d45; border: 1px solid #4b3f80; box-sizing: border-box; font: 600 13px/17px Teko, sans-serif; color: #ffd23f; text-align: center;">1</span>קצרה ומדויקת. לעולם לא מסתירה את הלוח</div>
+          <div style="display: flex; align-items: center; gap: 8px; font: 500 14px/1.3 Rubik, sans-serif; color: #cfc8ee;"><span style="flex: 0 0 18px; height: 18px; border-radius: 5px; background: #251d45; border: 1px solid #4b3f80; box-sizing: border-box; font: 600 13px/17px Teko, sans-serif; color: #ffd23f; text-align: center;">2</span>לכל פעולה תגובה תוך <span dir="ltr">140ms</span></div>
+          <div style="display: flex; align-items: center; gap: 8px; font: 500 14px/1.3 Rubik, sans-serif; color: #cfc8ee;"><span style="flex: 0 0 18px; height: 18px; border-radius: 5px; background: #251d45; border: 1px solid #4b3f80; box-sizing: border-box; font: 600 13px/17px Teko, sans-serif; color: #ffd23f; text-align: center;">3</span>חגיגה מחוץ ללוח, שקט בתוכו</div>
+        </div>
+        <button type="button" onClick="{{ toggle }}" aria-label="{{toggleLabel}}" style="flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; background: #251d45; border: 2px solid #4b3f80; border-radius: 12px; box-shadow: 0 3px 0 #07050f; color: #f1eeff; font: 600 13px/1 Rubik, sans-serif; cursor: pointer;">
+          <sc-if value="{{paused}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4l13 8-13 8V4z"></path></svg></sc-if>
+          <sc-if value="{{running}}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg></sc-if>
+          <span>{{toggleLabel}}</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 16px 20px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 20px; box-shadow: 0 6px 0 #07050f;">
+      <div style="display: flex; align-items: baseline; gap: 10px; height: 29px; margin-bottom: 6px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">01</span>
+        <span style="font: 700 32px/.9 Karantina, Teko, sans-serif; color: #f1eeff;">טוקנים</span>
+        <span style="font: 600 14px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb;">DURATION · EASING</span>
+        <span style="flex: 1 1 0;"></span>
+        <span style="font: 400 13px/1 Rubik, sans-serif; color: #a79fcb;">כל נקודה כאן רצה בזמן האמיתי שלה</span>
+      </div>
+      <div style="display: flex; gap: 8px; height: 92px;">
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column;">
+          <div style="position: relative; height: 38px;"><div style="position: absolute; left: 50%; top: 1px; width: 28px; height: 30px; margin-left: -14px; box-sizing: border-box; border-radius: 7px; background: #251d45; border: 1.5px solid #4b3f80; display: flex; align-items: center; justify-content: center; font: 600 20px/1 Teko, sans-serif; color: #f1eeff; animation: sf-tap-loop 1.4s cubic-bezier(.2,.8,.2,1) infinite; animation-play-state: {{ps}};">5</div></div>
+          <div dir="ltr" style="text-align: right; margin-top: 4px; font: 600 22px/1 Teko, sans-serif; color: #ffd23f; white-space: nowrap;">80–140ms</div>
+          <div style="font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">הקשה · מקש</div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column;">
+          <div style="position: relative; height: 38px;"><div style="position: absolute; left: 2px; right: 2px; top: 17px; height: 4px; border-radius: 2px; background: #342a5e;"></div><div style="position: absolute; right: 2px; top: 12px; width: 14px; height: 14px; border-radius: 50%; background: #2ee6ff; animation: sf-travel 1.5s cubic-bezier(.2,.8,.2,1) infinite; animation-play-state: {{ps}};"></div></div>
+          <div dir="ltr" style="text-align: right; margin-top: 4px; font: 600 22px/1 Teko, sans-serif; color: #ffd23f;">240ms</div>
+          <div style="font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">שינוי מצב</div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column;">
+          <div style="position: relative; height: 38px;"><div style="position: absolute; left: 50%; top: 2px; width: 32px; height: 32px; margin-left: -16px; border-radius: 5px; background: #fbfaff; animation: sf-shake-loop 1.5s linear infinite, sf-flash-loop 1.5s ease-out infinite; animation-play-state: {{ps}};"><span style="position: absolute; bottom: 2px; right: 3px; font: 700 10px/1 Rubik, sans-serif; color: #d10f37;">5</span></div></div>
+          <div dir="ltr" style="text-align: right; margin-top: 4px; font: 600 22px/1 Teko, sans-serif; color: #ffd23f;">300ms</div>
+          <div style="font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">טעות · רעד</div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column;">
+          <div dir="ltr" style="height: 38px; text-align: center; font: 600 34px/40px Teko, sans-serif; font-variant-numeric: tabular-nums; color: #2ee6ff;">{{cu}}</div>
+          <div dir="ltr" style="text-align: right; margin-top: 4px; font: 600 22px/1 Teko, sans-serif; color: #ffd23f;">650ms</div>
+          <div style="font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">ספירת ניקוד</div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column;">
+          <div style="position: relative; height: 38px;"><div style="position: absolute; left: 50%; top: 2px; width: 34px; height: 34px; margin-left: -17px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: linear-gradient(180deg, #ffe27a, #ffd23f 55%, #f5b800); box-shadow: 0 3px 0 #b37b00; animation: sf-pop-loop 1.5s cubic-bezier(.34,1.56,.64,1) infinite; animation-play-state: {{ps}};"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#1a1000" stroke="none"></path></svg></div></div>
+          <div dir="ltr" style="text-align: right; margin-top: 4px; font: 600 20px/1 Teko, sans-serif; color: #ffd23f; white-space: nowrap;">420–900ms</div>
+          <div style="font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">תגמול · סלאם</div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column;">
+          <div style="position: relative; height: 38px; display: flex; justify-content: center;"><svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14" fill="none" stroke="#342a5e" stroke-width="4"></circle><circle cx="18" cy="18" r="14" fill="none" stroke="#ff3355" stroke-width="4" pathLength="100" stroke-dasharray="100" transform="rotate(-90 18 18)" style="animation: sf-ring 5s linear infinite; animation-play-state: {{ps}};"></circle></svg><span style="position: absolute; left: 0; right: 0; top: 12px; text-align: center; font: 600 14px/1 Teko, sans-serif; color: #f1eeff;">5s</span></div>
+          <div dir="ltr" style="text-align: right; margin-top: 4px; font: 600 22px/1 Teko, sans-serif; color: #ffd23f;">5000ms</div>
+          <div style="font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">הפרעה · בדיוק</div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column;">
+          <div style="position: relative; height: 38px;"><div style="position: absolute; left: 50%; top: 2px; width: 26px; height: 26px; margin-left: -13px; border-radius: 4px; background: #c8f6ff; box-shadow: inset 0 0 0 2.5px #2ee6ff;"></div><div style="position: absolute; left: 6px; right: 6px; top: 33px; height: 3px; border-radius: 2px; background: #342a5e;"></div><div style="position: absolute; left: 6px; right: 6px; top: 33px; height: 3px; border-radius: 2px; background: #2ee6ff; transform-origin: right center; animation: sf-drain 12s linear infinite; animation-play-state: {{ps}};"></div></div>
+          <div dir="ltr" style="text-align: right; margin-top: 4px; font: 600 20px/1 Teko, sans-serif; color: #ffd23f; white-space: nowrap;">8 · 12 · 18s</div>
+          <div style="font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">נעילת משבצת</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; height: 64px; margin-top: 10px;">
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 7px 12px; border-radius: 12px; background: #151028; border: 1.5px solid #342a5e; display: flex; align-items: center; gap: 12px;">
+          <svg width="46" height="48" viewBox="-10 -22 120 132" aria-hidden="true" style="flex: 0 0 46px;"><rect x="0" y="0" width="100" height="100" fill="none" stroke="#342a5e" stroke-width="3"></rect><path d="M0 100 C20 20 20 0 100 0" fill="none" stroke="#2ee6ff" stroke-width="7" stroke-linecap="round"></path></svg>
+          <div style="flex: 1 1 0; min-width: 0;">
+            <div style="font: 600 13px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">סטנדרט · מעבר מצב</div>
+            <div dir="ltr" style="text-align: right; font: 500 14px/1.1 Teko, sans-serif; color: #a79fcb; white-space: nowrap;">cubic-bezier(.2,.8,.2,1)</div>
+            <div style="position: relative; height: 10px; margin-top: 5px;"><div style="position: absolute; left: 0; right: 0; top: 4px; height: 2px; background: #342a5e;"></div><div style="position: absolute; right: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #2ee6ff; animation: sf-ease-demo 1.8s cubic-bezier(.2,.8,.2,1) infinite; animation-play-state: {{ps}};"></div></div>
+          </div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 7px 12px; border-radius: 12px; background: #151028; border: 1.5px solid #342a5e; display: flex; align-items: center; gap: 12px;">
+          <svg width="46" height="48" viewBox="-10 -22 120 132" aria-hidden="true" style="flex: 0 0 46px;"><rect x="0" y="0" width="100" height="100" fill="none" stroke="#342a5e" stroke-width="3"></rect><path d="M0 100 C34 -56 64 0 100 0" fill="none" stroke="#ffd23f" stroke-width="7" stroke-linecap="round"></path></svg>
+          <div style="flex: 1 1 0; min-width: 0;">
+            <div style="font: 600 13px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">קפיצה · תגמול וסלאם</div>
+            <div dir="ltr" style="text-align: right; font: 500 14px/1.1 Teko, sans-serif; color: #a79fcb; white-space: nowrap;">cubic-bezier(.34,1.56,.64,1)</div>
+            <div style="position: relative; height: 10px; margin-top: 5px;"><div style="position: absolute; left: 0; right: 0; top: 4px; height: 2px; background: #342a5e;"></div><div style="position: absolute; right: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #ffd23f; animation: sf-ease-demo 1.8s cubic-bezier(.34,1.56,.64,1) infinite; animation-play-state: {{ps}};"></div></div>
+          </div>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 7px 12px; border-radius: 12px; background: #151028; border: 1.5px solid #342a5e; display: flex; align-items: center; gap: 12px;">
+          <svg width="46" height="48" viewBox="-10 -22 120 132" aria-hidden="true" style="flex: 0 0 46px;"><rect x="0" y="0" width="100" height="100" fill="none" stroke="#342a5e" stroke-width="3"></rect><path d="M0 100 L100 0" fill="none" stroke="#a79fcb" stroke-width="7" stroke-linecap="round"></path></svg>
+          <div style="flex: 1 1 0; min-width: 0;">
+            <div style="font: 600 13px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">ליניארי · טיימרים בלבד</div>
+            <div dir="ltr" style="text-align: right; font: 500 14px/1.1 Teko, sans-serif; color: #a79fcb; white-space: nowrap;">linear</div>
+            <div style="position: relative; height: 10px; margin-top: 5px;"><div style="position: absolute; left: 0; right: 0; top: 4px; height: 2px; background: #342a5e;"></div><div style="position: absolute; right: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #a79fcb; animation: sf-ease-demo 1.8s linear infinite; animation-play-state: {{ps}};"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ROW 2 · CORRECT + WRONG ===== -->
+  <div style="position: relative; flex: 0 0 192px; height: 192px; display: flex; gap: 14px;">
+
+    <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 12px 14px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 18px; box-shadow: 0 5px 0 #07050f; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 10px; height: 22px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">02</span>
+        <span style="font: 700 28px/.9 Karantina, Teko, sans-serif; color: #f1eeff; white-space: nowrap;">מהלך נכון</span>
+        <span style="font: 600 13px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb; white-space: nowrap;">CORRECT MOVE</span>
+        <span style="flex: 1 1 0;"></span>
+        <span dir="ltr" style="padding: 3px 9px; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; font: 600 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #cfc8ee; white-space: nowrap;">I1 → 5 · +3.5 · 51.5 → 55</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; right: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">51.5</span></div>
+              <div style="position: absolute; left: 17px; top: 30px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">6</div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">8<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="background: #e6e0ff;"></div>
+                <div style="position: relative; background: #e6e0ff;"><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">4</span></div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">1<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">3</div>
+                <div style="background: #c8f6ff; box-shadow: inset 0 0 0 2px #2ee6ff;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">4</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">2</div>
+              </div>
+              <span style="position: absolute; left: 19px; top: 74px; width: 20px; height: 20px; border-radius: 2px; animation: sf-glow 1.6s ease-in-out infinite; animation-play-state: {{ps}};"></span>
+              <span style="position: absolute; left: 30px; top: 67px; min-width: 14px; height: 12px; padding: 0 2px; box-sizing: border-box; border-radius: 6px; background: #2ee6ff; color: #0f0b1d; font: 600 11px/12px Teko, sans-serif; text-align: center;">12</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">0</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">בחירת I1 · 12 שנ׳</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; right: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">51.5</span></div>
+              <div style="position: absolute; left: 17px; top: 30px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">6</div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">8<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="background: #e6e0ff;"></div>
+                <div style="position: relative; background: #e6e0ff;"><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">4</span></div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">1<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">3</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #c8f6ff; box-shadow: inset 0 0 0 2px #2ee6ff; color: #006b8a; font: 600 16px/1 Rubik, sans-serif;">5</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">4</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">2</div>
+              </div>
+              <span style="position: absolute; left: 19px; top: 74px; width: 20px; height: 20px; border-radius: 2px; box-shadow: 0 0 0 2px #2ee6ff, 0 0 12px rgba(46,230,255,.7);"></span>
+              <span style="position: absolute; left: 30px; top: 67px; min-width: 14px; height: 12px; padding: 0 2px; box-sizing: border-box; border-radius: 6px; background: #2ee6ff; color: #0f0b1d; font: 600 11px/12px Teko, sans-serif; text-align: center;">9</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">הקשה על 5 · pop</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; right: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">51.5</span></div>
+              <div style="position: absolute; left: 17px; top: 30px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">6</div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">8<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="background: #fbfaff;"></div>
+                <div style="position: relative; background: #fbfaff;"><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">4</span></div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">1<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">3</div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">5<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">4</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">2</div>
+              </div>
+              <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true" style="position: absolute; left: 11px; top: 66px;"><path d="M18 1v6M18 29v6M1 18h6M29 18h6M6 6l4 4M26 26l4 4M30 6l-4 4M10 26l-4 4" fill="none" stroke="#ffd23f" stroke-width="2" stroke-linecap="round"></path></svg>
+              <span style="position: absolute; left: 5px; top: 50px; width: 48px; text-align: center; font: 600 21px/1 Teko, sans-serif; color: #2ee6ff; -webkit-text-stroke: 1px #0f0b1d; text-shadow: 0 0 10px rgba(255,210,63,.9);">+3.5</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t+140</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">טינט + <span dir="ltr">+3.5</span> קופץ</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; right: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #2ee6ff; border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">51.5</span></div>
+              <div style="position: absolute; left: 17px; top: 30px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">6</div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">8<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="background: #fbfaff;"></div>
+                <div style="position: relative; background: #fbfaff;"><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">4</span></div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">1<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">3</div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">5<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">4</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">2</div>
+              </div>
+              <svg width="100" height="97" viewBox="0 0 100 97" aria-hidden="true" style="position: absolute; left: 0; top: 0;"><path d="M29 72 Q30 30 74 22" fill="none" stroke="#ffd23f" stroke-width="1.5" stroke-dasharray="3 3" opacity=".75"></path></svg>
+              <span style="position: absolute; left: 24px; top: 28px; width: 40px; text-align: center; font: 600 18px/1 Teko, sans-serif; color: #2ee6ff; -webkit-text-stroke: 1px #0f0b1d; text-shadow: 0 0 10px rgba(255,210,63,.9);">+3.5</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t+440</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">טס לכרטיס שלי</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; right: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #2ee6ff; border-radius: 5px; background: linear-gradient(160deg, #2b2a5c, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f, 0 0 12px rgba(46,230,255,.75);"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 16px/1 Teko, sans-serif; color: #2ee6ff;">55</span></div>
+              <span dir="ltr" style="position: absolute; right: 6px; top: 22px; font: 500 9px/1 Teko, sans-serif; color: #a79fcb; white-space: nowrap;">51.5 → 55</span>
+              <div style="position: absolute; left: 17px; top: 30px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">6</div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">8<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="background: #fbfaff;"></div>
+                <div style="position: relative; background: #fbfaff;"><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">4</span></div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">1<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">3</div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #d3f8ff; color: #006b8a; font: 600 13px/1 Rubik, sans-serif;">5<span style="position: absolute; top: 2px; left: 2px; width: 3px; height: 3px; border-radius: 50%; background: #0098c2;"></span></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">4</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #fbfaff; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">2</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t+800 → 1450</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ספירה + הילה בכרטיס</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 12px 14px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 18px; box-shadow: 0 5px 0 #07050f; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 10px; height: 22px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">03</span>
+        <span style="font: 700 28px/.9 Karantina, Teko, sans-serif; color: #f1eeff; white-space: nowrap;">מהלך שגוי</span>
+        <span style="font: 600 13px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb; white-space: nowrap;">WRONG MOVE</span>
+        <span style="flex: 1 1 0;"></span>
+        <span dir="ltr" style="padding: 3px 9px; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; font: 600 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #cfc8ee; white-space: nowrap;">NinaVolt · A5 → 5 · −2 · 36.5 → 34.5</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">36.5</span></div>
+              <div dir="rtl" style="position: absolute; right: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">47.5</span></div>
+              <div style="position: absolute; left: 17px; top: 30px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">3</div>
+                <div style="background: repeating-linear-gradient(135deg, #ffe6cf 0 3px, #ece8fb 3px 6px); box-shadow: inset 0 0 0 2px #ff8a1f;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">9</div>
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">6</div>
+                <div style="background: #ece8fb;"></div>
+              </div>
+              <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="10" height="10" style="position: absolute; left: 55px; top: 27px; display: block; width: 10px; height: 10px; border-radius: 3px; box-shadow: 0 0 0 1.5px #ff8a1f;">
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">0</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">היא נועלת את A5</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">36.5</span></div>
+              <div dir="rtl" style="position: absolute; right: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">47.5</span></div>
+              <div style="position: absolute; left: 17px; top: 30px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">3</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(135deg, #ffe6cf 0 3px, #ece8fb 3px 6px); box-shadow: inset 0 0 0 2px #ff8a1f; color: #9a3f00; font: 600 15px/1 Rubik, sans-serif;">5</div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">9</div>
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">6</div>
+                <div style="background: #ece8fb;"></div>
+              </div>
+              <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="10" height="10" style="position: absolute; left: 55px; top: 27px; display: block; width: 10px; height: 10px; border-radius: 3px; box-shadow: 0 0 0 1.5px #ff8a1f;">
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">מקלידה 5</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(255,51,85,.22), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">36.5</span></div>
+              <div dir="rtl" style="position: absolute; right: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">47.5</span></div>
+              <div style="position: absolute; left: 17px; top: 30px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">3</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; box-shadow: inset 0 0 0 20px rgba(255,51,85,.55); color: #6e001c; font: 600 15px/1 Rubik, sans-serif; transform: translateX(-3px);">5</div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">9</div>
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">6</div>
+                <div style="background: #ece8fb;"></div>
+              </div>
+              <span style="position: absolute; left: 34px; top: 35px; width: 2px; height: 14px; border-radius: 1px; background: #ff3355;"></span>
+              <span style="position: absolute; left: 30px; top: 38px; width: 2px; height: 8px; border-radius: 1px; background: rgba(255,51,85,.6);"></span>
+              <span style="position: absolute; left: 63px; top: 35px; width: 2px; height: 14px; border-radius: 1px; background: #ff3355;"></span>
+              <span style="position: absolute; left: 67px; top: 38px; width: 2px; height: 8px; border-radius: 1px; background: rgba(255,51,85,.6);"></span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t → t+300</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">פלאש אדום + רעד</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">36.5</span></div>
+              <div dir="rtl" style="position: absolute; right: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">47.5</span></div>
+              <div style="position: absolute; left: 17px; top: 30px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">3</div>
+                <div style="position: relative; background: #ece8fb;"><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">5</span></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">9</div>
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">6</div>
+                <div style="background: #ece8fb;"></div>
+              </div>
+              <span style="position: absolute; left: 30px; top: 18px; width: 40px; text-align: center; font: 600 20px/1 Teko, sans-serif; color: #ff3355; -webkit-text-stroke: 1px #0f0b1d; text-shadow: 0 0 8px rgba(255,51,85,.6);">−2</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t+300</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">5 קטן נשאר · המשבצת משתחררת</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #ff3355; border-radius: 5px; background: linear-gradient(160deg, #3a1630, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">34.5</span></div>
+              <div dir="rtl" style="position: absolute; right: 4px; top: 3px; width: 44px; height: 18px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 5px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="11" height="11" style="display: block; width: 11px; height: 11px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">47.5</span></div>
+              <div style="position: absolute; left: 7px; top: 22px; display: flex; gap: 2px;"><span style="padding: 0 3px; border-radius: 3px; background: #b8102f; color: #ffffff; font: 600 9px/7px Teko, sans-serif;">−1</span><span style="padding: 0 3px; border-radius: 3px; background: #ff3355; color: #ffffff; font: 600 9px/7px Teko, sans-serif; box-shadow: 0 0 6px rgba(255,51,85,.9);">−2</span></div>
+              <div style="position: absolute; left: 17px; top: 30px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">3</div>
+                <div style="position: relative; background: #ece8fb;"><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">5</span></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">9</div>
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">6</div>
+                <div style="background: #ece8fb;"></div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t+600</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">פיפ <span dir="ltr">−2</span> בכרטיס שלה</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ROW 3 · LOCK TIMER + INTERFERENCE ===== -->
+  <div style="position: relative; flex: 0 0 192px; height: 192px; display: flex; gap: 14px;">
+
+    <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 12px 14px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 18px; box-shadow: 0 5px 0 #07050f; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 10px; height: 22px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">04</span>
+        <span style="font: 700 28px/.9 Karantina, Teko, sans-serif; color: #f1eeff; white-space: nowrap;">טיימר נעילה</span>
+        <span style="font: 600 13px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb; white-space: nowrap;">LOCK TIMER</span>
+        <span style="flex: 1 1 0;"></span>
+        <span style="padding: 3px 9px; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; font: 600 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">F8 · רגיל <span dir="ltr">12s</span> · מהיר 8 · קשה 18</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: 6px; top: 4px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="background: #e6e0ff;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">8</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">7</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">4</div>
+                <div style="background: #e6e0ff;"></div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #ffe6cf; color: #9a3f00; font: 600 13px/1 Rubik, sans-serif;">2<span style="position: absolute; top: 2px; left: 2px; width: 0; height: 0; border-left: 2px solid transparent; border-right: 2px solid transparent; border-bottom: 4px solid #c95600;"></span><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">3</span></div>
+                <div style="background: #e6e0ff;"></div>
+                <div style="background: #c8f6ff; box-shadow: inset 0 0 0 2px #2ee6ff;"></div>
+                <div style="background: #e6e0ff;"></div>
+              </div>
+              <span style="position: absolute; left: 29px; top: 48px; width: 20px; height: 20px; border-radius: 2px; box-shadow: 0 0 0 2px #2ee6ff, 0 0 10px rgba(46,230,255,.7);"></span>
+              <span style="position: absolute; left: 29px; top: 66px; width: 20px; height: 2px; background: #2ee6ff;"></span>
+              <span style="position: absolute; left: 40px; top: 42px; min-width: 14px; height: 12px; padding: 0 2px; box-sizing: border-box; border-radius: 6px; background: #2ee6ff; color: #0f0b1d; font: 600 11px/12px Teko, sans-serif; text-align: center;">12</span>
+              <svg width="20" height="20" viewBox="0 0 36 36" aria-hidden="true" style="position: absolute; left: 76px; top: 8px;"><circle cx="18" cy="18" r="14" fill="none" stroke="#342a5e" stroke-width="5"></circle><circle cx="18" cy="18" r="14" fill="none" stroke="#2ee6ff" stroke-width="5" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" transform="rotate(-90 18 18)"></circle></svg>
+              <span style="position: absolute; left: 74px; top: 32px; width: 24px; text-align: center; font: 600 18px/1 Teko, sans-serif; color: #f1eeff;">12</span>
+              <div style="position: absolute; left: 3px; top: 78px; width: 94px; height: 14px; border-radius: 3px; background: repeating-linear-gradient(90deg, #1f5d78 0 9px, transparent 9px 10.6px);"></div>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">0s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">נעילה · מקלדת חמושה</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: 6px; top: 4px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="background: #e6e0ff;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">8</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">7</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">4</div>
+                <div style="background: #e6e0ff;"></div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #ffe6cf; color: #9a3f00; font: 600 13px/1 Rubik, sans-serif;">2<span style="position: absolute; top: 2px; left: 2px; width: 0; height: 0; border-left: 2px solid transparent; border-right: 2px solid transparent; border-bottom: 4px solid #c95600;"></span><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">3</span></div>
+                <div style="background: #e6e0ff;"></div>
+                <div style="background: #c8f6ff; box-shadow: inset 0 0 0 2px #2ee6ff;"></div>
+                <div style="background: #e6e0ff;"></div>
+              </div>
+              <span style="position: absolute; left: 29px; top: 48px; width: 20px; height: 20px; border-radius: 2px; box-shadow: 0 0 0 2px #2ee6ff, 0 0 10px rgba(46,230,255,.7);"></span>
+              <span style="position: absolute; left: 29px; top: 66px; width: 12px; height: 2px; background: #2ee6ff;"></span>
+              <span style="position: absolute; left: 40px; top: 42px; min-width: 14px; height: 12px; padding: 0 2px; box-sizing: border-box; border-radius: 6px; background: #2ee6ff; color: #0f0b1d; font: 600 11px/12px Teko, sans-serif; text-align: center;">7</span>
+              <svg width="20" height="20" viewBox="0 0 36 36" aria-hidden="true" style="position: absolute; left: 76px; top: 8px;"><circle cx="18" cy="18" r="14" fill="none" stroke="#342a5e" stroke-width="5"></circle><circle cx="18" cy="18" r="14" fill="none" stroke="#2ee6ff" stroke-width="5" pathLength="100" stroke-dasharray="100" stroke-dashoffset="42" transform="rotate(-90 18 18)"></circle></svg>
+              <span style="position: absolute; left: 74px; top: 32px; width: 24px; text-align: center; font: 600 18px/1 Teko, sans-serif; color: #f1eeff;">7</span>
+              <div style="position: absolute; left: 3px; top: 78px; width: 94px; height: 14px; border-radius: 3px; background: repeating-linear-gradient(90deg, #1f5d78 0 9px, transparent 9px 10.6px);"></div>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">5s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">הטבעת והפס מתרוקנים</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(255,210,63,.16), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: 6px; top: 4px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="background: #e6e0ff;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">8</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">7</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">4</div>
+                <div style="background: #e6e0ff;"></div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #ffe6cf; color: #9a3f00; font: 600 13px/1 Rubik, sans-serif;">2<span style="position: absolute; top: 2px; left: 2px; width: 0; height: 0; border-left: 2px solid transparent; border-right: 2px solid transparent; border-bottom: 4px solid #c95600;"></span><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">3</span></div>
+                <div style="background: #e6e0ff;"></div>
+                <div style="background: #c8f6ff; box-shadow: inset 0 0 0 2px #2ee6ff;"></div>
+                <div style="background: #e6e0ff;"></div>
+              </div>
+              <span style="position: absolute; left: 29px; top: 48px; width: 20px; height: 20px; border-radius: 2px; box-shadow: 0 0 0 2px #2ee6ff, 0 0 10px rgba(46,230,255,.7);"></span>
+              <span style="position: absolute; left: 29px; top: 66px; width: 5px; height: 2px; background: #ffd23f;"></span>
+              <span style="position: absolute; left: 40px; top: 42px; min-width: 14px; height: 12px; padding: 0 2px; box-sizing: border-box; border-radius: 6px; background: #ffd23f; color: #1a1000; font: 600 11px/12px Teko, sans-serif; text-align: center; animation: sf-blink 1s ease-in-out infinite; animation-play-state: {{ps}};">3</span>
+              <svg width="20" height="20" viewBox="0 0 36 36" aria-hidden="true" style="position: absolute; left: 76px; top: 8px;"><circle cx="18" cy="18" r="14" fill="none" stroke="#342a5e" stroke-width="5"></circle><circle cx="18" cy="18" r="14" fill="none" stroke="#ffd23f" stroke-width="5" pathLength="100" stroke-dasharray="100" stroke-dashoffset="75" transform="rotate(-90 18 18)"></circle></svg>
+              <span style="position: absolute; left: 74px; top: 32px; width: 24px; text-align: center; font: 600 18px/1 Teko, sans-serif; color: #ffd23f;">3</span>
+              <div style="position: absolute; left: 3px; top: 78px; width: 94px; height: 14px; border-radius: 3px; background: repeating-linear-gradient(90deg, #1f5d78 0 9px, transparent 9px 10.6px);"></div>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">9s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">3 אחרונות · זהב מהבהב</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: 6px; top: 4px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">8</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">7</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">4</div>
+                <div style="background: #ece8fb;"></div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #ffe6cf; color: #9a3f00; font: 600 13px/1 Rubik, sans-serif;">2<span style="position: absolute; top: 2px; left: 2px; width: 0; height: 0; border-left: 2px solid transparent; border-right: 2px solid transparent; border-bottom: 4px solid #c95600;"></span><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">3</span></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb; box-shadow: inset 0 0 0 1px rgba(46,230,255,.5);"></div>
+                <div style="background: #ece8fb;"></div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 36 36" aria-hidden="true" style="position: absolute; left: 76px; top: 8px;"><circle cx="18" cy="18" r="14" fill="none" stroke="#342a5e" stroke-width="5"></circle></svg>
+              <span style="position: absolute; left: 74px; top: 32px; width: 24px; text-align: center; font: 600 18px/1 Teko, sans-serif; color: #6c5fa6;">0</span>
+              <div style="position: absolute; left: 3px; top: 78px; width: 94px; height: 14px; border-radius: 3px; opacity: .5; background: repeating-linear-gradient(90deg, #251d45 0 9px, transparent 9px 10.6px);"></div>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">12s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">שחרור אוטומטי · 240ms</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: 6px; top: 4px; width: 66px; height: 66px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 8px; overflow: hidden; background: #c9c2ea; display: grid; grid-template-columns: repeat(3, 20px); grid-template-rows: repeat(3, 20px); gap: 1px;">
+                <div style="background: #ece8fb;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">8</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">7</div>
+                <div style="display: flex; align-items: center; justify-content: center; background: #ece8fb; color: #1a1433; font: 600 13px/1 Rubik, sans-serif;">4</div>
+                <div style="background: #ece8fb;"></div>
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #ffe6cf; color: #9a3f00; font: 600 13px/1 Rubik, sans-serif;">2<span style="position: absolute; top: 2px; left: 2px; width: 0; height: 0; border-left: 2px solid transparent; border-right: 2px solid transparent; border-bottom: 4px solid #c95600;"></span><span style="position: absolute; bottom: 1px; right: 2px; font: 700 7px/1 Rubik, sans-serif; color: #d10f37;">3</span></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+                <div style="background: #ece8fb;"></div>
+              </div>
+              <span style="position: absolute; left: 74px; top: 14px; width: 24px; text-align: center; font: 600 9px/1.2 Rubik, sans-serif; color: #a79fcb;">פנוי</span>
+              <div style="position: absolute; left: 3px; top: 78px; width: 94px; height: 14px; border-radius: 3px; opacity: .5; background: repeating-linear-gradient(90deg, #251d45 0 9px, transparent 9px 10.6px);"></div>
+              <span style="position: absolute; left: 22px; top: 77px; width: 56px; padding: 2px 0; box-sizing: border-box; text-align: center; border-radius: 999px; background: #0f0b1d; border: 1px solid #4b3f80; font: 600 8px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">בחר משבצת</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">12.2s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">המקלדת נחה · בחר משבצת</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 12px 14px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 18px; box-shadow: 0 5px 0 #07050f; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 10px; height: 22px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">05</span>
+        <span style="font: 700 28px/.9 Karantina, Teko, sans-serif; color: #f1eeff; white-space: nowrap;">הפרעה</span>
+        <span style="font: 600 13px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb; white-space: nowrap;">INTERFERENCE</span>
+        <span style="flex: 1 1 0;"></span>
+        <span style="padding: 3px 9px; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; font: 600 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">רק גרירה · זיקוקים · 8 נק׳ · 5 שנ׳</span>
+      </div>
+      <div style="display: flex; gap: 7px;">
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 96px; height: 97px; margin-left: -48px;">
+              <div dir="rtl" style="position: absolute; left: 3px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 51px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">55</span></div>
+              <div style="position: absolute; left: 25px; top: 40px; width: 46px; height: 46px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 6px; background-color: #fbfaff; background-image: linear-gradient(90deg, #342a5e 1px, transparent 1px), linear-gradient(#342a5e 1px, transparent 1px), linear-gradient(90deg, #d8d2f0 1px, transparent 1px), linear-gradient(#d8d2f0 1px, transparent 1px); background-size: 14px 14px, 14px 14px, 4.67px 4.67px, 4.67px 4.67px;"></div>
+              <span style="position: absolute; left: -3px; top: 29px; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(255,51,85,.6); box-sizing: border-box;"></span>
+              <span style="position: absolute; left: 2px; top: 34px; width: 14px; height: 14px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: #ff3355; border: 1px solid #ff3355; color: #1a0006; transform: translateY(1px);"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"></path></svg></span>
+              <span style="position: absolute; left: 4px; top: 50px; font: 600 11px/1 Teko, sans-serif; color: #ff3355;">8</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">0</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">הקשה על הברק</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 96px; height: 97px; margin-left: -48px;">
+              <div dir="rtl" style="position: absolute; left: 3px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 51px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">55</span></div>
+              <div style="position: absolute; left: 25px; top: 40px; width: 46px; height: 46px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 6px; background-color: #fbfaff; background-image: linear-gradient(90deg, #342a5e 1px, transparent 1px), linear-gradient(#342a5e 1px, transparent 1px), linear-gradient(90deg, #d8d2f0 1px, transparent 1px), linear-gradient(#d8d2f0 1px, transparent 1px); background-size: 14px 14px, 14px 14px, 4.67px 4.67px, 4.67px 4.67px;"></div>
+              <span style="position: absolute; left: 2px; top: 34px; width: 14px; height: 14px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: #3a1630; border: 1px solid #ff3355; color: #ff3355;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"></path></svg></span>
+              <div style="position: absolute; left: 0; top: 0; width: 96px; height: 97px; background: rgba(7,5,15,.45);"></div>
+              <div style="position: absolute; left: 0; top: 60px; width: 96px; height: 40px; box-sizing: border-box; border-radius: 10px 10px 0 0; background: #1b1533; border-top: 1.5px solid #4b3f80; box-shadow: 0 -6px 14px rgba(0,0,0,.5);"></div>
+              <span style="position: absolute; left: 40px; top: 63px; width: 16px; height: 2px; border-radius: 1px; background: #4b3f80;"></span>
+              <span style="position: absolute; left: 62px; top: 69px; width: 20px; height: 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: #251d45; border: 1px solid #ffd23f; color: #ffd23f;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"></path></svg></span>
+              <span style="position: absolute; left: 38px; top: 69px; width: 20px; height: 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: #251d45; border: 1px solid #4b3f80; color: #f1eeff;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-9L4 4l5 4h6l5-4-1 7v9z"></path><path d="M9.5 13h.01M14.5 13h.01"></path></svg></span>
+              <span style="position: absolute; left: 14px; top: 69px; width: 20px; height: 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: #251d45; border: 1px solid #4b3f80; color: #cfc8ee;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8c3-3 6 3 9 0s6-3 9 0"></path><path d="M3 16c3-3 6 3 9 0s6-3 9 0"></path></svg></span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+240</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">מגש הארסנל עולה</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 96px; height: 97px; margin-left: -48px;">
+              <div dir="rtl" style="position: absolute; left: 3px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 51px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">55</span></div>
+              <div style="position: absolute; left: 25px; top: 40px; width: 46px; height: 46px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 6px; background-color: #fbfaff; background-image: linear-gradient(90deg, #342a5e 1px, transparent 1px), linear-gradient(#342a5e 1px, transparent 1px), linear-gradient(90deg, #d8d2f0 1px, transparent 1px), linear-gradient(#d8d2f0 1px, transparent 1px); background-size: 14px 14px, 14px 14px, 4.67px 4.67px, 4.67px 4.67px;"></div>
+              <div style="position: absolute; left: 0; top: 0; width: 96px; height: 97px; background: rgba(7,5,15,.45);"></div>
+              <span style="position: absolute; left: 0; top: 1px; width: 48px; height: 32px; box-sizing: border-box; border: 1.5px dashed #ffd23f; border-radius: 8px; box-shadow: 0 0 12px rgba(255,210,63,.6), inset 0 0 10px rgba(255,210,63,.25);"></span>
+              <div style="position: absolute; left: 0; top: 66px; width: 96px; height: 34px; box-sizing: border-box; border-radius: 10px 10px 0 0; background: #1b1533; border-top: 1.5px solid #4b3f80;"></div>
+              <span style="position: absolute; left: 62px; top: 73px; width: 20px; height: 20px; box-sizing: border-box; border-radius: 6px; border: 1px dashed #ffd23f;"></span>
+              <span style="position: absolute; left: 38px; top: 73px; width: 20px; height: 20px; box-sizing: border-box; border-radius: 6px; background: #251d45; border: 1px solid #4b3f80; opacity: .5;"></span>
+              <span style="position: absolute; left: 14px; top: 73px; width: 20px; height: 20px; box-sizing: border-box; border-radius: 6px; background: #251d45; border: 1px solid #4b3f80; opacity: .5;"></span>
+              <svg width="96" height="97" viewBox="0 0 96 97" aria-hidden="true" style="position: absolute; left: 0; top: 0;"><path d="M44 40 Q36 34 30 32" fill="none" stroke="#ffd23f" stroke-width="1.5" stroke-dasharray="2 3" stroke-linecap="round"></path></svg>
+              <span style="position: absolute; left: 40px; top: 36px; width: 24px; height: 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 7px; background: #251d45; border: 1.5px solid #ffd23f; color: #ffd23f; transform: scale(1.15) rotate(-6deg); box-shadow: 0 6px 12px rgba(0,0,0,.6), 0 0 12px rgba(255,210,63,.5);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"></path></svg></span>
+              <span dir="rtl" style="position: absolute; left: 16px; top: 63px; width: 66px; padding: 2px 0; box-sizing: border-box; text-align: center; border-radius: 999px; background: #0f0b1d; border: 1px solid #ffd23f; font: 600 8px/1.1 Rubik, sans-serif; color: #ffd23f; white-space: nowrap;">זיקוקים · 8 נק׳</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">drag</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">גרירה · שם, מחיר, יעד</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 25% 10%, rgba(255,210,63,.22), transparent 60%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 96px; height: 97px; margin-left: -48px;">
+              <div dir="rtl" style="position: absolute; left: 3px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #ffd23f; border-radius: 6px; background: linear-gradient(160deg, #3d2c45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f, 0 0 14px rgba(255,210,63,.6);"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <svg width="56" height="48" viewBox="0 0 56 48" aria-hidden="true" style="position: absolute; left: -4px; top: -7px;"><path d="M28 0v7M28 41v7M0 24h7M49 24h7M8 4l5 5M43 39l5 5M48 4l-5 5M13 39l-5 5" fill="none" stroke="#ffd23f" stroke-width="2" stroke-linecap="round"></path></svg>
+              <div dir="rtl" style="position: absolute; left: 51px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">47</span></div>
+              <span style="position: absolute; left: 62px; top: 31px; font: 600 15px/1 Teko, sans-serif; color: #ff3355; -webkit-text-stroke: 1px #0f0b1d;">−8</span>
+              <div style="position: absolute; left: 25px; top: 46px; width: 46px; height: 46px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 6px; background-color: #fbfaff; background-image: linear-gradient(90deg, #342a5e 1px, transparent 1px), linear-gradient(#342a5e 1px, transparent 1px), linear-gradient(90deg, #d8d2f0 1px, transparent 1px), linear-gradient(#d8d2f0 1px, transparent 1px); background-size: 14px 14px, 14px 14px, 4.67px 4.67px, 4.67px 4.67px;"></div>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">drop</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">פגיעה · <span dir="ltr">−8</span> לי</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 96px; height: 97px; margin-left: -48px;">
+              <div dir="rtl" style="position: absolute; left: 3px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: 34px; top: -4px; opacity: .85;"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"></path></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff3355" stroke-width="3" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: -2px; top: -2px;"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path></svg>
+              <svg width="22" height="22" viewBox="0 0 36 36" aria-hidden="true" style="position: absolute; left: 1px; top: 36px;"><circle cx="18" cy="18" r="14" fill="#0f0b1d" stroke="#342a5e" stroke-width="4"></circle><circle cx="18" cy="18" r="14" fill="none" stroke="#ffd23f" stroke-width="4" pathLength="100" stroke-dasharray="100" stroke-dashoffset="30" transform="rotate(-90 18 18)"></circle></svg>
+              <span style="position: absolute; left: 1px; top: 42px; width: 22px; text-align: center; font: 600 12px/1 Teko, sans-serif; color: #ffd23f;">3.5</span>
+              <div dir="rtl" style="position: absolute; left: 51px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">47</span></div>
+              <div style="position: absolute; left: 25px; top: 40px; width: 46px; height: 46px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 6px; background-color: #fbfaff; background-image: linear-gradient(90deg, #342a5e 1px, transparent 1px), linear-gradient(#342a5e 1px, transparent 1px), linear-gradient(90deg, #d8d2f0 1px, transparent 1px), linear-gradient(#d8d2f0 1px, transparent 1px); background-size: 14px 14px, 14px 14px, 4.67px 4.67px, 4.67px 4.67px;"></div>
+              <span style="position: absolute; left: 0; top: 61px; width: 24px; text-align: center; font: 600 8px/1.2 Rubik, sans-serif; color: #a79fcb;">אצלה</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">0 → 5s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">5 שנ׳ אצלה · הלוח שלי נקי</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 96px; height: 97px; margin-left: -48px;">
+              <div dir="rtl" style="position: absolute; left: 3px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 51px; top: 4px; width: 42px; height: 26px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">47</span></div>
+              <div style="position: absolute; left: 25px; top: 40px; width: 46px; height: 46px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 6px; background-color: #fbfaff; background-image: linear-gradient(90deg, #342a5e 1px, transparent 1px), linear-gradient(#342a5e 1px, transparent 1px), linear-gradient(90deg, #d8d2f0 1px, transparent 1px), linear-gradient(#d8d2f0 1px, transparent 1px); background-size: 14px 14px, 14px 14px, 4.67px 4.67px, 4.67px 4.67px;"></div>
+              <span style="position: absolute; left: 2px; top: 34px; width: 14px; height: 14px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: #3a1630; border: 1px solid #ff3355; color: #ff3355;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"></path></svg></span>
+              <span style="position: absolute; left: 2px; top: 50px; font: 600 11px/1 Teko, sans-serif; color: #ff3355;">16</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">5s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">סיום · הבאה 16 נק׳</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ROW 4 · MATCHMAKING + VICTORY ===== -->
+  <div style="position: relative; flex: 0 0 192px; height: 192px; display: flex; gap: 14px;">
+
+    <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 12px 14px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 18px; box-shadow: 0 5px 0 #07050f; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 10px; height: 22px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">06</span>
+        <span style="font: 700 28px/.9 Karantina, Teko, sans-serif; color: #f1eeff; white-space: nowrap;">חיפוש יריב</span>
+        <span style="font: 600 13px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb; white-space: nowrap;">MATCHMAKING</span>
+        <span style="flex: 1 1 0;"></span>
+        <span dir="ltr" style="padding: 3px 9px; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; font: 600 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #cfc8ee; white-space: nowrap;">MosheG 1287 · VS · NinaVolt 1305</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 40%, rgba(46,230,255,.12), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: 16px; top: 6px; width: 68px; height: 68px; box-sizing: border-box; border-radius: 50%; border: 1px solid #342a5e;"></div>
+              <div style="position: absolute; left: 28px; top: 18px; width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; border: 1px solid #342a5e;"></div>
+              <div style="position: absolute; left: 16px; top: 6px; width: 68px; height: 68px; border-radius: 50%; background: conic-gradient(from 0deg, rgba(46,230,255,0) 0%, rgba(46,230,255,0) 74%, rgba(46,230,255,.55) 100%); animation: sf-sweep 2.4s linear infinite; animation-play-state: {{ps}};"></div>
+              <div style="position: absolute; left: 39px; top: 29px; width: 22px; height: 22px; box-sizing: border-box; padding: 2px; border-radius: 7px; background: #2ee6ff; box-shadow: 0 2px 0 #0098c2;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px;"></div>
+              <span style="position: absolute; left: 25px; top: 18px; width: 4px; height: 4px; border-radius: 50%; background: #ff8a1f;"></span>
+              <span style="position: absolute; left: 72px; top: 52px; width: 3px; height: 3px; border-radius: 50%; background: #a79fcb;"></span>
+              <span style="position: absolute; left: 0; top: 81px; width: 100px; text-align: center; font: 600 9px/1 Rubik, sans-serif; color: #cfc8ee;">מחפש יריבים…</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">0s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">סריקה · 2.4s לסיבוב</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <span style="position: absolute; left: 0; top: 26px; width: 7px; height: 2px; background: rgba(255,138,31,.6);"></span>
+              <span style="position: absolute; left: 2px; top: 33px; width: 5px; height: 2px; background: rgba(255,138,31,.4);"></span>
+              <span style="position: absolute; left: 0; top: 40px; width: 7px; height: 2px; background: rgba(255,138,31,.6);"></span>
+              <div style="position: absolute; left: 10px; top: 16px; width: 32px; height: 32px; box-sizing: border-box; padding: 2px; border-radius: 9px; background: #ff8a1f; box-shadow: 0 3px 0 #c95600;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="28" height="28" style="display: block; width: 28px; height: 28px; border-radius: 7px;"></div>
+              <div style="position: absolute; left: 58px; top: 16px; width: 32px; height: 32px; box-sizing: border-box; padding: 2px; border-radius: 9px; background: #2ee6ff; box-shadow: 0 3px 0 #0098c2;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="28" height="28" style="display: block; width: 28px; height: 28px; border-radius: 7px;"></div>
+              <span style="position: absolute; left: 10px; top: 56px; width: 32px; text-align: center; font: 600 12px/1 Teko, sans-serif; color: #ffd23f;">1305</span>
+              <span style="position: absolute; left: 58px; top: 56px; width: 32px; text-align: center; font: 600 12px/1 Teko, sans-serif; color: #ffd23f;">1287</span>
+              <span style="position: absolute; left: 9px; top: 70px; width: 34px; padding: 2px 0; box-sizing: border-box; text-align: center; border-radius: 999px; background: #3ff0a6; color: #04261a; font: 700 8px/1.1 Rubik, sans-serif;">מוכן!</span>
+              <span style="position: absolute; left: 57px; top: 70px; width: 34px; padding: 2px 0; box-sizing: border-box; text-align: center; border-radius: 999px; background: #3ff0a6; color: #04261a; font: 700 8px/1.1 Rubik, sans-serif;">מוכן!</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+0</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">נמצאה · שניהם מוכנים</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, transparent 2px 9px), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: -10px; top: 36px; width: 120px; height: 12px; transform: rotate(-9deg); background: linear-gradient(90deg, rgba(255,210,63,0), rgba(255,210,63,.75) 35%, rgba(255,51,85,.75) 65%, rgba(255,51,85,0));"></div>
+              <div style="position: absolute; left: 6px; top: 18px; width: 32px; height: 32px; box-sizing: border-box; padding: 2px; border-radius: 9px; background: #ff8a1f; box-shadow: 0 3px 0 #c95600;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="28" height="28" style="display: block; width: 28px; height: 28px; border-radius: 7px;"></div>
+              <div style="position: absolute; left: 62px; top: 18px; width: 32px; height: 32px; box-sizing: border-box; padding: 2px; border-radius: 9px; background: #2ee6ff; box-shadow: 0 3px 0 #0098c2;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="28" height="28" style="display: block; width: 28px; height: 28px; border-radius: 7px;"></div>
+              <div style="position: absolute; left: 33px; top: 17px; width: 34px; height: 34px; box-sizing: border-box; border: 2px solid rgba(255,210,63,.25); border-radius: 6px; transform: rotate(45deg) scale(1.5);"></div>
+              <div style="position: absolute; left: 37px; top: 21px; width: 26px; height: 26px; box-sizing: border-box; border: 2px solid #ffd23f; border-radius: 5px; background: #0f0b1d; transform: rotate(45deg); box-shadow: 0 0 14px rgba(255,210,63,.6);"></div>
+              <span style="position: absolute; left: 37px; top: 27px; width: 26px; text-align: center; font: 700 16px/1 Teko, sans-serif; color: #ffd23f; transform: skewX(-9deg);">VS</span>
+              <span style="position: absolute; left: 0; top: 66px; width: 100px; text-align: center; font: 600 10px/1 Teko, sans-serif; letter-spacing: .06em; color: #a79fcb;">NINAVOLT · MOSHEG</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+400</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">VS slam · 600ms</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(70% 70% at 50% 45%, rgba(255,210,63,.14), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true" style="position: absolute; left: 18px; top: 8px;"><circle cx="32" cy="32" r="28" fill="none" stroke="#342a5e" stroke-width="4"></circle><circle cx="32" cy="32" r="28" fill="none" stroke="#ffd23f" stroke-width="4" pathLength="100" stroke-dasharray="100" stroke-dashoffset="34" transform="rotate(-90 32 32)" stroke-linecap="round"></circle></svg>
+              <span style="position: absolute; left: 0; top: 18px; width: 100px; text-align: center; font: 600 54px/.8 Teko, sans-serif; color: #f1eeff; text-shadow: 0 4px 0 #07050f;">3</span>
+              <span style="position: absolute; left: 36px; top: 82px; width: 6px; height: 6px; border-radius: 50%; background: #ffd23f;"></span>
+              <span style="position: absolute; left: 47px; top: 82px; width: 6px; height: 6px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid #6c5fa6;"></span>
+              <span style="position: absolute; left: 58px; top: 82px; width: 6px; height: 6px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid #6c5fa6;"></span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+1.2s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">3 · 2 · 1 · שנייה לכל ספרה</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: -20px; top: -22px; width: 140px; height: 140px; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(255,210,63,.24) 0deg 7deg, rgba(255,210,63,0) 7deg 20deg); -webkit-mask-image: radial-gradient(circle, #000 15%, transparent 68%); mask-image: radial-gradient(circle, #000 15%, transparent 68%);"></div>
+              <span style="position: absolute; left: 0; top: 24px; width: 100px; text-align: center; font: 700 50px/.8 Teko, sans-serif; letter-spacing: .02em; color: transparent; background: linear-gradient(180deg, #ffe27a, #ffd23f 50%, #ff8a1f); -webkit-background-clip: text; background-clip: text; transform: skewX(-9deg); filter: drop-shadow(0 3px 0 #07050f);">GO!</span>
+              <div style="position: absolute; left: 30px; top: 78px; width: 40px; height: 14px; border-radius: 3px; background-color: #fbfaff; background-image: linear-gradient(90deg, #342a5e 1px, transparent 1px), linear-gradient(90deg, #d8d2f0 1px, transparent 1px); background-size: 13.3px 14px, 4.44px 14px; opacity: .85;"></div>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+3.2s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">GO! · הלוח נחשף מלמטה</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 12px 14px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 18px; box-shadow: 0 5px 0 #07050f; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 10px; height: 22px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">07</span>
+        <span style="font: 700 28px/.9 Karantina, Teko, sans-serif; color: #f1eeff; white-space: nowrap;">ניצחון</span>
+        <span style="font: 600 13px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb; white-space: nowrap;">VICTORY</span>
+        <span style="flex: 1 1 0;"></span>
+        <span style="padding: 3px 9px; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; font: 600 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">רגיל · <span dir="ltr">1287 → 1304 · +17</span></span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: 21px; top: 16px; width: 58px; height: 58px; box-sizing: border-box; border: 2px solid #342a5e; border-radius: 7px; background-color: #fbfaff; background-image: linear-gradient(90deg, #342a5e 1px, transparent 1px), linear-gradient(#342a5e 1px, transparent 1px), linear-gradient(90deg, #d8d2f0 1px, transparent 1px), linear-gradient(#d8d2f0 1px, transparent 1px), linear-gradient(135deg, #d3f8ff 0 45%, #ffe6cf 45% 100%); background-size: 18px 18px, 18px 18px, 6px 6px, 6px 6px, 100% 100%;"></div>
+              <span style="position: absolute; left: 54px; top: 48px; width: 6px; height: 6px; background: #ffffff; box-shadow: 0 0 10px 5px rgba(255,255,255,.9);"></span>
+              <div style="position: absolute; left: 0; top: 0; width: 100px; height: 97px; background: radial-gradient(60% 60% at 57% 52%, rgba(255,255,255,.35), transparent 70%);"></div>
+              <span style="position: absolute; left: 0; top: 80px; width: 100px; text-align: center; font: 600 9px/1 Rubik, sans-serif; color: #cfc8ee;">הלוח מלא</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">0</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">התא האחרון · הבזק לבן</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, transparent 2px 9px), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: 4px; top: 30px; width: 92px; height: 38px; box-sizing: border-box; transform: skewX(-9deg); background: linear-gradient(90deg, rgba(255,210,63,.2), rgba(255,51,85,.2)); border-top: 1.5px solid #ffd23f; border-bottom: 1.5px solid #ffd23f;"></div>
+              <span style="position: absolute; left: 0; top: 26px; width: 100px; text-align: center; font: 700 34px/44px Karantina, Teko, sans-serif; color: rgba(255,210,63,.2); transform: scale(1.45) skewX(-9deg);">ניצחון!</span>
+              <span style="position: absolute; left: 0; top: 28px; width: 100px; text-align: center; font: 700 34px/44px Karantina, Teko, sans-serif; color: #ffd23f; transform: skewX(-9deg); text-shadow: 0 3px 0 #07050f;">ניצחון!</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+200</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ניצחון! · slam 600ms</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: -20px; top: -22px; width: 140px; height: 140px; border-radius: 50%; background: repeating-conic-gradient(from 6deg, rgba(255,210,63,.3) 0deg 8deg, rgba(255,210,63,0) 8deg 22deg); -webkit-mask-image: radial-gradient(circle, #000 15%, transparent 68%); mask-image: radial-gradient(circle, #000 15%, transparent 68%);"></div>
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; left: 40px; top: 12px;"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" fill="#ffd23f" stroke="#0f0b1d" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+              <div style="position: absolute; left: 31px; top: 32px; width: 38px; height: 38px; box-sizing: border-box; padding: 3px; border-radius: 11px; background: #2ee6ff; box-shadow: 0 3px 0 #0098c2, 0 0 18px rgba(255,210,63,.7);"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="32" height="32" style="display: block; width: 32px; height: 32px; border-radius: 8px;"></div>
+              <span style="position: absolute; left: 0; top: 78px; width: 100px; text-align: center; font: 600 9px/1 Rubik, sans-serif; color: #ffd23f;">מקום 1</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+700</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">פרץ זהב + כתר</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(80% 60% at 50% 40%, rgba(255,210,63,.14), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <span style="position: absolute; left: 0; top: 12px; width: 100px; text-align: center; font: 600 14px/1 Teko, sans-serif; color: #6c5fa6; text-decoration: line-through;">1287</span>
+              <span style="position: absolute; left: 0; top: 30px; width: 100px; display: flex; align-items: center; justify-content: center; gap: 3px; font: 600 34px/1 Teko, sans-serif; color: #ffd23f;"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f" stroke="none"></path></svg>1304</span>
+              <span style="position: absolute; left: 0; top: 66px; width: 100px; text-align: center; font: 600 22px/1 Teko, sans-serif; color: #3ff0a6; text-shadow: 0 0 10px rgba(63,240,166,.6); transform: scale(1.1);">+17</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+1.2s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">דירוג נספר · <span dir="ltr">+17</span></div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 100px; height: 97px; margin-left: -50px;">
+              <div style="position: absolute; left: 14px; top: 28px; width: 72px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); color: #1a1000; transform: skewX(-9deg); box-shadow: 0 3px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6); font: 700 18px/1 Karantina, Teko, sans-serif;"><span style="display: block; transform: skewX(9deg);">משחק חדש</span></div>
+              <span style="position: absolute; left: 0; top: 66px; width: 100px; text-align: center; font: 500 10px/1 Rubik, sans-serif; color: #a79fcb; text-decoration: underline;">צפייה חוזרת</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+1.9s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">פעולה אחת בולטת</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ROW 5 · DOMINANCE + REACTION ===== -->
+  <div style="position: relative; flex: 0 0 192px; height: 192px; display: flex; gap: 14px;">
+
+    <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 12px 14px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 18px; box-shadow: 0 5px 0 #07050f; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 10px; height: 22px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">08</span>
+        <span style="font: 700 28px/.9 Karantina, Teko, sans-serif; color: #f1eeff; white-space: nowrap;">מד השליטה</span>
+        <span style="font: 600 13px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb; white-space: nowrap;">DOMINANCE BAR</span>
+        <span style="flex: 1 1 0;"></span>
+        <span dir="ltr" style="padding: 3px 9px; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; font: 600 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #cfc8ee; white-space: nowrap;">55 : 39.5 · LEAD +15.5</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 140px; height: 97px; margin-left: -70px;">
+              <div dir="rtl" style="position: absolute; left: 6px; top: 10px; width: 54px; height: 22px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="14" height="14" style="display: block; width: 14px; height: 14px; border-radius: 4px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 18px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 80px; top: 10px; width: 54px; height: 22px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="14" height="14" style="display: block; width: 14px; height: 14px; border-radius: 4px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 18px/1 Teko, sans-serif; color: #2ee6ff;">51.5</span></div>
+              <span style="position: absolute; left: 62px; top: 15px; width: 16px; text-align: center; font: 700 12px/1 Teko, sans-serif; color: #ffd23f;">VS</span>
+              <div style="position: absolute; left: 6px; top: 46px; width: 128px; height: 10px; display: flex; border-radius: 3px; overflow: hidden; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f;"><div style="flex: 39.5 1 0; background: linear-gradient(90deg, #c95600, #ff8a1f);"></div><div style="width: 2px; background: #ffffff;"></div><div style="flex: 51.5 1 0; background: linear-gradient(90deg, #2ee6ff, #0098c2);"></div></div>
+              <span style="position: absolute; left: 60px; top: 43px; width: 2px; height: 16px; background: #ffffff; box-shadow: 0 0 8px 2px rgba(255,255,255,.7); transform: skewX(-9deg);"></span>
+              <span style="position: absolute; left: 47px; top: 64px; width: 28px; text-align: center; font: 600 14px/1 Teko, sans-serif; color: #2ee6ff;">+12</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">חלוקה לפי ניקוד · יתרון <span dir="ltr">+12</span></div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 140px; height: 97px; margin-left: -70px;">
+              <div dir="rtl" style="position: absolute; left: 6px; top: 10px; width: 54px; height: 22px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="14" height="14" style="display: block; width: 14px; height: 14px; border-radius: 4px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 18px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 80px; top: 10px; width: 54px; height: 22px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #2ee6ff; border-radius: 6px; background: linear-gradient(160deg, #2b2a5c, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f, 0 0 12px rgba(46,230,255,.7);"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="14" height="14" style="display: block; width: 14px; height: 14px; border-radius: 4px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 18px/1 Teko, sans-serif; color: #2ee6ff;">53.2</span></div>
+              <span style="position: absolute; left: 92px; top: 33px; font: 600 12px/1 Teko, sans-serif; color: #2ee6ff; text-shadow: 0 0 8px rgba(255,210,63,.8);">+3.5</span>
+              <div style="position: absolute; left: 6px; top: 46px; width: 128px; height: 10px; display: flex; border-radius: 3px; overflow: hidden; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f;"><div style="flex: 39.5 1 0; background: linear-gradient(90deg, #c95600, #ff8a1f);"></div><div style="width: 2px; background: #ffffff;"></div><div style="flex: 51.5 1 0; background: linear-gradient(90deg, #8ff4ff, #2ee6ff 40%, #0098c2);"></div></div>
+              <span style="position: absolute; left: 60px; top: 41px; width: 3px; height: 20px; background: #ffffff; box-shadow: 0 0 14px 5px rgba(255,255,255,.85); transform: skewX(-9deg);"></span>
+              <span style="position: absolute; left: 47px; top: 64px; width: 28px; text-align: center; font: 600 14px/1 Teko, sans-serif; color: #2ee6ff;">+13.7</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t+800</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">הניקוד נוחת · החריץ מבזיק</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 140px; height: 97px; margin-left: -70px;">
+              <div dir="rtl" style="position: absolute; left: 6px; top: 10px; width: 54px; height: 22px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="14" height="14" style="display: block; width: 14px; height: 14px; border-radius: 4px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 18px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 80px; top: 10px; width: 54px; height: 22px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(46,230,255,.75); border-radius: 6px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="14" height="14" style="display: block; width: 14px; height: 14px; border-radius: 4px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 18px/1 Teko, sans-serif; color: #2ee6ff;">55</span></div>
+              <svg width="18" height="20" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; left: 66px; top: 12px;"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" fill="#ffd23f" stroke="none"></path></svg>
+              <div style="position: absolute; left: 6px; top: 46px; width: 128px; height: 10px; display: flex; border-radius: 3px; overflow: hidden; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f;"><div style="flex: 39.5 1 0; background: linear-gradient(90deg, #c95600, #ff8a1f);"></div><div style="width: 2px; background: #ffffff;"></div><div style="flex: 55 1 0; background: linear-gradient(90deg, #2ee6ff, #0098c2);"></div></div>
+              <span style="position: absolute; left: 60px; top: 42px; width: 0; height: 18px; border-left: 1px dashed #a79fcb; transform: skewX(-9deg);"></span>
+              <span style="position: absolute; left: 58px; top: 43px; width: 2px; height: 16px; background: #ffffff; box-shadow: 0 0 8px 2px rgba(255,255,255,.7); transform: skewX(-9deg);"></span>
+              <span style="position: absolute; left: 42px; top: 64px; width: 34px; text-align: center; font: 600 14px/1 Teko, sans-serif; color: #2ee6ff;">+15.5</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">t+800 → 1040</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">החריץ מחליק · 240ms</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 140px; height: 97px; margin-left: -70px;">
+              <div dir="rtl" style="position: absolute; left: 6px; top: 10px; width: 40px; height: 22px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 6px; background: #1b1533; transform: skewX(-9deg);"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #ff8a1f;">17.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 50px; top: 10px; width: 40px; height: 22px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(168,240,60,.75); border-radius: 6px; background: #1b1533; transform: skewX(-9deg);"><img src="/_blob/d9a87df044aca7d23ac9093746e65889" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #a8f03c;">33</span></div>
+              <div dir="rtl" style="position: absolute; left: 94px; top: 10px; width: 40px; height: 22px; box-sizing: border-box; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #ffd23f; border-radius: 6px; background: #1b1533; transform: skewX(-9deg);"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="12" height="12" style="display: block; width: 12px; height: 12px; border-radius: 3px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 15px/1 Teko, sans-serif; color: #2ee6ff;">52.5</span></div>
+              <div style="position: absolute; left: 6px; top: 46px; width: 128px; height: 10px; display: flex; border-radius: 3px; overflow: hidden; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f;"><div style="flex: 17.5 1 0; background: linear-gradient(90deg, #c95600, #ff8a1f);"></div><div style="width: 2px; background: #ffffff;"></div><div style="flex: 33 1 0; background: linear-gradient(90deg, #5fa800, #a8f03c);"></div><div style="width: 2px; background: #ffffff;"></div><div style="flex: 52.5 1 0; background: linear-gradient(90deg, #2ee6ff, #0098c2);"></div></div>
+              <span style="position: absolute; left: 4px; top: 64px; font: 600 12px/1 Teko, sans-serif; color: #a79fcb;">#3</span>
+              <span style="position: absolute; left: 44px; top: 64px; font: 600 12px/1 Teko, sans-serif; color: #a79fcb;">#2</span>
+              <span style="position: absolute; left: 52px; top: 76px; width: 34px; text-align: center; font: 600 14px/1 Teko, sans-serif; color: #2ee6ff;">+19.5</span>
+              <span style="position: absolute; left: 118px; top: 64px; font: 600 12px/1 Teko, sans-serif; color: #ffd23f;">#1</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">3P</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">3 שחקנים · מקטעים לפי מקום</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 12px 14px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 18px; box-shadow: 0 5px 0 #07050f; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 10px; height: 22px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">09</span>
+        <span style="font: 700 28px/.9 Karantina, Teko, sans-serif; color: #f1eeff; white-space: nowrap;">תגובה</span>
+        <span style="font: 600 13px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb; white-space: nowrap;">REACTION FLOAT</span>
+        <span style="flex: 1 1 0;"></span>
+        <span style="padding: 3px 9px; border-radius: 999px; background: #251d45; border: 1px solid #4b3f80; font: 400 13px/1 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; white-space: nowrap;">😂 😱 😎 🤦 🔥 👀</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 140px; height: 97px; margin-left: -70px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 60px; width: 56px; height: 30px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 7px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 17px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 68px; top: 60px; width: 68px; height: 30px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; gap: 4px; border: 1.5px solid rgba(46,230,255,.75); border-radius: 7px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 17px/1 Teko, sans-serif; color: #2ee6ff;">55</span><span style="margin-inline-start: auto; width: 18px; height: 18px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 5px; background: #251d45; border: 1.5px solid #ffd23f; color: #ffd23f; transform: skewX(9deg) translateY(1px); box-shadow: 0 0 8px rgba(255,210,63,.6);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg></span></div>
+              <span style="position: absolute; left: 67px; top: 60px; width: 30px; height: 30px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid rgba(255,210,63,.45);"></span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">0</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">כפתור התגובה בכרטיס שלי</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 140px; height: 97px; margin-left: -70px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 60px; width: 56px; height: 30px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 7px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 17px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 68px; top: 60px; width: 68px; height: 30px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; gap: 4px; border: 1.5px solid rgba(46,230,255,.75); border-radius: 7px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 17px/1 Teko, sans-serif; color: #2ee6ff;">55</span><span style="margin-inline-start: auto; width: 18px; height: 18px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 5px; background: #251d45; border: 1.5px solid #ffd23f; color: #ffd23f; transform: skewX(9deg);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg></span></div>
+              <div dir="rtl" style="position: absolute; left: 30px; top: 30px; width: 106px; height: 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-around; border-radius: 999px; background: #1b1533; border: 1.5px solid #4b3f80; box-shadow: 0 4px 0 #07050f; font: 400 12px/1 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;"><span>😂</span><span>😱</span><span>😎</span><span>🤦</span><span>🔥</span><span>👀</span></div>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+0 → 200</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">פס 6 תגובות קופץ</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 140px; height: 97px; margin-left: -70px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 60px; width: 56px; height: 30px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 7px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 17px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 68px; top: 60px; width: 68px; height: 30px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; gap: 4px; border: 1.5px solid rgba(46,230,255,.75); border-radius: 7px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 17px/1 Teko, sans-serif; color: #2ee6ff;">55</span><span style="margin-inline-start: auto; width: 18px; height: 18px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 5px; background: #251d45; border: 1px solid #4b3f80; color: #f1eeff; transform: skewX(9deg);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg></span></div>
+              <div dir="rtl" style="position: absolute; left: 30px; top: 30px; width: 106px; height: 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-around; border-radius: 999px; background: #1b1533; border: 1.5px solid #4b3f80; box-shadow: 0 4px 0 #07050f; font: 400 12px/1 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;"><span style="opacity: .3;">😂</span><span style="opacity: .3;">😱</span><span style="opacity: .3;">😎</span><span style="opacity: .3;">🤦</span><span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; box-shadow: 0 0 0 1.5px #ffd23f, 0 0 10px rgba(255,210,63,.6); font-size: 15px;">🔥</span><span style="opacity: .3;">👀</span></div>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+120</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">בחירה · הפס נסגר</div>
+        </div>
+
+        <div style="flex: 1 1 0; min-width: 0;">
+          <div style="position: relative; height: 100px; box-sizing: border-box; overflow: hidden; border-radius: 12px; border: 1.5px solid #342a5e; background: radial-gradient(100% 70% at 50% 0%, rgba(120,90,255,.2), transparent 70%), #0f0b1d;">
+            <div dir="ltr" style="position: absolute; left: 50%; top: 0; width: 140px; height: 97px; margin-left: -70px;">
+              <div dir="rtl" style="position: absolute; left: 4px; top: 60px; width: 56px; height: 30px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid rgba(255,138,31,.75); border-radius: 7px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 17px/1 Teko, sans-serif; color: #ff8a1f;">39.5</span></div>
+              <div dir="rtl" style="position: absolute; left: 68px; top: 60px; width: 68px; height: 30px; box-sizing: border-box; padding: 0 5px; display: flex; align-items: center; gap: 4px; border: 1.5px solid rgba(46,230,255,.75); border-radius: 7px; background: linear-gradient(160deg, #251d45, #1b1533); transform: skewX(-9deg); box-shadow: 0 2px 0 #07050f;"><img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px; transform: skewX(9deg);"><span style="display: inline-block; transform: skewX(9deg); font: 600 17px/1 Teko, sans-serif; color: #2ee6ff;">55</span><span style="margin-inline-start: auto; width: 18px; height: 18px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 5px; background: #251d45; border: 1px solid #4b3f80; color: #f1eeff; transform: skewX(9deg);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg></span></div>
+              <span style="position: absolute; left: 96px; top: 46px; font: 400 12px/1 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; opacity: .2;">🔥</span>
+              <span style="position: absolute; left: 92px; top: 30px; font: 400 22px/1 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; animation: sf-float-up 1.8s cubic-bezier(.2,.8,.2,1) infinite; animation-play-state: {{ps}};">🔥</span>
+            </div>
+          </div>
+          <div style="margin-top: 3px; font: 600 14px/1 Teko, sans-serif; color: #ffd23f;"><span dir="ltr">+120 → 1.9s</span></div>
+          <div style="margin-top: 1px; font: 500 11px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">צף מהכרטיס שלי · גם אצלה</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ROW 6 · LIVE LOOPS + HAPTICS + REDUCED MOTION ===== -->
+  <div style="position: relative; flex: 0 0 348px; height: 348px; display: flex; gap: 16px;">
+
+    <div style="flex: 0 0 420px; box-sizing: border-box; padding: 16px 20px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 20px; box-shadow: 0 6px 0 #07050f;">
+      <div style="display: flex; align-items: baseline; gap: 10px; height: 29px; margin-bottom: 8px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">10</span>
+        <span style="font: 700 32px/.9 Karantina, Teko, sans-serif; color: #f1eeff;">לולאות חיות</span>
+        <span style="font: 600 14px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb;">LIVE KEYFRAMES</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+        <div style="height: 133px; box-sizing: border-box; padding: 10px 8px; border-radius: 14px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column; align-items: center;">
+          <div style="position: relative; height: 62px; width: 100%; display: flex; align-items: center; justify-content: center;"><div style="position: relative; width: 40px; height: 40px; border-radius: 5px; animation: sf-glow 1.6s ease-in-out infinite; animation-play-state: {{ps}};"><div style="width: 40px; height: 40px; border-radius: 5px; background: #c8f6ff; box-shadow: inset 0 0 0 3px #2ee6ff;"></div><span style="position: absolute; top: -7px; right: -7px; min-width: 18px; height: 18px; border-radius: 9px; background: #2ee6ff; color: #0f0b1d; font: 600 14px/18px Teko, sans-serif; text-align: center;">7</span></div></div>
+          <div style="margin-top: 4px; font: 600 17px/1 Teko, sans-serif; letter-spacing: .02em; color: #ffd23f;">SF-GLOW</div>
+          <div style="margin-top: 2px; font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">הנעילה שלי בלבד</div>
+          <div dir="ltr" style="font: 500 13px/1.1 Teko, sans-serif; color: #a79fcb;">1.6s · ∞</div>
+        </div>
+        <div style="height: 133px; box-sizing: border-box; padding: 10px 8px; border-radius: 14px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column; align-items: center;">
+          <div style="position: relative; height: 62px; width: 100%; display: flex; align-items: center; justify-content: center;"><svg width="54" height="54" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14" fill="none" stroke="#342a5e" stroke-width="4"></circle><circle cx="18" cy="18" r="14" fill="none" stroke="#2ee6ff" stroke-width="4" pathLength="100" stroke-dasharray="100" stroke-linecap="round" transform="rotate(-90 18 18)" style="animation: sf-ring 12s linear infinite; animation-play-state: {{ps}};"></circle></svg><span style="position: absolute; left: 0; right: 0; top: 22px; text-align: center; font: 600 18px/1 Teko, sans-serif; color: #f1eeff;">12</span></div>
+          <div style="margin-top: 4px; font: 600 17px/1 Teko, sans-serif; letter-spacing: .02em; color: #ffd23f;">SF-RING</div>
+          <div style="margin-top: 2px; font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">טבעת זמן נעילה</div>
+          <div dir="ltr" style="font: 500 13px/1.1 Teko, sans-serif; color: #a79fcb;">12s · linear</div>
+        </div>
+        <div style="height: 133px; box-sizing: border-box; padding: 10px 8px; border-radius: 14px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column; align-items: center;">
+          <div style="position: relative; height: 62px; width: 100%; overflow: hidden; display: flex; align-items: flex-end; justify-content: center;"><div style="position: relative; width: 30px; height: 30px; border-radius: 4px; background: #d3f8ff; display: flex; align-items: center; justify-content: center; font: 600 18px/1 Rubik, sans-serif; color: #006b8a;">5<span style="position: absolute; left: -12px; top: -16px; width: 54px; text-align: center; font: 600 21px/1 Teko, sans-serif; color: #2ee6ff; -webkit-text-stroke: 1px #0f0b1d; text-shadow: 0 0 10px rgba(255,210,63,.85); animation: sf-float-up 1.6s cubic-bezier(.2,.8,.2,1) infinite; animation-play-state: {{ps}};">+3.5</span></div></div>
+          <div style="margin-top: 4px; font: 600 17px/1 Teko, sans-serif; letter-spacing: .02em; color: #ffd23f;">SF-FLOAT-UP</div>
+          <div style="margin-top: 2px; font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">ניקוד ותגובות</div>
+          <div dir="ltr" style="font: 500 13px/1.1 Teko, sans-serif; color: #a79fcb;">1.6s · ease-out</div>
+        </div>
+        <div style="height: 133px; box-sizing: border-box; padding: 10px 8px; border-radius: 14px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column; align-items: center;">
+          <div style="position: relative; height: 62px; width: 100%; display: flex; align-items: center; justify-content: center;"><div style="position: relative; width: 40px; height: 40px; border-radius: 5px; background: #fbfaff; animation: sf-shake-loop 1.5s linear infinite, sf-flash-loop 1.5s ease-out infinite; animation-play-state: {{ps}};"><span style="position: absolute; bottom: 3px; right: 4px; font: 700 11px/1 Rubik, sans-serif; color: #d10f37;">5</span></div></div>
+          <div style="margin-top: 4px; font: 600 17px/1 Teko, sans-serif; letter-spacing: .02em; color: #ffd23f;">SF-SHAKE</div>
+          <div style="margin-top: 2px; font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">טעות · פעם אחת</div>
+          <div dir="ltr" style="font: 500 13px/1.1 Teko, sans-serif; color: #a79fcb;">300ms · loop 1.5s</div>
+        </div>
+        <div style="height: 133px; box-sizing: border-box; padding: 10px 8px; border-radius: 14px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column; align-items: center;">
+          <div style="position: relative; height: 62px; width: 100%; display: flex; align-items: center; justify-content: center;"><div style="width: 62px; height: 36px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid #ffd23f; border-radius: 8px; background: #0f0b1d; box-shadow: 0 4px 0 #07050f, 0 0 16px rgba(255,210,63,.45); animation: sf-slam-loop 1.8s cubic-bezier(.34,1.56,.64,1) infinite; animation-play-state: {{ps}};"><span style="display: block; transform: skewX(9deg); font: 700 26px/1 Teko, sans-serif; color: #ffd23f;">VS</span></div></div>
+          <div style="margin-top: 4px; font: 600 17px/1 Teko, sans-serif; letter-spacing: .02em; color: #ffd23f;">SF-SLAM</div>
+          <div style="margin-top: 2px; font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">VS, ניצחון, GO!</div>
+          <div dir="ltr" style="font: 500 13px/1.1 Teko, sans-serif; color: #a79fcb;">400ms · overshoot</div>
+        </div>
+        <div style="height: 133px; box-sizing: border-box; padding: 10px 8px; border-radius: 14px; background: #151028; border: 1.5px solid #342a5e; display: flex; flex-direction: column; align-items: center;">
+          <div style="position: relative; height: 62px; width: 100%; display: flex; align-items: center; justify-content: center;"><div style="position: relative; overflow: hidden; width: 84px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); color: #1a1000; transform: skewX(-9deg); box-shadow: 0 4px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6); font: 700 24px/1 Karantina, Teko, sans-serif;"><span style="display: block; transform: skewX(9deg);">שחק</span><span style="position: absolute; left: 0; top: 0; width: 84px; height: 38px; background: linear-gradient(100deg, rgba(255,255,255,0) 40%, rgba(255,255,255,.75) 50%, rgba(255,255,255,0) 60%); background-size: 250% 100%; animation: sf-shine 2.4s linear infinite; animation-play-state: {{ps}};"></span></div></div>
+          <div style="margin-top: 4px; font: 600 17px/1 Teko, sans-serif; letter-spacing: .02em; color: #ffd23f;">SF-SHINE</div>
+          <div style="margin-top: 2px; font: 500 11px/1.25 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">כפתור ראשי, פרס</div>
+          <div dir="ltr" style="font: 500 13px/1.1 Teko, sans-serif; color: #a79fcb;">2.4s · linear · ∞</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 0 0 560px; box-sizing: border-box; padding: 16px 20px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 20px; box-shadow: 0 6px 0 #07050f;">
+      <div style="display: flex; align-items: baseline; gap: 10px; height: 29px; margin-bottom: 8px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">11</span>
+        <span style="font: 700 32px/.9 Karantina, Teko, sans-serif; color: #f1eeff;">רטט וסאונד</span>
+        <span style="font: 600 14px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb;">HAPTICS · SOUND</span>
+        <span style="flex: 1 1 0;"></span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;"><span style="width: 4px; height: 6px; border-radius: 2px; background: #a79fcb;"></span>קל</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;"><span style="width: 5px; height: 10px; border-radius: 2px; background: #ffd23f;"></span>בינוני</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;"><span style="width: 6px; height: 14px; border-radius: 2px; background: #ff3355;"></span>חזק</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;"><span style="width: 5px; height: 10px; border-radius: 2px; background: #3ff0a6;"></span>הצלחה</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2ee6ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>בחירת משבצת</div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end; gap: 3px;"><span style="width: 4px; height: 6px; border-radius: 2px; background: #a79fcb;"></span></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">SELECTION</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">טיק עץ קצר</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3ff0a6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>ספרה נכונה</div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end; gap: 3px;"><span style="width: 4px; height: 6px; border-radius: 2px; background: #3ff0a6;"></span><span style="width: 5px; height: 10px; border-radius: 2px; background: #3ff0a6;"></span></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">SUCCESS</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">דינג עולה + צלצול מטבע</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z"></path></svg>ספירת ניקוד</div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end; gap: 3px;"><span style="width: 2px; height: 4px; border-radius: 1px; background: #a79fcb;"></span><span style="width: 2px; height: 4px; border-radius: 1px; background: #a79fcb;"></span><span style="width: 2px; height: 4px; border-radius: 1px; background: #a79fcb;"></span><span style="width: 2px; height: 4px; border-radius: 1px; background: #a79fcb;"></span><span style="width: 2px; height: 4px; border-radius: 1px; background: #a79fcb;"></span></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">MICRO TICKS</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">טיקים מתגלגלים לאורך <span dir="ltr">650ms</span></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff3355" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>ספרה שגויה</div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end; gap: 3px;"><span style="width: 8px; height: 14px; border-radius: 2px; background: #ff3355;"></span><span style="width: 4px; height: 6px; border-radius: 2px; background: #ff3355;"></span></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">ERROR</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">באז נמוך <span dir="ltr">120ms</span>, בלי דרמה</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>3 שניות אחרונות</div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end; gap: 9px;"><span style="width: 4px; height: 6px; border-radius: 2px; background: #a79fcb;"></span><span style="width: 4px; height: 6px; border-radius: 2px; background: #a79fcb;"></span><span style="width: 4px; height: 6px; border-radius: 2px; background: #a79fcb;"></span></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">1 / SEC</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">טיק שעון שקט, רק בנעילה שלי</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"></path></svg>הפרעה נשלחה</div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end; gap: 3px;"><span style="width: 5px; height: 10px; border-radius: 2px; background: #ffd23f;"></span><span style="width: 18px; height: 10px; border-radius: 2px; background: #ffd23f;"></span></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">IMPACT M</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ווש בגרירה, פיצוץ בנחיתה</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff3355" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"></path></svg>הפרעה פוגעת בי</div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end;"><svg width="80" height="14" viewBox="0 0 80 14" aria-hidden="true"><path d="M0 7 Q5 0 10 7 T20 7 T30 7 T40 7 T50 7 T60 7 T70 7 T80 7" fill="none" stroke="#ff3355" stroke-width="2" stroke-linecap="round"></path></svg></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">RUMBLE 5S</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">לפי סוג: זיקוקים, מיאו, עיוות</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f1eeff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg>תגובה התקבלה</div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end; gap: 3px;"><span style="width: 4px; height: 6px; border-radius: 2px; background: #a79fcb;"></span></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">SOFT</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">פופ רך, צליל לכל תגובה</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f1eeff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4l13 8-13 8V4z"></path></svg><span dir="ltr">3 · 2 · 1</span></div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end; gap: 8px;"><span style="width: 5px; height: 10px; border-radius: 2px; background: #ffd23f;"></span><span style="width: 5px; height: 10px; border-radius: 2px; background: #ffd23f;"></span><span style="width: 5px; height: 10px; border-radius: 2px; background: #ffd23f;"></span></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">BEATS</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">מכת תוף לכל ספרה</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path><circle cx="12" cy="12" r="2"></circle></svg>GO!</div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end; gap: 3px;"><span style="width: 8px; height: 14px; border-radius: 2px; background: #ff3355;"></span></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">IMPACT H</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">מכת גונג + קהל קצר</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; height: 23px; padding: 0 10px; border-radius: 8px; background: #151028;">
+          <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 7px; font: 500 13px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"></path><path d="M12 13v4M8 21h8M9.5 17h5"></path></svg>ניצחון / הפסד</div>
+          <div dir="ltr" style="flex: 0 0 86px; display: flex; align-items: center; justify-content: flex-end; gap: 3px;"><span style="width: 4px; height: 6px; border-radius: 2px; background: #3ff0a6;"></span><span style="width: 5px; height: 10px; border-radius: 2px; background: #3ff0a6;"></span><span style="width: 22px; height: 10px; border-radius: 2px; background: #3ff0a6;"></span><span style="width: 1px; height: 12px; margin: 0 3px; background: #4b3f80;"></span><span style="width: 4px; height: 6px; border-radius: 2px; background: #a79fcb;"></span></div>
+          <div style="flex: 0 0 74px; font: 500 13px/1 Teko, sans-serif; letter-spacing: .04em; color: #a79fcb;">WIN / LOSS</div>
+          <div style="flex: 1 1 0; min-width: 0; font: 400 12px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">פנפרה קצרה / אקורד יורד</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 16px 20px; background: rgba(27,21,51,.82); border: 2px solid #342a5e; border-radius: 20px; box-shadow: 0 6px 0 #07050f;">
+      <div style="display: flex; align-items: baseline; gap: 10px; height: 29px; margin-bottom: 8px;">
+        <span style="font: 600 20px/1 Teko, sans-serif; color: #ffd23f;">12</span>
+        <span style="font: 700 32px/.9 Karantina, Teko, sans-serif; color: #f1eeff; white-space: nowrap;">פחות תנועה</span>
+        <span style="font: 600 14px/1 Teko, sans-serif; letter-spacing: .08em; color: #a79fcb; white-space: nowrap;">REDUCED</span>
+      </div>
+      <div style="margin-bottom: 6px; font: 400 12px/1.35 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">מערכת או מתג: המידע נשאר, הדרמה יורדת.</div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div style="display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 8px; border-radius: 8px; background: #151028;"><span style="flex: 0 0 92px; font: 400 12px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">רעד</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg><span style="flex: 1 1 0; min-width: 0; font: 600 12px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">מסגרת אדומה <span dir="ltr">300ms</span></span></div>
+        <div style="display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 8px; border-radius: 8px; background: #151028;"><span style="flex: 0 0 92px; font: 400 12px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span dir="ltr">+3.5</span> טס</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg><span style="flex: 1 1 0; min-width: 0; font: 600 12px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">מופיע ליד הניקוד ודוהה</span></div>
+        <div style="display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 8px; border-radius: 8px; background: #151028;"><span style="flex: 0 0 92px; font: 400 12px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ספירת ניקוד</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg><span style="flex: 1 1 0; min-width: 0; font: 600 12px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">המספר הסופי מיד</span></div>
+        <div style="display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 8px; border-radius: 8px; background: #151028;"><span style="flex: 0 0 92px; font: 400 12px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">סלאם, זום</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg><span style="flex: 1 1 0; min-width: 0; font: 600 12px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">דהייה <span dir="ltr">200ms</span></span></div>
+        <div style="display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 8px; border-radius: 8px; background: #151028;"><span style="flex: 0 0 92px; font: 400 12px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">פרץ זהב</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg><span style="flex: 1 1 0; min-width: 0; font: 600 12px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">הילת זהב סטטית</span></div>
+        <div style="display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 8px; border-radius: 8px; background: #151028;"><span style="flex: 0 0 92px; font: 400 12px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">הילה פועמת</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg><span style="flex: 1 1 0; min-width: 0; font: 600 12px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">טבעת קבועה</span></div>
+        <div style="display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 8px; border-radius: 8px; background: #151028;"><span style="flex: 0 0 92px; font: 400 12px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ציפת תגובה</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg><span style="flex: 1 1 0; min-width: 0; font: 600 12px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">מופיעה ודוהה במקום</span></div>
+        <div style="display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 8px; border-radius: 8px; background: #151028;"><span style="flex: 0 0 92px; font: 400 12px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">טבעת טיימר</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg><span style="flex: 1 1 0; min-width: 0; font: 600 12px/1.2 Rubik, sans-serif; color: #3ff0a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">נשארת · זה מידע</span></div>
+        <div style="display: flex; align-items: center; gap: 6px; height: 25px; padding: 0 8px; border-radius: 8px; background: #151028;"><span style="flex: 0 0 92px; font: 400 12px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">הפרעות</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg><span style="flex: 1 1 0; min-width: 0; font: 600 12px/1.2 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">גרסה סטטית, עדיין 5 שנ׳</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this.cuStep = 0;
+    this.cuTimer = setTimeout(() => this.countLoop(), 600);
+  }
+  componentWillUnmount() {
+    clearTimeout(this.cuTimer);
+  }
+  countLoop() {
+    const st = this.state || {};
+    if (st.paused) {
+      this.cuTimer = setTimeout(() => this.countLoop(), 300);
+      return;
+    }
+    const k = (this.cuStep || 0) + 1;
+    if (k <= 10) {
+      this.cuStep = k;
+      this.setState({ cu: k });
+      this.cuTimer = setTimeout(() => this.countLoop(), 65);
+    } else {
+      this.cuTimer = setTimeout(() => {
+        this.cuStep = 0;
+        this.setState({ cu: 0 });
+        this.cuTimer = setTimeout(() => this.countLoop(), 500);
+      }, 1600);
+    }
+  }
+  renderVals() {
+    const st = this.state || {};
+    const paused = !!st.paused;
+    const k = st.cu || 0;
+    const t = k / 10;
+    const eased = 1 - Math.pow(1 - t, 3);
+    const value = 51.5 + 3.5 * eased;
+    const cu = k >= 10 ? '55' : (k === 0 ? '51.5' : value.toFixed(1));
+    return {
+      ps: paused ? 'paused' : 'running',
+      paused: paused,
+      running: !paused,
+      toggle: () => this.setState({ paused: !paused }),
+      toggleLabel: paused ? 'הפעל לולאות' : 'עצור לולאות',
+      cu: cu
+    };
+  }
+}
+</script>
+</body>
+</html>

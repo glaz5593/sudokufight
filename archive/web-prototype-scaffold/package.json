@@ -1,0 +1,16 @@
+{
+  "name": "sudoku-fight",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Sudoku Fight — competitive real-time multiplayer sudoku. V1 design prototype.",
+  "scripts": {
+    "serve": "node tools/serve.mjs",
+    "shot": "node tools/shot.mjs",
+    "test": "node --test tests/"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.10",
+    "playwright-core": "^1.55.0"
+  }
+}

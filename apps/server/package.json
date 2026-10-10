@@ -1,0 +1,43 @@
+{
+  "name": "@sudoku-fight/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Real-time game server (Colyseus). Authoritative: it runs @sudoku-fight/engine.",
+  "main": "./src/index.ts",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --format=cjs --external:@colyseus/* --external:express --external:@electric-sql/pglite --outfile=dist/index.cjs",
+    "start:prod": "node dist/index.cjs",
+    "test": "jest --config ../../jest.config.js --selectProjects server",
+    "typecheck": "tsc -p tsconfig.json",
+    "db:generate": "drizzle-kit generate",
+    "db:check": "drizzle-kit check",
+    "seed": "tsx scripts/seed.ts",
+    "db:seed-puzzles": "tsx scripts/seed-puzzles.ts",
+    "fake-client": "tsx scripts/fake-client.ts"
+  },
+  "dependencies": {
+    "@colyseus/core": "0.18.18",
+    "@colyseus/schema": "5.0.36",
+    "@colyseus/ws-transport": "0.18.4",
+    "@electric-sql/pglite": "^0.5.8",
+    "@sudoku-fight/engine": "*",
+    "@sudoku-fight/protocol": "*",
+    "drizzle-orm": "^0.45.4",
+    "express": "5.2.1",
+    "jose": "^6.2.12",
+    "postgres": "^3.4.9",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@colyseus/sdk": "0.18.5",
+    "@colyseus/testing": "^0.18.6",
+    "@colyseus/tools": "^0.18.9",
+    "drizzle-kit": "^0.31.11",
+    "esbuild": "0.28.2"
+  }
+}

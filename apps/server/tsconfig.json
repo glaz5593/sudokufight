@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "lib": ["ES2024"], "types": ["node", "jest"] },
+  "include": ["src", "test", "scripts", "drizzle.config.ts"]
+}

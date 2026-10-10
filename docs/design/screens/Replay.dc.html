@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Replay — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-pop { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1)} }
+@keyframes sf-pop-b { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1)} }
+@keyframes sf-float-up { 0%{transform:translateY(6px) scale(.8);opacity:0} 15%{opacity:1;transform:translateY(0) scale(1.15)} 100%{transform:translateY(-46px) scale(1);opacity:0} }
+@keyframes sf-float-up-b { 0%{transform:translateY(6px) scale(.8);opacity:0} 15%{opacity:1;transform:translateY(0) scale(1.15)} 100%{transform:translateY(-46px) scale(1);opacity:0} }
+@keyframes sf-shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+@keyframes sf-shake-b { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+@keyframes sf-flash-red { 0%{box-shadow:inset 0 0 0 40px rgba(255,51,85,.55)} 100%{box-shadow:inset 0 0 0 40px rgba(255,51,85,0)} }
+@keyframes sf-flash-red-b { 0%{box-shadow:inset 0 0 0 40px rgba(255,51,85,.55)} 100%{box-shadow:inset 0 0 0 40px rgba(255,51,85,0)} }
+@keyframes sf-score-pop { 0%{transform:scale(1)} 30%{transform:scale(1.28);text-shadow:0 0 18px rgba(255,210,63,.95)} 100%{transform:scale(1)} }
+@keyframes sf-score-pop-b { 0%{transform:scale(1)} 30%{transform:scale(1.28);text-shadow:0 0 18px rgba(255,210,63,.95)} 100%{transform:scale(1)} }
+@keyframes sf-score-hit { 0%{transform:translateX(0);color:#ff3355} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} 100%{transform:translateX(0)} }
+@keyframes sf-score-hit-b { 0%{transform:translateX(0);color:#ff3355} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} 100%{transform:translateX(0)} }
+@keyframes sf-card-in { 0%{transform:translateY(6px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+@keyframes sf-card-in-b { 0%{transform:translateY(6px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+@keyframes sf-lock-me { 0%,100%{box-shadow:inset 0 0 0 3px #2ee6ff, inset 0 0 6px 3px rgba(46,230,255,.25)} 50%{box-shadow:inset 0 0 0 3px #2ee6ff, inset 0 0 12px 6px rgba(46,230,255,.6)} }
+@keyframes sf-lock-nina { 0%,100%{box-shadow:inset 0 0 0 3px #ff8a1f} 50%{box-shadow:inset 0 0 0 3px #ff8a1f, inset 0 0 10px 3px rgba(255,138,31,.45)} }
+@keyframes sf-blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+.sf-press{transition:translate 80ms ease-out}
+.sf-press:active{translate:0 3px}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 60% at 50% -10%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 50% at 110% 110%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 50% at -10% 100%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; top: 36px; left: 0; right: 0; height: 170px; background-image: radial-gradient(rgba(255,255,255,.09) 1px, transparent 1.4px); background-size: 7px 7px; -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0)); mask-image: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0));"></div>
+  <div aria-hidden="true" style="position: absolute; top: 96px; left: 193px; width: 4px; height: 84px; background: linear-gradient(180deg, rgba(255,210,63,0), #ffd23f 30%, #ff3355 75%, rgba(255,51,85,0)); transform: skewX(-9deg); box-shadow: 0 0 12px rgba(255,210,63,.45); z-index: 1;"></div>
+
+  <a href="History.dc.html" aria-label="חזרה להיסטוריה" class="sf-press" style="position: absolute; top: 48px; right: 16px; width: 44px; height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #251d45; border: 2px solid #4b3f80; border-radius: 12px; box-shadow: 0 3px 0 #07050f; color: #f1eeff; text-decoration: none; z-index: 3;">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+  </a>
+  <div style="position: absolute; top: 46px; right: 72px; left: 116px; height: 48px; display: flex; flex-direction: column; justify-content: center; gap: 5px; z-index: 3;">
+    <h1 style="margin: 0; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 34px; line-height: .9; color: #f1eeff; white-space: nowrap;">צפייה חוזרת</h1>
+    <span style="font: 500 12px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">מדורג · רגיל · אתמול</span>
+  </div>
+  <div role="timer" aria-label="זמן משחק {{clock}}" style="position: absolute; top: 52px; left: 18px; height: 36px; box-sizing: border-box; padding: 0 12px; display: flex; align-items: center; background: #1b1533; border: 2px solid #342a5e; border-radius: 9px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08); z-index: 3;">
+    <span style="display: flex; align-items: center; gap: 6px; transform: skewX(9deg); color: #cfc8ee;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      <span dir="ltr" style="display: block; min-width: 34px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 24px; line-height: .8; padding-top: 4px; font-variant-numeric: tabular-nums; color: #f1eeff;">{{clock}}</span>
+    </span>
+  </div>
+
+  <div style="position: absolute; top: 100px; left: 203px; width: 171px; height: 70px; box-sizing: border-box; background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid {{me.border}}; border-radius: 12px; transform: skewX(-9deg); box-shadow: {{me.shadow}}; transition: border-color .24s, box-shadow .24s; z-index: 2;">
+    <div style="position: relative; height: 100%; box-sizing: border-box; padding: 0 10px; display: flex; align-items: center; gap: 8px; transform: skewX(9deg);">
+      <div style="position: relative; flex: none; width: 44px; height: 44px; padding: 3px; box-sizing: border-box; border-radius: 12px; background: #2ee6ff; box-shadow: 0 3px 0 #0098c2;">
+        <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="38" height="38" style="display: block; width: 38px; height: 38px; border-radius: 9px;">
+        <sc-if value="{{me.lead}}" hint-placeholder-val="{{ true }}">
+          <span style="position: absolute; top: -17px; left: 12px; width: 20px; height: 20px; display: block; animation: sf-pop .42s cubic-bezier(.34,1.56,.64,1) both;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ffd23f" stroke="#e8a100" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true" style="display: block; filter: drop-shadow(0 2px 0 #07050f);"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"></path></svg></span>
+        </sc-if>
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px;">
+        <div style="display: flex; align-items: center; gap: 5px; max-width: 100%;">
+          <span style="flex: none; display: block; width: 9px; height: 9px; background: #2ee6ff; clip-path: circle(50%);"></span>
+          <span style="min-width: 0; font: 600 13px/1.1 Rubik, sans-serif; color: #f1eeff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">MosheG</span>
+          <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇮🇱</span>
+        </div>
+        <div style="display: flex; align-items: flex-end; gap: 5px;">
+          <span dir="ltr" style="display: inline-block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 32px; line-height: .8; padding-top: 4px; font-variant-numeric: tabular-nums; color: #2ee6ff; text-shadow: 0 2px 0 #0098c2; transform-origin: 70% 60%; animation: {{me.bump}};">{{me.score}}</span>
+          <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; padding-bottom: 2px;">נק׳</span>
+          <sc-for list="{{me.pips}}" as="pp" hint-placeholder-count="1">
+            <span dir="ltr" style="display: inline-flex; align-items: center; height: 15px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 4px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.7); color: #ff6b84; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 14px; line-height: 1;">{{pp.t}}</span>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; top: 100px; left: 16px; width: 171px; height: 70px; box-sizing: border-box; background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid {{nina.border}}; border-radius: 12px; transform: skewX(-9deg); box-shadow: {{nina.shadow}}; transition: border-color .24s, box-shadow .24s; z-index: 2;">
+    <div style="position: relative; height: 100%; box-sizing: border-box; padding: 0 10px; display: flex; flex-direction: row-reverse; align-items: center; gap: 8px; transform: skewX(9deg);">
+      <div style="position: relative; flex: none; width: 44px; height: 44px; padding: 3px; box-sizing: border-box; border-radius: 12px; background: #ff8a1f; box-shadow: 0 3px 0 #c95600;">
+        <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="38" height="38" style="display: block; width: 38px; height: 38px; border-radius: 9px;">
+        <sc-if value="{{nina.lead}}" hint-placeholder-val="{{ false }}">
+          <span style="position: absolute; top: -17px; left: 12px; width: 20px; height: 20px; display: block; animation: sf-pop .42s cubic-bezier(.34,1.56,.64,1) both;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ffd23f" stroke="#e8a100" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true" style="display: block; filter: drop-shadow(0 2px 0 #07050f);"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"></path></svg></span>
+        </sc-if>
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+        <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 5px; max-width: 100%;">
+          <span style="flex: none; display: block; width: 10px; height: 9px; background: #ff8a1f; clip-path: polygon(50% 0, 100% 100%, 0 100%);"></span>
+          <span style="min-width: 0; font: 600 13px/1.1 Rubik, sans-serif; color: #f1eeff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">NinaVolt</span>
+          <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇩🇪</span>
+        </div>
+        <div style="display: flex; flex-direction: row-reverse; align-items: flex-end; gap: 5px;">
+          <span dir="ltr" style="display: inline-block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 32px; line-height: .8; padding-top: 4px; font-variant-numeric: tabular-nums; color: #ff8a1f; text-shadow: 0 2px 0 #c95600; transform-origin: 30% 60%; animation: {{nina.bump}};">{{nina.score}}</span>
+          <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; padding-bottom: 2px;">נק׳</span>
+          <sc-for list="{{nina.pips}}" as="pp" hint-placeholder-count="1">
+            <span dir="ltr" style="display: inline-flex; align-items: center; height: 15px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 4px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.7); color: #ff6b84; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 14px; line-height: 1; animation: sf-pop .3s cubic-bezier(.34,1.56,.64,1) both;">{{pp.t}}</span>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; top: 121px; left: 176px; width: 38px; height: 28px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #0f0b1d; border: 2px solid #ffd23f; border-radius: 6px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f, 0 0 16px rgba(255,210,63,.35); z-index: 4;">
+    <span style="display: block; transform: skewX(9deg); font-family: Teko, Rubik, sans-serif; font-weight: 700; font-size: 22px; line-height: .8; letter-spacing: .02em; color: #ffd23f; padding-top: 3px;">VS</span>
+  </div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 182px; left: 16px; width: 358px; height: 8px; border-radius: 4px; background: #251d45; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f; overflow: hidden; opacity: {{dom.op}}; z-index: 2;">
+    <div style="position: absolute; top: 0; bottom: 0; left: 0; width: {{dom.oppW}}; background: linear-gradient(90deg, #c95600, #ff8a1f); transition: width .65s cubic-bezier(.2,.8,.2,1);"></div>
+    <div style="position: absolute; top: 0; bottom: 0; right: 0; width: {{dom.meW}}; background: linear-gradient(90deg, #2ee6ff, #0098c2); transition: width .65s cubic-bezier(.2,.8,.2,1);"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; top: 178px; left: {{dom.notchX}}; width: 2px; height: 16px; background: #ffffff; border-radius: 1px; transform: skewX(-9deg); box-shadow: 0 0 10px #ffffff, 0 0 4px #ffffff; transition: left .65s cubic-bezier(.2,.8,.2,1); z-index: 3;"></div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 196px; left: 33px; width: 324px; height: 10px; padding: 0 3px; box-sizing: border-box; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px;">
+    <sc-for list="{{railTop}}" as="g" hint-placeholder-count="3">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px;">
+        <sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+          <span style="display: block; text-align: center; font: {{t.font}}; color: {{t.color}}; transition: color .24s;">{{t.t}}</span>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+  <div aria-hidden="true" style="position: absolute; top: 208px; left: 18px; width: 12px; height: 324px; padding: 3px 0; box-sizing: border-box; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3px;">
+    <sc-for list="{{railSide}}" as="g" hint-placeholder-count="3">
+      <div style="display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px;">
+        <sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+          <span style="display: flex; align-items: center; justify-content: center; font: {{t.font}}; color: {{t.color}}; transition: color .24s;">{{t.t}}</span>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div dir="ltr" role="img" aria-label="{{boardAria}}" style="position: absolute; top: 208px; left: 33px; width: 324px; height: 324px; padding: 3px; box-sizing: border-box; background: #342a5e; border-radius: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3px; box-shadow: 0 6px 0 #07050f, 0 18px 40px rgba(5,3,15,.6);">
+    <sc-for list="{{boxes}}" as="box" hint-placeholder-count="9">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; background: #c9c2ea; border-radius: 4px; overflow: hidden;">
+        <sc-for list="{{box.cells}}" as="cell" hint-placeholder-count="9">
+          <div style="position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; background: {{cell.bg}}; box-shadow: {{cell.ring}}; color: {{cell.fg}}; font: 600 21px/1 Rubik, sans-serif; animation: {{cell.anim}}; transition: background-color .24s;">
+            <span style="display: block; animation: {{cell.vAnim}};">{{cell.v}}</span>
+            <sc-if value="{{cell.hasGlyph}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; top: 3px; left: 3px; display: block; width: 6px; height: 6px; background: {{cell.glyph}}; clip-path: {{cell.clip}};"></span>
+            </sc-if>
+            <sc-if value="{{cell.hasWrong}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; bottom: 2px; right: 3px; font: 700 10px/1 Rubik, sans-serif; color: #d10f37; letter-spacing: .04em;">{{cell.wrong}}</span>
+            </sc-if>
+            <sc-if value="{{cell.meSel}}" hint-placeholder-val="{{ false }}">
+              <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="14" height="14" style="position: absolute; top: 3px; right: 3px; display: block; width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 0 1.5px #2ee6ff;">
+            </sc-if>
+            <sc-if value="{{cell.ninaSel}}" hint-placeholder-val="{{ false }}">
+              <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="14" height="14" style="position: absolute; top: 3px; right: 3px; display: block; width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 0 1.5px #ff8a1f;">
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 208px; left: 33px; width: 324px; height: 324px; pointer-events: none; z-index: 6;">
+    <sc-if value="{{pop.show}}" hint-placeholder-val="{{ true }}">
+      <span style="position: absolute; left: {{pop.x}}; top: {{pop.y}}; width: 80px; text-align: center; font-family: Teko, Rubik, sans-serif; font-weight: 700; font-size: 30px; line-height: 1; color: {{pop.color}}; -webkit-text-stroke: 1.5px #0f0b1d; text-shadow: {{pop.glow}}; animation: {{pop.anim}};">{{pop.text}}</span>
+    </sc-if>
+  </div>
+
+  <div style="position: absolute; top: 548px; left: 0; right: 0; bottom: 0; background: #1b1533; border-radius: 24px 24px 0 0; border-top: 2px solid #4b3f80; box-shadow: 0 -12px 34px rgba(0,0,0,.45); z-index: 8;">
+
+    <div style="position: absolute; top: 12px; left: 16px; right: 16px; height: 22px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+      <div style="flex: none; display: flex; align-items: baseline; gap: 6px;">
+        <span style="font: 600 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #a79fcb;">שלב</span>
+        <span dir="ltr" style="display: flex; align-items: baseline; gap: 4px; font-family: Teko, Rubik, sans-serif; font-weight: 600; line-height: .8; font-variant-numeric: tabular-nums;">
+          <span style="font-size: 26px; color: #f1eeff;">{{stepNo}}</span>
+          <span style="font-size: 18px; color: #6c5fa6;">/ {{stepTotal}}</span>
+        </span>
+      </div>
+      <div aria-live="polite" style="min-width: 0; display: flex; align-items: center; gap: 6px; animation: {{nar.anim}};">
+        <span style="flex: none; display: block; width: 9px; height: 9px; background: {{nar.color}}; clip-path: {{nar.clip}};"></span>
+        <span style="flex: none; font: 600 13px/1 Rubik, sans-serif; color: {{nar.color}};">{{nar.name}}</span>
+        <span style="flex: none; font: 500 13px/1 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">{{nar.verb}}</span>
+        <span dir="ltr" style="flex: none; display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px; color: #f1eeff;">{{nar.cell}}</span>
+        <sc-if value="{{nar.hasDelta}}" hint-placeholder-val="{{ true }}">
+          <span dir="ltr" style="flex: none; display: flex; align-items: center; height: 20px; padding: 2px 6px 0; box-sizing: border-box; border-radius: 6px; background: {{nar.dBg}}; border: 1px solid {{nar.dBd}}; color: {{nar.dColor}}; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 18px; line-height: 1;">{{nar.delta}}</span>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="position: absolute; top: 40px; left: 16px; right: 16px; height: 20px;">
+      <div aria-hidden="true" style="position: absolute; top: 9px; left: 0; right: 0; height: 2px; border-radius: 1px; background: #342a5e;"></div>
+      <div aria-hidden="true" style="position: absolute; top: 9px; right: 0; width: {{track.w}}; height: 2px; border-radius: 1px; background: linear-gradient(270deg, #ffe27a, #ffd23f 60%, #e8a100); box-shadow: 0 0 8px rgba(255,210,63,.5); transition: width .24s cubic-bezier(.2,.8,.2,1);"></div>
+      <div aria-hidden="true" style="position: absolute; top: 0; left: 0; right: 0; height: 20px; display: flex;">
+        <sc-for list="{{groups}}" as="gr" hint-placeholder-count="12">
+          <div style="flex: 1 1 0; min-width: 0; display: flex;">
+            <sc-for list="{{gr.dots}}" as="d" hint-placeholder-count="2">
+              <div style="flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center;">
+                <span style="display: block; flex: none; width: {{d.size}}; height: {{d.size}}; border-radius: 50%; background: {{d.bg}}; box-shadow: {{d.sh}}; opacity: {{d.op}}; animation: {{d.anim}}; transition: opacity .24s;"></span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      <label style="position: absolute; top: -12px; left: 0; right: 0; height: 44px; display: block; margin: 0; z-index: 2;">
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;">ציר השלבים</span>
+        <input type="range" min="1" max="24" step="1" value="{{stepNo}}" onChange="{{ scrub }}" dir="rtl" aria-valuetext="{{stepAria}}" style="position: absolute; top: 0; left: 0; width: 100%; height: 44px; margin: 0; padding: 0; opacity: 0; cursor: pointer;">
+      </label>
+    </div>
+
+    <div style="position: absolute; top: 68px; left: 16px; right: 16px; height: 150px; display: flex; gap: 8px;">
+      <sc-for list="{{cards}}" as="cd" hint-placeholder-count="2">
+        <div style="flex: 1 1 0; min-width: 0; height: 150px; box-sizing: border-box; padding: 8px 8px; display: flex; flex-direction: column; background: {{cd.bg}}; border: 2px solid {{cd.bd}}; border-radius: 14px; box-shadow: {{cd.sh}}; overflow: hidden; animation: {{cd.anim}}; transition: border-color .24s, box-shadow .24s;">
+          <div style="flex: none; height: 18px; display: flex; align-items: center; gap: 5px;">
+            <span style="flex: none; display: block; width: 8px; height: 8px; background: {{cd.p}}; clip-path: {{cd.clip}};"></span>
+            <span style="min-width: 0; font: 600 12px/1 Rubik, sans-serif; color: #f1eeff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{cd.name}}</span>
+            <span style="flex: 1;"></span>
+            <sc-if value="{{cd.has}}" hint-placeholder-val="{{ true }}">
+              <span style="flex: none; display: flex; align-items: center; gap: 3px; height: 18px; padding: 0 6px; box-sizing: border-box; border-radius: 9px; background: {{cd.chipBg}}; border: 1px solid {{cd.chipBd}}; color: {{cd.chipFg}}; white-space: nowrap;">
+                <span style="font: 600 10px/1 Rubik, sans-serif;">{{cd.chipLabel}}</span>
+                <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 15px; line-height: .8; padding-top: 2px;">{{cd.chipVal}}</span>
+              </span>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{cd.has}}" hint-placeholder-val="{{ true }}">
+            <div style="flex: none; height: 26px; margin-top: 4px; display: flex; align-items: center; gap: 5px;">
+              <span dir="ltr" style="flex: none; display: flex; align-items: baseline; gap: 4px; font-family: Teko, Rubik, sans-serif; font-weight: 600; line-height: .8; padding-top: 4px; white-space: nowrap;">
+                <span style="font-size: 30px; color: #f1eeff;">{{cd.cell}}</span>
+                <span style="font-size: 22px; color: #a79fcb;">→</span>
+                <span style="font-size: 30px; color: {{cd.p}}; text-shadow: 0 2px 0 {{cd.deep}};">{{cd.digit}}</span>
+              </span>
+              <sc-if value="{{cd.isWrong}}" hint-placeholder-val="{{ false }}">
+                <span dir="ltr" aria-label="נכתב {{cd.wrongDigit}}" style="flex: none; display: block; height: 18px; padding: 3px 5px 0; box-sizing: border-box; border-radius: 5px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.7); color: #ff6b84; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 16px; line-height: 1; text-decoration: line-through;">{{cd.wrongDigit}}</span>
+              </sc-if>
+              <span style="flex: 1;"></span>
+              <span style="flex: none; display: flex; align-items: center; height: 18px; padding: 0 6px; box-sizing: border-box; border-radius: 9px; border: 1px solid #4b3f80; background: #251d45; color: #cfc8ee; font: 600 10px/1 Rubik, sans-serif; white-space: nowrap;">{{cd.tech}}</span>
+            </div>
+
+            <div style="flex: none; margin-top: 5px; display: flex; flex-direction: column;">
+              <div style="height: 14px; display: flex; align-items: center; gap: 4px; white-space: nowrap; font: 500 11px/14px Rubik, sans-serif; color: #cfc8ee;">
+                <span>{{cd.rowPre}}</span>
+                <span dir="ltr" style="display: flex; font-weight: 700;">
+                  <sc-for list="{{cd.rowNums}}" as="n" hint-placeholder-count="5">
+                    <span style="color: {{n.c}}; text-decoration: {{n.deco}};">{{n.d}}</span><span style="color: #8f86bd; margin-right: 2px;">{{n.sep}}</span>
+                  </sc-for>
+                </span>
+              </div>
+              <sc-if value="{{cd.hasCol}}" hint-placeholder-val="{{ true }}">
+                <div style="height: 14px; display: flex; align-items: center; gap: 4px; white-space: nowrap; font: 500 11px/14px Rubik, sans-serif; color: #cfc8ee;">
+                  <sc-if value="{{cd.live}}" hint-placeholder-val="{{ true }}">
+                    <span style="flex: none; display: block; width: 7px; height: 7px; border-radius: 2px; background: #fff0bf; box-shadow: inset 0 0 0 2px #e8a100;"></span>
+                  </sc-if>
+                  <span>{{cd.colPre}}</span>
+                  <span dir="ltr" style="font-weight: 700; color: #f1eeff;">{{cd.colNums}}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{cd.hasBox}}" hint-placeholder-val="{{ true }}">
+                <div style="height: 14px; display: flex; align-items: center; gap: 4px; white-space: nowrap; font: 500 11px/14px Rubik, sans-serif; color: #cfc8ee;">
+                  <sc-if value="{{cd.live}}" hint-placeholder-val="{{ true }}">
+                    <span style="flex: none; display: block; width: 7px; height: 7px; border-radius: 2px; background: #fff0bf; box-shadow: inset 0 0 0 2px #e8a100;"></span>
+                  </sc-if>
+                  <span>{{cd.boxPre}}</span>
+                  <span dir="ltr" style="font-weight: 700; color: #f1eeff;">{{cd.boxNums}}</span>
+                </div>
+              </sc-if>
+              <div style="height: 14px; display: flex; align-items: center; gap: 4px; white-space: nowrap; font: 600 11px/14px Rubik, sans-serif; color: #f1eeff;">
+                <span>לכן רק</span>
+                <span style="font-weight: 800; color: {{cd.p}};">{{cd.digit}}</span>
+              </div>
+            </div>
+
+            <div style="flex: none; margin-top: auto; height: 16px; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+              <sc-if value="{{cd.isOk}}" hint-placeholder-val="{{ true }}">
+                <span style="font: 600 10px/1 Rubik, sans-serif; color: #a79fcb;">נק׳</span>
+                <span dir="ltr" style="display: flex; align-items: baseline; gap: 4px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 15px; line-height: .8; padding-top: 3px; color: #cfc8ee;">
+                  <span>{{cd.formula}}</span>
+                  <span style="color: {{cd.p}};">{{cd.result}}</span>
+                </span>
+              </sc-if>
+              <sc-if value="{{cd.isWrong}}" hint-placeholder-val="{{ false }}">
+                <span style="display: flex; align-items: center; gap: 4px; font: 600 11px/1 Rubik, sans-serif; color: #ff6b84;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+                  <span>{{cd.clashPre}}</span>
+                  <span dir="ltr" style="font-weight: 800;">{{cd.wrongDigit}}</span>
+                  <span>{{cd.clashWhere}}</span>
+                </span>
+              </sc-if>
+              <sc-if value="{{cd.pending}}" hint-placeholder-val="{{ false }}">
+                <span style="font: 600 11px/1 Rubik, sans-serif; color: {{cd.p}};">ממתין לתשובה<span style="animation: sf-blink 1.2s ease-in-out infinite;">…</span></span>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{cd.none}}" hint-placeholder-val="{{ false }}">
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center;">
+              <span style="display: block; width: 26px; height: 24px; background: {{cd.p}}; opacity: .28; clip-path: {{cd.clip}};"></span>
+              <span style="font: 600 12px/1.3 Rubik, sans-serif; color: #cfc8ee;">{{cd.noneTitle}}</span>
+              <span style="font: 500 11px/1.35 Rubik, sans-serif; color: #a79fcb;">ההסבר יופיע אחרי המהלך הראשון</span>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="position: absolute; top: 228px; left: 16px; right: 16px; height: 52px; display: flex; gap: 12px;">
+      <button type="button" onClick="{{ prev }}" aria-disabled="{{nav.prevDis}}" class="sf-press" style="flex: none; width: 140px; height: 52px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #251d45; border: 2px solid #4b3f80; border-radius: 10px; transform: skewX(-9deg); box-shadow: {{nav.prevSh}}; opacity: {{nav.prevOp}}; color: #f1eeff; cursor: {{nav.prevCur}}; transition: opacity .24s, box-shadow .24s;">
+        <span style="display: flex; align-items: center; gap: 6px; transform: skewX(9deg); font: 600 16px/1 Rubik, sans-serif; white-space: nowrap;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+          שלב קודם
+        </span>
+      </button>
+      <button type="button" onClick="{{ next }}" aria-disabled="{{nav.nextDis}}" class="sf-press" style="flex: 1 1 0; min-width: 0; height: 52px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); border: 0; border-radius: 10px; transform: skewX(-9deg); box-shadow: {{nav.nextSh}}; opacity: {{nav.nextOp}}; color: #1a1000; cursor: {{nav.nextCur}}; transition: opacity .24s, box-shadow .24s;">
+        <span style="display: flex; align-items: center; gap: 6px; transform: skewX(9deg); font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 30px; line-height: 1; white-space: nowrap;">
+          שלב הבא
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+        </span>
+      </button>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { i: 19, n: 0, disp: [38.5, 17.5] };
+
+  componentWillUnmount() {
+    if (this.countTimer) clearInterval(this.countTimer);
+    this.countTimer = null;
+  }
+
+  sol() {
+    return '864371259325849761971265843436192587198657432257483916689734125713528694542916378';
+  }
+
+  owner() {
+    return '0.gg..g.g.1g..g.0g.g..g..gg.0g..g.gggg100gg...g1.gg...g0...1g.g..gg.ggg..gggg.g1.';
+  }
+
+  moves() {
+    return [
+      { t: 9, seat: 0, type: 'correct', cell: 'D2', digit: 3, points: 6.5, X: 5, Y: 4, scoreAfter: 6.5, why: { technique: 'nakedSingle', digit: 3, missingRow: [1, 3, 4, 5, 9], elimByCol: [4, 5, 9], elimByBox: [1], row: 'D', col: 2, box: 4 } },
+      { t: 23, seat: 0, type: 'correct', cell: 'E4', digit: 6, points: 7.5, X: 4, Y: 4, scoreAfter: 14, why: { technique: 'nakedSingle', digit: 6, missingRow: [2, 3, 5, 6, 8], elimByCol: [3, 5], elimByBox: [2, 8], row: 'E', col: 4, box: 5 } },
+      { t: 38, seat: 1, type: 'correct', cell: 'E3', digit: 8, points: 6, X: 5, Y: 5, scoreAfter: 6, why: { technique: 'nakedSingle', digit: 8, missingRow: [2, 3, 5, 8], elimByCol: [2, 3, 5], elimByBox: [], row: 'E', col: 3, box: 4 } },
+      { t: 47, seat: 0, type: 'correct', cell: 'A1', digit: 8, points: 7.5, X: 4, Y: 4, scoreAfter: 21.5, why: { technique: 'nakedSingle', digit: 8, missingRow: [1, 5, 6, 7, 8], elimByCol: [1, 6], elimByBox: [5, 7], row: 'A', col: 1, box: 1 } },
+      { t: 60, seat: 0, type: 'correct', cell: 'E5', digit: 5, points: 5, X: 6, Y: 5, scoreAfter: 26.5, why: { technique: 'nakedSingle', digit: 5, missingRow: [2, 3, 5], elimByCol: [], elimByBox: [2, 3], row: 'E', col: 5, box: 5 } },
+      { t: 72, seat: 1, type: 'correct', cell: 'I8', digit: 7, points: 6, X: 5, Y: 5, scoreAfter: 12, why: { technique: 'nakedSingle', digit: 7, missingRow: [5, 6, 7, 8], elimByCol: [8], elimByBox: [5, 6], row: 'I', col: 8, box: 9 } },
+      { t: 86, seat: 0, type: 'correct', cell: 'G2', digit: 8, points: 6, X: 5, Y: 5, scoreAfter: 32.5, why: { technique: 'nakedSingle', digit: 8, missingRow: [2, 3, 4, 7, 8, 9], elimByCol: [3, 4, 7, 9], elimByBox: [2], row: 'G', col: 2, box: 7 } },
+      { t: 92, seat: 1, type: 'correct', cell: 'G6', digit: 4, points: 6.5, X: 5, Y: 4, scoreAfter: 18.5, why: { technique: 'nakedSingle', digit: 4, missingRow: [2, 3, 4, 7, 9], elimByCol: [2, 3, 7, 9], elimByBox: [], row: 'G', col: 6, box: 8 } },
+      { t: 96, seat: 1, type: 'wrong', cell: 'H1', digit: 4, penalty: 1, scoreAfter: 17.5, why: { technique: 'nakedSingle', digit: 7, missingRow: [1, 2, 4, 7], elimByCol: [1], elimByBox: [2, 4], row: 'H', col: 1, box: 7 } },
+      { t: 107, seat: 0, type: 'correct', cell: 'B8', digit: 6, points: 6, X: 5, Y: 5, scoreAfter: 38.5, why: { technique: 'nakedSingle', digit: 6, missingRow: [2, 3, 4, 6, 7, 8], elimByCol: [4, 7, 8], elimByBox: [2, 3], row: 'B', col: 8, box: 3 } },
+      { t: 120, seat: 1, type: 'correct', cell: 'B2', digit: 2, points: 5.5, X: 6, Y: 4, scoreAfter: 23, why: { technique: 'nakedSingle', digit: 2, missingRow: [2, 3, 4, 7, 8], elimByCol: [3, 4, 7, 8], elimByBox: [], row: 'B', col: 2, box: 1 } },
+      { t: 124, seat: 1, type: 'correct', cell: 'F3', digit: 7, points: 4.5, X: 6, Y: 6, scoreAfter: 27.5, why: { technique: 'nakedSingle', digit: 7, missingRow: [1, 2, 4, 6, 7, 9], elimByCol: [2, 4, 6], elimByBox: [1, 9], row: 'F', col: 3, box: 4 } }
+    ];
+  }
+
+  seats() {
+    return [
+      { name: 'MosheG', p: '#2ee6ff', deep: '#0098c2', tint: '#d3f8ff', solve: '#006b8a', clip: 'circle(50%)', glow: 'rgba(46,230,255,.5)', soft: 'rgba(46,230,255,.12)', line: 'rgba(46,230,255,.6)', edge: 'rgba(46,230,255,.7)', sel: 'בוחר את', ok: 'פתר את', bad: 'טעה במשבצת', picking: 'בוחר…', none: 'MosheG עוד לא שיחק' },
+      { name: 'NinaVolt', p: '#ff8a1f', deep: '#c95600', tint: '#ffe6cf', solve: '#9a3f00', clip: 'polygon(50% 0, 100% 100%, 0 100%)', glow: 'rgba(255,138,31,.5)', soft: 'rgba(255,138,31,.12)', line: 'rgba(255,138,31,.6)', edge: 'rgba(255,138,31,.7)', sel: 'בוחרת את', ok: 'פתרה את', bad: 'טעתה במשבצת', picking: 'בוחרת…', none: 'NinaVolt עוד לא שיחקה' }
+    ];
+  }
+
+  fmt(n) {
+    const a = Math.abs(n);
+    const t = (a % 1 === 0) ? String(a) : a.toFixed(1);
+    return (n < 0 ? '−' : '') + t;
+  }
+
+  idxOf(name) {
+    return 'ABCDEFGHI'.indexOf(name[0]) * 9 + Number(name.slice(1)) - 1;
+  }
+
+  times() {
+    const L = this.moves();
+    const out = [];
+    let prev = 0;
+    for (let k = 0; k < L.length; k++) {
+      const sel = Math.min(L[k].t, Math.max(L[k].t - 4, prev + 1));
+      out.push(sel, L[k].t);
+      prev = L[k].t;
+    }
+    return out;
+  }
+
+  clock(sec) {
+    const m = Math.floor(sec / 60), r = sec % 60;
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+
+  scoresAt(j) {
+    const L = this.moves();
+    const e = Math.floor(j / 2), ph = j % 2;
+    const sc = [0, 0];
+    for (let k = 0; k < L.length; k++) {
+      if (k > e || (k === e && ph === 0)) break;
+      sc[L[k].seat] = L[k].scoreAfter;
+    }
+    return sc;
+  }
+
+  boardBefore(k) {
+    const L = this.moves(), SOL = this.sol(), OWN = this.owner();
+    const b = [];
+    for (let i = 0; i < 81; i++) b.push(OWN[i] === 'g' ? SOL[i] : '');
+    for (let q = 0; q < k; q++) {
+      if (L[q].type === 'correct') b[this.idxOf(L[q].cell)] = String(L[q].digit);
+    }
+    return b;
+  }
+
+  clash(b, ci, d) {
+    const R = i => Math.floor(i / 9), C = i => i % 9, B = i => Math.floor(R(i) / 3) * 3 + Math.floor(C(i) / 3);
+    for (let i = 0; i < 81; i++) if (i !== ci && R(i) === R(ci) && b[i] === d) return { i: i, where: 'בשורה ' + 'ABCDEFGHI'[R(ci)] };
+    for (let i = 0; i < 81; i++) if (i !== ci && C(i) === C(ci) && b[i] === d) return { i: i, where: 'בעמודה ' + (C(ci) + 1) };
+    for (let i = 0; i < 81; i++) if (i !== ci && B(i) === B(ci) && b[i] === d) return { i: i, where: 'בריבוע ' + (B(ci) + 1) };
+    return null;
+  }
+
+  go(j) {
+    const s = this.state || { i: 19, n: 0, disp: [38.5, 17.5] };
+    const N = this.moves().length * 2;
+    const t = Math.max(0, Math.min(N - 1, j));
+    if (t === s.i) return;
+    this.setState({ i: t, n: (s.n || 0) + 1 });
+    this.startCount(this.scoresAt(t));
+  }
+
+  startCount(to) {
+    const s = this.state || {};
+    this.cFrom = (s.disp || to).slice();
+    this.cTo = to.slice();
+    this.cT0 = Date.now();
+    if (!this.countTimer) this.countTimer = setInterval(() => this.countStep(), 40);
+  }
+
+  countStep() {
+    if (!this.cTo) return;
+    const k = Math.min(1, (Date.now() - this.cT0) / 650);
+    if (k >= 1) {
+      clearInterval(this.countTimer);
+      this.countTimer = null;
+      this.setState({ disp: this.cTo.slice() });
+      return;
+    }
+    const e = 1 - Math.pow(1 - k, 3);
+    this.setState({ disp: this.cTo.map((t, j) => Math.round((this.cFrom[j] + (t - this.cFrom[j]) * e) * 2) / 2) });
+  }
+
+  renderVals() {
+    const s = this.state || { i: 19, n: 0, disp: [38.5, 17.5] };
+    const L = this.moves(), S = this.seats(), SOL = this.sol(), OWN = this.owner();
+    const N = L.length * 2;
+    const idx = Math.max(0, Math.min(N - 1, s.i));
+    const e = Math.floor(idx / 2), ph = idx % 2, E = L[e], A = S[E.seat];
+    const alt = (s.n % 2) ? '-b' : '';
+    const R = i => Math.floor(i / 9), C = i => i % 9, B = i => Math.floor(R(i) / 3) * 3 + Math.floor(C(i) / 3);
+    const shown = k => k < e || (k === e && ph === 1);
+
+    const cur = [], own = [], wrongAt = {}, mist = [[], []];
+    for (let i = 0; i < 81; i++) {
+      cur.push(OWN[i] === 'g' ? SOL[i] : '');
+      own.push(-1);
+    }
+    for (let k = 0; k < L.length && shown(k); k++) {
+      const x = L[k], ci = this.idxOf(x.cell);
+      if (x.type === 'correct') {
+        cur[ci] = String(x.digit);
+        own[ci] = x.seat;
+      } else {
+        if (!wrongAt[ci]) wrongAt[ci] = [];
+        wrongAt[ci].push(String(x.digit));
+        mist[x.seat].push({ t: '−' + this.fmt(x.penalty) });
+      }
+    }
+
+    const ci0 = this.idxOf(E.cell), r0 = R(ci0), c0 = C(ci0), b0 = B(ci0);
+    const ev = {};
+    E.why.elimByCol.forEach(d => { for (let i = 0; i < 81; i++) if (i !== ci0 && C(i) === c0 && cur[i] === String(d)) ev[i] = true; });
+    E.why.elimByBox.forEach(d => { for (let i = 0; i < 81; i++) if (i !== ci0 && B(i) === b0 && cur[i] === String(d)) ev[i] = true; });
+    const hit = (E.type === 'wrong' && ph === 1) ? this.clash(this.boardBefore(e), ci0, String(E.digit)) : null;
+
+    const boxes = [];
+    for (let bx = 0; bx < 9; bx++) {
+      const cells = [];
+      for (let k = 0; k < 9; k++) {
+        const i = (Math.floor(bx / 3) * 3 + Math.floor(k / 3)) * 9 + (bx % 3) * 3 + (k % 3);
+        const o = own[i], solved = o >= 0;
+        let bg = (bx % 2 === 1) ? '#ece8fb' : '#fbfaff', fg = '#1a1433', ring = 'none', anim = 'none', vAnim = 'none';
+        const peer = i !== ci0 && (R(i) === r0 || C(i) === c0 || B(i) === b0);
+        if (peer && !solved) bg = '#e4ddff';
+        if (solved) { bg = S[o].tint; fg = S[o].solve; }
+        if (ev[i]) { ring = 'inset 0 0 0 2px #e8a100'; if (!solved) bg = '#fff0bf'; }
+        if (hit && i === hit.i) { ring = 'inset 0 0 0 2px #d10f37'; if (!solved) bg = '#ffe0e6'; }
+        const isCur = i === ci0;
+        if (isCur) {
+          ring = 'inset 0 0 0 3px ' + A.p;
+          if (ph === 0) {
+            bg = E.seat === 0 ? '#c8f6ff' : 'repeating-linear-gradient(135deg, ' + A.tint + ' 0 4px, #fbfaff 4px 8px)';
+            anim = (E.seat === 0 ? 'sf-lock-me' : 'sf-lock-nina') + ' 1.4s ease-in-out infinite';
+          } else if (E.type === 'correct') {
+            vAnim = 'sf-pop' + alt + ' .42s cubic-bezier(.34,1.56,.64,1) both';
+          } else {
+            anim = 'sf-shake' + alt + ' .3s ease-out, sf-flash-red' + alt + ' .7s ease-out';
+          }
+        }
+        const w = wrongAt[i];
+        cells.push({
+          v: cur[i], bg: bg, fg: fg, ring: ring, anim: anim, vAnim: vAnim,
+          hasGlyph: solved, glyph: solved ? S[o].deep : 'transparent', clip: solved ? S[o].clip : 'none',
+          hasWrong: !!w, wrong: w ? w.join(' ') : '',
+          meSel: isCur && ph === 0 && E.seat === 0,
+          ninaSel: isCur && ph === 0 && E.seat === 1
+        });
+      }
+      boxes.push({ cells: cells });
+    }
+
+    const railTop = [0, 1, 2].map(g => ({ items: [0, 1, 2].map(k => {
+      const c = g * 3 + k;
+      return { t: String(c + 1), color: c === c0 ? A.p : '#a79fcb', font: c === c0 ? '800 11px/10px Rubik, sans-serif' : '600 10px/10px Rubik, sans-serif' };
+    }) }));
+    const railSide = [0, 1, 2].map(g => ({ items: [0, 1, 2].map(k => {
+      const r = g * 3 + k;
+      return { t: 'ABCDEFGHI'[r], color: r === r0 ? A.p : '#a79fcb', font: r === r0 ? '800 11px/1 Rubik, sans-serif' : '600 10px/1 Rubik, sans-serif' };
+    }) }));
+
+    const ok = E.type === 'correct';
+    const px = 3 + Math.floor(c0 / 3) * 107 + (c0 % 3) * 35 + 17;
+    const py = 3 + Math.floor(r0 / 3) * 107 + (r0 % 3) * 35 + 17;
+    const pop = {
+      show: ph === 1,
+      text: ok ? '+' + this.fmt(E.points) : '−' + this.fmt(E.penalty),
+      color: ok ? A.p : '#ff3355',
+      glow: ok ? '0 0 14px rgba(255,210,63,.75)' : '0 0 14px rgba(255,51,85,.6)',
+      x: (px - 40) + 'px',
+      y: (py - 38) + 'px',
+      anim: 'sf-float-up' + alt + ' 1s cubic-bezier(.2,.8,.2,1) .05s both'
+    };
+
+    const sc = this.scoresAt(idx);
+    const disp = (s.disp && s.disp.length === 2) ? s.disp : sc;
+    const lead = sc[0] > sc[1] ? 0 : (sc[1] > sc[0] ? 1 : -1);
+    const plate = p => {
+      const P = S[p], act = p === E.seat, res = act && ph === 1;
+      return {
+        score: this.fmt(disp[p]),
+        lead: lead === p,
+        border: lead === p ? 'rgba(255,210,63,.85)' : P.edge,
+        shadow: act ? '0 5px 0 #07050f, 0 0 22px ' + P.glow : '0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08)',
+        bump: res ? (ok ? 'sf-score-pop' + alt + ' .65s cubic-bezier(.34,1.56,.64,1)' : 'sf-score-hit' + alt + ' .4s ease-out') : 'none',
+        pips: mist[p]
+      };
+    };
+
+    const tot = Math.max(0, sc[0]) + Math.max(0, sc[1]);
+    const share = tot > 0 ? Math.max(0, sc[0]) / tot : 0.5;
+    const dom = {
+      meW: (share * 100).toFixed(2) + '%',
+      oppW: ((1 - share) * 100).toFixed(2) + '%',
+      notchX: (16 + 358 * (1 - share) - 1).toFixed(1) + 'px',
+      op: tot > 0 ? '1' : '.45'
+    };
+
+    const groups = [];
+    for (let k = 0; k < L.length; k++) {
+      const x = L[k], P = S[x.seat], dots = [];
+      for (let h = 0; h < 2; h++) {
+        const j = k * 2 + h, isC = j === idx, res = h === 1;
+        const ring = x.type === 'correct' ? '#3ff0a6' : '#ff3355';
+        let size = res ? 9 : 6;
+        let sh = res ? '0 0 0 2px ' + ring : 'none';
+        if (isC) {
+          size = res ? 13 : 11;
+          sh = (res ? '0 0 0 2px ' + ring + ', 0 0 0 4px #1b1533, 0 0 0 6px #f1eeff' : '0 0 0 2px #1b1533, 0 0 0 4px #f1eeff') + ', 0 0 16px ' + P.glow;
+        }
+        dots.push({ size: size + 'px', bg: P.p, sh: sh, op: j <= idx ? '1' : '.3', anim: isC ? 'sf-pop' + alt + ' .3s cubic-bezier(.34,1.56,.64,1) both' : 'none' });
+      }
+      groups.push({ dots: dots });
+    }
+
+    const nar = {
+      name: A.name, color: A.p, clip: A.clip,
+      verb: ph === 0 ? A.sel : (ok ? A.ok : A.bad),
+      cell: E.cell,
+      hasDelta: ph === 1,
+      delta: pop.text,
+      dColor: ok ? '#3ff0a6' : '#ff6b84',
+      dBg: ok ? 'rgba(63,240,166,.12)' : 'rgba(255,51,85,.14)',
+      dBd: ok ? 'rgba(63,240,166,.55)' : 'rgba(255,51,85,.7)',
+      anim: 'sf-card-in' + alt + ' .24s cubic-bezier(.2,.8,.2,1) both'
+    };
+
+    const cardFor = p => {
+      const P = S[p];
+      let k = -1;
+      for (let q = 0; q <= e; q++) if (L[q].seat === p) k = q;
+      const base = { name: P.name, p: P.p, deep: P.deep, clip: P.clip };
+      if (k < 0) {
+        return Object.assign(base, {
+          has: false, none: true, noneTitle: P.none, live: false, pending: false, isOk: false, isWrong: false,
+          bg: '#151028', bd: '#342a5e', sh: '0 4px 0 #07050f', anim: 'none',
+          chipLabel: '', chipVal: '', chipBg: 'transparent', chipBd: 'transparent', chipFg: '#a79fcb',
+          cell: '', digit: '', wrongDigit: '', tech: '', rowPre: '', rowNums: [], hasCol: false, colPre: '', colNums: '',
+          hasBox: false, boxPre: '', boxNums: '', formula: '', result: '', clashPre: '', clashWhere: ''
+        });
+      }
+      const x = L[k], w = x.why;
+      const live = k === e;
+      const pending = live && ph === 0;
+      const isOk = !pending && x.type === 'correct';
+      const isWrong = !pending && x.type === 'wrong';
+      const rowNums = w.missingRow.map((d, q) => ({
+        d: String(d),
+        c: d === w.digit ? P.p : '#8f86bd',
+        deco: d === w.digit ? 'none' : 'line-through',
+        sep: q < w.missingRow.length - 1 ? ',' : ''
+      }));
+      let chipLabel = 'טעות', chipVal = '', chipBg = 'rgba(255,51,85,.14)', chipBd = 'rgba(255,51,85,.7)', chipFg = '#ff6b84';
+      if (pending) { chipLabel = P.picking; chipBg = P.soft; chipBd = P.line; chipFg = P.p; }
+      else if (isOk) { chipLabel = 'נכון'; chipVal = '+' + this.fmt(x.points); chipBg = 'rgba(63,240,166,.12)'; chipBd = 'rgba(63,240,166,.6)'; chipFg = '#3ff0a6'; }
+      else { chipVal = '−' + this.fmt(x.penalty); }
+      let clashWhere = '';
+      if (x.type === 'wrong') {
+        const c = this.clash(this.boardBefore(k), this.idxOf(x.cell), String(x.digit));
+        clashWhere = c ? c.where : 'לא מתאים לפתרון';
+      }
+      return Object.assign(base, {
+        has: true, none: false, noneTitle: '', live: live, pending: pending, isOk: isOk, isWrong: isWrong,
+        cell: x.cell, digit: String(w.digit), wrongDigit: x.type === 'wrong' ? String(x.digit) : '',
+        tech: w.technique === 'hiddenSingle' ? 'בודד נסתר' : 'בודד גלוי',
+        rowPre: 'בשורה ' + w.row + ' חסרים', rowNums: rowNums,
+        hasCol: w.elimByCol.length > 0, colPre: 'בעמודה ' + w.col + ' כבר יש', colNums: w.elimByCol.join(', '),
+        hasBox: w.elimByBox.length > 0, boxPre: 'בריבוע ' + w.box + ' כבר יש', boxNums: w.elimByBox.join(', '),
+        formula: isOk ? '9 − ' + x.X + ' + (9 − ' + x.Y + ')/2 =' : '',
+        result: isOk ? this.fmt(x.points) : '',
+        clashPre: 'כבר יש', clashWhere: clashWhere,
+        chipLabel: chipLabel, chipVal: chipVal, chipBg: chipBg, chipBd: chipBd, chipFg: chipFg,
+        bg: live ? 'linear-gradient(160deg, #2a2152, #1b1533)' : '#151028',
+        bd: live ? P.p : '#342a5e',
+        sh: live ? '0 4px 0 #07050f, 0 0 18px ' + P.glow : '0 4px 0 #07050f',
+        anim: live ? 'sf-card-in' + alt + ' .24s cubic-bezier(.2,.8,.2,1) both' : 'none'
+      });
+    };
+
+    const atStart = idx === 0, atEnd = idx === N - 1;
+    const nav = {
+      prevDis: atStart ? 'true' : 'false',
+      prevOp: atStart ? '.4' : '1',
+      prevSh: atStart ? 'none' : '0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.12)',
+      prevCur: atStart ? 'default' : 'pointer',
+      nextDis: atEnd ? 'true' : 'false',
+      nextOp: atEnd ? '.4' : '1',
+      nextSh: atEnd ? 'none' : '0 5px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6)',
+      nextCur: atEnd ? 'default' : 'pointer'
+    };
+
+    const T = this.times();
+    const stepNo = String(idx + 1);
+    return {
+      boxes: boxes,
+      railTop: railTop,
+      railSide: railSide,
+      pop: pop,
+      me: plate(0),
+      nina: plate(1),
+      dom: dom,
+      groups: groups,
+      track: { w: ((idx + 0.5) / N * 100).toFixed(2) + '%' },
+      nar: nar,
+      cards: [cardFor(0), cardFor(1)],
+      nav: nav,
+      clock: this.clock(T[idx]),
+      stepNo: stepNo,
+      stepTotal: String(N),
+      stepAria: 'שלב ' + stepNo + ' מתוך ' + N,
+      boardAria: 'הלוח בשלב ' + stepNo + ': ' + A.name + ' ' + nar.verb + ' ' + E.cell,
+      prev: () => this.go((this.state ? this.state.i : 19) - 1),
+      next: () => this.go((this.state ? this.state.i : 19) + 1),
+      scrub: (ev) => {
+        const v = ev && ev.target ? parseInt(ev.target.value, 10) : NaN;
+        if (!isNaN(v)) this.go(v - 1);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

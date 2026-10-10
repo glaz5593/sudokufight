@@ -1,0 +1,14 @@
+{
+  "name": "@sudoku-fight/engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Game rules, scoring, timers, explanations and the puzzle bank. Pure TypeScript: no UI, no network, injected clock.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "test": "jest --config ../../jest.config.js --selectProjects engine",
+    "typecheck": "tsc -p tsconfig.src.json && tsc -p tsconfig.test.json && tsc -p tsconfig.scripts.json",
+    "puzzles:import": "tsx scripts/puzzles-import.ts",
+    "puzzles:generate": "tsx scripts/puzzles-generate.ts"
+  }
+}

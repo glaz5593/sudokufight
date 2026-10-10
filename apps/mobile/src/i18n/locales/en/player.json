@@ -1,0 +1,127 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Player",
+  "bot": "Bot",
+  "vs": "VS",
+  "seconds_one": "1 second",
+  "seconds_two": "{{count}} seconds",
+  "seconds_many": "{{count}} seconds",
+  "seconds_other": "{{count}} seconds",
+  "points_one": "{{score}} point",
+  "points_two": "{{score}} points",
+  "points_many": "{{score}} points",
+  "points_other": "{{score}} points",
+  "place": "Place {{place}}",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "Online",
+    "online_female": "Online",
+    "reconnecting": "Reconnecting",
+    "reconnecting_female": "Reconnecting",
+    "left": "Left",
+    "left_female": "Left"
+  },
+  "result": {
+    "win": "Win",
+    "loss": "Loss",
+    "draw": "Draw",
+    "winShort": "W",
+    "lossShort": "L",
+    "drawShort": "D"
+  },
+  "flag": {
+    "label": "Country: {{country}}"
+  },
+  "rating": {
+    "label": "Rating {{value}}",
+    "labelWithKey": "{{key}} rating {{value}}",
+    "provisional": "Provisional",
+    "provisionalLabel": "{{label}}, provisional"
+  },
+  "league": {
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "diamond": "Diamond",
+    "legend": "Legend",
+    "name": "{{league}} league",
+    "level": "Level {{level}}",
+    "levelAfter": "· Level {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "No mistakes",
+    "short_one": "{{count}} mistake",
+    "short_two": "{{count}} mistakes",
+    "short_many": "{{count}} mistakes",
+    "short_other": "{{count}} mistakes",
+    "long_zero": "No mistakes",
+    "long_one": "One mistake",
+    "long_two": "Two mistakes",
+    "long_many": "{{count}} mistakes",
+    "long_other": "{{count}} mistakes",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Choosing",
+    "locking_female": "Choosing",
+    "turn": "Their turn",
+    "turn_female": "Her turn",
+    "paused": "Paused",
+    "thinking": "Thinking",
+    "thinking_female": "Thinking",
+    "reconnecting": "Reconnecting",
+    "reconnecting_female": "Reconnecting",
+    "left": "Left",
+    "left_female": "Left",
+    "surrendered": "Surrendered",
+    "surrendered_female": "Surrendered",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Under interference, {{time}}",
+    "drop": "Drop here"
+  },
+  "actions": {
+    "surrender": "Surrender",
+    "endPractice": "End practice",
+    "reactions": "Reactions"
+  },
+  "interfere": {
+    "cost": "{{cost}} pts",
+    "unit": "pts",
+    "missing": "{{count}} pts short",
+    "label": "Interfere with {{name}} · costs {{cost}} pts",
+    "labelMissing": "Interfere with {{name}} · {{count}} pts short",
+    "labelBusy": "Interfering with {{name}} is unavailable, already under interference",
+    "labelNotRunning": "Interfering with {{name}} is unavailable right now",
+    "labelDisconnected": "No interferences while disconnected",
+    "labelOut": "{{name}} is out of the game",
+    "close": "Close the interference arsenal"
+  },
+  "reconnect": {
+    "label": "Waiting to reconnect, {{time}}"
+  },
+  "lead": {
+    "tie": "Tie",
+    "label": "{{name}} leads by {{gap}} points",
+    "label_female": "{{name}} leads by {{gap}} points",
+    "tieLabel": "Scores are tied"
+  },
+  "lock": {
+    "yourCell": "Your cell",
+    "paused": "Paused",
+    "pick": "Pick a cell",
+    "remaining_one": "1 second left",
+    "remaining_two": "{{count}} seconds left",
+    "remaining_many": "{{count}} seconds left",
+    "remaining_other": "{{count}} seconds left",
+    "label": "Your cell {{cell}}, {{remaining}}",
+    "labelPaused": "Your cell {{cell}}, timer stopped",
+    "progress": "Time left for cell {{cell}}",
+    "released": "Cell released"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "button": {
+    "loading": "{{label}}, טוען"
+  },
+  "nav": {
+    "label": "ניווט ראשי",
+    "tabs": {
+      "home": "בית",
+      "leaderboard": "טבלת מובילים",
+      "history": "היסטוריה",
+      "achievements": "הישגים"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "ביטול"
+  },
+  "sheet": {
+    "close": "סגירה"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_one": "נותרה שנייה אחת",
+    "secondsLeft_two": "נותרו {{count}} שניות",
+    "secondsLeft_other": "נותרו {{count}} שניות"
+  }
+}

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Dir B Home — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#2b59ff}a:hover{color:#1f45cc}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Heebo, 'Segoe UI', system-ui, sans-serif; color: #0f1115; background: #f4f5f7;">
+
+  <div style="position: absolute; top: 48px; left: 20px; right: 20px; height: 44px; display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+      <span dir="ltr" style="display: block; font: 800 19px/1 Heebo, sans-serif; letter-spacing: .08em; color: #0f1115;">SUDOKU FIGHT</span>
+      <span style="display: block; font: 500 12px/1 Heebo, sans-serif; color: #545b66;">סודוקו פייט</span>
+    </div>
+    <button type="button" aria-label="הגדרות" style="width: 44px; height: 44px; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; border-radius: 14px; color: #0f1115; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>
+    </button>
+  </div>
+
+  <div style="position: absolute; top: 112px; left: 20px; right: 20px; box-sizing: border-box; padding: 20px; background: #ffffff; border: 1px solid #e2e5ea; border-radius: 16px; box-shadow: 0 1px 2px rgba(15,17,21,.06);">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <div style="flex: none; width: 72px; height: 72px; box-sizing: border-box; padding: 2px; border: 2px solid #2b59ff; border-radius: 22px; background: #ffffff;">
+        <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="64" height="64" style="display: block; width: 64px; height: 64px; border-radius: 18px;">
+      </div>
+      <div style="flex: 1; min-width: 0;">
+        <div style="display: flex; align-items: center; gap: 8px; height: 28px;">
+          <span style="font: 800 24px/28px Heebo, sans-serif; color: #0f1115; white-space: nowrap;">MosheG</span>
+          <span style="font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 18px; line-height: 1;">🇮🇱</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+          <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; box-sizing: border-box; border-radius: 12px; background: #fff4d6; color: #9a6a00; font: 700 13px/1 Heebo, sans-serif; white-space: nowrap;">ליגת זהב</span>
+          <span style="font: 500 14px/1 Heebo, sans-serif; color: #545b66; white-space: nowrap;">רמה 14</span>
+        </div>
+        <div role="progressbar" aria-label="התקדמות לרמה 15" aria-valuemin="0" aria-valuemax="3000" aria-valuenow="2380" style="display: flex; height: 4px; margin-top: 12px; border-radius: 2px; background: #e2e5ea; overflow: hidden;">
+          <div style="width: 79.3%; height: 4px; border-radius: 2px; background: #2b59ff;"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; margin-top: 20px; padding-top: 18px; border-top: 1px solid #e2e5ea;">
+      <div role="group" aria-label="דירוג מהיר 1342" style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <span dir="ltr" style="display: inline-flex; align-items: center; gap: 5px; font: 800 28px/1 Heebo, sans-serif; font-variant-numeric: tabular-nums; color: #9a6a00;"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#9a6a00"></path></svg>1342</span>
+        <span style="font: 500 13px/16px Heebo, sans-serif; color: #545b66;">מהיר</span>
+      </div>
+      <div role="group" aria-label="דירוג רגיל 1287" style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; border-right: 1px solid #e2e5ea;">
+        <span dir="ltr" style="display: inline-flex; align-items: center; gap: 5px; font: 800 28px/1 Heebo, sans-serif; font-variant-numeric: tabular-nums; color: #9a6a00;"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#9a6a00"></path></svg>1287</span>
+        <span style="font: 500 13px/16px Heebo, sans-serif; color: #545b66;">רגיל</span>
+      </div>
+      <div role="group" aria-label="דירוג קשה 1198" style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; border-right: 1px solid #e2e5ea;">
+        <span dir="ltr" style="display: inline-flex; align-items: center; gap: 5px; font: 800 28px/1 Heebo, sans-serif; font-variant-numeric: tabular-nums; color: #9a6a00;"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#9a6a00"></path></svg>1198</span>
+        <span style="font: 500 13px/16px Heebo, sans-serif; color: #545b66;">קשה</span>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" style="position: absolute; top: 343px; left: 20px; right: 20px; height: 92px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #2b59ff; color: #ffffff; border: 0; border-radius: 14px; box-shadow: 0 4px 0 #1f45cc; font: 800 36px/1 Heebo, sans-serif; letter-spacing: .01em; cursor: pointer;">שחק</button>
+
+  <button type="button" style="position: absolute; top: 451px; left: 20px; right: 20px; height: 64px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; gap: 14px; background: transparent; border: 0; color: #0f1115; font-family: Heebo, sans-serif; cursor: pointer;">
+    <span style="flex: none; width: 44px; height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #ffffff; border: 1px solid #e2e5ea; border-radius: 14px; color: #0f1115;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></span>
+    <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+      <span style="font: 700 16px/20px Heebo, sans-serif; color: #0f1115;">עוד סיבוב</span>
+      <span style="font: 500 14px/18px Heebo, sans-serif; color: #545b66; white-space: nowrap;">מדורג · 2 שחקנים · רגיל</span>
+    </span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#545b66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="M15 5l-7 7 7 7"></path></svg>
+  </button>
+
+  <div style="position: absolute; top: 539px; left: 20px; right: 20px; height: 44px; display: flex; align-items: center; justify-content: space-between;">
+    <span style="font: 700 17px/1 Heebo, sans-serif; color: #0f1115;">משחקים אחרונים</span>
+    <button type="button" style="height: 44px; margin: 0; padding: 0 4px; background: transparent; border: 0; color: #2b59ff; font: 700 15px/1 Heebo, sans-serif; cursor: pointer;">הכל</button>
+  </div>
+
+  <div style="position: absolute; top: 587px; left: 20px; right: 20px; box-sizing: border-box; display: flex; padding: 16px 0; background: #ffffff; border: 1px solid #e2e5ea; border-radius: 16px; box-shadow: 0 1px 2px rgba(15,17,21,.06);">
+    <div role="group" aria-label="ניצחון מול Lior.K · 84.5 מול 62" style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center;">
+      <div style="position: relative; width: 48px; height: 48px;">
+        <img src="/_blob/83d89efebdbd95bda4ba28b1d1a9ae43" alt="" width="48" height="48" style="display: block; width: 48px; height: 48px; border-radius: 14px;">
+        <span aria-hidden="true" style="position: absolute; bottom: -4px; left: -4px; width: 22px; height: 22px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #0f1115; border: 2px solid #ffffff; color: #ffffff; font: 800 12px/1 Heebo, sans-serif;">נ</span>
+      </div>
+      <span style="margin-top: 10px; font: 700 14px/18px Heebo, sans-serif; color: #0f1115;">Lior.K</span>
+      <span dir="ltr" style="margin-top: 2px; font: 500 13px/18px Heebo, sans-serif; font-variant-numeric: tabular-nums; color: #545b66;">84.5–62</span>
+    </div>
+    <div role="group" aria-label="ניצחון מול Zoe.Q · 77 מול 70.5" style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; border-right: 1px solid #e2e5ea;">
+      <div style="position: relative; width: 48px; height: 48px;">
+        <img src="/_blob/188101c0e4b050534f9b9786d56c6e11" alt="" width="48" height="48" style="display: block; width: 48px; height: 48px; border-radius: 14px;">
+        <span aria-hidden="true" style="position: absolute; bottom: -4px; left: -4px; width: 22px; height: 22px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #0f1115; border: 2px solid #ffffff; color: #ffffff; font: 800 12px/1 Heebo, sans-serif;">נ</span>
+      </div>
+      <span style="margin-top: 10px; font: 700 14px/18px Heebo, sans-serif; color: #0f1115;">Zoe.Q</span>
+      <span dir="ltr" style="margin-top: 2px; font: 500 13px/18px Heebo, sans-serif; font-variant-numeric: tabular-nums; color: #545b66;">77–70.5</span>
+    </div>
+    <div role="group" aria-label="ניצחון מול Kofi_A · 91 מול 53.5" style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; border-right: 1px solid #e2e5ea;">
+      <div style="position: relative; width: 48px; height: 48px;">
+        <img src="/_blob/a9cc6f85528339a569e505510ab974a1" alt="" width="48" height="48" style="display: block; width: 48px; height: 48px; border-radius: 14px;">
+        <span aria-hidden="true" style="position: absolute; bottom: -4px; left: -4px; width: 22px; height: 22px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #0f1115; border: 2px solid #ffffff; color: #ffffff; font: 800 12px/1 Heebo, sans-serif;">נ</span>
+      </div>
+      <span style="margin-top: 10px; font: 700 14px/18px Heebo, sans-serif; color: #0f1115;">Kofi_A</span>
+      <span dir="ltr" style="margin-top: 2px; font: 500 13px/18px Heebo, sans-serif; font-variant-numeric: tabular-nums; color: #545b66;">91–53.5</span>
+    </div>
+  </div>
+
+  <nav aria-label="ניווט ראשי" style="position: absolute; left: 0; right: 0; bottom: 0; height: 84px; box-sizing: border-box; padding: 8px 8px 0; display: flex; align-items: flex-start; background: #ffffff; border-top: 1px solid #e2e5ea;">
+    <button type="button" aria-current="page" style="flex: 1; min-width: 0; height: 52px; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: transparent; border: 0; color: #2b59ff; cursor: pointer;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"></path></svg>
+      <span style="font: 700 13px/16px Heebo, sans-serif;">בית</span>
+    </button>
+    <button type="button" style="flex: 1; min-width: 0; height: 52px; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: transparent; border: 0; color: #545b66; cursor: pointer;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"></path><path d="M9 21V9h6v12"></path><path d="M3 21v-7h6M15 21v-4h6v4"></path></svg>
+      <span style="font: 500 13px/16px Heebo, sans-serif; white-space: nowrap;">טבלת מובילים</span>
+    </button>
+    <button type="button" style="flex: 1; min-width: 0; height: 52px; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: transparent; border: 0; color: #545b66; cursor: pointer;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      <span style="font: 500 13px/16px Heebo, sans-serif;">היסטוריה</span>
+    </button>
+    <button type="button" style="flex: 1; min-width: 0; height: 52px; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: transparent; border: 0; color: #545b66; cursor: pointer;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"></path><path d="M12 13v4M8 21h8M9.5 17h5"></path></svg>
+      <span style="font: 500 13px/16px Heebo, sans-serif;">הישגים</span>
+    </button>
+  </nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

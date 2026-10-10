@@ -1,0 +1,25 @@
+{
+  "name": "@sudoku-fight/admin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Read-only admin site (spec §27.3): installs, users, games and screens. Served by the server under /admin.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "jest --config ../../jest.config.js --selectProjects admin",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.3",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "jest-environment-jsdom": "^29.7.0",
+    "vite": "^8.3.4"
+  }
+}

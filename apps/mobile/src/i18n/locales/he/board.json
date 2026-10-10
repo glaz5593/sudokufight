@@ -1,0 +1,38 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "לוח המשחק",
+    "myLock": "המשבצת שלך {{cell}}",
+    "otherLock": "{{cell}} נעולה על ידי {{name}}"
+  },
+  "cell": {
+    "empty": "ריקה",
+    "given": "רמז",
+    "solvedByMe": "נפתרה על ידיך",
+    "solvedBy": "נפתרה על ידי {{name}}",
+    "lockedByMe": "נעולה אצלך",
+    "lockedBy": "נעולה על ידי {{name}}",
+    "pending": "ממתינה לאישור הנעילה",
+    "timerStopped": "הטיימר עצור",
+    "seconds_one": "שנייה אחת",
+    "seconds_two": "{{count}} שניות",
+    "seconds_many": "{{count}} שניות",
+    "seconds_other": "{{count}} שניות",
+    "wrong": "ספרות שגויות: {{digits}}",
+    "hintMyLock": "בחר ספרה במקלדת",
+    "player": "שחקן {{n}}"
+  },
+  "keypad": {
+    "armed": "ספרה {{digit}} · נותרו {{left}}",
+    "idle": "ספרה {{digit}}, נשארו {{left}}, קודם בוחרים משבצת",
+    "complete": "ספרה {{digit}}, נשארו {{left}}",
+    "tried": "ספרה {{digit}} · כבר נוסתה במשבצת הזו"
+  },
+  "cancel": {
+    "label": "ביטול בחירה",
+    "withCell": "ביטול בחירה, {{cell}}"
+  }
+}

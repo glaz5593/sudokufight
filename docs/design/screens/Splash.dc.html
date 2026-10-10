@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Splash — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-pop { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1)} }
+@keyframes sf-slam { 0%{transform:scale(2.2) skewX(-9deg);opacity:0;filter:blur(6px)} 55%{transform:scale(.94) skewX(-9deg);opacity:1;filter:blur(0)} 100%{transform:scale(1) skewX(-9deg)} }
+@keyframes sf-shine { 0%{background-position:-160% 0} 100%{background-position:260% 0} }
+@keyframes sf-sway { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+@keyframes sf-floor { from{background-position:97px 0,97px 0,32px 0,32px 0} to{background-position:97px 198px,97px 198px,32px 66px,32px 66px} }
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 60% at 50% -10%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 50% at 110% 110%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 50% at -10% 100%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; left: -300px; right: -300px; bottom: -40px; height: 900px; transform-origin: 50% 100%; transform: perspective(700px) rotateX(40deg); background-image: linear-gradient(rgba(124,98,255,.55) 3px, transparent 3px), linear-gradient(90deg, rgba(124,98,255,.55) 3px, transparent 3px), linear-gradient(rgba(46,230,255,.18) 1px, transparent 1px), linear-gradient(90deg, rgba(46,230,255,.18) 1px, transparent 1px); background-size: 198px 198px, 198px 198px, 66px 66px, 66px 66px; background-position: 97px 0, 97px 0, 32px 0, 32px 0; -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.5) 34%, transparent 60%); mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.5) 34%, transparent 60%); animation: sf-floor 9s linear infinite;"></div>
+
+  <div aria-hidden="true" style="position: absolute; top: 520px; left: 50%; width: 460px; height: 220px; margin-left: -230px; background: radial-gradient(closest-side, rgba(124,98,255,.34), rgba(124,98,255,0));"></div>
+
+  <div aria-hidden="true" style="position: absolute; top: -60px; right: -70px; width: 260px; height: 640px; transform-origin: 70% 0; transform: rotate(22deg); mix-blend-mode: screen;">
+    <div style="width: 100%; height: 100%; transform-origin: 70% 0; background: linear-gradient(180deg, rgba(46,230,255,.30), rgba(46,230,255,.07) 60%, rgba(46,230,255,0) 92%); clip-path: polygon(60% 0, 80% 0, 100% 100%, 0 100%); animation: sf-sway 8s ease-in-out infinite;"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; top: -60px; left: -70px; width: 260px; height: 640px; transform-origin: 30% 0; transform: rotate(-22deg); mix-blend-mode: screen;">
+    <div style="width: 100%; height: 100%; transform-origin: 30% 0; background: linear-gradient(180deg, rgba(255,138,31,.26), rgba(255,138,31,.06) 60%, rgba(255,138,31,0) 92%); clip-path: polygon(20% 0, 40% 0, 100% 100%, 0 100%); animation: sf-sway 8s ease-in-out -4s infinite;"></div>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.09) 1px, transparent 1.4px); background-size: 7px 7px; -webkit-mask-image: radial-gradient(70% 34% at 50% 38%, #000 0%, transparent 100%); mask-image: radial-gradient(70% 34% at 50% 38%, #000 0%, transparent 100%);"></div>
+
+  <div aria-hidden="true" style="position: absolute; top: 292px; left: -70px; width: 530px; height: 92px; transform: rotate(-9deg); background: linear-gradient(90deg, rgba(255,210,63,0), rgba(255,210,63,.22) 28%, rgba(255,51,85,.30) 72%, rgba(255,51,85,0));"></div>
+  <div aria-hidden="true" style="position: absolute; top: 270px; left: -40px; width: 470px; height: 2px; transform: rotate(-9deg); background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.35), rgba(255,255,255,0));"></div>
+  <div aria-hidden="true" style="position: absolute; top: 410px; left: -20px; width: 300px; height: 2px; transform: rotate(-9deg); background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,210,63,.5), rgba(255,255,255,0));"></div>
+  <div aria-hidden="true" style="position: absolute; top: 426px; left: 150px; width: 260px; height: 1px; transform: rotate(-9deg); background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.28), rgba(255,255,255,0));"></div>
+
+  <div style="position: absolute; top: 196px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center;">
+    <div aria-hidden="true" dir="ltr" style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" style="color: #2ee6ff; animation: sf-pop 420ms cubic-bezier(.34,1.56,.64,1) 700ms both;"><circle cx="12" cy="12" r="7" fill="currentColor" stroke="none"></circle></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" style="color: #ff8a1f; animation: sf-pop 420ms cubic-bezier(.34,1.56,.64,1) 780ms both;"><path d="M12 4l8 15H4z" fill="currentColor" stroke="none"></path></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" style="color: #a8f03c; animation: sf-pop 420ms cubic-bezier(.34,1.56,.64,1) 860ms both;"><rect x="5" y="5" width="14" height="14" rx="2" fill="currentColor" stroke="none"></rect></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" style="color: #e45cff; animation: sf-pop 420ms cubic-bezier(.34,1.56,.64,1) 940ms both;"><path d="M12 3l9 9-9 9-9-9z" fill="currentColor" stroke="none"></path></svg>
+    </div>
+
+    <h1 dir="ltr" aria-label="Sudoku Fight" style="margin: 0; display: flex; flex-direction: column; align-items: center; font-weight: 400;">
+      <span aria-hidden="true" style="display: block; padding-left: .16em; font: 600 60px/.8 Teko, Rubik, sans-serif; letter-spacing: .16em; color: #f1eeff; text-shadow: 0 4px 0 #07050f;">SUDOKU</span>
+      <span aria-hidden="true" style="display: block; margin-top: -2px; filter: drop-shadow(0 7px 0 #07050f) drop-shadow(0 0 28px rgba(255,90,60,.35));">
+        <span style="display: block; padding: 0 12px; font: 700 140px/.8 Teko, Rubik, sans-serif; letter-spacing: .01em; color: transparent; background: linear-gradient(100deg, #ffe27a 0%, #ffd23f 34%, #ff8a1f 62%, #ff3355 100%); -webkit-background-clip: text; background-clip: text; transform: skewX(-9deg); animation: sf-slam 760ms cubic-bezier(.34,1.56,.64,1) 150ms both;">FIGHT</span>
+      </span>
+    </h1>
+
+    <div aria-hidden="true" style="margin-top: 6px; width: 210px; height: 6px; transform: skewX(-9deg); border-radius: 2px; background: linear-gradient(270deg, #ffd23f, #ff8a1f 55%, #ff3355); box-shadow: 0 3px 0 #07050f;"></div>
+
+    <p style="margin: 16px 0 0; font: 700 44px/.9 Karantina, Teko, sans-serif; color: #ffd23f;">סודוקו פייט</p>
+    <p style="margin: 10px 0 0; font: 400 15px/1.45 Rubik, sans-serif; color: #cfc8ee;">לוח אחד. כולם פותרים. רק אחד מנצח.</p>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; top: 576px; left: 50%; width: 460px; height: 210px; margin-left: -230px; background: radial-gradient(closest-side, rgba(15,11,29,.94), rgba(15,11,29,0));"></div>
+
+  <div style="position: absolute; top: 612px; left: 50%; width: 296px; margin-left: -148px; display: flex; flex-direction: column; gap: 10px;">
+    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+      <span style="font: 500 14px/1 Rubik, sans-serif; color: #cfc8ee;">{{loadLabel}}</span>
+      <span dir="ltr" aria-hidden="true" style="font: 600 22px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #ffd23f;">{{pctText}}%</span>
+    </div>
+    <div role="progressbar" aria-label="טוען את הזירה" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{pctText}}" style="position: relative; height: 12px; transform: skewX(-9deg); background: #1b1533; border: 2px solid #342a5e; border-radius: 4px; box-shadow: 0 4px 0 #07050f; overflow: hidden;">
+      <div style="position: absolute; top: 0; bottom: 0; right: 0; width: {{barW}}; background: linear-gradient(270deg, #ffd23f 0%, #ff8a1f 60%, #ff3355 100%); transition: width 120ms linear;">
+        <span style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.6), rgba(255,255,255,0)); background-size: 40% 100%; background-repeat: no-repeat; animation: sf-shine 1.4s linear infinite;"></span>
+        <span style="position: absolute; top: -2px; bottom: -2px; left: 0; width: 3px; background: #ffffff; box-shadow: 0 0 10px #ffffff, 0 0 18px rgba(255,210,63,.9);"></span>
+      </div>
+    </div>
+    <div style="display: flex; align-items: flex-start; justify-content: center; gap: 8px; min-height: 40px; margin-top: 8px;">
+      <span style="flex: 0 0 auto; display: inline-block; margin-top: 1px; padding: 3px 8px; background: #ffd23f; color: #1a1000; border-radius: 4px; transform: skewX(-9deg); font: 700 11px/1 Rubik, sans-serif; letter-spacing: .08em;"><span style="display: block; transform: skewX(9deg);">טיפ</span></span>
+      <span style="font: 400 13px/1.45 Rubik, sans-serif; color: #cfc8ee;">{{tip}}</span>
+    </div>
+  </div>
+
+  <a href="Login.dc.html" style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 18px; color: #a79fcb; font: 500 15px/1 Rubik, sans-serif; text-decoration: none; white-space: nowrap;">התחברות<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { p: 64, hold: 0, tip: 0 };
+
+  componentDidMount() {
+    this.timer = setInterval(() => {
+      const s = this.state;
+      if (s.p < 100) {
+        this.setState({ p: Math.min(100, s.p + 1) });
+        return;
+      }
+      if (s.hold < 16) {
+        this.setState({ hold: s.hold + 1 });
+        return;
+      }
+      this.setState({ p: 6, hold: 0, tip: (s.tip + 1) % 4 });
+    }, 60);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timer);
+  }
+
+  renderVals() {
+    const TIPS = [
+      'משבצת שבחרת ננעלת רק לך: 12 שניות במשחק רגיל.',
+      'מהלך קשה שווה יותר: עד 13.5 נק׳ על משבצת אחת.',
+      'טעות עולה ביוקר: כל טעות כפולה מהקודמת.',
+      'הפרעה שולחים בגרירה אל הכרטיס של היריב.'
+    ];
+    const p = Math.min(100, this.state.p);
+    return {
+      barW: p + '%',
+      pctText: String(p),
+      loadLabel: p >= 100 ? 'הזירה מוכנה' : 'טוען את הזירה…',
+      tip: TIPS[this.state.tip % TIPS.length]
+    };
+  }
+}
+</script>
+</body>
+</html>

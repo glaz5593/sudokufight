@@ -1,0 +1,54 @@
+# The Docker build context (Dockerfile) is an allowlist: everything is out, and only what the image is built
+# from comes back in. A new folder, a .env, a keystore or a Firebase file cannot slip into an image by accident.
+# apps/server/test/deploy.test.ts checks this list against the files the builds actually read.
+#
+# Left out on purpose:
+# - apps/mobile, its package.json included: with it, `npm ci` for the server would install Expo (Dockerfile).
+# - apps/admin/dist and apps/server/dist: the image builds both itself, so a stale local build never ships.
+
+*
+
+!package.json
+!package-lock.json
+!tsconfig.base.json
+
+!packages/engine/package.json
+!packages/engine/tsconfig*.json
+!packages/engine/src
+!packages/engine/data
+!packages/protocol/package.json
+!packages/protocol/tsconfig*.json
+!packages/protocol/src
+
+!apps/server/package.json
+!apps/server/tsconfig.json
+!apps/server/src
+!apps/server/drizzle
+# The blocked-words list for display names: bundled into dist/index.cjs (src/accounts/blockedWords.ts).
+!apps/server/data
+
+!apps/admin/package.json
+!apps/admin/tsconfig*.json
+!apps/admin/index.html
+!apps/admin/vite.config.ts
+!apps/admin/public
+!apps/admin/src
+
+# Out again, inside the folders above: tests, local files and anything that looks like a secret.
+**/node_modules
+**/*.test.ts
+**/*.test.tsx
+**/*.tsbuildinfo
+**/.DS_Store
+**/.env
+**/.env.*
+**/.data
+**/google-services.json
+**/GoogleService-Info.plist
+**/service-account*.json
+**/*.jks
+**/*.keystore
+**/*.p8
+**/*.p12
+**/*.pem
+**/*.key

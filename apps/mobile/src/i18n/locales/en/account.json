@@ -1,0 +1,231 @@
+{
+  "devMode": {
+    "badge": "Development mode",
+    "label": "Development mode: local accounts on this phone only, without Firebase",
+    "noEmail": "Development mode sends no email."
+  },
+  "fields": {
+    "email": "Email",
+    "emailPlaceholder": "name@example.com",
+    "password": "Password",
+    "newPassword": "Password",
+    "confirmPassword": "Confirm password",
+    "displayName": "Display name",
+    "displayNamePlaceholder": "Your arena name",
+    "country": "Country",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "validation": {
+    "emailRequired": "Enter your email",
+    "emailInvalid": "That email address doesn't look right",
+    "passwordRequired": "Enter your password",
+    "passwordRules": "The password needs at least 8 characters, a letter and a digit",
+    "confirmMismatch": "The passwords don't match",
+    "countryRequired": "Choose a country"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "Wrong password. Try again, or reset it.",
+      "userNotFound": "No account with this email. Sign up?",
+      "invalidCredentials": "Wrong email or password.",
+      "tooManyRequests": "Too many attempts. Wait a few minutes and try again, or reset your password.",
+      "network": "No internet connection. Check it and try again.",
+      "emailInUse": "This email already has an account. Sign in with it.",
+      "invalidEmail": "That email address doesn't look right.",
+      "weakPassword": "That password is too weak. Choose a longer one.",
+      "requiresRecentLogin": "Please sign in again to do that.",
+      "userDisabled": "This account was disabled. Contact support.",
+      "noUser": "You're not signed in. Sign in again.",
+      "unknown": "Something went wrong. Try again."
+    },
+    "api": {
+      "badRequest": "That request wasn't valid. Try again.",
+      "invalidName": "That name breaks the rules.",
+      "unauthorized": "Your session with the server expired. Sign in again.",
+      "notRegistered": "This account has no fighter yet. Let's finish signing up.",
+      "notFound": "The server doesn't know this request. Update the app.",
+      "alreadyRegistered": "This account already has a fighter.",
+      "taken": "That name is taken. Choose another one.",
+      "renameTooSoon": "You can change your name only once every 30 days.",
+      "tooLarge": "That request is too large.",
+      "blocked": "That name doesn't fit the arena. Choose another one.",
+      "tooManyRequests": "Too many requests. Wait a moment and try again.",
+      "internal": "Server error. Try again in a moment.",
+      "disabled": "Accounts are off on this server right now.",
+      "unavailable": "The server isn't available right now. Try again in a moment.",
+      "network": "Can't reach the server. Check your internet and try again.",
+      "timeout": "The server didn't answer in time. Try again.",
+      "signedOut": "You're not signed in. Sign in again.",
+      "unexpected": "The server sent an unexpected answer. Try again, or update the app."
+    }
+  },
+  "splash": {
+    "label": "Sudoku Fight is loading",
+    "tagline": "One board. Everyone solves. Only one wins.",
+    "loading": "Loading the arena…",
+    "tipLabel": "Tip",
+    "tips": {
+      "lock": "A cell you pick is locked to you alone, for a few seconds.",
+      "hard": "A harder move is worth more points.",
+      "mistake": "A mistake costs points, so think before you type.",
+      "drag": "Send an interference by dragging it onto your opponent's card."
+    },
+    "errorTitle": "We couldn't load your fighter",
+    "retry": "Try again",
+    "signOut": "Sign out"
+  },
+  "login": {
+    "title": "Back to the <accent>arena</accent>",
+    "titleLabel": "Back to the arena",
+    "subtitle": "Your rating, your streak and your rivals are waiting.",
+    "forgot": "Forgot password",
+    "submit": "Sign in",
+    "noAccount": "No account yet?",
+    "register": "Sign up"
+  },
+  "forgot": {
+    "title": "Forgot password",
+    "body": "Enter the email you signed up with, and we'll send it a link to choose a new password.",
+    "submit": "Send reset link",
+    "sentTitle": "Check your inbox",
+    "sentBody": "If {{email}} has an account, we sent it a link to reset the password. Can't find it? Check your spam folder.",
+    "backToLogin": "Back to sign in"
+  },
+  "register": {
+    "step": "Step {{step}} of {{total}}",
+    "backToLogin": "Back to sign in",
+    "backToFighter": "Back to your fighter"
+  },
+  "fighter": {
+    "title": "Create your <accent>fighter</accent>",
+    "titleLabel": "Create your fighter",
+    "resumeNote": "Your account is ready. Just pick your fighter.",
+    "chooseAvatar": "Choose an avatar",
+    "avatarCount": "{{n}} / {{total}}",
+    "avatarGroup": "Avatar choice",
+    "avatar": "Avatar {{n}}",
+    "selectedAvatar": "Selected avatar: avatar {{n}}",
+    "prevAvatar": "Previous avatar",
+    "nextAvatar": "Next avatar",
+    "previewTitle": "This is how the arena sees you",
+    "previewLabel": "Preview of your card in a game: {{name}}",
+    "previewNew": "New",
+    "previewOpponent": "Your opponent",
+    "previewOpponentName": "???",
+    "previewVs": "VS",
+    "continue": "Continue",
+    "enterArena": "Enter the arena",
+    "signOut": "Sign out"
+  },
+  "name": {
+    "rules": "3–16 characters: Hebrew or English letters, digits, underscore and dot.",
+    "status": {
+      "checking": "Checking…",
+      "available": "Available",
+      "taken": "Taken",
+      "invalid": "Not valid",
+      "blocked": "Not allowed",
+      "error": "Not checked",
+      "current": "Your name"
+    },
+    "problem": {
+      "invalidChars": "These can't be used: {{chars}}",
+      "tooShort": "At least 3 characters",
+      "tooLong": "Up to 16 characters"
+    },
+    "takenHint": "Someone already picked this name. Try another one.",
+    "blockedHint": "That name doesn't fit the arena. Try another one.",
+    "errorHint": "We couldn't check the name. We'll check again when you save.",
+    "fieldLabel": "{{label}}, {{status}}"
+  },
+  "country": {
+    "label": "Country: {{country}}",
+    "choose": "Choose a country",
+    "sheetTitle": "Choose a country",
+    "search": "Search for a country",
+    "searchPlaceholder": "Search",
+    "none": "No country found",
+    "hint": "Detected from your phone's settings. You can change it any time."
+  },
+  "account": {
+    "title": "One more step to the <accent>arena</accent>",
+    "titleLabel": "One more step to the arena",
+    "subtitle": "Your email and password keep your rating and progress safe.",
+    "fighterReady": "Fighter ready",
+    "edit": "Edit",
+    "editLabel": "Edit your fighter",
+    "submit": "Create account and enter the arena",
+    "profileFailed": "Your account was created, but your fighter wasn't saved yet. Try again.",
+    "nameTakenNow": "The name {{name}} was taken meanwhile. Choose another one: your account is waiting."
+  },
+  "password": {
+    "rules": {
+      "length": "At least 8 characters",
+      "letter": "At least one letter",
+      "digit": "At least one digit"
+    },
+    "ruleMet": "{{rule}}: done",
+    "ruleMissing": "{{rule}}: missing",
+    "strengthLabel": "Password strength",
+    "strength": {
+      "weak": "Weak password",
+      "fair": "Fair password",
+      "good": "Good password",
+      "strong": "Strong password"
+    },
+    "match": "Matches",
+    "mismatch": "Doesn't match"
+  },
+  "terms": {
+    "accept": "I accept the terms of use and the privacy policy",
+    "termsLink": "Terms of use",
+    "privacyLink": "Privacy policy",
+    "linkHint": "Opens in the browser",
+    "required": "To enter the arena, accept the terms"
+  },
+  "verify": {
+    "bannerTitle": "Your email isn't verified yet",
+    "bannerAction": "Verify",
+    "bannerLabel": "Your email isn't verified yet. Verify your email",
+    "title": "Verify your email",
+    "body": "We sent a verification link to {{email}}. Open it, then come back here.",
+    "why": "Practice works without it. Ranked games will need a verified email.",
+    "resend": "Send again",
+    "sent": "We sent a new link",
+    "check": "I verified",
+    "notYet": "Not verified yet. Did you open the link?",
+    "done": "Email verified. Thanks!",
+    "devNote": "Development mode sends no email: \"I verified\" marks the email as verified."
+  },
+  "edit": {
+    "title": "Edit profile",
+    "save": "Save",
+    "saved": "Profile saved",
+    "nameRule": "You can change your name once every 30 days.",
+    "nameLocked": "You can change your name once every 30 days. Next change: {{date}}.",
+    "offline": "Can't reach the server. You can edit once you're back online."
+  },
+  "home": {
+    "editHint": "Edit your profile",
+    "offline": "Profile saved on this phone, no connection to the server",
+    "provisional": "Provisional rating: your first 10 games"
+  },
+  "settings": {
+    "section": "Account",
+    "signedInAs": "Signed in as {{email}}",
+    "editProfile": "Edit profile",
+    "signOut": "Sign out",
+    "signOutTitle": "Sign out?",
+    "signOutBody": "Practices on this phone stay. You'll need to sign in to play again.",
+    "deleteAccount": "Delete account",
+    "deleteTitle": "Delete your account?",
+    "deleteBody": "Your fighter, name and ratings will be deleted, and this can't be undone. Your name becomes free for other players.",
+    "deleteContinue": "Continue",
+    "deletePasswordTitle": "Confirm with your password",
+    "deletePasswordBody": "To delete the account, enter the password of {{email}}.",
+    "deleteSubmit": "Delete my account forever",
+    "deleted": "Your account was deleted",
+    "deletedPartly": "Your account was deleted. We couldn't delete your sign-in details: signing in with them starts a new registration."
+  }
+}

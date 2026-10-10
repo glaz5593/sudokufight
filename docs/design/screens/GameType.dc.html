@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>GameType — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-shine { 0%{background-position:-160% 0} 100%{background-position:260% 0} }
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 60% at 50% -10%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 50% at 110% 110%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 50% at -10% 100%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; top: 0; left: 0; right: 0; height: 260px; background-image: radial-gradient(rgba(255,255,255,.09) 1px, transparent 1.4px); background-size: 7px 7px; opacity: .5; -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, transparent 100%);"></div>
+  <div aria-hidden="true" style="position: absolute; top: 640px; left: -80px; width: 560px; height: 150px; transform: rotate(-9deg); background: linear-gradient(90deg, rgba(255,51,85,0), rgba(255,51,85,.14) 35%, rgba(255,210,63,.14) 70%, rgba(255,210,63,0));"></div>
+
+  <header style="position: absolute; top: 44px; right: 16px; left: 16px; height: 56px; display: flex; align-items: center; gap: 12px;">
+    <a href="Modes.dc.html" aria-label="חזרה" style="flex: none; width: 44px; height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #251d45; border: 2px solid #4b3f80; border-radius: 12px; box-shadow: 0 3px 0 #07050f; color: #f1eeff; text-decoration: none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></a>
+    <h1 style="margin: 0; font: 700 36px/.9 Karantina, Teko, sans-serif; color: #f1eeff; letter-spacing: 0;">סוג משחק</h1>
+    <span style="margin-right: auto; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; box-sizing: border-box; background: #251d45; border: 1px solid #4b3f80; border-radius: 13px; color: #cfc8ee; font: 600 12px/1 Rubik, sans-serif; white-space: nowrap;">
+      <svg width="9" height="9" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#2ee6ff"></circle></svg>
+      <svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2z" fill="#ff8a1f"></path></svg>
+      <span>מדורג · 2 שחקנים</span>
+    </span>
+  </header>
+
+  <div role="radiogroup" aria-label="סוג משחק" style="position: absolute; top: 112px; right: 16px; left: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+
+    <button type="button" role="radio" aria-checked="{{fast.checked}}" onClick="{{ fast.pick }}" style="position: relative; display: block; width: 336px; height: 136px; margin: 0; padding: 0; box-sizing: border-box; border: 2px solid {{fast.border}}; border-radius: 16px; background: {{fast.bg}}; box-shadow: {{fast.shadow}}; transform: skewX(-9deg); overflow: hidden; color: #f1eeff; font-family: Rubik, sans-serif; text-align: right; cursor: pointer;">
+      <span aria-hidden="true" dir="ltr" style="position: absolute; left: 8px; bottom: -22px; font: 700 112px/.8 Teko, sans-serif; letter-spacing: .02em; color: {{fast.wm}};">FAST</span>
+      <span style="position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; padding: 14px 22px; transform: skewX(9deg);">
+        <span style="display: flex; align-items: center; gap: 10px; height: 46px;">
+          <span aria-hidden="true" style="flex: none; display: flex; width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; border: 2px solid {{fast.radioBorder}}; background: {{fast.radioBg}}; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a1000" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: {{fast.checkOp}};"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>
+          <span style="font: 700 46px/.85 Karantina, Teko, sans-serif; color: #f1eeff; padding-top: 4px;">מהיר</span>
+          <span aria-hidden="true" style="display: flex; align-items: flex-end; gap: 3px; height: 20px;">
+            <span style="display: block; width: 5px; height: 9px; border-radius: 2px; background: #cfc8ee;"></span>
+            <span style="display: block; width: 5px; height: 14px; border-radius: 2px; background: #342a5e;"></span>
+            <span style="display: block; width: 5px; height: 20px; border-radius: 2px; background: #342a5e;"></span>
+          </span>
+          <span style="margin-right: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb;">הדירוג שלך</span>
+            <span style="display: flex; align-items: center; gap: 5px;"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg><span style="font: 600 32px/.8 Teko, sans-serif; color: #ffd23f; padding-top: 4px; font-variant-numeric: tabular-nums;">1342</span></span>
+          </span>
+        </span>
+        <span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px;">
+          <span style="display: flex; flex-direction: column; gap: 6px; padding-left: 10px;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">זמן למשבצת</span>
+            <span style="display: flex; align-items: center; gap: 5px; height: 26px; color: #cfc8ee;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg><span style="font: 600 27px/.8 Teko, sans-serif; color: #f1eeff; padding-top: 4px;">8</span><span style="font: 500 12px/1 Rubik, sans-serif;">ש׳</span></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 6px; padding: 0 10px; border-right: 1px solid #342a5e;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">קושי הלוח</span>
+            <span style="display: flex; align-items: center; gap: 5px; height: 26px; color: #cfc8ee;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9.3 4v16M14.7 4v16M4 9.3h16M4 14.7h16"></path></svg><span style="font: 600 14px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">קל-בינוני</span></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 6px; padding-right: 10px; border-right: 1px solid #342a5e;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">משך טיפוסי</span>
+            <span style="display: flex; align-items: center; gap: 5px; height: 26px; color: #cfc8ee;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span dir="ltr" style="font: 600 27px/.8 Teko, sans-serif; color: #f1eeff; padding-top: 4px;">~4</span><span style="font: 500 12px/1 Rubik, sans-serif;">דק׳</span></span>
+          </span>
+        </span>
+      </span>
+    </button>
+
+    <button type="button" role="radio" aria-checked="{{normal.checked}}" onClick="{{ normal.pick }}" style="position: relative; display: block; width: 336px; height: 136px; margin: 0; padding: 0; box-sizing: border-box; border: 2px solid {{normal.border}}; border-radius: 16px; background: {{normal.bg}}; box-shadow: {{normal.shadow}}; transform: skewX(-9deg); overflow: hidden; color: #f1eeff; font-family: Rubik, sans-serif; text-align: right; cursor: pointer;">
+      <span aria-hidden="true" dir="ltr" style="position: absolute; left: 8px; bottom: -20px; font: 700 100px/.8 Teko, sans-serif; letter-spacing: .02em; color: {{normal.wm}};">NORMAL</span>
+      <span style="position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; padding: 14px 22px; transform: skewX(9deg);">
+        <span style="display: flex; align-items: center; gap: 10px; height: 46px;">
+          <span aria-hidden="true" style="flex: none; display: flex; width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; border: 2px solid {{normal.radioBorder}}; background: {{normal.radioBg}}; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a1000" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: {{normal.checkOp}};"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>
+          <span style="font: 700 46px/.85 Karantina, Teko, sans-serif; color: #f1eeff; padding-top: 4px;">רגיל</span>
+          <span aria-hidden="true" style="display: flex; align-items: flex-end; gap: 3px; height: 20px;">
+            <span style="display: block; width: 5px; height: 9px; border-radius: 2px; background: #cfc8ee;"></span>
+            <span style="display: block; width: 5px; height: 14px; border-radius: 2px; background: #cfc8ee;"></span>
+            <span style="display: block; width: 5px; height: 20px; border-radius: 2px; background: #342a5e;"></span>
+          </span>
+          <span style="margin-right: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb;">הדירוג שלך</span>
+            <span style="display: flex; align-items: center; gap: 5px;"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg><span style="font: 600 32px/.8 Teko, sans-serif; color: #ffd23f; padding-top: 4px; font-variant-numeric: tabular-nums;">1287</span></span>
+          </span>
+        </span>
+        <span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px;">
+          <span style="display: flex; flex-direction: column; gap: 6px; padding-left: 10px;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">זמן למשבצת</span>
+            <span style="display: flex; align-items: center; gap: 5px; height: 26px; color: #cfc8ee;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg><span style="font: 600 27px/.8 Teko, sans-serif; color: #f1eeff; padding-top: 4px;">12</span><span style="font: 500 12px/1 Rubik, sans-serif;">ש׳</span></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 6px; padding: 0 10px; border-right: 1px solid #342a5e;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">קושי הלוח</span>
+            <span style="display: flex; align-items: center; gap: 5px; height: 26px; color: #cfc8ee;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9.3 4v16M14.7 4v16M4 9.3h16M4 14.7h16"></path></svg><span style="font: 600 14px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">בינוני</span></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 6px; padding-right: 10px; border-right: 1px solid #342a5e;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">משך טיפוסי</span>
+            <span style="display: flex; align-items: center; gap: 5px; height: 26px; color: #cfc8ee;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span dir="ltr" style="font: 600 27px/.8 Teko, sans-serif; color: #f1eeff; padding-top: 4px;">~7</span><span style="font: 500 12px/1 Rubik, sans-serif;">דק׳</span></span>
+          </span>
+        </span>
+      </span>
+    </button>
+
+    <button type="button" role="radio" aria-checked="{{hard.checked}}" onClick="{{ hard.pick }}" style="position: relative; display: block; width: 336px; height: 136px; margin: 0; padding: 0; box-sizing: border-box; border: 2px solid {{hard.border}}; border-radius: 16px; background: {{hard.bg}}; box-shadow: {{hard.shadow}}; transform: skewX(-9deg); overflow: hidden; color: #f1eeff; font-family: Rubik, sans-serif; text-align: right; cursor: pointer;">
+      <span aria-hidden="true" dir="ltr" style="position: absolute; left: 8px; bottom: -22px; font: 700 112px/.8 Teko, sans-serif; letter-spacing: .02em; color: {{hard.wm}};">HARD</span>
+      <span style="position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; padding: 14px 22px; transform: skewX(9deg);">
+        <span style="display: flex; align-items: center; gap: 10px; height: 46px;">
+          <span aria-hidden="true" style="flex: none; display: flex; width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; border: 2px solid {{hard.radioBorder}}; background: {{hard.radioBg}}; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a1000" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: {{hard.checkOp}};"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>
+          <span style="font: 700 46px/.85 Karantina, Teko, sans-serif; color: #f1eeff; padding-top: 4px;">קשה</span>
+          <span aria-hidden="true" style="display: flex; align-items: flex-end; gap: 3px; height: 20px;">
+            <span style="display: block; width: 5px; height: 9px; border-radius: 2px; background: #cfc8ee;"></span>
+            <span style="display: block; width: 5px; height: 14px; border-radius: 2px; background: #cfc8ee;"></span>
+            <span style="display: block; width: 5px; height: 20px; border-radius: 2px; background: #cfc8ee;"></span>
+          </span>
+          <span style="margin-right: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb;">הדירוג שלך</span>
+            <span style="display: flex; align-items: center; gap: 5px;"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg><span style="font: 600 32px/.8 Teko, sans-serif; color: #ffd23f; padding-top: 4px; font-variant-numeric: tabular-nums;">1198</span></span>
+          </span>
+        </span>
+        <span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px;">
+          <span style="display: flex; flex-direction: column; gap: 6px; padding-left: 10px;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">זמן למשבצת</span>
+            <span style="display: flex; align-items: center; gap: 5px; height: 26px; color: #cfc8ee;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg><span style="font: 600 27px/.8 Teko, sans-serif; color: #f1eeff; padding-top: 4px;">18</span><span style="font: 500 12px/1 Rubik, sans-serif;">ש׳</span></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 6px; padding: 0 10px; border-right: 1px solid #342a5e;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">קושי הלוח</span>
+            <span style="display: flex; align-items: center; gap: 5px; height: 26px; color: #cfc8ee;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9.3 4v16M14.7 4v16M4 9.3h16M4 14.7h16"></path></svg><span style="font: 600 14px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">קשה</span></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 6px; padding-right: 10px; border-right: 1px solid #342a5e;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">משך טיפוסי</span>
+            <span style="display: flex; align-items: center; gap: 5px; height: 26px; color: #cfc8ee;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span dir="ltr" style="font: 600 27px/.8 Teko, sans-serif; color: #f1eeff; padding-top: 4px;">~11</span><span style="font: 500 12px/1 Rubik, sans-serif;">דק׳</span></span>
+          </span>
+        </span>
+      </span>
+    </button>
+  </div>
+
+  <div style="position: absolute; top: 566px; right: 16px; left: 16px; display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; box-sizing: border-box; background: rgba(255,210,63,.06); border: 1px solid rgba(255,210,63,.28); border-radius: 12px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+    <p style="margin: 0; font: 400 13px/1.45 Rubik, sans-serif; color: #cfc8ee;"><span style="font-weight: 600; color: #f1eeff;">דירוג נפרד לכל סוג משחק;</span> מספר השחקנים משפיע על החישוב.</p>
+  </div>
+
+  <p style="position: absolute; top: 650px; right: 16px; left: 16px; margin: 0; height: 26px; display: flex; align-items: center; justify-content: center; gap: 8px; font: 500 13px/1 Rubik, sans-serif; color: #a79fcb;">
+    <span>נחפש יריבים סביב הדירוג שלך</span>
+    <span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; box-sizing: border-box; border-radius: 13px; background: #251d45; border: 1px solid #ffd23f; color: #ffd23f; font: 600 12px/1 Rubik, sans-serif; white-space: nowrap;"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg><span style="font: 600 18px/1 Teko, sans-serif; padding-top: 2px; font-variant-numeric: tabular-nums;">{{selRating}}</span><span>· {{selName}}</span></span>
+  </p>
+
+  <a href="Match-Search.dc.html" style="position: absolute; top: 690px; left: 21px; width: 348px; height: 60px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; overflow: hidden; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); color: #1a1000; text-decoration: none; transform: skewX(-9deg); border-radius: 10px; box-shadow: 0 5px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6); font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 34px; line-height: 1;">
+    <span aria-hidden="true" style="position: absolute; inset: 0; background-image: linear-gradient(105deg, rgba(255,255,255,0) 40%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 60%); background-size: 250% 100%; background-repeat: no-repeat; animation: sf-shine 3.4s cubic-bezier(.2,.8,.2,1) infinite;"></span>
+    <span style="position: relative; display: block; transform: skewX(9deg); padding-top: 3px;">חפש יריב</span>
+  </a>
+
+  <a href="BotSelect.dc.html" style="position: absolute; top: 768px; left: 95px; width: 200px; height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 8px; color: #cfc8ee; text-decoration: none; font: 500 15px/1 Rubik, sans-serif;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="8" width="14" height="11" rx="3"></rect><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16h5"></path></svg>
+    <span style="text-decoration: underline; text-decoration-color: #6c5fa6; text-underline-offset: 5px;">מול בוט</span>
+    <span style="font-size: 12px; color: #a79fcb;">· ללא דירוג</span>
+  </a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sel = (this.state && this.state.sel) || 'normal';
+    const INFO = {
+      fast: { name: 'מהיר', rating: '1342' },
+      normal: { name: 'רגיל', rating: '1287' },
+      hard: { name: 'קשה', rating: '1198' }
+    };
+    const card = (id) => {
+      const on = sel === id;
+      return {
+        sel: on,
+        checked: on ? 'true' : 'false',
+        border: on ? '#ffd23f' : '#342a5e',
+        bg: on ? 'linear-gradient(160deg, #34295f 0%, #221a46 55%, #1b1533 100%)' : 'linear-gradient(160deg, #221a40 0%, #1b1533 100%)',
+        shadow: on ? '0 0 0 1px #ffd23f, 0 0 26px rgba(255,210,63,.32), 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.14)' : '0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.06)',
+        wm: on ? 'rgba(255,210,63,.08)' : 'rgba(255,255,255,.04)',
+        radioBg: on ? '#ffd23f' : 'transparent',
+        radioBorder: on ? '#ffd23f' : '#6c5fa6',
+        checkOp: on ? '1' : '0',
+        pick: () => this.setState({ sel: id })
+      };
+    };
+    const cur = INFO[sel] || INFO.normal;
+    return {
+      fast: card('fast'),
+      normal: card('normal'),
+      hard: card('hard'),
+      selName: cur.name,
+      selRating: cur.rating
+    };
+  }
+}
+</script>
+</body>
+</html>

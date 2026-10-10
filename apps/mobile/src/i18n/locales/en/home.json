@@ -1,0 +1,226 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "Settings",
+    "back": "Back"
+  },
+  "profile": {
+    "defaultName": "Player",
+    "label": "My player card: {{name}}",
+    "noRating": "No rating yet",
+    "ratingTitle": "Rating",
+    "none": "—",
+    "games_one": "1 game",
+    "games_two": "{{count}} games",
+    "games_many": "{{count}} games",
+    "games_other": "{{count}} games",
+    "gamesLabel_one": "game",
+    "gamesLabel_two": "games",
+    "gamesLabel_many": "games",
+    "gamesLabel_other": "games",
+    "winsLabel": "wins",
+    "streakLabel": "streak",
+    "winRate": "{{percent}}% wins",
+    "streak_zero": "No win streak",
+    "streak_one": "A streak of 1 win",
+    "streak_two": "A streak of {{count}} wins",
+    "streak_many": "A streak of {{count}} wins",
+    "streak_other": "A streak of {{count}} wins"
+  },
+  "play": "Play",
+  "playHint": "Choose a game mode",
+  "again": {
+    "title": "One more round",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}"
+  },
+  "start": {
+    "failed": "Couldn't start the game. Try again."
+  },
+  "recent": {
+    "heading": "Recent games",
+    "all": "All",
+    "unavailable": "Couldn't read the games saved on this phone.",
+    "emptyTitle": "No games here yet",
+    "emptyBody": "Every practice is saved here, even after you close the app.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "Completed",
+      "ended": "Ended",
+      "interrupted": "Interrupted",
+      "playing": "In progress",
+      "win": "Won",
+      "loss": "Lost",
+      "tie": "Tied"
+    },
+    "openHint": "Opens the results",
+    "versus": "{{outcome}} vs {{name}}"
+  },
+  "modes": {
+    "title": "New game",
+    "footnote": "Ranked needs an internet connection · Practice is always available",
+    "soon": "Soon",
+    "groups": {
+      "ranked": {
+        "title": "Ranked",
+        "note": "Real opponents, in real time"
+      },
+      "practice": {
+        "title": "Practice",
+        "note": "No pressure, no rating"
+      }
+    },
+    "chips": {
+      "rated": "Rated",
+      "unrated": "Unrated",
+      "offline": "Works offline"
+    },
+    "ranked": {
+      "name": "Ranked"
+    },
+    "ranked2": {
+      "title": "2 players",
+      "tagline": "One on one · same board",
+      "label": "Ranked · 2 players"
+    },
+    "ranked3": {
+      "title": "3 players",
+      "tagline": "Free-for-all",
+      "label": "Ranked · 3 players"
+    },
+    "ranked4": {
+      "title": "4 players",
+      "tagline": "Free-for-all",
+      "label": "Ranked · 4 players"
+    },
+    "solo": {
+      "name": "Solo practice",
+      "title": "Solo practice",
+      "tagline": "At your own pace",
+      "label": "Solo practice"
+    },
+    "bot": {
+      "name": "Practice vs bot",
+      "title": "Practice vs bot",
+      "tagline": "5 levels",
+      "label": "Practice vs bot"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "Fast",
+      "difficulty": "Easy",
+      "technique": "Solved with naked singles only"
+    },
+    "normal": {
+      "name": "Normal",
+      "difficulty": "Medium",
+      "technique": "Needs hidden singles"
+    },
+    "hard": {
+      "name": "Hard",
+      "difficulty": "Hard",
+      "technique": "Needs pairs or eliminations"
+    }
+  },
+  "gameType": {
+    "title": "Game type",
+    "note": {
+      "solo": "Unrated. The board comes from the puzzles on this phone, without repeating one you played recently.",
+      "bot": "Unrated. The board comes from the puzzles on this phone, without repeating one you played recently. Next, you choose your opponent."
+    },
+    "start": {
+      "solo": "Start practice",
+      "bot": "Choose opponent"
+    },
+    "startHint": "Starts a {{type}} practice",
+    "lockTime": "Time per cell",
+    "board": "Board",
+    "duration": "Est. length",
+    "seconds": "{{seconds}} s",
+    "minutes": "{{range}} min",
+    "cardLabel": "{{name}}. {{technique}}. {{seconds}} per cell, {{difficulty}} board, about {{from}} to {{to}} minutes",
+    "botHint": "Choose a bot for a {{type}} game"
+  },
+  "dev": {
+    "title": "Development",
+    "designSystem": "Design system",
+    "hello": "Connection check"
+  },
+  "settings": {
+    "title": "Settings",
+    "feedback": "Sound and haptics",
+    "sound": "Sound",
+    "soundHint": "Sounds for moves and actions",
+    "haptics": "Haptics",
+    "hapticsHint": "Short vibrations as feedback for moves",
+    "motion": "Reduce motion",
+    "motionHint": "Fewer animations: scores jump straight to the result, and an interference shows as a still cover for the same time.",
+    "reduceMotion": {
+      "system": "Like the device",
+      "on": "On",
+      "off": "Off"
+    },
+    "language": "Language",
+    "languageHint": "Changing the language restarts the app.",
+    "languages": {
+      "he": "עברית",
+      "en": "English"
+    },
+    "version": "Version {{version}} · engine {{engine}}"
+  },
+  "placeholder": {
+    "soon": "Coming soon",
+    "leaderboard": {
+      "title": "Leaderboard",
+      "body": "The leaderboard opens together with ranked games."
+    },
+    "history": {
+      "title": "History",
+      "body": "All your games will be here, with replays and an explanation for every move. Meanwhile, your latest practices are on the home screen."
+    },
+    "achievements": {
+      "title": "Achievements",
+      "body": "Achievements, levels and XP are on their way."
+    }
+  },
+  "botSelect": {
+    "title": "Choose a bot",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "Think time per move",
+    "thinkValue": "{{range}} s",
+    "mistakes": "Mistakes",
+    "note": "The time is the bot's base time in this game type; on a hard cell it thinks longer. The bot plays the same board, in real time.",
+    "start": "Let's play",
+    "startHint": "Starts a {{type}} practice against {{name}}",
+    "cardLabel": "Level {{level}}, {{title}}: {{name}}. {{behavior}}. Thinks {{from}} to {{to}} seconds a move, {{mistakes}}% mistakes",
+    "levels": {
+      "1": {
+        "title": "Novice",
+        "behavior": "Slow, makes a fair few mistakes, and hardly ever interferes"
+      },
+      "2": {
+        "title": "Amateur",
+        "behavior": "Relaxed, slips here and there, and sometimes sends a 😂"
+      },
+      "3": {
+        "title": "Advanced",
+        "behavior": "Steady and thoughtful. When behind, it interferes"
+      },
+      "4": {
+        "title": "Master",
+        "behavior": "Fast, hardly ever wrong, and a little smug 😎"
+      },
+      "5": {
+        "title": "Grandmaster",
+        "behavior": "Fast, precise, and interferes without mercy"
+      }
+    }
+  }
+}

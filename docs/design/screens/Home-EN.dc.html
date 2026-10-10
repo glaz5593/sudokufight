@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<title>Home EN — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-shine { 0%{background-position:-160% 0} 100%{background-position:260% 0} }
+@keyframes sf-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 60% at 50% -10%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 50% at -10% 110%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 50% at 110% 100%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; top: 0; left: 0; right: 0; height: 360px; background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.4px); background-size: 7px 7px; -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent); mask-image: linear-gradient(180deg, #000 30%, transparent);"></div>
+  <div aria-hidden="true" style="position: absolute; top: 350px; left: -90px; width: 570px; height: 128px; transform: rotate(-9deg); background: linear-gradient(90deg, rgba(255,210,63,0) 0%, rgba(255,210,63,.22) 32%, rgba(255,51,85,.20) 72%, rgba(255,51,85,0) 100%);"></div>
+
+  <div style="position: absolute; top: 48px; left: 16px; right: 16px; display: flex; flex-direction: column;">
+
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+      <div style="display: flex; align-items: baseline; gap: 6px; font-family: Teko, Rubik, sans-serif; font-weight: 600; line-height: .9; letter-spacing: .04em;">
+        <span style="font-size: 28px; color: #f1eeff;">SUDOKU</span>
+        <span style="display: inline-block; font-size: 28px; font-weight: 700; color: transparent; background: linear-gradient(100deg, #ffe27a 0%, #ffd23f 40%, #ff8a1f 72%, #ff3355 100%); -webkit-background-clip: text; background-clip: text; transform: skewX(-9deg);">FIGHT</span>
+      </div>
+      <button type="button" aria-label="Settings" style="width: 44px; height: 44px; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; background: #251d45; border: 2px solid #4b3f80; border-radius: 12px; box-shadow: 0 3px 0 #07050f; color: #f1eeff; cursor: pointer;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>
+      </button>
+    </div>
+
+    <button type="button" aria-label="My player card: MosheG, Gold league, level 14" style="display: block; width: 100%; margin: 12px 0 0; padding: 0; height: 112px; box-sizing: border-box; font: inherit; text-align: left; cursor: pointer; color: #f1eeff; background: radial-gradient(70% 150% at 0% 0%, rgba(46,230,255,.22), transparent 62%), radial-gradient(rgba(255,255,255,.06) 1px, transparent 1.4px) 0 0 / 7px 7px, linear-gradient(200deg, #2a2152, #1b1533); border: 2px solid rgba(46,230,255,.6); border-radius: 16px; transform: skewX(-9deg); box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.10);">
+      <span style="display: flex; align-items: center; gap: 14px; height: 100%; padding: 0 20px; box-sizing: border-box; transform: skewX(9deg);">
+        <span style="display: block; flex: none; width: 72px; height: 72px; padding: 4px; box-sizing: border-box; border-radius: 18px; background: #2ee6ff; box-shadow: 0 4px 0 #0098c2;">
+          <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="64" height="64" style="display: block; width: 64px; height: 64px; border-radius: 14px;">
+        </span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="font: 700 22px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">MosheG</span>
+            <span style="font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 18px; line-height: 1;">🇮🇱</span>
+          </span>
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 6px; box-sizing: border-box; background: rgba(255,210,63,.12); border: 1px solid rgba(255,210,63,.5); border-radius: 6px;">
+              <svg width="14" height="16" viewBox="0 0 16 18" aria-hidden="true"><path d="M8 1l6.5 2.5v5.2c0 4-2.8 6.9-6.5 8.3-3.7-1.4-6.5-4.3-6.5-8.3V3.5L8 1z" fill="#ffd23f" stroke="#e8a100" stroke-width="1.2"></path><path d="M8 5.2l1.1 2.3 2.5.4-1.8 1.7.4 2.5L8 10.9l-2.2 1.2.4-2.5-1.8-1.7 2.5-.4L8 5.2z" fill="#7a5200"></path></svg>
+              <span style="font: 700 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #ffd23f;">GOLD LEAGUE</span>
+            </span>
+            <span style="font: 600 12px/1 Rubik, sans-serif; color: #cfc8ee;">Level 14</span>
+          </span>
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="display: flex; flex: 1; height: 8px; border-radius: 4px; overflow: hidden; background: #0f0b1d; box-shadow: inset 0 0 0 1px #342a5e;">
+              <span style="display: block; width: 79.3%; height: 100%; border-radius: 4px; background: linear-gradient(270deg, #c4f9ff 0%, #2ee6ff 30%, #0098c2 100%);"></span>
+            </span>
+            <span style="font: 600 15px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #cfc8ee; white-space: nowrap;">2,380/3,000 <span style="color: #a79fcb;">XP</span></span>
+          </span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a79fcb" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="M9 5l7 7-7 7"></path></svg>
+      </span>
+    </button>
+
+    <div style="position: relative; margin-top: 18px; height: 100px; box-sizing: border-box; background: linear-gradient(200deg, #251d45, #1b1533); border: 2px solid #4b3f80; border-radius: 16px; transform: skewX(-9deg); box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08);">
+      <div style="position: relative; height: 100%; padding: 0 18px; box-sizing: border-box; display: flex; flex-direction: column; transform: skewX(9deg);">
+        <span style="position: absolute; top: -12px; left: 26px; display: block; padding: 4px 10px; background: #ffd23f; border-radius: 4px; transform: skewX(-9deg); box-shadow: 0 2px 0 #b37b00;"><span style="display: block; transform: skewX(9deg); font: 700 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #1a1000;">RATING</span></span>
+        <div style="flex: 1; display: flex; align-items: center; padding-top: 4px;">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #a79fcb;">FAST</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 34px; line-height: .9; font-variant-numeric: tabular-nums; color: #ffd23f;"><svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg>1342</span>
+          </div>
+          <span aria-hidden="true" style="flex: none; width: 2px; height: 38px; border-radius: 1px; background: #342a5e; transform: skewX(-9deg);"></span>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #a79fcb;">NORMAL</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 34px; line-height: .9; font-variant-numeric: tabular-nums; color: #ffd23f;"><svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg>1287</span>
+          </div>
+          <span aria-hidden="true" style="flex: none; width: 2px; height: 38px; border-radius: 1px; background: #342a5e; transform: skewX(-9deg);"></span>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+            <span style="font: 600 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #a79fcb;">HARD</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 34px; line-height: .9; font-variant-numeric: tabular-nums; color: #ffd23f;"><svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg>1198</span>
+          </div>
+        </div>
+        <div style="height: 38px; display: flex; align-items: center; justify-content: center; gap: 12px; border-top: 1px solid #342a5e;">
+          <span style="display: inline-flex; align-items: baseline; gap: 5px;"><span style="font: 600 22px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #f1eeff;">86</span><span style="font: 500 13px/1 Rubik, sans-serif; color: #a79fcb;">games</span></span>
+          <span aria-hidden="true" style="width: 4px; height: 4px; border-radius: 50%; background: #4b3f80;"></span>
+          <span style="display: inline-flex; align-items: baseline; gap: 5px;"><span style="font: 600 22px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #f1eeff;">57%</span><span style="font: 500 13px/1 Rubik, sans-serif; color: #a79fcb;">wins</span></span>
+          <span aria-hidden="true" style="width: 4px; height: 4px; border-radius: 50%; background: #4b3f80;"></span>
+          <span style="display: inline-flex; align-items: baseline; gap: 5px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,138,31,.35)" stroke="#ff8a1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="align-self: center; display: block; animation: sf-bob 2.4s ease-in-out infinite;"><path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .5 2 1.5 3 2.5 3 0-3-1-5 0-8z"></path></svg><span style="font: 500 13px/1 Rubik, sans-serif; color: #cfc8ee;">Streak</span><span style="font: 600 22px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #ff8a1f;">3</span></span>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; margin: 20px 0 0; padding: 0; height: 92px; overflow: hidden; font: inherit; cursor: pointer; color: #1a1000; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); border: 0; border-radius: 16px; transform: skewX(-9deg); box-shadow: 0 6px 0 #b37b00, 0 16px 34px rgba(255,190,0,.22), inset 0 1px 0 rgba(255,255,255,.6), inset 0 -5px 0 rgba(179,123,0,.28);">
+      <span aria-hidden="true" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-image: linear-gradient(75deg, rgba(255,255,255,0) 40%, rgba(255,255,255,.65) 50%, rgba(255,255,255,0) 60%); background-size: 250% 100%; background-repeat: no-repeat; animation: sf-shine 3.6s ease-in-out 1s infinite reverse;"></span>
+      <span style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; transform: skewX(9deg);">
+        <span style="font-family: Teko, Rubik, sans-serif; font-weight: 700; font-size: 66px; line-height: .78; letter-spacing: .04em; color: #1a1000;">PLAY</span>
+        <span style="font: 600 11px/1 Rubik, sans-serif; letter-spacing: .1em; color: #5a3d00;">RANKED · SOLO · VS BOT</span>
+      </span>
+    </button>
+
+    <button type="button" style="display: flex; align-items: center; width: 100%; margin: 18px 0 0; height: 62px; box-sizing: border-box; padding: 0 16px; font: inherit; text-align: left; cursor: pointer; color: #f1eeff; background: #251d45; border: 2px solid #4b3f80; border-radius: 12px; transform: skewX(-9deg); box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.10);">
+      <span style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; transform: skewX(9deg);">
+        <span style="flex: none; width: 38px; height: 38px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,210,63,.12); border: 2px solid rgba(255,210,63,.55); color: #ffd23f;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px;">
+          <span style="font: 700 16px/1.1 Rubik, sans-serif; color: #f1eeff;">One more round</span>
+          <span style="font: 500 12.5px/1.2 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">Ranked · 2 players · Normal</span>
+        </span>
+        <span style="flex: none; display: inline-flex; align-items: center; gap: 4px; font: 600 22px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #ffd23f;"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg>1287</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a79fcb" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="M9 5l7 7-7 7"></path></svg>
+      </span>
+    </button>
+
+    <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px; box-sizing: border-box; padding: 10px 14px; background: linear-gradient(90deg, rgba(63,240,166,.10), rgba(63,240,166,0) 55%), #1b1533; border: 2px solid #342a5e; border-radius: 14px; box-shadow: 0 5px 0 #07050f;">
+      <span style="flex: none; width: 44px; height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: rgba(63,240,166,.12); border: 2px solid rgba(63,240,166,.5); color: #3ff0a6;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path><circle cx="12" cy="12" r="2"></circle></svg></span>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font: 700 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #3ff0a6;">DAILY MISSION</span>
+        <span style="font: 600 14px/1.2 Rubik, sans-serif; color: #f1eeff;">Solve 10 cells, no mistakes</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="flex: 1; height: 6px; display: flex; border-radius: 3px; overflow: hidden; background: #0f0b1d; box-shadow: inset 0 0 0 1px #342a5e;">
+            <div style="width: 60%; height: 100%; border-radius: 3px; background: linear-gradient(270deg, #b6ffe0 0%, #3ff0a6 40%, #0fa86a 100%);"></div>
+          </div>
+          <span style="font: 600 16px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #cfc8ee;">6/10</span>
+        </div>
+      </div>
+      <div style="flex: none; width: 58px; height: 52px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,210,63,.10); border: 2px solid rgba(255,210,63,.5); transform: skewX(-9deg);">
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 2px; transform: skewX(9deg);">
+          <span style="font: 600 24px/.9 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #ffd23f;">+150</span>
+          <span style="font: 700 10px/1 Rubik, sans-serif; letter-spacing: .08em; color: #ffd23f;">XP</span>
+        </span>
+      </div>
+    </div>
+
+    <div style="margin-top: 8px; height: 44px; display: flex; align-items: center; justify-content: space-between;">
+      <span style="font: 700 15px/1 Rubik, sans-serif; color: #f1eeff;">Recent games</span>
+      <button type="button" style="display: inline-flex; align-items: center; gap: 2px; min-height: 44px; margin: 0; padding: 0 4px; background: transparent; border: 0; font: 500 14px/1 Rubik, sans-serif; color: #a79fcb; cursor: pointer;">All<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+    </div>
+
+    <div style="margin-top: 2px; display: flex; gap: 8px;">
+      <button type="button" aria-label="Win vs Lior.K, Normal, rating up 11" style="flex: 1; min-width: 0; height: 64px; margin: 0; display: flex; align-items: center; gap: 8px; box-sizing: border-box; padding: 0 8px; font: inherit; text-align: left; cursor: pointer; color: #f1eeff; background: linear-gradient(180deg, rgba(63,240,166,.08), rgba(63,240,166,0) 60%), #1b1533; border: 2px solid #342a5e; border-radius: 12px; box-shadow: 0 4px 0 #07050f;">
+        <span style="position: relative; display: block; flex: none; width: 38px; height: 38px; padding: 2px; box-sizing: border-box; border-radius: 11px; background: #4b3f80;">
+          <img src="/_blob/83d89efebdbd95bda4ba28b1d1a9ae43" alt="" width="34" height="34" style="display: block; width: 34px; height: 34px; border-radius: 9px;">
+          <span style="position: absolute; top: -6px; left: -6px; width: 18px; height: 18px; border-radius: 5px; background: #3ff0a6; color: #07050f; font: 700 15px/19px Teko, Rubik, sans-serif; text-align: center; box-shadow: 0 2px 0 #0fa86a;">W</span>
+        </span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font: 500 12.5px/1.1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Lior.K</span>
+          <span style="display: flex; align-items: baseline; gap: 5px;"><span style="font: 600 20px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #3ff0a6;">+11</span><span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">Normal</span></span>
+        </span>
+      </button>
+      <button type="button" aria-label="Win vs Zoe.Q, Fast, rating up 16" style="flex: 1; min-width: 0; height: 64px; margin: 0; display: flex; align-items: center; gap: 8px; box-sizing: border-box; padding: 0 8px; font: inherit; text-align: left; cursor: pointer; color: #f1eeff; background: linear-gradient(180deg, rgba(63,240,166,.08), rgba(63,240,166,0) 60%), #1b1533; border: 2px solid #342a5e; border-radius: 12px; box-shadow: 0 4px 0 #07050f;">
+        <span style="position: relative; display: block; flex: none; width: 38px; height: 38px; padding: 2px; box-sizing: border-box; border-radius: 11px; background: #4b3f80;">
+          <img src="/_blob/188101c0e4b050534f9b9786d56c6e11" alt="" width="34" height="34" style="display: block; width: 34px; height: 34px; border-radius: 9px;">
+          <span style="position: absolute; top: -6px; left: -6px; width: 18px; height: 18px; border-radius: 5px; background: #3ff0a6; color: #07050f; font: 700 15px/19px Teko, Rubik, sans-serif; text-align: center; box-shadow: 0 2px 0 #0fa86a;">W</span>
+        </span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font: 500 12.5px/1.1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Zoe.Q</span>
+          <span style="display: flex; align-items: baseline; gap: 5px;"><span style="font: 600 20px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #3ff0a6;">+16</span><span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">Fast</span></span>
+        </span>
+      </button>
+      <button type="button" aria-label="Win vs Kofi_A, Normal, rating up 7" style="flex: 1; min-width: 0; height: 64px; margin: 0; display: flex; align-items: center; gap: 8px; box-sizing: border-box; padding: 0 8px; font: inherit; text-align: left; cursor: pointer; color: #f1eeff; background: linear-gradient(180deg, rgba(63,240,166,.08), rgba(63,240,166,0) 60%), #1b1533; border: 2px solid #342a5e; border-radius: 12px; box-shadow: 0 4px 0 #07050f;">
+        <span style="position: relative; display: block; flex: none; width: 38px; height: 38px; padding: 2px; box-sizing: border-box; border-radius: 11px; background: #4b3f80;">
+          <img src="/_blob/a9cc6f85528339a569e505510ab974a1" alt="" width="34" height="34" style="display: block; width: 34px; height: 34px; border-radius: 9px;">
+          <span style="position: absolute; top: -6px; left: -6px; width: 18px; height: 18px; border-radius: 5px; background: #3ff0a6; color: #07050f; font: 700 15px/19px Teko, Rubik, sans-serif; text-align: center; box-shadow: 0 2px 0 #0fa86a;">W</span>
+        </span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font: 500 12.5px/1.1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Kofi_A</span>
+          <span style="display: flex; align-items: baseline; gap: 5px;"><span style="font: 600 20px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #3ff0a6;">+7</span><span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">Normal</span></span>
+        </span>
+      </button>
+    </div>
+
+  </div>
+
+  <nav aria-label="Main navigation" style="position: absolute; left: 16px; right: 16px; bottom: 16px; height: 64px; box-sizing: border-box; display: flex; padding: 0 4px; background: #1b1533; border: 2px solid #342a5e; border-radius: 20px; box-shadow: 0 6px 0 #07050f;">
+    <button type="button" aria-current="page" style="position: relative; flex: 1; min-width: 0; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: transparent; border: 0; cursor: pointer; color: #ffd23f; font: 600 11px/1 Rubik, sans-serif;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"></path><path d="M6 9.5V20h12V9.5"></path><path d="M10 20v-5h4v5"></path></svg>
+      <span>Home</span>
+      <span aria-hidden="true" style="position: absolute; bottom: 4px; left: 50%; width: 18px; height: 3px; margin-left: -9px; border-radius: 2px; background: #ffd23f; box-shadow: 0 0 8px rgba(255,210,63,.6);"></span>
+    </button>
+    <button type="button" style="flex: 1; min-width: 0; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: transparent; border: 0; cursor: pointer; color: #a79fcb; font: 600 11px/1 Rubik, sans-serif;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"></path><path d="M9 21V9h6v12"></path><path d="M3 21v-7h6M15 21v-4h6v4"></path></svg>
+      <span>Leaderboard</span>
+    </button>
+    <button type="button" style="flex: 1; min-width: 0; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: transparent; border: 0; cursor: pointer; color: #a79fcb; font: 600 11px/1 Rubik, sans-serif;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      <span>History</span>
+    </button>
+    <button type="button" style="flex: 1; min-width: 0; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: transparent; border: 0; cursor: pointer; color: #a79fcb; font: 600 11px/1 Rubik, sans-serif;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"></path><path d="M12 13v4M8 21h8M9.5 17h5"></path></svg>
+      <span>Achievements</span>
+    </button>
+  </nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

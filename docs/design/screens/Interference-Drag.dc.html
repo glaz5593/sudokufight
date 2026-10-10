@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Interference Drag — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+@keyframes sf-blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+@keyframes sf-lock-me { 0%,100%{box-shadow:inset 0 0 0 3px #2ee6ff, inset 0 0 6px 3px rgba(46,230,255,.25)} 50%{box-shadow:inset 0 0 0 3px #2ee6ff, inset 0 0 12px 6px rgba(46,230,255,.6)} }
+@keyframes sf-lock-nina { 0%,100%{box-shadow:inset 0 0 0 3px #ff8a1f} 50%{box-shadow:inset 0 0 0 3px #ff8a1f, inset 0 0 10px 3px rgba(255,138,31,.45)} }
+@keyframes sf-dash { to{stroke-dashoffset:-28} }
+@keyframes sf-bloom { 0%{transform:scale(.15);opacity:0} 12%{opacity:1} 55%{transform:scale(1);opacity:1} 100%{transform:scale(1.12);opacity:0} }
+@keyframes sf-ember { 0%{transform:translateY(0);opacity:1} 100%{transform:translateY(26px);opacity:0} }
+@keyframes sf-target { 0%,100%{box-shadow:0 5px 0 #07050f, 0 0 0 3px #ffd23f, 0 0 22px rgba(255,210,63,.65)} 50%{box-shadow:0 5px 0 #07050f, 0 0 0 3px #ff3355, 0 0 36px rgba(255,51,85,.8)} }
+@keyframes sf-ping-skew { 0%{transform:skewX(-9deg) scale(.98);opacity:.85} 100%{transform:skewX(-9deg) scale(1.14);opacity:0} }
+@keyframes sf-hover { 0%,100%{transform:rotate(-9deg) scale(1.08)} 50%{transform:translate(-2px,-4px) rotate(-7deg) scale(1.08)} }
+@keyframes sf-ripple { 0%{transform:scale(.7);opacity:.7} 100%{transform:scale(1.6);opacity:0} }
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 60% at 50% -10%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 50% at 110% 110%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 50% at -10% 100%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; top: 36px; left: 0; right: 0; height: 190px; background-image: radial-gradient(rgba(255,255,255,.09) 1px, transparent 1.4px); background-size: 7px 7px; -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0)); mask-image: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0));"></div>
+  <div aria-hidden="true" style="position: absolute; top: 40px; left: 193px; width: 4px; height: 168px; background: linear-gradient(180deg, rgba(255,210,63,0), #ffd23f 30%, #ff3355 75%, rgba(255,51,85,0)); transform: skewX(-9deg); box-shadow: 0 0 12px rgba(255,210,63,.45); z-index: 1;"></div>
+
+  <div aria-hidden="true" style="position: absolute; top: 52px; right: 16px; width: 171px; height: 142px; box-sizing: border-box; background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid rgba(255,210,63,.9); border-radius: 12px; transform: skewX(-9deg); box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08), 0 0 22px rgba(255,210,63,.22); z-index: 2;">
+    <div style="height: 100%; box-sizing: border-box; padding: 8px 13px; display: flex; flex-direction: column; transform: skewX(9deg);">
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; flex: none;">
+        <div style="position: relative; flex: none; width: 44px; height: 44px; padding: 3px; box-sizing: border-box; border-radius: 12px; background: #2ee6ff; box-shadow: 0 3px 0 #0098c2;">
+          <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="38" height="38" style="display: block; width: 38px; height: 38px; border-radius: 9px;">
+          <span style="position: absolute; bottom: -3px; right: -3px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; background: #3ff0a6; border: 2px solid #0f0b1d;"></span>
+          <span style="position: absolute; top: -18px; left: 12px; width: 20px; height: 20px; display: block;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ffd23f" stroke="#e8a100" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true" style="display: block; filter: drop-shadow(0 2px 0 #07050f);"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"></path></svg></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; flex: none;">
+          <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; background: #251d45; border: 2px solid #4b3f80; border-radius: 12px; box-shadow: 0 3px 0 #07050f; color: #f1eeff;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg></span>
+          <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; background: #251d45; border: 2px solid #4b3f80; border-radius: 12px; box-shadow: 0 3px 0 #07050f; color: #ff3355;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"></path><path d="M5 4h11l-2 4 2 4H5"></path></svg></span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px; height: 16px; margin-top: 5px; flex: none; min-width: 0;">
+        <span style="min-width: 0; font: 600 14px/1.1 Rubik, sans-serif; color: #f1eeff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">MosheG</span>
+        <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇮🇱</span>
+        <span dir="ltr" style="flex: none; display: inline-flex; align-items: center; gap: 3px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: .9; font-variant-numeric: tabular-nums; color: #ffd23f; padding-top: 2px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="#ffd23f" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z"></path></svg>1287</span>
+      </div>
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; height: 34px; margin-top: 5px; flex: none;">
+        <div style="display: flex; align-items: baseline; gap: 4px; flex: none;">
+          <span dir="ltr" style="display: inline-block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 40px; line-height: .8; padding-top: 4px; font-variant-numeric: tabular-nums; color: #2ee6ff; text-shadow: 0 2px 0 #0098c2;">55</span>
+          <span style="font: 600 12px/1 Rubik, sans-serif; color: #a79fcb;">נק׳</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px; max-width: 50px;">
+          <span dir="ltr" style="display: inline-flex; align-items: center; height: 15px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 4px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.7); color: #ff6b84; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 14px; line-height: 1;">−1</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px; height: 14px; margin-top: 3px; flex: none;">
+        <span style="display: block; width: 9px; height: 9px; flex: none; background: #2ee6ff; clip-path: circle(50%);"></span>
+        <span style="font: 600 12px/1 Rubik, sans-serif; color: #2ee6ff; white-space: nowrap;">בוחר · <span dir="ltr">F8</span></span>
+        <svg width="13" height="13" viewBox="0 0 14 14" aria-hidden="true" style="flex: none; transform: rotate(-90deg);"><circle cx="7" cy="7" r="5" fill="none" stroke="rgba(46,230,255,.25)" stroke-width="2"></circle><circle cx="7" cy="7" r="5" fill="none" stroke="#2ee6ff" stroke-width="2" stroke-linecap="round" style="stroke-dasharray: 31.42px; stroke-dashoffset: 10.47px;"></circle></svg>
+      </div>
+    </div>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; top: 105px; left: 176px; width: 38px; height: 28px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #0f0b1d; border: 2px solid #ffd23f; border-radius: 6px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f, 0 0 16px rgba(255,210,63,.35); z-index: 4;">
+    <span style="display: block; transform: skewX(9deg); font-family: Teko, Rubik, sans-serif; font-weight: 700; font-size: 22px; line-height: .8; letter-spacing: .02em; color: #ffd23f; padding-top: 3px;">VS</span>
+  </div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 210px; left: 16px; width: 358px; height: 10px; border-radius: 4px; background: #251d45; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f; overflow: hidden; z-index: 2;">
+    <div style="position: absolute; top: 0; bottom: 0; left: 0; width: 41.8%; background: linear-gradient(90deg, #c95600, #ff8a1f);"></div>
+    <div style="position: absolute; top: 0; bottom: 0; right: 0; width: 58.2%; background: linear-gradient(90deg, #2ee6ff, #0098c2);"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; top: 206px; left: 164.6px; width: 2px; height: 18px; background: #ffffff; border-radius: 1px; transform: skewX(-9deg); box-shadow: 0 0 10px #ffffff, 0 0 4px #ffffff; z-index: 3;"></div>
+  <div aria-hidden="true" style="position: absolute; top: 225px; left: 165.6px; transform: translateX(-50%); display: flex; align-items: center; height: 15px; padding: 0 5px; box-sizing: border-box; border-radius: 4px; background: #0f0b1d; border: 1px solid #2ee6ff; color: #2ee6ff; font: 600 15px/13px Teko, Rubik, sans-serif; white-space: nowrap; z-index: 3;"><span dir="ltr" style="display: block; padding-top: 1px;">+15.5</span></div>
+
+  <div aria-hidden="true" style="position: absolute; top: 246px; left: 16px; right: 16px; height: 26px; display: flex; align-items: center; justify-content: space-between; gap: 8px; z-index: 3;">
+    <div style="display: flex; align-items: center; height: 26px; padding: 0 10px; box-sizing: border-box; background: rgba(46,230,255,.12); border: 1.5px solid #2ee6ff; border-radius: 7px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f;">
+      <span style="display: flex; align-items: center; gap: 6px; transform: skewX(9deg); color: #2ee6ff;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+        <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px;">F8</span>
+        <span style="font: 600 13px/1 Rubik, sans-serif; color: #6c5fa6;">·</span>
+        <span style="display: flex; align-items: baseline; gap: 1px;"><span style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums;">8</span><span style="font: 600 12px/1 Rubik, sans-serif;">ש׳</span></span>
+      </span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+      <span style="display: block; width: 9px; height: 9px; flex: none; background: #2ee6ff; clip-path: circle(50%);"></span>
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 19px; line-height: .8; padding-top: 3px; color: #2ee6ff;">I1</span>
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 19px; line-height: .8; padding-top: 3px; color: #3ff0a6;">+3.5</span>
+    </div>
+  </div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 278px; left: 16px; width: 358px; height: 10px; padding: 0 3px; box-sizing: border-box; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px;">
+    <sc-for list="{{railTop}}" as="g" hint-placeholder-count="3">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px;">
+        <sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+          <span style="display: block; text-align: center; font: 600 10px/10px Rubik, sans-serif; color: {{t.color}};">{{t.t}}</span>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+  <div aria-hidden="true" style="position: absolute; top: 290px; left: 2px; width: 12px; height: 358px; padding: 3px 0; box-sizing: border-box; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3px;">
+    <sc-for list="{{railSide}}" as="g" hint-placeholder-count="3">
+      <div style="display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px;">
+        <sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+          <span style="display: flex; align-items: center; justify-content: center; font: 600 10px/1 Rubik, sans-serif; color: {{t.color}};">{{t.t}}</span>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 290px; left: 16px; width: 358px; height: 358px; padding: 3px; box-sizing: border-box; background: #342a5e; border-radius: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3px; box-shadow: 0 6px 0 #07050f, 0 18px 40px rgba(5,3,15,.6);">
+    <sc-for list="{{boxes}}" as="box" hint-placeholder-count="9">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; background: #c9c2ea; border-radius: 4px; overflow: hidden;">
+        <sc-for list="{{box.cells}}" as="cell" hint-placeholder-count="9">
+          <div style="position: relative; display: flex; align-items: center; justify-content: center; background: {{cell.bg}}; box-shadow: {{cell.ring}}; color: {{cell.fg}}; font: 600 23px/1 Rubik, sans-serif; animation: {{cell.anim}};">
+            <span style="display: block;">{{cell.v}}</span>
+            <sc-if value="{{cell.hasGlyph}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; top: 3px; left: 3px; display: block; width: 7px; height: 7px; background: {{cell.glyph}}; clip-path: {{cell.clip}};"></span>
+            </sc-if>
+            <sc-if value="{{cell.hasWrong}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; bottom: {{cell.wb}}; right: 4px; font: 700 10px/1 Rubik, sans-serif; color: #d10f37; letter-spacing: .04em; z-index: 1;">{{cell.wrong}}</span>
+            </sc-if>
+            <sc-if value="{{cell.mineSel}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; top: 3px; right: 3px; min-width: 14px; height: 14px; padding: 0 3px; box-sizing: border-box; border-radius: 7px; background: #2ee6ff; color: #0f0b1d; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 13px; line-height: 15px; text-align: center;">{{cell.secs}}</span>
+              <span style="position: absolute; left: 4px; right: 4px; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(0,152,194,.22);"><span style="display: block; height: 3px; width: {{cell.barW}}; border-radius: 2px; background: #2ee6ff;"></span></span>
+            </sc-if>
+            <sc-if value="{{cell.ninaSel}}" hint-placeholder-val="{{ false }}">
+              <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="14" height="14" style="position: absolute; top: 4px; left: 4px; display: block; width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 0 1.5px #ff8a1f;">
+              <span style="position: absolute; top: 3px; right: 3px; min-width: 14px; height: 14px; padding: 0 3px; box-sizing: border-box; border-radius: 7px; background: #ff8a1f; color: #0f0b1d; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 13px; line-height: 15px; text-align: center;">{{cell.secs}}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(7,5,15,.72); z-index: 20;"></div>
+
+  <div aria-hidden="true" style="position: absolute; top: 52px; left: 16px; width: 171px; height: 142px; box-sizing: border-box; border: 3px solid #ffd23f; border-radius: 12px; transform: skewX(-9deg); opacity: 0; animation: sf-ping-skew 1.4s cubic-bezier(.2,.8,.2,1) infinite; z-index: 29;"></div>
+  <a href="Interference-Target.dc.html" aria-label="שחרר כאן: שיגור זיקוקים אל NinaVolt" style="position: absolute; top: 52px; left: 16px; width: 171px; height: 142px; box-sizing: border-box; display: block; text-decoration: none; color: #f1eeff; background: radial-gradient(90% 70% at 50% 100%, rgba(255,51,85,.38), transparent 70%), linear-gradient(160deg, #3a2350, #1b1533); border: 2px solid #ffd23f; border-radius: 12px; transform: skewX(-9deg); box-shadow: 0 5px 0 #07050f, 0 0 0 3px #ffd23f, 0 0 22px rgba(255,210,63,.65); animation: sf-target 1.1s ease-in-out infinite; z-index: 30;">
+    <span style="display: flex; flex-direction: column; height: 100%; box-sizing: border-box; padding: 8px 13px; transform: skewX(9deg);">
+      <span style="display: flex; flex-direction: row-reverse; align-items: center; justify-content: space-between; height: 44px; flex: none;">
+        <span style="position: relative; display: block; flex: none; width: 44px; height: 44px; padding: 3px; box-sizing: border-box; border-radius: 12px; background: #ff8a1f; box-shadow: 0 3px 0 #c95600;">
+          <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="38" height="38" style="display: block; width: 38px; height: 38px; border-radius: 9px;">
+          <span style="position: absolute; bottom: -3px; left: -3px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; background: #3ff0a6; border: 2px solid #0f0b1d;"></span>
+        </span>
+        <span style="display: flex; flex: none; width: 44px; height: 44px; align-items: center; justify-content: center; box-sizing: border-box; border-radius: 50%; background: rgba(255,210,63,.16); border: 2px solid #ffd23f; color: #ffd23f; box-shadow: 0 0 14px rgba(255,210,63,.5);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="animation: sf-blink .9s ease-in-out infinite;"><circle cx="12" cy="12" r="8"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path><circle cx="12" cy="12" r="2"></circle></svg>
+        </span>
+      </span>
+      <span style="display: flex; flex-direction: row-reverse; align-items: center; gap: 5px; height: 16px; margin-top: 5px; flex: none; min-width: 0;">
+        <span style="min-width: 0; font: 600 14px/1.1 Rubik, sans-serif; color: #f1eeff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">NinaVolt</span>
+        <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇩🇪</span>
+        <span dir="ltr" style="flex: none; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: .9; color: #ff8a1f; padding-top: 2px;">39.5</span>
+      </span>
+      <span style="display: flex; align-items: center; justify-content: center; gap: 6px; height: 42px; margin-top: 9px; flex: none; border-radius: 8px; background: linear-gradient(90deg, #ff3355, #ff8a1f 55%, #ffd23f); box-shadow: 0 3px 0 #b8102f, inset 0 1px 0 rgba(255,255,255,.45); color: #1a1000;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="animation: sf-bob .8s ease-in-out infinite;"><path d="M12 4v14"></path><path d="M6 12l6 6 6-6"></path></svg>
+        <span style="display: block; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 34px; line-height: .8; padding-top: 3px;">שחרר כאן</span>
+      </span>
+    </span>
+  </a>
+  <div aria-hidden="true" style="position: absolute; top: 44px; left: 8px; width: 187px; height: 158px; transform: skewX(-9deg); z-index: 31; pointer-events: none;">
+    <svg width="187" height="158" viewBox="0 0 187 158" style="display: block;"><rect x="2" y="2" width="183" height="154" rx="17" fill="none" stroke="#ffd23f" stroke-width="2.5" stroke-dasharray="8 6" style="animation: sf-dash .9s linear infinite;"></rect></svg>
+  </div>
+
+  <svg width="390" height="844" viewBox="0 0 390 844" aria-hidden="true" style="position: absolute; top: 0; left: 0; z-index: 35; pointer-events: none;">
+    <path d="M320 704C314 640 286 590 266 548" fill="none" stroke="#ffd23f" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 9" opacity=".35"></path>
+    <path d="M204 452C134 418 88 318 102 214" fill="none" stroke="#ffd23f" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="2 12" style="filter: drop-shadow(0 0 4px rgba(255,210,63,.8)); animation: sf-dash .8s linear infinite;"></path>
+    <path d="M91 226L102 211L113 226" fill="none" stroke="#ffd23f" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 4px rgba(255,210,63,.8));"></path>
+  </svg>
+
+  <a href="Arsenal.dc.html" style="position: absolute; top: 626px; left: 0; right: 0; margin: 0 auto; width: 228px; height: 34px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 7px; border-radius: 17px; background: #251d45; border: 1.5px solid #6c5fa6; box-shadow: 0 3px 0 #07050f; color: #cfc8ee; font: 500 13px/1 Rubik, sans-serif; text-decoration: none; white-space: nowrap; z-index: 41;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9 9l6 6M15 9l-6 6"></path></svg>
+    שחרור מחוץ לאזור מבטל
+  </a>
+
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 168px; box-sizing: border-box; padding: 10px 16px 0; background: #1b1533; border-radius: 24px 24px 0 0; border-top: 2px solid #4b3f80; box-shadow: 0 -20px 60px rgba(0,0,0,.6); z-index: 40;">
+    <div style="width: 40px; height: 4px; margin: 0 auto; border-radius: 2px; background: #4b3f80;"></div>
+    <div style="margin-top: 8px; display: flex; justify-content: space-between;">
+      <div style="width: 108px; height: 136px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border: 2px dashed rgba(255,210,63,.55); border-radius: 18px; background: rgba(255,210,63,.05);">
+        <svg width="40" height="40" viewBox="0 0 100 100" style="display: block; opacity: .35;"><path d="M66 50L90 50M61.3 61.3L78.3 78.3M50 66L50 90M38.7 61.3L21.7 78.3M34 50L10 50M38.7 38.7L21.7 21.7M50 34L50 10M61.3 38.7L78.3 21.7" fill="none" stroke="#ffd23f" stroke-width="7" stroke-linecap="round"></path></svg>
+        <span style="font: 600 11px/1 Rubik, sans-serif; color: rgba(255,210,63,.7);">בגרירה…</span>
+      </div>
+      <div style="width: 108px; height: 136px; box-sizing: border-box; padding-top: 9px; display: flex; flex-direction: column; align-items: center; background: linear-gradient(165deg, #4a2248 0%, #251d45 58%, #1b1533 100%); border: 2px solid rgba(255,122,168,.8); border-radius: 18px; box-shadow: 0 6px 0 #07050f; opacity: .38; filter: saturate(.55);">
+        <span style="display: grid; grid-template-columns: repeat(3, 4px); gap: 3px;"><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span></span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 96px; height: 56px; margin-top: 4px;">
+          <svg width="92" height="46" viewBox="0 0 150 76" style="display: block; overflow: visible;">
+            <g stroke-linecap="round" fill="none"><path d="M62 56L40 72" stroke="#1a1433" stroke-width="13"></path><path d="M98 56L120 72" stroke="#1a1433" stroke-width="13"></path><path d="M62 56L40 72" stroke="#c95600" stroke-width="7.5"></path><path d="M98 56L120 72" stroke="#c95600" stroke-width="7.5"></path><path d="M110 42C126 38 138 26 132 8" stroke="#1a1433" stroke-width="14"></path><path d="M110 42C126 38 138 26 132 8" stroke="#ff8a1f" stroke-width="8"></path></g>
+            <ellipse cx="80" cy="46" rx="34" ry="16" fill="#ff8a1f" stroke="#1a1433" stroke-width="3"></ellipse>
+            <g stroke-linecap="round" fill="none"><path d="M56 54L28 64" stroke="#1a1433" stroke-width="13"></path><path d="M104 52L132 60" stroke="#1a1433" stroke-width="13"></path><path d="M56 54L28 64" stroke="#ff8a1f" stroke-width="7.5"></path><path d="M104 52L132 60" stroke="#ff8a1f" stroke-width="7.5"></path></g>
+            <path d="M26 26L20 6L40 18Z" fill="#ff8a1f" stroke="#1a1433" stroke-width="3" stroke-linejoin="round"></path><path d="M44 16L56 2L60 24Z" fill="#ff8a1f" stroke="#1a1433" stroke-width="3" stroke-linejoin="round"></path>
+            <circle cx="42" cy="34" r="19" fill="#ff8a1f" stroke="#1a1433" stroke-width="3"></circle>
+            <ellipse cx="31" cy="42" rx="9" ry="6.5" fill="#fff2e6"></ellipse>
+            <ellipse cx="34" cy="31" rx="5" ry="6.5" fill="#ffffff" stroke="#1a1433" stroke-width="2"></ellipse><ellipse cx="48" cy="30" rx="5" ry="6.5" fill="#ffffff" stroke="#1a1433" stroke-width="2"></ellipse>
+            <circle cx="32" cy="32" r="3.2" fill="#1a1433"></circle><circle cx="46" cy="31" r="3.2" fill="#1a1433"></circle>
+          </svg>
+        </span>
+        <span style="display: block; margin-top: 2px; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 28px; line-height: .9; color: #f1eeff;">חתולים</span>
+      </div>
+      <div style="width: 108px; height: 136px; box-sizing: border-box; padding-top: 9px; display: flex; flex-direction: column; align-items: center; background: linear-gradient(165deg, #2c2a78 0%, #251d45 58%, #1b1533 100%); border: 2px solid rgba(157,123,255,.85); border-radius: 18px; box-shadow: 0 6px 0 #07050f; opacity: .38; filter: saturate(.55);">
+        <span style="display: grid; grid-template-columns: repeat(3, 4px); gap: 3px;"><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(207,200,238,.55);"></span></span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 72px; height: 56px; margin-top: 4px;">
+          <svg width="54" height="54" viewBox="0 0 96 96" style="display: block; overflow: visible;"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path transform="translate(-4 1)" stroke="#ff2e88" opacity=".85" d="M16 18C36 10 60 26 80 16C88 36 72 60 82 80C60 88 38 72 14 82C8 60 24 38 16 18Z M37 15C44 36 30 58 38 83 M59 19C52 40 66 60 60 85 M14 40C36 32 58 50 83 38 M12 61C36 54 58 70 81 59"></path><path transform="translate(4 -1)" stroke="#2ee6ff" opacity=".85" d="M16 18C36 10 60 26 80 16C88 36 72 60 82 80C60 88 38 72 14 82C8 60 24 38 16 18Z M37 15C44 36 30 58 38 83 M59 19C52 40 66 60 60 85 M14 40C36 32 58 50 83 38 M12 61C36 54 58 70 81 59"></path><path stroke="#f1eeff" d="M16 18C36 10 60 26 80 16C88 36 72 60 82 80C60 88 38 72 14 82C8 60 24 38 16 18Z M37 15C44 36 30 58 38 83 M59 19C52 40 66 60 60 85 M14 40C36 32 58 50 83 38 M12 61C36 54 58 70 81 59"></path></g></svg>
+        </span>
+        <span style="display: block; margin-top: 2px; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 28px; line-height: .9; color: #f1eeff;">עיוות</span>
+      </div>
+    </div>
+  </div>
+
+  <div role="status" aria-live="polite" style="position: absolute; top: 250px; left: 198px; width: 176px; box-sizing: border-box; padding: 10px 12px 10px; background: linear-gradient(170deg, #2a2152, #1b1533); border: 2px solid #ffd23f; border-radius: 16px; box-shadow: 0 6px 0 #07050f, 0 18px 36px rgba(0,0,0,.55), 0 0 24px rgba(255,210,63,.25); z-index: 51;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div aria-hidden="true" style="position: relative; flex: none; width: 60px; height: 60px; box-sizing: border-box; border-radius: 10px; overflow: hidden; border: 1.5px solid #4b3f80; background: linear-gradient(#c9c2ea, #c9c2ea) 18.5px 0 / 1.5px 100% no-repeat, linear-gradient(#c9c2ea, #c9c2ea) 37.5px 0 / 1.5px 100% no-repeat, linear-gradient(#c9c2ea, #c9c2ea) 0 18.5px / 100% 1.5px no-repeat, linear-gradient(#c9c2ea, #c9c2ea) 0 37.5px / 100% 1.5px no-repeat, #fbfaff;">
+        <div style="position: absolute; left: -4px; top: -2px; width: 46px; height: 46px; animation: sf-bloom 1.5s cubic-bezier(.2,.8,.2,1) -0.4s infinite;">
+          <svg width="46" height="46" viewBox="0 0 100 100" style="display: block; overflow: visible;"><path d="M66 50L90 50M61.3 61.3L78.3 78.3M50 66L50 90M38.7 61.3L21.7 78.3M34 50L10 50M38.7 38.7L21.7 21.7M50 34L50 10M61.3 38.7L78.3 21.7" fill="none" stroke="#ffb400" stroke-width="7" stroke-linecap="round"></path><path d="M61.1 54.6L77.7 61.5M54.6 61.1L61.5 77.7M45.4 61.1L38.5 77.7M38.9 54.6L22.3 61.5M38.9 45.4L22.3 38.5M45.4 38.9L38.5 22.3M54.6 38.9L61.5 22.3M61.1 45.4L77.7 38.5" fill="none" stroke="#ff2e9a" stroke-width="5.5" stroke-linecap="round"></path><circle cx="50" cy="50" r="9" fill="#ffffff"></circle></svg>
+        </div>
+        <div style="position: absolute; left: 24px; top: 22px; width: 36px; height: 36px; animation: sf-bloom 1.5s cubic-bezier(.2,.8,.2,1) -1.1s infinite;">
+          <svg width="36" height="36" viewBox="0 0 100 100" style="display: block; overflow: visible;"><path d="M66 50L90 50M61.3 61.3L78.3 78.3M50 66L50 90M38.7 61.3L21.7 78.3M34 50L10 50M38.7 38.7L21.7 21.7M50 34L50 10M61.3 38.7L78.3 21.7" fill="none" stroke="#00b8d9" stroke-width="7" stroke-linecap="round"></path><path d="M61.1 54.6L77.7 61.5M54.6 61.1L61.5 77.7M45.4 61.1L38.5 77.7M38.9 54.6L22.3 61.5M38.9 45.4L22.3 38.5M45.4 38.9L38.5 22.3M54.6 38.9L61.5 22.3M61.1 45.4L77.7 38.5" fill="none" stroke="#0fa86a" stroke-width="5.5" stroke-linecap="round"></path><circle cx="50" cy="50" r="9" fill="#ffffff"></circle></svg>
+        </div>
+        <span style="position: absolute; left: 12px; top: 30px; width: 4px; height: 4px; border-radius: 50%; background: #ff8a1f; animation: sf-ember 1s ease-in -0.3s infinite;"></span>
+        <span style="position: absolute; left: 44px; top: 8px; width: 3px; height: 3px; border-radius: 50%; background: #e45cff; animation: sf-ember 1.2s ease-in -0.8s infinite;"></span>
+        <span style="position: absolute; left: 30px; top: 14px; width: 3px; height: 3px; border-radius: 50%; background: #ffb400; animation: sf-ember .9s ease-in -0.5s infinite;"></span>
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+        <span style="display: block; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 32px; line-height: .8; color: #f1eeff;">זיקוקים</span>
+        <span style="display: flex; align-items: baseline; gap: 4px; white-space: nowrap;">
+          <span style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 26px; line-height: .8; padding-top: 3px; color: #ffd23f;">2</span>
+          <span style="font: 700 12px/1 Rubik, sans-serif; color: #ffd23f;">נק׳</span>
+          <span style="font: 500 11px/1 Rubik, sans-serif; color: #a79fcb;">· 5 שנ׳</span>
+        </span>
+      </div>
+    </div>
+    <div aria-hidden="true" style="height: 1px; margin: 9px 0 8px; background: #342a5e;"></div>
+    <div style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
+      <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px; box-shadow: 0 0 0 1.5px #2ee6ff;">
+      <span style="font: 600 12px/1 Rubik, sans-serif; color: #2ee6ff;">אני</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
+      <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="18" height="18" style="display: block; width: 18px; height: 18px; border-radius: 5px; box-shadow: 0 0 0 1.5px #ff8a1f;">
+      <span style="font: 600 12px/1 Rubik, sans-serif; color: #ff8a1f;">NinaVolt</span>
+    </div>
+    <span aria-hidden="true" style="position: absolute; bottom: -9px; left: 46px; width: 14px; height: 14px; background: #1b1533; border-right: 2px solid #ffd23f; border-bottom: 2px solid #ffd23f; transform: rotate(45deg);"></span>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; top: 404px; left: 200px; width: 108px; height: 136px; box-sizing: border-box; padding-top: 9px; display: flex; flex-direction: column; align-items: center; background: radial-gradient(80% 55% at 50% 38%, rgba(255,210,63,.26), transparent 70%), linear-gradient(165deg, #3b2370 0%, #251d45 58%, #1b1533 100%); border: 2px solid #ffd23f; border-radius: 18px; box-shadow: 0 30px 40px rgba(0,0,0,.6), 0 0 0 3px rgba(255,210,63,.5), 0 0 34px rgba(255,210,63,.55), inset 0 1px 0 rgba(255,255,255,.22); transform: rotate(-9deg) scale(1.08); animation: sf-hover 1.6s ease-in-out infinite; z-index: 50;">
+    <span style="display: grid; grid-template-columns: repeat(3, 4px); gap: 3px;"><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(241,238,255,.8);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(241,238,255,.8);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(241,238,255,.8);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(241,238,255,.8);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(241,238,255,.8);"></span><span style="width: 4px; height: 4px; border-radius: 50%; background: rgba(241,238,255,.8);"></span></span>
+    <span style="display: flex; align-items: center; justify-content: center; width: 72px; height: 56px; margin-top: 4px;">
+      <svg width="56" height="56" viewBox="0 0 100 100" style="display: block; overflow: visible; filter: drop-shadow(0 0 8px rgba(255,210,63,.7));">
+        <path d="M66 50L90 50M61.3 61.3L78.3 78.3M50 66L50 90M38.7 61.3L21.7 78.3M34 50L10 50M38.7 38.7L21.7 21.7M50 34L50 10M61.3 38.7L78.3 21.7" fill="none" stroke="#ffd23f" stroke-width="7" stroke-linecap="round"></path>
+        <path d="M61.1 54.6L77.7 61.5M54.6 61.1L61.5 77.7M45.4 61.1L38.5 77.7M38.9 54.6L22.3 61.5M38.9 45.4L22.3 38.5M45.4 38.9L38.5 22.3M54.6 38.9L61.5 22.3M61.1 45.4L77.7 38.5" fill="none" stroke="#ff5fd2" stroke-width="5.5" stroke-linecap="round"></path>
+        <g fill="#7fe7ff"><circle cx="96" cy="50" r="4"></circle><circle cx="82.5" cy="82.5" r="4"></circle><circle cx="50" cy="96" r="4"></circle><circle cx="17.5" cy="82.5" r="4"></circle><circle cx="4" cy="50" r="4"></circle><circle cx="17.5" cy="17.5" r="4"></circle><circle cx="50" cy="4" r="4"></circle><circle cx="82.5" cy="17.5" r="4"></circle></g>
+        <circle cx="50" cy="50" r="9" fill="#ffffff"></circle>
+      </svg>
+    </span>
+    <span style="display: block; margin-top: 2px; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 28px; line-height: .9; color: #f1eeff;">זיקוקים</span>
+    <span style="display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; height: 20px; padding: 0 8px; box-sizing: border-box; border-radius: 10px; background: #0f0b1d; border: 1px solid rgba(255,210,63,.5); font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 16px; line-height: 1; color: #ffd23f; white-space: nowrap;"><svg width="10" height="10" viewBox="0 0 24 24" fill="#ffd23f"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"></path></svg>2 נק׳</span>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; top: 478px; left: 236px; width: 44px; height: 44px; z-index: 52; pointer-events: none;">
+    <span style="position: absolute; top: 0; left: 0; width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; border: 2px solid rgba(255,255,255,.7); animation: sf-ripple 1.2s ease-out infinite;"></span>
+    <span style="position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; box-sizing: border-box; border-radius: 50%; background: rgba(255,255,255,.22); border: 2px solid rgba(255,255,255,.75);"></span>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  boardData(cur, own, wrong, mine, nina) {
+    const P = [
+      { tint: '#d3f8ff', solve: '#006b8a', deep: '#0098c2', clip: 'circle(50%)' },
+      { tint: '#ffe6cf', solve: '#9a3f00', deep: '#c95600', clip: 'polygon(50% 0, 100% 100%, 0 100%)' }
+    ];
+    const R = i => Math.floor(i / 9), C = i => i % 9, B = i => Math.floor(R(i) / 3) * 3 + Math.floor(C(i) / 3);
+    const boxes = [];
+    for (let bx = 0; bx < 9; bx++) {
+      const cells = [];
+      for (let k = 0; k < 9; k++) {
+        const i = (Math.floor(bx / 3) * 3 + Math.floor(k / 3)) * 9 + (bx % 3) * 3 + (k % 3);
+        const v = cur[i] === '0' ? '' : cur[i];
+        const o = own[i];
+        const shaded = bx % 2 === 1;
+        const isMine = !!mine && mine.i === i;
+        const isNina = !!nina && nina.i === i;
+        const peer = !!mine && !isMine && (R(i) === R(mine.i) || C(i) === C(mine.i) || B(i) === B(mine.i));
+        let bg = shaded ? '#ece8fb' : '#fbfaff';
+        let fg = '#1a1433', ring = 'none', anim = 'none', glyph = '', clip = 'none';
+        if (peer) bg = shaded ? '#dfd7fb' : '#e9e3ff';
+        if (o === '0' || o === '1') {
+          const pc = P[Number(o)];
+          bg = pc.tint; fg = pc.solve; glyph = pc.deep; clip = pc.clip;
+        }
+        if (isMine) { bg = '#c8f6ff'; ring = 'inset 0 0 0 3px #2ee6ff'; anim = 'sf-lock-me 1.4s ease-in-out infinite'; }
+        if (isNina) { bg = 'repeating-linear-gradient(135deg, #ffe6cf 0 4px, #fbfaff 4px 8px)'; ring = 'inset 0 0 0 3px #ff8a1f'; anim = 'sf-lock-nina 1.8s ease-in-out infinite'; }
+        const w = wrong.filter(x => x.i === i).slice(-3).map(x => String(x.d));
+        cells.push({
+          v: v, bg: bg, fg: fg, ring: ring, anim: anim, glyph: glyph, clip: clip,
+          hasGlyph: !!glyph,
+          hasWrong: w.length > 0,
+          wrong: w.join(' '),
+          wb: isMine ? '8px' : '2px',
+          mineSel: isMine,
+          ninaSel: isNina,
+          secs: isMine ? String(mine.secs) : (isNina ? String(nina.secs) : ''),
+          barW: isMine ? Math.round(mine.secs / mine.total * 100) + '%' : '0%'
+        });
+      }
+      boxes.push({ bx: bx, cells: cells });
+    }
+    return boxes;
+  }
+
+  renderVals() {
+    const cur = '864370209325009061970060043036002087198657402057083000680004105013508690542916370';
+    const own = '00gg1.g.g11g..g.0g0g..g..gg.0g..g.gggg100gg.1.g1.gg...g0...1g.g.0gg.ggg.0gggg0g1.';
+    const wrong = [{ i: 4, d: 5, seat: 1 }, { i: 44, d: 3, seat: 0 }, { i: 63, d: 4, seat: 1 }];
+    const mine = { i: 52, secs: 8, total: 12 };
+    const nina = { i: 7, secs: 4, total: 12 };
+    const railTop = [0, 1, 2].map(g => ({ items: [0, 1, 2].map(k => {
+      const c = g * 3 + k;
+      return { t: String(c + 1), color: c === 7 ? '#2ee6ff' : '#a79fcb' };
+    }) }));
+    const railSide = [0, 1, 2].map(g => ({ items: [0, 1, 2].map(k => {
+      const r = g * 3 + k;
+      return { t: 'ABCDEFGHI'[r], color: r === 5 ? '#2ee6ff' : '#a79fcb' };
+    }) }));
+    return {
+      boxes: this.boardData(cur, own, wrong, mine, nina),
+      railTop: railTop,
+      railSide: railSide
+    };
+  }
+}
+</script>
+</body>
+</html>

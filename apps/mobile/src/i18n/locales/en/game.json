@@ -1,0 +1,383 @@
+{
+  "title": "Solo practice",
+  "titleBot": "Practice vs bot",
+  "titleRanked": "Ranked game",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "Me",
+  "opponent": "Opponent",
+  "listSep": ", ",
+  "type": {
+    "fast": "Fast",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "hud": {
+    "time": "Time",
+    "best": "Best move",
+    "none": "—",
+    "timeLabel": "Time {{time}}",
+    "bestLabel": "Best move: {{points}} points in {{cell}}",
+    "noBestLabel": "No best move yet"
+  },
+  "progress": {
+    "label": "Board progress",
+    "value": "{{filled}}/{{total}}",
+    "a11y": "{{filled}} of {{total}} cells filled"
+  },
+  "end": {
+    "button": "End practice",
+    "title": "End the practice?",
+    "body": "Your result is saved on this phone. Your rating doesn't change.",
+    "confirm": "Yes, end it",
+    "footnote": "The game goes on in the background",
+    "dialog": "Confirm ending the practice"
+  },
+  "connection": {
+    "sep": ". ",
+    "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "frozen": {
+      "title": "Game frozen",
+      "timers": "All timers stopped",
+      "label": "Game frozen, all timers stopped"
+    },
+    "opponent": {
+      "lost": "{{name}} lost connection",
+      "lost_female": "{{name}} lost connection",
+      "title": "Opponent reconnecting…",
+      "timeUp": "Time's up",
+      "notBack": "{{name}} didn't come back",
+      "notBack_female": "{{name}} didn't come back",
+      "seconds": "seconds",
+      "ring": "Reconnecting... {{seconds}}",
+      "saved": "The game is saved on the server",
+      "savedSub": "The board and the scores are kept",
+      "winLabel": "Win by abandonment",
+      "winIn": "Win by abandonment in {{time}}",
+      "hint": "If {{name}} isn't back in time, you win by abandonment",
+      "hint_female": "If {{name}} isn't back in time, you win by abandonment",
+      "checking": "Checking with the server…",
+      "timeLeft": "Time to come back: {{time}}",
+      "announce": "{{name}} lost connection. The game is frozen until he's back",
+      "announce_female": "{{name}} lost connection. The game is frozen until she's back",
+      "announceExpired": "Time's up. Checking with the server"
+    },
+    "self": {
+      "lostTitle": "You lost your connection",
+      "lostSub": "Reconnecting…",
+      "attempt": "Try",
+      "attemptLabel": "Try {{attempt}}",
+      "backTitle": "You're back in the game",
+      "syncingSub": "Syncing…",
+      "syncedSub": "All synced · the game goes on",
+      "lockedTitle": "The board is locked until you're back",
+      "lockedSub": "When the connection is back we'll sync:",
+      "syncingTitle": "Syncing…",
+      "savedSub": "The game is saved on the server and goes on from the same point",
+      "item": {
+        "board": "Board",
+        "score": "Scores",
+        "locks": "Locks",
+        "turn": "Turn",
+        "timers": "Timers"
+      },
+      "itemDone": "{{item}}: synced",
+      "itemPending": "{{item}}: waiting",
+      "timeLeft_one": "You have {{seconds}} second to get back",
+      "timeLeft_two": "You have {{seconds}} seconds to get back",
+      "timeLeft_many": "You have {{seconds}} seconds to get back",
+      "timeLeft_other": "You have {{seconds}} seconds to get back",
+      "timeSub": "Before it counts as abandonment",
+      "backInTime": "Back in time",
+      "backInTimeSub": "The timers go on from the same second",
+      "announceLost": "You lost your connection. Reconnecting",
+      "announceAttempt": "You lost your connection. Reconnecting, try {{attempt}}",
+      "announceHurry": "In {{seconds}} seconds it counts as abandonment",
+      "announceSyncing": "You're back in the game. Syncing",
+      "announceSynced": "You're back in the game. The board and the scores are synced"
+    },
+    "left": {
+      "timeUp": "Time's up · {{seconds}} seconds without a connection",
+      "title": "{{name}} left the game",
+      "title_female": "{{name}} left the game",
+      "win": "You win by abandonment",
+      "rating": "rating",
+      "ratingLabel": "Rating change: {{delta}}, {{type}}",
+      "toResults": "See results",
+      "home": "Home"
+    },
+    "error": {
+      "title": "Connection error",
+      "offlineTitle": "No internet connection",
+      "body": {
+        "offline": "Your phone has no network right now. Connect to the internet and try again.",
+        "unreachable": "We couldn't reach the game server. Check your connection and try again.",
+        "lost": "The connection to the game server dropped and we couldn't get it back.",
+        "refused": "The server didn't let us into the room."
+      },
+      "refusal": {
+        "notFound": "There's no room with this code. Check the code and try again.",
+        "full": "This room is already full.",
+        "gameStarted": "The game in this room has already started.",
+        "alreadyInRoom": "You're already in this room, on another device.",
+        "unauthenticated": "Sign in to your account to play against others.",
+        "codeTaken": "A room with this code already exists. Try another code.",
+        "badOptions": "The room's settings aren't valid."
+      },
+      "code": "Error code: {{code}}",
+      "attemptFailed": "Try {{attempt}} failed",
+      "retry": "Try again",
+      "practice": "Go to practice",
+      "practiceNote": "Practice alone or against a bot works without a connection",
+      "home": "Back to home"
+    },
+    "surrender": {
+      "chip": "Surrender",
+      "title": "Are you sure you want to surrender?",
+      "body": "The game counts as a loss",
+      "bodyRating": "The game counts as a loss · estimated rating change {{delta}}",
+      "bodyMany": "You leave the game, and the cells you solved keep your colour.",
+      "confirm": "Yes, surrender",
+      "cancel": "Cancel",
+      "footnote": "The game goes on in the background",
+      "dialog": "Confirm surrender"
+    },
+    "lobby": {
+      "title": "Private room",
+      "subtitle": "{{type}} · {{players}} players",
+      "codeTitle": "Room code",
+      "codeLabel": "Room code: {{spelled}}",
+      "codeHint": "Send the code to whoever is playing with you",
+      "share": "Share the code",
+      "copy": "Copy",
+      "copied": "Code copied",
+      "shareMessage": "Come play Sudoku Fight with me! Room code: {{code}}",
+      "playersTitle": "Players in the room",
+      "you": "Me",
+      "emptySeat": "Waiting for a player…",
+      "seatMeLabel": "{{name}}, me",
+      "seatEmptyLabel": "Empty seat, waiting for a player",
+      "waiting_one": "Waiting for one more player",
+      "waiting_two": "Waiting for {{count}} more players",
+      "waiting_many": "Waiting for {{count}} more players",
+      "waiting_other": "Waiting for {{count}} more players",
+      "starting": "Everyone's here! The game is starting…",
+      "hint": "The game starts as soon as all the players are in the room",
+      "leave": "Leave the room",
+      "joined": "{{name}} is in the room"
+    },
+    "connecting": {
+      "title": "Entering the game",
+      "step": {
+        "server": "Connecting to the game server…",
+        "room": "Entering the room…",
+        "sync": "Syncing scores and timers…"
+      },
+      "label": "Loading the game, step {{step}} of {{total}}",
+      "cancel": "Cancel"
+    }
+  },
+  "live": {
+    "correct": "Correct: {{digit}} in {{cell}}, {{points}}",
+    "wrong": "Wrong: {{digit}} doesn't fit {{cell}}, {{penalty}}",
+    "taken": "{{cell}} is taken",
+    "cooldown": "You can pick {{cell}} again in a moment",
+    "expired": "Time's up, {{cell}} was released",
+    "complete": "Board complete!",
+    "oppCorrect": "{{name}} solved {{cell}}: {{digit}}, {{points}}",
+    "oppWrong": "{{name}} missed: {{digit}} doesn't fit {{cell}}, {{penalty}}",
+    "leadMine_one": "You lead by one point",
+    "leadMine_two": "You lead by two points",
+    "leadMine_many": "You lead by {{gap}} points",
+    "leadMine_other": "You lead by {{gap}} points",
+    "leadTheirs_one": "{{name}} leads by one point",
+    "leadTheirs_two": "{{name}} leads by two points",
+    "leadTheirs_many": "{{name}} leads by {{gap}} points",
+    "leadTheirs_other": "{{name}} leads by {{gap}} points",
+    "leadTie": "Scores are tied",
+    "reaction": "{{name}} reacted {{emoji}}"
+  },
+  "interference": {
+    "fireworks": "fireworks",
+    "cats": "cats",
+    "warp": "warp"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}} sent you fireworks!",
+      "cats": "{{name}} sent you cats!",
+      "warp": "{{name}} warped your screen!"
+    },
+    "cost": "It cost {{cost}} pts · the game goes on",
+    "goesOn": "The game goes on · your timer is paused",
+    "seconds_one": "1 second left",
+    "seconds_two": "2 seconds left",
+    "seconds_many": "{{count}} seconds left",
+    "seconds_other": "{{count}} seconds left",
+    "banner": "{{title}} {{subtitle}}, {{time}}",
+    "started": "{{title}} {{time}}, your timer is paused",
+    "ended": "The interference is over, your timer runs again",
+    "meow": "Meow!",
+    "mew": "Mew!"
+  },
+  "arsenal": {
+    "title": "Interference arsenal",
+    "target": "Target:",
+    "targetLabel": "Target: {{name}}",
+    "scrim": "Close the arsenal and go back to the board",
+    "next": "Your next interference:",
+    "unit": "pts",
+    "later": "· then {{costs}}…",
+    "score": "Your score",
+    "after": "After launch: {{score}}",
+    "costLabel": "Your next interference costs {{cost}} points, then {{costs}}. Your score is {{score}}, {{after}} after launch",
+    "costLabelShort": "Your next interference costs {{cost}} points, then {{costs}}. Your score is {{score}}, {{missing}} points short",
+    "info": "Each interference lasts {{seconds}} seconds · launch by dragging only",
+    "hint": "Drag onto {{name}}'s card to launch",
+    "cancelHint": "Release outside the zone to cancel",
+    "tapHint": "Drag onto {{name}} — a tap doesn't launch",
+    "dragging": "Dragging…",
+    "cost": "{{cost}} pts",
+    "missing": "{{count}} pts short",
+    "locked": "Locked",
+    "busy": "Under interference",
+    "unavailable": "Unavailable",
+    "ghost": "{{kind}} · {{cost}} pts",
+    "route": "Me → {{name}}",
+    "sent": "{{kind}} → {{name}}",
+    "drop": "Drop here: launch {{kind}} at {{name}}",
+    "dropIdle": "Drag an interference here from the arsenal to launch it at {{name}}",
+    "notEnough": "Not enough points for the next interference ({{cost}} pts)",
+    "label": "{{kind}} · {{cost}} pts · drag onto {{name}}'s card",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kind": {
+      "fireworks": "Fireworks",
+      "cats": "Cats",
+      "warp": "Warp"
+    },
+    "reason": {
+      "points": "{{count}} pts short for this interference",
+      "busy": "{{name}} is already under interference, try again in a moment",
+      "notRunning": "You can't launch an interference right now",
+      "locked": "This interference is still locked",
+      "out": "{{name}} is out of the game",
+      "disconnected": "{{name}} is not connected right now"
+    },
+    "live": {
+      "lift": "Dragging {{kind}}. Release on {{name}}'s card to launch",
+      "over": "Over {{name}}'s card: release to launch",
+      "left": "Outside the drop zone: releasing here cancels",
+      "cancelled": "Launch cancelled",
+      "launched": "You launched {{kind}} at {{name}}"
+    }
+  },
+  "reactions": {
+    "picker": "Reactions",
+    "item": "Reaction: {{name}}",
+    "itemOther": "Reaction {{emoji}}",
+    "name": {
+      "laugh": "laugh",
+      "scream": "scream",
+      "cool": "cool",
+      "facepalm": "facepalm",
+      "fire": "fire",
+      "eyes": "eyes"
+    },
+    "coolingDown": "You can send another reaction in a moment",
+    "close": "Close reactions",
+    "menu": {
+      "open": "{{name}}'s card menu",
+      "openHint": "There you can mute {{name}}'s reactions",
+      "openHintMuted": "{{name}}'s reactions are muted. There you can unmute them",
+      "label": "{{name}}'s menu",
+      "mute": "Mute reactions",
+      "unmute": "Unmute reactions",
+      "muteLabel": "Mute {{name}}'s reactions",
+      "unmuteLabel": "Unmute {{name}}'s reactions",
+      "muted": "{{name}}'s reactions are muted",
+      "unmuted": "{{name}}'s reactions are back",
+      "close": "Close the menu"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "Board complete!",
+      "ended": "Practice ended",
+      "interrupted": "Practice interrupted",
+      "surrendered": "You surrendered",
+      "abandoned": "You left the game",
+      "opponentSurrendered": "Your opponent surrendered",
+      "opponentLeft": "Your opponent left"
+    },
+    "outcome": {
+      "win": "Victory!",
+      "loss": "Defeat",
+      "tie": "Draw"
+    },
+    "abandonWin": "Won by abandonment",
+    "end": {
+      "label": "How it ended",
+      "completed": "You filled the whole board",
+      "full": "The board filled up",
+      "ended": "You ended the practice before the board was full",
+      "interrupted": "The practice stopped midway, for example when the app was closed",
+      "line": "{{label}}: {{reason}}",
+      "surrendered": "You surrendered before the board was full",
+      "abandoned": "You did not come back in time",
+      "opponentSurrendered": "Your opponent surrendered before the board was full",
+      "opponentLeft": "Your opponent lost the connection and did not come back in time"
+    },
+    "score": "Final score",
+    "points": "pts",
+    "scoreLabel": "Final score: {{score}} points",
+    "opponents": {
+      "title": "Opponent",
+      "label": "{{name}} · {{score}} points · {{mistakes}}",
+      "left": "Left the game"
+    },
+    "best": {
+      "title": "Move of the game",
+      "move": "{{cell}} → {{digit}}",
+      "label": "Move of the game: {{points}} points, {{digit}} in {{cell}}",
+      "formula": "How it scored",
+      "formulaLabel": "How it scored: {{line}}",
+      "none": "No correct move in this practice"
+    },
+    "stats": {
+      "time": "Game time",
+      "mistakes": "Mistakes",
+      "correct": "Correct moves",
+      "think": "Avg. think time",
+      "seconds": "{{value}} s",
+      "none": "—",
+      "label": "{{label}}: {{value}}"
+    },
+    "awards": {
+      "title": "Game awards",
+      "bestMove": "Best move",
+      "fewestMistakes": "Fewest mistakes",
+      "fastest": "Fastest",
+      "comeback": "Comeback",
+      "mostPoints": "Most points",
+      "label": "{{title}}: {{who}}, {{value}}",
+      "value": {
+        "bestMove": "{{value}} pts",
+        "fewestMistakes": "Mistakes: {{value}}",
+        "fastest": "{{value}} s per move",
+        "comeback": "from {{value}} pts behind",
+        "mostPoints": "{{value}} pts"
+      }
+    },
+    "unrated": "Practice: your rating does not change",
+    "ratingSoon": "Private room: ratings don't change yet",
+    "actions": {
+      "home": "Home",
+      "newGame": "New game",
+      "replay": "Replay · coming soon",
+      "replayHint": "Replay arrives in a later version"
+    },
+    "loading": "Loading the result…",
+    "missing": "We couldn't find this practice",
+    "unavailable": "We couldn't read the saved practices",
+    "notSaved": "This practice wasn't saved on the phone"
+  }
+}

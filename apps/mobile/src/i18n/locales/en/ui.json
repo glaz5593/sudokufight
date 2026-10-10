@@ -1,0 +1,29 @@
+{
+  "button": {
+    "loading": "{{label}}, loading"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "tabs": {
+      "home": "Home",
+      "leaderboard": "Leaderboard",
+      "history": "History",
+      "achievements": "Achievements"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "Cancel"
+  },
+  "sheet": {
+    "close": "Close"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_one": "1 second left",
+    "secondsLeft_two": "{{count}} seconds left",
+    "secondsLeft_other": "{{count}} seconds left"
+  }
+}

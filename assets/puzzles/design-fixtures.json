@@ -1,0 +1,11442 @@
+{
+ "note": "Generated from assets/sudoku.csv (690 puzzles, format puzzle,solution). Scores per spec §14.",
+ "bankStats": {
+  "puzzles": 690,
+  "minGivens": 30,
+  "maxGivens": 36,
+  "avgGivens": 33.8
+ },
+ "scenarios": {
+  "solo": {
+   "puzzleIndex": 0,
+   "puzzle": "004300209005009001070060043006002087190007400050083000600000105003508690042910300",
+   "solution": "864371259325849761971265843436192587198657432257483916689734125713528694542916378",
+   "grid": "804301259005009761070065843006002587190607400050083900680004105013508690042916370",
+   "cells": [
+    {
+     "i": 0,
+     "name": "A1",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 1,
+     "name": "A2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 2,
+     "name": "A3",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 3,
+     "name": "A4",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 4,
+     "name": "A5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 5,
+     "name": "A6",
+     "v": 1,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 6,
+     "name": "A7",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 7,
+     "name": "A8",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 8,
+     "name": "A9",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 9,
+     "name": "B1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 10,
+     "name": "B2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 11,
+     "name": "B3",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 12,
+     "name": "B4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 13,
+     "name": "B5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 14,
+     "name": "B6",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 15,
+     "name": "B7",
+     "v": 7,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 16,
+     "name": "B8",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 17,
+     "name": "B9",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 18,
+     "name": "C1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 19,
+     "name": "C2",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 20,
+     "name": "C3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 21,
+     "name": "C4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 22,
+     "name": "C5",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 23,
+     "name": "C6",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 24,
+     "name": "C7",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 25,
+     "name": "C8",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 26,
+     "name": "C9",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 27,
+     "name": "D1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 28,
+     "name": "D2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": [
+      {
+       "d": 4,
+       "by": 0
+      }
+     ]
+    },
+    {
+     "i": 29,
+     "name": "D3",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 30,
+     "name": "D4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 31,
+     "name": "D5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 32,
+     "name": "D6",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 33,
+     "name": "D7",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 34,
+     "name": "D8",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 35,
+     "name": "D9",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 36,
+     "name": "E1",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 37,
+     "name": "E2",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 38,
+     "name": "E3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 39,
+     "name": "E4",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 40,
+     "name": "E5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 41,
+     "name": "E6",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 42,
+     "name": "E7",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 43,
+     "name": "E8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 44,
+     "name": "E9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 45,
+     "name": "F1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 46,
+     "name": "F2",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 47,
+     "name": "F3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 48,
+     "name": "F4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 49,
+     "name": "F5",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 50,
+     "name": "F6",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 51,
+     "name": "F7",
+     "v": 9,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 52,
+     "name": "F8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 53,
+     "name": "F9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 54,
+     "name": "G1",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 55,
+     "name": "G2",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 56,
+     "name": "G3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 57,
+     "name": "G4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 58,
+     "name": "G5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 59,
+     "name": "G6",
+     "v": 4,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 60,
+     "name": "G7",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 61,
+     "name": "G8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 62,
+     "name": "G9",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 63,
+     "name": "H1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 64,
+     "name": "H2",
+     "v": 1,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 65,
+     "name": "H3",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 66,
+     "name": "H4",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 67,
+     "name": "H5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 68,
+     "name": "H6",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 69,
+     "name": "H7",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 70,
+     "name": "H8",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 71,
+     "name": "H9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 72,
+     "name": "I1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 73,
+     "name": "I2",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 74,
+     "name": "I3",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 75,
+     "name": "I4",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 76,
+     "name": "I5",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 77,
+     "name": "I6",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 78,
+     "name": "I7",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 79,
+     "name": "I8",
+     "v": 7,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 80,
+     "name": "I9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    }
+   ],
+   "players": [
+    {
+     "seat": 0,
+     "score": 73.5,
+     "mistakes": 1,
+     "correct": 15,
+     "interferences": 0,
+     "best": {
+      "cell": "G6",
+      "digit": 4,
+      "points": 6.5
+     }
+    }
+   ],
+   "log": [
+    {
+     "t": 11,
+     "type": "correct",
+     "seat": 0,
+     "cell": "G6",
+     "digit": 4,
+     "rowFilled": 3,
+     "colFilled": 5,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 6.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G6",
+      "digit": 4,
+      "missingRow": [
+       2,
+       3,
+       4,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       2,
+       3,
+       7,
+       8,
+       9
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 6,
+      "box": 8
+     }
+    },
+    {
+     "t": 24,
+     "type": "correct",
+     "seat": 0,
+     "cell": "H2",
+     "digit": 1,
+     "rowFilled": 5,
+     "colFilled": 4,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 13,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H2",
+      "digit": 1,
+      "missingRow": [
+       1,
+       2,
+       4,
+       7
+      ],
+      "elimByCol": [
+       4,
+       7
+      ],
+      "elimByBox": [
+       2
+      ],
+      "row": "H",
+      "col": 2,
+      "box": 7
+     }
+    },
+    {
+     "t": 32,
+     "type": "correct",
+     "seat": 0,
+     "cell": "I8",
+     "digit": 7,
+     "rowFilled": 5,
+     "colFilled": 3,
+     "boxFilled": 5,
+     "digitCount": 3,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 19,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I8",
+      "digit": 7,
+      "missingRow": [
+       5,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       8
+      ],
+      "elimByBox": [
+       5,
+       6
+      ],
+      "row": "I",
+      "col": 8,
+      "box": 9
+     }
+    },
+    {
+     "t": 44,
+     "type": "correct",
+     "seat": 0,
+     "cell": "B8",
+     "digit": 6,
+     "rowFilled": 3,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 25.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B8",
+      "digit": 6,
+      "missingRow": [
+       2,
+       3,
+       4,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       4,
+       7,
+       8
+      ],
+      "elimByBox": [
+       2,
+       3
+      ],
+      "row": "B",
+      "col": 8,
+      "box": 3
+     }
+    },
+    {
+     "t": 61,
+     "type": "correct",
+     "seat": 0,
+     "cell": "I6",
+     "digit": 6,
+     "rowFilled": 6,
+     "colFilled": 6,
+     "boxFilled": 5,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 30,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I6",
+      "digit": 6,
+      "missingRow": [
+       5,
+       6,
+       8
+      ],
+      "elimByCol": [
+       8
+      ],
+      "elimByBox": [
+       5
+      ],
+      "row": "I",
+      "col": 6,
+      "box": 8
+     }
+    },
+    {
+     "t": 66,
+     "type": "correct",
+     "seat": 0,
+     "cell": "F7",
+     "digit": 9,
+     "rowFilled": 3,
+     "colFilled": 5,
+     "boxFilled": 3,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 36,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F7",
+      "digit": 9,
+      "missingRow": [
+       1,
+       2,
+       4,
+       6,
+       7,
+       9
+      ],
+      "elimByCol": [
+       1,
+       2,
+       4,
+       6
+      ],
+      "elimByBox": [
+       7
+      ],
+      "row": "F",
+      "col": 7,
+      "box": 6
+     }
+    },
+    {
+     "t": 73,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A8",
+     "digit": 5,
+     "rowFilled": 4,
+     "colFilled": 5,
+     "boxFilled": 6,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 41,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A8",
+      "digit": 5,
+      "missingRow": [
+       1,
+       5,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       6,
+       7,
+       8
+      ],
+      "elimByBox": [
+       1
+      ],
+      "row": "A",
+      "col": 8,
+      "box": 3
+     }
+    },
+    {
+     "t": 77,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A6",
+     "digit": 1,
+     "rowFilled": 5,
+     "colFilled": 7,
+     "boxFilled": 3,
+     "digitCount": 5,
+     "X": 7,
+     "Y": 5,
+     "points": 4,
+     "score": 45,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A6",
+      "digit": 1,
+      "missingRow": [
+       1,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       6,
+       7,
+       8
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 6,
+      "box": 2
+     }
+    },
+    {
+     "t": 86,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C6",
+     "digit": 5,
+     "rowFilled": 4,
+     "colFilled": 8,
+     "boxFilled": 4,
+     "digitCount": 5,
+     "X": 8,
+     "Y": 5,
+     "points": 3,
+     "score": 48,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C6",
+      "digit": 5,
+      "missingRow": [
+       1,
+       2,
+       5,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       2,
+       8,
+       9
+      ],
+      "elimByBox": [],
+      "row": "C",
+      "col": 6,
+      "box": 2
+     }
+    },
+    {
+     "t": 92,
+     "type": "wrong",
+     "seat": 0,
+     "cell": "D2",
+     "digit": 4,
+     "penalty": 1,
+     "score": 47,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D2",
+      "digit": 3,
+      "missingRow": [
+       1,
+       3,
+       4,
+       5,
+       9
+      ],
+      "elimByCol": [
+       1,
+       4,
+       5,
+       9
+      ],
+      "elimByBox": [],
+      "row": "D",
+      "col": 2,
+      "box": 4
+     }
+    },
+    {
+     "t": 98,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A1",
+     "digit": 8,
+     "rowFilled": 6,
+     "colFilled": 2,
+     "boxFilled": 3,
+     "digitCount": 3,
+     "X": 6,
+     "Y": 3,
+     "points": 6,
+     "score": 53,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A1",
+      "digit": 8,
+      "missingRow": [
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       6
+      ],
+      "elimByBox": [
+       7
+      ],
+      "row": "A",
+      "col": 1,
+      "box": 1
+     }
+    },
+    {
+     "t": 110,
+     "type": "correct",
+     "seat": 0,
+     "cell": "D7",
+     "digit": 5,
+     "rowFilled": 4,
+     "colFilled": 6,
+     "boxFilled": 4,
+     "digitCount": 6,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 57.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D7",
+      "digit": 5,
+      "missingRow": [
+       1,
+       3,
+       4,
+       5,
+       9
+      ],
+      "elimByCol": [
+       1,
+       3,
+       4,
+       9
+      ],
+      "elimByBox": [],
+      "row": "D",
+      "col": 7,
+      "box": 6
+     }
+    },
+    {
+     "t": 116,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C7",
+     "digit": 8,
+     "rowFilled": 5,
+     "colFilled": 7,
+     "boxFilled": 7,
+     "digitCount": 4,
+     "X": 7,
+     "Y": 7,
+     "points": 3,
+     "score": 60.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C7",
+      "digit": 8,
+      "missingRow": [
+       1,
+       2,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       2,
+       9
+      ],
+      "elimByBox": [],
+      "row": "C",
+      "col": 7,
+      "box": 3
+     }
+    },
+    {
+     "t": 122,
+     "type": "correct",
+     "seat": 0,
+     "cell": "B7",
+     "digit": 7,
+     "rowFilled": 4,
+     "colFilled": 8,
+     "boxFilled": 8,
+     "digitCount": 4,
+     "X": 8,
+     "Y": 8,
+     "points": 1.5,
+     "score": 62,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B7",
+      "digit": 7,
+      "missingRow": [
+       2,
+       3,
+       4,
+       7,
+       8
+      ],
+      "elimByCol": [
+       2,
+       3,
+       4,
+       8
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 7,
+      "box": 3
+     }
+    },
+    {
+     "t": 130,
+     "type": "correct",
+     "seat": 0,
+     "cell": "E4",
+     "digit": 6,
+     "rowFilled": 4,
+     "colFilled": 3,
+     "boxFilled": 4,
+     "digitCount": 6,
+     "X": 6,
+     "Y": 4,
+     "points": 5.5,
+     "score": 67.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E4",
+      "digit": 6,
+      "missingRow": [
+       2,
+       3,
+       5,
+       6,
+       8
+      ],
+      "elimByCol": [
+       3,
+       5
+      ],
+      "elimByBox": [
+       2,
+       8
+      ],
+      "row": "E",
+      "col": 4,
+      "box": 5
+     }
+    },
+    {
+     "t": 138,
+     "type": "correct",
+     "seat": 0,
+     "cell": "G2",
+     "digit": 8,
+     "rowFilled": 4,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 73.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G2",
+      "digit": 8,
+      "missingRow": [
+       2,
+       3,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       7,
+       9
+      ],
+      "elimByBox": [
+       2,
+       3
+      ],
+      "row": "G",
+      "col": 2,
+      "box": 7
+     }
+    }
+   ],
+   "emptiesLeft": 31,
+   "nextMineExample": {
+    "cell": "E9",
+    "index": 44,
+    "digit": 2,
+    "rowFilled": 5,
+    "colFilled": 5,
+    "boxFilled": 5,
+    "digitCount": 3,
+    "X": 5,
+    "Y": 5,
+    "points": 6,
+    "expl": {
+     "technique": "nakedSingle",
+     "cell": "E9",
+     "digit": 2,
+     "missingRow": [
+      2,
+      3,
+      5,
+      8
+     ],
+     "elimByCol": [
+      3,
+      5
+     ],
+     "elimByBox": [
+      8
+     ],
+     "row": "E",
+     "col": 9,
+     "box": 6
+    }
+   },
+   "suggestedSelections": [
+    {
+     "cell": "A2",
+     "index": 1,
+     "candidates": [
+      6
+     ]
+    },
+    {
+     "cell": "A5",
+     "index": 4,
+     "candidates": [
+      7
+     ]
+    },
+    {
+     "cell": "B1",
+     "index": 9,
+     "candidates": [
+      2,
+      3
+     ]
+    },
+    {
+     "cell": "B2",
+     "index": 10,
+     "candidates": [
+      2,
+      3
+     ]
+    },
+    {
+     "cell": "B4",
+     "index": 12,
+     "candidates": [
+      2,
+      4,
+      8
+     ]
+    },
+    {
+     "cell": "B5",
+     "index": 13,
+     "candidates": [
+      2,
+      4
+     ]
+    },
+    {
+     "cell": "C1",
+     "index": 18,
+     "candidates": [
+      2,
+      9
+     ]
+    },
+    {
+     "cell": "C3",
+     "index": 20,
+     "candidates": [
+      1,
+      9
+     ]
+    }
+   ]
+  },
+  "bot2p": {
+   "puzzleIndex": 3,
+   "puzzle": "497200000100400005000016098620300040300900000001072600002005870000600004530097061",
+   "solution": "497258316186439725253716498629381547375964182841572639962145873718623954534897261",
+   "grid": "497200006106400005253716498620300040375900000841072609962105873008600004530097061",
+   "cells": [
+    {
+     "i": 0,
+     "name": "A1",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 1,
+     "name": "A2",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 2,
+     "name": "A3",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 3,
+     "name": "A4",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 4,
+     "name": "A5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 5,
+     "name": "A6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 6,
+     "name": "A7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 7,
+     "name": "A8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 8,
+     "name": "A9",
+     "v": 6,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 9,
+     "name": "B1",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 10,
+     "name": "B2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 11,
+     "name": "B3",
+     "v": 6,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 12,
+     "name": "B4",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 13,
+     "name": "B5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 14,
+     "name": "B6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 15,
+     "name": "B7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 16,
+     "name": "B8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 17,
+     "name": "B9",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 18,
+     "name": "C1",
+     "v": 2,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 19,
+     "name": "C2",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 20,
+     "name": "C3",
+     "v": 3,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 21,
+     "name": "C4",
+     "v": 7,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 22,
+     "name": "C5",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 23,
+     "name": "C6",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 24,
+     "name": "C7",
+     "v": 4,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 25,
+     "name": "C8",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 26,
+     "name": "C9",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 27,
+     "name": "D1",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 28,
+     "name": "D2",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 29,
+     "name": "D3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 30,
+     "name": "D4",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 31,
+     "name": "D5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 32,
+     "name": "D6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 33,
+     "name": "D7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 34,
+     "name": "D8",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 35,
+     "name": "D9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 36,
+     "name": "E1",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 37,
+     "name": "E2",
+     "v": 7,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 38,
+     "name": "E3",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": [
+      {
+       "d": 2,
+       "by": 0
+      }
+     ]
+    },
+    {
+     "i": 39,
+     "name": "E4",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 40,
+     "name": "E5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 41,
+     "name": "E6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 42,
+     "name": "E7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 43,
+     "name": "E8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 44,
+     "name": "E9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 45,
+     "name": "F1",
+     "v": 8,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 46,
+     "name": "F2",
+     "v": 4,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 47,
+     "name": "F3",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 48,
+     "name": "F4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 49,
+     "name": "F5",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 50,
+     "name": "F6",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 51,
+     "name": "F7",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 52,
+     "name": "F8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 53,
+     "name": "F9",
+     "v": 9,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 54,
+     "name": "G1",
+     "v": 9,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 55,
+     "name": "G2",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 56,
+     "name": "G3",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 57,
+     "name": "G4",
+     "v": 1,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 58,
+     "name": "G5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 59,
+     "name": "G6",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 60,
+     "name": "G7",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 61,
+     "name": "G8",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 62,
+     "name": "G9",
+     "v": 3,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 63,
+     "name": "H1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 64,
+     "name": "H2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 65,
+     "name": "H3",
+     "v": 8,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 66,
+     "name": "H4",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 67,
+     "name": "H5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 68,
+     "name": "H6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 69,
+     "name": "H7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 70,
+     "name": "H8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 71,
+     "name": "H9",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 72,
+     "name": "I1",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 73,
+     "name": "I2",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 74,
+     "name": "I3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 75,
+     "name": "I4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 76,
+     "name": "I5",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 77,
+     "name": "I6",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 78,
+     "name": "I7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 79,
+     "name": "I8",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 80,
+     "name": "I9",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    }
+   ],
+   "players": [
+    {
+     "seat": 0,
+     "score": 43.5,
+     "mistakes": 1,
+     "correct": 9,
+     "interferences": 0,
+     "best": {
+      "cell": "C2",
+      "digit": 5,
+      "points": 7.5
+     }
+    },
+    {
+     "seat": 1,
+     "score": 42,
+     "mistakes": 0,
+     "correct": 8,
+     "interferences": 0,
+     "best": {
+      "cell": "H3",
+      "digit": 8,
+      "points": 7.5
+     }
+    }
+   ],
+   "log": [
+    {
+     "t": 14,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C2",
+     "digit": 5,
+     "rowFilled": 4,
+     "colFilled": 3,
+     "boxFilled": 4,
+     "digitCount": 3,
+     "X": 4,
+     "Y": 4,
+     "points": 7.5,
+     "score": 7.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C2",
+      "digit": 5,
+      "missingRow": [
+       2,
+       3,
+       4,
+       5,
+       7
+      ],
+      "elimByCol": [
+       2,
+       3
+      ],
+      "elimByBox": [
+       4,
+       7
+      ],
+      "row": "C",
+      "col": 2,
+      "box": 1
+     }
+    },
+    {
+     "t": 31,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C4",
+     "digit": 7,
+     "rowFilled": 5,
+     "colFilled": 5,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 13.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C4",
+      "digit": 7,
+      "missingRow": [
+       2,
+       3,
+       4,
+       7
+      ],
+      "elimByCol": [
+       2,
+       3,
+       4
+      ],
+      "elimByBox": [],
+      "row": "C",
+      "col": 4,
+      "box": 2
+     }
+    },
+    {
+     "t": 41,
+     "type": "correct",
+     "seat": 0,
+     "cell": "G1",
+     "digit": 9,
+     "rowFilled": 4,
+     "colFilled": 5,
+     "boxFilled": 3,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 20,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G1",
+      "digit": 9,
+      "missingRow": [
+       1,
+       3,
+       4,
+       6,
+       9
+      ],
+      "elimByCol": [
+       1,
+       3,
+       4,
+       6
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 1,
+      "box": 7
+     }
+    },
+    {
+     "t": 48,
+     "type": "correct",
+     "seat": 1,
+     "cell": "G9",
+     "digit": 3,
+     "rowFilled": 5,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 3,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 6,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G9",
+      "digit": 3,
+      "missingRow": [
+       1,
+       3,
+       4,
+       6
+      ],
+      "elimByCol": [
+       1,
+       4
+      ],
+      "elimByBox": [
+       6
+      ],
+      "row": "G",
+      "col": 9,
+      "box": 9
+     }
+    },
+    {
+     "t": 53,
+     "type": "correct",
+     "seat": 1,
+     "cell": "A9",
+     "digit": 6,
+     "rowFilled": 4,
+     "colFilled": 5,
+     "boxFilled": 3,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 12,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A9",
+      "digit": 6,
+      "missingRow": [
+       1,
+       3,
+       5,
+       6,
+       8
+      ],
+      "elimByCol": [
+       1,
+       3,
+       5,
+       8
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 9,
+      "box": 3
+     }
+    },
+    {
+     "t": 67,
+     "type": "correct",
+     "seat": 1,
+     "cell": "C3",
+     "digit": 3,
+     "rowFilled": 6,
+     "colFilled": 3,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 17,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C3",
+      "digit": 3,
+      "missingRow": [
+       2,
+       3,
+       4
+      ],
+      "elimByCol": [
+       2
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "C",
+      "col": 3,
+      "box": 1
+     }
+    },
+    {
+     "t": 82,
+     "type": "correct",
+     "seat": 1,
+     "cell": "F1",
+     "digit": 8,
+     "rowFilled": 4,
+     "colFilled": 6,
+     "boxFilled": 4,
+     "digitCount": 2,
+     "X": 6,
+     "Y": 4,
+     "points": 5.5,
+     "score": 22.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F1",
+      "digit": 8,
+      "missingRow": [
+       3,
+       4,
+       5,
+       8,
+       9
+      ],
+      "elimByCol": [
+       3,
+       4,
+       5,
+       9
+      ],
+      "elimByBox": [],
+      "row": "F",
+      "col": 1,
+      "box": 4
+     }
+    },
+    {
+     "t": 99,
+     "type": "correct",
+     "seat": 0,
+     "cell": "F9",
+     "digit": 9,
+     "rowFilled": 5,
+     "colFilled": 6,
+     "boxFilled": 2,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 25,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F9",
+      "digit": 9,
+      "missingRow": [
+       3,
+       4,
+       5,
+       9
+      ],
+      "elimByCol": [
+       3,
+       4,
+       5
+      ],
+      "elimByBox": [],
+      "row": "F",
+      "col": 9,
+      "box": 6
+     }
+    },
+    {
+     "t": 110,
+     "type": "correct",
+     "seat": 1,
+     "cell": "H3",
+     "digit": 8,
+     "rowFilled": 2,
+     "colFilled": 4,
+     "boxFilled": 4,
+     "digitCount": 3,
+     "X": 4,
+     "Y": 4,
+     "points": 7.5,
+     "score": 30,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H3",
+      "digit": 8,
+      "missingRow": [
+       1,
+       2,
+       3,
+       5,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       2,
+       3,
+       7
+      ],
+      "elimByBox": [
+       5,
+       9
+      ],
+      "row": "H",
+      "col": 3,
+      "box": 7
+     }
+    },
+    {
+     "t": 116,
+     "type": "correct",
+     "seat": 1,
+     "cell": "B3",
+     "digit": 6,
+     "rowFilled": 3,
+     "colFilled": 5,
+     "boxFilled": 6,
+     "digitCount": 6,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 34.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B3",
+      "digit": 6,
+      "missingRow": [
+       2,
+       3,
+       6,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       2,
+       3,
+       7,
+       8
+      ],
+      "elimByBox": [
+       9
+      ],
+      "row": "B",
+      "col": 3,
+      "box": 1
+     }
+    },
+    {
+     "t": 123,
+     "type": "correct",
+     "seat": 1,
+     "cell": "C1",
+     "digit": 2,
+     "rowFilled": 7,
+     "colFilled": 7,
+     "boxFilled": 7,
+     "digitCount": 4,
+     "X": 7,
+     "Y": 7,
+     "points": 3,
+     "score": 37.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C1",
+      "digit": 2,
+      "missingRow": [
+       2,
+       4
+      ],
+      "elimByCol": [
+       4
+      ],
+      "elimByBox": [],
+      "row": "C",
+      "col": 1,
+      "box": 1
+     }
+    },
+    {
+     "t": 140,
+     "type": "correct",
+     "seat": 1,
+     "cell": "G4",
+     "digit": 1,
+     "rowFilled": 6,
+     "colFilled": 6,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 42,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G4",
+      "digit": 1,
+      "missingRow": [
+       1,
+       4,
+       6
+      ],
+      "elimByCol": [
+       4,
+       6
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 4,
+      "box": 8
+     }
+    },
+    {
+     "t": 144,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C7",
+     "digit": 4,
+     "rowFilled": 8,
+     "colFilled": 2,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 8,
+     "Y": 4,
+     "points": 3.5,
+     "score": 28.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C7",
+      "digit": 4,
+      "missingRow": [
+       4
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "C",
+      "col": 7,
+      "box": 3
+     }
+    },
+    {
+     "t": 157,
+     "type": "correct",
+     "seat": 0,
+     "cell": "F2",
+     "digit": 4,
+     "rowFilled": 6,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 33.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F2",
+      "digit": 4,
+      "missingRow": [
+       3,
+       4,
+       5
+      ],
+      "elimByCol": [
+       3,
+       5
+      ],
+      "elimByBox": [],
+      "row": "F",
+      "col": 2,
+      "box": 4
+     }
+    },
+    {
+     "t": 166,
+     "type": "wrong",
+     "seat": 0,
+     "cell": "E3",
+     "digit": 2,
+     "penalty": 1,
+     "score": 32.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E3",
+      "digit": 5,
+      "missingRow": [
+       1,
+       2,
+       4,
+       5,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       1,
+       2,
+       6,
+       7,
+       8
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "E",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 170,
+     "type": "correct",
+     "seat": 0,
+     "cell": "G2",
+     "digit": 6,
+     "rowFilled": 7,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 7,
+     "X": 7,
+     "Y": 7,
+     "points": 3,
+     "score": 35.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G2",
+      "digit": 6,
+      "missingRow": [
+       4,
+       6
+      ],
+      "elimByCol": [
+       4
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 2,
+      "box": 7
+     }
+    },
+    {
+     "t": 179,
+     "type": "correct",
+     "seat": 0,
+     "cell": "E2",
+     "digit": 7,
+     "rowFilled": 2,
+     "colFilled": 6,
+     "boxFilled": 6,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 40,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E2",
+      "digit": 7,
+      "missingRow": [
+       1,
+       2,
+       4,
+       5,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       2,
+       4,
+       5,
+       6
+      ],
+      "elimByBox": [
+       1,
+       8
+      ],
+      "row": "E",
+      "col": 2,
+      "box": 4
+     }
+    },
+    {
+     "t": 183,
+     "type": "correct",
+     "seat": 0,
+     "cell": "E3",
+     "digit": 5,
+     "rowFilled": 3,
+     "colFilled": 6,
+     "boxFilled": 7,
+     "digitCount": 4,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 43.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E3",
+      "digit": 5,
+      "missingRow": [
+       1,
+       2,
+       4,
+       5,
+       6,
+       8
+      ],
+      "elimByCol": [
+       1,
+       2,
+       6,
+       8
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "E",
+      "col": 3,
+      "box": 4
+     }
+    }
+   ],
+   "emptiesLeft": 31,
+   "nextMineExample": {
+    "cell": "H6",
+    "index": 68,
+    "digit": 3,
+    "rowFilled": 3,
+    "colFilled": 4,
+    "boxFilled": 5,
+    "digitCount": 5,
+    "X": 5,
+    "Y": 5,
+    "points": 6,
+    "expl": {
+     "technique": "nakedSingle",
+     "cell": "H6",
+     "digit": 3,
+     "missingRow": [
+      1,
+      2,
+      3,
+      5,
+      7,
+      9
+     ],
+     "elimByCol": [
+      2,
+      5,
+      7
+     ],
+     "elimByBox": [
+      1,
+      9
+     ],
+     "row": "H",
+     "col": 6,
+     "box": 8
+    }
+   },
+   "suggestedSelections": [
+    {
+     "cell": "A5",
+     "index": 4,
+     "candidates": [
+      3,
+      5,
+      8
+     ]
+    },
+    {
+     "cell": "A6",
+     "index": 5,
+     "candidates": [
+      3,
+      8
+     ]
+    },
+    {
+     "cell": "A7",
+     "index": 6,
+     "candidates": [
+      1,
+      3
+     ]
+    },
+    {
+     "cell": "A8",
+     "index": 7,
+     "candidates": [
+      1,
+      3
+     ]
+    },
+    {
+     "cell": "B2",
+     "index": 10,
+     "candidates": [
+      8
+     ]
+    },
+    {
+     "cell": "B5",
+     "index": 13,
+     "candidates": [
+      3,
+      8
+     ]
+    },
+    {
+     "cell": "B6",
+     "index": 14,
+     "candidates": [
+      3,
+      8,
+      9
+     ]
+    },
+    {
+     "cell": "B7",
+     "index": 15,
+     "candidates": [
+      2,
+      3,
+      7
+     ]
+    }
+   ]
+  },
+  "ranked2p": {
+   "puzzleIndex": 0,
+   "puzzle": "004300209005009001070060043006002087190007400050083000600000105003508690042910300",
+   "solution": "864371259325849761971265843436192587198657432257483916689734125713528694542916378",
+   "grid": "864370209325009061970060043036002087198657402057083000680004105013508690542916370",
+   "cells": [
+    {
+     "i": 0,
+     "name": "A1",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 1,
+     "name": "A2",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 2,
+     "name": "A3",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 3,
+     "name": "A4",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 4,
+     "name": "A5",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": [
+      {
+       "d": 5,
+       "by": 1
+      }
+     ]
+    },
+    {
+     "i": 5,
+     "name": "A6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 6,
+     "name": "A7",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 7,
+     "name": "A8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 8,
+     "name": "A9",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 9,
+     "name": "B1",
+     "v": 3,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 10,
+     "name": "B2",
+     "v": 2,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 11,
+     "name": "B3",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 12,
+     "name": "B4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 13,
+     "name": "B5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 14,
+     "name": "B6",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 15,
+     "name": "B7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 16,
+     "name": "B8",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 17,
+     "name": "B9",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 18,
+     "name": "C1",
+     "v": 9,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 19,
+     "name": "C2",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 20,
+     "name": "C3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 21,
+     "name": "C4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 22,
+     "name": "C5",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 23,
+     "name": "C6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 24,
+     "name": "C7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 25,
+     "name": "C8",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 26,
+     "name": "C9",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 27,
+     "name": "D1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 28,
+     "name": "D2",
+     "v": 3,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 29,
+     "name": "D3",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 30,
+     "name": "D4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 31,
+     "name": "D5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 32,
+     "name": "D6",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 33,
+     "name": "D7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 34,
+     "name": "D8",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 35,
+     "name": "D9",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 36,
+     "name": "E1",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 37,
+     "name": "E2",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 38,
+     "name": "E3",
+     "v": 8,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 39,
+     "name": "E4",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 40,
+     "name": "E5",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 41,
+     "name": "E6",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 42,
+     "name": "E7",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 43,
+     "name": "E8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 44,
+     "name": "E9",
+     "v": 2,
+     "given": false,
+     "by": 1,
+     "wrong": [
+      {
+       "d": 3,
+       "by": 0
+      }
+     ]
+    },
+    {
+     "i": 45,
+     "name": "F1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 46,
+     "name": "F2",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 47,
+     "name": "F3",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 48,
+     "name": "F4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 49,
+     "name": "F5",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 50,
+     "name": "F6",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 51,
+     "name": "F7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 52,
+     "name": "F8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 53,
+     "name": "F9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 54,
+     "name": "G1",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 55,
+     "name": "G2",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 56,
+     "name": "G3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 57,
+     "name": "G4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 58,
+     "name": "G5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 59,
+     "name": "G6",
+     "v": 4,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 60,
+     "name": "G7",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 61,
+     "name": "G8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 62,
+     "name": "G9",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 63,
+     "name": "H1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": [
+      {
+       "d": 4,
+       "by": 1
+      }
+     ]
+    },
+    {
+     "i": 64,
+     "name": "H2",
+     "v": 1,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 65,
+     "name": "H3",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 66,
+     "name": "H4",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 67,
+     "name": "H5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 68,
+     "name": "H6",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 69,
+     "name": "H7",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 70,
+     "name": "H8",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 71,
+     "name": "H9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 72,
+     "name": "I1",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 73,
+     "name": "I2",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 74,
+     "name": "I3",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 75,
+     "name": "I4",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 76,
+     "name": "I5",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 77,
+     "name": "I6",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 78,
+     "name": "I7",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 79,
+     "name": "I8",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 80,
+     "name": "I9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    }
+   ],
+   "players": [
+    {
+     "seat": 0,
+     "score": 55,
+     "mistakes": 1,
+     "correct": 11,
+     "interferences": 0,
+     "best": {
+      "cell": "E4",
+      "digit": 6,
+      "points": 7.5
+     }
+    },
+    {
+     "seat": 1,
+     "score": 39.5,
+     "mistakes": 2,
+     "correct": 8,
+     "interferences": 0,
+     "best": {
+      "cell": "G6",
+      "digit": 4,
+      "points": 6.5
+     }
+    }
+   ],
+   "log": [
+    {
+     "t": 9,
+     "type": "correct",
+     "seat": 0,
+     "cell": "D2",
+     "digit": 3,
+     "rowFilled": 4,
+     "colFilled": 4,
+     "boxFilled": 4,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 6.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D2",
+      "digit": 3,
+      "missingRow": [
+       1,
+       3,
+       4,
+       5,
+       9
+      ],
+      "elimByCol": [
+       4,
+       5,
+       9
+      ],
+      "elimByBox": [
+       1
+      ],
+      "row": "D",
+      "col": 2,
+      "box": 4
+     }
+    },
+    {
+     "t": 23,
+     "type": "correct",
+     "seat": 0,
+     "cell": "E4",
+     "digit": 6,
+     "rowFilled": 4,
+     "colFilled": 3,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 4,
+     "Y": 4,
+     "points": 7.5,
+     "score": 14,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E4",
+      "digit": 6,
+      "missingRow": [
+       2,
+       3,
+       5,
+       6,
+       8
+      ],
+      "elimByCol": [
+       3,
+       5
+      ],
+      "elimByBox": [
+       2,
+       8
+      ],
+      "row": "E",
+      "col": 4,
+      "box": 5
+     }
+    },
+    {
+     "t": 38,
+     "type": "correct",
+     "seat": 1,
+     "cell": "E3",
+     "digit": 8,
+     "rowFilled": 5,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 3,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 6,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E3",
+      "digit": 8,
+      "missingRow": [
+       2,
+       3,
+       5,
+       8
+      ],
+      "elimByCol": [
+       2,
+       3,
+       5
+      ],
+      "elimByBox": [],
+      "row": "E",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 47,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A1",
+     "digit": 8,
+     "rowFilled": 4,
+     "colFilled": 2,
+     "boxFilled": 3,
+     "digitCount": 4,
+     "X": 4,
+     "Y": 4,
+     "points": 7.5,
+     "score": 21.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A1",
+      "digit": 8,
+      "missingRow": [
+       1,
+       5,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       1,
+       6
+      ],
+      "elimByBox": [
+       5,
+       7
+      ],
+      "row": "A",
+      "col": 1,
+      "box": 1
+     }
+    },
+    {
+     "t": 60,
+     "type": "correct",
+     "seat": 0,
+     "cell": "E5",
+     "digit": 5,
+     "rowFilled": 6,
+     "colFilled": 3,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 26.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E5",
+      "digit": 5,
+      "missingRow": [
+       2,
+       3,
+       5
+      ],
+      "elimByCol": [],
+      "elimByBox": [
+       2,
+       3
+      ],
+      "row": "E",
+      "col": 5,
+      "box": 5
+     }
+    },
+    {
+     "t": 72,
+     "type": "correct",
+     "seat": 1,
+     "cell": "I8",
+     "digit": 7,
+     "rowFilled": 5,
+     "colFilled": 3,
+     "boxFilled": 5,
+     "digitCount": 3,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 12,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I8",
+      "digit": 7,
+      "missingRow": [
+       5,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       8
+      ],
+      "elimByBox": [
+       5,
+       6
+      ],
+      "row": "I",
+      "col": 8,
+      "box": 9
+     }
+    },
+    {
+     "t": 86,
+     "type": "correct",
+     "seat": 0,
+     "cell": "G2",
+     "digit": 8,
+     "rowFilled": 3,
+     "colFilled": 5,
+     "boxFilled": 4,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 32.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G2",
+      "digit": 8,
+      "missingRow": [
+       2,
+       3,
+       4,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       3,
+       4,
+       7,
+       9
+      ],
+      "elimByBox": [
+       2
+      ],
+      "row": "G",
+      "col": 2,
+      "box": 7
+     }
+    },
+    {
+     "t": 92,
+     "type": "correct",
+     "seat": 1,
+     "cell": "G6",
+     "digit": 4,
+     "rowFilled": 4,
+     "colFilled": 5,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 18.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G6",
+      "digit": 4,
+      "missingRow": [
+       2,
+       3,
+       4,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       3,
+       7,
+       9
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 6,
+      "box": 8
+     }
+    },
+    {
+     "t": 96,
+     "type": "wrong",
+     "seat": 1,
+     "cell": "H1",
+     "digit": 4,
+     "penalty": 1,
+     "score": 17.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H1",
+      "digit": 7,
+      "missingRow": [
+       1,
+       2,
+       4,
+       7
+      ],
+      "elimByCol": [
+       1
+      ],
+      "elimByBox": [
+       2,
+       4
+      ],
+      "row": "H",
+      "col": 1,
+      "box": 7
+     }
+    },
+    {
+     "t": 107,
+     "type": "correct",
+     "seat": 0,
+     "cell": "B8",
+     "digit": 6,
+     "rowFilled": 3,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 38.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B8",
+      "digit": 6,
+      "missingRow": [
+       2,
+       3,
+       4,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       4,
+       7,
+       8
+      ],
+      "elimByBox": [
+       2,
+       3
+      ],
+      "row": "B",
+      "col": 8,
+      "box": 3
+     }
+    },
+    {
+     "t": 120,
+     "type": "correct",
+     "seat": 1,
+     "cell": "B2",
+     "digit": 2,
+     "rowFilled": 4,
+     "colFilled": 6,
+     "boxFilled": 4,
+     "digitCount": 3,
+     "X": 6,
+     "Y": 4,
+     "points": 5.5,
+     "score": 23,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B2",
+      "digit": 2,
+      "missingRow": [
+       2,
+       3,
+       4,
+       7,
+       8
+      ],
+      "elimByCol": [
+       3,
+       4,
+       7,
+       8
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 2,
+      "box": 1
+     }
+    },
+    {
+     "t": 124,
+     "type": "correct",
+     "seat": 1,
+     "cell": "F3",
+     "digit": 7,
+     "rowFilled": 3,
+     "colFilled": 6,
+     "boxFilled": 6,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 27.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F3",
+      "digit": 7,
+      "missingRow": [
+       1,
+       2,
+       4,
+       6,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       4,
+       6
+      ],
+      "elimByBox": [
+       1,
+       9
+      ],
+      "row": "F",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 139,
+     "type": "correct",
+     "seat": 0,
+     "cell": "H2",
+     "digit": 1,
+     "rowFilled": 5,
+     "colFilled": 7,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 7,
+     "Y": 5,
+     "points": 4,
+     "score": 42.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H2",
+      "digit": 1,
+      "missingRow": [
+       1,
+       2,
+       4,
+       7
+      ],
+      "elimByCol": [
+       2,
+       4,
+       7
+      ],
+      "elimByBox": [],
+      "row": "H",
+      "col": 2,
+      "box": 7
+     }
+    },
+    {
+     "t": 147,
+     "type": "correct",
+     "seat": 1,
+     "cell": "B1",
+     "digit": 3,
+     "rowFilled": 5,
+     "colFilled": 3,
+     "boxFilled": 5,
+     "digitCount": 6,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 32.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B1",
+      "digit": 3,
+      "missingRow": [
+       3,
+       4,
+       7,
+       8
+      ],
+      "elimByCol": [
+       8
+      ],
+      "elimByBox": [
+       4,
+       7
+      ],
+      "row": "B",
+      "col": 1,
+      "box": 1
+     }
+    },
+    {
+     "t": 163,
+     "type": "wrong",
+     "seat": 0,
+     "cell": "E9",
+     "digit": 3,
+     "penalty": 1,
+     "score": 41.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E9",
+      "digit": 2,
+      "missingRow": [
+       2,
+       3
+      ],
+      "elimByCol": [
+       3
+      ],
+      "elimByBox": [],
+      "row": "E",
+      "col": 9,
+      "box": 6
+     }
+    },
+    {
+     "t": 168,
+     "type": "correct",
+     "seat": 1,
+     "cell": "E9",
+     "digit": 2,
+     "rowFilled": 7,
+     "colFilled": 5,
+     "boxFilled": 3,
+     "digitCount": 4,
+     "X": 7,
+     "Y": 5,
+     "points": 4,
+     "score": 36.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E9",
+      "digit": 2,
+      "missingRow": [
+       2,
+       3
+      ],
+      "elimByCol": [
+       3
+      ],
+      "elimByBox": [],
+      "row": "E",
+      "col": 9,
+      "box": 6
+     }
+    },
+    {
+     "t": 174,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A2",
+     "digit": 6,
+     "rowFilled": 5,
+     "colFilled": 8,
+     "boxFilled": 6,
+     "digitCount": 6,
+     "X": 8,
+     "Y": 6,
+     "points": 2.5,
+     "score": 44,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A2",
+      "digit": 6,
+      "missingRow": [
+       1,
+       5,
+       6,
+       7
+      ],
+      "elimByCol": [
+       1,
+       5,
+       7
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 2,
+      "box": 1
+     }
+    },
+    {
+     "t": 179,
+     "type": "correct",
+     "seat": 0,
+     "cell": "I6",
+     "digit": 6,
+     "rowFilled": 6,
+     "colFilled": 6,
+     "boxFilled": 5,
+     "digitCount": 7,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 47.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I6",
+      "digit": 6,
+      "missingRow": [
+       5,
+       6,
+       8
+      ],
+      "elimByCol": [
+       8
+      ],
+      "elimByBox": [
+       5
+      ],
+      "row": "I",
+      "col": 6,
+      "box": 8
+     }
+    },
+    {
+     "t": 191,
+     "type": "wrong",
+     "seat": 1,
+     "cell": "A5",
+     "digit": 5,
+     "penalty": 2,
+     "score": 34.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A5",
+      "digit": 7,
+      "missingRow": [
+       1,
+       5,
+       7
+      ],
+      "elimByCol": [
+       1,
+       5
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 5,
+      "box": 2
+     }
+    },
+    {
+     "t": 195,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C1",
+     "digit": 9,
+     "rowFilled": 4,
+     "colFilled": 4,
+     "boxFilled": 7,
+     "digitCount": 5,
+     "X": 7,
+     "Y": 5,
+     "points": 4,
+     "score": 51.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C1",
+      "digit": 9,
+      "missingRow": [
+       1,
+       2,
+       5,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       8
+      ],
+      "elimByBox": [
+       2,
+       5
+      ],
+      "row": "C",
+      "col": 1,
+      "box": 1
+     }
+    },
+    {
+     "t": 209,
+     "type": "correct",
+     "seat": 1,
+     "cell": "A5",
+     "digit": 7,
+     "rowFilled": 6,
+     "colFilled": 4,
+     "boxFilled": 3,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 39.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A5",
+      "digit": 7,
+      "missingRow": [
+       1,
+       5,
+       7
+      ],
+      "elimByCol": [
+       1,
+       5
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 5,
+      "box": 2
+     }
+    },
+    {
+     "t": 221,
+     "type": "correct",
+     "seat": 0,
+     "cell": "I1",
+     "digit": 5,
+     "rowFilled": 7,
+     "colFilled": 5,
+     "boxFilled": 6,
+     "digitCount": 5,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 55,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I1",
+      "digit": 5,
+      "missingRow": [
+       5,
+       8
+      ],
+      "elimByCol": [
+       8
+      ],
+      "elimByBox": [],
+      "row": "I",
+      "col": 1,
+      "box": 7
+     }
+    }
+   ],
+   "emptiesLeft": 27,
+   "nextMineExample": {
+    "cell": "F8",
+    "index": 52,
+    "digit": 1,
+    "rowFilled": 4,
+    "colFilled": 5,
+    "boxFilled": 4,
+    "digitCount": 5,
+    "X": 5,
+    "Y": 5,
+    "points": 6,
+    "expl": {
+     "technique": "nakedSingle",
+     "cell": "F8",
+     "digit": 1,
+     "missingRow": [
+      1,
+      2,
+      4,
+      6,
+      9
+     ],
+     "elimByCol": [
+      4,
+      6,
+      9
+     ],
+     "elimByBox": [
+      2
+     ],
+     "row": "F",
+     "col": 8,
+     "box": 6
+    }
+   },
+   "suggestedSelections": [
+    {
+     "cell": "A6",
+     "index": 5,
+     "candidates": [
+      1,
+      5
+     ]
+    },
+    {
+     "cell": "A8",
+     "index": 7,
+     "candidates": [
+      5
+     ]
+    },
+    {
+     "cell": "B4",
+     "index": 12,
+     "candidates": [
+      4,
+      8
+     ]
+    },
+    {
+     "cell": "B5",
+     "index": 13,
+     "candidates": [
+      4
+     ]
+    },
+    {
+     "cell": "B7",
+     "index": 15,
+     "candidates": [
+      7,
+      8
+     ]
+    },
+    {
+     "cell": "C3",
+     "index": 20,
+     "candidates": [
+      1
+     ]
+    },
+    {
+     "cell": "C4",
+     "index": 21,
+     "candidates": [
+      1,
+      2,
+      8
+     ]
+    },
+    {
+     "cell": "C6",
+     "index": 23,
+     "candidates": [
+      1,
+      5
+     ]
+    }
+   ]
+  },
+  "ranked3p": {
+   "puzzleIndex": 5,
+   "puzzle": "100005007380900000600000480820001075040760020069002001005039004000020100000046352",
+   "solution": "194685237382974516657213489823491675541768923769352841215839764436527198978146352",
+   "grid": "194085237382974516600010489820001075540760020769352841005039064400020100900046352",
+   "cells": [
+    {
+     "i": 0,
+     "name": "A1",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 1,
+     "name": "A2",
+     "v": 9,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 2,
+     "name": "A3",
+     "v": 4,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 3,
+     "name": "A4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 4,
+     "name": "A5",
+     "v": 8,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 5,
+     "name": "A6",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 6,
+     "name": "A7",
+     "v": 2,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 7,
+     "name": "A8",
+     "v": 3,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 8,
+     "name": "A9",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 9,
+     "name": "B1",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 10,
+     "name": "B2",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 11,
+     "name": "B3",
+     "v": 2,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 12,
+     "name": "B4",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 13,
+     "name": "B5",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 14,
+     "name": "B6",
+     "v": 4,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 15,
+     "name": "B7",
+     "v": 5,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 16,
+     "name": "B8",
+     "v": 1,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 17,
+     "name": "B9",
+     "v": 6,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 18,
+     "name": "C1",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 19,
+     "name": "C2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 20,
+     "name": "C3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 21,
+     "name": "C4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 22,
+     "name": "C5",
+     "v": 1,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 23,
+     "name": "C6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": [
+      {
+       "d": 7,
+       "by": 2
+      }
+     ]
+    },
+    {
+     "i": 24,
+     "name": "C7",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 25,
+     "name": "C8",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 26,
+     "name": "C9",
+     "v": 9,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 27,
+     "name": "D1",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 28,
+     "name": "D2",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 29,
+     "name": "D3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 30,
+     "name": "D4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 31,
+     "name": "D5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": [
+      {
+       "d": 6,
+       "by": 2
+      }
+     ]
+    },
+    {
+     "i": 32,
+     "name": "D6",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 33,
+     "name": "D7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 34,
+     "name": "D8",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 35,
+     "name": "D9",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 36,
+     "name": "E1",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 37,
+     "name": "E2",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 38,
+     "name": "E3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 39,
+     "name": "E4",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 40,
+     "name": "E5",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 41,
+     "name": "E6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 42,
+     "name": "E7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 43,
+     "name": "E8",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 44,
+     "name": "E9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 45,
+     "name": "F1",
+     "v": 7,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 46,
+     "name": "F2",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 47,
+     "name": "F3",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 48,
+     "name": "F4",
+     "v": 3,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 49,
+     "name": "F5",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 50,
+     "name": "F6",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 51,
+     "name": "F7",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 52,
+     "name": "F8",
+     "v": 4,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 53,
+     "name": "F9",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 54,
+     "name": "G1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 55,
+     "name": "G2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 56,
+     "name": "G3",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 57,
+     "name": "G4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 58,
+     "name": "G5",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 59,
+     "name": "G6",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 60,
+     "name": "G7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 61,
+     "name": "G8",
+     "v": 6,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 62,
+     "name": "G9",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 63,
+     "name": "H1",
+     "v": 4,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 64,
+     "name": "H2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 65,
+     "name": "H3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 66,
+     "name": "H4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 67,
+     "name": "H5",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 68,
+     "name": "H6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 69,
+     "name": "H7",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 70,
+     "name": "H8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 71,
+     "name": "H9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 72,
+     "name": "I1",
+     "v": 9,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 73,
+     "name": "I2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 74,
+     "name": "I3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 75,
+     "name": "I4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 76,
+     "name": "I5",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 77,
+     "name": "I6",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 78,
+     "name": "I7",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 79,
+     "name": "I8",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 80,
+     "name": "I9",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    }
+   ],
+   "players": [
+    {
+     "seat": 0,
+     "score": 52.5,
+     "mistakes": 0,
+     "correct": 11,
+     "interferences": 0,
+     "best": {
+      "cell": "A2",
+      "digit": 9,
+      "points": 7.5
+     }
+    },
+    {
+     "seat": 1,
+     "score": 17.5,
+     "mistakes": 0,
+     "correct": 4,
+     "interferences": 0,
+     "best": {
+      "cell": "B5",
+      "digit": 7,
+      "points": 7.5
+     }
+    },
+    {
+     "seat": 2,
+     "score": 33,
+     "mistakes": 2,
+     "correct": 7,
+     "interferences": 0,
+     "best": {
+      "cell": "G8",
+      "digit": 6,
+      "points": 6.5
+     }
+    }
+   ],
+   "log": [
+    {
+     "t": 11,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A2",
+     "digit": 9,
+     "rowFilled": 3,
+     "colFilled": 4,
+     "boxFilled": 4,
+     "digitCount": 3,
+     "X": 4,
+     "Y": 4,
+     "points": 7.5,
+     "score": 7.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A2",
+      "digit": 9,
+      "missingRow": [
+       2,
+       3,
+       4,
+       6,
+       8,
+       9
+      ],
+      "elimByCol": [
+       2,
+       4,
+       6,
+       8
+      ],
+      "elimByBox": [
+       3
+      ],
+      "row": "A",
+      "col": 2,
+      "box": 1
+     }
+    },
+    {
+     "t": 17,
+     "type": "correct",
+     "seat": 2,
+     "cell": "G8",
+     "digit": 6,
+     "rowFilled": 4,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 6.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G8",
+      "digit": 6,
+      "missingRow": [
+       1,
+       2,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       2,
+       7,
+       8
+      ],
+      "elimByBox": [
+       1
+      ],
+      "row": "G",
+      "col": 8,
+      "box": 9
+     }
+    },
+    {
+     "t": 32,
+     "type": "correct",
+     "seat": 2,
+     "cell": "B8",
+     "digit": 1,
+     "rowFilled": 3,
+     "colFilled": 5,
+     "boxFilled": 3,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 13,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B8",
+      "digit": 1,
+      "missingRow": [
+       1,
+       2,
+       4,
+       5,
+       6,
+       7
+      ],
+      "elimByCol": [
+       2,
+       5,
+       6,
+       7
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "B",
+      "col": 8,
+      "box": 3
+     }
+    },
+    {
+     "t": 39,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A8",
+     "digit": 3,
+     "rowFilled": 4,
+     "colFilled": 6,
+     "boxFilled": 4,
+     "digitCount": 3,
+     "X": 6,
+     "Y": 4,
+     "points": 5.5,
+     "score": 13,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A8",
+      "digit": 3,
+      "missingRow": [
+       2,
+       3,
+       4,
+       6,
+       8
+      ],
+      "elimByCol": [
+       2,
+       6,
+       8
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "A",
+      "col": 8,
+      "box": 3
+     }
+    },
+    {
+     "t": 52,
+     "type": "correct",
+     "seat": 0,
+     "cell": "F8",
+     "digit": 4,
+     "rowFilled": 4,
+     "colFilled": 7,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 7,
+     "Y": 4,
+     "points": 4.5,
+     "score": 17.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F8",
+      "digit": 4,
+      "missingRow": [
+       3,
+       4,
+       5,
+       7,
+       8
+      ],
+      "elimByCol": [
+       3,
+       5,
+       7,
+       8
+      ],
+      "elimByBox": [],
+      "row": "F",
+      "col": 8,
+      "box": 6
+     }
+    },
+    {
+     "t": 66,
+     "type": "wrong",
+     "seat": 2,
+     "cell": "D5",
+     "digit": 6,
+     "penalty": 1,
+     "score": 12,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D5",
+      "digit": 9,
+      "missingRow": [
+       3,
+       4,
+       6,
+       9
+      ],
+      "elimByCol": [
+       3,
+       4,
+       6
+      ],
+      "elimByBox": [],
+      "row": "D",
+      "col": 5,
+      "box": 5
+     }
+    },
+    {
+     "t": 72,
+     "type": "correct",
+     "seat": 1,
+     "cell": "B5",
+     "digit": 7,
+     "rowFilled": 4,
+     "colFilled": 4,
+     "boxFilled": 2,
+     "digitCount": 3,
+     "X": 4,
+     "Y": 4,
+     "points": 7.5,
+     "score": 7.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B5",
+      "digit": 7,
+      "missingRow": [
+       2,
+       4,
+       5,
+       6,
+       7
+      ],
+      "elimByCol": [
+       2,
+       4,
+       6
+      ],
+      "elimByBox": [
+       5
+      ],
+      "row": "B",
+      "col": 5,
+      "box": 2
+     }
+    },
+    {
+     "t": 76,
+     "type": "correct",
+     "seat": 0,
+     "cell": "E1",
+     "digit": 5,
+     "rowFilled": 4,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 24,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E1",
+      "digit": 5,
+      "missingRow": [
+       1,
+       3,
+       5,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       3,
+       8
+      ],
+      "elimByBox": [
+       9
+      ],
+      "row": "E",
+      "col": 1,
+      "box": 4
+     }
+    },
+    {
+     "t": 84,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C5",
+     "digit": 1,
+     "rowFilled": 3,
+     "colFilled": 5,
+     "boxFilled": 3,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 30,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C5",
+      "digit": 1,
+      "missingRow": [
+       1,
+       2,
+       3,
+       5,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       3,
+       7
+      ],
+      "elimByBox": [
+       5,
+       9
+      ],
+      "row": "C",
+      "col": 5,
+      "box": 2
+     }
+    },
+    {
+     "t": 88,
+     "type": "correct",
+     "seat": 2,
+     "cell": "B9",
+     "digit": 6,
+     "rowFilled": 5,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 18,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B9",
+      "digit": 6,
+      "missingRow": [
+       2,
+       4,
+       5,
+       6
+      ],
+      "elimByCol": [
+       2,
+       4,
+       5
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 9,
+      "box": 3
+     }
+    },
+    {
+     "t": 93,
+     "type": "correct",
+     "seat": 2,
+     "cell": "C9",
+     "digit": 9,
+     "rowFilled": 4,
+     "colFilled": 6,
+     "boxFilled": 6,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 22.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C9",
+      "digit": 9,
+      "missingRow": [
+       2,
+       3,
+       5,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       5,
+       7
+      ],
+      "elimByBox": [
+       3
+      ],
+      "row": "C",
+      "col": 9,
+      "box": 3
+     }
+    },
+    {
+     "t": 102,
+     "type": "correct",
+     "seat": 2,
+     "cell": "A5",
+     "digit": 8,
+     "rowFilled": 5,
+     "colFilled": 6,
+     "boxFilled": 4,
+     "digitCount": 3,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 27.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A5",
+      "digit": 8,
+      "missingRow": [
+       2,
+       4,
+       6,
+       8
+      ],
+      "elimByCol": [
+       2,
+       4,
+       6
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 5,
+      "box": 2
+     }
+    },
+    {
+     "t": 106,
+     "type": "wrong",
+     "seat": 2,
+     "cell": "C6",
+     "digit": 7,
+     "penalty": 2,
+     "score": 25.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C6",
+      "digit": 3,
+      "missingRow": [
+       2,
+       3,
+       5,
+       7
+      ],
+      "elimByCol": [
+       2,
+       5
+      ],
+      "elimByBox": [
+       7
+      ],
+      "row": "C",
+      "col": 6,
+      "box": 2
+     }
+    },
+    {
+     "t": 119,
+     "type": "correct",
+     "seat": 2,
+     "cell": "F1",
+     "digit": 7,
+     "rowFilled": 5,
+     "colFilled": 5,
+     "boxFilled": 6,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 30.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F1",
+      "digit": 7,
+      "missingRow": [
+       3,
+       5,
+       7,
+       8
+      ],
+      "elimByCol": [
+       3,
+       5,
+       8
+      ],
+      "elimByBox": [],
+      "row": "F",
+      "col": 1,
+      "box": 4
+     }
+    },
+    {
+     "t": 134,
+     "type": "correct",
+     "seat": 1,
+     "cell": "B6",
+     "digit": 4,
+     "rowFilled": 6,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 12.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B6",
+      "digit": 4,
+      "missingRow": [
+       2,
+       4,
+       5
+      ],
+      "elimByCol": [
+       2,
+       5
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 6,
+      "box": 2
+     }
+    },
+    {
+     "t": 149,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A7",
+     "digit": 2,
+     "rowFilled": 6,
+     "colFilled": 3,
+     "boxFilled": 7,
+     "digitCount": 5,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 33.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A7",
+      "digit": 2,
+      "missingRow": [
+       2,
+       4,
+       6
+      ],
+      "elimByCol": [
+       4
+      ],
+      "elimByBox": [
+       6
+      ],
+      "row": "A",
+      "col": 7,
+      "box": 3
+     }
+    },
+    {
+     "t": 161,
+     "type": "correct",
+     "seat": 1,
+     "cell": "B7",
+     "digit": 5,
+     "rowFilled": 7,
+     "colFilled": 4,
+     "boxFilled": 8,
+     "digitCount": 5,
+     "X": 8,
+     "Y": 7,
+     "points": 2,
+     "score": 14.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B7",
+      "digit": 5,
+      "missingRow": [
+       2,
+       5
+      ],
+      "elimByCol": [
+       2
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 7,
+      "box": 3
+     }
+    },
+    {
+     "t": 166,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A3",
+     "digit": 4,
+     "rowFilled": 7,
+     "colFilled": 2,
+     "boxFilled": 5,
+     "digitCount": 6,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 37,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A3",
+      "digit": 4,
+      "missingRow": [
+       4,
+       6
+      ],
+      "elimByCol": [],
+      "elimByBox": [
+       6
+      ],
+      "row": "A",
+      "col": 3,
+      "box": 1
+     }
+    },
+    {
+     "t": 176,
+     "type": "correct",
+     "seat": 0,
+     "cell": "F5",
+     "digit": 5,
+     "rowFilled": 6,
+     "colFilled": 7,
+     "boxFilled": 4,
+     "digitCount": 6,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 40.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F5",
+      "digit": 5,
+      "missingRow": [
+       3,
+       5,
+       8
+      ],
+      "elimByCol": [
+       3,
+       8
+      ],
+      "elimByBox": [],
+      "row": "F",
+      "col": 5,
+      "box": 5
+     }
+    },
+    {
+     "t": 189,
+     "type": "correct",
+     "seat": 0,
+     "cell": "F7",
+     "digit": 8,
+     "rowFilled": 7,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 7,
+     "Y": 5,
+     "points": 4,
+     "score": 44.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F7",
+      "digit": 8,
+      "missingRow": [
+       3,
+       8
+      ],
+      "elimByCol": [
+       3
+      ],
+      "elimByBox": [],
+      "row": "F",
+      "col": 7,
+      "box": 6
+     }
+    },
+    {
+     "t": 203,
+     "type": "correct",
+     "seat": 0,
+     "cell": "I1",
+     "digit": 9,
+     "rowFilled": 5,
+     "colFilled": 6,
+     "boxFilled": 1,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 49.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I1",
+      "digit": 9,
+      "missingRow": [
+       1,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       7,
+       8
+      ],
+      "elimByBox": [],
+      "row": "I",
+      "col": 1,
+      "box": 7
+     }
+    },
+    {
+     "t": 216,
+     "type": "correct",
+     "seat": 2,
+     "cell": "B3",
+     "digit": 2,
+     "rowFilled": 8,
+     "colFilled": 3,
+     "boxFilled": 6,
+     "digitCount": 6,
+     "X": 8,
+     "Y": 6,
+     "points": 2.5,
+     "score": 33,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B3",
+      "digit": 2,
+      "missingRow": [
+       2
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "B",
+      "col": 3,
+      "box": 1
+     }
+    },
+    {
+     "t": 228,
+     "type": "correct",
+     "seat": 1,
+     "cell": "H1",
+     "digit": 4,
+     "rowFilled": 2,
+     "colFilled": 7,
+     "boxFilled": 2,
+     "digitCount": 7,
+     "X": 7,
+     "Y": 7,
+     "points": 3,
+     "score": 17.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H1",
+      "digit": 4,
+      "missingRow": [
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       3,
+       5,
+       6,
+       7,
+       8,
+       9
+      ],
+      "elimByBox": [],
+      "row": "H",
+      "col": 1,
+      "box": 7
+     }
+    },
+    {
+     "t": 240,
+     "type": "correct",
+     "seat": 0,
+     "cell": "F4",
+     "digit": 3,
+     "rowFilled": 8,
+     "colFilled": 2,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 8,
+     "Y": 5,
+     "points": 3,
+     "score": 52.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F4",
+      "digit": 3,
+      "missingRow": [
+       3
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "F",
+      "col": 4,
+      "box": 5
+     }
+    }
+   ],
+   "emptiesLeft": 26,
+   "nextMineExample": {
+    "cell": "C6",
+    "index": 23,
+    "digit": 3,
+    "rowFilled": 5,
+    "colFilled": 6,
+    "boxFilled": 6,
+    "digitCount": 5,
+    "X": 6,
+    "Y": 6,
+    "points": 4.5,
+    "expl": {
+     "technique": "nakedSingle",
+     "cell": "C6",
+     "digit": 3,
+     "missingRow": [
+      2,
+      3,
+      5,
+      7
+     ],
+     "elimByCol": [
+      2,
+      5
+     ],
+     "elimByBox": [
+      7
+     ],
+     "row": "C",
+     "col": 6,
+     "box": 2
+    }
+   },
+   "suggestedSelections": [
+    {
+     "cell": "A4",
+     "index": 3,
+     "candidates": [
+      6
+     ]
+    },
+    {
+     "cell": "C2",
+     "index": 19,
+     "candidates": [
+      5,
+      7
+     ]
+    },
+    {
+     "cell": "C3",
+     "index": 20,
+     "candidates": [
+      7
+     ]
+    },
+    {
+     "cell": "C4",
+     "index": 21,
+     "candidates": [
+      2
+     ]
+    },
+    {
+     "cell": "C6",
+     "index": 23,
+     "candidates": [
+      3
+     ]
+    },
+    {
+     "cell": "D3",
+     "index": 29,
+     "candidates": [
+      3
+     ]
+    },
+    {
+     "cell": "D4",
+     "index": 30,
+     "candidates": [
+      4
+     ]
+    },
+    {
+     "cell": "D5",
+     "index": 31,
+     "candidates": [
+      9
+     ]
+    }
+   ]
+  },
+  "ranked4p": {
+   "puzzleIndex": 8,
+   "puzzle": "503070190000006750047190600400038000950200300000010072000804001300001860086720005",
+   "solution": "563472198219386754847195623472638519951247386638519472795864231324951867186723945",
+   "grid": "563472198009386754847195623402038010951247300638010072005864001304051860186720005",
+   "cells": [
+    {
+     "i": 0,
+     "name": "A1",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 1,
+     "name": "A2",
+     "v": 6,
+     "given": false,
+     "by": 3,
+     "wrong": []
+    },
+    {
+     "i": 2,
+     "name": "A3",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 3,
+     "name": "A4",
+     "v": 4,
+     "given": false,
+     "by": 3,
+     "wrong": []
+    },
+    {
+     "i": 4,
+     "name": "A5",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 5,
+     "name": "A6",
+     "v": 2,
+     "given": false,
+     "by": 3,
+     "wrong": []
+    },
+    {
+     "i": 6,
+     "name": "A7",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 7,
+     "name": "A8",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 8,
+     "name": "A9",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 9,
+     "name": "B1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 10,
+     "name": "B2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 11,
+     "name": "B3",
+     "v": 9,
+     "given": false,
+     "by": 0,
+     "wrong": [
+      {
+       "d": 2,
+       "by": 0
+      }
+     ]
+    },
+    {
+     "i": 12,
+     "name": "B4",
+     "v": 3,
+     "given": false,
+     "by": 3,
+     "wrong": []
+    },
+    {
+     "i": 13,
+     "name": "B5",
+     "v": 8,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 14,
+     "name": "B6",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 15,
+     "name": "B7",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 16,
+     "name": "B8",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 17,
+     "name": "B9",
+     "v": 4,
+     "given": false,
+     "by": 3,
+     "wrong": []
+    },
+    {
+     "i": 18,
+     "name": "C1",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 19,
+     "name": "C2",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 20,
+     "name": "C3",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 21,
+     "name": "C4",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 22,
+     "name": "C5",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 23,
+     "name": "C6",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 24,
+     "name": "C7",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 25,
+     "name": "C8",
+     "v": 2,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 26,
+     "name": "C9",
+     "v": 3,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 27,
+     "name": "D1",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 28,
+     "name": "D2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 29,
+     "name": "D3",
+     "v": 2,
+     "given": false,
+     "by": 1,
+     "wrong": [
+      {
+       "d": 9,
+       "by": 1
+      }
+     ]
+    },
+    {
+     "i": 30,
+     "name": "D4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 31,
+     "name": "D5",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 32,
+     "name": "D6",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 33,
+     "name": "D7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 34,
+     "name": "D8",
+     "v": 1,
+     "given": false,
+     "by": 3,
+     "wrong": []
+    },
+    {
+     "i": 35,
+     "name": "D9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 36,
+     "name": "E1",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 37,
+     "name": "E2",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 38,
+     "name": "E3",
+     "v": 1,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 39,
+     "name": "E4",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 40,
+     "name": "E5",
+     "v": 4,
+     "given": false,
+     "by": 2,
+     "wrong": [
+      {
+       "d": 1,
+       "by": 1
+      }
+     ]
+    },
+    {
+     "i": 41,
+     "name": "E6",
+     "v": 7,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 42,
+     "name": "E7",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 43,
+     "name": "E8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 44,
+     "name": "E9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 45,
+     "name": "F1",
+     "v": 6,
+     "given": false,
+     "by": 3,
+     "wrong": []
+    },
+    {
+     "i": 46,
+     "name": "F2",
+     "v": 3,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 47,
+     "name": "F3",
+     "v": 8,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 48,
+     "name": "F4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 49,
+     "name": "F5",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 50,
+     "name": "F6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 51,
+     "name": "F7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 52,
+     "name": "F8",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 53,
+     "name": "F9",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 54,
+     "name": "G1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 55,
+     "name": "G2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 56,
+     "name": "G3",
+     "v": 5,
+     "given": false,
+     "by": 3,
+     "wrong": []
+    },
+    {
+     "i": 57,
+     "name": "G4",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 58,
+     "name": "G5",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 59,
+     "name": "G6",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 60,
+     "name": "G7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 61,
+     "name": "G8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 62,
+     "name": "G9",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 63,
+     "name": "H1",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 64,
+     "name": "H2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 65,
+     "name": "H3",
+     "v": 4,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 66,
+     "name": "H4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 67,
+     "name": "H5",
+     "v": 5,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 68,
+     "name": "H6",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 69,
+     "name": "H7",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 70,
+     "name": "H8",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 71,
+     "name": "H9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 72,
+     "name": "I1",
+     "v": 1,
+     "given": false,
+     "by": 2,
+     "wrong": []
+    },
+    {
+     "i": 73,
+     "name": "I2",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 74,
+     "name": "I3",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 75,
+     "name": "I4",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 76,
+     "name": "I5",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 77,
+     "name": "I6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 78,
+     "name": "I7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 79,
+     "name": "I8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 80,
+     "name": "I9",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    }
+   ],
+   "players": [
+    {
+     "seat": 0,
+     "score": 30.5,
+     "mistakes": 1,
+     "correct": 8,
+     "interferences": 0,
+     "best": {
+      "cell": "F2",
+      "digit": 3,
+      "points": 6
+     }
+    },
+    {
+     "seat": 1,
+     "score": 2.5,
+     "mistakes": 2,
+     "correct": 1,
+     "interferences": 0,
+     "best": {
+      "cell": "D3",
+      "digit": 2,
+      "points": 5.5
+     }
+    },
+    {
+     "seat": 2,
+     "score": 36.5,
+     "mistakes": 0,
+     "correct": 8,
+     "interferences": 0,
+     "best": {
+      "cell": "F3",
+      "digit": 8,
+      "points": 8
+     }
+    },
+    {
+     "seat": 3,
+     "score": 39,
+     "mistakes": 0,
+     "correct": 8,
+     "interferences": 0,
+     "best": {
+      "cell": "F1",
+      "digit": 6,
+      "points": 7.5
+     }
+    }
+   ],
+   "log": [
+    {
+     "t": 16,
+     "type": "correct",
+     "seat": 2,
+     "cell": "F3",
+     "digit": 8,
+     "rowFilled": 3,
+     "colFilled": 3,
+     "boxFilled": 3,
+     "digitCount": 4,
+     "X": 4,
+     "Y": 3,
+     "points": 8,
+     "score": 8,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F3",
+      "digit": 8,
+      "missingRow": [
+       3,
+       4,
+       5,
+       6,
+       8,
+       9
+      ],
+      "elimByCol": [
+       3,
+       6
+      ],
+      "elimByBox": [
+       4,
+       5,
+       9
+      ],
+      "row": "F",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 21,
+     "type": "correct",
+     "seat": 3,
+     "cell": "A6",
+     "digit": 2,
+     "rowFilled": 5,
+     "colFilled": 4,
+     "boxFilled": 4,
+     "digitCount": 3,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 6.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A6",
+      "digit": 2,
+      "missingRow": [
+       2,
+       4,
+       6,
+       8
+      ],
+      "elimByCol": [
+       4,
+       6,
+       8
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 6,
+      "box": 2
+     }
+    },
+    {
+     "t": 37,
+     "type": "correct",
+     "seat": 3,
+     "cell": "F1",
+     "digit": 6,
+     "rowFilled": 4,
+     "colFilled": 4,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 4,
+     "Y": 4,
+     "points": 7.5,
+     "score": 14,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F1",
+      "digit": 6,
+      "missingRow": [
+       3,
+       4,
+       5,
+       6,
+       9
+      ],
+      "elimByCol": [
+       3,
+       4,
+       5,
+       9
+      ],
+      "elimByBox": [],
+      "row": "F",
+      "col": 1,
+      "box": 4
+     }
+    },
+    {
+     "t": 42,
+     "type": "correct",
+     "seat": 3,
+     "cell": "A2",
+     "digit": 6,
+     "rowFilled": 6,
+     "colFilled": 3,
+     "boxFilled": 4,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 19,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A2",
+      "digit": 6,
+      "missingRow": [
+       4,
+       6,
+       8
+      ],
+      "elimByCol": [
+       4,
+       8
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 2,
+      "box": 1
+     }
+    },
+    {
+     "t": 52,
+     "type": "correct",
+     "seat": 0,
+     "cell": "F2",
+     "digit": 3,
+     "rowFilled": 5,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 6,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F2",
+      "digit": 3,
+      "missingRow": [
+       3,
+       4,
+       5,
+       9
+      ],
+      "elimByCol": [
+       4,
+       5
+      ],
+      "elimByBox": [
+       9
+      ],
+      "row": "F",
+      "col": 2,
+      "box": 4
+     }
+    },
+    {
+     "t": 58,
+     "type": "correct",
+     "seat": 2,
+     "cell": "I1",
+     "digit": 1,
+     "rowFilled": 5,
+     "colFilled": 5,
+     "boxFilled": 3,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 14,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I1",
+      "digit": 1,
+      "missingRow": [
+       1,
+       3,
+       4,
+       9
+      ],
+      "elimByCol": [
+       3,
+       4,
+       9
+      ],
+      "elimByBox": [],
+      "row": "I",
+      "col": 1,
+      "box": 7
+     }
+    },
+    {
+     "t": 74,
+     "type": "correct",
+     "seat": 3,
+     "cell": "D8",
+     "digit": 1,
+     "rowFilled": 3,
+     "colFilled": 4,
+     "boxFilled": 3,
+     "digitCount": 6,
+     "X": 6,
+     "Y": 4,
+     "points": 5.5,
+     "score": 24.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D8",
+      "digit": 1,
+      "missingRow": [
+       1,
+       2,
+       5,
+       6,
+       7,
+       9
+      ],
+      "elimByCol": [
+       5,
+       6,
+       7,
+       9
+      ],
+      "elimByBox": [
+       2
+      ],
+      "row": "D",
+      "col": 8,
+      "box": 6
+     }
+    },
+    {
+     "t": 89,
+     "type": "correct",
+     "seat": 2,
+     "cell": "H5",
+     "digit": 5,
+     "rowFilled": 4,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 20,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H5",
+      "digit": 5,
+      "missingRow": [
+       2,
+       4,
+       5,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       7,
+       9
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "H",
+      "col": 5,
+      "box": 8
+     }
+    },
+    {
+     "t": 103,
+     "type": "correct",
+     "seat": 3,
+     "cell": "A4",
+     "digit": 4,
+     "rowFilled": 7,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 3,
+     "X": 7,
+     "Y": 5,
+     "points": 4,
+     "score": 28.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A4",
+      "digit": 4,
+      "missingRow": [
+       4,
+       8
+      ],
+      "elimByCol": [
+       8
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 4,
+      "box": 2
+     }
+    },
+    {
+     "t": 119,
+     "type": "correct",
+     "seat": 0,
+     "cell": "G5",
+     "digit": 6,
+     "rowFilled": 3,
+     "colFilled": 6,
+     "boxFilled": 6,
+     "digitCount": 6,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 10.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G5",
+      "digit": 6,
+      "missingRow": [
+       2,
+       3,
+       5,
+       6,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       3,
+       5,
+       7,
+       9
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 5,
+      "box": 8
+     }
+    },
+    {
+     "t": 132,
+     "type": "wrong",
+     "seat": 1,
+     "cell": "D3",
+     "digit": 9,
+     "penalty": 1,
+     "score": -1,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D3",
+      "digit": 2,
+      "missingRow": [
+       2,
+       5,
+       6,
+       7,
+       9
+      ],
+      "elimByCol": [
+       6,
+       7
+      ],
+      "elimByBox": [
+       5,
+       9
+      ],
+      "row": "D",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 136,
+     "type": "correct",
+     "seat": 3,
+     "cell": "B4",
+     "digit": 3,
+     "rowFilled": 3,
+     "colFilled": 5,
+     "boxFilled": 6,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 33.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B4",
+      "digit": 3,
+      "missingRow": [
+       1,
+       2,
+       3,
+       4,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       2,
+       4,
+       8
+      ],
+      "elimByBox": [
+       9
+      ],
+      "row": "B",
+      "col": 4,
+      "box": 2
+     }
+    },
+    {
+     "t": 151,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C6",
+     "digit": 5,
+     "rowFilled": 5,
+     "colFilled": 5,
+     "boxFilled": 7,
+     "digitCount": 5,
+     "X": 7,
+     "Y": 5,
+     "points": 4,
+     "score": 14.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C6",
+      "digit": 5,
+      "missingRow": [
+       2,
+       3,
+       5,
+       8
+      ],
+      "elimByCol": [
+       2,
+       8
+      ],
+      "elimByBox": [
+       3
+      ],
+      "row": "C",
+      "col": 6,
+      "box": 2
+     }
+    },
+    {
+     "t": 166,
+     "type": "wrong",
+     "seat": 1,
+     "cell": "E5",
+     "digit": 1,
+     "penalty": 2,
+     "score": -3,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E5",
+      "digit": 4,
+      "missingRow": [
+       1,
+       4,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       1,
+       6,
+       7
+      ],
+      "elimByBox": [
+       8
+      ],
+      "row": "E",
+      "col": 5,
+      "box": 5
+     }
+    },
+    {
+     "t": 183,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A9",
+     "digit": 8,
+     "rowFilled": 8,
+     "colFilled": 3,
+     "boxFilled": 5,
+     "digitCount": 5,
+     "X": 8,
+     "Y": 5,
+     "points": 3,
+     "score": 17.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A9",
+      "digit": 8,
+      "missingRow": [
+       8
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "A",
+      "col": 9,
+      "box": 3
+     }
+    },
+    {
+     "t": 190,
+     "type": "correct",
+     "seat": 1,
+     "cell": "D3",
+     "digit": 2,
+     "rowFilled": 4,
+     "colFilled": 4,
+     "boxFilled": 6,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 4,
+     "points": 5.5,
+     "score": 2.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D3",
+      "digit": 2,
+      "missingRow": [
+       2,
+       5,
+       6,
+       7,
+       9
+      ],
+      "elimByCol": [
+       6,
+       7
+      ],
+      "elimByBox": [
+       5,
+       9
+      ],
+      "row": "D",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 197,
+     "type": "correct",
+     "seat": 2,
+     "cell": "E3",
+     "digit": 1,
+     "rowFilled": 4,
+     "colFilled": 5,
+     "boxFilled": 7,
+     "digitCount": 7,
+     "X": 7,
+     "Y": 7,
+     "points": 3,
+     "score": 23,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E3",
+      "digit": 1,
+      "missingRow": [
+       1,
+       4,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       6,
+       7,
+       8
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "E",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 204,
+     "type": "correct",
+     "seat": 2,
+     "cell": "C9",
+     "digit": 3,
+     "rowFilled": 6,
+     "colFilled": 4,
+     "boxFilled": 6,
+     "digitCount": 6,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 27.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C9",
+      "digit": 3,
+      "missingRow": [
+       2,
+       3,
+       8
+      ],
+      "elimByCol": [
+       2,
+       8
+      ],
+      "elimByBox": [],
+      "row": "C",
+      "col": 9,
+      "box": 3
+     }
+    },
+    {
+     "t": 217,
+     "type": "wrong",
+     "seat": 0,
+     "cell": "B3",
+     "digit": 2,
+     "penalty": 1,
+     "score": 16.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B3",
+      "digit": 9,
+      "missingRow": [
+       1,
+       2,
+       4,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       2,
+       8
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "B",
+      "col": 3,
+      "box": 1
+     }
+    },
+    {
+     "t": 222,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C8",
+     "digit": 2,
+     "rowFilled": 7,
+     "colFilled": 5,
+     "boxFilled": 7,
+     "digitCount": 5,
+     "X": 7,
+     "Y": 7,
+     "points": 3,
+     "score": 19.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C8",
+      "digit": 2,
+      "missingRow": [
+       2,
+       8
+      ],
+      "elimByCol": [],
+      "elimByBox": [
+       8
+      ],
+      "row": "C",
+      "col": 8,
+      "box": 3
+     }
+    },
+    {
+     "t": 228,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C1",
+     "digit": 8,
+     "rowFilled": 8,
+     "colFilled": 6,
+     "boxFilled": 5,
+     "digitCount": 6,
+     "X": 8,
+     "Y": 6,
+     "points": 2.5,
+     "score": 22,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C1",
+      "digit": 8,
+      "missingRow": [
+       8
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "C",
+      "col": 1,
+      "box": 1
+     }
+    },
+    {
+     "t": 245,
+     "type": "correct",
+     "seat": 0,
+     "cell": "B3",
+     "digit": 9,
+     "rowFilled": 4,
+     "colFilled": 6,
+     "boxFilled": 6,
+     "digitCount": 3,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 26.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B3",
+      "digit": 9,
+      "missingRow": [
+       1,
+       2,
+       4,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       2,
+       8
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "B",
+      "col": 3,
+      "box": 1
+     }
+    },
+    {
+     "t": 260,
+     "type": "correct",
+     "seat": 3,
+     "cell": "B9",
+     "digit": 4,
+     "rowFilled": 5,
+     "colFilled": 5,
+     "boxFilled": 8,
+     "digitCount": 4,
+     "X": 8,
+     "Y": 5,
+     "points": 3,
+     "score": 36.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B9",
+      "digit": 4,
+      "missingRow": [
+       1,
+       2,
+       4,
+       8
+      ],
+      "elimByCol": [
+       1,
+       2,
+       8
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 9,
+      "box": 3
+     }
+    },
+    {
+     "t": 270,
+     "type": "correct",
+     "seat": 0,
+     "cell": "H3",
+     "digit": 4,
+     "rowFilled": 5,
+     "colFilled": 7,
+     "boxFilled": 4,
+     "digitCount": 5,
+     "X": 7,
+     "Y": 5,
+     "points": 4,
+     "score": 30.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H3",
+      "digit": 4,
+      "missingRow": [
+       2,
+       4,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       7,
+       9
+      ],
+      "elimByBox": [],
+      "row": "H",
+      "col": 3,
+      "box": 7
+     }
+    },
+    {
+     "t": 283,
+     "type": "correct",
+     "seat": 2,
+     "cell": "B5",
+     "digit": 8,
+     "rowFilled": 6,
+     "colFilled": 7,
+     "boxFilled": 8,
+     "digitCount": 7,
+     "X": 8,
+     "Y": 7,
+     "points": 2,
+     "score": 29.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B5",
+      "digit": 8,
+      "missingRow": [
+       1,
+       2,
+       8
+      ],
+      "elimByCol": [
+       1,
+       2
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 5,
+      "box": 2
+     }
+    },
+    {
+     "t": 288,
+     "type": "correct",
+     "seat": 2,
+     "cell": "E5",
+     "digit": 4,
+     "rowFilled": 5,
+     "colFilled": 8,
+     "boxFilled": 4,
+     "digitCount": 6,
+     "X": 8,
+     "Y": 6,
+     "points": 2.5,
+     "score": 32,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E5",
+      "digit": 4,
+      "missingRow": [
+       4,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       6,
+       7,
+       8
+      ],
+      "elimByBox": [],
+      "row": "E",
+      "col": 5,
+      "box": 5
+     }
+    },
+    {
+     "t": 292,
+     "type": "correct",
+     "seat": 2,
+     "cell": "E6",
+     "digit": 7,
+     "rowFilled": 6,
+     "colFilled": 6,
+     "boxFilled": 5,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 36.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E6",
+      "digit": 7,
+      "missingRow": [
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       6,
+       8
+      ],
+      "elimByBox": [],
+      "row": "E",
+      "col": 6,
+      "box": 5
+     }
+    },
+    {
+     "t": 303,
+     "type": "correct",
+     "seat": 3,
+     "cell": "G3",
+     "digit": 5,
+     "rowFilled": 4,
+     "colFilled": 8,
+     "boxFilled": 5,
+     "digitCount": 6,
+     "X": 8,
+     "Y": 6,
+     "points": 2.5,
+     "score": 39,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G3",
+      "digit": 5,
+      "missingRow": [
+       2,
+       3,
+       5,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       3,
+       7,
+       9
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 3,
+      "box": 7
+     }
+    }
+   ],
+   "emptiesLeft": 21,
+   "nextMineExample": {
+    "cell": "F6",
+    "index": 50,
+    "digit": 9,
+    "rowFilled": 6,
+    "colFilled": 7,
+    "boxFilled": 6,
+    "digitCount": 4,
+    "X": 7,
+    "Y": 6,
+    "points": 3.5,
+    "expl": {
+     "technique": "nakedSingle",
+     "cell": "F6",
+     "digit": 9,
+     "missingRow": [
+      4,
+      5,
+      9
+     ],
+     "elimByCol": [
+      4,
+      5
+     ],
+     "elimByBox": [],
+     "row": "F",
+     "col": 6,
+     "box": 5
+    }
+   },
+   "suggestedSelections": [
+    {
+     "cell": "B1",
+     "index": 9,
+     "candidates": [
+      2
+     ]
+    },
+    {
+     "cell": "B2",
+     "index": 10,
+     "candidates": [
+      1,
+      2
+     ]
+    },
+    {
+     "cell": "D2",
+     "index": 28,
+     "candidates": [
+      7
+     ]
+    },
+    {
+     "cell": "D4",
+     "index": 30,
+     "candidates": [
+      5,
+      6,
+      9
+     ]
+    },
+    {
+     "cell": "D7",
+     "index": 33,
+     "candidates": [
+      5,
+      9
+     ]
+    },
+    {
+     "cell": "D9",
+     "index": 35,
+     "candidates": [
+      6,
+      9
+     ]
+    },
+    {
+     "cell": "E8",
+     "index": 43,
+     "candidates": [
+      8
+     ]
+    },
+    {
+     "cell": "E9",
+     "index": 44,
+     "candidates": [
+      6
+     ]
+    }
+   ]
+  },
+  "replay": {
+   "puzzleIndex": 0,
+   "puzzle": "004300209005009001070060043006002087190007400050083000600000105003508690042910300",
+   "solution": "864371259325849761971265843436192587198657432257483916689734125713528694542916378",
+   "grid": "804300209025009061070060043036002087198657400057083000680004105003508690042910370",
+   "cells": [
+    {
+     "i": 0,
+     "name": "A1",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 1,
+     "name": "A2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 2,
+     "name": "A3",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 3,
+     "name": "A4",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 4,
+     "name": "A5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 5,
+     "name": "A6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 6,
+     "name": "A7",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 7,
+     "name": "A8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 8,
+     "name": "A9",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 9,
+     "name": "B1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 10,
+     "name": "B2",
+     "v": 2,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 11,
+     "name": "B3",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 12,
+     "name": "B4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 13,
+     "name": "B5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 14,
+     "name": "B6",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 15,
+     "name": "B7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 16,
+     "name": "B8",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 17,
+     "name": "B9",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 18,
+     "name": "C1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 19,
+     "name": "C2",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 20,
+     "name": "C3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 21,
+     "name": "C4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 22,
+     "name": "C5",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 23,
+     "name": "C6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 24,
+     "name": "C7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 25,
+     "name": "C8",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 26,
+     "name": "C9",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 27,
+     "name": "D1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 28,
+     "name": "D2",
+     "v": 3,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 29,
+     "name": "D3",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 30,
+     "name": "D4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 31,
+     "name": "D5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 32,
+     "name": "D6",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 33,
+     "name": "D7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 34,
+     "name": "D8",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 35,
+     "name": "D9",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 36,
+     "name": "E1",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 37,
+     "name": "E2",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 38,
+     "name": "E3",
+     "v": 8,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 39,
+     "name": "E4",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 40,
+     "name": "E5",
+     "v": 5,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 41,
+     "name": "E6",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 42,
+     "name": "E7",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 43,
+     "name": "E8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 44,
+     "name": "E9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 45,
+     "name": "F1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 46,
+     "name": "F2",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 47,
+     "name": "F3",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 48,
+     "name": "F4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 49,
+     "name": "F5",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 50,
+     "name": "F6",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 51,
+     "name": "F7",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 52,
+     "name": "F8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 53,
+     "name": "F9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 54,
+     "name": "G1",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 55,
+     "name": "G2",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 56,
+     "name": "G3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 57,
+     "name": "G4",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 58,
+     "name": "G5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 59,
+     "name": "G6",
+     "v": 4,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 60,
+     "name": "G7",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 61,
+     "name": "G8",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 62,
+     "name": "G9",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 63,
+     "name": "H1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": [
+      {
+       "d": 4,
+       "by": 1
+      }
+     ]
+    },
+    {
+     "i": 64,
+     "name": "H2",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 65,
+     "name": "H3",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 66,
+     "name": "H4",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 67,
+     "name": "H5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 68,
+     "name": "H6",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 69,
+     "name": "H7",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 70,
+     "name": "H8",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 71,
+     "name": "H9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 72,
+     "name": "I1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 73,
+     "name": "I2",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 74,
+     "name": "I3",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 75,
+     "name": "I4",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 76,
+     "name": "I5",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 77,
+     "name": "I6",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 78,
+     "name": "I7",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 79,
+     "name": "I8",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 80,
+     "name": "I9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    }
+   ],
+   "players": [
+    {
+     "seat": 0,
+     "score": 38.5,
+     "mistakes": 0,
+     "correct": 6,
+     "interferences": 0,
+     "best": {
+      "cell": "E4",
+      "digit": 6,
+      "points": 7.5
+     }
+    },
+    {
+     "seat": 1,
+     "score": 27.5,
+     "mistakes": 1,
+     "correct": 5,
+     "interferences": 0,
+     "best": {
+      "cell": "G6",
+      "digit": 4,
+      "points": 6.5
+     }
+    }
+   ],
+   "log": [
+    {
+     "t": 9,
+     "type": "correct",
+     "seat": 0,
+     "cell": "D2",
+     "digit": 3,
+     "rowFilled": 4,
+     "colFilled": 4,
+     "boxFilled": 4,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 6.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D2",
+      "digit": 3,
+      "missingRow": [
+       1,
+       3,
+       4,
+       5,
+       9
+      ],
+      "elimByCol": [
+       4,
+       5,
+       9
+      ],
+      "elimByBox": [
+       1
+      ],
+      "row": "D",
+      "col": 2,
+      "box": 4
+     }
+    },
+    {
+     "t": 23,
+     "type": "correct",
+     "seat": 0,
+     "cell": "E4",
+     "digit": 6,
+     "rowFilled": 4,
+     "colFilled": 3,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 4,
+     "Y": 4,
+     "points": 7.5,
+     "score": 14,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E4",
+      "digit": 6,
+      "missingRow": [
+       2,
+       3,
+       5,
+       6,
+       8
+      ],
+      "elimByCol": [
+       3,
+       5
+      ],
+      "elimByBox": [
+       2,
+       8
+      ],
+      "row": "E",
+      "col": 4,
+      "box": 5
+     }
+    },
+    {
+     "t": 38,
+     "type": "correct",
+     "seat": 1,
+     "cell": "E3",
+     "digit": 8,
+     "rowFilled": 5,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 3,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 6,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E3",
+      "digit": 8,
+      "missingRow": [
+       2,
+       3,
+       5,
+       8
+      ],
+      "elimByCol": [
+       2,
+       3,
+       5
+      ],
+      "elimByBox": [],
+      "row": "E",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 47,
+     "type": "correct",
+     "seat": 0,
+     "cell": "A1",
+     "digit": 8,
+     "rowFilled": 4,
+     "colFilled": 2,
+     "boxFilled": 3,
+     "digitCount": 4,
+     "X": 4,
+     "Y": 4,
+     "points": 7.5,
+     "score": 21.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A1",
+      "digit": 8,
+      "missingRow": [
+       1,
+       5,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       1,
+       6
+      ],
+      "elimByBox": [
+       5,
+       7
+      ],
+      "row": "A",
+      "col": 1,
+      "box": 1
+     }
+    },
+    {
+     "t": 60,
+     "type": "correct",
+     "seat": 0,
+     "cell": "E5",
+     "digit": 5,
+     "rowFilled": 6,
+     "colFilled": 3,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 26.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E5",
+      "digit": 5,
+      "missingRow": [
+       2,
+       3,
+       5
+      ],
+      "elimByCol": [],
+      "elimByBox": [
+       2,
+       3
+      ],
+      "row": "E",
+      "col": 5,
+      "box": 5
+     }
+    },
+    {
+     "t": 72,
+     "type": "correct",
+     "seat": 1,
+     "cell": "I8",
+     "digit": 7,
+     "rowFilled": 5,
+     "colFilled": 3,
+     "boxFilled": 5,
+     "digitCount": 3,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 12,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I8",
+      "digit": 7,
+      "missingRow": [
+       5,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       8
+      ],
+      "elimByBox": [
+       5,
+       6
+      ],
+      "row": "I",
+      "col": 8,
+      "box": 9
+     }
+    },
+    {
+     "t": 86,
+     "type": "correct",
+     "seat": 0,
+     "cell": "G2",
+     "digit": 8,
+     "rowFilled": 3,
+     "colFilled": 5,
+     "boxFilled": 4,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 32.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G2",
+      "digit": 8,
+      "missingRow": [
+       2,
+       3,
+       4,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       3,
+       4,
+       7,
+       9
+      ],
+      "elimByBox": [
+       2
+      ],
+      "row": "G",
+      "col": 2,
+      "box": 7
+     }
+    },
+    {
+     "t": 92,
+     "type": "correct",
+     "seat": 1,
+     "cell": "G6",
+     "digit": 4,
+     "rowFilled": 4,
+     "colFilled": 5,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 18.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G6",
+      "digit": 4,
+      "missingRow": [
+       2,
+       3,
+       4,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       3,
+       7,
+       9
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 6,
+      "box": 8
+     }
+    },
+    {
+     "t": 96,
+     "type": "wrong",
+     "seat": 1,
+     "cell": "H1",
+     "digit": 4,
+     "penalty": 1,
+     "score": 17.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H1",
+      "digit": 7,
+      "missingRow": [
+       1,
+       2,
+       4,
+       7
+      ],
+      "elimByCol": [
+       1
+      ],
+      "elimByBox": [
+       2,
+       4
+      ],
+      "row": "H",
+      "col": 1,
+      "box": 7
+     }
+    },
+    {
+     "t": 107,
+     "type": "correct",
+     "seat": 0,
+     "cell": "B8",
+     "digit": 6,
+     "rowFilled": 3,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 38.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B8",
+      "digit": 6,
+      "missingRow": [
+       2,
+       3,
+       4,
+       6,
+       7,
+       8
+      ],
+      "elimByCol": [
+       4,
+       7,
+       8
+      ],
+      "elimByBox": [
+       2,
+       3
+      ],
+      "row": "B",
+      "col": 8,
+      "box": 3
+     }
+    },
+    {
+     "t": 120,
+     "type": "correct",
+     "seat": 1,
+     "cell": "B2",
+     "digit": 2,
+     "rowFilled": 4,
+     "colFilled": 6,
+     "boxFilled": 4,
+     "digitCount": 3,
+     "X": 6,
+     "Y": 4,
+     "points": 5.5,
+     "score": 23,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B2",
+      "digit": 2,
+      "missingRow": [
+       2,
+       3,
+       4,
+       7,
+       8
+      ],
+      "elimByCol": [
+       3,
+       4,
+       7,
+       8
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 2,
+      "box": 1
+     }
+    },
+    {
+     "t": 124,
+     "type": "correct",
+     "seat": 1,
+     "cell": "F3",
+     "digit": 7,
+     "rowFilled": 3,
+     "colFilled": 6,
+     "boxFilled": 6,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 27.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F3",
+      "digit": 7,
+      "missingRow": [
+       1,
+       2,
+       4,
+       6,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       4,
+       6
+      ],
+      "elimByBox": [
+       1,
+       9
+      ],
+      "row": "F",
+      "col": 3,
+      "box": 4
+     }
+    }
+   ],
+   "emptiesLeft": 35,
+   "nextMineExample": {
+    "cell": "A5",
+    "index": 4,
+    "digit": 7,
+    "rowFilled": 5,
+    "colFilled": 4,
+    "boxFilled": 3,
+    "digitCount": 5,
+    "X": 5,
+    "Y": 5,
+    "points": 6,
+    "expl": {
+     "technique": "nakedSingle",
+     "cell": "A5",
+     "digit": 7,
+     "missingRow": [
+      1,
+      5,
+      6,
+      7
+     ],
+     "elimByCol": [
+      1,
+      5,
+      6
+     ],
+     "elimByBox": [],
+     "row": "A",
+     "col": 5,
+     "box": 2
+    }
+   },
+   "suggestedSelections": [
+    {
+     "cell": "A2",
+     "index": 1,
+     "candidates": [
+      1,
+      6
+     ]
+    },
+    {
+     "cell": "A5",
+     "index": 4,
+     "candidates": [
+      7
+     ]
+    },
+    {
+     "cell": "A6",
+     "index": 5,
+     "candidates": [
+      1,
+      5
+     ]
+    },
+    {
+     "cell": "A8",
+     "index": 7,
+     "candidates": [
+      5
+     ]
+    },
+    {
+     "cell": "B1",
+     "index": 9,
+     "candidates": [
+      3
+     ]
+    },
+    {
+     "cell": "B4",
+     "index": 12,
+     "candidates": [
+      4,
+      7,
+      8
+     ]
+    },
+    {
+     "cell": "B5",
+     "index": 13,
+     "candidates": [
+      4,
+      7
+     ]
+    },
+    {
+     "cell": "B7",
+     "index": 15,
+     "candidates": [
+      7,
+      8
+     ]
+    }
+   ]
+  },
+  "finished2p": {
+   "puzzleIndex": 12,
+   "puzzle": "004300000890200670700900050500008140070032060600001308001750900005040012980006005",
+   "solution": "254367891893215674716984253532698147178432569649571328421753986365849712987126435",
+   "grid": "254367891893215674710984250532608147178432569649571328021753986365849712987126435",
+   "cells": [
+    {
+     "i": 0,
+     "name": "A1",
+     "v": 2,
+     "given": false,
+     "by": 1,
+     "wrong": [
+      {
+       "d": 5,
+       "by": 1
+      }
+     ]
+    },
+    {
+     "i": 1,
+     "name": "A2",
+     "v": 5,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 2,
+     "name": "A3",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 3,
+     "name": "A4",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 4,
+     "name": "A5",
+     "v": 6,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 5,
+     "name": "A6",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 6,
+     "name": "A7",
+     "v": 8,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 7,
+     "name": "A8",
+     "v": 9,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 8,
+     "name": "A9",
+     "v": 1,
+     "given": false,
+     "by": 1,
+     "wrong": [
+      {
+       "d": 6,
+       "by": 0
+      }
+     ]
+    },
+    {
+     "i": 9,
+     "name": "B1",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 10,
+     "name": "B2",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 11,
+     "name": "B3",
+     "v": 3,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 12,
+     "name": "B4",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 13,
+     "name": "B5",
+     "v": 1,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 14,
+     "name": "B6",
+     "v": 5,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 15,
+     "name": "B7",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 16,
+     "name": "B8",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 17,
+     "name": "B9",
+     "v": 4,
+     "given": false,
+     "by": 1,
+     "wrong": [
+      {
+       "d": 5,
+       "by": 0
+      }
+     ]
+    },
+    {
+     "i": 18,
+     "name": "C1",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 19,
+     "name": "C2",
+     "v": 1,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 20,
+     "name": "C3",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 21,
+     "name": "C4",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 22,
+     "name": "C5",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 23,
+     "name": "C6",
+     "v": 4,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 24,
+     "name": "C7",
+     "v": 2,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 25,
+     "name": "C8",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 26,
+     "name": "C9",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 27,
+     "name": "D1",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 28,
+     "name": "D2",
+     "v": 3,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 29,
+     "name": "D3",
+     "v": 2,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 30,
+     "name": "D4",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 31,
+     "name": "D5",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 32,
+     "name": "D6",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 33,
+     "name": "D7",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 34,
+     "name": "D8",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 35,
+     "name": "D9",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 36,
+     "name": "E1",
+     "v": 1,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 37,
+     "name": "E2",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 38,
+     "name": "E3",
+     "v": 8,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 39,
+     "name": "E4",
+     "v": 4,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 40,
+     "name": "E5",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 41,
+     "name": "E6",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 42,
+     "name": "E7",
+     "v": 5,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 43,
+     "name": "E8",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 44,
+     "name": "E9",
+     "v": 9,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 45,
+     "name": "F1",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 46,
+     "name": "F2",
+     "v": 4,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 47,
+     "name": "F3",
+     "v": 9,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 48,
+     "name": "F4",
+     "v": 5,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 49,
+     "name": "F5",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 50,
+     "name": "F6",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 51,
+     "name": "F7",
+     "v": 3,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 52,
+     "name": "F8",
+     "v": 2,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 53,
+     "name": "F9",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 54,
+     "name": "G1",
+     "v": 0,
+     "given": false,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 55,
+     "name": "G2",
+     "v": 2,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 56,
+     "name": "G3",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 57,
+     "name": "G4",
+     "v": 7,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 58,
+     "name": "G5",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 59,
+     "name": "G6",
+     "v": 3,
+     "given": false,
+     "by": 1,
+     "wrong": [
+      {
+       "d": 2,
+       "by": 0
+      }
+     ]
+    },
+    {
+     "i": 60,
+     "name": "G7",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 61,
+     "name": "G8",
+     "v": 8,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 62,
+     "name": "G9",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 63,
+     "name": "H1",
+     "v": 3,
+     "given": false,
+     "by": 0,
+     "wrong": [
+      {
+       "d": 6,
+       "by": 1
+      }
+     ]
+    },
+    {
+     "i": 64,
+     "name": "H2",
+     "v": 6,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 65,
+     "name": "H3",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 66,
+     "name": "H4",
+     "v": 8,
+     "given": false,
+     "by": 1,
+     "wrong": [
+      {
+       "d": 9,
+       "by": 0
+      }
+     ]
+    },
+    {
+     "i": 67,
+     "name": "H5",
+     "v": 4,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 68,
+     "name": "H6",
+     "v": 9,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 69,
+     "name": "H7",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 70,
+     "name": "H8",
+     "v": 1,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 71,
+     "name": "H9",
+     "v": 2,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 72,
+     "name": "I1",
+     "v": 9,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 73,
+     "name": "I2",
+     "v": 8,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 74,
+     "name": "I3",
+     "v": 7,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 75,
+     "name": "I4",
+     "v": 1,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 76,
+     "name": "I5",
+     "v": 2,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 77,
+     "name": "I6",
+     "v": 6,
+     "given": true,
+     "by": null,
+     "wrong": []
+    },
+    {
+     "i": 78,
+     "name": "I7",
+     "v": 4,
+     "given": false,
+     "by": 1,
+     "wrong": []
+    },
+    {
+     "i": 79,
+     "name": "I8",
+     "v": 3,
+     "given": false,
+     "by": 0,
+     "wrong": []
+    },
+    {
+     "i": 80,
+     "name": "I9",
+     "v": 5,
+     "given": true,
+     "by": null,
+     "wrong": []
+    }
+   ],
+   "players": [
+    {
+     "seat": 0,
+     "score": 41.5,
+     "mistakes": 4,
+     "correct": 15,
+     "interferences": 0,
+     "best": {
+      "cell": "I4",
+      "digit": 1,
+      "points": 7.5
+     }
+    },
+    {
+     "seat": 1,
+     "score": 96.5,
+     "mistakes": 2,
+     "correct": 28,
+     "interferences": 0,
+     "best": {
+      "cell": "H4",
+      "digit": 8,
+      "points": 6
+     }
+    }
+   ],
+   "log": [
+    {
+     "t": 9,
+     "type": "correct",
+     "seat": 0,
+     "cell": "I4",
+     "digit": 1,
+     "rowFilled": 4,
+     "colFilled": 4,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 4,
+     "Y": 4,
+     "points": 7.5,
+     "score": 7.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I4",
+      "digit": 1,
+      "missingRow": [
+       1,
+       2,
+       3,
+       4,
+       7
+      ],
+      "elimByCol": [
+       2,
+       3,
+       7
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "I",
+      "col": 4,
+      "box": 8
+     }
+    },
+    {
+     "t": 26,
+     "type": "wrong",
+     "seat": 0,
+     "cell": "H4",
+     "digit": 9,
+     "penalty": 1,
+     "score": 6.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H4",
+      "digit": 8,
+      "missingRow": [
+       3,
+       6,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       3,
+       7,
+       9
+      ],
+      "elimByBox": [
+       6
+      ],
+      "row": "H",
+      "col": 4,
+      "box": 8
+     }
+    },
+    {
+     "t": 36,
+     "type": "correct",
+     "seat": 0,
+     "cell": "B3",
+     "digit": 3,
+     "rowFilled": 5,
+     "colFilled": 3,
+     "boxFilled": 4,
+     "digitCount": 3,
+     "X": 5,
+     "Y": 4,
+     "points": 6.5,
+     "score": 13,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B3",
+      "digit": 3,
+      "missingRow": [
+       1,
+       3,
+       4,
+       5
+      ],
+      "elimByCol": [
+       1,
+       4,
+       5
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 3,
+      "box": 1
+     }
+    },
+    {
+     "t": 45,
+     "type": "correct",
+     "seat": 1,
+     "cell": "H4",
+     "digit": 8,
+     "rowFilled": 4,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 6,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H4",
+      "digit": 8,
+      "missingRow": [
+       3,
+       6,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       3,
+       7,
+       9
+      ],
+      "elimByBox": [
+       6
+      ],
+      "row": "H",
+      "col": 4,
+      "box": 8
+     }
+    },
+    {
+     "t": 51,
+     "type": "correct",
+     "seat": 1,
+     "cell": "E7",
+     "digit": 5,
+     "rowFilled": 4,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 5,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 12,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E7",
+      "digit": 5,
+      "missingRow": [
+       1,
+       4,
+       5,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       9
+      ],
+      "elimByBox": [
+       4,
+       8
+      ],
+      "row": "E",
+      "col": 7,
+      "box": 6
+     }
+    },
+    {
+     "t": 56,
+     "type": "correct",
+     "seat": 0,
+     "cell": "D4",
+     "digit": 6,
+     "rowFilled": 4,
+     "colFilled": 6,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 4,
+     "points": 5.5,
+     "score": 18.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D4",
+      "digit": 6,
+      "missingRow": [
+       2,
+       3,
+       6,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       3,
+       7,
+       9
+      ],
+      "elimByBox": [],
+      "row": "D",
+      "col": 4,
+      "box": 5
+     }
+    },
+    {
+     "t": 64,
+     "type": "wrong",
+     "seat": 0,
+     "cell": "G6",
+     "digit": 2,
+     "penalty": 2,
+     "score": 16.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G6",
+      "digit": 3,
+      "missingRow": [
+       2,
+       3,
+       4,
+       6,
+       8
+      ],
+      "elimByCol": [
+       2,
+       6,
+       8
+      ],
+      "elimByBox": [
+       4
+      ],
+      "row": "G",
+      "col": 6,
+      "box": 8
+     }
+    },
+    {
+     "t": 74,
+     "type": "correct",
+     "seat": 1,
+     "cell": "B5",
+     "digit": 1,
+     "rowFilled": 6,
+     "colFilled": 3,
+     "boxFilled": 3,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 17,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B5",
+      "digit": 1,
+      "missingRow": [
+       1,
+       4,
+       5
+      ],
+      "elimByCol": [
+       4,
+       5
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 5,
+      "box": 2
+     }
+    },
+    {
+     "t": 80,
+     "type": "wrong",
+     "seat": 0,
+     "cell": "B9",
+     "digit": 5,
+     "penalty": 4,
+     "score": 12.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B9",
+      "digit": 4,
+      "missingRow": [
+       4,
+       5
+      ],
+      "elimByCol": [
+       5
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 9,
+      "box": 3
+     }
+    },
+    {
+     "t": 91,
+     "type": "correct",
+     "seat": 1,
+     "cell": "B9",
+     "digit": 4,
+     "rowFilled": 7,
+     "colFilled": 3,
+     "boxFilled": 3,
+     "digitCount": 3,
+     "X": 7,
+     "Y": 3,
+     "points": 5,
+     "score": 22,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B9",
+      "digit": 4,
+      "missingRow": [
+       4,
+       5
+      ],
+      "elimByCol": [
+       5
+      ],
+      "elimByBox": [],
+      "row": "B",
+      "col": 9,
+      "box": 3
+     }
+    },
+    {
+     "t": 97,
+     "type": "correct",
+     "seat": 1,
+     "cell": "B6",
+     "digit": 5,
+     "rowFilled": 8,
+     "colFilled": 4,
+     "boxFilled": 4,
+     "digitCount": 6,
+     "X": 8,
+     "Y": 6,
+     "points": 2.5,
+     "score": 24.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "B6",
+      "digit": 5,
+      "missingRow": [
+       5
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "B",
+      "col": 6,
+      "box": 2
+     }
+    },
+    {
+     "t": 112,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C6",
+     "digit": 4,
+     "rowFilled": 3,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 18.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C6",
+      "digit": 4,
+      "missingRow": [
+       1,
+       2,
+       3,
+       4,
+       6,
+       8
+      ],
+      "elimByCol": [
+       1,
+       2,
+       6,
+       8
+      ],
+      "elimByBox": [
+       3
+      ],
+      "row": "C",
+      "col": 6,
+      "box": 2
+     }
+    },
+    {
+     "t": 117,
+     "type": "correct",
+     "seat": 0,
+     "cell": "I8",
+     "digit": 3,
+     "rowFilled": 5,
+     "colFilled": 5,
+     "boxFilled": 4,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 24.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I8",
+      "digit": 3,
+      "missingRow": [
+       2,
+       3,
+       4,
+       7
+      ],
+      "elimByCol": [
+       4,
+       7
+      ],
+      "elimByBox": [
+       2
+      ],
+      "row": "I",
+      "col": 8,
+      "box": 9
+     }
+    },
+    {
+     "t": 134,
+     "type": "correct",
+     "seat": 1,
+     "cell": "H7",
+     "digit": 7,
+     "rowFilled": 5,
+     "colFilled": 5,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 5,
+     "Y": 5,
+     "points": 6,
+     "score": 30.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H7",
+      "digit": 7,
+      "missingRow": [
+       3,
+       6,
+       7,
+       9
+      ],
+      "elimByCol": [
+       3,
+       6,
+       9
+      ],
+      "elimByBox": [],
+      "row": "H",
+      "col": 7,
+      "box": 9
+     }
+    },
+    {
+     "t": 143,
+     "type": "correct",
+     "seat": 1,
+     "cell": "I7",
+     "digit": 4,
+     "rowFilled": 6,
+     "colFilled": 6,
+     "boxFilled": 6,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 35,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I7",
+      "digit": 4,
+      "missingRow": [
+       2,
+       4,
+       7
+      ],
+      "elimByCol": [
+       7
+      ],
+      "elimByBox": [
+       2
+      ],
+      "row": "I",
+      "col": 7,
+      "box": 9
+     }
+    },
+    {
+     "t": 148,
+     "type": "correct",
+     "seat": 1,
+     "cell": "G8",
+     "digit": 8,
+     "rowFilled": 4,
+     "colFilled": 6,
+     "boxFilled": 7,
+     "digitCount": 5,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 38.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G8",
+      "digit": 8,
+      "missingRow": [
+       2,
+       3,
+       4,
+       6,
+       8
+      ],
+      "elimByCol": [
+       3,
+       4,
+       6
+      ],
+      "elimByBox": [
+       2
+      ],
+      "row": "G",
+      "col": 8,
+      "box": 9
+     }
+    },
+    {
+     "t": 163,
+     "type": "correct",
+     "seat": 1,
+     "cell": "A6",
+     "digit": 7,
+     "rowFilled": 2,
+     "colFilled": 6,
+     "boxFilled": 6,
+     "digitCount": 5,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 43,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A6",
+      "digit": 7,
+      "missingRow": [
+       1,
+       2,
+       5,
+       6,
+       7,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       2,
+       5,
+       6,
+       8
+      ],
+      "elimByBox": [
+       9
+      ],
+      "row": "A",
+      "col": 6,
+      "box": 2
+     }
+    },
+    {
+     "t": 170,
+     "type": "correct",
+     "seat": 1,
+     "cell": "G6",
+     "digit": 3,
+     "rowFilled": 5,
+     "colFilled": 7,
+     "boxFilled": 6,
+     "digitCount": 5,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 46.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G6",
+      "digit": 3,
+      "missingRow": [
+       2,
+       3,
+       4,
+       6
+      ],
+      "elimByCol": [
+       2,
+       4,
+       6
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 6,
+      "box": 8
+     }
+    },
+    {
+     "t": 185,
+     "type": "wrong",
+     "seat": 1,
+     "cell": "H1",
+     "digit": 6,
+     "penalty": 1,
+     "score": 45.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H1",
+      "digit": 3,
+      "missingRow": [
+       3,
+       6,
+       9
+      ],
+      "elimByCol": [
+       6,
+       9
+      ],
+      "elimByBox": [],
+      "row": "H",
+      "col": 1,
+      "box": 7
+     }
+    },
+    {
+     "t": 201,
+     "type": "correct",
+     "seat": 0,
+     "cell": "G9",
+     "digit": 6,
+     "rowFilled": 6,
+     "colFilled": 4,
+     "boxFilled": 8,
+     "digitCount": 5,
+     "X": 8,
+     "Y": 6,
+     "points": 2.5,
+     "score": 27,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G9",
+      "digit": 6,
+      "missingRow": [
+       2,
+       4,
+       6
+      ],
+      "elimByCol": [
+       2,
+       4
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 9,
+      "box": 9
+     }
+    },
+    {
+     "t": 211,
+     "type": "correct",
+     "seat": 1,
+     "cell": "E4",
+     "digit": 4,
+     "rowFilled": 5,
+     "colFilled": 7,
+     "boxFilled": 5,
+     "digitCount": 6,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 49,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E4",
+      "digit": 4,
+      "missingRow": [
+       1,
+       4,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       8,
+       9
+      ],
+      "elimByBox": [],
+      "row": "E",
+      "col": 4,
+      "box": 5
+     }
+    },
+    {
+     "t": 223,
+     "type": "correct",
+     "seat": 1,
+     "cell": "E9",
+     "digit": 9,
+     "rowFilled": 6,
+     "colFilled": 5,
+     "boxFilled": 6,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 6,
+     "points": 4.5,
+     "score": 53.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E9",
+      "digit": 9,
+      "missingRow": [
+       1,
+       8,
+       9
+      ],
+      "elimByCol": [
+       8
+      ],
+      "elimByBox": [
+       1
+      ],
+      "row": "E",
+      "col": 9,
+      "box": 6
+     }
+    },
+    {
+     "t": 227,
+     "type": "correct",
+     "seat": 1,
+     "cell": "E1",
+     "digit": 1,
+     "rowFilled": 7,
+     "colFilled": 5,
+     "boxFilled": 3,
+     "digitCount": 6,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 57,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E1",
+      "digit": 1,
+      "missingRow": [
+       1,
+       8
+      ],
+      "elimByCol": [
+       8
+      ],
+      "elimByBox": [],
+      "row": "E",
+      "col": 1,
+      "box": 4
+     }
+    },
+    {
+     "t": 234,
+     "type": "correct",
+     "seat": 0,
+     "cell": "I5",
+     "digit": 2,
+     "rowFilled": 7,
+     "colFilled": 4,
+     "boxFilled": 7,
+     "digitCount": 3,
+     "X": 7,
+     "Y": 7,
+     "points": 3,
+     "score": 30,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I5",
+      "digit": 2,
+      "missingRow": [
+       2,
+       7
+      ],
+      "elimByCol": [],
+      "elimByBox": [
+       7
+      ],
+      "row": "I",
+      "col": 5,
+      "box": 8
+     }
+    },
+    {
+     "t": 239,
+     "type": "wrong",
+     "seat": 1,
+     "cell": "A1",
+     "digit": 5,
+     "penalty": 2,
+     "score": 55,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A1",
+      "digit": 2,
+      "missingRow": [
+       1,
+       2,
+       5,
+       6,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       5,
+       6,
+       8,
+       9
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 1,
+      "box": 1
+     }
+    },
+    {
+     "t": 252,
+     "type": "correct",
+     "seat": 1,
+     "cell": "A1",
+     "digit": 2,
+     "rowFilled": 3,
+     "colFilled": 6,
+     "boxFilled": 5,
+     "digitCount": 4,
+     "X": 6,
+     "Y": 5,
+     "points": 5,
+     "score": 60,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A1",
+      "digit": 2,
+      "missingRow": [
+       1,
+       2,
+       5,
+       6,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       5,
+       6,
+       8,
+       9
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 1,
+      "box": 1
+     }
+    },
+    {
+     "t": 256,
+     "type": "correct",
+     "seat": 1,
+     "cell": "A8",
+     "digit": 9,
+     "rowFilled": 4,
+     "colFilled": 7,
+     "boxFilled": 4,
+     "digitCount": 5,
+     "X": 7,
+     "Y": 5,
+     "points": 4,
+     "score": 64,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A8",
+      "digit": 9,
+      "missingRow": [
+       1,
+       5,
+       6,
+       8,
+       9
+      ],
+      "elimByCol": [
+       1,
+       5,
+       6,
+       8
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 8,
+      "box": 3
+     }
+    },
+    {
+     "t": 269,
+     "type": "wrong",
+     "seat": 0,
+     "cell": "A9",
+     "digit": 6,
+     "penalty": 8,
+     "score": 22,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A9",
+      "digit": 1,
+      "missingRow": [
+       1,
+       5,
+       6,
+       8
+      ],
+      "elimByCol": [
+       5,
+       6,
+       8
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 9,
+      "box": 3
+     }
+    },
+    {
+     "t": 274,
+     "type": "correct",
+     "seat": 1,
+     "cell": "A7",
+     "digit": 8,
+     "rowFilled": 5,
+     "colFilled": 7,
+     "boxFilled": 5,
+     "digitCount": 6,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 67.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A7",
+      "digit": 8,
+      "missingRow": [
+       1,
+       5,
+       6,
+       8
+      ],
+      "elimByCol": [
+       1,
+       5,
+       6
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 7,
+      "box": 3
+     }
+    },
+    {
+     "t": 280,
+     "type": "correct",
+     "seat": 0,
+     "cell": "F8",
+     "digit": 2,
+     "rowFilled": 4,
+     "colFilled": 8,
+     "boxFilled": 7,
+     "digitCount": 5,
+     "X": 8,
+     "Y": 7,
+     "points": 2,
+     "score": 24,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F8",
+      "digit": 2,
+      "missingRow": [
+       2,
+       4,
+       5,
+       7,
+       9
+      ],
+      "elimByCol": [
+       4,
+       5,
+       7,
+       9
+      ],
+      "elimByBox": [],
+      "row": "F",
+      "col": 8,
+      "box": 6
+     }
+    },
+    {
+     "t": 284,
+     "type": "correct",
+     "seat": 1,
+     "cell": "A5",
+     "digit": 6,
+     "rowFilled": 6,
+     "colFilled": 5,
+     "boxFilled": 7,
+     "digitCount": 6,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 71,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A5",
+      "digit": 6,
+      "missingRow": [
+       1,
+       5,
+       6
+      ],
+      "elimByCol": [
+       1,
+       5
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 5,
+      "box": 2
+     }
+    },
+    {
+     "t": 297,
+     "type": "correct",
+     "seat": 1,
+     "cell": "F2",
+     "digit": 4,
+     "rowFilled": 5,
+     "colFilled": 3,
+     "boxFilled": 4,
+     "digitCount": 7,
+     "X": 7,
+     "Y": 5,
+     "points": 4,
+     "score": 75,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F2",
+      "digit": 4,
+      "missingRow": [
+       4,
+       5,
+       7,
+       9
+      ],
+      "elimByCol": [
+       7,
+       9
+      ],
+      "elimByBox": [
+       5
+      ],
+      "row": "F",
+      "col": 2,
+      "box": 4
+     }
+    },
+    {
+     "t": 303,
+     "type": "correct",
+     "seat": 0,
+     "cell": "E3",
+     "digit": 8,
+     "rowFilled": 8,
+     "colFilled": 4,
+     "boxFilled": 5,
+     "digitCount": 7,
+     "X": 8,
+     "Y": 7,
+     "points": 2,
+     "score": 26,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "E3",
+      "digit": 8,
+      "missingRow": [
+       8
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "E",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 312,
+     "type": "correct",
+     "seat": 1,
+     "cell": "F4",
+     "digit": 5,
+     "rowFilled": 6,
+     "colFilled": 8,
+     "boxFilled": 6,
+     "digitCount": 7,
+     "X": 8,
+     "Y": 7,
+     "points": 2,
+     "score": 77,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F4",
+      "digit": 5,
+      "missingRow": [
+       5,
+       7,
+       9
+      ],
+      "elimByCol": [
+       7,
+       9
+      ],
+      "elimByBox": [],
+      "row": "F",
+      "col": 4,
+      "box": 5
+     }
+    },
+    {
+     "t": 319,
+     "type": "correct",
+     "seat": 1,
+     "cell": "G2",
+     "digit": 2,
+     "rowFilled": 7,
+     "colFilled": 4,
+     "boxFilled": 4,
+     "digitCount": 6,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 80.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "G2",
+      "digit": 2,
+      "missingRow": [
+       2,
+       4
+      ],
+      "elimByCol": [
+       4
+      ],
+      "elimByBox": [],
+      "row": "G",
+      "col": 2,
+      "box": 7
+     }
+    },
+    {
+     "t": 335,
+     "type": "correct",
+     "seat": 0,
+     "cell": "H1",
+     "digit": 3,
+     "rowFilled": 6,
+     "colFilled": 7,
+     "boxFilled": 5,
+     "digitCount": 6,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 29.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H1",
+      "digit": 3,
+      "missingRow": [
+       3,
+       6,
+       9
+      ],
+      "elimByCol": [
+       6,
+       9
+      ],
+      "elimByBox": [],
+      "row": "H",
+      "col": 1,
+      "box": 7
+     }
+    },
+    {
+     "t": 344,
+     "type": "correct",
+     "seat": 1,
+     "cell": "C7",
+     "digit": 2,
+     "rowFilled": 4,
+     "colFilled": 8,
+     "boxFilled": 6,
+     "digitCount": 7,
+     "X": 8,
+     "Y": 7,
+     "points": 2,
+     "score": 82.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C7",
+      "digit": 2,
+      "missingRow": [
+       1,
+       2,
+       3,
+       6,
+       8
+      ],
+      "elimByCol": [
+       1,
+       3,
+       6,
+       8
+      ],
+      "elimByBox": [],
+      "row": "C",
+      "col": 7,
+      "box": 3
+     }
+    },
+    {
+     "t": 351,
+     "type": "correct",
+     "seat": 1,
+     "cell": "A9",
+     "digit": 1,
+     "rowFilled": 7,
+     "colFilled": 6,
+     "boxFilled": 7,
+     "digitCount": 7,
+     "X": 7,
+     "Y": 7,
+     "points": 3,
+     "score": 85.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A9",
+      "digit": 1,
+      "missingRow": [
+       1,
+       5
+      ],
+      "elimByCol": [
+       5
+      ],
+      "elimByBox": [],
+      "row": "A",
+      "col": 9,
+      "box": 3
+     }
+    },
+    {
+     "t": 366,
+     "type": "correct",
+     "seat": 0,
+     "cell": "H2",
+     "digit": 6,
+     "rowFilled": 7,
+     "colFilled": 5,
+     "boxFilled": 6,
+     "digitCount": 7,
+     "X": 7,
+     "Y": 7,
+     "points": 3,
+     "score": 32.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H2",
+      "digit": 6,
+      "missingRow": [
+       6,
+       9
+      ],
+      "elimByCol": [
+       9
+      ],
+      "elimByBox": [],
+      "row": "H",
+      "col": 2,
+      "box": 7
+     }
+    },
+    {
+     "t": 382,
+     "type": "correct",
+     "seat": 1,
+     "cell": "D9",
+     "digit": 7,
+     "rowFilled": 5,
+     "colFilled": 7,
+     "boxFilled": 8,
+     "digitCount": 6,
+     "X": 8,
+     "Y": 7,
+     "points": 2,
+     "score": 87.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D9",
+      "digit": 7,
+      "missingRow": [
+       2,
+       3,
+       7,
+       9
+      ],
+      "elimByCol": [
+       2,
+       9
+      ],
+      "elimByBox": [
+       3
+      ],
+      "row": "D",
+      "col": 9,
+      "box": 6
+     }
+    },
+    {
+     "t": 390,
+     "type": "correct",
+     "seat": 0,
+     "cell": "F3",
+     "digit": 9,
+     "rowFilled": 7,
+     "colFilled": 5,
+     "boxFilled": 6,
+     "digitCount": 6,
+     "X": 7,
+     "Y": 6,
+     "points": 3.5,
+     "score": 36,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F3",
+      "digit": 9,
+      "missingRow": [
+       7,
+       9
+      ],
+      "elimByCol": [],
+      "elimByBox": [
+       7
+      ],
+      "row": "F",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 407,
+     "type": "correct",
+     "seat": 1,
+     "cell": "C2",
+     "digit": 1,
+     "rowFilled": 5,
+     "colFilled": 6,
+     "boxFilled": 6,
+     "digitCount": 8,
+     "X": 8,
+     "Y": 6,
+     "points": 2.5,
+     "score": 90,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C2",
+      "digit": 1,
+      "missingRow": [
+       1,
+       3,
+       6,
+       8
+      ],
+      "elimByCol": [
+       6,
+       8
+      ],
+      "elimByBox": [
+       3
+      ],
+      "row": "C",
+      "col": 2,
+      "box": 1
+     }
+    },
+    {
+     "t": 414,
+     "type": "correct",
+     "seat": 1,
+     "cell": "F5",
+     "digit": 7,
+     "rowFilled": 8,
+     "colFilled": 6,
+     "boxFilled": 7,
+     "digitCount": 7,
+     "X": 8,
+     "Y": 7,
+     "points": 2,
+     "score": 92,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "F5",
+      "digit": 7,
+      "missingRow": [
+       7
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "F",
+      "col": 5,
+      "box": 5
+     }
+    },
+    {
+     "t": 426,
+     "type": "correct",
+     "seat": 0,
+     "cell": "D3",
+     "digit": 2,
+     "rowFilled": 6,
+     "colFilled": 6,
+     "boxFilled": 7,
+     "digitCount": 8,
+     "X": 8,
+     "Y": 7,
+     "points": 2,
+     "score": 38,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D3",
+      "digit": 2,
+      "missingRow": [
+       2,
+       3,
+       9
+      ],
+      "elimByCol": [
+       3,
+       9
+      ],
+      "elimByBox": [],
+      "row": "D",
+      "col": 3,
+      "box": 4
+     }
+    },
+    {
+     "t": 438,
+     "type": "correct",
+     "seat": 0,
+     "cell": "C5",
+     "digit": 8,
+     "rowFilled": 6,
+     "colFilled": 7,
+     "boxFilled": 8,
+     "digitCount": 8,
+     "X": 8,
+     "Y": 8,
+     "points": 1.5,
+     "score": 39.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "C5",
+      "digit": 8,
+      "missingRow": [
+       3,
+       6,
+       8
+      ],
+      "elimByCol": [
+       3,
+       6
+      ],
+      "elimByBox": [],
+      "row": "C",
+      "col": 5,
+      "box": 2
+     }
+    },
+    {
+     "t": 454,
+     "type": "correct",
+     "seat": 0,
+     "cell": "D2",
+     "digit": 3,
+     "rowFilled": 7,
+     "colFilled": 7,
+     "boxFilled": 8,
+     "digitCount": 7,
+     "X": 8,
+     "Y": 7,
+     "points": 2,
+     "score": 41.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "D2",
+      "digit": 3,
+      "missingRow": [
+       3,
+       9
+      ],
+      "elimByCol": [
+       9
+      ],
+      "elimByBox": [],
+      "row": "D",
+      "col": 2,
+      "box": 4
+     }
+    },
+    {
+     "t": 458,
+     "type": "correct",
+     "seat": 1,
+     "cell": "H6",
+     "digit": 9,
+     "rowFilled": 8,
+     "colFilled": 8,
+     "boxFilled": 8,
+     "digitCount": 7,
+     "X": 8,
+     "Y": 8,
+     "points": 1.5,
+     "score": 93.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "H6",
+      "digit": 9,
+      "missingRow": [
+       9
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "H",
+      "col": 6,
+      "box": 8
+     }
+    },
+    {
+     "t": 470,
+     "type": "correct",
+     "seat": 1,
+     "cell": "A2",
+     "digit": 5,
+     "rowFilled": 8,
+     "colFilled": 8,
+     "boxFilled": 7,
+     "digitCount": 8,
+     "X": 8,
+     "Y": 8,
+     "points": 1.5,
+     "score": 95,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "A2",
+      "digit": 5,
+      "missingRow": [
+       5
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "A",
+      "col": 2,
+      "box": 1
+     }
+    },
+    {
+     "t": 474,
+     "type": "correct",
+     "seat": 1,
+     "cell": "I3",
+     "digit": 7,
+     "rowFilled": 8,
+     "colFilled": 7,
+     "boxFilled": 7,
+     "digitCount": 8,
+     "X": 8,
+     "Y": 8,
+     "points": 1.5,
+     "score": 96.5,
+     "expl": {
+      "technique": "nakedSingle",
+      "cell": "I3",
+      "digit": 7,
+      "missingRow": [
+       7
+      ],
+      "elimByCol": [],
+      "elimByBox": [],
+      "row": "I",
+      "col": 3,
+      "box": 7
+     }
+    }
+   ],
+   "emptiesLeft": 4,
+   "nextMineExample": {
+    "cell": "C3",
+    "index": 20,
+    "digit": 6,
+    "rowFilled": 7,
+    "colFilled": 8,
+    "boxFilled": 8,
+    "digitCount": 8,
+    "X": 8,
+    "Y": 8,
+    "points": 1.5,
+    "expl": {
+     "technique": "nakedSingle",
+     "cell": "C3",
+     "digit": 6,
+     "missingRow": [
+      3,
+      6
+     ],
+     "elimByCol": [
+      3
+     ],
+     "elimByBox": [],
+     "row": "C",
+     "col": 3,
+     "box": 1
+    }
+   },
+   "suggestedSelections": [
+    {
+     "cell": "C3",
+     "index": 20,
+     "candidates": [
+      6
+     ]
+    },
+    {
+     "cell": "C9",
+     "index": 26,
+     "candidates": [
+      3
+     ]
+    },
+    {
+     "cell": "D5",
+     "index": 31,
+     "candidates": [
+      9
+     ]
+    },
+    {
+     "cell": "G1",
+     "index": 54,
+     "candidates": [
+      4
+     ]
+    }
+   ]
+  }
+ }
+}

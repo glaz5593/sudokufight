@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Match Timeout — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-shine { 0%{background-position:-160% 0} 100%{background-position:260% 0} }
+@keyframes sf-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+@keyframes sf-sweep { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+@keyframes sf-blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+@keyframes sf-ping { 0%{transform:scale(.6);opacity:.9} 100%{transform:scale(2.4);opacity:0} }
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 60% at 50% -10%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 50% at 110% 110%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 50% at -10% 100%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div style="position: absolute; top: 52px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px;">
+    <div style="display: inline-flex; align-items: center; height: 30px; padding: 0 14px; box-sizing: border-box; background: #1b1533; border: 1px solid #4b3f80; border-radius: 6px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f;">
+      <span style="display: inline-flex; align-items: center; gap: 7px; transform: skewX(9deg); font: 600 13px/1 Rubik, sans-serif; color: #cfc8ee;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"></path><path d="M12 13v4M8 21h8M9.5 17h5"></path></svg>
+        <span style="color: #ffd23f;">מדורג</span>
+        <span style="color: #6c5fa6;">·</span>
+        <span>רגיל</span>
+      </span>
+    </div>
+    <div style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; box-sizing: border-box; background: #1b1533; border: 1px solid #4b3f80; border-radius: 6px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f;">
+      <span style="display: inline-flex; align-items: center; gap: 6px; transform: skewX(9deg); color: #cfc8ee;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .9; font-variant-numeric: tabular-nums; padding-top: 3px;">1:00</span>
+      </span>
+    </div>
+  </div>
+
+  <div style="position: absolute; top: 104px; left: 65px; width: 260px; height: 260px;">
+    <div style="position: absolute; inset: 0; box-sizing: border-box; border-radius: 50%; border: 2px dashed rgba(255,210,63,.45); animation: sf-blink 2.6s ease-in-out infinite;"></div>
+    <div style="position: absolute; top: 34px; left: 196px; width: 8px; height: 8px; margin: -4px 0 0 -4px;">
+      <div style="position: absolute; inset: 0; border-radius: 50%; border: 1px solid #ffd23f; animation: sf-ping 3s ease-out infinite;"></div>
+      <div style="position: absolute; inset: 0; border-radius: 50%; background: #ffe27a; box-shadow: 0 0 8px rgba(255,210,63,.8); opacity: .8;"></div>
+    </div>
+
+    <div style="position: absolute; inset: 32px; box-sizing: border-box; border-radius: 50%; border: 2px solid #342a5e; background: radial-gradient(circle, rgba(108,95,166,.16) 0%, rgba(27,21,51,.75) 100%); box-shadow: inset 0 0 30px rgba(7,5,15,.7);"></div>
+    <div style="position: absolute; inset: 32px; border-radius: 50%; background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.4px); background-size: 7px 7px;"></div>
+    <div style="position: absolute; inset: 66px; border-radius: 50%; border: 1px solid rgba(167,159,203,.16);"></div>
+    <div style="position: absolute; top: 129px; left: 40px; right: 40px; height: 1px; background: rgba(167,159,203,.12);"></div>
+    <div style="position: absolute; left: 129px; top: 40px; bottom: 40px; width: 1px; background: rgba(167,159,203,.12);"></div>
+
+    <div style="position: absolute; inset: 32px; animation: sf-sweep 7s linear infinite;">
+      <div style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, rgba(167,159,203,0) 0deg, rgba(167,159,203,0) 290deg, rgba(167,159,203,.22) 359deg, rgba(167,159,203,0) 360deg);"></div>
+      <div style="position: absolute; left: 97px; top: 2px; width: 2px; height: 96px; background: linear-gradient(180deg, rgba(207,200,238,.6), rgba(207,200,238,0));"></div>
+    </div>
+
+    <div style="position: absolute; top: 76px; left: 78px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; border: 1.5px dashed rgba(167,159,203,.5);"></div>
+    <div style="position: absolute; top: 166px; left: 186px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; border: 1.5px dashed rgba(167,159,203,.5);"></div>
+    <div style="position: absolute; top: 182px; left: 72px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; border: 1.5px dashed rgba(167,159,203,.5);"></div>
+
+    <div style="position: absolute; top: 98px; left: 98px; width: 64px; height: 64px; animation: sf-bob 3.6s ease-in-out infinite;">
+      <div style="width: 64px; height: 64px; padding: 3px; box-sizing: border-box; border-radius: 16px; background: #2ee6ff; box-shadow: 0 4px 0 #0098c2;">
+        <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="MosheG" width="58" height="58" style="display: block; width: 58px; height: 58px; border-radius: 13px;">
+      </div>
+    </div>
+
+    <div style="position: absolute; top: -12px; left: 0; right: 0; display: flex; justify-content: center;">
+      <span dir="ltr" style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; box-sizing: border-box; background: #0f0b1d; border: 1px solid rgba(255,210,63,.55); border-radius: 999px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: .9; font-variant-numeric: tabular-nums; color: #ffd23f; padding-top: 3px;">1187–1387</span>
+    </div>
+    <div style="position: absolute; top: 216px; left: 0; right: 0; display: flex; justify-content: center;">
+      <span dir="ltr" style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; box-sizing: border-box; background: #0f0b1d; border: 1px solid #4b3f80; border-radius: 999px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: .9; font-variant-numeric: tabular-nums; color: #cfc8ee; padding-top: 3px;">1237–1337</span>
+    </div>
+  </div>
+
+  <div style="position: absolute; top: 382px; left: 24px; right: 24px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;">
+    <h1 style="margin: 0; max-width: 320px; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 46px; line-height: .92; color: #f1eeff; text-shadow: 0 4px 0 #07050f;">עדיין לא מצאנו יריב ברמה שלך</h1>
+    <p style="margin: 0; max-width: 330px; font: 400 15px/1.45 Rubik, sans-serif; color: #a79fcb;">חיפשנו דקה שלמה שחקנים זמינים בטווח <span dir="ltr" style="color: #cfc8ee; font-weight: 600;">1237–1337</span>, בלי יריבים ששיחקת מולם לאחרונה. אפשר להרחיב את הטווח, או להתאמן מול בוט בינתיים.</p>
+  </div>
+
+  <div style="position: absolute; top: 572px; left: 24px; right: 24px; display: flex; flex-direction: column; gap: 18px;">
+    <a href="Match-Search.dc.html" style="position: relative; display: flex; align-items: center; justify-content: center; height: 72px; overflow: hidden; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); color: #1a1000; text-decoration: none; transform: skewX(-9deg); border-radius: 10px; box-shadow: 0 5px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6);">
+      <span style="position: absolute; inset: 0; background-image: linear-gradient(100deg, rgba(255,255,255,0) 35%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 65%); background-size: 50% 100%; background-repeat: no-repeat; animation: sf-shine 2.6s linear infinite;"></span>
+      <span style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; transform: skewX(9deg);">
+        <span style="display: flex; align-items: center; gap: 8px; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 34px; line-height: .9;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>המשך לחפש</span>
+        <span style="display: flex; align-items: center; gap: 6px; font: 600 13px/1 Rubik, sans-serif; color: #4a3200;">טווח רחב יותר<span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 18px; line-height: .9; font-variant-numeric: tabular-nums; padding-top: 2px;">1187–1387</span></span>
+      </span>
+    </a>
+    <a href="BotSelect.dc.html" style="display: flex; align-items: center; justify-content: center; height: 54px; box-sizing: border-box; background: #251d45; border: 2px solid #4b3f80; border-radius: 10px; box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08); transform: skewX(-9deg); color: #f1eeff; text-decoration: none; font: 600 17px/1 Rubik, sans-serif;"><span style="display: flex; align-items: center; gap: 10px; transform: skewX(9deg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="8" width="14" height="11" rx="3"></rect><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16h5"></path></svg>שחק מול בוט בינתיים</span></a>
+    <a href="Home.dc.html" style="display: flex; align-items: center; justify-content: center; height: 44px; color: #a79fcb; text-decoration: none; font: 500 15px/1 Rubik, sans-serif;">חזרה לבית</a>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

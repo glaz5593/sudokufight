@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Game 2P — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-pop { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1)} }
+@keyframes sf-pop-b { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1)} }
+@keyframes sf-float-up { 0%{transform:translateY(6px) scale(.8);opacity:0} 15%{opacity:1;transform:translateY(0) scale(1.15)} 100%{transform:translateY(-46px) scale(1);opacity:0} }
+@keyframes sf-float-up-b { 0%{transform:translateY(6px) scale(.8);opacity:0} 15%{opacity:1;transform:translateY(0) scale(1.15)} 100%{transform:translateY(-46px) scale(1);opacity:0} }
+@keyframes sf-shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+@keyframes sf-shake-b { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+@keyframes sf-flash-red { 0%{box-shadow:inset 0 0 0 40px rgba(255,51,85,.55)} 100%{box-shadow:inset 0 0 0 40px rgba(255,51,85,0)} }
+@keyframes sf-flash-red-b { 0%{box-shadow:inset 0 0 0 40px rgba(255,51,85,.55)} 100%{box-shadow:inset 0 0 0 40px rgba(255,51,85,0)} }
+@keyframes sf-flash-cyan { 0%{box-shadow:inset 0 0 0 40px rgba(46,230,255,.6)} 100%{box-shadow:inset 0 0 0 40px rgba(46,230,255,0)} }
+@keyframes sf-flash-cyan-b { 0%{box-shadow:inset 0 0 0 40px rgba(46,230,255,.6)} 100%{box-shadow:inset 0 0 0 40px rgba(46,230,255,0)} }
+@keyframes sf-flash-orange { 0%{box-shadow:inset 0 0 0 40px rgba(255,138,31,.6)} 100%{box-shadow:inset 0 0 0 40px rgba(255,138,31,0)} }
+@keyframes sf-flash-orange-b { 0%{box-shadow:inset 0 0 0 40px rgba(255,138,31,.6)} 100%{box-shadow:inset 0 0 0 40px rgba(255,138,31,0)} }
+@keyframes sf-lock-me { 0%,100%{box-shadow:inset 0 0 0 3px #2ee6ff, inset 0 0 6px 3px rgba(46,230,255,.25)} 50%{box-shadow:inset 0 0 0 3px #2ee6ff, inset 0 0 12px 6px rgba(46,230,255,.6)} }
+@keyframes sf-lock-nina { 0%,100%{box-shadow:inset 0 0 0 3px #ff8a1f} 50%{box-shadow:inset 0 0 0 3px #ff8a1f, inset 0 0 10px 3px rgba(255,138,31,.45)} }
+@keyframes sf-score-pop { 0%{transform:scale(1)} 30%{transform:scale(1.28);text-shadow:0 0 18px rgba(255,210,63,.95)} 100%{transform:scale(1)} }
+@keyframes sf-score-pop-b { 0%{transform:scale(1)} 30%{transform:scale(1.28);text-shadow:0 0 18px rgba(255,210,63,.95)} 100%{transform:scale(1)} }
+@keyframes sf-score-hit { 0%{transform:translateX(0);color:#ff3355} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} 100%{transform:translateX(0)} }
+@keyframes sf-score-hit-b { 0%{transform:translateX(0);color:#ff3355} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} 100%{transform:translateX(0)} }
+@keyframes sf-react { 0%{transform:translateY(12px) scale(.3);opacity:0} 18%{transform:translateY(-6px) scale(1.3);opacity:1} 38%{transform:translateY(-16px) scale(1) rotate(-10deg)} 58%{transform:translateY(-32px) rotate(8deg);opacity:1} 100%{transform:translateY(-74px) scale(.9) rotate(0);opacity:0} }
+@keyframes sf-react-b { 0%{transform:translateY(12px) scale(.3);opacity:0} 18%{transform:translateY(-6px) scale(1.3);opacity:1} 38%{transform:translateY(-16px) scale(1) rotate(-10deg)} 58%{transform:translateY(-32px) rotate(8deg);opacity:1} 100%{transform:translateY(-74px) scale(.9) rotate(0);opacity:0} }
+@keyframes sf-tick { 0%{transform:translateY(6px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+@keyframes sf-tick-b { 0%{transform:translateY(6px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+@keyframes sf-blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+@keyframes sf-slam { 0%{transform:scale(2.2) skewX(-9deg);opacity:0;filter:blur(6px)} 55%{transform:scale(.94) skewX(-9deg);opacity:1;filter:blur(0)} 100%{transform:scale(1) skewX(-9deg)} }
+@keyframes sf-shine { 0%{background-position:-160% 0} 100%{background-position:260% 0} }
+.sf-press{transition:translate 80ms ease-out}
+.sf-press:active{translate:0 3px}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 60% at 50% -10%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 50% at 110% 110%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 50% at -10% 100%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; top: 36px; left: 0; right: 0; height: 190px; background-image: radial-gradient(rgba(255,255,255,.09) 1px, transparent 1.4px); background-size: 7px 7px; -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0)); mask-image: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0));"></div>
+  <div aria-hidden="true" style="position: absolute; top: 40px; left: 193px; width: 4px; height: 168px; background: linear-gradient(180deg, rgba(255,210,63,0), #ffd23f 30%, #ff3355 75%, rgba(255,51,85,0)); transform: skewX(-9deg); box-shadow: 0 0 12px rgba(255,210,63,.45); z-index: 1;"></div>
+
+  <div style="position: absolute; top: 52px; left: 16px; width: 171px; height: 142px; box-sizing: border-box; background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid {{opp.border}}; border-radius: 12px; transform: skewX(-9deg); box-shadow: {{opp.shadow}}; transition: border-color .24s, box-shadow .24s; z-index: 2;">
+    <div style="height: 100%; box-sizing: border-box; padding: 8px 13px; display: flex; flex-direction: column; transform: skewX(9deg);">
+      <div style="display: flex; flex-direction: row-reverse; align-items: center; justify-content: space-between; height: 44px; flex: none;">
+        <div style="position: relative; flex: none; width: 44px; height: 44px; padding: 3px; box-sizing: border-box; border-radius: 12px; background: #ff8a1f; box-shadow: 0 3px 0 #c95600;">
+          <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="38" height="38" style="display: block; width: 38px; height: 38px; border-radius: 9px;">
+          <span style="position: absolute; bottom: -3px; left: -3px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; background: #3ff0a6; border: 2px solid #0f0b1d;"></span>
+          <sc-if value="{{opp.lead}}" hint-placeholder-val="{{ false }}">
+            <span style="position: absolute; top: -18px; left: 12px; width: 20px; height: 20px; display: block; animation: sf-pop .42s cubic-bezier(.34,1.56,.64,1) both;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ffd23f" stroke="#e8a100" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true" style="display: block; filter: drop-shadow(0 2px 0 #07050f);"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"></path></svg></span>
+          </sc-if>
+        </div>
+        <a href="Arsenal.dc.html" aria-label="הפרעה ל־NinaVolt · עלות 2 נק׳" style="flex: none; width: 44px; height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; box-sizing: border-box; background: rgba(255,51,85,.16); border: 2px solid #ff3355; border-radius: 12px; box-shadow: 0 3px 0 #b8102f; color: #ff3355; text-decoration: none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff3355" stroke="#ff3355" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"></path></svg>
+          <span style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 14px; line-height: .8; color: #ffc2cc; padding-top: 2px; white-space: nowrap;">2 נק׳</span>
+        </a>
+      </div>
+      <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 5px; height: 16px; margin-top: 5px; flex: none; min-width: 0;">
+        <span style="min-width: 0; font: 600 14px/1.1 Rubik, sans-serif; color: #f1eeff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">NinaVolt</span>
+        <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇩🇪</span>
+        <span dir="ltr" style="flex: none; display: inline-flex; align-items: center; gap: 3px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: .9; font-variant-numeric: tabular-nums; color: #ffd23f; padding-top: 2px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="#ffd23f" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z"></path></svg>1305</span>
+      </div>
+      <div style="display: flex; flex-direction: row-reverse; align-items: flex-start; justify-content: space-between; gap: 4px; height: 34px; margin-top: 5px; flex: none;">
+        <div style="display: flex; align-items: baseline; gap: 4px; flex: none;">
+          <span dir="ltr" style="display: inline-block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 40px; line-height: .8; padding-top: 4px; font-variant-numeric: tabular-nums; color: #ff8a1f; text-shadow: 0 2px 0 #c95600; transform-origin: 30% 60%; animation: {{opp.bump}};">{{opp.scoreTxt}}</span>
+          <span style="font: 600 12px/1 Rubik, sans-serif; color: #a79fcb;">נק׳</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: flex-start; align-content: flex-start; gap: 2px; max-width: 50px; max-height: 34px; overflow: hidden;">
+          <sc-for list="{{opp.pips}}" as="p" hint-placeholder-count="2">
+            <span dir="ltr" style="display: inline-flex; align-items: center; height: 15px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 4px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.7); color: #ff6b84; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 14px; line-height: 1; animation: sf-pop .3s cubic-bezier(.34,1.56,.64,1) both;">{{p.t}}</span>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 5px; height: 14px; margin-top: 3px; flex: none;">
+        <span style="display: block; width: 10px; height: 9px; flex: none; background: #ff8a1f; clip-path: polygon(50% 0, 100% 100%, 0 100%);"></span>
+        <sc-if value="{{opp.locked}}" hint-placeholder-val="{{ true }}">
+          <span style="font: 600 12px/1 Rubik, sans-serif; color: #ff8a1f; white-space: nowrap;">בוחרת · <span dir="ltr">{{opp.cell}}</span></span>
+          <svg width="13" height="13" viewBox="0 0 14 14" aria-hidden="true" style="flex: none; transform: rotate(-90deg);"><circle cx="7" cy="7" r="5" fill="none" stroke="rgba(255,138,31,.25)" stroke-width="2"></circle><circle cx="7" cy="7" r="5" fill="none" stroke="#ff8a1f" stroke-width="2" stroke-linecap="round" style="stroke-dasharray: 31.42px; stroke-dashoffset: {{opp.ringOff}}; transition: stroke-dashoffset 1s linear;"></circle></svg>
+        </sc-if>
+        <sc-if value="{{opp.idle}}" hint-placeholder-val="{{ false }}">
+          <span style="font: 500 12px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">חושבת<span style="animation: sf-blink 1.2s ease-in-out infinite;">…</span></span>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; top: 52px; right: 16px; width: 171px; height: 142px; box-sizing: border-box; background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid {{me.border}}; border-radius: 12px; transform: skewX(-9deg); box-shadow: {{me.shadow}}; transition: border-color .24s, box-shadow .24s; z-index: 2;">
+    <div style="height: 100%; box-sizing: border-box; padding: 8px 13px; display: flex; flex-direction: column; transform: skewX(9deg);">
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; flex: none;">
+        <div style="position: relative; flex: none; width: 44px; height: 44px; padding: 3px; box-sizing: border-box; border-radius: 12px; background: #2ee6ff; box-shadow: 0 3px 0 #0098c2;">
+          <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="38" height="38" style="display: block; width: 38px; height: 38px; border-radius: 9px;">
+          <span style="position: absolute; bottom: -3px; right: -3px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; background: #3ff0a6; border: 2px solid #0f0b1d;"></span>
+          <sc-if value="{{me.lead}}" hint-placeholder-val="{{ true }}">
+            <span style="position: absolute; top: -18px; left: 12px; width: 20px; height: 20px; display: block; animation: sf-pop .42s cubic-bezier(.34,1.56,.64,1) both;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ffd23f" stroke="#e8a100" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true" style="display: block; filter: drop-shadow(0 2px 0 #07050f);"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"></path></svg></span>
+          </sc-if>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; flex: none;">
+          <button type="button" aria-label="תגובות" aria-expanded="{{reactBtn.exp}}" onClick="{{ toggleReact }}" class="sf-press" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; box-sizing: border-box; background: {{reactBtn.bg}}; border: 2px solid {{reactBtn.bd}}; border-radius: 12px; box-shadow: 0 3px 0 #07050f; color: {{reactBtn.fg}}; cursor: pointer; transition: border-color .24s, color .24s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg></button>
+          <a href="Surrender.dc.html" aria-label="כניעה" class="sf-press" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; background: #251d45; border: 2px solid #4b3f80; border-radius: 12px; box-shadow: 0 3px 0 #07050f; color: #ff3355; text-decoration: none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"></path><path d="M5 4h11l-2 4 2 4H5"></path></svg></a>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px; height: 16px; margin-top: 5px; flex: none; min-width: 0;">
+        <span style="min-width: 0; font: 600 14px/1.1 Rubik, sans-serif; color: #f1eeff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">MosheG</span>
+        <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇮🇱</span>
+        <span dir="ltr" style="flex: none; display: inline-flex; align-items: center; gap: 3px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: .9; font-variant-numeric: tabular-nums; color: #ffd23f; padding-top: 2px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="#ffd23f" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z"></path></svg>1287</span>
+      </div>
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; height: 34px; margin-top: 5px; flex: none;">
+        <div style="display: flex; align-items: baseline; gap: 4px; flex: none;">
+          <span dir="ltr" style="display: inline-block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 40px; line-height: .8; padding-top: 4px; font-variant-numeric: tabular-nums; color: #2ee6ff; text-shadow: 0 2px 0 #0098c2; transform-origin: 70% 60%; animation: {{me.bump}};">{{me.scoreTxt}}</span>
+          <span style="font: 600 12px/1 Rubik, sans-serif; color: #a79fcb;">נק׳</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; align-content: flex-start; gap: 2px; max-width: 50px; max-height: 34px; overflow: hidden;">
+          <sc-for list="{{me.pips}}" as="p" hint-placeholder-count="1">
+            <span dir="ltr" style="display: inline-flex; align-items: center; height: 15px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 4px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.7); color: #ff6b84; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 14px; line-height: 1; animation: sf-pop .3s cubic-bezier(.34,1.56,.64,1) both;">{{p.t}}</span>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px; height: 14px; margin-top: 3px; flex: none;">
+        <span style="display: block; width: 9px; height: 9px; flex: none; background: #2ee6ff; clip-path: circle(50%);"></span>
+        <sc-if value="{{me.locked}}" hint-placeholder-val="{{ true }}">
+          <span style="font: 600 12px/1 Rubik, sans-serif; color: #2ee6ff; white-space: nowrap;">בוחר · <span dir="ltr">{{me.cell}}</span></span>
+          <svg width="13" height="13" viewBox="0 0 14 14" aria-hidden="true" style="flex: none; transform: rotate(-90deg);"><circle cx="7" cy="7" r="5" fill="none" stroke="rgba(46,230,255,.25)" stroke-width="2"></circle><circle cx="7" cy="7" r="5" fill="none" stroke="#2ee6ff" stroke-width="2" stroke-linecap="round" style="stroke-dasharray: 31.42px; stroke-dashoffset: {{me.ringOff}}; transition: stroke-dashoffset 1s linear;"></circle></svg>
+        </sc-if>
+        <sc-if value="{{me.idle}}" hint-placeholder-val="{{ false }}">
+          <span style="font: 500 12px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">חושב<span style="animation: sf-blink 1.2s ease-in-out infinite;">…</span></span>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; top: 105px; left: 176px; width: 38px; height: 28px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #0f0b1d; border: 2px solid #ffd23f; border-radius: 6px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f, 0 0 16px rgba(255,210,63,.35); z-index: 4;">
+    <span style="display: block; transform: skewX(9deg); font-family: Teko, Rubik, sans-serif; font-weight: 700; font-size: 22px; line-height: .8; letter-spacing: .02em; color: #ffd23f; padding-top: 3px;">VS</span>
+  </div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 210px; left: 16px; width: 358px; height: 10px; border-radius: 4px; background: #251d45; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f; overflow: hidden; z-index: 2;">
+    <div style="position: absolute; top: 0; bottom: 0; left: 0; width: {{dom.oppW}}; background: linear-gradient(90deg, #c95600, #ff8a1f); transition: width .65s cubic-bezier(.2,.8,.2,1);"></div>
+    <div style="position: absolute; top: 0; bottom: 0; right: 0; width: {{dom.meW}}; background: linear-gradient(90deg, #2ee6ff, #0098c2); transition: width .65s cubic-bezier(.2,.8,.2,1);"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; top: 206px; left: {{dom.notchX}}; width: 2px; height: 18px; background: #ffffff; border-radius: 1px; transform: skewX(-9deg); box-shadow: 0 0 10px #ffffff, 0 0 4px #ffffff; transition: left .65s cubic-bezier(.2,.8,.2,1); z-index: 3;"></div>
+  <div style="position: absolute; top: 225px; left: {{dom.tagX}}; transform: translateX(-50%); display: flex; align-items: center; height: 15px; padding: 0 5px; box-sizing: border-box; border-radius: 4px; background: #0f0b1d; border: 1px solid {{dom.tagColor}}; color: {{dom.tagColor}}; font: {{dom.tagFont}}; white-space: nowrap; transition: left .65s cubic-bezier(.2,.8,.2,1), color .24s, border-color .24s; z-index: 3;"><span dir="ltr" style="display: block; padding-top: 1px;">{{dom.tag}}</span></div>
+
+  <div style="position: absolute; top: 246px; left: 16px; right: 16px; height: 26px; display: flex; align-items: center; justify-content: space-between; gap: 8px; z-index: 3;">
+    <sc-if value="{{st.lock}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; align-items: center; height: 26px; padding: 0 10px; box-sizing: border-box; background: {{st.bg}}; border: 1.5px solid {{st.bd}}; border-radius: 7px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f; transition: background-color .24s, border-color .24s;">
+        <span style="display: flex; align-items: center; gap: 6px; transform: skewX(9deg); color: {{st.fg}};">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+          <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px;">{{st.cell}}</span>
+          <span style="font: 600 13px/1 Rubik, sans-serif; color: #6c5fa6;">·</span>
+          <span style="display: flex; align-items: baseline; gap: 1px;"><span style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums;">{{st.secs}}</span><span style="font: 600 12px/1 Rubik, sans-serif;">ש׳</span></span>
+        </span>
+      </div>
+    </sc-if>
+    <sc-if value="{{st.idle}}" hint-placeholder-val="{{ false }}">
+      <div style="animation: {{st.nudge}};">
+        <div style="display: flex; align-items: center; height: 26px; padding: 0 10px; box-sizing: border-box; background: rgba(255,210,63,.1); border: 1.5px solid #ffd23f; border-radius: 7px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f, 0 0 14px rgba(255,210,63,.25);">
+          <span style="display: flex; align-items: center; gap: 6px; transform: skewX(9deg); color: #ffd23f; font: 600 13px/1 Rubik, sans-serif; white-space: nowrap;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="animation: sf-blink 1.6s ease-in-out infinite;"><circle cx="12" cy="12" r="8"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path><circle cx="12" cy="12" r="2"></circle></svg>
+            בחר משבצת
+          </span>
+        </div>
+      </div>
+    </sc-if>
+    <div aria-live="polite" style="display: flex; align-items: center; gap: 6px; min-width: 0; animation: {{log.anim}};">
+      <span style="display: block; width: 9px; height: 9px; flex: none; background: {{log.glyph}}; clip-path: {{log.clip}};"></span>
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 19px; line-height: .8; padding-top: 3px; color: {{log.cellColor}};">{{log.cell}}</span>
+      <sc-if value="{{log.hasDelta}}" hint-placeholder-val="{{ true }}">
+        <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 19px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums; color: {{log.deltaColor}};">{{log.delta}}</span>
+      </sc-if>
+      <sc-if value="{{log.hasNote}}" hint-placeholder-val="{{ false }}">
+        <span style="font: 500 12px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">{{log.note}}</span>
+      </sc-if>
+    </div>
+  </div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 278px; left: 16px; width: 358px; height: 10px; padding: 0 3px; box-sizing: border-box; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px;">
+    <sc-for list="{{railTop}}" as="g" hint-placeholder-count="3">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px;">
+        <sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+          <span style="display: block; text-align: center; font: 600 10px/10px Rubik, sans-serif; color: {{t.color}}; transition: color .24s;">{{t.t}}</span>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+  <div aria-hidden="true" style="position: absolute; top: 290px; left: 2px; width: 12px; height: 358px; padding: 3px 0; box-sizing: border-box; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3px;">
+    <sc-for list="{{railSide}}" as="g" hint-placeholder-count="3">
+      <div style="display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px;">
+        <sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+          <span style="display: flex; align-items: center; justify-content: center; font: 600 10px/1 Rubik, sans-serif; color: {{t.color}}; transition: color .24s;">{{t.t}}</span>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div dir="ltr" style="position: absolute; top: 290px; left: 16px; width: 358px; height: 358px; padding: 3px; box-sizing: border-box; background: #342a5e; border-radius: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3px; box-shadow: 0 6px 0 #07050f, 0 18px 40px rgba(5,3,15,.6);">
+    <sc-for list="{{boxes}}" as="box" hint-placeholder-count="9">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; background: #c9c2ea; border-radius: 4px; overflow: hidden;">
+        <sc-for list="{{box.cells}}" as="cell" hint-placeholder-count="9">
+          <button type="button" aria-label="{{cell.aria}}" onClick="{{ cell.tap }}" style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-width: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: {{cell.bg}}; box-shadow: {{cell.ring}}; color: {{cell.fg}}; font: 600 23px/1 Rubik, sans-serif; cursor: pointer; animation: {{cell.anim}}; transition: background-color .24s; -webkit-tap-highlight-color: transparent;">
+            <span style="display: block; animation: {{cell.vAnim}};">{{cell.v}}</span>
+            <sc-if value="{{cell.hasGlyph}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; top: 3px; left: 3px; display: block; width: 7px; height: 7px; background: {{cell.glyph}}; clip-path: {{cell.clip}};"></span>
+            </sc-if>
+            <sc-if value="{{cell.hasWrong}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; bottom: {{cell.wb}}; right: 4px; font: 700 10px/1 Rubik, sans-serif; color: #d10f37; letter-spacing: .04em; z-index: 1;">{{cell.wrong}}</span>
+            </sc-if>
+            <sc-if value="{{cell.mineSel}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; top: 3px; right: 3px; min-width: 14px; height: 14px; padding: 0 3px; box-sizing: border-box; border-radius: 7px; background: {{cell.pillBg}}; color: #0f0b1d; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 13px; line-height: 15px; text-align: center; transition: background-color .24s;">{{cell.secs}}</span>
+              <span style="position: absolute; left: 4px; right: 4px; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(0,152,194,.22);">
+                <span style="display: block; height: 3px; width: {{cell.barW}}; border-radius: 2px; background: {{cell.pillBg}}; transition: width 1s linear, background-color .24s;"></span>
+              </span>
+            </sc-if>
+            <sc-if value="{{cell.ninaSel}}" hint-placeholder-val="{{ false }}">
+              <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="14" height="14" style="position: absolute; top: 4px; left: 4px; display: block; width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 0 1.5px #ff8a1f;">
+              <span style="position: absolute; top: 3px; right: 3px; min-width: 14px; height: 14px; padding: 0 3px; box-sizing: border-box; border-radius: 7px; background: #ff8a1f; color: #0f0b1d; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 13px; line-height: 15px; text-align: center;">{{cell.secs}}</span>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 290px; left: 16px; width: 358px; height: 358px; pointer-events: none; z-index: 6;">
+    <sc-if value="{{popMe.show}}" hint-placeholder-val="{{ false }}">
+      <span style="position: absolute; left: {{popMe.x}}; top: {{popMe.y}}; width: 80px; text-align: center; font-family: Teko, Rubik, sans-serif; font-weight: 700; font-size: 30px; line-height: 1; color: {{popMe.color}}; -webkit-text-stroke: 1.5px #0f0b1d; text-shadow: {{popMe.glow}}; animation: {{popMe.anim}};">{{popMe.text}}</span>
+    </sc-if>
+    <sc-if value="{{popOpp.show}}" hint-placeholder-val="{{ false }}">
+      <span style="position: absolute; left: {{popOpp.x}}; top: {{popOpp.y}}; width: 80px; text-align: center; font-family: Teko, Rubik, sans-serif; font-weight: 700; font-size: 30px; line-height: 1; color: {{popOpp.color}}; -webkit-text-stroke: 1.5px #0f0b1d; text-shadow: {{popOpp.glow}}; animation: {{popOpp.anim}};">{{popOpp.text}}</span>
+    </sc-if>
+  </div>
+
+  <div dir="ltr" style="position: absolute; top: 666px; left: 16px; width: 358px; display: flex; gap: 4px; opacity: {{pad.op}}; transition: opacity .24s;">
+    <sc-for list="{{keys}}" as="k" hint-placeholder-count="9">
+      <button type="button" aria-label="{{k.aria}}" onClick="{{ k.press }}" class="sf-press" style="flex: 1 1 0; min-width: 0; height: 62px; margin: 0; padding: 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: #251d45; border: 2px solid {{k.bd}}; border-radius: 10px; box-shadow: {{k.sh}}; opacity: {{k.op}}; color: #f1eeff; cursor: pointer; transition: border-color .24s, box-shadow .24s;">
+        <span style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 34px; line-height: .8; padding-top: 5px;">{{k.d}}</span>
+        <span style="display: block; font: 600 9px/1 Rubik, sans-serif; color: #a79fcb;">{{k.left}}</span>
+      </button>
+    </sc-for>
+  </div>
+
+  <button type="button" onClick="{{ release }}" aria-disabled="{{rel.dis}}" class="sf-press" style="position: absolute; top: 746px; left: 16px; width: 358px; height: 48px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #251d45; border: 2px solid #4b3f80; border-radius: 10px; transform: skewX(-9deg); box-shadow: {{rel.sh}}; opacity: {{rel.op}}; color: #f1eeff; cursor: pointer; transition: opacity .24s, box-shadow .24s;">
+    <span style="display: flex; align-items: center; gap: 8px; transform: skewX(9deg); font: 600 17px/1 Rubik, sans-serif; white-space: nowrap;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M9 9l6 6M15 9l-6 6"></path></svg>
+      ביטול בחירה
+      <sc-if value="{{rel.hasCell}}" hint-placeholder-val="{{ true }}">
+        <span dir="ltr" style="display: block; padding: 3px 6px 0; border-radius: 5px; background: rgba(46,230,255,.14); border: 1px solid rgba(46,230,255,.6); color: #2ee6ff; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: 17px;">{{rel.cell}}</span>
+      </sc-if>
+    </span>
+  </button>
+
+  <sc-if value="{{reactOpen}}" hint-placeholder-val="{{ false }}">
+    <div role="group" aria-label="תגובות" style="position: absolute; top: 204px; right: 14px; display: flex; gap: 2px; padding: 4px; background: #1b1533; border: 2px solid #4b3f80; border-radius: 16px; box-shadow: 0 5px 0 #07050f, 0 14px 30px rgba(0,0,0,.55); transform-origin: 70% 0; animation: sf-pop .22s cubic-bezier(.34,1.56,.64,1) both; z-index: 30;">
+      <span aria-hidden="true" style="position: absolute; top: -9px; right: 84px; width: 14px; height: 14px; background: #1b1533; border-top: 2px solid #4b3f80; border-left: 2px solid #4b3f80; transform: rotate(45deg);"></span>
+      <sc-for list="{{reactions}}" as="r" hint-placeholder-count="6">
+        <button type="button" aria-label="{{r.label}}" onClick="{{ r.send }}" class="sf-press" style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; background: transparent; border: 0; border-radius: 12px; cursor: pointer; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 26px; line-height: 1;">{{r.e}}</button>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{floatMe.show}}" hint-placeholder-val="{{ false }}">
+    <span aria-hidden="true" style="position: absolute; top: 64px; left: 313px; width: 48px; text-align: center; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 36px; line-height: 1; pointer-events: none; animation: {{floatMe.anim}}; z-index: 25;">{{floatMe.e}}</span>
+  </sc-if>
+  <sc-if value="{{floatOpp.show}}" hint-placeholder-val="{{ false }}">
+    <span aria-hidden="true" style="position: absolute; top: 64px; left: 29px; width: 48px; text-align: center; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 36px; line-height: 1; pointer-events: none; animation: {{floatOpp.anim}}; z-index: 25;">{{floatOpp.e}}</span>
+  </sc-if>
+
+  <sc-if value="{{end.show}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; top: 200px; left: 0; right: 0; bottom: 0; background: rgba(7,5,15,.72); z-index: 40;"></div>
+    <div role="dialog" aria-label="המשחק הסתיים" style="position: absolute; top: 338px; left: 28px; right: 28px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 22px 20px 26px; background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid #ffd23f; border-radius: 20px; box-shadow: 0 6px 0 #07050f, 0 24px 60px rgba(0,0,0,.6), 0 0 30px rgba(255,210,63,.18); animation: sf-pop .42s cubic-bezier(.34,1.56,.64,1) both; z-index: 41;">
+      <span style="font: 600 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #a79fcb;">הלוח מלא</span>
+      <h2 style="margin: 0; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 54px; line-height: .9; color: #f1eeff; text-shadow: 0 4px 0 #07050f;">המשחק הסתיים</h2>
+      <sc-if value="{{end.won}}" hint-placeholder-val="{{ true }}">
+        <span style="display: block; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 36px; line-height: .9; color: #ffd23f; text-shadow: 0 3px 0 #b37b00; animation: sf-slam .7s cubic-bezier(.34,1.56,.64,1) both;">ניצחון!</span>
+      </sc-if>
+      <sc-if value="{{end.lost}}" hint-placeholder-val="{{ false }}">
+        <span style="display: block; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 36px; line-height: .9; color: #ff3355; text-shadow: 0 3px 0 #b8102f; animation: sf-slam .7s cubic-bezier(.34,1.56,.64,1) both;">הפסד</span>
+      </sc-if>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="display: block; width: 9px; height: 9px; background: #2ee6ff; clip-path: circle(50%);"></span>
+          <span style="font: 600 13px/1 Rubik, sans-serif; color: #cfc8ee;">MosheG</span>
+          <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 28px; line-height: .8; padding-top: 3px; color: #2ee6ff;">{{end.me}}</span>
+        </div>
+        <span style="font-family: Teko, Rubik, sans-serif; font-weight: 700; font-size: 16px; line-height: 1; color: #6c5fa6;">VS</span>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 28px; line-height: .8; padding-top: 3px; color: #ff8a1f;">{{end.opp}}</span>
+          <span style="font: 600 13px/1 Rubik, sans-serif; color: #cfc8ee;">NinaVolt</span>
+          <span style="display: block; width: 10px; height: 9px; background: #ff8a1f; clip-path: polygon(50% 0, 100% 100%, 0 100%);"></span>
+        </div>
+      </div>
+      <sc-if value="{{end.won}}" hint-placeholder-val="{{ true }}">
+        <a href="Results-Victory.dc.html" style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 56px; margin-top: 6px; overflow: hidden; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); color: #1a1000; text-decoration: none; transform: skewX(-9deg); border-radius: 10px; box-shadow: 0 5px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6);"><span aria-hidden="true" style="position: absolute; inset: 0; background-image: linear-gradient(100deg, rgba(255,255,255,0) 35%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 65%); background-size: 50% 100%; background-repeat: no-repeat; animation: sf-shine 2.2s linear infinite;"></span><span style="position: relative; display: block; transform: skewX(9deg); font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 32px; line-height: 1;">לתוצאות</span></a>
+      </sc-if>
+      <sc-if value="{{end.lost}}" hint-placeholder-val="{{ false }}">
+        <a href="Results-Defeat.dc.html" style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 56px; margin-top: 6px; overflow: hidden; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); color: #1a1000; text-decoration: none; transform: skewX(-9deg); border-radius: 10px; box-shadow: 0 5px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6);"><span style="position: relative; display: block; transform: skewX(9deg); font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 32px; line-height: 1;">לתוצאות</span></a>
+      </sc-if>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = this.initState();
+
+  initState() {
+    return {
+      cur: '864370209325009061970060043036002087198657402057083000680004105013508690542916370',
+      own: '00gg1.g.g11g..g.0g0g..g..gg.0g..g.gggg100gg.1.g1.gg...g0...1g.g.0gg.ggg.0gggg0g1.',
+      wrong: [{ i: 4, d: 5, seat: 1 }, { i: 44, d: 3, seat: 0 }, { i: 63, d: 4, seat: 1 }],
+      score: [55, 39.5],
+      disp: [55, 39.5],
+      mist: [1, 2],
+      mine: { i: 52, secs: 10, total: 12 },
+      nina: { i: 7, secs: 10, total: 12, act: 3, miss: false, wd: 0 },
+      gap: 0,
+      seq: 2,
+      log: { seat: 0, cell: 'I1', delta: '+3.5', note: '', bad: false, n: 2 },
+      fxMe: null,
+      fxNina: null,
+      bumpMe: null,
+      bumpNina: null,
+      reactMe: null,
+      reactNina: null,
+      reactOpen: false,
+      deny: null,
+      nudge: null
+    };
+  }
+
+  componentDidMount() {
+    this.timer = setInterval(() => this.tick(), 1000);
+  }
+
+  componentWillUnmount() {
+    if (this.timer) clearInterval(this.timer);
+    if (this.countTimer) clearInterval(this.countTimer);
+    this.timer = null;
+    this.countTimer = null;
+  }
+
+  sol() {
+    return '864371259325849761971265843436192587198657432257483916689734125713528694542916378';
+  }
+
+  palette() {
+    return [
+      { p: '#2ee6ff', deep: '#0098c2', tint: '#d3f8ff', solve: '#006b8a', clip: 'circle(50%)' },
+      { p: '#ff8a1f', deep: '#c95600', tint: '#ffe6cf', solve: '#9a3f00', clip: 'polygon(50% 0, 100% 100%, 0 100%)' }
+    ];
+  }
+
+  cellName(i) {
+    return 'ABCDEFGHI'[Math.floor(i / 9)] + String((i % 9) + 1);
+  }
+
+  fmt(n) {
+    const a = Math.abs(n);
+    const t = (a % 1 === 0) ? String(a) : a.toFixed(1);
+    return (n < 0 ? '−' : '') + t;
+  }
+
+  setAt(str, i, ch) {
+    return str.slice(0, i) + ch + str.slice(i + 1);
+  }
+
+  points(cur, i, d) {
+    const r = Math.floor(i / 9), c = i % 9, b = Math.floor(r / 3) * 3 + Math.floor(c / 3);
+    let rf = 0, cf = 0, bf = 0, dc = 0;
+    for (let j = 0; j < 81; j++) {
+      if (cur[j] === '0') continue;
+      const rj = Math.floor(j / 9), cj = j % 9, bj = Math.floor(rj / 3) * 3 + Math.floor(cj / 3);
+      if (rj === r) rf++;
+      if (cj === c) cf++;
+      if (bj === b) bf++;
+      if (cur[j] === d) dc++;
+    }
+    const top = [rf, cf, bf, dc].sort((x, y) => y - x);
+    return 9 - top[0] + (9 - top[1]) / 2;
+  }
+
+  candCount(cur, i) {
+    const r = Math.floor(i / 9), c = i % 9, br = r - (r % 3), bc = c - (c % 3);
+    const used = {};
+    for (let k = 0; k < 9; k++) {
+      used[cur[r * 9 + k]] = true;
+      used[cur[k * 9 + c]] = true;
+      used[cur[(br + Math.floor(k / 3)) * 9 + bc + (k % 3)]] = true;
+    }
+    let n = 0;
+    for (let d = 1; d <= 9; d++) if (!used[String(d)]) n++;
+    return n;
+  }
+
+  remaining(cur) {
+    const rem = [9, 9, 9, 9, 9, 9, 9, 9, 9];
+    for (let j = 0; j < 81; j++) {
+      if (cur[j] !== '0') rem[Number(cur[j]) - 1]--;
+    }
+    return rem;
+  }
+
+  ninaPick(cur, avoid) {
+    const singles = [], empties = [];
+    for (let i = 0; i < 81; i++) {
+      if (cur[i] !== '0' || i === avoid) continue;
+      empties.push(i);
+      if (this.candCount(cur, i) === 1) singles.push(i);
+    }
+    const pool = singles.length ? singles : empties;
+    return pool.length ? pool[Math.floor(Math.random() * pool.length)] : -1;
+  }
+
+  startCount(to) {
+    const s = this.state;
+    this.cFrom = (s.disp || to).slice();
+    this.cTo = to.slice();
+    this.cT0 = Date.now();
+    if (!this.countTimer) this.countTimer = setInterval(() => this.countStep(), 40);
+  }
+
+  countStep() {
+    if (!this.cTo) return;
+    const k = Math.min(1, (Date.now() - this.cT0) / 650);
+    if (k >= 1) {
+      clearInterval(this.countTimer);
+      this.countTimer = null;
+      this.setState({ disp: this.cTo.slice() });
+      return;
+    }
+    const e = 1 - Math.pow(1 - k, 3);
+    this.setState({ disp: this.cTo.map((t, j) => Math.round((this.cFrom[j] + (t - this.cFrom[j]) * e) * 2) / 2) });
+  }
+
+  tick() {
+    const s = this.state;
+    if (!s) return;
+    const now = Date.now();
+    const up = {};
+    ['fxMe', 'fxNina', 'bumpMe', 'bumpNina', 'reactMe', 'reactNina', 'deny', 'nudge'].forEach(k => {
+      if (s[k] && now - s[k].t > 1700) up[k] = null;
+    });
+    if (s.cur.indexOf('0') < 0) {
+      if (Object.keys(up).length) this.setState(up);
+      return;
+    }
+    let seq = s.seq;
+    let mine = s.mine;
+    if (mine) {
+      if (mine.secs <= 1) {
+        seq++;
+        up.log = { seat: 0, cell: this.cellName(mine.i), delta: '', note: 'נגמר הזמן', bad: false, n: seq };
+        mine = null;
+      } else {
+        mine = { i: mine.i, secs: mine.secs - 1, total: mine.total };
+      }
+      up.mine = mine;
+    }
+    const SOL = this.sol();
+    const nina = s.nina;
+    if (nina) {
+      if (nina.act <= 1) {
+        seq++;
+        const name = this.cellName(nina.i);
+        let cur = s.cur, own = s.own, wrong = s.wrong, score = s.score, mist = s.mist;
+        if (nina.miss) {
+          const pen = Math.pow(2, mist[1]);
+          mist = [mist[0], mist[1] + 1];
+          score = [score[0], score[1] - pen];
+          wrong = wrong.concat([{ i: nina.i, d: nina.wd, seat: 1 }]);
+          up.fxNina = { i: nina.i, seat: 1, text: '−' + pen, bad: true, n: seq, t: now };
+          up.bumpNina = { bad: true, n: seq, t: now };
+          up.log = { seat: 1, cell: name, delta: '−' + pen, note: '', bad: true, n: seq };
+        } else {
+          const d = SOL[nina.i];
+          const p = this.points(cur, nina.i, d);
+          cur = this.setAt(cur, nina.i, d);
+          own = this.setAt(own, nina.i, '1');
+          score = [score[0], score[1] + p];
+          up.fxNina = { i: nina.i, seat: 1, text: '+' + this.fmt(p), bad: false, n: seq, t: now };
+          up.bumpNina = { bad: false, n: seq, t: now };
+          up.log = { seat: 1, cell: name, delta: '+' + this.fmt(p), note: '', bad: false, n: seq };
+          if (p >= 6 && Math.random() < 0.5) up.reactNina = { e: '😎', n: seq, t: now };
+        }
+        up.cur = cur;
+        up.own = own;
+        up.wrong = wrong;
+        up.score = score;
+        up.mist = mist;
+        up.nina = null;
+        up.gap = 2 + Math.floor(Math.random() * 2);
+        this.startCount(score);
+      } else {
+        up.nina = Object.assign({}, nina, { secs: nina.secs - 1, act: nina.act - 1 });
+      }
+    } else if (s.gap > 1) {
+      up.gap = s.gap - 1;
+    } else {
+      const pick = this.ninaPick(s.cur, mine ? mine.i : -1);
+      if (pick >= 0) {
+        const miss = Math.random() < 0.125;
+        const sd = Number(SOL[pick]);
+        let wd = 1 + Math.floor(Math.random() * 8);
+        if (wd >= sd) wd++;
+        up.nina = { i: pick, secs: 12, total: 12, act: 2 + Math.floor(Math.random() * 2), miss: miss, wd: wd };
+      } else {
+        up.gap = 1;
+      }
+    }
+    up.seq = seq;
+    this.setState(up);
+  }
+
+  tap(i) {
+    const s = this.state;
+    if (s.cur.indexOf('0') < 0 || s.cur[i] !== '0') return;
+    if (s.nina && s.nina.i === i) {
+      const seq = s.seq + 1;
+      this.setState({ seq: seq, deny: { i: i, n: seq, t: Date.now() }, log: { seat: 1, cell: this.cellName(i), delta: '', note: 'תפוסה', bad: false, n: seq } });
+      return;
+    }
+    if (s.mine && s.mine.i === i) return;
+    this.setState({ mine: { i: i, secs: 12, total: 12 }, reactOpen: false });
+  }
+
+  press(d) {
+    const s = this.state;
+    if (s.cur.indexOf('0') < 0) return;
+    const now = Date.now();
+    const seq = s.seq + 1;
+    if (!s.mine) {
+      this.setState({ seq: seq, nudge: { n: seq, t: now } });
+      return;
+    }
+    if (this.remaining(s.cur)[d - 1] <= 0) return;
+    const i = s.mine.i, ds = String(d), name = this.cellName(i);
+    if (this.sol()[i] === ds) {
+      const p = this.points(s.cur, i, ds);
+      const score = [s.score[0] + p, s.score[1]];
+      this.startCount(score);
+      this.setState({
+        cur: this.setAt(s.cur, i, ds),
+        own: this.setAt(s.own, i, '0'),
+        score: score,
+        mine: null,
+        seq: seq,
+        reactOpen: false,
+        fxMe: { i: i, seat: 0, text: '+' + this.fmt(p), bad: false, n: seq, t: now },
+        bumpMe: { bad: false, n: seq, t: now },
+        log: { seat: 0, cell: name, delta: '+' + this.fmt(p), note: '', bad: false, n: seq }
+      });
+    } else {
+      const pen = Math.pow(2, s.mist[0]);
+      const score = [s.score[0] - pen, s.score[1]];
+      this.startCount(score);
+      const up = {
+        score: score,
+        mist: [s.mist[0] + 1, s.mist[1]],
+        wrong: s.wrong.concat([{ i: i, d: d, seat: 0 }]),
+        mine: null,
+        seq: seq,
+        reactOpen: false,
+        fxMe: { i: i, seat: 0, text: '−' + pen, bad: true, n: seq, t: now },
+        bumpMe: { bad: true, n: seq, t: now },
+        log: { seat: 0, cell: name, delta: '−' + pen, note: '', bad: true, n: seq }
+      };
+      if (Math.random() < 0.5) up.reactNina = { e: '😂', n: seq, t: now };
+      this.setState(up);
+    }
+  }
+
+  release() {
+    const s = this.state;
+    if (!s.mine) return;
+    const seq = s.seq + 1;
+    this.setState({ mine: null, seq: seq, log: { seat: 0, cell: this.cellName(s.mine.i), delta: '', note: 'שוחררה', bad: false, n: seq } });
+  }
+
+  sendReact(e) {
+    const seq = this.state.seq + 1;
+    this.setState({ seq: seq, reactOpen: false, reactMe: { e: e, n: seq, t: Date.now() } });
+  }
+
+  renderVals() {
+    const s = this.state || this.initState();
+    const P = this.palette();
+    const over = s.cur.indexOf('0') < 0;
+    const mine = over ? null : s.mine;
+    const nina = over ? null : s.nina;
+    const R = i => Math.floor(i / 9), C = i => i % 9, B = i => Math.floor(R(i) / 3) * 3 + Math.floor(C(i) / 3);
+    const alt = n => (n % 2 ? '-b' : '');
+    const fxList = [s.fxMe, s.fxNina].filter(f => !!f);
+
+    const boxes = [];
+    for (let bx = 0; bx < 9; bx++) {
+      const cells = [];
+      for (let k = 0; k < 9; k++) {
+        const i = (Math.floor(bx / 3) * 3 + Math.floor(k / 3)) * 9 + (bx % 3) * 3 + (k % 3);
+        const v = s.cur[i] === '0' ? '' : s.cur[i];
+        const o = s.own[i];
+        const shaded = bx % 2 === 1;
+        const isMine = !!mine && mine.i === i;
+        const isNina = !!nina && nina.i === i;
+        const peer = !!mine && !isMine && (R(i) === R(mine.i) || C(i) === C(mine.i) || B(i) === B(mine.i));
+        let bg = shaded ? '#ece8fb' : '#fbfaff';
+        let fg = '#1a1433', ring = 'none', anim = 'none', vAnim = 'none', glyph = '', clip = 'none';
+        if (peer) bg = shaded ? '#dfd7fb' : '#e9e3ff';
+        if (o === '0' || o === '1') {
+          const pc = P[Number(o)];
+          bg = pc.tint; fg = pc.solve; glyph = pc.deep; clip = pc.clip;
+        }
+        if (isMine) {
+          bg = '#c8f6ff'; ring = 'inset 0 0 0 3px #2ee6ff'; anim = 'sf-lock-me 1.4s ease-in-out infinite';
+        }
+        if (isNina) {
+          bg = 'repeating-linear-gradient(135deg, #ffe6cf 0 4px, #fbfaff 4px 8px)'; ring = 'inset 0 0 0 3px #ff8a1f'; anim = 'sf-lock-nina 1.8s ease-in-out infinite';
+        }
+        for (let f = 0; f < fxList.length; f++) {
+          const fx = fxList[f];
+          if (fx.i !== i) continue;
+          if (fx.bad) {
+            anim = 'sf-flash-red' + alt(fx.n) + ' .55s ease-out, sf-shake' + alt(fx.n) + ' .3s ease-in-out';
+          } else {
+            anim = (fx.seat === 0 ? 'sf-flash-cyan' : 'sf-flash-orange') + alt(fx.n) + ' .7s ease-out';
+            vAnim = 'sf-pop' + alt(fx.n) + ' .42s cubic-bezier(.34,1.56,.64,1)';
+          }
+        }
+        if (isNina && s.deny && s.deny.i === i) anim = 'sf-lock-nina 1.8s ease-in-out infinite, sf-shake' + alt(s.deny.n) + ' .3s ease-in-out';
+        const w = s.wrong.filter(x => x.i === i).slice(-3).map(x => String(x.d));
+        const urgent = isMine && mine.secs <= 3;
+        const name = this.cellName(i);
+        cells.push({
+          i: i, v: v, bg: bg, fg: fg, ring: ring, anim: anim, vAnim: vAnim, glyph: glyph, clip: clip,
+          hasGlyph: !!glyph,
+          hasWrong: w.length > 0,
+          wrong: w.join(' '),
+          wb: isMine ? '8px' : '2px',
+          mineSel: isMine,
+          ninaSel: isNina,
+          secs: isMine ? String(mine.secs) : (isNina ? String(nina.secs) : ''),
+          pillBg: urgent ? '#ff3355' : '#2ee6ff',
+          barW: isMine ? Math.round(mine.secs / mine.total * 100) + '%' : '0%',
+          aria: name + (v ? ' · ' + v : '') + (isMine ? ' · נבחרה' : '') + (isNina ? ' · תפוסה' : ''),
+          tap: () => this.tap(i)
+        });
+      }
+      boxes.push({ bx: bx, cells: cells });
+    }
+
+    const railTop = [0, 1, 2].map(g => ({ items: [0, 1, 2].map(k => {
+      const c = g * 3 + k;
+      return { t: String(c + 1), color: mine && C(mine.i) === c ? '#2ee6ff' : '#a79fcb' };
+    }) }));
+    const railSide = [0, 1, 2].map(g => ({ items: [0, 1, 2].map(k => {
+      const r = g * 3 + k;
+      return { t: 'ABCDEFGHI'[r], color: mine && R(mine.i) === r ? '#2ee6ff' : '#a79fcb' };
+    }) }));
+
+    const BOX = (358 - 12) / 3, CELL = (BOX - 2) / 3;
+    const ctr = n => 3 + Math.floor(n / 3) * (BOX + 3) + (n % 3) * (CELL + 1) + CELL / 2;
+    const pop = (fx, seat) => fx ? {
+      show: true,
+      text: fx.text,
+      x: Math.round(ctr(C(fx.i)) - 40) + 'px',
+      y: Math.round(ctr(R(fx.i)) - 30) + 'px',
+      color: fx.bad ? '#ff3355' : P[seat].p,
+      glow: fx.bad ? '0 2px 0 #0f0b1d, 0 0 14px rgba(255,51,85,.7)' : '0 2px 0 #0f0b1d, 0 0 14px rgba(255,210,63,.8)',
+      anim: 'sf-float-up' + alt(fx.n) + ' 1.25s cubic-bezier(.2,.8,.2,1) both'
+    } : { show: false, text: '', x: '0px', y: '0px', color: '#ffffff', glow: 'none', anim: 'none' };
+
+    const lead = s.score[0] > s.score[1] ? 0 : (s.score[1] > s.score[0] ? 1 : -1);
+    const pips = seat => {
+      const n = s.mist[seat];
+      const out = [];
+      for (let k = 0; k < n; k++) out.push({ t: '−' + Math.pow(2, k) });
+      return n > 4 ? [{ t: '×' + n }].concat(out.slice(-3)) : out;
+    };
+    const bumpAnim = b => b ? (b.bad ? 'sf-score-hit' + alt(b.n) + ' .5s ease-out' : 'sf-score-pop' + alt(b.n) + ' .65s cubic-bezier(.34,1.56,.64,1)') : 'none';
+    const plate = (seat, sel, bump) => ({
+      lead: lead === seat,
+      border: lead === seat ? 'rgba(255,210,63,.9)' : (seat === 0 ? 'rgba(46,230,255,.7)' : 'rgba(255,138,31,.7)'),
+      shadow: lead === seat ? '0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08), 0 0 22px rgba(255,210,63,.22)' : '0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08)',
+      scoreTxt: this.fmt(s.disp[seat]),
+      bump: bumpAnim(bump),
+      pips: pips(seat),
+      locked: !!sel,
+      idle: !sel,
+      cell: sel ? this.cellName(sel.i) : '',
+      ringOff: sel ? (31.42 * (1 - sel.secs / sel.total)).toFixed(2) + 'px' : '0px'
+    });
+
+    const pos0 = Math.max(0, s.score[0]), pos1 = Math.max(0, s.score[1]);
+    let share = (pos0 + pos1) > 0 ? pos0 / (pos0 + pos1) : 0.5;
+    share = Math.min(0.94, Math.max(0.06, share));
+    const split = 16 + 358 * (1 - share);
+    const dom = {
+      meW: (share * 100).toFixed(2) + '%',
+      oppW: ((1 - share) * 100).toFixed(2) + '%',
+      notchX: (split - 1).toFixed(1) + 'px',
+      tagX: Math.min(350, Math.max(40, split)).toFixed(1) + 'px',
+      tag: lead === -1 ? 'שוויון' : '+' + this.fmt(Math.abs(s.score[0] - s.score[1])),
+      tagColor: lead === 0 ? '#2ee6ff' : (lead === 1 ? '#ff8a1f' : '#cfc8ee'),
+      tagFont: lead === -1 ? '600 11px/13px Rubik, sans-serif' : '600 15px/13px Teko, Rubik, sans-serif'
+    };
+
+    const urgent = !!mine && mine.secs <= 3;
+    const st = {
+      lock: !!mine,
+      idle: !mine && !over,
+      cell: mine ? this.cellName(mine.i) : '',
+      secs: mine ? String(mine.secs) : '',
+      fg: urgent ? '#ff3355' : '#2ee6ff',
+      bd: urgent ? '#ff3355' : '#2ee6ff',
+      bg: urgent ? 'rgba(255,51,85,.14)' : 'rgba(46,230,255,.12)',
+      nudge: s.nudge ? 'sf-shake' + alt(s.nudge.n) + ' .3s ease-in-out' : 'none'
+    };
+
+    const L = s.log;
+    const log = {
+      glyph: P[L.seat].p,
+      clip: P[L.seat].clip,
+      cell: L.cell,
+      cellColor: P[L.seat].p,
+      delta: L.delta,
+      hasDelta: !!L.delta,
+      deltaColor: L.bad ? '#ff3355' : '#3ff0a6',
+      note: L.note,
+      hasNote: !!L.note,
+      anim: 'sf-tick' + alt(L.n) + ' .32s cubic-bezier(.2,.8,.2,1) both'
+    };
+
+    const rem = this.remaining(s.cur);
+    const armed = !!mine;
+    const keys = [];
+    for (let d = 1; d <= 9; d++) {
+      const left = rem[d - 1];
+      keys.push({
+        d: String(d),
+        left: String(left),
+        op: left > 0 ? '1' : '.3',
+        bd: armed ? 'rgba(46,230,255,.6)' : '#4b3f80',
+        sh: armed ? '0 4px 0 #07050f, inset 0 2px 0 rgba(46,230,255,.35)' : '0 4px 0 #07050f',
+        aria: 'ספרה ' + d + ' · נותרו ' + left,
+        press: () => this.press(d)
+      });
+    }
+
+    const RX = [['😂', 'צחוק'], ['😱', 'בהלה'], ['😎', 'קול'], ['🤦', 'פספוס'], ['🔥', 'אש'], ['👀', 'עיניים']];
+    const reactions = RX.map(x => ({ e: x[0], label: 'תגובה: ' + x[1], send: () => this.sendReact(x[0]) }));
+    const floatOf = r => r ? { show: true, e: r.e, anim: 'sf-react' + alt(r.n) + ' 1.6s cubic-bezier(.2,.8,.2,1) both' } : { show: false, e: '', anim: 'none' };
+    const won = s.score[0] >= s.score[1];
+
+    return {
+      boxes: boxes,
+      railTop: railTop,
+      railSide: railSide,
+      popMe: pop(s.fxMe, 0),
+      popOpp: pop(s.fxNina, 1),
+      me: plate(0, mine, s.bumpMe),
+      opp: plate(1, nina, s.bumpNina),
+      dom: dom,
+      st: st,
+      log: log,
+      keys: keys,
+      pad: { op: armed ? '1' : '.55' },
+      rel: {
+        op: armed ? '1' : '.4',
+        sh: armed ? '0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08)' : 'none',
+        dis: armed ? 'false' : 'true',
+        hasCell: armed,
+        cell: armed ? this.cellName(mine.i) : ''
+      },
+      reactions: reactions,
+      reactOpen: !!s.reactOpen && !over,
+      reactBtn: {
+        bg: s.reactOpen ? '#342a5e' : '#251d45',
+        bd: s.reactOpen ? '#ffd23f' : '#4b3f80',
+        fg: s.reactOpen ? '#ffd23f' : '#f1eeff',
+        exp: s.reactOpen ? 'true' : 'false'
+      },
+      floatMe: floatOf(s.reactMe),
+      floatOpp: floatOf(s.reactNina),
+      end: { show: over, won: won, lost: !won, me: this.fmt(s.score[0]), opp: this.fmt(s.score[1]) },
+      toggleReact: () => this.setState({ reactOpen: !this.state.reactOpen }),
+      release: () => this.release()
+    };
+  }
+}
+</script>
+</body>
+</html>

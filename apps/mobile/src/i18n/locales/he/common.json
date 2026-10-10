@@ -1,0 +1,19 @@
+{
+  "hello": {
+    "title": "סודוקו פייט",
+    "engineLine": "שלום מה־engine · משבצת {{cell}}",
+    "versions": "engine {{engine}} · protocol {{protocol}}",
+    "taps": "לחיצות: {{count}}",
+    "server": {
+      "connecting": "שרת: מתחבר…",
+      "connected": "שרת: מחובר",
+      "rtt": "שרת: RTT {{ms}} ms",
+      "error": "שרת: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "משהו השתבש",
+    "body": "המסך נתקע בגלל תקלה. דיווחנו עליה, ואפשר לנסות שוב.",
+    "retry": "נסה שוב"
+  }
+}

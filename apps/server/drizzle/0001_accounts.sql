@@ -1,0 +1,2 @@
+DROP INDEX "users_display_name_lower_uq";--> statement-breakpoint
+CREATE UNIQUE INDEX "users_display_name_key_uq" ON "users" USING btree (translate(lower("display_name"), 'ךםןףץ', 'כמנפצ')) WHERE "users"."deleted_at" is null;

@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Progress — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-pop { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1)} }
+@keyframes sf-float-up { 0%{transform:translateY(6px) scale(.8);opacity:0} 15%{opacity:1;transform:translateY(0) scale(1.15)} 100%{transform:translateY(-46px) scale(1);opacity:0} }
+@keyframes sf-shine { 0%{background-position:-160% 0} 100%{background-position:260% 0} }
+@keyframes sf-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+@keyframes pg-draw { from{stroke-dashoffset:232.48px} }
+@keyframes pg-me { 0%,100%{box-shadow:0 0 0 3px #1b1533, 0 0 6px rgba(46,230,255,.45)} 50%{box-shadow:0 0 0 3px #1b1533, 0 0 16px rgba(46,230,255,.95)} }
+@keyframes pg-today { 0%,100%{box-shadow:0 2px 0 #c95600, 0 0 0 2px #1b1533, 0 0 0 4px rgba(255,138,31,.45)} 50%{box-shadow:0 2px 0 #c95600, 0 0 0 2px #1b1533, 0 0 0 4px rgba(255,138,31,.95), 0 0 14px rgba(255,138,31,.7)} }
+@keyframes pg-flicker { 0%,100%{transform:scale(1) rotate(-3deg)} 50%{transform:scale(1.1) rotate(3deg)} }
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 1100px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 40% at 50% -6%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 36% at 110% 104%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 36% at -10% 60%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; top: 0; left: 0; right: 0; height: 320px; background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.4px); background-size: 7px 7px; -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent); mask-image: linear-gradient(180deg, #000 30%, transparent);"></div>
+  <div aria-hidden="true" style="position: absolute; top: 330px; left: -90px; width: 570px; height: 96px; transform: rotate(-9deg); background: linear-gradient(90deg, rgba(255,51,85,0) 0%, rgba(255,51,85,.14) 28%, rgba(255,210,63,.16) 68%, rgba(255,210,63,0) 100%);"></div>
+
+  <div style="position: absolute; top: 48px; left: 16px; right: 16px; display: flex; flex-direction: column;">
+
+    <header style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+      <h1 style="margin: 0; font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 40px; line-height: .9; color: #f1eeff; white-space: nowrap;">הישגים והתקדמות</h1>
+      <a href="Profile.dc.html" aria-label="כרטיס השחקן שלי" style="flex: none; display: block; width: 44px; height: 44px; padding: 3px; box-sizing: border-box; border-radius: 13px; background: #2ee6ff; box-shadow: 0 3px 0 #0098c2; text-decoration: none;">
+        <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="38" height="38" style="display: block; width: 38px; height: 38px; border-radius: 10px;">
+      </a>
+    </header>
+
+    <section aria-label="{{levelAria}}" style="position: relative; margin-top: 8px; height: 160px; box-sizing: border-box; padding: 12px 14px; border-radius: 18px; border: 2px solid rgba(46,230,255,.45); background: radial-gradient(70% 120% at 100% 0%, rgba(46,230,255,.20), transparent 62%), radial-gradient(rgba(255,255,255,.05) 1px, transparent 1.4px) 0 0 / 7px 7px, linear-gradient(160deg, #241c48, #1b1533); box-shadow: 0 6px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.10); overflow: hidden;">
+      <div aria-hidden="true" style="position: absolute; top: -50px; left: 64px; width: 54px; height: 260px; transform: rotate(18deg); background: linear-gradient(180deg, rgba(255,210,63,0), rgba(255,210,63,.10) 50%, rgba(255,210,63,0));"></div>
+      <div aria-hidden="true" style="position: absolute; top: -50px; left: 30px; width: 12px; height: 260px; transform: rotate(18deg); background: linear-gradient(180deg, rgba(255,51,85,0), rgba(255,51,85,.16) 50%, rgba(255,51,85,0));"></div>
+
+      <div style="position: relative; height: 84px; display: flex; align-items: center; gap: 14px;">
+        <div style="position: relative; flex: none; width: 84px; height: 84px;">
+          <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true" style="display: block; transform: rotate(-90deg);">
+            <defs><linearGradient id="pgXpRing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c4f9ff"></stop><stop offset=".45" stop-color="#2ee6ff"></stop><stop offset="1" stop-color="#0098c2"></stop></linearGradient></defs>
+            <circle cx="42" cy="42" r="37" fill="none" stroke="#0f0b1d" stroke-width="8"></circle>
+            <circle cx="42" cy="42" r="37" fill="none" stroke="url(#pgXpRing)" stroke-width="8" stroke-linecap="round" stroke-dasharray="232.48" style="stroke-dashoffset: {{ringOffset}}; transition: stroke-dashoffset 650ms cubic-bezier(.2,.8,.2,1); animation: pg-draw 1200ms cubic-bezier(.2,.8,.2,1) 250ms backwards;"></circle>
+          </svg>
+          <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+            <span style="padding-top: 5px; font: 600 40px/.8 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #f1eeff;">14</span>
+            <span style="font: 700 10.5px/1 Rubik, sans-serif; letter-spacing: .08em; color: #2ee6ff;">רמה</span>
+          </div>
+        </div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px;">
+          <span style="font: 600 11px/1 Rubik, sans-serif; letter-spacing: .08em; color: #a79fcb;">נקודות ניסיון</span>
+          <div dir="ltr" style="height: 34px; display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px;">
+            <sc-if value="{{claimed}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; font: 600 42px/.8 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #2ee6ff; animation: sf-pop 520ms cubic-bezier(.34,1.56,.64,1) both;">2,430</span></sc-if>
+            <sc-if value="{{notClaimed}}" hint-placeholder-val="{{ true }}"><span style="display: inline-block; font: 600 42px/.8 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #2ee6ff;">2,380</span></sc-if>
+            <span style="padding-bottom: 2px; font: 600 20px/.9 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #a79fcb;">/ 3,000 XP</span>
+          </div>
+          <span style="font: 500 12.5px/1.2 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap;">עוד <span dir="ltr" style="font: 600 16px/1 Teko, Rubik, sans-serif; color: #f1eeff;">{{xpToGo}} XP</span> לרמה <span style="font: 600 16px/1 Teko, Rubik, sans-serif; color: #f1eeff;">15</span></span>
+        </div>
+      </div>
+
+      <div role="group" aria-label="פתיחות לפי רמה: אווטאר חדש ברמה 15, הפרעת דיו ברמה 18" style="position: relative; margin-top: 6px; height: 46px;">
+        <div aria-hidden="true" style="position: absolute; top: 13px; right: 15px; left: 31px; height: 4px; display: flex; border-radius: 2px; background: #342a5e;">
+          <div style="width: {{trackFill}}; height: 100%; border-radius: 2px; background: #2ee6ff; box-shadow: 0 0 8px rgba(46,230,255,.6); transition: width 650ms cubic-bezier(.2,.8,.2,1);"></div>
+        </div>
+        <div style="position: relative; height: 100%; margin-left: 16px; display: flex; justify-content: space-between;">
+          <div style="width: 30px; display: flex; flex-direction: column; align-items: center;">
+            <div style="height: 30px; display: flex; align-items: center; justify-content: center;">
+              <span style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; box-sizing: border-box; padding-top: 3px; border-radius: 50%; background: #2ee6ff; color: #07050f; font: 600 16px/1 Teko, Rubik, sans-serif; animation: pg-me 2.2s ease-in-out infinite;">14</span>
+            </div>
+            <span style="margin-top: 4px; white-space: nowrap; font: 700 10.5px/1 Rubik, sans-serif; color: #2ee6ff;">עכשיו</span>
+          </div>
+          <div style="width: 30px; display: flex; flex-direction: column; align-items: center;">
+            <div style="height: 30px; display: flex; align-items: center; justify-content: center;">
+              <span style="position: relative; display: block; width: 30px; height: 30px; padding: 2px; box-sizing: border-box; border-radius: 9px; background: #ffd23f; box-shadow: 0 2px 0 #b37b00;">
+                <img src="/_blob/65600257e61f2f45bd57d93805d8ea40" alt="" width="26" height="26" style="display: block; width: 26px; height: 26px; border-radius: 7px; filter: grayscale(.35) brightness(.75);">
+                <span style="position: absolute; bottom: -4px; left: -4px; width: 14px; height: 14px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #0f0b1d; border: 1.5px solid #ffd23f; color: #ffd23f;"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>
+              </span>
+            </div>
+            <span style="margin-top: 4px; display: flex; align-items: center; gap: 3px; height: 12px; white-space: nowrap; font: 700 10.5px/1 Rubik, sans-serif; color: #ffd23f;"><span style="padding-top: 2px; font: 600 13px/1 Teko, Rubik, sans-serif;">15</span>· אווטאר</span>
+          </div>
+          <div style="width: 30px; display: flex; flex-direction: column; align-items: center;">
+            <div style="height: 30px; display: flex; align-items: center; justify-content: center;">
+              <span style="display: block; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; background: #251d45; border: 2px solid #4b3f80;"></span>
+            </div>
+            <span style="margin-top: 4px; font: 600 13px/1 Teko, Rubik, sans-serif; color: #a79fcb;">16</span>
+          </div>
+          <div style="width: 30px; display: flex; flex-direction: column; align-items: center;">
+            <div style="height: 30px; display: flex; align-items: center; justify-content: center;">
+              <span style="display: block; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; background: #251d45; border: 2px solid #4b3f80;"></span>
+            </div>
+            <span style="margin-top: 4px; font: 600 13px/1 Teko, Rubik, sans-serif; color: #a79fcb;">17</span>
+          </div>
+          <div style="width: 30px; display: flex; flex-direction: column; align-items: center;">
+            <div style="height: 30px; display: flex; align-items: center; justify-content: center;">
+              <span style="position: relative; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; box-sizing: border-box; border-radius: 9px; background: rgba(255,51,85,.16); border: 2px solid rgba(255,51,85,.7); color: #ff3355;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,51,85,.35)" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c3 4.5 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 3-6.5 6-11z"></path></svg>
+                <span style="position: absolute; bottom: -5px; left: -5px; width: 14px; height: 14px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #0f0b1d; border: 1.5px solid #ff3355; color: #ff3355;"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>
+              </span>
+            </div>
+            <span style="margin-top: 4px; display: flex; align-items: center; gap: 3px; height: 12px; white-space: nowrap; font: 700 10.5px/1 Rubik, sans-serif; color: #ff3355;"><span style="padding-top: 2px; font: 600 13px/1 Teko, Rubik, sans-serif;">18</span>· הפרעה</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="ליגת זהב. דירוג כללי 1276, עוד 24 נקודות לליגת יהלום" style="margin-top: 10px; height: 120px; box-sizing: border-box; padding: 10px 12px; border-radius: 16px; background: radial-gradient(60% 100% at 50% 100%, rgba(255,210,63,.10), transparent 70%), linear-gradient(160deg, #251d45, #1b1533); border: 2px solid #342a5e; box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08);">
+      <div style="height: 20px; display: flex; align-items: center; justify-content: space-between;">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 8px; font: 700 15px/1 Rubik, sans-serif; color: #f1eeff;"><span aria-hidden="true" style="display: block; width: 4px; height: 16px; border-radius: 1px; background: #ffd23f; transform: skewX(-9deg);"></span>ליגה<span style="display: inline-flex; align-items: center; height: 18px; padding: 0 7px; box-sizing: border-box; border-radius: 5px; background: rgba(255,210,63,.10); border: 1px solid rgba(255,210,63,.45); font: 700 10.5px/1 Rubik, sans-serif; color: #ffd23f;">עונה <span style="padding-top: 2px; margin-right: 3px; font: 600 13px/1 Teko, Rubik, sans-serif;">3</span></span></h2>
+        <span style="font: 500 12px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">כללי <span style="font: 600 16px/1 Teko, Rubik, sans-serif; color: #f1eeff;">1276</span> · <span style="font-weight: 600; color: #7fe7ff;">עוד <span style="font: 600 16px/1 Teko, Rubik, sans-serif;">24</span> ליהלום</span></span>
+      </div>
+      <div style="position: relative; margin-top: 8px; height: 72px;">
+        <div aria-hidden="true" style="position: absolute; top: 20px; right: 33px; left: 33px; height: 4px; display: flex; border-radius: 2px; background: #342a5e;">
+          <div style="width: 63%; height: 100%; border-radius: 2px; background: linear-gradient(270deg, #d08a52 0%, #c9d3e6 40%, #ffd23f 80%, #ffd23f 100%);"></div>
+        </div>
+        <span aria-hidden="true" style="position: absolute; top: 14px; right: 191px; width: 16px; height: 16px; box-sizing: border-box; border-radius: 50%; background: #2ee6ff; border: 3px solid #c8f6ff; z-index: 1; animation: pg-me 2.2s ease-in-out infinite;"></span>
+        <div style="position: relative; height: 100%; display: flex;">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="height: 44px; display: flex; align-items: center; justify-content: center;">
+              <svg width="28" height="32" viewBox="0 0 16 18" aria-hidden="true" style="display: block;"><path d="M8 1l6.5 2.5v5.2c0 4-2.8 6.9-6.5 8.3-3.7-1.4-6.5-4.3-6.5-8.3V3.5L8 1z" fill="#d08a52" stroke="#8f5326" stroke-width="1"></path><path d="M8 5.2l1.1 2.3 2.5.4-1.8 1.7.4 2.5L8 10.9l-2.2 1.2.4-2.5-1.8-1.7 2.5-.4L8 5.2z" fill="#4a260c"></path></svg>
+            </div>
+            <span style="margin-top: 4px; font: 700 11px/1 Rubik, sans-serif; color: #d08a52;">ארד</span>
+            <span dir="ltr" style="margin-top: 3px; font: 600 13px/.9 Teko, Rubik, sans-serif; color: #a79fcb;">0+</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="height: 44px; display: flex; align-items: center; justify-content: center;">
+              <svg width="28" height="32" viewBox="0 0 16 18" aria-hidden="true" style="display: block;"><path d="M8 1l6.5 2.5v5.2c0 4-2.8 6.9-6.5 8.3-3.7-1.4-6.5-4.3-6.5-8.3V3.5L8 1z" fill="#c9d3e6" stroke="#7d88a3" stroke-width="1"></path><path d="M8 5.2l1.1 2.3 2.5.4-1.8 1.7.4 2.5L8 10.9l-2.2 1.2.4-2.5-1.8-1.7 2.5-.4L8 5.2z" fill="#3d4760"></path></svg>
+            </div>
+            <span style="margin-top: 4px; font: 700 11px/1 Rubik, sans-serif; color: #c9d3e6;">כסף</span>
+            <span dir="ltr" style="margin-top: 3px; font: 600 13px/.9 Teko, Rubik, sans-serif; color: #a79fcb;">1100+</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="height: 44px; display: flex; align-items: center; justify-content: center;">
+              <svg width="38" height="44" viewBox="0 0 16 18" aria-hidden="true" style="display: block; overflow: visible; filter: drop-shadow(0 0 7px rgba(255,210,63,.55)); animation: sf-bob 2.6s ease-in-out infinite;"><defs><linearGradient id="pgShieldGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe27a"></stop><stop offset=".55" stop-color="#ffd23f"></stop><stop offset="1" stop-color="#e8a100"></stop></linearGradient></defs><path d="M8 1l6.5 2.5v5.2c0 4-2.8 6.9-6.5 8.3-3.7-1.4-6.5-4.3-6.5-8.3V3.5L8 1z" fill="url(#pgShieldGold)" stroke="#b37b00" stroke-width=".8"></path><path d="M8 5.2l1.1 2.3 2.5.4-1.8 1.7.4 2.5L8 10.9l-2.2 1.2.4-2.5-1.8-1.7 2.5-.4L8 5.2z" fill="#7a5200"></path></svg>
+            </div>
+            <span style="margin-top: 4px; font: 800 11px/1 Rubik, sans-serif; color: #ffd23f;">זהב</span>
+            <span dir="ltr" style="margin-top: 3px; font: 600 13px/.9 Teko, Rubik, sans-serif; color: #cfc8ee;">1250+</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="height: 44px; display: flex; align-items: center; justify-content: center;">
+              <svg width="28" height="32" viewBox="0 0 16 18" aria-hidden="true" style="display: block;"><path d="M8 1l6.5 2.5v5.2c0 4-2.8 6.9-6.5 8.3-3.7-1.4-6.5-4.3-6.5-8.3V3.5L8 1z" fill="#1b1533" stroke="#7fe7ff" stroke-width="1.1"></path><path d="M8 5l3 3.5-3 4-3-4z" fill="#7fe7ff"></path></svg>
+            </div>
+            <span style="margin-top: 4px; font: 700 11px/1 Rubik, sans-serif; color: #7fe7ff;">יהלום</span>
+            <span dir="ltr" style="margin-top: 3px; font: 600 13px/.9 Teko, Rubik, sans-serif; color: #a79fcb;">1300+</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="height: 44px; display: flex; align-items: center; justify-content: center;">
+              <svg width="28" height="32" viewBox="0 0 16 18" aria-hidden="true" style="display: block;"><path d="M8 1l6.5 2.5v5.2c0 4-2.8 6.9-6.5 8.3-3.7-1.4-6.5-4.3-6.5-8.3V3.5L8 1z" fill="#1b1533" stroke="#6c5fa6" stroke-width="1.1"></path><path d="M4.5 7.5l2 1.6L8 6.2l1.5 2.9 2-1.6-.8 4.5H5.3z" fill="#6c5fa6"></path></svg>
+            </div>
+            <span style="margin-top: 4px; font: 700 11px/1 Rubik, sans-serif; color: #a79fcb;">אגדה</span>
+            <span dir="ltr" style="margin-top: 3px; font: 600 13px/.9 Teko, Rubik, sans-serif; color: #a79fcb;">1400+</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="רצף: 5 ימי משחק ברצף, 3 ניצחונות ברצף" style="margin-top: 10px; height: 70px; box-sizing: border-box; padding: 0 12px; display: flex; align-items: center; gap: 10px; border-radius: 16px; background: radial-gradient(50% 140% at 100% 50%, rgba(255,138,31,.20), transparent 70%), #1b1533; border: 2px solid #342a5e; box-shadow: 0 5px 0 #07050f;">
+      <span style="flex: none; width: 42px; height: 42px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: rgba(255,138,31,.14); border: 2px solid rgba(255,138,31,.6);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(255,138,31,.45)" stroke="#ff8a1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: block; transform-origin: 50% 85%; animation: pg-flicker 1.6s ease-in-out infinite;"><path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .5 2 1.5 3 2.5 3 0-3-1-5 0-8z"></path></svg>
+      </span>
+      <div style="flex: none; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; align-items: baseline; gap: 5px;">
+          <span style="font: 600 32px/.8 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #ff8a1f;">5</span>
+          <span style="font: 700 14px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">ימים ברצף</span>
+        </div>
+        <span style="font: 500 11.5px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;"><span style="font: 600 14px/1 Teko, Rubik, sans-serif; color: #f1eeff;">3</span> ניצחונות ברצף</span>
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; justify-content: space-between; padding-right: 4px;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <span style="display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(180deg, #ffb36b, #ff8a1f); box-shadow: 0 2px 0 #c95600; color: #1a0a00;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>
+          <span style="font: 600 10.5px/1 Rubik, sans-serif; color: #a79fcb;">א</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <span style="display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(180deg, #ffb36b, #ff8a1f); box-shadow: 0 2px 0 #c95600; color: #1a0a00;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>
+          <span style="font: 600 10.5px/1 Rubik, sans-serif; color: #a79fcb;">ב</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <span style="display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(180deg, #ffb36b, #ff8a1f); box-shadow: 0 2px 0 #c95600; color: #1a0a00;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>
+          <span style="font: 600 10.5px/1 Rubik, sans-serif; color: #a79fcb;">ג</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <span style="display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(180deg, #ffb36b, #ff8a1f); box-shadow: 0 2px 0 #c95600; color: #1a0a00;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>
+          <span style="font: 600 10.5px/1 Rubik, sans-serif; color: #a79fcb;">ד</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <span style="display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(180deg, #ffe27a, #ff8a1f); color: #1a0a00; animation: pg-today 1.8s ease-in-out infinite;"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .5 2 1.5 3 2.5 3 0-3-1-5 0-8z"></path></svg></span>
+          <span style="font: 800 10.5px/1 Rubik, sans-serif; color: #ff8a1f;">היום</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <span style="display: block; width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; border: 2px dashed #4b3f80;"></span>
+          <span style="font: 600 10.5px/1 Rubik, sans-serif; color: #a79fcb;">ו</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <span style="display: block; width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; border: 2px dashed #4b3f80;"></span>
+          <span style="font: 600 10.5px/1 Rubik, sans-serif; color: #a79fcb;">ש</span>
+        </div>
+      </div>
+    </section>
+
+    <div style="margin-top: 14px; height: 20px; display: flex; align-items: center; justify-content: space-between;">
+      <h2 style="margin: 0; display: flex; align-items: center; gap: 8px; font: 700 15px/1 Rubik, sans-serif; color: #f1eeff;"><span aria-hidden="true" style="display: block; width: 4px; height: 16px; border-radius: 1px; background: #ffd23f; transform: skewX(-9deg);"></span>משימות יומיות</h2>
+      <span style="display: inline-flex; align-items: center; gap: 5px; font: 500 12px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>מתחדשות בעוד<span dir="ltr" style="min-width: 48px; padding-top: 2px; font: 600 15px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #cfc8ee;">{{resetIn}}</span></span>
+    </div>
+
+    <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+
+      <div style="height: 54px; display: flex; align-items: center; gap: 10px; padding: 0 10px; box-sizing: border-box; background: linear-gradient(270deg, rgba(63,240,166,.07), rgba(63,240,166,0) 50%), #1b1533; border: 2px solid #342a5e; border-radius: 14px; box-shadow: 0 4px 0 #07050f;">
+        <span style="flex: none; width: 36px; height: 36px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(63,240,166,.12); border: 2px solid rgba(63,240,166,.5); color: #3ff0a6;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path><circle cx="12" cy="12" r="2"></circle></svg></span>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px;">
+          <span style="font: 600 13.5px/1.15 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">פתור 10 משבצות בלי טעות</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="flex: 1; height: 6px; display: flex; border-radius: 3px; overflow: hidden; background: #0f0b1d; box-shadow: inset 0 0 0 1px #342a5e;"><div style="width: 60%; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #b6ffe0 0%, #3ff0a6 40%, #0fa86a 100%);"></div></div>
+            <span dir="ltr" style="flex: none; padding-top: 2px; font: 600 15px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #cfc8ee;">6/10</span>
+          </div>
+        </div>
+        <div aria-label="פרס: 150 XP" role="img" style="flex: none; width: 58px; height: 40px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 9px; background: rgba(255,210,63,.10); border: 2px solid rgba(255,210,63,.5); transform: skewX(-9deg);">
+          <span style="display: flex; flex-direction: column; align-items: center; gap: 2px; transform: skewX(9deg);">
+            <span dir="ltr" style="padding-top: 2px; font: 600 21px/.85 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #ffd23f;">+150</span>
+            <span style="font: 700 9.5px/1 Rubik, sans-serif; letter-spacing: .08em; color: #ffd23f;">XP</span>
+          </span>
+        </div>
+      </div>
+
+      <div style="height: 54px; display: flex; align-items: center; gap: 10px; padding: 0 10px; box-sizing: border-box; background: radial-gradient(60% 140% at 0% 50%, rgba(255,210,63,.14), transparent 70%), #1b1533; border: 2px solid {{m2Bd}}; border-radius: 14px; box-shadow: 0 4px 0 #07050f; transition: border-color 240ms cubic-bezier(.2,.8,.2,1);">
+        <span style="flex: none; width: 36px; height: 36px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,210,63,.12); border: 2px solid rgba(255,210,63,.55); color: #ffd23f; opacity: {{m2Op}}; transition: opacity 240ms;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"></path><path d="M12 13v4M8 21h8M9.5 17h5"></path></svg></span>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; opacity: {{m2Op}}; transition: opacity 240ms;">
+          <span style="font: 600 13.5px/1.15 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">נצח משחק מדורג</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="flex: 1; height: 6px; display: flex; border-radius: 3px; overflow: hidden; background: #0f0b1d; box-shadow: inset 0 0 0 1px #342a5e;"><div style="width: 100%; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #fff1b8 0%, #ffd23f 40%, #e8a100 100%);"></div></div>
+            <span dir="ltr" style="flex: none; padding-top: 2px; font: 600 15px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #ffd23f;">1/1</span>
+          </div>
+        </div>
+        <div style="position: relative; flex: none; width: 76px; height: 44px; display: flex; align-items: center; justify-content: center;">
+          <sc-if value="{{notClaimed}}" hint-placeholder-val="{{ true }}">
+            <button type="button" onClick="{{ claim }}" aria-label="אסוף 50 XP" style="position: relative; width: 76px; height: 44px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 0; border-radius: 9px; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); transform: skewX(-9deg); box-shadow: 0 4px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6); color: #1a1000; cursor: pointer;">
+              <span aria-hidden="true" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-image: linear-gradient(105deg, rgba(255,255,255,0) 40%, rgba(255,255,255,.7) 50%, rgba(255,255,255,0) 60%); background-size: 250% 100%; background-repeat: no-repeat; animation: sf-shine 2.8s ease-in-out .8s infinite;"></span>
+              <span style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; transform: skewX(9deg);">
+                <span dir="ltr" style="padding-top: 2px; font: 600 20px/.85 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums;">+50 XP</span>
+                <span style="font: 800 11px/1 Rubik, sans-serif;">אסוף</span>
+              </span>
+            </button>
+          </sc-if>
+          <sc-if value="{{claimed}}" hint-placeholder-val="{{ false }}">
+            <span style="display: flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px; box-sizing: border-box; border-radius: 8px; border: 2px solid rgba(63,240,166,.6); background: rgba(63,240,166,.10); color: #3ff0a6; font: 700 12.5px/1 Rubik, sans-serif; white-space: nowrap; animation: sf-pop 420ms cubic-bezier(.34,1.56,.64,1) both;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>נאסף</span>
+            <span dir="ltr" aria-hidden="true" style="position: absolute; top: -8px; left: 50%; width: 70px; margin-left: -35px; text-align: center; font: 600 24px/1 Teko, Rubik, sans-serif; color: #ffd23f; -webkit-text-stroke: 2px #0f0b1d; paint-order: stroke fill; pointer-events: none; animation: sf-float-up 1000ms cubic-bezier(.2,.8,.2,1) both;">+50 XP</span>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="height: 54px; display: flex; align-items: center; gap: 10px; padding: 0 10px; box-sizing: border-box; background: linear-gradient(270deg, rgba(228,92,255,.07), rgba(228,92,255,0) 50%), #1b1533; border: 2px solid #342a5e; border-radius: 14px; box-shadow: 0 4px 0 #07050f;">
+        <span style="flex: none; width: 36px; height: 36px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(46,230,255,.12); border: 2px solid rgba(46,230,255,.5); color: #2ee6ff;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z"></path></svg></span>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px;">
+          <span style="font: 600 13.5px/1.15 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">בצע 3 מהלכים של <span dir="ltr">6+</span> נק׳</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="flex: 1; height: 6px; display: flex; border-radius: 3px; overflow: hidden; background: #0f0b1d; box-shadow: inset 0 0 0 1px #342a5e;"><div style="width: 66.7%; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #c4f9ff 0%, #2ee6ff 40%, #0098c2 100%);"></div></div>
+            <span dir="ltr" style="flex: none; padding-top: 2px; font: 600 15px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #cfc8ee;">2/3</span>
+          </div>
+        </div>
+        <div aria-label="פרס: פתיחת אווטאר" role="img" style="flex: none; width: 70px; height: 44px; box-sizing: border-box; display: flex; align-items: center; gap: 5px; padding: 0 5px; border-radius: 9px; background: rgba(228,92,255,.10); border: 2px solid rgba(228,92,255,.5);">
+          <span style="position: relative; flex: none; display: block; width: 28px; height: 28px; padding: 2px; box-sizing: border-box; border-radius: 8px; background: #e45cff; box-shadow: 0 2px 0 #9b1fbf;">
+            <img src="/_blob/366dbb9cb5269fdf638d4edcf94e79b5" alt="" width="24" height="24" style="display: block; width: 24px; height: 24px; border-radius: 6px; filter: brightness(.8);">
+            <span style="position: absolute; bottom: -4px; left: -4px; width: 13px; height: 13px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #0f0b1d; border: 1.5px solid #e45cff; color: #f3a6ff;"><svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 2px; font: 700 10.5px/1.05 Rubik, sans-serif; color: #f3a6ff;"><span>פתיחת</span><span>אווטאר</span></span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top: 14px; height: 20px; display: flex; align-items: center; justify-content: space-between;">
+      <h2 style="margin: 0; display: flex; align-items: center; gap: 8px; font: 700 15px/1 Rubik, sans-serif; color: #f1eeff;"><span aria-hidden="true" style="display: block; width: 4px; height: 16px; border-radius: 1px; background: #ffd23f; transform: skewX(-9deg);"></span>הישגים</h2>
+      <span style="display: inline-flex; align-items: center; gap: 5px; font: 500 12px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">נפתחו<span dir="ltr" style="padding-top: 2px; font: 600 16px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #f1eeff;">6/12</span></span>
+    </div>
+
+    <div aria-live="polite" style="margin-top: 8px; height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 10px; box-sizing: border-box; background: linear-gradient(270deg, rgba(255,210,63,.08), rgba(255,210,63,0) 60%), #1b1533; border: 2px solid rgba(255,210,63,.45); border-radius: 12px; box-shadow: 0 3px 0 #07050f;">
+      <span style="flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 28px; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); background: {{sel.bg}}; color: {{sel.ink}};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{sel.d}}"></path></svg></span>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+        <span style="font: 700 14px/1.1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{sel.name}}</span>
+        <span style="font: 500 11.5px/1.15 Rubik, sans-serif; color: #a79fcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{sel.desc}}</span>
+      </span>
+      <sc-if value="{{sel.locked}}" hint-placeholder-val="{{ true }}">
+        <span style="flex: none; width: 78px; display: flex; flex-direction: column; gap: 5px;">
+          <span dir="ltr" style="display: block; text-align: right; font: 600 17px/.85 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #f1eeff;">{{sel.progTxt}}</span>
+          <span style="height: 5px; display: flex; border-radius: 3px; overflow: hidden; background: #0f0b1d; box-shadow: inset 0 0 0 1px #342a5e;"><span style="display: block; width: {{sel.pct}}; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #fff1b8 0%, #ffd23f 40%, #e8a100 100%);"></span></span>
+        </span>
+      </sc-if>
+      <sc-if value="{{sel.unlocked}}" hint-placeholder-val="{{ false }}">
+        <span style="flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <span style="display: flex; align-items: center; gap: 4px; font: 700 11.5px/1 Rubik, sans-serif; color: #3ff0a6;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>נפתח</span>
+          <span dir="ltr" style="font: 600 15px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #cfc8ee;">{{sel.date}}</span>
+        </span>
+      </sc-if>
+    </div>
+
+    <div style="margin-top: 8px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+      <sc-for list="{{badges}}" as="a" hint-placeholder-count="12">
+        <button type="button" onClick="{{ a.pick }}" aria-pressed="{{a.pressed}}" aria-label="{{a.aria}}" style="position: relative; height: 68px; margin: 0; padding: 4px 4px 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 3px; background: {{a.tileBg}}; border: 2px solid {{a.tileBd}}; border-radius: 12px; box-shadow: 0 3px 0 #07050f; transform: {{a.lift}}; transition: transform 140ms cubic-bezier(.2,.8,.2,1), border-color 240ms cubic-bezier(.2,.8,.2,1); color: #f1eeff; font-family: inherit; cursor: pointer; overflow: hidden;">
+          <span style="flex: none; display: flex; align-items: center; justify-content: center; width: 30px; height: 26px; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); background: {{a.bg}}; color: {{a.ink}};"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{a.d}}"></path></svg></span>
+          <sc-if value="{{a.locked}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="position: absolute; top: 20px; left: 50%; margin-left: 6px; width: 14px; height: 14px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #0f0b1d; border: 1.5px solid #4b3f80; color: #a79fcb;"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span></sc-if>
+          <span style="max-width: 100%; font: 700 11px/1.1 Rubik, sans-serif; color: {{a.nameColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{a.name}}</span>
+          <sc-if value="{{a.unlocked}}" hint-placeholder-val="{{ true }}"><span dir="ltr" style="font: 600 13px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #a79fcb;">{{a.date}}</span></sc-if>
+          <sc-if value="{{a.locked}}" hint-placeholder-val="{{ false }}"><span style="width: 100%; padding: 0 4px; box-sizing: border-box; display: flex; align-items: center; gap: 3px;"><span style="flex: 1; min-width: 0; height: 3px; display: flex; border-radius: 2px; overflow: hidden; background: #251d45;"><span style="display: block; width: {{a.pct}}; height: 100%; background: #ffd23f;"></span></span><span dir="ltr" style="flex: none; font: 600 12px/1 Teko, Rubik, sans-serif; font-variant-numeric: tabular-nums; color: #cfc8ee;">{{a.progTxt}}</span></span></sc-if>
+        </button>
+      </sc-for>
+    </div>
+
+  </div>
+
+  <nav aria-label="ניווט ראשי" style="position: absolute; left: 16px; right: 16px; bottom: 16px; height: 64px; box-sizing: border-box; display: flex; padding: 0 4px; background: #1b1533; border: 2px solid #342a5e; border-radius: 20px; box-shadow: 0 6px 0 #07050f;">
+    <a href="Home.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-decoration: none; color: #a79fcb; font: 600 11px/1 Rubik, sans-serif;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"></path><path d="M6 9.5V20h12V9.5"></path><path d="M10 20v-5h4v5"></path></svg>
+      <span>בית</span>
+    </a>
+    <a href="Leaderboard.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-decoration: none; color: #a79fcb; font: 600 11px/1 Rubik, sans-serif;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"></path><path d="M9 21V9h6v12"></path><path d="M3 21v-7h6M15 21v-4h6v4"></path></svg>
+      <span>טבלת מובילים</span>
+    </a>
+    <a href="History.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-decoration: none; color: #a79fcb; font: 600 11px/1 Rubik, sans-serif;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      <span>היסטוריה</span>
+    </a>
+    <a href="Progress.dc.html" aria-current="page" style="position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-decoration: none; color: #ffd23f; font: 600 11px/1 Rubik, sans-serif;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"></path><path d="M12 13v4M8 21h8M9.5 17h5"></path></svg>
+      <span>הישגים</span>
+      <span aria-hidden="true" style="position: absolute; bottom: 4px; left: 50%; width: 18px; height: 3px; margin-left: -9px; border-radius: 2px; background: #ffd23f; box-shadow: 0 0 8px rgba(255,210,63,.6);"></span>
+    </a>
+  </nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1100}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this.timer = setInterval(() => {
+      const left = this.secondsLeft();
+      if (left > 0) {
+        this.setState({ left: left - 1 });
+      }
+    }, 1000);
+  }
+
+  componentWillUnmount() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  }
+
+  secondsLeft() {
+    const st = this.state || {};
+    return typeof st.left === 'number' ? st.left : 22360;
+  }
+
+  badges(selId) {
+    const I = {
+      trophy: 'M8 4h8v5a4 4 0 0 1-8 0V4z M8 6H5a3 3 0 0 0 3 4 M16 6h3a3 3 0 0 1-3 4 M12 13v4 M8 21h8 M9.5 17h5',
+      flame: 'M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .5 2 1.5 3 2.5 3 0-3-1-5 0-8z',
+      check: 'M5 12.5l4.5 4.5L19 7',
+      play: 'M7 4l13 8-13 8V4z',
+      star: 'M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z',
+      bolt: 'M13 2L4 14h7l-1 8 9-12h-7l1-8z',
+      crown: 'M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z',
+      retry: 'M20 11a8 8 0 1 0-2.3 5.7 M20 4v7h-7',
+      four: 'M4 7a3 3 0 1 0 6 0a3 3 0 1 0-6 0 M17 4l3.2 5.6h-6.4z M4 14h6v6H4z M17 13.5l3.5 3.5-3.5 3.5-3.5-3.5z',
+      shield: 'M12 2.5l8 3v6.2c0 4.6-3.3 7.9-8 9.8-4.7-1.9-8-5.2-8-9.8V5.5l8-3z M12 8.5l3 3.5-3 4-3-4z',
+      levels: 'M6 13l6-6 6 6 M6 19l6-6 6 6',
+      target: 'M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0 M12 2v4 M12 18v4 M2 12h4 M18 12h4 M10 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0'
+    };
+    const C = {
+      gold: ['linear-gradient(180deg, #ffe27a, #e8a100)', '#1a1000', 'rgba(255,210,63,.20)'],
+      orange: ['linear-gradient(180deg, #ffb36b, #c95600)', '#1a0a00', 'rgba(255,138,31,.20)'],
+      mint: ['linear-gradient(180deg, #9dffd6, #0fa86a)', '#04140d', 'rgba(63,240,166,.18)'],
+      cyan: ['linear-gradient(180deg, #b8f6ff, #0098c2)', '#00222c', 'rgba(46,230,255,.18)'],
+      magenta: ['linear-gradient(180deg, #f3a6ff, #9b1fbf)', '#1f0029', 'rgba(228,92,255,.18)']
+    };
+    const LIST = [
+      { id: 'first', name: 'ניצחון ראשון', desc: 'ניצחון ראשון במשחק מדורג', icon: 'trophy', c: 'gold', date: '12.04.26' },
+      { id: 'streak7', name: 'בלתי עציר', desc: '7 ניצחונות ברצף', icon: 'flame', c: 'orange', date: '15.07.26' },
+      { id: 'clean', name: 'יד יציבה', desc: 'ניצחון בלי אף טעות', icon: 'check', c: 'mint', date: '21.08.26' },
+      { id: 'games50', name: '50 משחקים', desc: '50 משחקים מדורגים', icon: 'play', c: 'cyan', date: '28.08.26' },
+      { id: 'goldmove', name: 'מהלך זהב', desc: 'מהלך של 12 נק׳ ומעלה · שיא 12.5', icon: 'star', c: 'gold', date: '03.09.26' },
+      { id: 'pest', name: 'מטריד סדרתי', desc: 'הפעלת 20 הפרעות', icon: 'bolt', c: 'magenta', date: '10.09.26' },
+      { id: 'wins100', name: '100 ניצחונות', desc: 'נצח 100 משחקים מדורגים', icon: 'crown', progTxt: '49/100', pct: 49 },
+      { id: 'comeback', name: 'Comeback', desc: 'נצח אחרי פיגור של 20 נק׳ · שיא 14', icon: 'retry', progTxt: '14/20', pct: 70 },
+      { id: 'arena', name: 'מלך הזירה', desc: 'מקום 1 במשחק של 4 שחקנים', icon: 'four', progTxt: '0/1', pct: 0 },
+      { id: 'diamond', name: 'ליגת יהלום', desc: 'הגע לדירוג כללי 1300', icon: 'shield', progTxt: '1276/1300', pct: 52 },
+      { id: 'lvl20', name: 'רמה 20', desc: 'הגע לרמה 20', icon: 'levels', progTxt: '14/20', pct: 70 },
+      { id: 'perfect', name: 'מהלך מושלם', desc: 'מהלך של 13.5 נק׳, המקסימום', icon: 'target', progTxt: '12.5/13.5', pct: 93 }
+    ];
+    return LIST.map(b => {
+      const un = !!b.date;
+      const col = un ? C[b.c] : null;
+      const on = b.id === selId;
+      return {
+        id: b.id,
+        name: b.name,
+        desc: b.desc,
+        d: I[b.icon],
+        unlocked: un,
+        locked: !un,
+        date: b.date || '',
+        progTxt: b.progTxt || '',
+        pct: (b.pct || 0) + '%',
+        bg: un ? col[0] : '#251d45',
+        ink: un ? col[1] : '#6c5fa6',
+        tileBg: un ? 'radial-gradient(80% 70% at 50% 0%, ' + col[2] + ', transparent 70%), #1b1533' : '#151028',
+        tileBd: on ? '#ffd23f' : (un ? '#342a5e' : '#251d45'),
+        lift: on ? 'translateY(-2px)' : 'none',
+        nameColor: un ? '#f1eeff' : '#a79fcb',
+        pressed: on ? 'true' : 'false',
+        aria: b.name + (un ? ', נפתח ' + b.date : ', נעול, ' + b.progTxt),
+        pick: () => this.setState({ sel: b.id })
+      };
+    });
+  }
+
+  renderVals() {
+    const st = this.state || {};
+    const claimed = !!st.claimed;
+    const xp = claimed ? 2430 : 2380;
+    const CIRC = 232.48;
+    const pct = xp / 3000;
+    const left = this.secondsLeft();
+    const pad = n => (n < 10 ? '0' : '') + n;
+    const resetIn = pad(Math.floor(left / 3600)) + ':' + pad(Math.floor((left % 3600) / 60)) + ':' + pad(left % 60);
+    const selId = st.sel || 'wins100';
+    const badges = this.badges(selId);
+    let sel = badges[6];
+    badges.forEach(b => { if (b.id === selId) { sel = b; } });
+
+    return {
+      levelAria: 'רמה 14, ' + (claimed ? '2,430' : '2,380') + ' מתוך 3,000 XP. עוד ' + (claimed ? '570' : '620') + ' XP לרמה 15',
+      ringOffset: (CIRC * (1 - pct)).toFixed(2) + 'px',
+      trackFill: (25 * pct).toFixed(2) + '%',
+      xpToGo: claimed ? '570' : '620',
+      claimed: claimed,
+      notClaimed: !claimed,
+      claim: () => this.setState({ claimed: true }),
+      m2Bd: claimed ? '#342a5e' : 'rgba(255,210,63,.6)',
+      m2Op: claimed ? '.55' : '1',
+      resetIn: resetIn,
+      badges: badges,
+      sel: sel
+    };
+  }
+}
+</script>
+</body>
+</html>

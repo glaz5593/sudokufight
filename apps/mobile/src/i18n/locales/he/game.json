@@ -1,0 +1,383 @@
+{
+  "title": "אימון לבד",
+  "titleBot": "אימון מול בוט",
+  "titleRanked": "משחק מדורג",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "אני",
+  "opponent": "היריב",
+  "listSep": ", ",
+  "type": {
+    "fast": "מהיר",
+    "normal": "רגיל",
+    "hard": "קשה"
+  },
+  "hud": {
+    "time": "זמן",
+    "best": "מהלך שיא",
+    "none": "—",
+    "timeLabel": "זמן {{time}}",
+    "bestLabel": "מהלך שיא: {{points}} נקודות ב־{{cell}}",
+    "noBestLabel": "עדיין אין מהלך שיא"
+  },
+  "progress": {
+    "label": "התקדמות הלוח",
+    "value": "{{filled}}/{{total}}",
+    "a11y": "{{filled}} מתוך {{total}} משבצות מלאות"
+  },
+  "end": {
+    "button": "סיום אימון",
+    "title": "לסיים את האימון?",
+    "body": "התוצאה תישמר במכשיר. אין השפעה על הדירוג.",
+    "confirm": "כן, לסיים",
+    "footnote": "המשחק ממשיך ברקע",
+    "dialog": "אישור סיום אימון"
+  },
+  "connection": {
+    "sep": ". ",
+    "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "frozen": {
+      "title": "המשחק מוקפא",
+      "timers": "כל הטיימרים עצורים",
+      "label": "המשחק מוקפא, כל הטיימרים עצורים"
+    },
+    "opponent": {
+      "lost": "{{name}} איבד חיבור",
+      "lost_female": "{{name}} איבדה חיבור",
+      "title": "היריב מתנתק…",
+      "timeUp": "הזמן נגמר",
+      "notBack": "{{name}} לא חזר",
+      "notBack_female": "{{name}} לא חזרה",
+      "seconds": "שניות",
+      "ring": "Reconnecting... {{seconds}}",
+      "saved": "המשחק נשמר בשרת",
+      "savedSub": "הלוח והניקוד שמורים",
+      "winLabel": "לניצחון בנטישה",
+      "winIn": "ניצחון בנטישה בעוד {{time}}",
+      "hint": "אם {{name}} לא יחזור בזמן, תנצח בנטישה",
+      "hint_female": "אם {{name}} לא תחזור בזמן, תנצח בנטישה",
+      "checking": "בודקים מול השרת…",
+      "timeLeft": "זמן לחזרה: {{time}}",
+      "announce": "{{name}} איבד חיבור. המשחק מוקפא עד שיחזור",
+      "announce_female": "{{name}} איבדה חיבור. המשחק מוקפא עד שתחזור",
+      "announceExpired": "הזמן נגמר. בודקים מול השרת"
+    },
+    "self": {
+      "lostTitle": "החיבור שלך אבד",
+      "lostSub": "מתחבר מחדש…",
+      "attempt": "ניסיון",
+      "attemptLabel": "ניסיון {{attempt}}",
+      "backTitle": "חזרת למשחק",
+      "syncingSub": "מסנכרן…",
+      "syncedSub": "הכל סונכרן · המשחק ממשיך",
+      "lockedTitle": "הלוח נעול עד שתחזור",
+      "lockedSub": "כשהחיבור יחזור נסנכרן:",
+      "syncingTitle": "מסנכרן…",
+      "savedSub": "המשחק נשמר בשרת וממשיך מאותה נקודה",
+      "item": {
+        "board": "לוח",
+        "score": "ניקוד",
+        "locks": "נעילות",
+        "turn": "תור",
+        "timers": "טיימרים"
+      },
+      "itemDone": "{{item}}: סונכרן",
+      "itemPending": "{{item}}: ממתין",
+      "timeLeft_one": "יש לך עוד {{seconds}} שנייה לחזור",
+      "timeLeft_two": "יש לך עוד {{seconds}} שניות לחזור",
+      "timeLeft_many": "יש לך עוד {{seconds}} שניות לחזור",
+      "timeLeft_other": "יש לך עוד {{seconds}} שניות לחזור",
+      "timeSub": "לפני שהמשחק ייחשב כנטישה",
+      "backInTime": "חזרת בזמן",
+      "backInTimeSub": "הטיימרים ממשיכים מאותה שנייה",
+      "announceLost": "החיבור שלך אבד. מתחבר מחדש",
+      "announceAttempt": "החיבור שלך אבד. מתחבר מחדש, ניסיון {{attempt}}",
+      "announceHurry": "עוד {{seconds}} שניות המשחק ייחשב כנטישה",
+      "announceSyncing": "חזרת למשחק. מסנכרן",
+      "announceSynced": "חזרת למשחק. הלוח והניקוד סונכרנו"
+    },
+    "left": {
+      "timeUp": "הזמן נגמר · {{seconds}} שניות בלי חיבור",
+      "title": "{{name}} עזב את המשחק",
+      "title_female": "{{name}} עזבה את המשחק",
+      "win": "ניצחת בנטישה",
+      "rating": "דירוג",
+      "ratingLabel": "שינוי בדירוג: {{delta}}, {{type}}",
+      "toResults": "לתוצאות",
+      "home": "לבית"
+    },
+    "error": {
+      "title": "שגיאת חיבור",
+      "offlineTitle": "אין חיבור לאינטרנט",
+      "body": {
+        "offline": "למכשיר אין רשת כרגע. התחבר לאינטרנט ונסה שוב.",
+        "unreachable": "לא הצלחנו להתחבר לשרת המשחק. בדוק את החיבור ונסה שוב.",
+        "lost": "החיבור לשרת המשחק אבד ולא הצלחנו לחזור אליו.",
+        "refused": "השרת לא הכניס אותנו לחדר."
+      },
+      "refusal": {
+        "notFound": "אין חדר עם הקוד הזה. בדוק את הקוד ונסה שוב.",
+        "full": "החדר הזה כבר מלא.",
+        "gameStarted": "המשחק בחדר הזה כבר התחיל.",
+        "alreadyInRoom": "אתה כבר בחדר הזה, ממכשיר אחר.",
+        "unauthenticated": "צריך להתחבר לחשבון כדי לשחק מול אחרים.",
+        "codeTaken": "כבר יש חדר עם הקוד הזה. נסה קוד אחר.",
+        "badOptions": "הגדרות החדר לא תקינות."
+      },
+      "code": "קוד שגיאה: {{code}}",
+      "attemptFailed": "ניסיון {{attempt}} נכשל",
+      "retry": "נסה שוב",
+      "practice": "עבור לאימון",
+      "practiceNote": "אימון לבד ומול בוט עובדים גם בלי חיבור",
+      "home": "חזרה לבית"
+    },
+    "surrender": {
+      "chip": "כניעה",
+      "title": "אתה בטוח שאתה רוצה להיכנע?",
+      "body": "המשחק ייחשב כהפסד",
+      "bodyRating": "המשחק ייחשב כהפסד · שינוי דירוג משוער {{delta}}",
+      "bodyMany": "תצא מהמשחק, והמשבצות שפתרת יישארו בצבע שלך.",
+      "confirm": "כן, להיכנע",
+      "cancel": "ביטול",
+      "footnote": "המשחק ממשיך ברקע",
+      "dialog": "אישור כניעה"
+    },
+    "lobby": {
+      "title": "חדר פרטי",
+      "subtitle": "{{type}} · {{players}} שחקנים",
+      "codeTitle": "קוד החדר",
+      "codeLabel": "קוד החדר: {{spelled}}",
+      "codeHint": "שלח את הקוד למי שמשחק איתך",
+      "share": "שיתוף הקוד",
+      "copy": "העתקה",
+      "copied": "הקוד הועתק",
+      "shareMessage": "בוא לשחק איתי סודוקו פייט! קוד החדר: {{code}}",
+      "playersTitle": "שחקנים בחדר",
+      "you": "אני",
+      "emptySeat": "ממתין לשחקן…",
+      "seatMeLabel": "{{name}}, אני",
+      "seatEmptyLabel": "מקום פנוי, ממתין לשחקן",
+      "waiting_one": "מחכים לעוד שחקן אחד",
+      "waiting_two": "מחכים לעוד {{count}} שחקנים",
+      "waiting_many": "מחכים לעוד {{count}} שחקנים",
+      "waiting_other": "מחכים לעוד {{count}} שחקנים",
+      "starting": "כולם כאן! המשחק מתחיל…",
+      "hint": "המשחק מתחיל ברגע שכל השחקנים בחדר",
+      "leave": "יציאה מהחדר",
+      "joined": "{{name}} בחדר"
+    },
+    "connecting": {
+      "title": "בכניסה למשחק",
+      "step": {
+        "server": "מתחבר לשרת המשחק…",
+        "room": "נכנס לחדר…",
+        "sync": "מסנכרן ניקוד וטיימרים…"
+      },
+      "label": "טעינת המשחק, שלב {{step}} מתוך {{total}}",
+      "cancel": "ביטול"
+    }
+  },
+  "live": {
+    "correct": "נכון: {{digit}} ב־{{cell}}, {{points}}",
+    "wrong": "טעות: {{digit}} לא מתאימה ל־{{cell}}, {{penalty}}",
+    "taken": "{{cell}} תפוסה",
+    "cooldown": "אפשר לבחור שוב את {{cell}} בעוד רגע",
+    "expired": "הזמן נגמר, {{cell}} שוחררה",
+    "complete": "הלוח הושלם!",
+    "oppCorrect": "{{name}} פתר את {{cell}}: {{digit}}, {{points}}",
+    "oppWrong": "{{name}} טעה: {{digit}} לא מתאימה ל־{{cell}}, {{penalty}}",
+    "leadMine_one": "אתה מוביל בנקודה אחת",
+    "leadMine_two": "אתה מוביל בשתי נקודות",
+    "leadMine_many": "אתה מוביל ב־{{gap}} נקודות",
+    "leadMine_other": "אתה מוביל ב־{{gap}} נקודות",
+    "leadTheirs_one": "{{name}} מוביל בנקודה אחת",
+    "leadTheirs_two": "{{name}} מוביל בשתי נקודות",
+    "leadTheirs_many": "{{name}} מוביל ב־{{gap}} נקודות",
+    "leadTheirs_other": "{{name}} מוביל ב־{{gap}} נקודות",
+    "leadTie": "שוויון בניקוד",
+    "reaction": "{{name}} שלח תגובה {{emoji}}"
+  },
+  "interference": {
+    "fireworks": "זיקוקים",
+    "cats": "חתולים",
+    "warp": "עיוות"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}} שלח/ה לך זיקוקים!",
+      "cats": "{{name}} שלח/ה לך חתולים!",
+      "warp": "{{name}} שלח/ה לך עיוות!"
+    },
+    "cost": "זה עלה {{cost}} נק׳ · המשחק ממשיך",
+    "goesOn": "המשחק ממשיך · הטיימר שלך עצור",
+    "seconds_one": "נותרה שנייה אחת",
+    "seconds_two": "נותרו 2 שניות",
+    "seconds_many": "נותרו {{count}} שניות",
+    "seconds_other": "נותרו {{count}} שניות",
+    "banner": "{{title}} {{subtitle}}, {{time}}",
+    "started": "{{title}} {{time}}, הטיימר שלך עצור",
+    "ended": "ההפרעה נגמרה, הטיימר שלך ממשיך",
+    "meow": "מיאו!",
+    "mew": "מיו!"
+  },
+  "arsenal": {
+    "title": "ארסנל ההפרעות",
+    "target": "יעד:",
+    "targetLabel": "יעד: {{name}}",
+    "scrim": "סגירת הארסנל וחזרה ללוח",
+    "next": "ההפרעה הבאה שלך:",
+    "unit": "נק׳",
+    "later": "· אחריה {{costs}}…",
+    "score": "הניקוד שלך",
+    "after": "אחרי שיגור: {{score}}",
+    "costLabel": "ההפרעה הבאה שלך עולה {{cost}} נקודות, אחריה {{costs}}. הניקוד שלך {{score}}, אחרי שיגור {{after}}",
+    "costLabelShort": "ההפרעה הבאה שלך עולה {{cost}} נקודות, אחריה {{costs}}. הניקוד שלך {{score}}, חסרות {{missing}} נקודות",
+    "info": "כל הפרעה נמשכת {{seconds}} שניות · שיגור בגרירה בלבד",
+    "hint": "גרור אל הכרטיס של {{name}} כדי לשגר",
+    "cancelHint": "שחרור מחוץ לאזור מבטל",
+    "tapHint": "גרור אל {{name}} — הקשה לא משגרת",
+    "dragging": "בגרירה…",
+    "cost": "{{cost}} נק׳",
+    "missing": "חסרות {{count}} נק׳",
+    "locked": "נעול",
+    "busy": "תחת הפרעה",
+    "unavailable": "לא זמין",
+    "ghost": "{{kind}} · {{cost}} נק׳",
+    "route": "אני ← {{name}}",
+    "sent": "{{kind}} ← {{name}}",
+    "drop": "שחרר כאן: שיגור {{kind}} אל {{name}}",
+    "dropIdle": "גרור לכאן הפרעה מהארסנל כדי לשגר אל {{name}}",
+    "notEnough": "אין מספיק נקודות להפרעה הבאה ({{cost}} נק׳)",
+    "label": "{{kind}} · {{cost}} נק׳ · גרור אל הכרטיס של {{name}}",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kind": {
+      "fireworks": "זיקוקים",
+      "cats": "חתולים",
+      "warp": "עיוות"
+    },
+    "reason": {
+      "points": "חסרות {{count}} נק׳ להפרעה הזאת",
+      "busy": "{{name}} כבר תחת הפרעה, אפשר לשגר עוד רגע",
+      "notRunning": "אי אפשר לשגר הפרעה כרגע",
+      "locked": "ההפרעה הזאת עוד נעולה",
+      "out": "{{name}} כבר לא במשחק",
+      "disconnected": "אין חיבור אל {{name}} כרגע"
+    },
+    "live": {
+      "lift": "גוררים {{kind}}. שחרר על הכרטיס של {{name}} כדי לשגר",
+      "over": "מעל הכרטיס של {{name}}: שחרר כדי לשגר",
+      "left": "מחוץ לאזור השחרור: שחרור כאן מבטל",
+      "cancelled": "השיגור בוטל",
+      "launched": "שיגרת {{kind}} אל {{name}}"
+    }
+  },
+  "reactions": {
+    "picker": "תגובות",
+    "item": "תגובה: {{name}}",
+    "itemOther": "תגובה {{emoji}}",
+    "name": {
+      "laugh": "צחוק",
+      "scream": "בהלה",
+      "cool": "קול",
+      "facepalm": "פספוס",
+      "fire": "אש",
+      "eyes": "עיניים"
+    },
+    "coolingDown": "אפשר לשלוח תגובה נוספת בעוד רגע",
+    "close": "סגירת התגובות",
+    "menu": {
+      "open": "תפריט הכרטיס של {{name}}",
+      "openHint": "משם אפשר להשתיק את התגובות של {{name}}",
+      "openHintMuted": "התגובות של {{name}} מושתקות. משם אפשר לבטל את ההשתקה",
+      "label": "התפריט של {{name}}",
+      "mute": "השתק תגובות",
+      "unmute": "בטל השתקה",
+      "muteLabel": "השתק את התגובות של {{name}}",
+      "unmuteLabel": "בטל את השתקת התגובות של {{name}}",
+      "muted": "התגובות של {{name}} מושתקות",
+      "unmuted": "התגובות של {{name}} חוזרות",
+      "close": "סגירת התפריט"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "הלוח הושלם!",
+      "ended": "האימון הסתיים",
+      "interrupted": "האימון נקטע",
+      "surrendered": "נכנעת",
+      "abandoned": "יצאת מהמשחק",
+      "opponentSurrendered": "היריב נכנע",
+      "opponentLeft": "היריב עזב"
+    },
+    "outcome": {
+      "win": "ניצחון!",
+      "loss": "הפסד",
+      "tie": "תיקו"
+    },
+    "abandonWin": "ניצחת בנטישה",
+    "end": {
+      "label": "איך זה נגמר",
+      "completed": "מילאת את כל הלוח",
+      "full": "הלוח התמלא",
+      "ended": "סיימת את האימון לפני שהלוח התמלא",
+      "interrupted": "האימון נעצר באמצע, למשל כשהאפליקציה נסגרה",
+      "line": "{{label}}: {{reason}}",
+      "surrendered": "נכנעת לפני שהלוח התמלא",
+      "abandoned": "לא חזרת למשחק בזמן",
+      "opponentSurrendered": "היריב נכנע לפני שהלוח התמלא",
+      "opponentLeft": "היריב איבד חיבור ולא חזר בזמן"
+    },
+    "score": "ניקוד סופי",
+    "points": "נק׳",
+    "scoreLabel": "ניקוד סופי: {{score}} נקודות",
+    "opponents": {
+      "title": "יריב",
+      "label": "{{name}} · {{score}} נקודות · {{mistakes}}",
+      "left": "יצא מהמשחק"
+    },
+    "best": {
+      "title": "מהלך המשחק",
+      "move": "{{cell}} → {{digit}}",
+      "label": "מהלך המשחק: {{points}} נקודות, {{digit}} ב־{{cell}}",
+      "formula": "החישוב",
+      "formulaLabel": "החישוב: {{line}}",
+      "none": "לא היה מהלך נכון באימון הזה"
+    },
+    "stats": {
+      "time": "זמן משחק",
+      "mistakes": "טעויות",
+      "correct": "מהלכים נכונים",
+      "think": "זמן חשיבה ממוצע",
+      "seconds": "{{value}} ש׳",
+      "none": "—",
+      "label": "{{label}}: {{value}}"
+    },
+    "awards": {
+      "title": "פרסי המשחק",
+      "bestMove": "המהלך הטוב ביותר",
+      "fewestMistakes": "הכי מעט טעויות",
+      "fastest": "הכי מהיר",
+      "comeback": "Comeback",
+      "mostPoints": "הכי הרבה נקודות",
+      "label": "{{title}}: {{who}}, {{value}}",
+      "value": {
+        "bestMove": "{{value}} נק׳",
+        "fewestMistakes": "טעויות: {{value}}",
+        "fastest": "{{value}} ש׳ למהלך",
+        "comeback": "פיגור של {{value}} נק׳",
+        "mostPoints": "{{value}} נק׳"
+      }
+    },
+    "unrated": "אימון: אין שינוי בדירוג",
+    "ratingSoon": "חדר פרטי: הדירוג עוד לא מתעדכן",
+    "actions": {
+      "home": "לבית",
+      "newGame": "משחק חדש",
+      "replay": "צפייה חוזרת · בקרוב",
+      "replayHint": "הצפייה החוזרת תגיע בגרסה הבאה"
+    },
+    "loading": "טוען את התוצאה…",
+    "missing": "לא מצאנו את האימון הזה",
+    "unavailable": "לא הצלחנו לקרוא את האימונים השמורים",
+    "notSaved": "האימון הזה לא נשמר במכשיר"
+  }
+}

@@ -1,0 +1,209 @@
+import {
+  BOT_LEVELS,
+  BOT_PACE,
+  type BotLevelId,
+  defaultRules,
+  GAME_TYPES,
+  type GameMode,
+  type GameType,
+} from '@sudoku-fight/engine';
+
+import { type AvatarId, EMPTY_AVATAR, isAvatarId } from '../../assets/avatars';
+import type { Outcome } from '../../game/outcome';
+import type { PracticeGameRecord } from '../../game/practiceRepo';
+import type { LastPlay } from '../../state/profile';
+import { botLevelOf } from '../game/identity';
+
+/**
+ * Pure data for the home-level screens (spec §4.3, §5, §9): the five options of "משחק חדש", what each game type
+ * means, the five bots to choose from, and how a saved practice reads in the recent list. No React, no rules
+ * of play: the think time comes from the engine's rules config, the bots from the engine's level table, the
+ * numbers of a game from the practice database.
+ */
+
+// ---------------------------------------------------------------------------------------------------------
+// Game modes (spec §5.1): exactly five options.
+
+export type ModeKey = 'ranked2' | 'ranked3' | 'ranked4' | 'solo' | 'bot';
+export type ModeGroup = 'ranked' | 'practice';
+
+export interface ModeOption {
+  key: ModeKey;
+  group: ModeGroup;
+  mode: GameMode;
+  /** Players at the table, the bot included. */
+  players: number;
+}
+
+/** In the order of the Modes board: ranked 2 · 3 · 4, then solo practice and practice against a bot. */
+export const MODE_OPTIONS: readonly ModeOption[] = [
+  { key: 'ranked2', group: 'ranked', mode: 'ranked', players: 2 },
+  { key: 'ranked3', group: 'ranked', mode: 'ranked', players: 3 },
+  { key: 'ranked4', group: 'ranked', mode: 'ranked', players: 4 },
+  { key: 'solo', group: 'practice', mode: 'solo', players: 1 },
+  { key: 'bot', group: 'practice', mode: 'bot', players: 2 },
+];
+
+export const MODE_GROUPS: readonly ModeGroup[] = ['ranked', 'practice'];
+
+/**
+ * The options that can be played in this build: the two practices. The ranked ones show "בקרוב" until
+ * work-plan stage 9. Add a key here when its stage lands.
+ */
+export const AVAILABLE_MODES: readonly ModeKey[] = ['solo', 'bot'];
+
+export const isAvailable = (key: ModeKey): boolean => AVAILABLE_MODES.includes(key);
+
+/** The mode of the game-type screen when the link names none (the results' "משחק חדש" keeps only the type). */
+export const DEFAULT_MODE: GameMode = 'solo';
+
+/** The modes the game-type screen can start: practices only, for now (against a bot, via the bot selection). */
+export const STARTABLE_MODES: readonly GameMode[] = ['solo', 'bot'];
+
+export const isStartableMode = (mode: unknown): mode is GameMode =>
+  STARTABLE_MODES.includes(mode as GameMode);
+
+// ---------------------------------------------------------------------------------------------------------
+// Game types (spec §5.2) [D5]: board difficulty and pace together.
+
+/** Preselected when the player has no last game yet: the middle one, as on the GameType board. */
+export const DEFAULT_GAME_TYPE: GameType = 'normal';
+
+export interface GameTypeInfo {
+  gameType: GameType;
+  /** How long a lock lasts (spec §5.2) [D2], from the engine's rules. */
+  thinkTimeMs: number;
+  /**
+   * The spec's estimate in minutes, [from, to]. Spec §5.2 gives it for a 2-player game; there is no solo
+   * figure yet, so this is the same until one is decided.
+   */
+  durationMin: readonly [number, number];
+}
+
+const DURATION_MIN: Record<GameType, readonly [number, number]> = {
+  fast: [4, 6],
+  normal: [6, 9],
+  hard: [9, 14],
+};
+
+export function gameTypeInfo(mode: GameMode, gameType: GameType): GameTypeInfo {
+  return {
+    gameType,
+    thinkTimeMs: defaultRules(mode, gameType).thinkTimeMs,
+    durationMin: DURATION_MIN[gameType],
+  };
+}
+
+export const gameTypeInfos = (mode: GameMode): GameTypeInfo[] =>
+  GAME_TYPES.map((type) => gameTypeInfo(mode, type));
+
+/** Whole seconds, for "8 ש׳". */
+export const thinkSeconds = (info: GameTypeInfo): number => Math.round(info.thinkTimeMs / 1000);
+
+// ---------------------------------------------------------------------------------------------------------
+// The bots (spec §9): the engine's level table, as the bot selection shows it.
+
+/**
+ * Preselected when the player has not played a bot yet: the middle one, as on the BotSelect board (Mr. Hoot).
+ * A setting, easy to change.
+ */
+export const DEFAULT_BOT_LEVEL: BotLevelId = 3;
+
+export interface BotOption {
+  level: BotLevelId;
+  /** The bot's name: data from the engine, the same in every language. */
+  name: string;
+  avatar: AvatarId;
+  /** The base think time per move in this game type: the table's (for 'normal') × the pace (spec §9). */
+  thinkMs: { min: number; max: number };
+  /** The share of its digits that are wrong, 0–1. */
+  mistakeRate: number;
+}
+
+/** The five bots for a game type, easiest first. */
+export function botOptions(gameType: GameType): BotOption[] {
+  const pace = BOT_PACE[gameType];
+  return BOT_LEVELS.map((b) => ({
+    level: b.level,
+    name: b.name,
+    avatar: isAvatarId(b.avatar) ? b.avatar : EMPTY_AVATAR,
+    thinkMs: { min: b.thinkMs.min * pace, max: b.thinkMs.max * pace },
+    mistakeRate: b.mistakeRate,
+  }));
+}
+
+/** Seconds with one decimal, none for whole ones: 5360 → "5.4", 8000 → "8", 16500 → "16.5". */
+export function secondsText(ms: number): string {
+  const tenths = Math.round(ms / 100);
+  return tenths % 10 === 0 ? String(tenths / 10) : (tenths / 10).toFixed(1);
+}
+
+/** A share as a whole percentage: 0.15 → 15. */
+export const percentOf = (share: number): number => Math.round(share * 100);
+
+// ---------------------------------------------------------------------------------------------------------
+// The recent list (spec §4.3 "משחקים אחרונים בקצרה") and "עוד סיבוב".
+
+/** How many saved games Home shows; the full list is the History screen (stage 11). */
+export const HOME_RECENT_COUNT = 5;
+
+/**
+ * How a saved practice ended, for its row. Alone: the board was completed, or the player ended it ("סיום
+ * אימון"). Against a bot: won, lost or tied. Either way: the app went away mid-game (interrupted), or it is
+ * still running.
+ */
+export type RecentOutcome = 'completed' | 'ended' | Outcome | 'interrupted' | 'playing';
+
+export function recentOutcome(
+  game: Pick<PracticeGameRecord, 'status' | 'endReason'> & { outcome?: Outcome | null },
+): RecentOutcome {
+  if (game.status === 'interrupted') return 'interrupted';
+  if (game.status === 'playing') return 'playing';
+  if (game.outcome) return game.outcome;
+  return game.endReason === 'boardComplete' ? 'completed' : 'ended';
+}
+
+/** The bot of a saved game: its level, by the opponent's id (`bot-3`); null for a solo practice. */
+export function botLevelOfGame(game: Partial<Pick<PracticeGameRecord, 'opponents'>>): BotLevelId | null {
+  for (const o of game.opponents ?? []) {
+    const level = o.isBot ? botLevelOf(o.id) : null;
+    if (level !== null) return level;
+  }
+  return null;
+}
+
+/**
+ * The setting "עוד סיבוב" repeats: the one remembered, or else the newest saved game's. A bot practice comes
+ * with its level: the one played, else the last one chosen (`botLevel`), else the default.
+ */
+export function lastPlayOf(
+  remembered: LastPlay | null,
+  recent: readonly (Pick<PracticeGameRecord, 'mode' | 'gameType'> &
+    Partial<Pick<PracticeGameRecord, 'opponents'>>)[],
+  botLevel: BotLevelId | null = null,
+): LastPlay | null {
+  const newest = recent[0];
+  const play: LastPlay | null =
+    remembered ??
+    (newest ? { mode: newest.mode, gameType: newest.gameType, ...levelOf(botLevelOfGame(newest)) } : null);
+  if (!play || !isStartableMode(play.mode)) return null;
+  if (play.mode !== 'bot') return { mode: play.mode, gameType: play.gameType };
+  return { mode: 'bot', gameType: play.gameType, botLevel: play.botLevel ?? botLevel ?? DEFAULT_BOT_LEVEL };
+}
+
+const levelOf = (level: BotLevelId | null): { botLevel?: BotLevelId } =>
+  level === null ? {} : { botLevel: level };
+
+/** When a game was played, in the app language: "9 באוק׳, 14:32". */
+export function playedAtText(at: number, language: string): string {
+  try {
+    return new Intl.DateTimeFormat(language, {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(at);
+  } catch {
+    return new Date(at).toISOString().slice(0, 16).replace('T', ' ');
+  }
+}

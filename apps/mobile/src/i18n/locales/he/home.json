@@ -1,0 +1,226 @@
+{
+  "brand": {
+    "name": "סודוקו פייט",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "סודוקו פייט"
+  },
+  "header": {
+    "settings": "הגדרות",
+    "back": "חזרה"
+  },
+  "profile": {
+    "defaultName": "שחקן",
+    "label": "הכרטיס שלי: {{name}}",
+    "noRating": "עוד אין דירוג",
+    "ratingTitle": "דירוג",
+    "none": "—",
+    "games_one": "משחק אחד",
+    "games_two": "{{count}} משחקים",
+    "games_many": "{{count}} משחקים",
+    "games_other": "{{count}} משחקים",
+    "gamesLabel_one": "משחק",
+    "gamesLabel_two": "משחקים",
+    "gamesLabel_many": "משחקים",
+    "gamesLabel_other": "משחקים",
+    "winsLabel": "ניצחונות",
+    "streakLabel": "רצף",
+    "winRate": "{{percent}}% ניצחונות",
+    "streak_zero": "בלי רצף ניצחונות",
+    "streak_one": "רצף של ניצחון אחד",
+    "streak_two": "רצף של {{count}} ניצחונות",
+    "streak_many": "רצף של {{count}} ניצחונות",
+    "streak_other": "רצף של {{count}} ניצחונות"
+  },
+  "play": "שחק",
+  "playHint": "בחירת מצב משחק",
+  "again": {
+    "title": "עוד סיבוב",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}"
+  },
+  "start": {
+    "failed": "לא הצלחנו להתחיל את המשחק. נסו שוב."
+  },
+  "recent": {
+    "heading": "משחקים אחרונים",
+    "all": "הכל",
+    "unavailable": "לא הצלחנו לקרוא את המשחקים השמורים במכשיר.",
+    "emptyTitle": "עוד אין משחקים כאן",
+    "emptyBody": "כל אימון נשמר כאן, גם אחרי שסוגרים את האפליקציה.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "הושלם",
+      "ended": "הסתיים",
+      "interrupted": "הופסק",
+      "playing": "במשחק",
+      "win": "ניצחון",
+      "loss": "הפסד",
+      "tie": "תיקו"
+    },
+    "openHint": "פתיחת התוצאות",
+    "versus": "{{outcome}} מול {{name}}"
+  },
+  "modes": {
+    "title": "משחק חדש",
+    "footnote": "מדורג דורש חיבור לאינטרנט · אימון זמין תמיד",
+    "soon": "בקרוב",
+    "groups": {
+      "ranked": {
+        "title": "מדורג",
+        "note": "יריבים אמיתיים, בזמן אמת"
+      },
+      "practice": {
+        "title": "אימון",
+        "note": "בלי לחץ, בלי דירוג"
+      }
+    },
+    "chips": {
+      "rated": "דירוג",
+      "unrated": "ללא דירוג",
+      "offline": "עובד גם בלי אינטרנט"
+    },
+    "ranked": {
+      "name": "מדורג"
+    },
+    "ranked2": {
+      "title": "2 שחקנים",
+      "tagline": "אחד על אחד · אותו לוח",
+      "label": "מדורג · 2 שחקנים"
+    },
+    "ranked3": {
+      "title": "3 שחקנים",
+      "tagline": "כולם נגד כולם",
+      "label": "מדורג · 3 שחקנים"
+    },
+    "ranked4": {
+      "title": "4 שחקנים",
+      "tagline": "כולם נגד כולם",
+      "label": "מדורג · 4 שחקנים"
+    },
+    "solo": {
+      "name": "אימון לבד",
+      "title": "אימון לבד",
+      "tagline": "בקצב שלך",
+      "label": "אימון לבד"
+    },
+    "bot": {
+      "name": "אימון מול בוט",
+      "title": "אימון מול בוט",
+      "tagline": "5 רמות",
+      "label": "אימון מול בוט"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "מהיר",
+      "difficulty": "קל",
+      "technique": "נפתר בבודד גלוי בלבד"
+    },
+    "normal": {
+      "name": "רגיל",
+      "difficulty": "בינוני",
+      "technique": "דורש בודד נסתר"
+    },
+    "hard": {
+      "name": "קשה",
+      "difficulty": "קשה",
+      "technique": "דורש זוגות או צמצומים"
+    }
+  },
+  "gameType": {
+    "title": "סוג משחק",
+    "note": {
+      "solo": "ללא דירוג. הלוח נבחר מהלוחות שבמכשיר, בלי לחזור על לוח ששיחקת לאחרונה.",
+      "bot": "ללא דירוג. הלוח נבחר מהלוחות שבמכשיר, בלי לחזור על לוח ששיחקת לאחרונה. בשלב הבא בוחרים יריב."
+    },
+    "start": {
+      "solo": "התחל אימון",
+      "bot": "בחירת יריב"
+    },
+    "startHint": "מתחיל אימון {{type}}",
+    "lockTime": "זמן למשבצת",
+    "board": "קושי הלוח",
+    "duration": "משך משוער",
+    "seconds": "{{seconds}} ש׳",
+    "minutes": "{{range}} דק׳",
+    "cardLabel": "{{name}}. {{technique}}. זמן למשבצת {{seconds}}, לוח {{difficulty}}, משך משוער {{from}} עד {{to}} דקות",
+    "botHint": "בחירת בוט למשחק {{type}}"
+  },
+  "dev": {
+    "title": "פיתוח",
+    "designSystem": "מערכת עיצוב",
+    "hello": "בדיקת חיבור"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "feedback": "צליל ורטט",
+    "sound": "צליל",
+    "soundHint": "צלילים למהלכים ולפעולות",
+    "haptics": "רטט",
+    "hapticsHint": "רטט קצר כמשוב למהלכים",
+    "motion": "הפחתת תנועה",
+    "motionHint": "פחות אנימציות: הניקוד קופץ ישר לתוצאה, והפרעה מוצגת ככיסוי סטטי לאותו זמן.",
+    "reduceMotion": {
+      "system": "כמו במכשיר",
+      "on": "מופעלת",
+      "off": "כבויה"
+    },
+    "language": "שפה",
+    "languageHint": "החלפת שפה מפעילה מחדש את האפליקציה.",
+    "languages": {
+      "he": "עברית",
+      "en": "English"
+    },
+    "version": "גרסה {{version}} · מנוע {{engine}}"
+  },
+  "placeholder": {
+    "soon": "בקרוב",
+    "leaderboard": {
+      "title": "טבלת מובילים",
+      "body": "הטבלה תיפתח יחד עם המשחקים המדורגים."
+    },
+    "history": {
+      "title": "היסטוריה",
+      "body": "כאן יופיעו כל המשחקים שלך, עם צפייה חוזרת והסבר לכל מהלך. בינתיים, האימונים האחרונים מופיעים במסך הבית."
+    },
+    "achievements": {
+      "title": "הישגים",
+      "body": "הישגים, רמות ו־XP יגיעו בקרוב."
+    }
+  },
+  "botSelect": {
+    "title": "בחר יריב בוט",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "זמן חשיבה למהלך",
+    "thinkValue": "{{range}} ש׳",
+    "mistakes": "טעויות",
+    "note": "הזמן הוא זמן הבסיס של הבוט בסוג המשחק הזה. במשבצת קשה הוא חושב יותר. הבוט משחק על אותו לוח, בזמן אמת.",
+    "start": "יאללה, למשחק",
+    "startHint": "מתחיל אימון {{type}} מול {{name}}",
+    "cardLabel": "רמה {{level}}, {{title}}: {{name}}. {{behavior}}. זמן חשיבה {{from}} עד {{to}} שניות למהלך, {{mistakes}}% טעויות",
+    "levels": {
+      "1": {
+        "title": "טירון",
+        "behavior": "איטי, טועה לא מעט, וכמעט אף פעם לא מפריע"
+      },
+      "2": {
+        "title": "חובב",
+        "behavior": "רגוע, טועה פה ושם, ולפעמים שולח 😂"
+      },
+      "3": {
+        "title": "מתקדם",
+        "behavior": "יציב ושקול. כשהוא מאחור, הוא מפריע"
+      },
+      "4": {
+        "title": "מאסטר",
+        "behavior": "מהיר, כמעט לא טועה, וקצת שחצן 😎"
+      },
+      "5": {
+        "title": "גרנדמאסטר",
+        "behavior": "מהיר, מדויק, ומפריע בלי רחמים"
+      }
+    }
+  }
+}

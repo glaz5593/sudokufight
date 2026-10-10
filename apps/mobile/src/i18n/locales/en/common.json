@@ -1,0 +1,19 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "Hello from the engine · cell {{cell}}",
+    "versions": "engine {{engine}} · protocol {{protocol}}",
+    "taps": "Taps: {{count}}",
+    "server": {
+      "connecting": "Server: connecting…",
+      "connected": "Server: connected",
+      "rtt": "Server: RTT {{ms}} ms",
+      "error": "Server: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "Something went wrong",
+    "body": "This screen hit an error. We reported it, and you can try again.",
+    "retry": "Try again"
+  }
+}

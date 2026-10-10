@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>BotSelect — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-shine { 0%{background-position:-160% 0} 100%{background-position:260% 0} }
+@keyframes sf-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 60% at 50% -10%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 50% at 110% 110%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 50% at -10% 100%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; top: 0; left: 0; right: 0; height: 240px; background-image: radial-gradient(rgba(255,255,255,.09) 1px, transparent 1.4px); background-size: 7px 7px; opacity: .5; -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, transparent 100%);"></div>
+  <div aria-hidden="true" style="position: absolute; top: 690px; left: -80px; width: 560px; height: 140px; transform: rotate(-9deg); background: linear-gradient(90deg, rgba(255,51,85,0), rgba(255,51,85,.14) 35%, rgba(255,210,63,.14) 70%, rgba(255,210,63,0));"></div>
+
+  <header style="position: absolute; top: 44px; right: 16px; left: 16px; height: 56px; display: flex; align-items: center; gap: 12px;">
+    <a href="GameType.dc.html" aria-label="חזרה" style="flex: none; width: 44px; height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #251d45; border: 2px solid #4b3f80; border-radius: 12px; box-shadow: 0 3px 0 #07050f; color: #f1eeff; text-decoration: none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></a>
+    <h1 style="margin: 0; font: 700 36px/.9 Karantina, Teko, sans-serif; color: #f1eeff; letter-spacing: 0; white-space: nowrap;">בחר יריב בוט</h1>
+    <span style="margin-right: auto; display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; box-sizing: border-box; background: #251d45; border: 1px solid #4b3f80; border-radius: 13px; color: #cfc8ee; font: 600 12px/1 Rubik, sans-serif; white-space: nowrap;">
+      <span>רגיל ·</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg>
+      <span style="font: 600 17px/1 Teko, sans-serif; color: #ffd23f; padding-top: 2px; font-variant-numeric: tabular-nums;">1287</span>
+    </span>
+  </header>
+
+  <div role="radiogroup" aria-label="בחר יריב בוט" style="position: absolute; top: 112px; right: 16px; left: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+
+    <button type="button" role="radio" aria-checked="{{pip.checked}}" onClick="{{ pip.pick }}" style="position: relative; display: block; width: 340px; height: 104px; margin: 0; padding: 0; box-sizing: border-box; border: 2px solid {{pip.border}}; border-radius: 14px; background: {{pip.bg}}; box-shadow: {{pip.shadow}}; transform: skewX(-9deg); overflow: hidden; color: #f1eeff; font-family: Rubik, sans-serif; text-align: right; cursor: pointer;">
+      <span aria-hidden="true" style="position: absolute; left: 10px; bottom: -26px; font: 700 132px/.8 Teko, sans-serif; color: {{pip.wm}};">1</span>
+      <span style="position: absolute; inset: 0; display: flex; align-items: center; gap: 14px; box-sizing: border-box; padding: 0 18px; transform: skewX(9deg);">
+        <span style="position: relative; flex: none; display: block; width: 62px; height: 62px; padding: 3px; box-sizing: border-box; border-radius: 15px; background: {{pip.frame}}; box-shadow: 0 4px 0 {{pip.frameDeep}}; animation: {{pip.anim}};">
+          <img src="/_blob/ba4d16f3ce627301c1fc7226dbafaed0" alt="" width="56" height="56" style="display: block; width: 56px; height: 56px; border-radius: 12px;">
+          <span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; display: flex; width: 22px; height: 22px; box-sizing: border-box; border-radius: 7px; background: #0f0b1d; border: 2px solid {{pip.frame}}; align-items: center; justify-content: center; font: 600 17px/1 Teko, sans-serif; color: #f1eeff; padding-top: 2px;">1</span>
+        </span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+          <span style="display: flex; align-items: center; gap: 6px; height: 24px;">
+            <span dir="ltr" style="font: 700 16px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">Pip</span>
+            <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 6px; border: 1px solid #4b3f80; background: #151028; color: #cfc8ee; font: 600 11px/1 Rubik, sans-serif; white-space: nowrap;">טירון</span>
+            <span style="margin-right: auto; display: flex; align-items: center; gap: 3px;"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg><span dir="ltr" style="font: 600 22px/.8 Teko, sans-serif; color: #ffd23f; padding-top: 3px; font-variant-numeric: tabular-nums;">~900</span></span>
+          </span>
+          <span style="margin-top: 4px; font: 400 12px/1.35 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">איטי, טועה לא מעט, אף פעם לא מפריע</span>
+          <span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 8px;">
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">מהירות</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{pip.spd}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">דיוק</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{pip.acc}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">אגרסיביות</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{pip.agg}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+          </span>
+        </span>
+      </span>
+    </button>
+
+    <button type="button" role="radio" aria-checked="{{biscuit.checked}}" onClick="{{ biscuit.pick }}" style="position: relative; display: block; width: 340px; height: 104px; margin: 0; padding: 0; box-sizing: border-box; border: 2px solid {{biscuit.border}}; border-radius: 14px; background: {{biscuit.bg}}; box-shadow: {{biscuit.shadow}}; transform: skewX(-9deg); overflow: hidden; color: #f1eeff; font-family: Rubik, sans-serif; text-align: right; cursor: pointer;">
+      <span aria-hidden="true" style="position: absolute; left: 10px; bottom: -26px; font: 700 132px/.8 Teko, sans-serif; color: {{biscuit.wm}};">2</span>
+      <span style="position: absolute; inset: 0; display: flex; align-items: center; gap: 14px; box-sizing: border-box; padding: 0 18px; transform: skewX(9deg);">
+        <span style="position: relative; flex: none; display: block; width: 62px; height: 62px; padding: 3px; box-sizing: border-box; border-radius: 15px; background: {{biscuit.frame}}; box-shadow: 0 4px 0 {{biscuit.frameDeep}}; animation: {{biscuit.anim}};">
+          <img src="/_blob/71f5422313bfc85009cef9963bb41ce2" alt="" width="56" height="56" style="display: block; width: 56px; height: 56px; border-radius: 12px;">
+          <span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; display: flex; width: 22px; height: 22px; box-sizing: border-box; border-radius: 7px; background: #0f0b1d; border: 2px solid {{biscuit.frame}}; align-items: center; justify-content: center; font: 600 17px/1 Teko, sans-serif; color: #f1eeff; padding-top: 2px;">2</span>
+        </span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+          <span style="display: flex; align-items: center; gap: 6px; height: 24px;">
+            <span dir="ltr" style="font: 700 16px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">Biscuit</span>
+            <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 6px; border: 1px solid #4b3f80; background: #151028; color: #cfc8ee; font: 600 11px/1 Rubik, sans-serif; white-space: nowrap;">חובב</span>
+            <span style="margin-right: auto; display: flex; align-items: center; gap: 3px;"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg><span dir="ltr" style="font: 600 22px/.8 Teko, sans-serif; color: #ffd23f; padding-top: 3px; font-variant-numeric: tabular-nums;">~1050</span></span>
+          </span>
+          <span style="margin-top: 4px; font: 400 12px/1.35 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">רגוע, טועה פה ושם, ולפעמים שולח <span style="font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;">😂</span></span>
+          <span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 8px;">
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">מהירות</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{biscuit.spd}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">דיוק</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{biscuit.acc}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">אגרסיביות</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{biscuit.agg}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+          </span>
+        </span>
+      </span>
+    </button>
+
+    <button type="button" role="radio" aria-checked="{{hoot.checked}}" onClick="{{ hoot.pick }}" style="position: relative; display: block; width: 340px; height: 104px; margin: 0; padding: 0; box-sizing: border-box; border: 2px solid {{hoot.border}}; border-radius: 14px; background: {{hoot.bg}}; box-shadow: {{hoot.shadow}}; transform: skewX(-9deg); overflow: hidden; color: #f1eeff; font-family: Rubik, sans-serif; text-align: right; cursor: pointer;">
+      <span aria-hidden="true" style="position: absolute; left: 10px; bottom: -26px; font: 700 132px/.8 Teko, sans-serif; color: {{hoot.wm}};">3</span>
+      <span style="position: absolute; inset: 0; display: flex; align-items: center; gap: 14px; box-sizing: border-box; padding: 0 18px; transform: skewX(9deg);">
+        <span style="position: relative; flex: none; display: block; width: 62px; height: 62px; padding: 3px; box-sizing: border-box; border-radius: 15px; background: {{hoot.frame}}; box-shadow: 0 4px 0 {{hoot.frameDeep}}; animation: {{hoot.anim}};">
+          <img src="/_blob/16ae87e119a2acf05518ac2648b68a10" alt="" width="56" height="56" style="display: block; width: 56px; height: 56px; border-radius: 12px;">
+          <span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; display: flex; width: 22px; height: 22px; box-sizing: border-box; border-radius: 7px; background: #0f0b1d; border: 2px solid {{hoot.frame}}; align-items: center; justify-content: center; font: 600 17px/1 Teko, sans-serif; color: #f1eeff; padding-top: 2px;">3</span>
+          <span style="position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%); display: block; height: 18px; padding: 0 7px; box-sizing: border-box; border-radius: 9px; background: #3ff0a6; box-shadow: 0 2px 0 #0fa86a; color: #062a1a; font: 700 11px/18px Rubik, sans-serif; white-space: nowrap;">ברמה שלך</span>
+        </span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+          <span style="display: flex; align-items: center; gap: 6px; height: 24px;">
+            <span dir="ltr" style="font: 700 16px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">Mr. Hoot</span>
+            <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 6px; border: 1px solid #4b3f80; background: #151028; color: #cfc8ee; font: 600 11px/1 Rubik, sans-serif; white-space: nowrap;">חד</span>
+            <span style="margin-right: auto; display: flex; align-items: center; gap: 3px;"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg><span dir="ltr" style="font: 600 22px/.8 Teko, sans-serif; color: #ffd23f; padding-top: 3px; font-variant-numeric: tabular-nums;">~1250</span></span>
+          </span>
+          <span style="margin-top: 4px; font: 400 12px/1.35 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">יציב ושקול. כשהוא מאחור, הוא מפריע</span>
+          <span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 8px;">
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">מהירות</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{hoot.spd}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">דיוק</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{hoot.acc}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">אגרסיביות</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{hoot.agg}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+          </span>
+        </span>
+      </span>
+    </button>
+
+    <button type="button" role="radio" aria-checked="{{maestro.checked}}" onClick="{{ maestro.pick }}" style="position: relative; display: block; width: 340px; height: 104px; margin: 0; padding: 0; box-sizing: border-box; border: 2px solid {{maestro.border}}; border-radius: 14px; background: {{maestro.bg}}; box-shadow: {{maestro.shadow}}; transform: skewX(-9deg); overflow: hidden; color: #f1eeff; font-family: Rubik, sans-serif; text-align: right; cursor: pointer;">
+      <span aria-hidden="true" style="position: absolute; left: 10px; bottom: -26px; font: 700 132px/.8 Teko, sans-serif; color: {{maestro.wm}};">4</span>
+      <span style="position: absolute; inset: 0; display: flex; align-items: center; gap: 14px; box-sizing: border-box; padding: 0 18px; transform: skewX(9deg);">
+        <span style="position: relative; flex: none; display: block; width: 62px; height: 62px; padding: 3px; box-sizing: border-box; border-radius: 15px; background: {{maestro.frame}}; box-shadow: 0 4px 0 {{maestro.frameDeep}}; animation: {{maestro.anim}};">
+          <img src="/_blob/d5c871b93374515f2ca12f46140e0aa9" alt="" width="56" height="56" style="display: block; width: 56px; height: 56px; border-radius: 12px;">
+          <span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; display: flex; width: 22px; height: 22px; box-sizing: border-box; border-radius: 7px; background: #0f0b1d; border: 2px solid {{maestro.frame}}; align-items: center; justify-content: center; font: 600 17px/1 Teko, sans-serif; color: #f1eeff; padding-top: 2px;">4</span>
+        </span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+          <span style="display: flex; align-items: center; gap: 6px; height: 24px;">
+            <span dir="ltr" style="font: 700 16px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">Maestro</span>
+            <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 6px; border: 1px solid #4b3f80; background: #151028; color: #cfc8ee; font: 600 11px/1 Rubik, sans-serif; white-space: nowrap;">מאסטר</span>
+            <span style="margin-right: auto; display: flex; align-items: center; gap: 3px;"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg><span dir="ltr" style="font: 600 22px/.8 Teko, sans-serif; color: #ffd23f; padding-top: 3px; font-variant-numeric: tabular-nums;">~1450</span></span>
+          </span>
+          <span style="margin-top: 4px; font: 400 12px/1.35 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">מהיר, כמעט לא טועה, וקצת שחצן <span style="font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;">😎</span></span>
+          <span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 8px;">
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">מהירות</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{maestro.spd}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">דיוק</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{maestro.acc}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">אגרסיביות</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{maestro.agg}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+          </span>
+        </span>
+      </span>
+    </button>
+
+    <button type="button" role="radio" aria-checked="{{overlord.checked}}" onClick="{{ overlord.pick }}" style="position: relative; display: block; width: 340px; height: 104px; margin: 0; padding: 0; box-sizing: border-box; border: 2px solid {{overlord.border}}; border-radius: 14px; background: {{overlord.bg}}; box-shadow: {{overlord.shadow}}; transform: skewX(-9deg); overflow: hidden; color: #f1eeff; font-family: Rubik, sans-serif; text-align: right; cursor: pointer;">
+      <span aria-hidden="true" style="position: absolute; left: 10px; bottom: -26px; font: 700 132px/.8 Teko, sans-serif; color: {{overlord.wm}};">5</span>
+      <span style="position: absolute; inset: 0; display: flex; align-items: center; gap: 14px; box-sizing: border-box; padding: 0 18px; transform: skewX(9deg);">
+        <span style="position: relative; flex: none; display: block; width: 62px; height: 62px; padding: 3px; box-sizing: border-box; border-radius: 15px; background: {{overlord.frame}}; box-shadow: 0 4px 0 {{overlord.frameDeep}}; animation: {{overlord.anim}};">
+          <img src="/_blob/263168f42dea205af7d52cee23e71d68" alt="" width="56" height="56" style="display: block; width: 56px; height: 56px; border-radius: 12px;">
+          <span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; display: flex; width: 22px; height: 22px; box-sizing: border-box; border-radius: 7px; background: #0f0b1d; border: 2px solid {{overlord.frame}}; align-items: center; justify-content: center; font: 600 17px/1 Teko, sans-serif; color: #f1eeff; padding-top: 2px;">5</span>
+        </span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+          <span style="display: flex; align-items: center; gap: 6px; height: 24px;">
+            <span dir="ltr" style="font: 700 16px/1 Rubik, sans-serif; color: #f1eeff; white-space: nowrap;">Overlord</span>
+            <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 6px; border: 1px solid rgba(255,51,85,.5); background: rgba(255,51,85,.10); color: #ff8a9e; font: 600 11px/1 Rubik, sans-serif; white-space: nowrap;">גרנדמאסטר</span>
+            <span style="margin-right: auto; display: flex; align-items: center; gap: 3px;"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffd23f"></path></svg><span dir="ltr" style="font: 600 22px/.8 Teko, sans-serif; color: #ffd23f; padding-top: 3px; font-variant-numeric: tabular-nums;">~1700</span></span>
+          </span>
+          <span style="margin-top: 4px; font: 400 12px/1.35 Rubik, sans-serif; color: #cfc8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">מהיר, מדויק, ומפריע בלי רחמים</span>
+          <span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 8px;">
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">מהירות</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{overlord.spd}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">דיוק</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{overlord.acc}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font: 600 11px/1 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">אגרסיביות</span><span aria-hidden="true" style="display: flex; gap: 2px;"><sc-for list="{{overlord.agg}}" as="s" hint-placeholder-count="5"><span style="flex: 1; height: 6px; border-radius: 2px; background: {{s.c}}; transform: skewX(-9deg);"></span></sc-for></span></span>
+          </span>
+        </span>
+      </span>
+    </button>
+  </div>
+
+  <p style="position: absolute; top: 684px; right: 16px; left: 16px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 6px; font: 500 13px/1.3 Rubik, sans-serif; color: #a79fcb; white-space: nowrap;">
+    <span>ללא השפעה על הדירוג</span>
+    <span aria-hidden="true" style="color: #6c5fa6;">·</span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3ff0a6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.5a16 16 0 0 1 4.5-2.8M10 5.1A16 16 0 0 1 22 8.5"></path><path d="M5 12.5a11 11 0 0 1 3.4-2M14.5 10.3a11 11 0 0 1 4.5 2.2"></path><path d="M8.5 16a6 6 0 0 1 7 0"></path><path d="M12 20h.01"></path><path d="M3 3l18 18"></path></svg>
+    <span style="color: #3ff0a6;">עובד גם בלי אינטרנט</span>
+  </p>
+
+  <a href="Game-Bot.dc.html" style="position: absolute; top: 722px; left: 21px; width: 348px; height: 60px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; overflow: hidden; background: linear-gradient(180deg, #ffe27a 0%, #ffd23f 55%, #f5b800 100%); color: #1a1000; text-decoration: none; transform: skewX(-9deg); border-radius: 10px; box-shadow: 0 5px 0 #b37b00, inset 0 1px 0 rgba(255,255,255,.6); font-family: Karantina, Teko, sans-serif; font-weight: 700; font-size: 34px; line-height: 1;">
+    <span aria-hidden="true" style="position: absolute; inset: 0; background-image: linear-gradient(105deg, rgba(255,255,255,0) 40%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 60%); background-size: 250% 100%; background-repeat: no-repeat; animation: sf-shine 3.4s cubic-bezier(.2,.8,.2,1) infinite;"></span>
+    <span style="position: relative; display: block; transform: skewX(9deg); padding-top: 3px;">יאללה, למשחק</span>
+  </a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sel = (this.state && this.state.sel) || 'hoot';
+    const seg = (n, c) => [0, 1, 2, 3, 4].map(k => ({ c: k < n ? c : '#342a5e' }));
+    const SPD = '#ffd23f', ACC = '#3ff0a6', AGG = '#ff3355';
+    const bot = (id, s, a, g) => {
+      const on = sel === id;
+      return {
+        sel: on,
+        checked: on ? 'true' : 'false',
+        border: on ? '#ffd23f' : '#342a5e',
+        bg: on ? 'linear-gradient(160deg, #34295f 0%, #221a46 55%, #1b1533 100%)' : 'linear-gradient(160deg, #211a3f 0%, #1a1432 100%)',
+        shadow: on ? '0 0 0 1px #ffd23f, 0 0 24px rgba(255,210,63,.30), 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.14)' : '0 4px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.06)',
+        frame: on ? '#ffd23f' : '#4b3f80',
+        frameDeep: on ? '#e8a100' : '#07050f',
+        wm: on ? 'rgba(255,210,63,.09)' : 'rgba(255,255,255,.04)',
+        anim: on ? 'sf-bob 2.8s ease-in-out infinite' : 'none',
+        spd: seg(s, SPD),
+        acc: seg(a, ACC),
+        agg: seg(g, AGG),
+        pick: () => this.setState({ sel: id })
+      };
+    };
+    return {
+      pip: bot('pip', 1, 1, 0),
+      biscuit: bot('biscuit', 2, 2, 1),
+      hoot: bot('hoot', 3, 3, 2),
+      maestro: bot('maestro', 4, 4, 3),
+      overlord: bot('overlord', 5, 5, 5)
+    };
+  }
+}
+</script>
+</body>
+</html>

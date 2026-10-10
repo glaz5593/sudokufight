@@ -1,0 +1,132 @@
+/* ==========================================================================
+   SUDOKU FIGHT — design tokens  ("Arena Ink")
+   Layout concept: a fighting-game arena at night. Slanted HUD plates and a
+   VS-energy frame around one calm, precise square: the board. Loud outside
+   the board, quiet inside it.
+   Single committed dark look (a game, not a document) — no light theme.
+   ========================================================================== */
+:root {
+  color-scheme: dark;
+
+  /* ---- Ink: the arena (cool violet-biased neutrals) ---- */
+  --ink-950: #07050f;   /* deepest — shadows, pressed edges */
+  --ink-900: #0f0b1d;   /* app ground */
+  --ink-850: #151028;
+  --ink-800: #1b1533;   /* surface 1 — plates, cards */
+  --ink-700: #251d45;   /* surface 2 — raised, inputs */
+  --ink-600: #342a5e;   /* surface 3 — strokes strong, board box lines */
+  --ink-500: #4b3f80;   /* muted strokes */
+  --ink-400: #6c5fa6;   /* disabled text on dark, hairlines on raised */
+
+  /* ---- Fog: text ---- */
+  --fog-300: #a79fcb;   /* secondary text */
+  --fog-200: #cfc8ee;   /* tertiary emphasis */
+  --fog-100: #f1eeff;   /* primary text */
+  --paper:   #fbfaff;   /* the board surface digits sit on (light, for max legibility) */
+  --paper-2: #ece8fb;   /* alternate box shade on the board */
+  --board-ink: #1a1433; /* given digits */
+
+  /* ---- Brand ---- */
+  --gold:      #ffd23f; /* titles, rating, crowns, rewards */
+  --gold-deep: #e8a100;
+  --strike:    #ff3355; /* wrong, danger, surrender, damage */
+  --strike-deep: #b8102f;
+  --mint:      #3ff0a6; /* correct feedback, online, success */
+  --mint-deep: #0fa86a;
+
+  /* ---- Player colors (seat palette). On every device, "me" renders as P1. ----
+     Each player also owns a glyph so ownership never relies on color alone:
+     P1 ● circle   P2 ▲ triangle   P3 ■ square   P4 ◆ diamond                    */
+  --p1: #2ee6ff;  --p1-deep: #0098c2;  --p1-ink: #002a38;   /* Volt  (cyan)    */
+  --p2: #ff8a1f;  --p2-deep: #c95600;  --p2-ink: #3a1800;   /* Blaze (orange)  */
+  --p3: #a8f03c;  --p3-deep: #5fa800;  --p3-ink: #1c3300;   /* Toxic (lime)    */
+  --p4: #e45cff;  --p4-deep: #9b1fbf;  --p4-ink: #33003f;   /* Hex   (magenta) */
+
+  /* ---- Leagues ---- */
+  --league-bronze: #d08a52;
+  --league-silver: #c9d3e6;
+  --league-gold:   #ffd23f;
+  --league-diamond:#7fe7ff;
+  --league-legend: #ff5fd2;
+
+  /* ---- Typography ----
+     Display: Teko (Latin, condensed HUD) + Karantina (Hebrew, condensed poster).
+     Body/UI: Rubik (Latin + Hebrew).  Emoji/flags: Noto Color Emoji (consistent on Windows). */
+  --font-display: "Teko", "Karantina", "Rubik", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Rubik", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-digits: "Rubik", "Segoe UI", system-ui, sans-serif;     /* board digits */
+  --font-hud: "Teko", "Rubik", "Arial Narrow", sans-serif;        /* scores, timers, ratings */
+  --font-emoji: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+
+  --fs-2xs: 10px;
+  --fs-xs: 11px;
+  --fs-sm: 13px;
+  --fs-md: 15px;
+  --fs-lg: 18px;
+  --fs-xl: 22px;
+  --fs-2xl: 28px;
+  --fs-3xl: 38px;
+  --fs-4xl: 52px;
+  --fs-hero: 72px;
+
+  --lh-tight: 1.0;
+  --lh-snug: 1.2;
+  --lh-body: 1.45;
+  --tracking-label: 0.08em;
+  --tracking-display: 0.02em;
+
+  /* ---- Space (4px grid) ---- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px;
+  --gutter: 16px;
+
+  /* ---- Shape ---- */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+  --skew: -9deg;          /* HUD plates & buttons lean forward */
+  --skew-inv: 9deg;       /* counter-skew for content inside a skewed plate */
+  --cut: 14px;            /* corner cut for clipped plates */
+
+  /* ---- Depth ---- */
+  --press-depth: 5px;
+  --shadow-press: 0 var(--press-depth) 0 var(--ink-950);
+  --shadow-1: 0 2px 0 rgba(0,0,0,.35), 0 8px 24px rgba(5,3,15,.45);
+  --shadow-2: 0 4px 0 rgba(0,0,0,.4), 0 18px 48px rgba(5,3,15,.6);
+  --inner-hi: inset 0 1px 0 rgba(255,255,255,.12);
+  --inner-lo: inset 0 -2px 0 rgba(0,0,0,.25);
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(.2,.8,.2,1);
+  --ease-in: cubic-bezier(.5,0,.75,0);
+  --ease-pop: cubic-bezier(.34,1.56,.64,1);      /* rewards, slams */
+  --ease-snap: cubic-bezier(.7,0,.2,1);          /* screen transitions */
+  --t-instant: 80ms;
+  --t-fast: 140ms;
+  --t-med: 240ms;
+  --t-slow: 420ms;
+  --t-epic: 900ms;
+
+  /* ---- Layers (inside #app) ---- */
+  --z-screen: 1;
+  --z-hud: 10;
+  --z-fx: 50;        /* interference effects & celebrations */
+  --z-drag: 70;      /* drag ghost */
+  --z-overlay: 80;   /* modals, sheets */
+  --z-toast: 90;
+
+  /* ---- Layout ---- */
+  --app-max-w: 480px;
+  --device-w: 390px;
+  --device-h: 844px;
+  --keypad-h: 64px;
+}
+
+/* Player color helpers: put .pc-1 … .pc-4 on any element, then use var(--pc) / var(--pc-deep) / var(--pc-ink). */
+.pc-1 { --pc: var(--p1); --pc-deep: var(--p1-deep); --pc-ink: var(--p1-ink); }
+.pc-2 { --pc: var(--p2); --pc-deep: var(--p2-deep); --pc-ink: var(--p2-ink); }
+.pc-3 { --pc: var(--p3); --pc-deep: var(--p3-deep); --pc-ink: var(--p3-ink); }
+.pc-4 { --pc: var(--p4); --pc-deep: var(--p4-deep); --pc-ink: var(--p4-ink); }

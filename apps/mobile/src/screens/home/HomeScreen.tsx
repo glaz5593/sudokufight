@@ -1,0 +1,264 @@
+import { botLevel as botLevelInfo } from '@sudoku-fight/engine';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { refreshMe, useAuth } from '../../auth/authStore';
+import { ROUTES } from '../../auth/redirect';
+import { ltr } from '../../components/player';
+import { BottomNav, Button, IconButton, RowButton, useToast } from '../../components/ui';
+import { useGameStore } from '../../game/gameStore';
+import { cue } from '../../services/feedback';
+import { VerifyBanner } from '../account/VerifyEmailScreen';
+import { usePracticeHistory } from '../../state/practiceHistory';
+import { useProfile } from '../../state/profile';
+import { color, size, space, text, tokens } from '../../theme';
+import { HOME_RECENT_COUNT, lastPlayOf } from './homeModel';
+import { goToTab } from './navigation';
+import { GUTTER } from './parts';
+import { usePracticeStats } from './practiceStats';
+import { ProfileCard } from './ProfileCard';
+import { RecentGames } from './RecentGames';
+import { startAndOpen } from './startGame';
+
+const HOME = tokens.layout.home;
+
+export interface HomeScreenProps {
+  /**
+   * Development builds: links to the dev screens (the design system, the stage-0 hello screen, and stage 7's
+   * online game and network measures).
+   */
+  devLinks?: boolean;
+}
+
+/**
+ * Home, first version (spec §4.3; Dir-C-Home for the look, Home for the content). The player card on top, the
+ * big "שחק", "עוד סיבוב" with the last setting, the latest practices saved on this phone, and the bottom
+ * navigation. Every time Home comes into view it reads the saved games again, so a game just played (or one
+ * saved before the app was closed) is there.
+ *
+ * Stage 8: the card is the account's (name, avatar, country and ratings from GET /v1/me, kept on the phone so
+ * Home opens offline); pressing it opens the profile. Until the email is verified, a banner under the card
+ * leads to /verify-email [D22]. Without an account profile (tests of the home screens alone) the card falls
+ * back to the local profile.
+ */
+export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
+  const { t, i18n } = useTranslation('home');
+  const { t: tDev } = useTranslation('dev');
+  const { top } = useSafeAreaInsets();
+  const me = useAuth((s) => s.me);
+  const localName = useProfile((s) => s.name);
+  const localAvatar = useProfile((s) => s.avatarId);
+  const localCountry = useProfile((s) => s.country);
+  const name = me?.displayName ?? localName;
+  const avatarId = me?.avatarId ?? localAvatar;
+  const country = me?.country ?? localCountry;
+  const lastPlay = useProfile((s) => s.lastPlay);
+  const botLevel = useProfile((s) => s.botLevel);
+  const recent = usePracticeHistory((s) => s.recent);
+  const status = usePracticeHistory((s) => s.status);
+  const gamesPlayed = usePracticeStats((s) => s.gamesPlayed);
+  const winRate = usePracticeStats((s) => s.winRate);
+  const streak = usePracticeStats((s) => s.streak);
+  const [starting, setStarting] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshHome();
+      // A profile read from the phone (no server last time): try the server again.
+      if (useAuth.getState().meOffline) void refreshMe();
+    }, []),
+  );
+
+  // "עוד סיבוב" (spec §4.3): the last setting; against a bot, with the bot's name ("· Pip").
+  const again = lastPlayOf(lastPlay, recent, botLevel);
+  let againText: string | null = null;
+  if (again) {
+    const parts = { mode: t(`modes.${again.mode}.name`), type: t(`gameTypes.${again.gameType}.name`) };
+    againText =
+      again.botLevel === undefined
+        ? t('again.subtitle', parts)
+        : t('again.subtitleBot', { ...parts, bot: ltr(botLevelInfo(again.botLevel).name) });
+  }
+
+  const playAgain = async () => {
+    if (!again || starting) return;
+    cue('primaryPress');
+    setStarting(true);
+    const ok = await startAndOpen(again, 'push');
+    setStarting(false);
+    if (!ok) useToast.getState().show({ variant: 'error', message: t('start.failed') });
+  };
+
+  const showSub = i18n.dir() === 'rtl';
+
+  return (
+    <View style={styles.screen}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: top + space[2] }]}
+        testID="home-scroll"
+      >
+        <View style={styles.header}>
+          <View
+            accessible
+            accessibilityRole="header"
+            accessibilityLabel={t('brand.name')}
+            style={styles.brand}
+          >
+            <Text style={styles.wordmark} numberOfLines={1}>
+              <Text style={styles.wordStart}>{t('brand.wordStart')}</Text>{' '}
+              <Text style={styles.wordEnd}>{t('brand.wordEnd')}</Text>
+            </Text>
+            {showSub ? <Text style={styles.brandSub}>{t('brand.sub')}</Text> : null}
+          </View>
+          <IconButton
+            icon="settings"
+            iconSize="header"
+            accessibilityLabel={t('header.settings')}
+            onPress={() => router.push('/settings')}
+            testID="open-settings"
+          />
+        </View>
+
+        <View style={styles.card}>
+          <ProfileCard
+            name={name ?? t('profile.defaultName')}
+            avatarId={avatarId}
+            country={country}
+            gamesPlayed={gamesPlayed}
+            winRate={winRate}
+            streak={streak}
+            ratings={me?.ratings ?? null}
+            onPress={me ? () => router.push(ROUTES.editProfile) : undefined}
+          />
+        </View>
+        <VerifyBanner style={styles.verify} />
+
+        <Button
+          label={t('play')}
+          size="hero"
+          onPress={() => {
+            cue('primaryPress');
+            router.push('/modes');
+          }}
+          accessibilityHint={t('playHint')}
+          style={styles.play}
+          testID="play"
+        />
+
+        {again && againText ? (
+          <RowButton
+            icon="refresh"
+            title={t('again.title')}
+            subtitle={againText}
+            onPress={() => void playAgain()}
+            loading={starting}
+            style={styles.again}
+            testID="play-again"
+          />
+        ) : null}
+
+        <View style={styles.recentHeader}>
+          <Text accessibilityRole="header" style={styles.recentTitle}>
+            {t('recent.heading')}
+          </Text>
+          <Button
+            variant="ghost"
+            label={t('recent.all')}
+            onPress={() => goToTab('history', 'home')}
+            testID="recent-all"
+          />
+        </View>
+        <View style={styles.recent}>
+          <RecentGames
+            games={recent.slice(0, HOME_RECENT_COUNT)}
+            status={status}
+            onOpen={(id) => router.push({ pathname: '/results/[id]', params: { id } })}
+          />
+        </View>
+
+        {devLinks ? (
+          <View style={styles.dev} testID="dev-links">
+            <Text style={styles.devTitle}>{t('dev.title')}</Text>
+            <View style={styles.devRow}>
+              <Button
+                variant="ghost"
+                label={t('dev.designSystem')}
+                onPress={() => router.push('/dev/design-system')}
+                testID="dev-design-system"
+              />
+              <Button
+                variant="ghost"
+                label={t('dev.hello')}
+                onPress={() => router.push('/dev/hello')}
+                testID="dev-hello"
+              />
+              <Button
+                variant="ghost"
+                label={tDev('link.online')}
+                accessibilityHint={tDev('link.onlineHint')}
+                onPress={() => router.push('/dev/online')}
+                testID="dev-online"
+              />
+              <Button
+                variant="ghost"
+                label={tDev('link.metrics')}
+                accessibilityHint={tDev('link.metricsHint')}
+                onPress={() => router.push('/dev/metrics')}
+                testID="dev-metrics"
+              />
+            </View>
+          </View>
+        ) : null}
+      </ScrollView>
+      <BottomNav active="home" onSelect={(tab) => goToTab(tab, 'home')} testID="nav" />
+    </View>
+  );
+}
+
+/**
+ * Reads the saved games and the numbers again. A game the player has just left is closed first (a running one
+ * is saved as interrupted) and its last writes are awaited, so the list already has its final row.
+ */
+async function refreshHome(): Promise<void> {
+  const { session, clear } = useGameStore.getState();
+  if (session) {
+    clear();
+    await session.flush();
+  }
+  await Promise.all([usePracticeHistory.getState().refresh(), usePracticeStats.getState().refresh()]);
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: color.bg },
+  content: { paddingHorizontal: GUTTER.home, paddingBottom: space[13] },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: HOME.headerHeight,
+  },
+  brand: { alignItems: 'flex-start', gap: space[3] },
+  wordmark: { ...text('brandWordmark') },
+  wordStart: { color: color.textMuted },
+  wordEnd: { color: color.text },
+  brandSub: { ...text('brandSub'), color: color.textMuted },
+  card: { marginTop: HOME.profileCardTop },
+  verify: { marginTop: space[6] },
+  play: { marginTop: HOME.ctaTop },
+  again: { marginTop: HOME.rowButtonTop },
+  recentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: size.touch,
+    marginTop: HOME.recentHeaderTop,
+  },
+  recentTitle: { ...text('h2'), color: color.text },
+  recent: { marginTop: HOME.recentRowTop },
+  dev: { marginTop: space[12], gap: space[2], alignItems: 'flex-start' },
+  devTitle: { ...text('micro'), color: color.textFaint },
+  devRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space[4] },
+});

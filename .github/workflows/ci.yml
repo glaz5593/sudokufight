@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, typecheck, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: One copy of react and react-native
+        run: npm ls react react-native
+      - run: npm run lint
+      - name: Typed routes for the app (expo-env.d.ts and .expo/types are not committed)
+        working-directory: apps/mobile
+        run: npx expo customize tsconfig.json
+        env:
+          CI: 'true'
+      - run: npm run typecheck
+      - run: npm test -- --ci
+      - name: The server bundles
+        run: npm run build -w @sudoku-fight/server

@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Reactions — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&family=Teko:wght@500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffd23f}a:hover{color:#fff1b8}
+@keyframes sf-pop { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1)} }
+@keyframes sf-pop-b { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1)} }
+@keyframes sf-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+@keyframes sf-blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+@keyframes sf-emote-a { 0%{transform:translateY(38px) scale(.3);opacity:0} 14%{transform:translateY(-8px) scale(1.28);opacity:1} 26%{transform:translateY(5px) scale(1.12,.86)} 38%{transform:translateY(-3px) scale(.95,1.06)} 50%{transform:translateY(0) scale(1)} 76%{transform:translateY(-6px) scale(1);opacity:1} 100%{transform:translateY(-44px) scale(.9);opacity:0} }
+@keyframes sf-emote-b { 0%{transform:translateY(38px) scale(.3);opacity:0} 14%{transform:translateY(-8px) scale(1.28);opacity:1} 26%{transform:translateY(5px) scale(1.12,.86)} 38%{transform:translateY(-3px) scale(.95,1.06)} 50%{transform:translateY(0) scale(1)} 76%{transform:translateY(-6px) scale(1);opacity:1} 100%{transform:translateY(-44px) scale(.9);opacity:0} }
+@keyframes sf-wobble { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg) translateY(-2px)} }
+@keyframes sf-nudge { 0%,82%,100%{transform:translateY(0) rotate(0)} 88%{transform:translateY(-4px) rotate(-8deg)} 94%{transform:translateY(0) rotate(5deg)} }
+@keyframes sf-lock-me { 0%,100%{box-shadow:inset 0 0 0 3px #2ee6ff, inset 0 0 6px 3px rgba(46,230,255,.25)} 50%{box-shadow:inset 0 0 0 3px #2ee6ff, inset 0 0 12px 6px rgba(46,230,255,.6)} }
+@keyframes sf-lock-nina { 0%,100%{box-shadow:inset 0 0 0 3px #ff8a1f} 50%{box-shadow:inset 0 0 0 3px #ff8a1f, inset 0 0 10px 3px rgba(255,138,31,.45)} }
+.sf-press{transition:translate 80ms ease-out}
+.sf-press:active{translate:0 3px}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:1ms !important;animation-iteration-count:1 !important} }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #f1eeff; background: radial-gradient(120% 60% at 50% -10%, rgba(120,90,255,.28), transparent 60%), radial-gradient(80% 50% at 110% 110%, rgba(255,51,85,.14), transparent 60%), radial-gradient(80% 50% at -10% 100%, rgba(46,230,255,.10), transparent 60%), repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 22px), #0f0b1d;">
+
+  <div aria-hidden="true" style="position: absolute; top: 36px; left: 0; right: 0; height: 190px; background-image: radial-gradient(rgba(255,255,255,.09) 1px, transparent 1.4px); background-size: 7px 7px; -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0)); mask-image: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0));"></div>
+  <div aria-hidden="true" style="position: absolute; top: 40px; left: 193px; width: 4px; height: 168px; background: linear-gradient(180deg, rgba(255,210,63,0), #ffd23f 30%, #ff3355 75%, rgba(255,51,85,0)); transform: skewX(-9deg); box-shadow: 0 0 12px rgba(255,210,63,.45); z-index: 1;"></div>
+
+  <div style="position: absolute; top: 52px; left: 16px; width: 171px; height: 142px; box-sizing: border-box; background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid rgba(255,138,31,.7); border-radius: 12px; transform: skewX(-9deg); box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08); z-index: 2;">
+    <div style="height: 100%; box-sizing: border-box; padding: 8px 13px; display: flex; flex-direction: column; transform: skewX(9deg);">
+      <div style="display: flex; flex-direction: row-reverse; align-items: center; justify-content: space-between; height: 44px; flex: none;">
+        <div style="position: relative; flex: none; width: 44px; height: 44px; padding: 3px; box-sizing: border-box; border-radius: 12px; background: #ff8a1f; box-shadow: 0 3px 0 #c95600;">
+          <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="38" height="38" style="display: block; width: 38px; height: 38px; border-radius: 9px;">
+          <span style="position: absolute; bottom: -3px; left: -3px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; background: #3ff0a6; border: 2px solid #0f0b1d;"></span>
+        </div>
+        <a href="Arsenal.dc.html" aria-label="הפרעה ל־NinaVolt · עלות 2 נק׳" style="flex: none; width: 44px; height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; box-sizing: border-box; background: rgba(255,51,85,.16); border: 2px solid #ff3355; border-radius: 12px; box-shadow: 0 3px 0 #b8102f; color: #ff3355; text-decoration: none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff3355" stroke="#ff3355" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"></path></svg>
+          <span style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 14px; line-height: .8; color: #ffc2cc; padding-top: 2px; white-space: nowrap;">2 נק׳</span>
+        </a>
+      </div>
+      <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 5px; height: 16px; margin-top: 5px; flex: none; min-width: 0;">
+        <span style="min-width: 0; font: 600 14px/1.1 Rubik, sans-serif; color: #f1eeff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">NinaVolt</span>
+        <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇩🇪</span>
+        <span dir="ltr" style="flex: none; display: inline-flex; align-items: center; gap: 3px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: .9; font-variant-numeric: tabular-nums; color: #ffd23f; padding-top: 2px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="#ffd23f" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z"></path></svg>1305</span>
+      </div>
+      <div style="display: flex; flex-direction: row-reverse; align-items: flex-start; justify-content: space-between; gap: 4px; height: 34px; margin-top: 5px; flex: none;">
+        <div style="display: flex; align-items: baseline; gap: 4px; flex: none;">
+          <span dir="ltr" style="display: inline-block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 40px; line-height: .8; padding-top: 4px; font-variant-numeric: tabular-nums; color: #ff8a1f; text-shadow: 0 2px 0 #c95600;">39.5</span>
+          <span style="font: 600 12px/1 Rubik, sans-serif; color: #a79fcb;">נק׳</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: flex-start; align-content: flex-start; gap: 2px; max-width: 50px; max-height: 34px; overflow: hidden;">
+          <span dir="ltr" style="display: inline-flex; align-items: center; height: 15px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 4px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.7); color: #ff6b84; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 14px; line-height: 1;">−1</span>
+          <span dir="ltr" style="display: inline-flex; align-items: center; height: 15px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 4px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.7); color: #ff6b84; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 14px; line-height: 1;">−2</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 5px; height: 14px; margin-top: 3px; flex: none;">
+        <span style="display: block; width: 10px; height: 9px; flex: none; background: #ff8a1f; clip-path: polygon(50% 0, 100% 100%, 0 100%);"></span>
+        <span style="font: 600 12px/1 Rubik, sans-serif; color: #ff8a1f; white-space: nowrap;">בוחרת · <span dir="ltr">A8</span></span>
+        <svg width="13" height="13" viewBox="0 0 14 14" aria-hidden="true" style="flex: none; transform: rotate(-90deg);"><circle cx="7" cy="7" r="5" fill="none" stroke="rgba(255,138,31,.25)" stroke-width="2"></circle><circle cx="7" cy="7" r="5" fill="none" stroke="#ff8a1f" stroke-width="2" stroke-linecap="round" style="stroke-dasharray: 31.42px; stroke-dashoffset: 18.33px;"></circle></svg>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; top: 52px; right: 16px; width: 171px; height: 142px; box-sizing: border-box; background: linear-gradient(160deg, #251d45, #1b1533); border: 2px solid rgba(255,210,63,.9); border-radius: 12px; transform: skewX(-9deg); box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08), 0 0 22px rgba(255,210,63,.22); z-index: 2;">
+    <div style="height: 100%; box-sizing: border-box; padding: 8px 13px; display: flex; flex-direction: column; transform: skewX(9deg);">
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; flex: none;">
+        <div style="position: relative; flex: none; width: 44px; height: 44px; padding: 3px; box-sizing: border-box; border-radius: 12px; background: #2ee6ff; box-shadow: 0 3px 0 #0098c2;">
+          <img src="/_blob/681dc07305326f9b99e5d748fd8030cf" alt="" width="38" height="38" style="display: block; width: 38px; height: 38px; border-radius: 9px;">
+          <span style="position: absolute; bottom: -3px; right: -3px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; background: #3ff0a6; border: 2px solid #0f0b1d;"></span>
+          <span style="position: absolute; top: -18px; left: 12px; width: 20px; height: 20px; display: block;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ffd23f" stroke="#e8a100" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true" style="display: block; filter: drop-shadow(0 2px 0 #07050f);"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"></path></svg></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; flex: none;">
+          <button type="button" aria-label="תגובות" aria-expanded="{{btn.exp}}" onClick="{{ toggle }}" class="sf-press" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; box-sizing: border-box; background: {{btn.bg}}; border: 2px solid {{btn.bd}}; border-radius: 12px; box-shadow: {{btn.sh}}; color: {{btn.fg}}; cursor: pointer; transition: border-color .24s, color .24s, box-shadow .24s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg></button>
+          <a href="Surrender.dc.html" aria-label="כניעה" class="sf-press" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; background: #251d45; border: 2px solid #4b3f80; border-radius: 12px; box-shadow: 0 3px 0 #07050f; color: #ff3355; text-decoration: none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"></path><path d="M5 4h11l-2 4 2 4H5"></path></svg></a>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px; height: 16px; margin-top: 5px; flex: none; min-width: 0;">
+        <span style="min-width: 0; font: 600 14px/1.1 Rubik, sans-serif; color: #f1eeff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">MosheG</span>
+        <span style="flex: none; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 12px; line-height: 1;">🇮🇱</span>
+        <span dir="ltr" style="flex: none; display: inline-flex; align-items: center; gap: 3px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: .9; font-variant-numeric: tabular-nums; color: #ffd23f; padding-top: 2px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="#ffd23f" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z"></path></svg>1287</span>
+      </div>
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; height: 34px; margin-top: 5px; flex: none;">
+        <div style="display: flex; align-items: baseline; gap: 4px; flex: none;">
+          <span dir="ltr" style="display: inline-block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 40px; line-height: .8; padding-top: 4px; font-variant-numeric: tabular-nums; color: #2ee6ff; text-shadow: 0 2px 0 #0098c2;">55</span>
+          <span style="font: 600 12px/1 Rubik, sans-serif; color: #a79fcb;">נק׳</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; align-content: flex-start; gap: 2px; max-width: 50px; max-height: 34px; overflow: hidden;">
+          <span dir="ltr" style="display: inline-flex; align-items: center; height: 15px; padding: 2px 4px 0; box-sizing: border-box; border-radius: 4px; background: rgba(255,51,85,.16); border: 1px solid rgba(255,51,85,.7); color: #ff6b84; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 14px; line-height: 1;">−1</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px; height: 14px; margin-top: 3px; flex: none;">
+        <span style="display: block; width: 9px; height: 9px; flex: none; background: #2ee6ff; clip-path: circle(50%);"></span>
+        <span style="font: 600 12px/1 Rubik, sans-serif; color: #2ee6ff; white-space: nowrap;">בוחר · <span dir="ltr">F8</span></span>
+        <svg width="13" height="13" viewBox="0 0 14 14" aria-hidden="true" style="flex: none; transform: rotate(-90deg);"><circle cx="7" cy="7" r="5" fill="none" stroke="rgba(46,230,255,.25)" stroke-width="2"></circle><circle cx="7" cy="7" r="5" fill="none" stroke="#2ee6ff" stroke-width="2" stroke-linecap="round" style="stroke-dasharray: 31.42px; stroke-dashoffset: 13.09px;"></circle></svg>
+      </div>
+    </div>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; top: 105px; left: 176px; width: 38px; height: 28px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #0f0b1d; border: 2px solid #ffd23f; border-radius: 6px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f, 0 0 16px rgba(255,210,63,.35); z-index: 4;">
+    <span style="display: block; transform: skewX(9deg); font-family: Teko, Rubik, sans-serif; font-weight: 700; font-size: 22px; line-height: .8; letter-spacing: .02em; color: #ffd23f; padding-top: 3px;">VS</span>
+  </div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 210px; left: 16px; width: 358px; height: 10px; border-radius: 4px; background: #251d45; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f; overflow: hidden; z-index: 2;">
+    <div style="position: absolute; top: 0; bottom: 0; left: 0; width: 41.8%; background: linear-gradient(90deg, #c95600, #ff8a1f);"></div>
+    <div style="position: absolute; top: 0; bottom: 0; right: 0; width: 58.2%; background: linear-gradient(90deg, #2ee6ff, #0098c2);"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; top: 206px; left: 164.6px; width: 2px; height: 18px; background: #ffffff; border-radius: 1px; transform: skewX(-9deg); box-shadow: 0 0 10px #ffffff, 0 0 4px #ffffff; z-index: 3;"></div>
+  <div style="position: absolute; top: 225px; left: 165.6px; transform: translateX(-50%); display: flex; align-items: center; height: 15px; padding: 0 5px; box-sizing: border-box; border-radius: 4px; background: #0f0b1d; border: 1px solid #2ee6ff; color: #2ee6ff; font: 600 15px/13px Teko, Rubik, sans-serif; white-space: nowrap; z-index: 3;"><span dir="ltr" style="display: block; padding-top: 1px;">+15.5</span></div>
+
+  <div style="position: absolute; top: 246px; left: 16px; right: 16px; height: 26px; display: flex; align-items: center; justify-content: space-between; gap: 8px; z-index: 3;">
+    <div style="display: flex; align-items: center; height: 26px; padding: 0 10px; box-sizing: border-box; background: rgba(46,230,255,.12); border: 1.5px solid #2ee6ff; border-radius: 7px; transform: skewX(-9deg); box-shadow: 0 3px 0 #07050f;">
+      <span style="display: flex; align-items: center; gap: 6px; transform: skewX(9deg); color: #2ee6ff;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+        <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px;">F8</span>
+        <span style="font: 600 13px/1 Rubik, sans-serif; color: #6c5fa6;">·</span>
+        <span style="display: flex; align-items: baseline; gap: 1px;"><span style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums;">7</span><span style="font: 600 12px/1 Rubik, sans-serif;">ש׳</span></span>
+      </span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+      <span style="display: block; width: 9px; height: 9px; flex: none; background: #2ee6ff; clip-path: circle(50%);"></span>
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 19px; line-height: .8; padding-top: 3px; color: #2ee6ff;">I1</span>
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 19px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums; color: #3ff0a6;">+3.5</span>
+    </div>
+  </div>
+
+  <div dir="ltr" aria-hidden="true" style="position: absolute; top: 278px; left: 16px; width: 358px; height: 10px; padding: 0 3px; box-sizing: border-box; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px;">
+    <sc-for list="{{railTop}}" as="g" hint-placeholder-count="3">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px;">
+        <sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+          <span style="display: block; text-align: center; font: 600 10px/10px Rubik, sans-serif; color: {{t.color}};">{{t.t}}</span>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+  <div aria-hidden="true" style="position: absolute; top: 290px; left: 2px; width: 12px; height: 358px; padding: 3px 0; box-sizing: border-box; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3px;">
+    <sc-for list="{{railSide}}" as="g" hint-placeholder-count="3">
+      <div style="display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px;">
+        <sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+          <span style="display: flex; align-items: center; justify-content: center; font: 600 10px/1 Rubik, sans-serif; color: {{t.color}};">{{t.t}}</span>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div dir="ltr" role="img" aria-label="לוח הסודוקו · 27 משבצות ריקות" style="position: absolute; top: 290px; left: 16px; width: 358px; height: 358px; padding: 3px; box-sizing: border-box; background: #342a5e; border-radius: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3px; box-shadow: 0 6px 0 #07050f, 0 18px 40px rgba(5,3,15,.6);">
+    <sc-for list="{{boxes}}" as="box" hint-placeholder-count="9">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; background: #c9c2ea; border-radius: 4px; overflow: hidden;">
+        <sc-for list="{{box.cells}}" as="cell" hint-placeholder-count="9">
+          <div style="position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; background: {{cell.bg}}; box-shadow: {{cell.ring}}; color: {{cell.fg}}; font: 600 23px/1 Rubik, sans-serif; animation: {{cell.anim}};">
+            <span style="display: block;">{{cell.v}}</span>
+            <sc-if value="{{cell.hasGlyph}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; top: 3px; left: 3px; display: block; width: 7px; height: 7px; background: {{cell.glyph}}; clip-path: {{cell.clip}};"></span>
+            </sc-if>
+            <sc-if value="{{cell.hasWrong}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; bottom: {{cell.wb}}; right: 4px; font: 700 10px/1 Rubik, sans-serif; color: #d10f37; letter-spacing: .04em; z-index: 1;">{{cell.wrong}}</span>
+            </sc-if>
+            <sc-if value="{{cell.mineSel}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; top: 3px; right: 3px; min-width: 14px; height: 14px; padding: 0 3px; box-sizing: border-box; border-radius: 7px; background: #2ee6ff; color: #0f0b1d; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 13px; line-height: 15px; text-align: center;">{{cell.secs}}</span>
+              <span style="position: absolute; left: 4px; right: 4px; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(0,152,194,.22);">
+                <span style="display: block; height: 3px; width: {{cell.barW}}; border-radius: 2px; background: #2ee6ff;"></span>
+              </span>
+            </sc-if>
+            <sc-if value="{{cell.ninaSel}}" hint-placeholder-val="{{ false }}">
+              <img src="/_blob/ed8983d48ab35afdada5812fb8bc7a5a" alt="" width="14" height="14" style="position: absolute; top: 4px; left: 4px; display: block; width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 0 1.5px #ff8a1f;">
+              <span style="position: absolute; top: 3px; right: 3px; min-width: 14px; height: 14px; padding: 0 3px; box-sizing: border-box; border-radius: 7px; background: #ff8a1f; color: #0f0b1d; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 13px; line-height: 15px; text-align: center;">{{cell.secs}}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div dir="ltr" style="position: absolute; top: 666px; left: 16px; width: 358px; display: flex; gap: 4px;">
+    <sc-for list="{{keys}}" as="k" hint-placeholder-count="9">
+      <button type="button" aria-label="{{k.aria}}" class="sf-press" style="flex: 1 1 0; min-width: 0; height: 62px; margin: 0; padding: 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: #251d45; border: 2px solid rgba(46,230,255,.6); border-radius: 10px; box-shadow: 0 4px 0 #07050f, inset 0 2px 0 rgba(46,230,255,.35); opacity: {{k.op}}; color: #f1eeff; cursor: pointer;">
+        <span style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 34px; line-height: .8; padding-top: 5px;">{{k.d}}</span>
+        <span style="display: block; font: 600 9px/1 Rubik, sans-serif; color: #a79fcb;">{{k.left}}</span>
+      </button>
+    </sc-for>
+  </div>
+
+  <button type="button" class="sf-press" style="position: absolute; top: 746px; left: 16px; width: 358px; height: 48px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #251d45; border: 2px solid #4b3f80; border-radius: 10px; transform: skewX(-9deg); box-shadow: 0 5px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.08); color: #f1eeff; cursor: pointer;">
+    <span style="display: flex; align-items: center; gap: 8px; transform: skewX(9deg); font: 600 17px/1 Rubik, sans-serif; white-space: nowrap;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M9 9l6 6M15 9l-6 6"></path></svg>
+      ביטול בחירה
+      <span dir="ltr" style="display: block; padding: 3px 6px 0; border-radius: 5px; background: rgba(46,230,255,.14); border: 1px solid rgba(46,230,255,.6); color: #2ee6ff; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: 17px;">F8</span>
+    </span>
+  </button>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ true }}">
+    <div role="group" aria-label="תגובות" style="position: absolute; top: 205px; left: 16px; width: 358px; height: 56px; z-index: 30; transform-origin: 77% 0; animation: sf-pop .26s cubic-bezier(.34,1.56,.64,1) both;">
+      <div aria-hidden="true" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; box-sizing: border-box; background: linear-gradient(180deg, #2b2253 0%, #1b1533 100%); border: 2px solid #6c5fa6; border-radius: 14px; transform: skewX(-9deg); box-shadow: 0 5px 0 #07050f, 0 16px 34px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12);"></div>
+      <span aria-hidden="true" style="position: absolute; top: -8px; left: 261px; width: 14px; height: 14px; box-sizing: border-box; background: #2b2253; border-top: 2px solid #6c5fa6; border-left: 2px solid #6c5fa6; transform: rotate(45deg);"></span>
+
+      <sc-if value="{{page0}}" hint-placeholder-val="{{ true }}">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 3px;">
+          <sc-for list="{{reactions}}" as="r" hint-placeholder-count="6">
+            <button type="button" aria-label="{{r.label}}" onClick="{{ r.send }}" class="sf-press" style="position: relative; flex: none; width: 44px; height: 44px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: {{r.bg}}; border: 2px solid {{r.bd}}; box-shadow: {{r.sh}}; transform: {{r.lift}}; cursor: pointer; overflow: visible; transition: border-color .14s, box-shadow .14s;">
+              <span style="display: block; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 36px; line-height: 1; animation: sf-nudge 4s ease-in-out {{r.delay}} infinite;">{{r.e}}</span>
+              <sc-if value="{{r.sent}}" hint-placeholder-val="{{ false }}">
+                <span style="position: absolute; bottom: -5px; left: -4px; width: 17px; height: 17px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #ffd23f; border: 2px solid #0f0b1d; color: #1a1000; animation: sf-pop .3s cubic-bezier(.34,1.56,.64,1) both;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>
+              </sc-if>
+            </button>
+          </sc-for>
+          <button type="button" aria-label="תגובות נוספות · נפתחות ברמה 20" onClick="{{ more }}" class="sf-press" style="position: relative; flex: none; width: 62px; height: 44px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 22px; background: #150f29; border: 2px dashed #6c5fa6; cursor: pointer; overflow: visible;">
+            <span dir="ltr" style="display: flex; align-items: center; margin-top: -4px;">
+              <span style="display: block; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 19px; line-height: 1; filter: grayscale(1); opacity: .55; transform: rotate(-12deg); margin-right: -6px;">🤯</span>
+              <span style="display: block; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 19px; line-height: 1; filter: grayscale(1); opacity: .55; transform: translateY(-3px); margin-right: -6px;">🥶</span>
+              <span style="display: block; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 19px; line-height: 1; filter: grayscale(1); opacity: .55; transform: rotate(12deg);">🙏</span>
+            </span>
+            <span style="position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 3px; height: 17px; padding: 0 6px; box-sizing: border-box; border-radius: 9px; background: #ffd23f; color: #1a1000; box-shadow: 0 2px 0 #b37b00; white-space: nowrap;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+              <span style="font: 700 11px/1 Rubik, sans-serif;">רמה</span>
+              <span style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 16px; line-height: .8; padding-top: 2px;">20</span>
+            </span>
+          </button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{page1}}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 3px;">
+          <button type="button" aria-label="חזרה לתגובות" onClick="{{ back }}" class="sf-press" style="flex: none; width: 44px; height: 44px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #251d45; border: 2px solid #4b3f80; box-shadow: 0 3px 0 #07050f; color: #f1eeff; cursor: pointer;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+          <sc-for list="{{locked}}" as="l" hint-placeholder-count="5">
+            <span role="img" aria-label="{{l.label}}" style="position: relative; flex: none; width: 44px; height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #150f29; border: 2px solid #342a5e; animation: sf-pop .26s cubic-bezier(.34,1.56,.64,1) {{l.delay}} both;">
+              <span style="display: block; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 30px; line-height: 1; filter: grayscale(1); opacity: .42;">{{l.e}}</span>
+              <span style="position: absolute; bottom: -3px; left: -3px; width: 18px; height: 18px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #251d45; border: 1.5px solid #6c5fa6; color: #cfc8ee;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>
+            </span>
+          </sc-for>
+          <span role="img" aria-label="תגובות נוספות נפתחות ברמה 20 · אתה ברמה 14" style="flex: none; width: 62px; height: 44px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; border-radius: 22px; background: rgba(255,210,63,.1); border: 2px solid #ffd23f;">
+            <span style="display: flex; align-items: center; gap: 3px; color: #ffd23f;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+              <span style="font: 700 11px/1 Rubik, sans-serif;">רמה</span>
+              <span style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 17px; line-height: .8; padding-top: 2px;">20</span>
+            </span>
+            <span style="display: block; width: 40px; height: 4px; border-radius: 2px; background: #342a5e; overflow: hidden;"><span style="display: block; width: 70%; height: 4px; border-radius: 2px; background: #ffd23f;"></span></span>
+          </span>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <div aria-hidden="true" style="position: absolute; left: 270px; top: 18px; width: 60px; height: 60px; z-index: 26; pointer-events: none;">
+    <sc-if value="{{fx.frozen}}" hint-placeholder-val="{{ true }}">
+      <span style="position: absolute; left: -16px; top: -14px; width: 92px; height: 92px; border-radius: 50%; background: radial-gradient(circle, rgba(46,230,255,.4) 0%, rgba(46,230,255,.12) 42%, rgba(46,230,255,0) 68%);"></span>
+      <svg width="92" height="92" viewBox="0 0 92 92" fill="none" stroke="#f1eeff" stroke-width="2.6" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: -16px; top: -16px; opacity: .8; overflow: visible;"><path d="M14 22l-7-6"></path><path d="M78 22l7-6"></path><path d="M8 46H1"></path><path d="M84 46h7"></path></svg>
+      <span style="position: absolute; left: 6px; top: 62px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 24px; line-height: 1; opacity: .16; transform: rotate(6deg);">{{fx.e}}</span>
+      <span style="position: absolute; left: 7px; top: 37px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 34px; line-height: 1; opacity: .32; transform: rotate(-3deg);">{{fx.e}}</span>
+    </sc-if>
+    <sc-if value="{{fx.live}}" hint-placeholder-val="{{ false }}">
+      <span style="position: absolute; left: 0; top: 0; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; opacity: .14; transform: rotate(-8deg);"><span style="display: block; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 52px; line-height: 1; animation: {{fx.g2Anim}};">{{fx.e}}</span></span>
+      <span style="position: absolute; left: 0; top: 0; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; opacity: .3; transform: rotate(-8deg);"><span style="display: block; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 52px; line-height: 1; animation: {{fx.g1Anim}};">{{fx.e}}</span></span>
+    </sc-if>
+    <span style="position: absolute; left: 0; top: 0; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; transform: rotate(-8deg);">
+      <span style="display: block; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 52px; line-height: 1; filter: drop-shadow(0 3px 0 rgba(7,5,15,.85)); animation: {{fx.heroAnim}};">{{fx.e}}</span>
+    </span>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; left: 78px; top: 38px; width: 54px; height: 52px; z-index: 24; pointer-events: none; transform-origin: 0% 75%; animation: {{nb.anim}};">
+    <div style="position: relative; width: 54px; height: 52px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #fbfaff; border: 2.5px solid #ff8a1f; border-radius: 18px; box-shadow: 0 4px 0 #c95600, 0 10px 22px rgba(0,0,0,.45);">
+      <span style="display: block; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; font-size: 34px; line-height: 1;">{{nb.e}}</span>
+    </div>
+    <span style="position: absolute; left: -5px; top: 31px; width: 13px; height: 13px; box-sizing: border-box; background: #fbfaff; border-left: 2.5px solid #ff8a1f; border-bottom: 2.5px solid #ff8a1f; border-radius: 0 0 0 3px; transform: rotate(45deg);"></span>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = {
+    open: true,
+    page: 0,
+    sent: { e: '😎', n: 0, live: false },
+    nina: { e: '😱', n: 0 }
+  };
+
+  componentWillUnmount() {
+    if (this.replyTimer) clearTimeout(this.replyTimer);
+    this.replyTimer = null;
+  }
+
+  cur() {
+    return '864370209325009061970060043036002087198657402057083000680004105013508690542916370';
+  }
+
+  board() {
+    const CUR = this.cur();
+    const OWN = '00gg1.g.g11g..g.0g0g..g..gg.0g..g.gggg100gg.1.g1.gg...g0...1g.g.0gg.ggg.0gggg0g1.';
+    const WRONG = [{ i: 4, d: 5, seat: 1 }, { i: 44, d: 3, seat: 0 }, { i: 63, d: 4, seat: 1 }];
+    const ME = { i: 52, secs: 7, total: 12 };
+    const NINA = { i: 7, secs: 5, total: 12 };
+    const P = [
+      { tint: '#d3f8ff', solve: '#006b8a', deep: '#0098c2', clip: 'circle(50%)' },
+      { tint: '#ffe6cf', solve: '#9a3f00', deep: '#c95600', clip: 'polygon(50% 0, 100% 100%, 0 100%)' }
+    ];
+    const R = i => Math.floor(i / 9), C = i => i % 9, B = i => Math.floor(R(i) / 3) * 3 + Math.floor(C(i) / 3);
+    const boxes = [];
+    for (let bx = 0; bx < 9; bx++) {
+      const cells = [];
+      for (let k = 0; k < 9; k++) {
+        const i = (Math.floor(bx / 3) * 3 + Math.floor(k / 3)) * 9 + (bx % 3) * 3 + (k % 3);
+        const v = CUR[i] === '0' ? '' : CUR[i];
+        const o = OWN[i];
+        const shaded = bx % 2 === 1;
+        const isMe = i === ME.i, isNina = i === NINA.i;
+        const peer = !isMe && (R(i) === R(ME.i) || C(i) === C(ME.i) || B(i) === B(ME.i));
+        let bg = shaded ? '#ece8fb' : '#fbfaff', fg = '#1a1433', ring = 'none', anim = 'none', glyph = '', clip = 'none';
+        if (peer) bg = shaded ? '#dfd7fb' : '#e9e3ff';
+        if (o === '0' || o === '1') {
+          const pc = P[Number(o)];
+          bg = pc.tint; fg = pc.solve; glyph = pc.deep; clip = pc.clip;
+        }
+        if (isMe) { bg = '#c8f6ff'; ring = 'inset 0 0 0 3px #2ee6ff'; anim = 'sf-lock-me 1.4s ease-in-out infinite'; }
+        if (isNina) { bg = 'repeating-linear-gradient(135deg, #ffe6cf 0 4px, #fbfaff 4px 8px)'; ring = 'inset 0 0 0 3px #ff8a1f'; anim = 'sf-lock-nina 1.8s ease-in-out infinite'; }
+        const w = WRONG.filter(x => x.i === i).map(x => String(x.d));
+        cells.push({
+          v: v, bg: bg, fg: fg, ring: ring, anim: anim, glyph: glyph, clip: clip,
+          hasGlyph: !!glyph,
+          hasWrong: w.length > 0,
+          wrong: w.join(' '),
+          wb: isMe ? '8px' : '2px',
+          mineSel: isMe,
+          ninaSel: isNina,
+          secs: isMe ? String(ME.secs) : (isNina ? String(NINA.secs) : ''),
+          barW: Math.round(ME.secs / ME.total * 100) + '%'
+        });
+      }
+      boxes.push({ bx: bx, cells: cells });
+    }
+    return boxes;
+  }
+
+  keys() {
+    const CUR = this.cur();
+    const rem = [9, 9, 9, 9, 9, 9, 9, 9, 9];
+    for (let j = 0; j < 81; j++) {
+      if (CUR[j] !== '0') rem[Number(CUR[j]) - 1]--;
+    }
+    return rem.map((left, k) => ({
+      d: String(k + 1),
+      left: String(left),
+      op: left > 0 ? '1' : '.3',
+      aria: 'ספרה ' + (k + 1) + ' · נותרו ' + left
+    }));
+  }
+
+  send(e) {
+    const n = this.state.sent.n + 1;
+    this.setState({ sent: { e: e, n: n, live: true } });
+    if (this.replyTimer) clearTimeout(this.replyTimer);
+    const REPLY = { '😂': '🤦', '😱': '😂', '😎': '😱', '🤦': '😂', '🔥': '😱', '👀': '👀' };
+    this.replyTimer = setTimeout(() => {
+      this.replyTimer = null;
+      const st = this.state;
+      this.setState({ nina: { e: REPLY[e] || '😱', n: st.nina.n + 1 } });
+    }, 1500);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const MY_COL = 7, MY_ROW = 5;
+    const railTop = [0, 1, 2].map(g => ({ items: [0, 1, 2].map(k => {
+      const c = g * 3 + k;
+      return { t: String(c + 1), color: c === MY_COL ? '#2ee6ff' : '#a79fcb' };
+    }) }));
+    const railSide = [0, 1, 2].map(g => ({ items: [0, 1, 2].map(k => {
+      const r = g * 3 + k;
+      return { t: 'ABCDEFGHI'[r], color: r === MY_ROW ? '#2ee6ff' : '#a79fcb' };
+    }) }));
+
+    const RX = [['😂', 'צוחק'], ['😱', 'בהלה'], ['😎', 'קול'], ['🤦', 'פאשלה'], ['🔥', 'בוער'], ['👀', 'מסתכל']];
+    const reactions = RX.map((x, k) => {
+      const on = s.sent.e === x[0];
+      return {
+        e: x[0],
+        label: 'תגובה: ' + x[1],
+        sent: on,
+        bg: on ? '#3a2f6b' : 'radial-gradient(circle at 50% 30%, #3a2f6b 0%, #251d45 72%)',
+        bd: on ? '#ffd23f' : '#4b3f80',
+        sh: on ? '0 2px 0 #b37b00, 0 0 0 3px rgba(255,210,63,.2), 0 0 18px rgba(255,210,63,.45)' : '0 3px 0 #07050f, inset 0 1px 0 rgba(255,255,255,.12)',
+        lift: on ? 'translateY(2px)' : 'none',
+        delay: (k * 0.12).toFixed(2) + 's',
+        send: () => this.send(x[0])
+      };
+    });
+    const locked = ['🤯', '🥶', '🙏', '🤩', '😤'].map((e, k) => ({
+      e: e,
+      label: 'תגובה נעולה · נפתחת ברמה 20',
+      delay: (k * 0.04).toFixed(2) + 's'
+    }));
+
+    const alt = s.sent.n % 2 ? 'b' : 'a';
+    const ease = ' 1.9s cubic-bezier(.2,.8,.2,1) ';
+    const fx = {
+      e: s.sent.e,
+      frozen: !s.sent.live,
+      live: !!s.sent.live,
+      heroAnim: s.sent.live ? 'sf-emote-' + alt + ease + 'both' : 'sf-bob 2.6s ease-in-out infinite',
+      g1Anim: 'sf-emote-' + alt + ease + '.09s both',
+      g2Anim: 'sf-emote-' + alt + ease + '.18s both'
+    };
+    const nb = {
+      e: s.nina.e,
+      anim: (s.nina.n % 2 ? 'sf-pop-b' : 'sf-pop') + ' .42s cubic-bezier(.34,1.56,.64,1) both, sf-wobble 2.6s ease-in-out .5s infinite'
+    };
+
+    return {
+      boxes: this.board(),
+      railTop: railTop,
+      railSide: railSide,
+      keys: this.keys(),
+      reactions: reactions,
+      locked: locked,
+      open: !!s.open,
+      page0: !!s.open && s.page === 0,
+      page1: !!s.open && s.page === 1,
+      btn: {
+        bg: s.open ? '#342a5e' : '#251d45',
+        bd: s.open ? '#ffd23f' : '#4b3f80',
+        fg: s.open ? '#ffd23f' : '#f1eeff',
+        sh: s.open ? '0 3px 0 #07050f, 0 0 0 2px rgba(255,210,63,.25), 0 0 14px rgba(255,210,63,.35)' : '0 3px 0 #07050f',
+        exp: s.open ? 'true' : 'false'
+      },
+      fx: fx,
+      nb: nb,
+      toggle: () => this.setState({ open: !this.state.open, page: 0 }),
+      more: () => this.setState({ page: 1 }),
+      back: () => this.setState({ page: 0 })
+    };
+  }
+}
+</script>
+</body>
+</html>
