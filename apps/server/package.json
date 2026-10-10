@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --format=cjs --external:@colyseus/* --external:express --external:@electric-sql/pglite --outfile=dist/index.cjs",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --format=cjs --external:@colyseus/* --external:express --external:@electric-sql/pglite --external:@sentry/node --outfile=dist/index.cjs",
     "start:prod": "node dist/index.cjs",
     "test": "jest --config ../../jest.config.js --selectProjects server",
     "typecheck": "tsc -p tsconfig.json",
@@ -25,6 +25,7 @@
     "@colyseus/schema": "5.0.36",
     "@colyseus/ws-transport": "0.18.4",
     "@electric-sql/pglite": "^0.5.8",
+    "@sentry/node": "^11.6.0",
     "@sudoku-fight/engine": "*",
     "@sudoku-fight/protocol": "*",
     "drizzle-orm": "^0.45.4",
