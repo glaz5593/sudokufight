@@ -22,6 +22,8 @@ export interface HistoryScreenProps {
   /** Where the games come from; called once. */
   deps: () => HistoryDeps;
   onOpen: (entry: HistoryEntry) => void;
+  /** A ranked game's opponent: their player card (stage 12). */
+  onOpenPlayer?: (playerId: string) => void;
   /** "שחק את המשחק הראשון". */
   onPlay: () => void;
   onTab: (tab: NavTab) => void;
@@ -34,6 +36,7 @@ export interface HistoryScreenProps {
 export function HistoryScreen({
   deps,
   onOpen,
+  onOpenPlayer,
   onPlay,
   onTab,
   myAvatar,
@@ -151,7 +154,15 @@ export function HistoryScreen({
       <FlatList
         data={shown?.entries ?? []}
         keyExtractor={(e) => `${e.source}:${e.id}`}
-        renderItem={({ item }) => <HistoryCard entry={item} myAvatar={myAvatar} now={at} onOpen={onOpen} />}
+        renderItem={({ item }) => (
+          <HistoryCard
+            entry={item}
+            myAvatar={myAvatar}
+            now={at}
+            onOpen={onOpen}
+            onOpenPlayer={onOpenPlayer}
+          />
+        )}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
         ListFooterComponent={

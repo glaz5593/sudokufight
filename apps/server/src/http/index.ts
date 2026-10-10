@@ -6,6 +6,12 @@ import { type TokenVerifier, tokenVerifierFor } from '../auth/firebaseToken';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db';
 import { createHistoryRouter } from '../history';
+import {
+  createProgressRouter,
+  type ProgressLimits,
+  progressSettings,
+  type ProgressSettings,
+} from '../progress';
 import { createTelemetryRouter, type TelemetryLimits } from '../telemetry/router';
 import { SAME_ORIGIN_PREFIXES } from './cors';
 import { jsonErrorHandler, notFound } from './errors';
@@ -13,8 +19,8 @@ import type { RateLimitRule } from './rateLimiter';
 
 /**
  * Everything the server answers over plain HTTP besides Colyseus's own routes (/health, /matchmake):
- * POST /v1/events, the account routes (/v1/names/available, /v1/users, /v1/me), the admin API (/admin/api)
- * and the admin site's files (/admin).
+ * POST /v1/events, the account routes (/v1/names/available, /v1/users, /v1/me), history (stage 11), progress
+ * (stage 12: leaderboards, player cards, XP), the admin API (/admin/api) and the admin site's files (/admin).
  *
  * Colyseus 0.18 builds an Express 5 app on its HTTP server when `defineServer({ express })` is given, and
  * passes it here once the database is open (createAppServer). A request that no Colyseus route matches
@@ -42,6 +48,10 @@ export interface HttpDeps {
   tokens?: TokenVerifier;
   /** Rate limits of the account routes; tests make them small. */
   accountLimits?: AccountLimits;
+  /** Rate limits of the progress routes (stage 12); tests make them small. */
+  progressLimits?: ProgressLimits;
+  /** Progress settings over the ones from `config` (tests: a small daily cap, other rules). */
+  progress?: Partial<ProgressSettings>;
 }
 
 /**
@@ -71,6 +81,8 @@ export function configureHttp(app: Application, deps: HttpDeps): void {
   app.use(createTelemetryRouter({ ...deps, tokens }));
   app.use(createAccountsRouter({ ...deps, tokens }));
   app.use(createHistoryRouter({ ...deps, tokens })); // GET /v1/me/games, /v1/games/:id/replay (stage 11)
+  // GET /v1/leaderboard, /v1/players/:id, /v1/me/progress; POST /v1/me/practice-results (stage 12)
+  app.use(createProgressRouter({ ...deps, tokens, settings: progressSettings(deps.config, deps.progress) }));
   // The API first: it answers everything under /admin/api (404 included), so the site never does.
   app.use(createAdminRouter(deps));
   app.use(createAdminSiteRouter(deps.adminSiteDir === undefined ? findAdminSiteDir() : deps.adminSiteDir));

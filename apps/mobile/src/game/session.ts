@@ -9,6 +9,7 @@ import {
   type GameConfig,
   type GameEvent,
   type GameMode,
+  type GameResult,
   type GameType,
   type GameView,
   type HostUpdate,
@@ -70,6 +71,21 @@ export interface PracticeDeps {
   track?: (name: AnalyticsEventName, props: AnalyticsProps) => void;
   /** Where save errors go; console.warn by default. */
   onError?: (what: string, error: unknown) => void;
+  /**
+   * The game is over (once): its practice XP goes to the queue [D41] (progress/appProgress.ts). An error
+   * here is reported, never thrown at the game.
+   */
+  onFinish?: (game: PracticeFinish) => void;
+}
+
+/** A practice that just ended, for its XP (spec §15). */
+export interface PracticeFinish {
+  id: string;
+  mode: GameMode;
+  gameType: GameType;
+  playerId: string;
+  result: GameResult;
+  endedAt: number;
 }
 
 export interface PracticeSession {
@@ -167,7 +183,17 @@ async function openPractice(
       ? null
       : (h: LocalGameHost) =>
           attachBot(h, { botId: opponent.id, level: bot, clock, scheduler, rng: createRng(botSeedOf(seed)) });
-  return new Session(host, config, clock, deps.repo, deps.track ?? defaultTrack, onError, bot, attach);
+  return new Session(
+    host,
+    config,
+    clock,
+    deps.repo,
+    deps.track ?? defaultTrack,
+    onError,
+    bot,
+    attach,
+    deps.onFinish ?? null,
+  );
 }
 
 class Session implements PracticeSession {
@@ -199,6 +225,7 @@ class Session implements PracticeSession {
     private readonly onError: (what: string, error: unknown) => void,
     readonly botLevel: BotLevelId | null = null,
     attach: ((host: LocalGameHost) => BotHandle) | null = null,
+    private readonly onFinish: ((game: PracticeFinish) => void) | null = null,
   ) {
     this.id = config.id;
     this.mode = config.mode;
@@ -302,6 +329,18 @@ class Session implements PracticeSession {
       await this.repo!.finishGame(this.id, { result, endedAt });
     });
     this.track('game_end', gameEndProps(this.mode, result, this.playerId));
+    try {
+      this.onFinish?.({
+        id: this.id,
+        mode: this.mode,
+        gameType: this.gameType,
+        playerId: this.playerId,
+        result,
+        endedAt,
+      });
+    } catch (error) {
+      this.onError('could not report the end of the game', error);
+    }
   }
 
   /** Queues the events not on disk yet; updates that come while a write runs join one batch. */

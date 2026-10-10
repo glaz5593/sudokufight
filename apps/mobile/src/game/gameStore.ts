@@ -4,6 +4,7 @@ import { create } from 'zustand';
 
 import { MatchmakingClient, type MatchmakingClientDeps } from '../net/matchmaking';
 import type { RemoteGameHost } from '../net/remoteGameHost';
+import { practiceFinished } from '../progress/appProgress';
 import { track } from '../services/analytics';
 import { type OnlineProfiles, type OnlineRequest, OnlineSession, type OnlineTrack } from './onlineSession';
 import type { PracticeRepo } from './practiceRepo';
@@ -94,7 +95,14 @@ export interface GameStoreDeps {
   ranked?: () => RankedDeps;
 }
 
-export const defaultGameStoreDeps: GameStoreDeps = { repo: practiceStorageOrNull };
+/**
+ * The phone's: the practice database, and each finished practice's XP queued for the server [D41]
+ * (progress/appProgress.ts; nothing is queued while nobody is signed in).
+ */
+export const defaultGameStoreDeps: GameStoreDeps = {
+  repo: practiceStorageOrNull,
+  session: { onFinish: practiceFinished },
+};
 
 export function createGameStore(deps: GameStoreDeps = defaultGameStoreDeps) {
   return create<GameStoreState>()((set, get) => {

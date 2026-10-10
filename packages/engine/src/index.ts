@@ -10,5 +10,6 @@ export * from './util/random';
 export * from './util/scheduler';
 export * from './sudoku';
 export * from './rating';
+export * from './progress';
 export * from './game';
 export * from './bot';

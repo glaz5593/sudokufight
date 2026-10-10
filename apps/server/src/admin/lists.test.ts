@@ -10,7 +10,17 @@ import type {
 } from '@sudoku-fight/protocol';
 import { eq } from 'drizzle-orm';
 
-import { appEvents, gameEvents, gamePlayers, games, installs, puzzles, ratings, users } from '../db/schema';
+import {
+  appEvents,
+  gameEvents,
+  gamePlayers,
+  games,
+  installs,
+  puzzles,
+  ratings,
+  users,
+  xp,
+} from '../db/schema';
 import {
   type AdminClient,
   createTestDb,
@@ -61,6 +71,8 @@ beforeAll(async () => {
       deletedAt: at('2026-10-05T09:00:00Z'),
     },
   ]);
+  // Stage 12: u1 has earned some XP (spec §15).
+  await t.db.insert(xp).values({ userId: 'u1', xp: 650, level: 3 });
   await t.db.insert(ratings).values([
     { userId: 'u1', ratingKey: 'normal', rating: 1210, games: 3, provisional: true, peak: 1215 },
     { userId: 'u1', ratingKey: 'fast', rating: 1287.5, games: 12, provisional: false, peak: 1300 },
@@ -445,6 +457,9 @@ describe('GET /admin/api/users', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
       ...U1,
+      // 650 XP: 200 to level 2, 400 to level 3, 50 into it.
+      xp: 650,
+      level: 3,
       ratings: [
         { key: 'fast', rating: 1287.5, games: 12, provisional: false, peak: 1300 },
         { key: 'normal', rating: 1210, games: 3, provisional: true, peak: 1215 },
@@ -493,6 +508,8 @@ describe('GET /admin/api/users', () => {
   it('stats of a user without games are empty, not zero', async () => {
     const res = await admin.get<AdminUserDetail>('/users/u3');
     expect(res.body).toMatchObject({
+      xp: 0,
+      level: 1,
       ratings: [],
       recentGames: [],
       installs: [],

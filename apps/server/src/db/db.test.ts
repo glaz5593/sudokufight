@@ -34,6 +34,7 @@ describe('database', () => {
       'games',
       'installs',
       'opponent_history',
+      'practice_results',
       'puzzle_history',
       'puzzles',
       'ratings',

@@ -39,6 +39,9 @@ describe('users', () => {
     expect(screen.getByText('moshe@example.com')).toBeTruthy();
     expect(screen.getByText('58%')).toBeTruthy(); // 7 of 12
     expect(screen.getByText('1.3')).toBeTruthy(); // mistakes on average
+    // Level and XP (spec §15, stage 12).
+    expect(screen.getByText('Level').nextElementSibling?.textContent).toBe('5');
+    expect(screen.getByText('XP').nextElementSibling?.textContent).toBe('2,350');
 
     const ratings = screen.getByRole('table', { name: 'Ratings' });
     expect(within(ratings).getByText('1,530')).toBeTruthy();

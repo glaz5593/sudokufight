@@ -143,3 +143,4 @@ export * from './admin';
 export * from './account';
 export * from './matchmaking';
 export * from './history';
+export * from './progress';

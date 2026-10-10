@@ -44,12 +44,19 @@ import type { SessionConnection } from '../../game/onlineSession';
 import type { PracticeSession } from '../../game/session';
 import { useGameEffects, useMatchEffects } from '../../game/useGameEffects';
 import { useNow } from '../../game/useNow';
+import { useMyLevel } from '../../progress/hooks';
 import { track } from '../../services/analytics';
 import { cue, cueCountUp, preloadCues } from '../../services/feedback';
 import { useProfile } from '../../state/profile';
 import { color, space, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
-import { ArsenalOverlay, type ArsenalTargetInfo, useArsenal, useSenderFeedback } from './arsenal';
+import {
+  ArsenalOverlay,
+  type ArsenalTargetInfo,
+  unlockedKinds,
+  useArsenal,
+  useSenderFeedback,
+} from './arsenal';
 import { BoardProgress } from './BoardProgress';
 import {
   blocksInput,
@@ -670,6 +677,9 @@ export function GameScreen({
     [host],
   );
   const arsenal = useArsenal({ onLaunch: interfere });
+  // [D17] The tokens open at my level (all of them in V1).
+  const myLevel = useMyLevel();
+  const unlocked = useMemo(() => unlockedKinds(myLevel), [myLevel]);
   const notifySent = useSenderFeedback();
   // The hit on me as its event told it (the view does not say these): what it cost its sender, for the
   // banner's second line, and its seq, which tells two hits of one kind from one sender apart.
@@ -1098,7 +1108,9 @@ export function GameScreen({
         />
       )}
       {/* Over the board: the tray, and the token flying from it to the card (spec §7.3). */}
-      {duel || groupCards ? <ArsenalOverlay arsenal={arsenal} view={view} describe={describe} /> : null}
+      {duel || groupCards ? (
+        <ArsenalOverlay arsenal={arsenal} view={view} describe={describe} unlocked={unlocked} />
+      ) : null}
       {/* Last, over everything: an online game's connection (spec §16.2, §16.3). */}
       {isOnline ? (
         <ConnectionLayer

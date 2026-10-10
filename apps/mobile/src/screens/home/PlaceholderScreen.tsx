@@ -8,7 +8,10 @@ import { color, radius, size, space, text, tokens } from '../../theme';
 import { goToTab } from './navigation';
 import { Chip, GUTTER } from './parts';
 
-/** The tabs that are not built yet: the leaderboard and achievements (stage 12) and the history (stage 11). */
+/**
+ * A bottom-nav tab that is not built yet. Every tab is built now (history: stage 11; the leaderboard and
+ * achievements: stage 12); kept for a tab still to come.
+ */
 export type PlaceholderTab = Exclude<NavTab, 'home'>;
 
 const ICON: Record<PlaceholderTab, IconName> = {

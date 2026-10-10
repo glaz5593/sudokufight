@@ -48,6 +48,21 @@ export interface CheatThresholds {
 
 export const DEFAULT_CHEAT_THRESHOLDS: CheatThresholds = { thinkMs: 1200, moves: 20 };
 
+/**
+ * Progress (spec §14.2, §15; stage 12, src/progress).
+ * - `practiceXpDailyCap` (PRACTICE_XP_DAILY_CAP, default 1500): the most XP practice games may earn per UTC day
+ *   of their end. Practice is played on the phone and only reported [D41], so the server can't check a result;
+ *   the cap bounds what a forged one is worth. 1500 is about 25 bot games a day (20–50 XP each, plus a point per
+ *   correct move), well above a keen player's day; 0 turns practice XP off.
+ * - `inviteUrl` (INVITE_URL): the link the friends tab's "invite friends" button shares [D27]; null hides it.
+ */
+export interface ProgressConfig {
+  practiceXpDailyCap: number;
+  inviteUrl: string | null;
+}
+
+export const DEFAULT_PRACTICE_XP_DAILY_CAP = 1500;
+
 /** Express's 'trust proxy' setting: false, true, a hop count, or addresses/subnets ("loopback, 10.0.0.0/8"). */
 export type TrustProxy = boolean | number | string;
 
@@ -74,6 +89,8 @@ export interface ServerConfig {
    * ago, else 401 reauthRequired (default 5 minutes, Firebase's own rule for deleting a user).
    */
   accountDeleteMaxAuthAgeMs: number;
+  /** PRACTICE_XP_DAILY_CAP and INVITE_URL (stage 12). */
+  progress: ProgressConfig;
 }
 
 export class ConfigError extends Error {
@@ -163,6 +180,17 @@ const envSchema = z.object({
       .min(1000)
       .max(24 * 3600 * 1000)
       .default(RECENT_SIGN_IN_MS),
+  ),
+  PRACTICE_XP_DAILY_CAP: z.preprocess(
+    unsetIfBlank,
+    z.coerce.number().int().min(0).max(1_000_000).default(DEFAULT_PRACTICE_XP_DAILY_CAP),
+  ),
+  INVITE_URL: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim()) : v),
+    z
+      .url({ protocol: /^https?$/, error: 'must be an http(s) URL' })
+      .max(500)
+      .optional(),
   ),
 });
 
@@ -258,5 +286,6 @@ export function loadConfig(
     ratingOption: e.RATING_OPTION,
     cheat: { thinkMs: e.CHEAT_FAST_THINK_MS, moves: e.CHEAT_FAST_THINK_MOVES },
     accountDeleteMaxAuthAgeMs: e.ACCOUNT_DELETE_MAX_AUTH_AGE_MS,
+    progress: { practiceXpDailyCap: e.PRACTICE_XP_DAILY_CAP, inviteUrl: e.INVITE_URL ?? null },
   };
 }

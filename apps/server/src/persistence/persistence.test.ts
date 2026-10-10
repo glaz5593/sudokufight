@@ -149,6 +149,7 @@ describe('a ranked game, stored (spec §19)', () => {
     const result = table.game.state.result!;
 
     expect(await recorder.done).toEqual<RecordOutcome>({ ok: true, outcome: 'recorded' });
+    const bestMoveOf = (id: string) => result.stats.find((s) => s.playerId === id)!.bestMove!.points;
 
     const [game] = await t.db.select().from(games).where(eq(games.id, 'g1'));
     expect(game).toEqual({
@@ -180,6 +181,7 @@ describe('a ranked game, stored (spec §19)', () => {
         ratingKey: 'fast',
         ratingBefore: 1287,
         ratingAfter: 1304,
+        bestMovePoints: bestMoveOf('ana'),
       },
       {
         gameId: 'g1',
@@ -192,8 +194,11 @@ describe('a ranked game, stored (spec §19)', () => {
         ratingKey: 'fast',
         ratingBefore: 1305,
         ratingAfter: 1288,
+        bestMovePoints: bestMoveOf('ben'),
       },
     ]);
+    // Stage 12: each seat's best move is stored for the player card (spec §14.3).
+    expect(bestMoveOf('ana')).toBeGreaterThan(0);
     expect(await rating('ana', 'fast')).toMatchObject({
       rating: 1304,
       games: 13,

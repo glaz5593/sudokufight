@@ -103,6 +103,8 @@ export function userRow(over: Partial<AdminUserRow> = {}, now = Date.now()): Adm
 export function userDetail(now = Date.now()): AdminUserDetail {
   return {
     ...userRow({}, now),
+    xp: 2350,
+    level: 5,
     ratings: [{ key: 'fast', rating: 1512, games: 12, provisional: false, peak: 1530 }],
     stats: { games: 12, wins: 7, losses: 5, winRate: 7 / 12, avgMistakes: 1.25, avgScore: 64.5 },
     recentGames: [

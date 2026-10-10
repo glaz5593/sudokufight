@@ -22,8 +22,8 @@ import { routeHref } from '../router';
 import { installColumns } from './InstallsPage';
 
 /**
- * Spec §27.3: a user's profile, ratings, game history and stats, the installs they used, and the anomaly flags
- * of their ranked games (spec §21: for review only).
+ * Spec §27.3: a user's profile, level and XP (spec §15), ratings, game history and stats, the installs they
+ * used, and the anomaly flags of their ranked games (spec §21: for review only).
  */
 export function UserDetailPage({ id }: { id: string }) {
   const { t } = useI18n();
@@ -118,6 +118,8 @@ function UserBody({ data }: { data: AdminUserDetail }) {
   ];
 
   const stats: { label: string; value: string }[] = [
+    { label: t('stats.level'), value: formatNumber(lang, data.level) },
+    { label: t('stats.xp'), value: formatNumber(lang, data.xp) },
     { label: t('stats.games'), value: formatNumber(lang, data.stats.games) },
     { label: t('stats.wins'), value: formatNumber(lang, data.stats.wins) },
     { label: t('stats.losses'), value: formatNumber(lang, data.stats.losses) },

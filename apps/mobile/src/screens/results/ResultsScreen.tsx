@@ -10,6 +10,7 @@ import { Icon } from '../../components/Icon';
 import { formatScore, ltr, paletteAt, scoreText, signedText } from '../../components/player';
 import { Button, Spinner } from '../../components/ui';
 import { cue } from '../../services/feedback';
+import { openPlayerCard } from '../player/navigation';
 import { useProfile } from '../../state/profile';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
@@ -39,6 +40,8 @@ export interface ResultsScreenProps {
   onHome: () => void;
   /** "צפייה חוזרת": the game's replay (default: the /replay route, from the phone or the server). */
   onReplay?: (gameId: string, mode: GameMode) => void;
+  /** Another player of a ranked game: their card (stage 12; the /player route by default). */
+  onOpenPlayer?: (playerId: string) => void;
   /** The game was just played here: a full board gets its fanfare (motion.md §7, "Win"). */
   celebrate?: boolean;
   testID?: string;
@@ -60,6 +63,7 @@ export function ResultsScreen({
   onNewGame,
   onHome,
   onReplay = openReplay,
+  onOpenPlayer = openPlayerCard,
   celebrate = false,
   testID = 'results',
 }: ResultsScreenProps) {
@@ -134,6 +138,7 @@ export function ResultsScreen({
       onNewGame={onNewGame}
       onHome={onHome}
       onReplay={onReplay}
+      onOpenPlayer={onOpenPlayer}
       padding={padding}
       testID={testID}
     />
@@ -145,6 +150,7 @@ function ResultsBody({
   onNewGame,
   onHome,
   onReplay,
+  onOpenPlayer,
   padding,
   testID,
 }: {
@@ -152,6 +158,7 @@ function ResultsBody({
   onNewGame: (gameType: GameType, mode?: GameMode) => void;
   onHome: () => void;
   onReplay: (gameId: string, mode: GameMode) => void;
+  onOpenPlayer: (playerId: string) => void;
   padding: { paddingTop: number; paddingBottom: number };
   testID: string;
 }) {
@@ -241,11 +248,15 @@ function ResultsBody({
 
         {model.ranking.length ? (
           <Animated.View entering={enter.section(1)}>
-            <RankingSection ranking={model.ranking} myAvatar={myAvatar} />
+            <RankingSection
+              ranking={model.ranking}
+              myAvatar={myAvatar}
+              onOpenPlayer={ranked ? onOpenPlayer : undefined}
+            />
           </Animated.View>
         ) : model.opponents.length ? (
           <Animated.View entering={enter.section(1)}>
-            <OpponentsSection opponents={model.opponents} />
+            <OpponentsSection opponents={model.opponents} onOpenPlayer={ranked ? onOpenPlayer : undefined} />
           </Animated.View>
         ) : null}
 

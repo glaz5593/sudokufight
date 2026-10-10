@@ -1,6 +1,6 @@
 import { RECENT_SIGN_IN_MS } from '@sudoku-fight/protocol';
 
-import { DEFAULT_CHEAT_THRESHOLDS, type ServerConfig } from '../config';
+import { DEFAULT_CHEAT_THRESHOLDS, DEFAULT_PRACTICE_XP_DAILY_CAP, type ServerConfig } from '../config';
 
 export const TEST_ADMIN_PASSWORD = 'test-admin-password';
 export const TEST_SESSION_SECRET = 'test-session-secret-0123456789abcdef';
@@ -28,6 +28,7 @@ export function testConfig(overrides: Partial<ServerConfig> = {}): ServerConfig 
     ratingOption: 'B',
     cheat: DEFAULT_CHEAT_THRESHOLDS,
     accountDeleteMaxAuthAgeMs: RECENT_SIGN_IN_MS,
+    progress: { practiceXpDailyCap: DEFAULT_PRACTICE_XP_DAILY_CAP, inviteUrl: null },
     ...overrides,
   };
 }

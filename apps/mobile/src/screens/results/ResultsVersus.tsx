@@ -2,7 +2,7 @@ import type { GameType } from '@sudoku-fight/engine';
 import type { TFunction } from 'i18next';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import type { AvatarId } from '../../assets/avatars';
 import { Icon, type IconName } from '../../components/Icon';
@@ -32,7 +32,52 @@ import type { AwardResult, OpponentResult, RankingRow, RatingResult } from './re
 
 type GameT = TFunction<'game'>;
 
-export function OpponentsSection({ opponents }: { opponents: readonly OpponentResult[] }) {
+/**
+ * A player's row: one summary for screen readers; with `onPress` (another player of a ranked game, stage 12)
+ * a button that opens their card.
+ */
+function PlayerRow({
+  label,
+  onPress,
+  style,
+  testID,
+  children,
+}: {
+  label: string;
+  onPress?: () => void;
+  style: StyleProp<ViewStyle>;
+  testID: string;
+  children: ReactNode;
+}) {
+  const { t } = useTranslation('progress');
+  if (!onPress)
+    return (
+      <View style={style} accessible accessibilityRole="text" accessibilityLabel={label} testID={testID}>
+        {children}
+      </View>
+    );
+  return (
+    <Pressable
+      style={({ pressed }) => [style, pressed && styles.pressed]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={t('leaderboard.openHint')}
+      onPress={onPress}
+      testID={testID}
+    >
+      {children}
+    </Pressable>
+  );
+}
+
+export function OpponentsSection({
+  opponents,
+  onOpenPlayer,
+}: {
+  opponents: readonly OpponentResult[];
+  /** A ranked game: another player's row opens their card (spec §14.3). */
+  onOpenPlayer?: (playerId: string) => void;
+}) {
   const { t } = useTranslation('game');
   const { t: tp } = useTranslation('player');
   const { t: th } = useTranslation('history');
@@ -54,12 +99,11 @@ export function OpponentsSection({ opponents }: { opponents: readonly OpponentRe
             })
           : t('results.opponents.label', { name, score: scoreText(o.score), mistakes });
         return (
-          <View
+          <PlayerRow
             key={o.playerId}
             style={styles.row}
-            accessible
-            accessibilityRole="text"
-            accessibilityLabel={label}
+            label={label}
+            onPress={onOpenPlayer && !o.isBot ? () => onOpenPlayer(o.playerId) : undefined}
             testID={`results-opponent-${o.playerId}`}
           >
             <Avatar avatarId={o.avatar} size="compact" colorIndex={o.colorIndex} bot={o.isBot} />
@@ -92,7 +136,7 @@ export function OpponentsSection({ opponents }: { opponents: readonly OpponentRe
                 </Text>
               ) : null}
             </View>
-          </View>
+          </PlayerRow>
         );
       })}
     </Card>
@@ -110,9 +154,12 @@ const STEP_HEIGHT = [space[15], space[13], space[11]] as const;
 export function RankingSection({
   ranking,
   myAvatar,
+  onOpenPlayer,
 }: {
   ranking: readonly RankingRow[];
   myAvatar: AvatarId;
+  /** A ranked game: another player opens their card (spec §14.3). */
+  onOpenPlayer?: (playerId: string) => void;
 }) {
   const { t } = useTranslation('history');
   const { t: tg } = useTranslation('game');
@@ -128,6 +175,8 @@ export function RankingSection({
       : t('results.ranking.label', base);
   };
   const avatarOf = (r: RankingRow) => (r.isMe ? myAvatar : r.avatar);
+  const openOf = (r: RankingRow) =>
+    onOpenPlayer && !r.isMe && !r.isBot ? () => onOpenPlayer(r.playerId) : undefined;
   const delta = (r: RankingRow) =>
     r.rating ? (
       <Text style={[text('caption'), r.rating.delta < 0 ? styles.danger : styles.success]}>
@@ -143,12 +192,11 @@ export function RankingSection({
           if (!r) return null;
           const palette = paletteAt(r.colorIndex);
           return (
-            <View
+            <PlayerRow
               key={r.playerId}
               style={styles.podiumColumn}
-              accessible
-              accessibilityRole="text"
-              accessibilityLabel={labelOf(r)}
+              label={labelOf(r)}
+              onPress={openOf(r)}
               testID={`results-podium-${r.place}-${r.playerId}`}
             >
               <Avatar
@@ -171,17 +219,16 @@ export function RankingSection({
               >
                 <Text style={[text('h1'), r.place === 1 ? styles.accent : styles.strong]}>{r.place}</Text>
               </View>
-            </View>
+            </PlayerRow>
           );
         })}
       </View>
       {rest.map((r) => (
-        <View
+        <PlayerRow
           key={r.playerId}
           style={[styles.row, styles.restRow, r.isMe ? { borderColor: paletteAt(0).ring } : null]}
-          accessible
-          accessibilityRole="text"
-          accessibilityLabel={labelOf(r)}
+          label={labelOf(r)}
+          onPress={openOf(r)}
           testID={`results-ranking-${r.place}-${r.playerId}`}
         >
           <Text style={[text('h1'), styles.muted]}>{r.place}</Text>
@@ -206,7 +253,7 @@ export function RankingSection({
             </Text>
             {delta(r)}
           </View>
-        </View>
+        </PlayerRow>
       ))}
     </Card>
   );
@@ -365,6 +412,7 @@ function Card({
 }
 
 const styles = StyleSheet.create({
+  pressed: { opacity: 0.85 },
   card: {
     gap: space[6],
     padding: space[8],

@@ -12,6 +12,7 @@ import enHistory from './locales/en/history.json';
 import enHome from './locales/en/home.json';
 import enMatch from './locales/en/match.json';
 import enPlayer from './locales/en/player.json';
+import enProgress from './locales/en/progress.json';
 import enReplay from './locales/en/replay.json';
 import enUi from './locales/en/ui.json';
 import heAccount from './locales/he/account.json';
@@ -23,13 +24,15 @@ import heHistory from './locales/he/history.json';
 import heHome from './locales/he/home.json';
 import heMatch from './locales/he/match.json';
 import hePlayer from './locales/he/player.json';
+import heProgress from './locales/he/progress.json';
 import heReplay from './locales/he/replay.json';
 import heUi from './locales/he/ui.json';
 
 /**
  * Translations (CLAUDE.md: no hard-coded UI strings; spec §22: Hebrew first, and English). Every string goes
  * through t(). One file per area (namespace): common, ui, player, board, home, game, account, dev, replay,
- * history (stage 11) and match (stage 9: matchmaking).
+ * history (stage 11), match (stage 9: matchmaking) and progress (stage 12: the leaderboard, the player card,
+ * progress and the interferences collection).
  */
 export const LANGUAGES = ['he', 'en'] as const;
 export type Language = (typeof LANGUAGES)[number];
@@ -45,6 +48,7 @@ export const NAMESPACES = [
   'replay',
   'history',
   'match',
+  'progress',
 ] as const;
 
 export const resources = {
@@ -60,6 +64,7 @@ export const resources = {
     replay: heReplay,
     history: heHistory,
     match: heMatch,
+    progress: heProgress,
   },
   en: {
     common: enCommon,
@@ -73,6 +78,7 @@ export const resources = {
     replay: enReplay,
     history: enHistory,
     match: enMatch,
+    progress: enProgress,
   },
 } as const;
 

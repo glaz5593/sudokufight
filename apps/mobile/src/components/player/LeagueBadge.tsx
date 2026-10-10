@@ -11,7 +11,9 @@ export interface LeagueBadgeProps {
    * The player's highest rating [D9]. Null hides the badge: it appears only once 10 provisional games are
    * done in some rating key (spec §11.3).
    */
-  rating: number | null;
+  rating?: number | null;
+  /** The league itself (the server's answer), instead of a rating; null hides the badge too. */
+  league?: League | null;
   level?: number | null;
   /** `text`: "ליגת זהב · רמה 14" (Home). `icon`: hexagon, tier name in its colour, then the level. */
   variant?: 'text' | 'icon';
@@ -24,15 +26,17 @@ const HEXAGON = `${W / 2},0 ${W},${H / 4} ${W},${(3 * H) / 4} ${W / 2},${H} 0,${
 
 /** The league of a rating (components.md §5.2). */
 export function LeagueBadge({
-  rating,
+  rating = null,
+  league: given,
   level = null,
   variant = 'text',
   thresholds = LEAGUE_THRESHOLDS,
   style,
 }: LeagueBadgeProps) {
   const { t } = useTranslation('player');
-  if (rating === null) return null;
-  const league: League = leagueFor(rating, thresholds);
+  const league: League | null =
+    given !== undefined ? given : rating === null ? null : leagueFor(rating, thresholds);
+  if (league === null) return null;
   const tier = t(`league.${league}`);
   const name = t('league.name', { league: tier });
   const levelText = level === null ? null : t('league.level', { level });

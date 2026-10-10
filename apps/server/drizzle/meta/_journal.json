@@ -22,6 +22,13 @@
       "when": 1791575036179,
       "tag": "0002_ranked_games",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791660130199,
+      "tag": "0003_progress",
+      "breakpoints": true
     }
   ]
 }

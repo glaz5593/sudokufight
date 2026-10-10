@@ -77,6 +77,11 @@ export const users = pgTable(
     uniqueIndex('users_display_name_key_uq')
       .on(displayNameKey(t.displayName))
       .where(sql`${t.deletedAt} is null`),
+    // The few deleted accounts: what the leaderboards leave out ("not exists" against this small index is
+    // cheaper than a join with every user, src/progress/leaderboard.ts).
+    index('users_deleted_idx')
+      .on(t.id)
+      .where(sql`${t.deletedAt} is not null`),
   ],
 );
 
@@ -96,8 +101,15 @@ export const ratings = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.ratingKey] }),
-    // The leaderboard (spec §14.2): one key, best first.
-    index('ratings_key_rating_idx').on(t.ratingKey, t.rating.desc()),
+    // The leaderboards (spec §14.2; src/progress/leaderboard.ts) rank only keys with a rated game, best first,
+    // equal ratings by user id: the keyset their pages walk. A game-type tab: one key.
+    index('ratings_board_idx')
+      .on(t.ratingKey, t.rating.desc(), t.userId)
+      .where(sql`${t.games} > 0`),
+    // The 'general' tab: every key at once, each user at their best row.
+    index('ratings_general_idx')
+      .on(t.rating.desc(), t.userId)
+      .where(sql`${t.games} > 0`),
   ],
 );
 
@@ -203,6 +215,12 @@ export const gamePlayers = pgTable(
     ratingKey: text('rating_key'),
     ratingBefore: real('rating_before'),
     ratingAfter: real('rating_after'),
+    /**
+     * The points of this seat's best correct move (the engine's stats.bestMove), written at the end; null
+     * without a correct move, and for games stored before stage 12 (no backfill: their events could give it,
+     * but the player card simply starts counting from here).
+     */
+    bestMovePoints: real('best_move_points'),
   },
   (t) => [primaryKey({ columns: [t.gameId, t.seat] }), index('game_players_user_idx').on(t.userId)],
 );
@@ -247,6 +265,11 @@ export const userAchievements = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.achievementId] })],
 );
 
+/**
+ * A player's XP (spec §15) [D38]: the total, and the level it reaches (the engine's levelFor(), kept here for
+ * SQL readers such as the admin site; the routes compute it again from `xp`). Written by the end of a ranked
+ * game (persistence/records.ts) and by practice results (src/progress/practice.ts).
+ */
 export const xp = pgTable('xp', {
   userId: text('user_id')
     .primaryKey()
@@ -254,6 +277,37 @@ export const xp = pgTable('xp', {
   level: integer('level').notNull().default(1),
   xp: integer('xp').notNull().default(0),
 });
+
+export const PRACTICE_MODES = ['solo', 'bot'] as const;
+
+/**
+ * Practice games the phone reported for their XP [D41] (spec §15): played on the phone, queued while offline,
+ * sent when there is a connection. One row per game: the phone's id, so a resend is counted once. `xp` is what
+ * the result actually earned (the daily practice cap may cut it, to 0 too); `ended_at` is the phone's clock.
+ */
+export const practiceResults = pgTable(
+  'practice_results',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** The practice game's id on the phone. */
+    id: text('id').notNull(),
+    mode: text('mode', { enum: PRACTICE_MODES }).notNull(),
+    gameType: text('game_type').notNull(),
+    outcome: text('outcome').notNull(),
+    correct: smallint('correct').notNull(),
+    endedAt: timestamptz('ended_at').notNull(),
+    xp: integer('xp').notNull(),
+    receivedAt: timestamptz('received_at').notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.id] }),
+    // The daily cap: a user's practice XP of one day.
+    index('practice_results_user_ended_idx').on(t.userId, t.endedAt),
+    check('practice_results_mode_check', sql`${t.mode} in ('solo', 'bot')`),
+  ],
+);
 
 /** Anomalies to look at (spec §21); no automatic action in V1. */
 export const cheatFlags = pgTable(
@@ -331,3 +385,4 @@ export type Game = typeof games.$inferSelect;
 export type GamePlayer = typeof gamePlayers.$inferSelect;
 export type Puzzle = typeof puzzles.$inferSelect;
 export type CheatFlag = typeof cheatFlags.$inferSelect;
+export type PracticeResultRow = typeof practiceResults.$inferSelect;

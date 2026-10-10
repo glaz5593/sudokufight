@@ -15,7 +15,7 @@ export {
   type TokenBlock,
 } from './arsenalModel';
 export { ArsenalOverlay, type ArsenalOverlayProps, type ArsenalTargetInfo } from './ArsenalOverlay';
-export { ARSENAL_CONFIG, type ArsenalConfig } from './config';
+export { ARSENAL_CONFIG, type ArsenalConfig, INTERFERENCE_UNLOCK_LEVELS, unlockedKinds } from './config';
 export {
   DragGhost,
   type DragGhostProps,

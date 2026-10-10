@@ -159,6 +159,9 @@ export interface AdminCheatFlag {
 }
 
 export interface AdminUserDetail extends AdminUserRow {
+  /** Spec §15 (stage 12): total XP, ranked games and practice together, and the level it reaches. */
+  xp: number;
+  level: number;
   ratings: AdminRating[];
   stats: {
     games: number;

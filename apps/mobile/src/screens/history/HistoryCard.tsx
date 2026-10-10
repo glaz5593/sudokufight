@@ -9,7 +9,9 @@ import { dayOf, type HistoryEntry, type HistoryOutcome, shortDate } from './hist
 
 /**
  * One game in the history (spec §14.1; History.dc.html): a result stripe, the opponents' avatars, the mode and
- * the type, the final score, the rating change and the date. The whole card opens the replay.
+ * the type, the final score, the rating change and the date. The whole card opens the replay. Stage 12: in a
+ * ranked game, an opponent's avatar opens their player card (and screen readers get it as an action of the
+ * card).
  */
 
 const STRIPE: Record<HistoryOutcome, string> = {
@@ -30,10 +32,15 @@ export interface HistoryCardProps {
   myAvatar: AvatarId;
   now: number;
   onOpen: (entry: HistoryEntry) => void;
+  /** A ranked game's opponent (not a bot): their player card (spec §14.3). */
+  onOpenPlayer?: (playerId: string) => void;
 }
 
-export function HistoryCard({ entry: e, myAvatar, now, onOpen }: HistoryCardProps) {
+const PLAYER_ACTION = 'player:';
+
+export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: HistoryCardProps) {
   const { t, i18n } = useTranslation('history');
+  const { t: tProgress } = useTranslation('progress');
   const { t: tg } = useTranslation('game');
   const { t: tp } = useTranslation('player');
   const day = dayOf(e.startedAt, now);
@@ -70,11 +77,26 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen }: HistoryCardProp
     date,
   });
 
+  const players = e.source === 'ranked' && onOpenPlayer ? e.opponents.filter((o) => !o.isBot) : [];
+  const playerActions = players.map((o) => ({
+    name: `${PLAYER_ACTION}${o.id}`,
+    label: tProgress('card.openOf', { name: displayName(o, tp) }),
+  }));
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={t('card.hint')}
+      accessibilityActions={playerActions.length ? playerActions : undefined}
+      onAccessibilityAction={
+        playerActions.length
+          ? (event) => {
+              const name = event.nativeEvent.actionName;
+              if (name.startsWith(PLAYER_ACTION)) onOpenPlayer?.(name.slice(PLAYER_ACTION.length));
+            }
+          : undefined
+      }
       onPress={() => onOpen(e)}
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
       testID={`history-card-${e.id}`}
@@ -87,18 +109,29 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen }: HistoryCardProp
         {e.opponents.length === 0 ? (
           <Avatar avatarId={myAvatar} size="compact" colorIndex={0} />
         ) : (
-          e.opponents
-            .slice(0, AVATARS_SHOWN)
-            .map((o, k) => (
-              <Avatar
+          e.opponents.slice(0, AVATARS_SHOWN).map((o, k) => {
+            const avatar = (
+              <Avatar avatarId={o.avatar} size="compact" colorIndex={o.colorIndex} bot={o.isBot} />
+            );
+            const overlap = k === 0 ? null : styles.overlap;
+            return players.includes(o) ? (
+              // Its own touch target: the card's screen-reader action does the same.
+              <Pressable
                 key={o.id}
-                avatarId={o.avatar}
-                size="compact"
-                colorIndex={o.colorIndex}
-                bot={o.isBot}
-                style={k === 0 ? null : styles.overlap}
-              />
-            ))
+                accessible={false}
+                onPress={() => onOpenPlayer?.(o.id)}
+                hitSlop={space[3]}
+                style={overlap}
+                testID={`history-card-${e.id}-player-${o.id}`}
+              >
+                {avatar}
+              </Pressable>
+            ) : (
+              <View key={o.id} style={overlap}>
+                {avatar}
+              </View>
+            );
+          })
         )}
       </View>
       <View style={styles.middle}>

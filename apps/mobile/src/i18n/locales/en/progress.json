@@ -1,0 +1,193 @@
+{
+  "common": {
+    "provisional": "Provisional rating",
+    "provisionalNote": "Your league shows after {{games}} ranked games in one game type",
+    "level": "Level {{level}}",
+    "you": "You",
+    "myCard": "My player card",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "offlineNote": "No connection to the server: showing what loaded before.",
+    "errorNote": "Couldn't update: showing what loaded before.",
+    "offlineTitle": "No connection to the server",
+    "offlineBody": "The leaderboard updates when the connection is back.",
+    "errorTitle": "Something went wrong",
+    "signedOut": "Sign in to see this",
+    "players_one": "1 player",
+    "players_two": "{{count}} players",
+    "players_many": "{{count}} players",
+    "players_other": "{{count}} players",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}, on the way to level {{level}}"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "tabs": {
+      "label": "Rating type",
+      "general": "General",
+      "fast": "Fast",
+      "normal": "Normal",
+      "hard": "Hard",
+      "friends": "Friends"
+    },
+    "caption": {
+      "general": "General · each player's highest rating",
+      "type": "{{type}} rating · worldwide",
+      "typePlayers": "{{type}} rating · {{players}} · worldwide",
+      "friends": "Your recent opponents"
+    },
+    "players": "Number of players",
+    "podium": "The top three",
+    "rankLabel": "Place {{rank}}",
+    "meName": "{{name}} (you)",
+    "openHint": "Opens the player card",
+    "meNone": "You have no rating in this table yet",
+    "play": "Play",
+    "playHint": "Play a ranked game to join the table",
+    "emptyTitle": "Nobody here yet",
+    "emptyBody": "Play a ranked game and be the first on the board."
+  },
+  "friends": {
+    "invite": "Invite friends",
+    "inviteMessage": "Come play me in Sudoku Fight!",
+    "inviteNote": "One more friend = one more rival",
+    "emptyTitle": "No opponents yet",
+    "emptyBody": "Play a ranked game and your opponents show up here. A full friends list is coming soon."
+  },
+  "league": {
+    "title": "League",
+    "toNext": "{{points}} to {{league}}",
+    "top": "The highest league",
+    "general": "General {{rating}} · {{next}}",
+    "generalTop": "General {{rating}} · the highest league",
+    "ladder": "The league ladder",
+    "step": "{{league}} league, from rating {{floor}}"
+  },
+  "card": {
+    "title": "Player card",
+    "edit": "Edit profile",
+    "notFound": "Player not found",
+    "offlineBody": "The card loads from the server. Try again when the connection is back.",
+    "savedNote": "No connection to the server: showing the saved card.",
+    "meLabel": "{{name}}, my card",
+    "ratingsTitle": "Rating by game type",
+    "ratingsNote": "{{n}} ratings",
+    "noRatings": "No rating yet",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "up {{points}} over the last games",
+    "trendDown": "down {{points}} over the last games",
+    "trendFlat": "no change over the last games",
+    "atPeak": "at its peak",
+    "peak": "peak {{value}}",
+    "atPeakShort": "Peak!",
+    "peakShort": "Peak {{value}}",
+    "games_one": "1 game",
+    "games_two": "{{count}} games",
+    "games_many": "{{count}} games",
+    "games_other": "{{count}} games",
+    "statsTitle": "Battle stats",
+    "stats": {
+      "games": "Games",
+      "wins": "Wins",
+      "losses": "Losses",
+      "winRate": "Win rate",
+      "streak": "Win streak",
+      "bestStreak": "Best streak",
+      "bestMove": "Best move",
+      "avgMistakes": "Mistakes per game"
+    },
+    "recentTitleSection": "Recent results",
+    "recentNote": "last {{n}}",
+    "recentEmpty": "No ranked games yet.",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "Win",
+      "loss": "Loss",
+      "tie": "Tie"
+    },
+    "outcomeShort": {
+      "win": "W",
+      "loss": "L",
+      "tie": "T"
+    },
+    "place": "Place {{place}}",
+    "points": "{{score}} pts",
+    "ratingDelta": "rating {{delta}}",
+    "formLabel": "Recent results, newest first: {{list}}",
+    "replayHint": "Opens the replay",
+    "openOf": "{{name}}'s player card",
+    "achievementsTitle": "Top achievements"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "soon": "Coming soon",
+    "soonBody": "12 achievements on the way: first win, win streaks, top moves and more. Coming here soon.",
+    "soonShort": "Achievements are coming soon.",
+    "earned": "{{name}}, earned on {{date}}"
+  },
+  "progress": {
+    "title": "Achievements & progress",
+    "savedNote": "No connection to the server: showing the saved numbers.",
+    "pending_one": "1 practice waiting to sync with the server",
+    "pending_two": "{{count}} practices waiting to sync with the server",
+    "pending_many": "{{count}} practices waiting to sync with the server",
+    "pending_other": "{{count}} practices waiting to sync with the server",
+    "offlineBody": "Your level and XP show once there is a connection to the server.",
+    "levelWord": "Level",
+    "xpTitle": "Experience points",
+    "toGo": "{{xp}} to level {{level}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "How to earn XP",
+    "how": {
+      "win": "First place in ranked, or a win against a bot",
+      "played": "Any other result in ranked or against a bot",
+      "solo": "Solo practice",
+      "perCorrect": "Each correct move, in ranked and against a bot"
+    }
+  },
+  "interferences": {
+    "title": "Interferences",
+    "entry": "Interference collection",
+    "entryNote": "{{open}} open · {{locked}} locked",
+    "countLabel": "{{open}} of {{total}} interferences open",
+    "opened": "open",
+    "facts": {
+      "seconds": "seconds each",
+      "cost": "the cost doubles with each launch",
+      "drag": "only, onto the opponent's card",
+      "dragValue": "Drag"
+    },
+    "arsenal": "Your arsenal",
+    "tapHint": "Tap to preview",
+    "openLabel": "{{name}}, available. {{description}}",
+    "previewHint": "Shows the preview",
+    "available": "Available",
+    "previewing": "Previewing",
+    "lockedTitle": "Locked",
+    "lockedNote": "Open as you level up",
+    "soon": "Coming soon",
+    "atLevel": "Opens at level {{level}}",
+    "lockedLabel": "{{name}}, locked, {{when}}",
+    "howTo": "In a game: tap the bolt on an opponent's card, and drag an interference onto it.",
+    "future": {
+      "ink": "Ink",
+      "earthquake": "Earthquake",
+      "fog": "Fog",
+      "bubbles": "Bubbles"
+    },
+    "description": {
+      "fireworks": "A colourful volley of fireworks over the screen",
+      "cats": "A caravan of cats racing across the screen",
+      "warp": "The screen bends and flickers",
+      "ink": "Ink blots that fade away",
+      "earthquake": "The screen shakes",
+      "fog": "Fog that slowly clears",
+      "bubbles": "Bubbles you have to pop"
+    }
+  },
+  "home": {
+    "levelXp": "Level {{level}} · {{xp}}"
+  }
+}

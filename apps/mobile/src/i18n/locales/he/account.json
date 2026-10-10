@@ -106,6 +106,7 @@
     "avatarCount": "{{n}} / {{total}}",
     "avatarGroup": "בחירת אווטאר",
     "avatar": "אווטאר {{n}}",
+    "avatarLocked": "אווטאר {{n}}, נפתח ברמה {{level}}",
     "selectedAvatar": "האווטאר שנבחר: אווטאר {{n}}",
     "prevAvatar": "האווטאר הקודם",
     "nextAvatar": "האווטאר הבא",

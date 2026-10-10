@@ -1,10 +1,18 @@
-import type { GameConfig, GameEvent, GameState, PlayerId } from '@sudoku-fight/engine';
+import {
+  DEFAULT_PROGRESS_RULES,
+  type GameConfig,
+  type GameEvent,
+  type GameState,
+  type PlayerId,
+  type ProgressRules,
+} from '@sudoku-fight/engine';
 import { eq, isNull, sql } from 'drizzle-orm';
 
 import { FAST_THINKING, fastThinkingFlags, insertCheatFlags } from '../cheat';
 import type { CheatThresholds } from '../config';
 import type { Db } from '../db';
 import { gameEvents, gamePlayers, games, opponentHistory, puzzleHistory } from '../db/schema';
+import { addXp, rankedXpGains } from '../progress/xp';
 import { applyRatingChanges, type RatingWrite } from '../ratings';
 
 /**
@@ -25,10 +33,11 @@ import { applyRatingChanges, type RatingWrite } from '../ratings';
  * - A restart (`endInterruptedGames`, at boot): a game still running when the server stopped is gone (it lived
  *   in its room's memory); its row is ended as 'serverRestart', unrated.
  * - End (`recordGameEnd`), one transaction: ended_at and end_reason; each seat's final score, mistakes,
- *   place (§6.7: whoever surrendered or abandoned ranks after those still in, a normal loss [D32]), status
- *   and rating after; the ratings themselves (../ratings); the anomaly flags (../cheat). The games row is
- *   locked and its ended_at checked first: a game already recorded is left as it is, so a retry never counts
- *   a game twice.
+ *   place (§6.7: whoever surrendered or abandoned ranks after those still in, a normal loss [D32]), status,
+ *   rating after and best move's points (stage 12, for the player card); the ratings themselves
+ *   (../ratings); every account's XP (../progress/xp, spec §15: 50 for a win, 20 otherwise, a point per
+ *   correct move); the anomaly flags (../cheat). The games row is locked and its ended_at checked first: a
+ *   game already recorded is left as it is, so a retry never counts a game (its ratings, its XP) twice.
  */
 
 /** A seat and the account playing it (null: no account, e.g. a bot). */
@@ -137,6 +146,8 @@ export interface GameEndRecord {
   /** The whole log, for the anomaly check. */
   log: readonly GameEvent[];
   cheat: CheatThresholds;
+  /** XP rules (default the engine's DEFAULT_PROGRESS_RULES). */
+  progress?: ProgressRules;
 }
 
 /** The end_reason of a game cut short by a server restart. Not an engine EndReason: no result, no rating. */
@@ -192,6 +203,7 @@ export async function recordGameEnd(db: Db, end: GameEndRecord): Promise<EndOutc
       const change = result.ratingChanges.find((c) => c.playerId === entry.playerId);
       const rated = start.ratingKey !== null && change !== undefined && userId !== null;
       if (rated) ratingWrites.push({ userId, change });
+      const stats = result.stats.find((s) => s.playerId === entry.playerId);
       const final = {
         userId,
         finalScore: entry.score,
@@ -201,6 +213,7 @@ export async function recordGameEnd(db: Db, end: GameEndRecord): Promise<EndOutc
         ratingKey: rated ? start.ratingKey : null,
         ratingBefore: rated ? change.before : null,
         ratingAfter: rated ? change.after : null,
+        bestMovePoints: stats?.bestMove?.points ?? null,
       };
       await tx
         .insert(gamePlayers)
@@ -213,6 +226,17 @@ export async function recordGameEnd(db: Db, end: GameEndRecord): Promise<EndOutc
         provisionalGames: start.config.rules.rating.provisionalGames,
         at,
       });
+    }
+
+    // XP for every account in the game (bots have none), in this transaction: recorded once, like the ratings.
+    // Ranked games only: practice XP comes from the phone [D41].
+    if (start.config.mode === 'ranked') {
+      const rules = end.progress ?? DEFAULT_PROGRESS_RULES;
+      const gains = rankedXpGains(result, rules).flatMap((g) => {
+        const userId = userOf.get(g.playerId) ?? null;
+        return userId === null ? [] : [{ userId, xp: g.xp }];
+      });
+      await addXp(tx, gains, rules);
     }
 
     const flags = fastThinkingFlags(end.log, end.cheat).flatMap((f) => {

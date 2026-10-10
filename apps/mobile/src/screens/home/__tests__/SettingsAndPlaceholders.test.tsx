@@ -8,6 +8,7 @@ import { practiceStorageOrNull } from '../../../game/storage';
 import i18n from '../../../i18n';
 import { haptics as hapticsService } from '../../../services/haptics';
 import { useSettings } from '../../../state/settings';
+import { PlaceholderScreen } from '../PlaceholderScreen';
 import { SettingsScreen } from '../SettingsScreen';
 import { renderApp } from '../testing/homeTesting';
 
@@ -104,22 +105,36 @@ describe('settings (spec §4.1)', () => {
   });
 });
 
-describe('the tabs that come later', () => {
-  it.each([
-    ['/leaderboard', 'leaderboard', 'טבלת מובילים'],
-    ['/achievements', 'achievements', 'הישגים'],
-  ])('%s: a title, "בקרוב" and the navigation with its tab on', async (url, tab, title) => {
-    await renderApp(url);
-    expect(screen.getByTestId(`placeholder-${tab}`)).toBeTruthy();
-    expect(screen.getByRole('header', { name: title })).toBeTruthy();
+describe('the stage-12 tabs (routes)', () => {
+  it('/leaderboard: its title and the navigation with its tab on; signed out, it says so', async () => {
+    await renderApp('/leaderboard');
+    expect(screen.getByTestId('leaderboard')).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'טבלת מובילים' })).toBeTruthy();
+    expect(await screen.findByText('צריך להתחבר כדי לראות את זה')).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'טבלת מובילים', selected: true })).toBeTruthy();
+  });
+
+  it('/achievements: progress, "בקרוב" for the achievements, and the navigation with its tab on', async () => {
+    await renderApp('/achievements');
+    expect(screen.getByTestId('progress')).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'הישגים והתקדמות' })).toBeTruthy();
     expect(screen.getByText('בקרוב')).toBeTruthy();
-    expect(screen.getByRole('tab', { name: title })).toHaveProp('accessibilityState', { selected: true });
+    expect(screen.getByRole('tab', { name: 'הישגים' })).toHaveProp('accessibilityState', { selected: true });
+  });
+
+  it('the placeholder of a tab still to come: a title, "בקרוב" and the navigation', async () => {
+    await renderApp('/history', { history: () => <PlaceholderScreen tab="history" /> });
+    expect(screen.getByTestId('placeholder-history')).toBeTruthy();
+    expect(screen.getByText('בקרוב')).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'היסטוריה' })).toHaveProp('accessibilityState', {
+      selected: true,
+    });
   });
 
   it('speak English too', async () => {
     await i18n.changeLanguage('en');
     await renderApp('/leaderboard');
     expect(screen.getByRole('header', { name: 'Leaderboard' })).toBeTruthy();
-    expect(screen.getByText('Coming soon')).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Friends' })).toBeTruthy();
   });
 });

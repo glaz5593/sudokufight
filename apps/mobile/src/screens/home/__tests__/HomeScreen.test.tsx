@@ -159,7 +159,7 @@ describe('Home (spec §4.3)', () => {
     const app = await renderApp();
     await fireEvent.press(screen.getByRole('tab', { name: 'טבלת מובילים' }));
     expect(app.pathname()).toBe('/leaderboard');
-    expect(screen.getByTestId('placeholder-leaderboard')).toBeTruthy();
+    expect(screen.getByTestId('leaderboard')).toBeTruthy();
     expect(screen.getByRole('tab', { name: 'טבלת מובילים' })).toHaveProp('accessibilityState', {
       selected: true,
     });
@@ -168,7 +168,7 @@ describe('Home (spec §4.3)', () => {
     expect(app.pathname()).toBe('/history');
     await fireEvent.press(screen.getByRole('tab', { name: 'הישגים' }));
     expect(app.pathname()).toBe('/achievements');
-    expect(screen.getByText('הישגים, רמות ו־XP יגיעו בקרוב.')).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'הישגים והתקדמות' })).toBeTruthy();
 
     await fireEvent.press(screen.getByRole('tab', { name: 'בית' }));
     expect(app.pathname()).toBe('/');

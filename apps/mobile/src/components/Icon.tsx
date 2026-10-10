@@ -183,6 +183,19 @@ const ICONS = {
   ),
   /** A picker that opens a list (the country). */
   chevronDown: <Path d="M6 9l6 6 6-6" />,
+  /** "הזמן חברים" (the leaderboard's friends tab, D27). */
+  share: (
+    <>
+      <Circle cx="18" cy="5" r="2.5" />
+      <Circle cx="6" cy="12" r="2.5" />
+      <Circle cx="18" cy="19" r="2.5" />
+      <Path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" />
+    </>
+  ),
+  /** A win streak (the player card, D28). */
+  flame: <Path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .5 2 1.5 3 2.5 3 0-3-1-5 0-8z" />,
+  /** A best move, a peak. */
+  star: <Path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" />,
 } as const;
 
 export type IconName = keyof typeof ICONS;

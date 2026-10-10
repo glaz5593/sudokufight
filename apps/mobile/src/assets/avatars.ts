@@ -62,3 +62,22 @@ export const EMPTY_AVATAR: AvatarId = 'av00';
 export const PICKABLE_AVATARS = (Object.keys(AVATARS) as AvatarId[]).filter((id) => id !== EMPTY_AVATAR);
 
 export const isAvatarId = (v: unknown): v is AvatarId => typeof v === 'string' && v in AVATARS;
+
+/** An avatar's metadata beside its file. */
+export interface AvatarMeta {
+  /**
+   * [D17] The level that opens it (spec §3.4: "פתיחת אווטרים נוספים לפי רמה: התשתית נבנית ב־V1 (שדה
+   * unlockLevel), והתוכן מגיע ב־V1.1"). V1: 0 for every avatar, so all are open from the start.
+   */
+  unlockLevel: number;
+}
+
+export const AVATAR_META: Readonly<Record<AvatarId, AvatarMeta>> = Object.fromEntries(
+  (Object.keys(AVATARS) as AvatarId[]).map((id) => [id, { unlockLevel: 0 }]),
+) as Record<AvatarId, AvatarMeta>;
+
+/** The level that opens `id` (0: open from the start). */
+export const avatarUnlockLevel = (
+  id: AvatarId,
+  meta: Readonly<Record<string, AvatarMeta>> = AVATAR_META,
+): number => meta[id]?.unlockLevel ?? 0;

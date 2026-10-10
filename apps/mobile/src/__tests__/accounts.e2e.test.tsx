@@ -8,6 +8,7 @@ import { Text } from 'react-native';
 import RootLayout from '../../app/_layout';
 import AchievementsRoute from '../../app/achievements';
 import EditProfileRoute from '../../app/edit-profile';
+import PlayerRoute from '../../app/player/[id]';
 import ForgotPasswordRoute from '../../app/forgot-password';
 import HistoryRoute from '../../app/history';
 import Index from '../../app/index';
@@ -69,6 +70,7 @@ const ROUTES = {
   'register/account': RegisterAccountRoute,
   'verify-email': VerifyEmailRoute,
   'edit-profile': EditProfileRoute,
+  'player/[id]': PlayerRoute,
   game: () => <Stub name="game" />,
   'results/[id]': () => <Stub name="results" />,
 };
@@ -168,11 +170,15 @@ describe('accounts, end to end (work plan stage 8 "סיום")', () => {
     expect(screen.getByTestId('verify-banner')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'שחק' })).toBeOnTheScreen();
 
-    // ---- edit the avatar ----
+    // ---- edit the avatar: from my player card (stage 12) ----
     await fireEvent.press(card);
+    await waitFor(() => expect(nav.pathname()).toBe(`/player/${useAuth.getState().me!.id}`));
+    await press('player-card-edit');
     await waitFor(() => expect(nav.pathname()).toBe('/edit-profile'));
     await press('avatar-picker-av09');
     await press('edit-save');
+    await waitFor(() => expect(nav.pathname()).toBe(`/player/${useAuth.getState().me!.id}`));
+    await press('back');
     await waitFor(() => expect(nav.pathname()).toBe('/'));
     expect(useAuth.getState().me?.avatarId).toBe('av09');
     expect(useProfile.getState().avatarId).toBe('av09');

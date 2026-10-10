@@ -6,12 +6,14 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { refreshMe, useAuth } from '../../auth/authStore';
-import { ROUTES } from '../../auth/redirect';
 import { ltr } from '../../components/player';
 import { BottomNav, Button, IconButton, RowButton, useToast } from '../../components/ui';
 import { useGameStore } from '../../game/gameStore';
+import { refreshMyProgress } from '../../progress/appProgress';
+import { useMyCard, useMyProgress } from '../../progress/hooks';
 import { cue } from '../../services/feedback';
 import { VerifyBanner } from '../account/VerifyEmailScreen';
+import { openPlayerCard } from '../player/navigation';
 import { usePracticeHistory } from '../../state/practiceHistory';
 import { useProfile } from '../../state/profile';
 import { color, size, space, text, tokens } from '../../theme';
@@ -59,9 +61,16 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
   const botLevel = useProfile((s) => s.botLevel);
   const recent = usePracticeHistory((s) => s.recent);
   const status = usePracticeHistory((s) => s.status);
-  const gamesPlayed = usePracticeStats((s) => s.gamesPlayed);
-  const winRate = usePracticeStats((s) => s.winRate);
-  const streak = usePracticeStats((s) => s.streak);
+  const practiceGames = usePracticeStats((s) => s.gamesPlayed);
+  const practiceWinRate = usePracticeStats((s) => s.winRate);
+  const practiceStreak = usePracticeStats((s) => s.streak);
+  // Stage 12: my level, XP and league, and my card's numbers (the ranked games, spec §4.3), saved on the
+  // phone; before my card came (offline at first, no account), the practices saved here.
+  const myProgress = useMyProgress();
+  const myStats = useMyCard()?.stats ?? null;
+  const gamesPlayed = myStats ? myStats.games : practiceGames;
+  const winRate = myStats ? myStats.winRate : practiceWinRate;
+  const streak = myStats ? (myStats.games > 0 ? myStats.streak : null) : practiceStreak;
   const [starting, setStarting] = useState(false);
 
   useFocusEffect(
@@ -69,6 +78,8 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
       void refreshHome();
       // A profile read from the phone (no server last time): try the server again.
       if (useAuth.getState().meOffline) void refreshMe();
+      // My level, XP and league, and my card's numbers (a game just played moved them).
+      void refreshMyProgress();
     }, []),
   );
 
@@ -134,7 +145,8 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
             winRate={winRate}
             streak={streak}
             ratings={me?.ratings ?? null}
-            onPress={me ? () => router.push(ROUTES.editProfile) : undefined}
+            progress={myProgress}
+            onPress={me ? () => openPlayerCard(me.id) : undefined}
           />
         </View>
         <VerifyBanner style={styles.verify} />

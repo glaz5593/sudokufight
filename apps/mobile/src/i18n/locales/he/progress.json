@@ -1,0 +1,193 @@
+{
+  "common": {
+    "provisional": "בדירוג זמני",
+    "provisionalNote": "הליגה תופיע אחרי {{games}} משחקים מדורגים באחד מסוגי המשחק",
+    "level": "רמה {{level}}",
+    "you": "אתה",
+    "myCard": "כרטיס השחקן שלי",
+    "loading": "טוען…",
+    "retry": "נסה שוב",
+    "offlineNote": "אין חיבור לשרת: מוצג מה שנטען קודם.",
+    "errorNote": "לא הצלחנו לעדכן: מוצג מה שנטען קודם.",
+    "offlineTitle": "אין חיבור לשרת",
+    "offlineBody": "הטבלה תתעדכן כשיחזור החיבור.",
+    "errorTitle": "משהו השתבש",
+    "signedOut": "צריך להתחבר כדי לראות את זה",
+    "players_one": "שחקן אחד",
+    "players_two": "{{count}} שחקנים",
+    "players_many": "{{count}} שחקנים",
+    "players_other": "{{count}} שחקנים",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}, בדרך לרמה {{level}}"
+  },
+  "leaderboard": {
+    "title": "טבלת מובילים",
+    "tabs": {
+      "label": "סוג דירוג",
+      "general": "כללי",
+      "fast": "מהיר",
+      "normal": "רגיל",
+      "hard": "קשה",
+      "friends": "חברים"
+    },
+    "caption": {
+      "general": "כללי · הדירוג הגבוה של כל שחקן",
+      "type": "דירוג {{type}} · כל העולם",
+      "typePlayers": "דירוג {{type}} · {{players}} · כל העולם",
+      "friends": "היריבים האחרונים שלך"
+    },
+    "players": "מספר שחקנים",
+    "podium": "שלושת המובילים",
+    "rankLabel": "מקום {{rank}}",
+    "meName": "{{name}} (אתה)",
+    "openHint": "פתיחת כרטיס השחקן",
+    "meNone": "עוד אין לך דירוג בטבלה הזו",
+    "play": "שחק",
+    "playHint": "שחק משחק מדורג כדי להיכנס לטבלה",
+    "emptyTitle": "עוד אין כאן אף אחד",
+    "emptyBody": "שחק משחק מדורג ותהיה הראשון בטבלה."
+  },
+  "friends": {
+    "invite": "הזמן חברים",
+    "inviteMessage": "בוא לשחק נגדי בסודוקו פייט!",
+    "inviteNote": "עוד חבר = עוד יריב",
+    "emptyTitle": "עוד אין יריבים",
+    "emptyBody": "שחק משחק מדורג, והיריבים שלך יופיעו כאן. רשימת חברים מלאה מגיעה בקרוב."
+  },
+  "league": {
+    "title": "ליגה",
+    "toNext": "עוד {{points}} ל{{league}}",
+    "top": "הליגה הגבוהה ביותר",
+    "general": "כללי {{rating}} · {{next}}",
+    "generalTop": "כללי {{rating}} · הליגה הגבוהה ביותר",
+    "ladder": "סולם הליגות",
+    "step": "ליגת {{league}}, מדירוג {{floor}}"
+  },
+  "card": {
+    "title": "כרטיס שחקן",
+    "edit": "עריכת פרופיל",
+    "notFound": "השחקן לא נמצא",
+    "offlineBody": "הכרטיס נטען מהשרת. נסה שוב כשיחזור החיבור.",
+    "savedNote": "אין חיבור לשרת: מוצג הכרטיס השמור.",
+    "meLabel": "{{name}}, הכרטיס שלי",
+    "ratingsTitle": "דירוג לפי סוג משחק",
+    "ratingsNote": "{{n}} דירוגים",
+    "noRatings": "עוד אין דירוג",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "עלייה של {{points}} במשחקים האחרונים",
+    "trendDown": "ירידה של {{points}} במשחקים האחרונים",
+    "trendFlat": "ללא שינוי במשחקים האחרונים",
+    "atPeak": "בשיא",
+    "peak": "שיא {{value}}",
+    "atPeakShort": "בשיא!",
+    "peakShort": "שיא {{value}}",
+    "games_one": "משחק אחד",
+    "games_two": "{{count}} משחקים",
+    "games_many": "{{count}} משחקים",
+    "games_other": "{{count}} משחקים",
+    "statsTitle": "נתוני קרב",
+    "stats": {
+      "games": "משחקים",
+      "wins": "ניצחונות",
+      "losses": "הפסדים",
+      "winRate": "אחוז ניצחונות",
+      "streak": "רצף נוכחי",
+      "bestStreak": "רצף שיא",
+      "bestMove": "מהלך שיא",
+      "avgMistakes": "טעויות למשחק"
+    },
+    "recentTitleSection": "תוצאות אחרונות",
+    "recentNote": "{{n}} אחרונות",
+    "recentEmpty": "עוד אין משחקים מדורגים.",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "ניצחון",
+      "loss": "הפסד",
+      "tie": "תיקו"
+    },
+    "outcomeShort": {
+      "win": "נ",
+      "loss": "ה",
+      "tie": "ת"
+    },
+    "place": "מקום {{place}}",
+    "points": "{{score}} נק׳",
+    "ratingDelta": "דירוג {{delta}}",
+    "formLabel": "התוצאות האחרונות, מהחדשה: {{list}}",
+    "replayHint": "פתיחת הצפייה החוזרת",
+    "openOf": "כרטיס השחקן של {{name}}",
+    "achievementsTitle": "הישגים מובילים"
+  },
+  "achievements": {
+    "title": "הישגים",
+    "soon": "בקרוב",
+    "soonBody": "12 הישגים בדרך: ניצחון ראשון, רצפי ניצחונות, מהלכי שיא ועוד. בקרוב כאן.",
+    "soonShort": "ההישגים מגיעים בקרוב.",
+    "earned": "{{name}}, הושג ב־{{date}}"
+  },
+  "progress": {
+    "title": "הישגים והתקדמות",
+    "savedNote": "אין חיבור לשרת: מוצגים הנתונים השמורים.",
+    "pending_one": "אימון אחד ממתין לסנכרון עם השרת",
+    "pending_two": "{{count}} אימונים ממתינים לסנכרון עם השרת",
+    "pending_many": "{{count}} אימונים ממתינים לסנכרון עם השרת",
+    "pending_other": "{{count}} אימונים ממתינים לסנכרון עם השרת",
+    "offlineBody": "הרמה וה־XP יופיעו כשיהיה חיבור לשרת.",
+    "levelWord": "רמה",
+    "xpTitle": "נקודות ניסיון",
+    "toGo": "עוד {{xp}} לרמה {{level}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "איך מרוויחים XP",
+    "how": {
+      "win": "מקום 1 במדורג, או ניצחון מול בוט",
+      "played": "כל תוצאה אחרת במדורג או מול בוט",
+      "solo": "אימון לבד",
+      "perCorrect": "כל מהלך נכון, במדורג ומול בוט"
+    }
+  },
+  "interferences": {
+    "title": "הפרעות",
+    "entry": "אוסף ההפרעות",
+    "entryNote": "{{open}} פתוחות · {{locked}} נעולות",
+    "countLabel": "{{open}} מתוך {{total}} הפרעות פתוחות",
+    "opened": "נפתחו",
+    "facts": {
+      "seconds": "שניות לכל הפרעה",
+      "cost": "העלות מוכפלת בכל שיגור",
+      "drag": "בלבד, אל כרטיס היריב",
+      "dragValue": "גרירה"
+    },
+    "arsenal": "הארסנל שלך",
+    "tapHint": "הקש לתצוגה מקדימה",
+    "openLabel": "{{name}}, זמין. {{description}}",
+    "previewHint": "הצגת התצוגה המקדימה",
+    "available": "זמין",
+    "previewing": "מציג",
+    "lockedTitle": "נעולות",
+    "lockedNote": "נפתחות עם עליית רמה",
+    "soon": "בקרוב",
+    "atLevel": "נפתח ברמה {{level}}",
+    "lockedLabel": "{{name}}, נעול, {{when}}",
+    "howTo": "במשחק: הקש על הברק בכרטיס היריב, וגרור הפרעה אל הכרטיס.",
+    "future": {
+      "ink": "דיו",
+      "earthquake": "רעידת אדמה",
+      "fog": "ערפל",
+      "bubbles": "בועות"
+    },
+    "description": {
+      "fireworks": "מטח זיקוקים צבעוני על המסך",
+      "cats": "שיירת חתולים דוהרת על המסך",
+      "warp": "המסך מתעקם ומרצד",
+      "ink": "כתמי דיו שנמחקים בהדרגה",
+      "earthquake": "המסך רועד",
+      "fog": "ערפל שמתפזר לאט",
+      "bubbles": "בועות שצריך לפוצץ"
+    }
+  },
+  "home": {
+    "levelXp": "רמה {{level}} · {{xp}}"
+  }
+}

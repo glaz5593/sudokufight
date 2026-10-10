@@ -46,6 +46,7 @@ describe('loadConfig', () => {
       ratingOption: 'B',
       cheat: { thinkMs: 1200, moves: 20 },
       accountDeleteMaxAuthAgeMs: 300_000,
+      progress: { practiceXpDailyCap: 1500, inviteUrl: null },
     });
     expect(DEFAULT_PGLITE_DIR).toBe(path.resolve(__dirname, '..', '.data', 'pglite'));
     // The dev password comes with a loud warning.
@@ -256,6 +257,22 @@ describe('loadConfig', () => {
         expect(issuesOf({ ACCOUNT_DELETE_MAX_AUTH_AGE_MS: bad })[0]).toMatch(
           /^ACCOUNT_DELETE_MAX_AUTH_AGE_MS: /,
         );
+    });
+
+    it('PRACTICE_XP_DAILY_CAP (default 1500, 0 = no practice XP) and INVITE_URL (stage 12)', () => {
+      expect(load({}).config.progress).toEqual({ practiceXpDailyCap: 1500, inviteUrl: null });
+      expect(
+        load({ PRACTICE_XP_DAILY_CAP: ' 800 ', INVITE_URL: ' https://sudokufight.app/invite ' }).config
+          .progress,
+      ).toEqual({ practiceXpDailyCap: 800, inviteUrl: 'https://sudokufight.app/invite' });
+      expect(load({ PRACTICE_XP_DAILY_CAP: '0', INVITE_URL: '' }).config.progress).toEqual({
+        practiceXpDailyCap: 0,
+        inviteUrl: null,
+      });
+      for (const bad of ['-1', '1.5', 'lots'])
+        expect(issuesOf({ PRACTICE_XP_DAILY_CAP: bad })[0]).toMatch(/^PRACTICE_XP_DAILY_CAP: /);
+      for (const bad of ['sudokufight.app/invite', 'javascript:alert(1)', 'ftp://x.example'])
+        expect(issuesOf({ INVITE_URL: bad })[0]).toMatch(/^INVITE_URL: /);
     });
   });
 

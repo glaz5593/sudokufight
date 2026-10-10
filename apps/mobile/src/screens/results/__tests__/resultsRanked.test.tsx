@@ -1,5 +1,5 @@
 import { type PlayerInfo, toView } from '@sudoku-fight/engine';
-import { act, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { scoreText, signedText } from '../../../components/player';
 import i18n from '../../../i18n';
@@ -47,7 +47,11 @@ function rankedDuel(): Table {
   return table;
 }
 
-async function show(table: Table, me: string, { fakeTimers = false } = {}) {
+async function show(
+  table: Table,
+  me: string,
+  { fakeTimers = false, onOpenPlayer }: { fakeTimers?: boolean; onOpenPlayer?: (id: string) => void } = {},
+) {
   const model = sessionResultsModel(sessionOf(table, me))!;
   await render(
     <ResultsScreen
@@ -55,6 +59,7 @@ async function show(table: Table, me: string, { fakeTimers = false } = {}) {
       load={async () => ({ kind: 'found', model })}
       onNewGame={jest.fn()}
       onHome={jest.fn()}
+      onOpenPlayer={onOpenPlayer}
     />,
   );
   await act(async () => {
@@ -201,5 +206,30 @@ describe('a four-player game: the full ranking (spec §12)', () => {
     expect(screen.getAllByLabelText(/^מקום \d: אני · /).length).toBe(1);
     expect(screen.queryByTestId('results-opponents')).toBeNull();
     expect(screen.getByTestId('results-rating')).toBeOnTheScreen();
+  });
+});
+
+describe('stage 12: another player of a ranked game opens their card (spec §14.3)', () => {
+  it('two players: the opponent’s row is a button', async () => {
+    const onOpenPlayer = jest.fn();
+    await show(rankedDuel(), 'me', { onOpenPlayer });
+    const row = screen.getByTestId('results-opponent-nina');
+    expect(row).toHaveProp('accessibilityRole', 'button');
+    expect(row).toHaveProp('accessibilityHint', 'פתיחת כרטיס השחקן');
+    await fireEvent.press(row);
+    expect(onOpenPlayer).toHaveBeenCalledWith('nina');
+  });
+
+  it('four players: every other player opens their card; my own row does not', async () => {
+    const onOpenPlayer = jest.fn();
+    const model = await show(fourPlayerGame(), 'p2', { onOpenPlayer });
+    for (const r of model.ranking) {
+      const id =
+        r.place === 4 ? `results-ranking-4-${r.playerId}` : `results-podium-${r.place}-${r.playerId}`;
+      expect(screen.getByTestId(id)).toHaveProp('accessibilityRole', r.isMe ? 'text' : 'button');
+    }
+    const other = model.ranking.find((r) => !r.isMe && r.place < 4)!;
+    await fireEvent.press(screen.getByTestId(`results-podium-${other.place}-${other.playerId}`));
+    expect(onOpenPlayer).toHaveBeenCalledWith(other.playerId);
   });
 });

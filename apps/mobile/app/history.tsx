@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { type HistoryEntry, HistoryScreen } from '../src/screens/history';
 import { appHistoryDeps } from '../src/screens/history/appWiring';
 import { goToTab } from '../src/screens/home';
+import { openPlayerCard } from '../src/screens/player/navigation';
 import { useProfile } from '../src/state/profile';
 
 const openReplay = (entry: HistoryEntry) =>
@@ -15,6 +16,7 @@ export default function HistoryRoute() {
     <HistoryScreen
       deps={appHistoryDeps}
       onOpen={openReplay}
+      onOpenPlayer={openPlayerCard}
       onPlay={() => router.push('/modes')}
       onTab={(tab) => goToTab(tab, 'history')}
       myAvatar={myAvatar}

@@ -106,6 +106,7 @@
     "avatarCount": "{{n}} / {{total}}",
     "avatarGroup": "Avatar choice",
     "avatar": "Avatar {{n}}",
+    "avatarLocked": "Avatar {{n}}, opens at level {{level}}",
     "selectedAvatar": "Selected avatar: avatar {{n}}",
     "prevAvatar": "Previous avatar",
     "nextAvatar": "Next avatar",

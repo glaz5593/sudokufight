@@ -43,7 +43,18 @@ export {
 } from './cardModel';
 export { countryName, flagEmoji } from './countryFlag';
 export { formatScore, formatSigned, ltr, MINUS, scoreText, secondsOf, signedText } from './format';
-export { type League, LEAGUE_THRESHOLDS, LEAGUES, leagueFor, type LeagueThresholds } from './league';
+export {
+  type League,
+  leagueFloor,
+  leagueFor,
+  type LeagueProgress,
+  leagueProgress,
+  LEAGUE_THRESHOLDS,
+  LEAGUES,
+  type LeagueThresholds,
+  nextLeague,
+  playerLeague,
+} from './league';
 export { AVATAR_SIZES, type AvatarSize, compactCardGap, compactCardWidth, paletteAt } from './metrics';
 export {
   activityPhrase,

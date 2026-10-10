@@ -4,6 +4,7 @@ import 'react-native-reanimated';
 import { fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 
+import { card as playerCard, myProgress } from '../../../api/testing/fakeProgress';
 import { initAuth, setAuthDeps, useAuth } from '../../../auth/authStore';
 import { installSignedInPlayer, type TestAuth } from '../../../auth/testing/testAuth';
 import { directionProblems } from '../../../components/ui/testing/layout';
@@ -12,6 +13,8 @@ import { practiceStorageOrNull } from '../../../game/storage';
 import { memoryDb } from '../../../game/testing/sqlJsDb';
 import i18n from '../../../i18n';
 import { usePracticeHistory } from '../../../state/practiceHistory';
+import { ltr } from '../../../components/player';
+import { adoptCard, adoptProgress, forgetProgress } from '../../../progress/progressStore';
 import { useProfile } from '../../../state/profile';
 import { usePracticeStats } from '../practiceStats';
 import { renderApp } from '../testing/homeTesting';
@@ -27,6 +30,7 @@ jest.mock('expo-haptics', () => jest.requireActual<Mocks>('../testing/nativeMock
 const hidden = { includeHiddenElements: true };
 const EXTRA = {
   'edit-profile': () => <Text testID="stub-edit-profile">edit</Text>,
+  'player/[id]': () => <Text testID="stub-player">player</Text>,
   'verify-email': () => <Text testID="stub-verify-email">verify</Text>,
 };
 
@@ -40,10 +44,13 @@ beforeEach(async () => {
   useProfile.setState({ name: null, avatarId: 'av00', country: 'US', lastPlay: null, botLevel: null });
   await i18n.changeLanguage('he');
 });
-afterEach(() => setAuthDeps(null));
+afterEach(() => {
+  setAuthDeps(null);
+  forgetProgress();
+});
 
 describe('Home with an account (stage 8)', () => {
-  it('the card is the account’s: name, flag, ratings 1200 provisional [D23], and opens the profile', async () => {
+  it('the card is the account’s: name, flag, ratings 1200 provisional [D23], and opens my player card', async () => {
     auth = await installSignedInPlayer({ displayName: 'MosheG', avatarId: 'av05', country: 'IL' });
     await initAuth();
     const app = await renderApp('/', EXTRA);
@@ -60,12 +67,45 @@ describe('Home with an account (stage 8)', () => {
         'דירוג רגיל 1200, זמני, דירוג קשה 1200, זמני, 0 משחקים',
     );
     expect(card).toHaveProp('accessibilityRole', 'button');
-    expect(card).toHaveProp('accessibilityHint', 'עריכת הפרופיל');
+    expect(card).toHaveProp('accessibilityHint', 'פתיחת כרטיס השחקן');
     // The game screens' "me" follows the account.
     expect(useProfile.getState()).toMatchObject({ name: 'MosheG', avatarId: 'av05', country: 'IL' });
 
+    // Stage 12 (spec §4.2): the card opens my player card.
     await fireEvent.press(card);
-    expect(app.pathname()).toBe('/edit-profile');
+    expect(app.pathname()).toBe(`/player/${useAuth.getState().me!.id}`);
+  });
+
+  it('stage 12: my level, the XP bar and my league from my progress; my card’s numbers', async () => {
+    auth = await installSignedInPlayer({ displayName: 'MosheG', avatarId: 'av05', country: 'IL' });
+    await initAuth();
+    const { user, me } = useAuth.getState();
+    adoptProgress(user!.uid, myProgress(), 1);
+    adoptCard(user!.uid, playerCard({ id: me!.id }), 1);
+    await renderApp('/', EXTRA);
+    const card = await screen.findByTestId('profile-card');
+    expect(within(card).getByTestId('league-gold')).toHaveTextContent('ליגת זהב · רמה 14');
+    expect(within(card).getByTestId('profile-xp')).toHaveTextContent(ltr('2,380 / 3,000 XP'));
+    expect(within(card).getByTestId('stat-games')).toHaveTextContent('86משחקים');
+    expect(within(card).getByTestId('stat-wins')).toHaveTextContent(`${ltr('57%')}ניצחונות`);
+    expect(within(card).getByTestId('stat-streak')).toHaveTextContent('3רצף');
+    expect(card).toHaveProp(
+      'accessibilityLabel',
+      expect.stringContaining(`ליגת זהב, רמה 14 · ${ltr('2,380 / 3,000 XP')}`),
+    );
+  });
+
+  it('stage 12: before a league, "בדירוג זמני" with my level', async () => {
+    auth = await installSignedInPlayer();
+    await initAuth();
+    adoptProgress(
+      useAuth.getState().user!.uid,
+      myProgress({ league: null, leagueRating: null, level: 2 }),
+      1,
+    );
+    await renderApp('/', EXTRA);
+    await screen.findByTestId('profile-card');
+    expect(screen.getByTestId('profile-league')).toHaveTextContent('בדירוג זמני · רמה 2');
   });
 
   it('a settled rating shows its league [D9]', async () => {

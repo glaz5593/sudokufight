@@ -133,6 +133,20 @@ curl -H 'authorization: Bearer dev:moshe' http://localhost:2567/v1/me/games
 curl -H 'authorization: Bearer dev:moshe' http://localhost:2567/v1/games/<id>/replay
 ```
 
+### טבלת מובילים, כרטיס שחקן ו־XP (שלב 12)
+
+- `GET /v1/leaderboard?tab=general|fast|normal|hard|friends&players=2|3|4&cursor=`: 50 בכל עמוד. דירוג שווה מקבל אותו מקום, והשורה שלי (`me`) מגיעה בכל עמוד.
+  `players` נקרא רק באפשרות A (ברירת מחדל 2). בלשונית `friends` יש יריבים אחרונים וקישור ההזמנה (`INVITE_URL`).
+- `GET /v1/players/:id`: כרטיס שחקן, רק נתונים ציבוריים. חשבון שנמחק מחזיר 404.
+- `GET /v1/me/progress`: ה־XP, הרמה והליגה שלי.
+- `POST /v1/me/practice-results`: תוצאות אימון מהטלפון (D41), עד 50 בכל בקשה. כל תוצאה נספרת פעם אחת, וה־XP של אימון מוגבל ביום (`PRACTICE_XP_DAILY_CAP`, ברירת מחדל 1500).
+- ה־XP של משחק מדורג נכתב בסוף המשחק, באותה טרנזקציה של הדירוג.
+- החוזה: `packages/protocol/src/progress.ts`. הקוד: `apps/server/src/progress`. ההישגים ממתינים לאישור: `docs/ACHIEVEMENTS-PROPOSAL.md`.
+
+```
+curl -H 'authorization: Bearer dev:moshe' 'http://localhost:2567/v1/leaderboard?tab=normal'
+```
+
 ### לשחק מול לקוח מזויף (fake-client)
 
 `apps/server/scripts/fake-client.ts` הוא שחקן שרץ ב־Node ומשחק דרך השרת כמו בוט: זמני חשיבה לפי הרמה וסוג המשחק, טעויות סבירות, תגובות והפרעות.

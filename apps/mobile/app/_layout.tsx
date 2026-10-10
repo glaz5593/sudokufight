@@ -9,6 +9,7 @@ import { useAuthGate } from '../src/auth';
 import { ToastViewport } from '../src/components/ui';
 import { openPracticeStorage } from '../src/game/storage';
 import i18n, { applyDirection } from '../src/i18n';
+import { startProgress } from '../src/progress';
 import { SplashOverlay } from '../src/screens/account/SplashScreen';
 import { ErrorScreen } from '../src/screens/ErrorScreen';
 import { track } from '../src/services/analytics';
@@ -31,6 +32,9 @@ export default function RootLayout() {
 
   // Spec §27.1: usage reports to our server. Loads the events earlier runs left, sends them, and keeps sending.
   useEffect(() => startTelemetry(), []);
+  // Stage 12 [D41]: the practice XP waiting on the phone goes to the server, and my progress is read, when a
+  // player is signed in (and again each time the app comes back to the foreground).
+  useEffect(() => startProgress(), []);
   // Spec §22: one app_open per run.
   useEffect(() => track('app_open'), []);
   // Spec §27.1: a screen_view for each screen entered (its route pattern; not the dev tools).

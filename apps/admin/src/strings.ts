@@ -181,6 +181,8 @@ const he = {
   'user.noFlags': 'אין סימונים.',
   'user.flagSeconds': '{n} שנ׳ בממוצע',
 
+  'stats.level': 'רמה',
+  'stats.xp': 'נקודות ניסיון (XP)',
   'stats.games': 'משחקים',
   'stats.wins': 'ניצחונות',
   'stats.losses': 'הפסדים',
@@ -407,6 +409,8 @@ const en: Record<StringKey, string> = {
   'user.noFlags': 'No flags.',
   'user.flagSeconds': '{n} s on average',
 
+  'stats.level': 'Level',
+  'stats.xp': 'XP',
   'stats.games': 'Games',
   'stats.wins': 'Wins',
   'stats.losses': 'Losses',

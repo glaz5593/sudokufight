@@ -13,6 +13,7 @@ import { isAccountApiError, isOfflineError } from '../../api/accountApi';
 import { nextRenameAt } from '../../api/me';
 import { updateProfile, useAuth } from '../../auth/authStore';
 import { Button, useToast } from '../../components/ui';
+import { useMyLevel } from '../../progress/hooks';
 import { cue } from '../../services/feedback';
 import { space } from '../../theme';
 import { goBack } from '../home/navigation';
@@ -58,6 +59,8 @@ function EditProfileForm({ me }: { me: Me }) {
   const [formError, setFormError] = useState<string | null>(null);
   const [shake, setShake] = useState(0);
   const [busy, setBusy] = useState(false);
+  // [D17] Avatars above my level show locked (none in V1).
+  const level = useMyLevel();
 
   const patch: UpdateMeRequest = {};
   if (avatarId !== null && avatarId !== me.avatarId) patch.avatarId = avatarId;
@@ -117,7 +120,7 @@ function EditProfileForm({ me }: { me: Me }) {
       <ScreenHeader title={t('edit.title')} onBack={goBack} />
       <DevModeBadge />
       <FormAlert message={formError} testID="edit-alert" />
-      <AvatarPicker value={avatarId} onChange={setAvatarId} />
+      <AvatarPicker value={avatarId} onChange={setAvatarId} level={level} />
       <View style={styles.form}>
         {renameAt === null ? (
           <NameField
