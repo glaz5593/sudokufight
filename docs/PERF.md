@@ -123,6 +123,8 @@ npx jest apps/mobile/src/screens/game/__tests__/GameScreenRenders.test.tsx --sel
 3. **קוד הפיתוח לא נכנס ל־release.**
    - ‏`app/dev/design-system.tsx` ו־`app/dev/hello.tsx` טוענים את המסכים שלהם רק מאחורי `__DEV__`.
    - כך יצאו מה־bundle ‏`src/components/dev`, ‏`DesignSystemScreen`, ‏`HelloScreen`, ‏`helloStore` ו־`useEchoRtt` (54 KB).
+   - כך גם `app/dev/sounds.tsx`: מסך ההאזנה `SoundAuditionScreen` ו־30 הצלילים המועמדים (`assets/sounds/candidates`, ‏1.4 MB) לא נכנסים ל־release.
+     **‏`startupGraph.test.ts`** בודק שאף מסך מחוץ ל־`app/dev` לא מגיע אליהם.
 4. **לפני המסך הראשון רצים רק הגופנים, השפה והכיוון שלה, ומצב ההתחברות.**
    - שלושה דברים עוברים לרגע שבו המסך הראשון כבר מוצג וה־JS פנוי (`requestIdleCallback`):
      - דיווחי השימוש (‏telemetry).

@@ -10,7 +10,8 @@
 | נכס | מקור | רישיון | סטטוס | מה צריך ממשה |
 |---|---|---|---|---|
 | 50 אווטרים + av00 | חבילה "freebie" מהאפליקציה הקודמת | **לא ידוע** | 🔴 **חוסם הגשה** | למצוא את מקור החבילה ואת דף הרישיון שלה (סעיף 1) |
-| 30 צלילים | נוצרו בקוד בפרויקט | אין צורך ברישיון | ✅ | להחליף בצלילים סופיים ב־CC0 (סעיף 2) |
+| 30 צלילים זמניים (placeholder): מה שהאפליקציה משמיעה היום | נוצרו בקוד בפרויקט | אין צורך ברישיון | ✅ | כלום. מותרים לבטא (סעיף 2.1) |
+| 30 צלילים מועמדים (`assets/sounds/candidates/`) | ‏Kenney ‏(26) ו־OpenGameArt ‏(4) | ‏CC0 1.0 | ✅ | לשמוע ב־`/dev/sounds` ולבחור (סעיף 2.2) |
 | גופנים Rubik ו־Teko | Google Fonts | SIL OFL 1.1 | ✅ | כלום. הרישיון מוצג באפליקציה |
 | 690 לוחות "מהיר" | האפליקציה הקודמת, כנראה Kaggle | **כנראה CC0** | 🟡 לאמת | לפתוח את דף המאגר ב־Kaggle ולוודא (סעיף 4) |
 | ‏6,000 לוחות מדורגים + 600 לוחות אופליין (רגיל, קשה) | המחולל שלנו | שלנו | ✅ | כלום |
@@ -44,49 +45,36 @@
 - **אפשרויות ב־CC0 (לבדוק את הרישיון בדף של כל סט לפני שימוש):** ‏Open Peeps (‏Pablo Stanley), וסגנונות CC0 של DiceBear, כמו Lorelei ו־Notionists.
 - **בקוד ההחלפה פשוטה:** אותם שמות קבצים (`av01.svg`…), אותם מזהים, ובלי מיגרציה. החשבונות הקיימים שומרים את המספר שבחרו.
 
-## 2. צלילים ✅ (זמניים)
+## 2. צלילים ✅
 
-**מה יש:** ‏30 קובצי WAV ב־`assets/sounds/placeholder/`. **כולם נוצרו בקוד** על ידי `apps/mobile/scripts/gen-placeholder-sounds.mjs`, מגלי סינוס, משולש ורעש. אין בהם חומר של צד שלישי, ולכן **אין רישיון לבדוק** (`assets/sounds/README.md`).
+### 2.1 מה האפליקציה משמיעה היום: placeholder ✅
 
-**הצלילים הסופיים: CC0 בלבד** (`docs/design/motion.md` §8). לכל קובץ רושמים מקור ויוצר ב־`assets/sounds/CREDITS.md`.
+**מה יש:** ‏30 קובצי WAV ב־`assets/sounds/placeholder/`. **כולם נוצרו בקוד** על ידי `apps/mobile/scripts/gen-placeholder-sounds.mjs`, מגלי סינוס, משולש ורעש. אין בהם חומר של צד שלישי, ולכן **אין רישיון לבדוק** (`assets/sounds/README.md`). הם מותרים לבטא.
 
-**הצעות לכל צליל** (לא הורדתי כלום). ‏Kenney.nl: כל החבילות שלו ב־**CC0**, בלי חובת קרדיט, ‏[kenney.nl/assets](https://kenney.nl/assets) ← category Audio. **שמות הקבצים הם הצעה:** לשמוע כמה קבצים סמוכים בחבילה ולבחור. ‏Kenney מספק `.ogg`, ולכן ממירים ל־`.m4a` (‏ffmpeg) ומקצרים לאורך שבטבלה.
+### 2.2 המועמדים לצלילים הסופיים: ‏CC0 ✅
 
-| צליל (`assets/sounds/`) | מה צריך | הצעה ראשונה | חלופה |
-|---|---|---|---|
-| `cell_select` | טיק עץ קצר, עד 60ms | Kenney **Impact Sounds**: ‏`impactWood_light_000` | Kenney **Interface Sounds**: ‏`tick_001` |
-| `cell_denied` | "טאק" עמום, עד 150ms | Interface Sounds: ‏`error_004` (בעוצמה נמוכה) | Impact Sounds: ‏`impactSoft_medium_000` |
-| `cell_release` | טיק הפוך ורך, עד 150ms | Interface Sounds: ‏`drop_001` | Interface Sounds: ‏`minimize_003` |
-| `correct` | "דינג" עולה עם צלצול מטבע, 300–500ms | Interface Sounds: ‏`confirmation_001` | Kenney **RPG Audio**: ‏`handleCoins` (כשכבה שנייה) |
-| `count_tick` | טיק זעיר, עד 30ms | Interface Sounds: ‏`tick_004` (חתוך) | Interface Sounds: ‏`click_002` |
-| `wrong` | זמזום נמוך, ‏120–200ms | Interface Sounds: ‏`error_006` | Kenney **Digital Audio**: ‏`lowDown` (חתוך) |
-| `lock_tick` | תקתוק שעון שקט | Interface Sounds: ‏`tick_002` | — |
-| `arsenal_open` | מגירה נפתחת, עד 250ms | Interface Sounds: ‏`open_001` | Interface Sounds: ‏`maximize_006` |
-| `interfere_whoosh` | "ווש" בגרירה, ‏300–500ms | Freesound, ‏CC0: חיפוש "whoosh short" | Kenney **Sci-Fi Sounds**: ‏`thrusterFire_000` (חתוך) |
-| `interfere_launch` | פיצוץ קטן בנחיתה, ‏300–600ms | Sci-Fi Sounds: ‏`explosionCrunch_000` | Impact Sounds: ‏`impactPunch_medium_000` |
-| `hit_fireworks` | פצפוצים וזיקוקים, **עד 5 שניות**, דעיכה בסוף | Freesound, ‏CC0: ‏"fireworks crackle" | כמה `explosionCrunch_00x` של Sci-Fi Sounds ברצף |
-| `hit_cats` | יללות וריצה, **עד 5 שניות** | Freesound, ‏CC0: ‏"cat meow" + ‏"small footsteps" | (אין חתולים אצל Kenney) |
-| `hit_warp` | "וובל" סינתטי, **עד 5 שניות** | Digital Audio: ‏`phaserDown3` או `spaceTrash1`, בלולאה | Sci-Fi Sounds: ‏`spaceEngine_000` |
-| `react_laugh` | צחקוק, עד 800ms | Freesound, ‏CC0: ‏"chuckle" | — |
-| `react_scream` | התנשפות, עד 800ms | Freesound, ‏CC0: ‏"gasp" | — |
-| `react_cool` | נקישת אצבעות, עד 800ms | Freesound, ‏CC0: ‏"finger snap" | Interface Sounds: ‏`click_005` |
-| `react_facepalm` | טפיחה רכה, עד 800ms | Impact Sounds: ‏`impactSoft_heavy_000` | Freesound, ‏CC0: ‏"face slap" |
-| `react_fire` | "ווש" של להבה, עד 800ms | Sci-Fi Sounds: ‏`thrusterFire_001` (חתוך) | Freesound, ‏CC0: ‏"fire whoosh" |
-| `react_eyes` | "הממ" סקרן, או "בוינג", עד 800ms | Interface Sounds: ‏`question_001` | Digital Audio: ‏`pepSound1` |
-| `react_pop` | פופ רך, עד 200ms | Interface Sounds: ‏`pluck_001` | Interface Sounds: ‏`drop_002` |
-| `match_found` | צלצול של שני תווים, עד 700ms | Digital Audio: ‏`twoTone1` | Interface Sounds: ‏`confirmation_002` |
-| `countdown_beat` | מכת תוף, עד 400ms | Freesound, ‏CC0: ‏"taiko hit" או "kick drum one shot" | Impact Sounds: ‏`impactPunch_heavy_000` |
-| `go` | גונג עם תרועה קצרה, עד 1.5 שניות | Impact Sounds: ‏`impactBell_heavy_000` + ‏Freesound, ‏CC0: ‏"crowd cheer short" | Kenney Voiceover: הקריינות "go" או "fight", אם יש |
-| `win` | פנפרה קצרה, עד 2 שניות | Kenney **Music Jingles**: אחד מ־`jingles_NES00`…`16` | Music Jingles: ‏`jingles_SAX..` |
-| `lose` | אקורד יורד, עד 1.5 שניות | Music Jingles: אחד יורד מ־`jingles_PIZZI..` | Digital Audio: ‏`lowThreeTone` |
-| `lead_take` | "סוויש" עולה, עד 400ms | Digital Audio: ‏`phaserUp3` | Interface Sounds: ‏`maximize_002` |
-| `lead_lose` | "סוויש" יורד, עד 400ms | Digital Audio: ‏`phaserDown2` | Interface Sounds: ‏`minimize_002` |
-| `disconnect` | שני צלילים יורדים, עד 600ms | Digital Audio: ‏`highDown` | Digital Audio: ‏`twoTone2` |
-| `reconnect` | שני צלילים עולים, עד 600ms | Digital Audio: ‏`highUp` | Digital Audio: ‏`twoTone1` |
-| `ui_tap` | קליק רך, עד 80ms | Interface Sounds: ‏`click_001` | Kenney **UI Audio**: ‏`click1` |
+**הצלילים הסופיים: CC0 בלבד** (`docs/design/motion.md` §8).
 
-**ב־Freesound.org:** מסננים לפי License: **Creative Commons 0** בלבד. קבצים ב־CC BY דורשים קרדיט, וב־CC BY-NC אסור להשתמש במשחק בחנות.
-**כשמחליפים:** לפי `assets/sounds/README.md` (אותם שמות, ‏`SOUND_SOURCES` ב־`apps/mobile/src/services/sfx.ts`, והבדיקות).
+- **מה יש:** ‏30 קובצי WAV ב־`assets/sounds/candidates/`, אחד לכל צליל, באותו שם (`candidates/correct.wav` וכן הלאה). הורדו ב־11.10.2026.
+- **הרישיון של כולם: CC0 1.0** (נחלת הכלל). מותר כל שימוש, גם מסחרי, ומותר לשנות. אין חובת קרדיט.
+  - **‏26 קבצים מ־7 חבילות של Kenney:** ‏Interface Sounds, ‏UI Audio, ‏Digital Audio, ‏Impact Sounds, ‏RPG Audio, ‏Sci-fi Sounds ו־Music Jingles. הרישיון נקרא מקובץ ה־`License.txt` שבכל חבילה.
+  - **‏4 קבצים מ־OpenGameArt** (זיקוקים, חתולים, צחקוק והקשת אצבעות). כל אחד מדף שמסומן "License(s): CC0". ל־Kenney אין צלילים כאלה.
+  - **לא נלקח שום קובץ ב־CC BY או ב־CC BY-NC.** קובץ זיקוקים עם מחיאות כפיים נפסל, כי הוא CC BY.
+- **הקרדיטים, הקישורים ונוסח הרישיון:** ‏`assets/sounds/candidates/LICENSE.txt`.
+- **מאיפה כל קובץ, מה נעשה בו והעוצמה שלו:** ‏`assets/sounds/candidates/SOURCES.md`.
+- **הם לא נכנסים לגרסת ה־release** כל עוד לא קודמו:
+  - רק מסך הפיתוח `/dev/sounds` טוען אותם, מאחורי `__DEV__`. הבדיקה `startupGraph.test.ts` שומרת על זה.
+  - בדקתי גם ייצוא release של Android (`npx expo export`): אף אחד מ־30 המועמדים לא נמצא בו, וכל 30 הצלילים הזמניים כן.
+- **מה משה צריך:** לשמוע ב־`/dev/sounds` (בבית, בשורת הפיתוח: "צלילים") ולבחור. את הרישיון אין צורך לבדוק שוב.
+- **תיעוד לבדיקת החנויות (רשות):** התווית CC0 בדף של OpenGameArt היא ההצהרה של מי שהעלה את הקובץ. כדאי לשמור צילום מסך של ארבעת הדפים. הקישורים נמצאים ב־`LICENSE.txt`.
+
+### 2.3 כשמקדמים מועמד, או מביאים צליל ממקור אחר
+
+- **מקדמים** לפי `assets/sounds/README.md`, בסעיף "איך מקדמים מועמד שמשה בחר".
+- **הקרדיט** של כל צליל שקודם עובר לרשימה "קרדיטים של הצלילים הסופיים", באותו README. ‏CC0 לא מחייב קרדיט. הרשימה נשמרת לבדיקת החנויות (אפיון סעיף 23).
+- **צליל ממקור אחר:** ‏CC0 בלבד.
+  - ב־Freesound.org מסננים לפי License: **Creative Commons 0** בלבד. קבצים ב־CC BY דורשים קרדיט, וב־CC BY-NC אסור להשתמש במשחק בחנות.
+  - **לא `.ogg`:** ‏iOS לא מנגן אותו. ממירים ל־WAV או ל־`.m4a`.
 
 ## 3. גופנים ✅
 

@@ -55,6 +55,7 @@ export type SoundId = (typeof SOUND_IDS)[number];
 /**
  * The files. Until the final CC0 sounds arrive (motion.md §8), each one is a generated placeholder
  * (scripts/gen-placeholder-sounds.mjs, assets/sounds/README.md). Replacing one is a change of path here.
+ * The CC0 candidates (assets/sounds/candidates) are auditioned on /dev/sounds and promoted as the README says.
  * Requires stay static so Metro bundles them.
  */
 export const SOUND_SOURCES: Record<SoundId, number> = {
@@ -118,6 +119,12 @@ export const volumeOf = (id: SoundId): number => VOLUME[id] ?? DEFAULT_VOLUME;
 /** Players per sound: two for the ticks that repeat fast (motion.md §8). */
 export const voicesOf = (id: SoundId): number => (id === 'count_tick' || id === 'lock_tick' ? 2 : 1);
 
+/**
+ * The game's audio mode: the iOS silent switch mutes it, and the player's own music keeps playing (motion.md §8).
+ * The sound audition screen (/dev/sounds) changes it while open and puts this back.
+ */
+export const GAME_AUDIO_MODE = { playsInSilentMode: false, interruptionMode: 'mixWithOthers' } as const;
+
 /** Sounds that are dropped first when 4 are already playing. */
 const UI_TICKS: ReadonlySet<SoundId> = new Set<SoundId>(['count_tick', 'lock_tick', 'cell_select', 'ui_tap']);
 export const MAX_CONCURRENT_SOUNDS = 4;
@@ -157,7 +164,7 @@ export function createSfx(): Sfx {
       if (before.sound && !now.sound) stopAll();
     });
     try {
-      setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers' }).catch(report);
+      setAudioModeAsync(GAME_AUDIO_MODE).catch(report);
     } catch (error) {
       report(error);
     }

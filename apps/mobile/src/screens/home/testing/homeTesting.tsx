@@ -33,6 +33,7 @@ export const ROUTES = {
   'results/[id]': () => <Stub name="results" />,
   'dev/hello': () => <Stub name="hello" />,
   'dev/design-system': () => <Stub name="design-system" />,
+  'dev/sounds': () => <Stub name="sounds" />,
 };
 
 export interface RenderedApp {

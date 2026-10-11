@@ -1,0 +1,58 @@
+Sudoku Fight - final-sound candidates (assets/sounds/candidates)
+================================================================
+
+Every file in this folder is in the public domain: Creative Commons Zero,
+CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/).
+No attribution is required. The credits below are kept for the store review
+(spec section 23) and as a courtesy.
+
+The files were cut, faded and level-matched for the app; SOURCES.md lists each
+change. CC0 allows any change.
+
+
+1. Kenney (www.kenney.nl) - CC0
+-------------------------------
+
+The license each pack ships (License.txt), quoted from Interface Sounds (1.0):
+
+    Created/distributed by Kenney (www.kenney.nl)
+
+    License: (Creative Commons Zero, CC0)
+    http://creativecommons.org/publicdomain/zero/1.0/
+
+    This content is free to use in personal, educational and commercial projects.
+    Support us by crediting Kenney or www.kenney.nl (this is not mandatory)
+
+The older packs say the same in other words: "License (Creative Commons Zero,
+CC0) ... You may use these assets in personal and commercial projects. Credit
+(Kenney or www.kenney.nl) would be nice but is not mandatory."
+
+Packs used (downloaded 2026-10-11):
+  - Interface Sounds (1.0), 2020-02-11     https://kenney.nl/assets/interface-sounds
+  - UI Audio ("UI SFX Set")                https://kenney.nl/assets/ui-audio
+  - Digital Audio                          https://kenney.nl/assets/digital-audio
+  - Impact Sounds (1.0), 2019-12-19        https://kenney.nl/assets/impact-sounds
+  - RPG Audio                              https://kenney.nl/assets/rpg-audio
+  - Sci-Fi Sounds (1.0), 2020-10-11        https://kenney.nl/assets/sci-fi-sounds
+  - Music Jingles                          https://kenney.nl/assets/music-jingles
+
+
+2. OpenGameArt.org - each page says "License(s): CC0"
+-----------------------------------------------------
+
+  - "25 CC0 bang / firework SFX" by rubberduck (fw_04.ogg)
+    https://opengameart.org/content/25-cc0-bang-firework-sfx
+  - "Cat Purr & Meow" by Kerzoven (cat_mewfood.wav)
+    https://opengameart.org/content/cat-purr-meow
+  - "Group giggling" by Nocturnal_Vanguard / AuraVoice (group_giggling.ogg)
+    https://opengameart.org/content/group-giggling
+  - "Snap of the fingers sounds" by Vinrax (snap_of_the_fingers3.wav)
+    https://opengameart.org/content/snap-of-the-fingers-sounds
+
+
+CC0 1.0 Universal, in short (the full legal code is at the link above): the
+person who associated a work with this deed has dedicated it to the public
+domain by waiving all of their rights to the work worldwide under copyright
+law, including all related and neighboring rights, to the extent allowed by
+law. You can copy, modify, distribute and perform the work, even for
+commercial purposes, all without asking permission.

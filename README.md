@@ -6,6 +6,7 @@
 |---|---|
 | אפיון מפורט | [docs/01-SPEC.md](docs/01-SPEC.md) |
 | תוכנית עבודה בשלבים | [docs/02-WORK-PLAN.md](docs/02-WORK-PLAN.md) |
+| כל ההחלטות שממתינות למשה, במקום אחד | [docs/DECISIONS-PENDING.md](docs/DECISIONS-PENDING.md) |
 | עיצוב (קנבס) | https://claude.ai/artifact/Gi5UdFahu2WP7ECR5Z5pon · פרטים ב־[docs/03-DESIGN.md](docs/03-DESIGN.md) |
 | האפיון המקורי | [docs/00-original-spec-v1.md](docs/00-original-spec-v1.md) |
 | שחרור: הצ'קליסט עד TestFlight ו־Play Closed testing | [docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md) |

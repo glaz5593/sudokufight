@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { eagerImports, importChain, importGraph, REPO_ROOT } from '../testing/importGraph';
@@ -30,6 +30,8 @@ const LATE_FILES: Record<string, string> = {
   'apps/mobile/src/components/dev/': 'the design system (development builds only)',
   'apps/mobile/src/screens/DesignSystemScreen.tsx': 'development builds only',
   'apps/mobile/src/screens/HelloScreen.tsx': 'development builds only',
+  'apps/mobile/src/screens/SoundAuditionScreen.tsx': 'development builds only',
+  'assets/sounds/candidates/': 'the final-sound candidates: development builds only',
   'apps/mobile/src/net/device.ts': 'an online game',
   'apps/mobile/src/net/onlineClient.ts': 'an online game',
   'apps/mobile/src/screens/home/SettingsScreen.tsx':
@@ -59,7 +61,7 @@ describe('the start: what the first screen loads (spec §22)', () => {
   });
 
   it('the dev routes require their screens only behind __DEV__, so release bundles drop them', () => {
-    for (const route of ['design-system', 'hello']) {
+    for (const route of ['design-system', 'hello', 'sounds']) {
       const file = join(REPO_ROOT, 'apps', 'mobile', 'app', 'dev', `${route}.tsx`);
       const text = readFileSync(file, 'utf8');
       // No static import of a screen: only `__DEV__ ? require(...) : null`.
@@ -67,6 +69,30 @@ describe('the start: what the first screen loads (spec §22)', () => {
       expect(text).not.toMatch(/^import .*\/screens\//m);
       expect(text).toMatch(/= __DEV__\s*\?[\s\S]*require\('\.\.\/\.\.\/src\/screens\//);
     }
+  });
+
+  it('no route outside app/dev reaches the final-sound candidates, so a release bundle has none of them', () => {
+    const app = join(REPO_ROOT, 'apps', 'mobile', 'app');
+    const routes: string[] = [];
+    const walk = (dir: string, rel: string): void => {
+      for (const name of readdirSync(dir)) {
+        if (statSync(join(dir, name)).isDirectory()) {
+          if (`${rel}${name}` !== 'dev') walk(join(dir, name), `${rel}${name}/`);
+        } else if (name.endsWith('.tsx')) routes.push(`app/${rel}${name}`);
+      }
+    };
+    walk(app, '');
+    expect(routes).toEqual(expect.arrayContaining(['app/_layout.tsx', 'app/game.tsx', 'app/settings.tsx']));
+    const release = importGraph(routes);
+    const candidates = [...release.files.keys()].filter(
+      (f) =>
+        f.startsWith('assets/sounds/candidates/') ||
+        f === 'apps/mobile/src/components/dev/soundCandidates.ts' ||
+        f === 'apps/mobile/src/screens/SoundAuditionScreen.tsx',
+    );
+    expect(candidates.map((f) => importChain(release, f))).toEqual([]);
+    // …and the graph does reach the sounds the app plays.
+    expect(release.files.has('assets/sounds/placeholder/correct.wav')).toBe(true);
   });
 });
 

@@ -351,6 +351,7 @@ Playback rules:
 - Preload every game sound when the game screen mounts (`createAudioPlayer`). Keep 2 players each for `count_tick` and `lock_tick` so fast repeats don't cut each other off. At most 4 sounds at once. The newest UI tick is dropped first.
 - Starting volumes: ticks 0.3, `cell_select` 0.5, `correct` and `wrong` 0.8, reactions 0.6, `hit_*` 0.6, `win` / `go` 0.9. Final tuning happens in stage 14 ("צלילים סופיים וכיול עוצמות").
 - Off when "צליל" is off. Sounds from muted players' reactions never play. Until the files exist, the `sfx` service maps every event to a placeholder (stage 4).
+- CC0 candidates for all 30 files (Kenney packs, and OpenGameArt where Kenney has nothing) are in `assets/sounds/candidates`, with their sources, processing and loudness in `SOURCES.md`. They are auditioned on the development screen `/dev/sounds` and promoted one by one (`assets/sounds/README.md`). The app does not play them until then.
 
 ## 9. Points for Moshe to confirm
 

@@ -193,6 +193,13 @@ describe('Home (spec §4.3)', () => {
     });
     await fireEvent.press(await screen.findByRole('button', { name: 'מערכת עיצוב' }));
     expect(app.pathname()).toBe('/dev/design-system');
+    await act(async () => {
+      router.back();
+    });
+    const sounds = await screen.findByRole('button', { name: 'צלילים' });
+    expect(sounds).toHaveProp('accessibilityHint', 'מסך פיתוח: המועמד של כל צליל, לצד הצליל הנוכחי');
+    await fireEvent.press(sounds);
+    expect(app.pathname()).toBe('/dev/sounds');
   });
 
   it('has no dev links in release builds', async () => {
