@@ -7,6 +7,7 @@
 | אפיון מפורט | [docs/01-SPEC.md](docs/01-SPEC.md) |
 | תוכנית עבודה בשלבים | [docs/02-WORK-PLAN.md](docs/02-WORK-PLAN.md) |
 | כל ההחלטות שממתינות למשה, במקום אחד | [docs/DECISIONS-PENDING.md](docs/DECISIONS-PENDING.md) |
+| המשימות של משה, צעד אחר צעד (באנגלית): חשבונות, Firebase, פריסת השרת, APK בשני טלפונים, Google Play | [docs/MOSHE-TODO.md](docs/MOSHE-TODO.md) |
 | עיצוב (קנבס) | https://claude.ai/artifact/Gi5UdFahu2WP7ECR5Z5pon · פרטים ב־[docs/03-DESIGN.md](docs/03-DESIGN.md) |
 | האפיון המקורי | [docs/00-original-spec-v1.md](docs/00-original-spec-v1.md) |
 | שחרור: הצ'קליסט עד TestFlight ו־Play Closed testing | [docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md) |
@@ -331,6 +332,7 @@ npx jest --selectProjects server protocol admin
 4. **מסד הנתונים (Neon):**
    - ב־https://console.neon.tech יוצרים פרויקט `sudoku-fight-staging` באזור **AWS Europe Central 1 (Frankfurt)**.
    - ב־"Connect" מכבים את **Connection pooling**, ומעתיקים את ה־connection string. הוא מתחיל ב־`postgresql://` ונגמר ב־`?sslmode=require`.
+     ‏Neon מוסיף היום בסוף גם `&channel_binding=require`: מוחקים את החלק הזה. ה־driver שלנו (postgres.js) לא משתמש בו, ושולח למסד כל פרמטר שהוא לא מכיר כהגדרה.
    - את הטבלאות לא יוצרים ידנית: השרת מריץ את המיגרציות (`apps/server/drizzle`) בכל הפעלה.
 5. **הסודות:**
    ```

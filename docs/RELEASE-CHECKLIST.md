@@ -127,7 +127,7 @@
 | ☐ | Main store listing: טקסטים, אייקון 512, ‏Feature graphic, צילומי מסך | `LISTING-GOOGLE.md` סעיף 1, ‏`store/ASSETS.md` |
 | ☐ | App content: מדיניות פרטיות, ‏Ads (אין), ‏App access (חשבון הדמו, שלב י), ‏**Advertising ID** (לא משתמשים: ההרשאה חסומה בקוד), ‏Content rating (IARC), ‏Target audience | `LISTING-GOOGLE.md` סעיפים 3–5 |
 | ☐ | **Data safety**, כולל כתובת מחיקת החשבון (`/legal/delete-account`) | [`store/DATA-SAFETY.md`](store/DATA-SAFETY.md) |
-| ✓ | Target API level: ‏React Native 0.86 בונה עם `targetSdk 36` (Play דורש 35 ומעלה). לוודא אחרי ההעלאה: Play Console ← App bundle explorer | |
+| ✓ | Target API level: ‏React Native 0.86 בונה עם `targetSdk 36` (מ־31.8.2026 Play דורש 36 ומעלה לאפליקציות חדשות ולעדכונים). לוודא אחרי ההעלאה: Play Console ← App bundle explorer | |
 
 ## שלב ח: בנייה ב־EAS
 

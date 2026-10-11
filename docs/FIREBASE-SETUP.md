@@ -9,7 +9,7 @@
 |---|---|
 | `google-services.json` (Android) | `apps/mobile/config/firebase/` במחשב, ומשתנה קובץ `GOOGLE_SERVICES_JSON` ב־EAS |
 | `GoogleService-Info.plist` (iOS) | `apps/mobile/config/firebase/` במחשב, ומשתנה קובץ `GOOGLE_SERVICE_INFO_PLIST` ב־EAS |
-| ה־Project ID (למשל `sudoku-fight-1a2b3`) | `FIREBASE_PROJECT_ID` בשרת: `apps/server/.env`, ו־`fly.toml` |
+| ה־Project ID (למשל `sudoku-fight-1a2b3`) | `FIREBASE_PROJECT_ID` בשרת: `apps/server/.env`, ובסודות של Fly (`fly secrets set`) |
 
 השרת לא צריך service account ולא שום קובץ סודי. הוא בודק את החתימה של כל ID token מול המפתחות הציבוריים של Google, לפי ה־Project ID בלבד.
 
@@ -130,8 +130,8 @@ eas env:create --scope project --name GOOGLE_SERVICE_INFO_PLIST --type file --va
   FIREBASE_PROJECT_ID=sudoku-fight-1a2b3
   ```
   עם ה־Project ID האמיתי מסעיף 1. בפיתוח השרת מקבל גם ID tokens של Firebase וגם `dev:<uid>`.
-- **ב־Fly.io:** ב־`fly.toml`, בתוך `[env]`, מוסיפים `FIREBASE_PROJECT_ID = "sudoku-fight-1a2b3"`, ואז `fly deploy --ha=false`.
-  זה לא סוד. לא צריך `fly secrets`.
+- **ב־Fly.io:** ‏`fly secrets set -a sudoku-fight-staging FIREBASE_PROJECT_ID=sudoku-fight-1a2b3` (המכונה עולה מחדש עם הערך).
+  זה לא סוד, אבל הוא **לא** נכנס ל־`fly.toml`: ‏`apps/server/test/deploy.test.ts` בודק שאין בקובצי ה־Fly ערכים של פרויקט, ונכשל אם הוא שם.
   בשרת ה־Production (`fly.production.toml`) הוא נכנס עם שאר ההגדרות ב־`fly secrets set`, לפי [`docs/DEPLOY-PRODUCTION.md`](DEPLOY-PRODUCTION.md) סעיף 4.
 - **בלי המשתנה:** שרת בייצור עולה עם אזהרה, ומסלולי החשבון עונים 503 `disabled`. גם הכניסה לחדרי משחק נחסמת.
 - שרת בייצור (`NODE_ENV=production`, כמו ב־`Dockerfile` וב־`fly.toml`) **אף פעם** לא מקבל `dev:<uid>`, לא ב־HTTP ולא בחדרי המשחק.

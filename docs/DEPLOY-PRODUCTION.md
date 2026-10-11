@@ -42,6 +42,7 @@ fly apps create sudoku-fight-prod
 
 1. ב־https://console.neon.tech יוצרים פרויקט `sudoku-fight-prod`, באזור **AWS Europe Central 1 (Frankfurt)**.
 2. ב־"Connect" מכבים את **Connection pooling**, ומעתיקים את ה־connection string. הוא מתחיל ב־`postgresql://` ונגמר ב־`?sslmode=require`.
+   ‏Neon מוסיף היום בסוף גם `&channel_binding=require`: מוחקים את החלק הזה (ה־driver שלנו, postgres.js, לא משתמש בו, ושולח למסד כל פרמטר שהוא לא מכיר כהגדרה).
 3. **גיבויים:** ב־Neon יש שחזור לנקודת זמן (Point-in-time restore). בתוכנית החינמית חלון השחזור קצר.
    לפני ההשקה כדאי לעבור לתוכנית בתשלום עם חלון של כמה ימים. לבדוק את המספרים העדכניים בדף התמחור של Neon.
 4. גיבוי ידני (מומלץ לפני כל פריסה עם מיגרציה חדשה, ופעם בשבוע בבטא). צריך `pg_dump` במחשב, בגרסה של השרת או חדשה ממנו:
