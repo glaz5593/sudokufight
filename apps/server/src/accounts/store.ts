@@ -18,6 +18,7 @@ import { and, eq, isNull, ne, sql } from 'drizzle-orm';
 import type { VerifiedToken } from '../auth/firebaseToken';
 import type { Db } from '../db';
 import { displayNameKey, installs, ratings, type User, users } from '../db/schema';
+import { anonymizeLoggedNames } from '../persistence/records';
 
 /**
  * The accounts in the database (spec §19): users and their ratings.
@@ -231,7 +232,12 @@ export const deletedName = () => `deleted:${randomUUID()}`;
  * deleted_at set; an anonymous name, so the old one is free at once; no email, country or avatar; and the
  * Firebase uid replaced by `deleted:<id>`, which unlinks the person and lets the same sign-in register again
  * (Firebase deletes its user right after, but if that fails the player is not locked out). The installs it
- * signed in on are unlinked. Ratings and games stay, under the anonymous row.
+ * signed in on are unlinked. Ratings and games stay, under the anonymous row, and the logs of those games
+ * get the anonymous name in place of the old one (anonymizeLoggedNames; the privacy policy says the name is
+ * replaced). One transaction: all of it, or nothing.
+ *
+ * The rest of what the server stores has no name in it: game_players, the histories, practice results,
+ * cheat flags and XP hold the users.id; app_events props never carry names (the app's analytics events).
  * False when there was no live account.
  */
 export async function deleteUser(db: Db, token: VerifiedToken, now: number): Promise<boolean> {
@@ -255,6 +261,7 @@ export async function deleteUser(db: Db, token: VerifiedToken, now: number): Pro
       })
       .where(eq(users.id, row.id));
     await tx.update(installs).set({ userId: null }).where(eq(installs.userId, row.id));
+    await anonymizeLoggedNames(tx, { userId: row.id });
     return true;
   });
 }

@@ -6,12 +6,12 @@ import {
   type PlayerId,
   type ProgressRules,
 } from '@sudoku-fight/engine';
-import { eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 
 import { FAST_THINKING, fastThinkingFlags, insertCheatFlags } from '../cheat';
 import type { CheatThresholds } from '../config';
 import type { Db } from '../db';
-import { gameEvents, gamePlayers, games, opponentHistory, puzzleHistory } from '../db/schema';
+import { gameEvents, gamePlayers, games, opponentHistory, puzzleHistory, users } from '../db/schema';
 import { addXp, rankedXpGains } from '../progress/xp';
 import { applyRatingChanges, type RatingWrite } from '../ratings';
 
@@ -29,7 +29,9 @@ import { applyRatingChanges, type RatingWrite } from '../ratings';
  *   (spec §10, D37).
  * - While it runs (`appendGameEvents`): the engine's events, in small batches. All of them, as the engine
  *   made them: gameCreated carries the solution, which the server keeps for the replay and never sends to a
- *   client while the game runs (spec §21).
+ *   client while the game runs (spec §21). It carries the players' display names too: a deleted account's
+ *   is replaced by its anonymous one (`anonymizeLoggedNames`), when the account is deleted and when a
+ *   gameCreated is written after that (a game the account was still in).
  * - A restart (`endInterruptedGames`, at boot): a game still running when the server stopped is gone (it lived
  *   in its room's memory); its row is ended as 'serverRestart', unrated.
  * - End (`recordGameEnd`), one transaction: ended_at and end_reason; each seat's final score, mistakes,
@@ -127,7 +129,14 @@ export function eventRow(gameId: string, event: GameEvent): typeof gameEvents.$i
 /** Rows per INSERT for events: well under Postgres's parameter limit. */
 const EVENT_CHUNK = 500;
 
-/** Appends events; one already there (same seq) is skipped, so a batch may be sent again. */
+/** A log's first event, its gameCreated (the engine's createGame). */
+const GAME_CREATED_SEQ = 1;
+
+/**
+ * Appends events; one already there (same seq) is skipped, so a batch may be sent again. A batch with the
+ * gameCreated (the one event with names) then takes the names of accounts deleted meanwhile out of it, or
+ * being deleted right now (anonymizeLoggedNames waits for those).
+ */
 export async function appendGameEvents(db: Db, gameId: string, events: readonly GameEvent[]): Promise<void> {
   for (let i = 0; i < events.length; i += EVENT_CHUNK) {
     await db
@@ -135,6 +144,69 @@ export async function appendGameEvents(db: Db, gameId: string, events: readonly 
       .values(events.slice(i, i + EVENT_CHUNK).map((e) => eventRow(gameId, e)))
       .onConflictDoNothing();
   }
+  if (events.some((e) => e.type === 'gameCreated')) await anonymizeLoggedNames(db, { gameId });
+}
+
+/**
+ * The display names of deleted accounts in the stored logs (spec §3.3, docs/DECISIONS-PENDING.md 1.9): the
+ * one event that carries names is gameCreated (config.players[seat].name; no other engine event has one). A
+ * deleted account's seat there gets the account's anonymous name (users.display_name, `deleted:<uuid>`), the
+ * same one its row and the admin site show; the replay (history/store.ts withoutNames) and the history leave
+ * it out for the players, who see "שחקן". Seats are the game_players rows: an account and its seat.
+ *
+ * - `{ userId }`: every game of that account (deleteUser, in its transaction, after the users row has its
+ *   anonymous name): its seats through game_players_user_idx, each game's gameCreated through the primary
+ *   key (game_id, seq 1): one row a game, however long its log.
+ * - `{ gameId }`: one game, for a gameCreated written after the account was deleted (appendGameEvents). It
+ *   first waits for a deletion still running (its users row locked): that deletion's own pass may have
+ *   started before this log was stored, so this pass must see the deletion.
+ *
+ * Only a seat whose logged name differs is written, so running it again changes nothing; and only where the
+ * log has the account's own id in that seat. An UPDATE … FROM writes a row once even when it joins several
+ * seats (two deleted accounts in one game), so it runs again until nothing is left: once more per extra
+ * deleted seat in a game, at most. Returns how many seats changed.
+ */
+export async function anonymizeLoggedNames(
+  db: Db,
+  scope: { userId: string } | { gameId: string },
+): Promise<number> {
+  if ('gameId' in scope) {
+    await db
+      .select({ id: users.id })
+      .from(users)
+      .innerJoin(gamePlayers, eq(gamePlayers.userId, users.id))
+      .where(eq(gamePlayers.gameId, scope.gameId))
+      .for('share', { of: users });
+  }
+  const seat = (field: 'id' | 'name') =>
+    sql`array['config', 'players', ${gamePlayers.seat}::text, ${sql.raw(`'${field}'`)}]`;
+  const pass = async () =>
+    (
+      await db
+        .update(gameEvents)
+        .set({
+          payload: sql`jsonb_set(${gameEvents.payload}, ${seat('name')}, to_jsonb(${users.displayName}), false)`,
+        })
+        .from(gamePlayers)
+        .innerJoin(users, eq(users.id, gamePlayers.userId))
+        .where(
+          and(
+            'userId' in scope ? eq(gamePlayers.userId, scope.userId) : eq(gamePlayers.gameId, scope.gameId),
+            eq(gameEvents.gameId, gamePlayers.gameId),
+            eq(gameEvents.seq, GAME_CREATED_SEQ),
+            eq(gameEvents.type, 'gameCreated'),
+            isNotNull(users.deletedAt),
+            sql`${gameEvents.payload} #>> ${seat('id')} = ${gamePlayers.userId}`,
+            // A seat with a name (no name, nothing to replace) other than the anonymous one already.
+            sql`${gameEvents.payload} #>> ${seat('name')} <> ${users.displayName}`,
+          ),
+        )
+        .returning({ gameId: gameEvents.gameId })
+    ).length;
+  let changed = 0;
+  // Each pass sets one seat in each row it writes, so this ends: by the number of seats at most.
+  for (let n = await pass(); n > 0; n = await pass()) changed += n;
+  return changed;
 }
 
 export interface GameEndRecord {

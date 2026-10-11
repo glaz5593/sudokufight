@@ -32,9 +32,10 @@ import type { GameRoom } from '../src/rooms/GameRoom';
 import { createTestDb, NEARLY_DONE, quietLog, testConfig, testPuzzles, type TestDb } from '../src/testing';
 import { call, fighter } from '../src/testing/accounts';
 import { addPuzzles } from '../src/testing/ranked';
-import { testTokens } from '../src/testing/tokens';
+import { testTokens, type TestTokens } from '../src/testing/tokens';
 
 let t: TestDb;
+let tokens: TestTokens;
 let server: ReturnType<typeof createAppServer>;
 let colyseus: ColyseusTestServer;
 let url = '';
@@ -45,7 +46,7 @@ const COUNTDOWN_MS = 200;
 
 beforeAll(async () => {
   t = await createTestDb();
-  const tokens = await testTokens();
+  tokens = await testTokens();
   server = createAppServer({
     gracefullyShutdown: false,
     config: testConfig(),
@@ -319,6 +320,34 @@ describe('matchmaking', () => {
       expect(await first.message('searching')).toMatchObject({ queueKey: 'fast-3p' });
       expect(await refusal(search(gil.client, 'hard-2p').then((s) => s.room))).toBe('alreadyQueued');
       await leave(first);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('wants a verified email (RANKED_REQUIRES_VERIFIED_EMAIL, on by default) [D22]', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      // A Firebase account whose token says the email is not verified yet.
+      const sign = (emailVerified: boolean) =>
+        tokens.sign({ uid: 'fb-mm-hila', email: 'hila@example.com', emailVerified }, Date.now());
+      const unverified = await sign(false);
+      const created = await call<Me>(url, 'POST', ACCOUNT_PATHS.users, {
+        token: unverified,
+        body: fighter({ displayName: 'MM_Hila' }),
+        headers: { connection: 'close' },
+      });
+      expect(created.status).toBe(201);
+      expect(created.body.emailVerified).toBe(false);
+      const hila = new Client(url);
+      hila.auth.token = unverified;
+      expect(await refusal(search(hila, 'fast-2p').then((s) => s.room))).toBe('emailNotVerified');
+
+      // Verified (a fresh token after the link): in the queue.
+      hila.auth.token = await sign(true);
+      const searching = await search(hila, 'fast-2p');
+      expect(await searching.message('searching')).toMatchObject({ queueKey: 'fast-2p' });
+      await leave(searching);
     } finally {
       warn.mockRestore();
     }

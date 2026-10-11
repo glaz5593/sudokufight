@@ -6,7 +6,8 @@ import type { LegalTexts } from './types';
  * The privacy policy (spec §23, §27.1: "מדיניות הפרטיות מפרטת את האירועים"). It must match the code; when the
  * code changes what it collects, this changes too (legal.test.ts checks that every telemetry event is listed):
  * - the account: apps/server/src/accounts (users: email, display name, country, avatar), Firebase Auth;
- *   deletion: accounts/store.ts deleteUser (anonymized row; ratings, games, events stay unlinked)
+ *   deletion: accounts/store.ts deleteUser (anonymized row, and the same anonymous name in its games' logs;
+ *   ratings, games, events stay unlinked)
  * - games and progress: persistence/, progress/ (ratings, xp, achievements, puzzle and opponent history,
  *   practice_results), cheat_flags
  * - usage: apps/mobile/src/services/telemetry and analytics.ts → POST /v1/events (installs, app_events),

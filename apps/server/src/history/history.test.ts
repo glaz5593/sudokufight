@@ -10,6 +10,8 @@ import {
   replay,
 } from '@sudoku-fight/engine';
 import {
+  ACCOUNT_PATHS,
+  type AdminGameDetail,
   HISTORY_PATHS,
   type HistoryError,
   type HistoryGame,
@@ -19,14 +21,15 @@ import {
   type ReplayAnswer,
   replayPath,
 } from '@sudoku-fight/protocol';
-import { eq } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 import express from 'express';
 
 import { DEFAULT_CHEAT_THRESHOLDS } from '../config';
-import { gamePlayers, games, users } from '../db/schema';
-import { type RankedGames, rankedGames } from '../persistence';
+import { gameEvents, gamePlayers, games, users } from '../db/schema';
+import { anonymizeLoggedNames, type RankedGames, rankedGames } from '../persistence';
 import { dbPuzzleSource } from '../puzzles';
 import { call, type CallOptions } from '../testing/accounts';
+import { signedInAdmin } from '../testing/admin';
 import { fakeClock } from '../testing/clock';
 import { testConfig } from '../testing/config';
 import { createTestDb, type TestDb } from '../testing/db';
@@ -343,6 +346,231 @@ describe('GET /v1/games/:id/replay (spec §13, §21)', () => {
     const last = replay(after.body.events).at(-1)!;
     expect(last.status).toBe('over');
     expect(after.body.events.slice(1)).toEqual(JSON.parse(JSON.stringify(events.slice(1))) as GameEvent[]);
+  });
+});
+
+describe('deleting an account takes its name out of the stored logs (spec §3.3, DECISIONS-PENDING 1.9)', () => {
+  /** Every stored event as its raw JSON text, by game and seq. */
+  const rawLogs = async () =>
+    t.db
+      .select({
+        gameId: gameEvents.gameId,
+        seq: gameEvents.seq,
+        text: sql<string>`${gameEvents.payload}::text`,
+      })
+      .from(gameEvents)
+      .orderBy(asc(gameEvents.gameId), asc(gameEvents.seq));
+  /** The names of a stored gameCreated, seat by seat. */
+  const loggedNames = async (gameId: string) => {
+    const [row] = await t.db
+      .select({ payload: gameEvents.payload })
+      .from(gameEvents)
+      .where(eq(gameEvents.gameId, gameId))
+      .orderBy(asc(gameEvents.seq))
+      .limit(1);
+    const { players } = (row!.payload as { config: { players: { id: string; name?: string }[] } }).config;
+    return players.map((p) => [p.id, p.name]);
+  };
+  const anonymousName = async (id: string) => {
+    const [row] = await t.db.select().from(users).where(eq(users.id, id));
+    expect(row!.deletedAt).not.toBeNull();
+    return row!.displayName;
+  };
+  const deleteAccount = async (id: string) =>
+    call<HistoryError>(http.url, 'DELETE', ACCOUNT_PATHS.me, { token: await tokenOf(id) });
+
+  it('every game of the account: its seat gets the anonymous name; others, and other games, keep theirs', async () => {
+    await playedGame('g1', ['ana', 'ben']);
+    await playedGame('g2', ['ben', 'cid']);
+    await playedGame('g3', ['ana', 'cid']);
+    const before = await rawLogs();
+    expect(before.some((r) => r.text.includes('"BEN"'))).toBe(true);
+
+    expect((await deleteAccount('ben')).status).toBe(204);
+    const anonymous = await anonymousName('ben');
+    expect(anonymous).toMatch(/^deleted:/);
+
+    // No stored event has the old name any more: not the one in the logs, nor the account's.
+    const after = await rawLogs();
+    for (const old of ['"BEN"', '"Ben"']) expect(after.filter((r) => r.text.includes(old))).toEqual([]);
+    expect(await loggedNames('g1')).toEqual([
+      ['ana', 'ANA'],
+      ['ben', anonymous],
+    ]);
+    expect(await loggedNames('g2')).toEqual([
+      ['ben', anonymous],
+      ['cid', 'CID'],
+    ]);
+    // Only the two gameCreated events changed; everything else is as it was, byte for byte.
+    const changed = after.filter((r, k) => r.text !== before[k]!.text);
+    expect(changed.map((r) => [r.gameId, r.seq])).toEqual([
+      ['g1', 1],
+      ['g2', 1],
+    ]);
+
+    // The replay a player gets: Ben's seat and his entry in the log have no name ("שחקן" in the app).
+    const replayed = await get<ReplayAnswer>(replayPath('g1'), 'ana');
+    expect(replayed.status).toBe(200);
+    expect(replayed.body.game.players[1]).toMatchObject({ userId: 'ben', displayName: null });
+    const first = replayed.body.events[0]!;
+    if (first.type !== 'gameCreated') throw new Error('the log starts with gameCreated');
+    expect(first.config.players.map((p) => [p.id, p.name])).toEqual([
+      ['ana', 'ANA'],
+      ['ben', undefined],
+    ]);
+    const replayText = JSON.stringify(replayed.body);
+    for (const hidden of ['BEN', anonymous]) expect(replayText).not.toContain(hidden);
+    expect(replay(replayed.body.events).at(-1)!.status).toBe('over');
+
+    // The admin site: the anonymous name, for the seat and in the log alike.
+    const admin = await signedInAdmin(http.url);
+    const detail = await admin.get<AdminGameDetail>('/games/g1');
+    expect(detail.status).toBe(200);
+    expect(detail.body.players.map((p) => [p.userId, p.displayName])).toEqual([
+      ['ana', 'Ana'],
+      ['ben', anonymous],
+    ]);
+    const logged = detail.body.events[0]!.payload as { config: { players: { name?: string }[] } };
+    expect(logged.config.players.map((p) => p.name)).toEqual(['ANA', anonymous]);
+    expect(JSON.stringify(detail.body)).not.toContain('BEN');
+
+    // Deleting again: no account any more (404), and nothing changes.
+    const again = await deleteAccount('ben');
+    expect(again.status).toBe(404);
+    expect(again.body.error).toBe('notRegistered');
+    expect(await anonymizeLoggedNames(t.db, { userId: 'ben' })).toBe(0);
+    expect(await rawLogs()).toEqual(after);
+    expect(await anonymousName('ben')).toBe(anonymous);
+  });
+
+  it('a game still running: its log, written after the deletions, gets the anonymous names too', async () => {
+    const config = await ranked.createConfig({
+      id: 'live',
+      gameType: 'fast',
+      players: [
+        { id: 'ben', name: 'BEN' },
+        { id: 'ana', name: 'ANA' },
+        { id: 'cid', name: 'CID' },
+      ],
+      seed: 4,
+    });
+    const recorder = ranked.record(config);
+    const table = tableFor(config, recorder);
+    table.game.start();
+    table.move('ana', NEARLY_CELLS[0]!);
+    // The events wait for their batch (a minute here): none is stored when Ben and Cid delete their accounts.
+    expect(await rawLogs()).toEqual([]);
+    expect((await deleteAccount('ben')).status).toBe(204);
+    expect((await deleteAccount('cid')).status).toBe(204);
+
+    await recorder.flush();
+    expect((await rawLogs()).filter((r) => /BEN|CID/.test(r.text))).toEqual([]);
+    // Two deleted seats in one log: both get their own anonymous name.
+    expect(await loggedNames('live')).toEqual([
+      ['ben', await anonymousName('ben')],
+      ['ana', 'ANA'],
+      ['cid', await anonymousName('cid')],
+    ]);
+  });
+
+  it('deleted mid-game, its log already stored: the name goes at once, and the game plays on to its end', async () => {
+    // Two logged names with the same beginning: only the deleted seat's changes.
+    const config = await ranked.createConfig({
+      id: 'mid',
+      gameType: 'fast',
+      players: [
+        { id: 'ana', name: 'BENITA' },
+        { id: 'ben', name: 'BEN' },
+      ],
+      seed: 1,
+    });
+    const recorder = ranked.record(config);
+    const table = tableFor(config, recorder);
+    table.game.start();
+    const [a, b, c, d] = NEARLY_CELLS as [CellIndex, CellIndex, CellIndex, CellIndex];
+    table.move('ana', a);
+    await recorder.flush();
+    expect(await loggedNames('mid')).toEqual([
+      ['ana', 'BENITA'],
+      ['ben', 'BEN'],
+    ]);
+
+    expect((await deleteAccount('ben')).status).toBe(204);
+    const anonymous = await anonymousName('ben');
+    expect(await loggedNames('mid')).toEqual([
+      ['ana', 'BENITA'],
+      ['ben', anonymous],
+    ]);
+    // Still running: no replay yet, for anyone.
+    expect((await get<HistoryError>(replayPath('mid'), 'ana')).status).toBe(409);
+
+    table.move('ben', b);
+    table.move('ana', c);
+    table.move('ana', d);
+    expect(await recorder.done).toMatchObject({ ok: true, outcome: 'recorded' });
+    const stored = await rawLogs();
+    expect(stored).toHaveLength(table.game.events.length);
+    expect(stored.filter((r) => r.text.includes('"BEN"'))).toEqual([]);
+    expect(await loggedNames('mid')).toEqual([
+      ['ana', 'BENITA'],
+      ['ben', anonymous],
+    ]);
+
+    // The other player's replay: the whole game, her own name, none for Ben.
+    const replayed = await get<ReplayAnswer>(replayPath('mid'), 'ana');
+    expect(replayed.status).toBe(200);
+    expect(replayed.body.events).toHaveLength(table.game.events.length);
+    const first = replayed.body.events[0]!;
+    if (first.type !== 'gameCreated') throw new Error('the log starts with gameCreated');
+    expect(first.config.players.map((p) => [p.id, p.name])).toEqual([
+      ['ana', 'BENITA'],
+      ['ben', undefined],
+    ]);
+    expect(JSON.stringify(replayed.body)).not.toContain(anonymous);
+    expect(replay(replayed.body.events).at(-1)!.status).toBe('over');
+  });
+
+  it('a game without a deleted account, a seat logged with no name or as someone else, is left as it is', async () => {
+    await playedGame('g1', ['ana', 'cid']);
+    await playedGame('g2', ['ana', 'ben']);
+    const deleteRow = (id: string) =>
+      t.db
+        .update(users)
+        .set({ deletedAt: new Date(T0), displayName: `deleted:${id}` })
+        .where(eq(users.id, id));
+    /** Changes the players of a stored gameCreated, as a log that does not match its seats might have them. */
+    const editLog = async (gameId: string, edit: (players: { id: string; name?: string }[]) => void) => {
+      const created = and(eq(gameEvents.gameId, gameId), eq(gameEvents.seq, 1));
+      const [row] = await t.db.select().from(gameEvents).where(created);
+      const payload = row!.payload as { config: { players: { id: string; name?: string }[] } };
+      edit(payload.config.players);
+      await t.db.update(gameEvents).set({ payload }).where(created);
+    };
+
+    // A seat whose logged player is not the seat's account: the anonymous name never goes on someone else.
+    await editLog('g2', (players) => {
+      players[1]!.id = 'someone';
+    });
+    // Ben is deleted, and played only g2; nobody in g1 is deleted.
+    await deleteRow('ben');
+    expect(await anonymizeLoggedNames(t.db, { userId: 'ben' })).toBe(0);
+    expect(await anonymizeLoggedNames(t.db, { gameId: 'g1' })).toBe(0);
+    expect(await anonymizeLoggedNames(t.db, { gameId: 'g2' })).toBe(0);
+    expect(await loggedNames('g2')).toEqual([
+      ['ana', 'ANA'],
+      ['someone', 'BEN'],
+    ]);
+
+    // A seat logged without a name (a bot's, say) gets none: there was no name to replace.
+    await editLog('g1', (players) => {
+      delete players[1]!.name;
+    });
+    await deleteRow('cid');
+    expect(await anonymizeLoggedNames(t.db, { userId: 'cid' })).toBe(0);
+    expect(await loggedNames('g1')).toEqual([
+      ['ana', 'ANA'],
+      ['cid', undefined],
+    ]);
   });
 });
 

@@ -38,6 +38,7 @@ async function show(lang: 'he' | 'en' = 'he') {
     onLeave: jest.fn(),
     onBot: jest.fn(),
     onPractice: jest.fn(),
+    onVerifyEmail: jest.fn(),
     onHome: jest.fn(),
   };
   await render(
@@ -134,6 +135,27 @@ describe('matchmaking errors (stage 13)', () => {
     expect(screen.queryByTestId('match-error-practice-shadow')).toBeNull();
   });
 
+  it('an email the server does not see as verified [D22]: "אמת את המייל" leads to the verification', async () => {
+    const { refuse, handlers } = await show();
+    await refuse(FakeMatchmaking.refusal('emailNotVerified'));
+    expect(title()).toHaveTextContent('החיפוש נעצר');
+    expect(body()).toHaveTextContent(
+      'משחק מדורג דורש מייל מאומת, והמייל שלך עוד לא מאומת אצלנו. אם כבר פתחת את קישור האימות, לחץ "אימתתי" במסך הבא.',
+    );
+    expect(code()).toHaveTextContent('emailNotVerified-4215');
+    // Another search can't help before the email is verified: "אמת את המייל" in place of "חפש שוב".
+    expect(screen.queryByRole('button', { name: 'חפש שוב' })).toBeNull();
+    expect(screen.getByTestId('match-error-verify-shadow')).toBeOnTheScreen();
+    expect(screen.queryByTestId('match-error-practice-shadow')).toBeNull();
+    expect(screen.getByRole('button', { name: 'עבור לאימון' })).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: 'אמת את המייל' }));
+    expect(handlers.onVerifyEmail).toHaveBeenCalledTimes(1);
+    // Once: the screen is being left.
+    await fireEvent.press(screen.getByRole('button', { name: 'אמת את המייל' }));
+    expect(handlers.onVerifyEmail).toHaveBeenCalledTimes(1);
+    expect(handlers.onPractice).not.toHaveBeenCalled();
+  });
+
   it('"חזרה לבית" leaves', async () => {
     const { refuse, handlers } = await show();
     await refuse(FakeMatchmaking.refusal('queueClosed'));
@@ -168,5 +190,11 @@ describe('matchmaking errors (stage 13)', () => {
     expect(screen.queryByRole('button', { name: 'Search again' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Go to practice' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Back home' })).toBeOnTheScreen();
+    await refuse(FakeMatchmaking.refusal('emailNotVerified'));
+    expect(body()).toHaveTextContent(
+      'Ranked games need a verified email, and yours isn\'t verified with us yet. If you already opened the verification link, tap "I verified" on the next screen.',
+    );
+    expect(screen.getByRole('button', { name: 'Verify email' })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'Search again' })).toBeNull();
   });
 });

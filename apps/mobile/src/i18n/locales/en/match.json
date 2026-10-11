@@ -94,11 +94,13 @@
       "queueClosed": "This queue isn't open yet.",
       "badQueue": "This queue doesn't exist.",
       "unauthenticated": "Sign in to your account to play ranked.",
+      "emailNotVerified": "Ranked games need a verified email, and yours isn't verified with us yet. If you already opened the verification link, tap \"I verified\" on the next screen.",
       "signedOut": "Sign in to your account to play ranked.",
       "unknown": "Something went wrong with the search."
     },
     "code": "Error code: {{code}}",
     "retry": "Search again",
+    "verify": "Verify email",
     "practice": "Go to practice",
     "practiceNote": "Practice alone or against a bot works offline too.",
     "home": "Back home"

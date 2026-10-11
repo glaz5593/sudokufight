@@ -22,6 +22,10 @@ import { findLiveUser } from './store';
  *
  * Without a token, `fallback` decides (outside production: the development identity of stage 7, so the
  * fake client keeps working); without a fallback, the join is refused.
+ *
+ * `requireVerifiedEmail` (the ranked queue, D22): the account's token must say its email is verified, else
+ * IdentityError 'emailNotVerified'. A development token counts as verified: the token verifier takes those
+ * only outside production. The check comes last, so a sign-in without an account is told to register first.
  */
 
 export interface AccountIdentityOptions {
@@ -29,9 +33,19 @@ export interface AccountIdentityOptions {
   /** The database, or how to get it once it is open (the room is defined before the server listens). */
   db: Db | (() => Db);
   fallback?: IdentityVerifier;
+  /** Only accounts whose token says the email is verified (default false). */
+  requireVerifiedEmail?: boolean;
 }
 
-export function accountIdentityVerifier({ tokens, db, fallback }: AccountIdentityOptions): IdentityVerifier {
+export const EMAIL_NOT_VERIFIED =
+  'Ranked games need a verified email address: verify it, then send a fresh ID token (email_verified)';
+
+export function accountIdentityVerifier({
+  tokens,
+  db,
+  fallback,
+  requireVerifiedEmail = false,
+}: AccountIdentityOptions): IdentityVerifier {
   const database = typeof db === 'function' ? db : () => db;
   return {
     kind: fallback === undefined ? 'account' : `account+${fallback.kind}`,
@@ -51,6 +65,9 @@ export function accountIdentityVerifier({ tokens, db, fallback }: AccountIdentit
       if (user === undefined) {
         throw new IdentityError('invalid', 'No account for this sign-in: register first');
       }
+      if (requireVerifiedEmail && result.token.kind !== 'dev' && !result.token.emailVerified) {
+        throw new IdentityError('emailNotVerified', EMAIL_NOT_VERIFIED);
+      }
       return { userId: user.id, name: user.displayName };
     },
   };
@@ -63,6 +80,8 @@ export interface RoomIdentityOptions {
   /** The same verifier as the HTTP routes (one cache of Google's keys): auth/firebaseToken tokenVerifierFor. */
   tokens: TokenVerifier;
   db: Db | (() => Db);
+  /** As in AccountIdentityOptions: for the tokens' accounts (the development identity has no email). */
+  requireVerifiedEmail?: boolean;
 }
 
 /**
@@ -72,12 +91,17 @@ export interface RoomIdentityOptions {
  * - elsewhere: a token (Firebase, or `dev:<uid>` from the app's development sign-in) of a live account, or,
  *   with no token at all, the development identity in the join options (the fake client, the room tests).
  */
-export function roomIdentityVerifier({ config, tokens, db }: RoomIdentityOptions): IdentityVerifier {
+export function roomIdentityVerifier({
+  config,
+  tokens,
+  db,
+  requireVerifiedEmail,
+}: RoomIdentityOptions): IdentityVerifier {
   if (config.nodeEnv === 'production') {
     // tokenVerifierFor() never takes development tokens in production; a verifier that does is a wiring bug.
     if (tokens.devTokens) throw new Error('A production server must not accept development tokens');
     if (tokens.projectId === null) return refusingIdentityVerifier(ACCOUNTS_OFF);
-    return accountIdentityVerifier({ tokens, db });
+    return accountIdentityVerifier({ tokens, db, requireVerifiedEmail });
   }
-  return accountIdentityVerifier({ tokens, db, fallback: devIdentityVerifier() });
+  return accountIdentityVerifier({ tokens, db, fallback: devIdentityVerifier(), requireVerifiedEmail });
 }

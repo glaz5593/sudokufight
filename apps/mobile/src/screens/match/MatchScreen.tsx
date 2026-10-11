@@ -29,6 +29,8 @@ export interface MatchScreenProps {
   onBot: () => void;
   /** A failure → "עבור לאימון". */
   onPractice: () => void;
+  /** The server wants a verified email for ranked games [D22] → "אמת את המייל": the verification screen. */
+  onVerifyEmail: () => void;
   /** "חזרה לבית". */
   onHome: () => void;
   /** The phone's clock (tests). */
@@ -55,6 +57,7 @@ export function MatchScreen({
   onLeave,
   onBot,
   onPractice,
+  onVerifyEmail,
   onHome,
   clock = systemClock,
 }: MatchScreenProps) {
@@ -148,6 +151,7 @@ export function MatchScreen({
           reduce={reduce}
           onRetry={() => void match.retry()}
           onPractice={() => leave(onPractice)}
+          onVerifyEmail={() => leave(onVerifyEmail)}
           onHome={() => leave(onHome)}
         />
       );

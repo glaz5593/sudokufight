@@ -49,6 +49,7 @@ describe('loadConfig', () => {
       ratingOption: 'B',
       cheat: { thinkMs: 1200, moves: 20 },
       accountDeleteMaxAuthAgeMs: 300_000,
+      rankedRequiresVerifiedEmail: true,
       progress: { practiceXpDailyCap: 1500, inviteUrl: null },
       sentry: null,
       legal: { contactEmail: null, operatorName: null },
@@ -264,6 +265,18 @@ describe('loadConfig', () => {
       for (const bad of ['0', '999', '86400001', '1.5', 'soon'])
         expect(issuesOf({ ACCOUNT_DELETE_MAX_AUTH_AGE_MS: bad })[0]).toMatch(
           /^ACCOUNT_DELETE_MAX_AUTH_AGE_MS: /,
+        );
+    });
+
+    it('RANKED_REQUIRES_VERIFIED_EMAIL: on by default [D22]; true/false or 1/0', () => {
+      const of = (v: string | undefined) => load({ RANKED_REQUIRES_VERIFIED_EMAIL: v }).config;
+      expect(of(undefined).rankedRequiresVerifiedEmail).toBe(true);
+      expect(of(' ').rankedRequiresVerifiedEmail).toBe(true);
+      for (const on of ['true', 'TRUE', ' 1 ']) expect(of(on).rankedRequiresVerifiedEmail).toBe(true);
+      for (const off of ['false', 'False', '0']) expect(of(off).rankedRequiresVerifiedEmail).toBe(false);
+      for (const bad of ['yes', 'off', '2'])
+        expect(issuesOf({ RANKED_REQUIRES_VERIFIED_EMAIL: bad })[0]).toMatch(
+          /^RANKED_REQUIRES_VERIFIED_EMAIL: expected true or false/,
         );
     });
 

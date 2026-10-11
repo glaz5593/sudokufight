@@ -7,6 +7,7 @@ export {
   type RecordOutcome,
 } from './recorder';
 export {
+  anonymizeLoggedNames,
   appendGameEvents,
   endInterruptedGames,
   type EndOutcome,

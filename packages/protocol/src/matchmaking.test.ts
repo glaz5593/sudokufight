@@ -97,6 +97,9 @@ describe('timings and messages', () => {
     expect(matchmakingErrorOf('queueClosed: 3–4 players come later')).toBe('queueClosed');
     expect(matchmakingErrorOf('alreadyQueued: searching on another device')).toBe('alreadyQueued');
     expect(matchmakingErrorOf('room "x" not found')).toBeNull();
+    expect(matchmakingErrorOf('emailNotVerified: Ranked games need a verified email address')).toBe(
+      'emailNotVerified',
+    );
     expect(MATCHMAKING_ERRORS).toContain('unauthenticated');
   });
 });

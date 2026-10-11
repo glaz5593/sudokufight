@@ -48,7 +48,9 @@ export type IdentityErrorCode =
   /** A token or dev identity that does not hold up. */
   | 'invalid'
   /** Nobody can join here yet (production before stage 8). */
-  | 'disabled';
+  | 'disabled'
+  /** A good token of a live account whose email is not verified, where one must be (the ranked queue, D22). */
+  | 'emailNotVerified';
 
 export class IdentityError extends Error {
   constructor(

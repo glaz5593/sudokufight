@@ -113,6 +113,13 @@ export interface ServerConfig {
    * ago, else 401 reauthRequired (default 5 minutes, Firebase's own rule for deleting a user).
    */
   accountDeleteMaxAuthAgeMs: number;
+  /**
+   * RANKED_REQUIRES_VERIFIED_EMAIL [D22] (default true): the ranked queue takes only an ID token whose email
+   * is verified (`email_verified`), else it refuses with `emailNotVerified` (matchmaking/identity.ts). The
+   * app asks the same before it searches (config/account.ts `verification.requiredForRanked`); this is the
+   * server's own check. Development tokens count as verified: they are taken only outside production.
+   */
+  rankedRequiresVerifiedEmail: boolean;
   /** PRACTICE_XP_DAILY_CAP and INVITE_URL (stage 12). */
   progress: ProgressConfig;
   /** SENTRY_DSN and the rest (stage 14), or null: no error reports leave the server. */
@@ -212,6 +219,13 @@ const envSchema = z.object({
       .min(1000)
       .max(24 * 3600 * 1000)
       .default(RECENT_SIGN_IN_MS),
+  ),
+  RANKED_REQUIRES_VERIFIED_EMAIL: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim().toLowerCase()) : v),
+    z
+      .enum(['true', 'false', '1', '0'], { error: 'expected true or false' })
+      .default('true')
+      .transform((v) => v === 'true' || v === '1'),
   ),
   PRACTICE_XP_DAILY_CAP: z.preprocess(
     unsetIfBlank,
@@ -396,6 +410,7 @@ export function loadConfig(
     ratingOption: e.RATING_OPTION,
     cheat: { thinkMs: e.CHEAT_FAST_THINK_MS, moves: e.CHEAT_FAST_THINK_MOVES },
     accountDeleteMaxAuthAgeMs: e.ACCOUNT_DELETE_MAX_AUTH_AGE_MS,
+    rankedRequiresVerifiedEmail: e.RANKED_REQUIRES_VERIFIED_EMAIL,
     progress: { practiceXpDailyCap: e.PRACTICE_XP_DAILY_CAP, inviteUrl: e.INVITE_URL ?? null },
     sentry:
       e.SENTRY_DSN === undefined

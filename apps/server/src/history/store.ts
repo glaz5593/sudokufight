@@ -162,7 +162,9 @@ export function eventOf(row: { seq: number; tMs: number; type: string; payload: 
 
 /**
  * The log as another player may see it: the names in gameCreated of the accounts in `gone` (deleted since)
- * are left out, as everywhere else (spec §3.3: a deleted account's name goes with it).
+ * are left out, as everywhere else (spec §3.3: a deleted account's name goes with it), and the app shows
+ * "שחקן". The stored log already has the account's anonymous name there, not the old one (deleteUser:
+ * persistence anonymizeLoggedNames); that one is left out too, like the seat's.
  */
 export function withoutNames(event: GameEvent, gone: ReadonlySet<string>): GameEvent {
   if (event.type !== 'gameCreated' || gone.size === 0) return event;

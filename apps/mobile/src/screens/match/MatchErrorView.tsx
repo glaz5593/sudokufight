@@ -22,6 +22,8 @@ export interface MatchErrorViewProps {
   onRetry: () => void;
   /** "עבור לאימון" (spec §16.3). */
   onPractice: () => void;
+  /** "אמת את המייל": the server wants a verified email for ranked games [D22]; the verification screen. */
+  onVerifyEmail: () => void;
   /** "חזרה לבית". */
   onHome: () => void;
   testID?: string;
@@ -34,20 +36,27 @@ const CONNECTION: readonly MatchmakingFailureCode[] = ['network', 'lost'];
  * "חפש שוב" is left out, and "עבור לאימון" becomes the one primary.
  */
 const FINAL: readonly MatchmakingFailureCode[] = ['signedOut', 'badQueue'];
+/**
+ * The server wants a verified email for ranked games [D22]: its own check, from the sign-in's token, which
+ * may be older than what the app knows (the app asks before it searches). "אמת את המייל" is the one primary:
+ * the verification screen, whose "אימתתי" also gets a fresh token. Searching again before that can't help.
+ */
+const VERIFY: MatchmakingFailureCode = 'emailNotVerified';
 
 /**
  * The search could not go on (spec §16.3, §4.1 "מצבי שגיאה … Matchmaking"; Connection-Error's look): no
  * answer from the server, a connection lost while searching, a match whose room this phone did not reach in
  * time, or the server's refusal (a search or a ranked game already running on another device, a closed
- * queue, no sign-in). A plain explanation, the small support code, then "חפש שוב", "עבור לאימון" (practice
- * works offline) and "חזרה לבית". A failure no new search can fix (signed out, an unknown queue) offers no
- * "חפש שוב".
+ * queue, no sign-in, an email not verified). A plain explanation, the small support code, then "חפש שוב",
+ * "עבור לאימון" (practice works offline) and "חזרה לבית". A failure no new search can fix (signed out, an
+ * unknown queue) offers no "חפש שוב"; an email not verified offers "אמת את המייל" in its place.
  */
 export function MatchErrorView({
   model: m,
   reduce,
   onRetry,
   onPractice,
+  onVerifyEmail,
   onHome,
   testID = 'match-error',
 }: MatchErrorViewProps) {
@@ -57,7 +66,10 @@ export function MatchErrorView({
   const connection = CONNECTION.includes(m.code);
   const title = connection ? t('error.offlineTitle') : t('error.title');
   const body = t(`error.body.${m.code}`);
-  const canRetry = !FINAL.includes(m.code);
+  const verify = m.code === VERIFY;
+  const canRetry = !verify && !FINAL.includes(m.code);
+  // Practice is the primary only when nothing else can help.
+  const practiceFirst = !canRetry && !verify;
 
   return (
     <View style={styles.root} testID={testID}>
@@ -92,6 +104,16 @@ export function MatchErrorView({
             <Text style={styles.codeText}>{m.supportCode}</Text>
           </View>
           <View style={styles.actions}>
+            {verify ? (
+              <Button
+                label={t('error.verify')}
+                onPress={onVerifyEmail}
+                size="lg"
+                icon="mail"
+                style={styles.stretch}
+                testID={`${testID}-verify`}
+              />
+            ) : null}
             {canRetry ? (
               <Button
                 label={t('error.retry')}
@@ -105,9 +127,9 @@ export function MatchErrorView({
             <Button
               label={t('error.practice')}
               onPress={onPractice}
-              variant={canRetry ? 'secondary' : 'primary'}
-              size={canRetry ? 'md' : 'lg'}
-              icon={canRetry ? undefined : 'target'}
+              variant={practiceFirst ? 'primary' : 'secondary'}
+              size={practiceFirst ? 'lg' : 'md'}
+              icon={practiceFirst ? 'target' : undefined}
               style={styles.stretch}
               testID={`${testID}-practice`}
             />

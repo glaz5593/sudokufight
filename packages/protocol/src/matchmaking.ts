@@ -251,6 +251,12 @@ export const MATCHMAKING_SERVER_MESSAGE_TYPES = [
 export const MATCHMAKING_ERRORS = [
   /** No token, a bad one, or no account (ranked games are for registered players only). */
   'unauthenticated',
+  /**
+   * A registered player whose email is not verified, on a server that wants it for ranked games [D22]
+   * (RANKED_REQUIRES_VERIFIED_EMAIL, on by default). The token's `email_verified` says so: after verifying,
+   * the app sends a fresh token.
+   */
+  'emailNotVerified',
   /** The join options name no queue (`queueKey`). */
   'badQueue',
   /** That queue is not open on this server (or the server is shutting down). */

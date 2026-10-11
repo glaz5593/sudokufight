@@ -65,6 +65,7 @@ async function show(
     onLeave: jest.fn(),
     onBot: jest.fn(),
     onPractice: jest.fn(),
+    onVerifyEmail: jest.fn(),
     onHome: jest.fn(),
   };
   await render(

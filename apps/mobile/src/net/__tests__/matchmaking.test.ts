@@ -367,6 +367,7 @@ describe('MatchmakingClient: failures', () => {
     ['alreadyQueued', 'alreadyQueued-4215'],
     ['queueClosed', 'queueClosed-4215'],
     ['unauthenticated', 'unauthenticated-4215'],
+    ['emailNotVerified', 'emailNotVerified-4215'],
   ])('a refusal (%s) fails with its code and a support code', async (refusal, support) => {
     const { mm, client, events } = fakeSetup();
     mm.refuse = FakeMatchmaking.refusal(refusal);
@@ -409,6 +410,10 @@ describe('MatchmakingClient: failures', () => {
       code: 'alreadyQueued',
       status: 4215,
     });
+    // The server's own check of the email [D22]: its code, for the verification screen.
+    expect(
+      matchmakingFailureOf(sdkError('emailNotVerified: Ranked games need a verified email address', 4215)),
+    ).toMatchObject({ code: 'emailNotVerified', status: 4215, supportCode: 'emailNotVerified-4215' });
     expect(matchmakingFailureOf(new TypeError('Network request failed')).code).toBe('network');
     expect(matchmakingFailureOf(sdkError('something odd', 400)).code).toBe('unknown');
     const own = new MatchmakingFailure('signedOut', 'x');

@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 
 import { isAvatarId } from '../../src/assets/avatars';
 import { useAuth } from '../../src/auth/authStore';
+import { ROUTES } from '../../src/auth/redirect';
 import { useGameStore } from '../../src/game/gameStore';
 import { goBack, startAndOpen } from '../../src/screens/home';
 import { headerOf, MatchScreen } from '../../src/screens/match';
@@ -57,6 +58,7 @@ export default function MatchRoute() {
         onPractice={() =>
           leaveTo(() => router.replace({ pathname: '/game-type', params: { mode: 'solo', gameType } }))
         }
+        onVerifyEmail={() => leaveTo(() => router.replace(ROUTES.verifyEmail))}
         onHome={() => dismissTo('/')}
       />
     </>

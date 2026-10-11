@@ -34,8 +34,9 @@ import type { OnlineInfo } from './remoteGameHost';
  *   head of the queue (`fellThrough` says why, for a line on the screen); not requeued: this player was the
  *   one missing, and the search failed ('noShow').
  * - Failures (`failed`, with a MatchmakingFailure): the server's refusals (protocol MATCHMAKING_ERRORS: not
- *   signed in, a queue that is closed, a search already running elsewhere), no answer ('network'), a
- *   connection lost while searching ('lost'). `retry()` searches again.
+ *   signed in, an email not verified [D22], a queue that is closed, a search already running elsewhere), no
+ *   answer ('network'), a connection lost while searching ('lost'). `retry()` searches again. The screens
+ *   send 'emailNotVerified' to the verification screen (screens/match/MatchErrorView).
  *
  * Analytics (spec §22): one `matchmaking_wait {sec, result}` per wait: 'found', 'timeout', 'cancelled' or
  * 'error' ("keep searching" after a timeout starts another).

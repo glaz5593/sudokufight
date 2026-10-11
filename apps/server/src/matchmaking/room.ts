@@ -49,8 +49,11 @@ export function createMatchmakingRoom(deps: MatchmakingRoomDeps) {
       try {
         return await deps.identity.verify({ token: token || undefined, options, ip: context.ip });
       } catch (error) {
-        if (error instanceof IdentityError)
-          throw refuse(ErrorCode.AUTH_FAILED, 'unauthenticated', error.message);
+        if (error instanceof IdentityError) {
+          // A registered player who has to verify the email first (D22): the app sends them to do it.
+          const refusal = error.code === 'emailNotVerified' ? 'emailNotVerified' : 'unauthenticated';
+          throw refuse(ErrorCode.AUTH_FAILED, refusal, error.message);
+        }
         // Not a refusal: the check itself failed (the database, Google's keys). Colyseus tells the client.
         reportError(error, { area: 'rooms', message: '[matchmaking] onAuth failed' });
         throw error;

@@ -15,6 +15,8 @@
  *   engine's eloChanges for the final places, and the result the hosts got says the same.
  * - A lonely search ends in the timeout (scaled), and "keep searching" goes on without the cap.
  * - A second search from the same account is refused ('alreadyQueued'), and a cancel lets it go.
+ * - A Firebase account whose email is not verified is refused ('emailNotVerified', D22): the code the app's
+ *   match screen turns into "אמת את המייל" (the verification screen).
  *
  * The timings are scaled through createAppServer's matchmaking options, as in ranked.e2e.test.ts: the range
  * steps every 250 ms, the timeout is 3 s, the countdown 600 ms. The ranked pool holds real puzzles a few
@@ -49,6 +51,7 @@ import { DEFAULT_MATCHER } from '../src/matchmaking';
 import { type BankPuzzle, seedRankedPuzzles } from '../src/puzzles';
 import { createTestDb, PUZZLE, quietLog, testConfig, type TestDb } from '../src/testing';
 import { solveGivens } from '../src/testing/fakeClient';
+import { testTokens, type TestTokens } from '../src/testing/tokens';
 
 // ---------------------------------------------------------------------------------------------------------
 // Scaled timings (ranked.e2e.test.ts's)
@@ -78,11 +81,14 @@ const bankPuzzle = (p: GamePuzzle, gameType: GameType): BankPuzzle => ({
 
 const log = quietLog();
 let db: TestDb;
+let tokens: TestTokens;
 let server: ReturnType<typeof createAppServer>;
 let url = '';
 
 beforeAll(async () => {
   db = await createTestDb();
+  // Firebase tokens signed here, and development tokens (as the app's development sign-in makes them).
+  tokens = await testTokens();
   await seedRankedPuzzles(db.db, [
     bankPuzzle(nearlyDone('contract-fast-1', [0, 13, 40, 80, 22, 57]), 'fast'),
     bankPuzzle(nearlyDone('contract-fast-2', [1, 14, 41, 79, 23, 58]), 'fast'),
@@ -91,6 +97,7 @@ beforeAll(async () => {
     gracefullyShutdown: false,
     config: testConfig(),
     db,
+    tokens: tokens.verifier(Date.now),
     game: { log, closeAfterGameMs: 500 },
     matchmaking: {
       config: {
@@ -134,9 +141,11 @@ const scheduler = {
   clearTimeout: (h: unknown) => clearTimeout(h as ReturnType<typeof setTimeout>),
 };
 
-/** A signed-in player: the development sign-in's token, its profile made with the app's account client. */
-async function account(name: string) {
-  const token = devToken(`app-${name.toLowerCase()}`);
+/**
+ * A signed-in player: the development sign-in's token (or `token`), its profile made with the app's account
+ * client.
+ */
+async function account(name: string, token = devToken(`app-${name.toLowerCase()}`)) {
   const api = createAccountApi({
     baseUrl: url,
     getToken: () => Promise.resolve(token),
@@ -336,5 +345,24 @@ describe("the app's matchmaking on the real server", () => {
     await new Promise((r) => setTimeout(r, 200));
     const again = search(cy, 'fast-2p');
     await until(() => infoOf(again).phase === 'searching', 'the new search');
+  }, 20_000);
+
+  it('an email that is not verified: refused with "emailNotVerified", for the verification screen [D22]', async () => {
+    const unverified = await tokens.sign(
+      { uid: 'fb-app-dana', email: 'dana@example.com', emailVerified: false },
+      Date.now(),
+    );
+    const dana = await account('DanaApp', unverified);
+    expect(dana.me.emailVerified).toBe(false);
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const s = search(dana, 'fast-2p');
+    await until(() => infoOf(s).phase === 'failed', 'the refusal');
+    warn.mockRestore();
+    expect(infoOf(s).error!.code).toBe('emailNotVerified');
+    // With the SDK's status for a refusal in onAuth.
+    expect(infoOf(s).error!.supportCode).toMatch(/^emailNotVerified-\d+$/);
+    expect(s.tracked).toEqual([
+      { name: 'matchmaking_wait', props: { sec: expect.any(Number), result: 'error' } },
+    ]);
   }, 20_000);
 });

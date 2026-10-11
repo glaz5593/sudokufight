@@ -28,6 +28,7 @@ export function testConfig(overrides: Partial<ServerConfig> = {}): ServerConfig 
     ratingOption: 'B',
     cheat: DEFAULT_CHEAT_THRESHOLDS,
     accountDeleteMaxAuthAgeMs: RECENT_SIGN_IN_MS,
+    rankedRequiresVerifiedEmail: true,
     progress: { practiceXpDailyCap: DEFAULT_PRACTICE_XP_DAILY_CAP, inviteUrl: null },
     // No error reports from tests (src/monitoring/sentry.test.ts starts Sentry with a fake transport itself).
     sentry: null,
