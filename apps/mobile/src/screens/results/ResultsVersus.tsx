@@ -8,6 +8,7 @@ import type { AvatarId } from '../../assets/avatars';
 import { Icon, type IconName } from '../../components/Icon';
 import {
   Avatar,
+  CountUpText,
   displayName,
   formatScore,
   ltr,
@@ -17,11 +18,10 @@ import {
   SeatGlyph,
   signedText,
 } from '../../components/player';
-import { useCountUp } from '../../components/player/anim';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { formatSeconds } from '../game/model';
-import type { AwardResult, OpponentResult, RankingRow, RatingResult } from './resultsModel';
+import type { AwardResult, OpponentResult, RankingRow, RatingPairRow, RatingResult } from './resultsModel';
 
 /**
  * The parts of the results that only a game with opponents has (spec §12; Results-Victory, Results-Defeat and
@@ -274,13 +274,30 @@ export function RankingSection({
 // ---------------------------------------------------------------------------------------------------------
 // My rating change (spec §12: "שינוי דירוג מונפש")
 
+/** A rating as its count shows it, in whole points. A worklet: it runs on the UI thread, every frame. */
+function ratingText(n: number): string {
+  'worklet';
+  return String(Math.round(n));
+}
+
 /**
- * The new rating counts from the old one as the sections land (motion.md §4.7 `ratingCountAt`). Reduced
- * motion: the new rating at once.
+ * The new rating counts from the old one as the sections land (motion.md §4.7 `ratingCountAt`), on the UI
+ * thread (CountUpText: no frame of the count renders in React). Reduced motion: the new rating at once. A game
+ * of 3–4 players also shows the change against each opponent (Results-4P: "מחושב מול כל יריב בנפרד"), in
+ * tenths that add up to the change.
  */
-export function RatingSection({ rating, gameType }: { rating: RatingResult; gameType: GameType }) {
+export function RatingSection({
+  rating,
+  gameType,
+  pairs = [],
+}: {
+  rating: RatingResult;
+  gameType: GameType;
+  pairs?: readonly RatingPairRow[];
+}) {
   const { t } = useTranslation('history');
   const { t: tg } = useTranslation('game');
+  const { t: tp } = useTranslation('player');
   const reduce = useReduceMotion();
   const before = Math.round(rating.before);
   const after = Math.round(rating.after);
@@ -291,26 +308,41 @@ export function RatingSection({ rating, gameType }: { rating: RatingResult; game
     return () => clearTimeout(id);
   }, [reduce]);
   const target = reduce || started ? after : before;
-  const shown = Math.round(useCountUp(target, reduce, motion.duration.rewardMax));
   const delta = signedText(rating.delta);
+  const pairLabels = pairs.map((p) =>
+    t('results.rating.pairLabel', { name: displayName(p, tp), delta: signedText(p.delta) }),
+  );
+  const label = [
+    t('results.rating.label', { delta, before, after }),
+    ...(pairs.length ? [`${t('results.rating.perOpponent')}: ${pairLabels.join(tg('listSep'))}`] : []),
+  ].join('. ');
   return (
     <View
       style={styles.card}
       accessible
       accessibilityRole="text"
-      accessibilityLabel={t('results.rating.label', { delta, before, after })}
+      accessibilityLabel={label}
       testID="results-rating"
     >
       <View style={styles.head}>
         <Icon name="leaderboard" size={size.icon.inline} color={color.textMuted} />
-        <Text style={[text('label'), styles.muted]}>
+        <Text style={[text('label'), styles.muted, styles.shrink]}>
           {t('results.rating.title', { type: tg(`type.${gameType}`) })}
         </Text>
+        {pairs.length ? (
+          <Text style={[text('caption'), styles.faint, styles.headNote]} numberOfLines={1}>
+            {t('results.rating.perOpponent')}
+          </Text>
+        ) : null}
       </View>
       <View style={styles.ratingRow}>
-        <Text style={[text('scoreXL'), styles.strong]} testID="results-rating-value">
-          {shown}
-        </Text>
+        <CountUpText
+          value={target}
+          format={ratingText}
+          durationMs={motion.duration.rewardMax}
+          style={[text('scoreXL'), styles.strong]}
+          testID="results-rating-value"
+        />
         <View style={styles.numbers}>
           <Text
             style={[text('rating'), rating.delta < 0 ? styles.danger : styles.success]}
@@ -321,6 +353,26 @@ export function RatingSection({ rating, gameType }: { rating: RatingResult; game
           <Text style={[text('caption'), styles.muted]}>{t('results.rating.from', { before })}</Text>
         </View>
       </View>
+      {pairs.length ? (
+        <View style={styles.pairs} testID="results-rating-pairs">
+          {pairs.map((p) => (
+            <View key={p.playerId} style={styles.pair} testID={`results-rating-pair-${p.playerId}`}>
+              <Avatar avatarId={p.avatar} size="cell" bot={p.isBot} />
+              <View style={styles.pairText}>
+                <Text style={[text('micro'), styles.muted]} numberOfLines={1}>
+                  {displayName(p, tp)}
+                </Text>
+                <Text
+                  style={[text('label'), p.delta < 0 ? styles.danger : styles.accent]}
+                  testID={`results-rating-pair-${p.playerId}-delta`}
+                >
+                  {signedText(p.delta)}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : null}
       {rating.provisional ? (
         <Text style={[text('caption'), styles.muted]}>{t('results.rating.provisional')}</Text>
       ) : null}
@@ -465,6 +517,21 @@ const styles = StyleSheet.create({
     borderColor: color.border,
   },
   ratingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[6] },
+  headNote: { flexShrink: 1, marginStart: 'auto' },
+  pairs: { flexDirection: 'row', gap: space[3] },
+  pair: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[3],
+    padding: space[3],
+    borderRadius: radius.lg,
+    borderWidth: tokens.border.hairline,
+    borderColor: color.border,
+    backgroundColor: color.surface2,
+  },
+  pairText: { flex: 1, minWidth: 0, gap: space[1], alignItems: 'flex-start' },
   badge: {
     width: size.iconButton,
     height: size.iconButton,

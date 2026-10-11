@@ -613,14 +613,34 @@ describe('seats and tokens', () => {
 describe('leaving and the grace (spec §16.2)', () => {
   it('a phone that goes silent (airplane mode: no goodbye, no answers) is noticed within 4.5 s, and its grace starts then', async () => {
     const [ana, ben] = await startTwo({ rules: { graceMs: 15_000 } });
-    // From the server's side, airplane mode is a socket whose pongs stop coming.
-    const socket = (serverClient(ana) as WebSocketClient).ref;
-    const silentFrom = Date.now();
-    socket.removeAllListeners('pong');
-    await until(() => ben.events.some((e) => e.type === 'playerDisconnected'), 'the drop', 6000);
-    const noticedAfter = Date.now() - silentFrom;
     const { pingInterval, pingMaxRetries } = HEARTBEAT;
-    expect(noticedAfter).toBeLessThanOrEqual(pingInterval * (pingMaxRetries + 1) + 250);
+    // The transport ticks at this interval and cuts after these retries (app.ts hands it HEARTBEAT).
+    expect(server.transport).toMatchObject({ pingIntervalMS: pingInterval, pingMaxRetries });
+    // From the server's side, airplane mode is a socket whose pongs stop coming. The heartbeat's ticks on it are
+    // counted (its pings, then the cut), not timed: a loaded machine runs timers late, but not more often.
+    const socket = (serverClient(ana) as WebSocketClient).ref;
+    let pings = 0;
+    let cut = false;
+    const ping = socket.ping.bind(socket);
+    const terminate = socket.terminate.bind(socket);
+    socket.ping = (...args: Parameters<typeof socket.ping>) => {
+      pings++;
+      ping(...args);
+    };
+    socket.terminate = () => {
+      cut = true;
+      terminate();
+    };
+    socket.removeAllListeners('pong');
+    await until(
+      () => ben.events.some((e) => e.type === 'playerDisconnected'),
+      'the drop',
+      4 * pingInterval * (pingMaxRetries + 1),
+    );
+    // Cut by the heartbeat on its (pingMaxRetries + 1)-th tick at the latest: at most pingMaxRetries pings
+    // without an answer, then terminate(). On time, that is within pingInterval * (pingMaxRetries + 1) ms.
+    expect(cut).toBe(true);
+    expect(pings).toBeLessThanOrEqual(pingMaxRetries);
     // Work plan, stage 7: 20 s of airplane mode is abandonment, so the drop must be noticed well before 5 s.
     expect(pingInterval * (pingMaxRetries + 1)).toBeLessThan(5000);
     const dropped = ben.events.find((e) => e.type === 'playerDisconnected')!;
@@ -630,7 +650,7 @@ describe('leaving and the grace (spec §16.2)', () => {
     ben.act('surrender'); // end it here, rather than 15 s later
     await ben.event('gameOver');
     await leaveAll(ben);
-  }, 10_000);
+  }, 30_000);
 
   it('both players leave on purpose: the game is kept; one comes back by code and wins when the other is out', async () => {
     const [ana, ben] = await startTwo({ rules: { graceMs: 1500 } });
@@ -688,7 +708,11 @@ describe('leaving and the grace (spec §16.2)', () => {
     try {
       void ben.room.leave(false);
       await ana.event('playerDisconnected');
-      await new Promise((r) => setTimeout(r, 450)); // past graceEndsAt; Colyseus holds the seat 1 s more
+      // Just past graceEndsAt (the server's clock is this process's): Colyseus holds the seat
+      // RECONNECT_SLACK_MS (1 s) more, so the sooner the return starts after the grace, the more of that it has.
+      const dropped = ana.events.find((e) => e.type === 'playerDisconnected')!;
+      const graceEndsAt = dropped.type === 'playerDisconnected' ? dropped.graceEndsAt : 0;
+      await until(() => Date.now() > graceEndsAt + 20, 'the end of the grace');
       back = new Player(await sdk.reconnect(token), 'ben');
       await until(() => back.of('solution').length > 0, 'the solution');
     } finally {

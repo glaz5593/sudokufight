@@ -227,6 +227,15 @@ export function sparkLength(points: string): number {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/** "במשחק מאז": the month and year an account was made, "אפריל 2026" / "April 2026". */
+export function monthYearText(at: number, language: string): string {
+  try {
+    return new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(at);
+  } catch {
+    return new Date(at).toISOString().slice(0, 7);
+  }
+}
+
 /** A result's day: "3 באוק׳" / "Oct 3". */
 export function dateText(at: number, language: string): string {
   try {

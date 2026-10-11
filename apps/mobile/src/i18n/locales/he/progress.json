@@ -120,7 +120,19 @@
     "replayHint": "פתיחת הצפייה החוזרת",
     "openOf": "כרטיס השחקן של {{name}}",
     "achievementsTitle": "הישגים מובילים",
-    "allAchievements": "כל ההישגים"
+    "allAchievements": "כל ההישגים",
+    "joinedSince": "במשחק מאז {{date}}",
+    "favorite": {
+      "title": "ההפרעה האהובה",
+      "uses_one": "הפעלה",
+      "uses_two": "הפעלות",
+      "uses_many": "הפעלות",
+      "uses_other": "הפעלות",
+      "label_one": "ההפרעה האהובה: {{kind}}, הפעלה אחת",
+      "label_two": "ההפרעה האהובה: {{kind}}, {{count}} הפעלות",
+      "label_many": "ההפרעה האהובה: {{kind}}, {{count}} הפעלות",
+      "label_other": "ההפרעה האהובה: {{kind}}, {{count}} הפעלות"
+    }
   },
   "achievements": {
     "title": "הישגים",

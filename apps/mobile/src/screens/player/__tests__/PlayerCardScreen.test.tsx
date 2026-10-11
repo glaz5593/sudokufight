@@ -51,7 +51,9 @@ describe('PlayerCardScreen', () => {
     const { onLoaded, onBack } = await show(async () => NINA);
     expect(screen.getByRole('header', { name: 'כרטיס שחקן' })).toBeOnTheScreen();
     expect(screen.getByTestId('player-card-identity')).toHaveTextContent('NinaVolt', { exact: false });
-    expect(screen.getByLabelText('NinaVolt, גרמניה, ליגת יהלום, רמה 22')).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('NinaVolt, גרמניה, במשחק מאז אפריל 2026, ליגת יהלום, רמה 22'),
+    ).toBeOnTheScreen();
     expect(screen.queryByTestId('player-card-xp')).toBeNull();
     expect(screen.queryByRole('button', { name: 'עריכת פרופיל' })).toBeNull();
 
@@ -102,7 +104,9 @@ describe('PlayerCardScreen', () => {
       playerId: 'me',
       myProgress: myProgress(),
     });
-    expect(screen.getByLabelText('MosheG, הכרטיס שלי, ישראל, ליגת זהב, רמה 14')).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('MosheG, הכרטיס שלי, ישראל, במשחק מאז אפריל 2026, ליגת זהב, רמה 14'),
+    ).toBeOnTheScreen();
     expect(
       within(screen.getByTestId('player-card-identity')).getByTestId('glyph-circle', hidden),
     ).toBeTruthy();
@@ -125,12 +129,16 @@ describe('PlayerCardScreen', () => {
     expect(screen.getByTestId('player-card-note')).toHaveTextContent('אין חיבור לשרת: מוצג הכרטיס השמור.', {
       exact: false,
     });
-    expect(screen.getByLabelText('MosheG, הכרטיס שלי, ישראל, ליגת זהב, רמה 9')).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('MosheG, הכרטיס שלי, ישראל, במשחק מאז אפריל 2026, ליגת זהב, רמה 9'),
+    ).toBeOnTheScreen();
     fail = false;
     await fireEvent.press(screen.getByTestId('player-card-note-retry'));
     await settle();
     expect(screen.queryByTestId('player-card-note')).toBeNull();
-    expect(screen.getByLabelText('MosheG, הכרטיס שלי, ישראל, ליגת זהב, רמה 10')).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('MosheG, הכרטיס שלי, ישראל, במשחק מאז אפריל 2026, ליגת זהב, רמה 10'),
+    ).toBeOnTheScreen();
   });
 
   it('another player offline: the offline state; not found: says so', async () => {
@@ -162,11 +170,44 @@ describe('PlayerCardScreen', () => {
     expect(screen.getByTestId('player-card-achievements')).toHaveTextContent('firstWin', { exact: false });
   });
 
+  it('"במשחק מאז" and the favourite interference with its count (Profile.dc.html)', async () => {
+    await show(async () => NINA);
+    expect(screen.getByTestId('player-card-joined')).toHaveTextContent('במשחק מאז אפריל 2026');
+    const favorite = screen.getByTestId('player-card-favorite');
+    expect(favorite).toHaveProp('accessibilityLabel', 'ההפרעה האהובה: זיקוקים, 23 הפעלות');
+    expect(favorite).toHaveTextContent('ההפרעה האהובה', { exact: false });
+    expect(favorite).toHaveTextContent('23', { exact: false });
+    // The picture holds still (no motion for a stat), and is hidden from screen readers.
+    expect(screen.getByTestId('player-card-favorite-art', hidden)).toHaveProp(
+      'accessibilityElementsHidden',
+      true,
+    );
+
+    await show(async () => ({ ...NINA, favoriteInterference: { kind: 'cats', count: 1 } }));
+    expect(screen.getByTestId('player-card-favorite')).toHaveProp(
+      'accessibilityLabel',
+      'ההפרעה האהובה: חתולים, הפעלה אחת',
+    );
+  });
+
+  it('without a favourite or a join date (none sent yet, or an older server): neither row', async () => {
+    await show(async () => ({ ...NINA, joinedAt: null, favoriteInterference: null }));
+    expect(screen.queryByTestId('player-card-joined')).toBeNull();
+    expect(screen.queryByTestId('player-card-favorite')).toBeNull();
+    expect(screen.getByLabelText('NinaVolt, גרמניה, ליגת יהלום, רמה 22')).toBeOnTheScreen();
+  });
+
   it('speaks English too', async () => {
     await i18n.changeLanguage('en');
     await show(async () => NINA);
+    expect(screen.getByTestId('player-card-favorite')).toHaveProp(
+      'accessibilityLabel',
+      'Favorite interference: Fireworks, sent 23 times',
+    );
     expect(screen.getByRole('header', { name: 'Player card' })).toBeOnTheScreen();
-    expect(screen.getByLabelText('NinaVolt, Germany, Diamond league, Level 22')).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('NinaVolt, Germany, Playing since April 2026, Diamond league, Level 22'),
+    ).toBeOnTheScreen();
     expect(screen.getByTestId('player-card-stat-streak')).toHaveProp('accessibilityLabel', 'Win streak: 3');
   });
 });

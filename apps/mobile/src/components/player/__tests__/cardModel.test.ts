@@ -59,6 +59,8 @@ describe('cardModel: the opponent', () => {
       cell: 'A8',
       cellIndex: A8,
       remainingMs: 9000,
+      // The deadline the ring drains toward on the UI thread (it starts again only when this changes).
+      expiresAt: NOW + 9000,
       totalMs: 12000,
       secondsLeft: 9,
       paused: false,
@@ -72,6 +74,7 @@ describe('cardModel: the opponent', () => {
     });
     expect(cardModel(view, 'nina', 0, NOW).activity).toMatchObject({
       paused: true,
+      expiresAt: null,
       remainingMs: 4100,
       secondsLeft: 5,
     });
@@ -266,6 +269,7 @@ describe('lockModel (§10)', () => {
       cell: 'F8',
       cellIndex: F8,
       remainingMs: 6200,
+      expiresAt: NOW + 6200,
       totalMs: 12000,
       secondsLeft: 7,
       paused: false,

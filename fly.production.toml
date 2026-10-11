@@ -1,0 +1,59 @@
+# Fly.io: the game server's PRODUCTION app (stage 14). Commands: docs/DEPLOY-PRODUCTION.md.
+#   fly deploy --config fly.production.toml --ha=false
+#
+# A separate app from staging (fly.toml), with its own database, secrets and address. The same image (Dockerfile).
+# One machine in one region (spec §17.1): Colyseus keeps rooms and matchmaking in the memory of its one process,
+# so this app runs exactly one machine: deploy with --ha=false, and never scale it out (scale up instead:
+# `fly scale vm` / `fly scale memory`).
+#
+# Secrets (fly secrets set --config fly.production.toml): DATABASE_URL, ADMIN_PASSWORD, ADMIN_SESSION_SECRET,
+# FIREBASE_PROJECT_ID, SENTRY_DSN, INVITE_URL. Nothing secret goes in here.
+
+app = "sudoku-fight-prod"
+primary_region = "fra"
+# Colyseus shuts down cleanly on SIGTERM: it stops matchmaking, disconnects the rooms, closes the database.
+kill_signal = "SIGTERM"
+kill_timeout = "30s"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "2567"
+  # Fly's proxy is the one hop in front of the server, so req.ip is the client's address (rate limits per IP).
+  # A hop count, not `true`.
+  TRUST_PROXY = "1"
+  ADMIN_TZ = "Asia/Jerusalem"
+  # [D7] B (the default): one rating per game type (fast, normal, hard); A: one per type and player count.
+  # Decided before launch (spec §24): the ratings live under the option's keys.
+  RATING_OPTION = "B"
+  # Sentry tells production from staging by this (both run NODE_ENV=production).
+  SENTRY_ENVIRONMENT = "production"
+
+[http_service]
+  internal_port = 2567
+  force_https = true
+  # A stopped machine drops every game in progress, and there is only one: it stays up.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  # Each WebSocket is one connection for as long as its game lasts (Fly's default hard limit is 25).
+  [http_service.concurrency]
+    type = "connections"
+    soft_limit = 800
+    hard_limit = 1000
+
+  # The server answers only once the database is open and migrated.
+  [[http_service.checks]]
+    method = "GET"
+    path = "/health"
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "30s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

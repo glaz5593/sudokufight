@@ -1,5 +1,5 @@
 import type { GameView, PlayerId } from '@sudoku-fight/engine';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import {
   pickerModel,
@@ -57,19 +57,26 @@ export function useReactions({ view, now, onReact }: UseReactionsOptions): React
   const gameId = view.gameId;
   const muted = useMutedPlayers(gameId);
   const toggle = useReactionMutes((s) => s.toggle);
+  // The model follows the time (the cooldown), so the handlers read it as it is when they run: they stay the
+  // same functions from one re-read of the time to the next, and my memo'd card skips those renders (spec §22).
+  const latest = useRef(model);
+  useLayoutEffect(() => {
+    latest.current = model;
+  });
 
   const togglePicker = useCallback(() => {
     setMenuFor(null);
-    setOpen((o) => pickerReducer(o, 'toggle', model));
-  }, [model]);
+    setOpen((o) => pickerReducer(o, 'toggle', latest.current));
+  }, []);
   const closePicker = useCallback(() => setOpen(false), []);
   const pick = useCallback(
     (emoji: string) => {
-      const item = model.items.find((i) => i.emoji === emoji);
+      const current = latest.current;
+      const item = current.items.find((i) => i.emoji === emoji);
       if (item && !item.disabled) onReact(emoji);
-      setOpen((o) => pickerReducer(o, 'pick', model));
+      setOpen((o) => pickerReducer(o, 'pick', current));
     },
-    [model, onReact],
+    [onReact],
   );
   const openMenu = useCallback((playerId: PlayerId) => {
     setOpen(false);

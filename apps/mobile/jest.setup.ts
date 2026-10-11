@@ -27,3 +27,8 @@ jest.mock(
   '@shopify/react-native-skia',
   () => jest.requireActual('./src/components/interference/testing/skiaMock').skiaModule,
 );
+
+// Rendering whole screens takes seconds per test (3–4 s for a game screen while every core is busy): Jest's 5 s
+// default is too close, more so on a CI runner's two cores. A test that hangs still fails; files that play whole
+// games set more with their own jest.setTimeout. (Per project here: Jest reads testTimeout from the root only.)
+jest.setTimeout(20_000);

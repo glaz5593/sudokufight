@@ -38,16 +38,20 @@ beforeAll(async () => {
 }, 30_000);
 afterAll(() => t.close());
 let running = false;
-afterEach(async () => {
+async function stop() {
   if (running) await http.close();
   running = false;
-});
+}
+afterEach(stop);
 
 async function start(
   config: Partial<ServerConfig> = {},
   accountLimits: AccountLimits = DEFAULT_ACCOUNT_LIMITS,
   devTokens?: boolean,
 ) {
+  // A test may start again with other settings, after its describe's beforeEach started one: close that one
+  // first, or its listening socket outlives the run and keeps Jest from exiting.
+  await stop();
   await t.reset();
   clock = fakeClock(NOW);
   const cfg = testConfig(config);

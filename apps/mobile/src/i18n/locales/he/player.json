@@ -25,9 +25,6 @@
     "left_female": "נטשה"
   },
   "result": {
-    "win": "ניצחון",
-    "loss": "הפסד",
-    "draw": "תיקו",
     "winShort": "נ",
     "lossShort": "ה",
     "drawShort": "ת"
@@ -101,9 +98,6 @@
     "labelDisconnected": "בזמן ניתוק אין הפרעות",
     "labelOut": "{{name}} כבר לא במשחק",
     "close": "סגירת ארסנל ההפרעות"
-  },
-  "reconnect": {
-    "label": "ממתינים לחיבור מחדש, {{time}}"
   },
   "lead": {
     "tie": "שוויון",

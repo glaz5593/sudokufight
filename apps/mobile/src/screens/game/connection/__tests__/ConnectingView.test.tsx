@@ -1,9 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
+import { ltr } from '../../../../components/player/format';
 import { color } from '../../../../theme';
 import { ConnectingView } from '../ConnectingView';
 import type { ConnectingStep } from '../connectionModel';
-import { type Setup, setUp, styleOf, wait } from '../testing/setup';
+import { matchLoadingOf, tipOf } from '../loadingModel';
+import { iso, type Setup, setUp, styleOf, wait } from '../testing/setup';
 
 let env: Setup;
 afterEach(() => env.restore());
@@ -62,6 +64,81 @@ describe('ConnectingView (Hebrew)', () => {
     await rerender(<ConnectingView model={{ kind: 'connecting', step: 'sync' }} />);
     await wait(20);
     expect(screen.getByTestId('connecting-step')).toHaveAnimatedStyle({ transform: [{ scale: 1 }] });
+  });
+});
+
+describe('ConnectingView, a ranked match’s room (Loading.dc.html)', () => {
+  beforeEach(async () => {
+    env = await setUp('he');
+  });
+
+  const PROFILES = {
+    me: { avatarId: 'av07', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
+    nina: { avatarId: 'av12', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
+  };
+  const loading = (step: ConnectingStep, seed = 'online-1') =>
+    matchLoadingOf({ profiles: PROFILES, myId: 'me', gameType: 'normal', step, seed })!;
+  const hidden = { includeHiddenElements: true };
+
+  it('the tag, both players with their ratings, who is ready, the small board and the percent', async () => {
+    await render(<ConnectingView model={{ kind: 'connecting', step: 'room' }} match={loading('room')} />);
+    expect(screen.getByTestId('connecting-tag')).toHaveTextContent('מדורג · רגיל');
+    // Me first ("אני", P1), not in the room yet; NinaVolt in her match already.
+    expect(screen.getByTestId('connecting-player-me')).toHaveAccessibleName('אני, דירוג 1287, מתחבר…');
+    expect(screen.getByTestId('connecting-player-nina')).toHaveAccessibleName(
+      `${iso('NinaVolt')}, דירוג 1305, זמני, מוכן!`,
+    );
+    expect(screen.getByTestId('connecting-player-nina-state')).toHaveStyle({ color: color.success });
+    expect(screen.getByTestId('connecting-player-nina')).toHaveTextContent('1305', { exact: false });
+    expect(screen.getByTestId('flag-DE', hidden)).toBeTruthy();
+    // The small board is decorative; the steps' bar is still the one progress bar.
+    expect(screen.getByTestId('connecting-mini-board', hidden)).toHaveProp(
+      'accessibilityElementsHidden',
+      true,
+    );
+    expect(screen.getByTestId('connecting-percent')).toHaveTextContent(ltr('33%'));
+    expect(screen.getByRole('progressbar')).toHaveAccessibleName('טעינת המשחק, שלב 2 מתוך 3');
+  });
+
+  it('"מוכן!" under me too once my phone is in the room (D37)', async () => {
+    await render(<ConnectingView model={{ kind: 'connecting', step: 'sync' }} match={loading('sync')} />);
+    expect(screen.getByTestId('connecting-player-me-state')).toHaveTextContent('מוכן!');
+    expect(screen.getByTestId('connecting-percent')).toHaveTextContent(ltr('67%'));
+  });
+
+  it('a tip from the list, with the bank’s numbers: up to 10.5 a cell, not 13.5', async () => {
+    const seed = Array.from({ length: 40 }, (_, k) => `online-${k}`).find((s) => tipOf(s) === 'score')!;
+    await render(
+      <ConnectingView model={{ kind: 'connecting', step: 'server' }} match={loading('server', seed)} />,
+    );
+    const tip = screen.getByTestId('connecting-tip');
+    expect(screen.getByTestId('connecting-tip-text')).toHaveTextContent(
+      'ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד 10.5 נק׳ למשבצת.',
+    );
+    expect(tip).toHaveAccessibleName(
+      'טיפ: ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד 10.5 נק׳ למשבצת.',
+    );
+    expect(tip).not.toHaveTextContent('13.5', { exact: false });
+  });
+
+  it('a room by code: the steps alone', async () => {
+    await render(<ConnectingView model={{ kind: 'connecting', step: 'room' }} match={null} />);
+    for (const id of ['connecting-tag', 'connecting-percent', 'connecting-tip', 'connecting-mini-board'])
+      expect(screen.queryByTestId(id, hidden)).toBeNull();
+  });
+
+  it('speaks English', async () => {
+    env.restore();
+    env = await setUp('en');
+    const seed = Array.from({ length: 40 }, (_, k) => `online-${k}`).find((s) => tipOf(s) === 'lastCell')!;
+    await render(
+      <ConnectingView model={{ kind: 'connecting', step: 'sync' }} match={loading('sync', seed)} />,
+    );
+    expect(screen.getByTestId('connecting-tag')).toHaveTextContent('Ranked · Normal');
+    expect(screen.getByTestId('connecting-player-me')).toHaveAccessibleName('Me, Rating 1287, Ready!');
+    expect(screen.getByTestId('connecting-tip-text')).toHaveTextContent(
+      'The last cell on the board is always worth just 1.5 points: everything around it is full.',
+    );
   });
 });
 

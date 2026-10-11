@@ -4,7 +4,8 @@
 # memory of its one process, so this app runs exactly one machine: deploy with `fly deploy --ha=false`, and
 # never scale it out.
 #
-# Secrets (fly secrets set): DATABASE_URL, ADMIN_PASSWORD, ADMIN_SESSION_SECRET. Nothing secret goes in here.
+# Secrets (fly secrets set): DATABASE_URL, ADMIN_PASSWORD, ADMIN_SESSION_SECRET, and SENTRY_DSN for error
+# reports. Nothing secret goes in here. Production is a separate app: fly.production.toml.
 
 app = "sudoku-fight-staging"
 primary_region = "fra"
@@ -22,6 +23,8 @@ kill_timeout = "30s"
   # A hop count, not `true`.
   TRUST_PROXY = "1"
   ADMIN_TZ = "Asia/Jerusalem"
+  # Sentry tells staging from production by this (both run NODE_ENV=production).
+  SENTRY_ENVIRONMENT = "staging"
 
 [http_service]
   internal_port = 2567

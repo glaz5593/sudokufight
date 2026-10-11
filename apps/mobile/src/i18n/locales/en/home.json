@@ -185,7 +185,12 @@
       "he": "עברית",
       "en": "English"
     },
-    "version": "Version {{version}} · engine {{engine}}"
+    "version": "Version {{version}} · engine {{engine}}",
+    "about": "About and legal",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "licenses": "Licenses",
+    "opensInBrowser": "Opens in the browser"
   },
   "placeholder": {
     "soon": "Coming soon",
@@ -235,5 +240,20 @@
         "behavior": "Fast, precise, and interferes without mercy"
       }
     }
+  },
+  "licenses": {
+    "title": "Licenses",
+    "intro": "Sudoku Fight is built on open fonts and open-source software. Thanks to their authors. Here are their licenses and copyright notices.",
+    "fonts": "Fonts",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_one": "1 open-source package",
+    "packages_two": "{{count}} open-source packages",
+    "packages_many": "{{count}} open-source packages",
+    "packages_other": "{{count}} open-source packages",
+    "packageLabel": "{{name}}, version {{version}}, license {{license}}",
+    "texts": "License texts",
+    "textsHint": "The full text of each license, as written.",
+    "show": "Show the {{license}} license",
+    "hide": "Hide the {{license}} license"
   }
 }

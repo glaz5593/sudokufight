@@ -100,6 +100,8 @@ export function card(over: Partial<PlayerCard> & { id: string }): PlayerCard {
     country: 'IL',
     league: 'gold',
     level: 14,
+    // "במשחק מאז אפריל 2026" (Profile.dc.html).
+    joinedAt: Date.UTC(2026, 3, 12, 9, 30),
     xp: 12_380,
     ratings: [
       rating('fast', { rating: 1342, peak: 1361 }),
@@ -116,6 +118,7 @@ export function card(over: Partial<PlayerCard> & { id: string }): PlayerCard {
       bestMove: { points: 12.5, gameId: 'g1' },
       avgMistakes: 2.5,
     },
+    favoriteInterference: { kind: 'fireworks', count: 23 },
     recent: recent(10),
     achievements: [],
     ...over,

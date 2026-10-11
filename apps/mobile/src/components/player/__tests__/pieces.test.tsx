@@ -1,11 +1,10 @@
-import { act, render, screen } from '@testing-library/react-native';
+import { render, screen } from '@testing-library/react-native';
 import { AccessibilityInfo, StyleSheet, type TextStyle } from 'react-native';
 
 import i18n from '../../../i18n';
 import { useSettings } from '../../../state/settings';
 import { color, tokens } from '../../../theme';
 import { fourPlayerView, NOW, twoPlayerView, withPlayer } from '../__fixtures__/gameView';
-import { useCountUp } from '../anim';
 import { Avatar } from '../Avatar';
 import { cardModel, leadModel, lockModel } from '../cardModel';
 import { Flag } from '../Flag';
@@ -176,45 +175,6 @@ describe('LockStrip (§10)', () => {
       'המשבצת שוחררה',
     ]);
     announce.mockRestore();
-  });
-});
-
-describe('score count (motion.md score.count)', () => {
-  let shown: number[] = [];
-  function Spy({ value }: { value: number }) {
-    const reduce = useSettings((s) => s.reduceMotion === 'on');
-    const v = useCountUp(value, reduce);
-    shown.push(v);
-    return null;
-  }
-
-  beforeEach(() => {
-    shown = [];
-    jest.useFakeTimers();
-  });
-  afterEach(() => jest.useRealTimers());
-
-  it('counts in half steps to the new score over 650 ms', async () => {
-    const { rerender } = await render(<Spy value={51.5} />);
-    await rerender(<Spy value={55} />);
-    // One frame at a time, so React renders each step of the count.
-    for (let t = 0; t < 700; t += 50) {
-      await act(async () => {
-        jest.advanceTimersByTime(50);
-      });
-    }
-    expect(shown.at(-1)).toBe(55);
-    const steps = shown.filter((v) => v !== 51.5 && v !== 55);
-    expect(steps.length).toBeGreaterThan(0);
-    expect(steps.every((v) => v * 2 === Math.round(v * 2) && v > 51.5 && v < 55)).toBe(true);
-  });
-
-  it('jumps straight to the score with reduced motion', async () => {
-    useSettings.setState({ reduceMotion: 'on' });
-    const { rerender } = await render(<Spy value={51.5} />);
-    await rerender(<Spy value={55} />);
-    expect(shown.at(-1)).toBe(55);
-    expect(shown.filter((v) => v !== 51.5 && v !== 55)).toEqual([]);
   });
 });
 

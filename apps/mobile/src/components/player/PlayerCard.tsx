@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -7,13 +8,14 @@ import { color, size, text, tokens } from '../../theme';
 import { ActivityLine, MistakesText } from './ActivityLine';
 import { Avatar } from './Avatar';
 import { HitChip, ReconnectPill } from './Badges';
-import type { CardModel, InterferenceModel } from './cardModel';
+import { type CardModel, type InterferenceModel, sameCard } from './cardModel';
 import { CardIconButton } from './CardIconButton';
 import { cardOpacity, DropZone, useCardOpacity } from './DropZone';
 import { Flag } from './Flag';
 import { InterferenceButton } from './InterferenceButton';
 import { metrics, paletteAt } from './metrics';
 import { Rating } from './Rating';
+import { sameProps, sameStyle } from './sameProps';
 import { DeltaLabel, type ScoreDelta, ScoreNumber } from './Score';
 import { SeatGlyph } from './SeatGlyph';
 import { cardLabel, displayName, type Gender } from './wording';
@@ -68,7 +70,7 @@ export interface PlayerCardProps extends PlayerCardActions {
  * delta, and a status line with the card's actions. No background or border: it sits on the screen.
  * Screen readers get one summary ("NinaVolt · 39.5 נקודות · בוחרת A8, …"); the buttons stay separate.
  */
-export function PlayerCard({
+export const PlayerCard = memo(function PlayerCard({
   model,
   avatarId,
   country,
@@ -199,6 +201,14 @@ export function PlayerCard({
       </Animated.View>
     </DropZone>
   );
+}, samePlayerCard);
+
+/**
+ * The screen re-reads the time 4 times a second and builds the card's model again each time: the card renders
+ * only when what it shows changed (sameCard), so its subtree stays put between whole seconds.
+ */
+function samePlayerCard(a: PlayerCardProps, b: PlayerCardProps): boolean {
+  return sameProps(a, b, { model: sameCard, style: sameStyle });
 }
 
 const card = tokens.layout.game.playerCard;

@@ -8,6 +8,7 @@ import {
   type BankPuzzle,
   dbPuzzleSource,
   EmptyPoolError,
+  isRankedPoolReady,
   rankedPoolSizes,
   readPuzzleBank,
   seedRankedPuzzles,
@@ -73,6 +74,15 @@ describe('npm run db:seed-puzzles: seedRankedPuzzles', () => {
     const [r1] = await t.db.select().from(puzzles).where(eq(puzzles.id, 'r1'));
     expect(r1!.techniques).toEqual(['hiddenSingle']);
     expect(await rankedPoolSizes(t.db)).toEqual({ fast: 2, normal: 1, hard: 0 });
+  });
+
+  it('--if-empty (and npm run dev:lan): the pool is ready only with puzzles of every game type', async () => {
+    expect(isRankedPoolReady(await rankedPoolSizes(t.db))).toBe(false);
+    await seedRankedPuzzles(t.db, [bankPuzzle('r1', 'fast', 'ranked'), bankPuzzle('r2', 'normal', 'ranked')]);
+    // No hard puzzle yet: hard ranked games couldn't start, so the pool still needs loading.
+    expect(isRankedPoolReady(await rankedPoolSizes(t.db))).toBe(false);
+    await seedRankedPuzzles(t.db, [bankPuzzle('r3', 'hard', 'ranked'), bankPuzzle('o1', 'hard', 'offline')]);
+    expect(isRankedPoolReady(await rankedPoolSizes(t.db))).toBe(true);
   });
 
   it('loads the real bank: 2,000+ ranked puzzles per type, no offline one', async () => {

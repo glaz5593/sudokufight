@@ -185,7 +185,12 @@
       "he": "עברית",
       "en": "English"
     },
-    "version": "גרסה {{version}} · מנוע {{engine}}"
+    "version": "גרסה {{version}} · מנוע {{engine}}",
+    "about": "מידע ומשפטי",
+    "privacy": "מדיניות פרטיות",
+    "terms": "תנאי שימוש",
+    "licenses": "רישיונות",
+    "opensInBrowser": "נפתח בדפדפן"
   },
   "placeholder": {
     "soon": "בקרוב",
@@ -235,5 +240,20 @@
         "behavior": "מהיר, מדויק, ומפריע בלי רחמים"
       }
     }
+  },
+  "licenses": {
+    "title": "רישיונות",
+    "intro": "סודוקו פייט בנוי על גופנים ועל תוכנות קוד פתוח. תודה ליוצרים שלהם. כאן מופיעים הרישיונות וזכויות היוצרים שלהם.",
+    "fonts": "גופנים",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_one": "רכיב קוד פתוח אחד",
+    "packages_two": "{{count}} רכיבי קוד פתוח",
+    "packages_many": "{{count}} רכיבי קוד פתוח",
+    "packages_other": "{{count}} רכיבי קוד פתוח",
+    "packageLabel": "{{name}}, גרסה {{version}}, רישיון {{license}}",
+    "texts": "נוסחי הרישיונות",
+    "textsHint": "הנוסח המלא של כל רישיון, כפי שהוא באנגלית.",
+    "show": "הצגת הרישיון {{license}}",
+    "hide": "הסתרת הרישיון {{license}}"
   }
 }

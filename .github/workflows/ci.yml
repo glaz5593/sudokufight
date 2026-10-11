@@ -8,10 +8,15 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Ubuntu, with the Node of .nvmrc (24). The checks run once; the tests are split by Jest project, the app's in two
+# shards, so each job is minutes on a 2-core runner and a slow project doesn't hold the others up. Jest runs two
+# workers in each: with one it would run in band, and a test that leaves a handle open would keep the job alive
+# until GitHub's 6-hour limit (workers are stopped at the end instead). Each job has its own time limit too.
 jobs:
-  verify:
-    name: Lint, typecheck, test
+  checks:
+    name: Lint, translations, typecheck, builds
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,14 +27,45 @@ jobs:
       - name: One copy of react and react-native
         run: npm ls react react-native
       - run: npm run lint
-      - name: Typed routes for the app (expo-env.d.ts and .expo/types are not committed)
-        working-directory: apps/mobile
-        run: npx expo customize tsconfig.json
-        env:
-          CI: 'true'
-      - run: npm run typecheck
+      - name: Formatting (Prettier)
+        run: npm run format:check
       - name: Translations (every key in Hebrew and English; unused keys are warnings)
         run: npm run i18n:check
-      - run: npm test -- --ci
+      # The app's typed routes first (expo customize: expo-env.d.ts and .expo/types are not committed), then tsc -b.
+      - name: Typecheck
+        run: npm run typecheck
+        env:
+          CI: 'true'
       - name: The server bundles
         run: npm run build -w @sudoku-fight/server
+      - name: The admin site builds
+        run: npm run admin:build
+
+  test:
+    name: Tests (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: engine, protocol, admin
+            jest: --selectProjects engine protocol admin
+          - name: server
+            jest: --selectProjects server
+          - name: app 1/2
+            jest: --selectProjects mobile --shard=1/2
+          - name: app 2/2
+            jest: --selectProjects mobile --shard=2/2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # apps/server/test/adminSite.e2e.test.ts checks the built site too (it skips that part without a build).
+      - name: The admin site, for the server's end-to-end test
+        if: matrix.name == 'server'
+        run: npm run admin:build
+      - run: npx jest --ci --maxWorkers=2 ${{ matrix.jest }}

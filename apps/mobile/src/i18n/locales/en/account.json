@@ -62,7 +62,6 @@
     }
   },
   "splash": {
-    "label": "Sudoku Fight is loading",
     "tagline": "One board. Everyone solves. Only one wins.",
     "loading": "Loading the arena…",
     "tipLabel": "Tip",
@@ -117,7 +116,6 @@
     "previewNew": "New",
     "previewOpponent": "Your opponent",
     "previewOpponentName": "???",
-    "previewVs": "VS",
     "continue": "Continue",
     "enterArena": "Enter the arena",
     "signOut": "Sign out"
@@ -140,8 +138,7 @@
     },
     "takenHint": "Someone already picked this name. Try another one.",
     "blockedHint": "That name doesn't fit the arena. Try another one.",
-    "errorHint": "We couldn't check the name. We'll check again when you save.",
-    "fieldLabel": "{{label}}, {{status}}"
+    "errorHint": "We couldn't check the name. We'll check again when you save."
   },
   "country": {
     "label": "Country: {{country}}",
@@ -211,8 +208,6 @@
     "offline": "Can't reach the server. You can edit once you're back online."
   },
   "home": {
-    "editHint": "Edit your profile",
-    "offline": "Profile saved on this phone, no connection to the server",
     "provisional": "Provisional rating: your first 10 games"
   },
   "settings": {
@@ -224,7 +219,7 @@
     "signOutBody": "Practices on this phone stay. You'll need to sign in to play again.",
     "deleteAccount": "Delete account",
     "deleteTitle": "Delete your account?",
-    "deleteBody": "Your fighter, name and ratings will be deleted, and this can't be undone. Your name becomes free for other players.",
+    "deleteBody": "Your email, fighter and name will be deleted, and this can't be undone. Games and ratings stay, no longer linked to you, so other players' games stay whole. Your name becomes free for other players.",
     "deleteContinue": "Continue",
     "deletePasswordTitle": "Confirm with your password",
     "deletePasswordBody": "To delete the account, enter the password of {{email}}.",

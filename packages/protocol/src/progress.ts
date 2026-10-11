@@ -1,4 +1,4 @@
-import type { GameType, League } from '@sudoku-fight/engine';
+import type { GameType, InterferenceKind, League } from '@sudoku-fight/engine';
 
 import type { AvatarId, CountryCode } from './account';
 
@@ -44,6 +44,8 @@ export const LEADERBOARD_PAGE_SIZE = 50;
 export const PODIUM_SIZE = 3;
 /** §14.3: the last results on a player card. */
 export const PLAYER_CARD_RECENT = 10;
+/** A card's favourite interference counts the player's last this many ranked games (a bounded query). */
+export const FAVORITE_INTERFERENCE_GAMES = 100;
 /** Practice results per request. */
 export const MAX_PRACTICE_RESULTS = 50;
 
@@ -119,12 +121,30 @@ export interface PlayerStats {
   avgMistakes: number | null;
 }
 
+/**
+ * "ההפרעה האהובה" (Profile.dc.html): the interference the player sent most in their last
+ * FAVORITE_INTERFERENCE_GAMES ranked games, and how many times. Counted on the server from the games' stored
+ * events (game_events of type 'interference' whose fromId is the player), through the player's own games only:
+ * no new column, and a cost bounded by the window. Equal counts: the kind sent most recently.
+ */
+export interface FavoriteInterference {
+  kind: InterferenceKind;
+  count: number;
+}
+
 export interface PlayerCard extends PublicPlayer {
+  /**
+   * "במשחק מאז" (Profile.dc.html): when the account was made (users.created_at), epoch ms. Null only on a
+   * card an older server sent (or an older app saved).
+   */
+  joinedAt: number | null;
   xp: number;
   /** Every rating key of the player: 3 under option B, 9 under option A (§14.3). */
   ratings: RatingSummary[];
   /** Ranked games only (practice stays on the phone). */
   stats: PlayerStats;
+  /** Null before any interference in a ranked game (or from an older server). */
+  favoriteInterference: FavoriteInterference | null;
   /** Newest first, at most PLAYER_CARD_RECENT. */
   recent: RecentResult[];
   /** Earned achievements, newest first (empty until the list is approved, stage 12). */

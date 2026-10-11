@@ -346,7 +346,14 @@ describe('the server image (Dockerfile)', () => {
       }
     }
     expect([...externals].sort()).toEqual(
-      expect.arrayContaining(['@colyseus/core', '@colyseus/ws-transport', '@electric-sql/pglite', 'express']),
+      expect.arrayContaining([
+        '@colyseus/core',
+        '@colyseus/ws-transport',
+        '@electric-sql/pglite',
+        'express',
+        // Required lazily (only with SENTRY_DSN), and never bundled: Sentry asks for its Node SDK not to be.
+        '@sentry/node',
+      ]),
     );
 
     const installed = productionClosure('apps/server');
@@ -405,9 +412,16 @@ describe('the server image (Dockerfile)', () => {
   });
 });
 
-describe('fly.toml (staging)', () => {
-  const fly = read('fly.toml');
-  const value = (key: string) => new RegExp(`^\\s*${key}\\s*=\\s*(.+?)\\s*$`, 'm').exec(fly)?.[1];
+const flyValue = (file: string) => {
+  const fly = read(file);
+  return (key: string) => new RegExp(`^\\s*${key}\\s*=\\s*(.+?)\\s*$`, 'm').exec(fly)?.[1];
+};
+
+describe.each([
+  ['fly.toml', 'staging'],
+  ['fly.production.toml', 'production'],
+])('%s (%s)', (file, environment) => {
+  const value = flyValue(file);
 
   it('one machine in fra that stays up, on the server port, behind HTTPS', () => {
     expect(value('primary_region')).toBe('"fra"');
@@ -417,14 +431,39 @@ describe('fly.toml (staging)', () => {
     expect(value('min_machines_running')).toBe('1');
     expect(value('NODE_ENV')).toBe('"production"');
     expect(value('TRUST_PROXY')).toBe('"1"');
+    expect(value('dockerfile')).toBe('"Dockerfile"');
   });
 
   it('checks /health, allows many WebSockets, and holds no secret', () => {
     expect(value('path')).toBe('"/health"');
     expect(value('type')).toBe('"connections"');
     expect(Number(value('hard_limit'))).toBeGreaterThanOrEqual(500);
-    for (const secret of ['DATABASE_URL', 'ADMIN_PASSWORD', 'ADMIN_SESSION_SECRET']) {
+    for (const secret of [
+      'DATABASE_URL',
+      'ADMIN_PASSWORD',
+      'ADMIN_SESSION_SECRET',
+      'SENTRY_DSN',
+      'FIREBASE_PROJECT_ID',
+      'INVITE_URL',
+    ]) {
       expect(value(secret)).toBeUndefined();
     }
+  });
+
+  it(`tells Sentry it is ${environment} (both run NODE_ENV=production)`, () => {
+    expect(value('SENTRY_ENVIRONMENT')).toBe(`"${environment}"`);
+  });
+});
+
+describe('production and staging are separate apps', () => {
+  it('different app names, the same image and settings otherwise', () => {
+    const staging = flyValue('fly.toml');
+    const production = flyValue('fly.production.toml');
+    expect(staging('app')).toBe('"sudoku-fight-staging"');
+    expect(production('app')).toMatch(/^"[a-z0-9-]+"$/);
+    expect(production('app')).not.toBe(staging('app'));
+    expect(production('RATING_OPTION')).toMatch(/^"[AB]"$/);
+    for (const key of ['kill_signal', 'kill_timeout', 'size', 'memory', 'soft_limit', 'interval'])
+      expect({ key, value: production(key) }).toEqual({ key, value: staging(key) });
   });
 });

@@ -14,6 +14,10 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  *
  * `extra.firebase` tells the app at run time which platforms have Firebase, so the account code can fall back
  * to the development sign-in instead of crashing in a build without it.
+ *
+ * Stage 14: Analytics joins the Firebase plugins (without Apple's advertising identifier, and without Android's
+ * AD_ID permission; firebase.json turns the rest of the ad features off), and a store build (eas.json's
+ * `production` profile) must have Firebase and a reachable game server, or it fails on EAS before it is built.
  */
 const LOCAL_ANDROID = './config/firebase/google-services.json';
 const LOCAL_IOS = './config/firebase/GoogleService-Info.plist';
@@ -38,6 +42,13 @@ export interface EasBuild {
   platform: string | undefined;
 }
 
+/** eas.json's profiles whose builds go to the stores (TestFlight, Play testing tracks, production). */
+export const STORE_PROFILES: readonly string[] = ['production'];
+
+/** A build on EAS's servers for a store profile. */
+export const isStoreBuild = (build: EasBuild): boolean =>
+  build.easBuild === 'true' && build.profile !== undefined && STORE_PROFILES.includes(build.profile);
+
 /**
  * A store build without Firebase for its platform would ship the development sign-in ("מצב פיתוח", tokens a
  * production server refuses): EAS's production profile fails instead, saying what is missing. Only on EAS's
@@ -47,7 +58,7 @@ export function assertStoreBuildHasFirebase(
   build: EasBuild,
   found: { android: boolean; ios: boolean },
 ): void {
-  if (build.easBuild !== 'true' || build.profile !== 'production') return;
+  if (!isStoreBuild(build)) return;
   const platforms =
     build.platform === 'android' || build.platform === 'ios' ? [build.platform] : ['android', 'ios'];
   const missing = platforms.filter((p) => !found[p as 'android' | 'ios']);
@@ -63,13 +74,53 @@ export function assertStoreBuildHasFirebase(
   );
 }
 
+/** Where the app finds the game server (src/config/server.ts), from eas.json's `env` of the profile. */
+export interface ServerEnv {
+  /** EXPO_PUBLIC_SERVER_HOST */
+  host?: string | undefined;
+  /** EXPO_PUBLIC_SERVER_SECURE ("true" for wss/https) */
+  secure?: string | undefined;
+}
+
+/** A host a phone in a tester's hand can't reach, or that was never filled in. */
+const UNREACHABLE_HOST =
+  /^(?:localhost|127\.|10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|0\.0\.0\.0|\[?::1\]?$)|\.local$|example\.|change[-_]?me|todo/i;
+
+/**
+ * A store build pointing at a computer on the developer's desk (localhost, a LAN address), or at a placeholder,
+ * or without TLS, would reach no server from a tester's phone: EAS's production profile fails instead, naming
+ * the setting. On EAS's servers only, like the Firebase check.
+ */
+export function assertStoreBuildHasServer(build: EasBuild, server: ServerEnv): void {
+  if (!isStoreBuild(build)) return;
+  const host = server.host?.trim() ?? '';
+  const problems: string[] = [];
+  if (host === '' || UNREACHABLE_HOST.test(host))
+    problems.push(`EXPO_PUBLIC_SERVER_HOST is ${host === '' ? 'not set' : `"${host}"`}`);
+  if (server.secure !== 'true') problems.push('EXPO_PUBLIC_SERVER_SECURE is not "true"');
+  if (problems.length === 0) return;
+  throw new Error(
+    `Production build without a reachable game server: ${problems.join('; ')}. ` +
+      "Set the production server in eas.json's production profile `env` (docs/DEPLOY-PRODUCTION.md).",
+  );
+}
+
 /** The environment this file reads. */
 export interface AppConfigEnv extends EasBuild {
   /** EAS file variable: the path of the uploaded google-services.json. */
   googleServicesJson: string | undefined;
   /** EAS file variable: the path of the uploaded GoogleService-Info.plist. */
   googleServiceInfoPlist: string | undefined;
+  /** The game server the build points at (stage 14: a store build must point at a real one). */
+  server?: ServerEnv;
 }
+
+/**
+ * Android's advertising id permission. Firebase Analytics' library asks for it; this app shows no ads and
+ * never reads it (firebase.json turns its collection off), so the permission is taken out of the manifest:
+ * Play's Data safety form and its "Advertising ID" declaration can then say no.
+ */
+export const AD_ID_PERMISSION = 'com.google.android.gms.permission.AD_ID';
 
 /** app.json's config with Firebase added for the platforms whose files exist (`exists`: tests pass theirs). */
 export function resolveAppConfig(
@@ -80,13 +131,22 @@ export function resolveAppConfig(
   const android = firebaseFile(env.googleServicesJson, LOCAL_ANDROID, exists);
   const ios = firebaseFile(env.googleServiceInfoPlist, LOCAL_IOS, exists);
   assertStoreBuildHasFirebase(env, { android: android !== null, ios: ios !== null });
+  assertStoreBuildHasServer(env, env.server ?? {});
   const extra = { ...base.extra, firebase: { android: android !== null, ios: ios !== null } };
   if (!android && !ios) return { ...base, extra };
 
   return {
     ...base,
     extra,
-    android: { ...base.android, ...(android ? { googleServicesFile: android } : null) },
+    android: {
+      ...base.android,
+      ...(android
+        ? {
+            googleServicesFile: android,
+            blockedPermissions: [...(base.android?.blockedPermissions ?? []), AD_ID_PERMISSION],
+          }
+        : null),
+    },
     ios: { ...base.ios, ...(ios ? { googleServicesFile: ios } : null) },
     plugins: [
       ...(base.plugins ?? []),
@@ -95,6 +155,8 @@ export function resolveAppConfig(
       '@react-native-firebase/app',
       '@react-native-firebase/auth',
       '@react-native-firebase/crashlytics',
+      // Stage 14: Analytics without Apple's advertising identifier (no IDFA, so no tracking prompt).
+      ['@react-native-firebase/analytics', { ios: { withoutAdIdSupport: true } }],
     ],
   };
 }
@@ -107,4 +169,8 @@ export default ({ config }: ConfigContext): ExpoConfig =>
     easBuild: process.env.EAS_BUILD,
     profile: process.env.EAS_BUILD_PROFILE,
     platform: process.env.EAS_BUILD_PLATFORM,
+    server: {
+      host: process.env.EXPO_PUBLIC_SERVER_HOST,
+      secure: process.env.EXPO_PUBLIC_SERVER_SECURE,
+    },
   });

@@ -8,6 +8,8 @@
 | תוכנית עבודה בשלבים | [docs/02-WORK-PLAN.md](docs/02-WORK-PLAN.md) |
 | עיצוב (קנבס) | https://claude.ai/artifact/Gi5UdFahu2WP7ECR5Z5pon · פרטים ב־[docs/03-DESIGN.md](docs/03-DESIGN.md) |
 | האפיון המקורי | [docs/00-original-spec-v1.md](docs/00-original-spec-v1.md) |
+| שחרור: הצ'קליסט עד TestFlight ו־Play Closed testing | [docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md) |
+| שרת ה־Production | [docs/DEPLOY-PRODUCTION.md](docs/DEPLOY-PRODUCTION.md) |
 
 ## מבנה
 
@@ -38,6 +40,7 @@ docs/               אפיון, תוכנית, עיצוב
 | `npm run lint` | ESLint, כולל הכלל שאוסר `Date.now()`, ‏`Math.random()` וטיימרים בתוך המנוע |
 | `npm run verify` | lint, ‏typecheck ובדיקות |
 | `npm run server` | השרת בפיתוח (tsx watch), פורט 2567 |
+| `npm run dev:lan` | השרת בפיתוח לטלפונים ב־Wi-Fi: מוצא את כתובת המחשב, טוען את המאגר המדורג אם חסר, ומדפיס מה לשים ב־`.env.local`. פירוט ב"טלפונים ב־Wi-Fi" |
 | `npm run fake-client -- --create` | לקוח מזויף שמשחק דרך השרת כמו בוט. פירוט ב"לשחק מול לקוח מזויף" |
 | `npm run seed` | נתוני דוגמה לאתר הניהול במסד של הפיתוח (PGlite): ‏300 התקנות, 80 משתמשים ו־150 משחקים מדורגים. טוען גם את המאגר המדורג. `-- --reset` מוחק קודם. לעצור את השרת לפני |
 | `npm run db:seed-puzzles` | טוען לטבלת `puzzles` את המאגר המדורג מ־`packages/engine/data/puzzles.json`: רק לוחות עם `pool='ranked'` (אפיון, סעיף 20). בלי זה משחק מדורג לא מתחיל. אפשר להריץ שוב: הוא רק מעדכן. ב־PGlite לעצור את השרת לפני. מול Postgres של הייצור: עם `DATABASE_URL` (למשל דרך `fly proxy`) |
@@ -47,6 +50,7 @@ docs/               אפיון, תוכנית, עיצוב
 | `npm run android:reverse` | מפנה את פורטים 2567 ו־8081 מהטלפון או מהאמולטור למחשב |
 | `npm run puzzles:import` | מייבא את `assets/puzzles/sudoku-bank-690.csv` אל `packages/engine/data/puzzles.json`, ומדפיס דוח |
 | `npm run puzzles:generate -- --type hard --count 300` | מחולל לוחות. אפשר גם `--pool ranked` ו־`--seed 42` |
+| `npm run licenses` | רישיונות של חבילות ה־Production באפליקציה ובשרת: כותב את `docs/store/LICENSES-REPORT.md` ואת הרשימה שמסך "רישיונות" מציג. מריצים אחרי כל שינוי בתלויות (`-- --check` רק בודק) |
 
 ## להריץ את האפליקציה בטלפון Android (Development Build)
 
@@ -64,8 +68,24 @@ docs/               אפיון, תוכנית, עיצוב
    `adb install -r apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk`.
 3. **שרת:** `npm run server`.
 4. **חיבור:** `npm run android:reverse` (כך `localhost` בטלפון מגיע למחשב), ואז `npm run mobile` ופותחים את האפליקציה.
-   בלי כבל: מעתיקים את `apps/mobile/.env.example` ל־`apps/mobile/.env.local` ושמים ב־`EXPO_PUBLIC_SERVER_HOST` את כתובת ה־IP של המחשב.
+   בלי כבל: `npm run dev:lan` במקום `npm run server` (הסעיף הבא).
 5. במסך "שלום" צריך לראות: "משבצת D5" (מה־engine), עיגול Skia, כפתור שקופץ (Reanimated), ו־"server RTT … ms".
+
+### טלפונים ב־Wi-Fi: `npm run dev:lan`
+
+לבדיקות בטלפונים בלי כבל, מהשורש:
+
+```
+npm run dev:lan -- --write-env    # הכתובת, המאגר המדורג, השרת, ו־apps/mobile/.env.local
+npm run mobile -- --clear         # בחלון שני: Metro, אחרי כל שינוי ב־.env.local
+```
+
+- **מה הוא עושה:** מוצא את כתובת ה־IPv4 של ה־Wi-Fi או ה־Ethernet (לא WSL, מכונה וירטואלית או VPN), טוען את המאגר המדורג אם חסר, ומפעיל את `npm run server`.
+  כשהשרת עונה, הוא מדפיס את הכתובת, את שלוש השורות ל־`apps/mobile/.env.local`, את אתר הניהול והסיסמה, פקודות ל־Windows Firewall ופקודות ל־`fake-client`.
+- **אפשרויות:** ‏`--write-env` כותב את השורות ל־`.env.local` (הקובץ ב־gitignore). ‏`--ip 192.168.1.20` בוחר כתובת אחרת. ‏`--seed` מוסיף נתוני דוגמה לאתר הניהול.
+  ‏`--no-server` רק מדפיס, כשהשרת כבר רץ בחלון אחר.
+- **בדיקה מהטלפון:** פותחים בדפדפן של הטלפון את `http://<הכתובת>:2567/health`. אם אין תשובה, זה כמעט תמיד ה־Firewall: הפקודות המודפסות (PowerShell כמנהל) פותחות את הפורט רק ברשתות פרטיות. הסקריפט לא מריץ אותן בעצמו.
+- עוצרים עם Ctrl+C: השרת נסגר, ותיקיית ה־PGlite משתחררת.
 
 ### חשבונות באפליקציה (שלב 8)
 
@@ -77,14 +97,15 @@ docs/               אפיון, תוכנית, עיצוב
 - **אימות מייל [D22]:** נשלח בהרשמה, אבל לא חוסם התחברות או אימון. במסך הבית יש באנר עד שהמייל מאומת. משחק מדורג (שלב 9) ידרוש מייל מאומת: `accountConfig.verification` ב־`apps/mobile/src/config/account.ts`.
 - **מחיקת חשבון:** סיסמה (reauthenticate), אחר כך `DELETE /v1/me` בשרת, ורק אז מחיקת המשתמש ב־Firebase. כך כישלון באמצע אף פעם לא משאיר בשרת פרופיל, שם ומייל בלי דרך להיכנס ולמחוק אותם. הפירוט ב־`deleteAccount` (`apps/mobile/src/auth/authStore.ts`).
 - **אופליין:** אחרי ההתחברות הראשונה הפרופיל נשמר בטלפון, והאפליקציה נפתחת עליו גם בלי רשת (D24 לא אושרה: ההרשמה חובה, והאימון זמין גם אופליין).
-- קישורי תנאי השימוש ומדיניות הפרטיות הם כתובות זמניות ב־`accountConfig.legal`. צריך להחליף אותן לפני ההגשה לחנויות.
+- **תנאי השימוש ומדיניות הפרטיות (שלב 14):** הקישורים בהרשמה ובהגדרות ("מידע ומשפטי") פותחים את הדפים שהשרת מגיש ב־`/legal/privacy`, ‏`/legal/terms` ו־`/legal/delete-account`, בשפת האפליקציה (`apps/mobile/src/config/legal.ts`). `EXPO_PUBLIC_LEGAL_BASE_URL` מפנה אותם לאתר אחר. הטקסטים: `apps/server/src/legal`. בהגדרות יש גם מסך "רישיונות".
 
 ## השרת
 
 - פיתוח: `npm run server`. ‏`GET http://localhost:2567/health` מחזיר את גרסאות ה־engine וה־protocol.
 - ייצור: `npm run build -w @sudoku-fight/server` יוצר `apps/server/dist/index.cjs` (esbuild, עם ה־engine בפנים),
   ו־`npm run start:prod -w @sudoku-fight/server` מריץ אותו.
-  ‏Colyseus, ‏Express ו־PGlite נשארים מחוץ לקובץ ונטענים מ־`node_modules`. ‏drizzle ו־postgres נמצאים בתוכו.
+  ‏Colyseus, ‏Express, ‏PGlite ו־Sentry נשארים מחוץ לקובץ ונטענים מ־`node_modules`. ‏drizzle ו־postgres נמצאים בתוכו.
+- **Sentry (שלב 14):** רק כש־`SENTRY_DSN` מוגדר. בלי מידע אישי, ובלי השפעה על השרת כש־Sentry לא זמין. הפירוט ב־`apps/server/src/monitoring/sentry.ts` וב־[`docs/DEPLOY-PRODUCTION.md`](docs/DEPLOY-PRODUCTION.md) סעיפים 3 ו־10.
 
 ### חשבונות (שלב 8)
 
@@ -260,6 +281,8 @@ curl -b jar.txt 'http://localhost:2567/admin/api/screens?days=30'
 | `ADMIN_SESSION_SECRET` | לפחות 32 תווים אקראיים: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` | כל הפעלה מחדש מוציאה את המנהל |
 | `TRUST_PROXY=1` | ב־Fly.io יש proxy אחד לפני השרת. **לא `true`.** | כל המשתמשים נספרים ככתובת אחת, והגבלת הקצב חוסמת אותם |
 | `FIREBASE_PROJECT_ID` | ה־Project ID של Firebase (לא סוד) | החשבונות כבויים (503 `disabled`), ואירועי השימוש נשמרים בלי משתמש |
+| `LEGAL_CONTACT_EMAIL`, ‏`LEGAL_OPERATOR_NAME` | פרטי הקשר ושם המפעיל בדפים המשפטיים `/legal/…` (שלב 14). לא המייל הפרטי של משה בלי אישורו | הדפים מציגים placeholder אדום ופס "טיוטה". אסור לתת את הכתובות לחנויות כך |
+| `SENTRY_DSN` | דיווחי שגיאות ל־Sentry (שלב 14). ‏`SENTRY_ENVIRONMENT` ב־`fly.toml` אומר אם זה staging או production | אין דיווחי שגיאות, רק הלוג |
 
 האתר עובד רק ב־HTTPS בייצור, כי ה־cookie מסומן Secure.
 

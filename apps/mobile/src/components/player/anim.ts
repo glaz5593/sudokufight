@@ -3,6 +3,7 @@ import {
   cancelAnimation,
   Easing,
   ReduceMotion,
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -17,6 +18,8 @@ export const easing = {
   standard: Easing.bezier(...motion.easing.standard),
   loop: Easing.bezier(...motion.easing.loop),
   exit: Easing.bezier(...motion.easing.exit),
+  /** motion.md `countUp`, cubic-bezier(.33, 1, .68, 1): a count that slows into its last value. */
+  countUp: Easing.bezier(...motion.easing.countUp),
   linear: Easing.linear,
 };
 export const springs = {
@@ -26,36 +29,45 @@ export const springs = {
 /** Our own reduced-motion decision (useReduceMotion) is applied by hand, so Reanimated must not add its own. */
 export const NEVER_REDUCE = ReduceMotion.Never;
 
-/** motion.md `countUp`, cubic-bezier(.33, 1, .68, 1): the ease-out cubic curve. */
-const countUpCurve = (x: number): number => 1 - (1 - x) ** 3;
+/** A number as it shows on screen. It must be a worklet: the count formats every frame on the UI thread. */
+export type NumberFormat = (n: number) => string;
 
 /**
- * The score as it counts to a new value (motion.md `score.count`): 650 ms, in 0.5 steps, and a new value
- * mid-count starts from what is on screen. With reduced motion it jumps straight to the value.
+ * A number counting to `target` on the UI thread (motion.md `score.count` and §6 "Count-up text"): the props of
+ * an animated TextInput (`text`, and `defaultValue`, which React keeps once the count settles), so no frame of
+ * the count renders in React. 650 ms on the countUp curve, in 0.5 steps (51.5 → 55 never shows 53.37); a new
+ * target mid-count starts from what is on screen, and the last frame shows the target itself. With reduced
+ * motion it jumps straight to the target.
  */
-export function useCountUp(target: number, reduce: boolean, durationMs: number = motion.duration.scoreCount) {
-  const [shown, setShown] = useState(target);
-  const onScreen = useRef(target);
+export function useCountUpProps(
+  target: number,
+  reduce: boolean,
+  format: NumberFormat,
+  durationMs: number = motion.duration.scoreCount,
+) {
+  const value = useSharedValue(target);
+  const goal = useSharedValue(target);
+  const counted = useRef(target);
   useEffect(() => {
+    goal.set(target);
     if (reduce) {
-      onScreen.current = target;
+      cancelAnimation(value);
+      value.set(target);
+      counted.current = target;
       return;
     }
-    const from = onScreen.current;
-    if (from === target) return;
-    const start = Date.now();
-    let frame = 0;
-    const step = () => {
-      const p = Math.min(1, (Date.now() - start) / durationMs);
-      const v = p >= 1 ? target : Math.round((from + (target - from) * countUpCurve(p)) * 2) / 2;
-      onScreen.current = v;
-      setShown(v);
-      if (p < 1) frame = requestAnimationFrame(step);
-    };
-    frame = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(frame);
-  }, [target, reduce, durationMs]);
-  return reduce ? target : shown;
+    if (counted.current === target) return;
+    counted.current = target;
+    value.set(
+      withTiming(target, { duration: durationMs, easing: easing.countUp, reduceMotion: NEVER_REDUCE }),
+    );
+  }, [target, reduce, durationMs, value, goal]);
+  return useAnimatedProps(() => {
+    const v = value.get();
+    const g = goal.get();
+    const text = format(v === g ? g : Math.round(v * 2) / 2);
+    return { text, defaultValue: text };
+  });
 }
 
 /**

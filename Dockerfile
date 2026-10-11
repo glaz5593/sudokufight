@@ -45,9 +45,10 @@ RUN npm run build --workspace @sudoku-fight/server \
 
 # ---- prod-deps ------------------------------------------------------------------------------------------
 FROM manifests AS prod-deps
-# The bundle keeps four packages outside (apps/server/package.json, "build"): @colyseus/core,
-# @colyseus/ws-transport, express and @electric-sql/pglite. They come with their own dependencies; drizzle-orm,
-# postgres and zod are inside the bundle but come too, being dependencies (about 24 MB).
+# The bundle keeps five packages outside (apps/server/package.json, "build"): @colyseus/core,
+# @colyseus/ws-transport, express, @electric-sql/pglite and @sentry/node (loaded only with SENTRY_DSN; Sentry
+# asks not to bundle its Node SDK). They come with their own dependencies; drizzle-orm, postgres and zod are
+# inside the bundle but come too, being dependencies.
 # --omit=optional leaves out msgpackr-extract, a native speed-up that msgpackr does without, and @pm2/io, an
 # optional peer of @colyseus/core that the lockfile holds for @colyseus/tools (a dev tool).
 # A dependency npm had to nest under apps/server/node_modules is found from apps/server/dist too; the folder is

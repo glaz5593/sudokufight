@@ -74,3 +74,10 @@ export async function rankedPoolSizes(db: Db): Promise<Record<GameType, number>>
   for (const r of rows) if (isGameType(r.gameType)) sizes[r.gameType] = r.n;
   return sizes;
 }
+
+/**
+ * Whether every game type has ranked puzzles (rankedPoolSizes): `npm run db:seed-puzzles -- --if-empty` (and
+ * `npm run dev:lan`, before it starts the server) loads the pool only when this is false.
+ */
+export const isRankedPoolReady = (sizes: Record<GameType, number>): boolean =>
+  GAME_TYPES.every((type) => sizes[type] > 0);

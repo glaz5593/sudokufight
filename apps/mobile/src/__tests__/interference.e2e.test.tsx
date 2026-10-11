@@ -399,7 +399,7 @@ describe('interferences against a bot, end to end (work plan stage 6)', () => {
     // What I see (spec §7.4): "זיקוקים ← Overlord", and the 2 points leaving my score.
     expect(screen.getByText(`זיקוקים ← ${isolate(BOT_NAME)}`)).toBeOnTheScreen();
     expect(screen.getByTestId('card-me-delta', hidden)).toHaveTextContent(signedText(-2));
-    expect(screen.getByTestId('card-me-score', hidden)).toHaveTextContent(scoreText(before - 2));
+    expect(screen.getByTestId('card-me-score', hidden)).toHaveAnimatedProps({ text: scoreText(before - 2) });
     expect(track).toHaveBeenCalledWith('interference_sent', { kind: 'fireworks', cost: 2 });
     expect(cues()).toEqual(expect.arrayContaining(['arsenalOpen', 'tokenLift', 'dropZoneEnter', 'launch']));
 

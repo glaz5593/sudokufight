@@ -18,6 +18,7 @@ const LATE_PACKAGES: Record<string, string> = {
   '@colyseus/schema': 'an online game',
   '@react-native-firebase/auth': 'the Firebase provider, required on first use',
   '@react-native-firebase/crashlytics': 'the crash reporter, required on first use',
+  '@react-native-firebase/analytics': "Firebase Analytics, required on track()'s first use (stage 14)",
 };
 
 /** App files the first screen doesn't need (prefixes, repo-relative). */

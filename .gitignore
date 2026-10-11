@@ -13,6 +13,7 @@ expo-env.d.ts
 .kotlin/
 *.orig.*
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
@@ -50,3 +51,8 @@ apps/server/.data/
 apps/mobile/config/firebase/google-services.json
 apps/mobile/config/firebase/GoogleService-Info.plist
 **/service-account*.json
+
+# Signing stays on EAS's servers (docs/RELEASE-CHECKLIST.md). If EAS's local credentials are ever used, they
+# never enter git either.
+apps/mobile/credentials.json
+apps/mobile/credentials/

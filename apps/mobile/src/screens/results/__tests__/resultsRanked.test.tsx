@@ -100,9 +100,9 @@ describe('a rated two-player game', () => {
 
   it('shows my new rating at once under Reduced Motion, with the change and the old rating', async () => {
     await show(table, 'me');
-    expect(screen.getByTestId('results-rating-value', hidden)).toHaveTextContent(
-      String(Math.round(mine.after)),
-    );
+    expect(screen.getByTestId('results-rating-value', hidden)).toHaveAnimatedProps({
+      text: String(Math.round(mine.after)),
+    });
     expect(screen.getByTestId('results-rating')).toHaveProp(
       'accessibilityLabel',
       `שינוי דירוג: ${signedText(mine.delta)}, מ־${Math.round(mine.before)} ל־${Math.round(mine.after)}`,
@@ -125,9 +125,9 @@ describe('a rated two-player game', () => {
     jest.useFakeTimers();
     try {
       await show(table, 'me', { fakeTimers: true });
-      expect(screen.getByTestId('results-rating-value', hidden)).toHaveTextContent(
-        String(Math.round(mine.before)),
-      );
+      expect(screen.getByTestId('results-rating-value', hidden)).toHaveAnimatedProps({
+        text: String(Math.round(mine.before)),
+      });
       // The count starts as the sections land (motion.md ratingCountAt), then runs for rewardMax.
       await act(async () => {
         jest.advanceTimersByTime(1_200);
@@ -135,9 +135,9 @@ describe('a rated two-player game', () => {
       await act(async () => {
         jest.advanceTimersByTime(1_000);
       });
-      expect(screen.getByTestId('results-rating-value', hidden)).toHaveTextContent(
-        String(Math.round(mine.after)),
-      );
+      expect(screen.getByTestId('results-rating-value', hidden)).toHaveAnimatedProps({
+        text: String(Math.round(mine.after)),
+      });
     } finally {
       jest.useRealTimers();
     }
@@ -179,6 +179,53 @@ describe('a four-player game: the full ranking (spec §12)', () => {
     expect(model.ranking.find((r) => r.playerId === 'p3')).toMatchObject({ left: true, place: 4 });
     for (const r of model.ranking)
       expect(r.rating?.delta).toBe(result.ratingChanges.find((c) => c.playerId === r.playerId)!.delta);
+  });
+
+  it('splits my rating change by opponent, as the engine did (Results-4P), adding up to it', () => {
+    const model = sessionResultsModel({ ...sessionOf(table, 'p2'), profiles: { p1: { avatarId: 'av12' } } })!;
+    const engine = result.ratingPairs!.find((p) => p.playerId === 'p2')!;
+    expect(model.ratingPairs.map((p) => [p.playerId, p.delta])).toEqual(
+      engine.pairs.map((p) => [p.opponentId, p.delta]),
+    );
+    // The opponents by place, each with their seat colour (never mine) and their own avatar when known.
+    expect(model.ratingPairs.map((p) => p.playerId)).toEqual(
+      result.ranking.filter((r) => r.playerId !== 'p2').map((r) => r.playerId),
+    );
+    expect(model.ratingPairs.every((p) => p.colorIndex > 0)).toBe(true);
+    expect(model.ratingPairs.find((p) => p.playerId === 'p1')).toMatchObject({ name: 'P1', avatar: 'av12' });
+    const tenths = model.ratingPairs.reduce((a, p) => a + Math.round(p.delta * 10), 0);
+    expect(tenths).toBe(model.rating!.delta * 10);
+
+    // Two players: the one pair would be the change itself, so there is none.
+    expect(sessionResultsModel(sessionOf(rankedDuel(), 'me'))!.ratingPairs).toEqual([]);
+    // A result from before the split (no ratingPairs): none, and nothing breaks.
+    const older = { ...result };
+    delete older.ratingPairs;
+    const view = toView(table.state, 'p2', table.now);
+    const oldModel = sessionResultsModel({
+      ...sessionOf(table, 'p2'),
+      getView: () => ({ ...view, result: older }),
+    })!;
+    expect(oldModel.ratingPairs).toEqual([]);
+    expect(oldModel.rating).toEqual(model.rating);
+  });
+
+  it('shows the change against each opponent under my rating, and says it for screen readers', async () => {
+    const model = await show(table, 'p2');
+    expect(screen.getByText('מחושב מול כל יריב בנפרד', hidden)).toBeOnTheScreen();
+    for (const p of model.ratingPairs)
+      expect(screen.getByTestId(`results-rating-pair-${p.playerId}-delta`, hidden)).toHaveTextContent(
+        signedText(p.delta),
+      );
+    const said = model.ratingPairs.map((p) => `מול ${p.name}: ${signedText(p.delta)}`).join(', ');
+    expect(screen.getByTestId('results-rating')).toHaveProp(
+      'accessibilityLabel',
+      expect.stringContaining(`. מחושב מול כל יריב בנפרד: ${said}`),
+    );
+
+    await i18n.changeLanguage('en');
+    await show(table, 'p2');
+    expect(screen.getByText('Counted against each opponent separately', hidden)).toBeOnTheScreen();
   });
 
   it('a ranked match’s opponents get their own avatars (the profiles from "found"); the rest keep the default', () => {

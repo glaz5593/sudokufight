@@ -29,6 +29,14 @@ server.transform['^.+[\\\\/]node_modules[\\\\/]jose[\\\\/].+\\.js$'] = [
   { tsconfig: '<rootDir>/tsconfig.jest.json' },
 ];
 server.transformIgnorePatterns = ['/node_modules/(?!(rou3|@electric-sql/pglite|jose)/)'];
+// 20 s per test by default: real servers and databases are slow on a busy machine (jest/timeout.cjs).
+server.setupFilesAfterEnv = ['<rootDir>/jest/timeout.cjs'];
+// The monorepo's Node scripts (scripts/lib/*.mjs), for the tests of their pure parts (test/devLan.test.ts):
+// ts-jest would keep their ESM syntax, so a small transform makes them CommonJS. First: Jest takes the first match.
+server.transform = {
+  '^.+[\\\\/]scripts[\\\\/]lib[\\\\/][^\\\\/]+\\.mjs$': '<rootDir>/jest/script-transform.cjs',
+  ...server.transform,
+};
 
 const engine = tsProject('engine', 'packages/engine', 'tsconfig.test.json');
 // `npm run test:coverage`: the engine's own code, not its tests or test helpers.

@@ -120,7 +120,19 @@
     "replayHint": "Opens the replay",
     "openOf": "{{name}}'s player card",
     "achievementsTitle": "Top achievements",
-    "allAchievements": "All achievements"
+    "allAchievements": "All achievements",
+    "joinedSince": "Playing since {{date}}",
+    "favorite": {
+      "title": "Favorite interference",
+      "uses_one": "time",
+      "uses_two": "times",
+      "uses_many": "times",
+      "uses_other": "times",
+      "label_one": "Favorite interference: {{kind}}, sent once",
+      "label_two": "Favorite interference: {{kind}}, sent {{count}} times",
+      "label_many": "Favorite interference: {{kind}}, sent {{count}} times",
+      "label_other": "Favorite interference: {{kind}}, sent {{count}} times"
+    }
   },
   "achievements": {
     "title": "Achievements",

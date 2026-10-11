@@ -42,6 +42,17 @@ export {
   SYNCED_HOLD_MS,
   type SyncItem,
 } from './connectionModel';
+export {
+  connectingPercent,
+  LAST_CELL_POINTS,
+  type LoadingPlayer,
+  type LoadingTip,
+  LOADING_TIPS,
+  type MatchLoading,
+  matchLoadingOf,
+  tipOf,
+  TOP_MOVE_POINTS,
+} from './loadingModel';
 export { COPIED_HOLD_MS, LobbyView, type LobbyViewProps } from './LobbyView';
 export { OpponentLeft, type OpponentLeftProps } from './OpponentLeft';
 export {

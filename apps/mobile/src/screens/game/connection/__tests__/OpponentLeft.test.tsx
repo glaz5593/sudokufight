@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, StyleSheet } from 'react-native';
 
 import { color } from '../../../../theme';
 import type { OpponentLeftModel } from '../connectionModel';
@@ -27,7 +27,10 @@ const model = (over: Partial<OpponentLeftModel> = {}): OpponentLeftModel => ({
 let env: Setup;
 afterEach(() => env.restore());
 
-const screenFor = (over: Partial<OpponentLeftModel> = {}, props: { gender?: 'female' } = {}) => {
+const screenFor = (
+  over: Partial<OpponentLeftModel> = {},
+  props: { gender?: 'female'; opponentCountry?: string | null } = {},
+) => {
   const onResults = jest.fn();
   const onHome = jest.fn();
   return {
@@ -55,6 +58,22 @@ describe('OpponentLeft (Hebrew)', () => {
     await render(screenFor().ui);
     expect(screen.getByTestId('opponent-left-rating')).toHaveAccessibleName('שינוי בדירוג: ⁦+9⁩, רגיל');
     expect(screen.getByText('⁦+9⁩')).toBeOnTheScreen();
+  });
+
+  it('puts the leaver’s flag on the avatar’s other corner, dimmed and silent; none without a country', async () => {
+    const { unmount } = await render(screenFor({}, { opponentCountry: 'DE' }).ui);
+    const badge = screen.getByTestId('opponent-left-flag', { includeHiddenElements: true });
+    expect(badge).toHaveProp('accessibilityElementsHidden', true);
+    expect(screen.getByTestId('flag-DE', { includeHiddenElements: true })).toHaveStyle({ opacity: 0.7 });
+    // The exit badge keeps its corner (end); the flag takes the start.
+    expect(badge).toHaveStyle({ position: 'absolute' });
+    expect(StyleSheet.flatten(badge.props.style)).toMatchObject({ start: expect.any(Number) });
+    await unmount();
+    for (const opponentCountry of [null, 'not a country']) {
+      const { unmount: again } = await render(screenFor({}, { opponentCountry }).ui);
+      expect(screen.queryByTestId('opponent-left-flag', { includeHiddenElements: true })).toBeNull();
+      await again();
+    }
   });
 
   it('has no rating chip in an unrated game', async () => {

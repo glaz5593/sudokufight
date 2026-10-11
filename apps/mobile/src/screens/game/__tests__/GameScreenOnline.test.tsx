@@ -87,8 +87,11 @@ async function show(session: OnlineSession, devMetrics = false): Promise<Handler
   return h;
 }
 
-async function live(o: Parameters<typeof liveOnlineSession>[0] = {}) {
-  game = await liveOnlineSession(o);
+async function live(
+  o: Parameters<typeof liveOnlineSession>[0] = {},
+  profiles: Parameters<typeof liveOnlineSession>[1] = null,
+) {
+  game = await liveOnlineSession(o, profiles);
   const h = await show(game.session);
   return { ...game, ...h };
 }
@@ -201,6 +204,38 @@ describe('in the game', () => {
     expect(screen.getByTestId('game-content', hidden)).toHaveProp('importantForAccessibility', 'auto');
   });
 
+  it('a match’s room (its players from "found"): the loading card with them, the tag, the percent and a tip', async () => {
+    game = onlineSession(
+      {},
+      {
+        [ME]: { avatarId: 'av07', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
+        [OPP]: { avatarId: 'av12', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
+      },
+    );
+    await show(game.session);
+    expect(screen.getByTestId('connecting')).toBeOnTheScreen();
+    expect(screen.getByTestId('connecting-tag')).toHaveTextContent('מדורג · מהיר');
+    expect(screen.getByTestId(`connecting-player-${OPP}`)).toHaveTextContent('NinaVolt', { exact: false });
+    expect(screen.getByTestId(`connecting-player-${OPP}-state`)).toHaveTextContent('מוכן!');
+    expect(screen.getByTestId('connecting-tip')).toBeOnTheScreen();
+    expect(screen.queryByTestId('connecting-tip')).not.toHaveTextContent('13.5', { exact: false });
+
+    // Into the room and the game: the card goes, the board comes.
+    await pass(game.table, 50);
+    game.table.startGame();
+    await pass(game.table, 300);
+    expect(screen.queryByTestId('connecting')).toBeNull();
+    expect(screen.getByTestId('game')).toBeOnTheScreen();
+  });
+
+  it('a room by code has no players to show while connecting: the steps alone', async () => {
+    game = onlineSession();
+    await show(game.session);
+    expect(screen.getByTestId('connecting')).toBeOnTheScreen();
+    expect(screen.queryByTestId('connecting-tag')).toBeNull();
+    expect(screen.queryByTestId('connecting-tip')).toBeNull();
+  });
+
   it('my connection drops: the board locks with the attempt; back, it is synced and play goes on', async () => {
     const g = await live();
     g.table.offline = true;
@@ -243,6 +278,20 @@ describe('in the game', () => {
     expect(g.onEnded).not.toHaveBeenCalled();
     await fireEvent.press(screen.getByRole('button', { name: 'לתוצאות' }));
     expect(g.onEnded).toHaveBeenCalledWith('online-1');
+    // A private room has no profiles: no flag.
+    expect(screen.queryByTestId('opponent-left-flag', hidden)).toBeNull();
+  });
+
+  it('the leaver’s flag on their avatar, from the match’s profiles (Opponent-Left)', async () => {
+    const g = await live({ rules: { graceMs: 2000 } }, { [OPP]: { avatarId: 'av12', country: 'DE' } });
+    await act(async () => {
+      g.table.game!.apply({ type: 'disconnect', playerId: OPP });
+    });
+    await pass(g.table, 2500);
+    const flag = screen.getByTestId('opponent-left-flag', hidden);
+    expect(within(flag).getByText('🇩🇪', hidden)).toBeTruthy();
+    // Decorative: the title says who left.
+    expect(flag).toHaveProp('accessibilityElementsHidden', true);
   });
 
   it('surrender (spec §6.6): "ביטול" is the safe choice; "כן, להיכנע" loses at once', async () => {

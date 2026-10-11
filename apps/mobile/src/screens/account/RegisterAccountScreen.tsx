@@ -13,7 +13,7 @@ import { useRegistrationDraft } from '../../auth/registrationDraft';
 import { Icon } from '../../components/Icon';
 import { Avatar, countryName, Flag, ltr } from '../../components/player';
 import { Button, useToast } from '../../components/ui';
-import { accountConfig } from '../../config/account';
+import { legalUrl } from '../../config/legal';
 import { track } from '../../services/analytics';
 import { cue } from '../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../theme';
@@ -248,14 +248,14 @@ export function RegisterAccountScreen() {
               role="link"
               label={t('terms.termsLink')}
               hint={t('terms.linkHint')}
-              onPress={() => void Linking.openURL(accountConfig.legal.termsUrl)}
+              onPress={() => void Linking.openURL(legalUrl('terms', i18n.language))}
               testID="account-terms-link"
             />
             <LinkButton
               role="link"
               label={t('terms.privacyLink')}
               hint={t('terms.linkHint')}
-              onPress={() => void Linking.openURL(accountConfig.legal.privacyUrl)}
+              onPress={() => void Linking.openURL(legalUrl('privacy', i18n.language))}
               testID="account-privacy-link"
             />
           </View>

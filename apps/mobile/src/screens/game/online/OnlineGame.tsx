@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
 
+import { useAuth } from '../../../auth';
 import type { OnlineSession } from '../../../game/onlineSession';
 import { useNow } from '../../../game/useNow';
 import { useProfile } from '../../../state/profile';
 import { color } from '../../../theme';
-import { ConnectionLayer, connectionModel } from '../connection';
+import { ConnectionLayer, connectionModel, matchLoadingOf } from '../connection';
 import { GameScreen } from '../GameScreen';
 import { connectionStatusOf } from './connectionStatus';
 import { useOnlineInfo } from './useOnlineInfo';
@@ -50,6 +51,22 @@ export function OnlineGame({
   // model's time stay current.
   const now = useNow(250, { clock: session.clock, enabled: !hasGame });
   const model = useMemo(() => connectionModel(null, connectionStatusOf(online), now), [online, now]);
+  // A ranked match's room (back in after a lost connection): its players as "found" gave them (Loading).
+  const accountId = useAuth((s) => s.me?.id ?? null);
+  const step = model.kind === 'connecting' ? model.step : null;
+  const loading = useMemo(
+    () =>
+      step === null
+        ? null
+        : matchLoadingOf({
+            profiles: session.profiles,
+            myId: online.playerId || accountId,
+            gameType: session.gameType,
+            step,
+            seed: session.key,
+          }),
+    [step, session, online.playerId, accountId],
+  );
 
   // Android back before the game: an error goes home; the lobby and connecting leave the room.
   const back = useRef<() => void>(noop);
@@ -90,6 +107,7 @@ export function OnlineGame({
         onPractice={onPractice}
         avatars={me ? { [me]: myAvatar } : undefined}
         myId={me ?? undefined}
+        loading={loading}
       />
     </View>
   );

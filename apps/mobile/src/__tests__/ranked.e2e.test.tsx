@@ -424,7 +424,16 @@ describe('ranked games, end to end (work plan stages 9–10)', () => {
 
     // ---- the results: "ניצחון!", the rating counting from 1200 to the engine's ----
     await passUntil(() => app.pathname() === `/results/${final.config.id}`);
-    const value = () => Number(String(screen.getByTestId('results-rating-value').props.children));
+    // The number counts on the UI thread (an animated text, silent for screen readers: the card's label says
+    // "from … to …"): what it shows now is its animated `text`, as Reanimated's Jest props hold it.
+    const value = () =>
+      Number(
+        (
+          screen.getByTestId('results-rating-value', hidden).props.jestAnimatedProps as {
+            value: { text: string };
+          }
+        ).value.text,
+      );
     expect(value()).toBe(before);
     expect(screen.getByTestId('results-rating-delta')).toHaveTextContent(signedText(mine.delta));
     expect(screen.getByTestId('results-rating')).toHaveProp(

@@ -70,7 +70,7 @@ import { createPracticeQueue } from '../../mobile/src/progress/practiceQueue';
 import { type FinishedPractice, practiceResultOf } from '../../mobile/src/progress/practiceResult';
 import { PracticeSync } from '../../mobile/src/progress/practiceSync';
 import { createAppServer } from '../src/app';
-import { gamePlayers, games } from '../src/db/schema';
+import { gameEvents, gamePlayers, games, users } from '../src/db/schema';
 import type { GamePuzzle } from '../src/game/puzzles';
 import { DEFAULT_MATCHER } from '../src/matchmaking';
 import { type BankPuzzle, seedRankedPuzzles } from '../src/puzzles';
@@ -697,6 +697,39 @@ describe("the app's progress on the real server (stage 12 'סיום')", () => {
       gameId: stored.find((s) => s.bestMove === best)!.id,
     });
     expect(best).toBeGreaterThan(0);
+
+    // "במשחק מאז" (Profile): the account's creation, through the app's guard.
+    const [account] = await t.db
+      .select({ createdAt: users.createdAt })
+      .from(users)
+      .where(eq(users.id, ana.me.id));
+    expect(card.joinedAt).toBe(account!.createdAt.getTime());
+    // "ההפרעה האהובה": these clients never interfere, so none yet. Two fireworks and a warp sent in her last
+    // game (stored as the engine's events are) make fireworks her favourite.
+    expect(card.favoriteInterference).toBeNull();
+    const last = stored[stored.length - 1]!.id;
+    await t.db.insert(gameEvents).values(
+      (['fireworks', 'warp', 'fireworks'] as const).map((kind, k) => ({
+        gameId: last,
+        seq: 100_000 + k,
+        tMs: Date.now() + k,
+        type: 'interference',
+        payload: {
+          fromId: ana.me.id,
+          targetId: ben.me.id,
+          kind,
+          cost: 2 ** (k + 1),
+          endsAt: 0,
+          score: 0,
+          locks: [],
+        },
+      })),
+    );
+    expect((await ben.progress.player(ana.me.id)).favoriteInterference).toEqual({
+      kind: 'fireworks',
+      count: 2,
+    });
+    expect((await ana.progress.player(ben.me.id)).favoriteInterference).toBeNull();
 
     // The last 10 results, newest first.
     const storedNewestFirst = [...stored].reverse();

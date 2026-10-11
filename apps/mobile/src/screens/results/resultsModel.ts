@@ -101,6 +101,20 @@ export interface RankingRow {
   rating: RatingResult | null;
 }
 
+/**
+ * My rating change against one opponent of a 3–4 player ranked game (Results-4P: "מחושב מול כל יריב בנפרד"):
+ * the engine's GameResult.ratingPairs, in tenths, adding up to my change.
+ */
+export interface RatingPairRow {
+  playerId: PlayerId;
+  /** Null: the screen's word for an unnamed player. */
+  name: string | null;
+  avatar: AvatarId;
+  isBot: boolean;
+  colorIndex: number;
+  delta: number;
+}
+
 /** A game award (spec §12) and who won it; `value` is the engine's (points, mistakes, ms). */
 export interface AwardResult {
   kind: AwardKind;
@@ -126,6 +140,11 @@ export interface ResultsModel {
   ranking: RankingRow[];
   /** My rating change in a ranked game; null for practice, or a game that moved no rating. */
   rating: RatingResult | null;
+  /**
+   * My change split by opponent, in the order of the ranking: only for a rated game of 3–4 players (with 2,
+   * the one pair is the change itself), and empty for a result stored before the engine had the split.
+   */
+  ratingPairs: RatingPairRow[];
   awards: AwardResult[];
   score: number;
   mistakes: number;
@@ -232,7 +251,10 @@ function versusOf(
   infos: readonly SeatedPlayer[] | null,
   result: GameResult | null,
   avatars: AvatarsById | null = null,
-): Pick<ResultsModel, 'players' | 'outcome' | 'place' | 'opponents' | 'awards' | 'ranking' | 'rating'> {
+): Pick<
+  ResultsModel,
+  'players' | 'outcome' | 'place' | 'opponents' | 'awards' | 'ranking' | 'rating' | 'ratingPairs'
+> {
   const players = Math.max(1, standings.length, infos?.length ?? 0);
   const mine = standings.find((s) => s.playerId === myId);
   const seats = standings.map((s) => s.seat);
@@ -298,7 +320,21 @@ function versusOf(
             };
           })
       : [];
-  return { players, outcome, place, opponents, awards, ranking, rating: ratingOf(myId) };
+  const seatOf = (id: PlayerId) => standings.find((s) => s.playerId === id)?.seat ?? null;
+  const myPairs = players >= 3 ? result?.ratingPairs?.find((p) => p.playerId === myId) : undefined;
+  const ratingPairs = (myPairs?.pairs ?? []).map((pair): RatingPairRow => {
+    const who = playerIdentity(info(pair.opponentId));
+    const seat = seatOf(pair.opponentId);
+    return {
+      playerId: pair.opponentId,
+      name: who.name,
+      avatar: avatarOf(pair.opponentId, who.avatar),
+      isBot: who.isBot,
+      colorIndex: seat === null ? 1 : colorIndexFor(seat, mine?.seat ?? null, seats),
+      delta: pair.delta,
+    };
+  });
+  return { players, outcome, place, opponents, awards, ranking, rating: ratingOf(myId), ratingPairs };
 }
 
 function ratingResult(change: RatingChange | undefined): RatingResult | null {

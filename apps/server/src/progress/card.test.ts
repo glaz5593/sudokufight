@@ -1,4 +1,5 @@
 import {
+  FAVORITE_INTERFERENCE_GAMES,
   type PlayerCard,
   playerPath,
   type ProgressError,
@@ -7,7 +8,7 @@ import {
 } from '@sudoku-fight/protocol';
 import { eq } from 'drizzle-orm';
 
-import { achievements, userAchievements, users, xp } from '../db/schema';
+import { achievements, gameEvents, userAchievements, users, xp } from '../db/schema';
 import { call } from '../testing/accounts';
 import { fakeClock } from '../testing/clock';
 import { testConfig } from '../testing/config';
@@ -16,7 +17,7 @@ import { startHttp, type TestHttp } from '../testing/http';
 import { addGamePuzzle, addStoredGame, type SeatResult, setRating } from '../testing/progress';
 import { addAccounts, T0 } from '../testing/ranked';
 import { testTokens, type TestTokens } from '../testing/tokens';
-import { type CardResult, recentOf, statsOf } from './card';
+import { type CardResult, favoriteInterferenceOf, recentOf, statsOf } from './card';
 
 /**
  * Stage 12: the player card (spec §14.3) from known games on PGlite: ratings with peak and trend, stats with
@@ -251,6 +252,76 @@ describe('GET /v1/players/:id (spec §14.3)', () => {
     expect((await card('ana', 'ben')).body.league).toBe('gold');
   });
 
+  it('"במשחק מאז": when the account was made (users.created_at)', async () => {
+    await addAccounts(t.db, [{ id: 'ana' }, { id: 'ben' }]);
+    const joined = Date.UTC(2026, 3, 12, 9, 30);
+    await t.db
+      .update(users)
+      .set({ createdAt: new Date(joined) })
+      .where(eq(users.id, 'ana'));
+    expect((await card('ana', 'ben')).body.joinedAt).toBe(joined);
+  });
+
+  it('the favourite interference: the kind sent most in ranked games, with the count (Profile)', async () => {
+    await anaGames();
+    // Nobody interfered yet.
+    expect((await card('ana', 'ben')).body.favoriteInterference).toBeNull();
+
+    await interferences('n0', [
+      ['ana', 'fireworks'],
+      ['ana', 'fireworks'],
+      ['ben', 'cats'],
+      ['ben', 'cats'],
+      ['ben', 'cats'],
+    ]);
+    await interferences('n5', [
+      ['ana', 'cats'],
+      ['ana', 'warp'],
+    ]);
+    // A practice game's (mode 'bot') and a running game's do not count.
+    await addStoredGame(t.db, {
+      id: 'practice',
+      mode: 'bot',
+      endedAt: T0 + 200 * MIN,
+      seats: [
+        { userId: 'ana', place: 1 },
+        { userId: null, place: 2 },
+      ],
+    });
+    await interferences('practice', [
+      ['ana', 'warp'],
+      ['ana', 'warp'],
+      ['ana', 'warp'],
+    ]);
+    await interferences('running', [
+      ['ana', 'warp'],
+      ['ana', 'warp'],
+    ]);
+    expect((await card('ana', 'ben')).body.favoriteInterference).toEqual({ kind: 'fireworks', count: 2 });
+    expect((await card('ben', 'ana')).body.favoriteInterference).toEqual({ kind: 'cats', count: 3 });
+
+    // Equal counts (cats 2, fireworks 2): the one sent last. Cut short by a restart still counts.
+    await interferences('restart', [['ana', 'cats']]);
+    expect((await card('ana', 'ben')).body.favoriteInterference).toEqual({ kind: 'cats', count: 2 });
+    await interferences('f1', [['ana', 'fireworks']]);
+    expect((await card('ana', 'ben')).body.favoriteInterference).toEqual({ kind: 'fireworks', count: 3 });
+  });
+
+  it(`the favourite interference counts the last ${FAVORITE_INTERFERENCE_GAMES} ranked games only`, async () => {
+    await addAccounts(t.db, [{ id: 'ana' }, { id: 'ben' }]);
+    const seats = [
+      { userId: 'ana', place: 1 },
+      { userId: 'ben', place: 2 },
+    ];
+    await addStoredGame(t.db, { id: 'old', endedAt: T0, seats });
+    await interferences('old', [['ana', 'warp']]);
+    for (let k = 1; k < FAVORITE_INTERFERENCE_GAMES; k++)
+      await addStoredGame(t.db, { id: `g${k}`, endedAt: T0 + k * MIN, seats });
+    expect(await favoriteInterferenceOf(t.db, 'ana')).toEqual({ kind: 'warp', count: 1 });
+    await addStoredGame(t.db, { id: 'newest', endedAt: T0 + 1000 * MIN, seats });
+    expect(await favoriteInterferenceOf(t.db, 'ana')).toBeNull();
+  }, 30_000);
+
   it('earned achievements, newest first (from user_achievements; the list itself awaits approval)', async () => {
     await addAccounts(t.db, [{ id: 'ana' }, { id: 'ben' }]);
     await t.db.insert(achievements).values([
@@ -287,6 +358,26 @@ describe('GET /v1/players/:id (spec §14.3)', () => {
     expect([stranger.status, stranger.body.error]).toEqual([404, 'notRegistered']);
   });
 });
+
+/** Each stored interference a second after the one before (seq and time), across the whole file. */
+let sentSoFar = 0;
+
+/** `interference` events of a stored game, in the order given: [sender, kind]. */
+async function interferences(gameId: string, sent: [string, string][]) {
+  await t.db.insert(gameEvents).values(
+    sent.map(([fromId, kind]) => {
+      const n = ++sentSoFar;
+      const targetId = fromId === 'ana' ? 'ben' : 'ana';
+      return {
+        gameId,
+        seq: 1000 + n,
+        tMs: T0 + n * 1000,
+        type: 'interference',
+        payload: { fromId, targetId, kind, cost: 2, endsAt: 0, score: 0, locks: [] },
+      };
+    }),
+  );
+}
 
 describe('statsOf and recentOf (newest first)', () => {
   const result = (place: number, shared = false, extra: Partial<CardResult> = {}): CardResult => ({

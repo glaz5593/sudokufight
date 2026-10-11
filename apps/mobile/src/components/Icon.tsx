@@ -196,6 +196,27 @@ const ICONS = {
   flame: <Path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .5 2 1.5 3 2.5 3 0-3-1-5 0-8z" />,
   /** A best move, a peak. */
   star: <Path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" />,
+  /** "מדיניות פרטיות" (settings, stage 14). */
+  shield: (
+    <>
+      <Path d="M12 3l7 3v6c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6l7-3z" />
+      <Path d="M9 12l2 2 4-4" />
+    </>
+  ),
+  /** "תנאי שימוש". */
+  document: (
+    <>
+      <Path d="M6 3h8l4 4v14H6V3z" />
+      <Path d="M14 3v4h4M9 12h6M9 16h6" />
+    </>
+  ),
+  /** "רישיונות". */
+  copyright: (
+    <>
+      <Circle cx="12" cy="12" r="9" />
+      <Path d="M14.8 9.4a4 4 0 1 0 0 5.2" />
+    </>
+  ),
 } as const;
 
 export type IconName = keyof typeof ICONS;

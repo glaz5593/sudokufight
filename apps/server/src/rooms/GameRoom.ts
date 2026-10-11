@@ -7,6 +7,8 @@ import {
   ErrorCode,
   matchMaker,
   Room,
+  type RoomException,
+  type RoomMethodName,
   ServerError,
 } from '@colyseus/core';
 import {
@@ -39,6 +41,7 @@ import {
   type RankedMatchSetup,
   type RankedRooms,
 } from '../matchmaking/ranked';
+import { reportError } from '../monitoring/report';
 import type { GameRecorder, RankedGames } from '../persistence';
 
 /**
@@ -129,11 +132,32 @@ export const systemScheduler: Scheduler = {
   clearTimeout: (handle) => clearTimeout(handle as NodeJS.Timeout),
 };
 
+/** The rooms' log (game and matchmaking). Its errors are bugs: they are reported too (src/monitoring). */
 export const consoleGameLog: GameRoomLog = {
   info: (m) => console.log(m),
   warn: (m) => console.warn(m),
-  error: (m, e) => console.error(m, e),
+  error: (m, e) => {
+    console.error(m, e);
+    reportError(e ?? m, { area: 'rooms', message: m });
+  },
 };
+
+/**
+ * Colyseus' onUncaughtException, for both rooms (stage 14): a hook, message handler or timer that threw. The
+ * room's own error goes to its log (and so to the reports); the wrapper Colyseus made around it carries the
+ * client, its options and its identity, which stay here. A refusal (a ServerError: bad options, a full or
+ * started game, no identity) is the room saying no, not a bug; Colyseus still answers the client with it.
+ */
+export function logRoomException(
+  log: GameRoomLog,
+  where: string,
+  exception: RoomException,
+  method: RoomMethodName,
+): void {
+  const cause = exception.cause ?? exception;
+  if (cause instanceof ServerError) return;
+  log.error(`${where} ${method} failed`, cause);
+}
 
 /** Colyseus keeps a dropped seat a little longer than the engine's grace, so a late comer still gets told. */
 export const RECONNECT_SLACK_MS = 1000;
@@ -187,6 +211,8 @@ export function createGameRoom(deps: GameRoomDeps) {
       } catch (error) {
         if (error instanceof IdentityError)
           throw refuse(ErrorCode.AUTH_FAILED, 'unauthenticated', error.message);
+        // Not a refusal: the check itself failed (the database, Google's keys). Colyseus tells the client.
+        reportError(error, { area: 'rooms', message: '[game] onAuth failed' });
         throw error;
       }
     }
@@ -343,6 +369,11 @@ export abstract class GameRoom extends Room {
       const how = code === CloseCode.CONSENTED ? 'left' : 'is gone';
       this.deps.log.info(`[game ${this.code}] ${seat.playerId} ${how}; grace runs`);
     }
+  }
+
+  /** A hook, a message handler or a timer threw (stage 14): logged and reported, refusals aside. */
+  override onUncaughtException(exception: RoomException, method: RoomMethodName): void {
+    logRoomException(this.deps.log, `[game ${this.code || '?'}]`, exception, method);
   }
 
   override onDispose(): void {

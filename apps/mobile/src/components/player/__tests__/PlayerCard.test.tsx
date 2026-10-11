@@ -41,7 +41,7 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
       />,
     );
     expect(screen.getByLabelText('MosheG · 55 נקודות · טעות אחת, דירוג 1287')).toBeTruthy();
-    expect(screen.getByTestId('me-score', hidden)).toHaveTextContent('55');
+    expect(screen.getByTestId('me-score', hidden)).toHaveAnimatedProps({ text: '55' });
     expect(styleOf(screen.getByTestId('me-score', hidden)).color).toBe(rgba(tokens.color.players[0].ring));
     expect(screen.getByTestId('mistakes', hidden)).toHaveTextContent('1 טעות');
     expect(screen.getByTestId('glyph-circle', hidden)).toBeTruthy();
@@ -77,7 +77,7 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
   it('keeps the minus before a negative score in Hebrew (D15, CLAUDE.md)', async () => {
     const view = withPlayer(twoPlayerView(), 'moshe', { score: -2 });
     await render(<PlayerCard model={me(view)} testID="me" />);
-    expect(screen.getByTestId('me-score', hidden)).toHaveTextContent(ltr('−2'));
+    expect(screen.getByTestId('me-score', hidden)).toHaveAnimatedProps({ text: ltr('−2') });
   });
 
   it("the opponent's card is mirrored, reads 'בוחרת · A8' and offers ⚡ in my colour", async () => {

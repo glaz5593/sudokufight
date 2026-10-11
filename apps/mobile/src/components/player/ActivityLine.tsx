@@ -55,8 +55,8 @@ export function ActivityLine({ activity, colorIndex, gender, compact = false }: 
           size={ring}
           tint={paletteAt(colorIndex).ring}
           remainingMs={lock.remainingMs}
+          expiresAt={lock.expiresAt}
           totalMs={lock.totalMs}
-          paused={lock.paused}
           seconds={compact ? lock.secondsLeft : null}
           testID="activity-ring"
         />

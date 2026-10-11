@@ -5,6 +5,9 @@ import type { RatingOption } from '@sudoku-fight/engine';
 import { RECENT_SIGN_IN_MS } from '@sudoku-fight/protocol';
 import { z } from 'zod';
 
+import serverPackage from '../package.json';
+import type { LegalSettings } from './legal/types';
+
 /**
  * The server's settings, read once from the environment (apps/server/.env.example documents each one).
  * Everything else takes a ServerConfig, never process.env, so tests can pass their own.
@@ -66,6 +69,27 @@ export const DEFAULT_PRACTICE_XP_DAILY_CAP = 1500;
 /** Express's 'trust proxy' setting: false, true, a hop count, or addresses/subnets ("loopback, 10.0.0.0/8"). */
 export type TrustProxy = boolean | number | string;
 
+/** The server's version (apps/server/package.json), the base of Sentry's release name. */
+export const SERVER_VERSION: string = serverPackage.version;
+
+/**
+ * Error reports and a sample of HTTP traces in Sentry (work plan stage 14; src/monitoring). Off, and the SDK
+ * never even loaded, without SENTRY_DSN.
+ * - `environment`: SENTRY_ENVIRONMENT, else NODE_ENV. Staging and production both run NODE_ENV=production, so
+ *   their fly.toml files say which they are.
+ * - `release`: SENTRY_RELEASE, else `sudoku-fight-server@<version>`, with `+<GIT_SHA>` (`fly deploy --env
+ *   GIT_SHA=…`) or else `+<Fly's deployment>` (from FLY_IMAGE_REF, which Fly sets on every machine).
+ * - `tracesSampleRate`: SENTRY_TRACES_SAMPLE_RATE, 0–1 (default 0.05: one HTTP request in 20); 0 turns tracing off.
+ */
+export interface SentryConfig {
+  dsn: string;
+  environment: string;
+  release: string;
+  tracesSampleRate: number;
+}
+
+export const DEFAULT_TRACES_SAMPLE_RATE = 0.05;
+
 export interface ServerConfig {
   nodeEnv: NodeEnv;
   port: number;
@@ -91,6 +115,14 @@ export interface ServerConfig {
   accountDeleteMaxAuthAgeMs: number;
   /** PRACTICE_XP_DAILY_CAP and INVITE_URL (stage 12). */
   progress: ProgressConfig;
+  /** SENTRY_DSN and the rest (stage 14), or null: no error reports leave the server. */
+  sentry: SentryConfig | null;
+  /**
+   * LEGAL_CONTACT_EMAIL and LEGAL_OPERATOR_NAME (stage 14): how to reach the game's operator, and who that is,
+   * on the legal pages (src/legal). Unset (or absent, as in tests): the pages show visible placeholders and a
+   * "draft" note.
+   */
+  legal?: LegalSettings;
 }
 
 export class ConfigError extends Error {
@@ -192,7 +224,77 @@ const envSchema = z.object({
       .max(500)
       .optional(),
   ),
+  // Sentry (stage 14). A DSN is https://<public key>@<host>/<project id>; it is not a secret (it only lets
+  // someone send events), but it stays out of the repo all the same: fly secrets.
+  SENTRY_DSN: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim()) : v),
+    z
+      .url({ protocol: /^https?$/, error: 'must be an http(s) URL' })
+      .refine(isSentryDsn, 'not a Sentry DSN (https://<key>@<host>/<project id>)')
+      .optional(),
+  ),
+  // Sentry's rules: no spaces or slashes, at most 64 characters.
+  SENTRY_ENVIRONMENT: z.preprocess(
+    unsetIfBlank,
+    z
+      .string()
+      .regex(/^[\w.-]{1,64}$/, 'letters, digits, "_", "." and "-" only, at most 64')
+      .optional(),
+  ),
+  // Sentry's rules: no whitespace or slashes, not "." or "..", at most 200 characters.
+  SENTRY_RELEASE: z.preprocess(
+    unsetIfBlank,
+    z
+      .string()
+      .regex(/^(?!\.{1,2}$)[^\s/\\]{1,200}$/, 'no spaces or slashes, at most 200 characters')
+      .optional(),
+  ),
+  SENTRY_TRACES_SAMPLE_RATE: z.preprocess(
+    unsetIfBlank,
+    z.coerce.number().min(0).max(1).default(DEFAULT_TRACES_SAMPLE_RATE),
+  ),
+  // The deployed commit, for the release name: `fly deploy --env GIT_SHA=$(git rev-parse --short HEAD)`.
+  GIT_SHA: z.preprocess(
+    unsetIfBlank,
+    z
+      .string()
+      .regex(/^[0-9a-f]{7,40}$/i, 'a git commit hash (7–40 hex digits)')
+      .optional(),
+  ),
+  // Set by Fly.io on every machine (registry.fly.io/<app>:deployment-<id>); read, never required.
+  FLY_IMAGE_REF: optionalString,
+  // The legal pages (stage 14, src/legal): the privacy contact address, and who runs the game.
+  LEGAL_CONTACT_EMAIL: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim()) : v),
+    z.email({ error: 'not an email address' }).max(254).optional(),
+  ),
+  LEGAL_OPERATOR_NAME: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim()) : v),
+    z.string().max(120, 'at most 120 characters').optional(),
+  ),
 });
+
+function isSentryDsn(dsn: string): boolean {
+  try {
+    const url = new URL(dsn);
+    return url.username !== '' && /^\/(?:.+\/)?\d+$/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
+/** Sentry's release name: SENTRY_RELEASE, or the server's version with the commit or Fly's deployment. */
+export function sentryRelease(env: {
+  SENTRY_RELEASE?: string;
+  GIT_SHA?: string;
+  FLY_IMAGE_REF?: string;
+}): string {
+  if (env.SENTRY_RELEASE !== undefined) return env.SENTRY_RELEASE;
+  const base = `sudoku-fight-server@${SERVER_VERSION}`;
+  if (env.GIT_SHA !== undefined) return `${base}+${env.GIT_SHA.toLowerCase().slice(0, 12)}`;
+  const deployment = /:(deployment-[A-Za-z0-9]+)$/.exec(env.FLY_IMAGE_REF ?? '')?.[1];
+  return deployment === undefined ? base : `${base}+${deployment}`;
+}
 
 /**
  * Reads the settings. Throws ConfigError listing every bad value, so the server fails at start, not later.
@@ -204,6 +306,7 @@ const envSchema = z.object({
  *   against a real database).
  * - FIREBASE_PROJECT_ID: unset in production → accounts off, with a warning (the server still starts: the
  *   game and the admin site don't need it).
+ * - SENTRY_DSN: unset → `sentry: null`, no error reports (the start says so; src/index.ts).
  */
 export function loadConfig(
   env: Record<string, string | undefined> = process.env,
@@ -274,6 +377,13 @@ export function loadConfig(
   if (production && firebaseProjectId === null) {
     warn('[config] accounts disabled: FIREBASE_PROJECT_ID is not set (the account routes answer 503)');
   }
+  const legal: LegalSettings = {
+    contactEmail: e.LEGAL_CONTACT_EMAIL ?? null,
+    operatorName: e.LEGAL_OPERATOR_NAME ?? null,
+  };
+  if (production && (legal.contactEmail === null || legal.operatorName === null)) {
+    warn('[config] LEGAL_CONTACT_EMAIL or LEGAL_OPERATOR_NAME is not set: the legal pages show placeholders');
+  }
 
   return {
     nodeEnv: e.NODE_ENV,
@@ -287,5 +397,15 @@ export function loadConfig(
     cheat: { thinkMs: e.CHEAT_FAST_THINK_MS, moves: e.CHEAT_FAST_THINK_MOVES },
     accountDeleteMaxAuthAgeMs: e.ACCOUNT_DELETE_MAX_AUTH_AGE_MS,
     progress: { practiceXpDailyCap: e.PRACTICE_XP_DAILY_CAP, inviteUrl: e.INVITE_URL ?? null },
+    sentry:
+      e.SENTRY_DSN === undefined
+        ? null
+        : {
+            dsn: e.SENTRY_DSN,
+            environment: e.SENTRY_ENVIRONMENT ?? e.NODE_ENV,
+            release: sentryRelease(e),
+            tracesSampleRate: e.SENTRY_TRACES_SAMPLE_RATE,
+          },
+    legal,
   };
 }

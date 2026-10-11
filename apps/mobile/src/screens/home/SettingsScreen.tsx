@@ -10,6 +10,7 @@ import type { Language } from '../../i18n';
 import { cue } from '../../services/feedback';
 import { type ReduceMotionSetting, useSettings } from '../../state/settings';
 import { AccountSettings } from '../account/AccountSettings';
+import { LegalSettings } from '../legal/LegalSettings';
 import { color, radius, space, text, tokens } from '../../theme';
 import { goBack } from './navigation';
 import { GUTTER, ScreenHeader, SectionLabel } from './parts';
@@ -22,7 +23,8 @@ const LANGUAGES: readonly Language[] = ['he', 'en'];
  * "הגדרות" (spec §4.1; no board yet, built in direction C with the design-system pieces): sound, haptics,
  * reduced motion and language, kept in the persisted settings store. A language that flips the layout direction
  * restarts the app (the root layout does it), so the switch asks first (work plan stage 13). Stage 8 adds the
- * account: edit profile, sign out, and delete the account (spec §3.3, §23: deletion inside the app).
+ * account: edit profile, sign out, and delete the account (spec §3.3, §23: deletion inside the app). Stage 14
+ * adds "מידע ומשפטי": the privacy policy, the terms of use and the licenses (screens/legal).
  */
 /** The app's version from its config (app.json), or null where the config is not embedded. */
 export const appVersion = (): string | null => Constants.expoConfig?.version ?? null;
@@ -95,6 +97,8 @@ export function SettingsScreen({ version = appVersion() }: SettingsScreenProps) 
         </Section>
 
         <AccountSettings />
+
+        <LegalSettings />
 
         {version ? (
           <Text style={styles.version} testID="app-version">

@@ -6,6 +6,7 @@ import { type TokenVerifier, tokenVerifierFor } from '../auth/firebaseToken';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db';
 import { createHistoryRouter } from '../history';
+import { createLegalRouter } from '../legal';
 import {
   createProgressRouter,
   type ProgressLimits,
@@ -20,7 +21,8 @@ import type { RateLimitRule } from './rateLimiter';
 /**
  * Everything the server answers over plain HTTP besides Colyseus's own routes (/health, /matchmake):
  * POST /v1/events, the account routes (/v1/names/available, /v1/users, /v1/me), history (stage 11), progress
- * (stage 12: leaderboards, player cards, XP), the admin API (/admin/api) and the admin site's files (/admin).
+ * (stage 12: leaderboards, player cards, XP), the admin API (/admin/api), the admin site's files (/admin) and
+ * the legal pages (stage 14: /legal/privacy, /legal/terms, /legal/delete-account).
  *
  * Colyseus 0.18 builds an Express 5 app on its HTTP server when `defineServer({ express })` is given, and
  * passes it here once the database is open (createAppServer). A request that no Colyseus route matches
@@ -86,6 +88,8 @@ export function configureHttp(app: Application, deps: HttpDeps): void {
   // The API first: it answers everything under /admin/api (404 included), so the site never does.
   app.use(createAdminRouter(deps));
   app.use(createAdminSiteRouter(deps.adminSiteDir === undefined ? findAdminSiteDir() : deps.adminSiteDir));
+  // The privacy policy, terms of use and account deletion page, public (src/legal).
+  app.use(createLegalRouter({ legal: deps.config.legal ?? { contactEmail: null, operatorName: null } }));
 
   app.use('/v1', notFound);
   app.use(jsonErrorHandler);

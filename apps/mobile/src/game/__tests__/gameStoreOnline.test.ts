@@ -78,7 +78,8 @@ describe('the game store online', () => {
     await inRoom.ready;
     expect(inRoom.host.roomCode).toBe(CODE);
     const rejoin = store2.getState().retryOnline()!;
-    expect(rejoin.request).toEqual({ kind: 'join', code: CODE });
+    // With the room's game type as known so far (the loading card's tag before the game says it).
+    expect(rejoin.request).toEqual({ kind: 'join', code: CODE, gameType: inRoom.gameType });
     expect(inRoom.online.closeReason).toBe('left');
     await rejoin.ready;
     expect(third.calls).toEqual([{ kind: 'join', arg: CODE }]);

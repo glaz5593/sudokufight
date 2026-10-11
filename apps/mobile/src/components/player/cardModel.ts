@@ -11,6 +11,7 @@ import {
 
 import { tokens } from '../../theme';
 import { secondsOf } from './format';
+import { sameData } from './sameProps';
 
 /**
  * Pure view models for the player components (components.md §3–§10). They read the engine's GameView, which
@@ -30,6 +31,11 @@ export interface LockActivity {
   cell: string;
   cellIndex: CellIndex;
   remainingMs: number;
+  /**
+   * When it runs out, in the view's clock; null while it is stopped. The ring drains toward it on the UI thread
+   * and starts again only when it changes (a new lock, a resume), not as `remainingMs` ticks down.
+   */
+  expiresAt: number | null;
   /** The full think time (8, 12 or 18 s from the rules) [D2]. */
   totalMs: number;
   secondsLeft: number;
@@ -123,6 +129,21 @@ export function timeLeft(timer: TimerView, now: number): number {
   return timer.expiresAt === null ? Math.max(0, timer.remainingMs) : Math.max(0, timer.expiresAt - now);
 }
 
+/** A countdown as the components draw it: the time left now, and the deadline (null while it is stopped). */
+export interface Countdown {
+  remainingMs: number;
+  expiresAt: number | null;
+}
+
+/**
+ * Whether two readings of a countdown draw the same: running toward one deadline (the drain between them is
+ * the UI thread's), or stopped with the same time left. The screen re-reads the time 4 times a second; what
+ * shows only whole seconds compares those on top of this.
+ */
+export function sameCountdown(a: Countdown, b: Countdown): boolean {
+  return a.expiresAt === b.expiresAt && (a.expiresAt !== null || a.remainingMs === b.remainingMs);
+}
+
 const PALETTE_SIZE = tokens.color.players.length;
 
 /**
@@ -158,6 +179,7 @@ function activityOf(view: GameView, p: PlayerView, now: number): Activity {
       cell: cellName(p.lock.cell),
       cellIndex: p.lock.cell,
       remainingMs,
+      expiresAt: p.lock.expiresAt,
       totalMs: view.rules.thinkTimeMs,
       secondsLeft: secondsOf(remainingMs),
       paused: p.lock.expiresAt === null,
@@ -236,6 +258,20 @@ export function cardModel(view: GameView, playerId: PlayerId, mySeat: number | n
 /** Every card, in seat order (spec §6.8: the order never changes, so interference targets never move). */
 export function cardModels(view: GameView, mySeat: number | null, now: number): CardModel[] {
   return [...view.players].sort((a, b) => a.seat - b.seat).map((p) => cardModel(view, p.id, mySeat, now));
+}
+
+/**
+ * Whether two card models draw the same card: every field equal, but a running lock's `remainingMs`, which
+ * changes on each re-read of the time while its ring drains by itself (sameCountdown). Cards are memo'd on it.
+ */
+export function sameCard(a: CardModel, b: CardModel): boolean {
+  if (a === b) return true;
+  return sameActivity(a.activity, b.activity) && sameData({ ...a, activity: null }, { ...b, activity: null });
+}
+
+function sameActivity(a: Activity, b: Activity): boolean {
+  if (a.kind !== 'locking' || b.kind !== 'locking') return sameData(a, b);
+  return sameCountdown(a, b) && sameData({ ...a, remainingMs: 0 }, { ...b, remainingMs: 0 });
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -325,6 +361,8 @@ export type LockStripModel =
       cell: string;
       cellIndex: CellIndex;
       remainingMs: number;
+      /** When it runs out, in the view's clock; null while it is stopped (the bar drains toward it). */
+      expiresAt: number | null;
       totalMs: number;
       secondsLeft: number;
       paused: boolean;
@@ -343,6 +381,7 @@ export function lockModel(view: GameView, now: number): LockStripModel {
     cell: cellName(me.lock.cell),
     cellIndex: me.lock.cell,
     remainingMs,
+    expiresAt: me.lock.expiresAt,
     totalMs: view.rules.thinkTimeMs,
     secondsLeft,
     paused,

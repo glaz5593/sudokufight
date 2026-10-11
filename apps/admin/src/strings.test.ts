@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import ts from 'typescript';
 
-import { isolate, LANGS, STRINGS, translate } from './strings';
+import { isolate, isStringKey, LANGS, STRINGS, translate } from './strings';
 
 const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
@@ -44,6 +44,16 @@ describe('strings: Hebrew and English', () => {
       'עמוד 2 מתוך 3 · 120 בסך הכול',
     );
     expect(translate('en', 'pager.status', { page: 1 })).toBe('Page 1 of {pages} · {total} in all');
+  });
+
+  it('every end reason the server stores has a label: the engine three and serverRestart', () => {
+    // The engine's EndReason, and the server's own for a ranked game cut short by a restart
+    // (apps/server persistence/records.ts SERVER_RESTART).
+    const reasons = ['boardComplete', 'lastPlayerStanding', 'practiceEnded', 'serverRestart'];
+    for (const reason of reasons)
+      expect([reason, isStringKey(`endReason.${reason}`)]).toEqual([reason, true]);
+    expect(translate('he', 'endReason.serverRestart')).toBe('נקטע בהפעלה מחדש של השרת');
+    expect(translate('en', 'endReason.serverRestart')).toBe('Cut short by a server restart');
   });
 
   it('isolate wraps left-to-right text in LRI…PDI', () => {

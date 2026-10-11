@@ -70,7 +70,6 @@
       "saved": "The game is saved on the server",
       "savedSub": "The board and the scores are kept",
       "winLabel": "Win by abandonment",
-      "winIn": "Win by abandonment in {{time}}",
       "hint": "If {{name}} isn't back in time, you win by abandonment",
       "hint_female": "If {{name}} isn't back in time, you win by abandonment",
       "checking": "Checking with the server…",
@@ -99,8 +98,6 @@
         "turn": "Turn",
         "timers": "Timers"
       },
-      "itemDone": "{{item}}: synced",
-      "itemPending": "{{item}}: waiting",
       "timeLeft_one": "You have {{seconds}} second to get back",
       "timeLeft_two": "You have {{seconds}} seconds to get back",
       "timeLeft_many": "You have {{seconds}} seconds to get back",
@@ -193,7 +190,18 @@
         "sync": "Syncing scores and timers…"
       },
       "label": "Loading the game, step {{step}} of {{total}}",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "tag": "Ranked · {{type}}",
+      "rating": "Rating {{rating}}",
+      "ready": "Ready!",
+      "joining": "Connecting…",
+      "tipTitle": "Tip",
+      "tips": {
+        "score": "The emptier the row, column and box, the more a move is worth: up to {{max}} points a cell.",
+        "lastCell": "The last cell on the board is always worth just {{points}} points: everything around it is full.",
+        "mistakes": "Each mistake costs twice the one before: 1, 2, 4, 8… Better to think a moment longer.",
+        "interference": "Each interference costs twice the one before. Save it for the right moment."
+      }
     }
   },
   "live": {
@@ -402,9 +410,7 @@
     "ratingSoon": "Private room: ratings don't change yet",
     "actions": {
       "home": "Home",
-      "newGame": "New game",
-      "replay": "Replay · coming soon",
-      "replayHint": "Replay arrives in a later version"
+      "newGame": "New game"
     },
     "loading": "Loading the result…",
     "missing": "We couldn't find this practice",

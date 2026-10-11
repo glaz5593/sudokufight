@@ -7,7 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { AvatarId } from '../../../assets/avatars';
 import { Icon } from '../../../components/Icon';
 import { Avatar } from '../../../components/player/Avatar';
+import { flagEmoji } from '../../../components/player/countryFlag';
+import { Flag } from '../../../components/player/Flag';
 import { signedText } from '../../../components/player/format';
+import { metrics as playerMetrics } from '../../../components/player/metrics';
 import type { Gender } from '../../../components/player/wording';
 import { Button } from '../../../components/ui/Button';
 import { color, radius, size, space, text, tokens } from '../../../theme';
@@ -27,6 +30,8 @@ export interface OpponentLeftProps {
   onHome: () => void;
   myAvatar?: AvatarId | null;
   opponentAvatar?: AvatarId | null;
+  /** The leaver's country (a ranked match's profiles): its flag on the avatar's other corner. */
+  opponentCountry?: string | null;
   /** The opponent's grammatical gender, for the Hebrew verb ("עזבה"). */
   gender?: Gender;
   testID?: string;
@@ -35,7 +40,7 @@ export interface OpponentLeftProps {
 /**
  * The opponent did not come back in time (spec §16.2: "במשחק של 2 שחקנים היריב מנצח, ורואה את המסך 'יריב
  * נטש' עם כפתור 'לתוצאות'"; design Opponent-Left in C's look). Over the finished game: the opponent's avatar,
- * grey with the exit badge, "הזמן נגמר · 15 שניות בלי חיבור", "NinaVolt עזב את המשחק", "ניצחת בנטישה"
+ * grey with the exit badge (and their flag, when the match's profiles gave a country), "הזמן נגמר · 15 שניות בלי חיבור", "NinaVolt עזב את המשחק", "ניצחת בנטישה"
  * landing in gold (motion.md `sf-slam` → C; reduced motion: a fade), my rating change (the star chip) when the
  * game was rated, the final scores, and "לתוצאות" (the one primary, with the trophy) over "לבית" (the
  * secondary outline, with the house), as on the board.
@@ -48,6 +53,7 @@ export function OpponentLeft({
   onHome,
   myAvatar,
   opponentAvatar,
+  opponentCountry = null,
   gender,
   testID = 'opponent-left',
 }: OpponentLeftProps) {
@@ -95,6 +101,17 @@ export function OpponentLeft({
           >
             <Icon name="logout" size={EXIT_GLYPH} color={color.text} />
           </View>
+          {/* Their flag, dimmed with the avatar, on the other corner (Opponent-Left). Decorative: the name says who. */}
+          {flagEmoji(opponentCountry) ? (
+            <View
+              style={styles.flagBadge}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              testID={`${testID}-flag`}
+            >
+              <Flag country={opponentCountry} size="compact" decorative style={styles.flagOut} />
+            </View>
+          ) : null}
         </View>
         <Text style={styles.timeUp}>{t('connection.left.timeUp', { seconds: m.graceSeconds })}</Text>
         <Text style={styles.title} accessibilityRole="header" testID={`${testID}-title`}>
@@ -159,6 +176,8 @@ export function OpponentLeft({
 /** The exit badge on the opponent's avatar (Opponent-Left: a 32 circle, its glyph 16). */
 const EXIT_BADGE = space[12];
 const EXIT_GLYPH = space[8];
+/** The flag badge on the other corner (Opponent-Left: a 26 circle). */
+const FLAG_BADGE = space[12] - space[3];
 
 const styles = StyleSheet.create({
   exitBadge: {
@@ -174,6 +193,20 @@ const styles = StyleSheet.create({
     borderColor: color.textMuted,
     backgroundColor: color.bg,
   },
+  flagBadge: {
+    position: 'absolute',
+    bottom: -space[4],
+    start: -space[4],
+    width: FLAG_BADGE,
+    height: FLAG_BADGE,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: tokens.border.hairline,
+    borderColor: color.border,
+    backgroundColor: color.bg,
+  },
+  flagOut: { opacity: playerMetrics.avatarDisconnectedOpacity },
   root: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',

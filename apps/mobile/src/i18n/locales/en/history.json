@@ -1,5 +1,21 @@
 {
   "title": "History",
+  "summary": {
+    "games_one": "1 game",
+    "games_two": "{{count}} games",
+    "games_many": "{{count}} games",
+    "games_other": "{{count}} games",
+    "winRate": "{{rate}} wins",
+    "practices_one": "1 practice",
+    "practices_two": "{{count}} practices",
+    "practices_many": "{{count}} practices",
+    "practices_other": "{{count}} practices",
+    "streak": "Streak",
+    "streakLabel_one": "Win streak: 1 win",
+    "streakLabel_two": "Win streak: {{count}} wins",
+    "streakLabel_many": "Win streak: {{count}} wins",
+    "streakLabel_other": "Win streak: {{count}} wins"
+  },
   "filters": {
     "label": "Filter the games",
     "all": "All",
@@ -62,13 +78,14 @@
       "title": "Rating change · {{type}}",
       "from": "from {{before}}",
       "label": "Rating change: {{delta}}, from {{before}} to {{after}}",
-      "provisional": "Provisional rating: changes count double in your first 10 games"
+      "provisional": "Provisional rating: changes count double in your first 10 games",
+      "perOpponent": "Counted against each opponent separately",
+      "pairLabel": "vs {{name}}: {{delta}}"
     },
     "ratingOf": "{{before}} → {{after}}",
     "opponentLabel": "{{name}} · {{score}} points · {{mistakes}} · rating {{delta}}",
     "ranking": {
       "title": "Final standings",
-      "place": "Place {{place}}",
       "left": "Left the game",
       "label": "Place {{place}}: {{name}} · {{score}} points · {{mistakes}}",
       "labelRating": "Place {{place}}: {{name}} · {{score}} points · {{mistakes}} · rating {{delta}}"

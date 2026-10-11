@@ -1,5 +1,5 @@
 import type { GameType } from '@sudoku-fight/engine';
-import { type ReactNode, useCallback, useRef } from 'react';
+import { memo, type ReactNode, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LayoutChangeEvent, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
@@ -14,6 +14,10 @@ import {
   ltr,
   MistakesText,
   paletteAt,
+  sameCard,
+  sameData,
+  sameProps,
+  sameStyle,
   type ScoreDelta,
   ScoreNumber,
   SeatGlyph,
@@ -51,7 +55,7 @@ export interface SoloHudProps {
 const ME = paletteAt(0);
 const row = tokens.layout.game.playerCard;
 
-export function SoloHud({
+export const SoloHud = memo(function SoloHud({
   card,
   delta,
   country = null,
@@ -185,7 +189,21 @@ export function SoloHud({
       </View>
     </View>
   );
+}, sameSoloHud);
+
+/**
+ * The screen re-reads the time 4 times a second and builds my card and the stats again each time: the HUD
+ * renders only when what it shows changed, my card (sameCard) or the stats as shown (the clock's whole seconds).
+ */
+function sameSoloHud(a: SoloHudProps, b: SoloHudProps): boolean {
+  return sameProps(a, b, { card: sameCard, stats: sameStats, style: sameStyle });
 }
+
+const sameStats = (a: SoloStats, b: SoloStats): boolean =>
+  formatClock(a.elapsedMs) === formatClock(b.elapsedMs) &&
+  a.filled === b.filled &&
+  a.total === b.total &&
+  sameData(a.best, b.best);
 
 function Stat({ label, children }: { label: string; children: ReactNode }) {
   return (

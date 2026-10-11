@@ -21,12 +21,15 @@ export async function startHttp(deps: HttpDeps): Promise<TestHttp> {
   const server = createServer(app);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address() as AddressInfo;
+  // Once: a test that closes its server before starting another, and the afterEach that closes whatever runs,
+  // may both close the same one.
+  let closed: Promise<void> | undefined;
   return {
     url: `http://127.0.0.1:${port}`,
     close: () =>
-      new Promise<void>((resolve, reject) => {
+      (closed ??= new Promise<void>((resolve, reject) => {
         server.close((err) => (err ? reject(err) : resolve()));
         server.closeAllConnections();
-      }),
+      })),
   };
 }

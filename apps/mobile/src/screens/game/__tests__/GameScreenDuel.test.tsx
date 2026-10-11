@@ -192,12 +192,12 @@ describe('the bot’s moves (spec §6.4, §6.5; motion.md §4.2: in its colour, 
     );
     const seq = g.host.events.find((e) => e.type === 'placedCorrect')!.seq;
     expect(screen.getByTestId(`flight-${seq}`, hidden)).toHaveTextContent(signedText(points));
-    expect(theirScore()).toHaveTextContent('0'); // held until the chip lands
+    expect(theirScore()).toHaveAnimatedProps({ text: '0' }); // held until the chip lands
     await frames(750);
     expect(screen.getByTestId('card-opponent-delta', hidden)).toHaveTextContent(signedText(points));
     await frames(700);
-    expect(theirScore()).toHaveTextContent(formatScore(points));
-    expect(myScore()).toHaveTextContent('0');
+    expect(theirScore()).toHaveAnimatedProps({ text: formatScore(points) });
+    expect(myScore()).toHaveAnimatedProps({ text: '0' });
     // Opponents' board moves are silent (motion.md §7); the live region says them, and the new leader.
     expect(cues()).toEqual([]);
     expect(feedback.cueCountUp).not.toHaveBeenCalled();
@@ -226,7 +226,7 @@ describe('the bot’s moves (spec §6.4, §6.5; motion.md §4.2: in its colour, 
     const seq = g.host.events.find((e) => e.type === 'placedWrong')!.seq;
     expect(screen.getByTestId(`flight-${seq}`, hidden)).toHaveTextContent(signedText(-1));
     await frames(1_500);
-    expect(theirScore()).toHaveTextContent(scoreText(-1));
+    expect(theirScore()).toHaveAnimatedProps({ text: scoreText(-1) });
     expect(screen.getByTestId('card-opponent-delta', hidden)).toHaveTextContent(signedText(-1));
     expect(
       screen.getByLabelText(`Mr. Hoot · ${scoreText(-1)} נקודה · חושב, טעות אחת, בוט, רמה 3, מתקדם, מחובר`),
@@ -245,7 +245,9 @@ describe('the bot’s moves (spec §6.4, §6.5; motion.md §4.2: in its colour, 
     await layOut();
     await act(async () => g.bot.solve(g.cells[0]!));
     expect(screen.queryByTestId(/^flight-\d+$/, hidden)).toBeNull();
-    expect(theirScore()).toHaveTextContent(formatScore(botScore(g)));
+    // The UI thread shows it on its next frame: the whole score, no count.
+    await frames(16, 16);
+    expect(theirScore()).toHaveAnimatedProps({ text: formatScore(botScore(g)) });
     expect(screen.getByTestId('card-opponent-delta', hidden)).toHaveTextContent(signedText(botScore(g)));
   });
 
@@ -263,7 +265,7 @@ describe('the bot’s moves (spec §6.4, §6.5; motion.md §4.2: in its colour, 
     expect(cues()).toEqual(['cellSelect', 'correct', 'leadTake']);
     expect(feedback.cueCountUp).toHaveBeenCalledTimes(1);
     await frames(700);
-    expect(myScore()).toHaveTextContent(formatScore(points));
+    expect(myScore()).toHaveAnimatedProps({ text: formatScore(points) });
     await spoken();
     expect(live()).toHaveTextContent(`אתה מוביל ב־${formatScore(points)} נקודות`, { exact: false });
 

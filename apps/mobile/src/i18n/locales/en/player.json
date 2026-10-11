@@ -25,9 +25,6 @@
     "left_female": "Left"
   },
   "result": {
-    "win": "Win",
-    "loss": "Loss",
-    "draw": "Draw",
     "winShort": "W",
     "lossShort": "L",
     "drawShort": "D"
@@ -101,9 +98,6 @@
     "labelDisconnected": "No interferences while disconnected",
     "labelOut": "{{name}} is out of the game",
     "close": "Close the interference arsenal"
-  },
-  "reconnect": {
-    "label": "Waiting to reconnect, {{time}}"
   },
   "lead": {
     "tie": "Tie",

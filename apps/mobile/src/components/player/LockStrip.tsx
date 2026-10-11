@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AccessibilityInfo,
@@ -9,19 +9,16 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import Animated, {
-  cancelAnimation,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { color, radius, size, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { Icon } from '../Icon';
-import { easing, NEVER_REDUCE, useBlink, useShake } from './anim';
-import type { LockStripModel } from './cardModel';
+import { useBlink, useShake } from './anim';
+import { type LockStripModel, sameCountdown } from './cardModel';
 import { metrics, paletteAt } from './metrics';
+import { sameData, sameProps, sameStyle } from './sameProps';
+import { useDrain } from './TimerRing';
 import { lockStripLabel, type PlayerT } from './wording';
 
 export interface LockStripProps {
@@ -43,8 +40,12 @@ const hidden = {
  * edge. Gold and blinking in the last 3 seconds (still gold, no blink, with reduced motion), muted and frozen
  * while paused, "בחר משבצת" without a lock. Screen readers hear it on lock, at 3 seconds and on release, never
  * every second.
+ *
+ * The bar drains on the UI thread toward the lock's deadline (useDrain), and the strip renders only when what
+ * it shows changes: the whole seconds, the lock, a stop, the last 3 seconds. The screen's 4 re-reads of the
+ * time a second skip it.
  */
-export function LockStrip({ model, nudgeKey, style, testID }: LockStripProps) {
+export const LockStrip = memo(function LockStrip({ model, nudgeKey, style, testID }: LockStripProps) {
   const { t } = useTranslation('player');
   const reduce = useReduceMotion();
   const locked = model.kind === 'locked' ? model : null;
@@ -55,18 +56,7 @@ export function LockStrip({ model, nudgeKey, style, testID }: LockStripProps) {
   useAnnouncements(model, t);
 
   // The bar: scaleX from the start edge, linear over the time left; frozen while paused.
-  const progress = useSharedValue(locked ? fraction(locked.remainingMs, locked.totalMs) : 0);
-  const remainingMs = locked?.remainingMs ?? 0;
-  const totalMs = locked?.totalMs ?? 0;
-  useEffect(() => {
-    cancelAnimation(progress);
-    progress.set(fraction(remainingMs, totalMs));
-    if (!paused && remainingMs > 0) {
-      progress.set(
-        withTiming(0, { duration: remainingMs, easing: easing.linear, reduceMotion: NEVER_REDUCE }),
-      );
-    }
-  }, [remainingMs, totalMs, paused, progress]);
+  const progress = useDrain(locked?.remainingMs ?? 0, locked?.totalMs ?? 0, locked?.expiresAt ?? null);
   const fill = useAnimatedStyle(() => ({ transform: [{ scaleX: progress.get() }] }));
 
   const label = lockStripLabel(model, t);
@@ -124,14 +114,25 @@ export function LockStrip({ model, nudgeKey, style, testID }: LockStripProps) {
         accessibilityLabel={t('lock.progress', { cell: locked.cell })}
         accessibilityValue={{ min: 0, max: Math.round(locked.totalMs / 1000), now: locked.secondsLeft }}
       >
-        <Animated.View style={[styles.fill, { backgroundColor: fillColor }, fill, urgent ? blink : null]} />
+        <Animated.View
+          style={[styles.fill, { backgroundColor: fillColor }, fill, urgent ? blink : null]}
+          testID={testID ? `${testID}-bar` : undefined}
+        />
       </View>
     </View>
   );
+}, sameStrip);
+
+/** A re-read of the time that changes nothing on the strip skips its render (the bar drains by itself). */
+function sameStrip(a: LockStripProps, b: LockStripProps): boolean {
+  return sameProps(a, b, { model: sameLock, style: sameStyle });
 }
 
-const fraction = (remainingMs: number, totalMs: number): number =>
-  totalMs > 0 ? Math.min(1, Math.max(0, remainingMs / totalMs)) : 0;
+/** The same lock as drawn: every field, but a running lock's `remainingMs` (sameCountdown). */
+function sameLock(a: LockStripModel, b: LockStripModel): boolean {
+  if (a.kind === 'none' || b.kind === 'none') return a.kind === b.kind;
+  return sameCountdown(a, b) && sameData({ ...a, remainingMs: 0 }, { ...b, remainingMs: 0 });
+}
 
 /** Lock, the 3-second mark and release, each said once (components.md §10). */
 function useAnnouncements(model: LockStripModel, t: PlayerT) {

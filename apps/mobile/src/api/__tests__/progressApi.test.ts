@@ -232,4 +232,24 @@ describe('the answers, checked', () => {
     expect(readPlayerCard(raw)?.ratings[0]!.trend).toEqual([1, 2]);
     expect(readPlayerCard(c)).toEqual(c);
   });
+
+  it('"במשחק מאז" and the favourite interference: kept, and null from an older server or an unknown kind', () => {
+    const c = card({ id: 'a' });
+    expect(readPlayerCard(c)).toMatchObject({
+      joinedAt: c.joinedAt,
+      favoriteInterference: { kind: 'fireworks', count: 23 },
+    });
+    // An older server (or a card an older app saved): neither field.
+    const { joinedAt: _joined, favoriteInterference: _favorite, ...older } = c;
+    expect(readPlayerCard(older)).toMatchObject({ joinedAt: null, favoriteInterference: null });
+    // A newer server's kind this app has no picture for, or a count that is not one: none.
+    for (const favoriteInterference of [
+      { kind: 'lasers', count: 4 },
+      { kind: 'cats', count: 0 },
+      { kind: 'cats', count: 'many' },
+      'cats',
+    ])
+      expect(readPlayerCard({ ...c, favoriteInterference })?.favoriteInterference).toBeNull();
+    expect(readPlayerCard({ ...c, joinedAt: 'April' })?.joinedAt).toBeNull();
+  });
 });

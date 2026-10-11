@@ -1086,6 +1086,41 @@ describe('rating changes (§11.2) [D7, D8]', () => {
     ]);
   });
 
+  it('ratingPairs: each change split by opponent (Results-4P), adding up to it; none in practice', () => {
+    const g = near({ players: rated([1318, 10], [1287, 10], [1271, 10], [1305, 10]) });
+    solveEach(g, 'p2', T.slice(0, 4)); // 6
+    solveEach(g, 'p1', T.slice(4, 7)); // 4.5
+    solveEach(g, 'p3', T.slice(7)); // 3; p4: 0
+    const r = result(g);
+    expect(r.ranking.map((x) => x.playerId)).toEqual(['p2', 'p1', 'p3', 'p4']);
+    expect(r.ratingPairs).toHaveLength(4);
+    for (const split of r.ratingPairs!) {
+      const sum = split.pairs.reduce((a, p) => a + p.delta * 10, 0) / 10;
+      expect([split.playerId, Math.round(sum * 10) / 10 - split.penalty]).toEqual([
+        split.playerId,
+        change(g, split.playerId)!.delta,
+      ]);
+    }
+    // 1st of 4 at 1287, a win against each (by place): exactly 5.81 + 5.09 + 5.61 = 16.51 → +17, the 0.49
+    // over the tenths handed out where most owed.
+    expect(r.ratingPairs!.find((p) => p.playerId === 'p2')).toEqual({
+      playerId: 'p2',
+      pairs: [
+        { opponentId: 'p1', delta: 6 },
+        { opponentId: 'p3', delta: 5.2 },
+        { opponentId: 'p4', delta: 5.8 },
+      ],
+      penalty: 0,
+    });
+    expect(gameOver(g).ratingPairs).toEqual(r.ratingPairs);
+
+    const solo = near({ players: rated([1200, 10]) });
+    solveEach(solo, 'p1', T);
+    expect('ratingPairs' in result(solo)).toBe(false);
+    const bot = twoPlayerGame(rated([1287, 10], [1305, 10]), true, { mode: 'bot' });
+    expect('ratingPairs' in result(bot)).toBe(false);
+  });
+
   it('3 players: places from surrenders count like any other place [D32]', () => {
     const g = GameDriver.of({ players: rated([1200, 10], [1200, 10], [1200, 10]) });
     g.solve('p1', 'A1', 1000); // the first to leave is last, whatever the score
@@ -1240,6 +1275,20 @@ describe('rating changes (§11.2) [D7, D8]', () => {
         p2: -16,
       });
       expect(change(g, 'p1')!.after).toBe(1185);
+      // Split by opponent, the penalty apart: Σ pairs − penalty = the change.
+      expect(result(g).ratingPairs!.map((p) => [p.playerId, p.penalty])).toEqual([
+        ['p4', 0],
+        ['p3', 0],
+        ['p1', 10],
+        ['p2', 0],
+      ]);
+      const p1 = result(g).ratingPairs!.find((p) => p.playerId === 'p1')!;
+      expect(p1.pairs.map((p) => [p.opponentId, p.delta])).toEqual([
+        // −5.33 −5.33 +5.33 = −5.33 → −5.
+        ['p4', -5.2],
+        ['p3', -5.2],
+        ['p2', 5.4],
+      ]);
     });
   });
 });

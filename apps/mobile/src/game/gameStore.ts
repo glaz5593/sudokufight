@@ -240,8 +240,10 @@ export function createGameStore(deps: GameStoreDeps = defaultGameStoreDeps) {
         const online = get().online;
         if (!online) return null;
         const code = online.host.roomCode;
-        // Back in by its code, with the players' avatars as the match had them.
-        if (code) return goOnline({ kind: 'join', code }, undefined, online.profiles);
+        // Back in by its code, with the players' avatars as the match had them (and its game type, for the
+        // loading card before the game says it).
+        if (code)
+          return goOnline({ kind: 'join', code, gameType: online.gameType }, undefined, online.profiles);
         // A match's reservation is good once: without the room's code there is nothing to go back to.
         return online.request.kind === 'match' ? null : goOnline(online.request);
       },
@@ -259,8 +261,22 @@ export function createGameStore(deps: GameStoreDeps = defaultGameStoreDeps) {
   });
 }
 
-/** The matched players' avatars and countries (the VS's), for the game screen and the results. */
+/**
+ * The matched players as the VS showed them: avatars and countries for the game screen and the results; names
+ * and ratings for the loading card of the match's room.
+ */
 export const profilesOf = (players: readonly MatchPlayer[]): OnlineProfiles =>
-  Object.fromEntries(players.map((p) => [p.id, { avatarId: p.avatarId, country: p.country }]));
+  Object.fromEntries(
+    players.map((p) => [
+      p.id,
+      {
+        avatarId: p.avatarId,
+        country: p.country,
+        name: p.name,
+        rating: p.rating,
+        provisional: p.provisional,
+      },
+    ]),
+  );
 
 export const useGameStore = createGameStore();

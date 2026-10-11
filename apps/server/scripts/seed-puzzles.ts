@@ -3,6 +3,7 @@
  *
  *   npm run db:seed-puzzles                         # at the root, or: npm run db:seed-puzzles -w @sudoku-fight/server
  *   npm run db:seed-puzzles -- --file=other.json    # another bank file (default packages/engine/data/puzzles.json)
+ *   npm run db:seed-puzzles -- --if-empty           # only if a game type has no ranked puzzle (npm run dev:lan)
  *
  * Only the puzzles with pool 'ranked' go into the `puzzles` table: the 'offline' pool ships in the app, and a
  * ranked game is never played on a puzzle whose solution is on the phone (spec §21). An upsert by id: run it
@@ -17,7 +18,7 @@ import path from 'node:path';
 
 import { ConfigError, loadConfig } from '../src/config';
 import { createDb, DataDirLockedError } from '../src/db';
-import { readPuzzleBank, rankedPoolSizes, seedRankedPuzzles } from '../src/puzzles';
+import { isRankedPoolReady, readPuzzleBank, rankedPoolSizes, seedRankedPuzzles } from '../src/puzzles';
 import { puzzleBankPath } from '../src/game/puzzles';
 
 function fail(message: string): never {
@@ -27,8 +28,9 @@ function fail(message: string): never {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const unknown = args.filter((a) => !/^--file=.+$/.test(a));
-  if (unknown.length > 0) fail(`unknown option ${unknown.join(' ')} (use --file=<bank.json>)`);
+  const unknown = args.filter((a) => !/^--file=.+$/.test(a) && a !== '--if-empty');
+  if (unknown.length > 0) fail(`unknown option ${unknown.join(' ')} (use --file=<bank.json>, --if-empty)`);
+  const ifEmpty = args.includes('--if-empty');
   const fileArg = args.find((a) => a.startsWith('--file='));
   const file = fileArg === undefined ? puzzleBankPath() : path.resolve(fileArg.slice('--file='.length));
   if (!existsSync(file)) fail(`no such file: ${file}`);
@@ -41,9 +43,19 @@ async function main(): Promise<void> {
     fail('PGLITE_DIR is "memory": the puzzles would be gone when this script ends');
   const where = config.database.kind === 'pglite' ? config.database.dataDir : 'Postgres (DATABASE_URL)';
 
-  const bank = readPuzzleBank(file);
   const database = await createDb(config);
   try {
+    if (ifEmpty) {
+      const before = await rankedPoolSizes(database.db);
+      if (isRankedPoolReady(before)) {
+        const counts = Object.entries(before).map(([type, n]) => `${type} ${n}`);
+        console.log(
+          `[db:seed-puzzles] the ranked pool in ${where} is ready (${counts.join(', ')}): nothing to do`,
+        );
+        return;
+      }
+    }
+    const bank = readPuzzleBank(file);
     const started = Date.now();
     const result = await seedRankedPuzzles(database.db, bank);
     const sizes = await rankedPoolSizes(database.db);

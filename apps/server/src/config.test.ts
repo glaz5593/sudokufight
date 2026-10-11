@@ -3,10 +3,13 @@ import path from 'node:path';
 import {
   ConfigError,
   DEFAULT_PGLITE_DIR,
+  DEFAULT_TRACES_SAMPLE_RATE,
   DEV_ADMIN_PASSWORD,
   loadConfig,
   type LoadConfigOptions,
   parseTrustProxy,
+  SERVER_VERSION,
+  sentryRelease,
 } from './config';
 
 const SECRET = 's'.repeat(32);
@@ -47,6 +50,8 @@ describe('loadConfig', () => {
       cheat: { thinkMs: 1200, moves: 20 },
       accountDeleteMaxAuthAgeMs: 300_000,
       progress: { practiceXpDailyCap: 1500, inviteUrl: null },
+      sentry: null,
+      legal: { contactEmail: null, operatorName: null },
     });
     expect(DEFAULT_PGLITE_DIR).toBe(path.resolve(__dirname, '..', '.data', 'pglite'));
     // The dev password comes with a loud warning.
@@ -102,6 +107,9 @@ describe('loadConfig', () => {
       NODE_ENV: 'production',
       DATABASE_URL: 'postgres://h/db',
       FIREBASE_PROJECT_ID: 'sudoku-fight',
+      // The legal pages' contact details (stage 14; src/legal/legal.test.ts checks the warning without them).
+      LEGAL_CONTACT_EMAIL: 'privacy@sudoku.example',
+      LEGAL_OPERATOR_NAME: 'Sudoku Fight',
     };
 
     it('needs DATABASE_URL, unless PGLITE_DIR is set on purpose (with a warning)', () => {
@@ -273,6 +281,59 @@ describe('loadConfig', () => {
         expect(issuesOf({ PRACTICE_XP_DAILY_CAP: bad })[0]).toMatch(/^PRACTICE_XP_DAILY_CAP: /);
       for (const bad of ['sudokufight.app/invite', 'javascript:alert(1)', 'ftp://x.example'])
         expect(issuesOf({ INVITE_URL: bad })[0]).toMatch(/^INVITE_URL: /);
+    });
+  });
+
+  describe('Sentry (stage 14)', () => {
+    const DSN = 'https://abc123@o42.ingest.de.sentry.io/4507';
+
+    it('off without SENTRY_DSN (blank counts as unset)', () => {
+      expect(load({}).config.sentry).toBeNull();
+      expect(load({ SENTRY_DSN: '  ', SENTRY_ENVIRONMENT: 'staging' }).config.sentry).toBeNull();
+    });
+
+    it("with a DSN: environment NODE_ENV unless SENTRY_ENVIRONMENT, the server's version as release, 5% traces", () => {
+      const { config, warnings } = load({ NODE_ENV: 'test', SENTRY_DSN: ` ${DSN} ` });
+      expect(config.sentry).toEqual({
+        dsn: DSN,
+        environment: 'test',
+        release: `sudoku-fight-server@${SERVER_VERSION}`,
+        tracesSampleRate: DEFAULT_TRACES_SAMPLE_RATE,
+      });
+      expect(DEFAULT_TRACES_SAMPLE_RATE).toBe(0.05);
+      expect(warnings).toEqual([]);
+      expect(
+        load({ SENTRY_DSN: DSN, SENTRY_ENVIRONMENT: 'staging', SENTRY_TRACES_SAMPLE_RATE: '0' }).config
+          .sentry,
+      ).toMatchObject({ environment: 'staging', tracesSampleRate: 0 });
+    });
+
+    it('release: SENTRY_RELEASE, else the version with the commit, else with Fly’s deployment', () => {
+      const base = `sudoku-fight-server@${SERVER_VERSION}`;
+      expect(SERVER_VERSION).toMatch(/^\d+\.\d+\.\d+/);
+      expect(sentryRelease({})).toBe(base);
+      expect(sentryRelease({ GIT_SHA: 'ABCDEF1234567890' })).toBe(`${base}+abcdef123456`);
+      expect(sentryRelease({ FLY_IMAGE_REF: 'registry.fly.io/sudoku-fight-prod:deployment-01HABCDEF' })).toBe(
+        `${base}+deployment-01HABCDEF`,
+      );
+      expect(sentryRelease({ FLY_IMAGE_REF: 'registry.fly.io/app:latest' })).toBe(base);
+      expect(sentryRelease({ SENTRY_RELEASE: 'server-7', GIT_SHA: 'abcdef1' })).toBe('server-7');
+      expect(load({ SENTRY_DSN: DSN, GIT_SHA: 'abcdef1' }).config.sentry?.release).toBe(`${base}+abcdef1`);
+    });
+
+    it('refuses what Sentry would refuse, each with its reason', () => {
+      for (const bad of [
+        'abc123@o42.ingest.sentry.io/4507',
+        'https://o42.ingest.sentry.io/4507',
+        'https://k@h/x',
+      ])
+        expect(issuesOf({ SENTRY_DSN: bad })[0]).toMatch(/^SENTRY_DSN: /);
+      expect(issuesOf({ SENTRY_ENVIRONMENT: 'my env' })[0]).toMatch(/^SENTRY_ENVIRONMENT: /);
+      expect(issuesOf({ SENTRY_RELEASE: 'a/b' })[0]).toMatch(/^SENTRY_RELEASE: /);
+      expect(issuesOf({ SENTRY_RELEASE: '..' })[0]).toMatch(/^SENTRY_RELEASE: /);
+      for (const bad of ['-0.1', '1.5', 'some'])
+        expect(issuesOf({ SENTRY_TRACES_SAMPLE_RATE: bad })[0]).toMatch(/^SENTRY_TRACES_SAMPLE_RATE: /);
+      expect(issuesOf({ GIT_SHA: 'main' })[0]).toMatch(/^GIT_SHA: /);
     });
   });
 

@@ -1,7 +1,14 @@
-import { isGameType, type League, LEAGUES } from '@sudoku-fight/engine';
+import {
+  INTERFERENCE_KINDS,
+  type InterferenceKind,
+  isGameType,
+  type League,
+  LEAGUES,
+} from '@sudoku-fight/engine';
 import {
   isAvatarId,
   isCountryCode,
+  type FavoriteInterference,
   type Leaderboard,
   type LeaderboardEntry,
   LEADERBOARD_TABS,
@@ -141,6 +148,13 @@ export function readPlayerStats(v: unknown): PlayerStats | null {
   };
 }
 
+/** The favourite interference; null without one, or for a kind this app does not know (a newer server). */
+export function readFavoriteInterference(v: unknown): FavoriteInterference | null {
+  if (!isObj(v) || !isNum(v.count) || v.count < 1) return null;
+  if (!INTERFERENCE_KINDS.includes(v.kind as InterferenceKind)) return null;
+  return { kind: v.kind as InterferenceKind, count: Math.floor(v.count) };
+}
+
 export function readPlayerCard(v: unknown): PlayerCard | null {
   const player = readPublicPlayer(v);
   if (!player || !isObj(v) || !isNum(v.xp)) return null;
@@ -151,7 +165,17 @@ export function readPlayerCard(v: unknown): PlayerCard | null {
     isObj(a) && isStr(a.key) && isNum(a.earnedAt) ? { key: a.key, earnedAt: a.earnedAt } : null,
   );
   if (!ratings || !stats || !recent || !achievements) return null;
-  return { ...player, xp: Math.max(0, v.xp), ratings, stats, recent, achievements };
+  return {
+    ...player,
+    // Lenient: an older server (or a card an older app saved) has neither.
+    joinedAt: isNum(v.joinedAt) && v.joinedAt > 0 ? v.joinedAt : null,
+    xp: Math.max(0, v.xp),
+    ratings,
+    stats,
+    favoriteInterference: readFavoriteInterference(v.favoriteInterference),
+    recent,
+    achievements,
+  };
 }
 
 export function readMyProgress(v: unknown): MyProgress | null {

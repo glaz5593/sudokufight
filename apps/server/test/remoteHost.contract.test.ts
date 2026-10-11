@@ -332,8 +332,9 @@ describe("the app's RemoteGameHost on the real server", () => {
     expect(away.graceEndsAt! - a.host.serverNow()).toBeGreaterThan(13_000);
     expect(a.host.online.status).toBe('live');
 
-    await new Promise((r) => setTimeout(r, 1000));
-    expect(b.host.online.reconnect?.attempt).toBeGreaterThanOrEqual(2); // "ניסיון 2"
+    await new Promise((r) => setTimeout(r, 1000)); // a drop of 1 s at least
+    // "ניסיון 2": the first attempt failed and the next began (250 ms later on time; waited for, not raced).
+    await until(() => (b.host.online.reconnect?.attempt ?? 0) >= 2, 'a second attempt', 5000);
     const upAt = Date.now();
     b.net.up();
     await until(() => inSync(b.host, room) && b.host.metrics.sync.count === 1, 'in sync again', 2000);

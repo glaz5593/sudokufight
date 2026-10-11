@@ -317,10 +317,12 @@ describe('fake players on the real server', () => {
       child.stdout.on('data', (d: Buffer) => (out += d.toString()));
       child.stderr.on('data', (d: Buffer) => (err += d.toString()));
       const exited = new Promise<number | null>((resolve) => child.once('exit', (code) => resolve(code)));
+      // A new Node process that compiles the client with tsx before it connects: a few seconds on an idle
+      // machine, far more while the other test files load every core. The code is waited for, not raced.
       const code = await new Promise<string>((resolve, reject) => {
         const timer = setTimeout(
-          () => reject(new Error(`no room code within 15 s:\n${out}\n${err}`)),
-          15_000,
+          () => reject(new Error(`no room code within 60 s:\n${out}\n${err}`)),
+          60_000,
         );
         const look = () => {
           const m = /room code ([A-Z0-9]{6}) /.exec(out);
@@ -356,7 +358,7 @@ describe('fake players on the real server', () => {
     } finally {
       if (child.exitCode === null) child.kill();
     }
-  }, 40_000);
+  }, 90_000);
 });
 
 describe('what the server saw', () => {

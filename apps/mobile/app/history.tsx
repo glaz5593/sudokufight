@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 
-import { type HistoryEntry, HistoryScreen } from '../src/screens/history';
+import { type HistoryEntry, HistoryScreen, useHistorySummary } from '../src/screens/history';
 import { appHistoryDeps } from '../src/screens/history/appWiring';
 import { goToTab } from '../src/screens/home';
 import { openPlayerCard } from '../src/screens/player/navigation';
@@ -12,6 +12,7 @@ const openReplay = (entry: HistoryEntry) =>
 /** /history: a bottom-nav tab (spec §14.1): every game, ranked and practice, each opening its replay. */
 export default function HistoryRoute() {
   const myAvatar = useProfile((s) => s.avatarId);
+  const summary = useHistorySummary();
   return (
     <HistoryScreen
       deps={appHistoryDeps}
@@ -20,6 +21,7 @@ export default function HistoryRoute() {
       onPlay={() => router.push('/modes')}
       onTab={(tab) => goToTab(tab, 'history')}
       myAvatar={myAvatar}
+      summary={summary}
     />
   );
 }

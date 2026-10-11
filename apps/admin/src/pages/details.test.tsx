@@ -85,6 +85,18 @@ describe('games', () => {
     );
   });
 
+  it('a ranked game cut short by a server restart says so (end reason serverRestart)', async () => {
+    const restarted = { ...gameRow(), endReason: 'serverRestart' };
+    const server = fakeServer({
+      'GET /session': SIGNED_IN,
+      'GET /games': { body: { items: [restarted], page: 1, pageSize: 50, total: 1 } },
+    });
+    renderSite(server, { hash: '#/games' });
+    const table = await screen.findByRole('table', { name: 'Games' });
+    expect(within(table).getByText('Cut short by a server restart')).toBeTruthy();
+    expect(within(table).queryByText('serverRestart')).toBeNull();
+  });
+
   it('a game: players with score, place and rating, and the event log from the start', async () => {
     setup(`#/games/${GAME_A}`);
     const players = await screen.findByRole('table', { name: 'Players' });

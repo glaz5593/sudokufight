@@ -19,7 +19,7 @@
 
 1. נכנסים ל־[console.firebase.google.com](https://console.firebase.google.com) עם חשבון Google שלך (לא חשבון של עבודה אחרת).
 2. **Create a project**. השם: `Sudoku Fight`.
-3. Google Analytics: אפשר לכבות בשלב הזה. Analytics יתחבר בשלב 14.
+3. Google Analytics: מדליקים (משלב 14 האפליקציה שולחת אליו אירועים). פרויקט שכבר נוצר בלי Analytics: סעיף 8א.
 4. **Create project**, ומחכים שיסתיים.
 5. רושמים את ה־**Project ID**: גלגל השיניים ליד "Project Overview" ← **Project settings** ← לשונית **General** ← השדה **Project ID**.
    זה לא תמיד בדיוק השם. לפעמים Firebase מוסיף לו סיומת, כמו `sudoku-fight-1a2b3`.
@@ -78,7 +78,7 @@ apps/mobile/config/firebase/GoogleService-Info.plist
 ```
 
 - שני השמות כבר ב־`.gitignore`. כדאי לבדוק: `git check-ignore -v apps/mobile/config/firebase/google-services.json` צריך להדפיס את השורה מ־`.gitignore`.
-- `apps/mobile/app.config.ts` מוצא אותם לבד. הוא מוסיף את ה־plugins של React Native Firebase (app, auth, crashlytics) ואת `expo-build-properties` (‏static frameworks ב־iOS), ומסמן לאפליקציה `extra.firebase`.
+- `apps/mobile/app.config.ts` מוצא אותם לבד. הוא מוסיף את ה־plugins של React Native Firebase (app, auth, crashlytics, ומשלב 14 גם analytics) ואת `expo-build-properties` (‏static frameworks ב־iOS), ומסמן לאפליקציה `extra.firebase`.
 - אפשר לשים רק את אחד הקבצים. אז רק הפלטפורמה ההיא עוברת ל־Firebase, והשנייה נשארת במצב פיתוח.
 
 ## 7. הקבצים ב־EAS (בנייה בענן)
@@ -105,6 +105,24 @@ eas env:create --scope project --name GOOGLE_SERVICE_INFO_PLIST --type file --va
    האפליקציה אוספת רק ב־release (`preview` או `production`), לא ב־Development Build. כך דיבוג בטלפון לא ממלא את הלוח.
 4. אין קובץ נוסף להוריד. ה־plugin של Crashlytics נכנס דרך `app.config.ts` יחד עם השאר.
 
+## 8א. Analytics (שלב 14)
+
+משלב 14, ‏`track()` שולח כל אירוע (אפיון 22) גם ל־Firebase Analytics, ולא רק לשרת שלנו (`apps/mobile/src/services/firebaseAnalytics.ts`).
+
+1. **אם Analytics כבוי בפרויקט:** גלגל השיניים ← **Project settings** ← לשונית **Integrations** ← **Google Analytics** ← **Enable**.
+   בוחרים חשבון Google Analytics (או יוצרים חדש, `Sudoku Fight`), ומיקום הנתונים.
+2. **מורידים שוב את שני קובצי ההגדרות** (סעיפים 4 ו־5: ‏Project settings ← General ← האפליקציה ← הורדה), שמים אותם במקום הישנים,
+   ו**מעלים אותם מחדש ל־EAS** (`eas env:update`, או מוחקים ויוצרים מחדש לפי סעיף 7). כך גם הקבצים כוללים את Analytics.
+3. ב־Google Analytics (‏analytics.google.com) ← Admin ← **Data collection and modification** ← **Data collection**:
+   **Google signals** כבוי. ב־**Data retention**: ‏2 חודשים מספיקים (ככה גם מדיניות הפרטיות פשוטה יותר).
+4. **מה האפליקציה שולחת:** רק את האירועים של אפיון 22 ו־`screen_view` (תבנית המסך, למשל `/results/[id]`). שמות בכללים של GA4, בלי מיילים, שמות, מזהים או tokens.
+   אין `setUserId`: הנתונים על האפליקציה, לא על אדם.
+5. **מה כבוי** (`apps/mobile/firebase.json` ו־`app.config.ts`): איסוף עד שבניית release מדליקה אותו, ה־Advertising ID של Android (גם ההרשאה `AD_ID` יוצאת מה־manifest),
+   ה־IDFA של iOS (בלי הודעת מעקב של Apple), התאמה אישית של פרסומות, ודיווח מסכים אוטומטי.
+6. **האיסוף רק בבניות release** (`preview` ו־`production`), כמו Crashlytics. גם בניות `preview` מול ה־Staging נכנסות לאותו Analytics, כי הפרויקט אחד. בבטא זה בסדר.
+7. **בדיקה:** בבניית `preview` בטלפון, פותחים כמה מסכים ומשחקים אימון אחד. אחרי כמה דקות ב־Firebase ← **Analytics** ← **Realtime** (או ב־GA4 ← Reports ← Realtime) רואים `app_open`, ‏`screen_view` ו־`game_start`.
+   הדוחות הרגילים מתעדכנים רק אחרי כמה שעות.
+
 ## 9. השרת: `FIREBASE_PROJECT_ID`
 
 - **במחשב:** ב־`apps/server/.env` (מעתיקים מ־`.env.example` אם עוד אין) מוסיפים:
@@ -114,6 +132,7 @@ eas env:create --scope project --name GOOGLE_SERVICE_INFO_PLIST --type file --va
   עם ה־Project ID האמיתי מסעיף 1. בפיתוח השרת מקבל גם ID tokens של Firebase וגם `dev:<uid>`.
 - **ב־Fly.io:** ב־`fly.toml`, בתוך `[env]`, מוסיפים `FIREBASE_PROJECT_ID = "sudoku-fight-1a2b3"`, ואז `fly deploy --ha=false`.
   זה לא סוד. לא צריך `fly secrets`.
+  בשרת ה־Production (`fly.production.toml`) הוא נכנס עם שאר ההגדרות ב־`fly secrets set`, לפי [`docs/DEPLOY-PRODUCTION.md`](DEPLOY-PRODUCTION.md) סעיף 4.
 - **בלי המשתנה:** שרת בייצור עולה עם אזהרה, ומסלולי החשבון עונים 503 `disabled`. גם הכניסה לחדרי משחק נחסמת.
 - שרת בייצור (`NODE_ENV=production`, כמו ב־`Dockerfile` וב־`fly.toml`) **אף פעם** לא מקבל `dev:<uid>`, לא ב־HTTP ולא בחדרי המשחק.
 

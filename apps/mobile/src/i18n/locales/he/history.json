@@ -1,5 +1,21 @@
 {
   "title": "היסטוריה",
+  "summary": {
+    "games_one": "משחק אחד",
+    "games_two": "{{count}} משחקים",
+    "games_many": "{{count}} משחקים",
+    "games_other": "{{count}} משחקים",
+    "winRate": "{{rate}} ניצחונות",
+    "practices_one": "אימון אחד",
+    "practices_two": "{{count}} אימונים",
+    "practices_many": "{{count}} אימונים",
+    "practices_other": "{{count}} אימונים",
+    "streak": "רצף",
+    "streakLabel_one": "רצף ניצחונות: ניצחון אחד",
+    "streakLabel_two": "רצף ניצחונות: {{count}} ניצחונות",
+    "streakLabel_many": "רצף ניצחונות: {{count}} ניצחונות",
+    "streakLabel_other": "רצף ניצחונות: {{count}} ניצחונות"
+  },
   "filters": {
     "label": "סינון המשחקים",
     "all": "הכל",
@@ -62,13 +78,14 @@
       "title": "שינוי דירוג · {{type}}",
       "from": "מ־{{before}}",
       "label": "שינוי דירוג: {{delta}}, מ־{{before}} ל־{{after}}",
-      "provisional": "דירוג זמני: השינוי כפול ב־10 המשחקים הראשונים"
+      "provisional": "דירוג זמני: השינוי כפול ב־10 המשחקים הראשונים",
+      "perOpponent": "מחושב מול כל יריב בנפרד",
+      "pairLabel": "מול {{name}}: {{delta}}"
     },
     "ratingOf": "{{before}} → {{after}}",
     "opponentLabel": "{{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}",
     "ranking": {
       "title": "דירוג המשחק",
-      "place": "מקום {{place}}",
       "left": "יצא מהמשחק",
       "label": "מקום {{place}}: {{name}} · {{score}} נקודות · {{mistakes}}",
       "labelRating": "מקום {{place}}: {{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}"

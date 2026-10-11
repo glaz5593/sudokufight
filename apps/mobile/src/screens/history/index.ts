@@ -23,3 +23,11 @@ export {
   shortDate,
 } from './historyModel';
 export { HistoryScreen, type HistoryScreenProps } from './HistoryScreen';
+export {
+  type HistorySummary,
+  historySummaryOf,
+  percentText,
+  type PracticeNumbers,
+  summaryLine,
+} from './historySummary';
+export { useHistorySummary } from './useHistorySummary';

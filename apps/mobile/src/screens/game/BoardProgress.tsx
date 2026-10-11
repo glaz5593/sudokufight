@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { I18nManager, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { ltr, paletteAt } from '../../components/player';
+import { ltr, paletteAt, sameProps, sameStyle } from '../../components/player';
 import { metrics } from '../../components/player/metrics';
 import { color, radius, size, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
@@ -47,7 +47,12 @@ function useShare(share: number, reduce: boolean) {
   return value;
 }
 
-export function BoardProgress({ filled, total, style, testID = 'board-progress' }: BoardProgressProps) {
+export const BoardProgress = memo(function BoardProgress({
+  filled,
+  total,
+  style,
+  testID = 'board-progress',
+}: BoardProgressProps) {
   const { t } = useTranslation('game');
   const reduce = useReduceMotion();
   const share = total > 0 ? Math.min(1, Math.max(0, filled / total)) : 0;
@@ -81,6 +86,11 @@ export function BoardProgress({ filled, total, style, testID = 'board-progress' 
       </View>
     </View>
   );
+}, sameProgress);
+
+/** The screen renders 4 times a second; the bar only when the board's count or its look changed. */
+function sameProgress(a: BoardProgressProps, b: BoardProgressProps): boolean {
+  return sameProps(a, b, { style: sameStyle });
 }
 
 const styles = StyleSheet.create({

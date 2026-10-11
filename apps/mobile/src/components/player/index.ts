@@ -6,6 +6,7 @@
 export { Avatar, type AvatarProps, type GameResultKind } from './Avatar';
 export { HitChip, RankBadge, ReconnectPill, VsBadge } from './Badges';
 export { CardIconButton, type CardIconButtonProps } from './CardIconButton';
+export { CountUpText, type CountUpTextProps } from './CountUpText';
 export { DropZone, type DropZoneProps } from './DropZone';
 export { Flag, type FlagProps, type FlagSize } from './Flag';
 export { InterferenceButton, type InterferenceButtonProps } from './InterferenceButton';
@@ -39,6 +40,8 @@ export {
   mistakePips,
   type MyActions,
   type Presence,
+  sameCard,
+  sameCountdown,
   timeLeft,
 } from './cardModel';
 export { countryName, flagEmoji } from './countryFlag';
@@ -56,6 +59,7 @@ export {
   playerLeague,
 } from './league';
 export { AVATAR_SIZES, type AvatarSize, compactCardGap, compactCardWidth, paletteAt } from './metrics';
+export { sameData, sameProps, sameStyle } from './sameProps';
 export {
   activityPhrase,
   activityWord,

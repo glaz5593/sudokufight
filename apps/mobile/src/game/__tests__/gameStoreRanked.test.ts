@@ -62,10 +62,11 @@ describe('the game store: a ranked game (stage 9)', () => {
       reservation: RESERVATION,
     });
     expect(used).toEqual([table]);
-    // The VS's avatars and countries go with the game (the cards, the locks, the results).
+    // The VS's avatars and countries go with the game (the cards, the locks, the results); the names and
+    // ratings too (the loading card of a rejoin, Loading.dc.html).
     expect(online.profiles).toEqual({
-      me: { avatarId: 'av07', country: 'IL' },
-      opp: { avatarId: 'av12', country: 'DE' },
+      me: { avatarId: 'av07', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
+      opp: { avatarId: 'av12', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
     });
     await settle();
     expect(table.calls.at(-1)).toEqual({ kind: 'reserved', arg: RESERVATION });
@@ -151,11 +152,13 @@ describe('the game store: a ranked game (stage 9)', () => {
     table.cutMe();
     const again = useStore.getState().retryOnline()!;
     expect(again).not.toBeNull();
-    expect(again.request).toEqual({ kind: 'join', code: CODE });
+    // The match's game type goes along: the loading card says "מדורג · מהיר" before the game does.
+    expect(again.request).toEqual({ kind: 'join', code: CODE, gameType: 'fast' });
+    expect(again.gameType).toBe('fast');
     expect(used).toEqual([table, rejoin]);
     expect(again.host).toBe(rejoin.host);
     expect(again.profiles).toEqual(before.profiles);
-    expect(again.profiles?.p3).toEqual({ avatarId: 'av20', country: 'FR' });
+    expect(again.profiles?.p3).toMatchObject({ avatarId: 'av20', country: 'FR', name: 'Ziv' });
     useStore.getState().clear();
   });
 

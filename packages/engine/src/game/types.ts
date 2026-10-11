@@ -1,5 +1,5 @@
 import type { GameType } from '../gameType';
-import type { RatingChange } from '../rating';
+import type { RatingChange, RatingPairs } from '../rating';
 import type { CellIndex, Digit } from '../sudoku/board';
 import type { MoveScore } from '../sudoku/scoring';
 import type { GameMode, InterferenceKind, ReleaseReason, Rules } from './rules';
@@ -236,6 +236,11 @@ export interface GameResult {
   ranking: RankEntry[];
   /** Ranked games whose players all came with a rating. */
   ratingChanges: RatingChange[];
+  /**
+   * The same changes split by opponent (spec §11.2, Results-4P): present exactly when ratingChanges is not
+   * empty. Absent from results stored before it existed (a ranked game's replay of an older game).
+   */
+  ratingPairs?: RatingPairs[];
   awards: Award[];
   stats: PlayerStats[];
 }

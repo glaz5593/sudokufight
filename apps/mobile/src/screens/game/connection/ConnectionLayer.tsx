@@ -7,6 +7,7 @@ import type { Gender } from '../../../components/player/wording';
 import { ConnectingView } from './ConnectingView';
 import { ConnectionError } from './ConnectionError';
 import type { ConnectionModel } from './connectionModel';
+import type { MatchLoading } from './loadingModel';
 import { LobbyView } from './LobbyView';
 import { OpponentLeft } from './OpponentLeft';
 import { OpponentReconnecting } from './OpponentReconnecting';
@@ -33,8 +34,12 @@ export interface ConnectionLayerProps {
   gender?: Gender;
   /** Avatars by player, when known (lobby seats, the opponent-left card). */
   avatars?: Partial<Record<PlayerId, AvatarId>>;
+  /** Countries by player, when known (a ranked match's profiles): the leaver's flag on the opponent-left card. */
+  countries?: Partial<Record<PlayerId, string | null>>;
   /** This phone's player (for its avatar on the opponent-left card). */
   myId?: PlayerId;
+  /** Connecting into a ranked match's room: its players, tag, percent and tip (./loadingModel). */
+  loading?: MatchLoading | null;
 }
 
 /**
@@ -55,7 +60,9 @@ export function ConnectionLayer({
   freezeTop = 0,
   gender,
   avatars,
+  countries,
   myId,
+  loading = null,
 }: ConnectionLayerProps) {
   const insets = useSafeAreaInsets();
   return (
@@ -75,6 +82,7 @@ export function ConnectionLayer({
           gender={gender}
           myAvatar={myId ? avatars?.[myId] : undefined}
           opponentAvatar={avatars?.[model.playerId]}
+          opponentCountry={countries?.[model.playerId] ?? null}
         />
       ) : null}
       {model.kind === 'error' ? (
@@ -84,7 +92,7 @@ export function ConnectionLayer({
       ) : null}
       {model.kind === 'connecting' ? (
         <View style={StyleSheet.absoluteFill}>
-          <ConnectingView model={model} onCancel={onLeave} />
+          <ConnectingView model={model} match={loading} onCancel={onLeave} />
         </View>
       ) : null}
       {model.kind === 'lobby' ? (

@@ -269,7 +269,9 @@ describe('progress, end to end (work plan stage 12 "סיום")', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'כרטיס השחקן שלי' }));
     await settle();
     expect(app.pathname()).toBe(`/player/${myId}`);
-    expect(await screen.findByLabelText('MosheG, הכרטיס שלי, ישראל, ליגת יהלום, רמה 2')).toBeTruthy();
+    expect(
+      await screen.findByLabelText('MosheG, הכרטיס שלי, ישראל, במשחק מאז אפריל 2026, ליגת יהלום, רמה 2'),
+    ).toBeTruthy();
   });
 
   it("a tap on a leaderboard row opens that player's card (spec §14.2, §14.3)", async () => {
@@ -286,7 +288,7 @@ describe('progress, end to end (work plan stage 12 "סיום")', () => {
     await settle();
     expect(app.pathname()).toBe('/player/p5');
     // Their card, not mine: name, country, league and level, as the server sent them.
-    expect(await screen.findByLabelText('Player5, צרפת, ליגת זהב, רמה 5')).toBeTruthy();
+    expect(await screen.findByLabelText('Player5, צרפת, במשחק מאז אפריל 2026, ליגת זהב, רמה 5')).toBeTruthy();
     expect(screen.queryByLabelText(/הכרטיס שלי/)).toBeNull();
   });
 

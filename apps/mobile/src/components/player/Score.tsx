@@ -12,7 +12,8 @@ import Animated, {
 
 import { color } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
-import { easing, NEVER_REDUCE, springs, useCountUp } from './anim';
+import { easing, NEVER_REDUCE, springs } from './anim';
+import { CountUpText } from './CountUpText';
 import { scoreText, signedText } from './format';
 import { metrics } from './metrics';
 
@@ -38,10 +39,12 @@ export interface ScoreNumberProps {
  * A card's score (motion.md §4.2–4.3): counts to the new value over 650 ms in 0.5 steps, bumps 1 → 1.08 → 1 on
  * a gain, and starts red after a penalty, returning to the seat colour while it counts down. Reduced motion:
  * the final number at once, no bump, and a red tint for 300 ms.
+ *
+ * The count, the bump and the tint all run on the UI thread (CountUpText, motion.md §6): no frame of them
+ * renders in React. Screen readers hear the final score in the card's summary, never the count.
  */
 export function ScoreNumber({ score, tint, textStyle, delta = null, testID }: ScoreNumberProps) {
   const reduce = useReduceMotion();
-  const shown = useCountUp(score, reduce);
   const red = useSharedValue(0);
   const scale = useSharedValue(1);
   const lastId = useRef(delta?.id);
@@ -80,11 +83,7 @@ export function ScoreNumber({ score, tint, textStyle, delta = null, testID }: Sc
     transform: [{ scale: scale.get() }],
   }));
 
-  return (
-    <Animated.Text style={[textStyle, anim]} testID={testID}>
-      {scoreText(shown)}
-    </Animated.Text>
-  );
+  return <CountUpText value={score} format={scoreText} style={[textStyle, anim]} testID={testID} />;
 }
 
 export interface DeltaLabelProps {

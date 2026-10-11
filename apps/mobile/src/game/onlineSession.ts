@@ -36,7 +36,8 @@ import { gameEndProps, gameStartProps } from './analyticsProps';
  */
 export type OnlineRequest =
   | { kind: 'create'; options: DevRoomOptions }
-  | { kind: 'join'; code: string }
+  /** `gameType`: what a rejoined match's room plays, before its game says so. */
+  | { kind: 'join'; code: string; gameType?: GameType }
   | { kind: 'match'; queueKey: QueueKey; matchId: string; reservation: MatchSeatReservation };
 
 /** The connection, as the game screen follows it. */
@@ -52,13 +53,19 @@ export type OnlineTrack = (name: 'game_start' | 'game_end', props: Record<string
 /**
  * A player's public profile beyond what the game's config says: their avatar and country. A ranked match has
  * them from matchmaking's "found" (protocol MatchPlayer); the game screen and the results draw opponents with
- * them (screens/game SessionProfile).
+ * them (screens/game SessionProfile). "found" also gives their name and rating, for the loading card of a
+ * match's room (Loading.dc.html) before the game's snapshot names them.
  */
 export interface OnlineProfile {
   /** protocol AvatarId, or av00. */
   avatarId: string | null;
   /** ISO alpha-2. */
   country: string | null;
+  name?: string;
+  /** In the match's rating key. */
+  rating?: number;
+  /** Still in the first 10 games of that key. */
+  provisional?: boolean;
 }
 
 export type OnlineProfiles = Readonly<Partial<Record<PlayerId, OnlineProfile>>>;
@@ -149,6 +156,7 @@ export class OnlineSession {
       this.host.game?.config.gameType ??
       this.host.online.lobby?.gameType ??
       (this.request.kind === 'create' ? this.request.options.gameType : undefined) ??
+      (this.request.kind === 'join' ? this.request.gameType : undefined) ??
       (this.request.kind === 'match' ? parseQueueKey(this.request.queueKey)?.gameType : undefined) ??
       'fast'
     );

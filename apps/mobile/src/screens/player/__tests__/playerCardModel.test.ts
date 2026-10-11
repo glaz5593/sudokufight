@@ -4,6 +4,7 @@ import i18n from '../../../i18n';
 import {
   groupDigits,
   levelProgressOf,
+  monthYearText,
   type ProgressT,
   ratingLayout,
   recentWords,
@@ -163,5 +164,16 @@ describe('the trend line', () => {
     expect(sparkPoints([5], 10, 10)).toBe('');
     expect(sparkLength('0,0 3,4 3,10')).toBe(11);
     expect(sparkLength('')).toBe(0);
+  });
+});
+
+describe('"במשחק מאז"', () => {
+  it('the month and year the account was made, in the language of the app', () => {
+    const at = Date.UTC(2026, 3, 12, 9, 30);
+    expect(monthYearText(at, 'he')).toBe('אפריל 2026');
+    expect(monthYearText(at, 'en')).toBe('April 2026');
+    expect(he('card.joinedSince', { date: monthYearText(at, 'he') })).toBe('במשחק מאז אפריל 2026');
+    // A language Intl can't take: the year and month as digits.
+    expect(monthYearText(at, 'not a language!')).toBe('2026-04');
   });
 });

@@ -4,11 +4,13 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AvatarId } from '../../assets/avatars';
+import { Icon } from '../../components/Icon';
 import { BottomNav, Button, type NavTab, SkeletonGroup, SkeletonRows, StateView } from '../../components/ui';
-import { color, radius, space, text, tokens } from '../../theme';
+import { color, radius, size, space, text, tokens } from '../../theme';
 import { HistoryCard } from './HistoryCard';
 import { type HistoryDeps, HistoryLoader, type HistorySnapshot } from './historyLoader';
 import { HISTORY_FILTERS, type HistoryEntry, type HistoryFilter, PAGE_SIZE } from './historyModel';
+import { type HistorySummary, showsStreak, summaryLine } from './historySummary';
 
 /**
  * The history tab (spec §14.1; History.dc.html, History-Empty.dc.html): every game, newest first, ranked games
@@ -31,6 +33,11 @@ export interface HistoryScreenProps {
   onPlay: () => void;
   onTab: (tab: NavTab) => void;
   myAvatar: AvatarId;
+  /**
+   * The header's numbers (History.dc.html: games, win %, the streak chip): my card's ranked games, the
+   * practices counted apart (./historySummary). Null: no line.
+   */
+  summary?: HistorySummary | null;
   /** For "היום" / "אתמול". */
   now?: () => number;
   testID?: string;
@@ -43,6 +50,7 @@ export function HistoryScreen({
   onPlay,
   onTab,
   myAvatar,
+  summary = null,
   now = Date.now,
   testID = 'history',
 }: HistoryScreenProps) {
@@ -100,11 +108,35 @@ export function HistoryScreen({
     notes.push({ key: 'practiceUnavailable', text: t('notes.practiceUnavailable'), retry: true });
   if (filter === 'practice') notes.push({ key: 'practice', text: t('notes.practice') });
 
+  const line = summary ? summaryLine(summary, t) : null;
+  const streak = summary && showsStreak(summary) ? summary.streak : null;
   const header = (
     <View style={styles.header}>
-      <Text accessibilityRole="header" style={[text('screenTitle'), styles.strong]}>
-        {t('title')}
-      </Text>
+      <View style={styles.titleRow}>
+        <View style={styles.titleText}>
+          <Text accessibilityRole="header" style={[text('screenTitle'), styles.strong]}>
+            {t('title')}
+          </Text>
+          {line ? (
+            <Text style={[text('caption'), styles.muted]} numberOfLines={1} testID="history-summary">
+              {line}
+            </Text>
+          ) : null}
+        </View>
+        {streak !== null ? (
+          <View
+            style={styles.streak}
+            accessible
+            accessibilityRole="text"
+            accessibilityLabel={t('summary.streakLabel', { count: streak })}
+            testID="history-streak"
+          >
+            <Icon name="flame" size={size.icon.inline} color={color.accent} />
+            <Text style={[text('label'), styles.strong]}>{t('summary.streak')}</Text>
+            <Text style={[text('scoreSm'), styles.accent]}>{streak}</Text>
+          </View>
+        ) : null}
+      </View>
       <View style={styles.filters} accessibilityRole="tablist" accessibilityLabel={t('filters.label')}>
         {HISTORY_FILTERS.map((f) => (
           <Button
@@ -238,6 +270,20 @@ const styles = StyleSheet.create({
     gap: space[4],
   },
   header: { gap: space[6], marginBottom: space[2] },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[6] },
+  titleText: { flexShrink: 1, minWidth: 0, gap: space[2], alignItems: 'flex-start' },
+  streak: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[3],
+    minHeight: size.iconButton,
+    paddingHorizontal: space[6],
+    borderRadius: radius.button,
+    borderWidth: tokens.border.hairline,
+    borderColor: color.border,
+    backgroundColor: color.accentSubtle,
+  },
+  accent: { color: color.accent },
   filters: { flexDirection: 'row', gap: space[4] },
   filter: { flex: 1 },
   note: {

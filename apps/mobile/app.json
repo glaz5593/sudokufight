@@ -6,12 +6,21 @@
     "orientation": "portrait",
     "scheme": "sudokufight",
     "userInterfaceStyle": "dark",
+    "icon": "./assets/brand/icon.png",
     "ios": {
       "bundleIdentifier": "com.mosheg.sudokufight",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
-      "package": "com.mosheg.sudokufight"
+      "package": "com.mosheg.sudokufight",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/adaptive-foreground.png",
+        "monochromeImage": "./assets/brand/adaptive-monochrome.png",
+        "backgroundColor": "#0f1218"
+      }
     },
     "plugins": [
       "expo-router",
@@ -45,7 +54,15 @@
           ]
         }
       ],
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/splash-mark.png",
+          "imageWidth": 176,
+          "resizeMode": "contain",
+          "backgroundColor": "#0f1218"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

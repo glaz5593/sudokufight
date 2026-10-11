@@ -1,8 +1,18 @@
-import { type AuthContext, type Client, CloseCode, ErrorCode, Room, ServerError } from '@colyseus/core';
+import {
+  type AuthContext,
+  type Client,
+  CloseCode,
+  ErrorCode,
+  Room,
+  type RoomException,
+  type RoomMethodName,
+  ServerError,
+} from '@colyseus/core';
 import type { MatchmakingError, MatchmakingServerMessage } from '@sudoku-fight/protocol';
 
 import { IdentityError, type IdentityVerifier, isIdentity } from '../auth';
-import type { GameRoomLog } from '../rooms/GameRoom';
+import { reportError } from '../monitoring/report';
+import { type GameRoomLog, logRoomException } from '../rooms/GameRoom';
 import { MatchmakingRefusal, type MatchmakingService, type MatchSession } from './service';
 
 /**
@@ -41,6 +51,8 @@ export function createMatchmakingRoom(deps: MatchmakingRoomDeps) {
       } catch (error) {
         if (error instanceof IdentityError)
           throw refuse(ErrorCode.AUTH_FAILED, 'unauthenticated', error.message);
+        // Not a refusal: the check itself failed (the database, Google's keys). Colyseus tells the client.
+        reportError(error, { area: 'rooms', message: '[matchmaking] onAuth failed' });
         throw error;
       }
     }
@@ -89,6 +101,15 @@ export abstract class MatchmakingRoom extends Room {
 
   override onLeave(client: Client): void {
     this.deps.service.left(client.sessionId);
+  }
+
+  /**
+   * A hook or a message handler threw (stage 14): logged and reported, refusals aside. onJoin logs its own
+   * failures (with who could not join) before Colyseus hands them here too.
+   */
+  override onUncaughtException(exception: RoomException, method: RoomMethodName): void {
+    if (method === 'onJoin') return;
+    logRoomException(this.deps.log, '[matchmaking]', exception, method);
   }
 
   private sendTo(client: Client, message: MatchmakingServerMessage): void {

@@ -152,8 +152,8 @@ export function HudSection() {
                   size={space[8]}
                   tint={paletteAt(m.colorIndex).ring}
                   remainingMs={m.activity.remainingMs}
+                  expiresAt={m.activity.expiresAt}
                   totalMs={m.activity.totalMs}
-                  paused={m.activity.paused}
                   seconds={m.activity.secondsLeft}
                 />
               </Specimen>

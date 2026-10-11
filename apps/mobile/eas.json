@@ -6,16 +6,42 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "environment": "development"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "environment": "preview",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SERVER_HOST": "sudoku-fight-staging.fly.dev",
+        "EXPO_PUBLIC_SERVER_PORT": "443",
+        "EXPO_PUBLIC_SERVER_SECURE": "true"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "distribution": "store",
+      "environment": "production",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_SERVER_HOST": "sudoku-fight-prod.fly.dev",
+        "EXPO_PUBLIC_SERVER_PORT": "443",
+        "EXPO_PUBLIC_SERVER_SECURE": "true"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      },
+      "ios": {}
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -9,6 +9,7 @@ import { easing, NEVER_REDUCE } from './anim';
 import type { LeadModel } from './cardModel';
 import { signedText } from './format';
 import { metrics, paletteAt } from './metrics';
+import { sameData, sameProps, sameStyle } from './sameProps';
 import { SeatGlyph } from './SeatGlyph';
 import { type Gender, leadLabel } from './wording';
 
@@ -53,7 +54,7 @@ function Spacer({ share, reduce }: { share: number; reduce: boolean }) {
  * my card (the start edge). 3–4 players: by place, and the tag adds the leader's shape. The row follows the
  * layout direction, so it mirrors in English by itself.
  */
-export function LeadBar({ model, gender, style, testID }: LeadBarProps) {
+export const LeadBar = memo(function LeadBar({ model, gender, style, testID }: LeadBarProps) {
   const { t } = useTranslation('player');
   const reduce = useReduceMotion();
   const leader = model.leader;
@@ -91,6 +92,11 @@ export function LeadBar({ model, gender, style, testID }: LeadBarProps) {
       </View>
     </View>
   );
+}, sameLeadBar);
+
+/** The screen renders 4 times a second; the bar only when its model (by content) or its look changed. */
+function sameLeadBar(a: LeadBarProps, b: LeadBarProps): boolean {
+  return sameProps(a, b, { model: sameData, style: sameStyle });
 }
 
 const styles = StyleSheet.create({

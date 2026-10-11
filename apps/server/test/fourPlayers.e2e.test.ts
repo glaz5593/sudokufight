@@ -20,7 +20,7 @@
  */
 import type { AddressInfo } from 'node:net';
 
-import { eloChanges, type GameType } from '@sudoku-fight/engine';
+import { eloChanges, eloPairs, type GameType } from '@sudoku-fight/engine';
 import { MATCH_RANGE, type QueueKey } from '@sudoku-fight/protocol';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
@@ -268,6 +268,34 @@ describe('a rated game of 4 (work plan stage 10, "סיום")', () => {
     expect(deltaOf(d)).toBe(-11);
     expect(deltaOf(a) + deltaOf(b)).toBe(43);
     expect(formula.every((x) => x.provisional)).toBe(true);
+
+    // Results-4P: the change against each opponent came to the phones with the result, as the engine split
+    // it (eloPairs over the same seats), each player's pairs adding up to their change.
+    const pairs = final.result!.ratingPairs!;
+    expect(pairs).toHaveLength(4);
+    // In the ranking's order, as the engine feeds them.
+    const split = eloPairs(
+      ranking.map((r) => {
+        const x = seats.find((seat) => seat.userId === r.playerId)!;
+        return {
+          id: x.userId!,
+          rating: x.ratingBefore!,
+          games: 0,
+          place: x.place!,
+          abandoned: x.status === 'abandoned',
+        };
+      }),
+    );
+    for (const mine of pairs) {
+      expect(mine).toEqual(split.find((x) => x.playerId === mine.playerId));
+      expect(mine.pairs).toHaveLength(3);
+      const tenths = mine.pairs.reduce((sum, p) => sum + Math.round(p.delta * 10), 0);
+      expect([mine.playerId, tenths]).toEqual([
+        mine.playerId,
+        formula.find((x) => x.playerId === mine.playerId)!.delta * 10,
+      ]);
+    }
+    expect(ben.state!.result!.ratingPairs).toEqual(pairs);
   }, 45_000);
 });
 

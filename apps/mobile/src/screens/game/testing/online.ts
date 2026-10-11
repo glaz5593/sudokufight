@@ -1,7 +1,7 @@
 /* Test-only: an online session (OnlineSession over the net tests' fake server) for the game screen's tests. */
 import { act } from '@testing-library/react-native';
 
-import { OnlineSession } from '../../../game/onlineSession';
+import { type OnlineProfiles, OnlineSession } from '../../../game/onlineSession';
 import { elapse, FakeTable, type FakeTableOptions } from '../../../net/testing/fakeServer';
 
 export { CODE, ME, OPP } from '../../../net/testing/fakeServer';
@@ -13,20 +13,27 @@ export interface OnlineGame {
 }
 
 /** A session that created the fake room (it is in the lobby once `table.lobby()` arrives). */
-export function onlineSession(o: FakeTableOptions = {}): OnlineGame {
+export function onlineSession(o: FakeTableOptions = {}, profiles: OnlineProfiles | null = null): OnlineGame {
   const table = new FakeTable(o);
   const tracked: OnlineGame['tracked'] = [];
   const session = new OnlineSession({
     host: table.host,
     request: { kind: 'create', options: { gameType: 'fast', playerCount: 2 } },
     track: (name, props) => tracked.push({ name, props }),
+    profiles,
   });
   return { table, session, tracked };
 }
 
-/** A session whose game has started: in the room, snapshot and start received, the clock synced. */
-export async function liveOnlineSession(o: FakeTableOptions = {}): Promise<OnlineGame> {
-  const game = onlineSession(o);
+/**
+ * A session whose game has started: in the room, snapshot and start received, the clock synced. `profiles`:
+ * the other players' public profiles, as a ranked match's "found" gives them.
+ */
+export async function liveOnlineSession(
+  o: FakeTableOptions = {},
+  profiles: OnlineProfiles | null = null,
+): Promise<OnlineGame> {
+  const game = onlineSession(o, profiles);
   await game.session.ready;
   game.table.lobby();
   game.table.startGame();

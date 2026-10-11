@@ -157,16 +157,16 @@ describe('GameScreen (solo practice)', () => {
       'accessibilityLabel',
       `${cellName(a)}, ${answerIn(puzzle, a)}, נפתרה על ידיך`,
     );
-    expect(score()).toHaveTextContent('0');
+    expect(score()).toHaveAnimatedProps({ text: '0' });
     await frames(650);
-    expect(score()).toHaveTextContent('0');
+    expect(score()).toHaveAnimatedProps({ text: '0' });
     expect(feedback.cueCountUp).not.toHaveBeenCalled();
 
     await frames(50);
     expect(feedback.cueCountUp).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('solo-hud-delta', hidden)).toHaveTextContent(signedText(points));
     await frames(700);
-    expect(score()).toHaveTextContent(formatScore(points));
+    expect(score()).toHaveAnimatedProps({ text: formatScore(points) });
     expect(screen.queryByTestId(`flight-${seq}`, hidden)).toBeNull();
     expect(screen.getByLabelText(`אני · ${formatScore(points)} נקודות · אין טעויות`)).toBeOnTheScreen();
     expect(screen.getByTestId('game-live')).toHaveTextContent(
@@ -194,7 +194,7 @@ describe('GameScreen (solo practice)', () => {
     expect(screen.getByTestId(`flight-${seq}`, hidden)).toHaveTextContent(signedText(-1));
 
     await frames(1_500);
-    expect(score()).toHaveTextContent(scoreText(-1));
+    expect(score()).toHaveAnimatedProps({ text: scoreText(-1) });
     expect(screen.getByTestId('solo-hud-delta', hidden)).toHaveTextContent(signedText(-1));
     expect(screen.getByTestId('mistakes', hidden)).toHaveTextContent('1 טעות');
     expect(feedback.cueCountUp).not.toHaveBeenCalled(); // count ticks are for gains only
@@ -211,7 +211,9 @@ describe('GameScreen (solo practice)', () => {
     await press(`key-${answerIn(puzzle, a)}`);
     const points = myScore(session);
     expect(screen.queryByTestId(/^flight-\d+$/, hidden)).toBeNull();
-    expect(score()).toHaveTextContent(formatScore(points));
+    // The UI thread shows it on its next frame: the whole score, no count.
+    await frames(16, 16);
+    expect(score()).toHaveAnimatedProps({ text: formatScore(points) });
     expect(screen.getByTestId('solo-hud-delta', hidden)).toHaveTextContent(signedText(points));
     expect(cues()).toEqual(['cellSelect', 'correct']);
   });

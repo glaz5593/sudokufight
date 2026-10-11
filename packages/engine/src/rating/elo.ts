@@ -58,21 +58,93 @@ export interface RatingChange {
 export const expectedScore = (rating: number, opponent: number): number =>
   1 / (1 + 10 ** ((opponent - rating) / 400));
 
+/** One pair's exact (unrounded) part of `me`'s change: K_pair × (S − E) against `opp`. */
+function pairPart(me: EloPlayer, opp: EloPlayer, n: number, o: EloOptions): number {
+  const provisional = me.games < o.provisionalGames;
+  const kPair = (o.k / Math.max(1, n - 1)) * (provisional ? o.provisionalFactor : 1);
+  let s = me.place < opp.place ? 1 : me.place === opp.place ? 0.5 : 0;
+  // [D8] is about a 2-player game won by abandonment.
+  if (s === 1 && opp.abandoned && n === 2) s = o.abandonWinScore;
+  return kPair * (s - expectedScore(me.rating, opp.rating));
+}
+
 export function eloChanges(players: readonly EloPlayer[], options: Partial<EloOptions> = {}): RatingChange[] {
   const o = { ...DEFAULT_ELO, ...options };
   const n = players.length;
   return players.map((me) => {
     const provisional = me.games < o.provisionalGames;
-    const kPair = (o.k / Math.max(1, n - 1)) * (provisional ? o.provisionalFactor : 1);
     let sum = 0;
-    for (const opp of players) {
-      if (opp === me) continue;
-      let s = me.place < opp.place ? 1 : me.place === opp.place ? 0.5 : 0;
-      // [D8] is about a 2-player game won by abandonment.
-      if (s === 1 && opp.abandoned && n === 2) s = o.abandonWinScore;
-      sum += kPair * (s - expectedScore(me.rating, opp.rating));
-    }
+    for (const opp of players) if (opp !== me) sum += pairPart(me, opp, n, o);
     const delta = Math.round(sum);
     return { playerId: me.id, before: me.rating, after: me.rating + delta, delta, provisional };
+  });
+}
+
+/** One opponent's share of a player's rating change (Results-4P: "מחושב מול כל יריב בנפרד"). */
+export interface RatingPair {
+  opponentId: string;
+  /** In tenths of a point; a player's pairs add up to their (whole) Elo change exactly. */
+  delta: number;
+}
+
+/** A player's rating change split by opponent. */
+export interface RatingPairs {
+  playerId: string;
+  /** Every opponent, in the order the players were given. */
+  pairs: RatingPair[];
+  /**
+   * Rating points lost on top of the pairs (rules.rating.abandonPenalty for an abandoning player; else 0):
+   * Σ pairs − penalty = the RatingChange's delta.
+   */
+  penalty: number;
+}
+
+/**
+ * Tenths that add up to `total` tenths, each as close as it can be to its exact value: start from each exact
+ * value rounded down, then hand out (or take back) one tenth at a time where it is most owed. Deterministic:
+ * equal claims go to the earlier pair.
+ */
+function apportionTenths(exact: readonly number[], total: number): number[] {
+  const tenths = exact.map((x) => Math.floor(x));
+  let sum = tenths.reduce((a, b) => a + b, 0);
+  const pick = (better: (owed: number, best: number) => boolean): number => {
+    let at = 0;
+    for (let i = 1; i < tenths.length; i++)
+      if (better(exact[i]! - tenths[i]!, exact[at]! - tenths[at]!)) at = i;
+    return at;
+  };
+  while (sum < total) {
+    tenths[pick((owed, best) => owed > best + 1e-9)]! += 1;
+    sum++;
+  }
+  while (sum > total) {
+    tenths[pick((owed, best) => owed < best - 1e-9)]! -= 1;
+    sum--;
+  }
+  return tenths;
+}
+
+/**
+ * Each player's change split by opponent (spec §11.2: every pair is a mini-match), consistent with
+ * eloChanges for the same input: K_pair × (S − E) per opponent, in tenths, apportioned so that a player's
+ * pairs add up exactly to their eloChanges delta (the exact parts add up to the delta before rounding; a pair
+ * moves at most a few tenths from its own exact part). Two players: the one pair is the whole change.
+ */
+export function eloPairs(players: readonly EloPlayer[], options: Partial<EloOptions> = {}): RatingPairs[] {
+  const o = { ...DEFAULT_ELO, ...options };
+  const n = players.length;
+  return players.map((me) => {
+    const opponents = players.filter((opp) => opp !== me);
+    const parts = opponents.map((opp) => pairPart(me, opp, n, o));
+    const delta = Math.round(parts.reduce((a, b) => a + b, 0));
+    const tenths = apportionTenths(
+      parts.map((x) => x * 10),
+      delta * 10,
+    );
+    return {
+      playerId: me.id,
+      pairs: opponents.map((opp, k) => ({ opponentId: opp.id, delta: (tenths[k] || 0) / 10 })),
+      penalty: 0,
+    };
   });
 }

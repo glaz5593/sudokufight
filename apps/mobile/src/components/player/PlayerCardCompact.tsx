@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -7,7 +8,7 @@ import { color, radius, text, tokens } from '../../theme';
 import { ActivityLine } from './ActivityLine';
 import { Avatar } from './Avatar';
 import { HitChip, RankBadge, ReconnectPill } from './Badges';
-import type { CardModel, MistakePips } from './cardModel';
+import { type CardModel, type MistakePips, sameCard } from './cardModel';
 import { CardIconButton } from './CardIconButton';
 import { cardOpacity, DropZone, useCardOpacity } from './DropZone';
 import { Flag } from './Flag';
@@ -16,6 +17,7 @@ import { InterferenceButton } from './InterferenceButton';
 import { metrics, paletteAt } from './metrics';
 import type { PlayerCardActions } from './PlayerCard';
 import { Rating } from './Rating';
+import { sameProps, sameStyle } from './sameProps';
 import { DeltaLabel, type ScoreDelta, ScoreNumber } from './Score';
 import { SeatGlyph } from './SeatGlyph';
 import { cardLabel, displayName, type Gender } from './wording';
@@ -46,7 +48,7 @@ const c = metrics.compact;
  * rating, score with penalty pips, activity with the lock ring, and an action strip (⚡ for opponents,
  * surrender and reactions for me). Cards keep their seat order; only the place badge changes.
  */
-export function PlayerCardCompact({
+export const PlayerCardCompact = memo(function PlayerCardCompact({
   model,
   avatarId,
   country,
@@ -174,6 +176,11 @@ export function PlayerCardCompact({
       </Animated.View>
     </DropZone>
   );
+}, sameCompactCard);
+
+/** Renders only when what the card shows changed (sameCard), not on each re-read of the time. */
+function sameCompactCard(a: PlayerCardCompactProps, b: PlayerCardCompactProps): boolean {
+  return sameProps(a, b, { model: sameCard, style: sameStyle });
 }
 
 /** The last penalties in small red pips, "×n" first from five mistakes (components.md §7.2). */

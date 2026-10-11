@@ -25,12 +25,14 @@ import {
   supportCodeOf,
 } from '../../components/ui';
 import { color, radius, size, space, text, tokens } from '../../theme';
+import { TokenArt } from '../game/arsenal/TokenArt';
 import { ScreenHeader, SectionLabel } from '../home/parts';
 import { Note, Panel, ProgressBar } from '../progress/parts';
 import {
   dateText,
   deltaText,
   levelProgressOf,
+  monthYearText,
   type ProgressT,
   type RatingTile,
   ratingLayout,
@@ -195,9 +197,15 @@ export function PlayerCardScreen({
   const leagueWords = card.league
     ? t('player:league.name', { league: t(`player:league.${card.league}`) })
     : t('common.provisional');
+  const joined =
+    card.joinedAt === null
+      ? null
+      : t('card.joinedSince', { date: monthYearText(card.joinedAt, i18n.language) });
+  const favorite = card.favoriteInterference;
   const identityLabel = [
     mine ? t('card.meLabel', { name: card.displayName }) : card.displayName,
     country,
+    joined,
     leagueWords,
     t('common.level', { level: card.level }),
   ]
@@ -236,6 +244,11 @@ export function PlayerCardScreen({
                     {country}
                   </Text>
                 </View>
+              ) : null}
+              {joined ? (
+                <Text style={[text('caption'), styles.muted]} numberOfLines={1} testID="player-card-joined">
+                  {joined}
+                </Text>
               ) : null}
               {card.league ? (
                 <LeagueBadge league={card.league} level={card.level} variant="icon" />
@@ -302,6 +315,35 @@ export function PlayerCardScreen({
             </View>
           ))}
         </View>
+        {favorite ? (
+          <View
+            style={styles.favorite}
+            accessible
+            accessibilityLabel={t('card.favorite.label', {
+              kind: t(`game:arsenal.kind.${favorite.kind}`),
+              count: favorite.count,
+            })}
+            testID="player-card-favorite"
+          >
+            <View style={styles.favoriteArt}>
+              <TokenArt kind={favorite.kind} size={FAVORITE_ART} still testID="player-card-favorite-art" />
+            </View>
+            <View style={styles.grow}>
+              <Text style={[text('micro'), styles.muted]} numberOfLines={1}>
+                {t('card.favorite.title')}
+              </Text>
+              <Text style={[text('h2'), styles.strong]} numberOfLines={1}>
+                {t(`game:arsenal.kind.${favorite.kind}`)}
+              </Text>
+            </View>
+            <View style={styles.favoriteCount}>
+              <Text style={[text('scoreCompact'), styles.strong]}>{favorite.count}</Text>
+              <Text style={[text('micro'), styles.muted]}>
+                {t('card.favorite.uses', { count: favorite.count })}
+              </Text>
+            </View>
+          </View>
+        ) : null}
 
         <SectionLabel
           title={t('card.recentTitleSection')}
@@ -503,6 +545,8 @@ function RecentResults({
 }
 
 const OUTCOME_COLOR = { win: color.success, loss: color.danger, tie: color.textMuted } as const;
+/** The favourite interference's picture (Profile.dc.html: 40 in its tile), from the spacing scale. */
+const FAVORITE_ART = space[12];
 const FORM = space[10];
 const STRIPE = space[2];
 
@@ -539,6 +583,24 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     backgroundColor: color.surface,
   },
+  favorite: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[6],
+    minHeight: size.listRow,
+    paddingHorizontal: space[6],
+    paddingVertical: space[3],
+    borderRadius: radius.lg,
+    backgroundColor: color.surface,
+  },
+  favoriteArt: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.button,
+    backgroundColor: color.surface2,
+    padding: space[2],
+  },
+  favoriteCount: { alignItems: 'center', gap: space[1] },
   recent: { gap: space[4] },
   form: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
   formChip: {

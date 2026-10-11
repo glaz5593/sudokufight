@@ -1,4 +1,4 @@
-import { eloChanges, type RatingChange } from '../rating';
+import { eloChanges, type EloPlayer, eloPairs, type RatingChange, type RatingPairs } from '../rating';
 import type { Award, EndReason, GameResult, GameState, PlayerState, PlayerStats, RankEntry } from './types';
 
 /**
@@ -48,28 +48,48 @@ export function rankPlayers(state: GameState): RankEntry[] {
  * default).
  */
 export function ratingChangesFor(state: GameState, ranking: RankEntry[]): RatingChange[] {
-  const { mode, players, rules } = state.config;
-  if (mode !== 'ranked' || players.length < 2 || players.some((p) => p.rating === undefined)) return [];
-  const changes = eloChanges(
-    ranking.map((r) => {
-      const info = players[r.seat]!;
-      return {
-        id: r.playerId,
-        rating: info.rating!,
-        games: info.ratedGames ?? 0,
-        place: r.place,
-        abandoned: r.status === 'abandoned',
-      };
-    }),
-    rules.rating,
-  );
-  const penalty = rules.rating.abandonPenalty;
+  const input = eloInput(state, ranking);
+  if (!input) return [];
+  const changes = eloChanges(input, state.config.rules.rating);
+  const penalty = state.config.rules.rating.abandonPenalty;
   if (!penalty) return changes;
   return changes.map((c) => {
     if (ranking.find((r) => r.playerId === c.playerId)?.status !== 'abandoned') return c;
     const delta = c.delta - penalty;
     return { ...c, delta, after: c.before + delta };
   });
+}
+
+/** The Elo input of a game whose rating moves (ranked, every player with a rating), by place; else null. */
+function eloInput(state: GameState, ranking: RankEntry[]): EloPlayer[] | null {
+  const { mode, players } = state.config;
+  if (mode !== 'ranked' || players.length < 2 || players.some((p) => p.rating === undefined)) return null;
+  return ranking.map((r) => {
+    const info = players[r.seat]!;
+    return {
+      id: r.playerId,
+      rating: info.rating!,
+      games: info.ratedGames ?? 0,
+      place: r.place,
+      abandoned: r.status === 'abandoned',
+    };
+  });
+}
+
+/**
+ * Each player's rating change of ratingChangesFor, split by opponent (Results-4P: "מחושב מול כל יריב
+ * בנפרד"): the rating module's eloPairs over the same input, plus an abandoning player's penalty, so that a
+ * player's Σ pairs − penalty is their RatingChange delta. Empty when ratingChangesFor is.
+ */
+export function ratingPairsFor(state: GameState, ranking: RankEntry[]): RatingPairs[] {
+  const input = eloInput(state, ranking);
+  if (!input) return [];
+  const pairs = eloPairs(input, state.config.rules.rating);
+  const penalty = state.config.rules.rating.abandonPenalty;
+  if (!penalty) return pairs;
+  return pairs.map((p) =>
+    ranking.find((r) => r.playerId === p.playerId)?.status === 'abandoned' ? { ...p, penalty } : p,
+  );
 }
 
 export function statsFor(state: GameState): PlayerStats[] {
@@ -144,11 +164,14 @@ export function awardsFor(state: GameState, ranking: RankEntry[]): Award[] {
 
 export function gameResult(state: GameState, reason: EndReason, at: number): GameResult {
   const ranking = rankPlayers(state);
+  const ratingChanges = ratingChangesFor(state, ranking);
   return {
     reason,
     durationMs: Math.max(0, at - (state.startedAt ?? at)),
     ranking,
-    ratingChanges: ratingChangesFor(state, ranking),
+    ratingChanges,
+    // Only when a rating moved, so a practice's result keeps its shape.
+    ...(ratingChanges.length > 0 ? { ratingPairs: ratingPairsFor(state, ranking) } : null),
     awards: awardsFor(state, ranking),
     stats: statsFor(state),
   };

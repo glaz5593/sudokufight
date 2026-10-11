@@ -1139,6 +1139,7 @@ export function GameScreen({
           onPractice={onPractice}
           freezeTop={hudBottom}
           avatars={avatars}
+          countries={countries}
           myId={me.id}
         />
       ) : null}
