@@ -23,8 +23,14 @@ const MOBILE = ['apps/mobile/**/*.{js,jsx,ts,tsx}'];
 const ENGINE_SRC = ['packages/engine/src/**/*.ts'];
 const ENGINE_EXEMPT = ['packages/engine/src/**/*.test.ts', 'packages/engine/src/testing/**'];
 
+const AVATARS_SRC = ['packages/avatars/src/**/*.ts'];
+const AVATARS_EXEMPT = ['packages/avatars/src/**/*.test.ts', 'packages/avatars/src/testing/**'];
+
 const PURE =
   'The engine is pure TypeScript: no platform, UI, network or protocol imports (CLAUDE.md, spec §17).';
+const AVATARS_PURE =
+  'Avatars are pure TypeScript that returns SVG strings: no React, DOM, platform or Node imports, so the app, ' +
+  'the admin site and the preview page share them (docs/avatars/STYLE.md).';
 const CLOCK =
   'Inject time (now / Clock) and randomness (Rng): the engine never reads the wall clock or Math.random.';
 
@@ -213,6 +219,62 @@ module.exports = defineConfig([
         { selector: "NewExpression[callee.name='Date'][arguments.length=0]", message: CLOCK },
         { selector: "CallExpression[callee.name='Date']", message: CLOCK },
         { selector: 'ImportExpression', message: `${PURE} (no dynamic import)` },
+      ],
+    },
+  },
+
+  // ---- packages/avatars/src: data and SVG strings, the same output everywhere ----
+  {
+    files: AVATARS_SRC,
+    ignores: AVATARS_EXEMPT,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: builtinModules.map((name) => ({ name, message: AVATARS_PURE })),
+          patterns: [
+            {
+              group: [
+                'node:*',
+                'react',
+                'react/*',
+                'react-*',
+                '@react-native/*',
+                'expo',
+                'expo/*',
+                'expo-*',
+                '@expo/*',
+                '@shopify/*',
+                '@sudoku-fight/*',
+              ],
+              message: AVATARS_PURE,
+            },
+          ],
+        },
+      ],
+      'no-restricted-globals': [
+        'error',
+        ...[
+          'window',
+          'document',
+          'navigator',
+          'self',
+          'globalThis',
+          'process',
+          'require',
+          'console',
+          'setTimeout',
+          'setInterval',
+          'requestAnimationFrame',
+          'performance',
+          'structuredClone',
+        ].map((name) => ({ name, message: `${AVATARS_PURE} (no host globals)` })),
+      ],
+      'no-restricted-properties': [
+        'error',
+        { object: 'Math', property: 'random', message: 'A render must be the same string every time.' },
+        { object: 'Date', property: 'now', message: 'A render must be the same string every time.' },
+        { property: 'toSorted', message: 'Not in Hermes (React Native 0.86): use slice().sort().' },
       ],
     },
   },

@@ -1,0 +1,14 @@
+{
+  "name": "@sudoku-fight/avatars",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Our own animated avatars: data plus pure functions that return SVG strings, shared by the app, the admin site and the preview page.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "test": "jest --config ../../jest.config.js --selectProjects avatars",
+    "typecheck": "tsc -p tsconfig.src.json && tsc -p tsconfig.test.json && tsc -p tsconfig.scripts.json",
+    "preview": "tsx scripts/preview.ts",
+    "sheet": "tsx scripts/sheet.ts"
+  }
+}

@@ -3,6 +3,7 @@
   "references": [
     { "path": "./packages/engine" },
     { "path": "./packages/protocol" },
+    { "path": "./packages/avatars" },
     { "path": "./apps/server" },
     { "path": "./apps/mobile" },
     { "path": "./apps/admin" }

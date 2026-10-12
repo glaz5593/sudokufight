@@ -56,6 +56,7 @@ module.exports = {
   projects: [
     engine,
     tsProject('protocol', 'packages/protocol', 'tsconfig.test.json'),
+    tsProject('avatars', 'packages/avatars', 'tsconfig.test.json'),
     server,
     admin,
     // jest-expo, configured in apps/mobile/jest.config.js
