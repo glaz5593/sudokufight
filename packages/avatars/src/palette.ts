@@ -115,6 +115,12 @@ export const FACE = {
   blush: '#ff8f86',
   tear: '#8fd3ff',
   sparkle: '#fff4b8',
+  /** The comic anger mark (angry). */
+  anger: '#e5263d',
+  /** The sleepy z's. */
+  zzz: '#4f63d8',
+  /** The white edge under the comic marks (anger, z's), so they read on any surface. */
+  markEdge: '#ffffff',
 } as const;
 
 // ---------------------------------------------------------------------------------------------------------

@@ -9,13 +9,32 @@
  * works on every avatar: people, animals and objects alike.
  */
 
-export type AvatarKind = 'person' | 'animal' | 'object';
-export const AVATAR_KINDS: readonly AvatarKind[] = ['person', 'animal', 'object'];
-
 export interface Localized {
   he: string;
   en: string;
 }
+
+/**
+ * What a character is, for the picker's filters. In this order the picker groups them.
+ * - `object`: things from the house, the office and the toy box (a kettle, a stapler, a cassette).
+ * - `food`: things you eat or drink (a toast, an egg, a lemon).
+ * - `nature`: weather, sky and earth (a rain cloud, the moon, a volcano, a rock).
+ * - `creature`: made-up beings (a cyclops, an alien, a ghost, a slime).
+ * - `symbol`: letters, digits, math signs and sudoku things (the 8, the letter A, a question mark).
+ */
+export const AVATAR_KINDS = ['person', 'animal', 'object', 'food', 'nature', 'creature', 'symbol'] as const;
+export type AvatarKind = (typeof AVATAR_KINDS)[number];
+
+/** Kind names for the UI: one character (a badge) and the filter (a group). */
+export const KIND_NAMES: Record<AvatarKind, { one: Localized; many: Localized }> = {
+  person: { one: { he: 'אדם', en: 'Person' }, many: { he: 'אנשים', en: 'People' } },
+  animal: { one: { he: 'חיה', en: 'Animal' }, many: { he: 'חיות', en: 'Animals' } },
+  object: { one: { he: 'חפץ', en: 'Object' }, many: { he: 'חפצים', en: 'Objects' } },
+  food: { one: { he: 'מאכל', en: 'Food' }, many: { he: 'אוכל', en: 'Food' } },
+  nature: { one: { he: 'טבע', en: 'Nature' }, many: { he: 'טבע', en: 'Nature' } },
+  creature: { one: { he: 'יצור', en: 'Creature' }, many: { he: 'יצורים', en: 'Creatures' } },
+  symbol: { one: { he: 'סימן', en: 'Symbol' }, many: { he: 'סימנים', en: 'Symbols' } },
+};
 
 export interface Point {
   x: number;
@@ -37,6 +56,8 @@ export const EXPRESSIONS = [
   'sad',
   'confused',
   'dizzy',
+  'angry',
+  'sleepy',
 ] as const;
 export type Expression = (typeof EXPRESSIONS)[number];
 
@@ -49,6 +70,8 @@ export const EXPRESSION_NAMES: Record<Expression, Localized> = {
   sad: { he: 'עצב', en: 'Sad' },
   confused: { he: 'בלבול', en: 'Confused' },
   dizzy: { he: 'סחרחורת', en: 'Dizzy' },
+  angry: { he: 'כעס', en: 'Angry' },
+  sleepy: { he: 'עייפות', en: 'Sleepy' },
 };
 
 /**
@@ -61,11 +84,9 @@ export const EXPRESSION_NAMES: Record<Expression, Localized> = {
 export const EYE_STYLES = ['dot', 'round', 'oval', 'button'] as const;
 export type EyeStyle = (typeof EYE_STYLES)[number];
 
-export interface EyesDef {
-  /** Eye centres (the viewer's left and right eye). */
-  left: Point;
-  right: Point;
-  /** Eye radius: half the eye's height. People 3.4-4.2, animals and objects up to 8. */
+/** What every eye shares, however many there are. */
+export interface EyeLook {
+  /** Eye radius: half the eye's height. People 3.4-4.2, animals and objects up to 8, one big eye up to 14. */
   r: number;
   style: EyeStyle;
   /** Pupil / dot colour. Default: `face.ink`. */
@@ -73,6 +94,43 @@ export interface EyesDef {
   /** Eyeball colour for `round` and `oval`. Default: white. */
   white?: string;
 }
+
+/** Two eyes: the default (`count` may be left out). */
+export interface TwoEyes extends EyeLook {
+  count?: 2;
+  /** Eye centres (the viewer's left and right eye). */
+  left: Point;
+  right: Point;
+  /**
+   * An eye the art covers (a pirate's patch): the rig does not draw it, and the other eye carries every
+   * expression alone (its wink is a sly half-closed squint). Brows, cheeks and extras still use both places.
+   */
+  covered?: 'left' | 'right';
+}
+
+/**
+ * One eye in the middle: a cyclops, the eye with legs, a porthole. A lid on it is shaped from both sides (a
+ * V when angry, a peak when sad), and its one brow is a unibrow that bends the same way.
+ */
+export interface OneEye extends EyeLook {
+  count: 1;
+  middle: Point;
+}
+
+/**
+ * Three eyes: `left` and `right` as for two, plus `middle` (an alien), usually a little higher. The middle
+ * eye has no brow; it stays open when the outer two close for a wink.
+ */
+export interface ThreeEyes extends EyeLook {
+  count: 3;
+  left: Point;
+  right: Point;
+  middle: Point;
+  /** The middle eye's radius, as a factor of `r`. Default 1. */
+  middleScale?: number;
+}
+
+export type EyesDef = TwoEyes | OneEye | ThreeEyes;
 
 export interface BrowsDef {
   /** Distance from the eye centre to the brow, in eye radii. Default 1.8. */
@@ -106,16 +164,30 @@ export interface CheeksDef {
   size?: number;
 }
 
+/**
+ * Art that changes with the expression, drawn by you instead of the rig: a calculator's display that shows
+ * its own mouth, a lid over a giant eyeball, lava on a volcano only when it is angry. `default` serves every
+ * expression without its own entry. It is drawn in the face group, over the rig's eyes, brows and mouth and
+ * under its extras, and it changes whenever the face changes. Same rules as `layers` (no ids, no scripts).
+ */
+export type FaceArt = { default: string } & Partial<Record<Expression, string>>;
+
 export interface FaceDef {
   /** The colour of the face's lines: dots, brows, mouth. Must contrast with the skin, fur or object. */
   ink: string;
   eyes: EyesDef;
-  /** `false`: no brows (some animals). */
+  /** `false`: no brows (some animals, a robot, the eye with legs). */
   brows: BrowsDef | false;
-  mouth: MouthDef;
+  /**
+   * `false`: the rig draws no mouth; your art draws it (`art`), or the character has none. The expression
+   * then reads from the eyes, brows and extras only: check every one of them.
+   */
+  mouth: MouthDef | false;
   cheeks?: CheeksDef;
   /** Where dizzy stars circle: just above the head. Default: above the eyes. */
   halo?: Point;
+  /** Your own per-expression art in the face (see FaceArt). */
+  art?: FaceArt;
 }
 
 export interface AvatarLayers {
@@ -123,6 +195,77 @@ export interface AvatarLayers {
   back: string;
   /** SVG markup over the face: glasses, a hat brim, steam. Optional. */
   front?: string;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Gimmicks (src/gimmick.ts): a character's own moving part
+
+/**
+ * What starts a gimmick: an expression (while it shows), a motion (while it plays), or `idle`. Not `neutral`
+ * and not `blink`: those show everywhere, grids included. A quiet loop for the big stage view is `idle`.
+ */
+export type GimmickTrigger = Exclude<Expression, 'neutral'> | Exclude<MotionId, 'blink'> | 'idle';
+
+/** A gimmick's pose: a transform around the anim's `origin`, and an opacity. */
+export interface GimmickPose extends Pose {
+  opacity: number;
+}
+
+export interface GimmickKeyframe extends Partial<GimmickPose> {
+  /** Time, 0-1 of the anim's duration. */
+  t: number;
+  /** Curve from this keyframe to the next one. Default: the anim's `ease`. */
+  ease?: EasingName;
+}
+
+export interface GimmickAnim {
+  /**
+   * When it plays. An expression: while that face shows (also when a motion shows it). A motion: with that
+   * motion (the one actually played, after squash falls back). `idle`: a subtle loop, only on a big stage
+   * view (never in a grid, never under 48 px).
+   */
+  trigger: readonly GimmickTrigger[];
+  /** Sorted by t, from t = 0 to t = 1. A missing field is the identity (0; 1 for scale and opacity). */
+  keyframes: readonly GimmickKeyframe[];
+  durationMs: number;
+  /** Repeat while the trigger lasts. Otherwise it plays once and holds its last pose until the trigger ends. */
+  loop?: boolean;
+  /** Wait this long after the trigger before starting (stagger three steam puffs). Default 0. */
+  delayMs?: number;
+  /** Default curve between keyframes. Default 'loop' (ease in and out). */
+  ease?: EasingName;
+  /** The fixed point of rotate and scale, in canvas units: a lid's hinge, a drum's axle, a balloon's knot. */
+  origin: Point;
+}
+
+/** A gimmick's depth (GimmickDef.z), from the back to the front. */
+export const GIMMICK_DEPTHS = ['behind', 'back', 'face', 'front'] as const;
+export type GimmickZ = (typeof GIMMICK_DEPTHS)[number];
+
+/**
+ * A moving part of one character, declared as data: the cuckoo's door, the kettle's steam, the washing
+ * machine's drum. Rendered as `<g class="sfa-gimmick sfa-g-{id}">` inside the body (so motions carry it), and
+ * played by CSS in the preview (gimmickCss) and by Reanimated in the app (gimmick.ts explains the contract).
+ * With reduced motion, and under 48 px, a gimmick stays in its rest pose.
+ */
+export interface GimmickDef {
+  /** Unique within the avatar: lowercase letters, digits and dashes. */
+  id: string;
+  /** SVG markup in the 100 x 100 canvas, drawn in its rest pose. Same rules as `layers`. */
+  markup: string;
+  /**
+   * Where the group sits, inside the body:
+   * - `behind`: under `layers.back`, so it comes out of the object (a toast from the toaster, a cuckoo);
+   * - `back`: over `layers.back`, under the face (a drum behind a porthole face);
+   * - `face`: it holds the face: its markup is drawn under the face, and the face moves with it (a balloon
+   *   that inflates, a head that pops out of a box). At most one per avatar;
+   * - `front` (default): over the face and `layers.front` (steam, drops, sparks, a lid).
+   */
+  z?: GimmickZ;
+  /** `hidden`: invisible until it plays (a drop, a spark); its keyframes fade it in. Default `shown`. */
+  rest?: 'shown' | 'hidden';
+  /** One anim, or several with different triggers (a balloon inflates when surprised and sags when sad). */
+  anim: GimmickAnim | readonly GimmickAnim[];
 }
 
 export interface AvatarDef {
@@ -147,6 +290,8 @@ export interface AvatarDef {
   squash?: boolean;
   /** Motions that suit this character best, first = favourite. The app picks reactions from these. */
   motionBias?: readonly MotionId[];
+  /** The character's own moving parts (see GimmickDef). */
+  gimmicks?: readonly GimmickDef[];
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -168,10 +313,16 @@ export type MotionId = (typeof MOTION_IDS)[number];
 /** Curves from docs/design/motion.md section 3. */
 export type EasingName = 'standard' | 'emphasized' | 'exit' | 'loop' | 'linear';
 
-/** Which group a track moves (render.ts names them). */
+/**
+ * Which group a track moves (render.ts names them): the body, the face, or the eyes. An `eyes` track moves
+ * each eye around its own centre (rig.ts eyeCentres), so three eyes at different heights blink in place.
+ */
 export type MotionTarget = 'body' | 'face' | 'eyes';
 
-/** The fixed point of a track's rotate and scale: the avatar's pivot, its base, or the eye line. */
+/**
+ * The fixed point of a track's rotate and scale: the avatar's pivot, its base, or the eyes (each eye's own
+ * centre; the eye line for two eyes on one line).
+ */
 export type MotionOrigin = 'pivot' | 'base' | 'eyes';
 
 /** A transform in viewBox units and degrees, around the track's origin. */

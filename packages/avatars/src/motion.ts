@@ -3,7 +3,9 @@
  *
  * A motion is data: tracks of keyframes (time 0-1, translate, rotate, scale, and an optional face change) for
  * three groups of the rendered SVG (render.ts): `body` (the character), `face` (the features only, for a nod)
- * and `eyes` (blink). The same data plays in two players:
+ * and `eyes` (blink: every eye's own <g class="sfa-eye">, each around its own centre, so three eyes at
+ * different heights blink in place; in the app one matrix per eye, from rig.ts eyeCentres()). The same data
+ * plays in two players:
  *
  * - CSS, for the preview page and the admin site: `motionCss()` turns every track into @keyframes. Put the
  *   class `sfa-m-{motion id}` on the <svg> to play it. Face changes need a script: `faceChanges()` lists them
@@ -35,6 +37,7 @@ import type {
   MotionId,
   MotionKeyframe,
   MotionOrigin,
+  MotionTarget,
   MotionTrack,
   Point,
   Pose,
@@ -337,16 +340,24 @@ function bezier(name: EasingName): string {
   return `cubic-bezier(${EASINGS[name].join(',')})`;
 }
 
+/** The class a track's target moves in the rendered SVG: an `eyes` track moves each eye on its own. */
+export const TARGET_CLASS: Record<MotionTarget, string> = {
+  body: 'sfa-body',
+  face: 'sfa-face',
+  eyes: 'sfa-eye',
+};
+
 /**
  * Every motion as CSS. Play one by adding `sfa-m-{id}` to the avatar's <svg> class (remove it and force a
- * reflow to replay). Transform origins come from the custom properties render.ts puts on the <svg>.
- * `scope` prefixes every selector (e.g. '.avatars-page').
+ * reflow to replay). Transform origins come from the custom properties render.ts puts on the <svg> (and the
+ * rig on each eye's group: its own `--sfa-eyes`). `scope` prefixes every selector (e.g. '.avatars-page').
  */
 export function motionCss(scope = ''): string {
   const s = scope ? `${scope} ` : '';
-  const out: string[] = [
-    `${s}.sfa .sfa-body,${s}.sfa .sfa-face,${s}.sfa .sfa-eyes{transform-box:view-box;transform-origin:var(--sfa-pivot)}`,
-  ];
+  const all = Object.values(TARGET_CLASS)
+    .map((c) => `${s}.sfa .${c}`)
+    .join(',');
+  const out: string[] = [`${all}{transform-box:view-box;transform-origin:var(--sfa-pivot)}`];
   for (const id of MOTION_IDS) {
     const m = MOTIONS[id];
     for (const tr of m.tracks) {
@@ -359,12 +370,10 @@ export function motionCss(scope = ''): string {
         .join('');
       out.push(`@keyframes ${name}{${frames}}`);
       out.push(
-        `${s}.sfa.sfa-m-${id} .sfa-${tr.target}{animation:${name} ${m.durationMs}ms both;transform-origin:var(--sfa-${tr.origin})}`,
+        `${s}.sfa.sfa-m-${id} .${TARGET_CLASS[tr.target]}{animation:${name} ${m.durationMs}ms both;transform-origin:var(--sfa-${tr.origin})}`,
       );
     }
   }
-  out.push(
-    `@media (prefers-reduced-motion:reduce){${s}.sfa .sfa-body,${s}.sfa .sfa-face,${s}.sfa .sfa-eyes{animation:none!important}}`,
-  );
+  out.push(`@media (prefers-reduced-motion:reduce){${all}{animation:none!important}}`);
   return out.join('\n');
 }

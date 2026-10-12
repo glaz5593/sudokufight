@@ -1,6 +1,9 @@
 /**
  * Objects with faces: digits, letters, things from a player's table. Each one is the whole object, standing in
  * the tile, with room around it for squash and stretch. Read docs/avatars/STYLE.md first.
+ *
+ * The first set: the digit 8 and the letter A are kind `symbol` (they filter with the digits and signs), the
+ * rest `object`. New characters go in their own files (home, office, play, food, digits, symbols…).
  */
 
 import { FACE, FUR, OBJECT, TILE } from '../palette';
@@ -29,7 +32,7 @@ const eightTile = TILE.iris;
 
 const eight: AvatarDef = {
   id: 'eight',
-  kind: 'object',
+  kind: 'symbol',
   name: { he: 'שמונה', en: 'Eight' },
   tile: eightTile,
   layers: {
@@ -79,7 +82,7 @@ const aCounterFloor = 'M48.4 22.2Q50 20 51.6 22.2L58.6 29.6Q60.2 32 57.2 32H42.8
 
 const letterA: AvatarDef = {
   id: 'letter-a',
-  kind: 'object',
+  kind: 'symbol',
   name: { he: 'אות A', en: 'Letter A' },
   tile: aTile,
   layers: {

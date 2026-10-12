@@ -10,6 +10,7 @@ import {
   poseMatrix,
   resolveMotion,
   sampleTrack,
+  TARGET_CLASS,
 } from './motion';
 import { eyeLineOf } from './render';
 import { type AvatarDef, EXPRESSIONS, MOTION_IDS, type Pose } from './types';
@@ -149,9 +150,17 @@ describe('motionCss', () => {
     for (const id of MOTION_IDS)
       for (const tr of MOTIONS[id].tracks) {
         expect(css).toContain(`@keyframes sfa-${id}-${tr.target}{`);
-        expect(css).toContain(`.sfa.sfa-m-${id} .sfa-${tr.target}{animation:sfa-${id}-${tr.target} `);
+        expect(css).toContain(
+          `.sfa.sfa-m-${id} .${TARGET_CLASS[tr.target]}{animation:sfa-${id}-${tr.target} `,
+        );
         expect(css).toContain(`transform-origin:var(--sfa-${tr.origin})`);
       }
+  });
+
+  it('blinks every eye on its own, around its own centre', () => {
+    expect(TARGET_CLASS.eyes).toBe('sfa-eye');
+    expect(css).toContain('.sfa.sfa-m-blink .sfa-eye{animation:sfa-blink-eyes ');
+    expect(css).toContain('transform-origin:var(--sfa-eyes)');
   });
 
   it('turns motion off for reduced motion', () => {

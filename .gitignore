@@ -56,3 +56,6 @@ apps/mobile/config/firebase/GoogleService-Info.plist
 # never enter git either.
 apps/mobile/credentials.json
 apps/mobile/credentials/
+
+# Claude Code personal permissions (never commit)
+.claude/settings.local.json

@@ -9,4 +9,5 @@ export * from './palette';
 export * from './rig';
 export * from './render';
 export * from './motion';
+export * from './gimmick';
 export * from './catalog';
