@@ -346,7 +346,7 @@ Staging first (D1 to D7): it's what the APK in Part E talks to. Production (D8 t
 
 ### D1. Install flyctl and log in
 
-- [ ] **D1** `fly auth whoami` prints your email
+- [x] **D1** `fly auth whoami` prints your email
 
 **What flyctl is.** Fly's command-line tool (`fly` / `flyctl`). Everything on Fly in this list is done with it; the website is only for billing and viewing.
 
@@ -374,7 +374,7 @@ Staging first (D1 to D7): it's what the APK in Part E talks to. Production (D8 t
 
 ### D2. Neon: the staging database and its connection string
 
-- [ ] **D2** Project `sudoku-fight-staging` in Frankfurt; direct connection string saved in the password manager
+- [x] **D2** Project `sudoku-fight-staging` in Frankfurt; direct connection string saved in the password manager
 
 **What you're making.** A Neon **project** is one Postgres database server with its own address and password. The **connection string** is one line that holds the address, the user name, the password and the database name: it is how the game server finds and logs in to the database, so it is a secret.
 
@@ -401,7 +401,7 @@ Staging first (D1 to D7): it's what the APK in Part E talks to. Production (D8 t
 
 ### D3. Create the Fly app for staging
 
-- [ ] **D3** `fly apps list` shows `sudoku-fight-staging`
+- [x] **D3** `fly apps list` shows `sudoku-fight-staging`
 
 **What a Fly "app" is.** A named slot on Fly with its own address (`https://<name>.fly.dev`), secrets and machines. Creating it doesn't run anything yet and costs nothing until the first deploy (D6) starts a machine.
 
@@ -421,7 +421,7 @@ fly apps list
 
 ### D4. Staging secrets (you: only the database; Claude: the rest)
 
-- [ ] **D4** `fly secrets list -a sudoku-fight-staging` shows DATABASE_URL, FIREBASE_PROJECT_ID, ADMIN_EMAILS, FIREBASE_WEB_API_KEY, FIREBASE_WEB_APP_ID, LEGAL_CONTACT_EMAIL, LEGAL_OPERATOR_NAME
+- [x] **D4** `fly secrets list -a sudoku-fight-staging` shows DATABASE_URL, FIREBASE_PROJECT_ID, ADMIN_EMAILS, FIREBASE_WEB_API_KEY, FIREBASE_WEB_APP_ID, LEGAL_CONTACT_EMAIL, LEGAL_OPERATOR_NAME
 
 **Why.** The server refuses to start in production mode without `DATABASE_URL`; without `FIREBASE_PROJECT_ID` all accounts answer 503 `disabled`; the admin site signs you in with Google (B6) only with `ADMIN_EMAILS`, `FIREBASE_WEB_API_KEY` (and `FIREBASE_WEB_APP_ID`) set, and stays off without a sign-in method.
 
@@ -457,7 +457,7 @@ Not needed any more: a generated admin password. Optional extras, only if you wa
 
 ### D5. Load the ranked puzzles into the staging database
 
-- [ ] **D5** The seed reports 2000 puzzles for each game type, written to Postgres
+- [x] **D5** The seed reports 2000 puzzles for each game type, written to Postgres
 
 **Why.** Ranked games only use puzzles from the server-side ranked pool (they never ship in the app). Without them, no ranked game starts, and the log warns `no ranked puzzles`.
 
@@ -479,7 +479,7 @@ Remove-Item Env:DATABASE_URL
 
 ### D6. Deploy staging
 
-- [ ] **D6** First deploy finished
+- [x] **D6** First deploy finished
 
 **Steps.** Say **"deploy staging"** and Claude runs it, or run it yourself:
 ```powershell
@@ -496,7 +496,7 @@ The image is built on Fly's builders (no Docker on this PC). The first time take
 
 ### D7. Check staging
 
-- [ ] **D7** Health, logs, admin site and legal page all OK
+- [x] **D7** Health, logs, admin site and legal page all OK
 
 **Steps**
 ```powershell

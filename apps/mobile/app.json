@@ -2,6 +2,7 @@
   "expo": {
     "name": "Sudoku Fight",
     "slug": "sudoku-fight",
+    "owner": "mosh-gl-dev",
     "version": "0.1.0",
     "orientation": "portrait",
     "scheme": "sudokufight",
@@ -68,7 +69,10 @@
     },
     "backgroundColor": "#0f1218",
     "extra": {
-      "supportsRTL": true
+      "supportsRTL": true,
+      "eas": {
+        "projectId": "b192b4d2-c768-4ec2-b2f3-96740b137d74"
+      }
     }
   }
 }
