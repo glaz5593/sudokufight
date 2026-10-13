@@ -10,6 +10,7 @@
 | `google-services.json` (Android) | `apps/mobile/config/firebase/` במחשב, ומשתנה קובץ `GOOGLE_SERVICES_JSON` ב־EAS |
 | `GoogleService-Info.plist` (iOS) | `apps/mobile/config/firebase/` במחשב, ומשתנה קובץ `GOOGLE_SERVICE_INFO_PLIST` ב־EAS |
 | ה־Project ID (למשל `sudoku-fight-1a2b3`) | `FIREBASE_PROJECT_ID` בשרת: `apps/server/.env`, ובסודות של Fly (`fly secrets set`) |
+| ה־`apiKey` וה־`appId` של אפליקציית ה־Web "Sudoku Fight Admin" (סעיף 9א) | `FIREBASE_WEB_API_KEY` ו־`FIREBASE_WEB_APP_ID` בשרת: `apps/server/.env`, ובסודות של Fly |
 
 השרת לא צריך service account ולא שום קובץ סודי. הוא בודק את החתימה של כל ID token מול המפתחות הציבוריים של Google, לפי ה־Project ID בלבד.
 
@@ -33,7 +34,8 @@
 5. לשונית **Settings** ← **User actions**: משאירים את **Email enumeration protection** דלוק (ברירת המחדל).
    האפליקציה כבר מטפלת בזה: היא מציגה "מייל או סיסמה שגויים" בלי לגלות אם המייל רשום.
 
-לא מדליקים עכשיו ספקים אחרים (Google, Apple, טלפון). הם לא חלק משלב 8.
+באפליקציה לא מדליקים ספקים אחרים (Google, Apple, טלפון). הם לא חלק משלב 8.
+הספק Google נדלק רק בשביל הכניסה לאתר הניהול (סעיף 9א). באפליקציה אין כפתור Google, אבל זה אותו פרויקט: כתובת שנכנסה לאתר הניהול עם Google כבר רשומה בו, ולא תוכל להירשם באפליקציה עם מייל וסיסמה (פרטים בסעיף 9א).
 
 ## 3. מיילים בעברית: אימות מייל ואיפוס סיסמה (D22)
 
@@ -136,6 +138,69 @@ eas env:create --scope project --name GOOGLE_SERVICE_INFO_PLIST --type file --va
 - **בלי המשתנה:** שרת בייצור עולה עם אזהרה, ומסלולי החשבון עונים 503 `disabled`. גם הכניסה לחדרי משחק נחסמת.
 - שרת בייצור (`NODE_ENV=production`, כמו ב־`Dockerfile` וב־`fly.toml`) **אף פעם** לא מקבל `dev:<uid>`, לא ב־HTTP ולא בחדרי המשחק.
 
+## 9א. כניסה עם Google לאתר הניהול (Google sign-in for the admin site)
+
+בשרתים האמיתיים (Staging ו־Production) נכנסים לאתר הניהול (`/admin`) **עם חשבון Google**, ורק החשבונות שברשימה `ADMIN_EMAILS` בשרת.
+אין סיסמה לייצר ולשמור. הכניסה עוברת דרך אותו פרויקט Firebase של המשחק.
+
+**מה זה עושה לחשבונות של האפליקציה.** כל חשבון Google שמסיים את החלון של Google ב־`/admin` נרשם כמשתמש בפרויקט (**Authentication** ← **Users**, עם הספק Google). גם חשבון שהשרת דוחה אחר כך.
+ב־Firebase ברירת המחדל היא חשבון אחד לכל כתובת מייל, ובאפליקציה אין כפתור Google. לכן:
+- כתובת שנכנסה לאתר הניהול **לא יכולה להירשם באפליקציה** עם מייל וסיסמה (`auth/email-already-in-use`). לחשבונות באפליקציה (בדיקות, חשבונות הדגמה) משתמשים בכתובות אחרות.
+  למשל כינוי של Gmail עם `+`, כמו `you+sf1@gmail.com`: מבחינת Firebase זו כתובת אחרת, והמיילים מגיעים לאותה תיבה.
+- ובכיוון ההפוך: חשבון של האפליקציה באותה כתובת, שהמייל שלו עוד לא אומת, יכול לאבד את הסיסמה שלו כשהכתובת נכנסת לאתר הניהול עם Google (Firebase סומך על Google בכתובות Gmail).
+- משתמש מיותר (למשל מישהו שניסה להיכנס ל־`/admin` עם חשבון Google משלו) אפשר למחוק ב־**Authentication** ← **Users**. הוא נספר כמשתמש פעיל באותו חודש, ותו לא.
+
+**1. מדליקים את Google כספק כניסה**
+1. **Authentication** ← לשונית **Sign-in method** ← **Add new provider** ← **Google**.
+2. מדליקים את המתג **Enable**.
+3. **Project support email:** בוחרים את המייל שלך מהרשימה. Google מציג אותו במסך בחירת החשבון.
+4. **Save**.
+
+**2. מוסיפים אפליקציית Web בשם "Sudoku Fight Admin"**
+1. גלגל השיניים ← **Project settings** ← לשונית **General** ← בתחתית, **Your apps** ← **Add app** ← הסמל של Web (`</>`).
+2. **App nickname:** `Sudoku Fight Admin`.
+3. **Also set up Firebase Hosting:** **לא** מסמנים. האתר רץ בשרת שלנו.
+4. **Register app**. מופיע קטע קוד עם `firebaseConfig`. מעתיקים ממנו רק שני ערכים:
+   - `apiKey` (מתחיל ב־`AIza`), שהוא `FIREBASE_WEB_API_KEY`.
+   - `appId` (נראה כמו `1:<מספר>:web:<אותיות ומספרים>`), שהוא `FIREBASE_WEB_APP_ID`.
+5. **Continue to console**. לא מתקינים SDK: הוא כבר באתר הניהול.
+
+שני הערכים **לא סודיים**: הדפדפן של כל מי שפותח את דף הכניסה מקבל אותם. ובכל זאת הם **לא** נכנסים לריפו (הוא ציבורי).
+הם נכנסים לסודות של Fly, ובמחשב ל־`apps/server/.env`. אפשר להדביק אותם ל־Claude, והוא מגדיר אותם.
+
+**3. מאשרים את הכתובות של השרתים**
+1. **Authentication** ← לשונית **Settings** ← **Authorized domains** ← **Add domain**.
+2. מוסיפים את `sudoku-fight-staging.fly.dev`, ואחר כך את `sudoku-fight-prod.fly.dev`.
+   ‏`localhost` כבר ברשימה, וכך הכניסה עובדת גם במחשב.
+3. **כל כתובת חדשה של שרת נכנסת לכאן**: שם אחר לאפליקציה ב־Fly (כשהשם תפוס), או דומיין משלך (`api.<הדומיין>`). בלי זה הכניסה עם Google בכתובת החדשה נכשלת (`auth/unauthorized-domain`), ובשרת בלי סיסמה אין דרך אחרת להיכנס לאתר הניהול.
+
+**4. השרת**
+- **ב־Fly** ‏(Claude מגדיר, ב־`fly secrets set` לכל אחד מהשרתים):
+  `FIREBASE_PROJECT_ID`, ‏`FIREBASE_WEB_API_KEY`, ‏`FIREBASE_WEB_APP_ID`, ו־`ADMIN_EMAILS`: הכתובות של חשבונות ה־Google שמותר להם להיכנס, מופרדות בפסיקים.
+  כותבים כל כתובת **בדיוק כמו ש־Google מציג אותה** (גדולות או קטנות לא משנה). את הרשימה האמיתית לא כותבים באף קובץ בריפו.
+  ‏Claude בודק שכל רשומה היא כתובת מייל לפני שהוא מגדיר. רשומה לא תקינה (למשל `a@gmail,com`) לא מפילה את השרת: היא מכבה רק את הכניסה עם Google, עם אזהרה בלוג.
+- `ADMIN_SESSION_SECRET` (לא חובה, משה מגדיר בעצמו): בלעדיו נכנסים שוב עם Google אחרי כל פריסה. כשהכניסה היא רק עם Google, **הוא לבדו חותם על החיבורים** לאתר הניהול, ולכן הוא סוד: נוצר אקראית בחלון של משה, ערך אחר לכל שרת, ולא עובר בצ'אט (`docs/MOSHE-TODO.md` ‏D4).
+- **במחשב** (לא חובה: בפיתוח סיסמת הפיתוח ממשיכה לעבוד): אותם ארבעה ב־`apps/server/.env`, למשל
+  ```
+  ADMIN_EMAILS=you@example.com
+  ```
+- סיסמה **לא חובה**. אם רוצים גם אותה: `ADMIN_PASSWORD` של 8 תווים לפחות (בייצור לא `sudoku-admin-dev`).
+- **בלוג של ההפעלה** כתוב אילו שיטות כניסה דלוקות, למשל `admin site on (Google sign-in for 3 addresses)`. בלי הכתובות עצמן.
+  אם רק חלק מההגדרות קיים, או שאחת מהן לא תקינה, השרת מזהיר `admin Google sign-in off: ...`, עם מה שחסר או לא תקין.
+
+**5. בדיקה**
+1. פותחים את `https://sudoku-fight-staging.fly.dev/admin` ← הכפתור של Google ← בוחרים חשבון שברשימה. האתר נפתח.
+2. בלוג של השרת (`fly logs`): `admin sign-in: <הכתובת>`.
+3. חשבון Google שלא ברשימה מקבל הודעה שהוא לא מורשה, ולא נכנס.
+
+**אם משהו לא עובד:**
+- החלון של Google נסגר מיד עם `auth/unauthorized-domain`: הכתובת של השרת לא ב־**Authorized domains** (שלב 3).
+- `auth/operation-not-allowed`: הספק Google לא דלוק (שלב 1).
+- `auth/web-storage-unsupported`: הדפדפן חוסם עוגיות ונתוני אתרים של צד שלישי (למשל בחלון גלישה בסתר), והחלון של Google צריך אותם. מאפשרים אותם לאתר הניהול, או נכנסים מחלון רגיל.
+- הודעה שהחשבון לא מורשה (403 `notAllowed`) עם החשבון הנכון: הכתובת ב־`ADMIN_EMAILS` לא זהה לכתובת של חשבון ה־Google.
+- 401 `invalidToken` עם `aud` או `iss` בהודעה: ה־`apiKey` שייך לפרויקט Firebase אחר מ־`FIREBASE_PROJECT_ID`.
+- כפתור Google לא מופיע: בשרת חסרה אחת משלוש ההגדרות, או שאחת מהן לא תקינה. הלוג של ההפעלה אומר איזו.
+
 ## 10. Development Build חדש
 
 React Native Firebase הוא קוד native. לכן ה־Development Build הקיים בטלפון **לא יכול** להשתמש בו, ואי אפשר לדלג על בנייה חדשה.
@@ -181,5 +246,7 @@ React Native Firebase הוא קוד native. לכן ה־Development Build הקי�
 - **לא** להעתיק קבצים, מפתחות או הגדרות מ־PureTrack או מכל פרויקט אחר. רק מהפרויקט "Sudoku Fight".
 - **לא** להוריד service account (המפתח הפרטי של Admin SDK) ולא לשים אותו בשרת. השרת לא צריך אותו.
 - **לא** לשים את ה־API key מתוך הקבצים בקוד, ב־`.env` או ב־`EXPO_PUBLIC_*`. הוא נכנס לבנייה דרך הקבצים בלבד.
+  (ה־`apiKey` של אפליקציית ה־Web של אתר הניהול, סעיף 9א, נכנס רק להגדרות של השרת: `apps/server/.env` במחשב, והסודות של Fly.)
+- **לא** לכתוב את הכתובות של `ADMIN_EMAILS` בקובץ בריפו, גם לא בדוגמה. בדוגמאות: `you@example.com`.
 - **לא** להריץ שרת אמיתי בלי `NODE_ENV=production`. רק במצב ייצור השרת דוחה את `dev:<uid>`.
 - **לא** להגיש לחנות בנייה שמופיע בה "מצב פיתוח". בנייה בפרופיל `production` ב־EAS כבר נכשלת אם חסר קובץ.

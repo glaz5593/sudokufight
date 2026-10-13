@@ -1,9 +1,15 @@
 import {
   ADMIN_API_PREFIX,
+  ADMIN_AUTH_METHODS_PATH,
   ADMIN_DEFAULT_PAGE_SIZE,
+  ADMIN_GOOGLE_LOGIN_PATH,
+  ADMIN_LOGIN_PATH,
+  type AdminAuthMethods,
   type AdminError,
   type AdminGameDetail,
   type AdminGameRow,
+  type AdminGoogleLoginErrorCode,
+  type AdminGoogleLoginRequest,
   type AdminInstallDetail,
   type AdminInstallRow,
   type AdminLoginRequest,
@@ -13,17 +19,19 @@ import {
   type AdminSession,
   type AdminUserDetail,
   type AdminUserRow,
+  isAdminGoogleLoginErrorCode,
 } from '@sudoku-fight/protocol';
 
 /**
  * The admin API client (packages/protocol/src/admin.ts is the contract). Same origin, so the session cookie
  * (HttpOnly) rides along by itself; the site never sees it.
  *
- * Every failure is an ApiError. A 401 from any route but login and session also calls `onUnauthorized`, so
- * the site goes back to the login screen wherever it was.
+ * Every failure is an ApiError. A 401 from any route but the sign-in ones and session also calls
+ * `onUnauthorized`, so the site goes back to the login screen wherever it was.
  */
 
-export type ApiErrorCode = AdminError['error'] | 'network' | 'server';
+/** The contract's error names (AdminError, and the Google sign-in's own), or no answer / not one of them. */
+export type ApiErrorCode = AdminError['error'] | AdminGoogleLoginErrorCode | 'network' | 'server';
 
 /** Every error name of the contract; TypeScript complains here when the list grows. */
 const ADMIN_ERROR_CODES: Record<AdminError['error'], true> = {
@@ -38,6 +46,10 @@ const ADMIN_ERROR_CODES: Record<AdminError['error'], true> = {
 
 function isAdminErrorCode(value: string): value is AdminError['error'] {
   return Object.hasOwn(ADMIN_ERROR_CODES, value);
+}
+
+function isNamedCode(value: string): value is AdminError['error'] | AdminGoogleLoginErrorCode {
+  return isAdminErrorCode(value) || isAdminGoogleLoginErrorCode(value);
 }
 
 export class ApiError extends Error {
@@ -73,7 +85,11 @@ export interface GameListQuery {
 }
 
 export interface AdminApi {
+  /** How this server lets an admin sign in (no session needed). */
+  authMethods(): Promise<AdminAuthMethods>;
   login(password: string): Promise<void>;
+  /** Signs in with the Firebase ID token of a Google sign-in. */
+  loginWithGoogle(idToken: string): Promise<void>;
   logout(): Promise<void>;
   session(): Promise<AdminSession>;
   overview(days: number): Promise<AdminOverview>;
@@ -126,7 +142,7 @@ function errorCode(status: number, body: unknown): ApiErrorCode {
     typeof body === 'object' && body !== null && 'error' in body && typeof body.error === 'string'
       ? body.error
       : null;
-  if (named !== null && isAdminErrorCode(named)) return named;
+  if (named !== null && isNamedCode(named)) return named;
   if (status === 401) return 'unauthorized';
   if (status === 404) return 'notFound';
   if (status === 400) return 'badRequest';
@@ -182,9 +198,15 @@ export function createApi(options: ApiOptions = {}): AdminApi {
   const id = (value: string) => encodeURIComponent(value);
 
   return {
+    authMethods: () => request<AdminAuthMethods>('GET', ADMIN_AUTH_METHODS_PATH, { authCheck: false }),
     login: (password) =>
-      request<void>('POST', '/login', {
+      request<void>('POST', ADMIN_LOGIN_PATH, {
         body: { password } satisfies AdminLoginRequest,
+        authCheck: false,
+      }),
+    loginWithGoogle: (idToken) =>
+      request<void>('POST', ADMIN_GOOGLE_LOGIN_PATH, {
+        body: { idToken } satisfies AdminGoogleLoginRequest,
         authCheck: false,
       }),
     logout: () => request<void>('POST', '/logout', { authCheck: false }),

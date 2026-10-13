@@ -4,7 +4,7 @@ import path from 'node:path';
 import { cellName, ENGINE_VERSION } from '@sudoku-fight/engine';
 
 import { createAppServer } from './app';
-import { loadConfig } from './config';
+import { describeAdmin, loadConfig } from './config';
 import { DataDirLockedError } from './db';
 import { flushReports, installProcessHandlers, reportError, setMonitor, startSentry } from './monitoring';
 
@@ -22,7 +22,8 @@ async function main(): Promise<void> {
 
   const db =
     config.database.kind === 'postgres' ? 'Postgres' : `PGlite (${config.database.dataDir ?? 'memory'})`;
-  const admin = config.admin.enabled ? 'on' : `off: ${config.admin.reason}`;
+  // Which sign-in methods are on; never the allowed addresses or the key.
+  const admin = describeAdmin(config.admin);
   const sentry = config.sentry
     ? `Sentry on (${config.sentry.environment}, ${config.sentry.release}, traces ${config.sentry.tracesSampleRate})`
     : 'Sentry off (no SENTRY_DSN)';

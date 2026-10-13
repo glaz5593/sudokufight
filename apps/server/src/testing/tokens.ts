@@ -27,6 +27,8 @@ export interface TokenClaims {
   uid?: string;
   email?: string | null;
   emailVerified?: boolean;
+  /** How the user signed in (`firebase.sign_in_provider`): 'password' (default), 'google.com'… */
+  provider?: string;
   /** Anything else, or a claim to override (iss, aud, exp…); undefined removes one. */
   extra?: Record<string, unknown>;
 }
@@ -58,11 +60,14 @@ export async function testTokens(projectId = TEST_FIREBASE_PROJECT_ID): Promise<
     jwks,
     keys,
     async sign(
-      { uid = 'firebase-uid-1', email = null, emailVerified = true, extra = {} },
+      { uid = 'firebase-uid-1', email = null, emailVerified = true, provider = 'password', extra = {} },
       now,
       options = {},
     ) {
       const iat = Math.floor(now / 1000);
+      // Like Firebase: a Google sign-in lists the Google account's id too.
+      const identities: Record<string, string[]> = email === null ? {} : { email: [email] };
+      if (provider === 'google.com') identities['google.com'] = [`google-${uid}`];
       const claims: JWTPayload = {
         iss: firebaseIssuer(projectId),
         aud: projectId,
@@ -71,7 +76,7 @@ export async function testTokens(projectId = TEST_FIREBASE_PROJECT_ID): Promise<
         exp: iat + 3600,
         auth_time: iat - 60,
         user_id: uid,
-        firebase: { identities: email === null ? {} : { email: [email] }, sign_in_provider: 'password' },
+        firebase: { identities, sign_in_provider: provider },
         ...(email === null ? {} : { email, email_verified: emailVerified }),
       };
       for (const [k, v] of Object.entries(extra)) {

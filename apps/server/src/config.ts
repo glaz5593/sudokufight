@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 
 import type { RatingOption } from '@sudoku-fight/engine';
-import { RECENT_SIGN_IN_MS } from '@sudoku-fight/protocol';
+import { type AdminGoogleWebConfig, RECENT_SIGN_IN_MS } from '@sudoku-fight/protocol';
 import { z } from 'zod';
 
 import serverPackage from '../package.json';
@@ -22,21 +22,64 @@ export const DEFAULT_ADMIN_TZ = 'Asia/Jerusalem';
 export const DEFAULT_PGLITE_DIR = path.resolve(__dirname, '..', '.data', 'pglite');
 /** In development, with the local PGlite and no ADMIN_PASSWORD, the admin site takes this one. */
 export const DEV_ADMIN_PASSWORD = 'sudoku-admin-dev';
-/** In production a shorter ADMIN_PASSWORD leaves the admin site off. */
-export const MIN_ADMIN_PASSWORD_LENGTH = 12;
+/** In production a shorter ADMIN_PASSWORD leaves password sign-in off. */
+export const MIN_ADMIN_PASSWORD_LENGTH = 8;
 export const MIN_SESSION_SECRET_LENGTH = 32;
 
 /** Where the data lives: Postgres (production) or PGlite, the in-process Postgres (development, tests). */
 export type DatabaseConfig = { kind: 'postgres'; url: string } | { kind: 'pglite'; dataDir: string | null };
 
 /**
- * The admin site (spec §27.3). `enabled: false` → every /admin/api route answers 503 `disabled`.
- * `sessionSecret` signs the session cookie; random per boot when ADMIN_SESSION_SECRET is unset, so a restart
- * signs everyone out.
+ * Google sign-in for the admin site: through the app's Firebase project, for the addresses on ADMIN_EMAILS
+ * only. On when FIREBASE_PROJECT_ID, FIREBASE_WEB_API_KEY and ADMIN_EMAILS are all set, and well formed.
+ */
+export interface AdminGoogleSignIn {
+  /** For the page (GET /admin/api/auth/methods): public by design. */
+  web: AdminGoogleWebConfig;
+  /** ADMIN_EMAILS: lower case, each once. Stays on the server: never sent to the page or logged. */
+  allowedEmails: readonly string[];
+}
+
+/**
+ * The admin site (spec §27.3): on when at least one sign-in method is. `enabled: false` → every /admin/api
+ * route answers 503 `disabled`.
+ * - `password`: ADMIN_PASSWORD (or the dev password, `devPassword`), or null: password sign-in off.
+ * - `google`: Google sign-in, or null: off.
+ * - `sessionSecret` signs the session cookie; random per boot when ADMIN_SESSION_SECRET is unset, so a restart
+ *   signs everyone out.
  */
 export type AdminConfig =
-  | { enabled: true; password: string; sessionSecret: string; devPassword: boolean }
+  | {
+      enabled: true;
+      password: string | null;
+      devPassword: boolean;
+      google: AdminGoogleSignIn | null;
+      sessionSecret: string;
+    }
   | { enabled: false; reason: string; sessionSecret: string };
+
+/** The admin site in the start-up line: which sign-in methods are on (never the addresses or the key). */
+export function describeAdmin(admin: AdminConfig): string {
+  if (!admin.enabled) return `off: ${admin.reason}`;
+  const methods: string[] = [];
+  if (admin.google !== null) {
+    const n = admin.google.allowedEmails.length;
+    methods.push(`Google sign-in for ${n} address${n === 1 ? '' : 'es'}`);
+  }
+  if (admin.password !== null) methods.push(admin.devPassword ? 'dev password' : 'password');
+  return `on (${methods.join(', ')})`;
+}
+
+/** ADMIN_EMAILS' entries: separated by commas, semicolons or spaces; trimmed, lower case, each once. */
+export function splitAdminEmails(raw: string): string[] {
+  const entries = raw
+    .split(/[\s,;]+/)
+    .map((e) => e.trim().toLowerCase())
+    .filter((e) => e !== '');
+  return [...new Set(entries)];
+}
+
+const isEmail = (value: string) => z.email().max(254).safeParse(value).success;
 
 /**
  * Anomaly flags (spec §21): a player whose average think time over `moves` consecutive correct moves of a ranked
@@ -148,6 +191,10 @@ export interface LoadConfigOptions {
 
 const unsetIfBlank = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v);
 const optionalString = z.preprocess(unsetIfBlank, z.string().optional());
+const trimmedString = z.preprocess(
+  (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim()) : v),
+  z.string().optional(),
+);
 
 export function isTimeZone(tz: string): boolean {
   try {
@@ -199,6 +246,12 @@ const envSchema = z.object({
       .regex(/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/, 'not a Firebase project id (e.g. sudoku-fight-1a2b3)')
       .optional(),
   ),
+  // The admin site's Google sign-in: who may sign in, and the Firebase web app the page signs in with. Checked
+  // in adminConfig (googleSettingProblems), not here: a bad value turns Google sign-in off with a warning, and
+  // never keeps the game server from starting.
+  ADMIN_EMAILS: optionalString,
+  FIREBASE_WEB_API_KEY: trimmedString,
+  FIREBASE_WEB_APP_ID: trimmedString,
   RATING_OPTION: z.preprocess(
     (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim().toUpperCase()) : v),
     z.enum(['A', 'B'], { error: 'expected A or B' }).default('B'),
@@ -310,14 +363,157 @@ export function sentryRelease(env: {
   return deployment === undefined ? base : `${base}+${deployment}`;
 }
 
+type Env = z.output<typeof envSchema>;
+
+/** The settings Google sign-in needs; FIREBASE_PROJECT_ID alone is the app's accounts, not a half-set admin. */
+const GOOGLE_ADMIN_SETTINGS = ['FIREBASE_PROJECT_ID', 'FIREBASE_WEB_API_KEY', 'ADMIN_EMAILS'] as const;
+
+/** A browser API key: "AIza" and 35 more characters (Firebase → Project settings → the web app → apiKey). */
+const FIREBASE_WEB_API_KEY_PATTERN = /^AIza[\w-]{35}$/;
+/** The web app's id, 1:<project number>:web:<hex> (appId in the same place). */
+const FIREBASE_WEB_APP_ID_PATTERN = /^1:\d{1,20}:web:[0-9a-f]{1,40}$/;
+
+/**
+ * What is wrong with the admin's Google settings that are set, each as `NAME: why`; none → []. An entry of
+ * ADMIN_EMAILS that is not an address is named (it is a typo, not an address anyone signs in with).
+ */
+function googleSettingProblems(e: {
+  ADMIN_EMAILS?: string;
+  FIREBASE_WEB_API_KEY?: string;
+  FIREBASE_WEB_APP_ID?: string;
+}): string[] {
+  const problems: string[] = [];
+  if (e.ADMIN_EMAILS !== undefined) {
+    const emails = splitAdminEmails(e.ADMIN_EMAILS);
+    if (emails.length === 0) problems.push('ADMIN_EMAILS: no email address in it');
+    for (const bad of emails.filter((x) => !isEmail(x))) {
+      problems.push(`ADMIN_EMAILS: "${bad}" is not an email address`);
+    }
+  }
+  if (e.FIREBASE_WEB_API_KEY !== undefined && !FIREBASE_WEB_API_KEY_PATTERN.test(e.FIREBASE_WEB_API_KEY)) {
+    problems.push('FIREBASE_WEB_API_KEY: not a Firebase web API key (apiKey: "AIza" and 35 more characters)');
+  }
+  if (e.FIREBASE_WEB_APP_ID !== undefined && !FIREBASE_WEB_APP_ID_PATTERN.test(e.FIREBASE_WEB_APP_ID)) {
+    problems.push('FIREBASE_WEB_APP_ID: not a Firebase web app id (appId: 1:<number>:web:<hex>)');
+  }
+  return problems;
+}
+
+/**
+ * The admin site's sign-in (spec §27.3), from ADMIN_EMAILS, FIREBASE_*, ADMIN_PASSWORD and ADMIN_SESSION_SECRET.
+ * - Google: on with FIREBASE_PROJECT_ID, FIREBASE_WEB_API_KEY and ADMIN_EMAILS (FIREBASE_WEB_APP_ID optional).
+ *   Some of them without the rest, or a bad value among them (googleSettingProblems): off, with a warning
+ *   saying what is missing or wrong. Never a ConfigError: an admin-only setting (say, a typo in ADMIN_EMAILS
+ *   set on the live server) must not keep the game from starting.
+ * - Password: ADMIN_PASSWORD; production wants at least 8 characters and not the (public) dev password, else
+ *   password sign-in stays off (with a warning). Elsewhere, unset means the fixed dev password, but only with
+ *   the local PGlite (never against a real database).
+ * - Neither: the admin site is off, and the warning says why.
+ */
+function adminConfig(
+  e: Env,
+  {
+    production,
+    database,
+    warn,
+    randomSecret,
+  }: {
+    production: boolean;
+    database: DatabaseConfig;
+    warn: (message: string) => void;
+    randomSecret: () => string;
+  },
+): AdminConfig {
+  const sessionSecret = e.ADMIN_SESSION_SECRET ?? randomSecret();
+
+  // Google sign-in.
+  let google: AdminGoogleSignIn | null = null;
+  let googleOff: string;
+  const projectId = e.FIREBASE_PROJECT_ID;
+  const apiKey = e.FIREBASE_WEB_API_KEY;
+  const emails = e.ADMIN_EMAILS;
+  const problems = googleSettingProblems(e);
+  if (problems.length === 0 && projectId !== undefined && apiKey !== undefined && emails !== undefined) {
+    google = {
+      web: {
+        apiKey,
+        authDomain: `${projectId}.firebaseapp.com`,
+        projectId,
+        appId: e.FIREBASE_WEB_APP_ID ?? null,
+      },
+      allowedEmails: splitAdminEmails(emails),
+    };
+    googleOff = '';
+  } else {
+    const missing = GOOGLE_ADMIN_SETTINGS.filter((name) => e[name] === undefined);
+    const why = [...problems, ...(missing.length === 0 ? [] : [`${missing.join(', ')} not set`])];
+    const partial = apiKey !== undefined || emails !== undefined || e.FIREBASE_WEB_APP_ID !== undefined;
+    googleOff =
+      problems.length === 0
+        ? `Google sign-in needs ${missing.join(', ')}`
+        : `Google sign-in is off: ${why.join('; ')}`;
+    if (partial) warn(`[config] admin Google sign-in off: ${why.join('; ')}`);
+  }
+
+  // Password sign-in.
+  let password: string | null = null;
+  let devPassword = false;
+  let passwordOff = '';
+  if (e.ADMIN_PASSWORD !== undefined) {
+    const weak =
+      e.ADMIN_PASSWORD.length < MIN_ADMIN_PASSWORD_LENGTH
+        ? `ADMIN_PASSWORD is shorter than ${MIN_ADMIN_PASSWORD_LENGTH} characters`
+        : e.ADMIN_PASSWORD === DEV_ADMIN_PASSWORD
+          ? 'ADMIN_PASSWORD is the dev password, which is public (it is in the code)'
+          : null;
+    if (production && weak !== null) {
+      passwordOff = weak;
+      if (google !== null) warn(`[config] admin password sign-in off: ${weak}`);
+    } else {
+      password = e.ADMIN_PASSWORD;
+    }
+  } else if (!production && database.kind === 'pglite') {
+    password = DEV_ADMIN_PASSWORD;
+    devPassword = true;
+    if (e.NODE_ENV === 'development') {
+      warn(
+        [
+          '',
+          '!!! ===================================================================',
+          `!!! ADMIN_PASSWORD is not set: the admin site takes the dev password "${DEV_ADMIN_PASSWORD}".`,
+          '!!! A server that goes online signs admins in with Google (ADMIN_EMAILS, FIREBASE_WEB_API_KEY)',
+          `!!! or with an ADMIN_PASSWORD of ${MIN_ADMIN_PASSWORD_LENGTH}+ characters.`,
+          '!!! ===================================================================',
+          '',
+        ].join('\n'),
+      );
+    }
+  } else {
+    passwordOff = production
+      ? 'ADMIN_PASSWORD is not set'
+      : 'ADMIN_PASSWORD is not set (the dev password works only with the local PGlite)';
+  }
+
+  if (google === null && password === null) {
+    const reason = `no sign-in method: ${googleOff}; ${passwordOff}`;
+    warn(`[config] admin site disabled: ${reason}`);
+    return { enabled: false, reason, sessionSecret };
+  }
+  if (production && e.ADMIN_SESSION_SECRET === undefined) {
+    warn('[config] ADMIN_SESSION_SECRET is not set: admins sign in again after each restart');
+  }
+  return { enabled: true, password, devPassword, google, sessionSecret };
+}
+
 /**
  * Reads the settings. Throws ConfigError listing every bad value, so the server fails at start, not later.
  *
  * - DATABASE_URL set → Postgres. Unset → PGlite in PGLITE_DIR (default apps/server/.data/pglite; in-memory
  *   under NODE_ENV=test, or with PGLITE_DIR=memory). Production needs DATABASE_URL unless PGLITE_DIR is set.
- * - ADMIN_PASSWORD: production needs at least 12 characters, and not the (public) dev password, else the
- *   admin site stays off. Elsewhere, unset means the fixed dev password, but only with the local PGlite (never
- *   against a real database).
+ * - The admin site: Google sign-in for ADMIN_EMAILS, and/or ADMIN_PASSWORD (adminConfig above). Production
+ *   refuses a password shorter than 8 characters or the (public) dev password; elsewhere, unset means the fixed
+ *   dev password, but only with the local PGlite (never against a real database). A bad ADMIN_EMAILS or
+ *   FIREBASE_WEB_* turns Google sign-in off with a warning; it never stops the server.
  * - FIREBASE_PROJECT_ID: unset in production → accounts off, with a warning (the server still starts: the
  *   game and the admin site don't need it).
  * - SENTRY_DSN: unset → `sentry: null`, no error reports (the start says so; src/index.ts).
@@ -346,46 +542,7 @@ export function loadConfig(
     if (production) warn('[config] production on PGlite: data stays on this machine only');
   }
 
-  const sessionSecret = e.ADMIN_SESSION_SECRET ?? randomSecret();
-  let admin: AdminConfig;
-  const password = e.ADMIN_PASSWORD;
-  if (password !== undefined) {
-    const weak =
-      password.length < MIN_ADMIN_PASSWORD_LENGTH
-        ? `ADMIN_PASSWORD is shorter than ${MIN_ADMIN_PASSWORD_LENGTH} characters`
-        : password === DEV_ADMIN_PASSWORD
-          ? 'ADMIN_PASSWORD is the dev password, which is public (it is in the code)'
-          : null;
-    if (production && weak !== null) {
-      warn(`[config] admin site disabled: ${weak}`);
-      admin = { enabled: false, reason: weak, sessionSecret };
-    } else {
-      admin = { enabled: true, password, sessionSecret, devPassword: false };
-    }
-  } else if (!production && database.kind === 'pglite') {
-    admin = { enabled: true, password: DEV_ADMIN_PASSWORD, sessionSecret, devPassword: true };
-    if (e.NODE_ENV === 'development') {
-      warn(
-        [
-          '',
-          '!!! ===================================================================',
-          `!!! ADMIN_PASSWORD is not set: the admin site takes the dev password "${DEV_ADMIN_PASSWORD}".`,
-          `!!! Set ADMIN_PASSWORD (${MIN_ADMIN_PASSWORD_LENGTH}+ characters) before this server goes online.`,
-          '!!! ===================================================================',
-          '',
-        ].join('\n'),
-      );
-    }
-  } else {
-    const reason = production
-      ? 'ADMIN_PASSWORD is not set'
-      : 'ADMIN_PASSWORD is not set (the dev password works only with the local PGlite)';
-    warn(`[config] admin site disabled: ${reason}`);
-    admin = { enabled: false, reason, sessionSecret };
-  }
-  if (admin.enabled && production && e.ADMIN_SESSION_SECRET === undefined) {
-    warn('[config] ADMIN_SESSION_SECRET is not set: admin sessions end when the server restarts');
-  }
+  const admin = adminConfig(e, { production, database, warn, randomSecret });
 
   const firebaseProjectId = e.FIREBASE_PROJECT_ID ?? null;
   if (production && firebaseProjectId === null) {

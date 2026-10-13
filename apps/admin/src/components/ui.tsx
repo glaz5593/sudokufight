@@ -64,6 +64,12 @@ const ERROR_TEXT: Record<ApiError['code'], StringKey> = {
   tooManyRequests: 'error.tooMany',
   disabled: 'error.disabled',
   unauthorized: 'login.expired',
+  // Only the Google sign-in answers these, and the login page words them itself (pages/LoginPage.tsx).
+  invalidToken: 'error.server',
+  wrongProvider: 'error.server',
+  unverifiedEmail: 'error.server',
+  notAllowed: 'error.server',
+  unavailable: 'error.server',
 };
 
 export function ErrorBox({ error, onRetry }: { error: ApiError; onRetry?: () => void }) {

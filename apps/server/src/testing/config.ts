@@ -1,11 +1,33 @@
 import { RECENT_SIGN_IN_MS } from '@sudoku-fight/protocol';
 
-import { DEFAULT_CHEAT_THRESHOLDS, DEFAULT_PRACTICE_XP_DAILY_CAP, type ServerConfig } from '../config';
+import {
+  type AdminGoogleSignIn,
+  DEFAULT_CHEAT_THRESHOLDS,
+  DEFAULT_PRACTICE_XP_DAILY_CAP,
+  type ServerConfig,
+} from '../config';
 
 export const TEST_ADMIN_PASSWORD = 'test-admin-password';
 export const TEST_SESSION_SECRET = 'test-session-secret-0123456789abcdef';
 /** The Firebase project of tests: tokens are signed with keys the test makes (testing/tokens.ts). */
 export const TEST_FIREBASE_PROJECT_ID = 'sudoku-fight-test';
+/** An admin address for Google sign-in tests (example.com: never a real one). */
+export const TEST_ADMIN_EMAIL = 'admin@example.com';
+/** A made-up Firebase web API key of the right shape, built here so no key-like text sits in the repo. */
+export const TEST_WEB_API_KEY = `AIza${'T'.repeat(35)}`;
+
+/** Google sign-in for the admin site, for TEST_FIREBASE_PROJECT_ID and these addresses (lower case). */
+export function testGoogleAdmin(allowedEmails: readonly string[] = [TEST_ADMIN_EMAIL]): AdminGoogleSignIn {
+  return {
+    web: {
+      apiKey: TEST_WEB_API_KEY,
+      authDomain: `${TEST_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+      projectId: TEST_FIREBASE_PROJECT_ID,
+      appId: '1:123456789012:web:0123456789abcdef',
+    },
+    allowedEmails,
+  };
+}
 
 /**
  * Settings for tests: in-memory PGlite, the admin site on with TEST_ADMIN_PASSWORD, accounts on for
@@ -19,8 +41,9 @@ export function testConfig(overrides: Partial<ServerConfig> = {}): ServerConfig 
     admin: {
       enabled: true,
       password: TEST_ADMIN_PASSWORD,
-      sessionSecret: TEST_SESSION_SECRET,
       devPassword: false,
+      google: null,
+      sessionSecret: TEST_SESSION_SECRET,
     },
     adminTz: 'Asia/Jerusalem',
     trustProxy: false,

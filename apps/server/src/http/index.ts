@@ -44,10 +44,13 @@ export interface HttpDeps {
   /** The built admin site (default apps/admin/dist when it has an index.html); null serves none. */
   adminSiteDir?: string | null;
   /**
-   * Checks Firebase ID tokens (accounts, and the sender of telemetry). Default: for the settings, with
-   * Google's keys (auth/firebaseToken); tests pass one with their own keys (testing/tokens).
+   * Checks Firebase ID tokens (accounts, the sender of telemetry, and the admin site's Google sign-in).
+   * Default: for the settings, with Google's keys (auth/firebaseToken); tests pass one with their own keys
+   * (testing/tokens).
    */
   tokens?: TokenVerifier;
+  /** Where admin sign-ins are logged (default console.log); tests capture it. */
+  adminLog?: (message: string) => void;
   /** Rate limits of the account routes; tests make them small. */
   accountLimits?: AccountLimits;
   /** Rate limits of the progress routes (stage 12); tests make them small. */
@@ -86,7 +89,7 @@ export function configureHttp(app: Application, deps: HttpDeps): void {
   // GET /v1/leaderboard, /v1/players/:id, /v1/me/progress; POST /v1/me/practice-results (stage 12)
   app.use(createProgressRouter({ ...deps, tokens, settings: progressSettings(deps.config, deps.progress) }));
   // The API first: it answers everything under /admin/api (404 included), so the site never does.
-  app.use(createAdminRouter(deps));
+  app.use(createAdminRouter({ ...deps, tokens, log: deps.adminLog })); // tokens: the admin's Google sign-in
   app.use(createAdminSiteRouter(deps.adminSiteDir === undefined ? findAdminSiteDir() : deps.adminSiteDir));
   // The privacy policy, terms of use and account deletion page, public (src/legal).
   app.use(createLegalRouter({ legal: deps.config.legal ?? { contactEmail: null, operatorName: null } }));

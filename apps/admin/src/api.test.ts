@@ -1,7 +1,7 @@
-import { ADMIN_API_PREFIX } from '@sudoku-fight/protocol';
+import { ADMIN_API_PREFIX, ADMIN_GOOGLE_LOGIN_ERRORS } from '@sudoku-fight/protocol';
 
 import { ApiError, createApi, queryString } from './api';
-import { fakeServer, SIGNED_IN } from './testing/server';
+import { fakeServer, GOOGLE_AND_PASSWORD, GOOGLE_WEB, SIGNED_IN } from './testing/server';
 
 describe('api client', () => {
   it('builds the list URLs the contract names, page size included', async () => {
@@ -89,6 +89,59 @@ describe('api client', () => {
 
     const dead = createApi({ fetch: () => Promise.reject(new TypeError('Failed to fetch')) });
     await expect(dead.session()).rejects.toMatchObject({ code: 'network', status: 0 });
+  });
+
+  it('asks for the ways to sign in without a session check, and posts a Google sign-in token', async () => {
+    const onUnauthorized = jest.fn();
+    const server = fakeServer({
+      'GET /auth/methods': GOOGLE_AND_PASSWORD,
+      'POST /login/google': { status: 204 },
+    });
+    const api = createApi({ fetch: server.fetch, onUnauthorized });
+
+    await expect(api.authMethods()).resolves.toEqual({ password: true, google: GOOGLE_WEB });
+    await expect(api.loginWithGoogle('firebase-id-token')).resolves.toBeUndefined();
+    expect(server.requests).toMatchObject([
+      { method: 'GET', url: '/admin/api/auth/methods', credentials: 'same-origin' },
+      {
+        method: 'POST',
+        url: '/admin/api/login/google',
+        body: { idToken: 'firebase-id-token' },
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+      },
+    ]);
+    expect(onUnauthorized).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [400, 'badRequest'],
+    [413, 'tooLarge'],
+    [401, 'invalidToken'],
+    [403, 'wrongProvider'],
+    [403, 'unverifiedEmail'],
+    [403, 'notAllowed'],
+    [403, 'disabled'],
+    [503, 'disabled'],
+    [429, 'tooManyRequests'],
+    [503, 'unavailable'],
+    [500, 'internal'],
+  ] as const)('names a Google sign-in refusal: %i %s', async (status, error) => {
+    const onUnauthorized = jest.fn();
+    const server = fakeServer({ 'POST /login/google': { status, body: { error, message: 'why' } } });
+    const api = createApi({ fetch: server.fetch, onUnauthorized });
+    await expect(api.loginWithGoogle('t')).rejects.toMatchObject({ code: error, status, message: 'why' });
+    // A refused token is not a session that ran out.
+    expect(onUnauthorized).not.toHaveBeenCalled();
+  });
+
+  it('every Google sign-in error of the contract is a code the client names', async () => {
+    for (const error of ADMIN_GOOGLE_LOGIN_ERRORS) {
+      const api = createApi({
+        fetch: fakeServer({ 'POST /login/google': { status: 403, body: { error } } }).fetch,
+      });
+      await expect(api.loginWithGoogle('t')).rejects.toMatchObject({ code: error });
+    }
   });
 
   it('returns the session', async () => {

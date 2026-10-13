@@ -17,7 +17,8 @@ export interface TestHttp {
  */
 export async function startHttp(deps: HttpDeps): Promise<TestHttp> {
   const app = express();
-  configureHttp(app, deps);
+  // Admin sign-ins are logged; quiet here unless the test listens (adminLog).
+  configureHttp(app, { adminLog: () => {}, ...deps });
   const server = createServer(app);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address() as AddressInfo;

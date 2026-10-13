@@ -446,9 +446,17 @@ describe.each([
       'SENTRY_DSN',
       'FIREBASE_PROJECT_ID',
       'INVITE_URL',
+      // The admin site's Google sign-in: who may sign in, and the Firebase web app (public, but not in the repo).
+      'ADMIN_EMAILS',
+      'FIREBASE_WEB_API_KEY',
+      'FIREBASE_WEB_APP_ID',
     ]) {
       expect(value(secret)).toBeUndefined();
     }
+    // Nor anything shaped like a Google API key or an email address, under any name.
+    const text = read(file);
+    expect(text).not.toMatch(/AIza[\w-]{35}/);
+    expect(text).not.toMatch(/[\w.+-]+@[\w-]+\.[\w.-]+/);
   });
 
   it(`tells Sentry it is ${environment} (both run NODE_ENV=production)`, () => {

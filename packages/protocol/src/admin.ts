@@ -2,15 +2,22 @@ import type { AvatarId, NO_AVATAR_ID } from './account';
 import type { TelemetryEventName, TelemetryProps } from './telemetry';
 
 /**
- * The admin site's API (spec §27.3): read-only, under `/admin/api`, behind the admin password from the
- * server's settings. The site (apps/admin) and the server (apps/server) both build on these types.
+ * The admin site's API (spec §27.3): read-only, under `/admin/api`, behind a sign-in. The site (apps/admin) and
+ * the server (apps/server) both build on these types.
+ *
+ * Signing in: with Google (a Firebase ID token of an address on the server's ADMIN_EMAILS list), and/or with
+ * the admin password (ADMIN_PASSWORD; in development, the dev password). Which of them a server offers is
+ * public: GET /admin/api/auth/methods. Both end in the same session cookie.
  *
  * Times are epoch ms. Days are 'YYYY-MM-DD' in the admin time zone (server setting, Asia/Jerusalem by default).
  *
  * Routes:
- *   POST /admin/api/login    AdminLoginRequest → 204 and an HttpOnly session cookie · 401 wrong · 429 too many tries
- *   POST /admin/api/logout   → 204
- *   GET  /admin/api/session  → AdminSession · 401 when not signed in (every route below answers 401 too)
+ *   GET  /admin/api/auth/methods → AdminAuthMethods (no session needed)
+ *   POST /admin/api/login        AdminLoginRequest → 204 and an HttpOnly session cookie · 401 wrong password ·
+ *                                403 disabled (password sign-in is off) · 429 too many tries
+ *   POST /admin/api/login/google AdminGoogleLoginRequest → 204 and the same cookie · AdminGoogleLoginError
+ *   POST /admin/api/logout       → 204
+ *   GET  /admin/api/session      → AdminSession · 401 when not signed in (every route below answers 401 too)
  *   GET  /admin/api/overview?days=30                      → AdminOverview
  *   GET  /admin/api/installs?search=&page=1&pageSize=50   → AdminPage<AdminInstallRow>
  *   GET  /admin/api/installs/:id                          → AdminInstallDetail · 404
@@ -19,26 +26,108 @@ import type { TelemetryEventName, TelemetryProps } from './telemetry';
  *   GET  /admin/api/games?mode=&search=&page=1&pageSize=50 → AdminPage<AdminGameRow>
  *   GET  /admin/api/games/:id                             → AdminGameDetail · 404
  *   GET  /admin/api/screens?days=30                       → AdminScreens
+ *
+ * With the admin site off on the server (no sign-in method set up), every route answers 503 `disabled`,
+ * auth/methods included.
  */
 
 export const ADMIN_API_PREFIX = '/admin/api';
 export const ADMIN_DEFAULT_PAGE_SIZE = 50;
 export const ADMIN_MAX_PAGE_SIZE = 200;
 
+/** The sign-in routes, under ADMIN_API_PREFIX. */
+export const ADMIN_AUTH_METHODS_PATH = '/auth/methods';
+export const ADMIN_LOGIN_PATH = '/login';
+export const ADMIN_GOOGLE_LOGIN_PATH = '/login/google';
+
+export type AdminSignInMethod = 'password' | 'google';
+
+/**
+ * The Firebase web app's settings, for the site's Firebase JS SDK (initializeApp, then GoogleAuthProvider and
+ * signInWithPopup). Public by design: a web app's config is visible in any page that uses it.
+ */
+export interface AdminGoogleWebConfig {
+  apiKey: string;
+  /** `<projectId>.firebaseapp.com`: where the sign-in popup opens. */
+  authDomain: string;
+  projectId: string;
+  /** The web app's id (`1:<number>:web:<hex>`); null when the server has none (sign-in works without it). */
+  appId: string | null;
+}
+
+/**
+ * GET /admin/api/auth/methods: how this server lets an admin sign in. Never says who may: the list of allowed
+ * addresses stays on the server.
+ */
+export interface AdminAuthMethods {
+  /** POST /login takes a password. */
+  password: boolean;
+  /** POST /login/google takes a Google sign-in; null when it is off. */
+  google: AdminGoogleWebConfig | null;
+}
+
 export interface AdminLoginRequest {
   password: string;
+}
+
+/** POST /admin/api/login/google: the Firebase ID token of the user signInWithPopup just signed in. */
+export interface AdminGoogleLoginRequest {
+  idToken: string;
+}
+
+/**
+ * What POST /admin/api/login/google answers instead of 204, by HTTP status:
+ * - 400 badRequest: the body is not JSON `{"idToken": "…"}`; 413 tooLarge: the body is too big.
+ * - 401 invalidToken: not a valid Firebase ID token of this server's project (forged, expired, for another
+ *   project, a development token…), or one of a sign-in more than 5 minutes old (`auth_time`; a refreshed
+ *   token keeps its first sign-in's). Signing in again in Google's popup gives a fresh one.
+ * - 403 wrongProvider: the token is not from a Google sign-in (e.g. email and password).
+ * - 403 unverifiedEmail: Google does not vouch for the address (`email_verified` is not true).
+ * - 403 notAllowed: the address is not on the server's list of admins.
+ * - 403 disabled: Google sign-in is off on this server (see auth/methods). 503 disabled: the admin site is off.
+ * - 429 tooManyRequests: too many sign-in tries from this address (password and Google count together),
+ *   with Retry-After in seconds.
+ * - 503 unavailable: the server can't reach Google's keys to check the token right now; try again later.
+ */
+export const ADMIN_GOOGLE_LOGIN_ERRORS = [
+  'badRequest',
+  'tooLarge',
+  'invalidToken',
+  'wrongProvider',
+  'unverifiedEmail',
+  'notAllowed',
+  'disabled',
+  'tooManyRequests',
+  'unavailable',
+  'internal',
+] as const;
+
+export type AdminGoogleLoginErrorCode = (typeof ADMIN_GOOGLE_LOGIN_ERRORS)[number];
+
+export interface AdminGoogleLoginError {
+  error: AdminGoogleLoginErrorCode;
+  message?: string;
+}
+
+export function isAdminGoogleLoginErrorCode(value: unknown): value is AdminGoogleLoginErrorCode {
+  return typeof value === 'string' && (ADMIN_GOOGLE_LOGIN_ERRORS as readonly string[]).includes(value);
 }
 
 export interface AdminSession {
   ok: true;
   /** When the session cookie runs out. */
   expiresAt: number;
+  /** How this session signed in. */
+  method: AdminSignInMethod;
+  /** The admin's address (lower case) for a Google sign-in; null for the password. */
+  email: string | null;
 }
 
 /**
- * 400 badRequest (a bad query string or login body) · 401 unauthorized · 404 notFound · 413 tooLarge (login
- * body) · 429 tooManyRequests (with Retry-After seconds) · 500 internal · 503 disabled (no admin password
- * set on the server).
+ * 400 badRequest (a bad query string or login body) · 401 unauthorized · 403 disabled (POST /login while
+ * password sign-in is off) · 404 notFound · 413 tooLarge (login body) · 429 tooManyRequests (with Retry-After
+ * seconds) · 500 internal · 503 disabled (the admin site is off: no sign-in method set up on the server).
+ * POST /login/google has its own codes: AdminGoogleLoginError.
  */
 export interface AdminError {
   error:

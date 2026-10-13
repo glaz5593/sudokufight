@@ -4,12 +4,15 @@ import {
   ConfigError,
   DEFAULT_PGLITE_DIR,
   DEFAULT_TRACES_SAMPLE_RATE,
+  describeAdmin,
   DEV_ADMIN_PASSWORD,
   loadConfig,
   type LoadConfigOptions,
+  MIN_ADMIN_PASSWORD_LENGTH,
   parseTrustProxy,
   SERVER_VERSION,
   sentryRelease,
+  splitAdminEmails,
 } from './config';
 
 const SECRET = 's'.repeat(32);
@@ -40,8 +43,9 @@ describe('loadConfig', () => {
       admin: {
         enabled: true,
         password: DEV_ADMIN_PASSWORD,
-        sessionSecret: 'random-secret',
         devPassword: true,
+        google: null,
+        sessionSecret: 'random-secret',
       },
       adminTz: 'Asia/Jerusalem',
       trustProxy: false,
@@ -120,26 +124,33 @@ describe('loadConfig', () => {
       expect(warnings.some((w) => w.includes('production on PGlite'))).toBe(true);
     });
 
-    it('enables the admin site only with a password of 12+ characters', () => {
-      const ok = load({ ...prod, ADMIN_PASSWORD: 'correct horse', ADMIN_SESSION_SECRET: SECRET });
+    it('a password alone enables the admin site, with 8+ characters', () => {
+      expect(MIN_ADMIN_PASSWORD_LENGTH).toBe(8);
+      const ok = load({ ...prod, ADMIN_PASSWORD: 'eight ch', ADMIN_SESSION_SECRET: SECRET });
       expect(ok.config.admin).toEqual({
         enabled: true,
-        password: 'correct horse',
-        sessionSecret: SECRET,
+        password: 'eight ch',
         devPassword: false,
+        google: null,
+        sessionSecret: SECRET,
       });
       expect(ok.warnings).toEqual([]);
 
-      const short = load({ ...prod, ADMIN_PASSWORD: 'short' });
+      const short = load({ ...prod, ADMIN_PASSWORD: 'seven c' });
       expect(short.config.admin).toEqual({
         enabled: false,
-        reason: 'ADMIN_PASSWORD is shorter than 12 characters',
+        reason:
+          'no sign-in method: Google sign-in needs FIREBASE_WEB_API_KEY, ADMIN_EMAILS; ' +
+          'ADMIN_PASSWORD is shorter than 8 characters',
         sessionSecret: 'random-secret',
       });
       expect(short.warnings[0]).toContain('admin site disabled');
 
       const unset = load(prod);
-      expect(unset.config.admin).toMatchObject({ enabled: false, reason: 'ADMIN_PASSWORD is not set' });
+      expect(unset.config.admin).toMatchObject({
+        enabled: false,
+        reason: expect.stringContaining('ADMIN_PASSWORD is not set'),
+      });
     });
 
     it('never falls back to the dev password', () => {
@@ -151,7 +162,9 @@ describe('loadConfig', () => {
       const { config, warnings } = load({ ...prod, ADMIN_PASSWORD: DEV_ADMIN_PASSWORD });
       expect(config.admin).toEqual({
         enabled: false,
-        reason: 'ADMIN_PASSWORD is the dev password, which is public (it is in the code)',
+        reason:
+          'no sign-in method: Google sign-in needs FIREBASE_WEB_API_KEY, ADMIN_EMAILS; ' +
+          'ADMIN_PASSWORD is the dev password, which is public (it is in the code)',
         sessionSecret: 'random-secret',
       });
       expect(warnings[0]).toContain('admin site disabled');
@@ -166,6 +179,231 @@ describe('loadConfig', () => {
       const { config, warnings } = load({ ...prod, ADMIN_PASSWORD: 'long enough password' });
       expect(config.admin.sessionSecret).toBe('random-secret');
       expect(warnings.some((w) => w.includes('ADMIN_SESSION_SECRET is not set'))).toBe(true);
+    });
+  });
+
+  describe("the admin site's sign-in: Google for ADMIN_EMAILS, and/or a password", () => {
+    // Made up, of the right shape; built here, so no key-like text sits in the repo.
+    const API_KEY = `AIza${'k'.repeat(30)}_-K9x`;
+    const APP_ID = '1:123456789012:web:0a1b2c3d4e5f';
+    const prod = { NODE_ENV: 'production', DATABASE_URL: 'postgres://h/db', ADMIN_SESSION_SECRET: SECRET };
+    const googleSettings = {
+      FIREBASE_PROJECT_ID: 'sudoku-fight-1a2b3',
+      FIREBASE_WEB_API_KEY: API_KEY,
+      FIREBASE_WEB_APP_ID: APP_ID,
+      ADMIN_EMAILS: 'first@example.com, second@example.org',
+    };
+    const web = {
+      apiKey: API_KEY,
+      authDomain: 'sudoku-fight-1a2b3.firebaseapp.com',
+      projectId: 'sudoku-fight-1a2b3',
+      appId: APP_ID,
+    };
+    const adminWarnings = (warnings: string[]) => warnings.filter((w) => /admin|ADMIN/.test(w));
+
+    it('Google only: the web config from the Firebase settings, and the allowed addresses', () => {
+      const { config, warnings } = load({ ...prod, ...googleSettings });
+      expect(config.admin).toEqual({
+        enabled: true,
+        password: null,
+        devPassword: false,
+        google: { web, allowedEmails: ['first@example.com', 'second@example.org'] },
+        sessionSecret: SECRET,
+      });
+      expect(adminWarnings(warnings)).toEqual([]);
+      expect(describeAdmin(config.admin)).toBe('on (Google sign-in for 2 addresses)');
+    });
+
+    it('Google without FIREBASE_WEB_APP_ID: appId null (sign-in works without it)', () => {
+      const { config } = load({ ...prod, ...googleSettings, FIREBASE_WEB_APP_ID: '' });
+      expect(config.admin).toMatchObject({ enabled: true, google: { web: { ...web, appId: null } } });
+    });
+
+    it('password only, in production', () => {
+      const { config, warnings } = load({ ...prod, ADMIN_PASSWORD: 'a long password' });
+      expect(config.admin).toMatchObject({ enabled: true, password: 'a long password', google: null });
+      expect(adminWarnings(warnings)).toEqual([]);
+      expect(describeAdmin(config.admin)).toBe('on (password)');
+    });
+
+    it('both', () => {
+      const { config } = load({ ...prod, ...googleSettings, ADMIN_PASSWORD: 'a long password' });
+      expect(config.admin).toMatchObject({
+        enabled: true,
+        password: 'a long password',
+        google: { web, allowedEmails: ['first@example.com', 'second@example.org'] },
+      });
+      expect(describeAdmin(config.admin)).toBe('on (Google sign-in for 2 addresses, password)');
+    });
+
+    it('none: the admin site is off, and the warning says what to set', () => {
+      const { config, warnings } = load(prod);
+      expect(config.admin).toEqual({
+        enabled: false,
+        reason:
+          'no sign-in method: Google sign-in needs FIREBASE_PROJECT_ID, FIREBASE_WEB_API_KEY, ADMIN_EMAILS; ' +
+          'ADMIN_PASSWORD is not set',
+        sessionSecret: SECRET,
+      });
+      expect(adminWarnings(warnings)).toEqual([
+        expect.stringMatching(/^\[config\] admin site disabled: no sign-in method: Google sign-in needs /),
+      ]);
+      expect(describeAdmin(config.admin)).toMatch(/^off: no sign-in method/);
+    });
+
+    it.each([
+      ['no API key', { FIREBASE_WEB_API_KEY: undefined }, 'FIREBASE_WEB_API_KEY'],
+      ['no addresses', { ADMIN_EMAILS: undefined }, 'ADMIN_EMAILS'],
+      ['no project', { FIREBASE_PROJECT_ID: undefined }, 'FIREBASE_PROJECT_ID'],
+      [
+        'only the app id',
+        { FIREBASE_WEB_API_KEY: undefined, ADMIN_EMAILS: undefined },
+        'FIREBASE_WEB_API_KEY, ADMIN_EMAILS',
+      ],
+    ])(
+      'part of the Google settings (%s): Google off, with a warning naming what is missing',
+      (_why, change, missing) => {
+        const { config, warnings } = load({
+          ...prod,
+          ...googleSettings,
+          ...change,
+          ADMIN_PASSWORD: 'a long password',
+        });
+        expect(config.admin).toMatchObject({ enabled: true, google: null, password: 'a long password' });
+        expect(warnings).toContain(`[config] admin Google sign-in off: ${missing} not set`);
+        // Outside production too: a half-set Google sign-in is a mistake anywhere.
+        expect(load({ ...googleSettings, ...change }).warnings).toContain(
+          `[config] admin Google sign-in off: ${missing} not set`,
+        );
+      },
+    );
+
+    it('FIREBASE_PROJECT_ID alone is the app’s accounts, not a half-set admin sign-in: no Google warning', () => {
+      const { warnings } = load({
+        ...prod,
+        FIREBASE_PROJECT_ID: 'sudoku-fight-1a2b3',
+        ADMIN_PASSWORD: 'a long password',
+      });
+      expect(warnings.filter((w) => w.includes('Google'))).toEqual([]);
+    });
+
+    it('ADMIN_EMAILS: separated by commas, semicolons or spaces; trimmed, lower case, each once', () => {
+      const of = (raw: string) => load({ ...prod, ...googleSettings, ADMIN_EMAILS: raw }).config.admin;
+      expect(
+        of(' First@Example.com;second@example.org\n  THIRD@example.net , first@example.com ,; '),
+      ).toMatchObject({
+        google: { allowedEmails: ['first@example.com', 'second@example.org', 'third@example.net'] },
+      });
+      expect(of('only@example.com')).toMatchObject({ google: { allowedEmails: ['only@example.com'] } });
+      expect(splitAdminEmails('a@one.example  b@two.example,A@ONE.example')).toEqual([
+        'a@one.example',
+        'b@two.example',
+      ]);
+    });
+
+    it('ADMIN_EMAILS: a bad entry turns Google sign-in off, named in the warning; the server still starts', () => {
+      // A typo on the live server: "b@example,com" for "b@example.com". The game must keep running.
+      const typo = load({ ...prod, ...googleSettings, ADMIN_EMAILS: 'first@example.com, b@example,com' });
+      expect(typo.config.admin).toEqual({
+        enabled: false,
+        reason:
+          'no sign-in method: Google sign-in is off: ADMIN_EMAILS: "b@example" is not an email address; ' +
+          'ADMIN_EMAILS: "com" is not an email address; ADMIN_PASSWORD is not set',
+        sessionSecret: SECRET,
+      });
+      expect(adminWarnings(typo.warnings)).toEqual([
+        '[config] admin Google sign-in off: ADMIN_EMAILS: "b@example" is not an email address; ' +
+          'ADMIN_EMAILS: "com" is not an email address',
+        expect.stringMatching(/^\[config\] admin site disabled: no sign-in method: Google sign-in is off: /),
+      ]);
+      // With a password, the admin site stays on through it.
+      const withPassword = load({
+        ...prod,
+        ...googleSettings,
+        ADMIN_EMAILS: 'x@y',
+        ADMIN_PASSWORD: 'a long password',
+      });
+      expect(withPassword.config.admin).toMatchObject({
+        enabled: true,
+        google: null,
+        password: 'a long password',
+      });
+      expect(withPassword.warnings).toContain(
+        '[config] admin Google sign-in off: ADMIN_EMAILS: "x@y" is not an email address',
+      );
+      // A list of no address; outside production too.
+      expect(load({ ...googleSettings, ADMIN_EMAILS: ' , ; ' }).warnings).toContain(
+        '[config] admin Google sign-in off: ADMIN_EMAILS: no email address in it',
+      );
+      // Blank is unset: no warning, and no half-set Google sign-in.
+      expect(load({ NODE_ENV: 'test', ADMIN_EMAILS: '   ' }).warnings).toEqual([]);
+    });
+
+    it('FIREBASE_WEB_API_KEY and FIREBASE_WEB_APP_ID must look like what Firebase shows, else Google is off', () => {
+      const googleOff = (change: Record<string, string>) => {
+        const { config, warnings } = load({ ...prod, ...googleSettings, ...change });
+        expect(config.admin).toMatchObject({ enabled: false });
+        return warnings.filter((w) => w.startsWith('[config] admin Google sign-in off: '));
+      };
+      for (const bad of [
+        'key',
+        `AIza${'k'.repeat(34)}`,
+        `AIza${'k'.repeat(36)}`,
+        `BIza${'k'.repeat(35)}`,
+        APP_ID,
+      ])
+        expect(googleOff({ FIREBASE_WEB_API_KEY: bad })).toEqual([
+          '[config] admin Google sign-in off: FIREBASE_WEB_API_KEY: not a Firebase web API key ' +
+            '(apiKey: "AIza" and 35 more characters)',
+        ]);
+      for (const bad of ['web-app', '1:123:android:abc', API_KEY, '1:123:web:XYZ'])
+        expect(googleOff({ FIREBASE_WEB_APP_ID: bad })).toEqual([
+          '[config] admin Google sign-in off: FIREBASE_WEB_APP_ID: not a Firebase web app id ' +
+            '(appId: 1:<number>:web:<hex>)',
+        ]);
+      // A bad value and a missing one: both said.
+      expect(googleOff({ FIREBASE_WEB_API_KEY: 'key', FIREBASE_PROJECT_ID: '' })).toEqual([
+        '[config] admin Google sign-in off: FIREBASE_WEB_API_KEY: not a Firebase web API key ' +
+          '(apiKey: "AIza" and 35 more characters); FIREBASE_PROJECT_ID not set',
+      ]);
+      // Never a ConfigError: the server starts.
+      expect(() =>
+        loadConfig({ ...prod, ...googleSettings, FIREBASE_WEB_API_KEY: 'key' }, { warn: () => {} }),
+      ).not.toThrow();
+      expect(load({ FIREBASE_WEB_API_KEY: ` ${API_KEY} ` }).config.admin.enabled).toBe(true);
+      expect(load({ ...googleSettings, FIREBASE_WEB_API_KEY: ` ${API_KEY} ` }).config.admin).toMatchObject({
+        google: { web: { apiKey: API_KEY } },
+      });
+    });
+
+    it('production: a password shorter than 8, or the dev password, is off; Google still signs in (with a warning)', () => {
+      for (const [password, why] of [
+        ['seven c', 'ADMIN_PASSWORD is shorter than 8 characters'],
+        [DEV_ADMIN_PASSWORD, 'ADMIN_PASSWORD is the dev password, which is public (it is in the code)'],
+      ] as const) {
+        const { config, warnings } = load({ ...prod, ...googleSettings, ADMIN_PASSWORD: password });
+        expect(config.admin).toMatchObject({ enabled: true, password: null, google: { web } });
+        expect(warnings).toContain(`[config] admin password sign-in off: ${why}`);
+      }
+    });
+
+    it('development: the dev password keeps working next to Google sign-in', () => {
+      const { config } = load(googleSettings);
+      expect(config.admin).toMatchObject({
+        enabled: true,
+        password: DEV_ADMIN_PASSWORD,
+        devPassword: true,
+        google: { web },
+      });
+      expect(describeAdmin(config.admin)).toBe('on (Google sign-in for 2 addresses, dev password)');
+      expect(describeAdmin(load({ NODE_ENV: 'test' }).config.admin)).toBe('on (dev password)');
+    });
+
+    it('the start-up line never shows the addresses or the key', () => {
+      const { config } = load({ ...prod, ...googleSettings, ADMIN_EMAILS: 'solo@example.com' });
+      const line = describeAdmin(config.admin);
+      expect(line).toBe('on (Google sign-in for 1 address)');
+      expect(line).not.toMatch(/@|AIza/);
     });
   });
 

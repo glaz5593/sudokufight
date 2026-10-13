@@ -13,28 +13,55 @@ describe('passwordMatches', () => {
 });
 
 describe('SessionKeeper', () => {
-  const make = (now = fakeClock(1_000_000)) =>
-    new SessionKeeper({ secret: 's'.repeat(32), password: 'pw', ttlMs: 1000, now: now.now, maxRevoked: 3 });
+  const PASSWORD = { method: 'password' } as const;
+  const make = (now = fakeClock(1_000_000), password: string | null = 'pw') =>
+    new SessionKeeper({ secret: 's'.repeat(32), password, ttlMs: 1000, now: now.now, maxRevoked: 3 });
 
   it('issues tokens that verify until they run out, each one different', () => {
     const clock = fakeClock(1_000_000);
     const keeper = make(clock);
-    const a = keeper.issue();
-    const b = keeper.issue();
+    const a = keeper.issue(PASSWORD);
+    const b = keeper.issue(PASSWORD);
     expect(a.expiresAt).toBe(1_001_000);
     expect(a.token).not.toBe(b.token);
-    expect(keeper.verify(a.token)).toBe(1_001_000);
+    expect(keeper.verify(a.token)).toEqual({ expiresAt: 1_001_000, admin: PASSWORD });
     clock.advance(999);
-    expect(keeper.verify(a.token)).toBe(1_001_000);
+    expect(keeper.verify(a.token)).toEqual({ expiresAt: 1_001_000, admin: PASSWORD });
     clock.advance(1);
     expect(keeper.verify(a.token)).toBeNull();
     expect(keeper.verify(undefined)).toBeNull();
   });
 
+  it('a token says who signed in: the password, or a Google address (signed, so it cannot be swapped)', () => {
+    const keeper = make(fakeClock(1_000_000), null);
+    const google = { method: 'google', email: 'dana@example.com' } as const;
+    const { token } = keeper.issue(google);
+    expect(token.split('.')).toHaveLength(4);
+    expect(keeper.verify(token)).toEqual({ expiresAt: 1_001_000, admin: google });
+    const long = { method: 'google', email: `${'a'.repeat(64)}@${'b'.repeat(180)}.example` } as const;
+    expect(keeper.verify(keeper.issue(long).token)).toEqual({ expiresAt: 1_001_000, admin: long });
+
+    // Another admin in the same token: the MAC no longer matches.
+    const [exp, nonce, , mac] = token.split('.') as [string, string, string, string];
+    for (const who of ['password', 'google:someone@example.com', 'nobody', 'google:']) {
+      const swapped = `${exp}.${nonce}.${Buffer.from(who).toString('base64url')}.${mac}`;
+      expect({ who, session: keeper.verify(swapped) }).toEqual({ who, session: null });
+    }
+    // The older three-part tokens are not sessions any more.
+    expect(keeper.verify(`${exp}.${nonce}.${mac}`)).toBeNull();
+  });
+
+  it('a password-less keeper (Google sign-in only) and one with a password sign different keys', () => {
+    const clock = fakeClock(1_000_000);
+    const { token } = make(clock, null).issue(PASSWORD);
+    expect(make(clock, 'pw').verify(token)).toBeNull();
+    expect(make(clock, null).verify(token)).not.toBeNull();
+  });
+
   it('revoked tokens are refused; the list forgets expired ones and stays bounded', () => {
     const clock = fakeClock(1_000_000);
     const keeper = make(clock);
-    const tokens = Array.from({ length: 5 }, () => keeper.issue().token);
+    const tokens = Array.from({ length: 5 }, () => keeper.issue(PASSWORD).token);
     keeper.revoke(tokens[0]);
     expect(keeper.verify(tokens[0])).toBeNull();
     expect(keeper.verify(tokens[1])).not.toBeNull();
@@ -43,7 +70,7 @@ describe('SessionKeeper', () => {
     keeper.revoke('not a token');
     expect(keeper.revokedCount).toBe(3);
     clock.advance(1000);
-    const fresh = keeper.issue().token;
+    const fresh = keeper.issue(PASSWORD).token;
     keeper.revoke(fresh);
     expect(keeper.revokedCount).toBe(1);
   });

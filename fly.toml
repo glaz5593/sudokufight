@@ -4,8 +4,10 @@
 # memory of its one process, so this app runs exactly one machine: deploy with `fly deploy --ha=false`, and
 # never scale it out.
 #
-# Secrets (fly secrets set): DATABASE_URL, ADMIN_PASSWORD, ADMIN_SESSION_SECRET, and SENTRY_DSN for error
-# reports. Nothing secret goes in here. Production is a separate app: fly.production.toml.
+# Secrets (fly secrets set): DATABASE_URL, FIREBASE_PROJECT_ID, the admin site's Google sign-in (ADMIN_EMAILS,
+# FIREBASE_WEB_API_KEY, FIREBASE_WEB_APP_ID), and optionally SENTRY_DSN for error reports, LEGAL_*,
+# ADMIN_PASSWORD, ADMIN_SESSION_SECRET. Nothing secret goes in here. Production is a separate app:
+# fly.production.toml.
 
 app = "sudoku-fight-staging"
 primary_region = "fra"

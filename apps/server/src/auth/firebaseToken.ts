@@ -36,6 +36,19 @@ export interface VerifiedToken {
    * or a re-authentication moves it on. Null for a development token, which has none.
    */
   signedInAt: number | null;
+  /**
+   * How the user signed in to Firebase (the token's `firebase.sign_in_provider`: 'password', 'google.com'…);
+   * null when the token doesn't say, and for a development token. The admin site's Google sign-in wants
+   * 'google.com'.
+   */
+  signInProvider: string | null;
+}
+
+/** The `firebase.sign_in_provider` claim of a verified payload, or null. */
+function signInProviderOf(firebase: unknown): string | null {
+  if (typeof firebase !== 'object' || firebase === null) return null;
+  const provider = (firebase as { sign_in_provider?: unknown }).sign_in_provider;
+  return typeof provider === 'string' && provider !== '' ? provider : null;
 }
 
 /**
@@ -99,7 +112,7 @@ export function createTokenVerifier({
         currentDate: new Date(now()),
         requiredClaims: ['exp', 'iat', 'sub', 'auth_time'],
       });
-      const { sub, iat, auth_time: authTime, email, email_verified: emailVerified } = payload;
+      const { sub, iat, auth_time: authTime, email, email_verified: emailVerified, firebase } = payload;
       if (typeof sub !== 'string' || sub === '' || sub.length > MAX_UID_LENGTH) {
         return fail('invalid', 'no subject (sub)');
       }
@@ -117,6 +130,7 @@ export function createTokenVerifier({
           emailVerified: emailVerified === true,
           kind: 'firebase',
           signedInAt: authTime * 1000,
+          signInProvider: signInProviderOf(firebase),
         },
       };
     } catch (err) {
@@ -145,6 +159,7 @@ export function createTokenVerifier({
             emailVerified: dev.email !== null,
             kind: 'dev',
             signedInAt: null,
+            signInProvider: null,
           },
         });
       }

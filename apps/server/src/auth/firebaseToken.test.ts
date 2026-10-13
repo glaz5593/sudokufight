@@ -39,10 +39,23 @@ describe('Firebase ID tokens', () => {
         kind: 'firebase',
         // testTokens signs in a minute before issuing the token.
         signedInAt: NOW - 60_000,
+        signInProvider: 'password',
       },
     });
     const verified = await tokens.sign({ uid: 'abc123', email: 'dana@example.com' }, NOW);
     expect(await verify(verified)).toMatchObject({ ok: true, token: { emailVerified: true } });
+  });
+
+  it('reads how the user signed in (firebase.sign_in_provider); null when the token does not say', async () => {
+    const google = await tokens.sign({ email: 'dana@example.com', provider: 'google.com' }, NOW);
+    expect(await verify(google)).toMatchObject({ ok: true, token: { signInProvider: 'google.com' } });
+    for (const firebase of [undefined, 'google.com', {}, { sign_in_provider: 7 }, { sign_in_provider: '' }]) {
+      const token = await tokens.sign({ extra: { firebase } }, NOW);
+      expect({ firebase, result: await verify(token) }).toMatchObject({
+        firebase,
+        result: { ok: true, token: { signInProvider: null } },
+      });
+    }
   });
 
   it('a token without an email has email null, unverified', async () => {
@@ -202,11 +215,25 @@ describe('development tokens', () => {
   it('outside production: dev:<uid> is taken as is, its uid kept apart from Firebase uids', async () => {
     expect(await verify('dev:ana_1')).toEqual({
       ok: true,
-      token: { uid: 'dev:ana_1', email: null, emailVerified: false, kind: 'dev', signedInAt: null },
+      token: {
+        uid: 'dev:ana_1',
+        email: null,
+        emailVerified: false,
+        kind: 'dev',
+        signedInAt: null,
+        signInProvider: null,
+      },
     });
     expect(await verify('dev:ana:ana@example.com')).toEqual({
       ok: true,
-      token: { uid: 'dev:ana', email: 'ana@example.com', emailVerified: true, kind: 'dev', signedInAt: null },
+      token: {
+        uid: 'dev:ana',
+        email: 'ana@example.com',
+        emailVerified: true,
+        kind: 'dev',
+        signedInAt: null,
+        signInProvider: null,
+      },
     });
     // Without Firebase too: that's what they are for.
     expect(failure(await verify('dev:ana', { projectId: null }))).toBe('ok');

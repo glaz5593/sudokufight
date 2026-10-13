@@ -1,4 +1,9 @@
-import { ADMIN_API_PREFIX } from '@sudoku-fight/protocol';
+import {
+  ADMIN_API_PREFIX,
+  type AdminAuthMethods,
+  type AdminGoogleWebConfig,
+  type AdminSession,
+} from '@sudoku-fight/protocol';
 import { render } from '@testing-library/react';
 
 import type { FetchLike, FetchResponse } from '../api';
@@ -80,8 +85,34 @@ export function fakeServer(routes: Record<string, Handler> = {}): FakeServer {
   };
 }
 
-export const SIGNED_IN: Reply = { body: { ok: true, expiresAt: Date.now() + 3_600_000 } };
+export const SIGNED_IN: Reply = {
+  body: {
+    ok: true,
+    expiresAt: Date.now() + 3_600_000,
+    method: 'password',
+    email: null,
+  } satisfies AdminSession,
+};
 export const SIGNED_OUT: Reply = { status: 401, body: { error: 'unauthorized' } };
+
+/**
+ * A Firebase web config for the tests. Not a real key: no `AIza…` text in the repo (the server's fixtures build
+ * theirs at run time); the site passes it to the SDK as it is.
+ */
+export const GOOGLE_WEB: AdminGoogleWebConfig = {
+  apiKey: 'test-web-api-key',
+  authDomain: 'sudoku-fight-test.firebaseapp.com',
+  projectId: 'sudoku-fight-test',
+  appId: '1:123:web:abc',
+};
+
+/** GET /auth/methods answers. */
+export const methods = (password: boolean, google: AdminGoogleWebConfig | null): Reply => ({
+  body: { password, google } satisfies AdminAuthMethods,
+});
+export const PASSWORD_ONLY = methods(true, null);
+export const GOOGLE_ONLY = methods(false, GOOGLE_WEB);
+export const GOOGLE_AND_PASSWORD = methods(true, GOOGLE_WEB);
 
 /** The whole site at `hash`, in English unless asked otherwise. */
 export function renderSite(

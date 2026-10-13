@@ -1,3 +1,5 @@
+import { RECENT_SIGN_IN_MS } from '@sudoku-fight/protocol';
+
 import type { RateLimitRule } from '../http/rateLimiter';
 
 /**
@@ -27,3 +29,10 @@ export const ADMIN_SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 export const ADMIN_COOKIE_NAME = 'sf_admin';
 /** Sign-in attempts per IP, right or wrong: 5 at once, then one every 12 s. */
 export const DEFAULT_LOGIN_LIMIT: RateLimitRule = { limit: 5, windowMs: 60_000 };
+/**
+ * A Google sign-in opens an admin session only with an ID token of a sign-in this recent (its `auth_time`): the
+ * page always signs in afresh in Google's popup, so its tokens are seconds old. A token refreshed later keeps
+ * its first sign-in time, so a refresh token taken from anywhere (Firebase's never run out) can't open a
+ * session without Google's own sign-in, 2-step verification included. 5 minutes, as for deleting an account.
+ */
+export const ADMIN_GOOGLE_MAX_AUTH_AGE_MS = RECENT_SIGN_IN_MS;

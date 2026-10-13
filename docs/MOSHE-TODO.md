@@ -30,7 +30,7 @@ from time to time: if a button has moved, use the console's own search box.
 | **Neon** | A company that hosts **Postgres** databases for us (managed: backups and upgrades are theirs). One Neon "project" for staging, one for production. | Free plan: $0, 100 CU-hours per project per month (a CU, "compute unit", is Neon's measure of how big the database machine is; CU-hours = size × hours running. That is about 400 hours of the smallest size, 0.25 CU; the database sleeps after 5 minutes without queries, so that is plenty for a beta), 1 GB storage per project, 6-hour restore window. If a project uses up its CU-hours, Neon suspends it until next month (the server then loses its database). Paid "Launch": pay as you go, $0.106 per CU-hour, $0.35 per GB-month, no minimum, restore window up to 7 days. |
 | **Postgres** | The database (accounts, ratings, games, admin data). The server creates its tables by itself on every start (migrations). | (in Neon) |
 | **Docker image** | A packaged copy of the server and everything it needs (`Dockerfile` at the repo root). Fly builds it on its own builders: no Docker on your PC. | $0 |
-| **Secrets** | Settings that must stay private (database URL, admin password). On Fly they are set with `fly secrets set` and are invisible afterwards (only names and digests are shown). | $0 |
+| **Secrets** | Settings that must stay private (the database URL; an admin session secret or password, if you set one). On Fly they are set with `fly secrets set` and are invisible afterwards (only names and digests are shown). We also keep a few public settings there (the Firebase project, the admin site's Google sign-in), so they stay out of the public repo. | $0 |
 | **Staging vs production** | Two separate copies of the server, each with its own database. **Staging** = for us and our test APKs (the `preview` build). **Production** = for Play testers and real players (the `production` build). A bug on staging never touches real players' data. | (two Fly apps, two Neon projects) |
 | **Play Console tracks** | Release channels on Google Play: **Internal testing** (up to 100 testers you name, almost no review), **Closed testing** (invited testers, reviewed; for new personal accounts, the 12-tester / 14-day requirement happens here), **Open testing** (anyone can join), **Production** (everyone). | (in the $25) |
 | **Play App Signing / upload key** | Google keeps the real **app signing key** and signs what users download. We sign uploads with an **upload key** that EAS creates and keeps on its servers. Consequence: an APK you install with ADB and the app from Play have different signatures; switching between them requires uninstalling first. | $0 |
@@ -46,7 +46,7 @@ from time to time: if a button has moved, use the console's own search box.
 | When | Part | What | Your time | Waiting (no work from you) |
 |---|---|---|---|---|
 | Today | **A** | Open accounts: Google Play Console, Expo, Fly.io, Neon, (Sentry). Start collecting testers. | about 1.5 h | **Play identity verification: usually a few days, sometimes longer.** |
-| Day 1 to 2 | **B** | Firebase project, email sign-in, Hebrew emails, the Android app and `google-services.json`. | about 1 h | none |
+| Day 1 to 2 | **B** | Firebase project, email sign-in, Hebrew emails, the Android app and `google-services.json`; B6: Google sign-in for the admin site. | about 1 h, plus 10 min for B6 | none |
 | Day 1 to 2 | **C** | 5 decisions that block these goals. | 30 to 60 min | the avatar-license search may take longer |
 | Day 2 | **D1 to D7** | Staging server: Neon database, Fly app, secrets, deploy, ranked puzzles, checks. **Goal 1 done.** | about 1 h with Claude | Fly's first build: about 5 min |
 | Day 2 to 3 | **E** | EAS: link the project, upload the Firebase file, build the APK, install on 2 phones with ADB, play. **Goal 2 done.** | 2 to 3 h | EAS free queue: from minutes up to 90+ min at peak, plus 10 to 30 min of build |
@@ -218,7 +218,7 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 
 **Steps**
 1. Left menu: **Authentication** (it may sit under "Build" or "Security"; or type "Authentication" in the console's search box) → **Get started**.
-2. **Sign-in method** tab → **Email/Password** → turn on the first switch (**Email/Password**). Leave **Email link (passwordless sign-in)** off → **Save**. Don't enable other providers.
+2. **Sign-in method** tab → **Email/Password** → turn on the first switch (**Email/Password**). Leave **Email link (passwordless sign-in)** off → **Save**. Don't enable other providers here (B6 adds Google, for the admin site only).
 3. **Settings** tab → **User actions**: keep **Email enumeration protection** on (the default).
 4. **Templates** tab → at the bottom, **Template language** → **Hebrew**.
 5. **Email address verification** → pencil icon: Sender name `סודוקו פייט`, Subject e.g. `אימות כתובת המייל שלך בסודוקו פייט`. If you edit the message, keep `%LINK%` in it. **Save**.
@@ -274,10 +274,32 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 
 **Then tell Claude:** "Firebase is ready. Project ID = `<your project id>`. The file is in `apps/mobile/config/firebase/`." (The Project ID is not a secret.) Claude uses it in D4/D11 and uploads the file to EAS in E2.
 
+### B6. Google sign-in for the admin site (new, small)
+
+- [ ] **B6** Google provider on; web app "Sudoku Fight Admin" added; both fly.dev domains authorized; Claude has the apiKey, the appId and your admin addresses
+
+**Why.** On the real servers you sign in to the admin site (`/admin`) **with your Google account**, and only the accounts on a list kept on the server (`ADMIN_EMAILS`) get in. No admin password to generate or store. Full Hebrew guide: `docs/FIREBASE-SETUP.md` §9א.
+
+**What it does to the app's accounts.** The admin's Google sign-in runs in the game's own Firebase project. So every Google account that completes Google's window on `/admin` becomes a user of that project (**Authentication → Users**, provider Google), even one the server then refuses. Firebase's default is one account per email address, and the app has no Google button, so:
+- An address that signed in to `/admin` can't sign up in the app with email and password (`auth/email-already-in-use`). For app accounts (E7, F8), use other addresses: a Gmail `+` alias such as `you+sf1@gmail.com` is a different address for Firebase, and its mail reaches the same inbox.
+- The other way round: an app account on that same address whose email is not verified yet can lose its password when that address signs in to `/admin` with Google (Firebase trusts Google for Gmail addresses).
+- A stray user (say, someone who tried `/admin` with their own Google account) can be deleted under **Authentication → Users**. It counts as an active user for that month, nothing more.
+
+**Steps** (Firebase console, project "Sudoku Fight")
+1. **Authentication** → **Sign-in method** → **Add new provider** → **Google** → **Enable** → **Project support email**: pick your email → **Save**.
+2. Gear icon → **Project settings** → **General** → **Your apps** → **Add app** → the Web icon (`</>`). **App nickname:** `Sudoku Fight Admin`. Do **not** tick "Also set up Firebase Hosting". **Register app**.
+3. From the `firebaseConfig` it shows, copy **`apiKey`** (starts with `AIza`) and **`appId`** (`1:<number>:web:<letters and digits>`). Then **Continue to console** (no SDK to install).
+4. **Authentication** → **Settings** → **Authorized domains** → **Add domain**: `sudoku-fight-staging.fly.dev`, then again for `sudoku-fight-prod.fly.dev` (`localhost` is already there).
+
+**You're done when** Sign-in method shows Google "Enabled", the web app appears under Your apps, and Authorized domains lists both fly.dev names.
+
+**Then tell Claude:** the `apiKey`, the `appId`, and the Google addresses that may enter the admin site (yours, up to 3). They are not secrets (the admin page receives the apiKey and appId anyway), so the chat is fine; Claude sets them as Fly secrets in D4/D11 and **never writes them into the repo**. Write each address exactly as Google shows it.
+
 ### Sources (Part B)
 - Firebase pricing (Spark, 50K MAU): https://firebase.google.com/pricing
 - File variables in EAS (`GOOGLE_SERVICES_JSON` holds a path during the build): https://docs.expo.dev/eas/environment-variables/faq/
 - FCM service-account key (later only): https://docs.expo.dev/push-notifications/fcm-credentials/
+- Google sign-in on the web with Firebase (B6; provider, web app, authorized domains): https://firebase.google.com/docs/auth/web/google-signin
 
 ---
 
@@ -394,37 +416,43 @@ fly apps list
 **You're done when** `fly apps list` shows `sudoku-fight-staging`. Its address will be `https://sudoku-fight-staging.fly.dev`.
 
 **Pitfalls**
-- "Name already taken": tell Claude the name you got instead. Three places must change together (`app` in `fly.toml`, the `preview` host in `apps/mobile/eas.json`, and `apps/server/test/deploy.test.ts`).
+- "Name already taken": tell Claude the name you got instead. Three places in the repo must change together (`app` in `fly.toml`, the `preview` host in `apps/mobile/eas.json`, and `apps/server/test/deploy.test.ts`), and one in Firebase: add `<the new name>.fly.dev` to **Authorized domains** (B6 step 4). Without it, Google sign-in to the admin site fails with `auth/unauthorized-domain`, and with Google only there is no other way in.
 - Never `fly launch`.
 
-### D4. Staging secrets (you, in your own PowerShell window)
+### D4. Staging secrets (you: only the database; Claude: the rest)
 
-- [ ] **D4** `fly secrets list -a sudoku-fight-staging` shows DATABASE_URL, ADMIN_PASSWORD, ADMIN_SESSION_SECRET, FIREBASE_PROJECT_ID
+- [ ] **D4** `fly secrets list -a sudoku-fight-staging` shows DATABASE_URL, FIREBASE_PROJECT_ID, ADMIN_EMAILS, FIREBASE_WEB_API_KEY, FIREBASE_WEB_APP_ID, LEGAL_CONTACT_EMAIL, LEGAL_OPERATOR_NAME
 
-**Why.** The server refuses to start in production mode without `DATABASE_URL`; the admin site stays off without a strong `ADMIN_PASSWORD` (at least 12 characters, not the public dev password `sudoku-admin-dev`); `ADMIN_SESSION_SECRET` (at least 32 characters) keeps you logged in to the admin site across restarts; without `FIREBASE_PROJECT_ID` all accounts answer 503 `disabled`.
+**Why.** The server refuses to start in production mode without `DATABASE_URL`; without `FIREBASE_PROJECT_ID` all accounts answer 503 `disabled`; the admin site signs you in with Google (B6) only with `ADMIN_EMAILS`, `FIREBASE_WEB_API_KEY` (and `FIREBASE_WEB_APP_ID`) set, and stays off without a sign-in method.
 
-**Steps.** Run this yourself (not through Claude), so no value ever shows up in the chat. `Read-Host` input is not saved in PowerShell's history.
-```powershell
-cd C:\Users\mosheg\Documents\ReactNative\sudoku-fight
-$db = Read-Host "Paste the STAGING Neon connection string"
-$admin = node -e "console.log(require('crypto').randomBytes(18).toString('base64url'))"
-$session = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-Write-Host "Staging admin password, save it in the password manager NOW: $admin"
-fly secrets set --stage -a sudoku-fight-staging "DATABASE_URL=$db" "ADMIN_PASSWORD=$admin" "ADMIN_SESSION_SECRET=$session" "FIREBASE_PROJECT_ID=sudoku-fight-dd416"
-fly secrets list -a sudoku-fight-staging
-Remove-Variable db, admin, session
-```
-The Project ID (`sudoku-fight-dd416`, from B1) is filled in; it is not a secret.
+**Steps.**
+1. **You, in your own PowerShell window** (not through Claude): the one real secret, the database URL, so it never shows up in the chat. `Read-Host` input is not saved in PowerShell's history.
+   ```powershell
+   cd C:\Users\mosheg\Documents\ReactNative\sudoku-fight
+   $db = Read-Host "Paste the STAGING Neon connection string"
+   fly secrets set --stage -a sudoku-fight-staging "DATABASE_URL=$db"
+   Remove-Variable db
+   ```
+2. **Claude** (say "set the staging settings"; needs B6 done): the rest are not secret, so Claude sets them with `fly secrets set --stage -a sudoku-fight-staging`:
+   - `FIREBASE_PROJECT_ID=sudoku-fight-dd416` (from B1)
+   - `ADMIN_EMAILS=` your admin Google addresses (from B6; Claude sets them, they are never written in this file or the repo)
+   - `FIREBASE_WEB_API_KEY` and `FIREBASE_WEB_APP_ID` (the web app's `apiKey` and `appId`, from B6)
+   - `LEGAL_CONTACT_EMAIL=mosh.gl.dev@gmail.com` and `LEGAL_OPERATOR_NAME=Moshe Glazman` (C2; they remove the "draft" banner from the legal pages)
+3. `fly secrets list -a sudoku-fight-staging`
 
-Optional for staging (they remove the "draft" banner from the legal pages; once C2 is decided, Claude can set these for you since they're public anyway):
-```powershell
-fly secrets set --stage -a sudoku-fight-staging "LEGAL_CONTACT_EMAIL=mosh.gl.dev@gmail.com" "LEGAL_OPERATOR_NAME=Moshe Glazman"
-```
+Not needed any more: a generated admin password. Optional extras, only if you want them, **both real secrets: you set them yourself in your own window, like the database URL, never through the chat**:
+- `ADMIN_PASSWORD`: a password sign-in next to Google (at least 8 characters, not `sudoku-admin-dev`).
+- `ADMIN_SESSION_SECRET` (at least 32 characters): keeps you signed in to the admin site across deploys and restarts; without it you just sign in with Google again. With Google sign-in only, this secret alone signs the admin sessions: whoever knows it can make one for any address on `ADMIN_EMAILS`. So: generated, never shown, and a **different** one for staging and production:
+  ```powershell
+  $session = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+  fly secrets set --stage -a sudoku-fight-staging "ADMIN_SESSION_SECRET=$session"
+  Remove-Variable session
+  ```
 
-**You're done when** `fly secrets list` shows the 4 names (values are never shown, only digests). Showing that output to Claude is safe.
+**You're done when** `fly secrets list` shows the 7 names (values are never shown, only digests). Showing that output to Claude is safe.
 
 **Pitfalls**
-- `NODE_ENV`, `TRUST_PROXY=1`, `PORT`, `ADMIN_TZ` and `SENTRY_ENVIRONMENT` are already in `fly.toml`; don't set them as secrets. **`FIREBASE_PROJECT_ID` must not go into `fly.toml`** (a test forbids it): it is a Fly secret.
+- `NODE_ENV`, `TRUST_PROXY=1`, `PORT`, `ADMIN_TZ` and `SENTRY_ENVIRONMENT` are already in `fly.toml`; don't set them as secrets. **`FIREBASE_PROJECT_ID`, `ADMIN_EMAILS` and `FIREBASE_WEB_*` must not go into `fly.toml`** (a test forbids it): they are Fly secrets.
 - `--stage` stores without restarting; the deploy in D6 picks everything up. Without `--stage` on a running app, each `fly secrets set` restarts the machine.
 
 ### D5. Load the ranked puzzles into the staging database
@@ -478,15 +506,15 @@ curl.exe https://sudoku-fight-staging.fly.dev/health
 fly logs -a sudoku-fight-staging --no-tail
 ```
 (`--no-tail` prints the recent log and stops; without it `fly logs` keeps streaming until Ctrl+C.) Then in a browser:
-- https://sudoku-fight-staging.fly.dev/admin → log in with the staging admin password. (The admin site is in Hebrew; the **English** button at the top switches language.)
+- https://sudoku-fight-staging.fly.dev/admin → **sign in with Google**, with one of your admin accounts. (The admin site is in Hebrew; the **English** button at the top switches language.)
 - https://sudoku-fight-staging.fly.dev/legal/privacy?lang=en (and without `?lang=en` for Hebrew).
 
 **You're done when**
 - `fly status`: **one** machine, state `started`, check `passing`.
 - `/health` returns `{"ok":true,"engine":"...","protocol":...}`.
-- The log has `[server] production, database Postgres, admin site on, Sentry off (no SENTRY_DSN)` (or `Sentry on (staging, ...)` after D8), and **none** of: `accounts disabled`, `admin site disabled`, `no ranked puzzles`. (`LEGAL_CONTACT_EMAIL or LEGAL_OPERATOR_NAME is not set` is expected on staging until you set them.)
-- The admin site opens (empty lists are fine).
-- The privacy page loads (a red placeholder and a "draft" note are expected on staging until the `LEGAL_*` values are set).
+- The log has `[server] production, database Postgres, admin site on (Google sign-in for 3 addresses), Sentry off (no SENTRY_DSN)` (the number is how many addresses `ADMIN_EMAILS` has; `Sentry on (staging, ...)` after D8), and **none** of: `accounts disabled`, `admin site disabled`, `admin Google sign-in off`, `no ranked puzzles`, `LEGAL_CONTACT_EMAIL or LEGAL_OPERATOR_NAME is not set`. (`ADMIN_SESSION_SECRET is not set` is fine: you sign in again after each deploy.)
+- The Google sign-in opens the admin site (empty lists are fine), and the log shows `admin sign-in: <your address>`. A Google account that is not on the list is refused.
+- The privacy page loads with your email and name, without a red placeholder or a "draft" note.
 
 **Then tell Claude:** "staging is up" (or paste the log lines; they contain no secrets). **Goal 1 (a server version deployed) is done.**
 
@@ -530,35 +558,36 @@ Budget: production is busier than staging. During the closed test, look at the p
    cd C:\Users\mosheg\Documents\ReactNative\sudoku-fight
    fly apps create sudoku-fight-prod --org personal
    ```
-2. If the name is taken: tell Claude the new name (it changes `app` in `fly.production.toml` and `EXPO_PUBLIC_SERVER_HOST` in the `production` profile of `apps/mobile/eas.json`).
+2. If the name is taken: tell Claude the new name (it changes `app` in `fly.production.toml` and `EXPO_PUBLIC_SERVER_HOST` in the `production` profile of `apps/mobile/eas.json`), and add `<the new name>.fly.dev` to Firebase **Authorized domains** yourself (B6 step 4), or the admin site's Google sign-in fails there (`auth/unauthorized-domain`).
 3. Never `fly deploy` for production without `--config fly.production.toml` (without it, it deploys to staging).
 4. **Only if C1 = own domain:** after the first production deploy (D12),
    ```powershell
    fly certs add api.<your-domain> -a sudoku-fight-prod
    ```
    Add the DNS records it prints at your domain registrar, then wait for `fly certs show api.<your-domain> -a sudoku-fight-prod` to report the certificate as issued. Tell Claude the host name; Claude updates the `production` profile in `eas.json` **before** F6.
+   Also add `api.<your-domain>` to Firebase → Authentication → Settings → **Authorized domains** (as in B6 step 4), or the admin site's Google sign-in fails on that address (`auth/unauthorized-domain`).
 
-### D11. Production secrets (you, in your own PowerShell window)
+### D11. Production secrets (you: only the database; Claude: the rest)
 
 - [ ] **D11** `fly secrets list -a sudoku-fight-prod` shows all required names
 
-Needs C2 decided (the legal values).
-```powershell
-cd C:\Users\mosheg\Documents\ReactNative\sudoku-fight
-$db = Read-Host "Paste the PRODUCTION Neon connection string"
-$admin = node -e "console.log(require('crypto').randomBytes(18).toString('base64url'))"
-$session = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-Write-Host "PRODUCTION admin password, save it in the password manager NOW: $admin"
-fly secrets set --stage -a sudoku-fight-prod "DATABASE_URL=$db" "ADMIN_PASSWORD=$admin" "ADMIN_SESSION_SECRET=$session" "FIREBASE_PROJECT_ID=sudoku-fight-dd416" "LEGAL_CONTACT_EMAIL=mosh.gl.dev@gmail.com" "LEGAL_OPERATOR_NAME=Moshe Glazman"
-fly secrets list -a sudoku-fight-prod
-Remove-Variable db, admin, session
-```
-Optional, same way: `"SENTRY_DSN=..."` (D8) and `"INVITE_URL=https://..."` (the "invite friends" link; without it the button is hidden).
+Needs C2 decided (the legal values) and B6 done (Google sign-in).
+1. **You, in your own PowerShell window:** the production database URL, the only real secret.
+   ```powershell
+   cd C:\Users\mosheg\Documents\ReactNative\sudoku-fight
+   $db = Read-Host "Paste the PRODUCTION Neon connection string"
+   fly secrets set --stage -a sudoku-fight-prod "DATABASE_URL=$db"
+   Remove-Variable db
+   ```
+2. **Claude** (say "set the production settings"): `fly secrets set --stage -a sudoku-fight-prod` with `FIREBASE_PROJECT_ID=sudoku-fight-dd416`, `ADMIN_EMAILS` (your admin Google addresses, set by Claude, never written here), `FIREBASE_WEB_API_KEY` and `FIREBASE_WEB_APP_ID` (B6; the same web app as staging), `LEGAL_CONTACT_EMAIL=mosh.gl.dev@gmail.com`, `LEGAL_OPERATOR_NAME=Moshe Glazman`.
+3. `fly secrets list -a sudoku-fight-prod`
 
-**You're done when** `fly secrets list` shows `DATABASE_URL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `FIREBASE_PROJECT_ID`, `LEGAL_CONTACT_EMAIL`, `LEGAL_OPERATOR_NAME` (and the optional ones you set).
+Optional: `SENTRY_DSN` (D8, you set it like the database URL) and `INVITE_URL=https://...` (the "invite friends" link; Claude can set it; without it the button is hidden). `ADMIN_PASSWORD` (8+ characters) and `ADMIN_SESSION_SECRET` only if you want them, set by you as in D4 (with `-a sudoku-fight-prod`), each **different** from staging's.
+
+**You're done when** `fly secrets list` shows `DATABASE_URL`, `FIREBASE_PROJECT_ID`, `ADMIN_EMAILS`, `FIREBASE_WEB_API_KEY`, `FIREBASE_WEB_APP_ID`, `LEGAL_CONTACT_EMAIL`, `LEGAL_OPERATOR_NAME` (and the optional ones you set).
 
 **Pitfalls**
-- Use a **different** admin password and session secret than staging.
+- If you do set an admin password or a session secret, use a **different** one than on staging: a value copied from staging would open production's admin site too.
 - `RATING_OPTION` [D7] is in `fly.production.toml` (`"B"`); not a secret.
 
 ### D12. Production: puzzles, deploy, checks
@@ -585,14 +614,14 @@ Optional, same way: `"SENTRY_DSN=..."` (D8) and `"INVITE_URL=https://..."` (the 
    fly logs -a sudoku-fight-prod --no-tail
    ```
 4. Open in a browser:
-   - https://sudoku-fight-prod.fly.dev/admin (production admin password)
+   - https://sudoku-fight-prod.fly.dev/admin (sign in with Google)
    - https://sudoku-fight-prod.fly.dev/legal/privacy?lang=en and https://sudoku-fight-prod.fly.dev/legal/privacy
    - https://sudoku-fight-prod.fly.dev/legal/terms?lang=en
    - https://sudoku-fight-prod.fly.dev/legal/delete-account?lang=en
 
-**You're done when** one machine is `started`/`passing`, `/health` answers `{"ok":true,...}`, the log has `[server] production, database Postgres, admin site on, ...` without `accounts disabled`, `admin site disabled`, `no ranked puzzles` or `LEGAL_CONTACT_EMAIL or LEGAL_OPERATOR_NAME is not set`, and the three legal pages show your email and name, **with no red placeholder and no "draft" note**, in English and Hebrew.
+**You're done when** one machine is `started`/`passing`, `/health` answers `{"ok":true,...}`, the log has `[server] production, database Postgres, admin site on (Google sign-in for ...), ...` without `accounts disabled`, `admin site disabled`, `admin Google sign-in off`, `no ranked puzzles` or `LEGAL_CONTACT_EMAIL or LEGAL_OPERATOR_NAME is not set`, the Google sign-in opens the admin site, and the three legal pages show your email and name, **with no red placeholder and no "draft" note**, in English and Hebrew.
 
-(With your own domain, replace `sudoku-fight-prod.fly.dev` with `api.<your-domain>` everywhere from here on.)
+(With your own domain, replace `sudoku-fight-prod.fly.dev` with `api.<your-domain>` everywhere from here on, and make sure it is in Firebase **Authorized domains**: D10 step 4.)
 
 ### Sources (Part D)
 - flyctl install (`pwsh`, or `powershell` instead; `~\.fly`): https://docs.fly.io/flyctl/install, and the script itself (user PATH, the UAC prompt for the `fly.exe` link): https://fly.io/install.ps1
@@ -770,7 +799,7 @@ adb -s <SERIAL_2> install -r $apk
 
 **Why two phones and real emails.** The staging server runs in production mode: it takes only real Firebase sign-ins, and ranked games only from **verified** emails (`RANKED_REQUIRES_VERIFIED_EMAIL`, on by default). So the development shortcuts (local "Development mode" accounts, the `fake-client` script used on this PC) can't play the second side; two real accounts on two phones can.
 
-Two accounts with **real** email addresses you can read. Tip: Gmail ignores `+tags`, so `you+sf1@gmail.com` and `you+sf2@gmail.com` are two different accounts for Firebase but arrive in one inbox. Don't reuse these addresses later for the demo accounts (F8): staging and production share one Firebase project.
+Two accounts with **real** email addresses you can read. Tip: Gmail ignores `+tags`, so `you+sf1@gmail.com` and `you+sf2@gmail.com` are two different accounts for Firebase but arrive in one inbox. Don't reuse these addresses later for the demo accounts (F8): staging and production share one Firebase project. And not an address you sign in to `/admin` with (B6): it is already a Google user of the project, so the app's sign-up refuses it ("email already in use"). In **Authentication → Users**, your admin Google accounts are listed too; that's expected.
 
 Labels: the app follows the phone's language; Hebrew label first, English in brackets.
 
@@ -779,7 +808,7 @@ Labels: the app follows the phone's language; Hebrew label first, English in bra
 2. [ ] Phone 2: the same with `...+sf2` and another display name.
 3. [ ] Both phones show the banner "המייל שלך עוד לא מאומת" (Your email isn't verified yet).
 4. [ ] Open the Hebrew verification email (sender "סודוקו פייט"; check Spam), tap the link, back in the app tap **אימתתי** (I verified). The banner disappears. Do it for both.
-5. [ ] Firebase console → **Authentication → Users** lists both emails.
+5. [ ] Firebase console → **Authentication → Users** lists both emails (next to your admin Google accounts from B6).
 
 **Practice (works offline too)**
 6. [ ] Phone 1: **שחק** (Play) → **אימון לבד** (Solo practice) → any type → play a few moves or finish.
@@ -1185,7 +1214,7 @@ The full list is in `docs/RELEASE-CHECKLIST.md` (stages ב, ג, ז, ח, יא) wi
 | Machine | 1 x shared-cpu-1x, 512 MB, `fra` | same |
 | Neon project | `sudoku-fight-staging`, AWS Europe (Frankfurt) | `sudoku-fight-prod`, same region |
 | Used by | `preview` APK | `production` AAB (Play) |
-| Admin site | `/admin` | `/admin` |
+| Admin site | `/admin` (sign in with Google; the address must be in Firebase **Authorized domains**, B6) | `/admin` (same; a new name or your own domain goes there too) |
 | Legal pages | `/legal/privacy`, `/legal/terms`, `/legal/delete-account` (`?lang=en` or `?lang=he`) | same |
 
 ### Server settings: where each one comes from
@@ -1198,13 +1227,16 @@ The full list is in `docs/RELEASE-CHECKLIST.md` (stages ב, ג, ז, ח, יא) wi
 | `ADMIN_TZ` | `[env]` | `Asia/Jerusalem` | already set |
 | `SENTRY_ENVIRONMENT` | `[env]` | `staging` / `production` | already set |
 | `RATING_OPTION` | `fly.production.toml` `[env]` | `B` [D7] (staging uses the default, B) | already set |
-| `DATABASE_URL` | `fly secrets` | Neon, direct (no `-pooler`), ending `?sslmode=require` | yes |
-| `ADMIN_PASSWORD` | `fly secrets` | generated (D4/D11), at least 12 characters, not `sudoku-admin-dev` | yes |
-| `ADMIN_SESSION_SECRET` | `fly secrets` | generated, at least 32 characters (64 hex) | yes |
-| `FIREBASE_PROJECT_ID` | `fly secrets` (**not** `fly.toml`: a test forbids it) | Firebase → Project settings → Project ID | yes |
-| `LEGAL_CONTACT_EMAIL` | `fly secrets` | `mosh.gl.dev@gmail.com` (C2) | yes for production |
-| `LEGAL_OPERATOR_NAME` | `fly secrets` | `Moshe Glazman` (C2) | yes for production |
-| `SENTRY_DSN` | `fly secrets` | Sentry → Project settings → Client Keys (D8) | optional |
+| `DATABASE_URL` | `fly secrets`, **by you** (`Read-Host`, your own PowerShell window) | Neon, direct (no `-pooler`), ending `?sslmode=require` | yes |
+| `FIREBASE_PROJECT_ID` | `fly secrets`, by Claude (**not** `fly.toml`: a test forbids it) | `sudoku-fight-dd416` (Firebase → Project settings → Project ID) | yes |
+| `ADMIN_EMAILS` | `fly secrets`, by Claude (it checks each entry is an address first) | your admin Google addresses, comma-separated (B6); never written in the repo. A bad entry turns Google sign-in off (log: `admin Google sign-in off`), not the server | yes (admin site) |
+| `FIREBASE_WEB_API_KEY` | `fly secrets`, by Claude | the "Sudoku Fight Admin" web app's `apiKey` (B6); public by design, kept out of the repo | yes (admin site) |
+| `FIREBASE_WEB_APP_ID` | `fly secrets`, by Claude | the same web app's `appId` (B6) | recommended |
+| `LEGAL_CONTACT_EMAIL` | `fly secrets`, by Claude | `mosh.gl.dev@gmail.com` (C2) | yes for production |
+| `LEGAL_OPERATOR_NAME` | `fly secrets`, by Claude | `Moshe Glazman` (C2) | yes for production |
+| `ADMIN_PASSWORD` | `fly secrets`, by you (your own window) | only if you want a password next to Google: at least 8 characters, not `sudoku-admin-dev`; a different one per server | no |
+| `ADMIN_SESSION_SECRET` | `fly secrets`, by you (your own window, generated, D4) | a real secret: with Google only, it alone signs admin sessions. At least 32 characters, a different one per server; without it you sign in with Google again after each deploy or restart | no |
+| `SENTRY_DSN` | `fly secrets`, by you (`Read-Host`, D8) | Sentry → Project settings → Client Keys (D8) | optional |
 | `INVITE_URL` | `fly secrets` | the "invite friends" link [D27] | optional |
 | `GIT_SHA` | `fly deploy --env GIT_SHA=$(git rev-parse --short HEAD)` | the deployed commit | optional |
 | `RANKED_REQUIRES_VERIFIED_EMAIL`, `PRACTICE_XP_DAILY_CAP`, `CHEAT_FAST_THINK_MS`, `CHEAT_FAST_THINK_MOVES`, `ACCOUNT_DELETE_MAX_AUTH_AGE_MS`, `SENTRY_TRACES_SAMPLE_RATE` | not set | defaults (`true`, `1500`, `1200`, `20`, `300000`, `0.05`); explained in `apps/server/.env.example` | no |

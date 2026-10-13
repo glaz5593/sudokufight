@@ -1,7 +1,7 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 
 import { overviewFixture } from './testing/fixtures';
-import { fakeServer, renderSite, SIGNED_IN, SIGNED_OUT } from './testing/server';
+import { fakeServer, PASSWORD_ONLY, renderSite, SIGNED_IN, SIGNED_OUT } from './testing/server';
 
 const password = () => screen.getByLabelText('Admin password');
 const signIn = () => screen.getByRole('button', { name: 'Sign in' });
@@ -16,6 +16,7 @@ describe('signing in', () => {
     let signedIn = false;
     const server = fakeServer({
       'GET /session': () => (signedIn ? SIGNED_IN : SIGNED_OUT),
+      'GET /auth/methods': PASSWORD_ONLY,
       'POST /login': (req) => {
         const ok = (req.body as { password?: string }).password === 'the-right-password';
         signedIn = ok;
@@ -27,8 +28,9 @@ describe('signing in', () => {
 
     expect(await screen.findByRole('heading', { name: 'Sign in to the admin site' })).toBeTruthy();
     expect(screen.queryByRole('navigation')).toBeNull();
-    // Nothing but the session check went out before signing in.
-    expect(server.requests.map((r) => r.path)).toEqual(['/session']);
+    // Nothing but the session check and the ways to sign in went out before signing in.
+    await screen.findByLabelText('Admin password');
+    expect(server.requests.map((r) => r.path)).toEqual(['/session', '/auth/methods']);
 
     fireEvent.click(signIn());
     expect((await screen.findByRole('alert')).textContent).toBe('Type the password.');
@@ -47,6 +49,7 @@ describe('signing in', () => {
   it('says how long to wait after too many tries', async () => {
     const server = fakeServer({
       'GET /session': SIGNED_OUT,
+      'GET /auth/methods': PASSWORD_ONLY,
       'POST /login': { status: 429, body: { error: 'tooManyRequests' }, headers: { 'Retry-After': '30' } },
     });
     renderSite(server);
@@ -57,13 +60,19 @@ describe('signing in', () => {
     );
   });
 
-  it('a server without an admin password: says so and keeps the form shut', async () => {
+  it('the admin site off on the server (503): says so, offers no way in, and "check again" asks again', async () => {
     const server = fakeServer({ 'GET /session': { status: 503, body: { error: 'disabled' } } });
     renderSite(server);
     const alert = await screen.findByRole('alert');
-    expect(alert.textContent).toContain('ADMIN_PASSWORD');
-    expect(password()).toHaveProperty('disabled', true);
-    expect(signIn()).toHaveProperty('disabled', true);
+    expect(alert.textContent).toBe(
+      'The admin site is off on this server: no way to sign in is set up (Google with ADMIN_EMAILS, or ADMIN_PASSWORD).',
+    );
+    expect(screen.queryByLabelText('Admin password')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sign in with Google' })).toBeNull();
+    // Off means off: the ways to sign in are not even asked for.
+    expect(server.requests.map((r) => r.path)).toEqual(['/session']);
+    fireEvent.click(screen.getByRole('button', { name: 'Check again' }));
+    await waitFor(() => expect(server.gets('/session')).toHaveLength(2));
   });
 
   it('an unreachable server: says so, and "check again" retries the session', async () => {
@@ -92,6 +101,7 @@ describe('a 401 anywhere', () => {
       'GET /overview': { body: overviewFixture() },
       'GET /installs': () =>
         session ? { body: { items: [], page: 1, pageSize: 50, total: 0 } } : SIGNED_OUT,
+      'GET /auth/methods': PASSWORD_ONLY,
       'POST /login': () => {
         session = true;
         return { status: 204 };
@@ -108,6 +118,7 @@ describe('a 401 anywhere', () => {
     });
     expect((await screen.findByRole('alert')).textContent).toBe('Your session ended. Sign in again.');
     expect(screen.queryByRole('navigation')).toBeNull();
+    await screen.findByLabelText('Admin password');
 
     typeAndSubmit('the-right-password');
     expect(await screen.findByRole('heading', { name: 'Installs', level: 1 })).toBeTruthy();
@@ -119,6 +130,7 @@ describe('a 401 anywhere', () => {
       'GET /session': SIGNED_IN,
       'GET /overview': { body: overviewFixture() },
       'POST /logout': { status: 204 },
+      'GET /auth/methods': PASSWORD_ONLY,
     });
     renderSite(server);
     fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }));
@@ -129,7 +141,7 @@ describe('a 401 anywhere', () => {
 
 describe('language', () => {
   it('Hebrew by default, right to left; the toggle switches to English, left to right', async () => {
-    const server = fakeServer({ 'GET /session': SIGNED_OUT });
+    const server = fakeServer({ 'GET /session': SIGNED_OUT, 'GET /auth/methods': PASSWORD_ONLY });
     renderSite(server, { lang: 'he' });
     expect(await screen.findByRole('heading', { name: 'כניסה לאתר הניהול' })).toBeTruthy();
     expect(document.documentElement.dir).toBe('rtl');

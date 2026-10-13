@@ -255,6 +255,7 @@ npm run server          # השרת בפורט 2567
 ```
 
 ואז פותחים את http://localhost:2567/admin ונכנסים עם סיסמת הפיתוח **`sudoku-admin-dev`**. עוצרים את השרת עם Ctrl+C.
+בשרתים האמיתיים נכנסים עם חשבון Google שברשימה `ADMIN_EMAILS` (ראו "בייצור" למטה). אפשר לנסות את זה גם במחשב: מוסיפים ל־`apps/server/.env` את `FIREBASE_PROJECT_ID`, ‏`FIREBASE_WEB_API_KEY` ו־`ADMIN_EMAILS`.
 
 - **נתוני הדוגמה** נשמרים ב־`apps/server/.data/pglite`, שלא נכנס ל־git. ‏`npm run seed -- --reset` מוחק אותם ויוצר חדשים, למשל כדי ש"היום" יהיה היום.
   ‏`rm -rf apps/server/.data` מפנה כ־70MB, והתיקייה נוצרת מחדש בהפעלה הבאה.
@@ -265,6 +266,7 @@ npm run server          # השרת בפורט 2567
 
 ```
 curl http://localhost:2567/health
+curl http://localhost:2567/admin/api/auth/methods
 curl -c jar.txt -H 'content-type: application/json' -d '{"password":"sudoku-admin-dev"}' http://localhost:2567/admin/api/login
 curl -b jar.txt 'http://localhost:2567/admin/api/overview?days=7'
 curl -b jar.txt 'http://localhost:2567/admin/api/screens?days=30'
@@ -281,8 +283,9 @@ curl -b jar.txt 'http://localhost:2567/admin/api/screens?days=30'
 |---|---|---|
 | `NODE_ENV=production` | מצב ייצור: cookie עם Secure, ובלי סיסמת הפיתוח | השרת חושב שהוא בפיתוח |
 | `DATABASE_URL` | ‏`postgres://…` של מסד Postgres | השרת לא עולה |
-| `ADMIN_PASSWORD` | הסיסמה לאתר הניהול: לפחות 12 תווים, ולא `sudoku-admin-dev` | האתר כבוי (503) |
-| `ADMIN_SESSION_SECRET` | לפחות 32 תווים אקראיים: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` | כל הפעלה מחדש מוציאה את המנהל |
+| `ADMIN_EMAILS`, ‏`FIREBASE_WEB_API_KEY`, ‏`FIREBASE_WEB_APP_ID` | כניסה עם Google לאתר הניהול: החשבונות שמותר להם, ואפליקציית ה־Web ב־Firebase (`docs/FIREBASE-SETUP.md` סעיף 9א). יחד עם `FIREBASE_PROJECT_ID` | אין כניסה עם Google. ערך לא תקין מכבה רק אותה (עם אזהרה בלוג), לא את השרת |
+| `ADMIN_PASSWORD` (לא חובה) | סיסמה לאתר הניהול, לצד Google: לפחות 8 תווים, ולא `sudoku-admin-dev` | אין כניסה עם סיסמה. בלי Google וגם בלי סיסמה, האתר כבוי (503) |
+| `ADMIN_SESSION_SECRET` (לא חובה) | לפחות 32 תווים אקראיים: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. **סוד**: כשהכניסה היא רק עם Google, הוא לבדו חותם על החיבורים לאתר הניהול. ערך אחר לכל שרת, ולא בצ'אט | כל הפעלה מחדש מוציאה את המנהל |
 | `TRUST_PROXY=1` | ב־Fly.io יש proxy אחד לפני השרת. **לא `true`.** | כל המשתמשים נספרים ככתובת אחת, והגבלת הקצב חוסמת אותם |
 | `FIREBASE_PROJECT_ID` | ה־Project ID של Firebase (לא סוד) | החשבונות כבויים (503 `disabled`), ואירועי השימוש נשמרים בלי משתמש |
 | `LEGAL_CONTACT_EMAIL`, ‏`LEGAL_OPERATOR_NAME` | פרטי הקשר ושם המפעיל בדפים המשפטיים `/legal/…` (שלב 14). לא המייל הפרטי של משה בלי אישורו | הדפים מציגים placeholder אדום ופס "טיוטה". אסור לתת את הכתובות לחנויות כך |
@@ -296,7 +299,7 @@ curl -b jar.txt 'http://localhost:2567/admin/api/screens?days=30'
   אם אין תהליך כזה, מוחקים את `apps/server/.data/pglite.lock`.
 - **`EADDRINUSE :::2567`**: שרת אחר כבר רץ בפורט 2567. עוצרים אותו.
 - **‏"The admin site is not built"**: מריצים `npm run admin:build`, ואחר כך מפעילים מחדש את השרת.
-- **‏503 `disabled`**: אין `ADMIN_PASSWORD`, היא קצרה מ־12 תווים, או שהיא סיסמת הפיתוח בייצור. הסיבה מודפסת בהפעלת השרת.
+- **‏503 `disabled`**: אין לאתר הניהול שיטת כניסה. חסרה הגדרה של Google, ו־`ADMIN_PASSWORD` חסרה, קצרה מ־8 תווים, או שהיא סיסמת הפיתוח בייצור. הסיבה מודפסת בהפעלת השרת.
 
 ### בדיקות
 
@@ -337,17 +340,22 @@ npx jest --selectProjects server protocol admin
      ‏Neon מוסיף היום בסוף גם `&channel_binding=require`: מוחקים את החלק הזה. ה־driver שלנו (postgres.js) לא משתמש בו, ושולח למסד כל פרמטר שהוא לא מכיר כהגדרה.
    - את הטבלאות לא יוצרים ידנית: השרת מריץ את המיגרציות (`apps/server/drizzle`) בכל הפעלה.
 5. **הסודות:**
-   ```
-   ADMIN_PASSWORD=$(node -e "console.log(require('crypto').randomBytes(18).toString('base64url'))")
-   echo "$ADMIN_PASSWORD"
-   fly secrets set --stage \
-     DATABASE_URL='postgresql://…?sslmode=require' \
-     ADMIN_PASSWORD="$ADMIN_PASSWORD" \
-     ADMIN_SESSION_SECRET="$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")"
-   fly secrets list
-   ```
-   - את הסיסמה שמודפסת שומרים במנהל הסיסמאות. איתה נכנסים לאתר הניהול.
-   - את `DATABASE_URL` מדביקים מ־Neon, בתוך גרשיים בודדים.
+   - `DATABASE_URL` (מ־Neon) הוא הסוד היחיד כאן. מדביקים אותו בחלון PowerShell משלך ל־`Read-Host`, שלא נשמר בהיסטוריה, ולא כותבים אותו בתוך הפקודה (`docs/MOSHE-TODO.md` ‏D4):
+     ```powershell
+     $db = Read-Host "Paste the STAGING Neon connection string"
+     fly secrets set --stage -a sudoku-fight-staging "DATABASE_URL=$db"
+     Remove-Variable db
+     ```
+   - השאר לא סודיים:
+     ```
+     fly secrets set --stage -a sudoku-fight-staging \
+       FIREBASE_PROJECT_ID='<Project ID>' \
+       ADMIN_EMAILS='you@example.com' \
+       FIREBASE_WEB_API_KEY='<apiKey>' \
+       FIREBASE_WEB_APP_ID='<appId>'
+     fly secrets list -a sudoku-fight-staging
+     ```
+   - לאתר הניהול נכנסים עם חשבון Google שב־`ADMIN_EMAILS`. ה־`apiKey` וה־`appId` הם של אפליקציית ה־Web ב־Firebase (`docs/FIREBASE-SETUP.md` סעיף 9א). את הכתובות האמיתיות לא כותבים בריפו.
    - ‏`NODE_ENV=production` ו־`TRUST_PROXY=1` לא נכנסים לסודות: הם כבר ב־`[env]` של `fly.toml`.
      הטבלה "בייצור: מה חייבים להגדיר" למעלה מסבירה כל ערך.
 
@@ -377,9 +385,9 @@ curl https://sudoku-fight-staging.fly.dev/health
 ```
 
 - ב־`fly status`: מכונה אחת במצב `started`, והבדיקה של `/health` במצב `passing`.
-- ב־`fly logs`: ‏`[server] production, database Postgres, admin site on`.
+- ב־`fly logs`: ‏`[server] production, database Postgres, admin site on (Google sign-in for …)`.
 - ‏`/health` מחזיר `{"ok":true,"engine":"…","protocol":…}`.
-- אתר הניהול: https://sudoku-fight-staging.fly.dev/admin, עם ה־`ADMIN_PASSWORD` משלב 5.
+- אתר הניהול: https://sudoku-fight-staging.fly.dev/admin, עם חשבון Google שב־`ADMIN_EMAILS` משלב 5.
   אם מתקבל 503 `disabled`, הסיבה מודפסת ב־`fly logs`.
 
 ### לחבר את האפליקציה לשרת
@@ -403,7 +411,7 @@ EXPO_PUBLIC_SERVER_SECURE=true
 | `fly deploy --ha=false` | פורסת את הקוד הנוכחי |
 | `fly logs` | לוגים בזמן אמת |
 | `fly status` | מצב המכונה והבדיקות |
-| `fly secrets set ADMIN_PASSWORD=…` | מחליפה סוד. המכונה עולה מחדש |
+| `fly secrets set ADMIN_EMAILS=…` | מחליפה סוד (כאן: מי נכנס לאתר הניהול). המכונה עולה מחדש. אחר כך בודקים ב־`fly logs` שאין `admin Google sign-in off`: רשימה עם טעות מכבה את הכניסה עם Google (לא את השרת) |
 | `fly ssh console` | פותחת מעטפת בתוך המכונה |
 | `fly scale count 1` | מתקנת, אם נוצרה בטעות מכונה שנייה |
 
@@ -422,4 +430,4 @@ docker build -t sudoku-fight-server .
 docker run --rm -p 2567:2567 -e PGLITE_DIR=memory -e ADMIN_PASSWORD=local-docker-check sudoku-fight-server
 ```
 
-בלי `DATABASE_URL`, ‏`PGLITE_DIR=memory` מריץ את המסד בזיכרון, ושום דבר לא נשמר. ‏`ADMIN_PASSWORD` צריכה לפחות 12 תווים.
+בלי `DATABASE_URL`, ‏`PGLITE_DIR=memory` מריץ את המסד בזיכרון, ושום דבר לא נשמר. ‏`ADMIN_PASSWORD` צריכה לפחות 8 תווים.

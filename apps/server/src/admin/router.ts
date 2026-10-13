@@ -1,33 +1,63 @@
-import { ADMIN_API_PREFIX, type AdminSession } from '@sudoku-fight/protocol';
-import { type CookieOptions, json, type Request, type RequestHandler, Router } from 'express';
+import {
+  ADMIN_API_PREFIX,
+  ADMIN_AUTH_METHODS_PATH,
+  ADMIN_GOOGLE_LOGIN_PATH,
+  ADMIN_LOGIN_PATH,
+  type AdminAuthMethods,
+  type AdminGoogleLoginErrorCode,
+  type AdminGoogleWebConfig,
+  type AdminSession,
+} from '@sudoku-fight/protocol';
+import { type CookieOptions, json, type Request, type RequestHandler, type Response, Router } from 'express';
 import { z } from 'zod';
 
+import { MAX_TOKEN_LENGTH, type TokenVerifier } from '../auth/firebaseToken';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db';
 import { clientKey } from '../http/clientKey';
 import { notFound, sendError, sendTooManyRequests } from '../http/errors';
 import { RateLimiter, type RateLimitRule } from '../http/rateLimiter';
-import { ADMIN_COOKIE_NAME, ADMIN_SESSION_TTL_MS, DEFAULT_LOGIN_LIMIT } from './constants';
+import {
+  ADMIN_COOKIE_NAME,
+  ADMIN_GOOGLE_MAX_AUTH_AGE_MS,
+  ADMIN_SESSION_TTL_MS,
+  DEFAULT_LOGIN_LIMIT,
+} from './constants';
 import { getGame, listGames } from './games';
 import { getInstall, listInstalls } from './installs';
 import { getOverview } from './overview';
 import { daysQuerySchema, gamesQuerySchema, pageQuerySchema, parseQuery } from './params';
 import { getScreens } from './screens';
-import { passwordMatches, readCookie, SessionKeeper } from './session';
+import {
+  type AdminIdentity,
+  passwordMatches,
+  readCookie,
+  SessionKeeper,
+  type VerifiedSession,
+} from './session';
 import type { StatsWindow } from './sql';
 import { getUser, listUsers } from './users';
 
 /**
- * The admin API (spec §27.3, routes in @sudoku-fight/protocol admin.ts): read-only, same-origin, behind the
- * admin password from the server's settings.
+ * The admin API (spec §27.3, routes in @sudoku-fight/protocol admin.ts): read-only, same-origin, behind a
+ * sign-in: Google (an address on ADMIN_EMAILS) and/or the admin password, as the server's settings say.
  *
  * - Admin off in the settings (config.admin.enabled false): every route answers 503 `disabled`.
+ * - GET /auth/methods → AdminAuthMethods: which sign-ins this server takes, and the Firebase web config for
+ *   Google's. Public; never the allowed addresses.
  * - POST /login {password}: right → 204 and the session cookie (HttpOnly, SameSite=Strict, Path=/admin,
- *   Secure in production, 12 h); wrong → 401; more than 5 tries a minute from one IP → 429 + Retry-After.
- *   One IP: an IPv4 address, or an IPv6 /64 (http/clientKey), so rotating addresses doesn't help.
- *   The body must be JSON (application/json), so a plain HTML form on another site can't post it.
+ *   Secure in production, 12 h); wrong → 401; password sign-in off → 403 `disabled`.
+ * - POST /login/google {idToken}: a Firebase ID token of this server's project (signature by Google's keys,
+ *   aud, iss, exp, iat: auth/firebaseToken), from a Google sign-in (`firebase.sign_in_provider` google.com)
+ *   at most 5 minutes ago (`auth_time`, ADMIN_GOOGLE_MAX_AUTH_AGE_MS), with `email_verified` true and the
+ *   address (any case) on ADMIN_EMAILS → 204 and the same cookie, with the address in the session; the server
+ *   logs "admin sign-in: <address>". Else AdminGoogleLoginError.
+ * - Both sign-ins together: more than 5 tries a minute from one IP → 429 + Retry-After. One IP: an IPv4
+ *   address, or an IPv6 /64 (http/clientKey), so rotating addresses doesn't help. The bodies must be JSON
+ *   (application/json), so a plain HTML form on another site can't post them.
  * - POST /logout → 204: clears the cookie and refuses that token from then on.
- * - GET /session → AdminSession, or 401. Every other route needs the cookie too (401 `unauthorized`).
+ * - GET /session → AdminSession, or 401. Every other route needs the cookie too (401 `unauthorized`). A session
+ *   ends early when its method is turned off, or its address taken off ADMIN_EMAILS (checked on each request).
  * - Everything else is GET; any other method or path is 404. Answers are never cached (no-store).
  * - No CORS: configureHttp strips Colyseus's open CORS headers under /admin, and the guard answers preflights
  *   there without them (http/cors).
@@ -37,8 +67,12 @@ export interface AdminRouterDeps {
   config: ServerConfig;
   db: Db;
   now: () => number;
+  /** Checks Google sign-ins' Firebase ID tokens: the verifier of the app's accounts (one cache of keys). */
+  tokens: TokenVerifier;
   /** Sign-in attempts per IP (tests make it small). */
   adminLoginLimit?: RateLimitRule;
+  /** Where sign-ins are logged (default console.log). Never a token or a password. */
+  log?: (message: string) => void;
 }
 
 /**
@@ -47,42 +81,74 @@ export interface AdminRouterDeps {
  * scripts and requests from this origin only, styles from here and Google Fonts (index.html loads Rubik),
  * no inline scripts, no plugins, no framing, and no form posting elsewhere. React's `style={…}` values are
  * set through the CSSOM, which style-src does not block.
+ *
+ * With Google sign-in, what the Firebase JS SDK's signInWithPopup needs (checked in @firebase/auth 12):
+ * Google's gapi loader (https://apis.google.com/js/api.js, a script it adds to the page), its hidden iframe
+ * on the auth domain (`https://<project>.firebaseapp.com/__/auth/iframe`), and its API calls to Identity
+ * Toolkit and Secure Token. The sign-in itself opens in a popup window, which frame-src does not govern.
  */
-export const ADMIN_CSP = [
-  "default-src 'none'",
-  "script-src 'self'",
-  "style-src 'self' https://fonts.googleapis.com",
-  'font-src https://fonts.gstatic.com',
-  "img-src 'self' data:",
-  "connect-src 'self'",
-  "manifest-src 'self'",
-  "base-uri 'none'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-].join('; ');
+export function adminCsp(google: AdminGoogleWebConfig | null = null): string {
+  return [
+    "default-src 'none'",
+    google === null ? "script-src 'self'" : "script-src 'self' https://apis.google.com",
+    "style-src 'self' https://fonts.googleapis.com",
+    'font-src https://fonts.gstatic.com',
+    "img-src 'self' data:",
+    google === null
+      ? "connect-src 'self'"
+      : "connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com",
+    ...(google === null ? [] : [`frame-src https://${google.authDomain}`]),
+    "manifest-src 'self'",
+    "base-uri 'none'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ].join('; ');
+}
 
-/** Hardening for every answer under /admin (API and site): the CSP, no framing, no sniffing, no referrer. */
-const SECURITY_HEADERS: Record<string, string> = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'Content-Security-Policy': ADMIN_CSP,
-  'Referrer-Policy': 'no-referrer',
-  'Cross-Origin-Opener-Policy': 'same-origin',
-  'Cross-Origin-Resource-Policy': 'same-origin',
-};
+/** The policy without Google sign-in. */
+export const ADMIN_CSP = adminCsp(null);
+
+/**
+ * Hardening for every answer under /admin (API and site): the CSP, no framing, no sniffing, no referrer, and
+ * a browsing context of its own. With Google sign-in, the opener policy lets the page keep its popup
+ * (same-origin-allow-popups): under same-origin the SDK loses sight of the window it opened and reports the
+ * sign-in as closed by the user.
+ */
+export function adminSecurityHeaders(google: AdminGoogleWebConfig | null = null): Record<string, string> {
+  return {
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Content-Security-Policy': adminCsp(google),
+    'Referrer-Policy': 'no-referrer',
+    'Cross-Origin-Opener-Policy': google === null ? 'same-origin' : 'same-origin-allow-popups',
+    'Cross-Origin-Resource-Policy': 'same-origin',
+  };
+}
 
 const loginSchema = z.object({ password: z.string().min(1).max(1024) });
+const googleLoginSchema = z.object({ idToken: z.string().min(1).max(MAX_TOKEN_LENGTH) });
+/** A Firebase ID token is 1–2 KB; MAX_TOKEN_LENGTH and the JSON around it fit. */
+const GOOGLE_LOGIN_BODY_LIMIT = 8 * 1024;
 const MAX_ID_LENGTH = 200;
+
+const sendGoogleError = (res: Response, status: number, error: AdminGoogleLoginErrorCode, message: string) =>
+  sendError(res, status, error, message);
 
 export function createAdminRouter({
   config,
   db,
   now,
+  tokens,
   adminLoginLimit = DEFAULT_LOGIN_LIMIT,
+  log = console.log,
 }: AdminRouterDeps): Router {
+  const { admin } = config;
+  const google = admin.enabled ? admin.google : null;
+
   const router = Router();
+  const securityHeaders = adminSecurityHeaders(google?.web ?? null);
   router.use('/admin', (_req, res, next) => {
-    res.set(SECURITY_HEADERS);
+    res.set(securityHeaders);
     next();
   });
 
@@ -93,15 +159,16 @@ export function createAdminRouter({
     next();
   });
 
-  const { admin } = config;
   if (!admin.enabled) {
     api.use((_req, res) => sendError(res, 503, 'disabled'));
     return router;
   }
 
+  const { password } = admin;
+  const allowedEmails = new Set(google?.allowedEmails ?? []);
   const sessions = new SessionKeeper({
     secret: admin.sessionSecret,
-    password: admin.password,
+    password,
     ttlMs: ADMIN_SESSION_TTL_MS,
     now,
   });
@@ -114,23 +181,100 @@ export function createAdminRouter({
   };
   const tokenOf = (req: Request) => readCookie(req.get('cookie'), ADMIN_COOKIE_NAME);
 
+  /** Whether this admin may still be signed in: their method is on, and a Google address still listed. */
+  const stillAllowed = (who: AdminIdentity) =>
+    who.method === 'password' ? password !== null : allowedEmails.has(who.email);
+  const sessionOf = (req: Request): VerifiedSession | null => {
+    const session = sessions.verify(tokenOf(req));
+    return session !== null && stillAllowed(session.admin) ? session : null;
+  };
+  const signIn = (res: Response, who: AdminIdentity) => {
+    const { token } = sessions.issue(who);
+    res.cookie(ADMIN_COOKIE_NAME, token, { ...cookie, maxAge: ADMIN_SESSION_TTL_MS });
+    log(`[admin] admin sign-in: ${who.method === 'google' ? who.email : 'password'}`);
+    res.sendStatus(204);
+  };
+
+  /** Both sign-ins draw on one budget per IP. */
+  const limitSignIns: RequestHandler = (req, res, next) => {
+    const r = loginLimiter.take(clientKey(req.ip));
+    if (r.ok) next();
+    else sendTooManyRequests(res, r.retryAfterMs);
+  };
+
+  api.get(ADMIN_AUTH_METHODS_PATH, (_req, res) => {
+    // Field by field, so nothing else of the settings (the allowed addresses) can ride along.
+    const web = google?.web;
+    res.json({
+      password: password !== null,
+      google:
+        web === undefined
+          ? null
+          : { apiKey: web.apiKey, authDomain: web.authDomain, projectId: web.projectId, appId: web.appId },
+    } satisfies AdminAuthMethods);
+  });
+
   api.post(
-    '/login',
-    (req, res, next) => {
-      const r = loginLimiter.take(clientKey(req.ip));
-      if (r.ok) next();
-      else sendTooManyRequests(res, r.retryAfterMs);
+    ADMIN_LOGIN_PATH,
+    (_req, res, next) => {
+      if (password === null) {
+        return sendError(res, 403, 'disabled', 'password sign-in is off on this server: sign in with Google');
+      }
+      next();
     },
+    limitSignIns,
     json({ limit: 1024 }),
     (req, res) => {
       const parsed = loginSchema.safeParse(req.body);
       if (!parsed.success) return sendError(res, 400, 'badRequest', 'expected JSON {"password": "…"}');
-      if (!passwordMatches(parsed.data.password, admin.password)) {
+      if (password === null || !passwordMatches(parsed.data.password, password)) {
         return sendError(res, 401, 'unauthorized', 'wrong password');
       }
-      const { token } = sessions.issue();
-      res.cookie(ADMIN_COOKIE_NAME, token, { ...cookie, maxAge: ADMIN_SESSION_TTL_MS });
-      res.sendStatus(204);
+      signIn(res, { method: 'password' });
+    },
+  );
+
+  api.post(
+    ADMIN_GOOGLE_LOGIN_PATH,
+    (_req, res, next) => {
+      if (google === null) {
+        return sendGoogleError(res, 403, 'disabled', 'Google sign-in is off on this server');
+      }
+      next();
+    },
+    limitSignIns,
+    json({ limit: GOOGLE_LOGIN_BODY_LIMIT }),
+    async (req, res) => {
+      const parsed = googleLoginSchema.safeParse(req.body);
+      if (!parsed.success) return sendGoogleError(res, 400, 'badRequest', 'expected JSON {"idToken": "…"}');
+      const result = await tokens.verifyIdToken(parsed.data.idToken);
+      if (!result.ok) {
+        if (result.failure === 'unavailable') {
+          return sendGoogleError(res, 503, 'unavailable', "Google's keys can't be reached right now");
+        }
+        return sendGoogleError(res, 401, 'invalidToken', result.message);
+      }
+      const token = result.token;
+      // A development token (`dev:…`, taken outside production for the app) never signs an admin in.
+      if (token.kind !== 'firebase') {
+        return sendGoogleError(res, 401, 'invalidToken', 'only a Firebase ID token signs in here');
+      }
+      if (token.signInProvider !== 'google.com') {
+        return sendGoogleError(res, 403, 'wrongProvider', 'sign in with Google');
+      }
+      // A fresh sign-in only (ADMIN_GOOGLE_MAX_AUTH_AGE_MS): not a token refreshed long after it.
+      if (token.signedInAt === null || now() - token.signedInAt > ADMIN_GOOGLE_MAX_AUTH_AGE_MS) {
+        return sendGoogleError(res, 401, 'invalidToken', 'the Google sign-in is too old: sign in again');
+      }
+      if (!token.emailVerified || token.email === null) {
+        return sendGoogleError(res, 403, 'unverifiedEmail', 'Google does not vouch for this address');
+      }
+      const email = token.email.trim().toLowerCase();
+      if (!allowedEmails.has(email)) {
+        log('[admin] admin sign-in refused: an address not on ADMIN_EMAILS');
+        return sendGoogleError(res, 403, 'notAllowed', 'this Google account may not use the admin site');
+      }
+      signIn(res, { method: 'google', email });
     },
   );
 
@@ -141,14 +285,20 @@ export function createAdminRouter({
   });
 
   api.get('/session', (req, res) => {
-    const expiresAt = sessions.verify(tokenOf(req));
-    if (expiresAt === null) return sendError(res, 401, 'unauthorized');
-    res.json({ ok: true, expiresAt } satisfies AdminSession);
+    const session = sessionOf(req);
+    if (session === null) return sendError(res, 401, 'unauthorized');
+    const { admin: who, expiresAt } = session;
+    res.json({
+      ok: true,
+      expiresAt,
+      method: who.method,
+      email: who.method === 'google' ? who.email : null,
+    } satisfies AdminSession);
   });
 
   // Everything below needs a session.
   api.use((req, res, next) => {
-    if (sessions.verify(tokenOf(req)) === null) sendError(res, 401, 'unauthorized');
+    if (sessionOf(req) === null) sendError(res, 401, 'unauthorized');
     else next();
   });
 

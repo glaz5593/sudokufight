@@ -289,11 +289,13 @@ h2 {
   white-space: nowrap;
 }
 
-.btn:hover:not(:disabled) {
+.btn:hover:not(:disabled, [aria-disabled='true']) {
   border-color: var(--text-faint);
 }
 
-.btn:disabled {
+/* aria-disabled: off for now, but still focusable (the Google button while its SDK loads). */
+.btn:disabled,
+.btn[aria-disabled='true'] {
   color: var(--text-faint);
   cursor: not-allowed;
   opacity: 0.7;
@@ -929,14 +931,61 @@ select.input {
   font-size: 14px;
 }
 
+/* Under the message: a technical detail (a Firebase code, the server's reason), as it is. */
+.form-error-detail {
+  display: block;
+  margin-block-start: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* A message for the whole card (the session ended, the server is unreachable or off): above the controls. */
+.login-notice {
+  margin: 0 0 16px;
+}
+
 .login-actions {
   display: flex;
   gap: 8px;
   margin-block-start: 12px;
 }
 
-.login-actions .btn-primary {
+.login-actions .login-submit {
   flex: 1 1 auto;
+}
+
+.login-google {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-google {
+  inline-size: 100%;
+  min-block-size: 44px;
+  gap: 10px;
+}
+
+.google-mark {
+  flex: none;
+}
+
+/* "or" between Google and the password, with a rule on each side. */
+.login-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.login-or::before,
+.login-or::after {
+  content: '';
+  flex: 1 1 auto;
+  border-block-start: 1px solid var(--border);
 }
 
 /* ---- Avatars (components/AvatarImg.tsx): a still picture; the tile is part of the SVG ---- */

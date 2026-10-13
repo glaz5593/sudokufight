@@ -6,8 +6,9 @@
 # so this app runs exactly one machine: deploy with --ha=false, and never scale it out (scale up instead:
 # `fly scale vm` / `fly scale memory`).
 #
-# Secrets (fly secrets set --config fly.production.toml): DATABASE_URL, ADMIN_PASSWORD, ADMIN_SESSION_SECRET,
-# FIREBASE_PROJECT_ID, SENTRY_DSN, INVITE_URL. Nothing secret goes in here.
+# Secrets (fly secrets set --config fly.production.toml): DATABASE_URL, FIREBASE_PROJECT_ID, the admin site's
+# Google sign-in (ADMIN_EMAILS, FIREBASE_WEB_API_KEY, FIREBASE_WEB_APP_ID), LEGAL_*, and optionally SENTRY_DSN,
+# INVITE_URL, ADMIN_PASSWORD, ADMIN_SESSION_SECRET. Nothing secret goes in here.
 
 app = "sudoku-fight-prod"
 primary_region = "fra"
