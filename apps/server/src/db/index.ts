@@ -7,6 +7,7 @@ import { getTableConfig, type PgDatabase, type PgQueryResultHKT, PgTable } from 
 import type { DatabaseConfig } from '../config';
 import { lockDataDir } from './lock';
 import * as schema from './schema';
+import { driverUrl } from './url';
 
 /**
  * Opens the database: Postgres (postgres-js) when the settings have a URL, else PGlite, the in-process
@@ -91,7 +92,7 @@ export async function createDb(
     import('drizzle-orm/postgres-js'),
     import('drizzle-orm/postgres-js/migrator'),
   ]);
-  const client = postgres(database.url, {
+  const client = postgres(driverUrl(database.url), {
     max: 10,
     connection: { TimeZone: 'UTC' },
     onnotice: () => {}, // "relation already exists, skipping" from the migrator
