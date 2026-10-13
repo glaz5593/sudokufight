@@ -12,7 +12,7 @@ import Storage from 'expo-sqlite/kv-store';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { type AvatarId, EMPTY_AVATAR, isAvatarId } from '../assets/avatars';
+import { type AvatarIdOrNone, NO_AVATAR_ID, normalizeAvatarId } from '../avatars';
 
 /**
  * The player on this phone, until accounts arrive (work plan stage 8): a local profile for the home screen's
@@ -32,7 +32,7 @@ export interface LastPlay {
 export interface ProfileState {
   /** Null until the player chooses one: screens show t('home:profile.defaultName'). */
   name: string | null;
-  avatarId: AvatarId;
+  avatarId: AvatarIdOrNone;
   /** ISO 3166-1 alpha-2. Detected from the phone's region, and can change [D21]. Null: unknown. */
   country: string | null;
   /** The last game the player started, or null before the first one. */
@@ -40,7 +40,7 @@ export interface ProfileState {
   /** The bot level of the last practice against a bot, or null before the first one. */
   botLevel: BotLevelId | null;
   setName: (name: string | null) => void;
-  setAvatar: (avatarId: AvatarId) => void;
+  setAvatar: (avatarId: AvatarIdOrNone) => void;
   setCountry: (country: string | null) => void;
   /** Remembers a game just started; a bot practice also sets `botLevel`. */
   rememberPlay: (play: LastPlay) => void;
@@ -89,7 +89,8 @@ function sanitize(saved: unknown): Partial<ProfileData> {
   const s = saved as Record<string, unknown>;
   const out: Partial<ProfileData> = {};
   if (s.name === null || typeof s.name === 'string') out.name = cleanName(s.name);
-  if (isAvatarId(s.avatarId)) out.avatarId = s.avatarId;
+  // An id of the retired av01–av51 pack reads as its replacement (protocol normalizeAvatarId).
+  if (typeof s.avatarId === 'string') out.avatarId = normalizeAvatarId(s.avatarId);
   if (s.country === null || (typeof s.country === 'string' && COUNTRY.test(s.country)))
     out.country = s.country === null ? null : s.country.toUpperCase();
   if (s.lastPlay === null) out.lastPlay = null;
@@ -102,7 +103,7 @@ export const useProfile = create<ProfileState>()(
   persist(
     (set) => ({
       name: null,
-      avatarId: EMPTY_AVATAR,
+      avatarId: NO_AVATAR_ID,
       country: deviceCountry(),
       lastPlay: null,
       botLevel: null,

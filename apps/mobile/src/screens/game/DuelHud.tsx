@@ -2,7 +2,7 @@ import type { PlayerId } from '@sudoku-fight/engine';
 import { useCallback } from 'react';
 import { type LayoutChangeEvent, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
-import type { AvatarId } from '../../assets/avatars';
+import type { AvatarFace, AvatarIdOrNone } from '../../avatars';
 import {
   type CardModel,
   type InterferenceModel,
@@ -29,8 +29,11 @@ import { CardMenuTrigger } from './reactions';
 export interface DuelHudProps {
   me: CardModel;
   opponent: CardModel;
-  myAvatar?: AvatarId | null;
-  opponentAvatar?: AvatarId | null;
+  myAvatar?: AvatarIdOrNone | null;
+  opponentAvatar?: AvatarIdOrNone | null;
+  /** The avatars' faces (game/useAvatarFaces): moods and reactions to the game. */
+  myFace?: AvatarFace | null;
+  opponentFace?: AvatarFace | null;
   /** The flags (spec §6.8), when the game knows the countries (a ranked match's profiles); ISO alpha-2. */
   myCountry?: string | null;
   opponentCountry?: string | null;
@@ -67,6 +70,8 @@ export function DuelHud({
   opponent,
   myAvatar,
   opponentAvatar,
+  myFace = null,
+  opponentFace = null,
   myCountry = null,
   opponentCountry = null,
   myDelta = null,
@@ -100,6 +105,7 @@ export function DuelHud({
     <PlayerCard
       model={opponent}
       avatarId={opponentAvatar}
+      face={opponentFace}
       country={opponentCountry}
       side="end"
       delta={opponentDelta}
@@ -117,6 +123,7 @@ export function DuelHud({
         <PlayerCard
           model={me}
           avatarId={myAvatar}
+          face={myFace}
           country={myCountry}
           side="start"
           delta={myDelta}

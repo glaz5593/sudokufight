@@ -14,17 +14,38 @@ const styleOf = (el: Styled) =>
   (StyleSheet.flatten(el.props.style as ViewStyle) ?? {}) as ViewStyle & TextStyle;
 
 const P = color.players;
-const me: CellPlayer = { id: 'moshe', seat: 0, colorIndex: 0, name: 'MosheG', avatar: 'av01', isMe: true };
+const me: CellPlayer = {
+  id: 'moshe',
+  seat: 0,
+  colorIndex: 0,
+  name: 'MosheG',
+  avatar: 'microphone',
+  isMe: true,
+};
 const nina: CellPlayer = {
   id: 'nina',
   seat: 1,
   colorIndex: 1,
   name: 'NinaVolt',
-  avatar: 'av07',
+  avatar: 'lava-lamp',
   isMe: false,
 };
-const aiko: CellPlayer = { id: 'aiko', seat: 2, colorIndex: 2, name: 'Aiko_M', avatar: 'av03', isMe: false };
-const omar: CellPlayer = { id: 'omar', seat: 3, colorIndex: 3, name: 'OmarK', avatar: 'av04', isMe: false };
+const aiko: CellPlayer = {
+  id: 'aiko',
+  seat: 2,
+  colorIndex: 2,
+  name: 'Aiko_M',
+  avatar: 'cassette',
+  isMe: false,
+};
+const omar: CellPlayer = {
+  id: 'omar',
+  seat: 3,
+  colorIndex: 3,
+  name: 'OmarK',
+  avatar: 'astronaut',
+  isMe: false,
+};
 const lock = (seconds: number, over: Partial<CellLock> = {}): CellLock => ({
   seconds,
   remainingMs: seconds * 1000,

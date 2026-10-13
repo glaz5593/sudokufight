@@ -4,9 +4,6 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
-// Avatars are SVG files (assets/avatars), drawn by expo-image as plain assets.
-if (!config.resolver.assetExts.includes('svg')) config.resolver.assetExts.push('svg');
-
 // @colyseus/sdk imports 'ws' only as a Node fallback; on the phone the platform's WebSocket is used.
 // Without this the native bundle fails on Node's 'stream'.
 const wsShim = path.resolve(__dirname, 'src/net/ws-shim.js');

@@ -128,14 +128,35 @@ export interface NameAvailability {
 // ---------------------------------------------------------------------------------------------------------
 // Avatars (spec §3.4)
 
-/** The avatars a player can choose: av01–av51 without av36 (assets/avatars). */
+/**
+ * The avatars a player can choose: our own 101 animated characters (packages/avatars, docs/avatars/STYLE.md),
+ * in the picker's order (the catalog's AVATARS: by kind, then by catalog file). The ids are stored with the
+ * user, so one is never renamed or reused. This is the contract: it does not import the avatars package, and
+ * a test in the app keeps the two lists equal.
+ */
 // prettier-ignore
 export const AVATAR_IDS = [
-  'av01', 'av02', 'av03', 'av04', 'av05', 'av06', 'av07', 'av08', 'av09', 'av10',
-  'av11', 'av12', 'av13', 'av14', 'av15', 'av16', 'av17', 'av18', 'av19', 'av20',
-  'av21', 'av22', 'av23', 'av24', 'av25', 'av26', 'av27', 'av28', 'av29', 'av30',
-  'av31', 'av32', 'av33', 'av34', 'av35', 'av37', 'av38', 'av39', 'av40',
-  'av41', 'av42', 'av43', 'av44', 'av45', 'av46', 'av47', 'av48', 'av49', 'av50', 'av51',
+  // people
+  'noam', 'maya', 'ruthie', 'omer', 'dana', 'ido', 'chef', 'astronaut', 'pirate', 'luchador', 'professor',
+  'punk',
+  // animals
+  'fox', 'cat', 'panda', 'frog', 'rabbit', 'owl', 'hatchling',
+  // objects
+  'coffee-cup', 'pencil', 'lightbulb', 'alarm-clock', 'shower-head', 'slipper', 'sock', 'washing-machine',
+  'kettle', 'toaster', 'wall-socket', 'sponge', 'pillow', 'lava-lamp', 'paper-clip', 'eraser', 'push-pin',
+  'calculator', 'tape-roll', 'scissors', 'puzzle-cube', 'hourglass', 'magnet', 'cassette', 'accordion',
+  'balloon', 'bowling-pin', 'joystick', 'microphone', 'boxing-glove', 'broom', 'ring-bell', 'trophy', 'fridge',
+  // food
+  'pickle', 'cotton-candy', 'banana', 'falafel', 'fried-egg', 'avocado', 'sufganiya', 'bourekas', 'pizza',
+  'ice-cream', 'broccoli',
+  // nature
+  'cactus', 'rain-cloud', 'lightning', 'sun', 'moon', 'volcano', 'rock', 'mushroom', 'wave', 'comet',
+  // creatures
+  'alien', 'cyclops', 'slime', 'ghost', 'furry-monster', 'baby-dragon', 'octopus', 'rusty-robot', 'shadow',
+  'mandrake', 'dino-egg', 'walking-eye',
+  // symbols
+  'eight', 'letter-a', 'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'nine', 'sudoku-board',
+  'question-mark', 'plus', 'minus',
 ] as const;
 export type AvatarId = (typeof AVATAR_IDS)[number];
 
@@ -143,6 +164,95 @@ export type AvatarId = (typeof AVATAR_IDS)[number];
 export const NO_AVATAR_ID = 'av00';
 
 export const isAvatarId = (v: unknown): v is AvatarId => AVATAR_IDS.includes(v as AvatarId);
+
+/**
+ * The first avatar pack (av01–av51 without av36), retired on 2026-10-12 for our own characters (spec §3.4);
+ * its files were deleted on 2026-10-13. Accounts and old records may still hold one of these ids:
+ * normalizeAvatarId() reads them as their LEGACY_AVATAR_MAP replacement. Never chosen again, never written again.
+ */
+// prettier-ignore
+export const LEGACY_AVATAR_IDS = [
+  'av01', 'av02', 'av03', 'av04', 'av05', 'av06', 'av07', 'av08', 'av09', 'av10',
+  'av11', 'av12', 'av13', 'av14', 'av15', 'av16', 'av17', 'av18', 'av19', 'av20',
+  'av21', 'av22', 'av23', 'av24', 'av25', 'av26', 'av27', 'av28', 'av29', 'av30',
+  'av31', 'av32', 'av33', 'av34', 'av35', 'av37', 'av38', 'av39', 'av40',
+  'av41', 'av42', 'av43', 'av44', 'av45', 'av46', 'av47', 'av48', 'av49', 'av50', 'av51',
+] as const;
+export type LegacyAvatarId = (typeof LEGACY_AVATAR_IDS)[number];
+
+export const isLegacyAvatarId = (v: unknown): v is LegacyAvatarId =>
+  LEGACY_AVATAR_IDS.includes(v as LegacyAvatarId);
+
+/**
+ * Each old avatar's replacement: a different new avatar for each, so two players who had different ones still
+ * do. Fixed for good (the server's migration 0004 wrote it into users.avatar_id; old snapshots are read
+ * through it): never change a row. The old picture is in the comment. Where the old one had a character of
+ * its own, the new one keeps it (the animals, the gentleman, the bearded man); the rest of the old people (the
+ * pack had 38 of them, the catalog has 12) get a character with a nod to theirs, never an unkind one.
+ */
+export const LEGACY_AVATAR_MAP: Readonly<Record<LegacyAvatarId, AvatarId>> = {
+  av01: 'microphone', // a woman, short black hair
+  av02: 'balloon', // a woman, long wavy brown hair
+  av03: 'cassette', // a woman, afro, glasses and a headband: retro
+  av04: 'astronaut', // a woman in sunglasses: a visor
+  av05: 'sun', // a blonde woman
+  av06: 'alarm-clock', // a woman in a suit, black bob
+  av07: 'lava-lamp', // a woman, long red hair
+  av08: 'dana', // a woman, dark skin, curly hair
+  av09: 'sufganiya', // a woman with a hair bun
+  av10: 'boxing-glove', // a woman with a ponytail: sporty
+  av11: 'pencil', // a woman in glasses
+  av12: 'maya', // a red-haired, freckled girl
+  av13: 'cotton-candy', // a platinum blonde
+  av14: 'question-mark', // a woman in a detective's hat
+  av15: 'ruthie', // a curly blonde in red glasses
+  av16: 'joystick', // a young man, brown hair
+  av17: 'coffee-cup', // a woman, long straight brown hair
+  av18: 'comet', // a red-haired woman
+  av19: 'punk', // a rocker in sunglasses, tattoos
+  av20: 'omer', // a bearded man
+  av21: 'puzzle-cube', // a red-haired man in glasses
+  av22: 'calculator', // a man in glasses, goatee
+  av23: 'hourglass', // a bearded man in glasses and a suit
+  av24: 'pirate', // a bearded man with a pipe
+  av25: 'paper-clip', // a man in glasses, suit and tie
+  av26: 'cactus', // a bearded man
+  av27: 'wave', // a man, long hair, a vest
+  av28: 'lightbulb', // a bearded man in glasses
+  av29: 'shadow', // a black bob over the eyes
+  av30: 'accordion', // a hipster: glasses, beard, bow tie
+  av31: 'sudoku-board', // a man in glasses, goatee
+  av32: 'noam', // a man with an afro
+  av33: 'trophy', // a blond man in a tie
+  av34: 'luchador', // a builder in a helmet and sunglasses: the tough guy
+  av35: 'ido', // a young man, spiky hair
+  av37: 'magnet', // a man in a suit
+  av38: 'chef', // a man with a mustache and a safari hat
+  av39: 'professor', // a gentleman: bowler hat, monocle, mustache
+  av40: 'furry-monster', // a chimpanzee: big and furry
+  av41: 'panda', // a panda
+  av42: 'frog', // a dog: still an animal
+  av43: 'mushroom', // a pig: truffles
+  av44: 'hatchling', // a mouse: small and new
+  av45: 'pillow', // a bear: a teddy
+  av46: 'cat', // a lynx
+  av47: 'ice-cream', // a cow: milk
+  av48: 'rabbit', // a hare
+  av49: 'owl', // an owl
+  av50: 'fox', // a fox
+  av51: 'moon', // a wolf: it howls at it
+};
+
+/**
+ * The avatar to draw for a stored id: a current one as it is, an old one (LEGACY_AVATAR_IDS) as its
+ * replacement, anything else (null, a deleted account, junk) as NO_AVATAR_ID. Everything that reads an avatar
+ * id from storage goes through this, so old rows and old snapshots still show a character.
+ */
+export function normalizeAvatarId(v: unknown): AvatarId | typeof NO_AVATAR_ID {
+  if (isAvatarId(v)) return v;
+  if (isLegacyAvatarId(v)) return LEGACY_AVATAR_MAP[v];
+  return NO_AVATAR_ID;
+}
 
 // ---------------------------------------------------------------------------------------------------------
 // Countries (spec §3.1, D21: detected from the device, can be changed any time)

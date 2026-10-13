@@ -1,8 +1,17 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+import { LEGACY_AVATAR_IDS, LEGACY_AVATAR_MAP } from '@sudoku-fight/protocol';
 import { getTableConfig, PgTable } from 'drizzle-orm/pg-core';
 import { is, sql } from 'drizzle-orm';
 
@@ -132,6 +141,74 @@ describe('createDb', () => {
       createDb({ database: { kind: 'pglite', dataDir: null } }, { migrationsFolder: os.tmpdir() }),
     ).rejects.toThrow(/_journal\.json/);
   });
+});
+
+describe('migration 0004: the first avatar pack is retired (spec §3.4)', () => {
+  const MIGRATION = path.join(findMigrationsFolder(), '0004_legacy_avatars.sql');
+
+  /** A copy of drizzle/ that ends with 0003: a database as it was before the new avatars. */
+  function foldersBefore0004(): string {
+    const full = findMigrationsFolder();
+    const dir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-migrations-'));
+    const journal = JSON.parse(readFileSync(path.join(full, 'meta', '_journal.json'), 'utf8')) as {
+      entries: { idx: number; tag: string }[];
+    };
+    journal.entries = journal.entries.filter((e) => e.idx < 4);
+    mkdirSync(path.join(dir, 'meta'));
+    writeFileSync(path.join(dir, 'meta', '_journal.json'), JSON.stringify(journal));
+    for (const e of journal.entries)
+      copyFileSync(path.join(full, `${e.tag}.sql`), path.join(dir, `${e.tag}.sql`));
+    return dir;
+  }
+
+  it('maps exactly the pairs of LEGACY_AVATAR_MAP', () => {
+    const pairs = [...readFileSync(MIGRATION, 'utf8').matchAll(/WHEN '(av\d\d)' THEN '([a-z0-9-]+)'/g)].map(
+      (m) => [m[1], m[2]],
+    );
+    expect(pairs).toEqual(LEGACY_AVATAR_IDS.map((id) => [id, LEGACY_AVATAR_MAP[id]]));
+  });
+
+  it('rewrites an old avatar id in users to its replacement and leaves every other value alone', async () => {
+    const migrations = foldersBefore0004();
+    const dataDir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-pglite-'));
+    try {
+      const before = await createDb(
+        { database: { kind: 'pglite', dataDir } },
+        { migrationsFolder: migrations },
+      );
+      const others: Record<string, string | null> = {
+        new: 'noam',
+        none: null,
+        unknown: 'av36',
+        blank: 'av00',
+      };
+      await before.db.insert(users).values([
+        ...LEGACY_AVATAR_IDS.map((id) => ({
+          id,
+          firebaseUid: `f-${id}`,
+          displayName: `u_${id}`,
+          avatarId: id,
+        })),
+        ...Object.entries(others).map(([id, avatarId]) => ({
+          id,
+          firebaseUid: `f-${id}`,
+          displayName: `u_${id}`,
+          avatarId,
+        })),
+      ]);
+      await before.close();
+
+      const after = await createDb({ database: { kind: 'pglite', dataDir } });
+      const rows = await after.db.select({ id: users.id, avatarId: users.avatarId }).from(users);
+      await after.close();
+      const byId = new Map(rows.map((r) => [r.id, r.avatarId]));
+      for (const id of LEGACY_AVATAR_IDS) expect([id, byId.get(id)]).toEqual([id, LEGACY_AVATAR_MAP[id]]);
+      for (const [id, avatarId] of Object.entries(others)) expect([id, byId.get(id)]).toEqual([id, avatarId]);
+    } finally {
+      rmSync(migrations, { recursive: true, force: true });
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  }, 30_000);
 });
 
 describe('one process per PGlite folder', () => {

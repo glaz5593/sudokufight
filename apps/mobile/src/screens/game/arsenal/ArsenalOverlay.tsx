@@ -22,7 +22,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import type { AvatarId } from '../../../assets/avatars';
+import { AVATAR_REACTIONS, type AvatarIdOrNone } from '../../../avatars';
 import { Icon } from '../../../components/Icon';
 import { Avatar, Flag, formatScore, paletteAt, scoreText } from '../../../components/player';
 import { dragClosesSheet, IconButton } from '../../../components/ui';
@@ -54,7 +54,7 @@ export interface ArsenalTargetInfo {
   name: string;
   /** Their palette index as this phone shows them (P2–P4; 0 is me). */
   colorIndex: number;
-  avatarId?: AvatarId | null;
+  avatarId?: AvatarIdOrNone | null;
   /** ISO alpha-2. */
   country?: string | null;
 }
@@ -476,7 +476,12 @@ function TargetLine({ target, label }: { target: ArsenalTargetInfo; label: strin
   return (
     <View style={styles.targetLine} accessible accessibilityLabel={label}>
       <Text style={styles.subtitle}>{t('arsenal.target')}</Text>
-      <Avatar avatarId={target.avatarId} size="cell" style={[styles.miniAvatar, { borderColor: ring }]} />
+      <Avatar
+        avatarId={target.avatarId}
+        size="cell"
+        expression={AVATAR_REACTIONS.moods.target}
+        style={[styles.miniAvatar, { borderColor: ring }]}
+      />
       <Text style={[styles.subtitle, styles.targetName]} numberOfLines={1}>
         {target.name}
       </Text>

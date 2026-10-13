@@ -7,7 +7,7 @@ import {
   type FetchInit,
   isOfflineError,
 } from '../accountApi';
-import { createMeCache, isMe, leagueRating, ME_CACHE_KEY, nextRenameAt, ratingsByType } from '../me';
+import { createMeCache, isMe, leagueRating, ME_CACHE_KEY, nextRenameAt, ratingsByType, readMe } from '../me';
 import { memoryStorage } from '../../auth/testing/testAuth';
 
 const BASE = 'http://game.test:2567';
@@ -15,7 +15,7 @@ const BASE = 'http://game.test:2567';
 export const SAMPLE_ME: Me = {
   id: 'user-1',
   displayName: 'MosheG',
-  avatarId: 'av05',
+  avatarId: 'sun',
   country: 'IL',
   email: 'mosheg@example.com',
   emailVerified: false,
@@ -91,11 +91,11 @@ describe('account API client (spec §18 HTTP API)', () => {
   it('POST /v1/users and PATCH /v1/me send JSON', async () => {
     const { fetch, requests } = scripted({ status: 201, body: SAMPLE_ME }, { status: 200, body: SAMPLE_ME });
     const { api: client } = api(fetch);
-    await client.createUser({ displayName: 'MosheG', avatarId: 'av05', country: 'IL' });
-    await client.updateMe({ avatarId: 'av07' });
+    await client.createUser({ displayName: 'MosheG', avatarId: 'sun', country: 'IL' });
+    await client.updateMe({ avatarId: 'lava-lamp' });
     expect(requests.map((r) => [r.init.method, r.url, r.init.body])).toEqual([
-      ['POST', `${BASE}/v1/users`, '{"displayName":"MosheG","avatarId":"av05","country":"IL"}'],
-      ['PATCH', `${BASE}/v1/me`, '{"avatarId":"av07"}'],
+      ['POST', `${BASE}/v1/users`, '{"displayName":"MosheG","avatarId":"sun","country":"IL"}'],
+      ['PATCH', `${BASE}/v1/me`, '{"avatarId":"lava-lamp"}'],
     ]);
     expect(requests[0]!.init.headers['Content-Type']).toBe('application/json');
   });
@@ -289,6 +289,13 @@ describe('the profile as the app keeps it', () => {
     expect(isMe(null)).toBe(false);
   });
 
+  it('reads an avatar of the retired av01–av51 pack as its replacement', () => {
+    expect(readMe(SAMPLE_ME)).toEqual(SAMPLE_ME);
+    expect(readMe({ ...SAMPLE_ME, avatarId: 'av07' })).toEqual({ ...SAMPLE_ME, avatarId: 'lava-lamp' });
+    expect(readMe({ ...SAMPLE_ME, avatarId: 'av36' })).toBeNull();
+    expect(readMe(null)).toBeNull();
+  });
+
   it('when the name may change again [D20]', () => {
     const now = SAMPLE_ME.createdAt;
     expect(nextRenameAt(SAMPLE_ME, now)).toBeNull();
@@ -311,6 +318,9 @@ describe('the profile as the app keeps it', () => {
     expect(await cache.load('uid-1')).toBeNull();
     storage.data.set(ME_CACHE_KEY, JSON.stringify({ uid: 'uid-1', me: { ...SAMPLE_ME, ratings: 'x' } }));
     expect(await cache.load('uid-1')).toBeNull();
+    // Saved before the avatars were replaced: the old id reads as its replacement.
+    storage.data.set(ME_CACHE_KEY, JSON.stringify({ uid: 'uid-1', me: { ...SAMPLE_ME, avatarId: 'av50' } }));
+    expect(await cache.load('uid-1')).toEqual({ ...SAMPLE_ME, avatarId: 'fox' });
     await cache.clear();
     expect(storage.data.has(ME_CACHE_KEY)).toBe(false);
   });

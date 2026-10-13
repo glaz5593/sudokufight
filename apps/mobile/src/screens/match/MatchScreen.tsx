@@ -2,7 +2,7 @@ import type { Clock } from '@sudoku-fight/engine';
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
 
-import type { AvatarId } from '../../assets/avatars';
+import type { AvatarIdOrNone } from '../../avatars';
 import { systemClock } from '../../game/clock';
 import { useNow } from '../../game/useNow';
 import type { MatchEntry, MatchmakingClient, MatchPhase } from '../../net/matchmaking';
@@ -20,7 +20,7 @@ export interface MatchScreenProps {
   /** The search (the game store's `match`). */
   match: MatchmakingClient<MatchEntry>;
   /** Me, as my avatar shows while searching. */
-  self: { name: string | null; avatarId: AvatarId };
+  self: { name: string | null; avatarId: AvatarIdOrNone };
   /** The board is here: open the game (it replaces this screen). */
   onPlay: () => void;
   /** The search was called off ("ביטול חיפוש", Android back): back where it was started. */

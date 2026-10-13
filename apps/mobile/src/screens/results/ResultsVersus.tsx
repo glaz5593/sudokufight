@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import type { AvatarId } from '../../assets/avatars';
+import { AVATAR_STAGES, type AvatarIdOrNone, endFaceOf, placeCue, useAfter } from '../../avatars';
 import { Icon, type IconName } from '../../components/Icon';
 import {
   Avatar,
@@ -21,7 +21,14 @@ import {
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { formatSeconds } from '../game/model';
-import type { AwardResult, OpponentResult, RankingRow, RatingPairRow, RatingResult } from './resultsModel';
+import type {
+  AwardResult,
+  OpponentResult,
+  Outcome,
+  RankingRow,
+  RatingPairRow,
+  RatingResult,
+} from './resultsModel';
 
 /**
  * The parts of the results that only a game with opponents has (spec §12; Results-Victory, Results-Defeat and
@@ -29,7 +36,22 @@ import type { AwardResult, OpponentResult, RankingRow, RatingPairRow, RatingResu
  * rating change), the full ranking of a 3–4 player game (a podium and 4th place), my rating change counting
  * from the old rating to the new one, and the game's awards with what each one means. Each row and each
  * award is one summary for screen readers.
+ *
+ * The avatars react to the end (spec §3.4, avatars/reactions.ts): as the players' section lands, the winner
+ * laughs and spins (and idles on), whoever is behind or left looks sad, a draw smiles. With reduced motion only
+ * the faces change.
  */
+
+/** The players' section is in place (motion.md §4.7: section 1 of the sequence): the end's reactions play. */
+function useEndReactions(): boolean {
+  const reduce = useReduceMotion();
+  const victory = motion.sequence.victory;
+  return useAfter(
+    reduce
+      ? motion.duration.reducedFade
+      : victory.crownAt + victory.awardsStagger + motion.duration.rewardMin,
+  );
+}
 
 type GameT = TFunction<'game'>;
 
@@ -73,15 +95,19 @@ function PlayerRow({
 
 export function OpponentsSection({
   opponents,
+  outcome = null,
   onOpenPlayer,
 }: {
   opponents: readonly OpponentResult[];
+  /** Mine: an opponent first with me is a draw (their face). */
+  outcome?: Outcome | null;
   /** A ranked game: another player's row opens their card (spec §14.3). */
   onOpenPlayer?: (playerId: string) => void;
 }) {
   const { t } = useTranslation('game');
   const { t: tp } = useTranslation('player');
   const { t: th } = useTranslation('history');
+  const play = useEndReactions();
   return (
     <Card
       title={t('results.opponents.title')}
@@ -91,6 +117,8 @@ export function OpponentsSection({
       {opponents.map((o) => {
         const name = displayName(o, tp);
         const mistakes = mistakesShort(o.mistakes, tp);
+        const end = placeCue(o.place, o.place === 1 && outcome === 'tie' ? 2 : 1, o.left);
+        const face = endFaceOf(end, play);
         const label = o.rating
           ? th('results.opponentLabel', {
               name,
@@ -107,7 +135,17 @@ export function OpponentsSection({
             onPress={onOpenPlayer && !o.isBot ? () => onOpenPlayer(o.playerId) : undefined}
             testID={`results-opponent-${o.playerId}`}
           >
-            <Avatar avatarId={o.avatar} size="compact" colorIndex={o.colorIndex} bot={o.isBot} />
+            <Avatar
+              avatarId={o.avatar}
+              size="compact"
+              colorIndex={o.colorIndex}
+              bot={o.isBot}
+              expression={face.expression}
+              reaction={face.reaction}
+              // The winner's stage: it idles on after its reaction.
+              idle={AVATAR_STAGES.winner && end === 'win'}
+              testID={`results-opponent-${o.playerId}-avatar`}
+            />
             <View style={styles.who}>
               <View style={styles.nameRow}>
                 <SeatGlyph colorIndex={o.colorIndex} size={GLYPH} />
@@ -163,7 +201,7 @@ export function RankingSection({
   onOpenPlayer,
 }: {
   ranking: readonly RankingRow[];
-  myAvatar: AvatarId;
+  myAvatar: AvatarIdOrNone;
   /** A ranked game: another player opens their card (spec §14.3). */
   onOpenPlayer?: (playerId: string) => void;
 }) {
@@ -181,6 +219,9 @@ export function RankingSection({
       : t('results.ranking.label', base);
   };
   const avatarOf = (r: RankingRow) => (r.isMe ? myAvatar : r.avatar);
+  const play = useEndReactions();
+  const firstPlaces = ranking.filter((r) => r.place === 1).length;
+  const faceOf = (r: RankingRow) => endFaceOf(placeCue(r.place, firstPlaces, r.left), play);
   const openOf = (r: RankingRow) =>
     onOpenPlayer && !r.isMe && !r.isBot ? () => onOpenPlayer(r.playerId) : undefined;
   const delta = (r: RankingRow) =>
@@ -197,6 +238,7 @@ export function RankingSection({
           const r = podium[k];
           if (!r) return null;
           const palette = paletteAt(r.colorIndex);
+          const face = faceOf(r);
           return (
             <PlayerRow
               key={r.playerId}
@@ -211,6 +253,11 @@ export function RankingSection({
                 colorIndex={r.colorIndex}
                 bot={r.isBot}
                 inactive={r.left}
+                expression={face.expression}
+                reaction={face.reaction}
+                // The winner's stage: it idles (blinks) on after its reaction.
+                idle={AVATAR_STAGES.winner && r.place === 1}
+                testID={`results-podium-${r.place}-${r.playerId}-avatar`}
               />
               <View style={styles.nameRow}>
                 <SeatGlyph colorIndex={r.colorIndex} size={GLYPH} />
@@ -247,6 +294,8 @@ export function RankingSection({
             colorIndex={r.colorIndex}
             bot={r.isBot}
             inactive={r.left}
+            {...faceOf(r)}
+            testID={`results-ranking-${r.place}-${r.playerId}-avatar`}
           />
           <View style={styles.who}>
             <View style={styles.nameRow}>

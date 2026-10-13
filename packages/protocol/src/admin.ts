@@ -1,3 +1,4 @@
+import type { AvatarId, NO_AVATAR_ID } from './account';
 import type { TelemetryEventName, TelemetryProps } from './telemetry';
 
 /**
@@ -122,7 +123,11 @@ export interface AdminUserRow {
   displayName: string;
   email: string | null;
   country: string | null;
-  avatarId: string | null;
+  /**
+   * The stored avatar through normalizeAvatarId (an old pack's id as its replacement, an unknown one as
+   * NO_AVATAR_ID); null when none is stored (a deleted account).
+   */
+  avatarId: AvatarId | typeof NO_AVATAR_ID | null;
   createdAt: number;
   deletedAt: number | null;
   /** Latest activity of any of the user's installs. */

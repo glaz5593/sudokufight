@@ -4,7 +4,7 @@ import { INTERFERENCE_KINDS } from '@sudoku-fight/engine';
 import { AVATAR_IDS, type AvatarId } from '@sudoku-fight/protocol';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import { AVATAR_META, type AvatarMeta, AVATARS, avatarUnlockLevel } from '../../assets/avatars';
+import { AVATAR_META, type AvatarMeta, avatarUnlockLevel } from '../../avatars';
 import i18n from '../../i18n';
 import { AvatarPicker } from '../../screens/account/AvatarPicker';
 import { ARSENAL_CONFIG, INTERFERENCE_UNLOCK_LEVELS, unlockedKinds } from '../../screens/game/arsenal/config';
@@ -34,36 +34,36 @@ describe('isUnlocked', () => {
 
 describe('avatars [D17]', () => {
   it('every avatar has an unlockLevel, 0 in V1', () => {
-    expect(Object.keys(AVATAR_META).sort()).toEqual(Object.keys(AVATARS).sort());
+    expect(Object.keys(AVATAR_META)).toEqual([...AVATAR_IDS]);
     expect(Object.values(AVATAR_META).every((m) => m.unlockLevel === 0)).toBe(true);
-    expect(avatarUnlockLevel('av12')).toBe(0);
+    expect(avatarUnlockLevel('maya')).toBe(0);
   });
 
   it('V1: the picker shows no lock', async () => {
-    await render(<AvatarPicker value="av01" onChange={jest.fn()} level={1} />);
-    expect(screen.queryAllByTestId(/^avatar-picker-av\d+-locked$/)).toHaveLength(0);
+    await render(<AvatarPicker value="noam" onChange={jest.fn()} level={1} />);
+    expect(screen.queryAllByTestId(/^avatar-picker-.+-locked$/)).toHaveLength(0);
   });
 
   it('above my level: a lock, "נפתח ברמה N", and it cannot be chosen; previous / next skip it', async () => {
     const meta: Record<string, AvatarMeta> = Object.fromEntries(
-      AVATAR_IDS.map((id) => [id, { unlockLevel: id === 'av02' ? 12 : 0 }]),
+      AVATAR_IDS.map((id) => [id, { unlockLevel: id === 'maya' ? 12 : 0 }]),
     );
     const onChange = jest.fn<void, [AvatarId]>();
-    await render(<AvatarPicker value="av01" onChange={onChange} level={3} meta={meta} />);
-    const locked = screen.getByTestId('avatar-picker-av02');
-    expect(screen.getByTestId('avatar-picker-av02-locked')).toBeOnTheScreen();
-    expect(locked).toHaveProp('accessibilityLabel', 'אווטאר 2, נפתח ברמה 12');
+    await render(<AvatarPicker value="noam" onChange={onChange} level={3} meta={meta} />);
+    const locked = screen.getByTestId('avatar-picker-maya');
+    expect(screen.getByTestId('avatar-picker-maya-locked')).toBeOnTheScreen();
+    expect(locked).toHaveProp('accessibilityLabel', 'מאיה, נפתח ברמה 12');
     expect(locked).toHaveProp('accessibilityState', { checked: false, disabled: true });
     await fireEvent.press(locked);
     expect(onChange).not.toHaveBeenCalled();
     await fireEvent.press(screen.getByRole('button', { name: 'האווטאר הבא' }));
-    expect(onChange).toHaveBeenLastCalledWith('av03');
+    expect(onChange).toHaveBeenLastCalledWith('ruthie');
   });
 
   it('opens once my level reaches it', async () => {
-    const meta = { ...AVATAR_META, av02: { unlockLevel: 12 } };
-    await render(<AvatarPicker value="av01" onChange={jest.fn()} level={12} meta={meta} />);
-    expect(screen.queryByTestId('avatar-picker-av02-locked')).toBeNull();
+    const meta = { ...AVATAR_META, maya: { unlockLevel: 12 } };
+    await render(<AvatarPicker value="noam" onChange={jest.fn()} level={12} meta={meta} />);
+    expect(screen.queryByTestId('avatar-picker-maya-locked')).toBeNull();
   });
 });
 

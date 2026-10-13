@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import type { AvatarId } from '../../assets/avatars';
+import type { AvatarFace, AvatarIdOrNone } from '../../avatars';
 import {
   type CardModel,
   displayName,
@@ -43,7 +43,9 @@ import { CardMenuTrigger } from './reactions';
 export interface GroupHudProps {
   /** In seat order, mine first (seatOrder). */
   cards: CardModel[];
-  avatars?: Readonly<Partial<Record<PlayerId, AvatarId>>>;
+  avatars?: Readonly<Partial<Record<PlayerId, AvatarIdOrNone>>>;
+  /** The avatars' faces (game/useAvatarFaces): moods and reactions to the game. */
+  faces?: Readonly<Partial<Record<PlayerId, AvatarFace>>>;
   countries?: Readonly<Partial<Record<PlayerId, string | null>>>;
   deltas?: Readonly<Partial<Record<PlayerId, ScoreDelta>>>;
   /** "כניעה" on my card: the screen asks first (spec §6.6). */
@@ -73,6 +75,7 @@ const ROW_GUTTER = tokens.layout.gutterGame;
 export function GroupHud({
   cards,
   avatars,
+  faces,
   countries,
   deltas,
   onSurrender,
@@ -99,6 +102,7 @@ export function GroupHud({
           card={card}
           width={widths[i]}
           avatarId={avatars?.[card.playerId]}
+          face={faces?.[card.playerId] ?? null}
           country={countries?.[card.playerId]}
           delta={deltas?.[card.playerId] ?? null}
           onSurrender={onSurrender}
@@ -120,7 +124,8 @@ export function GroupHud({
 interface GroupCardProps {
   card: CardModel;
   width: number | undefined;
-  avatarId: AvatarId | undefined;
+  avatarId: AvatarIdOrNone | undefined;
+  face: AvatarFace | null;
   country: string | null | undefined;
   delta: ScoreDelta | null;
   onSurrender: () => void;
@@ -140,6 +145,7 @@ const GroupCard = memo(function GroupCard({
   card,
   width,
   avatarId,
+  face,
   country,
   delta,
   onSurrender,
@@ -169,6 +175,7 @@ const GroupCard = memo(function GroupCard({
     <PlayerCardCompact
       model={card}
       avatarId={avatarId}
+      face={face}
       country={country}
       width={width}
       delta={delta}

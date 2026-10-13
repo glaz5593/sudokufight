@@ -28,6 +28,15 @@ jest.mock(
   () => jest.requireActual('./src/components/interference/testing/skiaMock').skiaModule,
 );
 
+// react-native-svg's SvgXml parses its markup in JS into one native element per shape (an avatar has about 36,
+// packages/avatars): under Jest it stays one host element `SvgXml` that keeps its `xml`, so screens full of
+// avatars render fast and a test can read what an avatar draws (src/avatars/testing). Everything else is real.
+jest.mock('react-native-svg', () => {
+  const actual = jest.requireActual<Record<string, unknown>>('react-native-svg');
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  return { ...actual, __esModule: true, SvgXml: (props: object) => createElement('SvgXml', props) };
+});
+
 // Rendering whole screens takes seconds per test (3–4 s for a game screen while every core is busy): Jest's 5 s
 // default is too close, more so on a CI runner's two cores. A test that hangs still fails; files that play whole
 // games set more with their own jest.setTimeout. (Per project here: Jest reads testTimeout from the root only.)

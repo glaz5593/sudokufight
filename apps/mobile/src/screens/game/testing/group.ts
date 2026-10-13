@@ -20,8 +20,8 @@ import type { GameSession } from '../GameScreen';
 export const ME = 'me';
 
 /**
- * The others, in seat order after me: Pip (av44), Biscuit (av42) and Maestro (av39), with the ratings of the
- * design's 4-player board (they make each card show a rating).
+ * The others, in seat order after me: Pip (hatchling), Biscuit (fox) and Maestro (professor), with the ratings
+ * of the design's 4-player board (they make each card show a rating).
  */
 export const OTHERS: readonly PlayerInfo[] = [
   { ...botPlayer(1), rating: 1305, ratedGames: 30 },

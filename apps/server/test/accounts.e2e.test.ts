@@ -50,8 +50,8 @@ describe('accounts on the real server', () => {
       body: { id: created.body.id },
     });
     expect(
-      await call(base, 'PATCH', ACCOUNT_PATHS.me, { token, body: { avatarId: 'av02' }, headers: close }),
-    ).toMatchObject({ status: 200, body: { avatarId: 'av02' } });
+      await call(base, 'PATCH', ACCOUNT_PATHS.me, { token, body: { avatarId: 'balloon' }, headers: close }),
+    ).toMatchObject({ status: 200, body: { avatarId: 'balloon' } });
     expect((await call(base, 'DELETE', ACCOUNT_PATHS.me, { token, headers: close })).status).toBe(204);
     expect((await call(base, 'GET', ACCOUNT_PATHS.me, { token, headers: close })).status).toBe(404);
   });

@@ -44,7 +44,7 @@ const wiring = jest.mocked(deviceMatchmakingDeps);
 const ME_ACCOUNT: Me = {
   id: 'me',
   displayName: 'MosheG',
-  avatarId: 'av07',
+  avatarId: 'lava-lamp',
   country: 'IL',
   email: 'moshe@example.com',
   emailVerified: true,

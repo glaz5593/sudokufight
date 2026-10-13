@@ -180,6 +180,7 @@ const he = {
   'user.flags': 'סימונים לבדיקה',
   'user.noFlags': 'אין סימונים.',
   'user.flagSeconds': '{n} שנ׳ בממוצע',
+  'user.avatarNone': 'אין אווטאר',
 
   'stats.level': 'רמה',
   'stats.xp': 'נקודות ניסיון (XP)',
@@ -409,6 +410,7 @@ const en: Record<StringKey, string> = {
   'user.flags': 'Flags for review',
   'user.noFlags': 'No flags.',
   'user.flagSeconds': '{n} s on average',
+  'user.avatarNone': 'No avatar',
 
   'stats.level': 'Level',
   'stats.xp': 'XP',

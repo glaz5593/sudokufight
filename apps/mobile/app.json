@@ -33,7 +33,6 @@
           "enableBackgroundPlayback": false
         }
       ],
-      "expo-image",
       "expo-sqlite",
       [
         "expo-localization",

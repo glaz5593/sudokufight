@@ -379,26 +379,41 @@ function spiralEye(face: FaceDef, slot: EyeSlot, l: Lod): string {
   return `${ball}<path d="${smooth(points)}" fill="none" stroke="${ink}" stroke-width="${f(sw)}" stroke-linecap="round" stroke-linejoin="round"/>`;
 }
 
+/** One eye the rig draws: its centre (a blink scales the eye around it) and its markup. */
+export interface EyePart {
+  c: Point;
+  markup: string;
+}
+
+/**
+ * Every drawn eye (a covered one is left out), in eyeCentres() order. drawEyes wraps each in a group for CSS;
+ * the app draws each as a layer of its own (native.ts).
+ */
+export function eyeParts(face: FaceDef, expression: Expression, opts?: RigOptions): EyePart[] {
+  const l = lod(opts);
+  const list = shapes(face, SPECS[expression]);
+  const out: EyePart[] = [];
+  eyeSlots(face).forEach((slot, i) => {
+    if (!slot.drawn) return;
+    const s = list[i] ?? { kind: 'open' };
+    const markup =
+      s.kind === 'closed'
+        ? closedEye(face, slot, l)
+        : s.kind === 'spiral'
+          ? spiralEye(face, slot, l)
+          : openEye(face, slot, s, l);
+    out.push({ c: slot.c, markup });
+  });
+  return out;
+}
+
 /**
  * Every drawn eye, each in its own `<g class="sfa-eye">` whose `--sfa-eyes` is that eye's centre: a blink
  * (motion.ts, target `eyes`) scales each eye around it.
  */
 export function drawEyes(face: FaceDef, expression: Expression, opts?: RigOptions): string {
-  const l = lod(opts);
-  const spec = SPECS[expression];
-  const list = shapes(face, spec);
-  return eyeSlots(face)
-    .map((slot, i) => {
-      if (!slot.drawn) return '';
-      const s = list[i] ?? { kind: 'open' };
-      const body =
-        s.kind === 'closed'
-          ? closedEye(face, slot, l)
-          : s.kind === 'spiral'
-            ? spiralEye(face, slot, l)
-            : openEye(face, slot, s, l);
-      return `<g class="sfa-eye" style="--sfa-eyes:${f(slot.c.x)}px ${f(slot.c.y)}px">${body}</g>`;
-    })
+  return eyeParts(face, expression, opts)
+    .map((e) => `<g class="sfa-eye" style="--sfa-eyes:${f(e.c.x)}px ${f(e.c.y)}px">${e.markup}</g>`)
     .join('');
 }
 

@@ -1,6 +1,6 @@
 import Storage from 'expo-sqlite/kv-store';
 
-import { EMPTY_AVATAR } from '../../assets/avatars';
+import { NO_AVATAR_ID } from '../../avatars';
 import { deviceCountry, useProfile } from '../profile';
 
 jest.mock('expo-localization', () => ({
@@ -16,7 +16,7 @@ describe('the local profile (until accounts, stage 8)', () => {
   beforeEach(() => {
     useProfile.setState({
       name: null,
-      avatarId: EMPTY_AVATAR,
+      avatarId: NO_AVATAR_ID,
       country: 'IL',
       lastPlay: null,
       botLevel: null,
@@ -27,7 +27,7 @@ describe('the local profile (until accounts, stage 8)', () => {
     const initial = useProfile.getInitialState();
     expect(initial).toMatchObject({
       name: null,
-      avatarId: EMPTY_AVATAR,
+      avatarId: NO_AVATAR_ID,
       country: 'IL',
       lastPlay: null,
       botLevel: null,
@@ -66,7 +66,7 @@ describe('the local profile (until accounts, stage 8)', () => {
     expect(useProfile.getState().lastPlay).toEqual({ mode: 'solo', gameType: 'hard' });
     expect((await saved()).state).toEqual({
       name: null,
-      avatarId: EMPTY_AVATAR,
+      avatarId: NO_AVATAR_ID,
       country: 'IL',
       lastPlay: { mode: 'solo', gameType: 'hard' },
       botLevel: null,
@@ -101,7 +101,7 @@ describe('the local profile (until accounts, stage 8)', () => {
     await useProfile.persist.rehydrate();
     expect(useProfile.getState()).toMatchObject({
       name: 'Nina',
-      avatarId: EMPTY_AVATAR,
+      avatarId: NO_AVATAR_ID,
       country: 'IL',
       lastPlay: null,
     });
@@ -110,16 +110,24 @@ describe('the local profile (until accounts, stage 8)', () => {
       'profile',
       JSON.stringify({
         version: 1,
-        state: { avatarId: 'av07', country: 'gb', lastPlay: { mode: 'solo', gameType: 'fast' } },
+        state: { avatarId: 'lava-lamp', country: 'gb', lastPlay: { mode: 'solo', gameType: 'fast' } },
       }),
     );
     await useProfile.persist.rehydrate();
     expect(useProfile.getState()).toMatchObject({
-      avatarId: 'av07',
+      avatarId: 'lava-lamp',
       country: 'GB',
       lastPlay: { mode: 'solo', gameType: 'fast' },
       botLevel: null,
     });
+
+    // An avatar of the retired av01–av51 pack (saved before our own characters) reads as its replacement.
+    await Storage.setItem('profile', JSON.stringify({ version: 1, state: { avatarId: 'av07' } }));
+    await useProfile.persist.rehydrate();
+    expect(useProfile.getState().avatarId).toBe('lava-lamp');
+    await Storage.setItem('profile', JSON.stringify({ version: 1, state: { avatarId: 'av50' } }));
+    await useProfile.persist.rehydrate();
+    expect(useProfile.getState().avatarId).toBe('fox');
 
     // A bot level that is not one of the five, here or in the last play, is dropped.
     await Storage.setItem(

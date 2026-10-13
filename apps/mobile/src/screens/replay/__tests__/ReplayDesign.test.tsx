@@ -23,7 +23,7 @@ async function show() {
   const repo = await memoryRepo();
   const table = soloGame();
   await savePractice(repo, table);
-  const deps = { practice: async () => repo, ranked: null, myAvatar: 'av07' as const, myCountry: 'IL' };
+  const deps = { practice: async () => repo, ranked: null, myAvatar: 'lava-lamp' as const, myCountry: 'IL' };
   await render(
     <ReplayScreen gameId={table.config.id} load={(g) => loadReplay(g, null, deps)} onBack={jest.fn()} />,
   );

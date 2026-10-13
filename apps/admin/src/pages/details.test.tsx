@@ -8,7 +8,7 @@ function setup(hash: string) {
     'GET /session': SIGNED_IN,
     'GET /users': {
       body: {
-        items: [userRow(), userRow({ id: 'u2', displayName: 'Gone', deletedAt: 1 })],
+        items: [userRow(), userRow({ id: 'u2', displayName: 'Gone', deletedAt: 1, avatarId: null })],
         page: 1,
         pageSize: 50,
         total: 2,
@@ -31,12 +31,19 @@ describe('users', () => {
     expect(within(rows[1] as HTMLElement).getByText('1,512')).toBeTruthy();
     expect(within(rows[1] as HTMLElement).getByText('2 hours ago')).toBeTruthy();
     expect(within(rows[2] as HTMLElement).getByText('Deleted')).toBeTruthy();
+    // Each name with its avatar (spec §3.4), drawn beside it for the eye only: the link is named by the name.
+    expect(rows[1]!.querySelector('a svg')?.getAttribute('data-avatar')).toBe('lava-lamp');
+    expect(rows[1]!.querySelector('a svg')?.getAttribute('aria-hidden')).toBe('true');
+    expect(rows[2]!.querySelector('a .avatar-none')).toBeTruthy();
   });
 
   it('a user: profile, stats, ratings, games with the rating change, installs', async () => {
     setup(`#/users/${USER_A}`);
     expect(await screen.findByRole('heading', { name: 'Moshe', level: 1 })).toBeTruthy();
     expect(screen.getByText('moshe@example.com')).toBeTruthy();
+    // The avatar itself (spec §3.4), named after the character, with its id.
+    expect(screen.getByRole('img', { name: 'Lava lamp' })).toBeTruthy();
+    expect(screen.getByText('lava-lamp')).toBeTruthy();
     expect(screen.getByText('58%')).toBeTruthy(); // 7 of 12
     expect(screen.getByText('1.3')).toBeTruthy(); // mistakes on average
     // Level and XP (spec §15, stage 12).

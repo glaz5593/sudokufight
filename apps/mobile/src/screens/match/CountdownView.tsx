@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AVATAR_REACTIONS, AVATAR_STAGES } from '../../avatars/reactions';
 import { Avatar } from '../../components/player/Avatar';
 import { easing, NEVER_REDUCE } from '../../components/player/anim';
 import { paletteAt } from '../../components/player/metrics';
@@ -128,7 +129,14 @@ function MiniSeat({ seat, compact = false }: { seat: SeatModel; compact?: boolea
   const { t } = useTranslation('match');
   return (
     <View style={compact ? styles.miniCompact : styles.mini} testID={`mini-${seat.id}`}>
-      <Avatar avatarId={seat.avatarId} size="card" colorIndex={seat.colorIndex} />
+      {/* Everyone is in: the ready face (a smile). */}
+      <Avatar
+        avatarId={seat.avatarId}
+        size="card"
+        colorIndex={seat.colorIndex}
+        idle={AVATAR_STAGES.countdown}
+        expression={AVATAR_REACTIONS.moods.ready}
+      />
       <View style={[styles.miniTexts, compact && styles.miniTextsCompact]}>
         <View style={styles.miniName}>
           <SeatGlyph colorIndex={seat.colorIndex} size={metrics.slot.glyph} />

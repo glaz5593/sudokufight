@@ -152,8 +152,10 @@ motionBias: ['nod', 'tilt', 'bounce', 'flip'],
   play `bounce` instead.
 - **`headBox`:** a square around the head, used when the avatar is 22–24 px (`crop: 'head'`). Include the hair and
   ears; a little of the hair may be cut. Objects leave it out and stay whole.
-- **`motionBias`:** 3–4 motions that suit the character, favourite first. The app picks reactions from it. A heavy
-  object might `wobble`, a bouncy one `squash`, a calm person `nod`.
+- **`motionBias`:** 3–4 motions that suit the character, favourite first. A heavy object might `wobble`, a bouncy one
+  `squash`, a calm person `nod`. **The app does not read it yet:** its reactions come from one table for every
+  character (`AVATAR_REACTIONS` in `apps/mobile/src/avatars/reactions.ts`), so changing `motionBias` changes nothing
+  in a game. Keep it filled in, for a later version that picks per character.
 
 ## 7. What reads at 24 px
 
@@ -265,9 +267,24 @@ that character. The page respects reduced motion: motions switch only the face, 
 
 Motions are data (`MOTIONS` in `src/motion.ts`): keyframes with time (0–1), translate, rotate, scale and an optional
 face change, for three groups: `body`, `face` and `eyes` (each eye blinks around its own centre). CSS plays them in
-the preview (`motionCss()`), and the app will play the same data with Reanimated (`sampleTrack()` and `poseMatrix()`
-are worklets). With reduced motion, only the face changes play. You don't write motions per avatar; you choose
-`pivot`, `base`, `squash` and `motionBias`.
+the preview (`motionCss()`). The app plays the same data with Reanimated, through `src/native.ts`: `nativeLayers()`
+cuts the avatar into layers (each a bitmap on the phone, as big as what it draws, measured by `src/bounds.ts`), and
+`motionPlan()`, `gimmickPlans()` and `blinkPlan()` turn the keyframes into `withTiming` sequences on those layers
+(`nativeTransform()` builds each layer's transform). With reduced motion, only the face changes play. You don't write
+motions per avatar; you choose `pivot`, `base`, `squash` and `motionBias`.
+
+**In the app** (`apps/mobile/src/avatars/AvatarArt.tsx`):
+
+- An avatar is one still picture almost everywhere (lists, cards at rest, the 22 px avatar in a locked cell). It moves
+  only while a reaction plays (the game, the replay, the results; the table is `AVATAR_REACTIONS`), while a gimmick
+  its face or motion starts plays, and on a stage view.
+- A stage view idles: its `idle` gimmicks loop and it blinks every few seconds. Where: `AVATAR_STAGES` in
+  `apps/mobile/src/avatars/reactions.ts`. By default only the picker's stage and the winner on the results idle
+  (waiting for Moshe, `docs/DECISIONS-PENDING.md` 3.19), and only while their screen is the one shown.
+- No gimmick plays under 48 px (`GIMMICK_MIN_SIZE`): in-game cards (34–44) show its rest pose, so draw that pose
+  finished.
+- Reduced motion means face only: expressions and reactions change the face for as long as they would play, and
+  nothing moves, blinks or plays a gimmick.
 
 ## 12. One eye, three eyes, a patch, no brows, a drawn mouth
 

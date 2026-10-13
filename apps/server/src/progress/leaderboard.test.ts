@@ -88,7 +88,7 @@ async function cast() {
   await setRating(t.db, 'gus', 'fast', 1100, 2);
   await t.db
     .update(users)
-    .set({ avatarId: 'av12', country: 'DE', email: 'ben@example.com' })
+    .set({ avatarId: 'maya', country: 'DE', email: 'ben@example.com' })
     .where(eq(users.id, 'ben'));
   await t.db.insert(xp).values({ userId: 'ben', xp: 650, level: 3 });
 }
@@ -109,7 +109,7 @@ describe('the general tab (spec §14.2: each player at their highest rating [D9]
     expect(answer.entries[0]).toEqual<LeaderboardEntry>({
       id: 'ben',
       displayName: 'Ben',
-      avatarId: 'av12',
+      avatarId: 'maya',
       country: 'DE',
       league: 'diamond',
       level: 3,
@@ -130,6 +130,13 @@ describe('the general tab (spec §14.2: each player at their highest rating [D9]
     // Public data only.
     const text = JSON.stringify(answer);
     for (const secret of ['ben@example.com', 'uid-ben', 'uid-ana']) expect(text).not.toContain(secret);
+  });
+
+  it('shows an old avatar id still in a row as its replacement (normalizeAvatarId)', async () => {
+    await cast();
+    await t.db.update(users).set({ avatarId: 'av50' }).where(eq(users.id, 'ana'));
+    const answer = await board('ben');
+    expect(answer.entries.find((e) => e.id === 'ana')!.avatarId).toBe('fox');
   });
 
   it('pins my row, with my exact rank; none before my first rated game', async () => {

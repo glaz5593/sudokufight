@@ -1,7 +1,7 @@
 import type { GameType, PlayerId } from '@sudoku-fight/engine';
 import { COUNTDOWN_STEP_MS, MATCH_RANGE, parseQueueKey, type QueueKey } from '@sudoku-fight/protocol';
 
-import { type AvatarId, EMPTY_AVATAR, isAvatarId } from '../../assets/avatars';
+import { type AvatarIdOrNone, normalizeAvatarId } from '../../avatars';
 import type { MatchmakingFailureCode, MatchmakingInfo } from '../../net/matchmaking';
 
 /**
@@ -38,7 +38,7 @@ export interface RatingRange {
 export interface SeatModel {
   id: PlayerId;
   name: string;
-  avatarId: AvatarId;
+  avatarId: AvatarIdOrNone;
   country: string | null;
   rating: number;
   provisional: boolean;
@@ -51,7 +51,7 @@ export interface SeatModel {
 /** Me while searching: the account's look, and the rating once the server said. */
 export interface SelfModel {
   name: string | null;
-  avatarId: AvatarId;
+  avatarId: AvatarIdOrNone;
   rating: number | null;
 }
 
@@ -120,7 +120,7 @@ export function seatsOf(info: MatchmakingInfo): SeatModel[] {
     return {
       id: p.id,
       name: p.name,
-      avatarId: isAvatarId(p.avatarId) ? p.avatarId : EMPTY_AVATAR,
+      avatarId: normalizeAvatarId(p.avatarId),
       country: p.country,
       rating: p.rating,
       provisional: p.provisional,

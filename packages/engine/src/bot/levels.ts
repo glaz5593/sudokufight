@@ -52,7 +52,10 @@ export interface BotLevel {
   level: BotLevelId;
   /** A name, not a UI string: the same in every language. The level's title ("Novice") is the app's t(). */
   name: string;
-  /** assets/avatars/<avatar>.svg */
+  /**
+   * An avatar id of the catalog (packages/avatars, protocol AVATAR_IDS). A plain string: the engine does not
+   * depend on the avatars. The bots wore the first pack until 2026-10-12 (spec §3.4); each kept its character.
+   */
   avatar: string;
   /** Base think time per move for the 'normal' game type; the others scale by `pace` (spec §9). */
   thinkMs: MsRange;
@@ -109,7 +112,7 @@ const LEVELS: readonly BotLevel[] = [
   {
     level: 1,
     name: 'Pip',
-    avatar: 'av44', // mouse
+    avatar: 'hatchling', // was a mouse: small and just out of the shell, a beginner
     thinkMs: { min: 8000, max: 11000 },
     mistakeRate: 0.15,
     // "Rare: at most once a game" [D40].
@@ -121,7 +124,7 @@ const LEVELS: readonly BotLevel[] = [
   {
     level: 2,
     name: 'Biscuit',
-    avatar: 'av42', // dog
+    avatar: 'fox', // was a dog: the catalog's canine
     thinkMs: { min: 6000, max: 9000 },
     mistakeRate: 0.09,
     // "Sometimes, when trailing by 15 points or more" [D40].
@@ -133,7 +136,7 @@ const LEVELS: readonly BotLevel[] = [
   {
     level: 3,
     name: 'Mr. Hoot',
-    avatar: 'av49', // owl
+    avatar: 'owl', // an owl, as before
     thinkMs: { min: 4000, max: 7000 },
     mistakeRate: 0.05,
     // "When trailing by 10 points or more".
@@ -145,7 +148,7 @@ const LEVELS: readonly BotLevel[] = [
   {
     level: 4,
     name: 'Maestro',
-    avatar: 'av39', // gentleman
+    avatar: 'professor', // was a gentleman: Professor Gedalya, mustache and all
     thinkMs: { min: 3000, max: 5000 },
     mistakeRate: 0.02,
     // "When trailing".
@@ -161,7 +164,7 @@ const LEVELS: readonly BotLevel[] = [
   {
     level: 5,
     name: 'Overlord',
-    avatar: 'av40', // monkey
+    avatar: 'furry-monster', // was a monkey: the big furry one
     thinkMs: { min: 2000, max: 4000 },
     mistakeRate: 0.01,
     // "Aggressive": whatever the score, whenever it can pay; the doubling cost [D10] keeps it in check.

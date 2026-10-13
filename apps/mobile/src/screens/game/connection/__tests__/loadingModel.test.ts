@@ -18,8 +18,8 @@ import {
  */
 
 const PROFILES = {
-  nina: { avatarId: 'av12', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
-  me: { avatarId: 'av07', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
+  nina: { avatarId: 'maya', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
+  me: { avatarId: 'lava-lamp', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
 };
 
 describe('matchLoadingOf', () => {
@@ -36,7 +36,7 @@ describe('matchLoadingOf', () => {
       {
         id: 'me',
         name: 'Moshe',
-        avatarId: 'av07',
+        avatarId: 'lava-lamp',
         country: 'IL',
         rating: 1287,
         provisional: false,
@@ -47,7 +47,7 @@ describe('matchLoadingOf', () => {
       {
         id: 'nina',
         name: 'NinaVolt',
-        avatarId: 'av12',
+        avatarId: 'maya',
         country: 'DE',
         rating: 1305,
         provisional: true,
@@ -73,9 +73,9 @@ describe('matchLoadingOf', () => {
     const m = matchLoadingOf({
       profiles: {
         a: { avatarId: 'nope', country: null, name: 'A', rating: 1200 },
-        me: { avatarId: 'av07', country: 'IL', name: 'Moshe' },
-        b: { avatarId: 'av01', country: 'FR', name: 'B', rating: 1210 },
-        c: { avatarId: 'av02', country: 'US', name: 'C', rating: 1190 },
+        me: { avatarId: 'lava-lamp', country: 'IL', name: 'Moshe' },
+        b: { avatarId: 'microphone', country: 'FR', name: 'B', rating: 1210 },
+        c: { avatarId: 'balloon', country: 'US', name: 'C', rating: 1190 },
       },
       myId: 'me',
       gameType: 'hard',
@@ -99,7 +99,7 @@ describe('matchLoadingOf', () => {
     expect(
       matchLoadingOf({
         ...base,
-        profiles: { me: { avatarId: 'av07', country: 'IL' }, nina: { avatarId: 'av12', country: 'DE' } },
+        profiles: { me: { avatarId: 'lava-lamp', country: 'IL' }, nina: { avatarId: 'maya', country: 'DE' } },
       }),
     ).toBeNull();
   });

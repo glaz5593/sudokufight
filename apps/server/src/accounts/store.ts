@@ -4,10 +4,9 @@ import { INITIAL_RATING, type RatingOption } from '@sudoku-fight/engine';
 import {
   type AvatarId,
   type CountryCode,
-  isAvatarId,
   isCountryCode,
   type Me,
-  NO_AVATAR_ID,
+  normalizeAvatarId,
   normalizeForCompare,
   RENAME_COOLDOWN_MS,
   type RatingEntry,
@@ -99,7 +98,8 @@ export async function toMe(
   return {
     id: user.id,
     displayName: user.displayName,
-    avatarId: isAvatarId(user.avatarId) ? user.avatarId : NO_AVATAR_ID,
+    // An old pack's id (a row older than migration 0004, say from a backup) as its replacement.
+    avatarId: normalizeAvatarId(user.avatarId),
     country: isCountryCode(user.country) ? user.country : null,
     email: token.email ?? user.email,
     emailVerified: token.emailVerified,

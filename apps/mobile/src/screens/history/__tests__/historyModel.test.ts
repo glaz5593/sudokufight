@@ -33,7 +33,7 @@ describe('cards', () => {
       place: 1,
       playerCount: 2,
       opponents: [
-        { id: 'nina', name: 'NinaVolt', avatar: 'av12', isBot: false, country: 'DE', colorIndex: 1 },
+        { id: 'nina', name: 'NinaVolt', avatar: 'maya', isBot: false, country: 'DE', colorIndex: 1 },
       ],
       myScore: result.ranking.find((r) => r.playerId === 'me')!.score,
       opponentScore: nina.score,

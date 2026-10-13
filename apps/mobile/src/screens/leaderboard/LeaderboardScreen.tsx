@@ -6,7 +6,7 @@ import { FlatList, Platform, Pressable, RefreshControl, Share, StyleSheet, Text,
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { ProgressApi } from '../../api/progressApi';
-import type { AvatarId } from '../../assets/avatars';
+import type { AvatarIdOrNone } from '../../avatars';
 import { Avatar, leagueProgress } from '../../components/player';
 import {
   BottomNav,
@@ -50,7 +50,7 @@ export interface LeaderboardScreenProps {
   api: () => ProgressApi | null;
   /** My public id (me.id): my rows are P1. */
   myId: string | null;
-  myAvatar: AvatarId;
+  myAvatar: AvatarIdOrNone;
   /** My league and the rating it comes from [D9], from my progress; null while not known. */
   myLeague: { league: League | null; rating: number | null } | null;
   onOpenPlayer: (id: string) => void;

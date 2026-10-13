@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import { AVATAR_STAGES } from '../../avatars/reactions';
+import { useReadyFace } from '../../avatars/useFaces';
 import { Icon } from '../../components/Icon';
 import { Avatar } from '../../components/player/Avatar';
 import { Flag } from '../../components/player/Flag';
@@ -72,13 +74,15 @@ export interface SeatTileProps {
 /**
  * A player at the table (Match-Found): the avatar in the seat's colour (me: P1), the seat's shape, the name
  * and flag, the rating (with "זמני" for the first 10 games, spec §11.2), and ready or still connecting (D37).
- * One label for screen readers: "NinaVolt, דירוג 1305, זמני, מוכן".
+ * One label for screen readers: "NinaVolt, דירוג 1305, זמני, מוכן". Ready, the avatar smiles (and nods as it
+ * turns ready on screen: avatars/useFaces useReadyFace).
  */
 export function SeatTile({ seat, showReady, reduce, style }: SeatTileProps) {
   const { t } = useTranslation('match');
   const { t: tp } = useTranslation('player');
   const connecting = showReady && !seat.ready;
   const pulse = usePulse(connecting, reduce);
+  const face = useReadyFace(seat.ready);
   const ring = paletteAt(seat.colorIndex).ring;
   const name = seat.name;
   const ratingLabel = seat.provisional
@@ -102,7 +106,15 @@ export function SeatTile({ seat, showReady, reduce, style }: SeatTileProps) {
       <View style={styles.tileGlyph}>
         <SeatGlyph colorIndex={seat.colorIndex} size={metrics.tile.glyph} />
       </View>
-      <Avatar avatarId={seat.avatarId} size="row" colorIndex={seat.colorIndex} />
+      <Avatar
+        avatarId={seat.avatarId}
+        size="row"
+        colorIndex={seat.colorIndex}
+        idle={AVATAR_STAGES.vs}
+        expression={face.expression}
+        reaction={face.reaction}
+        testID={`seat-${seat.id}-avatar`}
+      />
       <View style={styles.nameRow}>
         <Text style={styles.name} numberOfLines={1}>
           {name}

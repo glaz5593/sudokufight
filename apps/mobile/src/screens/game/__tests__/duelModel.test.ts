@@ -19,15 +19,15 @@ describe('who a player is (identity)', () => {
   it('a bot: the name it came with, else its level’s; the avatar of its level (spec §9)', () => {
     expect(playerIdentity({ id: 'bot-1', isBot: true })).toEqual({
       name: 'Pip',
-      avatar: 'av44',
+      avatar: 'hatchling',
       isBot: true,
       botLevel: 1,
     });
     expect(['bot-2', 'bot-3', 'bot-4', 'bot-5'].map((id) => playerIdentity({ id }).avatar)).toEqual([
-      'av42',
-      'av49',
-      'av39',
-      'av40',
+      'fox',
+      'owl',
+      'professor',
+      'furry-monster',
     ]);
     expect(playerIdentity({ id: 'bot-5', name: 'Overlord', isBot: true }).name).toBe('Overlord');
     expect(playerIdentity({ id: 'bot-3', name: 'Hooty', isBot: true }).name).toBe('Hooty');
@@ -51,7 +51,7 @@ describe('who a player is (identity)', () => {
   it('from a game’s view', () => {
     const g = duel();
     const view = g.host.getView();
-    expect(identityOf(view, BOT.id)).toMatchObject({ name: 'Mr. Hoot', avatar: 'av49', isBot: true });
+    expect(identityOf(view, BOT.id)).toMatchObject({ name: 'Mr. Hoot', avatar: 'owl', isBot: true });
     expect(identityOf(view, 'me')).toMatchObject({ name: null, avatar: 'av00', isBot: false });
     expect(identityOf(view, 'nobody')).toMatchObject({ name: null, isBot: false });
     g.session.close();

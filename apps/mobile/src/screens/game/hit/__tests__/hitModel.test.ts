@@ -12,7 +12,7 @@ function view(hitBy: PlayerView['hitBy']): Pick<GameView, 'players' | 'me' | 'ru
     rules: { interferenceMs: 5000 } as GameView['rules'],
   };
 }
-const names = { nameOf: (id: string) => id.toUpperCase(), avatarOf: () => 'av07' as const };
+const names = { nameOf: (id: string) => id.toUpperCase(), avatarOf: () => 'lava-lamp' as const };
 
 describe('hitOf', () => {
   it('is null when nothing hits me', () => {
@@ -25,7 +25,7 @@ describe('hitOf', () => {
       kind: 'warp',
       fromId: 'nina',
       fromName: 'NINA',
-      fromAvatar: 'av07',
+      fromAvatar: 'lava-lamp',
       // Seats 0 and 2 are my opponents: seat 2 is the second of them, P3.
       fromColorIndex: 2,
       endsAt: 20_000,

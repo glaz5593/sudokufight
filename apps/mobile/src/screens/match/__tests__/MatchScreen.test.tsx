@@ -69,7 +69,12 @@ async function show(
     onHome: jest.fn(),
   };
   await render(
-    <MatchScreen match={client} self={{ name: 'Moshe', avatarId: 'av07' }} clock={clock} {...handlers} />,
+    <MatchScreen
+      match={client}
+      self={{ name: 'Moshe', avatarId: 'lava-lamp' }}
+      clock={clock}
+      {...handlers}
+    />,
   );
   await act(async () => {
     await client.start();
@@ -314,8 +319,8 @@ describe('Found (Match-Found) and 3-2-1-GO (Match-Countdown)', () => {
 describe('a table of 3–4 (stage 10)', () => {
   const FOUR: MatchPlayer[] = [
     ...MATCH_PLAYERS,
-    { id: 'p3', name: 'Ziv', avatarId: 'av20', country: 'FR', rating: 1250, provisional: false },
-    { id: 'p4', name: 'Lea', avatarId: 'av31', country: 'US', rating: 1190, provisional: false },
+    { id: 'p3', name: 'Ziv', avatarId: 'omer', country: 'FR', rating: 1250, provisional: false },
+    { id: 'p4', name: 'Lea', avatarId: 'sudoku-board', country: 'US', rating: 1190, provisional: false },
   ];
   /** The seats' tiles (or the countdown's columns) in the order they are drawn. */
   const order = (prefix: 'seat' | 'mini') =>

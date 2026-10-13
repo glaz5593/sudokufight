@@ -19,6 +19,7 @@ import {
   type Scheduler,
 } from '@sudoku-fight/engine';
 import {
+  AVATAR_IDS,
   type AvatarId,
   type ClientMessage,
   type CountryCode,
@@ -96,7 +97,7 @@ export interface FakeClientTrouble {
 export interface FakeAccountOptions {
   /** Default: the development token of `id` (`dev:<id>`), which only a server outside production takes. */
   token?: string;
-  /** For the registration when the token has no account yet; default av01. */
+  /** For the registration when the token has no account yet; default AVATAR_IDS[0]. */
   avatarId?: AvatarId;
   /** Likewise; default IL. */
   country?: CountryCode;
@@ -111,7 +112,7 @@ export interface FakeQueueOptions {
    * token of `id` (`dev:<id>`), which only a server outside production takes.
    */
   token?: string;
-  /** For the registration (POST /v1/users) when the token has no account yet; default av01. */
+  /** For the registration (POST /v1/users) when the token has no account yet; default AVATAR_IDS[0]. */
   avatarId?: AvatarId;
   /** Likewise; default IL. */
   country?: CountryCode;
@@ -393,7 +394,7 @@ export class FakeClient {
       const token = opts.queue.token ?? devToken(opts.id ?? defaultFakeId(opts.name));
       const { me, registered } = await signIn(origin, token, {
         displayName: opts.name,
-        avatarId: opts.queue.avatarId ?? 'av01',
+        avatarId: opts.queue.avatarId ?? AVATAR_IDS[0],
         country: opts.queue.country ?? 'IL',
       });
       const client = new FakeClient(opts, me.id, { origin, token, registered, me });
@@ -410,7 +411,7 @@ export class FakeClient {
       const token = opts.account.token ?? devToken(opts.id ?? defaultFakeId(opts.name));
       const { me, registered } = await signIn(origin, token, {
         displayName: opts.name,
-        avatarId: opts.account.avatarId ?? 'av01',
+        avatarId: opts.account.avatarId ?? AVATAR_IDS[0],
         country: opts.account.country ?? 'IL',
       });
       const client = new FakeClient(opts, me.id, { origin, token, registered, me });

@@ -19,6 +19,10 @@
 !packages/protocol/package.json
 !packages/protocol/tsconfig*.json
 !packages/protocol/src
+# The avatars: the admin site draws them (its Vite build bundles them; the server never loads them).
+!packages/avatars/package.json
+!packages/avatars/tsconfig*.json
+!packages/avatars/src
 
 !apps/server/package.json
 !apps/server/tsconfig.json

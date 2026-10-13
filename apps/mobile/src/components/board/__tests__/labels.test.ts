@@ -15,10 +15,17 @@ const nina: CellPlayer = {
   seat: 1,
   colorIndex: 1,
   name: 'NinaVolt',
-  avatar: 'av07',
+  avatar: 'lava-lamp',
   isMe: false,
 };
-const moshe: CellPlayer = { id: 'moshe', seat: 0, colorIndex: 0, name: 'MosheG', avatar: 'av01', isMe: true };
+const moshe: CellPlayer = {
+  id: 'moshe',
+  seat: 0,
+  colorIndex: 0,
+  name: 'MosheG',
+  avatar: 'microphone',
+  isMe: true,
+};
 const cell = (name: string, over: Partial<CellModel> = {}): CellModel => ({
   ...emptyCell(parseCellName(name)),
   ...over,

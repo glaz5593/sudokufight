@@ -1,8 +1,8 @@
-import { Image } from 'expo-image';
+import type { Expression } from '@sudoku-fight/avatars';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { AVATARS, type AvatarId, EMPTY_AVATAR } from '../../assets/avatars';
+import { AvatarArt, type AvatarIdOrNone, type AvatarReaction } from '../../avatars';
 import { color, text, tokens } from '../../theme';
 import type { Presence } from './cardModel';
 import { AVATAR_SIZES, type AvatarSize, metrics, paletteAt } from './metrics';
@@ -10,8 +10,8 @@ import { AVATAR_SIZES, type AvatarSize, metrics, paletteAt } from './metrics';
 export type GameResultKind = 'win' | 'loss' | 'draw';
 
 export interface AvatarProps {
-  /** Null or missing: the empty avatar (av00). */
-  avatarId?: AvatarId | null;
+  /** Null or missing: the "no avatar" placeholder (av00). */
+  avatarId?: AvatarIdOrNone | null;
   /** components.md §2: cell 22 · compact 34 · list 36 · card 44 · row 52 · home 72 · profile 96. */
   size?: AvatarSize;
   /**
@@ -28,6 +28,11 @@ export interface AvatarProps {
   result?: GameResultKind | null;
   /** Reconnecting, left or surrendered: grayscale, dimmed, offline frame. */
   inactive?: boolean;
+  /** The face (AvatarArt): the base expression, a reaction to play, and whether it idles on a stage view. */
+  expression?: Expression;
+  reaction?: AvatarReaction | null;
+  /** A stage view (where: avatars AVATAR_STAGES): idle gimmicks and the blink, while its screen is shown. */
+  idle?: boolean;
   /**
    * Alone on screen, the avatar speaks the player's name. Next to the name (almost always), leave it out and
    * the avatar is decorative.
@@ -47,13 +52,15 @@ export function Avatar({
   bot = false,
   result = null,
   inactive = false,
+  expression,
+  reaction,
+  idle = false,
   label,
   style,
   testID,
 }: AvatarProps) {
   const { t } = useTranslation('player');
   const m = AVATAR_SIZES[size];
-  const id = avatarId ?? EMPTY_AVATAR;
   const frameColor = inactive
     ? color.status.offline
     : colorIndex === null
@@ -84,15 +91,18 @@ export function Avatar({
           opacity: inactive ? metrics.avatarDisconnectedOpacity : 1,
         }}
       >
-        <View style={inactive ? styles.grayscale : undefined}>
-          <Image
-            source={AVATARS[id]}
-            style={{ width: m.image, height: m.image, borderRadius: m.imageRadius }}
-            contentFit="cover"
-            accessible={false}
-            testID={testID ? `${testID}-image` : undefined}
-          />
-        </View>
+        <AvatarArt
+          avatarId={avatarId}
+          size={m.image}
+          radius={m.imageRadius}
+          // The 22 dp one (a locked cell, a small list) shows the head: a whole character is lost that small.
+          crop={size === 'cell' ? 'head' : 'tile'}
+          expression={expression}
+          reaction={reaction}
+          idle={idle}
+          inactive={inactive}
+          testID={testID ? `${testID}-image` : undefined}
+        />
       </View>
 
       {presence === 'online' || presence === 'reconnecting' ? (
@@ -127,7 +137,6 @@ export function Avatar({
 }
 
 const styles = StyleSheet.create({
-  grayscale: { filter: [{ grayscale: 1 }] },
   dot: {
     position: 'absolute',
     bottom: metrics.presenceDot.offset,

@@ -1,6 +1,6 @@
 import type { GameType, InterferenceKind, League } from '@sudoku-fight/engine';
 
-import type { AvatarId, CountryCode } from './account';
+import type { AvatarId, CountryCode, NO_AVATAR_ID } from './account';
 
 /**
  * Leaderboards, player cards and progress (spec §14.2, §14.3, §11.3, §15; work plan stage 12). Every route
@@ -52,7 +52,7 @@ export const MAX_PRACTICE_RESULTS = 50;
 export interface PublicPlayer {
   id: string;
   displayName: string;
-  avatarId: AvatarId | 'av00';
+  avatarId: AvatarId | typeof NO_AVATAR_ID;
   country: CountryCode | null;
   /** Null while every rating key is still provisional (§11.3). */
   league: League | null;

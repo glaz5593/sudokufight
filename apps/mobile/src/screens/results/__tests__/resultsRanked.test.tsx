@@ -72,7 +72,7 @@ async function show(
 beforeEach(async () => {
   await i18n.changeLanguage('he');
   useSettings.setState({ reduceMotion: 'on' });
-  useProfile.setState({ avatarId: 'av07' });
+  useProfile.setState({ avatarId: 'lava-lamp' });
 });
 
 describe('a rated two-player game', () => {
@@ -182,7 +182,7 @@ describe('a four-player game: the full ranking (spec §12)', () => {
   });
 
   it('splits my rating change by opponent, as the engine did (Results-4P), adding up to it', () => {
-    const model = sessionResultsModel({ ...sessionOf(table, 'p2'), profiles: { p1: { avatarId: 'av12' } } })!;
+    const model = sessionResultsModel({ ...sessionOf(table, 'p2'), profiles: { p1: { avatarId: 'maya' } } })!;
     const engine = result.ratingPairs!.find((p) => p.playerId === 'p2')!;
     expect(model.ratingPairs.map((p) => [p.playerId, p.delta])).toEqual(
       engine.pairs.map((p) => [p.opponentId, p.delta]),
@@ -192,7 +192,7 @@ describe('a four-player game: the full ranking (spec §12)', () => {
       result.ranking.filter((r) => r.playerId !== 'p2').map((r) => r.playerId),
     );
     expect(model.ratingPairs.every((p) => p.colorIndex > 0)).toBe(true);
-    expect(model.ratingPairs.find((p) => p.playerId === 'p1')).toMatchObject({ name: 'P1', avatar: 'av12' });
+    expect(model.ratingPairs.find((p) => p.playerId === 'p1')).toMatchObject({ name: 'P1', avatar: 'maya' });
     const tenths = model.ratingPairs.reduce((a, p) => a + Math.round(p.delta * 10), 0);
     expect(tenths).toBe(model.rating!.delta * 10);
 
@@ -233,10 +233,10 @@ describe('a four-player game: the full ranking (spec §12)', () => {
     expect(plain.ranking.filter((r) => !r.isMe).every((r) => r.avatar === 'av00')).toBe(true);
     const model = sessionResultsModel({
       ...sessionOf(table, 'p2'),
-      profiles: { p1: { avatarId: 'av12' }, p3: { avatarId: 'av20' }, p4: { avatarId: 'nope' } },
+      profiles: { p1: { avatarId: 'maya' }, p3: { avatarId: 'omer' }, p4: { avatarId: 'nope' } },
     })!;
     const avatarOf = (id: string) => model.ranking.find((r) => r.playerId === id)!.avatar;
-    expect([avatarOf('p1'), avatarOf('p3'), avatarOf('p4')]).toEqual(['av12', 'av20', 'av00']);
+    expect([avatarOf('p1'), avatarOf('p3'), avatarOf('p4')]).toEqual(['maya', 'omer', 'av00']);
   });
 
   it('draws a podium for the first three and a row for the 4th', async () => {

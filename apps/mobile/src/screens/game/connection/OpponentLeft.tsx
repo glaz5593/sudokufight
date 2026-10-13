@@ -4,7 +4,7 @@ import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { AvatarId } from '../../../assets/avatars';
+import type { AvatarIdOrNone } from '../../../avatars';
 import { Icon } from '../../../components/Icon';
 import { Avatar } from '../../../components/player/Avatar';
 import { flagEmoji } from '../../../components/player/countryFlag';
@@ -28,8 +28,8 @@ export interface OpponentLeftProps {
   onResults: () => void;
   /** "לבית". */
   onHome: () => void;
-  myAvatar?: AvatarId | null;
-  opponentAvatar?: AvatarId | null;
+  myAvatar?: AvatarIdOrNone | null;
+  opponentAvatar?: AvatarIdOrNone | null;
   /** The leaver's country (a ranked match's profiles): its flag on the avatar's other corner. */
   opponentCountry?: string | null;
   /** The opponent's grammatical gender, for the Hebrew verb ("עזבה"). */

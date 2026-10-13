@@ -11,7 +11,8 @@
  *   class `sfa-m-{motion id}` on the <svg> to play it. Face changes need a script: `faceChanges()` lists them
  *   with their times; replace g#face's content with renderFace() at each one.
  *
- * - Reanimated, in the app (later). Suggested wiring, one shared value per playing avatar:
+ * - Reanimated, in the app: native.ts does it per layer (nativeLayers, motionPlan). Sampling by hand works too,
+ *   one shared value per playing avatar:
  *     const progress = useSharedValue(0);
  *     progress.value = withTiming(1, { duration: motion.durationMs, easing: Easing.linear });
  *     const bodyProps = useAnimatedProps(() => ({

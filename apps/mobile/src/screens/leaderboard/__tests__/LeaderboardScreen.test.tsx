@@ -39,7 +39,7 @@ async function show(data: FakeBoards | ProgressApi | null, over: Partial<Leaderb
     <LeaderboardScreen
       api={() => api}
       myId="me"
-      myAvatar="av07"
+      myAvatar="lava-lamp"
       myLeague={{ league: 'gold', rating: 1276 }}
       {...props}
       {...over}

@@ -52,7 +52,7 @@ async function show(api: ProgressApi | null) {
     <LeaderboardScreen
       api={() => api}
       myId="me"
-      myAvatar="av07"
+      myAvatar="lava-lamp"
       myLeague={{ league: 'gold', rating: 1276 }}
       share={jest.fn(async () => undefined)}
       {...props}
@@ -180,7 +180,7 @@ describe('leaderboard skeleton motion (motion.md skeleton)', () => {
         <LeaderboardScreen
           api={() => api}
           myId="me"
-          myAvatar="av07"
+          myAvatar="lava-lamp"
           myLeague={null}
           onOpenPlayer={jest.fn()}
           onPlay={jest.fn()}

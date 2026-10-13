@@ -30,7 +30,7 @@ import {
 } from '../testing/testAuth';
 import { AuthError } from '../types';
 
-const PROFILE = { displayName: 'MosheG', avatarId: 'av07', country: 'IL' } as const;
+const PROFILE = { displayName: 'MosheG', avatarId: 'lava-lamp', country: 'IL' } as const;
 const state = () => useAuth.getState();
 
 async function rejection(p: Promise<unknown>): Promise<unknown> {
@@ -200,7 +200,7 @@ describe('registering (spec §3.2)', () => {
   it('step 2 makes the account, sends the verification and creates the profile → ready, 1200 provisional [D23]', async () => {
     const auth = installTestAuth();
     await initAuth();
-    useRegistrationDraft.setState({ displayName: 'MosheG', avatarId: 'av07', country: 'IL' });
+    useRegistrationDraft.setState({ displayName: 'MosheG', avatarId: 'lava-lamp', country: 'IL' });
     await signUpAndRegister('moshe@example.com', 'Arena1234', PROFILE);
     expect(state()).toMatchObject({
       status: 'ready',
@@ -260,9 +260,9 @@ describe('the profile and the email', () => {
   it('updates the avatar and the country any time, the name once in 30 days [D20, D21]', async () => {
     const auth = await installSignedInPlayer();
     await initAuth();
-    await updateProfile({ avatarId: 'av09', country: 'US' });
-    expect(state().me).toMatchObject({ avatarId: 'av09', country: 'US' });
-    expect(useProfile.getState()).toMatchObject({ avatarId: 'av09', country: 'US' });
+    await updateProfile({ avatarId: 'sufganiya', country: 'US' });
+    expect(state().me).toMatchObject({ avatarId: 'sufganiya', country: 'US' });
+    expect(useProfile.getState()).toMatchObject({ avatarId: 'sufganiya', country: 'US' });
 
     await updateProfile({ displayName: 'Renamed' });
     expect(state().me?.displayName).toBe('Renamed');

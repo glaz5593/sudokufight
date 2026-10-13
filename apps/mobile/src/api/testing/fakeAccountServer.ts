@@ -191,7 +191,7 @@ export function createFakeAccountServer({
       const uid = `other-${nextId}`;
       users.set(uid, {
         uid,
-        me: newMe({ displayName: name, avatarId: 'av02', country: 'US' }),
+        me: newMe({ displayName: name, avatarId: 'balloon', country: 'US' }),
       });
     },
     setNow: (t) => {

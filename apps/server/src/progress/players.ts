@@ -1,5 +1,5 @@
 import { levelFor } from '@sudoku-fight/engine';
-import { isAvatarId, isCountryCode, NO_AVATAR_ID, type PublicPlayer } from '@sudoku-fight/protocol';
+import { isCountryCode, normalizeAvatarId, type PublicPlayer } from '@sudoku-fight/protocol';
 import { and, inArray, isNull } from 'drizzle-orm';
 
 import type { Db } from '../db';
@@ -36,7 +36,7 @@ export async function publicPlayers(
     found.set(u.id, {
       id: u.id,
       displayName: u.displayName,
-      avatarId: isAvatarId(u.avatarId) ? u.avatarId : NO_AVATAR_ID,
+      avatarId: normalizeAvatarId(u.avatarId),
       country: isCountryCode(u.country) ? u.country : null,
       league: leagueOf(leagueRows.get(u.id) ?? [], settings.rules).league,
       level: levelFor(xpTotals.get(u.id) ?? 0, settings.rules).level,

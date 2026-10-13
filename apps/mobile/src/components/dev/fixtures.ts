@@ -18,7 +18,7 @@ import {
   toView,
 } from '@sudoku-fight/engine';
 
-import type { AvatarId } from '../../assets/avatars';
+import type { AvatarIdOrNone } from '../../avatars';
 import { DEMO_PUZZLE, demoAnswer, demoBoard, demoWrong } from '../board/demo';
 import type { Gender } from '../player/wording';
 
@@ -46,21 +46,21 @@ export const DS_PLAYERS: Readonly<Record<PlayerId, PlayerInfo>> = {
 
 /** What the profile adds to a player (stage 8 will bring it from the server). */
 export interface DsProfile {
-  avatar: AvatarId;
+  avatar: AvatarIdOrNone;
   /** ISO alpha-2. */
   country: string | null;
   gender?: Gender;
 }
 
 export const DS_PROFILES: Readonly<Record<PlayerId, DsProfile>> = {
-  [ME]: { avatar: 'av07', country: 'IL' },
-  [NINA]: { avatar: 'av12', country: 'DE', gender: 'female' },
-  [AIKO]: { avatar: 'av23', country: 'JP', gender: 'female' },
-  [OMAR]: { avatar: 'av31', country: 'BR' },
-  [BOT]: { avatar: 'av40', country: null },
+  [ME]: { avatar: 'lava-lamp', country: 'IL' },
+  [NINA]: { avatar: 'maya', country: 'DE', gender: 'female' },
+  [AIKO]: { avatar: 'hourglass', country: 'JP', gender: 'female' },
+  [OMAR]: { avatar: 'sudoku-board', country: 'BR' },
+  [BOT]: { avatar: 'furry-monster', country: null },
 };
 
-export const DS_AVATARS: Readonly<Record<PlayerId, AvatarId>> = Object.fromEntries(
+export const DS_AVATARS: Readonly<Record<PlayerId, AvatarIdOrNone>> = Object.fromEntries(
   Object.entries(DS_PROFILES).map(([id, p]) => [id, p.avatar]),
 );
 

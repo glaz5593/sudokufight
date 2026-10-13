@@ -17,7 +17,7 @@ import {
   statsFor,
 } from '@sudoku-fight/engine';
 
-import { type AvatarId, isAvatarId } from '../../assets/avatars';
+import { type AvatarIdOrNone, NO_AVATAR_ID, normalizeAvatarId } from '../../avatars';
 import { colorIndexFor } from '../../components/player';
 import type { PracticeGame, PracticeRepo } from '../../game/practiceRepo';
 import type { PracticeSession } from '../../game/session';
@@ -62,7 +62,7 @@ export interface OpponentResult {
   playerId: PlayerId;
   /** Null: the screen's word for an unnamed player. */
   name: string | null;
-  avatar: AvatarId;
+  avatar: AvatarIdOrNone;
   isBot: boolean;
   /** Their colour as this phone shows them (0 is me, so 1–3). */
   colorIndex: number;
@@ -90,7 +90,7 @@ export interface RankingRow {
   playerId: PlayerId;
   /** Null: the screen's word for an unnamed player ("אני" for me). */
   name: string | null;
-  avatar: AvatarId;
+  avatar: AvatarIdOrNone;
   isBot: boolean;
   isMe: boolean;
   colorIndex: number;
@@ -109,7 +109,7 @@ export interface RatingPairRow {
   playerId: PlayerId;
   /** Null: the screen's word for an unnamed player. */
   name: string | null;
-  avatar: AvatarId;
+  avatar: AvatarIdOrNone;
   isBot: boolean;
   colorIndex: number;
   delta: number;
@@ -260,9 +260,9 @@ function versusOf(
   const seats = standings.map((s) => s.seat);
   const info = (id: PlayerId) => infos?.find((p) => p.id === id) ?? { id };
   // A known avatar (a ranked opponent's own) before the default (a bot's by its level, else the empty one).
-  const avatarOf = (id: PlayerId, fallback: AvatarId): AvatarId => {
-    const own = avatars?.[id]?.avatarId;
-    return isAvatarId(own) ? own : fallback;
+  const avatarOf = (id: PlayerId, fallback: AvatarIdOrNone): AvatarIdOrNone => {
+    const own = normalizeAvatarId(avatars?.[id]?.avatarId);
+    return own !== NO_AVATAR_ID ? own : fallback;
   };
   const ratingOf = (id: PlayerId) => ratingResult(result?.ratingChanges.find((c) => c.playerId === id));
 

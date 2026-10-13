@@ -1,6 +1,6 @@
 import type { PlayerId } from '@sudoku-fight/engine';
 
-import type { AvatarId } from '../../assets/avatars';
+import type { AvatarIdOrNone } from '../../avatars';
 import type { PracticeRepo } from '../../game/practiceRepo';
 import { HISTORY_OFFLINE_CODES, type HistoryApi, isHistoryApiError } from '../history/historyApi';
 import { buildReplay, type Replay } from './replayModel';
@@ -38,7 +38,7 @@ export interface ReplaySourceDeps {
   /** The server's history; null when nobody is signed in. */
   ranked: HistoryApi | null;
   /** My avatar (the profile's), for my own seat in a practice. */
-  myAvatar: AvatarId;
+  myAvatar: AvatarIdOrNone;
   myCountry?: string | null;
 }
 
@@ -59,7 +59,7 @@ async function fromServer(id: string, api: HistoryApi | null): Promise<ReplayLoa
   try {
     const { game, events } = await api.replay(id);
     const me = game.players.find((p) => p.seat === game.mySeat)?.userId ?? null;
-    const avatars: Partial<Record<PlayerId, AvatarId>> = {};
+    const avatars: Partial<Record<PlayerId, AvatarIdOrNone>> = {};
     const names: Partial<Record<PlayerId, string | null>> = {};
     const countries: Partial<Record<PlayerId, string | null>> = {};
     for (const p of game.players) {

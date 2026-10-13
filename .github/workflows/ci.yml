@@ -49,8 +49,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: engine, protocol, admin
-            jest: --selectProjects engine protocol admin
+          - name: engine, protocol, avatars, admin
+            jest: --selectProjects engine protocol avatars admin
           - name: server
             jest: --selectProjects server
           - name: app 1/2

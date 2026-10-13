@@ -102,11 +102,12 @@ describe('parseFakeClientArgs', () => {
 
   it('--queue with its own options', () => {
     expect(
-      run('--queue normal-2p --token eyJ.abc.def --avatar av07 --country us --keep-searching').options.queue,
+      run('--queue normal-2p --token eyJ.abc.def --avatar lava-lamp --country us --keep-searching').options
+        .queue,
     ).toEqual({
       queueKey: 'normal-2p',
       token: 'eyJ.abc.def',
-      avatarId: 'av07',
+      avatarId: 'lava-lamp',
       country: 'US',
       keepSearching: true,
     });
@@ -124,8 +125,11 @@ describe('parseFakeClientArgs', () => {
       account: {},
     });
     expect(
-      run('--code XVGWGD --account --token eyJ.abc.def --avatar av07 --country us').options,
-    ).toMatchObject({ code: 'XVGWGD', account: { token: 'eyJ.abc.def', avatarId: 'av07', country: 'US' } });
+      run('--code XVGWGD --account --token eyJ.abc.def --avatar lava-lamp --country us').options,
+    ).toMatchObject({
+      code: 'XVGWGD',
+      account: { token: 'eyJ.abc.def', avatarId: 'lava-lamp', country: 'US' },
+    });
     expect(run('--code XVGWGD').options.account).toBeUndefined();
   });
 
@@ -279,7 +283,7 @@ describe('a ranked run (--queue)', () => {
     matchId: 'm-1',
     rematch: false,
     opponents: [
-      { id: 'u-ben', name: 'Ben', avatarId: 'av02', country: 'IL', rating: 1216, provisional: true },
+      { id: 'u-ben', name: 'Ben', avatarId: 'balloon', country: 'IL', rating: 1216, provisional: true },
     ],
     cancelled: null,
     registered: false,

@@ -24,7 +24,7 @@ const duel: HistoryEntry = {
   outcome: 'win',
   place: 1,
   playerCount: 2,
-  opponents: [{ id: 'lior', name: 'Lior.K', avatar: 'av12', isBot: false, country: 'IL', colorIndex: 1 }],
+  opponents: [{ id: 'lior', name: 'Lior.K', avatar: 'maya', isBot: false, country: 'IL', colorIndex: 1 }],
   myScore: 84.5,
   opponentScore: 62,
   ratingDelta: 11,
@@ -37,9 +37,9 @@ const four: HistoryEntry = {
   outcome: 'loss',
   playerCount: 4,
   opponents: [
-    { id: 'a', name: 'A', avatar: 'av01', isBot: false, country: null, colorIndex: 1 },
-    { id: 'b', name: 'B', avatar: 'av02', isBot: false, country: null, colorIndex: 2 },
-    { id: 'c', name: 'C', avatar: 'av03', isBot: false, country: null, colorIndex: 3 },
+    { id: 'a', name: 'A', avatar: 'microphone', isBot: false, country: null, colorIndex: 1 },
+    { id: 'b', name: 'B', avatar: 'balloon', isBot: false, country: null, colorIndex: 2 },
+    { id: 'c', name: 'C', avatar: 'cassette', isBot: false, country: null, colorIndex: 3 },
   ],
   myScore: 47.5,
   opponentScore: null,
@@ -54,7 +54,7 @@ describe.each(['he', 'en'] as const)('HistoryCard in %s', (lng) => {
   });
 
   it('one opponent: "84.5 : 62" isolated LTR, mine in P1 and theirs muted', async () => {
-    await render(<HistoryCard entry={duel} myAvatar="av07" now={NOW} onOpen={jest.fn()} />);
+    await render(<HistoryCard entry={duel} myAvatar="lava-lamp" now={NOW} onOpen={jest.fn()} />);
     expect(screen.getByTestId('history-card-g1-score', hidden)).toHaveTextContent(ltr('84.5 : 62'));
     expect(flat(screen.getByTestId('history-card-g1-score', hidden).props.style)).toMatchObject({
       color: color.textMuted,
@@ -65,7 +65,7 @@ describe.each(['he', 'en'] as const)('HistoryCard in %s', (lng) => {
   });
 
   it('several opponents: my points in P1', async () => {
-    await render(<HistoryCard entry={four} myAvatar="av07" now={NOW} onOpen={jest.fn()} />);
+    await render(<HistoryCard entry={four} myAvatar="lava-lamp" now={NOW} onOpen={jest.fn()} />);
     expect(flat(screen.getByTestId('history-card-g4-score', hidden).props.style)).toMatchObject({
       color: ME,
     });

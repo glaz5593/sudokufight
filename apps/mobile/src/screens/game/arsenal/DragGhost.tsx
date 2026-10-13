@@ -1,3 +1,4 @@
+import type { Expression } from '@sudoku-fight/avatars';
 import type { InterferenceKind } from '@sudoku-fight/engine';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import type { AvatarId } from '../../../assets/avatars';
+import { AVATAR_REACTIONS, type AvatarIdOrNone } from '../../../avatars';
 import { Avatar, paletteAt, SeatGlyph } from '../../../components/player';
 import { curve } from '../../../components/ui/motion';
 import { color, radius, tokens } from '../../../theme';
@@ -25,7 +26,7 @@ export interface RouteEnd {
   name: string;
   /** Palette index as this phone shows them (0 = me). */
   colorIndex: number;
-  avatarId?: AvatarId | null;
+  avatarId?: AvatarIdOrNone | null;
 }
 
 /** The 3–4 player route on the ghost (spec §7.3.5): from me to the card the arsenal was opened from. */
@@ -73,12 +74,12 @@ export function DragGhost({ kind, cost, route, drag, reduce }: DragGhostProps) {
           </Text>
           {route ? (
             <View style={styles.routeRow} testID="arsenal-route">
-              <RouteFace end={route.from} />
+              <RouteFace end={route.from} expression={AVATAR_REACTIONS.moods.sender} />
               <Text style={[m.ghost.routeStyle, styles.routeName]} numberOfLines={1}>
                 {route.from.name}
               </Text>
               <Text style={[m.ghost.routeStyle, styles.route]}>{t('arsenal.routeArrow')}</Text>
-              <RouteFace end={route.to} />
+              <RouteFace end={route.to} expression={AVATAR_REACTIONS.moods.target} />
               <Text style={[m.ghost.routeStyle, styles.routeName]} numberOfLines={1}>
                 {isolate(route.to.name)}
               </Text>
@@ -90,14 +91,18 @@ export function DragGhost({ kind, cost, route, drag, reduce }: DragGhostProps) {
   );
 }
 
-/** A route end's mini avatar, ringed in its seat colour, and its shape (ownership never by colour alone). */
-function RouteFace({ end }: { end: RouteEnd }) {
+/**
+ * A route end's mini avatar, ringed in its seat colour, and its shape (ownership never by colour alone); the
+ * sender's face and the target's (AVATAR_REACTIONS.moods).
+ */
+function RouteFace({ end, expression }: { end: RouteEnd; expression: Expression }) {
   const ring = paletteAt(end.colorIndex).ring;
   return (
     <>
       <Avatar
         avatarId={end.avatarId}
         size="cell"
+        expression={expression}
         style={[styles.routeAvatar, { borderColor: ring }]}
         testID={`arsenal-route-avatar-${end.colorIndex}`}
       />

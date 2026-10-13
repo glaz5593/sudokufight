@@ -13,6 +13,7 @@ import { memoryDb } from '../../../game/testing/sqlJsDb';
 import i18n from '../../../i18n';
 import { useProfile } from '../../../state/profile';
 import { renderApp } from '../testing/homeTesting';
+import { avatarIdsIn } from '../../../avatars/testing/avatarTesting';
 
 type Mocks = typeof import('../testing/nativeMocks');
 
@@ -21,22 +22,6 @@ jest.mock('../../../game/storage', () => jest.requireActual<Mocks>('../testing/n
 jest.mock('../../../services/analytics', () => ({ track: jest.fn() }));
 jest.mock('expo-audio', () => jest.requireActual<Mocks>('../testing/nativeMocks').expoAudio);
 jest.mock('expo-haptics', () => jest.requireActual<Mocks>('../testing/nativeMocks').expoHaptics);
-// Every avatar a source of its own, so a test can tell which one an image shows (Metro's asset ids in the app).
-jest.mock('../../../assets/avatars', () => {
-  const actual = jest.requireActual<typeof import('../../../assets/avatars')>('../../../assets/avatars');
-  return {
-    ...actual,
-    AVATARS: Object.fromEntries(Object.keys(actual.AVATARS).map((id) => [id, { uri: id }])),
-  };
-});
-
-type Node = ReturnType<typeof screen.getByTestId>;
-/** The avatar ids of every image under an element (the mocked sources are `{ uri: id }`). */
-function avatarsIn(el: Node): string[] {
-  const sources = ([] as unknown[]).concat(el.props.source ?? []) as { uri?: unknown }[];
-  const own = sources.flatMap((s) => (typeof s?.uri === 'string' ? [s.uri] : []));
-  return [...own, ...el.children.flatMap((c) => (typeof c === 'string' ? [] : avatarsIn(c)))];
-}
 
 const storage = jest.mocked(practiceStorageOrNull);
 let repo: PracticeRepo;
@@ -88,12 +73,12 @@ describe('"בחר יריב בוט" (spec §4.1 #9, §9)', () => {
       'רמה 1, טירון: Pip. איטי, טועה לא מעט, וכמעט אף פעם לא מפריע. זמן חשיבה 8 עד 11 שניות למהלך, 15% טעויות',
     );
     // The avatars of the level table, never typed in the screen.
-    expect([1, 2, 3, 4, 5].map((l) => avatarsIn(card(l)))).toEqual([
-      ['av44'],
-      ['av42'],
-      ['av49'],
-      ['av39'],
-      ['av40'],
+    expect([1, 2, 3, 4, 5].map((l) => avatarIdsIn(card(l)))).toEqual([
+      ['hatchling'],
+      ['fox'],
+      ['owl'],
+      ['professor'],
+      ['furry-monster'],
     ]);
     expect(screen.getByText('ללא דירוג')).toBeTruthy();
     expect(screen.getByText('עובד גם בלי אינטרנט')).toBeTruthy();

@@ -1,5 +1,5 @@
 import { type GameType, INITIAL_RATING } from '@sudoku-fight/engine';
-import { isAvatarId, isCountryCode, NO_AVATAR_ID } from '@sudoku-fight/protocol';
+import { isCountryCode, normalizeAvatarId } from '@sudoku-fight/protocol';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { Db } from '../db';
@@ -31,7 +31,7 @@ export function dbMatchmakingStore(db: Db | (() => Db)): MatchmakingStore {
       if (row === undefined) return undefined;
       return {
         name: row.name,
-        avatarId: isAvatarId(row.avatarId) ? row.avatarId : NO_AVATAR_ID,
+        avatarId: normalizeAvatarId(row.avatarId),
         country: isCountryCode(row.country) ? row.country : null,
         // A key without a row yet (e.g. RATING_OPTION changed from B to A) starts where everyone does [D23].
         rating: row.rating ?? INITIAL_RATING,

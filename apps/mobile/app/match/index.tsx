@@ -1,7 +1,7 @@
 import { type Href, router, Stack } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
-import { isAvatarId } from '../../src/assets/avatars';
+import { normalizeAvatarId } from '../../src/avatars';
 import { useAuth } from '../../src/auth/authStore';
 import { ROUTES } from '../../src/auth/redirect';
 import { useGameStore } from '../../src/game/gameStore';
@@ -44,7 +44,7 @@ export default function MatchRoute() {
         match={match}
         self={{
           name: me?.displayName ?? localName,
-          avatarId: me && isAvatarId(me.avatarId) ? me.avatarId : localAvatar,
+          avatarId: me ? normalizeAvatarId(me.avatarId) : localAvatar,
         }}
         onPlay={() => {
           leaving.current = true;

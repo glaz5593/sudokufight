@@ -17,6 +17,7 @@ import { GameScreen, type GameSession } from '../GameScreen';
 import type { Point, Rect } from '../geometry';
 import { useReactionMutes } from '../reactions';
 import { type Group, group, ME } from '../testing/group';
+import { avatarIdsIn } from '../../../avatars/testing/avatarTesting';
 
 /**
  * Work plan stage 10 on the game screen (spec §6.6–§6.8, §7.3, §7.4; Game-3P, Game-4P, Interference-Target):
@@ -42,14 +43,6 @@ jest.mock('../../../services/feedback', () => ({
   preloadCues: jest.fn(),
   cueCountUp: jest.fn(() => jest.fn()),
 }));
-// Every avatar a source of its own, so a test can tell which one an image shows (Metro's asset ids in the app).
-jest.mock('../../../assets/avatars', () => {
-  const actual = jest.requireActual<typeof import('../../../assets/avatars')>('../../../assets/avatars');
-  return {
-    ...actual,
-    AVATARS: Object.fromEntries(Object.keys(actual.AVATARS).map((id) => [id, { uri: id }])),
-  };
-});
 
 const hidden = { includeHiddenElements: true };
 const PIP = 'bot-1';
@@ -146,12 +139,6 @@ interface Node {
   props: Record<string, unknown>;
   children: readonly (Node | string)[];
 }
-/** The avatar ids of every image under an element (the mocked sources are `{ uri: id }`). */
-function avatarsIn(el: Node): string[] {
-  const sources = ([] as unknown[]).concat(el.props.source ?? []) as { uri?: unknown }[];
-  const own = sources.flatMap((s) => (typeof s?.uri === 'string' ? [s.uri] : []));
-  return [...own, ...el.children.flatMap((c) => (typeof c === 'string' ? [] : avatarsIn(c)))];
-}
 
 const card = (id: PlayerId) => screen.getByTestId(id === ME ? 'card-me' : `card-${id}`, hidden);
 const rankOf = (id: PlayerId) => within(card(id)).getByText(/^#\d$/, hidden).props.children as string;
@@ -207,7 +194,7 @@ beforeEach(async () => {
   await i18n.changeLanguage('he');
   useSettings.setState({ reduceMotion: 'off' });
   useReactionMutes.getState().reset();
-  useProfile.setState({ avatarId: 'av07' });
+  useProfile.setState({ avatarId: 'lava-lamp' });
 });
 
 afterEach(() => {
@@ -291,13 +278,13 @@ describe('the cards of 3–4 players (spec §6.8, components.md §6–§9)', () 
     const expectLock = (cell: CellIndex, name: string, avatar: string, colorIndex: number) => {
       const el = screen.getByTestId(`cell-${cellName(cell)}`);
       expect(el).toHaveProp('accessibilityLabel', `${cellName(cell)}, ריקה, נעולה על ידי ${name}, 8 שניות`);
-      expect(avatarsIn(within(el).getByTestId('cell-avatar', hidden))).toEqual([avatar]);
+      expect(avatarIdsIn(within(el).getByTestId('cell-avatar', hidden))).toEqual([avatar]);
       const ring = within(el).getByTestId('cell-ring', hidden).children[0] as unknown as Node;
       expect(styleOf(ring as never).borderColor).toBe(paletteAt(colorIndex).ring);
     };
-    expectLock(a!, 'Pip', 'av44', 1);
-    expectLock(b!, 'Biscuit', 'av42', 2);
-    expectLock(c!, 'Maestro', 'av39', 3);
+    expectLock(a!, 'Pip', 'hatchling', 1);
+    expectLock(b!, 'Biscuit', 'fox', 2);
+    expectLock(c!, 'Maestro', 'professor', 3);
     // Each card says what its player is choosing.
     expect(summaryOf(BISCUIT)).toContain(`בוחר ${cellName(b!)}`);
     // And my own lock is mine: P1, no avatar.
@@ -305,17 +292,17 @@ describe('the cards of 3–4 players (spec §6.8, components.md §6–§9)', () 
     await fireEvent.press(screen.getByTestId(`cell-${cellName(d!)}`));
     const mine = screen.getByTestId(`cell-${cellName(d!)}`);
     expect(within(mine).queryByTestId('cell-avatar', hidden)).toBeNull();
-    expect(avatarsIn(card(ME) as unknown as Node)).toEqual(['av07']);
+    expect(avatarIdsIn(card(ME) as unknown as Node)).toEqual(['lava-lamp']);
   });
 
   it('a ranked match’s profiles give the others their avatars (cards, locks and the arsenal)', async () => {
-    const g = await show({}, { profiles: { [PIP]: { avatarId: 'av12', country: 'DE' }, [BISCUIT]: null } });
-    expect(avatarsIn(card(PIP) as unknown as Node)).toEqual(['av12']);
-    expect(avatarsIn(card(BISCUIT) as unknown as Node)).toEqual(['av42']); // none given: its level's
+    const g = await show({}, { profiles: { [PIP]: { avatarId: 'maya', country: 'DE' }, [BISCUIT]: null } });
+    expect(avatarIdsIn(card(PIP) as unknown as Node)).toEqual(['maya']);
+    expect(avatarIdsIn(card(BISCUIT) as unknown as Node)).toEqual(['fox']); // none given: its level's
     const [a] = free(g);
     await by(g, PIP, (h) => h.select(a!));
     const el = screen.getByTestId(`cell-${cellName(a!)}`);
-    expect(avatarsIn(within(el).getByTestId('cell-avatar', hidden))).toEqual(['av12']);
+    expect(avatarIdsIn(within(el).getByTestId('cell-avatar', hidden))).toEqual(['maya']);
   });
 });
 
@@ -343,7 +330,7 @@ describe('interferences between 3–4 players (spec §7.3, §7.4)', () => {
     const ghost = screen.getByTestId('arsenal-ghost', hidden);
     expect(ghost).toHaveTextContent(`זיקוקים · 2 נק׳אני←${isolate('Biscuit')}`);
     const route = within(ghost).getByTestId('arsenal-route', hidden);
-    expect(avatarsIn(route as unknown as Node)).toEqual(['av07', 'av42']);
+    expect(avatarIdsIn(route as unknown as Node)).toEqual(['lava-lamp', 'fox']);
     // Over Pip's card nothing happens: it is not a drop zone.
     await f.move(centre(CARDS[PIP]!));
     await f.move(centre(dropZoneOf(CARDS[BISCUIT]!)));

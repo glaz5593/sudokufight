@@ -288,7 +288,10 @@ export interface AvatarDef {
   base?: number;
   /** True if the whole character may squash and stretch (objects and round animals). Default false. */
   squash?: boolean;
-  /** Motions that suit this character best, first = favourite. The app picks reactions from these. */
+  /**
+   * Motions that suit this character best, first = favourite. The app does not read it yet: its reactions come
+   * from one table for every character (apps/mobile AVATAR_REACTIONS).
+   */
   motionBias?: readonly MotionId[];
   /** The character's own moving parts (see GimmickDef). */
   gimmicks?: readonly GimmickDef[];

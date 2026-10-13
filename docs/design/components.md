@@ -218,7 +218,7 @@ The frame is a **border, not a filled plate** [C]. Image size = outer − 2 × (
 | 96 | Profile screen | 2 / 3 | 86 | 24 / 19 | [R1→C] |
 
 - **Frame colour:** `color.players[n].ring` during a game, and also on Home for "me" (P1) [C]. Outside a game, other players use `color.border` (neutral) [R1→C].
-- **No avatar:** `assets/avatars/av00.svg`.
+- **No avatar:** id `av00` (`NO_AVATAR_ID`; a deleted or missing account): the placeholder from `packages/avatars`, drawn in code. The avatars themselves are our own animated characters (`packages/avatars`, spec §3.4), not image files.
 - **Badges** [R1→C]:
   - **Presence dot** [new in C, from R1]: 10 dp (12 on 44+). Sits at the bottom-end corner with a −3 offset and a 2 dp border in the background colour behind it. Connected → `color.status.online`. Reconnecting → `color.textMuted`. Left → no dot.
   - **Bot chip:** height 18, padding 0 5, radius 9, background `color.bg`, 1 dp `color.textMuted`, bot icon 11 plus "בוט" Rubik 700 10 `color.text`. Sits at the top-start corner (−7, −9).

@@ -10,4 +10,6 @@ export * from './rig';
 export * from './render';
 export * from './motion';
 export * from './gimmick';
+export * from './bounds';
+export * from './native';
 export * from './catalog';

@@ -1,6 +1,6 @@
 import { botLevel, type BotLevelId, type GameView, isBotLevelId, type PlayerId } from '@sudoku-fight/engine';
 
-import { type AvatarId, EMPTY_AVATAR, isAvatarId } from '../../assets/avatars';
+import { type AvatarIdOrNone, NO_AVATAR_ID, normalizeAvatarId } from '../../avatars';
 
 /**
  * Who a player is on this phone's screens: the name and the avatar on their card, on their locks and in the
@@ -11,7 +11,7 @@ import { type AvatarId, EMPTY_AVATAR, isAvatarId } from '../../assets/avatars';
 export interface PlayerIdentity {
   /** Null: the screen's own word for it ("אני", "שחקן"). */
   name: string | null;
-  avatar: AvatarId;
+  avatar: AvatarIdOrNone;
   isBot: boolean;
   /** 1–5 for a bot of the engine's levels; null otherwise. */
   botLevel: BotLevelId | null;
@@ -38,7 +38,7 @@ export function playerIdentity(player: PlayerLike): PlayerIdentity {
   const bot = level === null ? null : botLevel(level);
   return {
     name: player.name ?? bot?.name ?? null,
-    avatar: bot && isAvatarId(bot.avatar) ? bot.avatar : EMPTY_AVATAR,
+    avatar: bot ? normalizeAvatarId(bot.avatar) : NO_AVATAR_ID,
     isBot: player.isBot ?? level !== null,
     botLevel: level,
   };

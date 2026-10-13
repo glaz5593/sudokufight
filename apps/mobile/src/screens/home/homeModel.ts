@@ -9,7 +9,7 @@ import {
 } from '@sudoku-fight/engine';
 import type { QueuePlayerCount, RatingEntry } from '@sudoku-fight/protocol';
 
-import { type AvatarId, EMPTY_AVATAR, isAvatarId } from '../../assets/avatars';
+import { type AvatarIdOrNone, normalizeAvatarId } from '../../avatars';
 import type { Outcome } from '../../game/outcome';
 import type { PracticeGameRecord } from '../../game/practiceRepo';
 import type { LastPlay } from '../../state/profile';
@@ -142,7 +142,7 @@ export interface BotOption {
   level: BotLevelId;
   /** The bot's name: data from the engine, the same in every language. */
   name: string;
-  avatar: AvatarId;
+  avatar: AvatarIdOrNone;
   /** The base think time per move in this game type: the table's (for 'normal') × the pace (spec §9). */
   thinkMs: { min: number; max: number };
   /** The share of its digits that are wrong, 0–1. */
@@ -155,7 +155,7 @@ export function botOptions(gameType: GameType): BotOption[] {
   return BOT_LEVELS.map((b) => ({
     level: b.level,
     name: b.name,
-    avatar: isAvatarId(b.avatar) ? b.avatar : EMPTY_AVATAR,
+    avatar: normalizeAvatarId(b.avatar),
     thinkMs: { min: b.thinkMs.min * pace, max: b.thinkMs.max * pace },
     mistakeRate: b.mistakeRate,
   }));

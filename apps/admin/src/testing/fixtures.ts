@@ -90,7 +90,7 @@ export function userRow(over: Partial<AdminUserRow> = {}, now = Date.now()): Adm
     displayName: 'Moshe',
     email: 'moshe@example.com',
     country: 'IL',
-    avatarId: 'av07',
+    avatarId: 'lava-lamp',
     createdAt: now - 30 * DAY,
     deletedAt: null,
     lastSeen: now - 2 * HOUR,

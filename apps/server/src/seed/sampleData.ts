@@ -8,7 +8,12 @@ import {
   ratingKey,
   type Rng,
 } from '@sudoku-fight/engine';
-import type { Platform, TelemetryEventName, TelemetryProps } from '@sudoku-fight/protocol';
+import {
+  AVATAR_IDS,
+  type Platform,
+  type TelemetryEventName,
+  type TelemetryProps,
+} from '@sudoku-fight/protocol';
 
 import type {
   appEvents,
@@ -234,9 +239,6 @@ const COUNTRIES: readonly (readonly [string, number])[] = [
   ['DE', 3],
   ['RU', 4],
 ];
-const AVATARS = Array.from({ length: 51 }, (_, k) => `av${String(k + 1).padStart(2, '0')}`).filter(
-  (a) => a !== 'av36',
-);
 
 class SampleBuilder {
   private readonly rng: Rng;
@@ -361,7 +363,7 @@ class SampleBuilder {
       displayName,
       email: chance(rng, 0.85) ? `player.${id.slice(0, 8)}@example.com` : null,
       country: weighted(rng, COUNTRIES),
-      avatarId: pick(rng, AVATARS),
+      avatarId: pick(rng, AVATAR_IDS),
       archetype,
       main,
       extra: null,

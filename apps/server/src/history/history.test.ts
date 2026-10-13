@@ -18,6 +18,7 @@ import {
   type HistoryPage,
   isHistoryPage,
   isReplayAnswer,
+  LEGACY_AVATAR_MAP,
   type ReplayAnswer,
   replayPath,
 } from '@sudoku-fight/protocol';
@@ -75,8 +76,8 @@ beforeEach(async () => {
     { id: 'ben', name: 'Ben', rating: 1305, games: 12 },
     { id: 'cid', name: 'Cid' },
   ]);
-  await t.db.update(users).set({ avatarId: 'av07', country: 'IL' }).where(eq(users.id, 'ana'));
-  await t.db.update(users).set({ avatarId: 'av12', country: 'DE' }).where(eq(users.id, 'ben'));
+  await t.db.update(users).set({ avatarId: 'lava-lamp', country: 'IL' }).where(eq(users.id, 'ana'));
+  await t.db.update(users).set({ avatarId: 'maya', country: 'DE' }).where(eq(users.id, 'ben'));
   await addPuzzles(t.db, [NEARLY_DONE]);
   ranked = rankedGames({
     db: t.db,
@@ -144,7 +145,7 @@ describe('GET /v1/me/games (spec §14.1)', () => {
               seat: 0,
               userId: 'ana',
               displayName: 'Ana',
-              avatarId: 'av07',
+              avatarId: 'lava-lamp',
               country: 'IL',
               score: anaRank!.score,
               mistakes: 0,
@@ -158,7 +159,7 @@ describe('GET /v1/me/games (spec §14.1)', () => {
               seat: 1,
               userId: 'ben',
               displayName: 'Ben',
-              avatarId: 'av12',
+              avatarId: 'maya',
               country: 'DE',
               score: benRank!.score,
               mistakes: 1,
@@ -213,6 +214,21 @@ describe('GET /v1/me/games (spec §14.1)', () => {
       avatarId: null,
       country: null,
     });
+  });
+
+  it('shows an old avatar id still in a row as its replacement, and an unknown one as none', async () => {
+    await playedGame();
+    await t.db.update(users).set({ avatarId: 'av49' }).where(eq(users.id, 'ana'));
+    await t.db.update(users).set({ avatarId: 'av36' }).where(eq(users.id, 'ben'));
+    const page = await get<HistoryPage>(HISTORY_PATHS.myGames, 'ana');
+    expect(isHistoryPage(page.body)).toBe(true);
+    expect(page.body.games[0]!.players.map((p) => [p.userId, p.avatarId])).toEqual([
+      ['ana', LEGACY_AVATAR_MAP.av49],
+      ['ben', null],
+    ]);
+    const replayed = await get<ReplayAnswer>(replayPath('g1'), 'ben');
+    expect(isReplayAnswer(replayed.body)).toBe(true);
+    expect(replayed.body.game.players[0]!.avatarId).toBe('owl');
   });
 
   it('pages 20 at a time, newest first, without gaps or repeats (equal start times by id)', async () => {

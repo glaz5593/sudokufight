@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { AvatarId } from '../../assets/avatars';
+import type { AvatarIdOrNone } from '../../avatars';
 import { Icon } from '../../components/Icon';
 import { Avatar, leagueProgress, ltr } from '../../components/player';
 import {
@@ -35,7 +35,7 @@ export interface ProgressScreenProps {
   status: ProgressStatus;
   /** Practice results not sent yet [D41]. */
   pending: number;
-  myAvatar: AvatarId;
+  myAvatar: AvatarIdOrNone;
   /** My level for the collection's count (unlockLevel, D17). */
   level: number | null;
   onOpenMyCard?: () => void;

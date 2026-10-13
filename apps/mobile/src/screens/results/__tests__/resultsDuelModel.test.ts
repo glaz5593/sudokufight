@@ -21,7 +21,7 @@ async function load(game: SavedDuel) {
 const botRow = {
   playerId: BOT.id,
   name: 'Mr. Hoot',
-  avatar: 'av49',
+  avatar: 'owl',
   isBot: true,
   colorIndex: 1,
   left: false,
@@ -94,7 +94,7 @@ describe('resultsModel against a bot (spec §12)', () => {
     expect(model.opponents[0]).toMatchObject({
       playerId: 'bot-3',
       name: 'Mr. Hoot',
-      avatar: 'av49',
+      avatar: 'owl',
       isBot: true,
     });
   });

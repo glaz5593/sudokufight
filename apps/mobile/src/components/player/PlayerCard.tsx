@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import type { AvatarId } from '../../assets/avatars';
+import { type AvatarFace, type AvatarIdOrNone, sameFace } from '../../avatars';
 import { color, size, text, tokens } from '../../theme';
 import { ActivityLine, MistakesText } from './ActivityLine';
 import { Avatar } from './Avatar';
@@ -31,7 +31,9 @@ export interface PlayerCardActions {
 
 export interface PlayerCardProps extends PlayerCardActions {
   model: CardModel;
-  avatarId?: AvatarId | null;
+  avatarId?: AvatarIdOrNone | null;
+  /** The avatar's face in the game (game/useAvatarFaces): its mood, and the reaction to play. */
+  face?: AvatarFace | null;
   /** ISO alpha-2 country code. */
   country?: string | null;
   /** Picks the Hebrew feminine forms ("בוחרת"); see components.md §17.8. */
@@ -73,6 +75,7 @@ export interface PlayerCardProps extends PlayerCardActions {
 export const PlayerCard = memo(function PlayerCard({
   model,
   avatarId,
+  face = null,
   country,
   gender,
   side,
@@ -118,6 +121,9 @@ export const PlayerCard = memo(function PlayerCard({
                 presence={model.presence}
                 bot={model.isBot}
                 inactive={model.out !== null || model.presence !== 'online'}
+                expression={face?.expression}
+                reaction={face?.reaction}
+                testID={testID ? `${testID}-avatar` : undefined}
               />
               {model.hit ? <HitChip seconds={model.hit.secondsLeft} style={styles.hitChip} /> : null}
             </View>
@@ -204,11 +210,12 @@ export const PlayerCard = memo(function PlayerCard({
 }, samePlayerCard);
 
 /**
- * The screen re-reads the time 4 times a second and builds the card's model again each time: the card renders
- * only when what it shows changed (sameCard), so its subtree stays put between whole seconds.
+ * The screen re-reads the time 4 times a second and builds the card's model (and the faces) again each time:
+ * the card renders only when what it shows changed (sameCard, sameFace), so its subtree stays put between whole
+ * seconds.
  */
 function samePlayerCard(a: PlayerCardProps, b: PlayerCardProps): boolean {
-  return sameProps(a, b, { model: sameCard, style: sameStyle });
+  return sameProps(a, b, { model: sameCard, face: sameFace, style: sameStyle });
 }
 
 const card = tokens.layout.game.playerCard;

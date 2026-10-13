@@ -9,7 +9,7 @@ import {
   type UpdateMeRequest,
 } from '@sudoku-fight/protocol';
 
-import { isMe } from './me';
+import { readMe } from './me';
 
 /**
  * The account routes of the game server (spec §18 "HTTP API", work plan stage 8; the contract is
@@ -202,8 +202,9 @@ export function createAccountApi(deps: AccountApiDeps): AccountApi {
   }
 
   const asMe = (data: unknown): Me => {
-    if (!isMe(data)) throw new AccountApiError('unexpected');
-    return data;
+    const me = readMe(data);
+    if (!me) throw new AccountApiError('unexpected');
+    return me;
   };
 
   return {

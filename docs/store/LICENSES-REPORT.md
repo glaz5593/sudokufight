@@ -12,15 +12,15 @@
 
 ## סיכום
 
-- חבילות באפליקציה (mobile): **671**
+- חבילות באפליקציה (mobile): **670**
 - חבילות בשרת (server): **141**
-- סה״כ שונות (שם@גרסה): **754**
+- סה״כ שונות (שם@גרסה): **753**
 - **מסומנות לבדיקה: 1**
 - דורשות תשומת לב (ייחוס / copyleft חלש): 15
 
 | רישיון | חבילות |
 |---|---|
-| MIT | 589 |
+| MIT | 588 |
 | Apache-2.0 | 70 |
 | ISC | 28 |
 | BSD-3-Clause | 22 |
@@ -483,7 +483,6 @@
 | expo-font | 57.0.4 | MIT | mobile |
 | expo-glass-effect | 57.0.4 | MIT | mobile |
 | expo-haptics | 57.0.3 | MIT | mobile |
-| expo-image | 57.0.5 | MIT | mobile |
 | expo-json-utils | 57.0.2 | MIT | mobile |
 | expo-keep-awake | 57.0.2 | MIT | mobile |
 | expo-linking | 57.0.12 | MIT | mobile |

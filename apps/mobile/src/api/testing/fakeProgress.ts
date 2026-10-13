@@ -19,7 +19,7 @@ export const T0 = 1_760_000_000_000;
 export function entry(over: Partial<LeaderboardEntry> & { id: string }): LeaderboardEntry {
   return {
     displayName: over.id,
-    avatarId: 'av07',
+    avatarId: 'lava-lamp',
     country: 'IL',
     league: 'gold',
     level: 5,
@@ -96,7 +96,7 @@ export function recent(n: number): RecentResult[] {
 export function card(over: Partial<PlayerCard> & { id: string }): PlayerCard {
   return {
     displayName: 'MosheG',
-    avatarId: 'av07',
+    avatarId: 'lava-lamp',
     country: 'IL',
     league: 'gold',
     level: 14,

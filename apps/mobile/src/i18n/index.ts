@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 import { I18nManager } from 'react-native';
 
 import enAccount from './locales/en/account.json';
+import enAvatars from './locales/en/avatars.json';
 import enBoard from './locales/en/board.json';
 import enCommon from './locales/en/common.json';
 import enDev from './locales/en/dev.json';
@@ -16,6 +17,7 @@ import enProgress from './locales/en/progress.json';
 import enReplay from './locales/en/replay.json';
 import enUi from './locales/en/ui.json';
 import heAccount from './locales/he/account.json';
+import heAvatars from './locales/he/avatars.json';
 import heBoard from './locales/he/board.json';
 import heCommon from './locales/he/common.json';
 import heDev from './locales/he/dev.json';
@@ -31,8 +33,9 @@ import heUi from './locales/he/ui.json';
 /**
  * Translations (CLAUDE.md: no hard-coded UI strings; spec §22: Hebrew first, and English). Every string goes
  * through t(). One file per area (namespace): common, ui, player, board, home, game, account, dev, replay,
- * history (stage 11), match (stage 9: matchmaking) and progress (stage 12: the leaderboard, the player card,
- * progress and the interferences collection).
+ * history (stage 11), match (stage 9: matchmaking), progress (stage 12: the leaderboard, the player card,
+ * progress and the interferences collection) and avatars (the characters' names, kinds, expressions and
+ * motions, generated from packages/avatars by scripts/gen-avatar-strings.ts).
  */
 export const LANGUAGES = ['he', 'en'] as const;
 export type Language = (typeof LANGUAGES)[number];
@@ -49,6 +52,7 @@ export const NAMESPACES = [
   'history',
   'match',
   'progress',
+  'avatars',
 ] as const;
 
 export const resources = {
@@ -65,6 +69,7 @@ export const resources = {
     history: heHistory,
     match: heMatch,
     progress: heProgress,
+    avatars: heAvatars,
   },
   en: {
     common: enCommon,
@@ -79,6 +84,7 @@ export const resources = {
     history: enHistory,
     match: enMatch,
     progress: enProgress,
+    avatars: enAvatars,
   },
 } as const;
 

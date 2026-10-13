@@ -1,12 +1,12 @@
-import { readdirSync } from 'node:fs';
-import path from 'node:path';
-
 import {
   ACCOUNT_PATHS,
   type AccountError,
   AVATAR_IDS,
+  type AvatarId,
+  LEGACY_AVATAR_MAP,
   type Me,
   type NameAvailability,
+  NO_AVATAR_ID,
   RECENT_SIGN_IN_MS,
   RENAME_COOLDOWN_MS,
 } from '@sudoku-fight/protocol';
@@ -95,16 +95,16 @@ describe('the "done" story of stage 8, on the server', () => {
   beforeEach(() => start());
 
   it('register → me → change the avatar → delete → register again with the same name', async () => {
-    const created = await register('uid-1', { displayName: 'Dana', avatarId: 'av07' });
+    const created = await register('uid-1', { displayName: 'Dana', avatarId: 'lava-lamp' });
     expect(created.status).toBe(201);
 
     const card = await me('uid-1');
     expect(card.status).toBe(200);
-    expect(card.body).toMatchObject({ displayName: 'Dana', avatarId: 'av07', country: 'IL' });
+    expect(card.body).toMatchObject({ displayName: 'Dana', avatarId: 'lava-lamp', country: 'IL' });
 
-    const changed = await patch('uid-1', { avatarId: 'av12' });
+    const changed = await patch('uid-1', { avatarId: 'maya' });
     expect(changed.status).toBe(200);
-    expect(changed.body.avatarId).toBe('av12');
+    expect(changed.body.avatarId).toBe('maya');
 
     expect((await remove('uid-1')).status).toBe(204);
     const row = await userRow(created.body.id);
@@ -125,14 +125,14 @@ describe('POST /v1/users', () => {
   it('creates the account: the name, avatar and country from the body, the email from the token', async () => {
     const res = await api<Me>('POST', ACCOUNT_PATHS.users, {
       token: await idToken('uid-1', 'dana@example.com', false),
-      body: fighter({ displayName: 'דנה_כהן', avatarId: 'av51', country: 'US' }),
+      body: fighter({ displayName: 'דנה_כהן', avatarId: 'moon', country: 'US' }),
     });
     expect(res.status).toBe(201);
     expect(res.headers.get('cache-control')).toBe('no-store');
     expect(res.body).toEqual({
       id: expect.stringMatching(UUID),
       displayName: 'דנה_כהן',
-      avatarId: 'av51',
+      avatarId: 'moon',
       country: 'US',
       email: 'dana@example.com',
       emailVerified: false,
@@ -151,7 +151,7 @@ describe('POST /v1/users', () => {
       displayName: 'דנה_כהן',
       displayNameChangedAt: null,
       country: 'US',
-      avatarId: 'av51',
+      avatarId: 'moon',
       email: 'dana@example.com',
       createdAt: new Date(NOW),
       deletedAt: null,
@@ -265,7 +265,9 @@ describe('POST /v1/users', () => {
   it.each([
     ['avatar av00 ("no avatar")', { avatarId: 'av00' }, 'avatarId'],
     ['avatar av36 (not in the set)', { avatarId: 'av36' }, 'avatarId'],
+    ['avatar av07 (the old pack)', { avatarId: 'av07' }, 'avatarId'],
     ['avatar av52', { avatarId: 'av52' }, 'avatarId'],
+    ['avatar Noam (case matters)', { avatarId: 'Noam' }, 'avatarId'],
     ['a lower-case country', { country: 'il' }, 'country'],
     ['an unknown country', { country: 'ZZ' }, 'country'],
     ['a number for a name', { displayName: 42 }, 'displayName'],
@@ -466,19 +468,19 @@ describe('GET /v1/me', () => {
 describe('PATCH /v1/me', () => {
   beforeEach(async () => {
     await start();
-    await register('uid-1', { displayName: 'Dana', avatarId: 'av07', country: 'IL' });
+    await register('uid-1', { displayName: 'Dana', avatarId: 'lava-lamp', country: 'IL' });
   });
 
   it('changes the avatar and the country any time [D21]', async () => {
-    expect(await patch('uid-1', { avatarId: 'av12' })).toMatchObject({
+    expect(await patch('uid-1', { avatarId: 'maya' })).toMatchObject({
       status: 200,
-      body: { avatarId: 'av12' },
+      body: { avatarId: 'maya' },
     });
     expect(await patch('uid-1', { country: 'FR' })).toMatchObject({ status: 200, body: { country: 'FR' } });
-    expect(await patch('uid-1', { avatarId: 'av01', country: 'IL' })).toMatchObject({
+    expect(await patch('uid-1', { avatarId: 'microphone', country: 'IL' })).toMatchObject({
       status: 200,
       body: {
-        avatarId: 'av01',
+        avatarId: 'microphone',
         country: 'IL',
         displayName: 'Dana',
         displayNameChangedAt: null,
@@ -502,7 +504,7 @@ describe('PATCH /v1/me', () => {
     // A case change is a rename too.
     expect((await patch('uid-1', { displayName: 'DANA2' })).status).toBe(409);
     // The avatar and the country still change.
-    expect((await patch('uid-1', { avatarId: 'av02' })).status).toBe(200);
+    expect((await patch('uid-1', { avatarId: 'balloon' })).status).toBe(200);
     // The same name again is no change at all.
     expect(await patch('uid-1', { displayName: 'Dana2', country: 'GB' })).toMatchObject({
       status: 200,
@@ -551,15 +553,15 @@ describe('PATCH /v1/me', () => {
   it('keeps a name that was fine when chosen, though a word in it is listed now', async () => {
     const { body } = await me('uid-1');
     await t.db.update(users).set({ displayName: 'fuck' }).where(eq(users.id, body.id));
-    expect(await patch('uid-1', { displayName: 'fuck', avatarId: 'av03' })).toMatchObject({
+    expect(await patch('uid-1', { displayName: 'fuck', avatarId: 'cassette' })).toMatchObject({
       status: 200,
-      body: { displayName: 'fuck', avatarId: 'av03' },
+      body: { displayName: 'fuck', avatarId: 'cassette' },
     });
   });
 
   it.each([
     ['nothing to change', {}, 'body'],
-    ['an unknown field', { avatar: 'av01' }, 'body'],
+    ['an unknown field', { avatar: 'microphone' }, 'body'],
     ['avatar av00', { avatarId: 'av00' }, 'avatarId'],
     ['country Israel', { country: 'Israel' }, 'country'],
     ['a null name', { displayName: null }, 'displayName'],
@@ -568,7 +570,7 @@ describe('PATCH /v1/me', () => {
   });
 
   it('404 notRegistered without an account', async () => {
-    expect(await patch('uid-9', { avatarId: 'av01' })).toMatchObject({
+    expect(await patch('uid-9', { avatarId: 'microphone' })).toMatchObject({
       status: 404,
       body: { error: 'notRegistered' },
     });
@@ -615,7 +617,7 @@ describe('DELETE /v1/me', () => {
     expect((await remove('uid-1')).status).toBe(204);
     expect(await me('uid-1')).toMatchObject({ status: 404, body: { error: 'notRegistered' } });
     expect(await remove('uid-1')).toMatchObject({ status: 404, body: { error: 'notRegistered' } });
-    expect((await patch('uid-1', { avatarId: 'av01' })).status).toBe(404);
+    expect((await patch('uid-1', { avatarId: 'microphone' })).status).toBe(404);
   });
 
   it('frees the name at once', async () => {
@@ -790,8 +792,8 @@ describe('rate limits', () => {
 
   it('writes, per account', async () => {
     await register('uid-1');
-    expect((await patch('uid-1', { avatarId: 'av01' })).status).toBe(200);
-    expect(await patch('uid-1', { avatarId: 'av02' })).toMatchObject({
+    expect((await patch('uid-1', { avatarId: 'microphone' })).status).toBe(200);
+    expect(await patch('uid-1', { avatarId: 'balloon' })).toMatchObject({
       status: 429,
       body: { error: 'tooManyRequests' },
     });
@@ -821,7 +823,7 @@ describe('production', () => {
       ['GET', `${ACCOUNT_PATHS.namesAvailable}?name=Dana`, undefined],
       ['POST', ACCOUNT_PATHS.users, fighter()],
       ['GET', ACCOUNT_PATHS.me, undefined],
-      ['PATCH', ACCOUNT_PATHS.me, { avatarId: 'av01' }],
+      ['PATCH', ACCOUNT_PATHS.me, { avatarId: 'microphone' }],
       ['DELETE', ACCOUNT_PATHS.me, undefined],
     ] as const) {
       const res = await api<AccountError>(method, p, { token, body });
@@ -872,9 +874,36 @@ describe('the admin site sees the accounts', () => {
   });
 });
 
-describe('avatars', () => {
-  it('every avatar one can choose has a file in assets/avatars, and av00 too', () => {
-    const files = new Set(readdirSync(path.resolve(__dirname, '../../../../assets/avatars')));
-    for (const id of [...AVATAR_IDS, 'av00']) expect([id, files.has(`${id}.svg`)]).toEqual([id, true]);
+describe('avatars (spec §3.4)', () => {
+  beforeEach(() => start());
+
+  it('takes any of our own avatars, at registration and later', async () => {
+    const created = await register('uid-1', { avatarId: 'coffee-cup' });
+    expect(created).toMatchObject({ status: 201, body: { avatarId: 'coffee-cup' } });
+    for (const avatarId of [AVATAR_IDS[0], AVATAR_IDS.at(-1), 'baby-dragon']) {
+      expect(await patch('uid-1', { avatarId })).toMatchObject({ status: 200, body: { avatarId } });
+    }
+    expect((await userRow(created.body.id))?.avatarId).toBe('baby-dragon');
+  });
+
+  it('refuses an id of the old pack: it is never written again', async () => {
+    expect(await register('uid-1', { avatarId: 'av07' as AvatarId })).toMatchObject({
+      status: 400,
+      body: { error: 'badRequest', field: 'avatarId' },
+    });
+    expect(await t.db.$count(users)).toBe(0);
+    await register('uid-1');
+    expect(await patch('uid-1', { avatarId: 'av07' })).toMatchObject({
+      status: 400,
+      body: { error: 'badRequest', field: 'avatarId' },
+    });
+  });
+
+  it('reads an old id still in a row as its replacement, and an unknown one as "no avatar"', async () => {
+    const created = await register('uid-1');
+    await t.db.update(users).set({ avatarId: 'av39' }).where(eq(users.id, created.body.id));
+    expect((await me('uid-1')).body.avatarId).toBe(LEGACY_AVATAR_MAP.av39);
+    await t.db.update(users).set({ avatarId: 'av36' }).where(eq(users.id, created.body.id));
+    expect((await me('uid-1')).body.avatarId).toBe(NO_AVATAR_ID);
   });
 });

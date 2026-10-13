@@ -2,7 +2,7 @@ import type { PlayerId } from '@sudoku-fight/engine';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { AvatarId } from '../../../assets/avatars';
+import type { AvatarIdOrNone } from '../../../avatars';
 import type { Gender } from '../../../components/player/wording';
 import { ConnectingView } from './ConnectingView';
 import { ConnectionError } from './ConnectionError';
@@ -33,7 +33,7 @@ export interface ConnectionLayerProps {
   /** The disconnected or departed opponent's grammatical gender (Hebrew verbs). */
   gender?: Gender;
   /** Avatars by player, when known (lobby seats, the opponent-left card). */
-  avatars?: Partial<Record<PlayerId, AvatarId>>;
+  avatars?: Partial<Record<PlayerId, AvatarIdOrNone>>;
   /** Countries by player, when known (a ranked match's profiles): the leaver's flag on the opponent-left card. */
   countries?: Partial<Record<PlayerId, string | null>>;
   /** This phone's player (for its avatar on the opponent-left card). */

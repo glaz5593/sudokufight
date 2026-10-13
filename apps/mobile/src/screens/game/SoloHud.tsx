@@ -3,7 +3,7 @@ import { memo, type ReactNode, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LayoutChangeEvent, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import type { AvatarId } from '../../assets/avatars';
+import { type AvatarFace, type AvatarIdOrNone, sameFace } from '../../avatars';
 import {
   Avatar,
   type CardModel,
@@ -43,7 +43,9 @@ export interface SoloHudProps {
   country?: string | null;
   gameType: GameType;
   stats: SoloStats;
-  avatarId?: AvatarId | null;
+  avatarId?: AvatarIdOrNone | null;
+  /** My avatar's face (game/useAvatarFaces): its mood, and the reaction to play. */
+  face?: AvatarFace | null;
   onEnd: () => void;
   /** Where the delta slot is, in the HUD's own coordinates: the chips fly there. */
   onTargetLayout?: (slot: Rect) => void;
@@ -62,6 +64,7 @@ export const SoloHud = memo(function SoloHud({
   gameType,
   stats,
   avatarId,
+  face = null,
   onEnd,
   onTargetLayout,
   onLayout,
@@ -113,7 +116,14 @@ export const SoloHud = memo(function SoloHud({
         testID={`${testID}-summary`}
       >
         <View style={styles.identity}>
-          <Avatar avatarId={avatarId} size="card" colorIndex={card.colorIndex} />
+          <Avatar
+            avatarId={avatarId}
+            size="card"
+            colorIndex={card.colorIndex}
+            expression={face?.expression}
+            reaction={face?.reaction}
+            testID={`${testID}-avatar`}
+          />
           <View style={styles.nameBlock}>
             <View style={styles.nameRow}>
               <SeatGlyph colorIndex={card.colorIndex} size={metrics.glyph.name} />
@@ -192,11 +202,12 @@ export const SoloHud = memo(function SoloHud({
 }, sameSoloHud);
 
 /**
- * The screen re-reads the time 4 times a second and builds my card and the stats again each time: the HUD
- * renders only when what it shows changed, my card (sameCard) or the stats as shown (the clock's whole seconds).
+ * The screen re-reads the time 4 times a second and builds my card, my face and the stats again each time: the
+ * HUD renders only when what it shows changed, my card (sameCard), my face (sameFace) or the stats as shown (the
+ * clock's whole seconds).
  */
 function sameSoloHud(a: SoloHudProps, b: SoloHudProps): boolean {
-  return sameProps(a, b, { card: sameCard, stats: sameStats, style: sameStyle });
+  return sameProps(a, b, { card: sameCard, face: sameFace, stats: sameStats, style: sameStyle });
 }
 
 const sameStats = (a: SoloStats, b: SoloStats): boolean =>

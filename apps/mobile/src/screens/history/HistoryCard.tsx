@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { AvatarId } from '../../assets/avatars';
+import type { AvatarIdOrNone } from '../../avatars';
 import { Icon } from '../../components/Icon';
 import {
   Avatar,
@@ -38,7 +38,7 @@ const AVATARS_SHOWN = 3;
 export interface HistoryCardProps {
   entry: HistoryEntry;
   /** My avatar, for a solo practice (no opponent to show). */
-  myAvatar: AvatarId;
+  myAvatar: AvatarIdOrNone;
   now: number;
   onOpen: (entry: HistoryEntry) => void;
   /** A ranked game's opponent (not a bot): their player card (spec §14.3). */

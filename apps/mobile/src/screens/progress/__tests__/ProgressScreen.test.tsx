@@ -31,7 +31,7 @@ async function show(over: Partial<ProgressScreenProps> = {}) {
       progress={myProgress()}
       status="ok"
       pending={0}
-      myAvatar="av07"
+      myAvatar="lava-lamp"
       level={14}
       {...props}
       {...over}

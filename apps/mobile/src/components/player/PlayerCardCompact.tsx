@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import type { AvatarId } from '../../assets/avatars';
+import { type AvatarFace, type AvatarIdOrNone, sameFace } from '../../avatars';
 import { color, radius, text, tokens } from '../../theme';
 import { ActivityLine } from './ActivityLine';
 import { Avatar } from './Avatar';
@@ -24,7 +24,9 @@ import { cardLabel, displayName, type Gender } from './wording';
 
 export interface PlayerCardCompactProps extends PlayerCardActions {
   model: CardModel;
-  avatarId?: AvatarId | null;
+  avatarId?: AvatarIdOrNone | null;
+  /** The avatar's face in the game or the replay: its mood, and the reaction to play. */
+  face?: AvatarFace | null;
   country?: string | null;
   gender?: Gender;
   /** components.md §7.1: 114 in 3P; 106 for me and 78 for the others in 4P (see compactCardWidth). */
@@ -51,6 +53,7 @@ const c = metrics.compact;
 export const PlayerCardCompact = memo(function PlayerCardCompact({
   model,
   avatarId,
+  face = null,
   country,
   gender,
   width,
@@ -94,6 +97,9 @@ export const PlayerCardCompact = memo(function PlayerCardCompact({
               backdrop={color.surface}
               bot={model.isBot}
               inactive={model.out !== null || model.presence !== 'online'}
+              expression={face?.expression}
+              reaction={face?.reaction}
+              testID={testID ? `${testID}-avatar` : undefined}
             />
             <Flag country={country} size="compact" decorative style={styles.flag} />
             {model.hit ? <HitChip seconds={model.hit.secondsLeft} style={styles.hitChip} /> : null}
@@ -178,9 +184,9 @@ export const PlayerCardCompact = memo(function PlayerCardCompact({
   );
 }, sameCompactCard);
 
-/** Renders only when what the card shows changed (sameCard), not on each re-read of the time. */
+/** Renders only when what the card shows changed (sameCard, sameFace), not on each re-read of the time. */
 function sameCompactCard(a: PlayerCardCompactProps, b: PlayerCardCompactProps): boolean {
-  return sameProps(a, b, { model: sameCard, style: sameStyle });
+  return sameProps(a, b, { model: sameCard, face: sameFace, style: sameStyle });
 }
 
 /** The last penalties in small red pips, "×n" first from five mistakes (components.md §7.2). */

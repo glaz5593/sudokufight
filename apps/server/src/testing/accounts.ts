@@ -41,7 +41,7 @@ export async function call<T = unknown>(
 
 export const fighter = (overrides: Partial<CreateUserRequest> = {}): CreateUserRequest => ({
   displayName: 'Dana',
-  avatarId: 'av07',
+  avatarId: 'lava-lamp',
   country: 'IL',
   ...overrides,
 });

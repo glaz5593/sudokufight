@@ -27,7 +27,9 @@ From DS-Motion (round 1), unchanged:
 Added for direction C:
 
 4. **Only functional loops.** An infinite animation must show a live state: my lock, the last 3 seconds, waiting or
-   connecting. Round 1's decorative idle loops are dropped (see §2).
+   connecting. Round 1's decorative idle loops are dropped (see §2). The one exception is an avatar's idle (§4.10),
+   and only where the spec asks for it (the results winner, spec §3.4) plus the avatar picker's stage, until Moshe
+   decides otherwise (`docs/DECISIONS-PENDING.md` 3.19).
 5. **At most one infinite loop on the board:** my lock pulse. Opponent locks are static.
 6. **"Me" is always P1** (`#36c9f0`, ●). Every one of my flashes, chips, rings and arcs uses P1. Opponents use their
    seat color (P2 `#ff9440`, ▲ ...) by seat order. Ownership never depends on color alone: shapes and avatars stay visible.
@@ -221,6 +223,20 @@ Photosensitivity: no effect may flash more than 3 times per second, and there ar
 | `skeleton` | Loading | 1200 loop | `loop` | Placeholder blocks `#1f2430` pulse opacity 0.5 ↔ 1 (replaces the round-1 gradient shimmer) | Static at 0.7 |
 | `form.error` | Invalid field on Login or Register | 300 | `loop` keyframes | The field shakes ±5 px and the red message appears | Red border, no shake |
 | `progress.fill` | XP bar on Home, level change | 650 | `standard` | The fill grows (scaleX) | Instant |
+
+### 4.10 Avatars (spec §3.4)
+
+Our own animated characters (`packages/avatars`; the app: `apps/mobile/src/avatars/AvatarArt.tsx`). The motions are
+data (`MOTIONS`), with their own keyframes and curves (the names in §3). What plays when is a config:
+`AVATAR_REACTIONS` (reactions, moods) and `AVATAR_STAGES` (where an avatar idles), both waiting for Moshe
+(`docs/DECISIONS-PENDING.md` 3.18, 3.19). An avatar is one still picture except while one of these plays.
+
+| ID | Trigger | ms | Easing | What moves (C look) | Reduced Motion |
+|---|---|---|---|---|---|
+| `avatar.reaction` | Something happens to the player (a correct digit, a mistake, an interference, an emoji, the end; the table in spec §3.4), on cards, the replay's step and the results | The motion's: nod 900, shake 900, bounce 1000, squash 1100, spin 1300, tilt 1400, wobble 1600 (an interference's target: again until it ends); the face may stay longer (`faceMs`) | The motion's | The face changes for the whole reaction, and the body, face or eyes move inside the avatar's rounded tile (never past it) | **Face only**, for the same time. Nothing moves. |
+| `avatar.gimmick` | A face or a motion that starts a character's own moving part (the rain cloud rains while sad), 48 px and up only | Per character, once or looping while its trigger lasts | Per character | The part moves inside the tile; the rest stands still | None: the part shows its rest pose |
+| `avatar.idle` | A stage view (`AVATAR_STAGES`: by default the avatar picker's stage, once a choice stays 600 ms, and the results winner after its reaction), while its screen is the one shown | Idle gimmicks loop (per character, 48 px and up); a blink every 2400–5200 ms | Per character / `loop` | The character's idle part (a ghost floats, a slime jiggles) and its blink. The only decorative loop C keeps (§1.4) | **Face only**: no loop, no blink |
+| `avatar.blink` | Part of `avatar.idle`, while no reaction plays | 200 | `loop` | Each eye closes and opens around its own centre (scaleY) | None |
 
 ## 5. Timelines
 

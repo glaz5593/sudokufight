@@ -116,7 +116,7 @@ describe.each([
   it('register step 2: no network says so over the form, and nothing is created', async () => {
     auth = installTestAuth();
     await initAuth();
-    useRegistrationDraft.setState({ displayName: 'MosheG', avatarId: 'av07', country: 'IL' });
+    useRegistrationDraft.setState({ displayName: 'MosheG', avatarId: 'lava-lamp', country: 'IL' });
     auth.provider.signUp = async () => {
       throw new AuthError('network');
     };

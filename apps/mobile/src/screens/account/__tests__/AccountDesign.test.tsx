@@ -141,7 +141,7 @@ describe('Register-Account board: my fighter', () => {
   beforeEach(async () => {
     installTestAuth();
     await initAuth();
-    useRegistrationDraft.setState({ displayName: 'MosheG', avatarId: 'av07', country: 'IL' });
+    useRegistrationDraft.setState({ displayName: 'MosheG', avatarId: 'lava-lamp', country: 'IL' });
   });
 
   it('framed in my P1 colour; "עריכה" muted with its icon, and spoken as "עריכת הלוחם"', async () => {

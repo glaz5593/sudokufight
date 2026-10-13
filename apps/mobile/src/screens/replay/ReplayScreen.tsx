@@ -19,6 +19,7 @@ import { color, size, space, text, tokens } from '../../theme';
 import { formatClock } from '../game/model';
 import { ScreenHeader } from '../home/parts';
 import { dayOf, shortDate } from '../history/historyModel';
+import { useReplayFaces } from './replayFaces';
 import { ExplanationCard, type MomentKind, MomentChips, StepButton, Timeline, useWho } from './ReplayParts';
 import { nextMoment, type Replay, type ReplayStep, stepView, type StepView } from './replayModel';
 import type { ReplayLoad, ReplayMeta } from './replaySource';
@@ -31,6 +32,8 @@ import type { ReplayLoad, ReplayMeta } from './replaySource';
  * "◀ שלב קודם | שלב הבא ▶". Read-only: nothing on the board or the cards can be pressed. Every number and
  * every explanation comes from the engine through the replay model. Motion: the cards' scores count to the
  * step's value and the step's cell flashes, both reduced to a jump under Reduced Motion (their components).
+ * The avatars react as the replay reaches each step (./replayFaces: a correct digit smiles, a mistake looks
+ * sad, …), only on the step it stops at; with Reduced Motion only their faces change.
  */
 
 export interface ReplayScreenProps {
@@ -149,6 +152,7 @@ function ReplayBody({
     return { ...model, cells: model.cells.map((c) => ({ ...c, interactive: false, cooldown: false })) };
   }, [sv.view, mySeat, step.t, avatars]);
   const flashes = useMemo(() => flashesOf(step), [step]);
+  const faces = useReplayFaces(replay, index, sv.view);
   const cards = useMemo(
     () => cardModels(sv.view, mySeat, step.t).map((c) => ({ ...c, mine: null, interference: null })),
     [sv.view, mySeat, step.t],
@@ -201,6 +205,7 @@ function ReplayBody({
                 key={c.playerId}
                 model={c}
                 avatarId={p?.avatar ?? null}
+                face={faces[c.playerId] ?? null}
                 country={meta.countries[c.playerId] ?? null}
                 width={compactCardWidth(Math.max(3, cards.length), c.isMe)}
                 testID={`${testID}-card-${c.playerId}`}

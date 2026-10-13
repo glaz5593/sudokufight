@@ -82,7 +82,7 @@ export const TEST_PLAYER = {
   email: 'player@example.com',
   password: 'Arena1234',
   displayName: 'Tester',
-  avatarId: 'av05',
+  avatarId: 'sun',
   country: 'IL',
 } as const satisfies TestPlayer;
 

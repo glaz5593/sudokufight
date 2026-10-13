@@ -21,7 +21,7 @@ function failedInsert() {
     severity: 'ERROR',
     table: 'users',
     column: 'id',
-    detail: `Failing row contains (null, ${UID}, Dana, null, IL, av07, ${EMAIL}).`,
+    detail: `Failing row contains (null, ${UID}, Dana, null, IL, lava-lamp, ${EMAIL}).`,
   });
   return new DrizzleQueryError(
     'insert into "users" ("id", "firebase_uid", "display_name", "email") values ($1, $2, $3, $4)',

@@ -302,8 +302,8 @@ describe('a rated game of 4 (work plan stage 10, "סיום")', () => {
 describe('a ranked game of 3 through matchmaking (fast-3p)', () => {
   it('three --queue clients find each other, play, and the database has the engine’s ratings for 3', async () => {
     const [eli, fay, gus] = await Promise.all([
-      queued('Eli3', 'fast-3p', { avatarId: 'av07' }),
-      queued('Fay3', 'fast-3p', { avatarId: 'av12', country: 'DE' }),
+      queued('Eli3', 'fast-3p', { avatarId: 'lava-lamp' }),
+      queued('Fay3', 'fast-3p', { avatarId: 'maya', country: 'DE' }),
       queued('Gus3', 'fast-3p'),
     ]);
     const summaries = await Promise.all([eli.done, fay.done, gus.done]);
@@ -325,10 +325,10 @@ describe('a ranked game of 3 through matchmaking (fast-3p)', () => {
     }
     expect(f.match!.opponents.find((p) => p.id === e.playerId)).toMatchObject({
       name: 'Eli3',
-      avatarId: 'av07',
+      avatarId: 'lava-lamp',
     });
     expect(e.match!.opponents.find((p) => p.id === f.playerId)).toMatchObject({
-      avatarId: 'av12',
+      avatarId: 'maya',
       country: 'DE',
     });
 

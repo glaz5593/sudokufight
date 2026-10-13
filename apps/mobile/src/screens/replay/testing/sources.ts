@@ -75,7 +75,7 @@ export function historyGameOf(table: Table, me = 'me'): HistoryGame {
         seat,
         userId: p.isBot ? null : p.id,
         displayName: p.name ?? null,
-        avatarId: seat === 0 ? 'av07' : 'av12',
+        avatarId: seat === 0 ? 'lava-lamp' : 'maya',
         country: seat === 0 ? 'IL' : 'DE',
         score: rank?.score ?? null,
         mistakes: rank?.mistakes ?? null,

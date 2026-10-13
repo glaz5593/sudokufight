@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AVATAR_STAGES } from '../../avatars/reactions';
 import { Avatar } from '../../components/player/Avatar';
 import { NEVER_REDUCE } from '../../components/player/anim';
 import { paletteAt } from '../../components/player/metrics';
@@ -193,7 +194,7 @@ function Radar({
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       />
-      <Avatar avatarId={me.avatarId} size="home" colorIndex={0} />
+      <Avatar avatarId={me.avatarId} size="home" colorIndex={0} idle={AVATAR_STAGES.search} />
       <View style={styles.meChip}>
         <Text style={[styles.meText, { color: paletteAt(0).ring }]}>{t('me')}</Text>
         {me.rating !== null ? (

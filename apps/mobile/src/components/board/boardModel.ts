@@ -12,7 +12,7 @@ import {
   type TimerView,
 } from '@sudoku-fight/engine';
 
-import { type AvatarId, EMPTY_AVATAR } from '../../assets/avatars';
+import { type AvatarIdOrNone, NO_AVATAR_ID } from '../../avatars';
 import { paletteForSeat, tokens } from '../../theme';
 
 /**
@@ -43,7 +43,7 @@ export interface CellPlayer {
   /** Index into color.players as this phone shows it: 0 = me (P1 ●), then P2 ▲, P3 ■, P4 ◆. */
   colorIndex: number;
   name: string | null;
-  avatar: AvatarId;
+  avatar: AvatarIdOrNone;
   isMe: boolean;
 }
 
@@ -127,7 +127,7 @@ export interface BoardModelOptions {
   /** The cell I tapped whose lock the server has not confirmed yet (spec §18, optimistic display). */
   pendingCell?: CellIndex | null;
   /** Each player's avatar; a player without one gets the empty avatar. */
-  avatars?: Readonly<Partial<Record<PlayerId, AvatarId>>>;
+  avatars?: Readonly<Partial<Record<PlayerId, AvatarIdOrNone>>>;
 }
 
 /** Last-seconds threshold of my lock (motion.md `lock.urgent`, tokens motion.limits). */
@@ -169,7 +169,7 @@ export function boardModel(
     seat: p.seat,
     colorIndex: players.indexOf(paletteForSeat(p.seat, me ? me.seat : null, seats)),
     name: p.name,
-    avatar: options.avatars?.[p.id] ?? EMPTY_AVATAR,
+    avatar: options.avatars?.[p.id] ?? NO_AVATAR_ID,
     isMe: p === me,
   });
 

@@ -71,8 +71,8 @@ export const MATCH_ID = 'match-1';
 
 /** The players of a 2-player match: me (seat 0, Moshe) and NinaVolt. */
 export const MATCH_PLAYERS: MatchPlayer[] = [
-  { id: ME, name: 'Moshe', avatarId: 'av07', country: 'IL', rating: 1287, provisional: false },
-  { id: OPP, name: 'NinaVolt', avatarId: 'av12', country: 'DE', rating: 1305, provisional: true },
+  { id: ME, name: 'Moshe', avatarId: 'lava-lamp', country: 'IL', rating: 1287, provisional: false },
+  { id: OPP, name: 'NinaVolt', avatarId: 'maya', country: 'DE', rating: 1305, provisional: true },
 ];
 
 export const RESERVATION: MatchSeatReservation = { name: 'game', roomId: CODE, sessionId: 'seat-1' };

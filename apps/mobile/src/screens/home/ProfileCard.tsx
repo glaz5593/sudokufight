@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { leagueRating, ratingsByType } from '../../api/me';
-import type { AvatarId } from '../../assets/avatars';
+import { AVATAR_STAGES, type AvatarIdOrNone } from '../../avatars';
 import { Icon } from '../../components/Icon';
 import { Avatar, countryName, Flag, LeagueBadge, leagueFor, ltr, Rating } from '../../components/player';
 import { color, radius, size, space, text, tokens } from '../../theme';
@@ -19,7 +19,7 @@ const HOME = tokens.layout.home;
 export interface ProfileCardProps {
   /** The name to show (the default name already filled in). */
   name: string;
-  avatarId: AvatarId;
+  avatarId: AvatarIdOrNone;
   country: string | null;
   /** Practices saved on this phone; null while unknown. */
   gamesPlayed: number | null;
@@ -114,7 +114,13 @@ export function ProfileCard({
   const content: ReactNode = (
     <>
       <View style={styles.identity}>
-        <Avatar avatarId={avatarId} size="home" colorIndex={0} backdrop={color.surface} />
+        <Avatar
+          avatarId={avatarId}
+          size="home"
+          colorIndex={0}
+          backdrop={color.surface}
+          idle={AVATAR_STAGES.home}
+        />
         <View style={styles.names}>
           <View style={styles.nameRow}>
             <Text style={styles.name} numberOfLines={1} testID="profile-name">

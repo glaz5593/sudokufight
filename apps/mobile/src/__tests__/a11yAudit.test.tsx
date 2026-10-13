@@ -553,7 +553,7 @@ describe.each(['he', 'en'] as const)('accessibility audit, every route (%s)', (l
   beforeEach(async () => {
     await i18n.changeLanguage(lang);
     useSettings.setState({ language: lang, reduceMotion: 'off', sound: true, haptics: true });
-    useProfile.setState({ name: 'Tester', avatarId: 'av05', country: 'IL', lastPlay: null, botLevel: null });
+    useProfile.setState({ name: 'Tester', avatarId: 'sun', country: 'IL', lastPlay: null, botLevel: null });
   });
 
   it.each(CASES)('$name', async (c) => {

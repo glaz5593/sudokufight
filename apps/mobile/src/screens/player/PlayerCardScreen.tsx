@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isProgressApiError, isProgressOffline } from '../../api/progressApi';
+import { AVATAR_STAGES } from '../../avatars/reactions';
 import { Icon } from '../../components/Icon';
 import {
   Avatar,
@@ -229,6 +230,7 @@ export function PlayerCardScreen({
               size="profile"
               colorIndex={mine ? 0 : null}
               backdrop={color.surface}
+              idle={AVATAR_STAGES.profile}
             />
             <View style={styles.identityText}>
               <View style={styles.nameRow}>

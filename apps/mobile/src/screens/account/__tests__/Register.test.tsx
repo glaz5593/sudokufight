@@ -7,6 +7,7 @@ import { act, fireEvent, screen, waitFor, within } from 'expo-router/testing-lib
 import { initAuth, setAuthDeps, useAuth } from '../../../auth/authStore';
 import { useRegistrationDraft } from '../../../auth/registrationDraft';
 import { installTestAuth, type TestAuth } from '../../../auth/testing/testAuth';
+import { AVATAR_GROUPS } from '../../../avatars';
 import { ltr } from '../../../components/player';
 import { useToast } from '../../../components/ui';
 import { directionProblems } from '../../../components/ui/testing/layout';
@@ -53,10 +54,16 @@ describe('Register step 1: "צור את הלוחם שלך" (spec §3.2)', () => 
     expect(screen.getByText('שלב 1 מתוך 2')).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'צור את הלוחם שלך' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'חזרה להתחברות' })).toBeOnTheScreen();
-    expect(screen.getByLabelText('האווטאר שנבחר: אווטאר 1')).toBeOnTheScreen();
+    expect(screen.getByLabelText('האווטאר שנבחר: נועם')).toBeOnTheScreen();
+    // The kinds as tabs, the chosen avatar's open; the strip shows its kind.
+    expect(screen.getAllByRole('tab').map((tab) => tab.props.accessibilityState)).toEqual(
+      AVATAR_GROUPS.map((g) => ({ selected: g.kind === 'person' })),
+    );
+    expect(screen.getByRole('tab', { name: 'אנשים' })).toBeOnTheScreen();
     const strip = screen.getByTestId('avatar-picker-strip');
-    expect(within(strip).getAllByRole('radio', hidden)).toHaveLength(AVATAR_IDS.length);
-    expect(screen.getByTestId('avatar-picker-av01')).toHaveProp('accessibilityState', { checked: true });
+    expect(within(strip).getAllByRole('radio', hidden)).toHaveLength(AVATAR_GROUPS[0]!.ids.length);
+    expect(screen.getByTestId('avatar-picker-noam')).toHaveProp('accessibilityState', { checked: true });
+    expect(screen.getByTestId('avatar-picker-noam')).toHaveProp('accessibilityLabel', 'נועם');
     // [D21] The country comes from the phone (the test phone is in the US).
     expect(screen.getByRole('button', { name: 'מדינה: ארצות הברית' })).toBeOnTheScreen();
     expect(screen.getByTestId('name-hint')).toHaveTextContent(
@@ -70,16 +77,18 @@ describe('Register step 1: "צור את הלוחם שלך" (spec §3.2)', () => 
   it('previous / next and a tap on the strip choose the avatar; the preview follows', async () => {
     await renderAccount('/register/fighter');
     await fireEvent.press(screen.getByRole('button', { name: 'האווטאר הבא' }));
-    expect(useRegistrationDraft.getState().avatarId).toBe('av02');
-    expect(screen.getByTestId('avatar-picker-count')).toHaveTextContent(ltr('2 / 50'));
+    expect(useRegistrationDraft.getState().avatarId).toBe('maya');
+    expect(screen.getByTestId('avatar-picker-count')).toHaveTextContent(ltr(`2 / ${AVATAR_IDS.length}`));
     await fireEvent.press(screen.getByRole('button', { name: 'האווטאר הקודם' }));
     await fireEvent.press(screen.getByRole('button', { name: 'האווטאר הקודם' }));
-    // Around: from the first to the last.
-    expect(useRegistrationDraft.getState().avatarId).toBe('av51');
-    await fireEvent.press(screen.getByTestId('avatar-picker-av12'));
-    expect(useRegistrationDraft.getState().avatarId).toBe('av12');
-    expect(screen.getByTestId('avatar-picker-av12')).toHaveProp('accessibilityState', { checked: true });
-    expect(screen.getByLabelText('האווטאר שנבחר: אווטאר 12')).toBeOnTheScreen();
+    // Around: from the first to the last, and the tabs follow it to its kind.
+    expect(useRegistrationDraft.getState().avatarId).toBe(AVATAR_IDS.at(-1));
+    expect(screen.getByRole('tab', { name: 'סימנים' })).toHaveProp('accessibilityState', { selected: true });
+    await fireEvent.press(screen.getByRole('tab', { name: 'אנשים' }));
+    await fireEvent.press(screen.getByTestId('avatar-picker-punk'));
+    expect(useRegistrationDraft.getState().avatarId).toBe('punk');
+    expect(screen.getByTestId('avatar-picker-punk')).toHaveProp('accessibilityState', { checked: true });
+    expect(screen.getByLabelText('האווטאר שנבחר: מיקה')).toBeOnTheScreen();
   });
 
   it('checks the name as it is typed: the rules at once, the server 300 ms after the last key', async () => {
@@ -199,7 +208,7 @@ describe('Register step 1: "צור את הלוחם שלך" (spec §3.2)', () => 
     await screen.findByTestId('name-status-available', hidden);
     await fireEvent.press(screen.getByRole('button', { name: 'היכנס לזירה' }));
     await waitFor(() => expect(useAuth.getState().status).toBe('ready'));
-    expect(useAuth.getState().me).toMatchObject({ displayName: 'Racer2', country: 'US', avatarId: 'av01' });
+    expect(useAuth.getState().me).toMatchObject({ displayName: 'Racer2', country: 'US', avatarId: 'noam' });
     // Spec §22: the step, then the registration's end (once, after the taken name).
     expect(jest.mocked(track).mock.calls).toEqual([
       ['register_step', { step: 'fighter' }],
@@ -223,7 +232,7 @@ describe('Register step 1: "צור את הלוחם שלך" (spec §3.2)', () => 
 
 describe('Register step 2: the account (spec §3.2)', () => {
   beforeEach(() => {
-    useRegistrationDraft.setState({ displayName: 'MosheG', avatarId: 'av07', country: 'IL' });
+    useRegistrationDraft.setState({ displayName: 'MosheG', avatarId: 'lava-lamp', country: 'IL' });
   });
 
   const type = (testID: string, text: string) => fireEvent.changeText(screen.getByTestId(testID), text);
@@ -311,7 +320,11 @@ describe('Register step 2: the account (spec §3.2)', () => {
     await fillIn();
     await submit();
     await waitFor(() => expect(useAuth.getState().status).toBe('ready'));
-    expect(useAuth.getState().me).toMatchObject({ displayName: 'MosheG', avatarId: 'av07', country: 'IL' });
+    expect(useAuth.getState().me).toMatchObject({
+      displayName: 'MosheG',
+      avatarId: 'lava-lamp',
+      country: 'IL',
+    });
     // Spec §22: this step was seen, and the registration completed.
     expect(track).toHaveBeenCalledWith('register_step', { step: 'account' });
     expect(track).toHaveBeenLastCalledWith('register_complete');

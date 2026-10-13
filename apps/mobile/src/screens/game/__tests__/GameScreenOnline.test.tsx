@@ -208,8 +208,8 @@ describe('in the game', () => {
     game = onlineSession(
       {},
       {
-        [ME]: { avatarId: 'av07', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
-        [OPP]: { avatarId: 'av12', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
+        [ME]: { avatarId: 'lava-lamp', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
+        [OPP]: { avatarId: 'maya', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
       },
     );
     await show(game.session);
@@ -283,7 +283,7 @@ describe('in the game', () => {
   });
 
   it('the leaver’s flag on their avatar, from the match’s profiles (Opponent-Left)', async () => {
-    const g = await live({ rules: { graceMs: 2000 } }, { [OPP]: { avatarId: 'av12', country: 'DE' } });
+    const g = await live({ rules: { graceMs: 2000 } }, { [OPP]: { avatarId: 'maya', country: 'DE' } });
     await act(async () => {
       g.table.game!.apply({ type: 'disconnect', playerId: OPP });
     });

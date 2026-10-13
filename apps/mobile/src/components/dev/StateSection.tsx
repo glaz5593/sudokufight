@@ -83,7 +83,7 @@ const HISTORY_ROW: HistoryEntry = {
   outcome: 'loss',
   place: 2,
   playerCount: 2,
-  opponents: [{ id: 'nina', name: 'NinaVolt', avatar: 'av12', isBot: false, country: 'DE', colorIndex: 1 }],
+  opponents: [{ id: 'nina', name: 'NinaVolt', avatar: 'maya', isBot: false, country: 'DE', colorIndex: 1 }],
   myScore: 41.5,
   opponentScore: 96.5,
   ratingDelta: -15,
@@ -91,7 +91,7 @@ const HISTORY_ROW: HistoryEntry = {
 
 const leader = (over: Partial<LeaderboardEntry> & Pick<LeaderboardEntry, 'id'>): LeaderboardEntry => ({
   displayName: over.id,
-  avatarId: 'av07',
+  avatarId: 'lava-lamp',
   country: 'IL',
   league: 'gold',
   level: 14,
@@ -105,7 +105,7 @@ const leader = (over: Partial<LeaderboardEntry> & Pick<LeaderboardEntry, 'id'>):
 const LEADER_ROW = leader({
   id: 'elif',
   displayName: 'Elif.T',
-  avatarId: 'av20',
+  avatarId: 'omer',
   country: 'TR',
   rank: 2,
   rating: 1356,
@@ -118,7 +118,7 @@ export function RowSection() {
   return (
     <>
       <Specimen label={t('rows.history')} align="stretch">
-        <HistoryCard entry={HISTORY_ROW} myAvatar="av07" now={NOON + 3_600_000} onOpen={noop} />
+        <HistoryCard entry={HISTORY_ROW} myAvatar="lava-lamp" now={NOON + 3_600_000} onOpen={noop} />
       </Specimen>
       <Specimen label={t('rows.leader')} align="stretch">
         <LeaderboardRow entry={LEADER_ROW} mine={false} onOpen={noop} testID="ds-row-leader" />

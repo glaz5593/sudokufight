@@ -7,7 +7,7 @@ import { clockText, countdownStep, headerOf, matchScreenModel, rangeOf, seatsOf 
 /** Which match screen, and with what (stage 9, spec §10): pure, from the search and the time. */
 
 const T = 1_000_000;
-const self = { name: 'Moshe', avatarId: 'av07' as const };
+const self = { name: 'Moshe', avatarId: 'lava-lamp' as const };
 
 const base: MatchmakingInfo = {
   phase: 'connecting',
@@ -109,7 +109,7 @@ describe('matchScreenModel', () => {
     const seats = seatsOf(info({ phase: 'found', match: { ...match, players } }));
     expect(seats.map((s) => [s.id, s.colorIndex, s.avatarId])).toEqual([
       ['opp', 1, 'av00'],
-      ['me', 0, 'av07'],
+      ['me', 0, 'lava-lamp'],
     ]);
   });
 

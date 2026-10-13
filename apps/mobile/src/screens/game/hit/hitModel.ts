@@ -1,6 +1,6 @@
 import type { GameView, InterferenceKind, PlayerId } from '@sudoku-fight/engine';
 
-import type { AvatarId } from '../../../assets/avatars';
+import type { AvatarIdOrNone } from '../../../avatars';
 // The pure models only: these never load Skia (a screen's tests can use them without its mock).
 import { catsRumble } from '../../../components/interference/catsModel';
 import { fireworksPlan, fireworksRumble } from '../../../components/interference/fireworksModel';
@@ -19,7 +19,7 @@ export interface HitInfo extends HitTime {
   fromId?: PlayerId;
   /** The sender's name as the screen says it. */
   fromName: string;
-  fromAvatar?: AvatarId | null;
+  fromAvatar?: AvatarIdOrNone | null;
   /** The sender's seat colour as this phone shows it (1–3; 0 is me, P1). Default 1. */
   fromColorIndex?: number;
   /** What it cost the sender (the `interference` event's cost), for the banner's second line. */
@@ -34,7 +34,7 @@ export interface HitInfo extends HitTime {
 
 export interface HitNames {
   nameOf: (id: PlayerId) => string;
-  avatarOf?: (id: PlayerId) => AvatarId | null | undefined;
+  avatarOf?: (id: PlayerId) => AvatarIdOrNone | null | undefined;
 }
 
 /** The interference on me in a view, or null. Its deadline is the view's `expiresAt` (null while frozen). */

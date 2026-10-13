@@ -15,7 +15,7 @@ const player = (seat: number, overrides: Partial<HistoryPlayer> = {}): HistoryPl
   seat,
   userId: `u${seat}`,
   displayName: `P${seat}`,
-  avatarId: 'av07',
+  avatarId: 'lava-lamp',
   country: 'IL',
   score: 40.5,
   mistakes: 1,
@@ -81,6 +81,8 @@ describe('answer checks (the app refuses what it can not read)', () => {
     expect(isHistoryGame(game({ mySeat: 3 }))).toBe(false);
     expect(isHistoryGame(game({ endReason: 'timeout' as never }))).toBe(false);
     expect(isHistoryGame(game({ players: [player(0, { avatarId: 'av36' as never })] }))).toBe(false);
+    // An old pack's id: the server normalizes ids on read (normalizeAvatarId), so an answer never has one.
+    expect(isHistoryGame(game({ players: [player(0, { avatarId: 'av07' as never })] }))).toBe(false);
     expect(isHistoryGame(game({ players: [player(0, { status: 'gone' as never })] }))).toBe(false);
     expect(isHistoryGame(game({ players: [player(0, { score: Number.NaN })] }))).toBe(false);
     expect(isHistoryGame(null)).toBe(false);

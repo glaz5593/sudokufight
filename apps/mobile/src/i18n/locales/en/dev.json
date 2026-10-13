@@ -7,7 +7,9 @@
     "metrics": "Network measures",
     "metricsHint": "Development screen: the five network measures of the online game",
     "sounds": "Sounds",
-    "soundsHint": "Development screen: each sound's candidate next to the current one"
+    "soundsHint": "Development screen: each sound's candidate next to the current one",
+    "avatars": "Avatars",
+    "avatarsHint": "Development screen: every character with every expression and motion"
   },
   "screen": {
     "title": "Design system",
@@ -475,5 +477,21 @@
       "reconnect": "Reconnected · tones going up",
       "ui_tap": "Primary button (\"Play\") · soft click"
     }
+  },
+  "avatarLab": {
+    "title": "Avatars",
+    "subtitle": "Development screen · {{n}} characters",
+    "close": "Close",
+    "intro": "Pick a character, then tap an expression or a motion. An expression stays until you change it; a motion plays once. With reduced motion only the face changes.",
+    "idle": "Idle on a stage: moving parts and a blink",
+    "reduceMotion": "Reduce motion on this screen only (the app's setting stays)",
+    "size": "Size",
+    "sizeLabel": "Size {{px}} px",
+    "selected": "{{kind}} · {{id}}",
+    "expressions": "Expressions",
+    "motions": "Motions",
+    "all": "All characters",
+    "expressionLabel": "Expression: {{name}}",
+    "motionLabel": "Motion: {{name}}"
   }
 }

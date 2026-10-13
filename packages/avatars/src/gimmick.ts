@@ -18,7 +18,8 @@
  * - CSS (preview page, admin site): `gimmickCss(avatars)` has one @keyframes per anim and rules keyed on the
  *   <svg>'s `data-avatar`, `data-expression`, its motion class `sfa-m-{id}` and `sfa-idle`. render.ts marks
  *   renders under 48 px with `sfa-small`, where nothing plays.
- * - Reanimated (the app, later), per playing gimmick group:
+ * - Reanimated (the app): native.ts does it per layer (gimmickPlans, gimmickUpdates). By hand, per playing
+ *   gimmick group:
  *     const progress = useSharedValue(0);
  *     progress.value = withDelay(anim.delayMs ?? 0,
  *       withRepeat(withTiming(1, { duration: anim.durationMs, easing: Easing.linear }), anim.loop ? -1 : 1));

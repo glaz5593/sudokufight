@@ -2,8 +2,9 @@ import {
   AVATAR_IDS,
   type AvatarId,
   type CountryCode,
-  isAvatarId,
   isCountryCode,
+  NO_AVATAR_ID,
+  normalizeAvatarId,
 } from '@sudoku-fight/protocol';
 import Storage from 'expo-sqlite/kv-store';
 import { create } from 'zustand';
@@ -46,7 +47,9 @@ function sanitize(saved: unknown): Partial<DraftData> {
   if (typeof saved !== 'object' || saved === null) return {};
   const s = saved as Record<string, unknown>;
   const out: Partial<DraftData> = {};
-  if (isAvatarId(s.avatarId)) out.avatarId = s.avatarId;
+  // An id of the retired av01–av51 pack reads as its replacement; anything unknown keeps the default.
+  const avatarId = normalizeAvatarId(s.avatarId);
+  if (avatarId !== NO_AVATAR_ID) out.avatarId = avatarId;
   if (typeof s.displayName === 'string') out.displayName = s.displayName.slice(0, 64);
   if (isCountryCode(s.country)) out.country = s.country;
   return out;

@@ -1,7 +1,7 @@
 import type { GameMode, GameResult, GameType, PlayerId } from '@sudoku-fight/engine';
 import { HISTORY_PAGE_SIZE, type HistoryGame } from '@sudoku-fight/protocol';
 
-import { type AvatarId, EMPTY_AVATAR } from '../../assets/avatars';
+import { type AvatarIdOrNone, NO_AVATAR_ID } from '../../avatars';
 import { colorIndexFor } from '../../components/player';
 import type { PracticeGameRecord } from '../../game/practiceRepo';
 import { playerIdentity } from '../game/identity';
@@ -23,7 +23,7 @@ export interface HistoryOpponent {
   id: PlayerId;
   /** Null: the screen's word for an unnamed (or deleted) player. */
   name: string | null;
-  avatar: AvatarId;
+  avatar: AvatarIdOrNone;
   isBot: boolean;
   country: string | null;
   /** As this phone shows them: 1–3 (0 is me). */
@@ -77,7 +77,7 @@ export function rankedEntry(game: HistoryGame): HistoryEntry {
     opponents: others.map((p) => ({
       id: p.userId ?? `seat-${p.seat}`,
       name: p.displayName,
-      avatar: p.avatarId ?? EMPTY_AVATAR,
+      avatar: p.avatarId ?? NO_AVATAR_ID,
       isBot: p.userId === null,
       country: p.country,
       colorIndex: colorIndexFor(p.seat, game.mySeat, seats),

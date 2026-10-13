@@ -226,14 +226,14 @@ describe('GET /v1/players/:id (spec §14.3)', () => {
     await addAccounts(t.db, [{ id: 'ana', name: 'Ana', rating: 1300, games: 9 }, { id: 'ben' }]);
     await t.db
       .update(users)
-      .set({ avatarId: 'av07', country: 'IL', email: 'ana@example.com' })
+      .set({ avatarId: 'lava-lamp', country: 'IL', email: 'ana@example.com' })
       .where(eq(users.id, 'ana'));
     await t.db.insert(xp).values({ userId: 'ana', xp: 1250, level: 4 });
     const { body } = await card('ana', 'ben');
     expect(body).toMatchObject({
       id: 'ana',
       displayName: 'Ana',
-      avatarId: 'av07',
+      avatarId: 'lava-lamp',
       country: 'IL',
       // 9 games in every key: still provisional (§11.3).
       league: null,

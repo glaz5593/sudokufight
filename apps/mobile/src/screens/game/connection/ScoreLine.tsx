@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import type { AvatarId } from '../../../assets/avatars';
+import type { AvatarIdOrNone } from '../../../avatars';
 import { Avatar } from '../../../components/player/Avatar';
 import { VsBadge } from '../../../components/player/Badges';
 import { barShares } from '../../../components/player/cardModel';
@@ -16,10 +16,10 @@ import { about, myNameOf, nameOf } from './wording';
 export interface ScoreLineData {
   myName: string | null;
   myScore: number;
-  myAvatar?: AvatarId | null;
+  myAvatar?: AvatarIdOrNone | null;
   opponentName: string | null;
   opponentScore: number;
-  opponentAvatar?: AvatarId | null;
+  opponentAvatar?: AvatarIdOrNone | null;
   /** The opponent's colour on this phone (P2 in a 2-player game). */
   opponentColorIndex: number;
 }

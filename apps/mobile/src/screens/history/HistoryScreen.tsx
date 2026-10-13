@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { AvatarId } from '../../assets/avatars';
+import type { AvatarIdOrNone } from '../../avatars';
 import { Icon } from '../../components/Icon';
 import { BottomNav, Button, type NavTab, SkeletonGroup, SkeletonRows, StateView } from '../../components/ui';
 import { color, radius, size, space, text, tokens } from '../../theme';
@@ -32,7 +32,7 @@ export interface HistoryScreenProps {
   /** "שחק את המשחק הראשון". */
   onPlay: () => void;
   onTab: (tab: NavTab) => void;
-  myAvatar: AvatarId;
+  myAvatar: AvatarIdOrNone;
   /**
    * The header's numbers (History.dc.html: games, win %, the streak chip): my card's ranked games, the
    * practices counted apart (./historySummary). Null: no line.

@@ -29,7 +29,7 @@ import {
   whyWrong,
 } from '@sudoku-fight/engine';
 
-import { type AvatarId } from '../../assets/avatars';
+import { type AvatarIdOrNone } from '../../avatars';
 import { colorIndexFor } from '../../components/player';
 import { playerIdentity } from '../game/identity';
 
@@ -110,7 +110,7 @@ export interface ReplayPlayer {
   /** Null: the screen's word for an unnamed player. */
   name: string | null;
   isBot: boolean;
-  avatar: AvatarId;
+  avatar: AvatarIdOrNone;
   /** As this phone shows them: 0 = me (P1, ●), then P2–P4 by seat (▲ ■ ◆). */
   colorIndex: number;
   isMe: boolean;
@@ -211,7 +211,7 @@ export interface ReplayOptions {
   /** The player on this phone. */
   me?: PlayerId | null;
   /** Avatars by player (a profile's); bots get their level's, everyone else the empty one. */
-  avatars?: Readonly<Partial<Record<PlayerId, AvatarId>>>;
+  avatars?: Readonly<Partial<Record<PlayerId, AvatarIdOrNone>>>;
   /** Names to show instead of the ones in the log (a ranked game's current display names). */
   names?: Readonly<Partial<Record<PlayerId, string | null>>>;
 }

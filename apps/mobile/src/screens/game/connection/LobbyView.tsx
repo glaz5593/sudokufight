@@ -5,7 +5,8 @@ import { ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { AvatarId } from '../../../assets/avatars';
+import type { AvatarIdOrNone } from '../../../avatars';
+import { AVATAR_REACTIONS } from '../../../avatars/reactions';
 import { Avatar } from '../../../components/player/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
@@ -29,7 +30,7 @@ export interface LobbyViewProps {
   /** Shares the invitation. Default: the system share sheet (React Native's Share; its sheet can copy too). */
   onShare?: (message: string) => void | Promise<void>;
   /** The seated players' avatars, when known. */
-  avatars?: Partial<Record<PlayerId, AvatarId>>;
+  avatars?: Partial<Record<PlayerId, AvatarIdOrNone>>;
   testID?: string;
 }
 
@@ -186,7 +187,7 @@ function SeatRow({
   testID,
 }: {
   seat: LobbySeat;
-  avatar: AvatarId | undefined;
+  avatar: AvatarIdOrNone | undefined;
   reduce: boolean;
   testID: string;
 }) {
@@ -216,7 +217,14 @@ function SeatRow({
       style={styles.seat}
       testID={testID}
     >
-      <Avatar avatarId={avatar} size="compact" colorIndex={seat.colorIndex} backdrop={color.surface} />
+      {/* In the room: the ready face (a smile). */}
+      <Avatar
+        avatarId={avatar}
+        size="compact"
+        colorIndex={seat.colorIndex}
+        backdrop={color.surface}
+        expression={AVATAR_REACTIONS.moods.ready}
+      />
       <Text style={styles.seatName} numberOfLines={1}>
         {p.name}
       </Text>

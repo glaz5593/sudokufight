@@ -34,6 +34,7 @@ export const ROUTES = {
   'dev/hello': () => <Stub name="hello" />,
   'dev/design-system': () => <Stub name="design-system" />,
   'dev/sounds': () => <Stub name="sounds" />,
+  'dev/avatars': () => <Stub name="avatars" />,
 };
 
 export interface RenderedApp {

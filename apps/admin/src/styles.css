@@ -939,6 +939,37 @@ select.input {
   flex: 1 1 auto;
 }
 
+/* ---- Avatars (components/AvatarImg.tsx): a still picture; the tile is part of the SVG ---- */
+
+.avatar {
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+  vertical-align: middle;
+}
+
+.avatar svg {
+  display: block;
+}
+
+/* No avatar (a deleted account, or none): a blank tile in the avatars' corner radius (18 of 100). */
+.avatar-none {
+  border: 1px solid var(--border);
+  border-radius: 18%;
+  background: var(--surface-2);
+}
+
+.user-link,
+.avatar-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-fact {
+  gap: 12px;
+}
+
 /* ---- Small screens ---- */
 
 @media (max-width: 720px) {

@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { type AvatarId, isAvatarId } from '../../assets/avatars';
+import { type AvatarIdOrNone, NO_AVATAR_ID, normalizeAvatarId } from '../../avatars';
 import { useAuth } from '../../auth/authStore';
 import { Board, type BoardFlash, boardModel, CancelSelection, Keypad } from '../../components/board';
 import { WarpFrame } from '../../components/interference';
@@ -43,6 +43,7 @@ import { ConfirmModal } from '../../components/ui';
 import type { MatchEffect, UiEffect } from '../../game/effects';
 import type { SessionConnection } from '../../game/onlineSession';
 import type { PracticeSession } from '../../game/session';
+import { useAvatarFaces } from '../../game/useAvatarFaces';
 import { useGameEffects, useMatchEffects } from '../../game/useGameEffects';
 import { useNow } from '../../game/useNow';
 import { useMyLevel } from '../../progress/hooks';
@@ -146,11 +147,16 @@ import { useLiveAnnouncer } from './useLiveAnnouncer';
  * My own surrender takes me out the same way, and the game goes on: I stay and watch it to the end (the board
  * and the keypad take nothing, the out strip says my place), and the results open when it ends, with the full
  * ranking; online, "לבית" on that strip leaves now instead (the server keeps my place).
+ *
+ * The avatars react to the game (spec §3.4; game/useAvatarFaces, the table in avatars/reactions.ts): on every
+ * card, a correct digit smiles and nods, a mistake looks sad and shakes, a hit is dizzy and wobbles while it
+ * lasts, a reaction emoji plays on its sender's face, the end of the game laughs or looks sad, and my avatar
+ * falls asleep after a while without an action. With reduced motion only the faces change.
  */
 
 /** What a game's config does not say about a player: their avatar and country (an online match's profiles). */
 export interface SessionProfile {
-  /** An avatar id (protocol AvatarId, or av00); anything else falls back to the player's default. */
+  /** An avatar id (protocol AvatarId; an old pack's id reads as its replacement); else the player's default. */
   avatarId?: string | null;
   /** ISO alpha-2. */
   country?: string | null;
@@ -293,10 +299,11 @@ export function GameScreen({
   const profiles = session.profiles ?? null;
   const players = view.players;
   const avatars = useMemo(() => {
-    const map: Partial<Record<PlayerId, AvatarId>> = {};
+    const map: Partial<Record<PlayerId, AvatarIdOrNone>> = {};
     for (const p of players) {
-      const own = profiles?.[p.id]?.avatarId;
-      map[p.id] = p.id === view.me ? myAvatar : isAvatarId(own) ? own : identityOf({ players }, p.id).avatar;
+      const own = normalizeAvatarId(profiles?.[p.id]?.avatarId);
+      map[p.id] =
+        p.id === view.me ? myAvatar : own !== NO_AVATAR_ID ? own : identityOf({ players }, p.id).avatar;
     }
     return map;
   }, [players, view.me, myAvatar, profiles]);
@@ -312,6 +319,8 @@ export function GameScreen({
   );
   const lock = useMemo(() => lockModel(view, now), [view, now]);
   const stats = soloStats(view, now);
+  // Every player's face (spec §3.4): moods from the view and the time, reactions from the session's events.
+  const faces = useAvatarFaces(session, view, now);
 
   // ---- an online game's connection (spec §16.2, §16.3): what shows over the game, in the server's time ----
   const graceMs = session.connection?.graceMs ?? undefined;
@@ -961,6 +970,8 @@ export function GameScreen({
                 opponent={duel.theirCard}
                 myAvatar={myAvatar}
                 opponentAvatar={avatars[duel.opponent.id]}
+                myFace={faces[me.id] ?? null}
+                opponentFace={faces[duel.opponent.id] ?? null}
                 myCountry={countries[me.id] ?? null}
                 opponentCountry={countries[duel.opponent.id] ?? null}
                 myDelta={deltas[me.id] ?? null}
@@ -986,6 +997,7 @@ export function GameScreen({
               <GroupHud
                 cards={groupCards}
                 avatars={avatars}
+                faces={faces}
                 countries={countries}
                 deltas={deltas}
                 onSurrender={openConfirm}
@@ -1011,6 +1023,7 @@ export function GameScreen({
                 gameType={view.gameType}
                 stats={stats}
                 avatarId={myAvatar}
+                face={faces[me.id] ?? null}
                 onEnd={openConfirm}
                 onTargetLayout={onTargetLayout}
                 onLayout={onHudLayout}

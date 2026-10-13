@@ -152,7 +152,7 @@ async function account(name: string, token = devToken(`app-${name.toLowerCase()}
     fetch: (target, init) => fetch(target, init),
     timeoutMs: 10_000,
   });
-  const me = await api.createUser({ displayName: name, avatarId: 'av07', country: 'IL' });
+  const me = await api.createUser({ displayName: name, avatarId: 'lava-lamp', country: 'IL' });
   return { name, token, api, me };
 }
 

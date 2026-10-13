@@ -180,7 +180,7 @@ async function account(name: string, uid: string, country: 'IL' | 'US') {
     fetch: (target, init) => fetch(target, init),
     timeoutMs: 10_000,
   });
-  const me = await accounts.createUser({ displayName: name, avatarId: 'av07', country });
+  const me = await accounts.createUser({ displayName: name, avatarId: 'lava-lamp', country });
   const progress = createProgressApi({
     baseUrl: url,
     getToken,
@@ -573,7 +573,7 @@ describe("the app's progress on the real server (stage 12 'סיום')", () => {
     expect(fast.me).toMatchObject({
       id: ana.me.id,
       displayName: 'AnaProg',
-      avatarId: 'av07',
+      avatarId: 'lava-lamp',
       country: 'IL',
       level: levelFor(xp).level,
       league: leagueFor(ratingIn(ana.me.id, 'fast')),
@@ -620,7 +620,7 @@ describe("the app's progress on the real server (stage 12 'סיום')", () => {
     expect(card).toMatchObject({
       id: ana.me.id,
       displayName: 'AnaProg',
-      avatarId: 'av07',
+      avatarId: 'lava-lamp',
       country: 'IL',
       league: leagueFor(ratingIn(ana.me.id, 'fast')),
       level: levelFor(xp).level,

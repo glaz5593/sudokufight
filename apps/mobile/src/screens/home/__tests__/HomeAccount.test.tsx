@@ -51,7 +51,7 @@ afterEach(() => {
 
 describe('Home with an account (stage 8)', () => {
   it('the card is the account’s: name, flag, ratings 1200 provisional [D23], and opens my player card', async () => {
-    auth = await installSignedInPlayer({ displayName: 'MosheG', avatarId: 'av05', country: 'IL' });
+    auth = await installSignedInPlayer({ displayName: 'MosheG', avatarId: 'sun', country: 'IL' });
     await initAuth();
     const app = await renderApp('/', EXTRA);
     const card = await screen.findByTestId('profile-card');
@@ -69,7 +69,7 @@ describe('Home with an account (stage 8)', () => {
     expect(card).toHaveProp('accessibilityRole', 'button');
     expect(card).toHaveProp('accessibilityHint', 'פתיחת כרטיס השחקן');
     // The game screens' "me" follows the account.
-    expect(useProfile.getState()).toMatchObject({ name: 'MosheG', avatarId: 'av05', country: 'IL' });
+    expect(useProfile.getState()).toMatchObject({ name: 'MosheG', avatarId: 'sun', country: 'IL' });
 
     // Stage 12 (spec §4.2): the card opens my player card.
     await fireEvent.press(card);
@@ -77,7 +77,7 @@ describe('Home with an account (stage 8)', () => {
   });
 
   it('stage 12: my level, the XP bar and my league from my progress; my card’s numbers', async () => {
-    auth = await installSignedInPlayer({ displayName: 'MosheG', avatarId: 'av05', country: 'IL' });
+    auth = await installSignedInPlayer({ displayName: 'MosheG', avatarId: 'sun', country: 'IL' });
     await initAuth();
     const { user, me } = useAuth.getState();
     adoptProgress(user!.uid, myProgress(), 1);

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { AvatarId } from '../../assets/avatars';
+import type { AvatarIdOrNone } from '../../avatars';
 import { useAuth } from '../../auth/authStore';
 import { Icon } from '../../components/Icon';
 import { Avatar, SeatGlyph } from '../../components/player';
@@ -116,7 +116,7 @@ export function ModesScreen() {
  * Me, at the end of the header (the Modes board): my name (isolated, in its own direction) and my avatar in P1's
  * frame. Read as the name; the avatar next to it is decorative.
  */
-function Me({ name, avatarId }: { name: string | null; avatarId: AvatarId }) {
+function Me({ name, avatarId }: { name: string | null; avatarId: AvatarIdOrNone }) {
   return (
     <View style={styles.me} testID="modes-me">
       {name ? (
@@ -139,7 +139,7 @@ function useConnectionLine(offline: boolean): string | null {
 }
 
 interface CardContext {
-  avatarId: AvatarId;
+  avatarId: AvatarIdOrNone;
   offline: boolean;
   /** My ratings (the account's), for the open ranked cards: each shows its own queue's. */
   ratings: readonly RatingEntry[] | null;
@@ -277,7 +277,7 @@ function OfflineChip({ label, testID }: { label: string; testID?: string }) {
 }
 
 /** The picture at the start of a card: the seats of a ranked table, my avatar, or the bot. */
-function Leading({ option, avatarId }: { option: ModeOption; avatarId: AvatarId }) {
+function Leading({ option, avatarId }: { option: ModeOption; avatarId: AvatarIdOrNone }) {
   if (option.mode === 'solo') return <Avatar avatarId={avatarId} size="card" colorIndex={0} />;
   return (
     <View style={styles.leadBox}>

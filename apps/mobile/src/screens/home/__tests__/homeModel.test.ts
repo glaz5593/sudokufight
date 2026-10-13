@@ -80,11 +80,11 @@ describe('the modes (spec §5.1)', () => {
 describe('the bots to choose from (spec §9)', () => {
   it('are the engine’s five levels, with their names and avatars', () => {
     expect(botOptions('normal').map((b) => [b.level, b.name, b.avatar])).toEqual([
-      [1, 'Pip', 'av44'],
-      [2, 'Biscuit', 'av42'],
-      [3, 'Mr. Hoot', 'av49'],
-      [4, 'Maestro', 'av39'],
-      [5, 'Overlord', 'av40'],
+      [1, 'Pip', 'hatchling'],
+      [2, 'Biscuit', 'fox'],
+      [3, 'Mr. Hoot', 'owl'],
+      [4, 'Maestro', 'professor'],
+      [5, 'Overlord', 'furry-monster'],
     ]);
     expect(botOptions('normal').map((b) => b.mistakeRate)).toEqual(BOT_LEVELS.map((l) => l.mistakeRate));
     expect(botOptions('fast').map((b) => percentOf(b.mistakeRate))).toEqual([15, 9, 5, 2, 1]);

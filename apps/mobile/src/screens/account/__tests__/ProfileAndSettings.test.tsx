@@ -56,10 +56,12 @@ describe('Edit profile [D20, D21]', () => {
       expect.objectContaining({ disabled: true }),
     );
 
-    await fireEvent.press(screen.getByTestId('avatar-picker-av09'));
+    // Another kind's tab, then the avatar.
+    await fireEvent.press(screen.getByRole('tab', { name: 'אוכל' }));
+    await fireEvent.press(screen.getByTestId('avatar-picker-sufganiya'));
     await fireEvent.press(screen.getByTestId('edit-save'));
-    await waitFor(() => expect(useAuth.getState().me?.avatarId).toBe('av09'));
-    expect(auth.server.calls.at(-1)).toBe('PATCH /v1/me {"avatarId":"av09"}');
+    await waitFor(() => expect(useAuth.getState().me?.avatarId).toBe('sufganiya'));
+    expect(auth.server.calls.at(-1)).toBe('PATCH /v1/me {"avatarId":"sufganiya"}');
     expect(useToast.getState().current?.message).toBe('הפרופיל נשמר');
   });
 
@@ -108,7 +110,8 @@ describe('Edit profile [D20, D21]', () => {
     await fireEvent.press(screen.getByTestId('edit-save'));
     expect(await screen.findByTestId('edit-name-error')).toHaveTextContent('השם הזה תפוס. בחר שם אחר.');
 
-    await fireEvent.press(screen.getByTestId('avatar-picker-av03'));
+    await fireEvent.press(screen.getByRole('tab', { name: 'חפצים' }));
+    await fireEvent.press(screen.getByTestId('avatar-picker-cassette'));
     await fireEvent.changeText(screen.getByTestId('edit-name'), 'Tester');
     auth.server.setOffline(true);
     await fireEvent.press(screen.getByTestId('edit-save'));

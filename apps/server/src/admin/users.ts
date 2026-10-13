@@ -1,11 +1,12 @@
 import { levelFor } from '@sudoku-fight/engine';
-import type {
-  AdminCheatFlag,
-  AdminPage,
-  AdminRating,
-  AdminUserDetail,
-  AdminUserGame,
-  AdminUserRow,
+import {
+  type AdminCheatFlag,
+  type AdminPage,
+  type AdminRating,
+  type AdminUserDetail,
+  type AdminUserGame,
+  type AdminUserRow,
+  normalizeAvatarId,
 } from '@sudoku-fight/protocol';
 import { asc, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm';
 
@@ -56,6 +57,8 @@ function toUserRow(r: {
 }): AdminUserRow {
   return {
     ...r,
+    // An old pack's id as its replacement, an unknown one as NO_AVATAR_ID; none stays null.
+    avatarId: r.avatarId === null ? null : normalizeAvatarId(r.avatarId),
     createdAt: r.createdAt.getTime(),
     deletedAt: r.deletedAt?.getTime() ?? null,
     lastSeen: msOrNull(r.lastSeen),

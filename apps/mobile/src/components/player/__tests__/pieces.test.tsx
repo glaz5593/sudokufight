@@ -24,7 +24,7 @@ beforeEach(async () => {
 
 describe('Avatar (§2)', () => {
   it('is decorative next to a name, and frames in the seat colour', async () => {
-    await render(<Avatar avatarId="av07" size="card" colorIndex={1} testID="av" />);
+    await render(<Avatar avatarId="lava-lamp" size="card" colorIndex={1} testID="av" />);
     expect(screen.queryByRole('image')).toBeNull();
     const frame = screen.getByTestId('av', hidden).children[0] as { props: { style?: unknown } };
     expect(styleOf(frame)).toMatchObject({

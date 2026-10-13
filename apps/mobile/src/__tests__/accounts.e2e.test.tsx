@@ -156,7 +156,7 @@ describe('accounts, end to end (work plan stage 8 "סיום")', () => {
     ]);
     expect(useAuth.getState()).toMatchObject({
       status: 'ready',
-      me: { displayName: 'MosheG', avatarId: 'av02', country: 'IL' },
+      me: { displayName: 'MosheG', avatarId: 'maya', country: 'IL' }, // the second avatar ("next" once)
     });
     // A fresh stack: no way back to the registration.
     expect(router.canGoBack()).toBe(false);
@@ -175,14 +175,15 @@ describe('accounts, end to end (work plan stage 8 "סיום")', () => {
     await waitFor(() => expect(nav.pathname()).toBe(`/player/${useAuth.getState().me!.id}`));
     await press('player-card-edit');
     await waitFor(() => expect(nav.pathname()).toBe('/edit-profile'));
-    await press('avatar-picker-av09');
+    await press('avatar-picker-kind-food');
+    await press('avatar-picker-sufganiya');
     await press('edit-save');
     await waitFor(() => expect(nav.pathname()).toBe(`/player/${useAuth.getState().me!.id}`));
     await press('back');
     await waitFor(() => expect(nav.pathname()).toBe('/'));
-    expect(useAuth.getState().me?.avatarId).toBe('av09');
-    expect(useProfile.getState().avatarId).toBe('av09');
-    expect(auth.server.calls).toContain('PATCH /v1/me {"avatarId":"av09"}');
+    expect(useAuth.getState().me?.avatarId).toBe('sufganiya');
+    expect(useProfile.getState().avatarId).toBe('sufganiya');
+    expect(auth.server.calls).toContain('PATCH /v1/me {"avatarId":"sufganiya"}');
 
     // ---- delete the account ----
     await fireEvent.press(screen.getByRole('button', { name: 'הגדרות' }));
@@ -211,7 +212,7 @@ describe('accounts, end to end (work plan stage 8 "סיום")', () => {
 
   it('a returning player signs in from the login screen and lands on Home', async () => {
     await auth.provider.signUp('back@example.com', 'Arena1234');
-    await auth.server.api.createUser({ displayName: 'Returner', avatarId: 'av11', country: 'IL' });
+    await auth.server.api.createUser({ displayName: 'Returner', avatarId: 'pencil', country: 'IL' });
     await auth.provider.signOut();
 
     const app = renderRouter(ROUTES, { initialUrl: '/' });

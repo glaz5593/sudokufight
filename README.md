@@ -18,9 +18,11 @@
 ```
 packages/engine     חוקי המשחק, ניקוד, הסברים, מאגר הלוחות (TypeScript טהור, שעון ו־RNG מוזרקים)
 packages/protocol   הממשק GameHost וטיפוסי ההודעות בין האפליקציה לשרת
+packages/avatars    101 האווטרים המונפשים שלנו: נתונים ופונקציות שמחזירות SVG (docs/avatars/STYLE.md)
 apps/mobile         האפליקציה (Expo SDK 57, expo-router, Reanimated 4, Skia, Zustand)
 apps/server         שרת זמן אמת (Node, Colyseus 0.18)
-assets/             אווטרים ולוחות מקור
+apps/admin          אתר הניהול (Vite, React), לקריאה בלבד
+assets/             לוחות מקור וצלילים
 docs/               אפיון, תוכנית, עיצוב
 ```
 
@@ -37,7 +39,7 @@ docs/               אפיון, תוכנית, עיצוב
 
 | פקודה | מה היא עושה |
 |---|---|
-| `npm test` | כל הבדיקות: engine, ‏protocol, ‏server, ‏admin ו־mobile |
+| `npm test` | כל הבדיקות: engine, ‏protocol, ‏avatars, ‏server, ‏admin ו־mobile |
 | `npm run typecheck` | `tsc -b` על כל ה־workspaces |
 | `npm run lint` | ESLint, כולל הכלל שאוסר `Date.now()`, ‏`Math.random()` וטיימרים בתוך המנוע |
 | `npm run verify` | lint, ‏typecheck ובדיקות |
@@ -127,7 +129,7 @@ npm run mobile -- --clear         # בחלון שני: Metro, אחרי כל שי
 
 ```
 curl 'http://localhost:2567/v1/names/available?name=Moshe'
-curl -H 'authorization: Bearer dev:moshe:moshe@example.com' -H 'content-type: application/json'   -d '{"displayName":"Moshe","avatarId":"av07","country":"IL"}' http://localhost:2567/v1/users
+curl -H 'authorization: Bearer dev:moshe:moshe@example.com' -H 'content-type: application/json'   -d '{"displayName":"Moshe","avatarId":"noam","country":"IL"}' http://localhost:2567/v1/users
 curl -H 'authorization: Bearer dev:moshe' http://localhost:2567/v1/me
 ```
 
@@ -193,7 +195,7 @@ npm run fake-client -- --queue fast-2p --name Ben --speed 20  # חלון 3: הם
 ```
 
 - **החשבון:** ה־token הוא token פיתוח `dev:<id>` (ברירת המחדל של `--id` היא `fake-<name>`), או token אמיתי עם `--token`.
-  בפעם הראשונה הוא נרשם ב־`POST /v1/users`, עם `--name`, ‏`--avatar av07` ו־`--country IL`.
+  בפעם הראשונה הוא נרשם ב־`POST /v1/users`, עם `--name`, ‏`--avatar noam` ו־`--country IL`.
 - **מה הוא עושה:** מחפש, מתחבר לחדר כשנמצא יריב (D37: זה ה"מוכן"), סופר 3-2-1 ומשחק.
   בסוף הוא מדפיס את ההתאמה (היריב, זמן החיפוש והטווחים), את הדירוג לפי התוצאה, ואת הדירוג השמור לפני המשחק ואחריו (`GET /v1/me`).
 - ‏`--keep-searching`: אחרי Match-Timeout (60 שניות) ממשיך לחפש, בלי תקרה לטווח.

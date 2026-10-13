@@ -250,6 +250,13 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
                 onPress={() => router.push('/dev/sounds')}
                 testID="dev-sounds"
               />
+              <Button
+                variant="ghost"
+                label={tDev('link.avatars')}
+                accessibilityHint={tDev('link.avatarsHint')}
+                onPress={() => router.push('/dev/avatars')}
+                testID="dev-avatars"
+              />
             </View>
           </View>
         ) : null}

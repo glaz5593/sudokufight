@@ -89,7 +89,7 @@ describe('the header', () => {
         onOpen={jest.fn()}
         onPlay={jest.fn()}
         onTab={jest.fn()}
-        myAvatar="av07"
+        myAvatar="lava-lamp"
         summary={summary}
       />,
     );

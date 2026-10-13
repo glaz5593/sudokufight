@@ -1,15 +1,22 @@
+import { BOT_LEVELS } from '@sudoku-fight/engine';
+
 import {
   ACCOUNT_ERROR_CODES,
   ACCOUNT_PATHS,
   AVATAR_IDS,
+  type AvatarId,
   COUNTRY_CODES,
   DISPLAY_NAME_PATTERN,
   devToken,
   invalidNameChars,
   isAvatarId,
   isCountryCode,
+  isLegacyAvatarId,
+  LEGACY_AVATAR_IDS,
+  LEGACY_AVATAR_MAP,
   NAME_RULES,
   NO_AVATAR_ID,
+  normalizeAvatarId,
   normalizeForCompare,
   parseDevToken,
   RENAME_COOLDOWN_MS,
@@ -98,24 +105,76 @@ describe('normalizeForCompare', () => {
 });
 
 describe('avatars (spec §3.4)', () => {
-  it('has the 50 choosable avatars: av01–av51 without av36', () => {
-    expect(AVATAR_IDS).toHaveLength(50);
-    expect(new Set(AVATAR_IDS).size).toBe(50);
+  it('has the 101 choosable avatars of the catalog, once each, as ids the catalog allows', () => {
+    expect(AVATAR_IDS).toHaveLength(101);
+    expect(new Set(AVATAR_IDS).size).toBe(101);
+    for (const id of AVATAR_IDS) expect(id).toMatch(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/);
+    // The picker's first of each kind (people, animals, objects, food, nature, creatures, symbols).
+    expect(
+      ['noam', 'fox', 'coffee-cup', 'pickle', 'cactus', 'alien', 'eight'].map((id) =>
+        AVATAR_IDS.indexOf(id as AvatarId),
+      ),
+    ).toEqual([0, 12, 19, 53, 64, 74, 86]);
+  });
+
+  it('av00 means "no avatar" and is never chosen; the old pack is not chosen either', () => {
+    expect(NO_AVATAR_ID).toBe('av00');
+    expect(isAvatarId('av00')).toBe(false);
+    expect(isAvatarId('av01')).toBe(false);
+    expect(isAvatarId('av51')).toBe(false);
+    expect(isAvatarId('NOAM')).toBe(false);
+    expect(isAvatarId(1)).toBe(false);
+    expect(isAvatarId('noam')).toBe(true);
+    expect(isAvatarId('minus')).toBe(true);
+  });
+
+  it('keeps the 50 ids of the old pack: av01–av51 without av36', () => {
     const expected = Array.from({ length: 51 }, (_, i) => `av${String(i + 1).padStart(2, '0')}`).filter(
       (id) => id !== 'av36',
     );
-    expect([...AVATAR_IDS]).toEqual(expected);
+    expect([...LEGACY_AVATAR_IDS]).toEqual(expected);
+    expect(isLegacyAvatarId('av07')).toBe(true);
+    expect(isLegacyAvatarId('av36')).toBe(false);
+    expect(isLegacyAvatarId('av00')).toBe(false);
+    expect(isLegacyAvatarId('noam')).toBe(false);
   });
 
-  it('av00 means "no avatar" and is never chosen', () => {
-    expect(NO_AVATAR_ID).toBe('av00');
-    expect(isAvatarId('av00')).toBe(false);
-    expect(isAvatarId('av36')).toBe(false);
-    expect(isAvatarId('av52')).toBe(false);
-    expect(isAvatarId('AV01')).toBe(false);
-    expect(isAvatarId(1)).toBe(false);
-    expect(isAvatarId('av01')).toBe(true);
-    expect(isAvatarId('av51')).toBe(true);
+  it('maps every old avatar to a different new one', () => {
+    expect(Object.keys(LEGACY_AVATAR_MAP).sort()).toEqual([...LEGACY_AVATAR_IDS].sort());
+    const targets = Object.values(LEGACY_AVATAR_MAP);
+    for (const id of targets) expect(isAvatarId(id)).toBe(true);
+    expect(new Set(targets).size).toBe(LEGACY_AVATAR_IDS.length);
+  });
+
+  it('keeps the character of the old avatars that had one', () => {
+    expect(LEGACY_AVATAR_MAP.av39).toBe('professor'); // the gentleman
+    expect(LEGACY_AVATAR_MAP.av40).toBe('furry-monster'); // the chimpanzee
+    expect(LEGACY_AVATAR_MAP.av44).toBe('hatchling'); // the mouse
+    expect(LEGACY_AVATAR_MAP.av41).toBe('panda');
+    expect(LEGACY_AVATAR_MAP.av46).toBe('cat');
+    expect(LEGACY_AVATAR_MAP.av48).toBe('rabbit');
+    expect(LEGACY_AVATAR_MAP.av49).toBe('owl');
+    expect(LEGACY_AVATAR_MAP.av50).toBe('fox');
+  });
+
+  it('dresses every bot in an avatar one can choose: the same ids as the players', () => {
+    expect(BOT_LEVELS.map((l) => l.avatar)).toEqual([
+      'hatchling',
+      'fox',
+      'owl',
+      'professor',
+      'furry-monster',
+    ]);
+    for (const level of BOT_LEVELS)
+      expect([level.name, isAvatarId(level.avatar)]).toEqual([level.name, true]);
+  });
+
+  it('normalizes a stored id: current as is, old as its replacement, anything else as "no avatar"', () => {
+    expect(normalizeAvatarId('noam')).toBe('noam');
+    expect(normalizeAvatarId('coffee-cup')).toBe('coffee-cup');
+    for (const id of LEGACY_AVATAR_IDS) expect(normalizeAvatarId(id)).toBe(LEGACY_AVATAR_MAP[id]);
+    for (const v of ['av00', 'av36', 'av52', 'AV01', 'Noam', '', null, undefined, 7, {}, ['noam']])
+      expect(normalizeAvatarId(v)).toBe(NO_AVATAR_ID);
   });
 });
 

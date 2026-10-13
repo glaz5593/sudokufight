@@ -6,7 +6,6 @@ import {
   LEAGUES,
 } from '@sudoku-fight/engine';
 import {
-  isAvatarId,
   isCountryCode,
   type FavoriteInterference,
   type Leaderboard,
@@ -14,7 +13,7 @@ import {
   LEADERBOARD_TABS,
   type LeaderboardTab,
   type MyProgress,
-  NO_AVATAR_ID,
+  normalizeAvatarId,
   type PlayerCard,
   type PlayerStats,
   type PracticeResultsResponse,
@@ -38,8 +37,8 @@ const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFin
 const numOrNull = (v: unknown): number | null | undefined => (v === null ? null : isNum(v) ? v : undefined);
 const isStr = (v: unknown): v is string => typeof v === 'string';
 
-const avatarOf = (v: unknown): PublicPlayer['avatarId'] =>
-  isAvatarId(v) || v === NO_AVATAR_ID ? v : NO_AVATAR_ID;
+/** An old pack's id (an old cache) as its replacement; one this app doesn't have as the placeholder. */
+const avatarOf = (v: unknown): PublicPlayer['avatarId'] => normalizeAvatarId(v);
 const countryOf = (v: unknown): PublicPlayer['country'] => (isCountryCode(v) ? v : null);
 const leagueOf = (v: unknown): League | null => (LEAGUES.includes(v as League) ? (v as League) : null);
 

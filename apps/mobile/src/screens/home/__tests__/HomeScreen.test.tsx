@@ -17,6 +17,7 @@ import { HomeScreen } from '../HomeScreen';
 import { usePracticeStats } from '../practiceStats';
 import { renderApp } from '../testing/homeTesting';
 import { seedBotPractices, seedPractices } from '../testing/seed';
+import { avatarIdsIn } from '../../../avatars/testing/avatarTesting';
 
 type Mocks = typeof import('../testing/nativeMocks');
 
@@ -25,22 +26,7 @@ jest.mock('../../../game/storage', () => jest.requireActual<Mocks>('../testing/n
 jest.mock('../../../services/analytics', () => ({ track: jest.fn() }));
 jest.mock('expo-audio', () => jest.requireActual<Mocks>('../testing/nativeMocks').expoAudio);
 jest.mock('expo-haptics', () => jest.requireActual<Mocks>('../testing/nativeMocks').expoHaptics);
-// Every avatar a source of its own, so a test can tell which one an image shows (Metro's asset ids in the app).
-jest.mock('../../../assets/avatars', () => {
-  const actual = jest.requireActual<typeof import('../../../assets/avatars')>('../../../assets/avatars');
-  return {
-    ...actual,
-    AVATARS: Object.fromEntries(Object.keys(actual.AVATARS).map((id) => [id, { uri: id }])),
-  };
-});
 
-type Node = ReturnType<typeof screen.getByTestId>;
-/** The avatar ids of every image under an element (the mocked sources are `{ uri: id }`). */
-function avatarsIn(el: Node): string[] {
-  const sources = ([] as unknown[]).concat(el.props.source ?? []) as { uri?: unknown }[];
-  const own = sources.flatMap((s) => (typeof s?.uri === 'string' ? [s.uri] : []));
-  return [...own, ...el.children.flatMap((c) => (typeof c === 'string' ? [] : avatarsIn(c)))];
-}
 const hidden = { includeHiddenElements: true };
 
 const storage = jest.mocked(practiceStorageOrNull);
@@ -200,6 +186,13 @@ describe('Home (spec §4.3)', () => {
     expect(sounds).toHaveProp('accessibilityHint', 'מסך פיתוח: המועמד של כל צליל, לצד הצליל הנוכחי');
     await fireEvent.press(sounds);
     expect(app.pathname()).toBe('/dev/sounds');
+    await act(async () => {
+      router.back();
+    });
+    const avatars = await screen.findByRole('button', { name: 'אווטרים' });
+    expect(avatars).toHaveProp('accessibilityHint', 'מסך פיתוח: כל דמות עם כל הבעה וכל תנועה');
+    await fireEvent.press(avatars);
+    expect(app.pathname()).toBe('/dev/avatars');
   });
 
   it('has no dev links in release builds', async () => {
@@ -256,7 +249,7 @@ describe('Home with practices against a bot (stage 5)', () => {
     expect(rows[0]).toHaveProp('accessibilityLabel', expect.stringMatching(/^אימון מול בוט · קשה, הופסק, /));
 
     // The bot's avatar, with the result badge of Dir-C-Home; none on a game that did not finish.
-    expect(rows.map(avatarsIn)).toEqual([['av42'], ['av39'], ['av44']]);
+    expect(rows.map(avatarIdsIn)).toEqual([['fox'], ['professor'], ['hatchling']]);
     expect(within(rows[2]!).getByTestId('result-win', hidden)).toHaveTextContent('נ');
     expect(within(rows[1]!).getByTestId('result-loss', hidden)).toHaveTextContent('ה');
     expect(within(rows[0]!).queryByTestId('result-win', hidden)).toBeNull();

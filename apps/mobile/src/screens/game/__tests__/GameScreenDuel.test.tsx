@@ -11,6 +11,7 @@ import { GameScreen, type GameSession } from '../GameScreen';
 import { isolateName } from '../hit';
 import { useReactionMutes } from '../reactions';
 import { type Duel, duel } from '../testing/duel';
+import { avatarIdsIn } from '../../../avatars/testing/avatarTesting';
 
 jest.mock(
   'react-native-safe-area-context',
@@ -22,14 +23,6 @@ jest.mock('../../../services/feedback', () => ({
   preloadCues: jest.fn(),
   cueCountUp: jest.fn(() => jest.fn()),
 }));
-// Every avatar a source of its own, so a test can tell which one an image shows (Metro's asset ids in the app).
-jest.mock('../../../assets/avatars', () => {
-  const actual = jest.requireActual<typeof import('../../../assets/avatars')>('../../../assets/avatars');
-  return {
-    ...actual,
-    AVATARS: Object.fromEntries(Object.keys(actual.AVATARS).map((id) => [id, { uri: id }])),
-  };
-});
 const feedback = jest.requireMock<{ cue: jest.Mock; preloadCues: jest.Mock; cueCountUp: jest.Mock }>(
   '../../../services/feedback',
 );
@@ -62,17 +55,6 @@ async function layOut() {
   await layout('duel-hud-theirs', 0, 0, 159, 160);
   await layout('board-room', 0, 288, 390, 358);
   await layout('board-slot', 16, 0, 358, 358);
-}
-
-interface Node {
-  props: Record<string, unknown>;
-  children: readonly (Node | string)[];
-}
-/** The avatar ids of every image under an element (the mocked sources are `{ uri: id }`; expo-image lists them). */
-function avatarsIn(el: Node): string[] {
-  const sources = ([] as unknown[]).concat(el.props.source ?? []) as { uri?: unknown }[];
-  const own = sources.flatMap((s) => (typeof s?.uri === 'string' ? [s.uri] : []));
-  return [...own, ...el.children.flatMap((c) => (typeof c === 'string' ? [] : avatarsIn(c)))];
 }
 
 const theirScore = () => screen.getByTestId('card-opponent-score', hidden);
@@ -133,17 +115,17 @@ describe('GameScreen against a bot (spec §6.8, §9)', () => {
     await act(async () => g.bot.select(a));
     const cell = screen.getByTestId(`cell-${name}`);
     expect(cell).toHaveProp('accessibilityLabel', `${name}, ריקה, נעולה על ידי Mr. Hoot, 8 שניות`);
-    expect(avatarsIn(within(cell).getByTestId('cell-avatar', hidden))).toEqual(['av49']);
-    expect(avatarsIn(screen.getByTestId('card-opponent'))).toEqual(['av49']);
+    expect(avatarIdsIn(within(cell).getByTestId('cell-avatar', hidden))).toEqual(['owl']);
+    expect(avatarIdsIn(screen.getByTestId('card-opponent'))).toEqual(['owl']);
     expect(
       screen.getByLabelText(`Mr. Hoot · 0 נקודות · בוחר ${name}, אין טעויות, בוט, רמה 3, מתקדם, מחובר`),
     ).toBeOnTheScreen();
   });
 
   it('my card shows my profile’s avatar; the bot’s lock never shows mine', async () => {
-    useProfile.setState({ avatarId: 'av07' });
+    useProfile.setState({ avatarId: 'lava-lamp' });
     const g = await show();
-    expect(avatarsIn(screen.getByTestId('card-me'))).toEqual(['av07']);
+    expect(avatarIdsIn(screen.getByTestId('card-me'))).toEqual(['lava-lamp']);
     await fireEvent.press(screen.getByTestId(`cell-${cellName(g.cells[0]!)}`));
     expect(
       within(screen.getByTestId(`cell-${cellName(g.cells[0]!)}`)).queryByTestId('cell-avatar', hidden),
@@ -165,12 +147,12 @@ describe('a ranked duel’s profiles (spec §6.8)', () => {
       subscribe: (listener) => s.subscribe(listener),
       endPractice: () => s.endPractice(),
       profiles: {
-        [s.playerId]: { avatarId: 'av05', country: 'IL' },
-        [opponent]: { avatarId: 'av12', country: 'DE' },
+        [s.playerId]: { avatarId: 'sun', country: 'IL' },
+        [opponent]: { avatarId: 'maya', country: 'DE' },
       },
     };
     await render(<GameScreen session={session} onEnded={jest.fn()} />);
-    expect(avatarsIn(screen.getByTestId('card-opponent'))).toEqual(['av12']);
+    expect(avatarIdsIn(screen.getByTestId('card-opponent'))).toEqual(['maya']);
     expect(within(screen.getByTestId('card-opponent')).getByTestId('flag-DE', hidden)).toBeTruthy();
     expect(within(screen.getByTestId('card-me')).getByTestId('flag-IL', hidden)).toBeTruthy();
   });

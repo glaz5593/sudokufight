@@ -64,7 +64,7 @@ Earliest public Play release from today: about 3 to 4 weeks, almost all of it wa
 
 ### A1. Before you start: password manager, personal Google account, support mailbox
 
-- [ ] **A1** Password manager ready, personal Google account chosen, support mailbox created
+- [x] **A1** Password manager ready, personal Google account chosen, support mailbox created
 
 **Why.** You are about to create about 10 passwords and secrets. The Google account you use for Play Console and Firebase becomes the owner of the app forever, and the support email is published on Google Play and on the legal pages.
 
@@ -80,7 +80,7 @@ Earliest public Play release from today: about 3 to 4 weeks, almost all of it wa
 
 ### A2. Google Play Console developer account (start first: verification takes days)
 
-- [ ] **A2** Play Console account created, paid, identity verified, Android device verified
+- [x] **A2** Play Console account created, paid, identity verified, Android device verified
 
 **Why.** Goal 3 needs it, and Google verifies your identity before you can create apps. With a **personal** account created after 13 Nov 2023, Google also requires a closed test with at least 12 testers for 14 days before production (Part F).
 
@@ -109,7 +109,7 @@ Earliest public Play release from today: about 3 to 4 weeks, almost all of it wa
 
 ### A3. Expo account (for EAS Build)
 
-- [ ] **A3** Expo account created
+- [x] **A3** Expo account created
 
 **Why.** EAS builds the APK and the AAB in the cloud, and keeps the Android signing key.
 
@@ -122,7 +122,7 @@ Earliest public Play release from today: about 3 to 4 weeks, almost all of it wa
 
 ### A4. Fly.io account, with a card
 
-- [ ] **A4** Fly.io account created and a payment method added
+- [x] **A4** Fly.io account created and a payment method added
 
 **Why.** Fly runs the game server. There is no free tier: the trial ends after 2 machine-hours or 7 days, whichever comes first, and our server runs non-stop, so without a card it would stop within hours.
 
@@ -135,7 +135,7 @@ Earliest public Play release from today: about 3 to 4 weeks, almost all of it wa
 
 ### A5. Neon account
 
-- [ ] **A5** Neon account created
+- [x] **A5** Neon account created
 
 **Why.** Neon hosts the two Postgres databases (staging and production).
 
@@ -147,7 +147,7 @@ Earliest public Play release from today: about 3 to 4 weeks, almost all of it wa
 
 ### A6. (Optional) Sentry account
 
-- [ ] **A6** Sentry account created, or decided to skip for now
+- [x] **A6** Sentry account created, or decided to skip for now
 
 **Why.** Server error reports by email. The server runs fine without it (the log then says `Sentry off (no SENTRY_DSN)`); you can add it any time.
 
@@ -157,7 +157,7 @@ Earliest public Play release from today: about 3 to 4 weeks, almost all of it wa
 
 ### A7. Start collecting 15 to 20 testers (for the 14-day closed test)
 
-- [ ] **A7** A list of at least 15 people who agreed to test
+- [x] **A7** A list of at least 15 people who agreed to test
 
 **Why.** Google needs **at least 12 testers opted in for 14 days in a row**. People who leave early don't count, so recruit 15 to 20. This is the slowest human part; start now.
 
@@ -198,7 +198,7 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 
 ### B1. Create the Firebase project, with Google Analytics
 
-- [ ] **B1** Project "Sudoku Fight" exists, with Analytics; Project ID written down
+- [x] **B1** Project "Sudoku Fight" exists, with Analytics; Project ID written down
 
 **Why.** One project serves staging and production. Its Project ID goes into the server (`FIREBASE_PROJECT_ID`).
 
@@ -214,7 +214,7 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 
 ### B2. Email/password sign-in, and Hebrew emails
 
-- [ ] **B2** Email/Password enabled; verification and reset emails in Hebrew
+- [x] **B2** Email/Password enabled; verification and reset emails in Hebrew
 
 **Steps**
 1. Left menu: **Authentication** (it may sit under "Build" or "Security"; or type "Authentication" in the console's search box) → **Get started**.
@@ -228,7 +228,7 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 
 ### B3. Add the Android app and save `google-services.json`
 
-- [ ] **B3** Android app registered; the file is in `apps/mobile/config/firebase/` and git ignores it
+- [x] **B3** Android app registered; the file is in `apps/mobile/config/firebase/` and git ignores it
 
 **Steps**
 1. **Project Overview** → **Add app** → the Android icon.
@@ -259,7 +259,7 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 
 ### B4. Crashlytics and Analytics settings
 
-- [ ] **B4** Crashlytics enabled; Google signals off; data retention 2 months; no Ads/AdMob link
+- [x] **B4** Crashlytics enabled; Google signals off; data retention 2 months; no Ads/AdMob link
 
 **Steps**
 1. Console search box → **Crashlytics** → choose the Android app → **Enable Crashlytics** if the button appears. It will "wait for data" until a release build reports; that's normal (preview and production builds report, Development Builds don't).
@@ -270,7 +270,7 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 
 ### B5. Hand over to Claude
 
-- [ ] **B5** Claude has the Project ID
+- [x] **B5** Claude has the Project ID
 
 **Then tell Claude:** "Firebase is ready. Project ID = `<your project id>`. The file is in `apps/mobile/config/firebase/`." (The Project ID is not a secret.) Claude uses it in D4/D11 and uploads the file to EAS in E2.
 
@@ -298,11 +298,18 @@ Only the ones that block these three goals. Everything else in `docs/DECISIONS-P
 - DECISIONS-PENDING 2.8: "Play with a friend by code" in V1. Not required, but it makes the closed test easier (testers can meet without waiting in the ranked queue).
 - DECISIONS-PENDING 1.7: production database on Neon (the recommendation, and what this list assumes) or Fly Postgres. With Fly Postgres, D9 and the puzzle loading in D12 change (`fly proxy` instead of a direct connection, `docs/DEPLOY-PRODUCTION.md` §2 and §7), and Claude must remove Neon from the privacy policy first.
 
-- [ ] **C1** server address decided
-- [ ] **C2** legal email and operator name decided
-- [ ] **C3** avatars (and 690 puzzles) license settled
-- [ ] **C4** report/block decided
-- [ ] **C5** store name decided
+- [x] **C1** server address decided
+- [x] **C2** legal email and operator name decided
+- [x] **C3** avatars (and 690 puzzles) license settled
+- [x] **C4** report/block decided
+- [x] **C5** store name decided
+
+**Decided 2026-10-12:**
+- **C1:** stay on `sudoku-fight-prod.fly.dev` (already in `apps/mobile/eas.json`).
+- **C2:** `LEGAL_CONTACT_EMAIL=mosh.gl.dev@gmail.com`, `LEGAL_OPERATOR_NAME=Moshe Glazman` (filled in D4 and D11).
+- **C3:** the avatars are our own (`packages/avatars`); the old 50 "freebie" avatars are removed from the app. The 690 "fast" puzzles: verified, Kaggle "1 million Sudoku games" by Kyubyong Park (`bryanpark/sudoku`), license **CC0: Public Domain**; our first puzzle is that file's first row.
+- **C4:** option A (report a player + block), built by Claude.
+- **C5:** `Sudoku Fight: Live PvP Sudoku`.
 
 **Then tell Claude** your answers. Claude updates the spec table, `eas.json` (C1), the legal settings (C2), and implements C3/C4 if needed.
 
@@ -403,15 +410,15 @@ $db = Read-Host "Paste the STAGING Neon connection string"
 $admin = node -e "console.log(require('crypto').randomBytes(18).toString('base64url'))"
 $session = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 Write-Host "Staging admin password, save it in the password manager NOW: $admin"
-fly secrets set --stage -a sudoku-fight-staging "DATABASE_URL=$db" "ADMIN_PASSWORD=$admin" "ADMIN_SESSION_SECRET=$session" "FIREBASE_PROJECT_ID=<your-firebase-project-id>"
+fly secrets set --stage -a sudoku-fight-staging "DATABASE_URL=$db" "ADMIN_PASSWORD=$admin" "ADMIN_SESSION_SECRET=$session" "FIREBASE_PROJECT_ID=sudoku-fight-dd416"
 fly secrets list -a sudoku-fight-staging
 Remove-Variable db, admin, session
 ```
-Replace `<your-firebase-project-id>` with the Project ID from B1 (it's not a secret).
+The Project ID (`sudoku-fight-dd416`, from B1) is filled in; it is not a secret.
 
 Optional for staging (they remove the "draft" banner from the legal pages; once C2 is decided, Claude can set these for you since they're public anyway):
 ```powershell
-fly secrets set --stage -a sudoku-fight-staging "LEGAL_CONTACT_EMAIL=<support mailbox>" "LEGAL_OPERATOR_NAME=<operator name>"
+fly secrets set --stage -a sudoku-fight-staging "LEGAL_CONTACT_EMAIL=mosh.gl.dev@gmail.com" "LEGAL_OPERATOR_NAME=Moshe Glazman"
 ```
 
 **You're done when** `fly secrets list` shows the 4 names (values are never shown, only digests). Showing that output to Claude is safe.
@@ -542,7 +549,7 @@ $db = Read-Host "Paste the PRODUCTION Neon connection string"
 $admin = node -e "console.log(require('crypto').randomBytes(18).toString('base64url'))"
 $session = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 Write-Host "PRODUCTION admin password, save it in the password manager NOW: $admin"
-fly secrets set --stage -a sudoku-fight-prod "DATABASE_URL=$db" "ADMIN_PASSWORD=$admin" "ADMIN_SESSION_SECRET=$session" "FIREBASE_PROJECT_ID=<your-firebase-project-id>" "LEGAL_CONTACT_EMAIL=<support mailbox>" "LEGAL_OPERATOR_NAME=<operator name>"
+fly secrets set --stage -a sudoku-fight-prod "DATABASE_URL=$db" "ADMIN_PASSWORD=$admin" "ADMIN_SESSION_SECRET=$session" "FIREBASE_PROJECT_ID=sudoku-fight-dd416" "LEGAL_CONTACT_EMAIL=mosh.gl.dev@gmail.com" "LEGAL_OPERATOR_NAME=Moshe Glazman"
 fly secrets list -a sudoku-fight-prod
 Remove-Variable db, admin, session
 ```
@@ -857,7 +864,7 @@ Order: F1 to F5 set up the store page and forms; F6 and F7 put the first build o
 
 Left menu **Grow users → Store presence → Store settings** (or from the Dashboard checklist):
 - **App category:** Game → **Puzzle** (the alternative is Board). **Tags:** up to 5 from Play's list; `docs/store/LISTING-GOOGLE.md` §2 suggests Sudoku, Multiplayer, Puzzle, Logic, Competitive (pick the closest names Play offers).
-- **Contact details:** Email = the support mailbox (public). Website optional. Phone: leave empty.
+- **Contact details:** Email = the support mailbox, `mosh.gl.dev@gmail.com` (public). Website optional. Phone: leave empty.
 
 ### F3. Main store listing: texts in English and Hebrew
 
@@ -1160,10 +1167,10 @@ The full list is in `docs/RELEASE-CHECKLIST.md` (stages ב, ג, ז, ח, יא) wi
 |---|---|
 | Android package / iOS bundle ID | `com.mosheg.sudokufight` |
 | Name under the icon | `Sudoku Fight` (`name` in `apps/mobile/app.json`) |
-| Play listing name | `Sudoku Fight: Live PvP Sudoku` (pending C5) |
+| Play listing name | `Sudoku Fight: Live PvP Sudoku` (C5, decided) |
 | Expo slug / scheme | `sudoku-fight` / `sudokufight` |
 | Visible version | `0.1.0` (`app.json`); version code kept on EAS, auto-incremented by production builds |
-| Firebase project | "Sudoku Fight", Project ID from B1 (one project for staging and production) |
+| Firebase project | "Sudoku Fight", Project ID `sudoku-fight-dd416` (one project for staging and production) |
 | EAS project | `@<your Expo username>/sudoku-fight`, project ID (UUID) in `apps/mobile/app.json` → `extra.eas.projectId` (E1) |
 | Git remote | https://github.com/glaz5593/sudokufight |
 
@@ -1174,7 +1181,7 @@ The full list is in `docs/RELEASE-CHECKLIST.md` (stages ב, ג, ז, ח, יא) wi
 | Fly app | `sudoku-fight-staging` | `sudoku-fight-prod` |
 | Config file | `fly.toml` | `fly.production.toml` |
 | Deploy | `fly deploy --ha=false` | `fly deploy --config fly.production.toml --ha=false` |
-| Address | https://sudoku-fight-staging.fly.dev | https://sudoku-fight-prod.fly.dev (or `api.<domain>`, C1) |
+| Address | https://sudoku-fight-staging.fly.dev | https://sudoku-fight-prod.fly.dev (C1: stays on fly.dev) |
 | Machine | 1 x shared-cpu-1x, 512 MB, `fra` | same |
 | Neon project | `sudoku-fight-staging`, AWS Europe (Frankfurt) | `sudoku-fight-prod`, same region |
 | Used by | `preview` APK | `production` AAB (Play) |
@@ -1195,8 +1202,8 @@ The full list is in `docs/RELEASE-CHECKLIST.md` (stages ב, ג, ז, ח, יא) wi
 | `ADMIN_PASSWORD` | `fly secrets` | generated (D4/D11), at least 12 characters, not `sudoku-admin-dev` | yes |
 | `ADMIN_SESSION_SECRET` | `fly secrets` | generated, at least 32 characters (64 hex) | yes |
 | `FIREBASE_PROJECT_ID` | `fly secrets` (**not** `fly.toml`: a test forbids it) | Firebase → Project settings → Project ID | yes |
-| `LEGAL_CONTACT_EMAIL` | `fly secrets` | support mailbox (C2) | yes for production |
-| `LEGAL_OPERATOR_NAME` | `fly secrets` | operator name (C2) | yes for production |
+| `LEGAL_CONTACT_EMAIL` | `fly secrets` | `mosh.gl.dev@gmail.com` (C2) | yes for production |
+| `LEGAL_OPERATOR_NAME` | `fly secrets` | `Moshe Glazman` (C2) | yes for production |
 | `SENTRY_DSN` | `fly secrets` | Sentry → Project settings → Client Keys (D8) | optional |
 | `INVITE_URL` | `fly secrets` | the "invite friends" link [D27] | optional |
 | `GIT_SHA` | `fly deploy --env GIT_SHA=$(git rev-parse --short HEAD)` | the deployed commit | optional |
@@ -1209,7 +1216,7 @@ The full list is in `docs/RELEASE-CHECKLIST.md` (stages ב, ג, ז, ח, יא) wi
 |---|---|---|---|---|
 | `development` | Development Build (dev client) | internal | `development` | whatever `apps/mobile/.env.local` says (Metro on this PC) |
 | `preview` | **APK** | internal | `preview` | `sudoku-fight-staging.fly.dev`, port 443, TLS |
-| `production` | **AAB** | store | `production` | `sudoku-fight-prod.fly.dev`, port 443, TLS (C1 may change it); auto-increments the version code |
+| `production` | **AAB** | store | `production` | `sudoku-fight-prod.fly.dev`, port 443, TLS (C1: fly.dev); auto-increments the version code |
 | submit `production` (Android) | | track `internal`, release status `draft` | | |
 
 | EAS variable | Type / visibility | Environments | From |

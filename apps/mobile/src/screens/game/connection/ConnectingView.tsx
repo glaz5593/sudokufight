@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import { useReadyFace } from '../../../avatars/useFaces';
 import { Icon } from '../../../components/Icon';
 import { Avatar } from '../../../components/player/Avatar';
 import { Flag } from '../../../components/player/Flag';
@@ -146,6 +147,8 @@ function PlayerChip({ player: p, testID }: { player: LoadingPlayer; testID: stri
           })
         : t('connection.connecting.rating', { rating: Math.round(p.rating) });
   const state = p.ready ? t('connection.connecting.ready') : t('connection.connecting.joining');
+  // In the room: a smile (and a nod as it turns ready).
+  const face = useReadyFace(p.ready);
   return (
     <View
       style={styles.chip}
@@ -156,7 +159,15 @@ function PlayerChip({ player: p, testID }: { player: LoadingPlayer; testID: stri
         .join(t('player:listSep'))}
       testID={testID}
     >
-      <Avatar avatarId={p.avatarId} size="compact" colorIndex={p.colorIndex} backdrop={color.surface} />
+      <Avatar
+        avatarId={p.avatarId}
+        size="compact"
+        colorIndex={p.colorIndex}
+        backdrop={color.surface}
+        expression={face.expression}
+        reaction={face.reaction}
+        testID={`${testID}-avatar`}
+      />
       <View style={styles.nameRow}>
         <SeatGlyph colorIndex={p.colorIndex} size={space[5]} />
         <Text style={styles.name} numberOfLines={1}>

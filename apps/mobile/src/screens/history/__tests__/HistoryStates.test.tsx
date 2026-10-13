@@ -50,7 +50,7 @@ async function show(practice: () => Promise<PracticeRepo | null>, api: HistoryAp
       onOpen={jest.fn()}
       onPlay={onPlay}
       onTab={jest.fn()}
-      myAvatar="av07"
+      myAvatar="lava-lamp"
       now={() => T0 + 2 * 86_400_000}
     />,
   );

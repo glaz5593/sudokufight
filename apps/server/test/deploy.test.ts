@@ -297,6 +297,7 @@ describe('the Docker build context (.dockerignore)', () => {
       'package-lock.json',
       'packages/engine/package.json',
       'packages/protocol/package.json',
+      'packages/avatars/package.json',
       'apps/server/package.json',
       'apps/admin/package.json',
       'apps/server/drizzle/meta/_journal.json',

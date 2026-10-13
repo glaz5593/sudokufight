@@ -74,7 +74,7 @@ describe('"משחק חדש" (spec §5.1)', () => {
   });
 
   it('the header ends with me, as on the Modes board: my name (isolated) and my avatar', async () => {
-    useProfile.setState({ name: 'MosheG', avatarId: 'av07' });
+    useProfile.setState({ name: 'MosheG', avatarId: 'lava-lamp' });
     await renderApp('/modes');
     const me = screen.getByTestId('modes-me');
     expect(me).toHaveTextContent('⁨MosheG⁩');

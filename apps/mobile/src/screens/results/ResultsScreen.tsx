@@ -284,7 +284,11 @@ function ResultsBody({
           </Animated.View>
         ) : model.opponents.length ? (
           <Animated.View entering={enter.section(1)}>
-            <OpponentsSection opponents={model.opponents} onOpenPlayer={ranked ? onOpenPlayer : undefined} />
+            <OpponentsSection
+              opponents={model.opponents}
+              outcome={model.outcome}
+              onOpenPlayer={ranked ? onOpenPlayer : undefined}
+            />
           </Animated.View>
         ) : null}
 

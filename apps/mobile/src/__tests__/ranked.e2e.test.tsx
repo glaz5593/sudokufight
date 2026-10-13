@@ -136,11 +136,14 @@ const hidden = { includeHiddenElements: true };
 const tracked = jest.mocked(track);
 let auth: TestAuth;
 
-/** The ranked account on this phone, as matchmaking shows it (TEST_PLAYER: Tester, av05, IL, 1200 provisional). */
+/**
+ * The ranked account on this phone, as matchmaking shows it (TEST_PLAYER: Tester, sun, IL, 1200
+ * provisional).
+ */
 const ME_MATCH: MatchPlayer = {
   id: ME,
   name: 'Tester',
-  avatarId: 'av05',
+  avatarId: 'sun',
   country: 'IL',
   rating: 1200,
   provisional: true,
@@ -148,7 +151,7 @@ const ME_MATCH: MatchPlayer = {
 const NINA: MatchPlayer = {
   id: OPP,
   name: 'NinaVolt',
-  avatarId: 'av12',
+  avatarId: 'maya',
   country: 'DE',
   rating: 1305,
   provisional: false,
@@ -156,7 +159,7 @@ const NINA: MatchPlayer = {
 const ZIV: MatchPlayer = {
   id: 'p3',
   name: 'Ziv',
-  avatarId: 'av20',
+  avatarId: 'omer',
   country: 'FR',
   rating: 1250,
   provisional: false,
@@ -164,7 +167,7 @@ const ZIV: MatchPlayer = {
 const LEA: MatchPlayer = {
   id: 'p4',
   name: 'Lea',
-  avatarId: 'av31',
+  avatarId: 'sudoku-board',
   country: 'US',
   rating: 1190,
   provisional: false,

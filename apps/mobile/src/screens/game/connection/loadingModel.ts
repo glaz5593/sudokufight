@@ -1,6 +1,6 @@
 import type { GameType, PlayerId } from '@sudoku-fight/engine';
 
-import { type AvatarId, EMPTY_AVATAR, isAvatarId } from '../../../assets/avatars';
+import { type AvatarIdOrNone, normalizeAvatarId } from '../../../avatars';
 import { CONNECTING_STEPS, type ConnectingStep } from './connectionModel';
 
 /**
@@ -29,7 +29,7 @@ export interface LoadingProfile {
 export interface LoadingPlayer {
   id: PlayerId;
   name: string;
-  avatarId: AvatarId;
+  avatarId: AvatarIdOrNone;
   country: string | null;
   rating: number | null;
   provisional: boolean;
@@ -95,7 +95,7 @@ export function matchLoadingOf({
   const players = [...mine, ...others].map((p, k): LoadingPlayer => ({
     id: p.id,
     name: p.name,
-    avatarId: isAvatarId(p.avatarId) ? p.avatarId : EMPTY_AVATAR,
+    avatarId: normalizeAvatarId(p.avatarId),
     country: p.country,
     rating: typeof p.rating === 'number' && Number.isFinite(p.rating) ? p.rating : null,
     provisional: p.provisional ?? false,

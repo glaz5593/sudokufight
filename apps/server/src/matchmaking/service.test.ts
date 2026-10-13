@@ -111,7 +111,7 @@ function setup({
         return Promise.resolve(
           p && {
             name: userId,
-            avatarId: 'av07',
+            avatarId: 'lava-lamp',
             country: 'IL',
             rating: 1200,
             games: 0,
@@ -294,7 +294,7 @@ describe('a match', () => {
     const t = setup({
       players: {
         ana: { rating: 1210, country: 'IL' },
-        ben: { rating: 1190, avatarId: 'av12', country: 'DE' },
+        ben: { rating: 1190, avatarId: 'maya', country: 'DE' },
       },
     });
     const ana = await t.join('ana');
@@ -317,8 +317,8 @@ describe('a match', () => {
       serverTime: T0 + 2500,
     });
     expect(a.players).toEqual([
-      { id: 'ana', name: 'ana', avatarId: 'av07', country: 'IL', rating: 1210, provisional: true },
-      { id: 'ben', name: 'ben', avatarId: 'av12', country: 'DE', rating: 1190, provisional: true },
+      { id: 'ana', name: 'ana', avatarId: 'lava-lamp', country: 'IL', rating: 1210, provisional: true },
+      { id: 'ben', name: 'ben', avatarId: 'maya', country: 'DE', rating: 1190, provisional: true },
     ]);
     expect(b.players).toEqual(a.players);
     expect(b.playerId).toBe('ben');
@@ -519,7 +519,7 @@ describe('3 and 4 players (stage 10, spec §10)', () => {
   });
 
   it('a match of 3 forms only when the group is full; whoever is found waits for the rest', async () => {
-    const t = setup({ players: { ben: { rating: 1220, avatarId: 'av12' }, cyd: { rating: 1190 } } });
+    const t = setup({ players: { ben: { rating: 1220, avatarId: 'maya' }, cyd: { rating: 1190 } } });
     const ana = await t.join('ana', 'fast-3p');
     t.clock.advance(S);
     const ben = await t.join('ben', 'fast-3p');
@@ -533,9 +533,9 @@ describe('3 and 4 players (stage 10, spec §10)', () => {
     expect(found).toMatchObject({ matchId: 'match-1', queueKey: 'fast-3p', playerId: 'ana', rematch: false });
     // Everyone, in seat order (the order of service), with their profiles; one room, a seat each.
     expect(found.players.map((p) => [p.id, p.rating, p.avatarId])).toEqual([
-      ['ana', 1200, 'av07'],
-      ['ben', 1220, 'av12'],
-      ['cyd', 1190, 'av07'],
+      ['ana', 1200, 'lava-lamp'],
+      ['ben', 1220, 'maya'],
+      ['cyd', 1190, 'lava-lamp'],
     ]);
     for (const s of [ben, cyd]) expect(s.last('found').players).toEqual(found.players);
     const rooms = new Set([ana, ben, cyd].map((s) => s.last('found').reservation.roomId));

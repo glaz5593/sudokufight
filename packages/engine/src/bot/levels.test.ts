@@ -17,13 +17,19 @@ describe('the level table (spec §9)', () => {
     expect(
       BOT_LEVELS.map((l) => [l.level, l.name, l.avatar, l.thinkMs.min, l.thinkMs.max, l.mistakeRate]),
     ).toEqual([
-      [1, 'Pip', 'av44', 8000, 11000, 0.15],
-      [2, 'Biscuit', 'av42', 6000, 9000, 0.09],
-      [3, 'Mr. Hoot', 'av49', 4000, 7000, 0.05],
-      [4, 'Maestro', 'av39', 3000, 5000, 0.02],
-      [5, 'Overlord', 'av40', 2000, 4000, 0.01],
+      [1, 'Pip', 'hatchling', 8000, 11000, 0.15],
+      [2, 'Biscuit', 'fox', 6000, 9000, 0.09],
+      [3, 'Mr. Hoot', 'owl', 4000, 7000, 0.05],
+      [4, 'Maestro', 'professor', 3000, 5000, 0.02],
+      [5, 'Overlord', 'furry-monster', 2000, 4000, 0.01],
     ]);
     expect(BOT_LEVEL_IDS).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('dresses every level in a different catalog avatar (protocol checks they are choosable ids)', () => {
+    const avatars = BOT_LEVELS.map((l) => l.avatar);
+    expect(new Set(avatars).size).toBe(BOT_LEVELS.length);
+    for (const id of avatars) expect(id).toMatch(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/);
   });
 
   it('interferes per [D40]: L1 at most once a game, L2 when 15 behind, L3 when 10 behind, L4 when behind, L5 always', () => {

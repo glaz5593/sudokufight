@@ -7,7 +7,8 @@
 # Stages:
 #   manifests  the package.json files and the lockfile only: the npm layers stay cached until a dependency changes
 #   build      the dependencies of the server and the admin site (dev ones too), then both builds:
-#              apps/server/dist/index.cjs (esbuild; the engine and the protocol are inside) and apps/admin/dist (Vite)
+#              apps/server/dist/index.cjs (esbuild; the engine and the protocol are inside) and apps/admin/dist (Vite;
+#              the avatars are inside, the site draws them)
 #   prod-deps  the server's production dependencies, nothing else
 #   runtime    node:24-slim, as the `node` user: the bundle, the migrations, the admin site and the puzzle bank
 #
@@ -26,6 +27,7 @@ ENV npm_config_audit=false npm_config_fund=false npm_config_update_notifier=fals
 COPY package.json package-lock.json ./
 COPY packages/engine/package.json packages/engine/
 COPY packages/protocol/package.json packages/protocol/
+COPY packages/avatars/package.json packages/avatars/
 COPY apps/server/package.json apps/server/
 COPY apps/admin/package.json apps/admin/
 
@@ -38,6 +40,7 @@ RUN --mount=type=cache,target=/root/.npm \
 COPY tsconfig.base.json ./
 COPY packages/engine packages/engine
 COPY packages/protocol packages/protocol
+COPY packages/avatars packages/avatars
 COPY apps/server apps/server
 COPY apps/admin apps/admin
 RUN npm run build --workspace @sudoku-fight/server \

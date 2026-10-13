@@ -64,7 +64,7 @@ async function show(practice: () => Promise<PracticeRepo | null>, api: HistoryAp
       onOpen={onOpen}
       onPlay={onPlay}
       onTab={onTab}
-      myAvatar="av07"
+      myAvatar="lava-lamp"
       now={() => T0 + 2 * 86_400_000}
     />,
   );
@@ -189,7 +189,7 @@ describe('stage 12: a ranked game’s opponent opens their player card', () => {
         onOpenPlayer={onOpenPlayer}
         onPlay={jest.fn()}
         onTab={jest.fn()}
-        myAvatar="av07"
+        myAvatar="lava-lamp"
         now={() => T0 + 2 * 86_400_000}
       />,
     );
@@ -246,7 +246,7 @@ describe('“done” (work plan stage 11): from the history to the replay, step 
     await fireEvent.press(screen.getByTestId('history-card-ranked-1'));
     await fireEvent.press(screen.getByTestId('history-card-bot-1'));
     const [rankedEntry, botEntry] = onOpen.mock.calls.map(([e]) => e);
-    const deps: ReplaySourceDeps = { practice: async () => repo, ranked: api, myAvatar: 'av07' };
+    const deps: ReplaySourceDeps = { practice: async () => repo, ranked: api, myAvatar: 'lava-lamp' };
     await stepThrough(rankedEntry!, deps, ranked.log);
     expect(api.calls).toContain('replay:ranked-1');
     await stepThrough(botEntry!, deps, bot.log);

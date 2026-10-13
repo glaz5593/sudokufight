@@ -1,6 +1,7 @@
 import type { AdminCheatFlag, AdminRating, AdminUserDetail, AdminUserGame } from '@sudoku-fight/protocol';
 import { useCallback } from 'react';
 
+import { AvatarImg } from '../components/AvatarImg';
 import { type Column, DataTable } from '../components/DataTable';
 import {
   AsyncView,
@@ -148,7 +149,12 @@ function UserBody({ data }: { data: AdminUserDetail }) {
             { label: t('col.country'), value: data.country ?? none },
             {
               label: t('col.avatar'),
-              value: data.avatarId ? <Ltr className="mono">{data.avatarId}</Ltr> : none,
+              value: (
+                <span className="avatar-fact">
+                  <AvatarImg id={data.avatarId} size={56} />
+                  {data.avatarId ? <Ltr className="mono">{data.avatarId}</Ltr> : none}
+                </span>
+              ),
             },
             { label: t('col.joined'), value: <DateTime ms={data.createdAt} /> },
             { label: t('col.lastSeen'), value: <RelativeTime ms={data.lastSeen} /> },

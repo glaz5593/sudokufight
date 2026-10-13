@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
-import type { AvatarId } from '../../../assets/avatars';
+import { AVATAR_REACTIONS, type AvatarIdOrNone } from '../../../avatars';
 import { HIT_FADE_OUT_MS } from '../../../components/interference/config';
 import { hitAlpha } from '../../../components/interference/hitClock';
 import { Avatar } from '../../../components/player';
@@ -27,7 +27,7 @@ export interface HitBannerProps {
   seconds: number;
   /** What a screen reader says when it reaches the banner (title, subtitle and the time left). */
   label: string;
-  fromAvatar?: AvatarId | null;
+  fromAvatar?: AvatarIdOrNone | null;
   /** The sender's seat colour as this phone shows it: the avatar's frame. */
   fromColorIndex: number;
   /** ms into the hit, from its clock: the ring drains with it, and the banner fades out at the end. */
@@ -48,7 +48,7 @@ const NEVER = ReduceMotion.Never;
 
 /**
  * The banner the hit player sees (spec §7.4; components.md §15.2; motion.md `hit.banner`): the sender's avatar
- * in their seat colour, "NinaVolt שלח/ה לך זיקוקים!", "המשחק ממשיך", and a gold ring counting the 5 s down.
+ * in their seat colour (with the sender's face, a wink: AVATAR_REACTIONS.moods.sender), "NinaVolt שלח/ה לך זיקוקים!", "המשחק ממשיך", and a gold ring counting the 5 s down.
  * It drops in 16 dp with the `settle` spring (reduced motion: a 200 ms fade) and fades out over the effect's
  * last 240 ms, so it is gone at `endsAt` with the effect. The ring is information: it drains with reduced
  * motion too.
@@ -96,7 +96,14 @@ export function HitBanner({
       style={[styles.banner, { top }, motionStyle]}
       testID={testID}
     >
-      <Avatar avatarId={fromAvatar} size="compact" colorIndex={fromColorIndex} backdrop={color.surface2} />
+      <Avatar
+        avatarId={fromAvatar}
+        size="compact"
+        colorIndex={fromColorIndex}
+        backdrop={color.surface2}
+        expression={AVATAR_REACTIONS.moods.sender}
+        testID={`${testID}-avatar`}
+      />
       <View style={styles.texts}>
         <Text style={styles.title} numberOfLines={1} testID={`${testID}-title`}>
           {title}

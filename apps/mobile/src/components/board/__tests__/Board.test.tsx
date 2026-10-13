@@ -20,7 +20,7 @@ describe('Board', () => {
 
   const demo = () => {
     const { view, mySeat, now } = demoBoard();
-    return boardModel(view, mySeat, now, { avatars: { nina: 'av07', aiko: 'av12' } });
+    return boardModel(view, mySeat, now, { avatars: { nina: 'lava-lamp', aiko: 'maya' } });
   };
 
   it('is a grid of 81 cell buttons with a summary label, always left to right', async () => {

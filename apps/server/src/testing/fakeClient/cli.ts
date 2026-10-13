@@ -54,7 +54,7 @@ export const FAKE_CLIENT_USAGE = `Usage: npm run fake-client -- (--code <code> |
 
   with --queue or --account (an account: registered with POST /v1/users the first time):
   --token <token>          the account's ID token (default dev:<id>, which only a dev server takes)
-  --avatar <id>            the new account's avatar, av01-av51 (default av01)
+  --avatar <id>            the new account's avatar, an AVATAR_IDS id (default noam)
   --country <XX>           the new account's country, ISO code (default IL)
   --keep-searching         after a timeout (60 s), search on without the cap on the range
   --no-show                after "found", never connect to the game room (the match is called off)
@@ -294,7 +294,7 @@ function parseAccount(values: Map<ValueFlag, string>): FakeAccountOptions {
   }
   const avatar = values.get('avatar');
   if (avatar !== undefined) {
-    if (!isAvatarId(avatar)) throw new ArgError('--avatar: av01 to av51 (not av36)');
+    if (!isAvatarId(avatar)) throw new ArgError('--avatar: an avatar id such as noam or coffee-cup');
     account.avatarId = avatar;
   }
   const country = values.get('country')?.toUpperCase();

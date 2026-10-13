@@ -75,7 +75,7 @@ describe('ConnectionLayer', () => {
       <ConnectionLayer
         model={connectionModel(game.view(), { kind: 'online' }, game.now())}
         {...h}
-        avatars={{ me: 'av07', nina: 'av12' }}
+        avatars={{ me: 'lava-lamp', nina: 'maya' }}
         myId="me"
       />,
     );

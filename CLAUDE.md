@@ -46,8 +46,11 @@
 - Commit רק כשמשה מבקש.
 
 ## נכסים
-- `assets/avatars/*.svg`: ‏50 אווטרים (av01 עד av51, בלי av36), ו־av00 לתמונה ריקה. צריך לבדוק את הרישיון לפני העלאה לחנות.
+- `packages/avatars`: ‏101 אווטרים מונפשים משלנו (`docs/avatars/STYLE.md`, תצוגה ב־`docs/avatars/preview.html`).
+  - חבילת ה־"freebie" הישנה (av01 עד av51) נמחקה ב־2026-10-13, לבקשת משה, גם מ־`assets/avatars/` וגם מ־`assets-src/avatars/`.
+  - מזהה ישן ממופה לחדש דרך `LEGACY_AVATAR_MAP` ו־`normalizeAvatarId` ב־`packages/protocol`. ‏av00 נשאר המזהה של "אין אווטאר".
 - `assets/puzzles/sudoku-bank-690.csv`: מאגר הלוחות הקיים, בפורמט `puzzle,solution`. **כל 690 הלוחות ברמת "מהיר".**
+  - המקור אומת: ‏Kaggle, ‏"1 million Sudoku games" של Kyubyong Park, ברישיון CC0.
 - `assets/puzzles/design-fixtures.json`: מצבי לוח מהעיצוב.
 - `assets-src/`: קבצי המקור מהאפליקציה הקודמת. לא לשנות.
 - `archive/`: קוד ישן, לא בשימוש.

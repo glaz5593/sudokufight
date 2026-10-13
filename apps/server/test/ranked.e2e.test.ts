@@ -677,7 +677,7 @@ async function register(name: string): Promise<string> {
       'content-type': 'application/json',
       connection: 'close',
     },
-    body: JSON.stringify({ displayName: name, avatarId: 'av07', country: 'IL' }),
+    body: JSON.stringify({ displayName: name, avatarId: 'lava-lamp', country: 'IL' }),
   });
   expect(res.status).toBe(201);
   const me = (await res.json()) as { id: string };

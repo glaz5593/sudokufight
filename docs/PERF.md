@@ -178,8 +178,8 @@ npx jest apps/mobile/src/screens/game/__tests__/GameScreenRenders.test.tsx --sel
   - ‏`semver`: בדיקת הגרסה של Reanimated, ‏21 KB.
   - ‏`whatwg-url-minimum`: ה־URL של Expo.
   - ‏`@expo/ui`: ה־toolbar של expo-router ב־Android, ‏53 KB.
-- **‏`av19.svg` שוקל 57 KB, פי 7 משאר האווטרים.**
-  - אפשר להקטין אותו עם svgo, אחרי בדיקת הרישיון של האווטרים.
+- **האווטרים:** מ־12.10.2026 הם שלנו (`packages/avatars`): נתונים ופונקציות שמחזירות SVG, ולא קובצי SVG בבנדל.
+  - חבילת ה־SVG הישנה (ובה `av19.svg` של 57 KB) נמחקה מהמאגר ב־13.10.2026, ולכן אין מה להקטין בה.
 
 ## מסך המשחק: ספירות וטיימרים בלי React
 

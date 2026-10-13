@@ -11,6 +11,4 @@ module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testPathIgnorePatterns: ['/node_modules/', '<rootDir>/app/'],
-  // SVG avatars are assets for Metro; in tests any number will do.
-  moduleNameMapper: { '\\.svg$': '<rootDir>/src/testing/svgStub.js' },
 };

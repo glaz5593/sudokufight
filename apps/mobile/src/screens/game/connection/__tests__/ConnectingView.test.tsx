@@ -73,8 +73,8 @@ describe('ConnectingView, a ranked match’s room (Loading.dc.html)', () => {
   });
 
   const PROFILES = {
-    me: { avatarId: 'av07', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
-    nina: { avatarId: 'av12', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
+    me: { avatarId: 'lava-lamp', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
+    nina: { avatarId: 'maya', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
   };
   const loading = (step: ConnectingStep, seed = 'online-1') =>
     matchLoadingOf({ profiles: PROFILES, myId: 'me', gameType: 'normal', step, seed })!;

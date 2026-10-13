@@ -155,11 +155,11 @@ describe('registration (spec §3.2): step 1, the fighter, before any sign-in; st
 
   it("step 2 makes the profile with the sign-in's token: the email comes from the token, 1200 provisional", async () => {
     const ana = phone(url, { token: anaToken });
-    anaFirst = await ana.api.createUser({ displayName: 'Ana_Arena', avatarId: 'av07', country: 'IL' });
+    anaFirst = await ana.api.createUser({ displayName: 'Ana_Arena', avatarId: 'lava-lamp', country: 'IL' });
     expect(isMe(anaFirst)).toBe(true);
     expect(anaFirst).toMatchObject({
       displayName: 'Ana_Arena',
-      avatarId: 'av07',
+      avatarId: 'lava-lamp',
       country: 'IL',
       email: ANA.email,
       displayNameChangedAt: null,
@@ -191,20 +191,20 @@ describe('registration (spec §3.2): step 1, the fighter, before any sign-in; st
     const benToken = await tokens.sign({ uid: 'fb-ben', email: 'ben@example.com' }, clock.now());
     const ben = phone(url, { token: benToken });
     const taken = await failure(
-      ben.api.createUser({ displayName: 'ANA_arena', avatarId: 'av01', country: 'GB' }),
+      ben.api.createUser({ displayName: 'ANA_arena', avatarId: 'microphone', country: 'GB' }),
     );
     expect(taken).toMatchObject({ code: 'taken', status: 409 });
-    const me = await ben.api.createUser({ displayName: 'Ben_Fb', avatarId: 'av01', country: 'GB' });
+    const me = await ben.api.createUser({ displayName: 'Ben_Fb', avatarId: 'microphone', country: 'GB' });
     expect(me).toMatchObject({ displayName: 'Ben_Fb', email: 'ben@example.com', emailVerified: true });
 
     // A second registration of the same sign-in (the app then reads the profile: authStore createOrFetch).
     const again = await failure(
-      ben.api.createUser({ displayName: 'Ben_Two', avatarId: 'av01', country: 'GB' }),
+      ben.api.createUser({ displayName: 'Ben_Two', avatarId: 'microphone', country: 'GB' }),
     );
     expect(again).toMatchObject({ code: 'alreadyRegistered', status: 409 });
     // Anything but the three fields is refused: the email can't come from the body.
     const sneaky = await failure(
-      ben.api.updateMe({ avatarId: 'av02', email: 'evil@example.com' } as Parameters<
+      ben.api.updateMe({ avatarId: 'balloon', email: 'evil@example.com' } as Parameters<
         AccountApi['updateMe']
       >[0]),
     );
@@ -216,8 +216,8 @@ describe('registration (spec §3.2): step 1, the fighter, before any sign-in; st
 describe('the profile (D20, D21)', () => {
   it('avatar and country any time; the name once in 30 days, with nextRenameAt the app shows', async () => {
     const ana = phone(url, { token: anaToken });
-    expect(await ana.api.updateMe({ avatarId: 'av02', country: 'US' })).toMatchObject({
-      avatarId: 'av02',
+    expect(await ana.api.updateMe({ avatarId: 'balloon', country: 'US' })).toMatchObject({
+      avatarId: 'balloon',
       country: 'US',
       displayNameChangedAt: null,
     });
@@ -239,7 +239,7 @@ describe('the profile (D20, D21)', () => {
     expect(tooSoon.body?.nextRenameAt).toBe(renamedAt + RENAME_COOLDOWN_MS);
     expect(isOfflineError(tooSoon)).toBe(false);
     // The avatar still changes meanwhile [D21].
-    expect(await ana.api.updateMe({ avatarId: 'av03' })).toMatchObject({ avatarId: 'av03' });
+    expect(await ana.api.updateMe({ avatarId: 'cassette' })).toMatchObject({ avatarId: 'cassette' });
 
     clock.set(renamedAt + RENAME_COOLDOWN_MS);
     expect(nextRenameAt(await ana.api.getMe(), clock.now())).toBeNull();
@@ -344,14 +344,16 @@ describe('deleting the account (spec §3.3, §23), then registering again', () =
       ['DELETE', 404],
     ]);
     expect(await failure(ana.api.getMe())).toMatchObject({ code: 'notRegistered', status: 404 });
-    expect(await failure(ana.api.updateMe({ avatarId: 'av04' }))).toMatchObject({ code: 'notRegistered' });
+    expect(await failure(ana.api.updateMe({ avatarId: 'astronaut' }))).toMatchObject({
+      code: 'notRegistered',
+    });
   });
 
   it('the name is free at once: someone else registers it', async () => {
     expect(await phone(url, { token: null }).api.nameAvailable('Ana_Again')).toEqual({ available: true });
     const carol = phone(url, { token: devToken('CarolDevUid0123456789abcdefX', 'carol@example.com') });
     expect(
-      await carol.api.createUser({ displayName: 'Ana_Again', avatarId: 'av09', country: 'FR' }),
+      await carol.api.createUser({ displayName: 'Ana_Again', avatarId: 'sufganiya', country: 'FR' }),
     ).toMatchObject({
       displayName: 'Ana_Again',
       email: 'carol@example.com',
@@ -360,7 +362,7 @@ describe('deleting the account (spec §3.3, §23), then registering again', () =
 
   it('the same sign-in may register again (the Firebase delete failed on the phone): a new profile', async () => {
     const ana = phone(url, { token: anaToken });
-    const back = await ana.api.createUser({ displayName: 'Ana_Arena', avatarId: 'av07', country: 'IL' });
+    const back = await ana.api.createUser({ displayName: 'Ana_Arena', avatarId: 'lava-lamp', country: 'IL' });
     expect(back.id).not.toBe(anaFirst.id);
     expect(back).toMatchObject({ displayName: 'Ana_Arena', displayNameChangedAt: null, nextRenameAt: null });
   });
@@ -388,7 +390,7 @@ describe('production servers (the app sees these as the protocol says)', () => {
       const dev = phone(base, { token: anaToken });
       expect(await failure(dev.api.getMe())).toMatchObject({ code: 'unauthorized', status: 401 });
       expect(
-        await failure(dev.api.createUser({ displayName: 'Dev_Prod', avatarId: 'av01', country: 'IL' })),
+        await failure(dev.api.createUser({ displayName: 'Dev_Prod', avatarId: 'microphone', country: 'IL' })),
       ).toMatchObject({ code: 'unauthorized' });
       // The name check takes no token: a refused one is as good as none.
       expect(await dev.api.nameAvailable('Dev_Prod')).toEqual({ available: true });
@@ -440,8 +442,8 @@ describe('production servers (the app sees these as the protocol says)', () => {
       expect(names.retryAfterMs).toBeGreaterThanOrEqual(1000);
       expect(isOfflineError(names)).toBe(true);
 
-      await ben.api.updateMe({ avatarId: 'av05' });
-      expect(await failure(ben.api.updateMe({ avatarId: 'av06' }))).toMatchObject({
+      await ben.api.updateMe({ avatarId: 'sun' });
+      expect(await failure(ben.api.updateMe({ avatarId: 'alarm-clock' }))).toMatchObject({
         code: 'tooManyRequests',
       });
     },

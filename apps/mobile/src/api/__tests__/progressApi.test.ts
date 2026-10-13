@@ -189,6 +189,12 @@ describe('the answers, checked', () => {
     });
   });
 
+  it('reads an avatar of the retired av01–av51 pack (a card saved on the phone) as its replacement', () => {
+    expect(readPlayerCard({ ...card({ id: 'a' }), avatarId: 'av50' })?.avatarId).toBe('fox');
+    const raw = { ...entry({ id: 'a' }), avatarId: 'av07' };
+    expect(readLeaderboard({ ...board(), entries: [raw] })?.entries[0]?.avatarId).toBe('lava-lamp');
+  });
+
   it('reads the friends tab: recent opponents and the invite link (an empty one is none)', () => {
     const raw = {
       ...board({ tab: 'friends' }),

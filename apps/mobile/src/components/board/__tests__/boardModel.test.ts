@@ -94,8 +94,8 @@ describe('boardModel: solved cells and colours (me is always P1)', () => {
   });
 
   it('uses each player’s avatar when given one', () => {
-    const m = boardModel(g.view('moshe'), 0, g.now, { avatars: { nina: 'av12' } });
-    expect(at(m, 'A2').player!.avatar).toBe('av12');
+    const m = boardModel(g.view('moshe'), 0, g.now, { avatars: { nina: 'maya' } });
+    expect(at(m, 'A2').player!.avatar).toBe('maya');
     expect(at(m, 'A1').player!.avatar).toBe('av00');
   });
 });
@@ -127,11 +127,11 @@ describe('boardModel: locks and their seconds', () => {
 
   it('an opponent’s lock: their palette, interactive ("taken"), never urgent, listed for the label', () => {
     const g = new DemoGame().select('nina', 'A8', 1000);
-    const m = boardModel(g.view('moshe'), 0, 1000 + 8100, { avatars: { nina: 'av07' } });
+    const m = boardModel(g.view('moshe'), 0, 1000 + 8100, { avatars: { nina: 'lava-lamp' } });
     expect(at(m, 'A8')).toMatchObject({
       kind: 'oppLock',
       interactive: true,
-      player: { id: 'nina', colorIndex: 1, avatar: 'av07', isMe: false },
+      player: { id: 'nina', colorIndex: 1, avatar: 'lava-lamp', isMe: false },
       lock: { seconds: 4, paused: false, urgent: false },
     });
     expect(m.myLock).toBeNull();

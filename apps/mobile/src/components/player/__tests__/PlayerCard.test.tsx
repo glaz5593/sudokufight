@@ -34,7 +34,7 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
       <PlayerCard
         model={me()}
         country="IL"
-        avatarId="av07"
+        avatarId="lava-lamp"
         onSurrender={onSurrender}
         onReactions={onReactions}
         testID="me"

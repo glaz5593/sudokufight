@@ -65,8 +65,8 @@ describe('the game store: a ranked game (stage 9)', () => {
     // The VS's avatars and countries go with the game (the cards, the locks, the results); the names and
     // ratings too (the loading card of a rejoin, Loading.dc.html).
     expect(online.profiles).toEqual({
-      me: { avatarId: 'av07', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
-      opp: { avatarId: 'av12', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
+      me: { avatarId: 'lava-lamp', country: 'IL', name: 'Moshe', rating: 1287, provisional: false },
+      opp: { avatarId: 'maya', country: 'DE', name: 'NinaVolt', rating: 1305, provisional: true },
     });
     await settle();
     expect(table.calls.at(-1)).toEqual({ kind: 'reserved', arg: RESERVATION });
@@ -142,7 +142,7 @@ describe('the game store: a ranked game (stage 9)', () => {
       ...MATCH_PLAYERS[1]!,
       id: 'p3',
       name: 'Ziv',
-      avatarId: 'av20',
+      avatarId: 'omer',
       country: 'FR',
     };
     mm.found({ players: [...MATCH_PLAYERS, third] });
@@ -158,7 +158,7 @@ describe('the game store: a ranked game (stage 9)', () => {
     expect(used).toEqual([table, rejoin]);
     expect(again.host).toBe(rejoin.host);
     expect(again.profiles).toEqual(before.profiles);
-    expect(again.profiles?.p3).toMatchObject({ avatarId: 'av20', country: 'FR', name: 'Ziv' });
+    expect(again.profiles?.p3).toMatchObject({ avatarId: 'omer', country: 'FR', name: 'Ziv' });
     useStore.getState().clear();
   });
 

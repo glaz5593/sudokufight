@@ -42,7 +42,12 @@ async function show(lang: 'he' | 'en' = 'he') {
     onHome: jest.fn(),
   };
   await render(
-    <MatchScreen match={client} self={{ name: 'Moshe', avatarId: 'av07' }} clock={clock} {...handlers} />,
+    <MatchScreen
+      match={client}
+      self={{ name: 'Moshe', avatarId: 'lava-lamp' }}
+      clock={clock}
+      {...handlers}
+    />,
   );
   await act(async () => {
     await client.start();

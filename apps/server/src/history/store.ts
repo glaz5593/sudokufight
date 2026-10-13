@@ -14,8 +14,9 @@ import {
   type HistoryGame,
   type HistoryPage,
   type HistoryPlayer,
-  isAvatarId,
   isCountryCode,
+  NO_AVATAR_ID,
+  normalizeAvatarId,
 } from '@sudoku-fight/protocol';
 import { and, asc, desc, eq, inArray, isNotNull, lt, or, sql } from 'drizzle-orm';
 
@@ -71,12 +72,14 @@ async function seatsOf(db: Db, gameIds: readonly string[]): Promise<Map<string, 
     .orderBy(asc(gamePlayers.gameId), asc(gamePlayers.seat));
   for (const r of rows) {
     const live = r.userId !== null && r.deletedAt === null;
+    // An old pack's id as its new one; none (or an unknown one) as null, what a history card reads as "none".
+    const avatarId = live ? normalizeAvatarId(r.avatarId) : NO_AVATAR_ID;
     const list = bySeat.get(r.gameId) ?? [];
     list.push({
       seat: r.seat,
       userId: r.userId,
       displayName: live ? r.displayName : null,
-      avatarId: live && isAvatarId(r.avatarId) ? r.avatarId : null,
+      avatarId: avatarId === NO_AVATAR_ID ? null : avatarId,
       country: live && isCountryCode(r.country) ? r.country : null,
       score: r.score,
       mistakes: r.mistakes,

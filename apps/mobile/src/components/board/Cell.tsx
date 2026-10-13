@@ -1,5 +1,4 @@
 import type { CellIndex, Digit } from '@sudoku-fight/engine';
-import { Image } from 'expo-image';
 import { memo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type Insets, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
@@ -15,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path, Rect } from 'react-native-svg';
 
-import { AVATARS } from '../../assets/avatars';
+import { AvatarArt } from '../../avatars';
 import { color, type PlayerPalette, size, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import {
@@ -386,11 +385,12 @@ function MiniAvatar({
   const side = px(g, size.avatar.cell.size);
   return (
     <Animated.View style={[style, lifted ? { top: -px(g, AVATAR_LIFT) } : null]} testID="cell-avatar">
-      <Image
-        source={AVATARS[player.avatar]}
-        style={{ width: side, height: side, borderRadius: px(g, size.avatar.cell.radius) }}
-        contentFit="cover"
-        accessible={false}
+      <AvatarArt
+        avatarId={player.avatar}
+        size={side}
+        crop="head"
+        radius={px(g, size.avatar.cell.radius)}
+        testID="cell-avatar-art"
       />
     </Animated.View>
   );

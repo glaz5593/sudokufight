@@ -194,7 +194,7 @@ function parseBody<T extends RawFields>(schema: z.ZodType<RawFields>, body: unkn
   }
   const value = parsed.data;
   if (value.avatarId !== undefined && !isAvatarId(value.avatarId)) {
-    return { ok: false, field: 'avatarId', message: 'not an avatar one can choose (av01–av51, not av36)' };
+    return { ok: false, field: 'avatarId', message: 'not an avatar one can choose (AVATAR_IDS)' };
   }
   if (value.country !== undefined && !isCountryCode(value.country)) {
     return { ok: false, field: 'country', message: 'not an ISO 3166-1 alpha-2 code (upper case)' };

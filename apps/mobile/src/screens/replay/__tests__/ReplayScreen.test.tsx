@@ -49,7 +49,7 @@ async function practiceDeps(): Promise<{
   return {
     table,
     id: table.config.id,
-    deps: { practice: async () => repo, ranked: null, myAvatar: 'av07', myCountry: 'IL' },
+    deps: { practice: async () => repo, ranked: null, myAvatar: 'lava-lamp', myCountry: 'IL' },
   };
 }
 
@@ -179,7 +179,7 @@ describe('a ranked game from the server', () => {
     const table = rankedDuel();
     const api = fakeHistoryApi([table]);
     await show(
-      (g) => loadReplay(g, 'ranked', { practice: async () => null, ranked: api, myAvatar: 'av01' }),
+      (g) => loadReplay(g, 'ranked', { practice: async () => null, ranked: api, myAvatar: 'microphone' }),
       table.config.id,
     );
     expect(api.calls).toEqual(['replay:ranked-1']);
@@ -202,7 +202,7 @@ describe('a ranked game from the server', () => {
     const deps = (failWith?: 'notFinished' | 'network') => ({
       practice: async () => null,
       ranked: fakeHistoryApi([table], { failWith }),
-      myAvatar: 'av01' as const,
+      myAvatar: 'microphone' as const,
     });
     await show((g) => loadReplay(g, 'ranked', deps()), 'nope');
     expect(screen.getByRole('header', { name: 'לא מצאנו את המשחק הזה' })).toBeOnTheScreen();
@@ -223,7 +223,7 @@ describe('a ranked game from the server', () => {
     expect(load).toHaveBeenCalledTimes(2);
 
     await show(
-      (g) => loadReplay(g, 'ranked', { practice: async () => null, ranked: null, myAvatar: 'av01' }),
+      (g) => loadReplay(g, 'ranked', { practice: async () => null, ranked: null, myAvatar: 'microphone' }),
       'x',
     );
     expect(screen.getByRole('header', { name: 'צריך להתחבר כדי לצפות במשחק מדורג' })).toBeOnTheScreen();
@@ -234,7 +234,7 @@ describe('a ranked game from the server', () => {
     const table = rankedDuel();
     const api = fakeHistoryApi([table]);
     await show(
-      (g) => loadReplay(g, 'ranked', { practice: async () => null, ranked: api, myAvatar: 'av01' }),
+      (g) => loadReplay(g, 'ranked', { practice: async () => null, ranked: api, myAvatar: 'microphone' }),
       table.config.id,
     );
     expect(screen.getByRole('header', { name: 'Replay' })).toBeOnTheScreen();

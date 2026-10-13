@@ -83,8 +83,8 @@ function Harness({
         view={view}
         describe={(id) =>
           id === ME
-            ? { name: 'אני', colorIndex: 0, avatarId: 'av07' }
-            : { name: NAME, colorIndex: 1, avatarId: 'av49', country: 'DE' }
+            ? { name: 'אני', colorIndex: 0, avatarId: 'lava-lamp' }
+            : { name: NAME, colorIndex: 1, avatarId: 'owl', country: 'DE' }
         }
         showRoute={showRoute}
       />

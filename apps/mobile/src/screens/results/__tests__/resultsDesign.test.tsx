@@ -54,7 +54,7 @@ async function show(table: Table, me: string) {
 beforeEach(async () => {
   await i18n.changeLanguage('he');
   useSettings.setState({ reduceMotion: 'on' });
-  useProfile.setState({ avatarId: 'av07' });
+  useProfile.setState({ avatarId: 'lava-lamp' });
 });
 
 describe('Results-4P: the place is the headline behind the winner', () => {

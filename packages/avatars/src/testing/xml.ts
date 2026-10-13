@@ -95,6 +95,31 @@ export function checkXml(xml: string): XmlReport {
   return { root, elements, ids };
 }
 
+export interface XmlNode extends XmlElement {
+  children: XmlNode[];
+}
+
+/** The element tree of `xml` (well-formed: checkXml throws otherwise). Text and comments are left out. */
+export function xmlTree(xml: string): XmlNode {
+  checkXml(xml);
+  const top: XmlNode = { name: '', attrs: {}, children: [] };
+  const stack: XmlNode[] = [top];
+  for (const m of xml.matchAll(/<!--[\s\S]*?-->|<(\/?)([^\s/>]+)([^>]*?)(\/?)>/g)) {
+    if (m[0].startsWith('<!--')) continue;
+    if (m[1]) {
+      stack.pop();
+      continue;
+    }
+    const name = m[2] ?? '';
+    const node: XmlNode = { name, attrs: parseAttrs(m[3] ?? '', name), children: [] };
+    stack[stack.length - 1]?.children.push(node);
+    if (!m[4]) stack.push(node);
+  }
+  const root = top.children[0];
+  if (!root) throw new Error('No root element');
+  return root;
+}
+
 /** Ids that appear more than once. */
 export function duplicates(ids: readonly string[]): string[] {
   const seen = new Set<string>();

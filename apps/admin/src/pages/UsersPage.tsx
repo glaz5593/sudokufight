@@ -1,6 +1,7 @@
 import { ADMIN_DEFAULT_PAGE_SIZE, type AdminUserRow } from '@sudoku-fight/protocol';
 import { useCallback } from 'react';
 
+import { AvatarImg } from '../components/AvatarImg';
 import { type Column, DataTable } from '../components/DataTable';
 import {
   AsyncView,
@@ -33,7 +34,8 @@ export function UsersPage({ search, page }: { search: string; page: number }) {
       header: t('col.name'),
       cell: (u) => (
         <>
-          <a href={routeHref({ name: 'user', id: u.id })}>
+          <a className="user-link" href={routeHref({ name: 'user', id: u.id })}>
+            <AvatarImg id={u.avatarId} size={28} decorative />
             <bdi>{u.displayName}</bdi>
           </a>
           {u.deletedAt !== null && <span className="badge badge-danger">{t('users.deleted')}</span>}
