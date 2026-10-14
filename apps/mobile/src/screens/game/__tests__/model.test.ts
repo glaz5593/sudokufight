@@ -4,7 +4,14 @@ import { boardGeometry } from '../../../components/board';
 import { answerIn, emptyCellsOf, PUZZLE, testHost, wrongIn } from '../../../game/testing/practice';
 import { motion } from '../../../theme/motion';
 import { boardSide, cellCenter, centerOf, within } from '../geometry';
-import { endDelayMs, formatClock, formatSeconds, MOVE_TIMELINE, soloStats } from '../model';
+import {
+  DIALOG_GONE_CEILING_MS,
+  endDelayMs,
+  formatClock,
+  formatSeconds,
+  MOVE_TIMELINE,
+  soloStats,
+} from '../model';
 
 describe('formats', () => {
   it('shows a game time as m:ss, and h:mm:ss past an hour', () => {
@@ -71,6 +78,10 @@ describe('the move timeline (motion.md §5)', () => {
     expect(endDelayMs('boardComplete', true)).toBe(motion.duration.reducedFade);
     expect(endDelayMs('practiceEnded', false)).toBe(0);
     expect(endDelayMs(undefined, false)).toBe(0);
+  });
+
+  it('the ceiling on waiting for the end dialog to leave is well past its exit', () => {
+    expect(DIALOG_GONE_CEILING_MS).toBeGreaterThan(motion.duration.sheetOut + 500);
   });
 });
 

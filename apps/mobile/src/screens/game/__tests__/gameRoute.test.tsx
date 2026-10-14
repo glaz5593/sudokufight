@@ -1,5 +1,5 @@
 import { ManualClock, ManualScheduler } from '@sudoku-fight/engine';
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import GameRoute from '../../../../app/game';
 import { useGameStore } from '../../../game/gameStore';
@@ -9,6 +9,7 @@ import i18n from '../../../i18n';
 import { OnlineSession } from '../../../game/onlineSession';
 import { elapse, FakeTable } from '../../../net/testing/fakeServer';
 import { useSettings } from '../../../state/settings';
+import { motion } from '../../../theme/motion';
 import { liveOnlineSession, onlineSession, OPP } from '../testing/online';
 
 /** The /game route: the store's practice or online game, or home; its end opens /results/[id]. */
@@ -69,8 +70,14 @@ it('plays the store’s practice; "סיום אימון" → "כן, לסיים" o
   expect(screen.getByTestId('game')).toBeOnTheScreen();
 
   await fireEvent.press(screen.getByRole('button', { name: 'סיום אימון' }));
+  // The dialog slides up (as a player sees it before tapping "כן, לסיים").
+  await act(() => new Promise((resolve) => setTimeout(resolve, motion.duration.sheetIn + 50)));
   await fireEvent.press(screen.getByRole('button', { name: 'כן, לסיים' }));
-  expect(router.replace).toHaveBeenCalledWith({ pathname: '/results/[id]', params: { id: session.id } });
+  // Only once the dialog has left the screen (its onExited), never while it still slides away.
+  expect(router.replace).not.toHaveBeenCalledWith(expect.objectContaining({ pathname: '/results/[id]' }));
+  await waitFor(() =>
+    expect(router.replace).toHaveBeenCalledWith({ pathname: '/results/[id]', params: { id: session!.id } }),
+  );
 });
 
 describe('an online game', () => {

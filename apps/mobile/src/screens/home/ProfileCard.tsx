@@ -166,7 +166,13 @@ export function ProfileCard({
               <View style={styles.column} testID={`rating-${type}`}>
                 <Text style={styles.columnLabel}>{t(`gameTypes.${type}.name`)}</Text>
                 {r ? (
-                  <Rating value={r.rating} size="home" provisional={r.provisional} decorative />
+                  <Rating
+                    value={r.rating}
+                    size="home"
+                    provisional={r.provisional}
+                    decorative
+                    testID={`rating-${type}-value`}
+                  />
                 ) : (
                   <Text style={styles.noRating}>{t('profile.none')}</Text>
                 )}
@@ -242,10 +248,13 @@ const styles = StyleSheet.create({
   },
   dividerLabel: { ...text('label'), color: color.textMuted },
   rule: { flex: 1, height: tokens.border.hairline, backgroundColor: color.border },
-  columns: { flexDirection: 'row', alignItems: 'center', marginTop: HOME.ratingRowTop },
+  // The columns line up at the top: a provisional rating's chip sits under its number (Rating), so columns
+  // with and without one differ in height.
+  columns: { flexDirection: 'row', alignItems: 'stretch', marginTop: HOME.ratingRowTop },
   column: { flex: 1, alignItems: 'center', gap: space[4] },
   columnLabel: { ...text('label'), color: color.textMuted },
   columnRule: {
+    alignSelf: 'center',
     width: tokens.border.hairline,
     height: size.dividerVertical.rating,
     backgroundColor: color.border,

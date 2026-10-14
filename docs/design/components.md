@@ -127,7 +127,8 @@ label is the visible text. Icon-only buttons need an explicit label.
 | Radius | 12 |
 | Shadow | Hard offset `0 4 0 color.accentShadow`. In RN, draw it as a sibling View in `accentShadow` placed 4 dp lower. RN shadows blur, and Android elevation has no colour or offset. |
 | Label | Rubik 700, `color.onAccent`, centred |
-| Sizes | `hero`: height **96**, label **44** [C, Home "שחק", full width 342] · `lg`: height 60, label 28 [R1 height, C font] · `md`: height 52, label 20 [R1→C] · `modal`: height 48, label 18 [R1→C]. Heights are `size.ctaHero`, `size.buttonLg`, `size.buttonMd`, `size.buttonModal`. |
+| Sizes | `hero`: height **96**, label **44** [C, Home "שחק", full width 342] · `lg`: height 60, label 28 [R1 height, C font] · `md`: height 52, label 20 [R1→C] · `modal`: height 48, label 18 [R1→C]. Heights are `size.ctaHero`, `size.buttonLg`, `size.buttonMd`, `size.buttonModal`. A long label uses `md` (Register-Account's "צור משתמש והיכנס לזירה": at `lg` it could not fit a 360 dp phone; at `md` it does, measured in Rubik 700, up to text scale 1.1, and `wrapLabel` gives it a second line from 1.15). |
+| Large text | With `wrapLabel`, from the system's "Large" text size (fontScale ≥ 1.15) the label may take a second line when it no longer fits on one, and the button grows (min height instead of height; the shadow follows). Below that, and without `wrapLabel`, one line at the fixed height. |
 | Width | Fill the parent, or content plus 26 padding on each side |
 
 | State | Visual |
@@ -228,6 +229,8 @@ The frame is a **border, not a filled plate** [C]. Image size = outer − 2 × (
   - Left or surrendered: same, plus the card dims (§3.4).
 - **A11y:** decorative (`accessible={false}`) whenever the name is next to it, which is almost always. When it stands alone, the label is the player name.
 - **RTL:** badge corners use start/end, so they mirror.
+- **Avatar picker** (Register-Fighter, Edit profile; Moshe's device test, 14.10.2026, replaces the stage and strip): a field as high as the name's (44): the chosen avatar at 34 in my P1 frame, its name, "שינוי ⌄". A tap opens the sheet in its `fill` form (§13), "בחר אווטאר" with "הבחירה שלך: …" under it: all 101 in a grid of 72 dp frames (as many to a row as fit, at least 8 apart: 4 on a 360 dp phone), under a sticky header per kind (Rubik 500 16 `color.textMuted`). Each one is a radio, still (no idle, no reaction); the chosen one in my P1 frame with a tick badge, a locked one [D17] grey with a lock badge. A tap chooses and closes; the field's avatar smiles and bounces (reduced motion: the smile only). The grid is virtualized and opens on the chosen avatar's row.
+- **Fighter card** (Register-Fighter's preview "ככה יראו אותך בזירה", Register-Account's "הלוחם מוכן"): one full-width card, `color.surface`, 1 dp P1 border, radius 14, padding 12: the avatar at 52 in my P1 frame, ● and the name (Rubik 700 16, one line, room for 16 characters on a 360 dp phone), and under it the flag 13 with the country's name and a note ("חדש" / "✓ הלוחם מוכן"). No VS and no opponent.
 
 **Tokens:** `color.players[n].ring`, `color.border`, `color.bg`, `color.status.online`, `color.status.offline`, `color.textMuted`.
 
@@ -304,6 +307,8 @@ The gendered forms in the design ("בוחרת", "שלחה") need a grammatical-g
 - Sizes: **18** Home profile · **15** 2P card · **13** compact card and lists · **12** sheet subtitle.
 - In a compact card the flag sits on the avatar's bottom-start corner (−10, −5) [R1].
 - **A11y:** never read the emoji. The label is the country name, e.g. "מדינה: ישראל" [R1]. Inside a card, the flag is decorative because the card label carries the information.
+- **Names** come from the app's own tables (`apps/mobile/src/i18n/countries/<lang>.json`, generated from CLDR by `npm run countries:names -w @sudoku-fight/mobile`), never from the phone: Hermes has no `Intl.DisplayNames`.
+- **Country picker** (Register-Fighter, Edit profile): a field like the name's ("🇮🇱 ישראל · שינוי ⌄"), and a sheet in its `fill` form (§13) with a search and every country: flag 22 and the full name (Rubik 500 16, up to two lines), sorted by the name in the app's language; the chosen row on `color.surface2` with a gold tick. The search matches as a phone keyboard types (`countrySearch.ts`): the Hebrew ׳ ״ as ' " or left out (צ'כיה, צכיה), Latin without accents (curacao, turkiye), "&" as "and", "St." as "saint", and a few other names people use (USA, UK, Turkey, Holland, אמריקה, אנגליה); an exact name or code comes first.
 - No colour tokens.
 
 ---
@@ -320,7 +325,7 @@ The gendered forms in the design ("בוחרת", "שלחה") need a grammatical-g
 | 16 | 2P card | [new] |
 | 15 | Compact card | [R1→C] |
 
-- **Provisional** (the first 10 games in a rating key, §11.2): the number is followed by a chip, height 18, radius 9, 1 dp `color.border`, Rubik 500 11 `color.textMuted`. Copy TBD.
+- **Provisional** (the first 10 games in a rating key, §11.2): a chip, min height 18, radius 9, 1 dp `color.border`, Rubik 500 11 `color.textMuted`, "זמני". In lists and cards it follows the number. **On Home (44) it sits under the number, centred**, and the number stays on one line, shrinking rather than being cut at the largest text sizes: beside it, the chip squeezed the numbers out of their third of the card (Moshe's device test, 14.10.2026).
 - **A11y:** e.g. "דירוג רגיל 1287"†.
 - Works unchanged with rating option A (9 ratings) or B (3 ratings). The key comes from `ratingKey()`.
 
@@ -591,7 +596,7 @@ iOS `announceForAccessibility`) that announces opponent moves and leader changes
 | Part | Spec |
 |---|---|
 | Scrim | Full screen, `color.scrim` (`rgba(7,9,12,.72)`). Tap → close. Label "סגירת הארסנל וחזרה ללוח" [R1]. Fade 240ms. |
-| Sheet | Full width, bottom 0, radius **24** on the top corners (the Foundations token said 28, but every sheet drawn uses 24), background `color.surface`, top border 1 dp `color.border`, padding 10 16 (16 + bottom safe area), max height 85%. No glow or gradient. |
+| Sheet | Full width, bottom 0, radius **24** on the top corners (the Foundations token said 28, but every sheet drawn uses 24), background `color.surface`, top border 1 dp `color.border`, padding 10 16 (16 + bottom safe area), max height 85%. No glow or gradient. `fill`: always 85% high, the content filling it (a long scrolling list: the country and avatar pickers). |
 | Handle | 40 × 4, radius 2, `color.border`, centred, `aria-hidden`. Dragging down past 25% of the height (or a fast fling) closes the sheet. |
 | Header (mt 10, h 48) | Title Rubik 700 22 `color.text` ("ארסנל ההפרעות"). Subtitle row Rubik 500 13 `color.textMuted`: "יעד:", a mini avatar 18 (radius 5, 1.5 dp ring in the target's `players[n].ring`), the name in Rubik 500 `color.text`, and a flag at 12. A close icon button 44 sits at the end ("סגירה"). |
 | Content (arsenal) | Next-cost row, h 60: `color.surface2`, 1 dp `color.border`, radius 12, text "ההפרעה הבאה שלך: 2 נק׳ · אחריה 4, 8…" with the cost in Teko 600 30 `color.accent`; my score in Teko 600 28 `players[0].ring` with "אחרי שיגור: 53". Info line Rubik 500 13 `color.textMuted`: "כל הפרעה נמשכת 5 שניות · שיגור בגרירה בלבד". **Tokens:** 108 × 136, `color.surface2`, 1 dp `color.border`, radius 18, illustration 56, name, and a cost pill (h 20, radius 10, `color.bg`, Teko 600 16 `color.accent`). **Locked tokens:** h 76, background `color.bg`, 1 dp `color.border`, radius 14, `color.iconFaint` art, plus a "רמה 18" chip. Hint pill: "גרור אל הכרטיס של NinaVolt כדי לשגר". |

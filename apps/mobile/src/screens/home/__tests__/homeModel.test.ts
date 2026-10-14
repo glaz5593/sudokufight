@@ -91,12 +91,10 @@ describe('the bots to choose from (spec §9)', () => {
     expect(DEFAULT_BOT_LEVEL).toBe(3);
   });
 
-  it('think as long as the table says for "normal", × 0.67 in fast and × 1.5 in hard', () => {
+  it('think as long as the table says for an ordinary move, the same in every game type (spec §9)', () => {
     const range = (type: GameType) =>
       botOptions(type).map((b) => `${secondsText(b.thinkMs.min)}–${secondsText(b.thinkMs.max)}`);
-    expect(range('normal')).toEqual(['8–11', '6–9', '4–7', '3–5', '2–4']);
-    expect(range('fast')).toEqual(['5.4–7.4', '4–6', '2.7–4.7', '2–3.4', '1.3–2.7']);
-    expect(range('hard')).toEqual(['12–16.5', '9–13.5', '6–10.5', '4.5–7.5', '3–6']);
+    for (const type of GAME_TYPES) expect(range(type)).toEqual(['15–25', '12–20', '9–15', '6–10', '3–5']);
     for (const type of GAME_TYPES)
       expect(botOptions(type).map((b) => b.thinkMs)).toEqual(
         BOT_LEVELS.map((l) => ({ min: l.thinkMs.min * BOT_PACE[type], max: l.thinkMs.max * BOT_PACE[type] })),

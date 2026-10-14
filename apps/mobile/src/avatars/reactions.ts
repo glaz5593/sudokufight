@@ -210,7 +210,8 @@ export type AvatarStage = 'picker' | 'winner' | 'home' | 'profile' | 'search' | 
 /**
  * Where avatars idle, a config like the table above (waiting for Moshe's approval, DECISIONS-PENDING 3.19).
  * motion.md §1 keeps only functional loops, so by default only the stages the spec names idle: the picker's
- * stage (§3.2, the character being chosen, big on a stage) and the winner on the results (§3.4, "ממשיך לזוז
+ * stage (§3.2, the character being chosen: since 14.10.2026 the avatar of my card in registration step 1's
+ * preview; the grid in the avatar sheet stays still) and the winner on the results (§3.4, "ממשיך לזוז
  * במקום"). Home's card, the profile, the search, the VS and the countdown stay still until he says otherwise.
  * Wherever it idles, an avatar idles only while its screen is the one shown, and never with reduced motion.
  */

@@ -4,6 +4,7 @@ import { authErrorCodeOf, toAuthError } from '../errors';
 import {
   emailOk,
   PASSWORD_MIN_LENGTH,
+  PASSWORD_RULES,
   passwordOk,
   passwordRules,
   passwordStrength,
@@ -30,31 +31,41 @@ describe('sha256Hex (the development sign-in hashes passwords with it)', () => {
   });
 });
 
-describe('password rules (spec §3.1: ≥ 8, a letter and a digit)', () => {
-  it('checks each rule', () => {
+describe('password rules (spec §3.1: at least 8 characters, nothing else)', () => {
+  it('has one rule: the length', () => {
     expect(PASSWORD_MIN_LENGTH).toBe(8);
-    expect(passwordRules('')).toEqual({ length: false, letter: false, digit: false });
-    expect(passwordRules('abcdefgh')).toEqual({ length: true, letter: true, digit: false });
-    expect(passwordRules('12345678')).toEqual({ length: true, letter: false, digit: true });
-    expect(passwordRules('a1')).toEqual({ length: false, letter: true, digit: true });
-    // Hebrew letters count as letters.
-    expect(passwordRules('סיסמה1234')).toEqual({ length: true, letter: true, digit: true });
-    expect(passwordOk('Arena1234')).toBe(true);
-    expect(passwordOk('Arena123')).toBe(true);
-    expect(passwordOk('Arena12')).toBe(false);
+    expect(PASSWORD_RULES).toEqual(['length']);
+    expect(passwordRules('')).toEqual({ length: false });
+    expect(passwordRules('a1')).toEqual({ length: false });
+    expect(passwordRules('Arena12')).toEqual({ length: false });
+    expect(passwordRules('Arena123')).toEqual({ length: true });
+    // Characters, not UTF-16 units: an emoji is one.
+    expect(passwordRules('🎯🎯🎯🎯🎯🎯🎯')).toEqual({ length: false });
+    expect(passwordRules('🎯🎯🎯🎯🎯🎯🎯🎯')).toEqual({ length: true });
+  });
+
+  it('any 8 characters will do: no letter, digit, case or symbol needed ("not a bank account")', () => {
+    for (const ok of ['abcdefgh', '12345678', 'ABCDEFGH', 'סיסמהארוכ', '!@#$%^&*', 'Arena1234']) {
+      expect([ok, passwordOk(ok)]).toEqual([ok, true]);
+    }
+    for (const short of ['', 'a', 'abcdefg', '1234567', 'סיסמה']) {
+      expect([short, passwordOk(short)]).toEqual([short, false]);
+    }
   });
 
   it('meters the strength in 4 levels', () => {
     expect(passwordStrength('')).toBe(0);
     expect(strengthLevel(0)).toBeNull();
-    // Below the rules: weak.
+    // Too short: weak.
     expect(passwordStrength('abc')).toBe(1);
+    // Predictable: weak, though allowed (the meter only advises).
     expect(passwordStrength('abcdefgh')).toBe(1);
-    // Predictable: weak even when the rules hold.
+    expect(passwordStrength('12345678')).toBe(1);
     expect(passwordStrength('abcdefg1')).toBe(1);
     expect(passwordStrength('aaaaaaa1')).toBe(1);
-    // The rules and no more: fair.
+    // The rule and no more: fair, letters only too.
     expect(passwordStrength('arena4812')).toBe(2);
+    expect(passwordStrength('mosheglz')).toBe(2);
     // Longer, more kinds: good (the design's "Fox.Arena42" is "סיסמה טובה").
     expect(passwordStrength('Fox.Arena42')).toBe(3);
     // Long and every kind: strong.
@@ -89,6 +100,8 @@ describe('Firebase errors in the app’s terms', () => {
       ['auth/email-already-in-use', 'emailInUse'],
       ['auth/invalid-email', 'invalidEmail'],
       ['auth/weak-password', 'weakPassword'],
+      // A password policy in the Firebase console asking for more than 8 characters.
+      ['auth/password-does-not-meet-requirements', 'weakPassword'],
       ['auth/requires-recent-login', 'requiresRecentLogin'],
       ['auth/user-disabled', 'userDisabled'],
       ['auth/something-new', 'unknown'],

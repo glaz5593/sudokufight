@@ -64,13 +64,13 @@ describe('"בחר יריב בוט" (spec §4.1 #9, §9)', () => {
       '4 · מאסטר',
       '5 · גרנדמאסטר',
     ]);
-    expect(screen.getByTestId('bot-1-think')).toHaveTextContent(`זמן חשיבה למהלך${ltr('8–11')} ש׳`);
+    expect(screen.getByTestId('bot-1-think')).toHaveTextContent(`זמן חשיבה למהלך${ltr('15–25')} ש׳`);
     expect(screen.getByTestId('bot-1-mistakes')).toHaveTextContent(`טעויות${ltr('15%')}`);
     expect(screen.getByTestId('bot-5-mistakes')).toHaveTextContent(`טעויות${ltr('1%')}`);
     expect(card(4)).toHaveTextContent(/מהיר, כמעט לא טועה, וקצת שחצן 😎/);
     expect(card(1)).toHaveProp(
       'accessibilityLabel',
-      'רמה 1, טירון: Pip. איטי, טועה לא מעט, וכמעט אף פעם לא מפריע. זמן חשיבה 8 עד 11 שניות למהלך, 15% טעויות',
+      'רמה 1, טירון: Pip. איטי, טועה לא מעט, וכמעט אף פעם לא מפריע. זמן חשיבה 15 עד 25 שניות למהלך, 15% טעויות',
     );
     // The avatars of the level table, never typed in the screen.
     expect([1, 2, 3, 4, 5].map((l) => avatarIdsIn(card(l)))).toEqual([
@@ -85,18 +85,18 @@ describe('"בחר יריב בוט" (spec §4.1 #9, §9)', () => {
     expect(directionProblems(card(3))).toEqual([]);
   });
 
-  it('times the bots for a fast game: the table × 0.67 (spec §9)', async () => {
+  it('times the bots for a fast game as the table says: an ordinary move (spec §9)', async () => {
     await renderApp('/bot-select?gameType=fast');
-    expect(screen.getByTestId('bot-1-think')).toHaveTextContent(ltr('5.4–7.4'), { exact: false });
-    expect(screen.getByTestId('bot-5-think')).toHaveTextContent(ltr('1.3–2.7'), { exact: false });
-    expect(card(1)).toHaveProp('accessibilityLabel', expect.stringContaining('זמן חשיבה 5.4 עד 7.4 שניות'));
+    expect(screen.getByTestId('bot-1-think')).toHaveTextContent(ltr('15–25'), { exact: false });
+    expect(screen.getByTestId('bot-5-think')).toHaveTextContent(ltr('3–5'), { exact: false });
+    expect(card(1)).toHaveProp('accessibilityLabel', expect.stringContaining('זמן חשיבה 15 עד 25 שניות'));
   });
 
-  it('times the bots for a hard game: the table × 1.5 (spec §9)', async () => {
+  it('times the bots for a hard game the same: a harder board is slower through its cells (spec §9)', async () => {
     await renderApp('/bot-select?gameType=hard');
     expect(screen.getByText('אימון מול בוט · קשה')).toBeTruthy();
-    expect(screen.getByTestId('bot-1-think')).toHaveTextContent(ltr('12–16.5'), { exact: false });
-    expect(screen.getByTestId('bot-4-think')).toHaveTextContent(ltr('4.5–7.5'), { exact: false });
+    expect(screen.getByTestId('bot-1-think')).toHaveTextContent(ltr('15–25'), { exact: false });
+    expect(screen.getByTestId('bot-4-think')).toHaveTextContent(ltr('6–10'), { exact: false });
   });
 
   it('opens on Mr. Hoot the first time, and a tap chooses another', async () => {
@@ -174,7 +174,7 @@ describe('"בחר יריב בוט" (spec §4.1 #9, §9)', () => {
     expect(screen.getByText('Practice vs bot · Fast')).toBeTruthy();
     expect(card(5)).toHaveProp(
       'accessibilityLabel',
-      'Level 5, Grandmaster: Overlord. Fast, precise, and interferes without mercy. Thinks 1.3 to 2.7 seconds a move, 1% mistakes',
+      'Level 5, Grandmaster: Overlord. Fast, precise, and interferes without mercy. Thinks 3 to 5 seconds a move, 1% mistakes',
     );
     expect(screen.getByRole('button', { name: "Let's play" })).toBeTruthy();
   });

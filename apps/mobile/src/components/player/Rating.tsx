@@ -29,6 +29,14 @@ export interface RatingProps {
   testID?: string;
 }
 
+/**
+ * Home's three columns: the number is 44 and a column a third of the card, so the provisional chip goes under
+ * the number, not beside it (Moshe's device test, 14.10.2026: "זמני" squeezed the numbers), and the number
+ * stays whole on one line, shrinking a little rather than being cut at the largest text sizes.
+ */
+const STACKED: Record<RatingSize, boolean> = { home: true, list: false, card: false, compact: false };
+const FIT_NUMBER = { numberOfLines: 1, adjustsFontSizeToFit: true, minimumFontScale: 0.6 } as const;
+
 /** A rating number: Teko, tabular, LTR, gold. No star in C. */
 export function Rating({
   value,
@@ -58,11 +66,15 @@ export function Rating({
       testID={testID}
     >
       {showLabel && label !== undefined ? <Text style={[text('label'), styles.label]}>{label}</Text> : null}
-      <View style={styles.row}>
-        <Text style={[NUMBER_STYLE[size], styles.number]}>{String(shown)}</Text>
+      <View style={STACKED[size] ? styles.stack : styles.row}>
+        <Text style={[NUMBER_STYLE[size], styles.number]} {...(STACKED[size] ? FIT_NUMBER : null)}>
+          {String(shown)}
+        </Text>
         {provisional ? (
-          <View style={styles.chip}>
-            <Text style={[text('plateNameCompact'), styles.chipText]}>{t('rating.provisional')}</Text>
+          <View style={styles.chip} testID={testID && `${testID}-provisional`}>
+            <Text style={[text('plateNameCompact'), styles.chipText]} numberOfLines={1}>
+              {t('rating.provisional')}
+            </Text>
           </View>
         ) : null}
       </View>
@@ -75,9 +87,10 @@ const styles = StyleSheet.create({
   // Dir-C-Home: the key name sits 8 above the number.
   label: { color: color.textMuted, marginBottom: space[4] },
   row: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
+  stack: { alignItems: 'center', gap: space[2] },
   number: { color: color.accent },
   chip: {
-    height: metrics.rating.provisionalChipHeight,
+    minHeight: metrics.rating.provisionalChipHeight,
     paddingHorizontal: metrics.rating.provisionalPaddingX,
     borderRadius: metrics.rating.provisionalChipHeight / 2,
     borderWidth: tokens.border.hairline,

@@ -2,7 +2,8 @@ import { applyAction } from '../game/engine';
 import type { GameState, PlayerState } from '../game/types';
 import { publicState } from '../game/view';
 import { GAME_TYPES } from '../gameType';
-import { type CellIndex, DIGITS, parseCellName } from '../sudoku/board';
+import { type CellIndex, cellName, DIGITS, parseCellName } from '../sudoku/board';
+import { LogicBoard, type Technique, TECHNIQUES } from '../sudoku/logic';
 import { type ConfigOptions, GameDriver, PUZZLE } from '../testing/game';
 import { createRng, type Rng } from '../util/random';
 import {
@@ -31,6 +32,8 @@ import {
   botLevel,
   type BotLevelId,
   botPlayer,
+  CELL_TECHNIQUES,
+  type CellTechnique,
 } from './levels';
 
 /* The bot's decisions (spec §9), one pure function at a time. */
@@ -79,13 +82,52 @@ const NEAR = {
 
 // On the test puzzle at the start:
 //   A1 naked single (8) · B7 hidden single, options 7 8 · B2 hidden single, options 2 3 6 8
-//   A2 needs more, options 1 6 8 (6) · A5 needs more, options 5 7 (7) · D1 options 3 4, D2 a naked single (3)
+//   A5 a single after pointing, options 5 7 (7) · F9 after claiming · B5 after a hidden pair
+//   A2 needs more, options 1 6 8 (6) · D1 options 3 4, D2 a naked single (3)
 
-describe('cellDifficulty (spec §9: options and technique)', () => {
+/** The test puzzle with these cells (by name) open as well. */
+const opened = (...names: string[]) => ({
+  id: `open-${names.join('-')}`,
+  givens: [...PUZZLE.solution].map((d, i) => (names.map(cell).includes(i) ? '0' : d)).join(''),
+  solution: PUZZLE.solution,
+});
+
+/**
+ * The oracle for the eliminations: whether `c` becomes a naked or hidden single once the logical solver has
+ * applied every elimination up to `upTo` it can (none for null), placing no digit.
+ */
+function singleAfter(s: GameState, c: CellIndex, upTo: Technique | null): boolean {
+  const board = new LogicBoard(s.grid);
+  const allowed = new Set(upTo ? TECHNIQUES.slice(2, TECHNIQUES.indexOf(upTo) + 1) : []);
+  for (let step = board.findStep(allowed); step; step = board.findStep(allowed)) board.apply(step);
+  return (board.nakedSingleAt(c) ?? board.hiddenSingleAt(c)) !== null;
+}
+
+describe('cellDifficulty (spec §9: the deduction a move needs, and its options)', () => {
   const s = game().state;
+  const factorOf = (t: CellTechnique) => BOT_CONFIG.difficulty.technique[t];
 
-  it('a naked single is the easiest: one option, factor 1', () => {
+  it('a naked single is the reference of the level table: one option, factor 1', () => {
     expect(cellDifficulty(s, cell('A1'))).toEqual({ options: 1, technique: 'nakedSingle', factor: 1 });
+  });
+
+  it('the last gap of a row, column or box is quicker than that', () => {
+    const near = game(3, { puzzle: NEAR }).state;
+    for (const name of ['A1', 'E5'])
+      expect(cellDifficulty(near, cell(name))).toEqual({ options: 1, technique: 'lastGap', factor: 0.8 });
+  });
+
+  it('so is the last place of a digit already on the board eight times, whatever else fits there', () => {
+    // A1 (8) with A2 (6), B1 (3) and G1 (6) open: 6 or 8 fit, no unit is down to A1, but 8 has no other place.
+    const s8 = game(3, { puzzle: opened('A1', 'A2', 'B1', 'G1') }).state;
+    expect(cellOptions(s8, cell('A1'))).toEqual([6, 8]);
+    const a1 = cellDifficulty(s8, cell('A1'));
+    expect(a1).toMatchObject({ options: 2, technique: 'lastGap' });
+    expect(a1.factor).toBeCloseTo(0.8 * 1.05);
+    // With another 8 open (D8), it is only a hidden single: the 8 of row A.
+    const s7 = game(3, { puzzle: opened('A1', 'A2', 'B1', 'G1', 'D8') }).state;
+    expect(cellOptions(s7, cell('A1'))).toEqual([6, 8]);
+    expect(cellDifficulty(s7, cell('A1')).technique).toBe('hiddenSingle');
   });
 
   it('a hidden single costs more, and more with more options', () => {
@@ -93,19 +135,71 @@ describe('cellDifficulty (spec §9: options and technique)', () => {
     const b2 = cellDifficulty(s, cell('B2'));
     expect(b7).toMatchObject({ options: 2, technique: 'hiddenSingle' });
     expect(b2).toMatchObject({ options: 4, technique: 'hiddenSingle' });
-    expect(b7.factor).toBeCloseTo(1.25 * 1.05);
-    expect(b2.factor).toBeCloseTo(1.25 * 1.15);
+    expect(b7.factor).toBeCloseTo(1.3 * 1.05);
+    expect(b2.factor).toBeCloseTo(1.3 * 1.15);
   });
 
-  it('a cell no single solves yet is the hardest', () => {
-    expect(cellDifficulty(s, cell('A5'))).toMatchObject({ options: 2, technique: 'harder' });
+  it("a cell that needs eliminations first costs the hardest one it needs (the logical solver's)", () => {
+    expect(cellDifficulty(s, cell('A5'))).toMatchObject({ options: 2, technique: 'pointing' });
+    expect(cellDifficulty(s, cell('A5')).factor).toBeCloseTo(1.7 * 1.05);
+    expect(cellDifficulty(s, cell('F9'))).toMatchObject({ options: 2, technique: 'claiming' });
+    expect(cellDifficulty(s, cell('B5'))).toMatchObject({ options: 3, technique: 'hiddenPair' });
+    expect(cellDifficulty(s, cell('B5')).factor).toBeCloseTo(2 * 1.1);
+  });
+
+  it('a naked pair, on a board of the bank that needs one', () => {
+    const pair = game(3, {
+      puzzle: {
+        id: 'pair',
+        givens: '157409380683000904492000701865010400074600518031040600709080200306000805528304107',
+        solution: '157429386683751924492836751865217439274693518931548672749185263316972845528364197',
+      },
+    }).state;
+    expect(cellDifficulty(pair, cell('F8'))).toMatchObject({ options: 3, technique: 'nakedPair' });
+    expect(cellDifficulty(pair, cell('F8')).factor).toBeCloseTo(2 * 1.1);
+  });
+
+  it('a cell none of these reach yet (other cells first) is the hardest', () => {
     expect(cellDifficulty(s, cell('A2'))).toMatchObject({ options: 3, technique: 'harder' });
-    expect(cellDifficulty(s, cell('A2')).factor).toBeCloseTo(1.6 * 1.1);
+    expect(cellDifficulty(s, cell('A2')).factor).toBeCloseTo(2.5 * 1.1);
+  });
+
+  it('agrees with the logical solver on every cell: the simplest eliminations that make it a single', () => {
+    const seen = new Set<CellTechnique>();
+    cellDifficulties(s).forEach((d, c) => {
+      if (!d || d.technique === 'lastGap' || d.technique === 'nakedSingle' || d.technique === 'hiddenSingle')
+        return;
+      seen.add(d.technique);
+      const where = `${cellName(c)} (${d.technique})`;
+      expect([where, singleAfter(s, c, null)]).toEqual([where, false]);
+      if (d.technique === 'harder') {
+        expect([where, singleAfter(s, c, 'hiddenPair')]).toEqual([where, false]);
+        return;
+      }
+      const k = TECHNIQUES.indexOf(d.technique);
+      expect([where, singleAfter(s, c, d.technique)]).toEqual([where, true]);
+      if (k > 2) expect([where, singleAfter(s, c, TECHNIQUES[k - 1]!)]).toEqual([where, false]);
+    });
+    expect(seen).toEqual(new Set(['pointing', 'claiming', 'hiddenPair', 'harder']));
+  });
+
+  it('every factor is the technique × the options, as configured', () => {
+    for (const d of cellDifficulties(s))
+      if (d) expect(d.factor).toBeCloseTo(factorOf(d.technique) * (1 + 0.05 * (d.options - 1)));
   });
 
   it('caps the factor', () => {
     const config = { ...BOT_CONFIG, difficulty: { ...BOT_CONFIG.difficulty, max: 1.5 } };
     expect(cellDifficulty(s, cell('A2'), config).factor).toBe(1.5);
+    // The default cap: three times the base at most.
+    expect(BOT_CONFIG.difficulty.max).toBe(3);
+    for (const d of cellDifficulties(s)) if (d) expect(d.factor).toBeLessThanOrEqual(3);
+  });
+
+  it('takes its factors from the config', () => {
+    const technique = Object.fromEntries(CELL_TECHNIQUES.map((t) => [t, 1])) as Record<CellTechnique, number>;
+    const flat = { ...BOT_CONFIG, difficulty: { technique, perExtraOption: 0, max: 9 } };
+    for (const d of cellDifficulties(s, flat)) if (d) expect(d.factor).toBe(1);
   });
 
   it('reads the board as it is now: solved cells count', () => {
@@ -121,6 +215,20 @@ describe('cellDifficulty (spec §9: options and technique)', () => {
     g.place(ME, 'A5', 5); // wrong: the answer is 7
     expect(cellOptions(g.state, cell('A5'))).toEqual([7]);
     expect(cellDifficulty(g.state, cell('A5'))).toMatchObject({ options: 1, technique: 'nakedSingle' });
+  });
+
+  it('a digit tried in one cell can only make the deductions elsewhere easier [D12]', () => {
+    const g = game();
+    const before = cellDifficulties(g.state);
+    g.select(ME, 'A2');
+    g.place(ME, 'A2', 1); // wrong: the answer is 6
+    const after = cellDifficulties(g.state);
+    expect(cellOptions(g.state, cell('A2'))).toEqual([6, 8]);
+    expect(after[cell('A2')]!.options).toBe(2);
+    const rank = (t: CellTechnique) => CELL_TECHNIQUES.indexOf(t);
+    after.forEach((d, c) => {
+      if (d) expect(rank(d.technique)).toBeLessThanOrEqual(rank(before[c]!.technique));
+    });
   });
 
   it('cellDifficulties covers every cell (null for filled ones) and agrees with cellDifficulty', () => {
@@ -206,7 +314,7 @@ describe('chooseCell (spec §9: prefers easy cells, with noise) and eligibility 
   });
 });
 
-describe('thinkTime (spec §9: base × pace × difficulty, with spread)', () => {
+describe('thinkTime (spec §9: base × difficulty (× pace), with spread)', () => {
   it.each(BOT_LEVELS.flatMap((level) => GAME_TYPES.map((gameType) => ({ level, gameType }))))(
     'L$level.level on $gameType: within the range, centred on its middle',
     ({ level, gameType }) => {
@@ -228,15 +336,57 @@ describe('thinkTime (spec §9: base × pace × difficulty, with spread)', () => 
     },
   );
 
-  it('scales the same draw by the pace of the game type and by the difficulty', () => {
+  it('scales the same draw by the difficulty; the game type does not change it (pace 1) unless configured', () => {
     const level = botLevel(2);
-    const at = (gameType: (typeof GAME_TYPES)[number], factor: number) =>
-      thinkTime({ level, gameType, factor }, createRng(9));
-    expect(at('fast', 1) / at('normal', 1)).toBeCloseTo(0.67, 3);
-    expect(at('hard', 1) / at('normal', 1)).toBeCloseTo(1.5, 3);
+    const at = (gameType: (typeof GAME_TYPES)[number], factor: number, config = BOT_CONFIG) =>
+      thinkTime({ level, gameType, factor }, createRng(9), config);
+    expect(at('fast', 1)).toBe(at('normal', 1));
+    expect(at('hard', 1)).toBe(at('normal', 1));
     expect(at('normal', 1.6) / at('normal', 1)).toBeCloseTo(1.6, 3);
-    expect(thinkTime({ level, gameType: 'normal', factor: 1 }, fixed(0))).toBe(6000);
-    expect(thinkTime({ level, gameType: 'normal', factor: 1 }, fixed(0.5))).toBe(7500);
+    const paced = { ...BOT_CONFIG, pace: { fast: 0.5, normal: 1, hard: 2 } };
+    expect(at('fast', 1, paced) / at('normal', 1)).toBeCloseTo(0.5, 3);
+    expect(at('hard', 1, paced) / at('normal', 1)).toBeCloseTo(2, 3);
+    expect(thinkTime({ level, gameType: 'normal', factor: 1 }, fixed(0))).toBe(12_000);
+    expect(thinkTime({ level, gameType: 'normal', factor: 1 }, fixed(0.5))).toBe(16_000);
+    expect(thinkTime({ level, gameType: 'normal', factor: 1 }, fixed(0.999_999))).toBe(20_000);
+  });
+
+  it.each(BOT_LEVELS)(
+    'L$level ($name): a move of each technique takes base × its factor, over the whole range',
+    (level) => {
+      const rng = createRng(100 + level.level);
+      const n = 400;
+      for (const technique of CELL_TECHNIQUES) {
+        const factor = BOT_CONFIG.difficulty.technique[technique];
+        const times = Array.from({ length: n }, () => thinkTime({ level, gameType: 'fast', factor }, rng));
+        const lo = level.thinkMs.min * factor;
+        const hi = level.thinkMs.max * factor;
+        expect(Math.min(...times)).toBeGreaterThanOrEqual(Math.floor(lo));
+        expect(Math.max(...times)).toBeLessThanOrEqual(Math.ceil(hi));
+        // Both ends are reached within 5% of the width.
+        expect(Math.min(...times)).toBeLessThan(lo + 0.05 * (hi - lo));
+        expect(Math.max(...times)).toBeGreaterThan(hi - 0.05 * (hi - lo));
+      }
+    },
+  );
+
+  it('the Novice takes 15–25 s for an ordinary move, the Grandmaster 3–5 s (Moshe, 2026-10-14)', () => {
+    const range = (l: BotLevelId) =>
+      [0, 0.999_999].map((r) => thinkTime({ level: botLevel(l), gameType: 'fast', factor: 1 }, fixed(r)));
+    expect(range(1)).toEqual([15_000, 25_000]);
+    expect(range(5)).toEqual([3_000, 5_000]);
+  });
+
+  it('is repeatable with the same seed, and another seed draws other times', () => {
+    const level = botLevel(3);
+    const run = (seed: number) => {
+      const rng = createRng(seed);
+      return Array.from({ length: 30 }, (_, k) =>
+        thinkTime({ level, gameType: 'normal', factor: 1 + (k % 4) * 0.3 }, rng),
+      );
+    };
+    expect(run(41)).toEqual(run(41));
+    expect(run(41)).not.toEqual(run(42));
   });
 });
 

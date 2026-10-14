@@ -2,7 +2,7 @@ import type { InterferenceKind } from '../game/rules';
 import type { GameState, PlayerId, PlayerState } from '../game/types';
 import type { GameType } from '../gameType';
 import { type CellIndex, CELL_COUNT, type Digit, DIGITS, missingDigits, unitsOf } from '../sudoku/board';
-import { LogicBoard } from '../sudoku/logic';
+import { LogicBoard, type Technique, TECHNIQUES } from '../sudoku/logic';
 import { pick, type Rng } from '../util/random';
 import {
   BOT_CONFIG,
@@ -54,52 +54,121 @@ export function leadOver(state: GameState, id: PlayerId): number | null {
 // Cells
 
 /**
- * The options of every cell: its candidates on the current board (givens and solved cells) without the
- * digits already tried wrongly there, which everyone sees (spec §6.5) [D12]. 0 for a filled cell.
+ * A logical board of the current state (givens and solved cells) whose candidates leave out the digits
+ * already tried wrongly in each cell, which everyone sees (spec §6.5) [D12].
  */
-function optionMasks(state: GameState): number[] {
+function logicBoardOf(state: GameState): LogicBoard {
   const board = new LogicBoard(state.grid);
-  return board.cand.map((mask, cell) => {
-    let m = mask;
-    for (const w of state.wrong[cell]!) m &= ~bit(w.digit);
-    return m;
+  state.wrong.forEach((tries, cell) => {
+    for (const w of tries) board.cand[cell]! &= ~bit(w.digit);
   });
+  return board;
 }
 
 /** The options cellDifficulty counts: the cell's candidates without the digits tried there. */
 export const cellOptions = (state: GameState, cell: CellIndex): Digit[] =>
-  state.grid[cell] === 0 ? digitsOf(optionMasks(state)[cell]!) : [];
+  state.grid[cell] === 0 ? digitsOf(logicBoardOf(state).cand[cell]!) : [];
+
+/** Whether `cell` is a naked or a hidden single with these candidates (`masks`, 0 for a filled cell). */
+function singleAt(grid: readonly number[], masks: readonly number[], cell: CellIndex): boolean {
+  const mask = masks[cell]!;
+  if (popcount(mask) === 1) return true;
+  for (const unit of unitsOf(cell)) {
+    let elsewhere = 0;
+    for (const c of unit.cells) if (c !== cell && grid[c] === 0) elsewhere |= masks[c]!;
+    // A digit that fits nowhere else in a row, column or box goes here.
+    if ((mask & ~elsewhere) !== 0) return true;
+  }
+  return false;
+}
+
+/** The eliminations of the logical solver, simplest first (sudoku/logic). */
+const ELIMINATIONS: ReadonlySet<Technique> = new Set(
+  TECHNIQUES.filter((t) => t !== 'nakedSingle' && t !== 'hiddenSingle'),
+);
+/** A guard: every elimination removes a candidate, so a board runs out of them long before this. */
+const MAX_ELIMINATIONS = 729;
+
+interface BoardReading {
+  /** The options of each cell (a digit mask; 0 for a filled cell). */
+  readonly masks: readonly number[];
+  /** The deduction that solves each empty cell (null for a filled one). */
+  readonly techniques: readonly (CellTechnique | null)[];
+}
+
+/**
+ * One reading per state: a move reads the same state more than once (the cell to choose, then its think
+ * time), and a state never changes once it is made (game/evolve). Weak: a state that is gone takes its
+ * reading with it.
+ */
+const readings = new WeakMap<GameState, BoardReading>();
+
+function readBoard(state: GameState): BoardReading {
+  let reading = readings.get(state);
+  if (!reading) {
+    reading = computeReading(state);
+    readings.set(state, reading);
+  }
+  return reading;
+}
+
+/**
+ * The deduction that solves each empty cell on the board as it is (CELL_TECHNIQUES), and the options of
+ * each: the logical solver's own steps (sudoku/logic, as in the explanations), nothing the bot works out by
+ * itself.
+ *   1. On the board as it is: the last gap of a unit or of a digit, a naked single, a hidden single.
+ *   2. The rest: the solver's eliminations, simplest first, one at a time (pointing, claiming, naked and
+ *      hidden pairs; no digit is placed). A cell that becomes a single gets the hardest technique used so
+ *      far: the simplest one that reaches it.
+ *   3. What is left needs other cells first, or more than the solver knows: 'harder'.
+ */
+function computeReading(state: GameState): BoardReading {
+  const grid = state.grid;
+  const board = logicBoardOf(state);
+  const masks = board.cand.slice();
+  const count = new Array<number>(10).fill(0);
+  for (const v of grid) count[v]!++;
+  const techniques = new Array<CellTechnique | null>(CELL_COUNT).fill(null);
+  const pending: CellIndex[] = [];
+  for (let cell = 0; cell < CELL_COUNT; cell++) {
+    if (grid[cell] !== 0) continue;
+    const mask = masks[cell]!;
+    const lastOfUnit = unitsOf(cell).some((u) => u.cells.every((c) => c === cell || grid[c] !== 0));
+    // A digit with eight on the board has one place left, and only that cell still lists it.
+    const lastOfDigit = digitsOf(mask).some((d) => count[d] === 8);
+    if (lastOfUnit || lastOfDigit) techniques[cell] = 'lastGap';
+    else if (popcount(mask) === 1) techniques[cell] = 'nakedSingle';
+    else if (singleAt(grid, masks, cell)) techniques[cell] = 'hiddenSingle';
+    else pending.push(cell);
+  }
+  let hardest = -1;
+  for (let k = 0; k < MAX_ELIMINATIONS && pending.length; k++) {
+    const step = board.findStep(ELIMINATIONS);
+    if (!step) break;
+    board.apply(step);
+    hardest = Math.max(hardest, TECHNIQUES.indexOf(step.technique));
+    for (let i = pending.length - 1; i >= 0; i--) {
+      const cell = pending[i]!;
+      if (!singleAt(grid, board.cand, cell)) continue;
+      techniques[cell] = TECHNIQUES[hardest]!;
+      pending.splice(i, 1);
+    }
+  }
+  for (const cell of pending) techniques[cell] = 'harder';
+  return { masks, techniques };
+}
 
 export interface CellDifficulty {
   /** Digits that still fit the cell. */
   options: number;
-  /** The simplest technique that solves the cell on the board as it is. */
+  /** The deduction that solves the cell on the board as it is (CELL_TECHNIQUES). */
   technique: CellTechnique;
-  /** Think time multiplier (spec §9): 1 for a naked single, more for the rest. */
+  /** Think time multiplier (spec §9): 1 for a naked single, less for a last gap, more for the rest. */
   factor: number;
 }
 
-function difficultyAt(
-  state: GameState,
-  masks: readonly number[],
-  cell: CellIndex,
-  config: BotConfig,
-): CellDifficulty {
-  const mask = masks[cell]!;
+function difficultyOf(mask: number, technique: CellTechnique, config: BotConfig): CellDifficulty {
   const options = popcount(mask);
-  let technique: CellTechnique = 'harder';
-  if (options === 1) technique = 'nakedSingle';
-  else {
-    for (const unit of unitsOf(cell)) {
-      let elsewhere = 0;
-      for (const c of unit.cells) if (c !== cell && state.grid[c] === 0) elsewhere |= masks[c]!;
-      // A digit that fits nowhere else in a row, column or box goes here.
-      if ((mask & ~elsewhere) !== 0) {
-        technique = 'hiddenSingle';
-        break;
-      }
-    }
-  }
   const d = config.difficulty;
   const factor = Math.min(d.max, d.technique[technique] * (1 + d.perExtraOption * Math.max(0, options - 1)));
   return { options, technique, factor };
@@ -112,7 +181,8 @@ export function cellDifficulty(
   config: BotConfig = BOT_CONFIG,
 ): CellDifficulty {
   if (state.grid[cell] !== 0) throw new RangeError(`Cell ${cell} is not empty`);
-  return difficultyAt(state, optionMasks(state), cell, config);
+  const { masks, techniques } = readBoard(state);
+  return difficultyOf(masks[cell]!, techniques[cell]!, config);
 }
 
 /** The difficulty of every cell; null for filled ones. */
@@ -120,10 +190,8 @@ export function cellDifficulties(
   state: GameState,
   config: BotConfig = BOT_CONFIG,
 ): (CellDifficulty | null)[] {
-  const masks = optionMasks(state);
-  return Array.from({ length: CELL_COUNT }, (_, cell) =>
-    state.grid[cell] === 0 ? difficultyAt(state, masks, cell, config) : null,
-  );
+  const { masks, techniques } = readBoard(state);
+  return techniques.map((t, cell) => (t === null ? null : difficultyOf(masks[cell]!, t, config)));
 }
 
 /** Digits that may still be entered in a cell: not tried wrongly there [D12], not all nine on the board. */
@@ -211,8 +279,12 @@ export interface ThinkTimeInput {
 }
 
 /**
- * A move's think time in ms (spec §9): a base drawn from the level's range (for 'normal'), × the pace of the
- * game type, × the difficulty of the cell, × the adaptation.
+ * A move's think time in ms (spec §9): a base drawn uniformly from the level's range (an ordinary move, a
+ * naked single), × the difficulty of the cell (the deduction it needs), × the pace of the game type (1 by
+ * default), × the adaptation.
+ *
+ * Only the hesitation before locking can be long: splitThinkTime keeps the part after locking within the
+ * lock time, and in 'turns' the runner keeps the hesitation within the turn [D1].
  */
 export function thinkTime(
   { level, gameType, factor, adapt = 1 }: ThinkTimeInput,

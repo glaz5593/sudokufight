@@ -124,12 +124,13 @@ describe('a practice against a bot (spec §9)', () => {
     const r = await rig();
     const s = await startBotPractice({ gameType: 'fast', level: 1 }, r.deps);
     expect(solvedBy(s.events, 'bot-1')).toEqual([]);
-    r.scheduler.advance(60_000);
+    r.scheduler.advance(120_000);
     const locks = s.events.filter((e) => e.type === 'cellLocked' && e.playerId === 'bot-1');
     expect(locks.length).toBeGreaterThan(3);
     expect(solvedBy(s.events, 'bot-1').length + s.getView().players[1]!.mistakes).toBeGreaterThan(2);
-    // Pip at the fast pace: a move takes 8–11 s × 0.67 at the least, most of it hesitating before the lock.
-    const quickest = BOT_LEVELS[0]!.thinkMs.min * BOT_PACE.fast;
+    // Pip: an ordinary move takes 15–25 s, the easiest (a last gap) × 0.8; most of it hesitating before the lock.
+    const easiest = Math.min(...Object.values(BOT_CONFIG.difficulty.technique));
+    const quickest = BOT_LEVELS[0]!.thinkMs.min * BOT_PACE.fast * easiest;
     expect(locks[0]!.t - s.events[0]!.t).toBeGreaterThanOrEqual(quickest * (1 - BOT_CONFIG.solveShare.max));
     s.close();
   });

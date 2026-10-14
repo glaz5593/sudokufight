@@ -24,6 +24,8 @@ export interface RankedSurrenderProps {
   onConfirm: () => void;
   /** "ביטול", the scrim, Android back and the iOS escape gesture. */
   onCancel: () => void;
+  /** The dialog has closed and left the screen (ConfirmModal's onExited). */
+  onExited?: () => void;
   /** A spinner on the confirm while the surrender goes out. */
   confirming?: boolean;
   testID?: string;
@@ -44,6 +46,7 @@ export function RankedSurrender({
   summary = null,
   onConfirm,
   onCancel,
+  onExited,
   confirming = false,
   testID = 'ranked-surrender',
 }: RankedSurrenderProps) {
@@ -75,6 +78,7 @@ export function RankedSurrender({
       confirmLoading={confirming}
       onConfirm={onConfirm}
       onCancel={onCancel}
+      onExited={onExited}
       testID={testID}
     >
       {duel && summary ? (

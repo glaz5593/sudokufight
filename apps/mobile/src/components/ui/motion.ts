@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import {
   Easing,
   type SharedValue,
@@ -41,16 +41,22 @@ export interface PresenceTimings {
 /**
  * Keeps an overlay mounted while it animates out. `progress` runs 0 → 1 on enter and 1 → 0 on exit; the overlay
  * unmounts when the exit finishes. Reopening during the exit cancels it.
+ *
+ * `onExited` runs once the overlay has left the screen: its exit finished and the render that drops it was
+ * committed (a native Modal's window included). Whatever must not happen under a closing overlay waits for it,
+ * e.g. the game screen replaced by the results (bug 9).
  */
 export function usePresence(
   visible: boolean,
   { inMs, outMs, reduce }: PresenceTimings,
+  onExited?: () => void,
 ): { mounted: boolean; progress: SharedValue<number> } {
   const [mounted, setMounted] = useState(visible);
   const progress = useSharedValue(0);
 
   // Opening mounts right away (state derived during render, no extra effect pass).
   if (visible && !mounted) setMounted(true);
+  const shown = mounted || visible;
 
   useEffect(() => {
     if (visible) {
@@ -64,5 +70,12 @@ export function usePresence(
     );
   }, [visible, inMs, outMs, reduce, progress]);
 
-  return { mounted: mounted || visible, progress };
+  const exited = useEffectEvent(() => onExited?.());
+  const wasShown = useRef(shown);
+  useEffect(() => {
+    if (wasShown.current && !shown) exited();
+    wasShown.current = shown;
+  }, [shown]);
+
+  return { mounted: shown, progress };
 }

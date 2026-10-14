@@ -143,7 +143,10 @@ export interface BotOption {
   /** The bot's name: data from the engine, the same in every language. */
   name: string;
   avatar: AvatarIdOrNone;
-  /** The base think time per move in this game type: the table's (for 'normal') × the pace (spec §9). */
+  /**
+   * The think time of an ordinary move (a naked single) in this game type: the table's × the pace, which is 1
+   * in every type (spec §9). A harder cell takes longer, the last gap of a row, column or box less.
+   */
   thinkMs: { min: number; max: number };
   /** The share of its digits that are wrong, 0–1. */
   mistakeRate: number;

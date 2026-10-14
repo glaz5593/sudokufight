@@ -36,8 +36,8 @@ export function renameDate(at: number, language: string): string {
 }
 
 /**
- * "עריכת פרופיל" (spec §4.1 "screens missing from the design"; work plan stage 8): the avatar and the
- * country any time [D21], the display name once in 30 days [D20] — while it is locked the field says until
+ * "עריכת פרופיל" (spec §4.1 "screens missing from the design"; work plan stage 8): the three fields of
+ * registration step 1. The avatar and the country any time [D21], the display name once in 30 days [D20] — while it is locked the field says until
  * when. Saves only what changed (PATCH /v1/me). From Home's card and from the settings.
  */
 export function EditProfileScreen() {
@@ -120,8 +120,8 @@ function EditProfileForm({ me }: { me: Me }) {
       <ScreenHeader title={t('edit.title')} onBack={goBack} />
       <DevModeBadge />
       <FormAlert message={formError} testID="edit-alert" />
-      <AvatarPicker value={avatarId} onChange={setAvatarId} level={level} />
       <View style={styles.form}>
+        <AvatarPicker value={avatarId} onChange={setAvatarId} level={level} />
         {renameAt === null ? (
           <NameField
             value={name}

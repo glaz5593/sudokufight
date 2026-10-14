@@ -26,6 +26,8 @@ const FLING_VELOCITY = 1;
 const DRAG_SLOP = space[2];
 /** The sheet never covers more than this share of the screen. */
 const MAX_HEIGHT = '85%';
+/** The sheet's side padding: content inside it is the screen's width less twice this. */
+export const SHEET_GUTTER = space[8];
 
 /** Whether a released drag closes the sheet: down past a quarter of its height, or a fast downward fling. */
 export function dragClosesSheet(dy: number, vy: number, sheetHeight: number): boolean {
@@ -51,6 +53,11 @@ export interface SheetProps {
   scrimLabel?: string;
   /** `tray`: the arsenal rises in 240 ms (`trayRise`); other sheets take 320 ms (`sheetIn`). */
   enter?: 'sheet' | 'tray';
+  /**
+   * The sheet takes its full height (85% of the screen) whatever its content, and the content fills the rest
+   * with `flex: 1`: a long list that scrolls inside it (the country and avatar pickers).
+   */
+  fill?: boolean;
   testID?: string;
 }
 
@@ -68,6 +75,7 @@ export function Sheet({
   closeLabel,
   scrimLabel,
   enter = 'sheet',
+  fill = false,
   testID,
 }: SheetProps) {
   const { t } = useTranslation('ui');
@@ -134,7 +142,7 @@ export function Sheet({
           accessibilityLabel={accessibilityLabel ?? title}
           onAccessibilityEscape={onClose}
           onLayout={(e) => height.set(e.nativeEvent.layout.height)}
-          style={[styles.sheet, { paddingBottom: space[8] + bottom }, sheetStyle]}
+          style={[styles.sheet, fill && styles.fill, { paddingBottom: space[8] + bottom }, sheetStyle]}
         >
           <View {...pan.panHandlers}>
             <View style={styles.handle} accessibilityElementsHidden importantForAccessibility="no" />
@@ -175,13 +183,14 @@ const styles = StyleSheet.create({
   sheet: {
     maxHeight: MAX_HEIGHT,
     paddingTop: space[5],
-    paddingHorizontal: space[8],
+    paddingHorizontal: SHEET_GUTTER,
     borderTopLeftRadius: radius.sheet,
     borderTopRightRadius: radius.sheet,
     borderTopWidth: tokens.border.hairline,
     borderTopColor: color.sheet.border,
     backgroundColor: color.sheet.bg,
   },
+  fill: { height: MAX_HEIGHT },
   handle: {
     alignSelf: 'center',
     width: size.sheetHandle.width,

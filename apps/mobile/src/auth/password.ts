@@ -1,32 +1,26 @@
 /**
- * Password and email checks of the registration (spec §3.1): at least 8 characters, at least one letter and
- * one digit, and a strength meter with 4 levels. Firebase checks the password again on its side.
+ * Password and email checks of the registration (spec §3.1): at least 8 characters and nothing else (Moshe,
+ * 14.10.2026: "it's not a bank account": no letter, digit, case or symbol rules), and a strength meter with 4
+ * levels that only advises. Firebase checks the password again on its side (its own minimum is 6; a password
+ * policy in the Firebase console could ask for more, and it should stay off).
  */
 
 export const PASSWORD_MIN_LENGTH = 8;
 
+/** The registration's password rules, each met or not: there is one. */
 export interface PasswordRules {
   length: boolean;
-  letter: boolean;
-  digit: boolean;
 }
 
-/** Any letter, Hebrew included. */
-const LETTER = /\p{L}/u;
+export const PASSWORD_RULES = ['length'] as const satisfies readonly (keyof PasswordRules)[];
+
 const DIGIT = /\p{Nd}/u;
 
 export function passwordRules(password: string): PasswordRules {
-  return {
-    length: [...password].length >= PASSWORD_MIN_LENGTH,
-    letter: LETTER.test(password),
-    digit: DIGIT.test(password),
-  };
+  return { length: [...password].length >= PASSWORD_MIN_LENGTH };
 }
 
-export const passwordOk = (password: string): boolean => {
-  const r = passwordRules(password);
-  return r.length && r.letter && r.digit;
-};
+export const passwordOk = (password: string): boolean => passwordRules(password).length;
 
 /** 0: empty · 1 weak · 2 fair · 3 good · 4 strong. */
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
@@ -47,8 +41,9 @@ function predictable(password: string): boolean {
 }
 
 /**
- * The meter (Register-Account): below the rules it is always "weak"; meeting them is "fair"; longer
- * passwords that mix more kinds of characters (lower case, upper case, digits, symbols) go up from there.
+ * The meter (Register-Account), advice only: any password of 8 characters can be used. Shorter than that, or
+ * predictable ("12345678", "aaaaaaaa"), it is "weak"; otherwise "fair", and longer passwords that mix more
+ * kinds of characters (lower case, upper case, digits, symbols) go up from there.
  */
 export function passwordStrength(password: string): PasswordStrength {
   if (password.length === 0) return 0;

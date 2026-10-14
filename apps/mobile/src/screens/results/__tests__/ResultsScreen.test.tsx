@@ -20,6 +20,13 @@ jest.mock(
 );
 jest.mock('../../../services/feedback', () => ({ cue: jest.fn() }));
 const feedback = jest.requireMock<{ cue: jest.Mock }>('../../../services/feedback');
+jest.mock('../../../services/crashlytics', () => {
+  const reporter = { enabled: true, recordError: jest.fn(), setUser: jest.fn(), log: jest.fn() };
+  return { crashReporter: () => reporter };
+});
+const crash = jest
+  .requireMock<{ crashReporter: () => { recordError: jest.Mock } }>('../../../services/crashlytics')
+  .crashReporter();
 
 const hidden = { includeHiddenElements: true };
 
@@ -176,5 +183,18 @@ describe('ResultsScreen (solo practice, spec §12)', () => {
     );
     await act(async () => undefined);
     expect(screen.getByRole('header', { name: 'לא הצלחנו לקרוא את האימונים השמורים' })).toBeOnTheScreen();
+  });
+
+  it('a load that fails is reported, and says so with a way home: never a spinner for ever (bug 9)', async () => {
+    const boom = new Error('could not read');
+    const onHome = jest.fn();
+    await render(
+      <ResultsScreen gameId="z" load={() => Promise.reject(boom)} onNewGame={jest.fn()} onHome={onHome} />,
+    );
+    await act(async () => undefined);
+    expect(screen.getByRole('header', { name: 'לא הצלחנו לקרוא את האימונים השמורים' })).toBeOnTheScreen();
+    expect(crash.recordError).toHaveBeenCalledWith(boom, 'results: could not load');
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
+    expect(onHome).toHaveBeenCalled();
   });
 });

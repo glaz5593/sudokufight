@@ -16,6 +16,7 @@ import { track } from '../../../services/analytics';
 import { renameDate } from '../EditProfileScreen';
 import { SplashScreen } from '../SplashScreen';
 import { renderAccount } from '../testing/accountTesting';
+import { chooseAvatar } from '../testing/avatarGrid';
 
 type Mocks = typeof import('../../home/testing/nativeMocks');
 
@@ -56,9 +57,10 @@ describe('Edit profile [D20, D21]', () => {
       expect.objectContaining({ disabled: true }),
     );
 
-    // Another kind's tab, then the avatar.
-    await fireEvent.press(screen.getByRole('tab', { name: 'אוכל' }));
-    await fireEvent.press(screen.getByTestId('avatar-picker-sufganiya'));
+    // The avatar is a field, as in the registration: its sheet holds every kind.
+    expect(screen.getByRole('button', { name: /^האווטאר שנבחר: / })).toHaveProp('testID', 'avatar-picker');
+    await chooseAvatar('sufganiya');
+    expect(screen.getByRole('button', { name: 'האווטאר שנבחר: סופגנייה' })).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('edit-save'));
     await waitFor(() => expect(useAuth.getState().me?.avatarId).toBe('sufganiya'));
     expect(auth.server.calls.at(-1)).toBe('PATCH /v1/me {"avatarId":"sufganiya"}');
@@ -110,8 +112,7 @@ describe('Edit profile [D20, D21]', () => {
     await fireEvent.press(screen.getByTestId('edit-save'));
     expect(await screen.findByTestId('edit-name-error')).toHaveTextContent('השם הזה תפוס. בחר שם אחר.');
 
-    await fireEvent.press(screen.getByRole('tab', { name: 'חפצים' }));
-    await fireEvent.press(screen.getByTestId('avatar-picker-cassette'));
+    await chooseAvatar('cassette');
     await fireEvent.changeText(screen.getByTestId('edit-name'), 'Tester');
     auth.server.setOffline(true);
     await fireEvent.press(screen.getByTestId('edit-save'));

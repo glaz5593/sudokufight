@@ -214,7 +214,7 @@
     "thinkTime": "Think time per move",
     "thinkValue": "{{range}} s",
     "mistakes": "Mistakes",
-    "note": "The time is the bot's base time in this game type; on a hard cell it thinks longer. The bot plays the same board, in real time.",
+    "note": "That's the time for an ordinary move. A cell that takes harder logic takes the bot longer, and the last gap of a row, column or box a little less. The bot plays the same board, in real time.",
     "start": "Let's play",
     "startHint": "Starts a {{type}} practice against {{name}}",
     "cardLabel": "Level {{level}}, {{title}}: {{name}}. {{behavior}}. Thinks {{from}} to {{to}} seconds a move, {{mistakes}}% mistakes",

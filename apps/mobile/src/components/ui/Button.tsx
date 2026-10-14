@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   type TextStyle,
+  useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native';
@@ -35,6 +36,12 @@ export interface ButtonProps {
   loading?: boolean;
   /** Secondary "chip" use: gold border and label (components.md §1.2). */
   selected?: boolean;
+  /**
+   * Primary only: once the phone's text is large (fontScale ≥ LARGE_TEXT_SCALE), the label may take a second
+   * line instead of being cut, and the button grows to hold it. Below that the label keeps to one line at the
+   * button's height, as every button does.
+   */
+  wrapLabel?: boolean;
   /** Overrides the visible label for screen readers (the visible label is the default). */
   accessibilityLabel?: string;
   accessibilityHint?: string;
@@ -51,6 +58,12 @@ const HEIGHT: Record<ButtonSize, number> = {
   md: size.buttonMd,
   modal: size.buttonModal,
 };
+
+/**
+ * From this system text scale (Android's "Large" font size and up), a `wrapLabel` button may take two lines.
+ * It takes the second only when the label doesn't fit on one, and stays as high as before when it does.
+ */
+export const LARGE_TEXT_SCALE = 1.15;
 
 /** Rubik 700, 44 / 28 / 22 / 18. */
 const PRIMARY_LABEL: Record<ButtonSize, TextStyle> = {
@@ -84,6 +97,7 @@ export function Button({
   disabled = false,
   loading = false,
   selected,
+  wrapLabel = false,
   accessibilityLabel,
   accessibilityHint,
   hitSlop,
@@ -93,6 +107,8 @@ export function Button({
 }: ButtonProps) {
   const { t } = useTranslation('ui');
   const reduce = useReduceMotion();
+  const { fontScale } = useWindowDimensions();
+  const twoLines = wrapLabel && fontScale >= LARGE_TEXT_SCALE;
   const press = useSharedValue(0);
   const face = useAnimatedStyle(() => ({
     transform: [{ translateY: press.get() * CTA.pressedTranslateY }, { skewX: SKEW }],
@@ -117,6 +133,8 @@ export function Button({
 
   if (variant === 'primary') {
     const height = HEIGHT[sizeName];
+    // Two lines of a large label: the height becomes a minimum, and the face (and its shadow) grow with it.
+    const box = twoLines ? { minHeight: height } : { height };
     // cta.press (motion.md §4.1): 80 ms down, 140 ms up. Reduced motion: the same 3 dp, without the tween.
     const toPressed = (to: number, duration: number) =>
       press.set(reduce ? to : withTiming(to, { duration, easing: curve('standard') }));
@@ -125,18 +143,26 @@ export function Button({
         {...a11y}
         onPressIn={() => toPressed(1, motion.duration.tapFeedbackMin)}
         onPressOut={() => toPressed(0, motion.duration.tapFeedbackMax)}
-        style={[{ height }, disabled && styles.disabled, style]}
+        style={[box, disabled && styles.disabled, style]}
       >
         {disabled ? null : (
           <View
             testID={testID && `${testID}-shadow`}
-            style={[styles.primaryShadow, { height, top: CTA.offsetY, transform: [{ skewX: SKEW }] }]}
+            style={[
+              styles.primaryShadow,
+              twoLines ? { top: CTA.offsetY, bottom: -CTA.offsetY } : { height, top: CTA.offsetY },
+              { transform: [{ skewX: SKEW }] },
+            ]}
           />
         )}
-        <Animated.View style={[styles.primaryFace, { height }, face]}>
+        <Animated.View style={[styles.primaryFace, box, twoLines && styles.primaryFaceTall, face]}>
           <View style={[styles.content, loading && styles.hidden, { transform: [{ skewX: UNSKEW }] }]}>
             {icon ? <Icon name={icon} size={ICON_SIZE[sizeName]} color={color.onAccent} /> : null}
-            <Text style={[PRIMARY_LABEL[sizeName], styles.primaryLabel]} numberOfLines={1}>
+            <Text
+              style={[PRIMARY_LABEL[sizeName], styles.primaryLabel, twoLines && styles.labelWrap]}
+              numberOfLines={twoLines ? 2 : 1}
+              testID={testID && `${testID}-label`}
+            >
               {label}
             </Text>
           </View>
@@ -239,9 +265,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.button,
     backgroundColor: color.accent,
   },
+  primaryFaceTall: {
+    paddingVertical: space[4],
+  },
   primaryLabel: {
     color: color.onAccent,
     textAlign: 'center',
+  },
+  labelWrap: {
+    flexShrink: 1,
   },
   outline: {
     justifyContent: 'center',

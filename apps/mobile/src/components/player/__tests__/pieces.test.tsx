@@ -92,6 +92,24 @@ describe('Rating and league (§5)', () => {
     expect(screen.getByLabelText('דירוג 1200, זמני')).toHaveTextContent('1200זמני');
   });
 
+  it('on Home the "זמני" chip goes under the number, which stays whole (Moshe’s device test)', async () => {
+    await render(<Rating value={1200} size="home" provisional testID="home" />);
+    const number = screen.getByText('1200', hidden);
+    const chip = screen.getByTestId('home-provisional', hidden);
+    // Number and chip in a column, not a row.
+    const stack = styleOf(screen.getByTestId('home', hidden).children[0] as { props: { style?: unknown } });
+    expect(stack.flexDirection).toBeUndefined();
+    expect(stack.alignItems).toBe('center');
+    expect(chip).toHaveTextContent('זמני');
+    // One line, shrinking a little at the largest text sizes rather than being cut.
+    expect(number).toHaveProp('numberOfLines', 1);
+    expect(number).toHaveProp('adjustsFontSizeToFit', true);
+    // Elsewhere (lists, cards) the chip stays beside the number.
+    await render(<Rating value={1200} size="list" provisional testID="list" />);
+    const row = styleOf(screen.getByTestId('list', hidden).children[0] as { props: { style?: unknown } });
+    expect(row.flexDirection).toBe('row');
+  });
+
   it('words the league as on Home, and draws the icon variant in the league colour', async () => {
     await render(<LeagueBadge rating={1305} level={14} />);
     expect(screen.getByText('ליגת זהב · רמה 14')).toBeTruthy();

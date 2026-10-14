@@ -15,6 +15,7 @@
     "pool": "node scripts/gen-offline-pool.mjs",
     "icons": "node scripts/gen-icons.mjs",
     "avatars:strings": "tsx scripts/gen-avatar-strings.ts",
+    "countries:names": "tsx scripts/gen-country-names.ts",
     "perf:bundle": "node scripts/bundle-report.mjs",
     "routes:types": "cross-env CI=true expo customize tsconfig.json"
   },

@@ -1,18 +1,16 @@
-import type { CountryCode } from '@sudoku-fight/protocol';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { isAccountApiError } from '../../api/accountApi';
 import { registerProfile, signOut, useAuth } from '../../auth/authStore';
 import { ROUTES } from '../../auth/redirect';
 import { useRegistrationDraft } from '../../auth/registrationDraft';
-import { Flag } from '../../components/player';
 import { Button } from '../../components/ui';
 import { track } from '../../services/analytics';
 import { cue } from '../../services/feedback';
-import { color, radius, space, text, tokens } from '../../theme';
+import { space } from '../../theme';
 import { AvatarPicker } from './AvatarPicker';
 import { CountryPicker } from './CountryPicker';
 import { FighterPreview } from './FighterPreview';
@@ -30,8 +28,9 @@ import {
 import { nameSubmittable, useNameCheck } from './useNameCheck';
 
 /**
- * Registration, step 1: "צור את הלוחם שלך" (spec §3.2; Register-Fighter). The avatar on its stage and the
- * strip, the display name with its live check, the country [D21], and the live preview of the card.
+ * Registration, step 1: "צור את הלוחם שלך" (spec §3.2; Register-Fighter). Three fields: the avatar (its sheet
+ * shows all of them in a grid), the display name with its live check, and the country [D21]; under them the
+ * live preview of my card.
  *
  * Signed out: "המשך" goes on to step 2 (the account). Signed in without a profile (the registration stopped
  * after the account was made, or the name was taken meanwhile): "היכנס לזירה" creates the profile here, and
@@ -94,7 +93,8 @@ export function RegisterFighterScreen() {
       footer={
         <Button
           label={signedIn ? t('fighter.enterArena') : t('fighter.continue')}
-          size="lg"
+          size="md"
+          wrapLabel
           loading={busy}
           onPress={() => void submit()}
           testID="fighter-submit"
@@ -122,13 +122,8 @@ export function RegisterFighterScreen() {
       {signedIn ? <FormNote message={t('fighter.resumeNote')} testID="fighter-resume" /> : null}
       <FormAlert message={formError} testID="fighter-alert" />
 
-      <AvatarPicker
-        value={avatarId}
-        onChange={draft.setAvatar}
-        caption={<NameTag name={displayName} country={country} />}
-      />
-
       <View style={styles.form}>
+        <AvatarPicker value={avatarId} onChange={draft.setAvatar} />
         <NameField
           value={displayName}
           onChangeText={(v) => {
@@ -155,40 +150,6 @@ export function RegisterFighterScreen() {
   );
 }
 
-/**
- * The board's tag under the avatar on the stage: my flag and the name as typed (the default name while it is
- * empty). Seen, not spoken: the field under it and the preview say the same.
- */
-function NameTag({ name, country }: { name: string; country: CountryCode | null }) {
-  const { t } = useTranslation('account');
-  return (
-    <View
-      style={styles.tag}
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      testID="fighter-name-tag"
-    >
-      <Flag country={country} size="home" decorative />
-      <Text style={styles.tagName} numberOfLines={1}>
-        {name.trim() || t('home:profile.defaultName')}
-      </Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   form: { gap: space[8] },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space[4],
-    maxWidth: '100%',
-    paddingHorizontal: space[8],
-    paddingVertical: space[3],
-    borderRadius: radius.button,
-    borderWidth: tokens.border.hairline,
-    borderColor: color.border,
-    backgroundColor: color.surface2,
-  },
-  tagName: { ...text('h2'), color: color.text, flexShrink: 1 },
 });

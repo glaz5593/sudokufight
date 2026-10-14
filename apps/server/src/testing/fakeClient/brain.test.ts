@@ -273,6 +273,8 @@ describe('FakeBrain: a game against the server game', () => {
       ]);
       t.run();
       const { pace, difficulty, adaptation } = BOT_CONFIG;
+      // The quickest cell, a last gap, takes less than an ordinary move.
+      const easiest = Math.min(...Object.values(difficulty.technique));
       for (const [id, level] of [
         ['ana', 1],
         ['ben', 4],
@@ -281,7 +283,7 @@ describe('FakeBrain: a game against the server game', () => {
         const ps = plans(t.seat(id));
         expect(ps.length).toBeGreaterThan(10);
         for (const p of ps) {
-          expect(p.totalMs).toBeGreaterThanOrEqual(Math.floor(min * thinkScale * pace.fast) - 1);
+          expect(p.totalMs).toBeGreaterThanOrEqual(Math.floor(min * thinkScale * pace.fast * easiest) - 1);
           expect(p.totalMs).toBeLessThanOrEqual(
             Math.ceil(max * thinkScale * pace.fast * difficulty.max * adaptation.slowdown) + 1,
           );
@@ -291,7 +293,7 @@ describe('FakeBrain: a game against the server game', () => {
         }
       }
     }
-    expect(scaledBotConfig(0.5).levels[0]!.thinkMs).toEqual({ min: 4000, max: 5500 });
+    expect(scaledBotConfig(0.5).levels[0]!.thinkMs).toEqual({ min: 7500, max: 12_500 });
     expect(() => scaledBotConfig(0)).toThrow(RangeError);
   });
 

@@ -93,7 +93,8 @@ export const FLASH_CLEAR_MS = motion.duration.correctFlash + motion.duration.red
 /**
  * How long the board stays after the game ends, before the results (motion.md `last.cell`): a full board
  * plays the last cell's flash and holds it (700 + 400 ms; 200 ms with reduced motion). "End practice" goes
- * at once: the player asked for it.
+ * at once: the player asked for it. Either way the results never replace the screen while its end dialog
+ * is still on it (GameScreen: they also wait for the dialog's onExited, at most DIALOG_GONE_CEILING_MS more).
  */
 export const LAST_CELL_HOLD_MS = 400;
 
@@ -101,6 +102,13 @@ export function endDelayMs(reason: EndReason | undefined, reduce: boolean): numb
   if (reason !== 'boardComplete') return 0;
   return reduce ? motion.duration.reducedFade : motion.duration.correctFlash + LAST_CELL_HOLD_MS;
 }
+
+/**
+ * The longest the results wait for the end dialog to report it has left the screen (bug 9): its exit is
+ * `sheet.out` (240 ms, or a 200 ms fade) once the game-over render is committed, which can take a few hundred
+ * ms more on the phone. Only a ceiling: should the exit never be reported, the results still open.
+ */
+export const DIALOG_GONE_CEILING_MS = 1_500;
 
 // ---------------------------------------------------------------------------------------------------------
 // Two players (practice against a bot, spec §5.1, §9; ranked), and three or four (ranked, work plan stage 10)

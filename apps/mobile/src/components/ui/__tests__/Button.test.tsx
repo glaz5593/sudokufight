@@ -4,8 +4,8 @@ import { I18nManager, StyleSheet, type ViewStyle } from 'react-native';
 import i18n from '../../../i18n';
 import { useSettings } from '../../../state/settings';
 import { color, size, tokens } from '../../../theme';
-import { Button } from '../Button';
-import { directionProblems, hostStyles } from '../testing/layout';
+import { Button, LARGE_TEXT_SCALE } from '../Button';
+import { directionProblems, hostStyles, PHONE, setWindow } from '../testing/layout';
 
 const styleOf = (el: { props: { style?: unknown } }) => StyleSheet.flatten(el.props.style as ViewStyle) ?? {};
 
@@ -40,6 +40,57 @@ describe('Button', () => {
   ] as const)('primary %s is %i high', async (name, height) => {
     await render(<Button label="שחק" size={name} />);
     expect(styleOf(screen.getByRole('button'))).toMatchObject({ height });
+  });
+
+  describe('wrapLabel: a second line only at large system text sizes', () => {
+    it.each([1, 1.1, LARGE_TEXT_SCALE - 0.01])(
+      'at fontScale %d the label keeps to one line',
+      async (fontScale) => {
+        const restore = setWindow({ ...PHONE, fontScale });
+        try {
+          await render(<Button label="צור משתמש והיכנס לזירה" size="md" wrapLabel testID="go" />);
+          expect(screen.getByTestId('go-label')).toHaveProp('numberOfLines', 1);
+          expect(styleOf(screen.getByRole('button'))).toMatchObject({ height: size.buttonMd });
+          expect(styleOf(screen.getByTestId('go-shadow'))).toMatchObject({ height: size.buttonMd });
+        } finally {
+          await restore();
+        }
+      },
+    );
+
+    it.each([LARGE_TEXT_SCALE, 1.5, 2])(
+      'at fontScale %d it may wrap, and the button grows',
+      async (fontScale) => {
+        const restore = setWindow({ ...PHONE, fontScale });
+        try {
+          await render(<Button label="צור משתמש והיכנס לזירה" size="md" wrapLabel testID="go" />);
+          const label = screen.getByTestId('go-label');
+          expect(label).toHaveProp('numberOfLines', 2);
+          expect(styleOf(label).flexShrink).toBe(1);
+          const button = styleOf(screen.getByRole('button'));
+          expect(button.height).toBeUndefined();
+          expect(button.minHeight).toBe(size.buttonMd);
+          // The shadow follows the face's height, 4 dp lower.
+          expect(styleOf(screen.getByTestId('go-shadow'))).toMatchObject({
+            top: tokens.elevation.cta.offsetY,
+            bottom: -tokens.elevation.cta.offsetY,
+          });
+        } finally {
+          await restore();
+        }
+      },
+    );
+
+    it('without it, a label stays on one line at any size, as before', async () => {
+      const restore = setWindow({ ...PHONE, fontScale: 2 });
+      try {
+        await render(<Button label="שחק" size="hero" testID="play" />);
+        expect(screen.getByTestId('play-label')).toHaveProp('numberOfLines', 1);
+        expect(styleOf(screen.getByRole('button'))).toMatchObject({ height: size.ctaHero });
+      } finally {
+        await restore();
+      }
+    });
   });
 
   it('presses down and back with and without reduced motion', async () => {

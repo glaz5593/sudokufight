@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '../../components/Icon';
 import { formatScore, ltr, paletteAt, scoreText, signedText } from '../../components/player';
 import { Button, Spinner } from '../../components/ui';
+import { crashReporter } from '../../services/crashlytics';
 import { cue } from '../../services/feedback';
 import { openPlayerCard } from '../player/navigation';
 import { useProfile } from '../../state/profile';
@@ -73,8 +74,15 @@ export function ResultsScreen({
 
   useEffect(() => {
     let alive = true;
-    void load(gameId).then((result) => {
+    crashReporter().log('results: loading');
+    const show = (result: ResultsLoad) => {
+      crashReporter().log(`results: ${result.kind}`);
       if (alive) setLoaded({ id: gameId, result });
+    };
+    // A load that fails says so ("unavailable", with "לבית"), reported, instead of a spinner for ever.
+    load(gameId).then(show, (error: unknown) => {
+      crashReporter().recordError(error, 'results: could not load');
+      show({ kind: 'unavailable' });
     });
     return () => {
       alive = false;

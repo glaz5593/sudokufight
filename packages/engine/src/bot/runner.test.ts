@@ -4,7 +4,7 @@ import { defaultRules, INTERFERENCE_KINDS } from '../game/rules';
 import type { Action, GameConfig, GameEvent, GameState } from '../game/types';
 import { replay } from '../game/view';
 import type { CellIndex, Digit } from '../sudoku/board';
-import { type BotGame, botGame, eventsOf, HUMAN, runUntilOver, withLevel } from '../testing/bot';
+import { type BotGame, botGame, eventsOf, HUMAN, runUntilOver, scriptHuman, withLevel } from '../testing/bot';
 import { PUZZLE } from '../testing/game';
 import { ManualClock } from '../util/clock';
 import { createRng } from '../util/random';
@@ -51,35 +51,6 @@ function humanErrs(g: BotGame, avoid?: CellIndex): void {
   g.host.place(cell, plausibleWrongDigits(g.host.state, cell)[0]!);
 }
 
-/**
- * A human who, every `everyMs`, locks the first free cell and enters its digit `placeMs` later; every
- * `missEvery`-th digit is a plausible wrong one.
- */
-function scriptHuman(
-  g: BotGame,
-  { everyMs = 6000, placeMs = 2000, missEvery = 0, startAt = 1000 } = {},
-): void {
-  let moves = 0;
-  const { host, scheduler, clock } = g;
-  const step = () => {
-    const s = host.state;
-    if (s.status === 'over') return;
-    const cell = eligibleCells(s, HUMAN, clock.now())[0];
-    if (s.status === 'running' && !s.locks.some((l) => l.playerId === HUMAN) && cell !== undefined) {
-      host.select(cell);
-      scheduler.setTimeout(() => {
-        const st = host.state;
-        if (st.status !== 'running' || !st.locks.some((l) => l.playerId === HUMAN && l.cell === cell)) return;
-        moves++;
-        const wrong = missEvery && moves % missEvery === 0 ? plausibleWrongDigits(st, cell)[0] : undefined;
-        host.place(cell, wrong ?? solutionOf(st, cell));
-      }, placeMs);
-    }
-    scheduler.setTimeout(step, everyMs);
-  };
-  scheduler.setTimeout(step, startAt);
-}
-
 /** Every reaction always, for this level. */
 const reactsAlways = (level: 1 | 2 | 3 | 4 | 5) =>
   withLevel(BOT_LEVELS, level, {
@@ -122,6 +93,27 @@ describe('a whole game against a scripted human (spec §9)', () => {
   it('is never refused and never fails, and re-plans when the human takes its cell', () => {
     expect(problems(g)).toEqual([]);
     expect(plans(g).length).toBeGreaterThan(eventsOf(events, 'cellLocked', g.botId).length);
+  });
+
+  it('thinks the level’s base × the difficulty of the deduction each move needs (spec §9)', () => {
+    const { min, max } = BOT_LEVELS[2]!.thinkMs; // Mr. Hoot: 9–15 s
+    const seen = new Set<string>();
+    for (const p of plans(g)) {
+      seen.add(p.difficulty.technique);
+      const base = p.totalMs / (p.difficulty.factor * p.adapt * BOT_CONFIG.pace.fast);
+      expect(base).toBeGreaterThanOrEqual(min - 1);
+      expect(base).toBeLessThanOrEqual(max + 1);
+      expect(p.hesitateMs + p.solveMs).toBe(p.totalMs);
+      expect(p.solveMs).toBeLessThanOrEqual(g.config.rules.thinkTimeMs * BOT_CONFIG.placeWithin);
+    }
+    // Easy cells mostly, and a move on an easier one is quicker.
+    expect(seen).toContain('lastGap');
+    expect(seen).toContain('nakedSingle');
+    const meanOf = (t: string) => {
+      const ms = plans(g).filter((p) => p.difficulty.technique === t && p.adapt === 1);
+      return ms.reduce((a, p) => a + p.totalMs, 0) / ms.length;
+    };
+    expect(meanOf('lastGap')).toBeLessThan(meanOf('nakedSingle'));
   });
 
   it('stops at the end: nothing after gameOver, no timer left', () => {
@@ -492,6 +484,77 @@ describe("the 'turns' model [D1]", () => {
     expect(locks.length).toBeGreaterThan(3);
     for (const before of locks) expect(before.turn?.playerId).toBe(g.botId);
     expect(problems(g)).toEqual([]);
+  });
+
+  it('the slowest level still locks before its turn passes, and its digit comes within the lock', () => {
+    const g = botGame({ level: 1, gameType: 'normal', seed: 23, rules: { turnModel: 'turns' } });
+    scriptHuman(g, { everyMs: 500, placeMs: 2000, startAt: 100 }); // quick on its own turns
+    runUntilOver(g, 2 * 3600_000, 1000);
+    expect(g.host.state.result?.reason).toBe('boardComplete');
+    const events = g.host.events;
+    const turns = eventsOf(events, 'turnStarted').filter((e) => e.playerId === g.botId);
+    expect(turns.length).toBeGreaterThan(10);
+    for (const turn of turns) {
+      const next = events.find(
+        (e) => e.seq > turn.seq && (e.type === 'turnStarted' || e.type === 'gameOver'),
+      );
+      const lock = events.find((e) => e.seq > turn.seq && e.type === 'cellLocked' && e.playerId === g.botId);
+      // A Novice move takes 15 s and more, a 'normal' turn 12 s: it hesitates within the turn instead.
+      expect(lock).toBeDefined();
+      expect(lock!.seq).toBeLessThan(next!.seq);
+      if (turn.endsAt !== null) expect(lock!.t).toBeLessThan(turn.endsAt);
+    }
+    // Only the deliberate hesitation lets a lock run out (spec §9: about 2%).
+    const timeouts = eventsOf(events, 'cellReleased', g.botId).filter((e) => e.reason === 'timeout');
+    expect(timeouts.length).toBeLessThanOrEqual(Math.ceil(0.1 * turns.length));
+    expect(problems(g)).toEqual([]);
+  });
+});
+
+describe('four at the table', () => {
+  it('a human and three bots (levels 1, 2 and 4) fill the board; every bot digit comes within its lock', () => {
+    const clock = new ManualClock();
+    const scheduler = new ManualScheduler(clock);
+    const levels = [1, 2, 4] as const;
+    const config: GameConfig = {
+      id: 'four',
+      mode: 'bot',
+      gameType: 'fast',
+      puzzle: PUZZLE,
+      players: [{ id: HUMAN }, ...levels.map((l) => botPlayer(l))],
+      rules: defaultRules('bot', 'fast'),
+      seed: 1,
+    };
+    const host = new LocalGameHost({ config, playerId: HUMAN, clock, scheduler });
+    const traces: BotTrace[] = [];
+    for (const level of levels)
+      attachBot(host, {
+        botId: `bot-${level}`,
+        level,
+        clock,
+        scheduler,
+        rng: createRng(30 + level),
+        onTrace: (t) => traces.push(t),
+      });
+    scriptHuman({ host, scheduler, clock }, { everyMs: 10_000, missEvery: 5 });
+    while (host.state.status !== 'over' && clock.now() < 3600_000) scheduler.advance(1000);
+    expect(host.state.result?.reason).toBe('boardComplete');
+    expect(traces.filter((t) => t.type === 'error' || (t.type === 'action' && t.rejected))).toEqual([]);
+    const limit = config.rules.thinkTimeMs * BOT_CONFIG.placeWithin;
+    for (const level of levels) {
+      const id = `bot-${level}`;
+      let lockedAt: number | null = null;
+      let digits = 0;
+      for (const e of host.events) {
+        if (!('playerId' in e) || e.playerId !== id) continue;
+        if (e.type === 'cellLocked') lockedAt = e.t;
+        if (e.type === 'placedCorrect' || e.type === 'placedWrong') {
+          expect(e.t - lockedAt!).toBeLessThanOrEqual(limit);
+          digits++;
+        }
+      }
+      expect([id, digits > 0]).toEqual([id, true]);
+    }
   });
 });
 

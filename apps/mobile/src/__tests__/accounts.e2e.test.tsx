@@ -24,6 +24,7 @@ import { installTestAuth, type TestAuth } from '../auth/testing/testAuth';
 import { memoryDb, type SqlJsDb } from '../game/testing/sqlJsDb';
 import i18n from '../i18n';
 import { track } from '../services/analytics';
+import { chooseAvatar } from '../screens/account/testing/avatarGrid';
 import { useProfile } from '../state/profile';
 import { useSettings } from '../state/settings';
 
@@ -96,7 +97,7 @@ async function register(app: { pathname(): string }, name: string, email: string
   await fireEvent.press(screen.getByRole('button', { name: 'הרשמה' }));
   await waitFor(() => expect(app.pathname()).toBe('/register/fighter'));
 
-  await fireEvent.press(screen.getByRole('button', { name: 'האווטאר הבא' }));
+  await chooseAvatar('maya');
   await type('name', name);
   await wait(300);
   expect(await screen.findByTestId('name-status-available', hidden)).toHaveTextContent('פנוי');
@@ -156,7 +157,7 @@ describe('accounts, end to end (work plan stage 8 "סיום")', () => {
     ]);
     expect(useAuth.getState()).toMatchObject({
       status: 'ready',
-      me: { displayName: 'MosheG', avatarId: 'maya', country: 'IL' }, // the second avatar ("next" once)
+      me: { displayName: 'MosheG', avatarId: 'maya', country: 'IL' }, // chosen in the avatar sheet
     });
     // A fresh stack: no way back to the registration.
     expect(router.canGoBack()).toBe(false);
@@ -175,8 +176,7 @@ describe('accounts, end to end (work plan stage 8 "סיום")', () => {
     await waitFor(() => expect(nav.pathname()).toBe(`/player/${useAuth.getState().me!.id}`));
     await press('player-card-edit');
     await waitFor(() => expect(nav.pathname()).toBe('/edit-profile'));
-    await press('avatar-picker-kind-food');
-    await press('avatar-picker-sufganiya');
+    await chooseAvatar('sufganiya');
     await press('edit-save');
     await waitFor(() => expect(nav.pathname()).toBe(`/player/${useAuth.getState().me!.id}`));
     await press('back');

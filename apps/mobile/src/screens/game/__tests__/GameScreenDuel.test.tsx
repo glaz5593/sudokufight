@@ -486,6 +486,9 @@ describe('ending a practice against a bot', () => {
     expect(cues()).toEqual(['surrender']);
     expect(g.host.getView().result?.reason).toBe('practiceEnded');
     expect(g.host.getView().result?.ratingChanges).toEqual([]);
+    // The results replace the game once the dialog has slid away (sheet.out, 240 ms).
+    expect(g.onEnded).not.toHaveBeenCalled();
+    await frames(250);
     expect(g.onEnded).toHaveBeenCalledWith(g.session.id);
   });
 

@@ -35,6 +35,11 @@ export interface ConfirmModalProps {
   onConfirm: () => void;
   /** Cancel button, scrim tap, Android back and the iOS escape gesture all call this. */
   onCancel: () => void;
+  /**
+   * The dialog has closed and left the screen: its exit animation is over and its window is gone. What must
+   * not happen under a closing dialog waits for this (the game screen replaced by the results, bug 9).
+   */
+  onExited?: () => void;
   tone?: ConfirmTone;
   placement?: ConfirmPlacement;
   /** Icon in a 40 dp circle (the surrender flag). */
@@ -64,6 +69,7 @@ export function ConfirmModal({
   cancelLabel,
   onConfirm,
   onCancel,
+  onExited,
   tone = 'neutral',
   placement = 'bottom',
   icon,
@@ -79,11 +85,15 @@ export function ConfirmModal({
   const { bottom } = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const center = placement === 'center';
-  const { mounted, progress } = usePresence(visible, {
-    inMs: center ? motion.duration.stateChange : motion.duration.sheetIn,
-    outMs: center ? motion.duration.stateChange : motion.duration.sheetOut,
-    reduce,
-  });
+  const { mounted, progress } = usePresence(
+    visible,
+    {
+      inMs: center ? motion.duration.stateChange : motion.duration.sheetIn,
+      outMs: center ? motion.duration.stateChange : motion.duration.sheetOut,
+      reduce,
+    },
+    onExited,
+  );
   const panelHeight = useSharedValue(windowHeight);
   const cancelRef = useRef<ComponentRef<typeof View>>(null);
 

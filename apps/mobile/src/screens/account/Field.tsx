@@ -115,20 +115,40 @@ export function Field({
         {status}
         {end}
       </Animated.View>
-      {error ? (
-        <View style={styles.messageRow} accessibilityLiveRegion="polite">
-          <Icon name="alert" size={size.icon.inline} color={color.danger} />
-          <Text style={styles.error} accessibilityRole="alert" testID={testID && `${testID}-error`}>
-            {error}
-          </Text>
-        </View>
-      ) : hint ? (
-        <Text style={styles.hint} testID={testID && `${testID}-hint`}>
-          {hint}
-        </Text>
-      ) : null}
+      <FieldMessage error={error} hint={hint} testID={testID} />
     </View>
   );
+}
+
+/**
+ * The line under a field (this one, and the pickers' PickerField): the error in red after the alert icon,
+ * announced as it appears (a live region: TalkBack ignores the alert role), or else the hint.
+ */
+export function FieldMessage({
+  error = null,
+  hint = null,
+  testID,
+}: {
+  error?: string | null;
+  hint?: string | null;
+  testID?: string;
+}) {
+  if (error)
+    return (
+      <View style={styles.messageRow} accessibilityLiveRegion="polite" testID={testID && `${testID}-message`}>
+        <Icon name="alert" size={size.icon.inline} color={color.danger} />
+        <Text style={styles.error} accessibilityRole="alert" testID={testID && `${testID}-error`}>
+          {error}
+        </Text>
+      </View>
+    );
+  if (hint)
+    return (
+      <Text style={styles.hint} testID={testID && `${testID}-hint`}>
+        {hint}
+      </Text>
+    );
+  return null;
 }
 
 /** A short status inside a field: icon and word in a colour ("✓ פנוי", "תפוס"). */

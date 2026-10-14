@@ -12,15 +12,17 @@
     "confirmPassword": "Confirm password",
     "displayName": "Display name",
     "displayNamePlaceholder": "Your arena name",
+    "avatar": "Avatar",
     "country": "Country",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "change": "Change"
   },
   "validation": {
     "emailRequired": "Enter your email",
     "emailInvalid": "That email address doesn't look right",
     "passwordRequired": "Enter your password",
-    "passwordRules": "The password needs at least 8 characters, a letter and a digit",
+    "passwordRules": "The password needs at least 8 characters",
     "confirmMismatch": "The passwords don't match",
     "countryRequired": "Choose a country"
   },
@@ -104,19 +106,13 @@
     "titleLabel": "Create your fighter",
     "resumeNote": "Your account is ready. Just pick your fighter.",
     "chooseAvatar": "Choose an avatar",
-    "avatarCount": "{{n}} / {{total}}",
-    "kinds": "Kinds of character",
-    "avatarGroup": "Avatar choice: {{kind}}",
     "avatar": "{{name}}",
     "avatarLocked": "{{name}}, opens at level {{level}}",
     "selectedAvatar": "Selected avatar: {{name}}",
-    "prevAvatar": "Previous avatar",
-    "nextAvatar": "Next avatar",
+    "yourPick": "Your pick: {{name}}",
     "previewTitle": "This is how the arena sees you",
     "previewLabel": "Preview of your card in a game: {{name}}",
     "previewNew": "New",
-    "previewOpponent": "Your opponent",
-    "previewOpponentName": "???",
     "continue": "Continue",
     "enterArena": "Enter the arena",
     "signOut": "Sign out"
@@ -157,15 +153,13 @@
     "fighterReady": "Fighter ready",
     "edit": "Edit",
     "editLabel": "Edit your fighter",
-    "submit": "Create account and enter the arena",
+    "submit": "Create account",
     "profileFailed": "Your account was created, but your fighter wasn't saved yet. Try again.",
     "nameTakenNow": "The name {{name}} was taken meanwhile. Choose another one: your account is waiting."
   },
   "password": {
     "rules": {
-      "length": "At least 8 characters",
-      "letter": "At least one letter",
-      "digit": "At least one digit"
+      "length": "At least 8 characters"
     },
     "ruleMet": "{{rule}}: done",
     "ruleMissing": "{{rule}}: missing",

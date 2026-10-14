@@ -20,7 +20,12 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '../../auth/authStore';
-import { type PasswordRules, type PasswordStrength, strengthLevel } from '../../auth/password';
+import {
+  PASSWORD_RULES,
+  type PasswordRules,
+  type PasswordStrength,
+  strengthLevel,
+} from '../../auth/password';
 import { Icon, type IconName } from '../../components/Icon';
 import { SeatGlyph } from '../../components/player';
 import { color, radius, size, space, text, tokens } from '../../theme';
@@ -252,12 +257,12 @@ export function StrengthMeter({ strength, testID }: { strength: PasswordStrength
   );
 }
 
-/** The password's three rules, each with a tick once met (spec §3.1). */
+/** The password's rules (spec §3.1: one, at least 8 characters), each with a tick once met. */
 export function PasswordChecklist({ rules, testID }: { rules: PasswordRules; testID?: string }) {
   const { t } = useTranslation('account');
   return (
     <View style={styles.rules} testID={testID}>
-      {(['length', 'letter', 'digit'] as const).map((rule) => {
+      {PASSWORD_RULES.map((rule) => {
         const met = rules[rule];
         const name = t(`password.rules.${rule}`);
         return (

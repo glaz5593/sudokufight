@@ -15,6 +15,9 @@ const FIREBASE_CODES: Record<string, AuthErrorCode> = {
   'auth/invalid-email': 'invalidEmail',
   'auth/missing-email': 'invalidEmail',
   'auth/weak-password': 'weakPassword',
+  // A password policy turned on in the Firebase console (Authentication › Settings) asking for more than the
+  // app's 8 characters. It should stay off (spec §3.1); if it is on, the player at least hears why.
+  'auth/password-does-not-meet-requirements': 'weakPassword',
   'auth/requires-recent-login': 'requiresRecentLogin',
   'auth/user-disabled': 'userDisabled',
   'auth/user-token-expired': 'requiresRecentLogin',

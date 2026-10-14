@@ -1,3 +1,5 @@
+import { GAME_TYPES } from '../gameType';
+import { TECHNIQUES } from '../sudoku/logic';
 import {
   BOT_CONFIG,
   BOT_LEVEL_IDS,
@@ -7,23 +9,36 @@ import {
   botLevel,
   type BotLevelId,
   botPlayer,
+  CELL_TECHNIQUES,
   isBotLevelId,
 } from './levels';
 
 /* The level table and the bot settings (spec §9) [D40]. */
 
 describe('the level table (spec §9)', () => {
-  it('has the five levels of the table: name, avatar, base think time for "normal", mistake rate', () => {
+  it('has the five levels of the table: name, avatar, base think time per move, mistake rate', () => {
     expect(
       BOT_LEVELS.map((l) => [l.level, l.name, l.avatar, l.thinkMs.min, l.thinkMs.max, l.mistakeRate]),
     ).toEqual([
-      [1, 'Pip', 'hatchling', 8000, 11000, 0.15],
-      [2, 'Biscuit', 'fox', 6000, 9000, 0.09],
-      [3, 'Mr. Hoot', 'owl', 4000, 7000, 0.05],
-      [4, 'Maestro', 'professor', 3000, 5000, 0.02],
-      [5, 'Overlord', 'furry-monster', 2000, 4000, 0.01],
+      [1, 'Pip', 'hatchling', 15_000, 25_000, 0.15],
+      [2, 'Biscuit', 'fox', 12_000, 20_000, 0.09],
+      [3, 'Mr. Hoot', 'owl', 9_000, 15_000, 0.05],
+      [4, 'Maestro', 'professor', 6_000, 10_000, 0.02],
+      [5, 'Overlord', 'furry-monster', 3_000, 5_000, 0.01],
     ]);
     expect(BOT_LEVEL_IDS).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it("thinks per Moshe's ends (Novice 15–25 s, Grandmaster 3–5 s a move), the levels between evenly spaced", () => {
+    const first = BOT_LEVELS[0]!.thinkMs;
+    const last = BOT_LEVELS.at(-1)!.thinkMs;
+    expect(first).toEqual({ min: 15_000, max: 25_000 });
+    expect(last).toEqual({ min: 3_000, max: 5_000 });
+    const steps = BOT_LEVELS.length - 1;
+    BOT_LEVELS.forEach((l, k) => {
+      expect(l.thinkMs.min).toBeCloseTo(first.min + ((last.min - first.min) * k) / steps, 6);
+      expect(l.thinkMs.max).toBeCloseTo(first.max + ((last.max - first.max) * k) / steps, 6);
+    });
   });
 
   it('dresses every level in a different catalog avatar (protocol checks they are choosable ids)', () => {
@@ -74,8 +89,9 @@ describe('the level table (spec §9)', () => {
 });
 
 describe('the settings (spec §9)', () => {
-  it('paces the game types: fast ×0.67, normal ×1, hard ×1.5', () => {
-    expect(BOT_PACE).toEqual({ fast: 0.67, normal: 1, hard: 1.5 });
+  it('thinks as long per move in every game type: a harder board is slower through its cells', () => {
+    expect(BOT_PACE).toEqual({ fast: 1, normal: 1, hard: 1 });
+    expect(Object.keys(BOT_PACE).sort()).toEqual([...GAME_TYPES].sort());
     expect(BOT_CONFIG.pace).toBe(BOT_PACE);
   });
 
@@ -93,11 +109,31 @@ describe('the settings (spec §9)', () => {
     expect(BOT_CONFIG.adaptation.slowdown).toBeLessThanOrEqual(1.5);
   });
 
-  it('makes harder cells slower: naked single 1 < hidden single < harder, capped', () => {
+  it("knows the logical solver's techniques, between a last gap and 'harder'", () => {
+    expect(CELL_TECHNIQUES).toEqual(['lastGap', ...TECHNIQUES, 'harder']);
+    expect(Object.keys(BOT_CONFIG.difficulty.technique).sort()).toEqual([...CELL_TECHNIQUES].sort());
+  });
+
+  it('makes a harder deduction slower: last gap < naked single (1, the table) < hidden single < … < harder', () => {
     const { technique, max, perExtraOption } = BOT_CONFIG.difficulty;
-    expect(technique.nakedSingle).toBe(1);
+    expect(technique).toEqual({
+      lastGap: 0.8,
+      nakedSingle: 1,
+      hiddenSingle: 1.3,
+      pointing: 1.7,
+      claiming: 1.7,
+      nakedPair: 2,
+      hiddenPair: 2,
+      harder: 2.5,
+    });
+    // Never faster for a harder technique (the order of CELL_TECHNIQUES), and strictly so across the tiers.
+    const factors = CELL_TECHNIQUES.map((t) => technique[t]);
+    for (let k = 1; k < factors.length; k++) expect(factors[k]).toBeGreaterThanOrEqual(factors[k - 1]!);
+    expect(technique.lastGap).toBeLessThan(technique.nakedSingle);
     expect(technique.hiddenSingle).toBeGreaterThan(technique.nakedSingle);
-    expect(technique.harder).toBeGreaterThan(technique.hiddenSingle);
+    expect(technique.pointing).toBeGreaterThan(technique.hiddenSingle);
+    expect(technique.nakedPair).toBeGreaterThan(technique.claiming);
+    expect(technique.harder).toBeGreaterThan(technique.hiddenPair);
     expect(max).toBeGreaterThanOrEqual(technique.harder);
     expect(perExtraOption).toBeGreaterThan(0);
   });

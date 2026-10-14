@@ -246,6 +246,10 @@ describe('GameScreen (solo practice)', () => {
     expect(cues()).toEqual(['surrender']);
     expect(session.getView().status).toBe('over');
     expect(session.getView().result?.reason).toBe('practiceEnded');
+    // Over at once; the results replace the game once the dialog has slid away (sheet.out, 240 ms).
+    expect(onEnded).not.toHaveBeenCalled();
+    await frames(250);
+    expect(screen.queryByTestId('end-practice')).toBeNull();
     expect(onEnded).toHaveBeenCalledWith(session.id);
     expect(onEnded).toHaveBeenCalledTimes(1);
   });

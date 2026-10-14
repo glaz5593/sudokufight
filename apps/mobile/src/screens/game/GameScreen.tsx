@@ -48,6 +48,7 @@ import { useGameEffects, useMatchEffects } from '../../game/useGameEffects';
 import { useNow } from '../../game/useNow';
 import { useMyLevel } from '../../progress/hooks';
 import { track } from '../../services/analytics';
+import { crashReporter } from '../../services/crashlytics';
 import { cue, cueCountUp, preloadCues } from '../../services/feedback';
 import { useProfile } from '../../state/profile';
 import { color, space, tokens } from '../../theme';
@@ -87,6 +88,7 @@ import { GroupHud } from './GroupHud';
 import { HitLayer, hitOf } from './hit';
 import { identityOf } from './identity';
 import {
+  DIALOG_GONE_CEILING_MS,
   endDelayMs,
   FLASH_CLEAR_MS,
   hudLayoutOf,
@@ -152,6 +154,13 @@ import { useLiveAnnouncer } from './useLiveAnnouncer';
  * card, a correct digit smiles and nods, a mistake looks sad and shakes, a hit is dizzy and wobbles while it
  * lasts, a reaction emoji plays on its sender's face, the end of the game laughs or looks sad, and my avatar
  * falls asleep after a while without an action. With reduced motion only the faces change.
+ *
+ * Nothing here may take the app down (bug 9: "כן, לסיים" against a bot, then a black screen). The host hands a
+ * listener's error to whoever acted (packages/engine host.ts), and a throw out of a press handler, or out of a
+ * timer, is a fatal error in a release build: every host action from a press, and the way to the results, report
+ * such an error to Crashlytics (with breadcrumbs of the end) instead, and the game and its end go on. "כן, לסיים"
+ * ends the game at once, and the results replace the screen only once the dialog has left it (its onExited:
+ * the exit animation over and its window gone), never while it is still closing.
  */
 
 /** What a game's config does not say about a player: their avatar and country (an online match's profiles). */
@@ -226,6 +235,24 @@ function without<T>(
 }
 
 const NO_CONNECTION: ConnectionModel = { kind: 'none' };
+
+/** An error the game survives: reported to Crashlytics (and shown in development), never thrown on. */
+function survive(error: unknown, context: string): void {
+  if (__DEV__) console.warn(`[game] ${context}`, error);
+  crashReporter().recordError(error, `game: ${context}`);
+}
+
+/** A host action from a press or a timer: an error out of the host's listeners is survived (see above). */
+function safely(context: string, run: () => void): void {
+  try {
+    run();
+  } catch (error) {
+    survive(error, context);
+  }
+}
+
+/** A step of the game's end, kept with a crash report (Crashlytics' log). */
+const breadcrumb = (message: string) => crashReporter().log(`game: ${message}`);
 
 export function GameScreen({
   session,
@@ -482,6 +509,56 @@ export function GameScreen({
   const deniedIds = useRef(0);
   const ended = useRef(false);
 
+  // "סיום אימון" / "כניעה" (spec §6.6): its dialog.
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  /** True from the moment the end dialog opens (openConfirm) until it has left the screen (its onExited). */
+  const dialogUp = useRef(false);
+  /** The results, waiting for the end dialog to leave the screen. */
+  const whenDialogGone = useRef<(() => void) | null>(null);
+  const onDialogExited = useCallback(() => {
+    dialogUp.current = false;
+    const next = whenDialogGone.current;
+    whenDialogGone.current = null;
+    next?.();
+  }, []);
+
+  /**
+   * The results replace the game, once: after `delay` ms (a timer of this screen), or at once. Never while the
+   * end dialog is still on the screen (bug 9: the dialog's native window torn down with the screen): an open
+   * dialog closes (the game is over), and the results also wait for it to have left, up to a ceiling should
+   * that never be reported. Never from a throw: a failed navigation is reported, and the game stays, over.
+   */
+  const showResults = useCallback(
+    (gameId: string, delay = 0) => {
+      ended.current = true;
+      let opened = false;
+      const open = () => {
+        if (opened) return;
+        opened = true;
+        whenDialogGone.current = null;
+        breadcrumb('opening the results');
+        safely('opening the results', () => onEnded(gameId));
+      };
+      let waits = 0;
+      const done = () => {
+        waits -= 1;
+        if (waits === 0) open();
+      };
+      if (dialogUp.current) {
+        waits += 1;
+        whenDialogGone.current = done;
+        setConfirmOpen(false);
+        later(delay + DIALOG_GONE_CEILING_MS, open);
+      }
+      if (delay > 0) {
+        waits += 1;
+        later(delay, done);
+      }
+      if (waits === 0) open();
+    },
+    [later, onEnded],
+  );
+
   const flash = (f: BoardFlash) => {
     setFlashes((list) => [...list.filter((x) => x.cell !== f.cell), f]);
     later(FLASH_CLEAR_MS, () => setFlashes((list) => list.filter((x) => x !== f)));
@@ -662,9 +739,8 @@ export function GameScreen({
           return;
         const reason = update.view.result?.reason;
         if (reason === 'boardComplete') announce(t('live.complete'));
-        const delay = endDelayMs(reason, reduce);
-        if (delay > 0) later(delay, () => onEnded(e.gameId));
-        else onEnded(e.gameId);
+        breadcrumb(`game over (${reason ?? 'no result'})`);
+        showResults(e.gameId, endDelayMs(reason, reduce));
         return;
       }
     }
@@ -693,10 +769,10 @@ export function GameScreen({
   });
 
   // ---- between the players (work plan stage 6): reactions, the arsenal, an interference on me ----
-  const react = useCallback((emoji: string) => host.react(emoji), [host]);
+  const react = useCallback((emoji: string) => safely('react', () => host.react(emoji)), [host]);
   const reactions = useReactions({ view, now, onReact: react });
   const interfere = useCallback(
-    (targetId: PlayerId, kind: InterferenceKind) => host.interfere(targetId, kind),
+    (targetId: PlayerId, kind: InterferenceKind) => safely('interfere', () => host.interfere(targetId, kind)),
     [host],
   );
   const arsenal = useArsenal({ onLaunch: interfere });
@@ -839,14 +915,10 @@ export function GameScreen({
   // departure is still on the screen).
   useEffect(() => {
     if (view.status !== 'over' || ended.current || awaitResults) return;
-    ended.current = true;
-    onEnded(view.gameId);
-  }, [view.status, view.gameId, onEnded, awaitResults]);
+    showResults(view.gameId);
+  }, [view.status, view.gameId, showResults, awaitResults]);
   // "לתוצאות" on "the opponent left".
-  const toResults = useCallback(() => {
-    ended.current = true;
-    onEnded(view.gameId);
-  }, [onEnded, view.gameId]);
+  const toResults = useCallback(() => showResults(view.gameId), [showResults, view.gameId]);
 
   // The sounds of the game are loaded once the screen is up (motion.md §8).
   useEffect(() => {
@@ -869,14 +941,15 @@ export function GameScreen({
         cue('cellSelect'); // on tap, before the host answers (motion.md §7)
         setPendingCell(cell);
       }
-      host.select(cell);
+      safely('select', () => host.select(cell));
     },
     [host, session],
   );
   const onDigit = useCallback(
     (digit: Digit) => {
       const mine = latest.current.board.myLock;
-      if (mine) host.place(mine.cell, digit);
+      // The last digit of the board ends the game: its listeners run inside this press.
+      if (mine) safely('place', () => host.place(mine.cell, digit));
     },
     [host],
   );
@@ -886,16 +959,32 @@ export function GameScreen({
   }, []);
   const onCancel = useCallback(() => {
     cue('cellRelease');
-    host.release();
+    safely('release', () => host.release());
   }, [host]);
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const openConfirm = useCallback(() => setConfirmOpen(true), []);
+  const openConfirm = useCallback(() => {
+    dialogUp.current = true;
+    setConfirmOpen(true);
+  }, []);
   const closeConfirm = useCallback(() => setConfirmOpen(false), []);
+  /**
+   * "כן, לסיים" / "כן, להיכנע" (spec §6.6): the game ends now (a practice: at once, inside this press), and the
+   * results open once the dialog has left the screen (showResults). Whatever fails on the way is reported, and
+   * the end still reaches the results (bug 9).
+   */
   const confirmEnd = () => {
     setConfirmOpen(false);
     cue('surrender');
-    session.endPractice();
+    breadcrumb(isOnline ? 'surrender confirmed' : 'end of practice confirmed');
+    try {
+      session.endPractice();
+    } catch (error) {
+      // A listener of the host failed at the end; the game is over all the same.
+      survive(error, 'ending the game');
+    }
+    // The end's own effect did not get to the results (it failed before them): the game is over, go there.
+    if (!ended.current && !isOnline && session.getView().status === 'over')
+      showResults(session.getView().gameId);
   };
 
   // Android back asks first, like "סיום אימון" / "כניעה" (an open dialog handles back itself). Online, while the
@@ -907,7 +996,7 @@ export function GameScreen({
       // Out of a game that goes on (3–4 players): nothing to give up any more; online, back leaves it.
       else if (out) {
         if (isOnline) onHome?.();
-      } else if (playing && !blocked) setConfirmOpen(true);
+      } else if (playing && !blocked) openConfirm();
     };
   });
   useEffect(() => {
@@ -1120,6 +1209,7 @@ export function GameScreen({
           summary={surrenderSummary}
           onConfirm={confirmEnd}
           onCancel={closeConfirm}
+          onExited={onDialogExited}
         />
       ) : (
         <ConfirmModal
@@ -1134,6 +1224,7 @@ export function GameScreen({
           accessibilityLabel={t('end.dialog')}
           onConfirm={confirmEnd}
           onCancel={closeConfirm}
+          onExited={onDialogExited}
           testID="end-practice"
         />
       )}

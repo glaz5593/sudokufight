@@ -2,12 +2,13 @@
 // module is already in place as the mock (see the jest.mock below).
 import 'react-native-reanimated';
 import { fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { card as playerCard, myProgress } from '../../../api/testing/fakeProgress';
 import { initAuth, setAuthDeps, useAuth } from '../../../auth/authStore';
 import { installSignedInPlayer, type TestAuth } from '../../../auth/testing/testAuth';
-import { directionProblems } from '../../../components/ui/testing/layout';
+import { metrics } from '../../../components/player/metrics';
+import { directionProblems, PHONE, setWindow, textWidth } from '../../../components/ui/testing/layout';
 import { openPracticeRepo } from '../../../game/practiceRepo';
 import { practiceStorageOrNull } from '../../../game/storage';
 import { memoryDb } from '../../../game/testing/sqlJsDb';
@@ -16,6 +17,8 @@ import { usePracticeHistory } from '../../../state/practiceHistory';
 import { ltr } from '../../../components/player';
 import { adoptCard, adoptProgress, forgetProgress } from '../../../progress/progressStore';
 import { useProfile } from '../../../state/profile';
+import { space, text, tokens } from '../../../theme';
+import { GUTTER } from '../parts';
 import { usePracticeStats } from '../practiceStats';
 import { renderApp } from '../testing/homeTesting';
 
@@ -127,6 +130,40 @@ describe('Home with an account (stage 8)', () => {
     expect(within(card).getByTestId('league-gold')).toHaveTextContent('ליגת זהב');
     expect(within(card).getByTestId('rating-fast')).toHaveTextContent(/1342$/);
     expect(within(card).getByTestId('rating-hard')).toHaveTextContent(/1198זמני$/);
+  });
+
+  it('on the phone, "זמני" sits under its number and every rating fits its column (Moshe’s device test)', async () => {
+    const restore = setWindow(PHONE);
+    try {
+      auth = await installSignedInPlayer();
+      await initAuth();
+      await renderApp('/', EXTRA);
+      const card = await screen.findByTestId('profile-card');
+      for (const type of ['fast', 'normal', 'hard']) {
+        const rating = within(card).getByTestId(`rating-${type}-value`, hidden);
+        const stack = rating.children[0] as typeof rating;
+        expect(StyleSheet.flatten(stack.props.style).flexDirection).toBeUndefined();
+        expect(within(stack).getByTestId(`rating-${type}-value-provisional`, hidden)).toHaveTextContent(
+          'זמני',
+        );
+        expect(within(stack).getByText('1200', hidden)).toHaveProp('numberOfLines', 1);
+      }
+      // A column is a third of the card. The number fits it, and so does the chip under it; side by side, as
+      // the first APK drew them, they did not.
+      const home = tokens.layout.home;
+      const column =
+        (PHONE.width - 2 * GUTTER.home - 2 * home.profileCardPadding - 2 * tokens.border.hairline) / 3;
+      const number = textWidth('1200', text('rating').fontSize!, { font: 'Teko' });
+      const chip =
+        textWidth('זמני', text('plateNameCompact').fontSize!) +
+        2 * metrics.rating.provisionalPaddingX +
+        2 * tokens.border.hairline;
+      expect(number).toBeLessThanOrEqual(column);
+      expect(chip).toBeLessThanOrEqual(column);
+      expect(number + space[2] + chip).toBeGreaterThan(column);
+    } finally {
+      await restore();
+    }
   });
 
   it('an unverified email: the banner under the card leads to /verify-email [D22]', async () => {

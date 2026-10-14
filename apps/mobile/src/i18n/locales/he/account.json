@@ -12,15 +12,17 @@
     "confirmPassword": "אימות סיסמה",
     "displayName": "שם לתצוגה",
     "displayNamePlaceholder": "השם שלך בזירה",
+    "avatar": "אווטאר",
     "country": "מדינה",
     "showPassword": "הצג סיסמה",
-    "hidePassword": "הסתר סיסמה"
+    "hidePassword": "הסתר סיסמה",
+    "change": "שינוי"
   },
   "validation": {
     "emailRequired": "כתוב את המייל שלך",
     "emailInvalid": "כתובת המייל לא תקינה",
     "passwordRequired": "כתוב את הסיסמה",
-    "passwordRules": "הסיסמה צריכה לפחות 8 תווים, אות אחת וספרה אחת",
+    "passwordRules": "הסיסמה צריכה לפחות 8 תווים",
     "confirmMismatch": "הסיסמאות לא תואמות",
     "countryRequired": "בחר מדינה"
   },
@@ -104,19 +106,13 @@
     "titleLabel": "צור את הלוחם שלך",
     "resumeNote": "החשבון שלך מוכן. נשאר רק לבחור לוחם.",
     "chooseAvatar": "בחר אווטאר",
-    "avatarCount": "{{n}} / {{total}}",
-    "kinds": "סוגי דמויות",
-    "avatarGroup": "בחירת אווטאר: {{kind}}",
     "avatar": "{{name}}",
     "avatarLocked": "{{name}}, נפתח ברמה {{level}}",
     "selectedAvatar": "האווטאר שנבחר: {{name}}",
-    "prevAvatar": "האווטאר הקודם",
-    "nextAvatar": "האווטאר הבא",
+    "yourPick": "הבחירה שלך: {{name}}",
     "previewTitle": "ככה יראו אותך בזירה",
     "previewLabel": "תצוגה מקדימה של הכרטיס שלך במשחק: {{name}}",
     "previewNew": "חדש",
-    "previewOpponent": "היריב שלך",
-    "previewOpponentName": "???",
     "continue": "המשך",
     "enterArena": "היכנס לזירה",
     "signOut": "התנתקות"
@@ -163,9 +159,7 @@
   },
   "password": {
     "rules": {
-      "length": "לפחות 8 תווים",
-      "letter": "אות אחת לפחות",
-      "digit": "ספרה אחת לפחות"
+      "length": "לפחות 8 תווים"
     },
     "ruleMet": "{{rule}}: יש",
     "ruleMissing": "{{rule}}: חסר",

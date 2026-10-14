@@ -2,7 +2,15 @@ import type { GameEvent, GameState } from '../game/types';
 import { replay } from '../game/view';
 import { GAME_TYPES, type GameType } from '../gameType';
 import { type CellIndex, DIGITS, missingDigits, unitsOf } from '../sudoku/board';
-import { bankPuzzles, type BotGame, botGame, runUntilOver } from '../testing/bot';
+import {
+  bankPuzzles,
+  type BotGame,
+  botGame,
+  eventsOf,
+  HUMAN,
+  runUntilOver,
+  scriptHuman,
+} from '../testing/bot';
 import { adaptationFactor, cellDifficulty, eligibleCells } from './brain';
 import {
   BOT_CONFIG,
@@ -18,8 +26,9 @@ import {
  * fixed seeds. Each level plays GAMES_PER_TYPE games of each game type, alone against an idle human, through
  * the real runner and LocalGameHost. Then, from the event log only:
  *   (a) its mistake rate is within 3 standard deviations (binomial) of the table's rate;
- *   (b) every move took "base × pace × cell difficulty (× adaptation)" with the base inside the level's range,
- *       and the base averages to the middle of that range per game type and per difficulty;
+ *   (b) every move took "base × cell difficulty (× pace, × adaptation)" with the base inside the level's range,
+ *       and the base averages to the middle of that range per game type and per difficulty (the deduction
+ *       the move needed);
  *   (c) its locks almost never run out: only the deliberate ~2%, and at most 5%.
  * The results are in the test names (run with --verbose to see the table).
  */
@@ -234,10 +243,59 @@ describe('bot simulation: 5 levels × 3 game types × 16 games (work plan stage 
     expect(Math.abs(share - BOT_CONFIG.lingerShare)).toBeLessThanOrEqual(3 * lsd);
   });
 
-  it('prefers easy cells: most digits go into naked singles', () => {
+  it('prefers easy cells: most digits go into the simplest (a last gap or a naked single), nearly all into singles', () => {
+    const singles: readonly CellTechnique[] = ['lastGap', 'nakedSingle', 'hiddenSingle'];
     for (const { run } of titled) {
-      const easy = run.moves.filter((m) => m.technique === 'nakedSingle').length;
+      const easy = run.moves.filter((m) => m.technique === 'lastGap' || m.technique === 'nakedSingle').length;
       expect(easy / run.moves.length).toBeGreaterThan(0.6);
+      const single = run.moves.filter((m) => singles.includes(m.technique)).length;
+      expect(single / run.moves.length).toBeGreaterThan(0.95);
     }
+  });
+});
+
+/*
+ * How long a game against the slowest bot takes (Moshe, 2026-10-14: the Novice thinks 15–25 s a move), on
+ * the first 16 "fast" boards of the bank: alone (the human idle: the longest it can be), and against a
+ * human who makes a move every 8 s (locks a cell, its digit 2 s later; every 6th digit wrong).
+ */
+describe('a game against the Novice still ends in a reasonable time', () => {
+  const novice = BOT_LEVELS[0]!;
+  const puzzles = bankPuzzles('fast', GAMES_PER_TYPE);
+  const min = (ms: number) => `${(ms / 60_000).toFixed(1)} min`;
+  const play = (withHuman: boolean) =>
+    puzzles.map((puzzle, k) => {
+      const g = botGame({ level: 1, gameType: 'fast', puzzle, seed: 500 + k });
+      if (withHuman) scriptHuman(g, { everyMs: 8000, missEvery: 6 });
+      const ms = runUntilOver(g, 2 * 3600_000, 1000);
+      const bot = eventsOf(g.host.events, 'placedCorrect', g.botId).length;
+      const human = eventsOf(g.host.events, 'placedCorrect', HUMAN).length;
+      return { g, ms, bot, human, over: g.host.state.result?.reason };
+    });
+  const alone = play(false);
+  const duel = play(true);
+  const stats = (games: typeof alone) => {
+    const ms = games.map((x) => x.ms);
+    const share = mean(games.map((x) => x.bot / (x.bot + x.human)));
+    return { mean: mean(ms), max: Math.max(...ms), share };
+  };
+  const a = stats(alone);
+  const d = stats(duel);
+  const perMove = mean(alone.map((x) => x.ms / eventsOf(x.g.host.events, 'placedCorrect', x.g.botId).length));
+
+  it(`alone: ${min(a.mean)} on average, ${min(a.max)} at most; ${sec(perMove)} per solved cell (mistakes and adapting included)`, () => {
+    for (const x of alone) expect(x.over).toBe('boardComplete');
+    // About 50 gaps at 15–25 s, a last gap quicker, a mistake now and then: well under half an hour.
+    expect(a.max).toBeLessThan(30 * 60_000);
+    expect(perMove).toBeGreaterThan(novice.thinkMs.min);
+    expect(perMove).toBeLessThan(novice.thinkMs.max * BOT_CONFIG.adaptation.slowdown * 1.25);
+  });
+
+  it(`against a human at 8 s a move: ${min(d.mean)} on average, ${min(d.max)} at most; the Novice solves ${pct(d.share)} of the cells`, () => {
+    for (const x of duel) expect(x.over).toBe('boardComplete');
+    expect(d.max).toBeLessThan(10 * 60_000);
+    // It still plays: a fair share of the board, less than the quicker human.
+    expect(d.share).toBeGreaterThan(0.15);
+    expect(d.share).toBeLessThan(0.5);
   });
 });

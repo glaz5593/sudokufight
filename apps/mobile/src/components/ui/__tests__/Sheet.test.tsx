@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { AccessibilityInfo, I18nManager, Text } from 'react-native';
+import { AccessibilityInfo, I18nManager, StyleSheet, Text } from 'react-native';
 
 import i18n from '../../../i18n';
 import { useSettings } from '../../../state/settings';
@@ -35,6 +35,20 @@ describe('Sheet', () => {
   });
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it('`fill`: takes its full height (85%) for a list to fill; otherwise it fits its content up to that', async () => {
+    const sheetStyle = (label: string) => StyleSheet.flatten(screen.getByLabelText(label).props.style);
+    await render(arsenal(true));
+    expect(sheetStyle('ארסנל ההפרעות')).toMatchObject({ maxHeight: '85%' });
+    expect(sheetStyle('ארסנל ההפרעות').height).toBeUndefined();
+    await screen.unmount();
+    await render(
+      <Sheet visible onClose={jest.fn()} title="בחר מדינה" fill>
+        <Text>רשימה</Text>
+      </Sheet>,
+    );
+    expect(sheetStyle('בחר מדינה')).toMatchObject({ height: '85%', maxHeight: '85%' });
   });
 
   it('renders nothing while closed', async () => {

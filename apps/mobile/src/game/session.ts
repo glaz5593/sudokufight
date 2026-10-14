@@ -22,8 +22,9 @@ import {
 import type { GameHost } from '@sudoku-fight/protocol';
 
 import { type AnalyticsEventName, type AnalyticsProps, track as defaultTrack } from '../services/analytics';
+import { crashReporter } from '../services/crashlytics';
 import { gameEndProps, gameStartProps } from './analyticsProps';
-import { systemClock, timeoutScheduler } from './clock';
+import { guardedScheduler, systemClock, timeoutScheduler } from './clock';
 import { offlinePool, type PuzzlePool } from './offlinePool';
 import type { PracticeRepo } from './practiceRepo';
 
@@ -72,6 +73,11 @@ export interface PracticeDeps {
   /** Where save errors go; console.warn by default. */
   onError?: (what: string, error: unknown) => void;
   /**
+   * An error out of one of the game's timers (a listener that failed on a lock running out, say): reported here,
+   * never thrown at React Native. Crashlytics by default.
+   */
+  onTimerError?: (error: unknown) => void;
+  /**
    * The game is over (once): its practice XP goes to the queue [D41] (progress/appProgress.ts). An error
    * here is reported, never thrown at the game.
    */
@@ -117,6 +123,12 @@ export interface PracticeSession {
 }
 
 const randomSeed = (): number => Math.floor(Math.random() * 2 ** 31);
+
+/** An error out of a game timer, on the phone: kept with the crash reports (and shown in development). */
+function reportTimerError(error: unknown): void {
+  if (__DEV__) console.warn('[practice] a game timer failed', error);
+  crashReporter().recordError(error, 'game: tick');
+}
 
 /** The puzzle for a practice: none from the current cycle of the history, if possible (spec §20). */
 export function choosePuzzle(
@@ -165,7 +177,12 @@ async function openPractice(
   if (!puzzle) throw new Error(`Puzzle ${puzzleId} is not in the pool`);
 
   const clock = deps.clock ?? systemClock;
-  const scheduler = deps.scheduler ?? timeoutScheduler;
+  // The game's timers (its clock, the bot's) never throw out to React Native: a listener's error from a tick is
+  // reported, and the game goes on (see guardedScheduler).
+  const scheduler = guardedScheduler(
+    deps.scheduler ?? timeoutScheduler,
+    deps.onTimerError ?? reportTimerError,
+  );
   const playerId = deps.playerId ?? ME;
   const opponent: PlayerInfo | null = bot === null ? null : botPlayer(bot);
   const config: GameConfig = {
@@ -328,7 +345,12 @@ class Session implements PracticeSession {
     this.write('could not save the end of the game', async () => {
       await this.repo!.finishGame(this.id, { result, endedAt });
     });
-    this.track('game_end', gameEndProps(this.mode, result, this.playerId));
+    // Nothing here stops the end (the XP below, the saved finish above): a failure is reported.
+    try {
+      this.track('game_end', gameEndProps(this.mode, result, this.playerId));
+    } catch (error) {
+      this.onError('could not track the end of the game', error);
+    }
     try {
       this.onFinish?.({
         id: this.id,

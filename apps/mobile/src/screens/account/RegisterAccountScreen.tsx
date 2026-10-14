@@ -11,13 +11,14 @@ import { emailOk, passwordOk, passwordRules, passwordStrength } from '../../auth
 import { ROUTES } from '../../auth/redirect';
 import { useRegistrationDraft } from '../../auth/registrationDraft';
 import { Icon } from '../../components/Icon';
-import { Avatar, countryName, Flag, ltr } from '../../components/player';
+import { ltr } from '../../components/player';
 import { Button, useToast } from '../../components/ui';
 import { legalUrl } from '../../config/legal';
 import { track } from '../../services/analytics';
 import { cue } from '../../services/feedback';
-import { color, radius, size, space, text, tokens } from '../../theme';
+import { color, size, space, text } from '../../theme';
 import { Field, FieldStatus, PasswordField } from './Field';
+import { FighterCard } from './FighterCard';
 import { errorMessage } from './messages';
 import {
   AccentTitle,
@@ -35,8 +36,8 @@ type Errors = { email?: string; password?: string; confirm?: string; terms?: str
 
 /**
  * Registration, step 2: "החשבון" (spec §3.2; Register-Account). The fighter from step 1 (with "עריכה" back
- * to it), then email, password with its 4-level meter and rules (≥ 8, a letter, a digit), the confirmation,
- * and the terms and privacy checkbox with links to both (spec §23).
+ * to it), then email, password with its 4-level meter and its one rule (at least 8 characters, nothing else:
+ * Moshe, 14.10.2026), the confirmation, and the terms and privacy checkbox with links to both (spec §23).
  *
  * "צור משתמש והיכנס לזירה" makes the sign-in, sends the verification email [D22] and creates the profile
  * (POST /v1/users); the root layout then goes home. If the account was made but the profile was not (the
@@ -125,7 +126,8 @@ export function RegisterAccountScreen() {
       footer={
         <Button
           label={t('account.submit')}
-          size="lg"
+          size="md"
+          wrapLabel
           loading={busy}
           onPress={() => void submit()}
           testID="account-submit"
@@ -135,29 +137,29 @@ export function RegisterAccountScreen() {
       <StepHeader step={2} onBack={backToFighter} backLabel={t('register.backToFighter')} />
       <DevModeBadge />
 
-      <View style={styles.fighter} testID="account-fighter">
-        <Avatar avatarId={avatarId} size="row" colorIndex={0} backdrop={color.surface} />
-        <View style={styles.fighterText}>
-          <Text style={styles.fighterName} numberOfLines={1}>
-            {name}
-          </Text>
-          <View style={styles.fighterLine}>
-            <Flag country={country} size="compact" decorative />
-            {country ? <Text style={styles.muted}>{countryName(country, i18n.language)}</Text> : null}
-            <Text style={styles.muted}>{t('player:sep')}</Text>
+      <FighterCard
+        avatarId={avatarId}
+        name={name}
+        country={country}
+        note={
+          <>
+            {country ? <Text style={styles.muted}>{t('player:sep')}</Text> : null}
             <Icon name="check" size={size.icon.inline} color={color.success} />
             <Text style={styles.ready}>{t('account.fighterReady')}</Text>
-          </View>
-        </View>
-        <LinkButton
-          label={t('account.edit')}
-          accessibilityLabel={t('account.editLabel')}
-          icon="edit"
-          tone="muted"
-          onPress={backToFighter}
-          testID="account-edit-fighter"
-        />
-      </View>
+          </>
+        }
+        end={
+          <LinkButton
+            label={t('account.edit')}
+            accessibilityLabel={t('account.editLabel')}
+            icon="edit"
+            tone="muted"
+            onPress={backToFighter}
+            testID="account-edit-fighter"
+          />
+        }
+        testID="account-fighter"
+      />
 
       <View style={styles.titles}>
         <AccentTitle i18nKey="account.title" label={t('account.titleLabel')} />
@@ -266,20 +268,6 @@ export function RegisterAccountScreen() {
 }
 
 const styles = StyleSheet.create({
-  fighter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space[6],
-    padding: space[6],
-    borderRadius: radius.card,
-    borderWidth: tokens.border.hairline,
-    // Me, in my P1 colour (the board's frame around "הלוחם מוכן").
-    borderColor: color.players[0]!.ring,
-    backgroundColor: color.surface,
-  },
-  fighterText: { flex: 1, minWidth: 0, alignItems: 'flex-start', gap: space[2] },
-  fighterName: { ...text('playerName'), color: color.text },
-  fighterLine: { flexDirection: 'row', alignItems: 'center', gap: space[2], flexWrap: 'wrap' },
   muted: { ...text('caption'), color: color.textMuted },
   ready: { ...text('caption'), color: color.success },
   titles: { gap: space[4] },

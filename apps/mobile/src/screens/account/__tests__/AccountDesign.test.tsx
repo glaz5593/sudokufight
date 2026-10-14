@@ -9,9 +9,12 @@ import { I18nManager, StyleSheet } from 'react-native';
 import { initAuth, setAuthDeps } from '../../../auth/authStore';
 import { useRegistrationDraft } from '../../../auth/registrationDraft';
 import { installSignedInPlayer, installTestAuth } from '../../../auth/testing/testAuth';
-import { directionProblems } from '../../../components/ui/testing/layout';
+import { AVATAR_SIZES } from '../../../components/player';
+import { directionProblems, PHONE, setWindow, textWidth } from '../../../components/ui/testing/layout';
 import i18n from '../../../i18n';
 import { color } from '../../../theme';
+import { GUTTER } from '../../home/parts';
+import { NAME_LEAD } from '../FighterCard';
 import { LoginArena } from '../LoginArena';
 import { SplashScreen, splashTip } from '../SplashScreen';
 import { renderAccount } from '../testing/accountTesting';
@@ -110,30 +113,58 @@ describe('Login arena', () => {
   });
 });
 
-describe('Register-Fighter board: my name tag on the stage', () => {
+describe('Register-Fighter board: my card in the preview (Moshe, 14.10.2026)', () => {
   beforeEach(async () => {
     installTestAuth();
     await initAuth();
   });
 
-  it('shows the name as typed with my flag, the default name while empty; it is not spoken', async () => {
+  it('my name as typed, my flag and country, the default name while empty, in my P1 frame; one label', async () => {
     useRegistrationDraft.setState({ country: 'IL' });
     await renderAccount('/register/fighter');
-    const tag = screen.getByTestId('fighter-name-tag', hidden);
-    expect(tag).toHaveProp('importantForAccessibility', 'no-hide-descendants');
-    expect(tag).toHaveTextContent('שחקן', { exact: false });
-    expect(tag).toHaveTextContent('🇮🇱', { exact: false });
+    const card = screen.getByTestId('fighter-preview-me', hidden);
+    expect(styleOf(card).borderColor).toBe(color.players[0]!.ring);
+    expect(card).toHaveTextContent('שחקן', { exact: false });
+    expect(card).toHaveTextContent('ישראל', { exact: false });
+    expect(within(card).getByTestId('flag-IL', hidden)).toBeTruthy();
     await fireEvent.changeText(screen.getByTestId('name'), 'MosheG');
-    expect(screen.getByTestId('fighter-name-tag', hidden)).toHaveTextContent('MosheG', { exact: false });
-    // Under the chosen avatar, on the stage.
-    expect(within(screen.getByTestId('avatar-picker')).getByTestId('fighter-name-tag', hidden)).toBeTruthy();
+    expect(screen.getByTestId('fighter-preview-me-name', hidden)).toHaveTextContent('MosheG');
+    expect(screen.getByRole('image', { name: 'תצוגה מקדימה של הכרטיס שלך במשחק: MosheG' })).toBeOnTheScreen();
     expect(directionProblems(screen.getByTestId('register-fighter'))).toEqual([]);
+  });
+
+  it('room for a whole 16-character name on the phone; an ellipsis only past the card', async () => {
+    const restore = setWindow(PHONE);
+    try {
+      useRegistrationDraft.setState({ country: 'IL' });
+      await renderAccount('/register/fighter');
+      const card = styleOf(screen.getByTestId('fighter-preview-me', hidden));
+      const name = screen.getByTestId('fighter-preview-me-name', hidden);
+      expect(name).toHaveProp('numberOfLines', 1);
+      const fontSize = styleOf(name).fontSize as number;
+      // The card spans the screen: its width less its padding and border, my avatar, and the ● before the name.
+      const room =
+        PHONE.width -
+        2 * GUTTER.screen -
+        2 * (card.padding as number) -
+        2 * (card.borderWidth as number) -
+        AVATAR_SIZES.row.frame -
+        (card.gap as number) -
+        NAME_LEAD;
+      for (const longest of ['MosheGlazman_123', 'MOSHEGLAZMAN2026', 'משה.גלזמן_הגדול1']) {
+        expect(longest).toHaveLength(16);
+        expect([longest, textWidth(longest, fontSize, { bold: true }) <= room]).toEqual([longest, true]);
+      }
+    } finally {
+      await restore();
+    }
   });
 
   it('English', async () => {
     await i18n.changeLanguage('en');
     await renderAccount('/register/fighter');
-    expect(screen.getByTestId('fighter-name-tag', hidden)).toHaveTextContent('Player', { exact: false });
+    expect(screen.getByTestId('fighter-preview-me-name', hidden)).toHaveTextContent('Player');
+    expect(screen.getByTestId('fighter-preview')).toHaveTextContent(/This is how the arena sees you/);
   });
 });
 

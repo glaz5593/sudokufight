@@ -271,6 +271,7 @@ describe('nothing to do: the bot waits without spinning', () => {
     const t = table({ level: 5, puzzle: nearlySolved([cell]), config: { lingerShare: 1 } });
     t.attach();
     t.scheduler.advance(60_000);
+    while (t.host.state.locks.length) t.scheduler.advance(100); // the round under way runs out too
     const locks = eventsOf(t.host.events, 'cellLocked', t.botId);
     const timeouts = eventsOf(t.host.events, 'cellReleased', t.botId);
     expect(locks.length).toBeGreaterThan(3);

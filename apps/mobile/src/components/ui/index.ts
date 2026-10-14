@@ -10,7 +10,7 @@ export {
 export { IconButton, type IconButtonProps } from './IconButton';
 export { RowButton, type RowButtonProps } from './RowButton';
 export { Scrim, type ScrimProps } from './Scrim';
-export { dragClosesSheet, Sheet, type SheetProps } from './Sheet';
+export { dragClosesSheet, Sheet, SHEET_GUTTER, type SheetProps } from './Sheet';
 export {
   Skeleton,
   SKELETON_OPACITY,

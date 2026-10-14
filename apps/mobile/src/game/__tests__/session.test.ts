@@ -67,6 +67,26 @@ function wrapRepo(repo: PracticeRepo, over: Partial<PracticeRepo> = {}): Practic
   };
 }
 
+jest.mock('../../services/crashlytics', () => {
+  const reporter = { enabled: true, recordError: jest.fn(), setUser: jest.fn(), log: jest.fn() };
+  return { crashReporter: () => reporter };
+});
+const crash = jest
+  .requireMock<{ crashReporter: () => { recordError: jest.Mock } }>('../../services/crashlytics')
+  .crashReporter();
+
+/** A listener that throws the first time a lock is released (a lock running out, in these tests). */
+function failOnce(s: PracticeSession): Error {
+  const boom = new Error('a listener failed');
+  let failed = false;
+  s.subscribe((u) => {
+    if (failed || u.kind !== 'events' || !u.events.some((e) => e.type === 'cellReleased')) return;
+    failed = true;
+    throw boom;
+  });
+  return boom;
+}
+
 const local = (s: PracticeSession) => s.host as unknown as LocalGameHost;
 const puzzleOf = (s: PracticeSession) => allOfflinePuzzles().find((p) => p.id === s.puzzleId)!;
 const plain = (events: readonly GameEvent[]) => JSON.parse(JSON.stringify(events)) as GameEvent[];
@@ -186,6 +206,65 @@ describe('a practice from start to finish', () => {
       expect.objectContaining({ result: 'ended', mistakes: 0 }),
     );
     s.close();
+  });
+
+  it('a failure to track the end is reported; the end is still saved and its XP still queued', async () => {
+    const r = await rig();
+    const finished: string[] = [];
+    const broken = new Error('analytics down');
+    r.track.mockImplementation((name: string) => {
+      if (name === 'game_end') throw broken;
+    });
+    const s = await startPractice(
+      { gameType: 'fast' },
+      { ...r.deps, onFinish: (end) => finished.push(end.id) },
+    );
+    expect(() => s.endPractice()).not.toThrow();
+    await s.flush();
+    expect(r.errors).toEqual([['could not track the end of the game', broken]]);
+    expect(finished).toEqual([s.id]);
+    expect(await r.repo.getGame(s.id)).toMatchObject({ status: 'finished', endReason: 'practiceEnded' });
+    s.close();
+  });
+});
+
+describe('a game timer that fails (bug 9: a throw out of a timer is fatal on the phone)', () => {
+  it('a listener failing on a lock that runs out is reported, never thrown at the timer; the game goes on', async () => {
+    const r = await rig();
+    const timerErrors: unknown[] = [];
+    const s = await startPractice(
+      { gameType: 'fast' },
+      { ...r.deps, onTimerError: (error) => timerErrors.push(error) },
+    );
+    const empty = emptyCellsOf(puzzleOf(s));
+    const boom = failOnce(s);
+    r.scheduler.advance(1000);
+    s.host.select(empty[0]!);
+    // The host's own clock: the lock runs out [D2] inside the timer, and the listener throws there.
+    expect(() => r.scheduler.advance(THINK_TIME_MS.fast + 1)).not.toThrow();
+    expect(s.events.at(-1)).toMatchObject({ type: 'cellReleased', reason: 'timeout' });
+    expect(timerErrors).toEqual([boom]);
+    // The game is still on, and plays on.
+    expect(s.getView().status).toBe('running');
+    solve(r, s, empty[1]!);
+    expect(s.getView().players[0]!.score).toBeGreaterThan(0);
+    s.close();
+  });
+
+  it('on the phone the error goes to Crashlytics ("game: tick")', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const r = await rig();
+      const s = await startPractice({ gameType: 'fast' }, r.deps);
+      const boom = failOnce(s);
+      r.scheduler.advance(1000);
+      s.host.select(emptyCellsOf(puzzleOf(s))[0]!);
+      expect(() => r.scheduler.advance(THINK_TIME_MS.fast + 1)).not.toThrow();
+      expect(crash.recordError).toHaveBeenCalledWith(boom, 'game: tick');
+      s.close();
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
 
