@@ -32,7 +32,7 @@ export const TERMS: LegalTexts = {
           {
             list: [
               'חשבון אחד לכל אדם, עם מייל שלכם.',
-              'שמרו על הסיסמה. אתם אחראים לכל מה שנעשה בחשבון שלכם.',
+              'שמרו על הסיסמה (או על חשבון Google שאיתו אתם נכנסים). אתם אחראים לכל מה שנעשה בחשבון שלכם.',
               'אפשר למחוק את החשבון בכל רגע מתוך האפליקציה: הגדרות ← מחיקת חשבון.',
             ],
           },
@@ -161,7 +161,7 @@ export const TERMS: LegalTexts = {
           {
             list: [
               'One account per person, with your own email.',
-              'Keep your password safe. You are responsible for everything done with your account.',
+              'Keep your password (or the Google account you sign in with) safe. You are responsible for everything done with your account.',
               'You can delete your account at any time in the app: Settings → Delete account.',
             ],
           },

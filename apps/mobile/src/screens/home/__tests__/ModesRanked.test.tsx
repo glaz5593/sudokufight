@@ -62,7 +62,7 @@ function signIn(emailVerified = true) {
   useAuth.setState({
     status: 'ready',
     provider: 'dev',
-    user: { uid: 'u1', email: 'moshe@example.com', emailVerified },
+    user: { uid: 'u1', email: 'moshe@example.com', emailVerified, methods: ['password'] },
     me: { ...ME_ACCOUNT, emailVerified },
     meOffline: false,
   });

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, type TextInput, View } from 'react-native';
 
 import { isAccountApiError } from '../../api/accountApi';
-import { signIn } from '../../auth/authStore';
+import { signIn, signInWithGoogle, useAuth } from '../../auth/authStore';
 import { toAuthError } from '../../auth/errors';
 import { emailOk } from '../../auth/password';
 import { ROUTES } from '../../auth/redirect';
@@ -12,8 +12,9 @@ import { Button } from '../../components/ui';
 import { cue } from '../../services/feedback';
 import { color, space, text } from '../../theme';
 import { Field, PasswordField } from './Field';
+import { GoogleButton, OrDivider } from './GoogleButton';
 import { LoginArena } from './LoginArena';
-import { errorMessage } from './messages';
+import { errorMessage, withGoogleHint } from './messages';
 import { AccentTitle, AccountScreen, Brand, DevModeBadge, FormAlert, LinkButton } from './parts';
 
 /**
@@ -22,13 +23,20 @@ import { AccentTitle, AccountScreen, Brand, DevModeBadge, FormAlert, LinkButton 
  * at once on submit; then the sign-in's own (wrong password → under the password, unknown address → under
  * the email, too many attempts and no connection → over the form). Success needs no navigation here: the
  * root layout follows the auth status (home, or step 1 of the registration when the account has no profile).
+ *
+ * "המשך עם Google" (Moshe, 14.10.2026), above the form when the build has it (a Firebase build; not the
+ * development sign-in): Google's chooser, then the same: home, or step 1 for a Google account new to the game
+ * (signed in; step 1 creates the fighter). Closing the chooser says nothing. Its errors go over the form; a
+ * wrong password also suggests Google, since an address that signed up with Google has no password.
  */
 export function LoginScreen() {
   const { t } = useTranslation('account');
+  const google = useAuth((s) => s.google);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [shown, setShown] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
   const [shake, setShake] = useState({ email: 0, password: 0 });
   const passwordRef = useRef<TextInput>(null);
@@ -43,7 +51,7 @@ export function LoginScreen() {
   };
 
   const submit = async () => {
-    if (busy) return;
+    if (busy || googleBusy) return;
     const local: typeof errors = {};
     if (!email.trim()) local.email = t('validation.emailRequired');
     else if (!emailOk(email)) local.email = t('validation.emailInvalid');
@@ -58,9 +66,23 @@ export function LoginScreen() {
       setBusy(false);
       if (isAccountApiError(error)) return fail({ form: errorMessage(t, error) });
       const { code } = toAuthError(error);
-      if (code === 'wrongPassword') return fail({ password: errorMessage(t, error) });
-      if (code === 'userNotFound' || code === 'invalidEmail') return fail({ email: errorMessage(t, error) });
-      return fail({ form: errorMessage(t, error) });
+      const message = withGoogleHint(t, error, google);
+      if (code === 'wrongPassword') return fail({ password: message });
+      if (code === 'userNotFound' || code === 'invalidEmail') return fail({ email: message });
+      return fail({ form: message });
+    }
+  };
+
+  const continueWithGoogle = async () => {
+    if (busy || googleBusy) return;
+    setErrors({});
+    setGoogleBusy(true);
+    try {
+      // Signed in: the root layout takes it from here (home, or step 1 to create the fighter).
+      if ((await signInWithGoogle()) === 'cancelled') setGoogleBusy(false);
+    } catch (error) {
+      setGoogleBusy(false);
+      fail({ form: errorMessage(t, error) });
     }
   };
 
@@ -97,6 +119,18 @@ export function LoginScreen() {
       </View>
 
       <FormAlert message={errors.form ?? null} testID="login-alert" />
+
+      {google ? (
+        <View style={styles.google}>
+          <GoogleButton
+            onPress={() => void continueWithGoogle()}
+            loading={googleBusy}
+            disabled={busy}
+            testID="login-google"
+          />
+          <OrDivider label={t('google.orEmail')} testID="login-or" />
+        </View>
+      ) : null}
 
       <View style={styles.form}>
         <Field
@@ -155,6 +189,7 @@ const styles = StyleSheet.create({
   titles: { gap: space[4] },
   subtitle: { ...text('body'), color: color.textMuted, textAlign: 'center' },
   form: { gap: space[8] },
+  google: { gap: space[8] },
   forgotRow: { alignItems: 'flex-end', marginTop: -space[6] },
   footer: { gap: space[4] },
   registerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space[2] },

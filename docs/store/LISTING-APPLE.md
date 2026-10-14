@@ -192,7 +192,7 @@ The app has no ads, no in-app purchases, and does not track users.
 
 - **אם מוסיפים "דווח על שחקן" ו"חסימה"** (`docs/store/UGC-PROPOSAL.md`), מעדכנים את הפסקה על User-generated content בהתאם.
 - **התפריטים בהערות** (Home → Play, ‏"Practice vs bot" וכו') צריכים להתאים לשמות באפליקציה באנגלית. לבדוק מול הבנייה לפני ההדבקה.
-- **Sign in with Apple לא נדרש** (הנחיה 4.8): הכניסה היא חשבון משלנו, מייל וסיסמה, בלי Google ובלי רשת חברתית. אם מוסיפים התחברות כזו, מוסיפים גם Sign in with Apple (אפיון סעיף 23).
+- **Sign in with Apple** (הנחיה 4.8): ב־14.10.2026 נוספה, לבקשת משה, "המשך עם Google", אבל **ב־Android בלבד**. בגרסת iOS הכניסה עדיין מייל וסיסמה בלבד, ולכן Sign in with Apple עוד לא נדרש. **ברגע שהכפתור של Google מגיע ל־iOS, ‏Sign in with Apple חובה באותה גרסה** (אפיון סעיף 23), ומעדכנים גם את `APP-PRIVACY.md`.
 
 ## 6. Export Compliance (הצפנה)
 

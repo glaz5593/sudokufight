@@ -39,7 +39,13 @@
       "requiresRecentLogin": "Please sign in again to do that.",
       "userDisabled": "This account was disabled. Contact support.",
       "noUser": "You're not signed in. Sign in again.",
-      "unknown": "Something went wrong. Try again."
+      "unknown": "Something went wrong. Try again.",
+      "cancelled": "Google sign-in was cancelled.",
+      "inProgress": "Google sign-in is already open. Finish it, or close it and try again.",
+      "playServices": "Signing in with Google needs Google Play services. Update them and try again.",
+      "googleConfig": "Google sign-in isn't available in this version of the app right now (DEVELOPER_ERROR). Use your email and password meanwhile.",
+      "accountExistsWithPassword": "This email already has an account with a password. Sign in with your email and password.",
+      "userMismatch": "That's a different Google account. Choose the one you signed in with."
     },
     "api": {
       "badRequest": "That request wasn't valid. Try again.",
@@ -88,6 +94,17 @@
     "register": "Sign up",
     "arenaSpot": "Your spot"
   },
+  "google": {
+    "continue": "Continue with Google",
+    "orEmail": "or with email",
+    "orEmailPassword": "or with email and password",
+    "existing": "This Google account already has a fighter, {{name}}. You're signed in to it.",
+    "passwordHint": "Signed up with Google? Use \"Continue with Google\".",
+    "emailInUseHint": "If you signed up with Google, use \"Continue with Google\".",
+    "termsTitle": "Terms and privacy",
+    "termsBody": "To continue with Google, accept the terms of use and the privacy policy.",
+    "termsAccept": "Accept and continue"
+  },
   "forgot": {
     "title": "Forgot password",
     "body": "Enter the email you signed up with, and we'll send it a link to choose a new password.",
@@ -115,7 +132,8 @@
     "previewNew": "New",
     "continue": "Continue",
     "enterArena": "Enter the arena",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "googleNote": "You're signed in with Google. Just pick your fighter."
   },
   "name": {
     "rules": "3–16 characters: Hebrew or English letters, digits, underscore and dot.",
@@ -220,6 +238,16 @@
     "deletePasswordBody": "To delete the account, enter the password of {{email}}.",
     "deleteSubmit": "Delete my account forever",
     "deleted": "Your account was deleted",
-    "deletedPartly": "Your account was deleted. We couldn't delete your sign-in details: signing in with them starts a new registration."
+    "deletedPartly": "Your account was deleted. We couldn't delete your sign-in details: signing in with them starts a new registration.",
+    "method": {
+      "password": "Signs in with email and password",
+      "google": "Signs in with Google",
+      "both": "Signs in with Google, or with email and password"
+    },
+    "deleteGoogleTitle": "Confirm with Google",
+    "deleteGoogleBody": "To delete the account, choose the Google account {{email}} again.",
+    "deleteGoogleSubmit": "Confirm with Google and delete",
+    "deleteGoogleAgain": "Deleting the account needs a fresh confirmation. Try again and choose your Google account.",
+    "deleteWithPassword": "Confirm with your password instead"
   }
 }

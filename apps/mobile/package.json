@@ -27,6 +27,7 @@
     "@react-native-firebase/app": "26.4.0",
     "@react-native-firebase/auth": "26.4.0",
     "@react-native-firebase/crashlytics": "26.4.0",
+    "@react-native-google-signin/google-signin": "16.1.5",
     "@shopify/react-native-skia": "2.6.2",
     "@sudoku-fight/avatars": "*",
     "@sudoku-fight/engine": "*",

@@ -18,7 +18,7 @@ export const DELETE_ACCOUNT: LegalTexts = {
             list: [
               'פותחים את סודוקו פייט ונכנסים ל**הגדרות**.',
               'לוחצים **מחיקת חשבון**, ומאשרים.',
-              'מקלידים את הסיסמה. החשבון נמחק מיד, והאפליקציה חוזרת למסך הכניסה.',
+              'מקלידים את הסיסמה, או, מי שנכנס עם Google, בוחרים שוב את חשבון Google. החשבון נמחק מיד, והאפליקציה חוזרת למסך הכניסה.',
             ],
             ordered: true,
           },
@@ -61,7 +61,7 @@ export const DELETE_ACCOUNT: LegalTexts = {
             list: [
               'Open Sudoku Fight and go to **Settings**.',
               'Tap **Delete account**, and confirm.',
-              'Enter your password. The account is deleted at once, and the app goes back to the sign-in screen.',
+              'Enter your password, or, if you sign in with Google, choose your Google account again. The account is deleted at once, and the app goes back to the sign-in screen.',
             ],
             ordered: true,
           },

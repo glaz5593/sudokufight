@@ -50,6 +50,7 @@ describe('DevAuthProvider (no Firebase in this build)', () => {
       uid: expect.stringMatching(/^[A-Za-z0-9]{28}$/),
       email: 'Moshe@Example.com',
       emailVerified: false,
+      methods: ['password'],
     });
     expect(provider.currentUser()).toEqual(user);
     const token = await provider.getIdToken(true);
@@ -170,8 +171,19 @@ describe('FirebaseAuthProvider (React Native Firebase, modular API)', () => {
 
   it('restores the saved session from the first auth-state answer', async () => {
     const { provider, state } = make();
-    state.currentUser = { uid: 'u1', email: 'a@b.co', emailVerified: true };
-    expect(await provider.restore()).toEqual({ uid: 'u1', email: 'a@b.co', emailVerified: true });
+    state.currentUser = {
+      uid: 'u1',
+      email: 'a@b.co',
+      emailVerified: true,
+      providerData: [{ providerId: 'google.com' }, { providerId: 'password' }, { providerId: 'firebase' }],
+    };
+    // Its sign-in methods come from Firebase's providers (only the ones the app knows, in a fixed order).
+    expect(await provider.restore()).toEqual({
+      uid: 'u1',
+      email: 'a@b.co',
+      emailVerified: true,
+      methods: ['password', 'google'],
+    });
   });
 
   it('signs in and up, and maps Firebase errors', async () => {
@@ -181,6 +193,7 @@ describe('FirebaseAuthProvider (React Native Firebase, modular API)', () => {
       uid: 'fb-uid-1',
       email: 'a@b.co',
       emailVerified: false,
+      methods: ['password'],
     });
     expect(mod.signInWithEmailAndPassword).toHaveBeenLastCalledWith(expect.anything(), 'a@b.co', 'Arena1234');
     expect(await codeOf(provider.signUp('taken@example.com', 'Arena1234'))).toBe('emailInUse');

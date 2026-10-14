@@ -12,15 +12,15 @@
 
 ## סיכום
 
-- חבילות באפליקציה (mobile): **670**
+- חבילות באפליקציה (mobile): **671**
 - חבילות בשרת (server): **141**
-- סה״כ שונות (שם@גרסה): **753**
+- סה״כ שונות (שם@גרסה): **754**
 - **מסומנות לבדיקה: 1**
 - דורשות תשומת לב (ייחוס / copyleft חלש): 15
 
 | רישיון | חבילות |
 |---|---|
-| MIT | 588 |
+| MIT | 589 |
 | Apache-2.0 | 70 |
 | ISC | 28 |
 | BSD-3-Clause | 22 |
@@ -315,6 +315,7 @@
 | @react-native-firebase/app | 26.4.0 | Apache-2.0 | mobile |
 | @react-native-firebase/auth | 26.4.0 | Apache-2.0 | mobile |
 | @react-native-firebase/crashlytics | 26.4.0 | Apache-2.0 | mobile |
+| @react-native-google-signin/google-signin | 16.1.5 | MIT | mobile |
 | @react-native-masked-view/masked-view | 0.3.2 | MIT | mobile |
 | @react-native/assets-registry | 0.86.3 | MIT | mobile |
 | @react-native/babel-plugin-codegen | 0.86.3 | MIT | mobile |

@@ -18,7 +18,12 @@ describe('FirebaseAuthProvider with the package itself (mocked)', () => {
     expect(firebase.getAuth).not.toHaveBeenCalled();
 
     const user = await provider.signIn('player@example.com', 'Arena1234');
-    expect(user).toEqual({ uid: 'fb-uid-1', email: 'player@example.com', emailVerified: false });
+    expect(user).toEqual({
+      uid: 'fb-uid-1',
+      email: 'player@example.com',
+      emailVerified: false,
+      methods: ['password'],
+    });
     expect(firebase.getAuth).toHaveBeenCalled();
     expect(firebase.signInWithEmailAndPassword).toHaveBeenCalledWith(
       expect.anything(),

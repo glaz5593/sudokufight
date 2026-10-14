@@ -6,7 +6,7 @@ import type { MeCache } from '../api/me';
 import { useProfile } from '../state/profile';
 import { toAuthError } from './errors';
 import { useRegistrationDraft } from './registrationDraft';
-import type { AuthProvider, AuthProviderKind, AuthUser } from './types';
+import { AuthError, type AuthProvider, type AuthProviderKind, type AuthUser, type GoogleAuth } from './types';
 
 /**
  * Who is playing (spec §3, work plan stage 8). The provider (Firebase, or the development sign-in) says who
@@ -23,12 +23,17 @@ import type { AuthProvider, AuthProviderKind, AuthUser } from './types';
  *
  * [D22] Email verification is not a status: it never blocks practice. Home shows a banner while
  * `user.emailVerified` is false (config/account.ts says what ranked play will ask for).
+ *
+ * "המשך עם Google" (Moshe, 14.10.2026) reaches the same statuses: signInWithGoogle (login) and
+ * registerWithGoogle (registration step 2) below.
  */
 export type AuthStatus = 'loading' | 'signedOut' | 'needsProfile' | 'ready';
 
 export interface AuthState {
   status: AuthStatus;
   provider: AuthProviderKind | null;
+  /** The sign-in has "המשך עם Google" (a Firebase build with Google's client id): the screens show its button. */
+  google: boolean;
   user: AuthUser | null;
   me: Me | null;
   meOffline: boolean;
@@ -38,6 +43,7 @@ export interface AuthState {
 export const useAuth = create<AuthState>()(() => ({
   status: 'loading',
   provider: null,
+  google: false,
   user: null,
   me: null,
   meOffline: false,
@@ -76,13 +82,26 @@ export function setAuthDeps(next: AuthDeps | null): void {
   deps = next;
   starting = null;
   useAuth.setState(
-    { status: 'loading', provider: null, user: null, me: null, meOffline: false, loadError: null },
+    {
+      status: 'loading',
+      provider: null,
+      google: false,
+      user: null,
+      me: null,
+      meOffline: false,
+      loadError: null,
+    },
     false,
   );
 }
 
 const set = (patch: Partial<AuthState>) => useAuth.setState(patch);
 const report = (error: unknown, where: string) => deps?.report?.(error, where);
+/** Which sign-in this is, and whether it has Google (for the screens). */
+const providerState = (provider: AuthProvider): Pick<AuthState, 'provider' | 'google'> => ({
+  provider: provider.kind,
+  google: provider.google !== undefined,
+});
 
 /** The profile from the server or the phone: kept, saved, and mirrored where the game screens read it. */
 async function adopt(user: AuthUser, me: Me, offline: boolean): Promise<void> {
@@ -135,7 +154,7 @@ async function loadProfile(user: AuthUser, strict: boolean): Promise<void> {
 export function initAuth(): Promise<void> {
   starting ??= (async () => {
     const { provider } = authDeps();
-    set({ provider: provider.kind, loadError: null });
+    set({ ...providerState(provider), loadError: null });
     let user: AuthUser | null = null;
     try {
       user = await provider.restore();
@@ -166,7 +185,11 @@ export async function retryLoad(): Promise<void> {
  */
 export async function signIn(email: string, password: string): Promise<void> {
   const { provider } = authDeps();
-  const user = await provider.signIn(email, password);
+  await finishSignIn(provider, await provider.signIn(email, password));
+}
+
+/** A sign-in's profile, or the sign-in undone when it can't be read (strict loadProfile). */
+async function finishSignIn(provider: AuthProvider, user: AuthUser): Promise<void> {
   try {
     await loadProfile(user, true);
   } catch (error) {
@@ -174,6 +197,106 @@ export async function signIn(email: string, password: string): Promise<void> {
     set({ status: 'signedOut', user: null, me: null });
     throw error;
   }
+}
+
+/** The sign-in's Google, or an AuthError when this build has none (the screens show no button then). */
+function googleOf(provider: AuthProvider): GoogleAuth {
+  if (!provider.google) throw new AuthError('unknown', 'this build has no Google sign-in');
+  return provider.google;
+}
+
+/**
+ * Google failures nobody on the phone can fix, sent to Crashlytics with Google's own code: 'googleConfig' (a
+ * build whose signing key Firebase doesn't list: every player of it fails, so the developer must hear of it) and
+ * 'unknown' (e.g. Google Play services' SIGN_IN_FAILED). A closed chooser, a second tap, missing Play services
+ * and no connection are the phone's, and stay out.
+ */
+const REPORTED_GOOGLE_FAILURES: ReadonlySet<string> = new Set(['googleConfig', 'unknown']);
+
+function reportGoogleFailure(error: unknown, where: string): void {
+  const failure = toAuthError(error);
+  if (!REPORTED_GOOGLE_FAILURES.has(failure.code)) return;
+  const cause = failure.cause as { code?: unknown } | undefined;
+  const raw = typeof cause?.code === 'string' || typeof cause?.code === 'number' ? ` (${cause.code})` : '';
+  report(failure, `${where}: ${failure.code}${raw}`);
+}
+
+/** Google's sign-in, or null when the player closed the chooser (nothing changed). */
+async function googleUser(google: GoogleAuth): Promise<AuthUser | null> {
+  try {
+    return await google.signIn();
+  } catch (error) {
+    if (toAuthError(error).code === 'cancelled') return null;
+    reportGoogleFailure(error, 'google.signIn');
+    throw error;
+  }
+}
+
+/**
+ * What "המשך עם Google" on the login screen led to: the chooser closed (nothing changed), signed in with a
+ * profile (→ Home), or signed in without one (→ registration step 1, signed in: it creates the profile).
+ */
+export type GoogleSignInOutcome = 'cancelled' | 'ready' | 'needsProfile';
+
+/**
+ * Login → "המשך עם Google". Like signIn: throws AuthError (no Play services, a build Google doesn't know, the
+ * address has a password account, no connection…), or AccountApiError when the profile can't be read and none
+ * is saved (the sign-in is undone). A Google account without a profile on the server (new to the game, or
+ * registered elsewhere without finishing) becomes needsProfile, and the router takes it to step 1.
+ */
+export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
+  const { provider } = authDeps();
+  const user = await googleUser(googleOf(provider));
+  if (!user) return 'cancelled';
+  await finishSignIn(provider, user);
+  return useAuth.getState().status === 'needsProfile' ? 'needsProfile' : 'ready';
+}
+
+/**
+ * What "המשך עם Google" on registration step 2 led to: the chooser closed, the fighter of step 1 created, or the
+ * Google account already had a fighter, so it was a sign-in (→ Home; the screen says so).
+ */
+export type GoogleRegisterOutcome = 'cancelled' | 'created' | 'existing';
+
+/**
+ * Registration step 2 → "המשך עם Google" (the terms accepted first): the Google sign-in, then the profile from
+ * step 1 (POST /v1/users), unless the account has one already (GET /v1/me first: then it is a sign-in, and the
+ * step-1 draft is dropped). The status changes only at the end.
+ *
+ * Throws AuthError when the Google sign-in fails (nothing changed). When the profile can't be read for a
+ * reason other than "none" (no connection), the sign-in is undone and the error thrown: nothing changed, try
+ * again. When the profile can't be created (the name was taken meanwhile, no connection), the sign-in stays
+ * and the status becomes needsProfile, as with email (signUpAndRegister), and the error is thrown too.
+ */
+export async function registerWithGoogle(profile: CreateUserRequest): Promise<GoogleRegisterOutcome> {
+  const { provider, api } = authDeps();
+  const user = await googleUser(googleOf(provider));
+  if (!user) return 'cancelled';
+  // The terms were accepted on the screen just before the chooser: by this account's owner. If the fighter
+  // fails now, step 1 finishes it without asking again.
+  useRegistrationDraft.getState().acceptTermsFor(user.uid);
+  set(providerState(provider));
+  let existing: Me | null = null;
+  try {
+    existing = await api.getMe();
+  } catch (error) {
+    if (!isAccountApiError(error) || error.code !== 'notRegistered') {
+      await provider.signOut().catch(() => undefined);
+      set({ status: 'signedOut', user: null, me: null });
+      throw error;
+    }
+  }
+  if (existing) {
+    await adoptCreated(user, existing);
+    return 'existing';
+  }
+  try {
+    await adoptCreated(user, await createOrFetch(api, profile));
+  } catch (error) {
+    set({ status: 'needsProfile', user, me: null, meOffline: false, loadError: null });
+    throw error;
+  }
+  return 'created';
 }
 
 /**
@@ -193,7 +316,7 @@ export async function signUpAndRegister(
 ): Promise<void> {
   const { provider, api } = authDeps();
   const user = await provider.signUp(email, password);
-  set({ provider: provider.kind });
+  set(providerState(provider));
   provider.sendEmailVerification().catch((error: unknown) => report(error, 'sendEmailVerification'));
   try {
     await adoptCreated(user, await createOrFetch(api, profile));
@@ -300,6 +423,30 @@ export async function signOut(): Promise<void> {
   await forgetLocal();
 }
 
+/**
+ * Step 1's "התנתקות", signed in without a profile (needsProfile). A sign-in with Google only, made from the login
+ * screen, holds Google's address, name and photo link at Firebase from the moment it was made, before the terms
+ * were accepted, and nothing on our server: leaving here deletes it (and lets go of Google), so nothing stays.
+ * Firebase allows that only shortly after the sign-in; later (the app was reopened on step 1) it is only signed
+ * out, and the web page for deletion requests remains. A sign-in with a password is kept: its owner made it at
+ * step 2, and may come back to finish.
+ */
+export async function leaveRegistration(): Promise<void> {
+  const { provider } = authDeps();
+  const { status, user } = useAuth.getState();
+  const googleOnly = user?.methods.includes('google') === true && !user.methods.includes('password');
+  if (status === 'needsProfile' && googleOnly && provider.currentUser()?.uid === user.uid) {
+    try {
+      await provider.deleteUser();
+      await forgetLocal();
+      return;
+    } catch (error) {
+      if (toAuthError(error).code !== 'requiresRecentLogin') report(error, 'leaveRegistration.deleteUser');
+    }
+  }
+  await signOut();
+}
+
 export interface DeleteOutcome {
   /** False when the server's profile is gone but the sign-in could not be deleted (see below). */
   signInDeleted: boolean;
@@ -308,8 +455,9 @@ export interface DeleteOutcome {
 /**
  * Settings → "מחיקת חשבון" (spec §3.3, §23; work plan stage 8), in the safer order:
  *
- * 1. Re-authenticate with the password. Proves it is the owner, and makes the provider's delete possible
- *    (it needs a recent sign-in). A wrong password stops here: nothing is deleted.
+ * 1. Re-authenticate with the password (or with Google: deleteAccountWithGoogle). Proves it is the owner, and
+ *    makes the provider's delete possible (it needs a recent sign-in). A wrong password stops here: nothing is
+ *    deleted.
  * 2. A fresh ID token (getIdToken(true)): the server checks the token's sign-in time (auth_time), and the
  *    token the provider kept may predate step 1.
  * 3. DELETE /v1/me with it. The server is where the personal data and the name live: it marks deleted_at,
@@ -327,8 +475,28 @@ export interface DeleteOutcome {
  * Throws AuthError (steps 1–2) or AccountApiError (step 3).
  */
 export async function deleteAccount(password: string): Promise<DeleteOutcome> {
+  const { provider } = authDeps();
+  return deleteAfter(() => provider.reauthenticate(password));
+}
+
+/**
+ * The same deletion for an account that signs in with Google: step 1 is Google's chooser instead of the
+ * password (the player picks the same Google account again). Throws AuthError 'cancelled' when the chooser is
+ * closed (nothing deleted), and 'userMismatch' when another Google account is picked.
+ */
+export async function deleteAccountWithGoogle(): Promise<DeleteOutcome> {
+  const google = googleOf(authDeps().provider);
+  return deleteAfter(() =>
+    google.reauthenticate().catch((error: unknown) => {
+      reportGoogleFailure(error, 'google.reauthenticate');
+      throw error;
+    }),
+  );
+}
+
+async function deleteAfter(reauthenticate: () => Promise<void>): Promise<DeleteOutcome> {
   const { provider, api } = authDeps();
-  await provider.reauthenticate(password);
+  await reauthenticate();
   await provider.getIdToken(true);
   await api.deleteMe();
   let signInDeleted = true;

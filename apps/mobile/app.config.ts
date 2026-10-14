@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import type { ConfigContext, ExpoConfig } from 'expo/config';
@@ -18,6 +18,13 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  * Stage 14: Analytics joins the Firebase plugins (without Apple's advertising identifier, and without Android's
  * AD_ID permission; firebase.json turns the rest of the ad features off), and a store build (eas.json's
  * `production` profile) must have Firebase and a reachable game server, or it fails on EAS before it is built.
+ *
+ * "המשך עם Google" (Moshe, 14.10.2026; Android only for now, iOS later): with the Android Firebase file, the
+ * google-signin library's config plugin joins the Firebase plugins, and `extra.googleSignIn` carries the web OAuth
+ * client id read from that file (readGoogleSignIn below). The library's free version doesn't find that id by
+ * itself, and without it Google gives no ID token for Firebase. It is public: every APK carries it. The button
+ * shows only when the file lists the key that signs the build; a store build fails while the file still lists
+ * React Native's public debug key (TEMPLATE_DEBUG_KEY_SHA1).
  *
  * Builds on this PC (`npm run apk`, docs/BUILD-APK.md) get more, never EAS builds: Android build fixes
  * (LOCAL_BUILD_PLUGINS: the NDK installed here for every library, and on Windows limits for C++: memory and
@@ -124,6 +131,11 @@ export interface AppConfigEnv extends EasBuild {
    * unless the manifest allows cleartext traffic.
    */
   allowCleartext?: string | undefined;
+  /**
+   * SF_LOCAL_APK: "1" from `npm run apk` (scripts/build-apk.mjs), whose APK is signed with React Native's template
+   * debug key (TEMPLATE_DEBUG_KEY_SHA1). Google sign-in then works only if Firebase lists that key.
+   */
+  localApk?: string | undefined;
 }
 
 /**
@@ -144,6 +156,9 @@ const isLocalBuild = (build: EasBuild): boolean => build.easBuild !== 'true';
 export const allowsCleartext = (env: AppConfigEnv): boolean =>
   env.allowCleartext === '1' && isLocalBuild(env);
 
+/** An APK of `npm run apk` (signed with the template debug key); never a build on EAS's servers. */
+export const isLocalApk = (env: AppConfigEnv): boolean => env.localApk === '1' && isLocalBuild(env);
+
 /**
  * Android's advertising id permission. Firebase Analytics' library asks for it; this app shows no ads and
  * never reads it (firebase.json turns its collection off), so the permission is taken out of the manifest:
@@ -151,17 +166,140 @@ export const allowsCleartext = (env: AppConfigEnv): boolean =>
  */
 export const AD_ID_PERMISSION = 'com.google.android.gms.permission.AD_ID';
 
+/** The config plugin of @react-native-google-signin/google-signin, in its Firebase form (no options). */
+export const GOOGLE_SIGN_IN_PLUGIN = '@react-native-google-signin/google-signin';
+
+/** A Google OAuth client id ("<project number>-<letters and digits>.apps.googleusercontent.com"). */
+const OAUTH_CLIENT_ID = /^\d+-[a-z0-9]+\.apps\.googleusercontent\.com$/;
+
+/**
+ * The SHA-1 of the debug key in React Native's project template (android/app/debug.keystore, alias
+ * androiddebugkey), which signs the APKs of `npm run apk`. That key is public: it is the same in every React
+ * Native project. While Firebase lists it for this package, anyone can sign an APK named com.mosheg.sudokufight
+ * with it, have someone install it, and receive the Firebase session of every Google sign-in made in it. Fine
+ * for test phones; a store build refuses it (assertStoreBuildWithoutDebugKey).
+ */
+export const TEMPLATE_DEBUG_KEY_SHA1 = '5e8f16062ea3cd2c4a0d547876baa6f38cabf625';
+
+/** What google-services.json says about Google sign-in for the app's Android package. */
+export interface GoogleSignInSetup {
+  /**
+   * The web OAuth client (client_type 3), which GoogleSignin.configure({ webClientId }) needs to get an ID token
+   * Firebase takes. Null when the file has none (Google sign-in is not enabled in Firebase).
+   */
+  webClientId: string | null;
+  /**
+   * The package's Android OAuth clients (client_type 1): Firebase makes one for each SHA-1 added to the Android
+   * app. With none, Google answers every sign-in with DEVELOPER_ERROR, so the app shows no Google button.
+   */
+  androidClients: number;
+  /** One of them is for the template debug key (TEMPLATE_DEBUG_KEY_SHA1). */
+  debugKey: boolean;
+}
+
+const NO_GOOGLE: GoogleSignInSetup = { webClientId: null, androidClients: 0, debugKey: false };
+
+/** A certificate hash as Firebase writes it (40 hex digits, lower case), whatever its case or colons. */
+const sha1Of = (hash: unknown): string =>
+  typeof hash === 'string' ? hash.replace(/:/g, '').toLowerCase() : '';
+
+type Json = Record<string, unknown>;
+const isObject = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v);
+const objects = (v: unknown): Json[] => (Array.isArray(v) ? v.filter(isObject) : []);
+
+/**
+ * Google sign-in's part of google-services.json, for the app's package: the web client id, how many Android
+ * clients there are, and whether one is the template debug key's. Reads only those fields (the file holds the
+ * API key too; nothing else leaves here).
+ */
+export function readGoogleSignIn(json: unknown, androidPackage: string | undefined): GoogleSignInSetup {
+  if (!isObject(json) || !androidPackage) return NO_GOOGLE;
+  const client = objects(json.client).find((c) => {
+    const info = isObject(c.client_info) ? c.client_info : {};
+    const android = isObject(info.android_client_info) ? info.android_client_info : {};
+    return android.package_name === androidPackage;
+  });
+  if (!client) return NO_GOOGLE;
+  const services = isObject(client.services) ? client.services : {};
+  const invite = isObject(services.appinvite_service) ? services.appinvite_service : {};
+  const oauth = [...objects(client.oauth_client), ...objects(invite.other_platform_oauth_client)];
+  const idOf = (c: Json) =>
+    typeof c.client_id === 'string' && OAUTH_CLIENT_ID.test(c.client_id) ? c.client_id : null;
+  const web = oauth.find((c) => c.client_type === 3 && idOf(c) !== null);
+  const androidInfo = objects(client.oauth_client)
+    .filter((c) => c.client_type === 1 && idOf(c) !== null)
+    .map((c) => (isObject(c.android_info) ? c.android_info : {}))
+    .filter((info) => info.package_name === androidPackage);
+  return {
+    webClientId: web ? idOf(web) : null,
+    androidClients: androidInfo.length,
+    debugKey: androidInfo.some((info) => sha1Of(info.certificate_hash) === TEMPLATE_DEBUG_KEY_SHA1),
+  };
+}
+
+/**
+ * An Android store build while Firebase still lets the public template debug key sign in with Google (see
+ * TEMPLATE_DEBUG_KEY_SHA1) fails on EAS, saying how to take the key out. The file is the build's own copy of
+ * Firebase's list, downloaded again after every fingerprint change (docs/FIREBASE-SETUP.md §4א).
+ */
+export function assertStoreBuildWithoutDebugKey(build: EasBuild, google: GoogleSignInSetup): void {
+  if (!isStoreBuild(build) || build.platform === 'ios' || !google.debugKey) return;
+  throw new Error(
+    "Production build while Firebase lets React Native's public debug key sign in with Google: " +
+      `google-services.json lists its SHA-1 (${TEMPLATE_DEBUG_KEY_SHA1}). Anyone could sign an APK with this ` +
+      "app's package name with that key and take the Google sign-ins made in it. Remove that fingerprint in " +
+      'Firebase (Project settings > Your apps > Sudoku Fight Android), download google-services.json again and ' +
+      'upload it with `eas env:create ... --force` (docs/FIREBASE-SETUP.md section 4a).',
+  );
+}
+
+/** google-services.json at `path` (relative to this folder, or absolute), or null when it can't be read. */
+function readJsonFile(path: string): unknown {
+  try {
+    return JSON.parse(readFileSync(resolve(__dirname, path), 'utf8')) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * What the app reads at run time (auth/googleConfig.ts): on which platforms "המשך עם Google" works, and the web
+ * client id it configures Google sign-in with.
+ */
+export interface GoogleSignInExtra {
+  android: boolean;
+  /** iOS comes later (with Sign in with Apple, which the App Store then requires: spec §23). */
+  ios: boolean;
+  webClientId: string | null;
+}
+
 /** app.json's config with Firebase added for the platforms whose files exist (`exists`: tests pass theirs). */
 export function resolveAppConfig(
   base: ExpoConfig,
   env: AppConfigEnv,
   exists: (path: string) => boolean = existsSync,
+  readJson: (path: string) => unknown = readJsonFile,
 ): ExpoConfig {
   const android = firebaseFile(env.googleServicesJson, LOCAL_ANDROID, exists);
   const ios = firebaseFile(env.googleServiceInfoPlist, LOCAL_IOS, exists);
   assertStoreBuildHasFirebase(env, { android: android !== null, ios: ios !== null });
   assertStoreBuildHasServer(env, env.server ?? {});
-  const extra = { ...base.extra, firebase: { android: android !== null, ios: ios !== null } };
+  const google = android ? readGoogleSignIn(readJson(android), base.android?.package) : NO_GOOGLE;
+  assertStoreBuildWithoutDebugKey(env, google);
+  // The key that signs the build must be one Firebase lists, or every Google sign-in ends in DEVELOPER_ERROR.
+  // An APK of `npm run apk` is signed with the template debug key; other builds (EAS's key, then Play's) can't
+  // be told apart in the file, so any Android client will do.
+  const signingKeyListed = isLocalApk(env) ? google.debugKey : google.androidClients > 0;
+  const googleSignIn: GoogleSignInExtra = {
+    android: google.webClientId !== null && signingKeyListed,
+    ios: false,
+    webClientId: google.webClientId,
+  };
+  const extra = {
+    ...base.extra,
+    firebase: { android: android !== null, ios: ios !== null },
+    googleSignIn,
+  };
   const cleartext = allowsCleartext(env) ? { android: { usesCleartextTraffic: true } } : null;
   const localPlugins = isLocalBuild(env) ? LOCAL_BUILD_PLUGINS : [];
   if (!android && !ios) {
@@ -194,6 +332,9 @@ export function resolveAppConfig(
       '@react-native-firebase/crashlytics',
       // Stage 14: Analytics without Apple's advertising identifier (no IDFA, so no tracking prompt).
       ['@react-native-firebase/analytics', { ios: { withoutAdIdSupport: true } }],
+      // "המשך עם Google" (Android first). The Firebase form of the plugin: it reads the Firebase files, and on
+      // iOS adds the URL scheme from GoogleService-Info.plist once there is one (nothing without it).
+      ...(android ? [GOOGLE_SIGN_IN_PLUGIN] : []),
     ],
   };
 }
@@ -211,4 +352,5 @@ export default ({ config }: ConfigContext): ExpoConfig =>
       secure: process.env.EXPO_PUBLIC_SERVER_SECURE,
     },
     allowCleartext: process.env.SF_ALLOW_CLEARTEXT,
+    localApk: process.env.SF_LOCAL_APK,
   });

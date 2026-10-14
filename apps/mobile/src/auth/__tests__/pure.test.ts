@@ -158,8 +158,10 @@ describe('where each auth status belongs (spec §4.2)', () => {
 });
 
 describe('what an unverified email may do [D22]', () => {
-  const verified = { uid: 'u', email: 'a@b.co', emailVerified: true };
+  const verified = { uid: 'u', email: 'a@b.co', emailVerified: true, methods: ['password'] as const };
   const unverified = { ...verified, emailVerified: false };
+  // A Google sign-in comes with its address verified by Google (Firebase's emailVerified is true).
+  const google = { uid: 'g', email: 'gamer@gmail.com', emailVerified: true, methods: ['google'] as const };
 
   it('practice: always (the V1 setting)', () => {
     expect(canPractice(unverified)).toBe(true);
@@ -168,6 +170,7 @@ describe('what an unverified email may do [D22]', () => {
 
   it('ranked: a verified address while the setting asks for it', () => {
     expect(canPlayRanked(verified)).toBe(true);
+    expect(canPlayRanked(google)).toBe(true);
     expect(canPlayRanked(unverified)).toBe(false);
     expect(canPlayRanked(null)).toBe(false);
     expect(canPlayRanked(unverified, { blocksPractice: false, requiredForRanked: false })).toBe(true);

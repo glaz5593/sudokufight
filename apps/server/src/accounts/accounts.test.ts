@@ -117,6 +117,37 @@ describe('the "done" story of stage 8, on the server', () => {
     expect(again.body.id).not.toBe(created.body.id);
     expect(again.body.displayName).toBe('Dana');
   });
+
+  it('"המשך עם Google" in the app (Moshe, 14.10.2026): a Google sign-in is an account like any other', async () => {
+    // Firebase's token of a Google sign-in: sign_in_provider google.com, the address verified by Google.
+    const google = (uid: string) =>
+      tokens.sign(
+        { uid, email: 'gamer@gmail.com', emailVerified: true, provider: 'google.com' },
+        clock.now(),
+      );
+    for (const env of ['test', 'production'] as const) {
+      await start({ nodeEnv: env });
+      const created = await api<Me>('POST', ACCOUNT_PATHS.users, {
+        token: await google('google-uid-1'),
+        body: fighter({ displayName: 'Gamer' }),
+      });
+      expect({ env, status: created.status }).toEqual({ env, status: 201 });
+      const card = await api<Me>('GET', ACCOUNT_PATHS.me, { token: await google('google-uid-1') });
+      expect(card.body).toMatchObject({
+        displayName: 'Gamer',
+        email: 'gamer@gmail.com',
+        emailVerified: true,
+      });
+      const changed = await api<Me>('PATCH', ACCOUNT_PATHS.me, {
+        token: await google('google-uid-1'),
+        body: { country: 'US' },
+      });
+      expect(changed.body.country).toBe('US');
+      // Deleting it needs a fresh sign-in, as with a password: re-authenticating with Google gives one.
+      const removed = await api('DELETE', ACCOUNT_PATHS.me, { token: await google('google-uid-1') });
+      expect(removed.status).toBe(204);
+    }
+  });
 });
 
 describe('POST /v1/users', () => {

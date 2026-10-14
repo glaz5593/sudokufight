@@ -24,6 +24,20 @@ describe('the registration draft', () => {
     expect((await load({ avatarId: 'av41' })).avatarId).toBe('panda');
   });
 
+  it('remembers which account accepted the terms (an account id only), until reset', async () => {
+    expect(useRegistrationDraft.getState().termsAcceptedBy).toBeNull();
+    useRegistrationDraft.getState().acceptTermsFor('fbg-1');
+    expect(useRegistrationDraft.getState().termsAcceptedBy).toBe('fbg-1');
+    expect(JSON.parse((await Storage.getItem('registration'))!).state.termsAcceptedBy).toBe('fbg-1');
+    useRegistrationDraft.getState().reset();
+    expect(useRegistrationDraft.getState().termsAcceptedBy).toBeNull();
+    for (const junk of [true, '', 42, null, 'x'.repeat(129)])
+      expect((await load({ termsAcceptedBy: junk })).termsAcceptedBy).toBeNull();
+    // An earlier draft's "accepted on this phone" says nothing about any account.
+    expect((await load({ termsAccepted: true })).termsAcceptedBy).toBeNull();
+    expect((await load({ termsAcceptedBy: 'fbg-2' })).termsAcceptedBy).toBe('fbg-2');
+  });
+
   it('keeps its avatar when the saved one is unknown or "no avatar"', async () => {
     useRegistrationDraft.getState().setAvatar('fox');
     expect((await load({ avatarId: 'av36' })).avatarId).toBe('fox');

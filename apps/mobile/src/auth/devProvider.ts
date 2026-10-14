@@ -18,6 +18,7 @@ import { AuthError, type AuthProvider, type AuthUser, type KeyValueStore } from 
  * - It behaves like Firebase where the screens care: wrong password vs unknown user, a lockout after
  *   MAX_FAILURES wrong passwords in a row (for LOCKOUT_MS), email in use, weak password (< 6), and delete
  *   needing a sign-in within RECENT_LOGIN_MS.
+ * - No Google: "המשך עם Google" needs Firebase (and Google's web client id), so the screens show no Google button.
  */
 
 export const DEV_ACCOUNTS_KEY = 'devAuth.accounts';
@@ -89,6 +90,7 @@ export function createDevAuthProvider({
     uid: a.uid,
     email: a.email,
     emailVerified: a.emailVerified,
+    methods: ['password'],
   });
 
   async function startSession(account: DevAccount): Promise<AuthUser> {

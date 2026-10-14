@@ -292,6 +292,9 @@ function buildEnv(server) {
   delete env.CI;
   // app.config.ts gives builds on this PC their own plugins, and never lets an EAS build allow cleartext.
   delete env.EAS_BUILD;
+  // The APK is signed with the template debug key: app.config.ts shows "המשך עם Google" only while Firebase
+  // lists that key's SHA-1 (it can't work otherwise).
+  env.SF_LOCAL_APK = '1';
   if (server.secure) delete env.SF_ALLOW_CLEARTEXT;
   else env.SF_ALLOW_CLEARTEXT = '1';
   if (!env.ANDROID_HOME) env.ANDROID_HOME = androidSdk();

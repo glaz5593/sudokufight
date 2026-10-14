@@ -104,7 +104,10 @@ export function DevModeBadge({ style }: { style?: StyleProp<ViewStyle> }) {
   );
 }
 
-/** The registration's header: back, "שלב 1 מתוך 2" and its two bars (Register-Fighter / -Account). */
+/**
+ * The registration's header: back, "שלב 1 מתוך 2" and its two bars (Register-Fighter / -Account). Without `step`,
+ * no counter: step 1 when signed in already, which then finishes the registration itself.
+ */
 export function StepHeader({
   step,
   total = 2,
@@ -112,7 +115,7 @@ export function StepHeader({
   backLabel,
   end,
 }: {
-  step: number;
+  step?: number | undefined;
   total?: number;
   onBack?: () => void;
   backLabel?: string;
@@ -123,12 +126,16 @@ export function StepHeader({
     <View style={styles.stepHeader}>
       {onBack ? <BackButton onPress={onBack} label={backLabel} /> : <View style={styles.stepSpacer} />}
       <View style={styles.stepMiddle}>
-        <Text style={styles.stepText}>{t('register.step', { step, total })}</Text>
-        <View style={styles.stepBars} importantForAccessibility="no-hide-descendants">
-          {Array.from({ length: total }, (_, i) => (
-            <View key={i} style={[styles.stepBar, i < step && styles.stepBarOn]} />
-          ))}
-        </View>
+        {step === undefined ? null : (
+          <>
+            <Text style={styles.stepText}>{t('register.step', { step, total })}</Text>
+            <View style={styles.stepBars} importantForAccessibility="no-hide-descendants">
+              {Array.from({ length: total }, (_, i) => (
+                <View key={i} style={[styles.stepBar, i < step && styles.stepBarOn]} />
+              ))}
+            </View>
+          </>
+        )}
       </View>
       {end ?? <View style={styles.stepSpacer} />}
     </View>

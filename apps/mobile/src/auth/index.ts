@@ -43,16 +43,22 @@ export {
   type AuthStatus,
   checkEmailVerified,
   deleteAccount,
+  deleteAccountWithGoogle,
   type DeleteOutcome,
+  type GoogleRegisterOutcome,
+  type GoogleSignInOutcome,
   initAuth,
+  leaveRegistration,
   refreshMe,
   registerProfile,
+  registerWithGoogle,
   retryLoad,
   sendPasswordReset,
   sendVerificationEmail,
   setAuthDeps,
   signedInIdToken,
   signIn,
+  signInWithGoogle,
   signOut,
   signUpAndRegister,
   updateProfile,
@@ -61,11 +67,20 @@ export {
 export { chooseAuthProvider, firebaseConfigured } from './chooseProvider';
 export { createDevAuthProvider } from './devProvider';
 export { createFirebaseAuthProvider } from './firebaseProvider';
-export { authErrorCodeOf, toAuthError } from './errors';
+export { authErrorCodeOf, googleAuthErrorCodeOf, toAuthError, toGoogleAuthError } from './errors';
+export { type GoogleSignInConfig, googleSignInConfig } from './googleConfig';
 export { accountNetIdentity } from './netIdentity';
 export * from './password';
 export { redirectFor, ROUTES } from './redirect';
 export { defaultCountry, useRegistrationDraft } from './registrationDraft';
 export { useAuthGate } from './useAuthGate';
 export { canPlayRanked, canPractice } from './verification';
-export { AuthError, type AuthErrorCode, type AuthProvider, type AuthUser, isAuthError } from './types';
+export {
+  AuthError,
+  type AuthErrorCode,
+  type AuthProvider,
+  type AuthUser,
+  type GoogleAuth,
+  isAuthError,
+  type SignInMethod,
+} from './types';

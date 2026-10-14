@@ -75,6 +75,19 @@ describe('the legal texts', () => {
     expect(en).toMatch(/replaced by an anonymous id/);
     expect(en).toMatch(/not meant for children under 13/);
   });
+
+  it('say what sign-in with Google brings (Moshe, 14.10.2026): optional, what comes from Google, what we keep', () => {
+    const en = textOf(renderLegalPage('privacy', 'en', SET));
+    expect(en).toMatch(/Sign in with Google \(optional\)/);
+    expect(en).toMatch(/your Google account’s email \(verified by Google\) and its Google id/);
+    expect(en).toMatch(/Our server doesn’t store or show them/);
+    expect(en).toMatch(/revokes the access it was given to your Google account/);
+    const he = textOf(renderLegalPage('privacy', 'he', SET));
+    expect(he).toMatch(/כניסה עם Google \(רשות\)/);
+    expect(he).toMatch(/השרת שלנו לא שומר אותם ולא מציג אותם/);
+    expect(textOf(renderLegalPage('delete-account', 'en', SET))).toMatch(/choose your Google account again/);
+    expect(textOf(renderLegalPage('delete-account', 'he', SET))).toMatch(/בוחרים שוב את חשבון Google/);
+  });
 });
 
 describe('a rendered page', () => {

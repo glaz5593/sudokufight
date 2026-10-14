@@ -16,7 +16,7 @@
 
 | מקור | מה נאסף | איפה בקוד |
 |---|---|---|
-| חשבון | מייל, שם לתצוגה, מדינה, אווטאר, מזהה חשבון, uid של Firebase | `apps/server/src/accounts`, ‏Firebase Auth |
+| חשבון | מייל, שם לתצוגה, מדינה, אווטאר, מזהה חשבון, uid של Firebase. **בכניסה עם Google** (רשות, מ־14.10.2026, ב־Android בלבד בינתיים): ‏Firebase Auth שומר גם את מזהה חשבון Google, ואת השם ואת הקישור לתמונה של חשבון Google. השרת שלנו לא שומר אותם ולא מציג אותם | `apps/server/src/accounts`, ‏Firebase Auth, ‏`apps/mobile/src/auth/firebaseProvider.ts` |
 | משחקים | מהלכים עם זמנים, ניקוד, טעויות, מיקום, דירוג, XP, היסטוריית לוחות ויריבים, תוצאות אימון, ‏cheat_flags | `apps/server/src/persistence`, ‏`progress`, ‏`db/schema.ts` |
 | אירועי שימוש | ‏`installId` אקראי, פלטפורמה, גרסה, 13 אירועים עם props (טבלה במדיניות) | `apps/mobile/src/services/telemetry`, ‏`POST /v1/events` |
 | Firebase Analytics | אותם אירועים, ‏App Instance ID, פרטי מכשיר, מיקום משוער מה־IP | `apps/mobile/src/services/analytics.ts` ← ‏`firebaseAnalytics.ts`, ‏`ga4.ts` |
@@ -31,8 +31,8 @@
 
 | קטגוריה ב־Apple | סוג | נאסף? | מקושר? | Tracking? | מטרות | מה זה אצלנו |
 |---|---|---|---|---|---|---|
-| Contact Info | **Email Address** | **כן** | כן | לא | App Functionality | כניסה, אימות, איפוס סיסמה |
-| Contact Info | Name | לא | — | — | — | אין שם אמיתי. השם לתצוגה הוא כינוי (ראו User ID) |
+| Contact Info | **Email Address** | **כן** | כן | לא | App Functionality | כניסה (במייל וסיסמה, או עם Google), אימות, איפוס סיסמה |
+| Contact Info | Name | **לא, עד שתהיה כניסה עם Google ב־iOS. אז: כן** | כן | לא | App Functionality | השם לתצוגה הוא כינוי (ראו User ID). בכניסה עם Google, ‏Firebase Authentication שומר את השם של חשבון Google עם הכניסה (אנחנו לא משתמשים בו ולא מציגים אותו), ולכן ברגע שהכפתור מגיע ל־iOS מסמנים כאן כן |
 | Contact Info | Phone, Physical Address, Other | לא | — | — | — | |
 | Health & Fitness | הכל | לא | — | — | — | |
 | Financial Info | הכל | לא | — | — | — | אין רכישות |
@@ -66,7 +66,8 @@
 
 - **Privacy manifest (‏`PrivacyInfo.xcprivacy`):** ‏Expo ו־React Native Firebase מוסיפים אחד בבנייה, עם "required reason APIs". אחרי בניית EAS הראשונה: Xcode → Archive → ‏**Generate Privacy Report**, ולוודא שאין בו סוגי מידע שלא מופיעים כאן.
 - **ATT (App Tracking Transparency):** לא מבקשים. אין מעקב.
-- **מחיקת חשבון** (הנחיה 5.1.1(v)): הגדרות → מחיקת חשבון. מוחקת את החשבון בשרת ואת הכניסה ב־Firebase. אחרי המחיקה נשארים רק נתונים אנונימיים (המדיניות, סעיף "כמה זמן המידע נשמר").
+- **מחיקת חשבון** (הנחיה 5.1.1(v)): הגדרות → מחיקת חשבון. מוחקת את החשבון בשרת ואת הכניסה ב־Firebase. אחרי המחיקה נשארים רק נתונים אנונימיים (המדיניות, סעיף "כמה זמן המידע נשמר"). מי שנכנס עם Google מאשר עם חשבון Google במקום סיסמה, והאפליקציה מבטלת את הגישה שקיבלה ממנו.
+- **כניסה עם Google ו־Sign in with Apple** (הנחיה 4.8): היום הכפתור של Google קיים רק ב־Android. כשמוסיפים אותו ל־iOS, ‏**Sign in with Apple חובה באותה גרסה** (אפיון 23), ומעדכנים כאן את Name (למעלה) ואת המקור "חשבון".
 - **קישור למדיניות:** בהרשמה (תיבת האישור) ובהגדרות → "מידע ומשפטי".
 
 </div>

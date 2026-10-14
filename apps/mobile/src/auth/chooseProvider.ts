@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 
 import { createDevAuthProvider } from './devProvider';
 import { createFirebaseAuthProvider } from './firebaseProvider';
+import { googleSignInConfig } from './googleConfig';
 import type { AuthProvider } from './types';
 
 /**
@@ -22,14 +23,14 @@ export function firebaseConfigured(
 }
 
 /**
- * Firebase when the build has it for this platform; otherwise the development sign-in (local accounts,
- * "dev:<uid>" tokens a production server refuses). Dropping the Firebase files in and rebuilding switches
- * to Firebase with no code change.
+ * Firebase when the build has it for this platform (with "המשך עם Google" when the build has that too:
+ * googleConfig.ts); otherwise the development sign-in (local accounts, "dev:<uid>" tokens a production server
+ * refuses, no Google). Dropping the Firebase files in and rebuilding switches to Firebase with no code change.
  */
 export function chooseAuthProvider(
   configured: boolean = firebaseConfigured(),
   make: { firebase: () => AuthProvider; dev: () => AuthProvider } = {
-    firebase: () => createFirebaseAuthProvider(),
+    firebase: () => createFirebaseAuthProvider(undefined, googleSignInConfig()),
     dev: () => createDevAuthProvider({ storage: Storage }),
   },
 ): AuthProvider {

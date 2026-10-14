@@ -9,10 +9,15 @@ import appConfig, {
   type AppConfigEnv,
   assertStoreBuildHasFirebase,
   assertStoreBuildHasServer,
+  assertStoreBuildWithoutDebugKey,
+  GOOGLE_SIGN_IN_PLUGIN,
+  isLocalApk,
   isStoreBuild,
   LOCAL_BUILD_PLUGINS,
+  readGoogleSignIn,
   resolveAppConfig,
   STORE_PROFILES,
+  TEMPLATE_DEBUG_KEY_SHA1,
 } from '../../app.config';
 
 /**
@@ -40,8 +45,13 @@ const resolve = (env: Partial<AppConfigEnv> = {}) =>
 describe('app.config.ts and Firebase', () => {
   it('without the files: no Firebase plugins, extra.firebase says so', () => {
     const config = resolve();
-    expect(config.extra).toEqual({ supportsRTL: true, firebase: { android: false, ios: false } });
+    expect(config.extra).toEqual({
+      supportsRTL: true,
+      firebase: { android: false, ios: false },
+      googleSignIn: { android: false, ios: false, webClientId: null },
+    });
     expect(JSON.stringify(config.plugins ?? [])).not.toContain('react-native-firebase');
+    expect(JSON.stringify(config.plugins ?? [])).not.toContain('google-signin');
   });
 
   it('with the EAS file variables: the plugins, static frameworks on iOS, and extra.firebase true', () => {
@@ -112,6 +122,205 @@ describe('app.config.ts and Firebase', () => {
           existsSync(join(dir, 'GoogleService-Info.plist')) ||
           existsSync(process.env.GOOGLE_SERVICE_INFO_PLIST ?? ''),
       },
+    });
+  });
+});
+
+describe('"Continue with Google" (Moshe, 14.10.2026): the plugin and the web client id', () => {
+  const PACKAGE = 'com.mosheg.sudokufight';
+  const WEB = '111122223333-webclientabc123.apps.googleusercontent.com';
+  /** google-services.json's shape (made-up values; the real file never enters the repo). */
+  const servicesJson = ({
+    pkg = PACKAGE,
+    web = WEB as string | null,
+    androidClients = 2,
+    webInOtherPlatforms = false,
+    hashes = [] as string[],
+  } = {}) => ({
+    project_info: { project_id: 'sudoku-fight-test' },
+    client: [
+      {
+        client_info: { android_client_info: { package_name: 'com.example.other' } },
+        oauth_client: [{ client_id: '999-otherweb.apps.googleusercontent.com', client_type: 3 }],
+      },
+      {
+        client_info: { android_client_info: { package_name: pkg } },
+        oauth_client: [
+          ...Array.from({ length: androidClients }, (_, i) => ({
+            client_id: `111122223333-androidclient${i}.apps.googleusercontent.com`,
+            client_type: 1,
+            android_info: { package_name: pkg, certificate_hash: hashes[i] ?? 'a'.repeat(40) },
+          })),
+          ...(web && !webInOtherPlatforms ? [{ client_id: web, client_type: 3 }] : []),
+        ],
+        api_key: [{ current_key: 'AIza-test-key' }],
+        services: {
+          appinvite_service: {
+            other_platform_oauth_client:
+              web && webInOtherPlatforms ? [{ client_id: web, client_type: 3 }] : [],
+          },
+        },
+      },
+    ],
+  });
+  const BASE_APP: ExpoConfig = { ...BASE, android: { package: PACKAGE } };
+  const withFile = (json: unknown) =>
+    resolveAppConfig(BASE_APP, { ...NO_ENV, googleServicesJson: ANDROID_FILE }, easFilesOnly, (path) =>
+      path === ANDROID_FILE ? json : null,
+    );
+
+  it("reads the web client and the package's Android clients from google-services.json, nothing else", () => {
+    expect(readGoogleSignIn(servicesJson(), PACKAGE)).toEqual({
+      webClientId: WEB,
+      androidClients: 2,
+      debugKey: false,
+    });
+    // Firebase sometimes lists the web client only under the invite service.
+    expect(readGoogleSignIn(servicesJson({ webInOtherPlatforms: true }), PACKAGE).webClientId).toBe(WEB);
+    // Another app's clients don't count.
+    expect(readGoogleSignIn(servicesJson(), 'com.example.nothere')).toEqual({
+      webClientId: null,
+      androidClients: 0,
+      debugKey: false,
+    });
+    expect(readGoogleSignIn(servicesJson({ web: 'not a client id' }), PACKAGE).webClientId).toBeNull();
+    expect(readGoogleSignIn(servicesJson({ web: null }), PACKAGE).webClientId).toBeNull();
+    for (const junk of [null, 'text', [], { client: 'x' }, { client: [null, 3] }])
+      expect(readGoogleSignIn(junk, PACKAGE)).toEqual({
+        webClientId: null,
+        androidClients: 0,
+        debugKey: false,
+      });
+    expect(readGoogleSignIn(servicesJson(), undefined).webClientId).toBeNull();
+  });
+
+  it('with the Android Firebase file: the plugin after the Firebase ones, and Google on for Android', () => {
+    const config = withFile(servicesJson());
+    expect(GOOGLE_SIGN_IN_PLUGIN).toBe('@react-native-google-signin/google-signin');
+    const plugins = (config.plugins ?? []).map((p) => (Array.isArray(p) ? p[0] : p));
+    expect(plugins).toContain(GOOGLE_SIGN_IN_PLUGIN);
+    expect(plugins.indexOf(GOOGLE_SIGN_IN_PLUGIN)).toBeGreaterThan(
+      plugins.indexOf('@react-native-firebase/auth'),
+    );
+    expect(config.extra).toMatchObject({ googleSignIn: { android: true, ios: false, webClientId: WEB } });
+  });
+
+  it('no SHA-1 in Firebase yet (no Android client), or no web client: no Google button (it could only fail)', () => {
+    expect(withFile(servicesJson({ androidClients: 0 })).extra).toMatchObject({
+      googleSignIn: { android: false, webClientId: WEB },
+    });
+    expect(withFile(servicesJson({ web: null })).extra).toMatchObject({
+      googleSignIn: { android: false, webClientId: null },
+    });
+    // A file that can't be read: Firebase still builds, without Google.
+    const unreadable = withFile(null);
+    expect(unreadable.extra).toMatchObject({ firebase: { android: true }, googleSignIn: { android: false } });
+    expect(unreadable.plugins).toContain(GOOGLE_SIGN_IN_PLUGIN);
+  });
+
+  it('only with the Android file: an iOS-only Firebase build has no Google plugin (iOS comes later)', () => {
+    const config = resolveAppConfig(
+      BASE_APP,
+      { ...NO_ENV, googleServiceInfoPlist: IOS_FILE },
+      easFilesOnly,
+      () => servicesJson(),
+    );
+    expect(config.extra).toMatchObject({
+      firebase: { android: false, ios: true },
+      googleSignIn: { android: false },
+    });
+    expect(config.plugins).not.toContain(GOOGLE_SIGN_IN_PLUGIN);
+    expect(config.plugins).toContain('@react-native-firebase/auth');
+  });
+
+  it("this machine's google-services.json, if any: Google exactly when it has the clients", () => {
+    const local = join(__dirname, '..', '..', 'config', 'firebase', 'google-services.json');
+    const app = JSON.parse(readFileSync(join(__dirname, '..', '..', 'app.json'), 'utf8')) as {
+      expo: ExpoConfig;
+    };
+    const config = appConfig({ config: app.expo } as Parameters<typeof appConfig>[0]);
+    const extra = config.extra as { googleSignIn: { android: boolean; webClientId: string | null } };
+    const fromEnv = process.env.GOOGLE_SERVICES_JSON ?? '';
+    if (!existsSync(local) && !existsSync(fromEnv)) {
+      expect(extra.googleSignIn).toEqual({ android: false, ios: false, webClientId: null });
+      return;
+    }
+    // Only compared, never printed.
+    const file = existsSync(fromEnv) ? fromEnv : local;
+    const setup = readGoogleSignIn(JSON.parse(readFileSync(file, 'utf8')), app.expo.android?.package);
+    expect(extra.googleSignIn.webClientId === setup.webClientId).toBe(true);
+    const env = { ...NO_ENV, easBuild: process.env.EAS_BUILD, localApk: process.env.SF_LOCAL_APK };
+    const keyListed = isLocalApk(env) ? setup.debugKey : setup.androidClients > 0;
+    expect(extra.googleSignIn.android).toBe(setup.webClientId !== null && keyListed);
+    expect(config.plugins).toContain(GOOGLE_SIGN_IN_PLUGIN);
+  });
+
+  describe("React Native's public template debug key (it signs `npm run apk`)", () => {
+    const DEBUG_COLONS = '5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25';
+    const withDebugKey = servicesJson({ hashes: [TEMPLATE_DEBUG_KEY_SHA1] });
+    const easKeyOnly = servicesJson({ androidClients: 1 });
+    const googleOn = (json: unknown, env: Partial<AppConfigEnv>) =>
+      (
+        resolveAppConfig(
+          BASE_APP,
+          { ...NO_ENV, googleServicesJson: ANDROID_FILE, ...env },
+          easFilesOnly,
+          (path) => (path === ANDROID_FILE ? json : null),
+        ).extra as { googleSignIn: { android: boolean } }
+      ).googleSignIn.android;
+
+    it("is the keystore's known fingerprint, found among the package's Android clients in any spelling", () => {
+      expect(DEBUG_COLONS.replace(/:/g, '').toLowerCase()).toBe(TEMPLATE_DEBUG_KEY_SHA1);
+      expect(readGoogleSignIn(withDebugKey, PACKAGE)).toMatchObject({ androidClients: 2, debugKey: true });
+      expect(readGoogleSignIn(servicesJson({ hashes: [DEBUG_COLONS] }), PACKAGE).debugKey).toBe(true);
+      expect(readGoogleSignIn(easKeyOnly, PACKAGE).debugKey).toBe(false);
+      // Another package's client with that key doesn't count.
+      expect(
+        readGoogleSignIn(
+          servicesJson({ pkg: 'com.example.other', hashes: [TEMPLATE_DEBUG_KEY_SHA1] }),
+          PACKAGE,
+        ),
+      ).toMatchObject({ debugKey: false });
+    });
+
+    it('an APK of `npm run apk` shows Google only while Firebase lists that key (else it could only fail)', () => {
+      expect(googleOn(withDebugKey, { localApk: '1' })).toBe(true);
+      // The debug key's SHA-1 removed from Firebase: the EAS key alone can't sign this APK in.
+      expect(googleOn(easKeyOnly, { localApk: '1' })).toBe(false);
+      // Other builds can't tell their key in the file: any Android client.
+      expect(googleOn(easKeyOnly, {})).toBe(true);
+      expect(googleOn(easKeyOnly, { easBuild: 'true', profile: 'preview', platform: 'android' })).toBe(true);
+      // Never on EAS's servers, even if the variable leaked there.
+      expect(isLocalApk({ ...NO_ENV, localApk: '1', easBuild: 'true' })).toBe(false);
+      expect(googleOn(easKeyOnly, { localApk: '1', easBuild: 'true', profile: 'preview' })).toBe(true);
+    });
+
+    it('an Android store build fails while the file lists it, saying how to remove it', () => {
+      const store = {
+        easBuild: 'true',
+        profile: 'production',
+        platform: 'android',
+        server: { host: 'sudoku-fight-prod.fly.dev', secure: 'true' },
+      };
+      expect(() => googleOn(withDebugKey, store)).toThrow(
+        /public debug key.*5e8f16062ea3cd2c4a0d547876baa6f38cabf625.*Remove that fingerprint in Firebase.*--force/s,
+      );
+      expect(googleOn(easKeyOnly, store)).toBe(true);
+      // Preview builds, builds on this PC and iOS builds go on (the APKs for test phones keep it).
+      const setup = readGoogleSignIn(withDebugKey, PACKAGE);
+      for (const build of [
+        { easBuild: 'true', profile: 'preview', platform: 'android' },
+        { easBuild: undefined, profile: 'production', platform: 'android' },
+        { easBuild: 'true', profile: 'production', platform: 'ios' },
+      ])
+        expect(() => assertStoreBuildWithoutDebugKey(build, setup)).not.toThrow();
+      // No platform said: Android is one of them.
+      expect(() =>
+        assertStoreBuildWithoutDebugKey(
+          { easBuild: 'true', profile: 'production', platform: undefined },
+          setup,
+        ),
+      ).toThrow(/public debug key/);
     });
   });
 });

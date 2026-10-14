@@ -1,11 +1,11 @@
-import { validateDisplayName } from '@sudoku-fight/protocol';
+import { type CreateUserRequest, validateDisplayName } from '@sudoku-fight/protocol';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet, Text, type TextInput, View } from 'react-native';
 
 import { isAccountApiError } from '../../api/accountApi';
-import { signUpAndRegister } from '../../auth/authStore';
+import { registerWithGoogle, signUpAndRegister, useAuth } from '../../auth/authStore';
 import { toAuthError } from '../../auth/errors';
 import { emailOk, passwordOk, passwordRules, passwordStrength } from '../../auth/password';
 import { ROUTES } from '../../auth/redirect';
@@ -19,7 +19,8 @@ import { cue } from '../../services/feedback';
 import { color, size, space, text } from '../../theme';
 import { Field, FieldStatus, PasswordField } from './Field';
 import { FighterCard } from './FighterCard';
-import { errorMessage } from './messages';
+import { GoogleButton, OrDivider } from './GoogleButton';
+import { errorMessage, withGoogleHint } from './messages';
 import {
   AccentTitle,
   AccountScreen,
@@ -31,6 +32,7 @@ import {
   StepHeader,
   StrengthMeter,
 } from './parts';
+import { TermsModal } from './TermsModal';
 
 type Errors = { email?: string; password?: string; confirm?: string; terms?: string; form?: string };
 
@@ -43,9 +45,17 @@ type Errors = { email?: string; password?: string; confirm?: string; terms?: str
  * (POST /v1/users); the root layout then goes home. If the account was made but the profile was not (the
  * name was taken meanwhile, no connection), the player is sent back to step 1, signed in, with a toast that
  * says why: the account is not lost.
+ *
+ * "המשך עם Google" (Moshe, 14.10.2026), above the form when the build has it: the terms first (the checkbox,
+ * or a dialog when it isn't ticked: TermsModal), then Google's chooser and the profile from step 1. A Google
+ * account that already has a fighter just signs in (a toast names that fighter) and goes home; the step-1 draft
+ * is dropped. Closing the chooser says nothing. The same toasts as above when the profile can't be created.
+ * One attempt at a time: `working` is set at once, so a second tap (the terms dialog stays pressable while it
+ * fades out) starts nothing.
  */
 export function RegisterAccountScreen() {
   const { t, i18n } = useTranslation('account');
+  const google = useAuth((s) => s.google);
   const avatarId = useRegistrationDraft((s) => s.avatarId);
   const displayName = useRegistrationDraft((s) => s.displayName);
   const country = useRegistrationDraft((s) => s.country);
@@ -57,6 +67,10 @@ export function RegisterAccountScreen() {
   const [errors, setErrors] = useState<Errors>({});
   const [shake, setShake] = useState({ email: 0, password: 0, confirm: 0, terms: 0 });
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  /** An account is being made (email or Google): set at once, before the state above re-renders. */
+  const working = useRef(false);
   const passwordRef = useRef<TextInput>(null);
   const confirmRef = useRef<TextInput>(null);
 
@@ -81,13 +95,26 @@ export function RegisterAccountScreen() {
     cue('nudge');
   };
 
+  /** Step 1's fighter; when it isn't complete (a deep link, an older version's draft), back to step 1. */
+  const fighter = (): CreateUserRequest | null => {
+    if (validateDisplayName(name) === null && country) return { displayName: name, avatarId, country };
+    router.replace(ROUTES.registerFighter);
+    return null;
+  };
+
+  /** The profile was not created: the sign-in exists now, and the router takes the player back to step 1. */
+  const profileFailed = (error: unknown) => {
+    const message =
+      isAccountApiError(error) && error.code === 'taken'
+        ? t('account.nameTakenNow', { name: ltr(name) })
+        : `${t('account.profileFailed')} ${errorMessage(t, error)}`;
+    useToast.getState().show({ variant: 'error', message });
+  };
+
   const submit = async () => {
-    if (busy) return;
-    // Step 1 must be complete (a deep link, or a draft from an older version).
-    if (validateDisplayName(name) !== null || !country) {
-      router.replace(ROUTES.registerFighter);
-      return;
-    }
+    if (busy || googleBusy || working.current) return;
+    const profile = fighter();
+    if (!profile) return;
     const local: Errors = {};
     if (!email.trim()) local.email = t('validation.emailRequired');
     else if (!emailOk(email)) local.email = t('validation.emailInvalid');
@@ -98,25 +125,65 @@ export function RegisterAccountScreen() {
 
     setErrors({});
     setBusy(true);
+    working.current = true;
     cue('primaryPress');
     try {
-      await signUpAndRegister(email.trim(), password, { displayName: name, avatarId, country });
+      await signUpAndRegister(email.trim(), password, profile);
       track('register_complete');
     } catch (error) {
+      working.current = false;
       setBusy(false);
-      if (isAccountApiError(error)) {
-        // The sign-in exists now; the router takes the player back to step 1 to finish.
-        const message =
-          error.code === 'taken'
-            ? t('account.nameTakenNow', { name: ltr(name) })
-            : `${t('account.profileFailed')} ${errorMessage(t, error)}`;
-        useToast.getState().show({ variant: 'error', message });
-        return;
-      }
+      if (isAccountApiError(error)) return profileFailed(error);
       const { code } = toAuthError(error);
-      if (code === 'emailInUse' || code === 'invalidEmail') return fail({ email: errorMessage(t, error) });
+      if (code === 'emailInUse' || code === 'invalidEmail')
+        return fail({ email: withGoogleHint(t, error, google) });
       if (code === 'weakPassword') return fail({ password: errorMessage(t, error) });
       return fail({ form: errorMessage(t, error) });
+    }
+  };
+
+  const continueWithGoogle = () => {
+    if (busy || googleBusy || working.current) return;
+    const profile = fighter();
+    if (!profile) return;
+    if (agree) void runGoogle(profile);
+    else setTermsOpen(true);
+  };
+
+  const acceptTermsAndGo = () => {
+    if (working.current) return;
+    setTermsOpen(false);
+    setAgree(true);
+    setErrors((e) => ({ ...e, terms: undefined }));
+    const profile = fighter();
+    if (profile) void runGoogle(profile);
+  };
+
+  const runGoogle = async (profile: CreateUserRequest) => {
+    if (working.current) return;
+    working.current = true;
+    setErrors({});
+    setGoogleBusy(true);
+    try {
+      const outcome = await registerWithGoogle(profile);
+      if (outcome === 'cancelled') {
+        working.current = false;
+        return setGoogleBusy(false);
+      }
+      if (outcome === 'created') track('register_complete');
+      // A sign-in after all: this Google account already has its fighter (the root layout goes home). The toast
+      // names it, so a fighter someone else made on this address (spec §3.3) doesn't pass as the player's own.
+      else {
+        const existing = useAuth.getState().me?.displayName ?? '';
+        useToast.getState().show({ variant: 'info', message: t('google.existing', { name: ltr(existing) }) });
+      }
+    } catch (error) {
+      working.current = false;
+      setGoogleBusy(false);
+      // Signed in, but the fighter wasn't saved: as with email, back to step 1 to finish.
+      if (isAccountApiError(error) && useAuth.getState().status === 'needsProfile')
+        return profileFailed(error);
+      fail({ form: errorMessage(t, error) });
     }
   };
 
@@ -167,6 +234,18 @@ export function RegisterAccountScreen() {
       </View>
 
       <FormAlert message={errors.form ?? null} testID="account-alert" />
+
+      {google ? (
+        <View style={styles.google}>
+          <GoogleButton
+            onPress={continueWithGoogle}
+            loading={googleBusy}
+            disabled={busy}
+            testID="account-google"
+          />
+          <OrDivider label={t('google.orEmailPassword')} testID="account-or" />
+        </View>
+      ) : null}
 
       <View style={styles.form}>
         <Field
@@ -263,6 +342,8 @@ export function RegisterAccountScreen() {
           </View>
         </View>
       </View>
+
+      <TermsModal visible={termsOpen} onAccept={acceptTermsAndGo} onCancel={() => setTermsOpen(false)} />
     </AccountScreen>
   );
 }
@@ -273,6 +354,7 @@ const styles = StyleSheet.create({
   titles: { gap: space[4] },
   subtitle: { ...text('body'), color: color.textMuted, textAlign: 'center' },
   form: { gap: space[8] },
+  google: { gap: space[8] },
   passwordBlock: { gap: space[5] },
   terms: { gap: space[2] },
   links: { flexDirection: 'row', flexWrap: 'wrap', gap: space[6] },

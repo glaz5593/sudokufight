@@ -46,7 +46,7 @@ from time to time: if a button has moved, use the console's own search box.
 | When | Part | What | Your time | Waiting (no work from you) |
 |---|---|---|---|---|
 | Today | **A** | Open accounts: Google Play Console, Expo, Fly.io, Neon, (Sentry). Start collecting testers. | about 1.5 h | **Play identity verification: usually a few days, sometimes longer.** |
-| Day 1 to 2 | **B** | Firebase project, email sign-in, Hebrew emails, the Android app and `google-services.json`; B6: Google sign-in for the admin site. | about 1 h, plus 10 min for B6 | none |
+| Day 1 to 2 | **B** | Firebase project, email sign-in, Hebrew emails, the Android app and `google-services.json`; B6: Google sign-in for the admin site; B7: the signing keys for Google sign-in in the app. | about 1 h, plus 10 min each for B6 and B7 | none |
 | Day 1 to 2 | **C** | 5 decisions that block these goals. | 30 to 60 min | the avatar-license search may take longer |
 | Day 2 | **D1 to D7** | Staging server: Neon database, Fly app, secrets, deploy, ranked puzzles, checks. **Goal 1 done.** | about 1 h with Claude | Fly's first build: about 5 min |
 | Day 2 to 3 | **E** | EAS: link the project, upload the Firebase file, build the APK (or on this PC with `npm run apk`: E-local), install on the phones with ADB, play. **Goal 2 done.** | 2 to 3 h | EAS free queue: from minutes up to 90+ min at peak, plus 10 to 30 min of build |
@@ -233,7 +233,7 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 **Steps**
 1. **Project Overview** → **Add app** → the Android icon.
 2. **Android package name:** `com.mosheg.sudokufight` (exactly; it must equal `android.package` in `apps/mobile/app.json`).
-3. **App nickname:** `Sudoku Fight Android`. **Debug signing certificate SHA-1:** leave empty (email/password sign-in doesn't need it).
+3. **App nickname:** `Sudoku Fight Android`. **Debug signing certificate SHA-1:** leave empty here (email/password sign-in doesn't need it; B7 adds the fingerprints that Google sign-in needs).
 4. **Register app** → **Download google-services.json**.
 5. Skip the "add the SDK" screens (**Next**, **Next**, **Continue to console**): Expo's config plugins do that part.
 6. Move the file into the repo and check that git ignores it:
@@ -280,8 +280,8 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 
 **Why.** On the real servers you sign in to the admin site (`/admin`) **with your Google account**, and only the accounts on a list kept on the server (`ADMIN_EMAILS`) get in. No admin password to generate or store. Full Hebrew guide: `docs/FIREBASE-SETUP.md` §9א.
 
-**What it does to the app's accounts.** The admin's Google sign-in runs in the game's own Firebase project. So every Google account that completes Google's window on `/admin` becomes a user of that project (**Authentication → Users**, provider Google), even one the server then refuses. Firebase's default is one account per email address, and the app has no Google button, so:
-- An address that signed in to `/admin` can't sign up in the app with email and password (`auth/email-already-in-use`). For app accounts (E7, F8), use other addresses: a Gmail `+` alias such as `you+sf1@gmail.com` is a different address for Firebase, and its mail reaches the same inbox.
+**What it does to the app's accounts.** The admin's Google sign-in runs in the game's own Firebase project. So every Google account that completes Google's window on `/admin` becomes a user of that project (**Authentication → Users**, provider Google), even one the server then refuses. Firebase's default is one account per email address, so:
+- An address that signed in to `/admin` can't sign up in the app **with email and password** (`auth/email-already-in-use`). **Since 2026-10-14 the app has "Continue with Google" (B7):** with that button the same address simply signs in to its Firebase user and creates a fighter, like any player. That app account gives no admin rights: only `ADMIN_EMAILS` does. For more test accounts (E7) and the demo accounts (F8, which need a password), use other addresses: a Gmail `+` alias such as `you+sf1@gmail.com` is a different address for Firebase, and its mail reaches the same inbox.
 - The other way round: an app account on that same address whose email is not verified yet can lose its password when that address signs in to `/admin` with Google (Firebase trusts Google for Gmail addresses).
 - A stray user (say, someone who tried `/admin` with their own Google account) can be deleted under **Authentication → Users**. It counts as an active user for that month, nothing more.
 
@@ -294,6 +294,16 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 **You're done when** Sign-in method shows Google "Enabled", the web app appears under Your apps, and Authorized domains lists both fly.dev names.
 
 **Then tell Claude:** the `apiKey`, the `appId`, and the Google addresses that may enter the admin site (yours, up to 3). They are not secrets (the admin page receives the apiKey and appId anyway), so the chat is fine; Claude sets them as Fly secrets in D4/D11 and **never writes them into the repo**. Write each address exactly as Google shows it.
+
+### B7. Google sign-in in the app: the signing keys (done 2026-10-14)
+
+- [x] **B7** The SHA-1 of the local debug key and of the EAS key added to the Firebase Android app; the new `google-services.json` in `apps/mobile/config/firebase/` and uploaded to EAS
+
+**Why.** "Continue with Google" (המשך עם Google) in the app works only for builds signed with a key whose **SHA-1 fingerprint** is registered on the Firebase Android app. Without it the button shows, but every sign-in fails and the app shows a message with `DEVELOPER_ERROR`. Hebrew guide with the commands: `docs/FIREBASE-SETUP.md` §4א.
+
+**The rule from now on: every new signing key needs its SHA-1 in Firebase.** The next one is Google Play's own key (Play App Signing), at **F7**. After adding a fingerprint, sign-in starts working within minutes (no new build); still download the new `google-services.json`, replace it in `apps/mobile/config/firebase/`, and upload it to EAS again (`eas env:create ... --force`, `docs/FIREBASE-SETUP.md` §7).
+
+**Before the first store build (F6):** remove the local debug key's SHA-1 from Firebase. That key is React Native's public template key, the same in every project: while Firebase lists it, anyone can sign an APK with this app's package name, get someone to install it, and take over the Google sign-ins made in it. **The production build on EAS now refuses to build while `google-services.json` still lists it**, and says what to do: Firebase console → **Project settings → General → Your apps → Sudoku Fight Android** → the fingerprint `5e:8f:16:...:f6:25` → delete → download the new `google-services.json` into `apps/mobile/config/firebase/` → tell Claude (it re-uploads the file to EAS with `--force`). APKs from this PC then show no Google button (email and password only); test Google on an EAS `preview` APK or the Play build. If you want Google in APKs from this PC too, ask Claude to give `npm run apk` a key of its own (its SHA-1 goes into Firebase instead; phones with the old APK uninstall it once).
 
 ### Sources (Part B)
 - Firebase pricing (Spark, 50K MAU): https://firebase.google.com/pricing
@@ -829,7 +839,7 @@ adb -s <SERIAL_2> install -r $apk
 
 **Why two phones and real emails.** The staging server runs in production mode: it takes only real Firebase sign-ins, and ranked games only from **verified** emails (`RANKED_REQUIRES_VERIFIED_EMAIL`, on by default). So the development shortcuts (local "Development mode" accounts, the `fake-client` script used on this PC) can't play the second side; two real accounts on two phones can.
 
-Two accounts with **real** email addresses you can read. Tip: Gmail ignores `+tags`, so `you+sf1@gmail.com` and `you+sf2@gmail.com` are two different accounts for Firebase but arrive in one inbox. Don't reuse these addresses later for the demo accounts (F8): staging and production share one Firebase project. And not an address you sign in to `/admin` with (B6): it is already a Google user of the project, so the app's sign-up refuses it ("email already in use"). In **Authentication → Users**, your admin Google accounts are listed too; that's expected.
+Two accounts with **real** email addresses you can read. Tip: Gmail ignores `+tags`, so `you+sf1@gmail.com` and `you+sf2@gmail.com` are two different accounts for Firebase but arrive in one inbox. Don't reuse these addresses later for the demo accounts (F8): staging and production share one Firebase project. And not an address you sign in to `/admin` with (B6) for **email-and-password** sign-up: it is already a Google user of the project, so that sign-up refuses it ("email already in use"); with **"המשך עם Google"** it works. In **Authentication → Users**, your admin Google accounts are listed too; that's expected.
 
 Labels: the app follows the phone's language; Hebrew label first, English in brackets.
 
@@ -994,7 +1004,7 @@ Open them from the Dashboard's **"Set up your app"** list (or left menu **Policy
 
 - [ ] **F6** A finished `production` Android build (an `.aab`)
 
-**Before:** D12 healthy; C1 final (the host in the `production` profile of `eas.json` is the one you'll keep); E2 shows `GOOGLE_SERVICES_JSON` in `production`; the projectId is in `app.json` (E1).
+**Before:** D12 healthy; C1 final (the host in the `production` profile of `eas.json` is the one you'll keep); E2 shows `GOOGLE_SERVICES_JSON` in `production`; the projectId is in `app.json` (E1); the local debug key's SHA-1 removed from Firebase and the new `google-services.json` uploaded (B7, last paragraph).
 
 Say **"build the production AAB"**, or:
 ```powershell
@@ -1006,7 +1016,7 @@ The version code is kept on EAS and goes up by itself on every production build 
 **You're done when** the build page shows **Finished** with an `.aab`. Download it (**Download** button).
 
 **Pitfalls**
-- The build **stops on purpose** if Firebase is missing for Android in the `production` environment, or if the server host is `localhost`, a LAN address, a placeholder, or not `SECURE=true`. The message says what to fix.
+- The build **stops on purpose** if Firebase is missing for Android in the `production` environment, if the server host is `localhost`, a LAN address, a placeholder, or not `SECURE=true`, or if `google-services.json` still lists React Native's public debug key (B7). The message says what to fix.
 - The AAB can't be installed with ADB; it only goes to Play.
 
 ### F7. First upload: Internal testing (by hand)
@@ -1024,8 +1034,9 @@ The version code is kept on EAS and goes up by itself on every production build 
 6. **Next** → fix any errors shown (warnings can usually wait) → **Save** → **Start rollout to Internal testing**.
 7. Check the permissions: **Test and release → Latest releases and bundles → All app versions → App bundle explorer** → the version → **Details**: **`com.google.android.gms.permission.AD_ID` must not be listed**, and the target SDK is 36 (Play requires API 36 for new apps and updates since 31 Aug 2026). If `AD_ID` is there, tell Claude before you submit the Advertising ID form.
 8. **Testers** tab → copy the **join link** → open it on your phone (signed in with the same Gmail) → **Accept / Become a tester** → **Download it on Google Play** → install.
+9. **Google sign-in for the Play build (B7):** Play now signs the app with **its own** key, so add that key's SHA-1 to Firebase: Play Console → **Test and release → App integrity → App signing** → **App signing key certificate** → copy **SHA-1** → Firebase console → **Project settings → General → Your apps → Sudoku Fight Android → Add fingerprint** → paste → **Save**. Then download the new `google-services.json` into `apps/mobile/config/firebase/` and tell Claude (it re-uploads the file to EAS). Without this, "Continue with Google" in the Play build fails with `DEVELOPER_ERROR`.
 
-**You're done when** the app installed from Play opens on your phone. **Goal 3 (a first version on Google Play) is done**; the rest of Part F takes it to the public.
+**You're done when** the app installed from Play opens on your phone, and "המשך עם Google" signs in there. **Goal 3 (a first version on Google Play) is done**; the rest of Part F takes it to the public.
 
 **Pitfalls**
 - **Uninstall the ADB-installed APK first** (`adb -s <SERIAL> uninstall com.mosheg.sudokufight`): Play's copy is signed with Google's key, so Play can't update over yours. Going back to an APK later also needs an uninstall.

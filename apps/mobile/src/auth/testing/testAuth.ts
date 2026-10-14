@@ -5,7 +5,13 @@ import { createMeCache } from '../../api/me';
 import { createFakeAccountServer, type FakeAccountServer } from '../../api/testing/fakeAccountServer';
 import { type AuthDeps, setAuthDeps } from '../authStore';
 import { createDevAuthProvider } from '../devProvider';
+import {
+  createFirebaseAuthProvider,
+  type FirebaseAuthModule,
+  type GoogleSignInModule,
+} from '../firebaseProvider';
 import type { AuthProvider, KeyValueStore } from '../types';
+import { fakeFirebase, fakeGoogleSignIn } from './fakeFirebase';
 
 /** A key-value store in memory (expo-sqlite's, as the auth code sees it). */
 export function memoryStorage(): KeyValueStore & { data: Map<string, string> } {
@@ -100,4 +106,68 @@ export async function installSignedInPlayer(
   if (p.emailVerified ?? true) await auth.provider.reloadUser();
   await auth.server.api.createUser({ displayName: p.displayName, avatarId: p.avatarId, country: p.country });
   return auth;
+}
+
+/** A web OAuth client id shaped like Google's (the tests' "extra.googleSignIn.webClientId"). */
+export const TEST_WEB_CLIENT_ID = '123456789012-abcdefghijklmnopqrstuvwxyz012345.apps.googleusercontent.com';
+
+export interface FirebaseTestAuth {
+  provider: AuthProvider;
+  server: FakeAccountServer;
+  storage: ReturnType<typeof memoryStorage>;
+  deps: AuthDeps;
+  reports: [where: string, error: unknown][];
+  /** The fake Firebase module (its state and jest.fn calls). */
+  firebase: ReturnType<typeof fakeFirebase>;
+  /** The fake Google sign-in library: `google.state.next` makes the next chooser cancel or fail. */
+  google: ReturnType<typeof fakeGoogleSignIn>;
+}
+
+/**
+ * Installs the real Firebase provider on fake Firebase and Google modules (a Firebase build with "המשך עם
+ * Google", or without Google when `google` is false), and the fake account server. Nobody is signed in. The
+ * chooser picks `account` (gamer@gmail.com by default).
+ */
+export function installFirebaseTestAuth({
+  google = true,
+  account,
+}: { google?: boolean; account?: { email: string } } = {}): FirebaseTestAuth {
+  const storage = memoryStorage();
+  const firebase = fakeFirebase({ devTokens: true });
+  const googleFake = fakeGoogleSignIn(account);
+  const provider = createFirebaseAuthProvider(
+    () => firebase.mod as unknown as FirebaseAuthModule,
+    google
+      ? { webClientId: TEST_WEB_CLIENT_ID, load: () => googleFake.mod as unknown as GoogleSignInModule }
+      : null,
+  );
+  const server = createFakeAccountServer({
+    getToken: async (force) => (provider.currentUser() ? provider.getIdToken(force) : null),
+  });
+  const reports: FirebaseTestAuth['reports'] = [];
+  const deps: AuthDeps = {
+    provider,
+    api: server.api,
+    meCache: createMeCache(storage),
+    report: (error, where) => reports.push([where, error]),
+  };
+  setAuthDeps(deps);
+  return { provider, server, storage, deps, reports, firebase, google: googleFake };
+}
+
+/**
+ * A Google account that already has its fighter on the server (registered earlier, maybe on another phone),
+ * signed out of the app now.
+ */
+export async function addGooglePlayer(
+  auth: FirebaseTestAuth,
+  fighter: { displayName?: string; avatarId?: AvatarId; country?: CountryCode } = {},
+): Promise<void> {
+  await auth.provider.google!.signIn();
+  await auth.server.api.createUser({
+    displayName: fighter.displayName ?? 'GoogleGamer',
+    avatarId: fighter.avatarId ?? 'sun',
+    country: fighter.country ?? 'IL',
+  });
+  await auth.provider.signOut();
 }

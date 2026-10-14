@@ -49,7 +49,7 @@ beforeEach(async () => {
   useSettings.setState({ reduceMotion: 'on' });
   useAuth.setState({
     status: 'ready',
-    user: { uid: 'u1', email: 'moshe@example.com', emailVerified: true },
+    user: { uid: 'u1', email: 'moshe@example.com', emailVerified: true, methods: ['password'] },
   });
 });
 

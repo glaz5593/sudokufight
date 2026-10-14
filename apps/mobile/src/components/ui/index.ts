@@ -1,6 +1,6 @@
 /** Stage 3 design system, area "ui": buttons, navigation and overlays of direction C (docs/design/components.md). */
 export { BottomNav, NAV_TABS, type BottomNavProps, type NavTab } from './BottomNav';
-export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
+export { Button, type ButtonProps, type ButtonSize, type ButtonVariant, LARGE_TEXT_SCALE } from './Button';
 export {
   ConfirmModal,
   type ConfirmModalProps,

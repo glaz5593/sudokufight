@@ -1,10 +1,11 @@
+import type { CountryCode } from '@sudoku-fight/protocol';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { isAccountApiError } from '../../api/accountApi';
-import { registerProfile, signOut, useAuth } from '../../auth/authStore';
+import { leaveRegistration, registerProfile, useAuth } from '../../auth/authStore';
 import { ROUTES } from '../../auth/redirect';
 import { useRegistrationDraft } from '../../auth/registrationDraft';
 import { Button } from '../../components/ui';
@@ -25,6 +26,7 @@ import {
   LinkButton,
   StepHeader,
 } from './parts';
+import { TermsModal } from './TermsModal';
 import { nameSubmittable, useNameCheck } from './useNameCheck';
 
 /**
@@ -35,11 +37,23 @@ import { nameSubmittable, useNameCheck } from './useNameCheck';
  * Signed out: "המשך" goes on to step 2 (the account). Signed in without a profile (the registration stopped
  * after the account was made, or the name was taken meanwhile): "היכנס לזירה" creates the profile here, and
  * the header offers "התנתקות" instead of the way back.
+ *
+ * A Google account new to the game (signed in from the login screen with "המשך עם Google") comes here signed
+ * in too, without having seen step 2: its note says so, and before the profile is created it accepts the terms
+ * (TermsModal), unless this same account accepted them already (registrationDraft.ts termsAcceptedBy). An account
+ * with a password accepted them at step 2. "התנתקות" here deletes a Google-only sign-in that has no fighter
+ * (authStore.ts leaveRegistration), so its Google details don't stay at Firebase.
+ *
+ * Signed in, this is the registration's last screen: no "step 1 of 2" then.
  */
 export function RegisterFighterScreen() {
   const { t } = useTranslation('account');
   const status = useAuth((s) => s.status);
+  const methods = useAuth((s) => s.user?.methods);
+  const uid = useAuth((s) => s.user?.uid ?? null);
   const signedIn = status === 'needsProfile';
+  const googleOnly = Boolean(methods?.includes('google') && !methods.includes('password'));
+  const termsAccepted = useRegistrationDraft((s) => uid !== null && s.termsAcceptedBy === uid);
   const avatarId = useRegistrationDraft((s) => s.avatarId);
   const displayName = useRegistrationDraft((s) => s.displayName);
   const country = useRegistrationDraft((s) => s.country);
@@ -50,12 +64,15 @@ export function RegisterFighterScreen() {
   const [formError, setFormError] = useState<string | null>(null);
   const [shake, setShake] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  /** The profile is being created: set at once, so a second tap (or the closing dialog's) does nothing. */
+  const creating = useRef(false);
 
   // Spec §22: the registration's funnel, step by step.
   useEffect(() => track('register_step', { step: 'fighter' }), []);
 
   const submit = async () => {
-    if (busy) return;
+    if (busy || creating.current) return;
     const nameOk = nameSubmittable(check.state);
     // An empty name says so; invalid, taken and blocked ones already say why under the field.
     setNameError(check.state === 'idle' ? t('name.problem.tooShort') : null);
@@ -71,11 +88,22 @@ export function RegisterFighterScreen() {
       router.push(ROUTES.registerAccount);
       return;
     }
+    if (googleOnly && !termsAccepted) {
+      setTermsOpen(true);
+      return;
+    }
+    await create(country);
+  };
+
+  const create = async (chosen: CountryCode) => {
+    if (creating.current) return;
+    creating.current = true;
     setBusy(true);
     try {
-      await registerProfile({ displayName: check.name, avatarId, country });
+      await registerProfile({ displayName: check.name, avatarId, country: chosen });
       track('register_complete');
     } catch (error) {
+      creating.current = false;
       setBusy(false);
       if (isAccountApiError(error) && ['taken', 'blocked', 'invalidName'].includes(error.code)) {
         setNameError(errorMessage(t, error));
@@ -102,7 +130,7 @@ export function RegisterFighterScreen() {
       }
     >
       <StepHeader
-        step={1}
+        step={signedIn ? undefined : 1}
         onBack={
           signedIn ? undefined : () => (router.canGoBack() ? router.back() : router.replace(ROUTES.login))
         }
@@ -111,7 +139,7 @@ export function RegisterFighterScreen() {
           signedIn ? (
             <LinkButton
               label={t('fighter.signOut')}
-              onPress={() => void signOut()}
+              onPress={() => void leaveRegistration()}
               testID="fighter-sign-out"
             />
           ) : undefined
@@ -119,7 +147,12 @@ export function RegisterFighterScreen() {
       />
       <DevModeBadge />
       <AccentTitle i18nKey="fighter.title" label={t('fighter.titleLabel')} />
-      {signedIn ? <FormNote message={t('fighter.resumeNote')} testID="fighter-resume" /> : null}
+      {signedIn ? (
+        <FormNote
+          message={googleOnly ? t('fighter.googleNote') : t('fighter.resumeNote')}
+          testID="fighter-resume"
+        />
+      ) : null}
       <FormAlert message={formError} testID="fighter-alert" />
 
       <View style={styles.form}>
@@ -146,6 +179,19 @@ export function RegisterFighterScreen() {
       </View>
 
       <FighterPreview avatarId={avatarId} name={displayName} country={country} />
+
+      <TermsModal
+        visible={termsOpen}
+        onAccept={() => {
+          // The dialog stays pressable while it fades out: a second tap must not create twice.
+          if (creating.current) return;
+          setTermsOpen(false);
+          if (uid) draft.acceptTermsFor(uid);
+          if (country) void create(country);
+        }}
+        onCancel={() => setTermsOpen(false)}
+        testID="fighter-terms"
+      />
     </AccountScreen>
   );
 }

@@ -39,7 +39,13 @@
       "requiresRecentLogin": "צריך להתחבר שוב כדי לעשות את זה.",
       "userDisabled": "המשתמש הזה הושבת. פנה אלינו לתמיכה.",
       "noUser": "אתה לא מחובר. התחבר שוב.",
-      "unknown": "משהו השתבש. נסה שוב."
+      "unknown": "משהו השתבש. נסה שוב.",
+      "cancelled": "הכניסה עם Google בוטלה.",
+      "inProgress": "הכניסה עם Google כבר פתוחה. סיים אותה, או סגור אותה ונסה שוב.",
+      "playServices": "כדי להיכנס עם Google צריך את Google Play Services. עדכן אותם ונסה שוב.",
+      "googleConfig": "הכניסה עם Google לא זמינה כרגע בגרסה הזו של האפליקציה (DEVELOPER_ERROR). בינתיים אפשר להמשיך עם מייל וסיסמה.",
+      "accountExistsWithPassword": "למייל הזה כבר יש חשבון עם סיסמה. התחבר עם המייל והסיסמה.",
+      "userMismatch": "זה חשבון Google אחר. בחר את החשבון שאיתו נכנסת."
     },
     "api": {
       "badRequest": "הבקשה לא תקינה. נסה שוב.",
@@ -88,6 +94,17 @@
     "register": "הרשמה",
     "arenaSpot": "המקום שלך"
   },
+  "google": {
+    "continue": "המשך עם Google",
+    "orEmail": "או עם מייל",
+    "orEmailPassword": "או עם מייל וסיסמה",
+    "existing": "לחשבון Google הזה כבר יש לוחם, {{name}}. נכנסת אליו.",
+    "passwordHint": "נרשמת עם Google? לחץ על \"המשך עם Google\".",
+    "emailInUseHint": "אם נרשמת עם Google, לחץ על \"המשך עם Google\".",
+    "termsTitle": "תנאים ופרטיות",
+    "termsBody": "כדי להמשיך עם Google, צריך לאשר את תנאי השימוש ואת מדיניות הפרטיות.",
+    "termsAccept": "מאשר וממשיך"
+  },
   "forgot": {
     "title": "שכחתי סיסמה",
     "body": "כתוב את המייל שנרשמת איתו, ונשלח אליו קישור לבחירת סיסמה חדשה.",
@@ -115,7 +132,8 @@
     "previewNew": "חדש",
     "continue": "המשך",
     "enterArena": "היכנס לזירה",
-    "signOut": "התנתקות"
+    "signOut": "התנתקות",
+    "googleNote": "נכנסת עם Google. נשאר רק לבחור לוחם."
   },
   "name": {
     "rules": "3–16 תווים: אותיות בעברית או באנגלית, ספרות, קו תחתון ונקודה.",
@@ -220,6 +238,16 @@
     "deletePasswordBody": "כדי למחוק את החשבון, כתוב את הסיסמה של {{email}}.",
     "deleteSubmit": "מחק את החשבון לצמיתות",
     "deleted": "החשבון נמחק",
-    "deletedPartly": "החשבון נמחק. את פרטי הכניסה לא הצלחנו למחוק: התחברות איתם תתחיל הרשמה חדשה."
+    "deletedPartly": "החשבון נמחק. את פרטי הכניסה לא הצלחנו למחוק: התחברות איתם תתחיל הרשמה חדשה.",
+    "method": {
+      "password": "כניסה עם מייל וסיסמה",
+      "google": "כניסה עם Google",
+      "both": "כניסה עם Google, או עם מייל וסיסמה"
+    },
+    "deleteGoogleTitle": "אישור עם Google",
+    "deleteGoogleBody": "כדי למחוק את החשבון, בחר שוב את חשבון Google ‏{{email}}.",
+    "deleteGoogleSubmit": "אשר עם Google ומחק",
+    "deleteGoogleAgain": "כדי למחוק את החשבון צריך אישור טרי. נסה שוב ובחר את חשבון Google שלך.",
+    "deleteWithPassword": "אישור עם הסיסמה במקום"
   }
 }

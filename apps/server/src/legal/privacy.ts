@@ -5,7 +5,9 @@ import type { LegalTexts } from './types';
 /**
  * The privacy policy (spec §23, §27.1: "מדיניות הפרטיות מפרטת את האירועים"). It must match the code; when the
  * code changes what it collects, this changes too (legal.test.ts checks that every telemetry event is listed):
- * - the account: apps/server/src/accounts (users: email, display name, country, avatar), Firebase Auth;
+ * - the account: apps/server/src/accounts (users: email, display name, country, avatar), Firebase Auth (email and
+ *   password, or "המשך עם Google": apps/mobile/src/auth/firebaseProvider.ts; the server reads only the token's uid,
+ *   email and email_verified, never its name or picture claims);
  *   deletion: accounts/store.ts deleteUser (anonymized row, and the same anonymous name in its games' logs;
  *   ratings, games, events stay unlinked)
  * - games and progress: persistence/, progress/ (ratings, xp, achievements, puzzle and opponent history,
@@ -97,10 +99,11 @@ export const PRIVACY: LegalTexts = {
           {
             list: [
               '**מייל:** לכניסה, לאימות הכתובת, לאיפוס סיסמה ולהודעות על החשבון. אנחנו לא שולחים דיוור שיווקי.',
-              '**סיסמה:** מטופלת על ידי Firebase Authentication של Google. היא לא מגיעה לשרתים שלנו, ואנחנו לא יכולים לראות אותה.',
+              '**סיסמה** (כשנרשמים עם מייל וסיסמה): מטופלת על ידי Firebase Authentication של Google. היא לא מגיעה לשרתים שלנו, ואנחנו לא יכולים לראות אותה.',
+              '**כניסה עם Google (רשות):** אפשר להירשם ולהיכנס עם חשבון Google במקום מייל וסיסמה. אז Firebase Authentication מקבל מ־Google את המייל של החשבון (מאומת על ידי Google) ואת המזהה שלו ב־Google, ושומר אותם עם הכניסה, ואנחנו שומרים את המייל כמו בכל חשבון. Google מוסרת ל־Firebase גם את השם ואת תמונת הפרופיל שלכם ב־Google, ו־Firebase שומר אותם עם הכניסה. השרת שלנו לא שומר אותם ולא מציג אותם: בזירה מופיעים רק השם והאווטאר שאתם בוחרים. אנחנו לא מקבלים את הסיסמה של Google, ולא גישה לשום מידע אחר בחשבון (אנשי קשר, מיילים, קבצים). מי שלא רוצה, נרשם עם מייל וסיסמה.',
               '**שם לתצוגה, מדינה ואווטאר:** אתם בוחרים אותם, והם מוצגים לשחקנים אחרים. המדינה נבחרת על ידיכם (ברירת המחדל לפי הגדרות השפה והאזור של המכשיר). אנחנו לא משתמשים במיקום של המכשיר.',
               '**מועד יצירת החשבון ומועד שינוי השם האחרון** (שם אפשר לשנות פעם ב־30 יום).',
-              '**מזהה החשבון** אצלנו, ומזהה הכניסה של Firebase.',
+              '**מזהה החשבון** אצלנו, ומזהה הכניסה של Firebase (ובכניסה עם Google, Firebase שומר גם את מזהה חשבון Google).',
             ],
           },
         ],
@@ -162,7 +165,7 @@ export const PRIVACY: LegalTexts = {
               'ההגדרות: צליל, רטט, הפחתת תנועה ושפה.',
               'עותק של הפרופיל, כדי שהאפליקציה תיפתח גם בלי חיבור.',
               'תורים של אירועים ושל תוצאות אימון שעוד לא נשלחו, ומזהה ההתקנה.',
-              'החיבור לחשבון (נשמר על ידי Firebase).',
+              'החיבור לחשבון (נשמר על ידי Firebase), ובכניסה עם Google גם החשבון שנבחר (נשמר על ידי Google Play Services עד ההתנתקות).',
             ],
           },
           'כל אלה נמחקים כשמסירים את האפליקציה. התנתקות מוחקת את עותק הפרופיל. מחיקת החשבון לא מוחקת את משחקי האימון שבטלפון: כדי למחוק גם אותם, מסירים את האפליקציה.',
@@ -210,7 +213,7 @@ export const PRIVACY: LegalTexts = {
           'אנחנו **לא מוכרים** מידע, ולא מעבירים אותו למפרסמים או לסוחרי מידע. ספקי השירות שלנו מעבדים אותו בשבילנו בלבד:',
           {
             list: [
-              '**Google (Firebase):** כניסה לחשבון (Authentication), דוחות קריסה (Crashlytics) ונתוני שימוש (Analytics).',
+              '**Google (Firebase):** כניסה לחשבון (Authentication, כולל הכניסה עם Google), דוחות קריסה (Crashlytics) ונתוני שימוש (Analytics).',
               '**Fly.io:** אחסון השרת.',
               '**Neon:** מסד הנתונים (PostgreSQL).',
               '**Sentry:** דוחות על תקלות בשרת.',
@@ -233,7 +236,7 @@ export const PRIVACY: LegalTexts = {
           {
             list: [
               '**פרטי החשבון:** כל עוד החשבון קיים.',
-              '**כשמוחקים את החשבון:** המייל, המדינה, האווטאר והקישור לכניסה נמחקים מיד, והשם לתצוגה מוחלף במזהה אנונימי (השם הישן מתפנה מיד). גם הכניסה ב־Firebase נמחקת.',
+              '**כשמוחקים את החשבון:** המייל, המדינה, האווטאר והקישור לכניסה נמחקים מיד, והשם לתצוגה מוחלף במזהה אנונימי (השם הישן מתפנה מיד). גם הכניסה ב־Firebase נמחקת, ואיתה מה שנשמר בה מ־Google. מי שנכנס עם Google: האפליקציה גם מבטלת את הגישה שקיבלה לחשבון Google.',
               '**מה נשאר אחרי מחיקה, באופן אנונימי:** משחקים מדורגים, דירוגים, XP, תוצאות אימון, רשומות משחק הוגן ונתוני שימוש. הם כבר לא מקושרים אליכם, אבל המשחקים, הצפייה החוזרת והטבלאות של השחקנים האחרים נשארים שלמים.',
               '**נתוני שימוש:** נשמרים כל עוד הם עוזרים לנו להבין את השימוש במשחק. אנחנו בודקים אותם מדי פעם ומוחקים את הישנים.',
               '**Crashlytics:** ‏Google שומרת דוחות קריסה עד 90 יום. **Analytics:** לפי תקופת השמירה שהגדרנו ב־Firebase.',
@@ -310,10 +313,11 @@ export const PRIVACY: LegalTexts = {
           {
             list: [
               '**Email:** to sign in, verify the address, reset your password and send account messages. We don’t send marketing email.',
-              '**Password:** handled by Google’s Firebase Authentication. It never reaches our servers, and we can’t see it.',
+              '**Password** (when you sign up with email and password): handled by Google’s Firebase Authentication. It never reaches our servers, and we can’t see it.',
+              '**Sign in with Google (optional):** you can sign up and sign in with your Google account instead of an email and password. Firebase Authentication then receives from Google your Google account’s email (verified by Google) and its Google id, and keeps them with your sign-in; we keep the email as with any account. Google also gives Firebase your Google name and profile photo, which Firebase keeps with the sign-in. Our server doesn’t store or show them: in the arena only the name and avatar you choose appear. We never get your Google password, or access to anything else in your Google account (contacts, email, files). If you prefer, sign up with email and password.',
               '**Display name, country and avatar:** you choose them, and they are shown to other players. You pick the country yourself (the default comes from your device’s language and region settings). We don’t use your device’s location.',
               '**When the account was created and when the name last changed** (a name can change once in 30 days).',
-              '**Our account id**, and your Firebase sign-in id.',
+              '**Our account id**, and your Firebase sign-in id (with Google sign-in, Firebase also keeps your Google account id).',
             ],
           },
         ],
@@ -375,7 +379,7 @@ export const PRIVACY: LegalTexts = {
               'Your settings: sound, haptics, reduced motion and language.',
               'A copy of your profile, so the app opens without a connection.',
               'Queues of events and practice results not sent yet, and the install id.',
-              'Your sign-in (kept by Firebase).',
+              'Your sign-in (kept by Firebase), and with Google sign-in the account you chose (kept by Google Play services until you sign out).',
             ],
           },
           'All of these are deleted when you uninstall the app. Signing out deletes the profile copy. Deleting your account does not delete the practice games on your phone: to delete those too, uninstall the app.',
@@ -423,7 +427,7 @@ export const PRIVACY: LegalTexts = {
           'We **don’t sell** data, and we don’t pass it to advertisers or data brokers. Our service providers process it for us only:',
           {
             list: [
-              '**Google (Firebase):** sign-in (Authentication), crash reports (Crashlytics) and usage data (Analytics).',
+              '**Google (Firebase):** sign-in (Authentication, including sign-in with Google), crash reports (Crashlytics) and usage data (Analytics).',
               '**Fly.io:** hosting for the server.',
               '**Neon:** the database (PostgreSQL).',
               '**Sentry:** reports of server errors.',
@@ -446,7 +450,7 @@ export const PRIVACY: LegalTexts = {
           {
             list: [
               '**Account details:** as long as the account exists.',
-              '**When you delete your account:** your email, country, avatar and sign-in link are deleted at once, and your display name is replaced by an anonymous id (the old name is free again at once). Your Firebase sign-in is deleted too.',
+              '**When you delete your account:** your email, country, avatar and sign-in link are deleted at once, and your display name is replaced by an anonymous id (the old name is free again at once). Your Firebase sign-in is deleted too, with what it kept from Google. If you signed in with Google, the app also revokes the access it was given to your Google account.',
               '**What stays after deletion, anonymously:** ranked games, ratings, XP, practice results, fair-play records and usage data. They are no longer linked to you, but other players’ games, replays and leaderboards stay whole.',
               '**Usage data:** kept while it helps us understand how the game is used. We review it from time to time and delete old data.',
               '**Crashlytics:** Google keeps crash reports for up to 90 days. **Analytics:** for the retention period we set in Firebase.',

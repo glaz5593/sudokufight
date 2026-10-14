@@ -75,6 +75,14 @@ describe.each(['production', 'test'] as const)('the ranked queue (%s)', (env) =>
     );
   });
 
+  it('a Google sign-in (the app\'s "המשך עם Google") comes verified by Google, and is let in', async () => {
+    const google = (emailVerified: boolean) =>
+      tokens.sign({ uid: 'uid-1', email: 'dana@gmail.com', emailVerified, provider: 'google.com' }, NOW);
+    await expect(join(queue(env), await google(true))).resolves.toEqual(DANA);
+    // The check is the token's email_verified, whatever the sign-in method: nothing asks for a password.
+    expect((await refusalOf(join(queue(env), await google(false)))).code).toBe('emailNotVerified');
+  });
+
   it('RANKED_REQUIRES_VERIFIED_EMAIL=false: an unverified email is let in', async () => {
     await expect(join(queue(env, false), await firebase(false))).resolves.toEqual(DANA);
     await expect(join(queue(env, false), await firebase(true))).resolves.toEqual(DANA);
