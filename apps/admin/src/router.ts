@@ -1,15 +1,20 @@
+import { ADMIN_REPORT_FILTERS, type AdminReportFilter } from '@sudoku-fight/protocol';
 import { useMemo, useSyncExternalStore } from 'react';
 
 /**
- * A small hash router: `#/installs?search=x&page=2`, `#/users/<id>`. The hash keeps the server's job simple
- * (one index.html under /admin), and Back / Forward / reload keep the page, its search and its paging.
+ * A small hash router: `#/installs?search=x&page=2`, `#/users/<id>`, `#/reports?status=all`. The hash keeps
+ * the server's job simple (one index.html under /admin), and Back / Forward / reload keep the page, its
+ * search, its filter and its paging.
  */
 
 export const DEFAULT_DAYS = 30;
 export const DAY_RANGES = [7, 30, 90] as const;
 export const MAX_DAYS = 365;
 
-export type Section = 'overview' | 'installs' | 'users' | 'games' | 'screens';
+/** The reports page's default filter (the server's too): what still needs an answer. */
+export const DEFAULT_REPORT_FILTER: AdminReportFilter = 'open';
+
+export type Section = 'overview' | 'installs' | 'users' | 'games' | 'reports' | 'audit' | 'screens';
 
 export type Route =
   | { name: 'overview'; days?: number }
@@ -19,6 +24,8 @@ export type Route =
   | { name: 'user'; id: string }
   | { name: 'games'; mode?: string; search?: string; page?: number }
   | { name: 'game'; id: string }
+  | { name: 'reports'; status?: AdminReportFilter; page?: number }
+  | { name: 'audit'; page?: number }
   | { name: 'screens'; days?: number }
   | { name: 'notFound' };
 
@@ -29,6 +36,8 @@ export function sectionOf(route: Route): Section | null {
     case 'installs':
     case 'users':
     case 'games':
+    case 'reports':
+    case 'audit':
     case 'screens':
       return route.name;
     case 'install':
@@ -46,6 +55,12 @@ function positiveInt(value: string | null, fallback: number, max = Number.MAX_SA
   if (value === null || !/^\d+$/.test(value)) return fallback;
   const n = Number(value);
   return n >= 1 && n <= max ? n : fallback;
+}
+
+function reportFilter(value: string | null): AdminReportFilter {
+  return (ADMIN_REPORT_FILTERS as readonly (string | null)[]).includes(value)
+    ? (value as AdminReportFilter)
+    : DEFAULT_REPORT_FILTER;
 }
 
 function decode(segment: string): string | null {
@@ -86,6 +101,10 @@ export function parseRoute(hash: string): Route {
       return { name: 'users', search: query.get('search') ?? '', page };
     case 'games':
       return { name: 'games', mode: query.get('mode') ?? '', search: query.get('search') ?? '', page };
+    case 'reports':
+      return { name: 'reports', status: reportFilter(query.get('status')), page };
+    case 'audit':
+      return { name: 'audit', page };
     default:
       return { name: 'notFound' };
   }
@@ -101,7 +120,7 @@ function withQuery(path: string, params: Record<string, string | number | undefi
   return text ? `${path}?${text}` : path;
 }
 
-/** The href of a route; defaults (page 1, 30 days, no search) are left out. */
+/** The href of a route; defaults (page 1, 30 days, no search, open reports) are left out. */
 export function routeHref(route: Route): string {
   const page = (p: number | undefined) => (p && p > 1 ? p : undefined);
   const days = (d: number | undefined) => (d && d !== DEFAULT_DAYS ? d : undefined);
@@ -116,6 +135,13 @@ export function routeHref(route: Route): string {
       return withQuery('#/users', { search: route.search, page: page(route.page) });
     case 'games':
       return withQuery('#/games', { mode: route.mode, search: route.search, page: page(route.page) });
+    case 'reports':
+      return withQuery('#/reports', {
+        status: route.status === DEFAULT_REPORT_FILTER ? undefined : route.status,
+        page: page(route.page),
+      });
+    case 'audit':
+      return withQuery('#/audit', { page: page(route.page) });
     case 'install':
       return `#/installs/${encodeURIComponent(route.id)}`;
     case 'user':

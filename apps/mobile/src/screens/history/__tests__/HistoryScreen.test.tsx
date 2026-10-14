@@ -195,7 +195,7 @@ describe('stage 12: a ranked game’s opponent opens their player card', () => {
     );
     await settle();
     await fireEvent.press(screen.getByTestId('history-card-ranked-1-player-nina'));
-    expect(onOpenPlayer).toHaveBeenCalledWith('nina');
+    expect(onOpenPlayer).toHaveBeenCalledWith('nina', 'ranked-1');
     const card = screen.getByTestId('history-card-ranked-1');
     expect(card).toHaveProp('accessibilityActions', [
       { name: 'player:nina', label: 'כרטיס השחקן של NinaVolt' },
@@ -204,6 +204,7 @@ describe('stage 12: a ranked game’s opponent opens their player card', () => {
       card.props.onAccessibilityAction({ nativeEvent: { actionName: 'player:nina' } });
     });
     expect(onOpenPlayer).toHaveBeenCalledTimes(2);
+    expect(onOpenPlayer).toHaveBeenLastCalledWith('nina', 'ranked-1');
     expect(screen.queryByTestId(/^history-card-bot-1-player-/)).toBeNull();
     expect(screen.getByTestId('history-card-bot-1')).not.toHaveProp(
       'accessibilityActions',

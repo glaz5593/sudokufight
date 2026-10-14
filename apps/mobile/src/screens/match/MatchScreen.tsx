@@ -33,6 +33,11 @@ export interface MatchScreenProps {
   onVerifyEmail: () => void;
   /** "חזרה לבית". */
   onHome: () => void;
+  /**
+   * The server refused the search because the account is suspended (spec §3.5): once per failure, so the app
+   * reads the profile again and shows the suspension everywhere.
+   */
+  onSuspended?: () => void;
   /** The phone's clock (tests). */
   clock?: Clock;
 }
@@ -59,6 +64,7 @@ export function MatchScreen({
   onPractice,
   onVerifyEmail,
   onHome,
+  onSuspended,
   clock = systemClock,
 }: MatchScreenProps) {
   const subscribe = useCallback((listener: () => void) => match.subscribe(listener), [match]);
@@ -80,6 +86,15 @@ export function MatchScreen({
     if (model.kind === 'play') leave(onPlay);
     else if (model.kind === 'cancelled') leave(onLeave);
   }, [model.kind, leave, onPlay, onLeave]);
+
+  const refusedSuspended = model.kind === 'failed' && model.code === 'suspended';
+  const suspended = useRef(onSuspended);
+  useEffect(() => {
+    suspended.current = onSuspended;
+  });
+  useEffect(() => {
+    if (refusedSuspended) suspended.current?.();
+  }, [refusedSuspended]);
 
   // motion.md §7–§8: found, then 3 · 2 · 1 and GO.
   const beat = model.kind === 'countdown' ? `countdown-${model.step}` : model.kind;

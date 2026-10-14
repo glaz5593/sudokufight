@@ -9,6 +9,7 @@ import type {
   RankEntry,
 } from '@sudoku-fight/engine';
 import { REACTIONS } from '@sudoku-fight/engine';
+import { MUTED_REACTION_EMOJI } from '@sudoku-fight/protocol';
 
 import {
   admits,
@@ -188,6 +189,10 @@ describe('the table (AVATAR_REACTIONS, spec §3.4)', () => {
   it('covers the six base reactions (spec §8); an emoji outside the table plays nothing', () => {
     expect(Object.keys(AVATAR_REACTIONS.emoji).sort()).toEqual([...REACTIONS].sort());
     expect(facesAfter([emoji('p2', '🦄')])('p2').reaction).toBeNull();
+  });
+
+  it('a reaction the server muted for me (spec §3.5: I blocked its sender) moves no face', () => {
+    expect(facesAfter([emoji('p2', MUTED_REACTION_EMOJI)])('p2').reaction).toBeNull();
   });
 
   it.each(['row', 'col', 'box', 'num'] as const)(

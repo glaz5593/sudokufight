@@ -9,6 +9,8 @@ import { toAuthError } from '../../auth/errors';
 import { emailOk } from '../../auth/password';
 import { ROUTES } from '../../auth/redirect';
 import { Button } from '../../components/ui';
+import { VersionInfo } from '../../components/VersionInfo';
+import { type AppVersionInfo, appVersionInfo } from '../../config/appVersion';
 import { cue } from '../../services/feedback';
 import { color, space, text } from '../../theme';
 import { Field, PasswordField } from './Field';
@@ -28,8 +30,10 @@ import { AccentTitle, AccountScreen, Brand, DevModeBadge, FormAlert, LinkButton 
  * development sign-in): Google's chooser, then the same: home, or step 1 for a Google account new to the game
  * (signed in; step 1 creates the fighter). Closing the chooser says nothing. Its errors go over the form; a
  * wrong password also suggests Google, since an address that signed up with Google has no password.
+ *
+ * The footer ends with the app's version and build (components/VersionInfo), as the settings do.
  */
-export function LoginScreen() {
+export function LoginScreen({ version = appVersionInfo() }: { version?: AppVersionInfo | null } = {}) {
   const { t } = useTranslation('account');
   const google = useAuth((s) => s.google);
   const [email, setEmail] = useState('');
@@ -106,6 +110,8 @@ export function LoginScreen() {
               testID="login-register"
             />
           </View>
+          {/* Which app this is (Moshe, 14.10.2026), small, under everything. */}
+          <VersionInfo info={version} />
         </View>
       }
     >

@@ -2,7 +2,8 @@ import type { LegalTexts } from './types';
 
 /**
  * The terms of use (spec §3.2: accepted at registration; §23). They describe the game as built: display names
- * with a word filter and a 30-day rename rule [D20], fair play (cheat_flags, no automatic action in V1),
+ * with a word filter and a 30-day rename rule [D20], reports and blocks with the 48-hour review commitment and
+ * the two admin actions (spec §3.5: moderation/), fair play (cheat_flags, no automatic action in V1),
  * ratings and XP with no money value, no purchases and no ads, ranked games cut short by a server restart end
  * unrated (persistence endInterruptedGames). The governing-law clause is a default for Moshe to confirm.
  */
@@ -51,7 +52,17 @@ export const TERMS: LegalTexts = {
             ],
           },
           'שמות נבדקים אוטומטית מול רשימת מילים אסורות. אנחנו רשאים לשנות שם שמפר את הכללים, לבקש שם חדש, או להשעות חשבון.',
-          'התגובות במשחק הן אימוג׳י מתוך רשימה קבועה. אפשר להשתיק יריב מתוך הכרטיס שלו במשחק.',
+          'התגובות במשחק הן אימוג׳י מתוך רשימה קבועה. אפשר להשתיק יריב מתוך הכרטיס שלו במשחק, לחסום אותו או לדווח עליו (הסעיף הבא).',
+        ],
+      },
+      {
+        id: 'reports',
+        title: 'דיווח וחסימה',
+        blocks: [
+          'אפשר לדווח על שחקן מתוך הכרטיס שלו או מתוך המשחק, עם אחת משלוש סיבות: שם פוגעני, רמאות או אחר. **אנחנו בודקים כל דיווח תוך 48 שעות.**',
+          'אם נמצא שהכללים הופרו, אנחנו רשאים להחליף את השם בשם זמני (ואז השחקן מתבקש לבחור שם חדש, וכלל 30 הימים לא חל על הבחירה הזו), להשעות את החשבון ממשחקים מדורגים ומשינויים בחשבון עד שההשעיה מוסרת, או לסגור אותו. שם שהוחלף כך לא יכול להיבחר שוב. גם חשבון מושעה אפשר למחוק בכל רגע, אבל המחיקה לא מבטלת את ההשעיה: חשבון חדש עם אותה כניסה מתחיל מושעה עד שנבדוק אותו.',
+          'אפשר גם לחסום שחקן: לא תשובצו איתו באותו משחק, והתגובות שלו לא יוצגו לכם. מבטלים חסימה בהגדרות ← שחקנים חסומים. חסימה לא מסתירה אף אחד מטבלת המובילים.',
+          'אל תדווחו סתם: דיווחי סרק חוזרים הם הפרה של התנאים.',
         ],
       },
       {
@@ -180,7 +191,17 @@ export const TERMS: LegalTexts = {
             ],
           },
           'Names are checked automatically against a list of blocked words. We may change a name that breaks these rules, ask for a new one, or suspend the account.',
-          'Reactions in the game are emoji from a fixed list. You can mute an opponent from their card during a game.',
+          'Reactions in the game are emoji from a fixed list. You can mute an opponent from their card during a game, block them, or report them (next section).',
+        ],
+      },
+      {
+        id: 'reports',
+        title: 'Reporting and blocking',
+        blocks: [
+          'You can report a player from their card or from the game, with one of three reasons: offensive name, cheating or other. **We review every report within 48 hours.**',
+          'If the rules were broken, we may replace the name with a temporary one (the player is then asked to choose a new name, and the 30-day rule does not apply to that choice), suspend the account from ranked games and account changes until the suspension is lifted, or close it. A name replaced this way can’t be chosen again. A suspended account can still be deleted at any time, but deleting it doesn’t lift the suspension: a new account with the same sign-in starts suspended until we review it.',
+          'You can also block a player: you won’t be put in the same game with them, and their reactions won’t be shown to you. Lift a block in Settings → Blocked players. A block hides no one from the leaderboards.',
+          'Don’t report for no reason: repeated false reports break these terms.',
         ],
       },
       {

@@ -52,6 +52,7 @@
       "invalidName": "That name breaks the rules.",
       "unauthorized": "Your session with the server expired. Sign in again.",
       "reauthRequired": "Deleting the account needs a fresh sign-in. Enter your password again and retry.",
+      "suspended": "Your account is suspended, so it can't be changed right now.",
       "notRegistered": "This account has no fighter yet. Let's finish signing up.",
       "notFound": "The server doesn't know this request. Update the app.",
       "alreadyRegistered": "This account already has a fighter.",

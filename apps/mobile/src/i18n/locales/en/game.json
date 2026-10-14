@@ -136,6 +136,7 @@
         "gameStarted": "The game in this room has already started.",
         "alreadyInRoom": "You're already in this room, on another device.",
         "unauthenticated": "Sign in to your account to play against others.",
+        "suspended": "Your account is suspended, so there are no ranked games for now. Practice alone or against a bot still works.",
         "codeTaken": "A room with this code already exists. Try another code.",
         "badOptions": "The room's settings aren't valid."
       },

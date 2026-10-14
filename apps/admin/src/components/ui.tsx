@@ -64,6 +64,10 @@ const ERROR_TEXT: Record<ApiError['code'], StringKey> = {
   tooManyRequests: 'error.tooMany',
   disabled: 'error.disabled',
   unauthorized: 'login.expired',
+  // The moderation actions' refusals (components/ConfirmDialog.tsx shows them).
+  notOpen: 'error.notOpen',
+  accountDeleted: 'error.accountDeleted',
+  googleRequired: 'error.googleRequired',
   // Only the Google sign-in answers these, and the login page words them itself (pages/LoginPage.tsx).
   invalidToken: 'error.server',
   wrongProvider: 'error.server',
@@ -71,6 +75,11 @@ const ERROR_TEXT: Record<ApiError['code'], StringKey> = {
   notAllowed: 'error.server',
   unavailable: 'error.server',
 };
+
+/** The words for a moderation action's failure: a 404 there means the report or account went meanwhile. */
+export function actionErrorKey(code: ApiError['code']): StringKey {
+  return code === 'notFound' ? 'error.actionNotFound' : ERROR_TEXT[code];
+}
 
 export function ErrorBox({ error, onRetry }: { error: ApiError; onRetry?: () => void }) {
   const { t } = useI18n();

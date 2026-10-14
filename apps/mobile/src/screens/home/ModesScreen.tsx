@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { isSuspended } from '../../api/me';
 import type { AvatarIdOrNone } from '../../avatars';
 import { useAuth } from '../../auth/authStore';
 import { Icon } from '../../components/Icon';
@@ -42,6 +43,8 @@ import { Chip, GUTTER, ScreenHeader, SectionLabel } from './parts';
  * חיבור לאינטרנט" shows, the practices say "זמין אופליין", and the bottom offers "עבור לאימון" and "בדוק
  * שוב" ("עדיין אין חיבור · ניסיון 2" after another miss); meanwhile it checks again in the background, and
  * the ranked cards come back with the connection.
+ *
+ * A suspended account (spec §3.5): the ranked cards are dimmed with "החשבון מושעה", and the group's note says why.
  */
 export function ModesScreen() {
   const { t } = useTranslation('home');
@@ -55,11 +58,12 @@ export function ModesScreen() {
   const myName = accountName ?? localName;
   const connectivity = useConnectivityWatch();
   const offline = connectivity.status === 'offline';
+  const suspended = useAuth((s) => isSuspended(s.me));
   const announcement = useConnectionLine(offline);
   const rankedType: GameType = lastPlay?.mode === 'ranked' ? lastPlay.gameType : DEFAULT_GAME_TYPE;
 
   const open = (option: ModeOption) => {
-    if (!isAvailable(option.key) || (offline && option.group === 'ranked')) return;
+    if (!isAvailable(option.key) || ((offline || suspended) && option.group === 'ranked')) return;
     cue('toggle');
     const gameType = lastPlay?.mode === option.mode ? lastPlay.gameType : undefined;
     const params: Record<string, string> = { mode: option.mode };
@@ -91,6 +95,7 @@ export function ModesScreen() {
             group={group}
             avatarId={avatarId}
             offline={offline}
+            suspended={suspended}
             ratings={group === 'ranked' ? ratings : null}
             rankedType={rankedType}
             onOpen={open}
@@ -141,6 +146,8 @@ function useConnectionLine(offline: boolean): string | null {
 interface CardContext {
   avatarId: AvatarIdOrNone;
   offline: boolean;
+  /** The account is suspended (spec §3.5): no ranked games. */
+  suspended: boolean;
   /** My ratings (the account's), for the open ranked cards: each shows its own queue's. */
   ratings: readonly RatingEntry[] | null;
   rankedType: GameType;
@@ -156,11 +163,14 @@ function Group({
   const options = MODE_OPTIONS.filter((o) => o.group === group);
   // The Modes board: the 2-player card across the width, then 3 and 4 side by side.
   const [wide, ...pair] = group === 'ranked' ? options : [];
-  const note = !context.offline
-    ? t(`modes.groups.${group}.note`)
-    : group === 'ranked'
-      ? tm('offline.rankedNote')
-      : tm('offline.practiceNote');
+  const note =
+    context.suspended && group === 'ranked'
+      ? t('moderation:suspended.chip')
+      : !context.offline
+        ? t(`modes.groups.${group}.note`)
+        : group === 'ranked'
+          ? tm('offline.rankedNote')
+          : tm('offline.practiceNote');
   const card = (o: ModeOption, compact = false) => (
     <ModeCard key={o.key} option={o} onPress={() => onOpen(o)} compact={compact} {...context} />
   );
@@ -187,6 +197,7 @@ function ModeCard({
   option,
   avatarId,
   offline,
+  suspended,
   ratings,
   rankedType,
   onPress,
@@ -196,9 +207,11 @@ function ModeCard({
   const { t: tm } = useTranslation('match');
   const ranked = option.group === 'ranked';
   const built = isAvailable(option.key);
+  // Spec §3.5: a suspended account plays no ranked game (it says so over "no connection": it lasts longer).
+  const barred = ranked && suspended && built;
   // Spec §16.1: no connection, no ranked game (practice works offline).
-  const needsConnection = ranked && offline && built;
-  const available = built && !needsConnection;
+  const needsConnection = ranked && offline && built && !barred;
+  const available = built && !needsConnection && !barred;
   const title = t(`modes.${option.key}.title`);
   const tagline = t(`modes.${option.key}.tagline`);
   const typeName = t(`gameTypes.${rankedType}.name`);
@@ -217,7 +230,13 @@ function ModeCard({
     t(`modes.${option.key}.label`),
     tagline,
     ...(shownRating ? [tm('modes.ratingLabel', { rating: shownRating.rating, type: typeName })] : chips),
-    needsConnection ? tm('offline.needsConnectionLabel') : built ? null : t('modes.soon'),
+    barred
+      ? t('moderation:suspended.chipLabel')
+      : needsConnection
+        ? tm('offline.needsConnectionLabel')
+        : built
+          ? null
+          : t('modes.soon'),
   ]
     .filter(Boolean)
     .join(t('player:listSep'));
@@ -233,7 +252,7 @@ function ModeCard({
         styles.card,
         compact ? styles.cardCompact : styles.cardRow,
         available ? styles.cardAvailable : styles.cardSoon,
-        needsConnection && styles.cardOffline,
+        (needsConnection || barred) && styles.cardOffline,
         pressed && styles.cardPressed,
       ]}
       testID={`mode-${option.key}`}
@@ -247,7 +266,9 @@ function ModeCard({
           {tagline}
         </Text>
         <View style={styles.chips}>
-          {needsConnection ? (
+          {barred ? (
+            <OfflineChip label={t('moderation:suspended.chip')} testID={`suspended-${option.key}`} />
+          ) : needsConnection ? (
             <OfflineChip label={tm('offline.needsConnection')} testID={`offline-${option.key}`} />
           ) : built ? null : (
             <Chip label={t('modes.soon')} testID={`soon-${option.key}`} />
@@ -264,7 +285,7 @@ function ModeCard({
   );
 }
 
-/** "דורש חיבור" with the lock (the Offline board). */
+/** "דורש חיבור" with the lock (the Offline board); "החשבון מושעה" the same way. */
 function OfflineChip({ label, testID }: { label: string; testID?: string }) {
   return (
     <View style={styles.offlineChip} testID={testID}>

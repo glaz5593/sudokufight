@@ -175,6 +175,9 @@ describe('POST /v1/users', () => {
         { key: 'normal', rating: 1200, games: 0, provisional: true, peak: 1200 },
         { key: 'hard', rating: 1200, games: 0, provisional: true, peak: 1200 },
       ],
+      // Moderation (spec §3.5): neither.
+      nameResetRequired: false,
+      suspended: false,
     });
     expect(await userRow(res.body.id)).toEqual({
       id: res.body.id,
@@ -186,6 +189,8 @@ describe('POST /v1/users', () => {
       email: 'dana@example.com',
       createdAt: new Date(NOW),
       deletedAt: null,
+      suspendedAt: null,
+      nameResetRequired: false,
     });
   });
 
@@ -637,6 +642,8 @@ describe('DELETE /v1/me', () => {
       email: null,
       createdAt: new Date(NOW),
       deletedAt: new Date(NOW + DAY),
+      suspendedAt: null,
+      nameResetRequired: false,
     });
     // Ratings stay with the anonymous row (its games keep their players); the install is unlinked.
     expect(await t.db.$count(ratings, eq(ratings.userId, created.id))).toBe(3);

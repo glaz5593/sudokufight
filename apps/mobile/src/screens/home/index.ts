@@ -50,5 +50,5 @@ export {
   winStats,
   type WinStats,
 } from './practiceStats';
-export { appVersion, SettingsScreen, type SettingsScreenProps } from './SettingsScreen';
+export { SettingsScreen, type SettingsScreenProps } from './SettingsScreen';
 export { MATCH_PATH, startAndOpen, startRankedAndOpen } from './startGame';

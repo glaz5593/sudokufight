@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { isSuspended } from '../../api/me';
 import { refreshMe, useAuth } from '../../auth/authStore';
 import { ltr } from '../../components/player';
 import { BottomNav, Button, IconButton, RowButton, useToast } from '../../components/ui';
@@ -15,6 +16,7 @@ import { useMyCard, useMyProgress } from '../../progress/hooks';
 import { cue } from '../../services/feedback';
 import { VerifyBanner } from '../account/VerifyEmailScreen';
 import { Announcer } from '../game/connection/Announcer';
+import { SuspendedBanner } from '../moderation/SuspendedBanner';
 import { openPlayerCard } from '../player/navigation';
 import { usePracticeHistory } from '../../state/practiceHistory';
 import { useProfile } from '../../state/profile';
@@ -48,6 +50,9 @@ export interface HomeScreenProps {
  * Home opens offline); pressing it opens the profile. Until the email is verified, a banner under the card
  * leads to /verify-email [D22]. Without an account profile (tests of the home screens alone) the card falls
  * back to the local profile.
+ *
+ * Spec §3.5: while the account is suspended, a banner under the card leads to the suspension's screen, and a ranked
+ * "עוד סיבוב" is dimmed with "החשבון מושעה".
  *
  * Stage 13 (spec §16.1): Home asks the server too (net/connectivity.ts). Without an answer the banner "אין
  * חיבור לאינטרנט" shows under the card, and a ranked "עוד סיבוב" is dimmed with "דורש חיבור"; the app checks
@@ -105,10 +110,13 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
           ? t('again.subtitleRanked', { ...parts, players: t('match:players', { count: again.players }) })
           : t('again.subtitle', parts);
   }
-  // Spec §16.1: a ranked game needs the connection.
-  const againBlocked = offline && again?.mode === 'ranked';
+  // Spec §16.1: a ranked game needs the connection; spec §3.5: and an account that isn't suspended.
+  const suspended = isSuspended(me);
+  const againBlocked = (offline || suspended) && again?.mode === 'ranked';
   if (againText && againBlocked)
-    againText = `${againText}${t('player:sep')}${t('match:offline.needsConnection')}`;
+    againText = `${againText}${t('player:sep')}${
+      suspended ? t('moderation:suspended.chip') : t('match:offline.needsConnection')
+    }`;
 
   const playAgain = async () => {
     if (!again || starting || againBlocked) return;
@@ -162,6 +170,7 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
             onPress={me ? () => openPlayerCard(me.id) : undefined}
           />
         </View>
+        <SuspendedBanner style={styles.verify} />
         <VerifyBanner style={styles.verify} />
         {offline ? (
           <View style={styles.offline}>

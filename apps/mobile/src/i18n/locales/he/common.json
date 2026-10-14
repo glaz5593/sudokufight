@@ -15,5 +15,10 @@
     "title": "משהו השתבש",
     "body": "המסך נתקע בגלל תקלה. דיווחנו עליה, ואפשר לנסות שוב.",
     "retry": "נסה שוב"
+  },
+  "appVersion": {
+    "version": "גרסה {{version}}",
+    "build": "build {{build}}",
+    "engine": "מנוע {{engine}}"
   }
 }

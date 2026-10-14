@@ -63,6 +63,8 @@ interface Room {
 interface SetupOptions {
   players?: Record<string, Partial<StoredPlayer>>;
   history?: Record<string, OpponentRecord[]>;
+  /** Blocks, both ways, by player (spec §3.5). */
+  blocks?: Record<string, string[]>;
   ratingOption?: 'A' | 'B';
   failOpen?: boolean;
   config?: Partial<MatchmakingConfig>;
@@ -73,6 +75,7 @@ interface SetupOptions {
 function setup({
   players = {},
   history = {},
+  blocks = {},
   ratingOption = 'B',
   failOpen = false,
   config = {},
@@ -121,6 +124,7 @@ function setup({
         );
       },
       opponents: (userId) => Promise.resolve(history[userId] ?? []),
+      blocked: (userId) => Promise.resolve(blocks[userId] ?? []),
     },
     games,
     ratingOption,
@@ -623,5 +627,41 @@ describe('3 and 4 players (stage 10, spec §10)', () => {
     await t.advance(500);
     expect(cyd.last('found').players.map((p) => p.id)).toEqual(['ana', 'ben', 'cyd']);
     expect(t.service.queued('fast-3p').map((x) => x.userId)).toEqual(['far']);
+  });
+});
+
+describe('blocks (spec §3.5)', () => {
+  it('loads each player’s blocks, both ways, and never matches the two; requeued tickets keep them', async () => {
+    const t = setup({ blocks: { ana: ['ben'], ben: ['ana'] } });
+    const ana = await t.join('ana');
+    const ben = await t.join('ben');
+    await t.advance(500);
+    expect(t.rooms).toEqual([]);
+    expect(t.service.queued('fast-2p').map((x) => [x.userId, [...x.blocked]])).toEqual([
+      ['ana', ['ben']],
+      ['ben', ['ana']],
+    ]);
+    const cyd = await t.join('cyd');
+    await t.advance(500);
+    expect(cyd.last('found').players.map((p) => p.id)).toEqual(['ana', 'cyd']);
+    expect(ben.of('found')).toEqual([]);
+    // Cyd never comes to the room: Ana goes back to the head of the queue, still not with Ben.
+    t.rooms[0]!.link.join('ana');
+    await t.advance(DEFAULT_MATCHMAKING.readyTimeoutMs);
+    expect(ana.last('searching').requeued).toBe(true);
+    await t.advance(500);
+    expect(t.rooms).toHaveLength(1);
+    expect([...t.service.queued('fast-2p').find((x) => x.userId === 'ana')!.blocked]).toEqual(['ben']);
+  });
+
+  it('a group of 3 forms without the blocked pair', async () => {
+    const t = setup({ blocks: { ana: ['ben'], ben: ['ana'] } });
+    for (const id of ['ana', 'ben', 'cyd']) await t.join(id, 'fast-3p');
+    await t.advance(500);
+    expect(t.rooms).toEqual([]);
+    const dan = await t.join('dan', 'fast-3p');
+    await t.advance(500);
+    expect(dan.last('found').players.map((p) => p.id)).toEqual(['ana', 'cyd', 'dan']);
+    expect(t.service.queued('fast-3p').map((x) => x.userId)).toEqual(['ben']);
   });
 });

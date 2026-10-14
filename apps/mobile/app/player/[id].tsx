@@ -1,13 +1,15 @@
-import type { PlayerCard } from '@sudoku-fight/protocol';
+import { type PlayerCard, PLAYER_ID_PATTERN } from '@sudoku-fight/protocol';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
+import { isSuspended } from '../../src/api/me';
 import { useAuth } from '../../src/auth/authStore';
 import { ROUTES } from '../../src/auth/redirect';
 import { currentOwner, signedInProgressApi } from '../../src/progress/appProgress';
 import { useMyCard, useMyProgress } from '../../src/progress/hooks';
 import { adoptCard } from '../../src/progress/progressStore';
 import { goBack } from '../../src/screens/home';
+import { ModerationButtons } from '../../src/screens/moderation';
 import { PlayerCardScreen } from '../../src/screens/player';
 
 const openReplay = (gameId: string) =>
@@ -25,13 +27,31 @@ const keepMine = (card: PlayerCard) => {
   if (owner && card.id === useAuth.getState().me?.id) adoptCard(owner, card, Date.now());
 };
 
+const openEditProfile = () => router.push(ROUTES.editProfile);
+
+/**
+ * Another player's card ends with "דווח על שחקן" and "חסום שחקן" (spec §3.5). Opened from a ranked game (its
+ * results, its history card), a report is about that game.
+ */
+function moderationOf(gameId: string | null) {
+  return function ModerationFooter(card: PlayerCard) {
+    return <ModerationButtons player={{ id: card.id, name: card.displayName }} gameId={gameId} />;
+  };
+}
+
+/** The `gameId` param when it can be a game's id (a link may carry anything): else none. */
+const gameIdOf = (param: string | string[] | undefined): string | null =>
+  typeof param === 'string' && PLAYER_ID_PATTERN.test(param) ? param : null;
+
 /**
  * /player/[id]: a player's card (spec §14.3). Mine from Home's card and the other tabs; another player's from
- * the leaderboard and a ranked game's results.
+ * the leaderboard, and from a ranked game's results and history card (with `gameId`, for a report).
+ * "עריכת פרופיל" is not offered while the account is suspended (spec §3.5: it can't change).
  */
 export default function PlayerRoute() {
-  const { id = '' } = useLocalSearchParams<{ id: string }>();
+  const { id = '', gameId } = useLocalSearchParams<{ id: string; gameId?: string }>();
   const myId = useAuth((s) => s.me?.id ?? null);
+  const suspended = useAuth((s) => isSuspended(s.me));
   const cached = useMyCard();
   const progress = useMyProgress();
   // One loader for the screen's life (the screen reads again when it changes).
@@ -47,10 +67,11 @@ export default function PlayerRoute() {
       cached={cached}
       myProgress={progress}
       onBack={goBack}
-      onEditProfile={() => router.push(ROUTES.editProfile)}
+      onEditProfile={suspended ? undefined : openEditProfile}
       onOpenReplay={openReplay}
       onOpenAchievements={openAchievements}
       onLoaded={keepMine}
+      othersFooter={myId === null ? undefined : moderationOf(gameIdOf(gameId))}
     />
   );
 }

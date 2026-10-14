@@ -14,6 +14,7 @@ import {
 import {
   defaultRules,
   type GameConfig,
+  type GameEvent,
   type GameType,
   type PlayerId,
   type Scheduler,
@@ -22,6 +23,7 @@ import {
 import {
   type GameRoomError,
   type GameRoomRuleOverrides,
+  MUTED_REACTION_EMOJI,
   PROTOCOL_VERSION,
   type ServerMessage,
 } from '@sudoku-fight/protocol';
@@ -41,6 +43,7 @@ import {
   type RankedMatchSetup,
   type RankedRooms,
 } from '../matchmaking/ranked';
+import type { RoomBlocks } from '../moderation/watch';
 import { reportError } from '../monitoring/report';
 import type { GameRecorder, RankedGames } from '../persistence';
 
@@ -86,6 +89,13 @@ import type { GameRecorder, RankedGames } from '../persistence';
  * brings them back. When the game is over and its result stored, the room tells matchmaking, which refuses
  * the players' searches until then (one ranked game at a time).
  *
+ * Blocks (spec §3.5): matchmaking never puts two players who blocked each other in one game, but a game that
+ * started before the block (or a block made from the opponent's card during the game) brings them together.
+ * From the start of the game the room knows the blocks among its players (deps.blocks: the stored ones, then
+ * every change), and a blocked player's `reaction` reaches whoever blocked them with MUTED_REACTION_EMOJI:
+ * the event stays (its seq, its sender), so that client's state keeps in step, but there is nothing to show.
+ * Nobody else's events change, and nobody is told about the block.
+ *
  * Abuse: messages over a type's rate limit are dropped; too many malformed or over-the-limit messages and
  * the client is disconnected (for the game, a drop). Measures: every action's handling time goes to
  * GameMetrics (GET /dev/metrics outside production) and to the game's summary line in the log when it ends;
@@ -124,6 +134,8 @@ export interface GameRoomDeps {
   ranked?: RankedGames;
   /** Matchmaking's matches (stage 9): a room created for one claims it. Without it, no match rooms. */
   matches?: RankedRooms;
+  /** Blocks among the players (spec §3.5), to mute reactions. Without it, nothing is muted. */
+  blocks?: RoomBlocks;
 }
 
 /** Node's timers, for the engine. */
@@ -209,8 +221,14 @@ export function createGameRoom(deps: GameRoomDeps) {
       try {
         return await deps.identity.verify({ token: token || undefined, options, ip: context.ip });
       } catch (error) {
+        // A suspension (spec §3.5) says so, so the app shows it and reloads the profile; anything else is a
+        // sign-in the room can't take.
         if (error instanceof IdentityError)
-          throw refuse(ErrorCode.AUTH_FAILED, 'unauthenticated', error.message);
+          throw refuse(
+            ErrorCode.AUTH_FAILED,
+            error.code === 'suspended' ? 'suspended' : 'unauthenticated',
+            error.message,
+          );
         // Not a refusal: the check itself failed (the database, Google's keys). Colyseus tells the client.
         reportError(error, { area: 'rooms', message: '[game] onAuth failed' });
         throw error;
@@ -243,6 +261,10 @@ export abstract class GameRoom extends Room {
   private readonly kicked = new Set<string>();
   /** This room's action handling times, for the summary when the game ends. */
   private readonly actionTimes = new LatencyStats(2048);
+  /** Blocks among the players, as `<blocker> <blocked>`: the blocked one's reactions are muted for the blocker. */
+  private readonly mutes = new Set<string>();
+  /** Stops listening for block changes (the room closes). */
+  private stopBlocks: (() => void) | null = null;
 
   /** The game, once every seat is taken (diagnostics and tests; stage 9 stores its events). */
   get currentGame(): ServerGame | null {
@@ -377,6 +399,8 @@ export abstract class GameRoom extends Room {
   }
 
   override onDispose(): void {
+    this.stopBlocks?.();
+    this.stopBlocks = null;
     // A match that never got to its countdown is off (matchmaking requeues whoever was here).
     this.match?.closed();
     this.game?.close();
@@ -506,6 +530,7 @@ export abstract class GameRoom extends Room {
   // -- the game ------------------------------------------------------------------------------------------
 
   private startGame(): void {
+    this.watchBlocks();
     const id = randomUUID();
     const seed = this.deps.random(2 ** 31);
     const ranked = this.deps.ranked;
@@ -574,7 +599,7 @@ export abstract class GameRoom extends Room {
   }
 
   private onGameUpdate({ events, state }: ServerGameUpdate): void {
-    this.broadcastMessage({ type: 'events', events: events.map(toPublicEvent) });
+    this.sendEvents(events.map(toPublicEvent));
     if (state.status !== 'over' || this.phase === 'over') return;
     this.phase = 'over';
     // A match's players may search again once the result is stored, so the next search has the new rating.
@@ -628,6 +653,54 @@ export abstract class GameRoom extends Room {
       playerId,
       lastClientSeq: this.gate!.lastClientSeq(playerId),
     });
+  }
+
+  // -- blocks (spec §3.5) --------------------------------------------------------------------------------
+
+  /**
+   * From the game's start: the blocks among its players, stored and to come. Listening starts before the
+   * stored ones are read, so a change meanwhile is not lost; a pair that changed meanwhile keeps the change.
+   */
+  private watchBlocks(): void {
+    const blocks = this.deps.blocks;
+    if (blocks === undefined || this.stopBlocks !== null) return;
+    const players = new Set(this.seats.map((s) => s.playerId));
+    const touched = new Set<string>();
+    this.stopBlocks = blocks.subscribe((change) => {
+      if (!players.has(change.blockerId) || !players.has(change.blockedId)) return;
+      const key = muteKey(change.blockerId, change.blockedId);
+      touched.add(key);
+      if (change.blocked) this.mutes.add(key);
+      else this.mutes.delete(key);
+    });
+    blocks
+      .among([...players])
+      .then((pairs) => {
+        for (const p of pairs) {
+          const key = muteKey(p.blockerId, p.blockedId);
+          if (!touched.has(key)) this.mutes.add(key);
+        }
+      })
+      .catch((error: unknown) => this.deps.log.error(`[game ${this.code}] blocks could not be read`, error));
+  }
+
+  /** The events to everyone; a reaction from a player someone blocked goes to that one muted. */
+  private sendEvents(events: GameEvent[]): void {
+    if (this.mutes.size === 0 || !events.some((e) => e.type === 'reaction')) {
+      return this.broadcastMessage({ type: 'events', events });
+    }
+    for (const client of this.clients) {
+      const viewer = this.seatOfSession(client.sessionId)?.playerId;
+      const mine =
+        viewer === undefined
+          ? events
+          : events.map((e) =>
+              e.type === 'reaction' && this.mutes.has(muteKey(viewer, e.playerId))
+                ? { ...e, emoji: MUTED_REACTION_EMOJI }
+                : e,
+            );
+      this.sendTo(client, { type: 'events', events: mine });
+    }
   }
 
   // -- messages ------------------------------------------------------------------------------------------
@@ -703,6 +776,9 @@ export abstract class GameRoom extends Room {
     throw new Error('No free room code after 10 draws');
   }
 }
+
+/** The key of a block in a room: `blocker` doesn't see `blocked`'s reactions. */
+const muteKey = (blocker: string, blocked: string) => `${blocker} ${blocked}`;
 
 /** Fills in what tests and app.ts don't say. */
 export function gameRoomDeps(

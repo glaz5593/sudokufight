@@ -172,6 +172,43 @@ describe('CardMenu', () => {
     expect(screen.getByText('Unmute reactions')).toBeOnTheScreen();
   });
 
+  it('a ranked opponent (spec §3.5): "דווח על שחקן" and "חסום שחקן" under the mute; each closes the menu first', async () => {
+    const calls: string[] = [];
+    const moderation = {
+      blocked: false,
+      onReport: () => calls.push('report'),
+      onToggleBlock: () => calls.push('block'),
+    };
+    const ui = (blocked: boolean) => (
+      <CardMenu
+        visible
+        anchor={THEIR_CARD}
+        name="NinaVolt"
+        muted={false}
+        onToggleMute={jest.fn()}
+        moderation={{ ...moderation, blocked }}
+        onClose={() => calls.push('close')}
+      />
+    );
+    await render(ui(false));
+    expect(screen.getAllByRole('menuitem')).toHaveLength(3);
+    expect(screen.getByText('דווח על שחקן')).toBeOnTheScreen();
+    expect(screen.getByTestId('icon-flag', hidden)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('menuitem', { name: 'דווח על ⁨NinaVolt⁩' }));
+    await fireEvent.press(screen.getByRole('menuitem', { name: 'חסום את ⁨NinaVolt⁩' }));
+    expect(calls).toEqual(['close', 'report', 'close', 'block']);
+    // Blocked already: the item lifts the block.
+    await screen.rerender(ui(true));
+    expect(screen.getByText('בטל חסימה')).toBeOnTheScreen();
+    expect(screen.getByRole('menuitem', { name: 'בטל את החסימה של ⁨NinaVolt⁩' })).toBeOnTheScreen();
+  });
+
+  it('practice against a bot: the mute alone, never report or block', async () => {
+    await show(false).rendered;
+    expect(screen.getAllByRole('menuitem')).toHaveLength(1);
+    expect(screen.queryByText('דווח על שחקן')).toBeNull();
+  });
+
   it('an outside tap closes it without a change', async () => {
     const { onToggleMute, onClose, rendered } = show(false);
     await rendered;

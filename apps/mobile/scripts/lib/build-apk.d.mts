@@ -52,6 +52,12 @@ export declare function serverEnv(server: Server): {
 
 export declare function describeServer(server: Server): string;
 
+export declare function appServerLabel(server: Server): string;
+export declare function buildInfoEnv(
+  server: Server,
+  git: { sha: string; dirty: boolean },
+): { EXPO_PUBLIC_APP_BUILD: string; EXPO_PUBLIC_SERVER_LABEL: string };
+
 export declare function apkFileName(info: {
   version: string;
   sha: string;

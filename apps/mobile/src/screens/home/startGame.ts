@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 
+import { isSuspended } from '../../api/me';
 import { useAuth } from '../../auth/authStore';
 import { ROUTES } from '../../auth/redirect';
 import { canPlayRanked } from '../../auth/verification';
@@ -7,6 +8,7 @@ import { useToast } from '../../components/ui/toastStore';
 import { type RankedDeps, type RankedRequest, useGameStore } from '../../game/gameStore';
 import i18n from '../../i18n';
 import { type LastPlay, useProfile } from '../../state/profile';
+import { SUSPENDED_PATH } from '../moderation/SuspendedBanner';
 import { DEFAULT_BOT_LEVEL, DEFAULT_RANKED_PLAYERS, isOpenPlayerCount, isStartableMode } from './homeModel';
 
 /** The ranked search's screen (stage 9): searching, found, 3-2-1-GO, the timeout. */
@@ -65,10 +67,17 @@ export async function startAndOpen(play: LastPlay, how: 'push' | 'replace'): Pro
 /**
  * Searches for a ranked game (stage 9, spec §10) and opens the match screen. Ranked play is for a verified
  * address while config/account.ts `verification.requiredForRanked` is on [D22]: an unverified player gets
- * the verification screen instead, with a line that says why. Returns whether the search started.
+ * the verification screen instead, with a line that says why. A suspended account (spec §3.5) gets the
+ * suspension's screen, with its line. Returns whether the search started.
  */
 export function startRankedAndOpen(request: RankedRequest, how: 'push' | 'replace'): boolean {
-  const user = useAuth.getState().user;
+  const { user, me } = useAuth.getState();
+  if (isSuspended(me)) {
+    useToast.getState().show({ variant: 'info', message: i18n.t('moderation:suspended.ranked') });
+    if (how === 'push') router.push(SUSPENDED_PATH);
+    else router.replace(SUSPENDED_PATH);
+    return false;
+  }
   if (!canPlayRanked(user)) {
     useToast.getState().show({ variant: 'info', message: i18n.t('match:verify.required') });
     if (how === 'push') router.push(ROUTES.verifyEmail);

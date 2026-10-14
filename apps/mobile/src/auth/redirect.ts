@@ -9,6 +9,10 @@ import type { AuthStatus } from './authStore';
  * - needsProfile: signed in without a profile → /register/fighter, which finishes the registration.
  * - ready: everything but the sign-in screens, which send the player home. /verify-email is open to a
  *   signed-in player only: verification never blocks [D22].
+ * - ready, but an admin reset the display name (spec §3.5, Me.nameResetRequired, api/me.ts needsNewName):
+ *   /choose-name until a new name is saved (then it sends the player home), and meanwhile only what needs no
+ *   name (OPEN_WHILE_NAME_RESET): practice, which works offline too (spec §16.1), where saving a name can't;
+ *   and the settings, where the account can be deleted instead.
  */
 
 export const ROUTES = {
@@ -19,6 +23,7 @@ export const ROUTES = {
   registerAccount: '/register/account',
   verifyEmail: '/verify-email',
   editProfile: '/edit-profile',
+  chooseName: '/choose-name',
 } as const;
 
 export type AuthRoute = (typeof ROUTES)[keyof typeof ROUTES];
@@ -28,8 +33,36 @@ const SIGNED_OUT: readonly string[] = ['login', 'forgot-password', 'register/fig
 
 const pathOf = (segments: readonly string[]) => segments.filter((s) => !s.startsWith('(')).join('/');
 
+/**
+ * Where a player whose name was reset may go before choosing a new one: practice alone or against a bot (the
+ * mode choice, the bot's level, the game, its results, the interferences' guide) and the settings (with the
+ * blocked players, the licenses, and deleting the account). Not Home, the modes (ranked is there), the player
+ * card or the profile: those lead back to /choose-name.
+ */
+export const OPEN_WHILE_NAME_RESET: readonly string[] = [
+  'choose-name',
+  'game-type',
+  'bot-select',
+  'game',
+  'results/[id]',
+  'interferences',
+  'settings',
+  'blocked-players',
+  'licenses',
+];
+
+/** What else decides where a ready player belongs. */
+export interface AuthGates {
+  /** The profile asks for a new display name (spec §3.5): /choose-name, and OPEN_WHILE_NAME_RESET only. */
+  nameReset?: boolean;
+}
+
 /** The route to go to, or null to stay. */
-export function redirectFor(status: AuthStatus, segments: readonly string[]): AuthRoute | null {
+export function redirectFor(
+  status: AuthStatus,
+  segments: readonly string[],
+  { nameReset = false }: AuthGates = {},
+): AuthRoute | null {
   const path = pathOf(segments);
   const onSignedOutScreen = SIGNED_OUT.includes(path);
   switch (status) {
@@ -40,6 +73,7 @@ export function redirectFor(status: AuthStatus, segments: readonly string[]): Au
     case 'needsProfile':
       return path === 'register/fighter' ? null : ROUTES.registerFighter;
     case 'ready':
-      return onSignedOutScreen ? ROUTES.home : null;
+      if (nameReset) return OPEN_WHILE_NAME_RESET.includes(path) ? null : ROUTES.chooseName;
+      return onSignedOutScreen || path === 'choose-name' ? ROUTES.home : null;
   }
 }

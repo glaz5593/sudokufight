@@ -20,7 +20,8 @@ import { epochMs, msOrNull, numOrNull } from './sql';
 /**
  * GET /admin/api/users and /users/:id (spec §27.3): accounts with their ratings, games and installs, and in
  * the detail their XP and level (spec §15) and the anomaly flags of their ranked games (spec §21).
- * Deleted accounts stay listed (deletedAt set): their games still point at them.
+ * Deleted accounts stay listed (deletedAt set): their games still point at them. Every row carries its
+ * moderation state (spec §3.5): suspended since, a name reset waiting for a new name, open reports.
  */
 
 const lastSeenSql = sql<
@@ -41,6 +42,10 @@ const userRow = {
   ),
   // real, not cast: a float8 cast would turn 1287.3 into 1287.300048828125.
   bestRating: sql<number | null>`(select max(r.rating) from ratings as r where r.user_id = users.id)`,
+  suspendedAt: users.suspendedAt,
+  nameResetRequired: users.nameResetRequired,
+  openReports: sql<number>`(select count(*)::int from player_reports as pr
+    where pr.reported_id = users.id and pr.status = 'open')`.mapWith(Number),
 };
 
 function toUserRow(r: {
@@ -54,6 +59,9 @@ function toUserRow(r: {
   lastSeen: unknown;
   games: number;
   bestRating: unknown;
+  suspendedAt: Date | null;
+  nameResetRequired: boolean;
+  openReports: number;
 }): AdminUserRow {
   return {
     ...r,
@@ -63,10 +71,17 @@ function toUserRow(r: {
     deletedAt: r.deletedAt?.getTime() ?? null,
     lastSeen: msOrNull(r.lastSeen),
     bestRating: numOrNull(r.bestRating),
+    suspendedAt: r.suspendedAt?.getTime() ?? null,
   };
 }
 
 const selectUsers = (db: Db) => db.select(userRow).from(users);
+
+/** One account as the users list shows it (the moderation actions answer it), or null. */
+export async function getUserRow(db: Db, id: string): Promise<AdminUserRow | null> {
+  const [row] = await selectUsers(db).where(eq(users.id, id));
+  return row === undefined ? null : toUserRow(row);
+}
 
 /** Matches the user id, Firebase uid, display name, email and country. */
 function searchUsers(search: string | undefined): SQL | undefined {

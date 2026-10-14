@@ -1,4 +1,4 @@
-import { ADMIN_DEFAULT_PAGE_SIZE, ADMIN_MAX_PAGE_SIZE } from '@sudoku-fight/protocol';
+import { ADMIN_DEFAULT_PAGE_SIZE, ADMIN_MAX_PAGE_SIZE, ADMIN_REPORT_FILTERS } from '@sudoku-fight/protocol';
 import { z } from 'zod';
 
 import { DEFAULT_STATS_DAYS, MAX_SEARCH_LENGTH, MAX_STATS_DAYS } from './constants';
@@ -57,3 +57,17 @@ export function parseQuery<T>(schema: z.ZodType<T>, query: unknown): ParseResult
 export function likePattern(search: string): string {
   return `%${search.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
 }
+
+/** GET /admin/api/reports (spec §3.5): a page of reported players, by the reports' status. */
+export const reportsQuerySchema = z.object({
+  page: int(1, 1_000_000, 1),
+  pageSize: int(1, ADMIN_MAX_PAGE_SIZE, ADMIN_DEFAULT_PAGE_SIZE),
+  status: z.preprocess(blankToUndefined, z.enum(ADMIN_REPORT_FILTERS).default('open')),
+});
+export type ReportsQuery = z.infer<typeof reportsQuerySchema>;
+
+/** GET /admin/api/audit: a page of the audit log. */
+export const auditQuerySchema = z.object({
+  page: int(1, 1_000_000, 1),
+  pageSize: int(1, ADMIN_MAX_PAGE_SIZE, ADMIN_DEFAULT_PAGE_SIZE),
+});

@@ -1,10 +1,14 @@
 import type {
+  AdminAuditEntry,
   AdminGameDetail,
   AdminGameRow,
   AdminInstallDetail,
   AdminInstallRow,
   AdminOverview,
+  AdminModerationResult,
   AdminPage,
+  AdminReport,
+  AdminReportedPlayer,
   AdminScreens,
   AdminUserDetail,
   AdminUserRow,
@@ -44,6 +48,9 @@ export const INSTALL_A = '3f2a9c1e-5b7d-4e8f-9a0b-1c2d3e4f5a6b';
 export const INSTALL_B = 'a1b2c3d4-0000-4000-8000-000000000002';
 export const USER_A = 'u-1111-2222';
 export const GAME_A = 'g-7777-8888';
+/** A reporter, and a second reported player (suspended, waiting for a new name). */
+export const USER_B = 'u-3333-4444';
+export const USER_C = 'u-5555-6666';
 
 export function installRow(over: Partial<AdminInstallRow> = {}, now = Date.now()): AdminInstallRow {
   return {
@@ -96,6 +103,9 @@ export function userRow(over: Partial<AdminUserRow> = {}, now = Date.now()): Adm
     lastSeen: now - 2 * HOUR,
     games: 12,
     bestRating: 1512,
+    suspendedAt: null,
+    nameResetRequired: false,
+    openReports: 3,
     ...over,
   };
 }
@@ -195,4 +205,106 @@ export function screensFixture(): AdminScreens {
       { screen: 'lobby', views: 400, installs: 100, exits: 10, exitRate: 0.05, lastScreenOfGone: 1 },
     ],
   };
+}
+
+// ---- Moderation (spec §3.5) ----
+
+export function report(over: Partial<AdminReport> = {}, now = Date.now()): AdminReport {
+  return {
+    id: 'r-1',
+    playerId: USER_A,
+    reason: 'offensiveName',
+    status: 'open',
+    gameId: GAME_A,
+    createdAt: now - 3 * HOUR,
+    resolvedAt: null,
+    resolvedBy: null,
+    reporter: { id: USER_B, displayName: 'Dana' },
+    ...over,
+  };
+}
+
+/**
+ * Moshe: three open reports, the oldest 50 hours old (past the 48-hour promise), one from a deleted account.
+ * Rude: suspended, waiting for a new name, one open report.
+ */
+export function reportedPlayers(now = Date.now()): AdminReportedPlayer[] {
+  return [
+    {
+      player: {
+        id: USER_A,
+        displayName: 'Moshe',
+        avatarId: 'lava-lamp',
+        country: 'IL',
+        deletedAt: null,
+        suspendedAt: null,
+        nameResetRequired: false,
+      },
+      counts: { offensiveName: 2, cheating: 1, other: 0, total: 3, reporters: 3 },
+      open: 3,
+      oldestOpenAt: now - 50 * HOUR,
+      lastReportedAt: now - 3 * HOUR,
+      reports: [
+        report({}, now),
+        report(
+          {
+            id: 'r-3',
+            reason: 'cheating',
+            gameId: null,
+            createdAt: now - 5 * HOUR,
+            reporter: { id: 'u-gone', displayName: null },
+          },
+          now,
+        ),
+        report({ id: 'r-2', createdAt: now - 50 * HOUR, reporter: { id: 'u-gil', displayName: 'Gil' } }, now),
+      ],
+    },
+    {
+      player: {
+        id: USER_C,
+        displayName: 'Rude',
+        avatarId: null,
+        country: null,
+        deletedAt: null,
+        suspendedAt: now - DAY,
+        nameResetRequired: true,
+      },
+      counts: { offensiveName: 0, cheating: 0, other: 1, total: 1, reporters: 1 },
+      open: 1,
+      oldestOpenAt: now - HOUR,
+      lastReportedAt: now - HOUR,
+      reports: [
+        report({ id: 'r-4', playerId: USER_C, reason: 'other', gameId: null, createdAt: now - HOUR }, now),
+      ],
+    },
+  ];
+}
+
+export function reportsPage(
+  items: AdminReportedPlayer[] = reportedPlayers(),
+  page = 1,
+  total = items.length,
+): AdminPage<AdminReportedPlayer> {
+  return { items, page, pageSize: 20, total };
+}
+
+export function auditEntry(over: Partial<AdminAuditEntry> = {}, now = Date.now()): AdminAuditEntry {
+  return {
+    id: 'a-1',
+    adminEmail: 'moshe@example.com',
+    action: 'suspend',
+    targetUserId: USER_A,
+    details: {},
+    createdAt: now - HOUR,
+    ...over,
+  };
+}
+
+/** What reset-name, suspend and unsuspend answer. */
+export function moderationResult(
+  user: Partial<AdminUserRow>,
+  audit: Partial<AdminAuditEntry> | null,
+  now = Date.now(),
+): AdminModerationResult {
+  return { user: userRow(user, now), audit: audit === null ? null : auditEntry(audit, now) };
 }

@@ -155,6 +155,41 @@ describe('where each auth status belongs (spec §4.2)', () => {
     // Groups in parentheses are not part of the path.
     expect(redirectFor('ready', ['(auth)', 'login'])).toBe(ROUTES.home);
   });
+
+  it('ready, with a name an admin reset (spec §3.5): "בחר שם חדש", and meanwhile practice and the settings only', () => {
+    const reset = { nameReset: true };
+    expect(redirectFor('ready', ['choose-name'], reset)).toBeNull();
+    // Practice works offline, where saving a name can't (spec §16.1); the settings hold "delete account".
+    for (const s of [
+      ['game-type'],
+      ['bot-select'],
+      ['game'],
+      ['results', '[id]'],
+      ['interferences'],
+      ['settings'],
+      ['blocked-players'],
+      ['licenses'],
+    ]) {
+      expect([s, redirectFor('ready', s, reset)]).toEqual([s, null]);
+    }
+    for (const s of [
+      [],
+      ['modes'],
+      ['match'],
+      ['edit-profile'],
+      ['player', '[id]'],
+      ['leaderboard'],
+      ['login'],
+      ['verify-email'],
+    ]) {
+      expect([s, redirectFor('ready', s, reset)]).toEqual([s, ROUTES.chooseName]);
+    }
+    // Chosen: the screen leads home; no other status is held by it.
+    expect(redirectFor('ready', ['choose-name'])).toBe(ROUTES.home);
+    expect(redirectFor('ready', ['choose-name'], { nameReset: false })).toBe(ROUTES.home);
+    expect(redirectFor('signedOut', ['choose-name'], reset)).toBe(ROUTES.login);
+    expect(redirectFor('loading', ['modes'], reset)).toBeNull();
+  });
 });
 
 describe('what an unverified email may do [D22]', () => {

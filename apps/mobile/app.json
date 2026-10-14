@@ -3,7 +3,7 @@
     "name": "Sudoku Fight",
     "slug": "sudoku-fight",
     "owner": "mosh-gl-dev",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "sudokufight",
     "userInterfaceStyle": "dark",
@@ -19,8 +19,9 @@
       "package": "com.mosheg.sudokufight",
       "adaptiveIcon": {
         "foregroundImage": "./assets/brand/adaptive-foreground.png",
+        "backgroundImage": "./assets/brand/adaptive-background.png",
         "monochromeImage": "./assets/brand/adaptive-monochrome.png",
-        "backgroundColor": "#0f1218"
+        "backgroundColor": "#101b33"
       }
     },
     "plugins": [

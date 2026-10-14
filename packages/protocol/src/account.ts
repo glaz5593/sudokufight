@@ -16,7 +16,7 @@ import { GAME_TYPES, ratingKey, type RatingOption } from '@sudoku-fight/engine';
  *                                                      422 blocked
  *   GET    /v1/me                        → 200 Me    · 404 notRegistered
  *   PATCH  /v1/me      UpdateMeRequest   → 200 Me    · 404 notRegistered · 409 renameTooSoon (nextRenameAt)
- *                                                      | taken · 400 invalidName · 422 blocked
+ *                                                      | taken · 400 invalidName · 422 blocked · 403 suspended
  *   DELETE /v1/me                        → 204       · 404 notRegistered (already deleted: count it as done) ·
  *                                                      401 reauthRequired when the sign-in is older than
  *                                                      RECENT_SIGN_IN_MS (re-authenticate, then a fresh token)
@@ -32,6 +32,18 @@ import { GAME_TYPES, ratingKey, type RatingOption } from '@sudoku-fight/engine';
  * account without the password. The server keeps the row (games keep their players) with deleted_at set, an
  * anonymous name and no email, and forgets the Firebase uid: the name is free again at once, and signing in
  * again (even with the same Firebase account, if its deletion failed) starts a fresh registration.
+ *
+ * Moderation (spec §3.5, moderation.ts): an admin may reset an offensive name or suspend the account.
+ * - A reset name is a temporary one ("שחקן48213"), and Me.nameResetRequired is true: the app asks for a new
+ *   name. That rename is free of the 30-day rule (nextRenameAt is null meanwhile); after it the flag is false
+ *   and the 30 days count from it.
+ * - A name an admin reset away is retired: nobody may take it again (the name check, POST /v1/users and PATCH
+ *   /v1/me answer `blocked`, as for a blocked word).
+ * - A suspended account (Me.suspended) can't play ranked games (matchmaking and game rooms refuse
+ *   `suspended`) or change the account: PATCH /v1/me answers 403 `suspended`. GET /v1/me and DELETE /v1/me
+ *   still work. Lifting the suspension restores everything. Deleting a suspended account doesn't lift it: a
+ *   new account with the same sign-in (the same Google account or verified email) starts suspended (Me.suspended
+ *   from POST /v1/users on), for an admin to review.
  */
 
 // ---------------------------------------------------------------------------------------------------------
@@ -110,7 +122,10 @@ export function normalizeForCompare(name: string): string {
   return out;
 }
 
-/** D20: the display name changes at most once in this many days. The name chosen at registration is free. */
+/**
+ * D20: the display name changes at most once in this many days. The name chosen at registration is free, and
+ * so is the first rename after an admin reset the name (Me.nameResetRequired).
+ */
 export const RENAME_COOLDOWN_DAYS = 30;
 export const RENAME_COOLDOWN_MS = RENAME_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
 
@@ -359,6 +374,17 @@ export interface Me {
   nextRenameAt: number | null;
   /** One per rating key of the server's RATING_OPTION, in ratingKeysFor() order. */
   ratings: RatingEntry[];
+  /**
+   * An admin reset the display name (an offensive one) to a temporary name: ask for a new one. The next rename
+   * is free of the 30-day rule. The server always sends it; missing only in a profile an older server sent
+   * (or an older app saved): read it as false.
+   */
+  nameResetRequired?: boolean;
+  /**
+   * An admin suspended the account: no ranked games and no account changes until it is lifted (deleting the
+   * account still works). Always sent; missing only as for nameResetRequired: read it as false.
+   */
+  suspended?: boolean;
 }
 
 export const ACCOUNT_ERROR_CODES = [
@@ -373,6 +399,8 @@ export const ACCOUNT_ERROR_CODES = [
    * keeps the sign-in time): re-authenticate (the password again), then call with getIdToken(true).
    */
   'reauthRequired',
+  /** 403, PATCH /v1/me only: the account is suspended (Me.suspended); changes wait until it is lifted. */
+  'suspended',
   /** 404: this sign-in has no account (never registered, or deleted). Go to registration. */
   'notRegistered',
   /** 404: no such route. */

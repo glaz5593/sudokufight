@@ -200,6 +200,7 @@ const FATAL_ON_RETURN = new Set<OnlineError['code']>([
   'roomGone',
   'gameStarted',
   'unauthenticated',
+  'suspended',
   'badCode',
   'protocol',
 ]);

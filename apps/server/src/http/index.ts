@@ -7,6 +7,9 @@ import type { ServerConfig } from '../config';
 import type { Db } from '../db';
 import { createHistoryRouter } from '../history';
 import { createLegalRouter } from '../legal';
+import type { ModerationTools } from '../moderation/admin';
+import { createModerationRouter, type ModerationLimits } from '../moderation/router';
+import { BlockWatch } from '../moderation/watch';
 import {
   createProgressRouter,
   type ProgressLimits,
@@ -21,8 +24,9 @@ import type { RateLimitRule } from './rateLimiter';
 /**
  * Everything the server answers over plain HTTP besides Colyseus's own routes (/health, /matchmake):
  * POST /v1/events, the account routes (/v1/names/available, /v1/users, /v1/me), history (stage 11), progress
- * (stage 12: leaderboards, player cards, XP), the admin API (/admin/api), the admin site's files (/admin) and
- * the legal pages (stage 14: /legal/privacy, /legal/terms, /legal/delete-account).
+ * (stage 12: leaderboards, player cards, XP), reports and blocks (spec §3.5: /v1/reports, /v1/me/blocks), the
+ * admin API (/admin/api), the admin site's files (/admin) and the legal pages (stage 14: /legal/privacy,
+ * /legal/terms, /legal/delete-account).
  *
  * Colyseus 0.18 builds an Express 5 app on its HTTP server when `defineServer({ express })` is given, and
  * passes it here once the database is open (createAppServer). A request that no Colyseus route matches
@@ -57,6 +61,15 @@ export interface HttpDeps {
   progressLimits?: ProgressLimits;
   /** Progress settings over the ones from `config` (tests: a small daily cap, other rules). */
   progress?: Partial<ProgressSettings>;
+  /** Rate limits of the report and block routes; tests make them small. */
+  moderationLimits?: ModerationLimits;
+  /**
+   * Where blocks and unblocks are told, for the game rooms that mute reactions (createAppServer shares one with
+   * them). Default: a watch of this app's own, that nobody else hears.
+   */
+  blockWatch?: BlockWatch;
+  /** The admin's moderation actions: word filter and randomness (tests: a fixed temporary name). */
+  moderationTools?: ModerationTools;
 }
 
 /**
@@ -83,11 +96,14 @@ export function configureHttp(app: Application, deps: HttpDeps): void {
   });
 
   const tokens = deps.tokens ?? tokenVerifierFor(deps.config, deps.now);
+  const settings = progressSettings(deps.config, deps.progress);
   app.use(createTelemetryRouter({ ...deps, tokens }));
   app.use(createAccountsRouter({ ...deps, tokens }));
   app.use(createHistoryRouter({ ...deps, tokens })); // GET /v1/me/games, /v1/games/:id/replay (stage 11)
   // GET /v1/leaderboard, /v1/players/:id, /v1/me/progress; POST /v1/me/practice-results (stage 12)
-  app.use(createProgressRouter({ ...deps, tokens, settings: progressSettings(deps.config, deps.progress) }));
+  app.use(createProgressRouter({ ...deps, tokens, settings }));
+  // POST /v1/reports; GET, POST and DELETE /v1/me/blocks (spec §3.5)
+  app.use(createModerationRouter({ ...deps, tokens, settings, watch: deps.blockWatch ?? new BlockWatch() }));
   // The API first: it answers everything under /admin/api (404 included), so the site never does.
   app.use(createAdminRouter({ ...deps, tokens, log: deps.adminLog })); // tokens: the admin's Google sign-in
   app.use(createAdminSiteRouter(deps.adminSiteDir === undefined ? findAdminSiteDir() : deps.adminSiteDir));

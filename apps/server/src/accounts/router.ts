@@ -14,6 +14,7 @@ import type { ServerConfig } from '../config';
 import type { Db } from '../db';
 import { clientKey } from '../http/clientKey';
 import { RateLimiter, type RateLimitRule } from '../http/rateLimiter';
+import { isRetiredName } from '../moderation/store';
 import { type BlockedWords, defaultBlockedWords } from './blockedWords';
 import { checkName } from './names';
 import {
@@ -36,7 +37,8 @@ import {
  * (production without FIREBASE_PROJECT_ID: 503 `disabled`); the token (`Authorization: Bearer`, optional for
  * the name check); a per-account limit (per IP for an anonymous name check); the body (JSON, 2 KB at most).
  * DELETE /v1/me also wants a recent sign-in (ACCOUNT_DELETE_MAX_AUTH_AGE_MS, default protocol
- * RECENT_SIGN_IN_MS).
+ * RECENT_SIGN_IN_MS). A suspended account (spec §3.5) gets 403 `suspended` from PATCH /v1/me; GET and DELETE
+ * work as ever. A name an admin reset away (spec §3.5, retired) is `blocked` everywhere a name is checked.
  * Answers are never cached (`Cache-Control: no-store`): they are personal.
  */
 
@@ -111,6 +113,10 @@ function signInAgain(res: Response, maxAgeMs: number): void {
     message: `Sign in again: deleting the account needs a sign-in within the last ${howLong(maxAgeMs)}`,
   });
 }
+
+/** 403: an admin suspended the account (spec §3.5); GET and DELETE /v1/me still work. */
+const suspended = (res: Response) =>
+  send(res, 403, { error: 'suspended', message: 'this account is suspended: no changes until it is lifted' });
 
 function tooMany(res: Response, retryAfterMs: number): void {
   res.set('Retry-After', String(Math.max(1, Math.ceil(retryAfterMs / 1000))));
@@ -202,14 +208,20 @@ function parseBody<T extends RawFields>(schema: z.ZodType<RawFields>, body: unkn
   return { ok: true, value: value as T };
 }
 
-/** Sends the answer for a name that breaks the rules; true when it did. */
-function refuseName(res: Response, name: string, words: BlockedWords): boolean {
+/**
+ * Sends the answer for a name that breaks the rules, or that an admin reset away (retired, spec §3.5: blocked,
+ * like a blocked word); true when it did.
+ */
+async function refuseName(res: Response, name: string, words: BlockedWords, db: Db): Promise<boolean> {
   const check = checkName(name, words);
-  if (check.ok) return false;
-  if (check.reason === 'invalid') {
+  if (!check.ok && check.reason === 'invalid') {
     send(res, 400, { error: 'invalidName', problem: check.problem, message: 'see NAME_RULES' });
-  } else {
+  } else if (!check.ok) {
     send(res, 422, { error: 'blocked', message: 'the name contains a word that is not allowed' });
+  } else if (await isRetiredName(db, name)) {
+    send(res, 422, { error: 'blocked', message: 'the name is not allowed (an admin removed it)' });
+  } else {
+    return false;
   }
   return true;
 }
@@ -264,6 +276,8 @@ export function createAccountsRouter({
           check.reason === 'invalid'
             ? { available: false, reason: 'invalid', problem: check.problem }
             : { available: false, reason: 'blocked' };
+      } else if (await isRetiredName(db, name)) {
+        answer = { available: false, reason: 'blocked' };
       } else {
         // The caller's own name (any case) is theirs to keep: available.
         const token = tokenOf(res);
@@ -286,7 +300,7 @@ export function createAccountsRouter({
       const token = requiredToken(res);
       const parsed = parseBody<NewUser>(createSchema, req.body);
       if (!parsed.ok) return badRequest(res, parsed.field, parsed.message);
-      if (refuseName(res, parsed.value.displayName, blockedWords)) return;
+      if (await refuseName(res, parsed.value.displayName, blockedWords, db)) return;
       // A clear answer for a second registration; the unique uid catches two at once.
       if ((await findLiveUser(db, token.uid)) !== undefined) {
         return send(res, 409, { error: 'alreadyRegistered', message: 'this sign-in already has an account' });
@@ -331,9 +345,10 @@ export function createAccountsRouter({
       const user = await findLiveUser(db, token.uid);
       if (user === undefined)
         return send(res, 404, { error: 'notRegistered', message: 'no account: register' });
+      if (user.suspendedAt !== null) return suspended(res);
       // The name is checked only when it changes: a name from before a word was listed may stay.
       if (changes.displayName !== undefined && changes.displayName !== user.displayName) {
-        if (refuseName(res, changes.displayName, blockedWords)) return;
+        if (await refuseName(res, changes.displayName, blockedWords, db)) return;
       }
       const t = now();
       const updated = await updateUser(db, token, changes, t);
@@ -347,6 +362,7 @@ export function createAccountsRouter({
         }
         if (updated.error === 'taken')
           return send(res, 409, { error: 'taken', message: 'the name is taken' });
+        if (updated.error === 'suspended') return suspended(res);
         return send(res, 404, { error: 'notRegistered', message: 'no account: register' });
       }
       res.json(await toMe(db, updated.user, token, config.ratingOption, t));

@@ -50,7 +50,9 @@ export type IdentityErrorCode =
   /** Nobody can join here yet (production before stage 8). */
   | 'disabled'
   /** A good token of a live account whose email is not verified, where one must be (the ranked queue, D22). */
-  | 'emailNotVerified';
+  | 'emailNotVerified'
+  /** A good token of a live account that an admin suspended (spec §3.5): no ranked games until it is lifted. */
+  | 'suspended';
 
 export class IdentityError extends Error {
   constructor(

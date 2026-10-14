@@ -1,9 +1,11 @@
 import {
+  isReportReason,
   MAX_EVENTS_PER_BATCH,
   MAX_PROPS_BYTES,
   PLATFORMS,
   TELEMETRY_EVENT_NAMES,
   type TelemetryBatch,
+  type TelemetryProps,
 } from '@sudoku-fight/protocol';
 import { z } from 'zod';
 
@@ -34,12 +36,25 @@ const props = z
     error: `more than ${MAX_PROPS_BYTES} bytes`,
   });
 
-export const telemetryEventSchema = z.object({
-  id: uuid,
-  name: z.enum(TELEMETRY_EVENT_NAMES, { error: 'unknown event name' }),
-  props,
-  t: z.number().int(),
-});
+/**
+ * Events whose props are fixed, checked one by one: anything else in them is refused. `report_sent` (spec
+ * §3.5) carries the reason only, so a report's player or game never lands in the usage data.
+ */
+const FIXED_PROPS: Partial<Record<(typeof TELEMETRY_EVENT_NAMES)[number], (p: TelemetryProps) => boolean>> = {
+  report_sent: (p) => Object.keys(p).length === 1 && isReportReason(p.reason),
+};
+
+export const telemetryEventSchema = z
+  .object({
+    id: uuid,
+    name: z.enum(TELEMETRY_EVENT_NAMES, { error: 'unknown event name' }),
+    props,
+    t: z.number().int(),
+  })
+  .refine((e) => FIXED_PROPS[e.name]?.(e.props) ?? true, {
+    error: 'not the props of this event (report_sent: { reason } only)',
+    path: ['props'],
+  });
 
 export const telemetryBatchSchema = z.object({
   installId: uuid,

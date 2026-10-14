@@ -8,6 +8,7 @@ describe('onlineErrorOf: the server’s and the SDK’s refusals as typed errors
     [sdk('gameStarted: the game in this room has started', 526), 'gameStarted'],
     [sdk('alreadyInRoom: me is connected already', 526), 'alreadyInRoom'],
     [sdk('unauthenticated: Sign-in required', 525), 'unauthenticated'],
+    [sdk('suspended: This account is suspended', 525), 'suspended'],
     [sdk('badOptions: private rooms are off', 521), 'badOptions'],
     [sdk('codeTaken: a room already has the code ABC234', 521), 'codeTaken'],
     [sdk('room "ABC234" not found', 522), 'notFound'],

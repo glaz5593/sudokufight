@@ -20,6 +20,11 @@ import type { KeyValueStore } from '../auth/types';
 
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const isNumOrNull = (v: unknown) => v === null || isNum(v);
+/**
+ * Me's moderation flags (spec §3.5): booleans, or missing in a profile an older server sent (read as false). A
+ * null is read as false too: a whole profile refused for one flag would keep the player out of the app.
+ */
+const isOptionalFlag = (v: unknown): boolean => v === undefined || v === null || typeof v === 'boolean';
 
 function isRatingEntry(v: unknown): v is RatingEntry {
   if (typeof v !== 'object' || v === null) return false;
@@ -49,7 +54,9 @@ export function isMe(v: unknown): v is Me {
     isNumOrNull(m.displayNameChangedAt) &&
     isNumOrNull(m.nextRenameAt) &&
     Array.isArray(m.ratings) &&
-    m.ratings.every(isRatingEntry)
+    m.ratings.every(isRatingEntry) &&
+    isOptionalFlag(m.nameResetRequired) &&
+    isOptionalFlag(m.suspended)
   );
 }
 
@@ -69,11 +76,24 @@ export function readMe(v: unknown): Me | null {
  * older server leaves it out. Null: now.
  */
 export function nextRenameAt(me: Me, now: number): number | null {
+  // An admin reset the name (spec §3.5): the new one is free of the 30-day rule.
+  if (me.nameResetRequired === true) return null;
   const next =
     me.nextRenameAt ??
     (me.displayNameChangedAt === null ? null : me.displayNameChangedAt + RENAME_COOLDOWN_MS);
   return next !== null && next > now ? next : null;
 }
+
+/**
+ * An admin reset the display name to a temporary one (spec §3.5): the app asks for a new name before anything
+ * else (/choose-name). Not while the account is suspended: a suspended account can't change its name (PATCH
+ * /v1/me answers `suspended`), so the suspension's own screen says what to do instead.
+ */
+export const needsNewName = (me: Me | null | undefined): boolean =>
+  me?.nameResetRequired === true && me.suspended !== true;
+
+/** An admin suspended the account (spec §3.5): no ranked games and no account changes until it is lifted. */
+export const isSuspended = (me: Me | null | undefined): boolean => me?.suspended === true;
 
 export const ME_CACHE_KEY = 'account.me';
 

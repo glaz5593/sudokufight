@@ -15,5 +15,10 @@
     "title": "Something went wrong",
     "body": "This screen hit an error. We reported it, and you can try again.",
     "retry": "Try again"
+  },
+  "appVersion": {
+    "version": "Version {{version}}",
+    "build": "build {{build}}",
+    "engine": "engine {{engine}}"
   }
 }

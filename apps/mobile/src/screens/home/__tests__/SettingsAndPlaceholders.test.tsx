@@ -3,6 +3,7 @@ import 'react-native-reanimated';
 import { ENGINE_VERSION } from '@sudoku-fight/engine';
 import { fireEvent, screen } from 'expo-router/testing-library';
 
+import { ltr } from '../../../components/player';
 import { directionProblems } from '../../../components/ui/testing/layout';
 import { practiceStorageOrNull } from '../../../game/storage';
 import i18n from '../../../i18n';
@@ -83,9 +84,30 @@ describe('settings (spec §4.1)', () => {
     expect(useSettings.getState().language).toBe('en');
   });
 
-  it('shows the app and engine versions', async () => {
-    await renderApp('/settings', { settings: () => <SettingsScreen version="1.2.3" /> });
-    expect(screen.getByTestId('app-version')).toHaveTextContent(`גרסה 1.2.3 · מנוע ${ENGINE_VERSION}`);
+  it('shows the version, then the build, the server and the engine (Moshe: "I can see it in the app")', async () => {
+    const version = { version: '1.0.1', build: 'a1b2c3d', server: 'staging' };
+    await renderApp('/settings', { settings: () => <SettingsScreen version={version} /> });
+    expect(screen.getByTestId('app-version-version')).toHaveTextContent(`גרסה ${ltr('1.0.1')}`);
+    expect(screen.getByTestId('app-version-details')).toHaveTextContent(
+      ltr(`build a1b2c3d · staging · מנוע ${ENGINE_VERSION}`),
+    );
+    expect(screen.getByTestId('app-version')).toHaveProp(
+      'accessibilityLabel',
+      `גרסה ${ltr('1.0.1')}, build a1b2c3d · staging · מנוע ${ENGINE_VERSION}`,
+    );
+  });
+
+  it('a build that did not say its commit (Metro, EAS) shows the server alone', async () => {
+    const version = { version: '1.0.0', build: null, server: 'production' };
+    await renderApp('/settings', { settings: () => <SettingsScreen version={version} /> });
+    expect(screen.getByTestId('app-version-details')).toHaveTextContent(
+      ltr(`production · מנוע ${ENGINE_VERSION}`),
+    );
+  });
+
+  it('no version known: no lines', async () => {
+    await renderApp('/settings', { settings: () => <SettingsScreen version={null} /> });
+    expect(screen.queryByTestId('app-version')).toBeNull();
   });
 
   it('goes back to where it was opened from', async () => {

@@ -1,0 +1,108 @@
+{
+  "actions": {
+    "report": "Report player",
+    "block": "Block player",
+    "unblock": "Unblock",
+    "reportLabel": "Report {{name}}",
+    "blockLabel": "Block {{name}}",
+    "unblockLabel": "Unblock {{name}}",
+    "blockedNote": "You blocked this player: you won't be matched together in ranked games."
+  },
+  "report": {
+    "title": "Report {{name}}",
+    "question": "What's wrong?",
+    "reasons": {
+      "offensiveName": "Offensive name",
+      "cheating": "Cheating",
+      "other": "Other"
+    },
+    "reasonHints": {
+      "offensiveName": "The name is rude, insulting or inappropriate",
+      "cheating": "Looks like outside help, or abusing a bug",
+      "other": "Something else that doesn't belong in the arena"
+    },
+    "privacy": "The player won't know who reported them. Every report is reviewed within {{hours}} hours.",
+    "send": "Send report",
+    "pickFirst": "Pick a reason, then send.",
+    "thanks": "Thanks. We'll review the report within {{hours}} hours.",
+    "done": "Close",
+    "errors": {
+      "rateLimited_one": "You sent many reports in the last hour. You can send another in a minute.",
+      "rateLimited_two": "You sent many reports in the last hour. You can send another in 2 minutes.",
+      "rateLimited_other": "You sent many reports in the last hour. You can send another in {{count}} minutes.",
+      "busy": "Too many requests. Wait a moment and try again.",
+      "suspended": "Your account is suspended, so you can't send reports right now.",
+      "self": "You can't report yourself.",
+      "notFound": "This player is no longer in the game.",
+      "offline": "No connection to the server: the report wasn't sent. Try again.",
+      "failed": "We couldn't send the report. Try again."
+    }
+  },
+  "block": {
+    "title": "Block {{name}}?",
+    "body": "You won't be matched together in ranked games, and {{name}}'s reactions won't reach you. Nobody is told about a block. You can lift it any time: Settings → Blocked players.",
+    "confirm": "Block",
+    "done": "{{name}} is blocked.",
+    "unblockTitle": "Unblock {{name}}?",
+    "unblockBody": "You may meet in ranked games again, and {{name}}'s reactions will reach you.",
+    "unblockConfirm": "Unblock",
+    "unblocked": "{{name}} is unblocked.",
+    "errors": {
+      "limitReached": "You can block up to {{max}} players. Unblock someone (Settings → Blocked players) and try again.",
+      "self": "You can't block yourself.",
+      "notFound": "This player is no longer in the game.",
+      "busy": "Too many requests. Wait a moment and try again.",
+      "offline": "No connection to the server: the block wasn't saved. Try again.",
+      "unblockOffline": "No connection to the server: the block wasn't lifted. Try again.",
+      "failed": "We couldn't save the block. Try again.",
+      "unblockFailed": "We couldn't lift the block. Try again."
+    }
+  },
+  "blocked": {
+    "title": "Blocked players",
+    "settingsRow": "Blocked players",
+    "note": "You won't be matched together in ranked games, and their reactions won't reach you. Nobody is told about a block.",
+    "count": "{{count}} of {{max}}",
+    "since": "Blocked since {{date}}",
+    "rowLabel": "{{name}}, blocked since {{date}}",
+    "emptyTitle": "No blocked players",
+    "emptyBody": "You can block a player from their card, or from their card's menu in a ranked game.",
+    "loading": "Loading blocked players…",
+    "offlineTitle": "No connection to the server",
+    "offlineBody": "The list is kept on the server. Try again when you're online.",
+    "errorTitle": "We couldn't load the list",
+    "errorBody": "Try again in a moment.",
+    "retry": "Try again",
+    "signedOut": "Sign in to see the list."
+  },
+  "chooseName": {
+    "title": "Choose a new name",
+    "body": "Your previous name was replaced with a temporary one, {{name}}, because it broke the name rules. Choose a new name to continue.",
+    "rule": "No 30-day wait this time: you can choose a name now.",
+    "save": "Save and continue",
+    "saved": "Your new name is saved.",
+    "same": "That's the temporary name. Choose your own.",
+    "offline": "No connection to the server: the name wasn't saved. Try again when you're online.",
+    "practice": "Practice meanwhile",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "suspended": {
+    "banner": "Account suspended: no ranked games",
+    "bannerAction": "Details",
+    "bannerLabel": "Account suspended, no ranked games. Details",
+    "title": "Account suspended",
+    "body": "Following a report, your account is suspended. While it is, there are no ranked games and the profile can't be changed.",
+    "can": "You can still practice alone or against a bot, block players, and delete the account.",
+    "contactTitle": "Think this is a mistake?",
+    "contact": "Write to us and we'll look again. The contact details are in the terms of use.",
+    "contactEmail": "You can write to us: {{email}}",
+    "openContact": "Contact details",
+    "opensInBrowser": "Opens in the browser",
+    "practice": "Practice",
+    "chip": "Account suspended",
+    "chipLabel": "Unavailable: account suspended",
+    "ranked": "Your account is suspended, so there are no ranked games for now.",
+    "editProfile": "Account suspended: the profile can't be changed"
+  }
+}

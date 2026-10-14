@@ -26,6 +26,9 @@ import { findLiveUser } from './store';
  * `requireVerifiedEmail` (the ranked queue, D22): the account's token must say its email is verified, else
  * IdentityError 'emailNotVerified'. A development token counts as verified: the token verifier takes those
  * only outside production. The check comes last, so a sign-in without an account is told to register first.
+ *
+ * A suspended account (spec §3.5) is refused everywhere this verifier is asked (the queue and the game rooms,
+ * whose games are all ranked in production): IdentityError 'suspended', before the email check.
  */
 
 export interface AccountIdentityOptions {
@@ -39,6 +42,8 @@ export interface AccountIdentityOptions {
 
 export const EMAIL_NOT_VERIFIED =
   'Ranked games need a verified email address: verify it, then send a fresh ID token (email_verified)';
+
+export const ACCOUNT_SUSPENDED = 'This account is suspended: no ranked games until the suspension is lifted';
 
 export function accountIdentityVerifier({
   tokens,
@@ -65,6 +70,7 @@ export function accountIdentityVerifier({
       if (user === undefined) {
         throw new IdentityError('invalid', 'No account for this sign-in: register first');
       }
+      if (user.suspendedAt !== null) throw new IdentityError('suspended', ACCOUNT_SUSPENDED);
       if (requireVerifiedEmail && result.token.kind !== 'dev' && !result.token.emailVerified) {
         throw new IdentityError('emailNotVerified', EMAIL_NOT_VERIFIED);
       }

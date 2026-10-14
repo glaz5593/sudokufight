@@ -95,6 +95,7 @@
       "badQueue": "This queue doesn't exist.",
       "unauthenticated": "Sign in to your account to play ranked.",
       "emailNotVerified": "Ranked games need a verified email, and yours isn't verified with us yet. If you already opened the verification link, tap \"I verified\" on the next screen.",
+      "suspended": "Your account is suspended, so there are no ranked games for now. Practice alone or against a bot still works.",
       "signedOut": "Sign in to your account to play ranked.",
       "unknown": "Something went wrong with the search."
     },

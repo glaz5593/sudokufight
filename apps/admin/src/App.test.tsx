@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 
 import { overviewFixture } from './testing/fixtures';
 import { fakeServer, PASSWORD_ONLY, renderSite, SIGNED_IN, SIGNED_OUT } from './testing/server';
@@ -151,6 +151,27 @@ describe('language', () => {
     expect(screen.getByRole('heading', { name: 'Sign in to the admin site' })).toBeTruthy();
     expect(document.documentElement.dir).toBe('ltr');
     expect(window.localStorage.getItem('sudoku-fight-admin.lang')).toBe('en');
+  });
+
+  it('the nav: every page, the reports and the audit log included', async () => {
+    const server = fakeServer({ 'GET /session': SIGNED_IN, 'GET /overview': { body: overviewFixture() } });
+    renderSite(server);
+    const nav = await screen.findByRole('navigation', { name: 'Main' });
+    expect(
+      within(nav)
+        .getAllByRole('link')
+        .map((l) => [l.textContent, l.getAttribute('href')]),
+    ).toEqual([
+      ['Overview', '#/overview'],
+      ['Installs', '#/installs'],
+      ['Users', '#/users'],
+      ['Games', '#/games'],
+      ['Screens', '#/screens'],
+      ['Reports', '#/reports'],
+      ['Audit log', '#/audit'],
+    ]);
+    // No longer view-only (spec §27.3, changed with Moshe's approval): no "Read-only" badge.
+    expect(screen.queryByText('Read-only')).toBeNull();
   });
 
   it('marks the current page in the nav and names the tab', async () => {

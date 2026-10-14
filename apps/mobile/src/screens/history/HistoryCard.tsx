@@ -42,7 +42,8 @@ export interface HistoryCardProps {
   now: number;
   onOpen: (entry: HistoryEntry) => void;
   /** A ranked game's opponent (not a bot): their player card (spec §14.3). */
-  onOpenPlayer?: (playerId: string) => void;
+  /** A ranked game's opponent: their card, with this game (for a report). */
+  onOpenPlayer?: (playerId: string, gameId: string) => void;
 }
 
 const PLAYER_ACTION = 'player:';
@@ -109,7 +110,7 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
         playerActions.length
           ? (event) => {
               const name = event.nativeEvent.actionName;
-              if (name.startsWith(PLAYER_ACTION)) onOpenPlayer?.(name.slice(PLAYER_ACTION.length));
+              if (name.startsWith(PLAYER_ACTION)) onOpenPlayer?.(name.slice(PLAYER_ACTION.length), e.id);
             }
           : undefined
       }
@@ -135,7 +136,7 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
               <Pressable
                 key={o.id}
                 accessible={false}
-                onPress={() => onOpenPlayer?.(o.id)}
+                onPress={() => onOpenPlayer?.(o.id, e.id)}
                 hitSlop={space[3]}
                 style={overlap}
                 testID={`history-card-${e.id}-player-${o.id}`}

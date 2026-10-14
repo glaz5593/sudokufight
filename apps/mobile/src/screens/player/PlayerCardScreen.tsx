@@ -1,5 +1,5 @@
 import type { MyProgress, PlayerCard, RecentResult } from '@sudoku-fight/protocol';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, type ReactNode, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -51,7 +51,7 @@ import { Sparkline } from './Sparkline';
  * option A) with its trend line and peak; the stats (games, wins, losses, win %, current and best streak
  * [D28], best move, mistakes per game); the last 10 results; the achievements (none until the list is
  * approved, stage 12). Mine opens at once on the card saved on the phone, offline too; another player's
- * needs the server.
+ * needs the server. Another player's card ends with "דווח על שחקן" and "חסום שחקן" (spec §3.5).
  */
 
 export type CardLoadStatus = 'loading' | 'ok' | 'offline' | 'error' | 'notFound' | 'signedOut';
@@ -74,6 +74,11 @@ export interface PlayerCardScreenProps {
   onOpenAchievements?: () => void;
   /** A card came from the server (mine is saved for offline). */
   onLoaded?: (card: PlayerCard) => void;
+  /**
+   * What ends another player's card (never mine): the route puts "דווח על שחקן" and "חסום שחקן" there (spec
+   * §3.5, screens/moderation ModerationButtons) when someone is signed in to do it.
+   */
+  othersFooter?: (card: PlayerCard) => ReactNode;
   testID?: string;
 }
 
@@ -98,6 +103,7 @@ export function PlayerCardScreen({
   onOpenReplay,
   onOpenAchievements,
   onLoaded,
+  othersFooter,
   testID = 'player-card',
 }: PlayerCardScreenProps) {
   const { t, i18n } = useTranslation('progress');
@@ -397,6 +403,8 @@ export function PlayerCardScreen({
             ))}
           </View>
         )}
+
+        {othersFooter && !mine ? othersFooter(card) : null}
       </ScrollView>
     </View>
   );

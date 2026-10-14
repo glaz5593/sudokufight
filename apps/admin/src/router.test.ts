@@ -16,6 +16,18 @@ describe('router', () => {
     expect(parseRoute('#/installs/abc-123')).toEqual({ name: 'install', id: 'abc-123' });
     expect(parseRoute('#/users/u%2F1')).toEqual({ name: 'user', id: 'u/1' });
     expect(parseRoute('#/games/g1')).toEqual({ name: 'game', id: 'g1' });
+    expect(parseRoute('#/reports')).toEqual({ name: 'reports', status: 'open', page: 1 });
+    expect(parseRoute('#/reports?status=dismissed&page=2')).toEqual({
+      name: 'reports',
+      status: 'dismissed',
+      page: 2,
+    });
+    expect(parseRoute('#/audit?page=4')).toEqual({ name: 'audit', page: 4 });
+  });
+
+  it('an unknown report status is the open reports', () => {
+    expect(parseRoute('#/reports?status=closed')).toEqual({ name: 'reports', status: 'open', page: 1 });
+    expect(parseRoute('#/reports/x')).toEqual({ name: 'notFound' });
   });
 
   it('ignores bad numbers and unknown paths', () => {
@@ -36,17 +48,25 @@ describe('router', () => {
       { name: 'games', mode: 'bot', search: 'pz', page: 4 },
       { name: 'install', id: 'x/y' },
       { name: 'screens', days: 30 },
+      { name: 'reports', status: 'all', page: 3 },
+      { name: 'reports', status: 'open', page: 1 },
+      { name: 'audit', page: 2 },
     ];
     for (const route of routes) {
       expect(parseRoute(routeHref(route))).toMatchObject(route);
     }
     expect(routeHref({ name: 'users', search: '', page: 1 })).toBe('#/users');
     expect(routeHref({ name: 'overview', days: 30 })).toBe('#/overview');
+    expect(routeHref({ name: 'reports', status: 'open', page: 1 })).toBe('#/reports');
+    expect(routeHref({ name: 'reports', status: 'resolved' })).toBe('#/reports?status=resolved');
+    expect(routeHref({ name: 'audit', page: 1 })).toBe('#/audit');
   });
 
   it('maps detail pages to their nav section', () => {
     expect(sectionOf({ name: 'install', id: 'x' })).toBe('installs');
     expect(sectionOf({ name: 'game', id: 'x' })).toBe('games');
+    expect(sectionOf({ name: 'reports' })).toBe('reports');
+    expect(sectionOf({ name: 'audit' })).toBe('audit');
     expect(sectionOf({ name: 'notFound' })).toBeNull();
   });
 });

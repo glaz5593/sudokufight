@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { isAccountApiError } from '../../api/accountApi';
+import { isSuspended } from '../../api/me';
 import {
   deleteAccount,
   deleteAccountWithGoogle,
@@ -33,9 +34,10 @@ const methodKey = (methods: readonly SignInMethod[]): 'both' | SignInMethod =>
 
 /**
  * The account part of the settings (spec §3.3, §4.1 "הגדרות", §23; work plan stage 8): who is signed in and
- * how (email and password, Google, or both), "עריכת פרופיל", "התנתקות" (with a confirmation) and "מחיקת
- * חשבון": a warning, then the re-authentication, then the deletion (auth/authStore.ts deleteAccount says in
- * which order and why). The root layout takes the player to the login screen once signed out.
+ * how (email and password, Google, or both), "עריכת פרופיל" (not while suspended, spec §3.5), "שחקנים חסומים"
+ * (spec §3.5), "התנתקות" (with a confirmation) and "מחיקת חשבון": a warning, then the re-authentication, then
+ * the deletion (auth/authStore.ts deleteAccount says in which order and why). The root layout takes the player
+ * to the login screen once signed out.
  *
  * The re-authentication is Google's chooser for an account that signs in with Google (when the build has
  * Google), and the password otherwise. A Google account has no password to type, change or reset here. An
@@ -49,6 +51,9 @@ export function AccountSettings() {
   const googleBuild = useAuth((s) => s.google);
   const withGoogle = googleBuild && Boolean(methods?.includes('google'));
   const hasPassword = Boolean(methods?.includes('password'));
+  // Spec §3.5: a suspended account can't change its profile (the server answers 403 `suspended`).
+  const suspended = useAuth((s) => isSuspended(s.me));
+  const { t: tm } = useTranslation('moderation');
   const [step, setStep] = useState<Step>(null);
   const [password, setPassword] = useState('');
   const [shown, setShown] = useState(false);
@@ -143,8 +148,16 @@ export function AccountSettings() {
         <RowButton
           icon="edit"
           title={t('settings.editProfile')}
+          subtitle={suspended ? tm('suspended.editProfile') : undefined}
+          disabled={suspended}
           onPress={() => router.push(ROUTES.editProfile)}
           testID="settings-edit-profile"
+        />
+        <RowButton
+          icon="block"
+          title={tm('blocked.settingsRow')}
+          onPress={() => router.push('/blocked-players')}
+          testID="settings-blocked-players"
         />
         <RowButton
           icon="logout"

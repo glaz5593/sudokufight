@@ -226,6 +226,29 @@ export function serverEnv(server) {
   };
 }
 
+/**
+ * The game server as the app's version line names it (Settings and the login screen: "build a1b2c3d · staging"):
+ * staging, production or local, or the host (with its port unless 443) when --server named one.
+ */
+export function appServerLabel(server) {
+  if (server.source !== 'command line') return server.label;
+  return server.port === 443 ? server.host : `${server.host}:${server.port}`;
+}
+
+/**
+ * What the app shows of its build (src/config/appVersion.ts), inlined by Metro like the server's variables:
+ * the commit (`-dirty` when files had changed since it, as in the APK's name) and the server's label.
+ *
+ * @param {{ label: string; host: string; port: number; source: string }} server
+ * @param {{ sha: string; dirty: boolean }} git
+ */
+export function buildInfoEnv(server, git) {
+  return {
+    EXPO_PUBLIC_APP_BUILD: `${git.sha}${git.dirty ? '-dirty' : ''}`,
+    EXPO_PUBLIC_SERVER_LABEL: appServerLabel(server),
+  };
+}
+
 /** `host:port (TLS)`, for the console. */
 export const describeServer = (server) =>
   `${server.host}:${server.port} ${server.secure ? '(TLS)' : '(no TLS)'}`;

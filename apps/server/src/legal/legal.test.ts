@@ -76,6 +76,34 @@ describe('the legal texts', () => {
     expect(en).toMatch(/not meant for children under 13/);
   });
 
+  it('say what reports and blocks keep, and promise a review within 48 hours (spec §3.5)', () => {
+    const en = textOf(renderLegalPage('privacy', 'en', SET));
+    expect(en).toMatch(/Reports and blocks/);
+    expect(en).toMatch(/A report has no free text\. The reported player is not told who reported them\./);
+    expect(en).toMatch(/a block hides no one from the leaderboards/);
+    expect(en).toMatch(/within 48 hours/);
+    // A reset name can't come back, and deleting an account doesn't lift its suspension (a one-way fingerprint).
+    expect(en).toMatch(/A name replaced this way goes on a list of names nobody may choose again/);
+    expect(en).toMatch(/deleting an account doesn’t lift a suspension/);
+    expect(en).toMatch(
+      /a one-way fingerprint \(a hash\) of its sign-in id and of its verified email address/,
+    );
+    const he = textOf(renderLegalPage('privacy', 'he', SET));
+    expect(he).toMatch(/דיווחים וחסימות/);
+    expect(he).toMatch(/תוך 48 שעות/);
+    expect(he).toMatch(/מחיקה לא מבטלת השעיה/);
+    for (const lang of LEGAL_LANGS) {
+      const terms = textOf(renderLegalPage('terms', lang, SET));
+      expect(terms).toMatch(
+        lang === 'en' ? /We review every report within 48 hours\./ : /אנחנו בודקים כל דיווח תוך 48 שעות\./,
+      );
+      expect(terms).toMatch(lang === 'en' ? /Settings → Blocked players/ : /הגדרות ← שחקנים חסומים/);
+      expect(terms).toMatch(
+        lang === 'en' ? /deleting it doesn’t lift the suspension/ : /המחיקה לא מבטלת את ההשעיה/,
+      );
+    }
+  });
+
   it('say what sign-in with Google brings (Moshe, 14.10.2026): optional, what comes from Google, what we keep', () => {
     const en = textOf(renderLegalPage('privacy', 'en', SET));
     expect(en).toMatch(/Sign in with Google \(optional\)/);

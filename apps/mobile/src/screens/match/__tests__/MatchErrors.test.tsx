@@ -40,6 +40,7 @@ async function show(lang: 'he' | 'en' = 'he') {
     onPractice: jest.fn(),
     onVerifyEmail: jest.fn(),
     onHome: jest.fn(),
+    onSuspended: jest.fn(),
   };
   await render(
     <MatchScreen
@@ -127,6 +128,19 @@ describe('matchmaking errors (stage 13)', () => {
     expect(screen.getByTestId('match-error-practice-shadow')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'עבור לאימון' }));
     expect(handlers.onPractice).toHaveBeenCalledTimes(1);
+  });
+
+  it('a suspended account (spec §3.5): says so, no "חפש שוב", practice first; the profile is read again once', async () => {
+    const { refuse, handlers } = await show();
+    await refuse(FakeMatchmaking.refusal('suspended'));
+    expect(title()).toHaveTextContent('החיפוש נעצר');
+    expect(body()).toHaveTextContent(
+      'החשבון שלך מושעה, ולכן אין משחקים מדורגים כרגע. אימון לבד או מול בוט עדיין עובד.',
+    );
+    expect(code()).toHaveTextContent('suspended-4215');
+    expect(screen.queryByRole('button', { name: 'חפש שוב' })).toBeNull();
+    expect(screen.getByTestId('match-error-practice-shadow')).toBeOnTheScreen();
+    expect(handlers.onSuspended).toHaveBeenCalledTimes(1);
   });
 
   it('an unknown queue, and a sign-in the server refused (a fresh token may help)', async () => {

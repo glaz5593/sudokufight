@@ -10,6 +10,7 @@ import { ConnectionLayer, connectionModel, matchLoadingOf } from '../connection'
 import { GameScreen } from '../GameScreen';
 import { connectionStatusOf } from './connectionStatus';
 import { useOnlineInfo } from './useOnlineInfo';
+import { useSuspendedRefusal } from './useSuspendedRefusal';
 
 export interface OnlineGameProps {
   session: OnlineSession;
@@ -51,6 +52,8 @@ export function OnlineGame({
   // model's time stay current.
   const now = useNow(250, { clock: session.clock, enabled: !hasGame });
   const model = useMemo(() => connectionModel(null, connectionStatusOf(online), now), [online, now]);
+  // The room refused a suspended account (spec §3.5): the error says so, and the profile is read again.
+  useSuspendedRefusal(model);
   // A ranked match's room (back in after a lost connection): its players as "found" gave them (Loading).
   const accountId = useAuth((s) => s.me?.id ?? null);
   const step = model.kind === 'connecting' ? model.step : null;

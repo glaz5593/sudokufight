@@ -1,11 +1,12 @@
 import { devToken } from '@sudoku-fight/protocol';
+import { eq } from 'drizzle-orm';
 
 import { devIdentityVerifier, IdentityError, SIGN_IN_REQUIRED } from '../auth/identity';
 import { users } from '../db/schema';
 import { fakeClock } from '../testing/clock';
 import { createTestDb, type TestDb } from '../testing/db';
 import { testTokens, type TestTokens } from '../testing/tokens';
-import { accountIdentityVerifier, ACCOUNTS_OFF, roomIdentityVerifier } from './identity';
+import { ACCOUNT_SUSPENDED, accountIdentityVerifier, ACCOUNTS_OFF, roomIdentityVerifier } from './identity';
 
 const NOW = Date.UTC(2026, 9, 9, 12);
 const clock = fakeClock(NOW);
@@ -58,6 +59,24 @@ describe('the account identity of a room join', () => {
     expect(await refusal(ask(undefined))).toBe('missing');
     expect(await refusal(ask('garbage'))).toBe('invalid');
     expect(await refusal(ask(await tokens.sign({ uid: 'uid-9' }, NOW)))).toBe('invalid');
+  });
+
+  it('refuses a suspended account (spec §3.5), before the email check; lifting it lets the account in', async () => {
+    await t.db
+      .update(users)
+      .set({ suspendedAt: new Date(NOW) })
+      .where(eq(users.id, 'user-1'));
+    const token = await tokens.sign({ uid: 'uid-1', emailVerified: false }, NOW);
+    const strict = accountIdentityVerifier({
+      tokens: tokens.verifier(clock.now),
+      db: () => t.db,
+      requireVerifiedEmail: true,
+    });
+    const refused = await refusalOf(strict.verify({ token, options: {}, ip: undefined }));
+    expect(refused).toEqual({ code: 'suspended', message: ACCOUNT_SUSPENDED });
+    await t.db.update(users).set({ suspendedAt: null }).where(eq(users.id, 'user-1'));
+    expect(await refusal(strict.verify({ token, options: {}, ip: undefined }))).toBe('emailNotVerified');
+    await expect(ask(await tokens.sign({ uid: 'uid-1' }, NOW))).resolves.toMatchObject({ userId: 'user-1' });
   });
 
   it('without a token, the fallback (the development identity) decides', async () => {

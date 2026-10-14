@@ -14,6 +14,8 @@ import { createDb, type Database, type Db } from './db';
 import { bankPuzzleSource } from './game/puzzles';
 import { configureHttp, type HttpDeps } from './http';
 import { guardHttpServer } from './http/guard';
+import { roomBlocks } from './moderation/store';
+import { BlockWatch } from './moderation/watch';
 import {
   colyseusMatchGames,
   createMatchmakingRoom,
@@ -100,13 +102,18 @@ export interface AppServerOptions {
 export interface GameAccounts {
   tokens: TokenVerifier;
   db: Db | (() => Db);
+  /**
+   * Where the block routes tell blocks and unblocks (spec §3.5), for the rooms that mute reactions; the
+   * HTTP routes must get the same one. Default: one of the rooms' own (they hear only the stored blocks).
+   */
+  blockWatch?: BlockWatch;
 }
 
 /**
  * The game room's dependencies for these settings. With `accounts`, players are known by their accounts
- * (roomIdentityVerifier), and rated rooms have the database (persistence/rankedGames: ranked-pool puzzles
- * without repeats, ratings, the game stored); without, players are known by auth/identity's
- * defaultIdentityVerifier and rated rooms are refused (no database).
+ * (roomIdentityVerifier), rated rooms have the database (persistence/rankedGames: ranked-pool puzzles
+ * without repeats, ratings, the game stored), and blocks mute reactions (spec §3.5); without, players are
+ * known by auth/identity's defaultIdentityVerifier, rated rooms are refused (no database) and nothing is muted.
  */
 export function gameDepsFor(
   config: ServerConfig,
@@ -134,6 +141,8 @@ export function gameDepsFor(
               puzzles: dbPuzzleSource({ db: accounts.db, rng: { next: () => randomInt(2 ** 32) / 2 ** 32 } }),
               log: overrides.log ?? consoleGameLog,
             }),
+      blocks:
+        accounts === undefined ? undefined : roomBlocks(accounts.db, accounts.blockWatch ?? new BlockWatch()),
       ...overrides,
     },
   );
@@ -165,7 +174,9 @@ export function createAppServer({
     log: game?.log ?? consoleGameLog,
     config: { ...DEFAULT_MATCHMAKING, ...matchmakingOptions.config },
   });
-  const gameDeps = gameDepsFor(config, { matches: matchmaking, ...game }, { tokens, db: openDb });
+  // Blocks and unblocks (spec §3.5): told by the HTTP routes, heard by the game rooms.
+  const blockWatch = new BlockWatch();
+  const gameDeps = gameDepsFor(config, { matches: matchmaking, ...game }, { tokens, db: openDb, blockWatch });
   const server = defineServer({
     greet: false,
     gracefullyShutdown,
@@ -213,7 +224,7 @@ export function createAppServer({
     },
     express: (app) => {
       if (database === undefined) throw new Error('The database must be open before the HTTP routes');
-      configureHttp(app, { config, db: database.db, now, telemetryLimits, tokens });
+      configureHttp(app, { config, db: database.db, now, telemetryLimits, tokens, blockWatch });
     },
   });
   server.onShutdown(async () => {

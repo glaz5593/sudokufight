@@ -5,20 +5,31 @@ import { LangToggle } from './components/LangToggle';
 import { PageHeader } from './components/ui';
 import { ApiContext, NowContext } from './data';
 import { useI18n } from './i18n';
+import { AuditPage } from './pages/AuditPage';
 import { GameDetailPage } from './pages/GameDetailPage';
 import { GamesPage } from './pages/GamesPage';
 import { InstallDetailPage } from './pages/InstallDetailPage';
 import { InstallsPage } from './pages/InstallsPage';
 import { LoginPage, type LoginNotice } from './pages/LoginPage';
 import { OverviewPage } from './pages/OverviewPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { ScreensPage } from './pages/ScreensPage';
 import { UserDetailPage } from './pages/UserDetailPage';
 import { UsersPage } from './pages/UsersPage';
-import { DEFAULT_DAYS, type Route, routeHref, type Section, sectionOf, useRoute } from './router';
+import {
+  DEFAULT_DAYS,
+  DEFAULT_REPORT_FILTER,
+  type Route,
+  routeHref,
+  type Section,
+  sectionOf,
+  useRoute,
+} from './router';
 import type { StringKey } from './strings';
 
 /**
- * The admin site (spec §27.3): read-only. It asks the server for the session first; without one it shows
+ * The admin site (spec §27.3): for viewing, but for the moderation actions on the reports (spec §3.5), each
+ * confirmed and written to the audit log. It asks the server for the session first; without one it shows
  * the login, and any 401 later (the cookie ran out, the server restarted with a new secret) brings it back.
  */
 
@@ -96,6 +107,8 @@ const NAV: { section: Section; label: StringKey; route: Route }[] = [
   { section: 'users', label: 'nav.users', route: { name: 'users' } },
   { section: 'games', label: 'nav.games', route: { name: 'games' } },
   { section: 'screens', label: 'nav.screens', route: { name: 'screens' } },
+  { section: 'reports', label: 'nav.reports', route: { name: 'reports' } },
+  { section: 'audit', label: 'nav.audit', route: { name: 'audit' } },
 ];
 
 /** "Now" for relative times, moved on every minute. */
@@ -135,7 +148,6 @@ function Shell({ onLogout }: { onLogout: () => void }) {
               <span className="brand-mark" aria-hidden="true" />
               {t('app.name')} · {t('app.admin')}
             </a>
-            <span className="badge">{t('app.readOnly')}</span>
             <nav className="nav" aria-label={t('nav.label')}>
               <ul>
                 {NAV.map((item) => (
@@ -184,6 +196,10 @@ function Page({ route }: { route: Route }) {
       return <GameDetailPage id={route.id} />;
     case 'screens':
       return <ScreensPage days={route.days ?? DEFAULT_DAYS} />;
+    case 'reports':
+      return <ReportsPage status={route.status ?? DEFAULT_REPORT_FILTER} page={route.page ?? 1} />;
+    case 'audit':
+      return <AuditPage page={route.page ?? 1} />;
     case 'notFound':
       return <NotFound />;
   }

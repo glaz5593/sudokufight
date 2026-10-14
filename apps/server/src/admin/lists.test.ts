@@ -403,6 +403,9 @@ describe('GET /admin/api/users', () => {
     lastSeen: ms('2026-10-09T11:00:00Z'),
     games: 4,
     bestRating: 1287.5,
+    suspendedAt: null,
+    nameResetRequired: false,
+    openReports: 0,
   };
 
   it('lists users, latest activity first, with games and best rating; deleted ones too', async () => {
@@ -421,6 +424,9 @@ describe('GET /admin/api/users', () => {
           lastSeen: ms('2026-10-05T09:00:00Z'),
           games: 4,
           bestRating: 1180,
+          suspendedAt: null,
+          nameResetRequired: false,
+          openReports: 0,
         },
         {
           id: 'u3',
@@ -433,6 +439,9 @@ describe('GET /admin/api/users', () => {
           lastSeen: null,
           games: 0,
           bestRating: null,
+          suspendedAt: null,
+          nameResetRequired: false,
+          openReports: 0,
         },
       ],
       page: 1,

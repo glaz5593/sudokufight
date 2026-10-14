@@ -12,6 +12,9 @@ import type { LegalTexts } from './types';
  *   ratings, games, events stay unlinked)
  * - games and progress: persistence/, progress/ (ratings, xp, achievements, puzzle and opponent history,
  *   practice_results), cheat_flags
+ * - reports and blocks (spec §3.5): moderation/ (player_reports, user_blocks, admin_audit, retired_names,
+ *   suspended_sign_ins; users.suspended_at and name_reset_required); deletion: moderation/store.ts
+ *   forgetModeration and keepSuspension
  * - usage: apps/mobile/src/services/telemetry and analytics.ts → POST /v1/events (installs, app_events),
  *   and Firebase Analytics; crashes: services/crashlytics.ts (user id = our account id)
  * - IP addresses: only in memory, for rate limits (http/clientKey.ts, http/rateLimiter.ts)
@@ -56,6 +59,10 @@ export const EVENT_DETAILS: Record<TelemetryEventName, { he: [string, string]; e
   },
   replay_open: { he: ['פתיחת צפייה חוזרת (Replay)', 'מצב המשחק'], en: ['A replay opens', 'The game’s mode'] },
   account_delete: { he: ['מחיקת החשבון', '—'], en: ['The account is deleted', '—'] },
+  report_sent: {
+    he: ['שליחת דיווח על שחקן', 'סיבת הדיווח בלבד (בלי מי דווח ובלי המשחק)'],
+    en: ['You report a player', 'The reason only (not who was reported, nor the game)'],
+  },
 };
 
 const eventRows = (lang: 'he' | 'en') =>
@@ -119,6 +126,7 @@ export const PRIVACY: LegalTexts = {
               '**אילו לוחות שיחקתם ומול מי:** כדי לא לתת לכם את אותו לוח או את אותו יריב שוב ושוב.',
               '**תוצאות של משחקי אימון** (לבד או מול בוט), כשהאפליקציה מדווחת אותן בשביל ה־XP: מצב המשחק, הסוג, התוצאה, מספר המהלכים הנכונים, מתי הסתיים, וכמה XP הוא נתן.',
               '**משחק הוגן:** כשקצב המהלכים במשחק מדורג מהיר באופן חריג, נשמרת רשומה לבדיקה של אדם. אין על סמך זה פעולה אוטומטית.',
+              '**דיווחים וחסימות:** ראו את הסעיף "דיווחים וחסימות" למטה.',
             ],
           },
         ],
@@ -193,13 +201,27 @@ export const PRIVACY: LegalTexts = {
         ],
       },
       {
+        id: 'reports',
+        title: 'דיווחים וחסימות',
+        blocks: [
+          {
+            list: [
+              '**דיווח על שחקן:** כשאתם מדווחים, אנחנו שומרים מי דיווח, על מי, את הסיבה (שם פוגעני, רמאות או אחר), את המשחק המדורג כשהדיווח נשלח ממנו, ומתי. בדיווח אין טקסט חופשי. השחקן שדווח לא יודע מי דיווח עליו.',
+              '**חסימה:** אנחנו שומרים את השחקנים שחסמתם ומתי. בזכותה לא תשובצו איתם באותו משחק, והתגובות שלהם לא מוצגות לכם. מי שנחסם לא מקבל על זה הודעה, והחסימה לא מסתירה אף אחד מטבלת המובילים.',
+              '**טיפול בדיווחים:** מפעיל המשחק בודק כל דיווח תוך 48 שעות. הוא יכול להחליף שם פוגעני בשם זמני (ואז השחקן מתבקש לבחור שם חדש), או להשעות חשבון ממשחקים מדורגים ומשינויים בחשבון. כל פעולה כזו נרשמת ביומן פנימי, עם הכתובת של המנהל שביצע אותה, ועם השם הקודם והחדש כשהשם הוחלף. שם שהוחלף כך נשמר ברשימת שמות שאף אחד לא יכול לבחור שוב (רק השם, בלי קישור לשחקן).',
+              '**חשבון מושעה שנמחק:** מחיקה לא מבטלת השעיה. כשנמחק חשבון מושעה, אנחנו שומרים טביעה חד־כיוונית (גיבוב, Hash) של מזהה הכניסה שלו ושל כתובת המייל המאומתת שלו, ולא את המזהה או את הכתובת עצמם. חשבון חדש עם אותה כניסה מתחיל מושעה עד שמנהל בודק אותו, ואז הטביעה נמחקת. זה האינטרס הלגיטימי שלנו ושל כל השחקנים במשחק הוגן.',
+            ],
+          },
+        ],
+      },
+      {
         id: 'use',
         title: 'למה אנחנו משתמשים במידע',
         blocks: [
           {
             list: [
               '**להפעיל את המשחק:** חשבון, משחקים, דירוג, Matchmaking, היסטוריה וטבלת מובילים. זה הבסיס להסכם בינינו (תנאי השימוש).',
-              '**אבטחה ומשחק הוגן:** הגבלת קצב, זיהוי חריגות ומניעת רמאות. זה האינטרס הלגיטימי שלנו ושל כל השחקנים.',
+              '**אבטחה ומשחק הוגן:** הגבלת קצב, זיהוי חריגות, מניעת רמאות, וטיפול בדיווחים ובחסימות. זה האינטרס הלגיטימי שלנו ושל כל השחקנים.',
               '**לשפר את המשחק:** להבין באילו מסכים ובאילו מצבים משחקים, למצוא תקלות ולתקן קריסות. גם זה אינטרס לגיטימי, ונעשה בלי פרסום ובלי פרופיל שיווקי.',
               '**הודעות שירות במייל:** אימות כתובת ואיפוס סיסמה בלבד.',
             ],
@@ -237,7 +259,8 @@ export const PRIVACY: LegalTexts = {
             list: [
               '**פרטי החשבון:** כל עוד החשבון קיים.',
               '**כשמוחקים את החשבון:** המייל, המדינה, האווטאר והקישור לכניסה נמחקים מיד, והשם לתצוגה מוחלף במזהה אנונימי (השם הישן מתפנה מיד). גם הכניסה ב־Firebase נמחקת, ואיתה מה שנשמר בה מ־Google. מי שנכנס עם Google: האפליקציה גם מבטלת את הגישה שקיבלה לחשבון Google.',
-              '**מה נשאר אחרי מחיקה, באופן אנונימי:** משחקים מדורגים, דירוגים, XP, תוצאות אימון, רשומות משחק הוגן ונתוני שימוש. הם כבר לא מקושרים אליכם, אבל המשחקים, הצפייה החוזרת והטבלאות של השחקנים האחרים נשארים שלמים.',
+              '**מה נשאר אחרי מחיקה, באופן אנונימי:** משחקים מדורגים, דירוגים, XP, תוצאות אימון, רשומות משחק הוגן, דיווחים ששלחתם ונתוני שימוש. הם כבר לא מקושרים אליכם, אבל המשחקים, הצפייה החוזרת והטבלאות של השחקנים האחרים נשארים שלמים.',
+              '**דיווחים, חסימות ויומן הפעולות:** חסימה נשמרת עד שמבטלים אותה או מוחקים את החשבון (אז נמחקות כל החסימות שלו, לשני הכיוונים). דיווחים ויומן פעולות המנהלים נשמרים כל עוד הם נחוצים לטיפול ולשמירה על משחק בטוח והוגן, ואנחנו בודקים אותם מדי פעם ומוחקים ישנים. כשחשבון נמחק, דיווחים פתוחים עליו נסגרים, והשמות שלו נמחקים מיומן הפעולות. אם החשבון היה מושעה, נשארת רק הטביעה החד־כיוונית שתוארה למעלה, עד שנפתח חשבון חדש עם אותה כניסה או עד שאנחנו מוחקים אותה בבדיקה התקופתית.',
               '**נתוני שימוש:** נשמרים כל עוד הם עוזרים לנו להבין את השימוש במשחק. אנחנו בודקים אותם מדי פעם ומוחקים את הישנים.',
               '**Crashlytics:** ‏Google שומרת דוחות קריסה עד 90 יום. **Analytics:** לפי תקופת השמירה שהגדרנו ב־Firebase.',
             ],
@@ -333,6 +356,7 @@ export const PRIVACY: LegalTexts = {
               '**Which puzzles you played, and against whom:** so you don’t get the same puzzle or opponent again and again.',
               '**Practice results** (solo or against a bot), when the app reports them for XP: mode, game type, outcome, number of correct moves, when it ended, and the XP it earned.',
               '**Fair play:** when the pace of moves in a ranked game is unusually fast, a record is kept for a person to review. Nothing happens automatically because of it.',
+              '**Reports and blocks:** see "Reports and blocks" below.',
             ],
           },
         ],
@@ -407,13 +431,27 @@ export const PRIVACY: LegalTexts = {
         ],
       },
       {
+        id: 'reports',
+        title: 'Reports and blocks',
+        blocks: [
+          {
+            list: [
+              '**Reporting a player:** when you report someone, we keep who reported, whom, the reason (offensive name, cheating or other), the ranked game when the report came from one, and when. A report has no free text. The reported player is not told who reported them.',
+              '**Blocking:** we keep the players you blocked and when. Because of it you are not put in the same game with them, and their reactions are not shown to you. Nobody is told they were blocked, and a block hides no one from the leaderboards.',
+              '**Handling reports:** the game’s operator reviews every report within 48 hours. They may replace an offensive name with a temporary one (the player is then asked to choose a new name), or suspend an account from ranked games and account changes. Each such action goes into an internal log, with the address of the admin who took it, and the old and new names when a name was replaced. A name replaced this way goes on a list of names nobody may choose again (the name only, linked to no player).',
+              '**A suspended account that is deleted:** deleting an account doesn’t lift a suspension. When a suspended account is deleted, we keep a one-way fingerprint (a hash) of its sign-in id and of its verified email address, not the id or the address themselves. A new account with the same sign-in starts suspended until an admin reviews it, and the fingerprint is then deleted. This is our legitimate interest, and every player’s, in fair play.',
+            ],
+          },
+        ],
+      },
+      {
         id: 'use',
         title: 'Why we use the data',
         blocks: [
           {
             list: [
               '**To run the game:** your account, games, ratings, matchmaking, history and leaderboards. This is needed for our agreement with you (the Terms of Use).',
-              '**Security and fair play:** rate limits, spotting anomalies and preventing cheating. This is our legitimate interest, and every player’s.',
+              '**Security and fair play:** rate limits, spotting anomalies, preventing cheating, and handling reports and blocks. This is our legitimate interest, and every player’s.',
               '**To improve the game:** to learn which screens and modes are played, find problems and fix crashes. Also a legitimate interest, with no advertising and no marketing profile.',
               '**Service email:** address verification and password reset only.',
             ],
@@ -451,7 +489,8 @@ export const PRIVACY: LegalTexts = {
             list: [
               '**Account details:** as long as the account exists.',
               '**When you delete your account:** your email, country, avatar and sign-in link are deleted at once, and your display name is replaced by an anonymous id (the old name is free again at once). Your Firebase sign-in is deleted too, with what it kept from Google. If you signed in with Google, the app also revokes the access it was given to your Google account.',
-              '**What stays after deletion, anonymously:** ranked games, ratings, XP, practice results, fair-play records and usage data. They are no longer linked to you, but other players’ games, replays and leaderboards stay whole.',
+              '**What stays after deletion, anonymously:** ranked games, ratings, XP, practice results, fair-play records, reports you sent and usage data. They are no longer linked to you, but other players’ games, replays and leaderboards stay whole.',
+              '**Reports, blocks and the admin log:** a block is kept until you lift it or delete your account (then all its blocks go, both ways). Reports and the log of admin actions are kept while they are needed to handle reports and keep the game safe and fair; we review them from time to time and delete old ones. When an account is deleted, open reports about it are closed, and its names are removed from the admin log. If it was suspended, only the one-way fingerprint described above stays, until a new account with the same sign-in is made or we delete it in a periodic review.',
               '**Usage data:** kept while it helps us understand how the game is used. We review it from time to time and delete old data.',
               '**Crashlytics:** Google keeps crash reports for up to 90 days. **Analytics:** for the retention period we set in Firebase.',
             ],

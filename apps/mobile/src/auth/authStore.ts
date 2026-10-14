@@ -349,11 +349,21 @@ export async function registerProfile(profile: CreateUserRequest): Promise<void>
   await adoptCreated(user, await createOrFetch(api, profile));
 }
 
-/** PATCH /v1/me. Throws AccountApiError (taken, renameTooSoon with nextRenameAt, offline…). */
+/**
+ * PATCH /v1/me. Throws AccountApiError (taken, renameTooSoon with nextRenameAt, offline…). A 403 `suspended`
+ * (spec §3.5: an admin suspended the account since the profile was read) reads the profile again, so the app
+ * shows the suspension.
+ */
 export async function updateProfile(patch: UpdateMeRequest): Promise<Me> {
   const user = useAuth.getState().user;
   if (!user) throw new AccountApiError('signedOut');
-  const me = await authDeps().api.updateMe(patch);
+  let me: Me;
+  try {
+    me = await authDeps().api.updateMe(patch);
+  } catch (error) {
+    if (isAccountApiError(error) && error.code === 'suspended') void refreshMe();
+    throw error;
+  }
   await adopt(user, me, false);
   return me;
 }

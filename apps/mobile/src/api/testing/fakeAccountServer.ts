@@ -39,6 +39,10 @@ export interface FakeAccountServer {
   takeName(name: string): void;
   /** The server's clock. */
   setNow(now: number): void;
+  /** An admin resets the name of `uid` to `temporary` (spec §3.5): the next rename is free of the 30 days. */
+  resetName(uid: string, temporary: string): void;
+  /** An admin suspends `uid` (or lifts it): PATCH /v1/me answers 403 `suspended` meanwhile. */
+  suspend(uid: string, on: boolean): void;
 }
 
 export function createFakeAccountServer({
@@ -104,6 +108,8 @@ export function createFakeAccountServer({
       createdAt: now,
       displayNameChangedAt: null,
       nextRenameAt: null,
+      nameResetRequired: false,
+      suspended: false,
       ratings: ratingKeysFor('B').map((key) => ({
         key,
         rating: 1200,
@@ -149,6 +155,7 @@ export function createFakeAccountServer({
       calls.push(`PATCH /v1/me ${JSON.stringify(patch)}`);
       const uid = (await caller('updateMe', true))!;
       const row = rowOf(uid);
+      if (row.me.suspended) reject(403, { error: 'suspended' });
       const me = { ...row.me };
       if (patch.avatarId !== undefined) {
         if (!isAvatarId(patch.avatarId)) reject(400, { error: 'badRequest', field: 'avatarId' });
@@ -159,13 +166,15 @@ export function createFakeAccountServer({
         me.country = patch.country;
       }
       if (patch.displayName !== undefined && patch.displayName !== me.displayName) {
-        if (me.nextRenameAt !== null && now < me.nextRenameAt) {
+        // After an admin's reset the rename is free of the 30 days (spec §3.5).
+        if (!me.nameResetRequired && me.nextRenameAt !== null && now < me.nextRenameAt) {
           reject(409, { error: 'renameTooSoon', nextRenameAt: me.nextRenameAt });
         }
         checkName(patch.displayName, uid);
         me.displayName = patch.displayName;
         me.displayNameChangedAt = now;
         me.nextRenameAt = now + RENAME_COOLDOWN_MS;
+        me.nameResetRequired = false;
       }
       row.me = me;
       return copy(me);
@@ -196,6 +205,14 @@ export function createFakeAccountServer({
     },
     setNow: (t) => {
       now = t;
+    },
+    resetName: (uid, temporary) => {
+      const row = rowOf(uid);
+      row.me = { ...row.me, displayName: temporary, nameResetRequired: true, nextRenameAt: null };
+    },
+    suspend: (uid, on) => {
+      const row = rowOf(uid);
+      row.me = { ...row.me, suspended: on };
     },
   };
 }

@@ -1,11 +1,12 @@
 import { ENGINE_VERSION } from '@sudoku-fight/engine';
-import Constants from 'expo-constants';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ConfirmModal } from '../../components/ui';
+import { VersionInfo } from '../../components/VersionInfo';
+import { type AppVersionInfo, appVersionInfo } from '../../config/appVersion';
 import type { Language } from '../../i18n';
 import { cue } from '../../services/feedback';
 import { type ReduceMotionSetting, useSettings } from '../../state/settings';
@@ -24,17 +25,18 @@ const LANGUAGES: readonly Language[] = ['he', 'en'];
  * reduced motion and language, kept in the persisted settings store. A language that flips the layout direction
  * restarts the app (the root layout does it), so the switch asks first (work plan stage 13). Stage 8 adds the
  * account: edit profile, sign out, and delete the account (spec §3.3, §23: deletion inside the app). Stage 14
- * adds "מידע ומשפטי": the privacy policy, the terms of use and the licenses (screens/legal).
+ * adds "מידע ומשפטי": the privacy policy, the terms of use and the licenses (screens/legal). At the bottom, the
+ * version (Moshe, 14.10.2026): the installed app's, its build and its server (components/VersionInfo).
  */
-/** The app's version from its config (app.json), or null where the config is not embedded. */
-export const appVersion = (): string | null => Constants.expoConfig?.version ?? null;
-
 export interface SettingsScreenProps {
-  /** The version line; by default the app's own. Null hides the line. */
-  version?: string | null;
+  /**
+   * The version lines at the bottom ("גרסה 1.0.0", then "build a1b2c3d · staging · מנוע 3"); by default the
+   * installed app's own (config/appVersion.ts). Null hides them.
+   */
+  version?: AppVersionInfo | null;
 }
 
-export function SettingsScreen({ version = appVersion() }: SettingsScreenProps) {
+export function SettingsScreen({ version = appVersionInfo() }: SettingsScreenProps) {
   const { t } = useTranslation('home');
   const { top, bottom } = useSafeAreaInsets();
   const sound = useSettings((s) => s.sound);
@@ -100,11 +102,7 @@ export function SettingsScreen({ version = appVersion() }: SettingsScreenProps) 
 
         <LegalSettings />
 
-        {version ? (
-          <Text style={styles.version} testID="app-version">
-            {t('settings.version', { version, engine: ENGINE_VERSION })}
-          </Text>
-        ) : null}
+        <VersionInfo info={version} engine={ENGINE_VERSION} />
       </ScrollView>
 
       {/* The new direction needs a restart (the root layout does it once the setting changes). */}
@@ -150,5 +148,4 @@ const styles = StyleSheet.create({
   },
   rule: { height: tokens.border.hairline, backgroundColor: color.border, marginHorizontal: space[8] },
   hint: { ...text('caption'), color: color.textMuted },
-  version: { ...text('caption'), color: color.textMuted, textAlign: 'center' },
 });

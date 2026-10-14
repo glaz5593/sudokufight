@@ -36,6 +36,7 @@ describe('database', () => {
   it('has every table of spec §19 and §27.2', () => {
     expect(SCHEMA_TABLES).toEqual([
       'achievements',
+      'admin_audit',
       'app_events',
       'cheat_flags',
       'game_events',
@@ -43,11 +44,15 @@ describe('database', () => {
       'games',
       'installs',
       'opponent_history',
+      'player_reports',
       'practice_results',
       'puzzle_history',
       'puzzles',
       'ratings',
+      'retired_names',
+      'suspended_sign_ins',
       'user_achievements',
+      'user_blocks',
       'users',
       'xp',
     ]);
@@ -143,23 +148,37 @@ describe('createDb', () => {
   });
 });
 
+/** A copy of drizzle/ that stops before migration `idx`: a database as it was then. */
+function foldersBefore(idx: number): string {
+  const full = findMigrationsFolder();
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-migrations-'));
+  const journal = JSON.parse(readFileSync(path.join(full, 'meta', '_journal.json'), 'utf8')) as {
+    entries: { idx: number; tag: string }[];
+  };
+  journal.entries = journal.entries.filter((e) => e.idx < idx);
+  mkdirSync(path.join(dir, 'meta'));
+  writeFileSync(path.join(dir, 'meta', '_journal.json'), JSON.stringify(journal));
+  for (const e of journal.entries)
+    copyFileSync(path.join(full, `${e.tag}.sql`), path.join(dir, `${e.tag}.sql`));
+  return dir;
+}
+
+/**
+ * Users rows in a database of an older schema: raw SQL with the columns every migration has (the schema's
+ * insert would name columns a later migration adds).
+ */
+async function insertOldUsers(
+  db: Parameters<typeof queryRows>[0],
+  rows: { id: string; avatarId: string | null }[],
+): Promise<void> {
+  for (const r of rows)
+    await db.execute(sql`insert into users (id, firebase_uid, display_name, avatar_id)
+                         values (${r.id}, ${`f-${r.id}`}, ${`u_${r.id}`}, ${r.avatarId})`);
+}
+
 describe('migration 0004: the first avatar pack is retired (spec §3.4)', () => {
   const MIGRATION = path.join(findMigrationsFolder(), '0004_legacy_avatars.sql');
-
-  /** A copy of drizzle/ that ends with 0003: a database as it was before the new avatars. */
-  function foldersBefore0004(): string {
-    const full = findMigrationsFolder();
-    const dir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-migrations-'));
-    const journal = JSON.parse(readFileSync(path.join(full, 'meta', '_journal.json'), 'utf8')) as {
-      entries: { idx: number; tag: string }[];
-    };
-    journal.entries = journal.entries.filter((e) => e.idx < 4);
-    mkdirSync(path.join(dir, 'meta'));
-    writeFileSync(path.join(dir, 'meta', '_journal.json'), JSON.stringify(journal));
-    for (const e of journal.entries)
-      copyFileSync(path.join(full, `${e.tag}.sql`), path.join(dir, `${e.tag}.sql`));
-    return dir;
-  }
+  const foldersBefore0004 = () => foldersBefore(4);
 
   it('maps exactly the pairs of LEGACY_AVATAR_MAP', () => {
     const pairs = [...readFileSync(MIGRATION, 'utf8').matchAll(/WHEN '(av\d\d)' THEN '([a-z0-9-]+)'/g)].map(
@@ -182,19 +201,9 @@ describe('migration 0004: the first avatar pack is retired (spec §3.4)', () => 
         unknown: 'av36',
         blank: 'av00',
       };
-      await before.db.insert(users).values([
-        ...LEGACY_AVATAR_IDS.map((id) => ({
-          id,
-          firebaseUid: `f-${id}`,
-          displayName: `u_${id}`,
-          avatarId: id,
-        })),
-        ...Object.entries(others).map(([id, avatarId]) => ({
-          id,
-          firebaseUid: `f-${id}`,
-          displayName: `u_${id}`,
-          avatarId,
-        })),
+      await insertOldUsers(before.db, [
+        ...LEGACY_AVATAR_IDS.map((id) => ({ id, avatarId: id })),
+        ...Object.entries(others).map(([id, avatarId]) => ({ id, avatarId })),
       ]);
       await before.close();
 
@@ -204,6 +213,115 @@ describe('migration 0004: the first avatar pack is retired (spec §3.4)', () => 
       const byId = new Map(rows.map((r) => [r.id, r.avatarId]));
       for (const id of LEGACY_AVATAR_IDS) expect([id, byId.get(id)]).toEqual([id, LEGACY_AVATAR_MAP[id]]);
       for (const [id, avatarId] of Object.entries(others)) expect([id, byId.get(id)]).toEqual([id, avatarId]);
+    } finally {
+      rmSync(migrations, { recursive: true, force: true });
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
+
+describe('migration 0005: moderation (spec §3.5)', () => {
+  it('adds the reports, blocks and audit tables, and existing accounts are neither suspended nor reset', async () => {
+    const migrations = foldersBefore(5);
+    const dataDir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-pglite-'));
+    try {
+      const before = await createDb(
+        { database: { kind: 'pglite', dataDir } },
+        { migrationsFolder: migrations },
+      );
+      await insertOldUsers(before.db, [
+        { id: 'ana', avatarId: 'noam' },
+        { id: 'ben', avatarId: null },
+      ]);
+      await before.close();
+
+      const after = await createDb({ database: { kind: 'pglite', dataDir } });
+      try {
+        const rows = await after.db
+          .select({ id: users.id, suspendedAt: users.suspendedAt, reset: users.nameResetRequired })
+          .from(users)
+          .orderBy(users.id);
+        expect(rows).toEqual([
+          { id: 'ana', suspendedAt: null, reset: false },
+          { id: 'ben', suspendedAt: null, reset: false },
+        ]);
+        // One open report per reporter, player and reason; a closed one doesn't count.
+        const report = (status: string) =>
+          after.db.execute(sql`insert into player_reports (id, reporter_id, reported_id, reason, status)
+                               values (gen_random_uuid()::text, 'ana', 'ben', 'cheating', ${status})`);
+        await report('open');
+        await expect(report('open')).rejects.toThrow();
+        await report('resolved');
+        await report('dismissed');
+        // The checks: a known reason and status, never about oneself; a block is one row a pair, not of oneself.
+        await expect(
+          after.db.execute(sql`insert into player_reports (id, reporter_id, reported_id, reason)
+                               values ('r1', 'ana', 'ben', 'spam')`),
+        ).rejects.toThrow();
+        await expect(
+          after.db.execute(sql`insert into player_reports (id, reporter_id, reported_id, reason)
+                               values ('r2', 'ana', 'ana', 'other')`),
+        ).rejects.toThrow();
+        await after.db.execute(sql`insert into user_blocks (blocker_id, blocked_id) values ('ana', 'ben')`);
+        await expect(
+          after.db.execute(sql`insert into user_blocks (blocker_id, blocked_id) values ('ana', 'ben')`),
+        ).rejects.toThrow();
+        await expect(
+          after.db.execute(sql`insert into user_blocks (blocker_id, blocked_id) values ('ana', 'ana')`),
+        ).rejects.toThrow();
+        await after.db.execute(sql`insert into admin_audit (admin_email, action, target_user_id)
+                                   values ('admin@example.com', 'suspend', 'ben')`);
+        const [audit] = await queryRows<{ id: number; details: unknown }>(
+          after.db,
+          sql`select id::int as id, details from admin_audit`,
+        );
+        expect(audit).toEqual({ id: 1, details: {} });
+      } finally {
+        await after.close();
+      }
+    } finally {
+      rmSync(migrations, { recursive: true, force: true });
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
+
+describe('migration 0006: retired names and suspended sign-ins (spec §3.5)', () => {
+  it('adds both tables, empty, on a database that has 0005 already', async () => {
+    const migrations = foldersBefore(6);
+    const dataDir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-pglite-'));
+    try {
+      const before = await createDb(
+        { database: { kind: 'pglite', dataDir } },
+        { migrationsFolder: migrations },
+      );
+      await insertOldUsers(before.db, [{ id: 'ana', avatarId: null }]);
+      await before.close();
+
+      const after = await createDb({ database: { kind: 'pglite', dataDir } });
+      try {
+        const count = async (table: string) =>
+          (
+            await queryRows<{ n: number }>(
+              after.db,
+              sql`select count(*)::int as n from ${sql.identifier(table)}`,
+            )
+          )[0]?.n;
+        expect([await count('retired_names'), await count('suspended_sign_ins')]).toEqual([0, 0]);
+        await after.db.execute(sql`insert into retired_names (name_key) values ('ana')`);
+        await expect(
+          after.db.execute(sql`insert into retired_names (name_key) values ('ana')`),
+        ).rejects.toThrow();
+        await after.db.execute(sql`insert into suspended_sign_ins (fingerprint, user_id, suspended_at)
+                                   values ('f1', 'ana', now())`);
+        // The fingerprint names a deleted account's row, which stays: one that isn't there is refused.
+        await expect(
+          after.db.execute(sql`insert into suspended_sign_ins (fingerprint, user_id, suspended_at)
+                               values ('f2', 'nobody', now())`),
+        ).rejects.toThrow();
+      } finally {
+        await after.close();
+      }
     } finally {
       rmSync(migrations, { recursive: true, force: true });
       rmSync(dataDir, { recursive: true, force: true });

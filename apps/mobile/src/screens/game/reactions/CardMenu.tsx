@@ -13,17 +13,20 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-import { Icon } from '../../../components/Icon';
+import { Icon, type IconName } from '../../../components/Icon';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { useReduceMotion } from '../../../theme/motion';
 import type { Rect } from '../geometry';
+import { isolateName } from '../hit/hitModel';
 import { avatarX, defaultCardRect, placeUnder } from './model';
 import { Popover } from './Popover';
 
 /**
  * An opponent card's menu (spec §8, D19: "אפשר להשתיק יריב דרך התפריט של הכרטיס שלו"). No board draws it
- * (components.md §17.9); as proposed there, a long press on the opponent's card opens a one-item menu under
- * it: "השתק תגובות", or "בטל השתקה" once muted. A muted player's reactions are neither shown nor played.
+ * (components.md §17.9); as proposed there, a long press on the opponent's card opens a menu under it:
+ * "השתק תגובות", or "בטל השתקה" once muted. A muted player's reactions are neither shown nor played. In a ranked
+ * game (spec §3.5) two more items follow: "דווח על שחקן" and "חסום שחקן" (or "בטל חסימה"); a bot is never
+ * reported or blocked.
  *
  * Screen readers can't long-press a card whose parts are read one by one, so the trigger also holds a
  * button only they reach, right after the card: "תפריט הכרטיס של NinaVolt".
@@ -89,8 +92,17 @@ export interface CardMenuProps {
   muted: boolean;
   /** "השתק תגובות" / "בטל השתקה": the menu says the change to screen readers and closes itself. */
   onToggleMute: () => void;
+  /** A ranked game's opponent: "דווח על שחקן" and "חסום שחקן" / "בטל חסימה" (each closes the menu first). */
+  moderation?: CardMenuModeration | null;
   onClose: () => void;
   testID?: string;
+}
+
+export interface CardMenuModeration {
+  /** I blocked this player: the item reads "בטל חסימה". */
+  blocked: boolean;
+  onReport: () => void;
+  onToggleBlock: () => void;
 }
 
 export function CardMenu({
@@ -99,10 +111,12 @@ export function CardMenu({
   name,
   muted,
   onToggleMute,
+  moderation = null,
   onClose,
   testID = 'card-menu',
 }: CardMenuProps) {
   const { t } = useTranslation('game');
+  const { t: tm } = useTranslation('moderation');
   const reduce = useReduceMotion();
   const { width: screenWidth } = useWindowDimensions();
   const item = useRef<ComponentRef<typeof Pressable>>(null);
@@ -155,8 +169,65 @@ export function CardMenu({
             {t(muted ? 'reactions.menu.unmute' : 'reactions.menu.mute')}
           </Text>
         </Pressable>
+        {moderation ? (
+          <>
+            <MenuItem
+              icon="flag"
+              label={tm('actions.report')}
+              accessibilityLabel={tm('actions.reportLabel', { name: isolateName(name) })}
+              onPress={() => {
+                onClose();
+                moderation.onReport();
+              }}
+              testID={`${testID}-report`}
+            />
+            <MenuItem
+              icon="block"
+              label={moderation.blocked ? tm('actions.unblock') : tm('actions.block')}
+              accessibilityLabel={
+                moderation.blocked
+                  ? tm('actions.unblockLabel', { name: isolateName(name) })
+                  : tm('actions.blockLabel', { name: isolateName(name) })
+              }
+              onPress={() => {
+                onClose();
+                moderation.onToggleBlock();
+              }}
+              testID={`${testID}-${moderation.blocked ? 'unblock' : 'block'}`}
+            />
+          </>
+        ) : null}
       </View>
     </Popover>
+  );
+}
+
+function MenuItem({
+  icon,
+  label,
+  accessibilityLabel,
+  onPress,
+  testID,
+}: {
+  icon: IconName;
+  label: string;
+  accessibilityLabel: string;
+  onPress: () => void;
+  testID: string;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      role="menuitem"
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+      style={({ pressed }) => [styles.item, pressed && styles.pressed]}
+    >
+      <Icon name={icon} size={size.icon.card} color={color.text} />
+      <Text style={styles.itemText} numberOfLines={1}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 

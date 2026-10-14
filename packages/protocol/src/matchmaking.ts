@@ -257,6 +257,8 @@ export const MATCHMAKING_ERRORS = [
    * the app sends a fresh token.
    */
   'emailNotVerified',
+  /** The account is suspended by an admin (spec §3.5): no ranked games until it is lifted. */
+  'suspended',
   /** The join options name no queue (`queueKey`). */
   'badQueue',
   /** That queue is not open on this server (or the server is shutting down). */

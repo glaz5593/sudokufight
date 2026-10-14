@@ -951,7 +951,7 @@ Left menu **Grow users → Store presence → Store settings** (or from the Dash
 
 | Asset | Google's rule | Use |
 |---|---|---|
-| App icon | 512 x 512, 32-bit PNG (with alpha), max 1024 KB | `apps/mobile/assets/brand/play-icon-512.png` (512 x 512, 14 KB, no transparent pixels) |
+| App icon | 512 x 512, 32-bit PNG (with alpha), max 1024 KB | `apps/mobile/assets/brand/play-icon-512.png` (512 x 512, 19 KB, no transparent pixels; design "B · Tile Clash", preview: `docs/brand/icon-preview.html`) |
 | Feature graphic (required) | 1024 x 500, JPEG or 24-bit PNG, **no alpha** | `apps/mobile/assets/brand/feature-graphic.png` (1024 x 500, RGB) |
 | Phone screenshots | 2 to 8; JPEG or 24-bit PNG, **no alpha**; each side 320 to 3840 px; **the long side at most 2x the short side**. To be eligible for Play's recommendations: at least 4 screenshots of at least 1080 px, portrait 9:16 at least 1080 x 1920; for games, at least 3 of them showing real gameplay. Google's page sets no file-size limit for these | 1080 x 1920 each, made from the phones (below) |
 

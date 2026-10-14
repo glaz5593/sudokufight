@@ -2,6 +2,7 @@ import { type CellIndex, cellName } from '@sudoku-fight/engine';
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { BackHandler } from 'react-native';
 
+import * as authStore from '../../../auth/authStore';
 import { answerIn, emptyCellsOf, PUZZLE } from '../../../game/testing/practice';
 import { OnlineSession } from '../../../game/onlineSession';
 import i18n from '../../../i18n';
@@ -122,6 +123,26 @@ describe('before the game', () => {
     // No connection screen over a game that runs.
     expect(screen.queryByTestId('connection-error')).toBeNull();
     expect(screen.getByTestId('game-content', hidden)).toHaveProp('importantForAccessibility', 'auto');
+  });
+
+  it('a suspended account (spec §3.5): the room’s refusal explained, and the profile read again', async () => {
+    const refresh = jest.spyOn(authStore, 'refreshMe').mockResolvedValue(undefined);
+    try {
+      const table = new FakeTable();
+      table.refuseWith = 'suspended';
+      const session = new OnlineSession({ host: table.host, request: { kind: 'join', code: CODE } });
+      game = { table, session, tracked: [] };
+      await show(session);
+      await pass(table, 50);
+      expect(screen.getByTestId('connection-error')).toBeOnTheScreen();
+      expect(
+        screen.getByText('החשבון שלך מושעה, ולכן אין משחקים מדורגים כרגע. אפשר עדיין להתאמן לבד או מול בוט.'),
+      ).toBeOnTheScreen();
+      expect(screen.getByText(/suspended-525/)).toBeOnTheScreen();
+      expect(refresh).toHaveBeenCalledTimes(1);
+    } finally {
+      refresh.mockRestore();
+    }
   });
 
   it('a code that is no room: the refusal explained, "נסה שוב", and back goes home', async () => {

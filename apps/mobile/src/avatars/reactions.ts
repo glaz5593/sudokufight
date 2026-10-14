@@ -1,5 +1,6 @@
 import { type Expression, MOTIONS, type MotionId } from '@sudoku-fight/avatars';
 import type { GameEvent, GameResult, GameView, MoveScore, PlayerId, PlayerView } from '@sudoku-fight/engine';
+import { MUTED_REACTION_EMOJI } from '@sudoku-fight/protocol';
 
 /**
  * How the avatars react to the game (spec §3.4): the table of what each happening plays (AVATAR_REACTIONS, a
@@ -312,7 +313,8 @@ export function cuesOf(
         add(e, e.fromId, 'hitSent');
         break;
       case 'reaction':
-        add(e, e.playerId, 'emoji', { emoji: e.emoji });
+        // A reaction the server muted for me (spec §3.5, a player I blocked) moves no face.
+        if (e.emoji !== MUTED_REACTION_EMOJI) add(e, e.playerId, 'emoji', { emoji: e.emoji });
         break;
       case 'playerSurrendered':
         add(e, e.playerId, 'surrendered');

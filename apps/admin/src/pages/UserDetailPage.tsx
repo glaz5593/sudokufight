@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 
 import { AvatarImg } from '../components/AvatarImg';
 import { type Column, DataTable } from '../components/DataTable';
+import { AccountActions, type Moderation, ModerationBadges, useModeration } from '../components/moderation';
 import {
   AsyncView,
   DateTime,
@@ -18,20 +19,28 @@ import {
 } from '../components/ui';
 import { useApi, useAsync } from '../data';
 import { formatNumber, formatPercent } from '../format';
-import { useI18n } from '../i18n';
+import { Rich, useI18n } from '../i18n';
 import { routeHref } from '../router';
 import { installColumns } from './InstallsPage';
 
 /**
  * Spec §27.3: a user's profile, level and XP (spec §15), ratings, game history and stats, the installs they
- * used, and the anomaly flags of their ranked games (spec §21: for review only).
+ * used, and the anomaly flags of their ranked games (spec §21: for review only). And their moderation state
+ * (spec §3.5) with its actions: reset the name, suspend the account or lift the suspension.
  */
 export function UserDetailPage({ id }: { id: string }) {
   const { t } = useI18n();
   const api = useApi();
   const load = useCallback(() => api.user(id), [api, id]);
   const result = useAsync(load);
-  const name = result.data?.id === id ? result.data.displayName : null;
+  const moderation = useModeration({ reload: result.reload, loading: result.loading });
+  const user = result.data?.id === id ? result.data : null;
+  const name = user?.displayName ?? null;
+  const badges = user && {
+    deleted: user.deletedAt !== null,
+    suspended: (user.suspendedAt ?? null) !== null,
+    nameReset: user.nameResetRequired ?? false,
+  };
 
   return (
     <>
@@ -39,13 +48,97 @@ export function UserDetailPage({ id }: { id: string }) {
         title={name === null ? t('user.profile') : <bdi>{name}</bdi>}
         docTitle={name ?? t('user.profile')}
         back={{ href: routeHref({ name: 'users' }), label: t('user.back') }}
-      />
-      <AsyncView result={result}>{(data) => <UserBody data={data} />}</AsyncView>
+      >
+        {badges && (badges.deleted || badges.suspended || badges.nameReset) && (
+          <div className="head-badges">
+            <ModerationBadges {...badges} />
+          </div>
+        )}
+      </PageHeader>
+      {moderation.notice}
+      <AsyncView result={result}>
+        {(data) => <UserBody data={data} moderation={moderation} busy={result.loading} />}
+      </AsyncView>
+      {moderation.dialog}
     </>
   );
 }
 
-function UserBody({ data }: { data: AdminUserDetail }) {
+/** Suspension, the name's state, open reports, and the actions (none on a deleted account). */
+function ModerationSection({
+  data,
+  moderation,
+  busy,
+}: {
+  data: AdminUserDetail;
+  moderation: Moderation;
+  busy: boolean;
+}) {
+  const { t } = useI18n();
+  const deleted = data.deletedAt !== null;
+  const suspendedAt = data.suspendedAt ?? null;
+  return (
+    <Section
+      title={t('user.moderation')}
+      hint={deleted ? t('user.deletedNoActions') : t('user.moderationHint')}
+    >
+      <Facts
+        items={[
+          {
+            label: t('user.suspension'),
+            value:
+              suspendedAt === null ? (
+                t('user.notSuspended')
+              ) : (
+                <Rich k="user.suspendedSince" nodes={{ date: <DateTime ms={suspendedAt} /> }} />
+              ),
+          },
+          {
+            label: t('user.displayName'),
+            value: (
+              <>
+                <bdi>{data.displayName}</bdi>
+                <span className="fact-note">
+                  {data.nameResetRequired ? t('user.nameResetPending') : t('user.nameOwn')}
+                </span>
+              </>
+            ),
+          },
+          {
+            label: t('user.openReports'),
+            value: (
+              <>
+                <Num value={data.openReports ?? 0} />
+                <span className="fact-note">
+                  <a href={routeHref({ name: 'reports' })}>{t('user.toReports')}</a>
+                  {' · '}
+                  <a href={routeHref({ name: 'audit' })}>{t('user.toAudit')}</a>
+                </span>
+              </>
+            ),
+          },
+        ]}
+      />
+      <div className="section-actions">
+        <AccountActions
+          user={{ id: data.id, name: data.displayName, suspended: suspendedAt !== null, deleted }}
+          disabled={busy}
+          onAsk={moderation.ask}
+        />
+      </div>
+    </Section>
+  );
+}
+
+function UserBody({
+  data,
+  moderation,
+  busy,
+}: {
+  data: AdminUserDetail;
+  moderation: Moderation;
+  busy: boolean;
+}) {
   const i18n = useI18n();
   const { t, lang, label } = i18n;
   const playerStatus = usePlayerStatus();
@@ -164,6 +257,8 @@ function UserBody({ data }: { data: AdminUserDetail }) {
           ]}
         />
       </Section>
+
+      <ModerationSection data={data} moderation={moderation} busy={busy} />
 
       <Section title={t('user.stats')}>
         <dl className="stats stats-compact">

@@ -50,7 +50,10 @@ function rankedDuel(): Table {
 async function show(
   table: Table,
   me: string,
-  { fakeTimers = false, onOpenPlayer }: { fakeTimers?: boolean; onOpenPlayer?: (id: string) => void } = {},
+  {
+    fakeTimers = false,
+    onOpenPlayer,
+  }: { fakeTimers?: boolean; onOpenPlayer?: (id: string, gameId: string) => void } = {},
 ) {
   const model = sessionResultsModel(sessionOf(table, me))!;
   await render(
@@ -259,12 +262,13 @@ describe('a four-player game: the full ranking (spec §12)', () => {
 describe('stage 12: another player of a ranked game opens their card (spec §14.3)', () => {
   it('two players: the opponent’s row is a button', async () => {
     const onOpenPlayer = jest.fn();
-    await show(rankedDuel(), 'me', { onOpenPlayer });
+    const model = await show(rankedDuel(), 'me', { onOpenPlayer });
     const row = screen.getByTestId('results-opponent-nina');
     expect(row).toHaveProp('accessibilityRole', 'button');
     expect(row).toHaveProp('accessibilityHint', 'פתיחת כרטיס השחקן');
     await fireEvent.press(row);
-    expect(onOpenPlayer).toHaveBeenCalledWith('nina');
+    // With the game: a report from that card is about it (spec §3.5).
+    expect(onOpenPlayer).toHaveBeenCalledWith('nina', model.gameId);
   });
 
   it('four players: every other player opens their card; my own row does not', async () => {
@@ -277,6 +281,6 @@ describe('stage 12: another player of a ranked game opens their card (spec §14.
     }
     const other = model.ranking.find((r) => !r.isMe && r.place < 4)!;
     await fireEvent.press(screen.getByTestId(`results-podium-${other.place}-${other.playerId}`));
-    expect(onOpenPlayer).toHaveBeenCalledWith(other.playerId);
+    expect(onOpenPlayer).toHaveBeenCalledWith(other.playerId, model.gameId);
   });
 });

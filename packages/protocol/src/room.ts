@@ -91,6 +91,11 @@ export const GAME_ROOM_ERRORS = [
   'codeTaken',
   /** No identity, a bad one, or none accepted here (production before stage 8). */
   'unauthenticated',
+  /**
+   * The account is suspended by an admin (spec §3.5): no ranked games until it is lifted. A match found just
+   * before the suspension, or a game rejoined after it, is refused with this; reload the profile (Me.suspended).
+   */
+  'suspended',
   /** This player is already in the room (another device or tab). */
   'alreadyInRoom',
   /** The game started without this player. */

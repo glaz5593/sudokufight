@@ -44,6 +44,7 @@ import {
   apkFileName,
   apkProblems,
   apksToPrune,
+  buildInfoEnv,
   describeServer,
   EXIT,
   failureSummary,
@@ -76,6 +77,7 @@ import {
   uninstallCommand,
   USAGE,
 } from './lib/build-apk.mjs';
+import { buildNumber } from './lib/version.mjs';
 
 const MOBILE = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const REPO = resolve(MOBILE, '..', '..');
@@ -280,9 +282,12 @@ function killTree(child) {
   else child.kill('SIGTERM');
 }
 
-/** Everything a build step runs with: the server, production, no .env files, never "CI", never "EAS". */
-function buildEnv(server) {
-  const env = { ...process.env, ...serverEnv(server), NODE_ENV: 'production' };
+/**
+ * Everything a build step runs with: the server, the build's commit and server label (the app's version line),
+ * production, no .env files, never "CI", never "EAS".
+ */
+function buildEnv(server, git) {
+  const env = { ...process.env, ...serverEnv(server), ...buildInfoEnv(server, git), NODE_ENV: 'production' };
   // apps/mobile/.env.local (npm run dev:lan writes a LAN address there) must not decide the APK's server.
   env.EXPO_NO_DOTENV = '1';
   // android/ is gitignored: prebuild --clean needn't ask about uncommitted changes.
@@ -755,6 +760,10 @@ async function main() {
   say('Sudoku Fight: release APK on this PC');
   say(`  server   ${describeServer(server)}  [${server.source}]`);
   say(`  apk      ${rel(join(APK_DIR, apkName))}`);
+  const shown = buildInfoEnv(server, git);
+  say(
+    `  version  ${version} (build number ${buildNumber(version)}); the app shows "build ${shown.EXPO_PUBLIC_APP_BUILD} · ${shown.EXPO_PUBLIC_SERVER_LABEL}"`,
+  );
   say(`  prebuild ${plan.run ? 'yes' : 'no'} (${plan.reason})`);
   if (freeAtStart !== null) say(`  disk     ${formatBytes(freeAtStart)} free on drive C`);
   if (!server.secure)
@@ -777,7 +786,7 @@ async function main() {
 
   openLog();
   say(`  log      ${rel(LOG_FILE)}`);
-  const env = buildEnv(server);
+  const env = buildEnv(server, git);
   if (plan.run) await phase('prebuild', () => prebuild(plan, hash, env));
   else say(`[prebuild] skipped: ${plan.reason}`);
   const signing = releaseSigning();

@@ -46,6 +46,7 @@ import type { PracticeSession } from '../../game/session';
 import { useAvatarFaces } from '../../game/useAvatarFaces';
 import { useGameEffects, useMatchEffects } from '../../game/useGameEffects';
 import { useNow } from '../../game/useNow';
+import { blockedIds, loadBlocks, useBlocks, useIsBlocked } from '../../moderation/moderation';
 import { useMyLevel } from '../../progress/hooks';
 import { track } from '../../services/analytics';
 import { crashReporter } from '../../services/crashlytics';
@@ -53,6 +54,7 @@ import { cue, cueCountUp, preloadCues } from '../../services/feedback';
 import { useProfile } from '../../state/profile';
 import { color, space, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
+import { useModerationFlow } from '../moderation/useModerationFlow';
 import {
   ArsenalOverlay,
   type ArsenalTargetInfo,
@@ -104,9 +106,10 @@ import { connectionStatusOf } from './online/connectionStatus';
 import { DevMetricsToggle } from './online/DevMetricsToggle';
 import type { NetMetricsSource } from './online/NetMetricsPanel';
 import { useOnlineInfo } from './online/useOnlineInfo';
+import { useSuspendedRefusal } from './online/useSuspendedRefusal';
 import { OutStrip } from './OutStrip';
 import { REACTION_MS, type ReactionFloat, ReactionLayer, withFloat } from './ReactionLayer';
-import { CardMenu, ReactionPicker, useReactions } from './reactions';
+import { CardMenu, ReactionPicker, useReactionMutes, useReactions } from './reactions';
 import { SoloHud } from './SoloHud';
 import { useLiveAnnouncer } from './useLiveAnnouncer';
 
@@ -355,6 +358,8 @@ export function GameScreen({
     () => (online ? connectionModel(view, connectionStatusOf(online), now, { graceMs }) : NO_CONNECTION),
     [online, view, now, graceMs],
   );
+  // A rejoin refused for a suspension (spec §3.5): the profile is read again.
+  useSuspendedRefusal(connection);
   // The board and the keypad take nothing meanwhile (the layer takes the touches; screen readers skip them).
   const blocked = blocksInput(connection);
   // "The opponent left" (spec §16.2) waits for "לתוצאות" before the results.
@@ -771,6 +776,29 @@ export function GameScreen({
   // ---- between the players (work plan stage 6): reactions, the arsenal, an interference on me ----
   const react = useCallback((emoji: string) => safely('react', () => host.react(emoji)), [host]);
   const reactions = useReactions({ view, now, onReact: react });
+  // Spec §3.5: a ranked opponent's card menu also reports and blocks them (a bot never). A block mutes their
+  // reactions here at once (the server mutes the next ones for me), and so does one made before this game.
+  const ranked = view.mode === 'ranked';
+  const gameId = view.gameId;
+  const setMuted = useReactionMutes((s) => s.setMuted);
+  const modFlow = useModerationFlow({
+    placement: 'bottom',
+    onBlocked: (id) => setMuted(gameId, id, true),
+  });
+  const menuBlocked = useIsBlocked(ranked ? reactions.menuFor : null);
+  const myBlocks = useBlocks((s) => s.blocks);
+  const opponentIds = view.players
+    .filter((p) => p.id !== view.me)
+    .map((p) => p.id)
+    .join(' ');
+  useEffect(() => {
+    if (ranked) void loadBlocks();
+  }, [ranked]);
+  useEffect(() => {
+    if (!ranked) return;
+    const blocked = blockedIds();
+    for (const id of opponentIds.split(' ')) if (blocked.has(id)) setMuted(gameId, id, true);
+  }, [ranked, gameId, opponentIds, myBlocks, setMuted]);
   const interfere = useCallback(
     (targetId: PlayerId, kind: InterferenceKind) => safely('interfere', () => host.interfere(targetId, kind)),
     [host],
@@ -1189,8 +1217,23 @@ export function GameScreen({
             onToggleMute={() => {
               if (menuFor !== null) reactions.toggleMute(menuFor);
             }}
+            moderation={
+              ranked && menuFor !== null && menuFor !== me.id
+                ? {
+                    blocked: menuBlocked,
+                    onReport: () => modFlow.openReport({ id: menuFor, name: nameOf(menuFor) }, gameId),
+                    onToggleBlock: () => {
+                      const target = { id: menuFor, name: nameOf(menuFor) };
+                      if (menuBlocked) modFlow.openUnblock(target);
+                      else modFlow.openBlock(target);
+                    },
+                  }
+                : null
+            }
             onClose={closeMenu}
           />
+          {/* Spec §3.5: the report's reasons and the block's confirmation, over the board. */}
+          {modFlow.view}
         </>
       ) : null}
       {/* The live region (components.md §11.6): invisible, read by screen readers as it changes. */}

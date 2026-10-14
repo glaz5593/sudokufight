@@ -205,7 +205,9 @@ DATABASE_URL='postgres://<user>:<password>@localhost:15432/<db>?sslmode=disable'
 
 ## 8. אתר הניהול והדפים המשפטיים
 
-- **אתר הניהול:** https://sudoku-fight-prod.fly.dev/admin. נכנסים עם חשבון Google שב־`ADMIN_EMAILS` (סעיף 4), או עם `ADMIN_PASSWORD` אם הוגדרה. לצפייה בלבד (אפיון 27.3).
+- **אתר הניהול:** https://sudoku-fight-prod.fly.dev/admin. נכנסים עם חשבון Google שב־`ADMIN_EMAILS` (סעיף 4), או עם `ADMIN_PASSWORD` אם הוגדרה.
+  - **יש בו פעולות** (אפיון 3.5 ו־27.3): סגירת דיווחים, איפוס שם, השעיית חשבון וביטול השעיה. כל פעולה נרשמת ב"יומן פעולות" עם הכתובת של המנהל.
+  - **הפעולות רק בכניסה עם Google.** כניסה עם `ADMIN_PASSWORD` רואה הכל, אבל פעולה מקבלת `googleRequired`: הסיסמה משותפת, והיומן לא יידע מי פעל. אם הגדרת סיסמה, שמור אותה כמו כל סוד.
   בלוג מופיע `admin sign-in: <הכתובת>` בכל כניסה. הכתובת `sudoku-fight-prod.fly.dev` צריכה להיות ב־Authorized domains של Firebase (`docs/FIREBASE-SETUP.md` סעיף 9א).
 - **הדפים המשפטיים** (הכתובות שנכנסות לחנויות ולאפליקציה):
   - https://sudoku-fight-prod.fly.dev/legal/privacy (מדיניות פרטיות; ‏`?lang=en` לאנגלית)

@@ -94,6 +94,10 @@ export type ServerMessage =
        */
       lastClientSeq?: number;
     }
+  /**
+   * The engine's events. A `reaction` from a player the receiver blocked arrives with `emoji`
+   * MUTED_REACTION_EMOJI (moderation.ts): show nothing for it.
+   */
   | { type: 'events'; events: GameEvent[] }
   | { type: 'rejected'; clientSeq: number; reason: RejectReason }
   /** After gameOver: the solution, for the replay (spec §21). */
@@ -144,3 +148,4 @@ export * from './account';
 export * from './matchmaking';
 export * from './history';
 export * from './progress';
+export * from './moderation';

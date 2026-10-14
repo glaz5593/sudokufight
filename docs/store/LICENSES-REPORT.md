@@ -12,15 +12,15 @@
 
 ## סיכום
 
-- חבילות באפליקציה (mobile): **671**
+- חבילות באפליקציה (mobile): **672**
 - חבילות בשרת (server): **141**
-- סה״כ שונות (שם@גרסה): **754**
+- סה״כ שונות (שם@גרסה): **755**
 - **מסומנות לבדיקה: 1**
 - דורשות תשומת לב (ייחוס / copyleft חלש): 15
 
 | רישיון | חבילות |
 |---|---|
-| MIT | 589 |
+| MIT | 590 |
 | Apache-2.0 | 70 |
 | ISC | 28 |
 | BSD-3-Clause | 22 |
@@ -471,6 +471,7 @@
 | etag | 1.8.1 | MIT | mobile, server |
 | event-target-shim | 5.0.1 | MIT | mobile |
 | expo | 57.0.27 | MIT | mobile |
+| expo-application | 57.0.3 | MIT | mobile |
 | expo-asset | 57.0.19 | MIT | mobile |
 | expo-audio | 57.0.5 | MIT | mobile |
 | expo-build-properties | 57.0.22 | MIT | mobile |

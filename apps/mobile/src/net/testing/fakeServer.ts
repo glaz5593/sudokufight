@@ -235,6 +235,8 @@ export class FakeTable implements OnlineClient {
   hang = false;
   /** The server holds no seat for any token (e.g. it took the drop for a goodbye): only a rejoin works. */
   refuseToken = false;
+  /** Every create, join and reserved seat is refused with this GameRoomError (e.g. 'suspended'), or none. */
+  refuseWith: string | null = null;
   /** Keep the game's events here instead of sending them (the test delivers them itself). */
   hold = false;
   readonly held: GameEvent[] = [];
@@ -264,6 +266,11 @@ export class FakeTable implements OnlineClient {
     });
   }
 
+  /** The server's refusal (refuseWith), as the SDK hands it on: "<GameRoomError>: <text>", code 525. */
+  private refuseIfAsked(): void {
+    if (this.refuseWith !== null) throw sdkError(`${this.refuseWith}: refused by the test`, 525);
+  }
+
   /** The server's clock. */
   serverNow(): number {
     return this.clock.now() + this.skewMs;
@@ -280,12 +287,16 @@ export class FakeTable implements OnlineClient {
 
   create(options: DevRoomOptions): Promise<RoomLike> {
     this.calls.push({ kind: 'create', arg: options });
-    return this.respond(() => this.newRoom());
+    return this.respond(() => {
+      this.refuseIfAsked();
+      return this.newRoom();
+    });
   }
 
   join(code: string): Promise<RoomLike> {
     this.calls.push({ kind: 'join', arg: code });
     return this.respond(() => {
+      this.refuseIfAsked();
       if (code !== CODE) throw sdkError(`room "${code}" not found`, 522);
       if (!this.game) return this.newRoom();
       const me = this.game.state.players.find((p) => p.id === ME)!;
@@ -301,6 +312,7 @@ export class FakeTable implements OnlineClient {
   consumeSeatReservation(reservation: MatchSeatReservation): Promise<RoomLike> {
     this.calls.push({ kind: 'reserved', arg: reservation });
     return this.respond(() => {
+      this.refuseIfAsked();
       if (reservation.roomId !== CODE) throw sdkError(`room "${reservation.roomId}" not found`, 522);
       return this.newRoom();
     });

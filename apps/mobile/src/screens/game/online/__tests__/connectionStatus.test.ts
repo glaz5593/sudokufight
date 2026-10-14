@@ -151,6 +151,7 @@ describe('refusalOf', () => {
       'badOptions',
       'codeTaken',
       'unauthenticated',
+      'suspended',
       'alreadyInRoom',
       'gameStarted',
     ] as const)

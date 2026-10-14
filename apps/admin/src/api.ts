@@ -1,9 +1,12 @@
 import {
+  ADMIN_ACTION_ERRORS,
   ADMIN_API_PREFIX,
   ADMIN_AUTH_METHODS_PATH,
   ADMIN_DEFAULT_PAGE_SIZE,
   ADMIN_GOOGLE_LOGIN_PATH,
   ADMIN_LOGIN_PATH,
+  type AdminActionErrorCode,
+  type AdminAuditEntry,
   type AdminAuthMethods,
   type AdminError,
   type AdminGameDetail,
@@ -13,8 +16,12 @@ import {
   type AdminInstallDetail,
   type AdminInstallRow,
   type AdminLoginRequest,
+  type AdminModerationResult,
   type AdminOverview,
   type AdminPage,
+  type AdminReport,
+  type AdminReportedPlayer,
+  type AdminReportFilter,
   type AdminScreens,
   type AdminSession,
   type AdminUserDetail,
@@ -28,10 +35,17 @@ import {
  *
  * Every failure is an ApiError. A 401 from any route but the sign-in ones and session also calls
  * `onUnauthorized`, so the site goes back to the login screen wherever it was.
+ *
+ * The moderation actions (spec §3.5) are the site's only writes: each is a POST with the JSON body `{}`
+ * (the server refuses anything else), and the page asks for a confirmation first.
  */
 
-/** The contract's error names (AdminError, and the Google sign-in's own), or no answer / not one of them. */
-export type ApiErrorCode = AdminError['error'] | AdminGoogleLoginErrorCode | 'network' | 'server';
+/**
+ * The contract's error names (AdminError, the moderation actions' own, and the Google sign-in's), or no
+ * answer / not one of them.
+ */
+export type ApiErrorCode =
+  AdminError['error'] | AdminActionErrorCode | AdminGoogleLoginErrorCode | 'network' | 'server';
 
 /** Every error name of the contract; TypeScript complains here when the list grows. */
 const ADMIN_ERROR_CODES: Record<AdminError['error'], true> = {
@@ -48,8 +62,14 @@ function isAdminErrorCode(value: string): value is AdminError['error'] {
   return Object.hasOwn(ADMIN_ERROR_CODES, value);
 }
 
-function isNamedCode(value: string): value is AdminError['error'] | AdminGoogleLoginErrorCode {
-  return isAdminErrorCode(value) || isAdminGoogleLoginErrorCode(value);
+function isActionErrorCode(value: string): value is AdminActionErrorCode {
+  return (ADMIN_ACTION_ERRORS as readonly string[]).includes(value);
+}
+
+function isNamedCode(
+  value: string,
+): value is AdminError['error'] | AdminActionErrorCode | AdminGoogleLoginErrorCode {
+  return isAdminErrorCode(value) || isActionErrorCode(value) || isAdminGoogleLoginErrorCode(value);
 }
 
 export class ApiError extends Error {
@@ -84,6 +104,18 @@ export interface GameListQuery {
   pageSize?: number;
 }
 
+export interface ReportListQuery {
+  /** Defaults to 'open' (the server's default too). */
+  status?: AdminReportFilter;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PageQuery {
+  page?: number;
+  pageSize?: number;
+}
+
 export interface AdminApi {
   /** How this server lets an admin sign in (no session needed). */
   authMethods(): Promise<AdminAuthMethods>;
@@ -100,7 +132,19 @@ export interface AdminApi {
   games(query: GameListQuery): Promise<AdminPage<AdminGameRow>>;
   game(id: string): Promise<AdminGameDetail>;
   screens(days: number): Promise<AdminScreens>;
+  /** Reported players, the most reported first (spec §3.5). */
+  reports(query: ReportListQuery): Promise<AdminPage<AdminReportedPlayer>>;
+  resolveReport(reportId: string): Promise<AdminReport>;
+  dismissReport(reportId: string): Promise<AdminReport>;
+  resetName(userId: string): Promise<AdminModerationResult>;
+  suspend(userId: string): Promise<AdminModerationResult>;
+  unsuspend(userId: string): Promise<AdminModerationResult>;
+  /** The admin actions, newest first. */
+  audit(query: PageQuery): Promise<AdminPage<AdminAuditEntry>>;
 }
+
+/** The body of every moderation action: an empty JSON object, nothing else (the server checks). */
+const ACTION_BODY = {};
 
 /** The part of the fetch Response the client reads, so tests can answer with a plain object. */
 export interface FetchResponse {
@@ -225,5 +269,21 @@ export function createApi(options: ApiOptions = {}): AdminApi {
       ),
     game: (gameId) => request<AdminGameDetail>('GET', `/games/${id(gameId)}`),
     screens: (days) => request<AdminScreens>('GET', `/screens${queryString({ days })}`),
+    reports: (q) =>
+      request<AdminPage<AdminReportedPlayer>>(
+        'GET',
+        `/reports${queryString({ status: q.status ?? 'open', ...page(q) })}`,
+      ),
+    resolveReport: (reportId) =>
+      request<AdminReport>('POST', `/reports/${id(reportId)}/resolve`, { body: ACTION_BODY }),
+    dismissReport: (reportId) =>
+      request<AdminReport>('POST', `/reports/${id(reportId)}/dismiss`, { body: ACTION_BODY }),
+    resetName: (userId) =>
+      request<AdminModerationResult>('POST', `/users/${id(userId)}/reset-name`, { body: ACTION_BODY }),
+    suspend: (userId) =>
+      request<AdminModerationResult>('POST', `/users/${id(userId)}/suspend`, { body: ACTION_BODY }),
+    unsuspend: (userId) =>
+      request<AdminModerationResult>('POST', `/users/${id(userId)}/unsuspend`, { body: ACTION_BODY }),
+    audit: (q) => request<AdminPage<AdminAuditEntry>>('GET', `/audit${queryString(page(q))}`),
   };
 }

@@ -17,6 +17,8 @@ export {
   type GameStartRecord,
   recordGameEnd,
   recordGameStart,
+  renameLoggedNames,
+  scrubLoggedNames,
   seatsOf,
   SERVER_RESTART,
 } from './records';

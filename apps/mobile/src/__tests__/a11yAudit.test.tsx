@@ -5,8 +5,11 @@ import type { PlayerInfo } from '@sudoku-fight/engine';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { Pressable, Text, View } from 'react-native';
 
+import AccountSuspendedRoute from '../../app/account-suspended';
 import AchievementsRoute from '../../app/achievements';
+import BlockedPlayersRoute from '../../app/blocked-players';
 import BotSelectRoute from '../../app/bot-select';
+import ChooseNameRoute from '../../app/choose-name';
 import DesignSystemRoute from '../../app/dev/design-system';
 import HelloRoute from '../../app/dev/hello';
 import EditProfileRoute from '../../app/edit-profile';
@@ -27,6 +30,7 @@ import ReplayRoute from '../../app/replay/[id]';
 import ResultsRoute from '../../app/results/[id]';
 import SettingsRoute from '../../app/settings';
 import VerifyEmailRoute from '../../app/verify-email';
+import { createFakeModeration, type FakeModeration } from '../api/testing/fakeModeration';
 import { board, card, type FakeCall, fakeFetch, myProgress, ranked } from '../api/testing/fakeProgress';
 import { initAuth, setAuthDeps, useAuth } from '../auth/authStore';
 import { installSignedInPlayer, installTestAuth } from '../auth/testing/testAuth';
@@ -36,6 +40,7 @@ import { practiceStorageOrNull } from '../game/storage';
 import { answerIn, emptyCellsOf, PUZZLE } from '../game/testing/practice';
 import { memoryDb } from '../game/testing/sqlJsDb';
 import i18n from '../i18n';
+import { blockPlayer, resetBlocks, setModerationApi } from '../moderation/moderation';
 import { setHealthCheck } from '../net/connectivity';
 import { FakeMatchmaking } from '../net/testing/fakeMatchmaking';
 import { elapse, FakeTable, ME, OPP } from '../net/testing/fakeServer';
@@ -123,6 +128,9 @@ const ROUTES = {
   'register/account': RegisterAccountRoute,
   'verify-email': VerifyEmailRoute,
   'edit-profile': EditProfileRoute,
+  'blocked-players': BlockedPlayersRoute,
+  'choose-name': ChooseNameRoute,
+  'account-suspended': AccountSuspendedRoute,
   'dev/hello': HelloRoute,
   'dev/design-system': DesignSystemRoute,
 };
@@ -287,6 +295,31 @@ const CASES: Case[] = [
   { name: 'achievements', url: '/achievements', ready: 'progress' },
   { name: 'interferences', url: '/interferences', ready: 'interferences' },
   { name: 'my player card', url: () => `/player/${useAuth.getState().me!.id}`, ready: 'player-card' },
+  // ---- reporting and blocking (spec §3.5)
+  { name: "another player's card: report and block", url: '/player/nina', ready: 'player-moderation' },
+  {
+    name: 'player card: the report sheet',
+    url: '/player/nina',
+    ready: 'player-moderation',
+    drive: () => tap('player-moderation-report'),
+    shows: 'report-sheet-send',
+  },
+  {
+    name: 'player card: the block confirmation',
+    url: '/player/nina',
+    ready: 'player-moderation',
+    drive: () => tap('player-moderation-block'),
+    shows: 'block-confirm-confirm',
+  },
+  {
+    name: 'blocked players',
+    url: '/blocked-players',
+    setup: async () => void (await blockPlayer('nina')),
+    ready: 'blocked-list',
+  },
+  { name: 'blocked players: none', url: '/blocked-players', ready: 'blocked-empty' },
+  { name: 'choose a new name (an admin reset it)', url: '/choose-name', ready: 'choose-name' },
+  { name: 'account suspended', url: '/account-suspended', ready: 'account-suspended' },
   { name: "another player's card", url: '/player/p7', ready: 'player-card' },
   { name: 'replay: a practice', url: () => `/replay/${ids.ended}?source=practice`, ready: 'replay' },
   { name: 'replay: a bot game', url: () => `/replay/${ids.won}?source=practice`, ready: 'replay' },
@@ -528,7 +561,14 @@ beforeAll(async () => {
   mockApp.history = fakeHistoryApi([rankedDuel('ranked-1')]);
 });
 
+/** The report and block routes in memory (spec §3.5). */
+let moderation: FakeModeration | null = null;
+
 beforeEach(() => {
+  moderation = createFakeModeration();
+  moderation.addPlayer({ id: 'nina', displayName: 'NinaVolt', country: 'DE' });
+  setModerationApi(() => moderation!.api);
+  resetBlocks();
   jest.mocked(practiceStorageOrNull).mockImplementation(async () => mockApp.repo);
   setProgressFetch(progressFetch);
   setHealthCheck(async () => true);
@@ -543,6 +583,7 @@ afterEach(async () => {
   rankedNet = null;
   setHealthCheck(null);
   setProgressFetch(null);
+  setModerationApi(null);
   forgetProgress();
   setAuthDeps(null);
   jest.restoreAllMocks();

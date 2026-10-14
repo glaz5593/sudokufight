@@ -11,7 +11,16 @@ import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import { FAST_THINKING, fastThinkingFlags, insertCheatFlags } from '../cheat';
 import type { CheatThresholds } from '../config';
 import type { Db } from '../db';
-import { gameEvents, gamePlayers, games, opponentHistory, puzzleHistory, users } from '../db/schema';
+import {
+  displayNameKey,
+  gameEvents,
+  gamePlayers,
+  games,
+  opponentHistory,
+  puzzleHistory,
+  retiredNames,
+  users,
+} from '../db/schema';
 import { addXp, rankedXpGains } from '../progress/xp';
 import { applyRatingChanges, type RatingWrite } from '../ratings';
 
@@ -31,7 +40,8 @@ import { applyRatingChanges, type RatingWrite } from '../ratings';
  *   made them: gameCreated carries the solution, which the server keeps for the replay and never sends to a
  *   client while the game runs (spec §21). It carries the players' display names too: a deleted account's
  *   is replaced by its anonymous one (`anonymizeLoggedNames`), when the account is deleted and when a
- *   gameCreated is written after that (a game the account was still in).
+ *   gameCreated is written after that (a game the account was still in); a name an admin reset away by the
+ *   account's current one, likewise (`renameLoggedNames`, and `scrubLoggedNames` for a later gameCreated).
  * - A restart (`endInterruptedGames`, at boot): a game still running when the server stopped is gone (it lived
  *   in its room's memory); its row is ended as 'serverRestart', unrated.
  * - End (`recordGameEnd`), one transaction: ended_at and end_reason; each seat's final score, mistakes,
@@ -134,8 +144,9 @@ const GAME_CREATED_SEQ = 1;
 
 /**
  * Appends events; one already there (same seq) is skipped, so a batch may be sent again. A batch with the
- * gameCreated (the one event with names) then takes the names of accounts deleted meanwhile out of it, or
- * being deleted right now (anonymizeLoggedNames waits for those).
+ * gameCreated (the one event with names) then takes out of it the names of accounts deleted meanwhile, or
+ * being deleted right now, and the names an admin reset away meanwhile, or is resetting right now
+ * (scrubLoggedNames waits for those).
  */
 export async function appendGameEvents(db: Db, gameId: string, events: readonly GameEvent[]): Promise<void> {
   for (let i = 0; i < events.length; i += EVENT_CHUNK) {
@@ -144,7 +155,7 @@ export async function appendGameEvents(db: Db, gameId: string, events: readonly 
       .values(events.slice(i, i + EVENT_CHUNK).map((e) => eventRow(gameId, e)))
       .onConflictDoNothing();
   }
-  if (events.some((e) => e.type === 'gameCreated')) await anonymizeLoggedNames(db, { gameId });
+  if (events.some((e) => e.type === 'gameCreated')) await scrubLoggedNames(db, gameId);
 }
 
 /**
@@ -170,6 +181,43 @@ export async function anonymizeLoggedNames(
   db: Db,
   scope: { userId: string } | { gameId: string },
 ): Promise<number> {
+  return rewriteLoggedNames(db, scope, 'deleted');
+}
+
+/**
+ * After an admin reset an offensive display name (spec §3.5, moderation/admin.ts): every game of that account
+ * gets its new, temporary name in the logged gameCreated, so its opponents' replays no longer show the old
+ * one. The same pass as anonymizeLoggedNames, for a live account. (A rename by the player keeps the logs as
+ * they were played.) Returns how many seats changed.
+ */
+export async function renameLoggedNames(db: Db, userId: string): Promise<number> {
+  return rewriteLoggedNames(db, { userId }, 'all');
+}
+
+/**
+ * One game's gameCreated, written after its players' names changed under it (appendGameEvents): a deleted
+ * account's seat gets its anonymous name (as anonymizeLoggedNames), and a seat whose logged name an admin reset
+ * away (retired_names) gets the account's current name (as renameLoggedNames). The room took the names when the
+ * players joined, and the recorder writes the log a little later (a batch, a retry): a reset in between would
+ * otherwise leave the old name in that game's replay. A name the player changed themselves stays as played.
+ * Waits for a deletion or a reset still running (their users row locked), as anonymizeLoggedNames does.
+ */
+export async function scrubLoggedNames(db: Db, gameId: string): Promise<number> {
+  return rewriteLoggedNames(db, { gameId }, 'deletedOrRetired');
+}
+
+/**
+ * Which seats get the account's current users.display_name: every seat that differs (`all`), a deleted
+ * account's (`deleted`), or those and the seats whose logged name is retired (`deletedOrRetired`).
+ */
+type RewriteSeats = 'all' | 'deleted' | 'deletedOrRetired';
+
+/** Sets the account's current users.display_name in its seats of the logged gameCreated events. */
+async function rewriteLoggedNames(
+  db: Db,
+  scope: { userId: string } | { gameId: string },
+  seats: RewriteSeats,
+): Promise<number> {
   if ('gameId' in scope) {
     await db
       .select({ id: users.id })
@@ -180,6 +228,13 @@ export async function anonymizeLoggedNames(
   }
   const seat = (field: 'id' | 'name') =>
     sql`array['config', 'players', ${gamePlayers.seat}::text, ${sql.raw(`'${field}'`)}]`;
+  const loggedName = sql`${gameEvents.payload} #>> ${seat('name')}`;
+  const which =
+    seats === 'all'
+      ? undefined
+      : seats === 'deleted'
+        ? isNotNull(users.deletedAt)
+        : sql`(${users.deletedAt} is not null or ${displayNameKey(loggedName)} in (select ${retiredNames.nameKey} from ${retiredNames}))`;
   const pass = async () =>
     (
       await db
@@ -195,10 +250,10 @@ export async function anonymizeLoggedNames(
             eq(gameEvents.gameId, gamePlayers.gameId),
             eq(gameEvents.seq, GAME_CREATED_SEQ),
             eq(gameEvents.type, 'gameCreated'),
-            isNotNull(users.deletedAt),
+            which,
             sql`${gameEvents.payload} #>> ${seat('id')} = ${gamePlayers.userId}`,
-            // A seat with a name (no name, nothing to replace) other than the anonymous one already.
-            sql`${gameEvents.payload} #>> ${seat('name')} <> ${users.displayName}`,
+            // A seat with a name (no name, nothing to replace) other than the account's current one already.
+            sql`${loggedName} <> ${users.displayName}`,
           ),
         )
         .returning({ gameId: gameEvents.gameId })

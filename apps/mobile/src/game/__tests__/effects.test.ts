@@ -1,4 +1,5 @@
 import { type HostUpdate, THINK_TIME_MS } from '@sudoku-fight/engine';
+import { MUTED_REACTION_EMOJI } from '@sudoku-fight/protocol';
 
 import { effectsOf, matchEffectsOf, type UiEffect } from '../effects';
 import { answerIn, emptyCellsOf, PUZZLE, testHost, wrongIn } from '../testing/practice';
@@ -175,6 +176,20 @@ describe('matchEffectsOf (spec §7, §8)', () => {
     expect(g.next()).toEqual([
       { kind: 'reaction', seq: expect.any(Number), playerId: 'bot', emoji: '😂', byMe: false },
       { kind: 'reaction', seq: expect.any(Number), playerId: 'me', emoji: '😎', byMe: true },
+    ]);
+  });
+
+  it('a reaction the server muted for me (spec §3.5: I blocked its sender) is nothing at all', () => {
+    const update: HostUpdate = {
+      kind: 'events',
+      view: game().host.getView(),
+      events: [
+        { type: 'reaction', seq: 7, t: 1, playerId: 'nina', emoji: MUTED_REACTION_EMOJI },
+        { type: 'reaction', seq: 8, t: 2, playerId: 'pip', emoji: '🔥' },
+      ],
+    } as HostUpdate;
+    expect(matchEffectsOf(update, 'me')).toEqual([
+      { kind: 'reaction', seq: 8, playerId: 'pip', emoji: '🔥', byMe: false },
     ]);
   });
 

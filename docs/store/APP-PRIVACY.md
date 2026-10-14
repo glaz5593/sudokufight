@@ -18,7 +18,8 @@
 |---|---|---|
 | חשבון | מייל, שם לתצוגה, מדינה, אווטאר, מזהה חשבון, uid של Firebase. **בכניסה עם Google** (רשות, מ־14.10.2026, ב־Android בלבד בינתיים): ‏Firebase Auth שומר גם את מזהה חשבון Google, ואת השם ואת הקישור לתמונה של חשבון Google. השרת שלנו לא שומר אותם ולא מציג אותם | `apps/server/src/accounts`, ‏Firebase Auth, ‏`apps/mobile/src/auth/firebaseProvider.ts` |
 | משחקים | מהלכים עם זמנים, ניקוד, טעויות, מיקום, דירוג, XP, היסטוריית לוחות ויריבים, תוצאות אימון, ‏cheat_flags | `apps/server/src/persistence`, ‏`progress`, ‏`db/schema.ts` |
-| אירועי שימוש | ‏`installId` אקראי, פלטפורמה, גרסה, 13 אירועים עם props (טבלה במדיניות) | `apps/mobile/src/services/telemetry`, ‏`POST /v1/events` |
+| דיווחים וחסימות (אפיון 3.5, מ־14.10.2026) | דיווח: מי דיווח, על מי, אחת משלוש סיבות קבועות (בלי טקסט חופשי), המשחק המדורג אם יש, מתי, והטיפול בו. חסימה: את מי ומתי. יומן פעולות המנהלים (איפוס שם עם השם הקודם והחדש, השעיה), עם המייל של המנהל | `apps/server/src/moderation`, ‏`db/schema.ts` (`player_reports`, ‏`user_blocks`, ‏`admin_audit`, ‏`retired_names`, ‏`suspended_sign_ins`: שמות שאופסו, בלי קישור לשחקן; וטביעות חד־כיווניות של הכניסה של חשבון מושעה שנמחק) |
+| אירועי שימוש | ‏`installId` אקראי, פלטפורמה, גרסה, 14 אירועים עם props (טבלה במדיניות; ‏`report_sent` נושא רק את הסיבה) | `apps/mobile/src/services/telemetry`, ‏`POST /v1/events` |
 | Firebase Analytics | אותם אירועים, ‏App Instance ID, פרטי מכשיר, מיקום משוער מה־IP | `apps/mobile/src/services/analytics.ts` ← ‏`firebaseAnalytics.ts`, ‏`ga4.ts` |
 | Crashlytics | דוחות קריסה, דגם, מערכת, גרסה, מזהה חשבון (לא מייל) | `apps/mobile/src/services/crashlytics.ts` |
 | Sentry (שרת) | פרטי שגיאה טכניים, לפעמים מזהה חשבון | `apps/server/src/monitoring` |
@@ -42,7 +43,7 @@
 | Contacts | — | לא | — | — | — | |
 | User Content | Emails or Text Messages, Photos or Videos, Audio, Customer Support | לא | — | — | — | אין צ׳אט. תמיכה במייל, מחוץ לאפליקציה |
 | User Content | **Gameplay Content** | **כן** | כן | לא | App Functionality | משחקים מדורגים, מהלכים, Replay, תוצאות אימון, דירוג ו־XP |
-| User Content | **Other User Content** | **כן** | כן | לא | App Functionality | המדינה והאווטאר שהשחקן בוחר, גלויים לאחרים |
+| User Content | **Other User Content** | **כן** | כן | לא | App Functionality | המדינה והאווטאר שהשחקן בוחר, גלויים לאחרים. גם הדיווחים על שחקנים (סיבה קבועה, בלי טקסט) והחסימות שלו (אפיון 3.5): נשמרים בשרת, ולא גלויים לשחקנים אחרים |
 | Browsing / Search History | — | לא | — | — | — | |
 | Identifiers | **User ID** | **כן** | כן | לא | App Functionality, Analytics | מזהה החשבון, ה־uid של Firebase, והשם לתצוגה (screen name) |
 | Identifiers | **Device ID** | **כן** | כן | לא | App Functionality, Analytics | ‏`installId` שלנו, ‏App Instance ID של Firebase, מזהה ההתקנה של Crashlytics. **לא IDFA** |

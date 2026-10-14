@@ -1,6 +1,12 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
+import {
+  ADMIN_AUDIT_ACTIONS,
+  ADMIN_REPORT_FILTERS,
+  REPORT_REASONS,
+  REPORT_STATUSES,
+} from '@sudoku-fight/protocol';
 import ts from 'typescript';
 
 import { isolate, isStringKey, LANGS, STRINGS, translate } from './strings';
@@ -54,6 +60,27 @@ describe('strings: Hebrew and English', () => {
       expect([reason, isStringKey(`endReason.${reason}`)]).toEqual([reason, true]);
     expect(translate('he', 'endReason.serverRestart')).toBe('נקטע בהפעלה מחדש של השרת');
     expect(translate('en', 'endReason.serverRestart')).toBe('Cut short by a server restart');
+  });
+
+  it('every report reason, status, filter and audit action of the contract has its words (spec §3.5)', () => {
+    const groups: [string, readonly string[]][] = [
+      ['reason', REPORT_REASONS],
+      ['reportStatus', REPORT_STATUSES],
+      ['reportFilter', ADMIN_REPORT_FILTERS],
+      ['auditAction', ADMIN_AUDIT_ACTIONS],
+    ];
+    for (const [group, values] of groups) {
+      for (const value of values) {
+        expect([group, value, isStringKey(`${group}.${value}`)]).toEqual([group, value, true]);
+      }
+    }
+    // The three reasons as the spec and the app name them.
+    expect(
+      REPORT_REASONS.map((r) => {
+        const key = `reason.${r}`;
+        return isStringKey(key) ? translate('he', key) : key;
+      }),
+    ).toEqual(['שם פוגעני', 'רמאות', 'אחר']);
   });
 
   it('isolate wraps left-to-right text in LRI…PDI', () => {

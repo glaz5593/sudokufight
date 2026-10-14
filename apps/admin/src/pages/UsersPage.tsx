@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 
 import { AvatarImg } from '../components/AvatarImg';
 import { type Column, DataTable } from '../components/DataTable';
+import { ModerationBadges } from '../components/moderation';
 import {
   AsyncView,
   DateTime,
@@ -17,7 +18,10 @@ import { useApi, useAsync } from '../data';
 import { useI18n } from '../i18n';
 import { navigate, routeHref } from '../router';
 
-/** Spec §27.3 "משתמשים": registered users with search, "last seen", games and their best rating. */
+/**
+ * Spec §27.3 "משתמשים": registered users with search, "last seen", games and their best rating, and their
+ * moderation state (spec §3.5): suspended, waiting for a new name, open reports.
+ */
 export function UsersPage({ search, page }: { search: string; page: number }) {
   const { t } = useI18n();
   const api = useApi();
@@ -38,7 +42,11 @@ export function UsersPage({ search, page }: { search: string; page: number }) {
             <AvatarImg id={u.avatarId} size={28} decorative />
             <bdi>{u.displayName}</bdi>
           </a>
-          {u.deletedAt !== null && <span className="badge badge-danger">{t('users.deleted')}</span>}
+          <ModerationBadges
+            deleted={u.deletedAt !== null}
+            suspended={(u.suspendedAt ?? null) !== null}
+            nameReset={u.nameResetRequired ?? false}
+          />
         </>
       ),
     },
@@ -56,6 +64,12 @@ export function UsersPage({ search, page }: { search: string; page: number }) {
       header: t('col.bestRating'),
       numeric: true,
       cell: (u) => <Num value={u.bestRating} />,
+    },
+    {
+      id: 'openReports',
+      header: t('col.openReports'),
+      numeric: true,
+      cell: (u) => <Num value={u.openReports ?? null} />,
     },
   ];
 

@@ -41,6 +41,11 @@ export const TELEMETRY_EVENT_NAMES = [
   'latency_sample',
   'replay_open',
   'account_delete',
+  /**
+   * A player report went out (spec §3.5): props `{ reason }` (a ReportReason) and nothing else, never an id
+   * of the player or the game. The server refuses any other props for it.
+   */
+  'report_sent',
 ] as const;
 export type TelemetryEventName = (typeof TELEMETRY_EVENT_NAMES)[number];
 

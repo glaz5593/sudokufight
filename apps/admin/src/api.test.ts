@@ -1,4 +1,4 @@
-import { ADMIN_API_PREFIX, ADMIN_GOOGLE_LOGIN_ERRORS } from '@sudoku-fight/protocol';
+import { ADMIN_ACTION_ERRORS, ADMIN_API_PREFIX, ADMIN_GOOGLE_LOGIN_ERRORS } from '@sudoku-fight/protocol';
 
 import { ApiError, createApi, queryString } from './api';
 import { fakeServer, GOOGLE_AND_PASSWORD, GOOGLE_WEB, SIGNED_IN } from './testing/server';
@@ -35,6 +35,58 @@ describe('api client', () => {
       '/admin/api/overview?days=7',
       '/admin/api/screens?days=90',
     ]);
+  });
+
+  it('asks for the reports (open by default, or by status) and the audit log', async () => {
+    const empty = { body: { items: [], page: 1, pageSize: 50, total: 0 } };
+    const server = fakeServer({ 'GET /reports': empty, 'GET /audit': empty });
+    const api = createApi({ fetch: server.fetch });
+    await api.reports({});
+    await api.reports({ status: 'all', page: 2, pageSize: 20 });
+    await api.audit({});
+    await api.audit({ page: 3 });
+    expect(server.requests.map((r) => r.url)).toEqual([
+      '/admin/api/reports?status=open&page=1&pageSize=50',
+      '/admin/api/reports?status=all&page=2&pageSize=20',
+      '/admin/api/audit?page=1&pageSize=50',
+      '/admin/api/audit?page=3&pageSize=50',
+    ]);
+  });
+
+  it('posts each moderation action as JSON {} to its path, ids escaped', async () => {
+    const ok = { body: {} };
+    const server = fakeServer({
+      'POST /reports/r%2F1/resolve': ok,
+      'POST /reports/r-2/dismiss': ok,
+      'POST /users/u-1/reset-name': ok,
+      'POST /users/u-1/suspend': ok,
+      'POST /users/u-1/unsuspend': ok,
+    });
+    const api = createApi({ fetch: server.fetch });
+    await api.resolveReport('r/1');
+    await api.dismissReport('r-2');
+    await api.resetName('u-1');
+    await api.suspend('u-1');
+    await api.unsuspend('u-1');
+    expect(server.requests.map((r) => [r.method, r.url, r.body])).toEqual([
+      ['POST', '/admin/api/reports/r%2F1/resolve', {}],
+      ['POST', '/admin/api/reports/r-2/dismiss', {}],
+      ['POST', '/admin/api/users/u-1/reset-name', {}],
+      ['POST', '/admin/api/users/u-1/suspend', {}],
+      ['POST', '/admin/api/users/u-1/unsuspend', {}],
+    ]);
+    for (const req of server.requests) {
+      expect(req).toMatchObject({
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      });
+    }
+  });
+
+  it.each(ADMIN_ACTION_ERRORS)('names a moderation refusal: 409 %s', async (error) => {
+    const server = fakeServer({ 'POST /users/u-1/suspend': { status: 409, body: { error } } });
+    const api = createApi({ fetch: server.fetch });
+    await expect(api.suspend('u-1')).rejects.toMatchObject({ code: error, status: 409 });
   });
 
   it('escapes ids in detail paths', async () => {

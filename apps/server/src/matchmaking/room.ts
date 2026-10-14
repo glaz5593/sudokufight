@@ -50,8 +50,10 @@ export function createMatchmakingRoom(deps: MatchmakingRoomDeps) {
         return await deps.identity.verify({ token: token || undefined, options, ip: context.ip });
       } catch (error) {
         if (error instanceof IdentityError) {
-          // A registered player who has to verify the email first (D22): the app sends them to do it.
-          const refusal = error.code === 'emailNotVerified' ? 'emailNotVerified' : 'unauthenticated';
+          // A registered player who has to verify the email first (D22): the app sends them to do it. A
+          // suspended one (spec §3.5) is told so.
+          const refusal =
+            error.code === 'emailNotVerified' || error.code === 'suspended' ? error.code : 'unauthenticated';
           throw refuse(ErrorCode.AUTH_FAILED, refusal, error.message);
         }
         // Not a refusal: the check itself failed (the database, Google's keys). Colyseus tells the client.

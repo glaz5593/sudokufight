@@ -210,6 +210,20 @@ const ICONS = {
       <Path d="M14 3v4h4M9 12h6M9 16h6" />
     </>
   ),
+  /** "דווח על שחקן" (spec §3.5): a flag on its pole. */
+  flag: (
+    <>
+      <Path d="M5 21V4" />
+      <Path d="M5 4h11l-2 4 2 4H5" />
+    </>
+  ),
+  /** "חסום שחקן" (spec §3.5): a circle struck through. */
+  block: (
+    <>
+      <Circle cx="12" cy="12" r="9" />
+      <Path d="M5.6 5.6l12.8 12.8" />
+    </>
+  ),
   /** "רישיונות". */
   copyright: (
     <>

@@ -17,6 +17,7 @@ import { and, eq, isNull, ne, sql } from 'drizzle-orm';
 import type { VerifiedToken } from '../auth/firebaseToken';
 import type { Db } from '../db';
 import { displayNameKey, installs, ratings, type User, users } from '../db/schema';
+import { forgetModeration, keepSuspension, takeSuspension } from '../moderation/store';
 import { anonymizeLoggedNames } from '../persistence/records';
 
 /**
@@ -44,9 +45,12 @@ export function uniqueViolation(err: unknown): string | null {
   return null;
 }
 
-/** When the next rename is allowed (D20), or null when it is allowed now. */
-export function nextRenameAt(changedAt: Date | null, now: number): number | null {
-  if (changedAt === null) return null;
+/**
+ * When the next rename is allowed (D20), or null when it is allowed now. After an admin reset the name
+ * (`nameResetRequired`, spec §3.5) the next rename is free.
+ */
+export function nextRenameAt(changedAt: Date | null, now: number, nameResetRequired = false): number | null {
+  if (changedAt === null || nameResetRequired) return null;
   const next = changedAt.getTime() + RENAME_COOLDOWN_MS;
   return next > now ? next : null;
 }
@@ -105,8 +109,10 @@ export async function toMe(
     emailVerified: token.emailVerified,
     createdAt: user.createdAt.getTime(),
     displayNameChangedAt: user.displayNameChangedAt?.getTime() ?? null,
-    nextRenameAt: nextRenameAt(user.displayNameChangedAt, now),
+    nextRenameAt: nextRenameAt(user.displayNameChangedAt, now, user.nameResetRequired),
     ratings: await ratingsOf(db, user.id, option),
+    nameResetRequired: user.nameResetRequired,
+    suspended: user.suspendedAt !== null,
   };
 }
 
@@ -118,7 +124,11 @@ export interface NewUser {
 
 export type CreateResult = { ok: true; user: User } | { ok: false; error: 'alreadyRegistered' | 'taken' };
 
-/** A users row for this sign-in, and its ratings at 1200, provisional, for every key of `option` [D7, D23]. */
+/**
+ * A users row for this sign-in, and its ratings at 1200, provisional, for every key of `option` [D7, D23]. A
+ * sign-in of a suspended account that was deleted starts suspended (spec §3.5, moderation/store.ts
+ * takeSuspension): deleting the account is no way out of a suspension.
+ */
 export async function createUser(
   db: Db,
   token: VerifiedToken,
@@ -142,6 +152,7 @@ export async function createUser(
         })
         .returning();
       if (row === undefined) throw new Error('insert into users returned nothing');
+      const suspendedAt = await takeSuspension(tx, row.id, token, now);
       await tx.insert(ratings).values(
         ratingKeysFor(option).map((ratingKey) => ({
           userId: row.id,
@@ -153,7 +164,7 @@ export async function createUser(
           updatedAt: at,
         })),
       );
-      return row;
+      return suspendedAt === null ? row : { ...row, suspendedAt };
     });
     return { ok: true, user };
   } catch (err) {
@@ -172,13 +183,15 @@ export interface UserChanges {
 
 export type UpdateResult =
   | { ok: true; user: User }
-  | { ok: false; error: 'notRegistered' | 'taken' }
+  | { ok: false; error: 'notRegistered' | 'taken' | 'suspended' }
   | { ok: false; error: 'renameTooSoon'; nextRenameAt: number };
 
 /**
  * Changes the live account of `token`: avatar and country any time (D21), the name once in 30 days (D20;
- * the same name again is no change). The email follows the sign-in's. The row is locked while it is read
- * and written, so two renames at once can't both pass the 30-day check.
+ * the same name again is no change), or at once after an admin reset it (spec §3.5: that rename clears
+ * `nameResetRequired`, and the 30 days count from it). The email follows the sign-in's. The row is locked while
+ * it is read and written, so two renames at once can't both pass the 30-day check. A suspended account
+ * changes nothing (`suspended`; the router answers 403).
  */
 export async function updateUser(
   db: Db,
@@ -194,13 +207,15 @@ export async function updateUser(
         .where(and(eq(users.firebaseUid, token.uid), isNull(users.deletedAt)))
         .for('update');
       if (row === undefined) return { ok: false, error: 'notRegistered' };
+      if (row.suspendedAt !== null) return { ok: false, error: 'suspended' };
 
       const set: Partial<typeof users.$inferInsert> = {};
       if (changes.displayName !== undefined && changes.displayName !== row.displayName) {
-        const next = nextRenameAt(row.displayNameChangedAt, now);
+        const next = nextRenameAt(row.displayNameChangedAt, now, row.nameResetRequired);
         if (next !== null) return { ok: false, error: 'renameTooSoon', nextRenameAt: next };
         set.displayName = changes.displayName;
         set.displayNameChangedAt = new Date(now);
+        set.nameResetRequired = false;
       }
       if (changes.avatarId !== undefined && changes.avatarId !== row.avatarId)
         set.avatarId = changes.avatarId;
@@ -238,16 +253,23 @@ export const deletedName = () => `deleted:${randomUUID()}`;
  *
  * The rest of what the server stores has no name in it: game_players, the histories, practice results,
  * cheat flags and XP hold the users.id; app_events props never carry names (the app's analytics events).
+ *
+ * Moderation (spec §3.5, moderation/store.ts forgetModeration): the account's blocks go, both ways; open
+ * reports about it are dismissed by `system` (nothing left to act on), while the reports it sent stay, from
+ * the anonymous row, for the admins to handle; the admins' audit entries about it stay but lose the names in
+ * their details; the suspension and a pending name reset are cleared from the row, but a suspension outlives
+ * the deletion as fingerprints of the sign-in (keepSuspension: a new account with it starts suspended).
  * False when there was no live account.
  */
 export async function deleteUser(db: Db, token: VerifiedToken, now: number): Promise<boolean> {
   return db.transaction(async (tx) => {
     const [row] = await tx
-      .select({ id: users.id })
+      .select({ id: users.id, suspendedAt: users.suspendedAt })
       .from(users)
       .where(and(eq(users.firebaseUid, token.uid), isNull(users.deletedAt)))
       .for('update');
     if (row === undefined) return false;
+    if (row.suspendedAt !== null) await keepSuspension(tx, row.id, row.suspendedAt, token, now);
     await tx
       .update(users)
       .set({
@@ -258,10 +280,13 @@ export async function deleteUser(db: Db, token: VerifiedToken, now: number): Pro
         country: null,
         avatarId: null,
         firebaseUid: `deleted:${row.id}`,
+        suspendedAt: null,
+        nameResetRequired: false,
       })
       .where(eq(users.id, row.id));
     await tx.update(installs).set({ userId: null }).where(eq(installs.userId, row.id));
     await anonymizeLoggedNames(tx, { userId: row.id });
+    await forgetModeration(tx, row.id, now);
     return true;
   });
 }

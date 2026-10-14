@@ -42,7 +42,7 @@
 | App activity | **App interactions** | **Yes** | No | No | Required | Analytics, App functionality. האירועים ו־`screen_view` |
 | App activity | In-app search history, Installed apps | No | | | | |
 | App activity | Other user-generated content | No | | | | השם לתצוגה מוצהר תחת Name |
-| App activity | **Other actions** | **Yes** | No | No | Required | App functionality, Analytics, Fraud prevention, security, and compliance. מהלכים, משחקים, דירוג, XP, ‏cheat_flags |
+| App activity | **Other actions** | **Yes** | No | No | Required | App functionality, Analytics, Fraud prevention, security, and compliance. מהלכים, משחקים, דירוג, XP, ‏cheat_flags. **דיווחים על שחקנים** (מי, על מי, אחת משלוש סיבות קבועות, המשחק, מתי) ו**חסימות** (את מי ומתי), אפיון 3.5 |
 | Web browsing | Web browsing history | No | | | | |
 | App info and performance | **Crash logs** | **Yes** | No | No | Required | App functionality, Analytics. ‏Crashlytics |
 | App info and performance | **Diagnostics** | **Yes** | No | No | Required | App functionality, Analytics. ‏`latency_sample`, ‏`reconnect`, דגם, מערכת וגרסה |
@@ -58,7 +58,10 @@
 ## 4. מתי לעדכן
 
 - כל הוספה של SDK (פרסום, תשלומים, צ׳אט, התחברות עם Facebook או עם Apple) או של אירוע אנליטיקס עם מידע חדש. (התחברות עם Google כבר כלולה למעלה, מ־14.10.2026.)
-- הוספת "דווח על שחקן" (`UGC-PROPOSAL.md`): דיווח נשמר בשרת. הוא נכנס ל־"Other actions", ואם יש בו טקסט חופשי גם ל־"Other user-generated content".
+- ~~הוספת "דווח על שחקן"~~ **נעשה (14.10.2026, אפיון 3.5):** דיווחים וחסימות נשמרים בשרת, ונכנסו ל־"Other actions" (למעלה). אין בהם טקסט חופשי, ולכן "Other user-generated content" נשאר No. אם יתווסף לדיווח טקסט חופשי, לסמן גם אותו.
+  - **שמירה:** חסימה עד שמבטלים אותה או מוחקים את החשבון. דיווחים ויומן פעולות המנהלים כל עוד הם נחוצים לטיפול, עם בדיקה ומחיקה של ישנים (כמו במדיניות). במחיקת חשבון: החסימות שלו נמחקות, דיווחים פתוחים עליו נסגרים, והשמות שלו יוצאים מהיומן.
+  - **חשבון מושעה שנמחק:** נשארות רק טביעות חד־כיווניות (Hash) של מזהה הכניסה ושל המייל המאומת, כדי שחשבון חדש עם אותה כניסה יתחיל מושעה (Fraud prevention). זה לא המייל עצמו, ולכן "Data deletion" נשאר נכון; המדיניות מפרטת את זה. שם שמנהל איפס נשמר ברשימת שמות אסורים, בלי קישור לשחקן.
+  - האירוע `report_sent` נושא את הסיבה בלבד (נכלל ב־"App interactions").
 - כיבוי Analytics, או הוספת מתג "שתף נתוני שימוש": משנה את "Required" ל־"Optional".
 
 </div>

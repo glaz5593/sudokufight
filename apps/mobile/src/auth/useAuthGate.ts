@@ -1,6 +1,7 @@
 import { router, useRootNavigationState, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
 
+import { needsNewName } from '../api/me';
 import { initAuth, useAuth } from './authStore';
 import { redirectFor } from './redirect';
 
@@ -15,9 +16,11 @@ import { redirectFor } from './redirect';
  */
 export function useAuthGate(): { splash: boolean } {
   const status = useAuth((s) => s.status);
+  // Spec §3.5: an admin reset the name; the player chooses a new one before anything else.
+  const nameReset = useAuth((s) => s.status === 'ready' && needsNewName(s.me));
   const segments = useSegments();
   const navigationReady = Boolean(useRootNavigationState()?.key);
-  const target = redirectFor(status, segments);
+  const target = redirectFor(status, segments, { nameReset });
   // Settled: the first time the status is known and the screen is right. Derived during render.
   const [settled, setSettled] = useState(false);
   if (!settled && status !== 'loading' && target === null) setSettled(true);

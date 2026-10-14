@@ -32,10 +32,10 @@ export interface MatchErrorViewProps {
 /** Failures that are the connection's: no answer, or it dropped. */
 const CONNECTION: readonly MatchmakingFailureCode[] = ['network', 'lost'];
 /**
- * Failures another search can't get past (stage 13): nobody signed in, or a queue the server doesn't have.
- * "חפש שוב" is left out, and "עבור לאימון" becomes the one primary.
+ * Failures another search can't get past (stage 13): nobody signed in, a queue the server doesn't have, or a
+ * suspended account (spec §3.5). "חפש שוב" is left out, and "עבור לאימון" becomes the one primary.
  */
-const FINAL: readonly MatchmakingFailureCode[] = ['signedOut', 'badQueue'];
+const FINAL: readonly MatchmakingFailureCode[] = ['signedOut', 'badQueue', 'suspended'];
 /**
  * The server wants a verified email for ranked games [D22]: its own check, from the sign-in's token, which
  * may be older than what the app knows (the app asks before it searches). "אמת את המייל" is the one primary:

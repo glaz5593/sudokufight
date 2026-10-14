@@ -4,13 +4,15 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import type { Db } from '../db';
 import { opponentHistory, ratings, users } from '../db/schema';
+import { blockedEitherWay } from '../moderation/store';
 import type { OpponentRecord } from './matcher';
 import type { MatchmakingStore, StoredPlayer } from './service';
 
 /**
  * What matchmaking reads from the database (spec §19): the player's profile and rating in the queue's rating
- * key, and their opponent_history (one row per player, opponent and game type, played_at the latest game;
- * written by the rated game room when a game starts, persistence/records.ts).
+ * key, their opponent_history (one row per player, opponent and game type, played_at the latest game;
+ * written by the rated game room when a game starts, persistence/records.ts), and their blocks, both ways
+ * (user_blocks, spec §3.5).
  */
 export function dbMatchmakingStore(db: Db | (() => Db)): MatchmakingStore {
   const database = typeof db === 'function' ? db : () => db;
@@ -47,5 +49,7 @@ export function dbMatchmakingStore(db: Db | (() => Db)): MatchmakingStore {
         .where(and(eq(opponentHistory.userId, userId), eq(opponentHistory.gameType, gameType)));
       return rows.map((r) => ({ opponentId: r.opponentId, playedAt: r.playedAt.getTime() }));
     },
+
+    blocked: (userId) => blockedEitherWay(database(), userId),
   };
 }

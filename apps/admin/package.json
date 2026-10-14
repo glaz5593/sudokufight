@@ -2,7 +2,7 @@
   "name": "@sudoku-fight/admin",
   "version": "0.1.0",
   "private": true,
-  "description": "Read-only admin site (spec §27.3): installs, users, games and screens. Served by the server under /admin.",
+  "description": "Admin site (spec §27.3): installs, users, games and screens to view, and the reports with their moderation actions (spec §3.5). Served by the server under /admin.",
   "type": "module",
   "scripts": {
     "dev": "vite",

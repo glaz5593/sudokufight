@@ -2,6 +2,7 @@ import { createRng } from '@sudoku-fight/engine';
 import { type QueueKey } from '@sudoku-fight/protocol';
 
 import {
+  blockedPair,
   inMutualRange,
   matchTick,
   MatchQueue,
@@ -359,6 +360,85 @@ describe('a ticket is matched once (stage 9 review: two matches never pull the s
           expect(before.some((x) => x.userId === id)).toBe(true);
         }
         expect(queue.size).toBe(before.length - out.length);
+      }
+    }
+  });
+});
+
+describe('blocks (spec §3.5): never in one game, either way, and no search starves for it', () => {
+  it('two players of whom one blocked the other never meet, however long they wait; both meet others', () => {
+    const { add, round } = queueOf();
+    const ana = add('ana', 1200, { blocked: ['ben'] });
+    const ben = add('ben', 1200);
+    expect([blockedPair(ana, ben), blockedPair(ben, ana)]).toEqual([true, true]);
+    for (let s = 0; s < 30; s += 5) expect(round(T0 + s * S).groups).toEqual([]);
+    add('cy', 1210, { at: T0 + 30 * S });
+    expect(round(T0 + 30 * S).groups).toEqual([['ana', 'cy']]);
+    add('dee', 1190, { at: T0 + 31 * S });
+    expect(round(T0 + 31 * S).groups).toEqual([['ben', 'dee']]);
+  });
+
+  it('the block counts from either side: the one who was blocked does not meet the blocker', () => {
+    const { add, round } = queueOf();
+    add('ana', 1200);
+    add('ben', 1200, { blocked: ['ana'] });
+    expect(round(T0).groups).toEqual([]);
+  });
+
+  it('3 and 4 players: a group never has a blocked pair, and forms around it when it can', () => {
+    const three = queueOf(3);
+    three.add('ana', 1200, { blocked: ['ben'] });
+    three.add('ben', 1200);
+    three.add('cy', 1200);
+    expect(three.round(T0).groups).toEqual([]);
+    three.add('dee', 1200);
+    // Ana is served first: with Cy and Dee, not Ben.
+    expect(three.round(T0).groups).toEqual([['ana', 'cy', 'dee']]);
+
+    const four = queueOf(4);
+    for (const id of ['p1', 'p2', 'p3', 'p4']) four.add(id, 1200, id === 'p4' ? { blocked: ['p2'] } : {});
+    expect(four.round(T0).groups).toEqual([]);
+    four.add('p5', 1200);
+    expect(four.round(T0).groups).toEqual([['p1', 'p2', 'p3', 'p5']]);
+  });
+
+  it('a blocked player is not an available opponent: the 80% reset still comes (no starvation)', () => {
+    const { add, round, queue } = queueOf();
+    // Ana and Cy met; Ana blocked Ben, who is in Ana's reach (200 away) but not in Cy's (400 away). Were Ben
+    // an available opponent of Ana's, she would have met only half of hers, Cy would stay "recent", and Ana
+    // could meet nobody while Ben waits. Without him, Cy is all she could meet: the history starts over.
+    const ana = add('ana', 1200, { opponents: met('cy'), blocked: ['ben'] });
+    add('ben', 1400);
+    const cy = add('cy', 1000, { opponents: met('ana') });
+    expect(recentOpponents(ana, queue.list())).toEqual(new Set());
+    expect(recentOpponents(cy, queue.list())).toEqual(new Set());
+    expect(round(T0 + 25 * S).groups).toEqual([]); // 200 apart: both ranges reach it at 30 s
+    const r = round(T0 + 30 * S);
+    expect(r.groups).toEqual([['ana', 'cy']]);
+    expect(r.rematch).toEqual([true]);
+  });
+
+  it('random busy queues with blocks: no group ever holds a blocked pair', () => {
+    const rng = createRng(20261014);
+    const pick = (n: number) => Math.floor(rng.next() * n);
+    for (let trial = 0; trial < 30; trial++) {
+      const size = 2 + (trial % 3);
+      const { queue, add } = queueOf(size);
+      const players = 6 + pick(20);
+      const blocks = new Map<string, string[]>();
+      for (let i = 0; i < players; i++) {
+        const blocked = pick(3) === 0 ? [`p${pick(players)}`, `p${pick(players)}`] : [];
+        blocks.set(`p${i}`, blocked);
+        add(`p${i}`, 1100 + pick(300), { at: T0 - pick(30) * S, blocked });
+      }
+      const isBlocked = (a: string, b: string) =>
+        (blocks.get(a) ?? []).includes(b) || (blocks.get(b) ?? []).includes(a);
+      for (let r = 0; r < 12 && queue.size > 0; r++) {
+        for (const g of queue.tick(T0 + r * 5 * S).groups) {
+          const ids = g.tickets.map((x) => x.userId);
+          for (const [i, a] of ids.entries())
+            for (const b of ids.slice(i + 1)) expect(isBlocked(a, b)).toBe(false);
+        }
       }
     }
   });

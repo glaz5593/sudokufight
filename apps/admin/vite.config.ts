@@ -19,7 +19,19 @@ const proxy = { '/admin/api': SERVER, '/v1': SERVER };
 export default defineConfig({
   base: '/admin/',
   plugins: [react()],
-  build: { outDir: 'dist', emptyOutDir: true },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    // React in a chunk of its own: it changes far less often than the site, so a browser keeps it cached
+    // across deploys (hashed assets are cached for a year), and the site's chunk stays under 500 kB.
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [{ name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ }],
+        },
+      },
+    },
+  },
   server: { port: 5174, proxy },
   preview: { port: 4174, proxy },
 });

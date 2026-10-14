@@ -15,6 +15,7 @@ import {
 import { ltr } from '../../../components/player';
 import { directionProblems } from '../../../components/ui/testing/layout';
 import i18n from '../../../i18n';
+import { LoginScreen } from '../LoginScreen';
 import { renderAccount } from '../testing/accountTesting';
 
 type Mocks = typeof import('../../home/testing/nativeMocks');
@@ -58,6 +59,19 @@ describe('Login (spec §3.3)', () => {
     expect(screen.getByTestId('login-email')).toHaveStyle({ writingDirection: 'ltr' });
     expect(screen.getByTestId('login-password')).toHaveStyle({ writingDirection: 'ltr' });
     expect(directionProblems(screen.getByTestId('login'))).toEqual([]);
+  });
+
+  it('the footer says which app this is: "גרסה 1.0.0" and "build a1b2c3d · staging"', async () => {
+    auth = await installSignedInPlayer();
+    await auth.provider.signOut();
+    await initAuth();
+    const version = { version: '1.0.0', build: 'a1b2c3d', server: 'staging' };
+    await renderAccount('/login', { login: () => <LoginScreen version={version} /> });
+    expect(screen.getByTestId('app-version-version')).toHaveTextContent(`גרסה ${ltr('1.0.0')}`);
+    expect(screen.getByTestId('app-version-details')).toHaveTextContent(ltr('build a1b2c3d · staging'));
+    // By default the installed app's own; a build without one shows no lines.
+    await renderAccount('/login', { login: () => <LoginScreen version={null} /> });
+    expect(screen.queryByTestId('app-version')).toBeNull();
   });
 
   it('the eye shows and hides the password', async () => {

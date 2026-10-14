@@ -1,3 +1,5 @@
+import { randomInt } from 'node:crypto';
+
 import {
   ADMIN_API_PREFIX,
   ADMIN_AUTH_METHODS_PATH,
@@ -11,12 +13,15 @@ import {
 import { type CookieOptions, json, type Request, type RequestHandler, type Response, Router } from 'express';
 import { z } from 'zod';
 
+import { defaultBlockedWords } from '../accounts/blockedWords';
 import { MAX_TOKEN_LENGTH, type TokenVerifier } from '../auth/firebaseToken';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db';
 import { clientKey } from '../http/clientKey';
 import { notFound, sendError, sendTooManyRequests } from '../http/errors';
 import { RateLimiter, type RateLimitRule } from '../http/rateLimiter';
+import type { ModerationTools } from '../moderation/admin';
+import { moderationAdminRoutes } from '../moderation/adminRoutes';
 import {
   ADMIN_COOKIE_NAME,
   ADMIN_GOOGLE_MAX_AUTH_AGE_MS,
@@ -39,8 +44,10 @@ import type { StatsWindow } from './sql';
 import { getUser, listUsers } from './users';
 
 /**
- * The admin API (spec §27.3, routes in @sudoku-fight/protocol admin.ts): read-only, same-origin, behind a
- * sign-in: Google (an address on ADMIN_EMAILS) and/or the admin password, as the server's settings say.
+ * The admin API (spec §27.3, routes in @sudoku-fight/protocol admin.ts): same-origin, behind a sign-in: Google
+ * (an address on ADMIN_EMAILS) and/or the admin password, as the server's settings say. Read-only, except the
+ * moderation actions (spec §3.5, approved by Moshe on 2026-10-12: ../moderation/adminRoutes), each written to
+ * the audit log with the session's address.
  *
  * - Admin off in the settings (config.admin.enabled false): every route answers 503 `disabled`.
  * - GET /auth/methods → AdminAuthMethods: which sign-ins this server takes, and the Firebase web config for
@@ -58,7 +65,8 @@ import { getUser, listUsers } from './users';
  * - POST /logout → 204: clears the cookie and refuses that token from then on.
  * - GET /session → AdminSession, or 401. Every other route needs the cookie too (401 `unauthorized`). A session
  *   ends early when its method is turned off, or its address taken off ADMIN_EMAILS (checked on each request).
- * - Everything else is GET; any other method or path is 404. Answers are never cached (no-store).
+ * - Everything else is GET, but the moderation POSTs (JSON `{}` bodies only); any other method or path is 404.
+ *   Answers are never cached (no-store).
  * - No CORS: configureHttp strips Colyseus's open CORS headers under /admin, and the guard answers preflights
  *   there without them (http/cors).
  */
@@ -73,6 +81,8 @@ export interface AdminRouterDeps {
   adminLoginLimit?: RateLimitRule;
   /** Where sign-ins are logged (default console.log). Never a token or a password. */
   log?: (message: string) => void;
+  /** The moderation actions' word filter and randomness (default: the server's list, crypto randomInt). */
+  moderationTools?: ModerationTools;
 }
 
 /**
@@ -141,6 +151,7 @@ export function createAdminRouter({
   tokens,
   adminLoginLimit = DEFAULT_LOGIN_LIMIT,
   log = console.log,
+  moderationTools,
 }: AdminRouterDeps): Router {
   const { admin } = config;
   const google = admin.enabled ? admin.google : null;
@@ -356,6 +367,16 @@ export function createAdminRouter({
   api.get(
     '/games/:id',
     byId((id) => getGame(db, id)),
+  );
+  // Reports, the audit log and the moderation actions (spec §3.5).
+  api.use(
+    moderationAdminRoutes({
+      db,
+      now,
+      tools: moderationTools ?? { blockedWords: defaultBlockedWords(), random: randomInt },
+      adminOf: (req) => sessionOf(req)?.admin ?? null,
+      googleRequired: google !== null,
+    }),
   );
 
   api.use(notFound);

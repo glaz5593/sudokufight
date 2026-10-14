@@ -40,8 +40,9 @@ import type { RankedMatchLink, RankedMatchSetup, RankedRoomHooks, RankedRooms } 
  * to it; the database (store.ts) and the game rooms (games.ts) come in as interfaces, and so do the clock
  * and the timers, so tests drive all of it with a manual clock.
  *
- * - A player joins a queue (registered accounts only: their rating in the queue's rating key and their
- *   opponent history of the game type are loaded once). One search per account at a time.
+ * - A player joins a queue (registered accounts only: their rating in the queue's rating key, their opponent
+ *   history of the game type and their blocks, both ways, are loaded once). One search per account at a
+ *   time.
  * - Every `tickMs` the matcher runs on each queue (matcher.ts has the rules). A `searching` goes out when a
  *   player's range widens.
  * - A group found: matchmaking opens the ranked game room (its onCreate claims the match: RankedRooms) and
@@ -80,6 +81,8 @@ export interface MatchmakingStore {
    * persistence/records.ts.)
    */
   opponents(userId: string, gameType: GameType): Promise<OpponentRecord[]>;
+  /** Everyone the player blocked or was blocked by (spec §3.5): never matched with them. */
+  blocked(userId: string): Promise<string[]>;
 }
 
 export interface OpenMatch {
@@ -255,16 +258,17 @@ export class MatchmakingService implements RankedRooms {
     this.bySession.set(session.id, entry);
     try {
       const key = ratingKey(spec.gameType, spec.players, this.deps.ratingOption);
-      const [player, opponents] = await Promise.all([
+      const [player, opponents, blocked] = await Promise.all([
         this.deps.store.player(entry.userId, key),
         this.deps.store.opponents(entry.userId, spec.gameType),
+        this.deps.store.blocked(entry.userId),
       ]);
       if (player === undefined)
         throw new MatchmakingRefusal('unauthenticated', 'no account for this player: register first');
       // Left (or cancelled) while loading.
       if (this.entries.get(entry.userId) !== entry || entry.session === null) return;
       entry.player = player;
-      this.search(entry, { userId: entry.userId, rating: player.rating, opponents });
+      this.search(entry, { userId: entry.userId, rating: player.rating, opponents, blocked });
     } catch (error) {
       this.forget(entry);
       throw error;
@@ -294,6 +298,7 @@ export class MatchmakingService implements RankedRooms {
         userId: t.userId,
         rating: t.rating,
         opponents: t.opponents,
+        blocked: t.blocked,
         enqueuedAt: t.enqueuedAt,
         searchStart: t.searchStart,
         deadline: now + this.deps.config.extendedTimeoutMs,
@@ -595,6 +600,7 @@ export class MatchmakingService implements RankedRooms {
           userId: t.userId,
           rating: t.rating,
           opponents: t.opponents,
+          blocked: t.blocked,
           enqueuedAt: t.enqueuedAt,
           searchStart: t.searchStart + pausedMs,
           deadline: t.deadline + pausedMs,

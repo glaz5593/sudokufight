@@ -207,6 +207,14 @@ export const tokens = {
         lockEdge: '#6234b2',
       },
     ],
+    brand: {
+      bg: '#101b33',
+      grid: 'rgba(255,255,255,0.07)',
+      blue: '#3d7bff',
+      orange: '#ff8a1f',
+      spark: '#ffd23f',
+      digit: '#ffffff',
+    },
   },
   font: {
     families: {

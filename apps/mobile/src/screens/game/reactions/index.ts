@@ -1,6 +1,7 @@
 /** Sending and muting reactions in a game (spec §8, D19; work plan stage 6). */
 export {
   CardMenu,
+  type CardMenuModeration,
   type CardMenuProps,
   CardMenuTrigger,
   type CardMenuTriggerProps,

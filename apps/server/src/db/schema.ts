@@ -1,9 +1,12 @@
 import { randomUUID } from 'node:crypto';
 
 import {
+  type AdminAuditAction,
   HEBREW_FINAL_LETTERS,
   HEBREW_REGULAR_LETTERS,
   type Platform,
+  REPORT_REASONS,
+  REPORT_STATUSES,
   type TelemetryEventName,
   type TelemetryProps,
 } from '@sudoku-fight/protocol';
@@ -71,6 +74,16 @@ export const users = pgTable(
     createdAt: timestamptz('created_at').notNull().defaultNow(),
     /** The account was deleted (spec §3.3); the row stays so games keep their players. */
     deletedAt: timestamptz('deleted_at'),
+    /**
+     * Suspended by an admin (spec §3.5): no ranked games and no account changes until it is lifted (null).
+     * Cleared when the account is deleted.
+     */
+    suspendedAt: timestamptz('suspended_at'),
+    /**
+     * An admin reset the display name to a temporary one: the app asks for a new name, and that rename is free
+     * of the 30-day rule [D20]. False again after it.
+     */
+    nameResetRequired: boolean('name_reset_required').notNull().default(false),
   },
   (t) => [
     // Spec §19's unique lower(display_name), widened to Hebrew final letters, among accounts not deleted.
@@ -331,6 +344,123 @@ export const cheatFlags = pgTable(
 );
 
 // ---------------------------------------------------------------------------------------------------------
+// Moderation (spec §3.5: report a player, block, and the admin's two actions)
+
+const inList = (values: readonly string[]) => sql.raw(values.map((v) => `'${v}'`).join(', '));
+
+/**
+ * Reports on players (src/moderation). One open report per reporter, player and reason (the partial unique
+ * index: a second one is `duplicate`); closed ones stay as the record. `game_id` only when it names a ranked
+ * game both sat in. When the reported account is deleted, its open reports are dismissed by `system`.
+ */
+export const playerReports = pgTable(
+  'player_reports',
+  {
+    id: text('id').primaryKey().$defaultFn(newId),
+    reporterId: text('reporter_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    reportedId: text('reported_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    reason: text('reason', { enum: REPORT_REASONS }).notNull(),
+    gameId: text('game_id').references(() => games.id, { onDelete: 'set null' }),
+    status: text('status', { enum: REPORT_STATUSES }).notNull().default('open'),
+    createdAt: timestamptz('created_at').notNull().defaultNow(),
+    resolvedAt: timestamptz('resolved_at'),
+    /** An admin's address, `password`, or `system` (the reported account was deleted). */
+    resolvedBy: text('resolved_by'),
+  },
+  (t) => [
+    uniqueIndex('player_reports_open_uq')
+      .on(t.reporterId, t.reportedId, t.reason)
+      .where(sql`${t.status} = 'open'`),
+    // The admin's list: by status, newest first, grouped by the reported player.
+    index('player_reports_status_idx').on(t.status, t.reportedId, t.createdAt),
+    index('player_reports_reported_idx').on(t.reportedId, t.createdAt),
+    // The hourly quota: a reporter's reports of the last hour.
+    index('player_reports_reporter_idx').on(t.reporterId, t.createdAt),
+    check('player_reports_reason_check', sql`${t.reason} in (${inList(REPORT_REASONS)})`),
+    check('player_reports_status_check', sql`${t.status} in (${inList(REPORT_STATUSES)})`),
+    check('player_reports_not_self', sql`${t.reporterId} <> ${t.reportedId}`),
+  ],
+);
+
+/**
+ * Blocks (spec §3.5): matchmaking never groups the two, and a game that brings them together anyway mutes the
+ * blocked player's reactions for the blocker. Both rows go when either account is deleted.
+ */
+export const userBlocks = pgTable(
+  'user_blocks',
+  {
+    blockerId: text('blocker_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    blockedId: text('blocked_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamptz('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.blockerId, t.blockedId] }),
+    // "Who blocked me": matchmaking reads both directions.
+    index('user_blocks_blocked_idx').on(t.blockedId),
+    check('user_blocks_not_self', sql`${t.blockerId} <> ${t.blockedId}`),
+  ],
+);
+
+/**
+ * Names an admin reset away as offensive (spec §3.5): nobody may take one again (registration, a rename, the
+ * live name check all answer `blocked`), so a reset can't be undone by choosing the old name again, by that
+ * player or another. Only the compare form (displayNameKey, protocol normalizeForCompare), linked to no one.
+ */
+export const retiredNames = pgTable('retired_names', {
+  nameKey: text('name_key').primaryKey(),
+  createdAt: timestamptz('created_at').notNull().defaultNow(),
+});
+
+/**
+ * The sign-in of a suspended account that was deleted (spec §3.5): one-way fingerprints (SHA-256, never the
+ * uid or the address itself) of its Firebase uid and of its verified email, so a new account with the same
+ * sign-in starts suspended for an admin to review, instead of the deletion lifting the suspension. They go
+ * when a new account matches them (it carries the suspension from then on). `user_id` is the deleted account:
+ * the admins' link to its games and reports.
+ */
+export const suspendedSignIns = pgTable(
+  'suspended_sign_ins',
+  {
+    fingerprint: text('fingerprint').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    suspendedAt: timestamptz('suspended_at').notNull(),
+    createdAt: timestamptz('created_at').notNull().defaultNow(),
+  },
+  (t) => [index('suspended_sign_ins_user_idx').on(t.userId)],
+);
+
+/**
+ * What admins did (spec §3.5, §27.3): every moderation action, with the session's address (`system` for what
+ * the server did itself: a suspension carried to a new account of the same sign-in). Never deleted; a
+ * deleted account's names are scrubbed from `details` (accounts/store.ts deleteUser).
+ */
+export const adminAudit = pgTable(
+  'admin_audit',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    adminEmail: text('admin_email').notNull(),
+    action: text('action').$type<AdminAuditAction>().notNull(),
+    targetUserId: text('target_user_id').references(() => users.id, { onDelete: 'set null' }),
+    details: jsonb('details').$type<Record<string, string | number | boolean | null>>().notNull().default({}),
+    createdAt: timestamptz('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    index('admin_audit_created_at_idx').on(t.createdAt),
+    index('admin_audit_target_idx').on(t.targetUserId),
+  ],
+);
+
+// ---------------------------------------------------------------------------------------------------------
 // Usage data (spec §27.2)
 
 /** One row per app install. No uninstall tracking: last_seen tells who left (spec §27.1). */
@@ -386,3 +516,7 @@ export type GamePlayer = typeof gamePlayers.$inferSelect;
 export type Puzzle = typeof puzzles.$inferSelect;
 export type CheatFlag = typeof cheatFlags.$inferSelect;
 export type PracticeResultRow = typeof practiceResults.$inferSelect;
+export type PlayerReport = typeof playerReports.$inferSelect;
+export type UserBlock = typeof userBlocks.$inferSelect;
+export type AdminAuditRow = typeof adminAudit.$inferSelect;
+export type SuspendedSignIn = typeof suspendedSignIns.$inferSelect;

@@ -36,13 +36,18 @@ import {
  *    - Among the groups that may form: never-met groups first ("priority to new opponents"); then the group
  *      whose latest meeting is the oldest (spec §10: "the opponent whose last game against is the oldest").
  *
- * 3. Then the closest ratings (smallest spread, max − min); then the longest-waiting players.
+ * 3. Blocks (spec §3.5): two players of whom either blocked the other are never in one group, whatever the
+ *    group's size. Like a repeat opponent, but for good: no reset lets them through. They don't count as
+ *    available opponents of each other either (2's pool), so a player who blocked people still reaches the
+ *    80% reset with everyone else they could meet: a block never starves a search.
  *
- * 4. Fairness: tickets are served oldest first (a ticket requeued after a failed ready check first of all,
+ * 4. Then the closest ratings (smallest spread, max − min); then the longest-waiting players.
+ *
+ * 5. Fairness: tickets are served oldest first (a ticket requeued after a failed ready check first of all,
  *    spec §10 "back to the head of the queue"). Each in turn takes the best group it can form with the
  *    tickets not matched yet in this tick.
  *
- * 5. Timeout: a ticket still unmatched at its deadline (60 s of searching) leaves the queue with 'timeout'.
+ * 6. Timeout: a ticket still unmatched at its deadline (60 s of searching) leaves the queue with 'timeout'.
  *    Matching runs first, so a ticket that can match at that very moment does.
  *
  * Group size is the queue's number of players (2–4). For 3–4 players every pair in the group is checked;
@@ -75,6 +80,11 @@ export interface Ticket {
   priority: boolean;
   /** opponent_history of this game type, as loaded when the player joined. */
   opponents: readonly OpponentRecord[];
+  /**
+   * Everyone this player blocked or was blocked by (user_blocks, both ways, as loaded when the player joined):
+   * never in one group with them (spec §3.5).
+   */
+  blocked: ReadonlySet<string>;
   /** Arrival order, for a stable order among equal times. */
   seq: number;
 }
@@ -118,16 +128,23 @@ export function reachable(a: Ticket, b: Ticket, config: MatcherConfig = DEFAULT_
   return d <= capOf(a, config) && d <= capOf(b, config);
 }
 
+/** Either of the two blocked the other (spec §3.5): never in one game. */
+export function blockedPair(a: Ticket, b: Ticket): boolean {
+  return a.blocked.has(b.userId) || b.blocked.has(a.userId);
+}
+
 /**
  * The ticket's recent opponents among `others` (the queue): its plays against the opponents it could meet
- * in this search, with the 80% reset applied.
+ * in this search (not one it blocked or was blocked by), with the 80% reset applied.
  */
 export function recentOpponents(
   t: Ticket,
   others: readonly Ticket[],
   config: MatcherConfig = DEFAULT_MATCHER,
 ): Set<string> {
-  const pool = others.filter((o) => o.userId !== t.userId && reachable(t, o, config)).map((o) => o.userId);
+  const pool = others
+    .filter((o) => o.userId !== t.userId && !blockedPair(t, o) && reachable(t, o, config))
+    .map((o) => o.userId);
   if (pool.length === 0) return new Set();
   const plays = t.opponents.map((o) => ({ puzzleId: o.opponentId, playedAt: o.playedAt }));
   return new Set(currentCycle(plays, pool, config.resetShare).map((p) => p.puzzleId));
@@ -208,7 +225,7 @@ export function matchTick(
   const isRecent = (a: Ticket, b: Ticket) =>
     recent.get(a.userId)!.has(b.userId) || recent.get(b.userId)!.has(a.userId);
   const compatible = (a: Ticket, b: Ticket) =>
-    a.userId !== b.userId && inMutualRange(a, b, now, config) && !isRecent(a, b);
+    a.userId !== b.userId && !blockedPair(a, b) && inMutualRange(a, b, now, config) && !isRecent(a, b);
 
   const taken = new Set<string>();
   const groups: MatchGroup[] = [];
@@ -261,6 +278,8 @@ export interface NewTicket {
   userId: string;
   rating: number;
   opponents: readonly OpponentRecord[];
+  /** Blocked either way (spec §3.5). Default: nobody. */
+  blocked?: Iterable<string>;
   /** Default: now. */
   enqueuedAt?: number;
   /** Default: enqueuedAt. */
@@ -312,6 +331,7 @@ export class MatchQueue {
       extended: input.extended ?? false,
       priority: input.priority ?? false,
       opponents: input.opponents,
+      blocked: new Set(input.blocked ?? []),
       seq: ++this.seq,
     };
     this.tickets.set(ticket.userId, ticket);

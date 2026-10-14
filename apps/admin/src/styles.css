@@ -18,8 +18,11 @@
   --accent-subtle: rgba(255, 207, 63, 0.1);
   --on-accent: #241a00;
   --danger: #ff4d5e;
+  --danger-hover: #ff7a87;
   --danger-subtle: rgba(255, 77, 94, 0.12);
+  --on-danger: #1f0005;
   --success: #40e29f;
+  --success-subtle: rgba(64, 226, 159, 0.08);
   --data: #36c9f0;
   --data-hover: #8fe1f7;
   --data-wash: rgba(54, 201, 240, 0.1);
@@ -1017,6 +1020,221 @@ select.input {
 
 .avatar-fact {
   gap: 12px;
+}
+
+/* ---- Moderation (spec §3.5): reports, actions, the confirmation dialog ---- */
+
+.lede {
+  margin: 0;
+  max-inline-size: 80ch;
+  color: var(--text-muted);
+}
+
+.btn-sm {
+  min-block-size: 32px;
+  padding: 4px 12px;
+  font-size: 13px;
+}
+
+/* A confirm button for an action that is hard to undo. Dark text on the red clears 4.5:1. */
+.btn-danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--on-danger);
+  font-weight: 600;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger-hover);
+  border-color: var(--danger-hover);
+}
+
+.btn-danger:disabled {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+/* A button that opens such an action's confirmation. */
+.btn-danger-outline {
+  border-color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.btn-danger-outline:hover:not(:disabled, [aria-disabled='true']) {
+  border-color: var(--danger-hover);
+}
+
+.badge-warn {
+  border-color: var(--data);
+  color: var(--text);
+  background: var(--data-wash);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.head-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.head-badges .badge,
+.report-player-meta .badge,
+.report-closed .badge {
+  margin: 0;
+}
+
+.fact-note {
+  display: block;
+  margin-block-start: 2px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.section-actions {
+  margin-block-start: 12px;
+}
+
+/* The outcome of the last action. The live region stays in place (empty) between messages. */
+.notice-text {
+  margin: 0;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-block-end: 20px;
+  padding: 10px 16px;
+  border: 1px solid var(--success);
+  border-radius: var(--radius);
+  background: var(--success-subtle);
+}
+
+.report-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.report-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+}
+
+.report-group-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.report-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-inline-size: 0;
+}
+
+.report-player-name {
+  margin: 0;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+.report-player-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 4px;
+}
+
+.report-summary {
+  background: var(--surface-2);
+}
+
+.report-summary .fact:first-child {
+  grid-column: 1 / -1;
+}
+
+.reason-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reason-counts .chip {
+  display: inline-flex;
+  gap: 6px;
+  background: var(--surface);
+}
+
+.report-closed {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.report-more {
+  margin: 0;
+}
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  inline-size: min(calc(100% - 32px), 500px);
+  block-size: fit-content;
+  max-block-size: calc(100% - 32px);
+  margin: auto;
+  padding: 24px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.dialog::backdrop {
+  background: rgba(5, 7, 10, 0.72);
+}
+
+.dialog-title {
+  margin-block-end: 12px;
+  font-size: 19px;
+}
+
+.dialog-body p {
+  margin: 0 0 10px;
+}
+
+.dialog-body .muted {
+  font-size: 14px;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 20px;
 }
 
 /* ---- Small screens ---- */

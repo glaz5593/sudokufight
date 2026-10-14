@@ -1,9 +1,11 @@
 import type { AvatarId, NO_AVATAR_ID } from './account';
+import type { ReportReason, ReportStatus } from './moderation';
 import type { TelemetryEventName, TelemetryProps } from './telemetry';
 
 /**
- * The admin site's API (spec §27.3): read-only, under `/admin/api`, behind a sign-in. The site (apps/admin) and
- * the server (apps/server) both build on these types.
+ * The admin site's API (spec §27.3): under `/admin/api`, behind a sign-in. The site (apps/admin) and the server
+ * (apps/server) both build on these types. Read-only, except the moderation actions below (spec §3.5, approved
+ * by Moshe on 2026-10-12: UGC-PROPOSAL option A), each written to the audit log.
  *
  * Signing in: with Google (a Firebase ID token of an address on the server's ADMIN_EMAILS list), and/or with
  * the admin password (ADMIN_PASSWORD; in development, the dev password). Which of them a server offers is
@@ -26,6 +28,23 @@ import type { TelemetryEventName, TelemetryProps } from './telemetry';
  *   GET  /admin/api/games?mode=&search=&page=1&pageSize=50 → AdminPage<AdminGameRow>
  *   GET  /admin/api/games/:id                             → AdminGameDetail · 404
  *   GET  /admin/api/screens?days=30                       → AdminScreens
+ *
+ * Moderation (spec §3.5; AdminActionError for the codes):
+ *   GET  /admin/api/reports?status=open&page=1&pageSize=50 → AdminPage<AdminReportedPlayer>
+ *        status: open (default) | resolved | dismissed | all. One item per reported player (total: players).
+ *   POST /admin/api/reports/:id/resolve                    → AdminReport · 404 · 409 notOpen
+ *   POST /admin/api/reports/:id/dismiss                    → AdminReport · 404 · 409 notOpen
+ *   POST /admin/api/users/:id/reset-name                   → AdminModerationResult · 404 · 409 accountDeleted
+ *   POST /admin/api/users/:id/suspend                      → AdminModerationResult · 404 · 409 accountDeleted
+ *   POST /admin/api/users/:id/unsuspend                    → AdminModerationResult · 404
+ *   GET  /admin/api/audit?page=1&pageSize=50               → AdminPage<AdminAuditEntry> (newest first)
+ * The POSTs want `Content-Type: application/json` and a JSON object body with no fields (`{}`): anything else
+ * is 400 badRequest (a form on another site can't send JSON without a preflight, which /admin refuses). Each
+ * action that changes something writes one AdminAuditEntry with the session's address; one that changes
+ * nothing (suspending a suspended account) answers the same and writes none (`audit: null`). The confirmation
+ * step is the site's. On a server that offers Google sign-in, a password session may read but not act: the
+ * POSTs answer 403 `googleRequired` (the shared password names no one in the audit log). On a server with the
+ * password only (development), the password acts, logged as `password`.
  *
  * With the admin site off on the server (no sign-in method set up), every route answers 503 `disabled`,
  * auth/methods included.
@@ -135,6 +154,20 @@ export interface AdminError {
   message?: string;
 }
 
+/**
+ * The moderation actions' extra refusals (on top of AdminError's codes):
+ * - 409 notOpen: the report is resolved or dismissed already.
+ * - 409 accountDeleted: the account is deleted (nothing to reset or suspend).
+ * - 403 googleRequired: a password session on a server that offers Google sign-in: sign in with Google.
+ */
+export const ADMIN_ACTION_ERRORS = ['notOpen', 'accountDeleted', 'googleRequired'] as const;
+export type AdminActionErrorCode = (typeof ADMIN_ACTION_ERRORS)[number];
+
+export interface AdminActionError {
+  error: AdminError['error'] | AdminActionErrorCode;
+  message?: string;
+}
+
 export interface AdminPage<T> {
   items: T[];
   page: number;
@@ -224,6 +257,15 @@ export interface AdminUserRow {
   games: number;
   /** The highest of the user's ratings (spec §14.2 "general"), null before any. */
   bestRating: number | null;
+  /**
+   * Moderation (spec §3.5). This server always sends the three; they are optional only so older fixtures
+   * still type-check. When the account was suspended, null when it is not.
+   */
+  suspendedAt?: number | null;
+  /** The name was reset by an admin and the player has not chosen a new one yet. */
+  nameResetRequired?: boolean;
+  /** Open reports about this player. */
+  openReports?: number;
 }
 
 export interface AdminUserGame {
@@ -331,4 +373,99 @@ export interface AdminScreens {
   goneAfterDays: number;
   sessions: number;
   screens: AdminScreenStat[];
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Moderation (spec §3.5)
+
+/** The `status` filter of GET /admin/api/reports. */
+export const ADMIN_REPORT_FILTERS = ['open', 'resolved', 'dismissed', 'all'] as const;
+export type AdminReportFilter = (typeof ADMIN_REPORT_FILTERS)[number];
+
+/** A reported player's reports shown in one AdminReportedPlayer, newest first. */
+export const ADMIN_REPORTS_PER_PLAYER = 50;
+
+export interface AdminReport {
+  id: string;
+  /** The reported player. */
+  playerId: string;
+  reason: ReportReason;
+  status: ReportStatus;
+  /** The ranked game it is about (AdminGameDetail), when the app sent one both players sat in. */
+  gameId: string | null;
+  createdAt: number;
+  resolvedAt: number | null;
+  /**
+   * Who closed it: an admin's address, `password` (the password sign-in), or `system` (the reported account
+   * was deleted while the report was open: dismissed).
+   */
+  resolvedBy: string | null;
+  reporter: {
+    id: string;
+    /** Null when the reporter's account is deleted. */
+    displayName: string | null;
+  };
+}
+
+export interface AdminReportedPlayer {
+  player: {
+    id: string;
+    /** The current name; null when the account is deleted. */
+    displayName: string | null;
+    avatarId: AvatarId | typeof NO_AVATAR_ID | null;
+    country: string | null;
+    deletedAt: number | null;
+    suspendedAt: number | null;
+    nameResetRequired: boolean;
+  };
+  /**
+   * The player's reports that match the filter: by reason, in all, and the different accounts that sent them
+   * (`reporters`: the list is sorted by it first, so many reports from one account don't push a player up).
+   */
+  counts: Record<ReportReason, number> & { total: number; reporters: number };
+  /** Open reports about the player, whatever the filter. */
+  open: number;
+  /**
+   * When the oldest of those open reports was sent (null: none open), whatever the filter and however many
+   * reports the item carries: the 48-hour promise (REPORT_RESPONSE_HOURS) is measured from it.
+   */
+  oldestOpenAt: number | null;
+  /** The newest report that matches the filter. */
+  lastReportedAt: number;
+  /** Those reports, newest first (at most ADMIN_REPORTS_PER_PLAYER). */
+  reports: AdminReport[];
+}
+
+export const ADMIN_AUDIT_ACTIONS = [
+  'resetName',
+  'suspend',
+  'unsuspend',
+  'resolveReport',
+  'dismissReport',
+] as const;
+export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];
+
+/**
+ * One admin action (admin_audit). `details` by action:
+ * - resetName: `{ fromName, toName }` (the names; scrubbed when the account is deleted later);
+ * - suspend, unsuspend: `{}`; a suspend by `system` (a new account of the sign-in of a suspended account that
+ *   was deleted starts suspended): `{ previousUserId }`, the deleted account;
+ * - resolveReport, dismissReport: `{ reportId, reason }`.
+ */
+export interface AdminAuditEntry {
+  id: string;
+  /** The admin's address, `password` for the password sign-in, or `system` (the server itself). */
+  adminEmail: string;
+  action: AdminAuditAction;
+  /** The player acted on (the reported player, for a report). */
+  targetUserId: string | null;
+  details: Record<string, string | number | boolean | null>;
+  createdAt: number;
+}
+
+/** What reset-name, suspend and unsuspend answer: the player as the users list shows them now. */
+export interface AdminModerationResult {
+  user: AdminUserRow;
+  /** The entry written; null when nothing changed (no entry). */
+  audit: AdminAuditEntry | null;
 }

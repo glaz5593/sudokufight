@@ -2,7 +2,7 @@ import { type Href, router, Stack } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
 import { normalizeAvatarId } from '../../src/avatars';
-import { useAuth } from '../../src/auth/authStore';
+import { refreshMe, useAuth } from '../../src/auth/authStore';
 import { ROUTES } from '../../src/auth/redirect';
 import { useGameStore } from '../../src/game/gameStore';
 import { goBack, startAndOpen } from '../../src/screens/home';
@@ -60,6 +60,7 @@ export default function MatchRoute() {
         }
         onVerifyEmail={() => leaveTo(() => router.replace(ROUTES.verifyEmail))}
         onHome={() => dismissTo('/')}
+        onSuspended={() => void refreshMe()}
       />
     </>
   );

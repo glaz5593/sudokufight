@@ -28,7 +28,7 @@ export interface HistoryScreenProps {
   deps: () => HistoryDeps;
   onOpen: (entry: HistoryEntry) => void;
   /** A ranked game's opponent: their player card (stage 12). */
-  onOpenPlayer?: (playerId: string) => void;
+  onOpenPlayer?: (playerId: string, gameId: string) => void;
   /** "שחק את המשחק הראשון". */
   onPlay: () => void;
   onTab: (tab: NavTab) => void;

@@ -1,6 +1,6 @@
 import type { GameMode, GameType } from '@sudoku-fight/engine';
 import { router } from 'expo-router';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInUp, ReduceMotion } from 'react-native-reanimated';
@@ -41,8 +41,8 @@ export interface ResultsScreenProps {
   onHome: () => void;
   /** "צפייה חוזרת": the game's replay (default: the /replay route, from the phone or the server). */
   onReplay?: (gameId: string, mode: GameMode) => void;
-  /** Another player of a ranked game: their card (stage 12; the /player route by default). */
-  onOpenPlayer?: (playerId: string) => void;
+  /** Another player of a ranked game: their card, with this game for a report (the /player route by default). */
+  onOpenPlayer?: (playerId: string, gameId: string) => void;
   /** The game was just played here: a full board gets its fanfare (motion.md §7, "Win"). */
   celebrate?: boolean;
   testID?: string;
@@ -166,7 +166,7 @@ function ResultsBody({
   onNewGame: (gameType: GameType, mode?: GameMode) => void;
   onHome: () => void;
   onReplay: (gameId: string, mode: GameMode) => void;
-  onOpenPlayer: (playerId: string) => void;
+  onOpenPlayer: (playerId: string, gameId: string) => void;
   padding: { paddingTop: number; paddingBottom: number };
   testID: string;
 }) {
@@ -177,6 +177,12 @@ function ResultsBody({
   const enter = enteringFor(reduce);
   const none = t('results.stats.none');
   const best = model.bestMove;
+  // Another player's card from here carries this game: a report from it is about this game (spec §3.5).
+  const { gameId } = model;
+  const openPlayer = useCallback(
+    (playerId: string) => onOpenPlayer(playerId, gameId),
+    [onOpenPlayer, gameId],
+  );
   const versus = model.players > 1;
   // A full board against someone was filled by both: "the board filled up", not "you filled it".
   const reason = versus && model.end === 'completed' ? t('results.end.full') : t(`results.end.${model.end}`);
@@ -287,7 +293,7 @@ function ResultsBody({
             <RankingSection
               ranking={model.ranking}
               myAvatar={myAvatar}
-              onOpenPlayer={ranked ? onOpenPlayer : undefined}
+              onOpenPlayer={ranked ? openPlayer : undefined}
             />
           </Animated.View>
         ) : model.opponents.length ? (
@@ -295,7 +301,7 @@ function ResultsBody({
             <OpponentsSection
               opponents={model.opponents}
               outcome={model.outcome}
-              onOpenPlayer={ranked ? onOpenPlayer : undefined}
+              onOpenPlayer={ranked ? openPlayer : undefined}
             />
           </Animated.View>
         ) : null}

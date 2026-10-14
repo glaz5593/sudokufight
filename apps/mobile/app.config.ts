@@ -26,6 +26,9 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  * shows only when the file lists the key that signs the build; a store build fails while the file still lists
  * React Native's public debug key (TEMPLATE_DEBUG_KEY_SHA1).
  *
+ * The build number comes from the version (versionCodeOf below): app.json's `expo.version` is the one number to
+ * change, with `npm run version:bump`.
+ *
  * Builds on this PC (`npm run apk`, docs/BUILD-APK.md) get more, never EAS builds: Android build fixes
  * (LOCAL_BUILD_PLUGINS: the NDK installed here for every library, and on Windows limits for C++: memory and
  * path length), and with `--server local` the APK may use plain ws:// and http:// (SF_ALLOW_CLEARTEXT), which
@@ -115,6 +118,46 @@ export function assertStoreBuildHasServer(build: EasBuild, server: ServerEnv): v
     `Production build without a reachable game server: ${problems.join('; ')}. ` +
       "Set the production server in eas.json's production profile `env` (docs/DEPLOY-PRODUCTION.md).",
   );
+}
+
+/** The largest minor and patch number: each takes two digits of the build number (versionCodeOf). */
+export const VERSION_PART_MAX = 99;
+
+/**
+ * The build number of a version (Moshe, 14.10.2026: "start with 1.0.0 and next version will be 1.0.1 and I can
+ * see it in the app"): major·10000 + minor·100 + patch, so 1.0.0 → 10000, 1.0.1 → 10001, 1.2.3 → 10203. It is
+ * Android's versionCode and iOS's buildNumber. Android installs an APK over the app on the phone only when its
+ * versionCode is not lower, so every APK of `npm run apk` after a version bump upgrades in place, data kept.
+ *
+ * EAS builds for the stores count on their own: eas.json has `cli.appVersionSource: "remote"` (and
+ * `autoIncrement` in production), so EAS ignores these two values and raises its own number by one per build.
+ * The version people see (expo.version) is app.json's in both. Throws on a version that isn't major.minor.patch,
+ * or whose minor or patch is over VERSION_PART_MAX: a wrong build number must never reach a phone.
+ */
+export function versionCodeOf(version: string): number {
+  const match = /^(\d{1,5})\.(\d+)\.(\d+)$/.exec(version);
+  const [major, minor, patch] = (match ?? []).slice(1).map(Number);
+  const fits = (n: number | undefined): n is number => n !== undefined && n <= VERSION_PART_MAX;
+  if (major === undefined || !fits(minor) || !fits(patch))
+    throw new Error(
+      `app.json expo.version "${version}" must be major.minor.patch, minor and patch at most ${VERSION_PART_MAX} ` +
+        '(e.g. 1.0.1): the build number is made from it. Change it with npm run version:bump.',
+    );
+  const code = major * 10_000 + minor * 100 + patch;
+  if (code < 1)
+    throw new Error(`app.json expo.version "${version}" gives build number 0: start at 0.0.1 or more`);
+  return code;
+}
+
+/** The config with its build numbers (versionCodeOf), when it has a version (tests' configs may have none). */
+export function withBuildNumbers(base: ExpoConfig): ExpoConfig {
+  if (base.version === undefined) return base;
+  const code = versionCodeOf(base.version);
+  return {
+    ...base,
+    android: { ...base.android, versionCode: code },
+    ios: { ...base.ios, buildNumber: String(code) },
+  };
 }
 
 /** The environment this file reads. */
@@ -275,11 +318,12 @@ export interface GoogleSignInExtra {
 
 /** app.json's config with Firebase added for the platforms whose files exist (`exists`: tests pass theirs). */
 export function resolveAppConfig(
-  base: ExpoConfig,
+  config: ExpoConfig,
   env: AppConfigEnv,
   exists: (path: string) => boolean = existsSync,
   readJson: (path: string) => unknown = readJsonFile,
 ): ExpoConfig {
+  const base = withBuildNumbers(config);
   const android = firebaseFile(env.googleServicesJson, LOCAL_ANDROID, exists);
   const ios = firebaseFile(env.googleServiceInfoPlist, LOCAL_IOS, exists);
   assertStoreBuildHasFirebase(env, { android: android !== null, ios: ios !== null });

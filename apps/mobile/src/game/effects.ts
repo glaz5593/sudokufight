@@ -8,6 +8,7 @@ import type {
   RejectReason,
   ReleaseReason,
 } from '@sudoku-fight/engine';
+import { MUTED_REACTION_EMOJI } from '@sudoku-fight/protocol';
 
 /**
  * What a game screen plays for an update (spec §6.2–§6.5): score flying to the card, a red flash and shake, a
@@ -166,6 +167,8 @@ export function matchEffectsOf(update: HostUpdate, myId: PlayerId | null): Match
   for (const e of update.events) {
     switch (e.type) {
       case 'reaction':
+        // Muted by the server for me (spec §3.5: its sender is a player I blocked): nothing shown, played or said.
+        if (e.emoji === MUTED_REACTION_EMOJI) break;
         effects.push({
           kind: 'reaction',
           seq: e.seq,

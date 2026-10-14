@@ -68,6 +68,7 @@ describe('ConnectionError (Hebrew)', () => {
     ['gameStarted', 'המשחק בחדר הזה כבר התחיל.'],
     ['alreadyInRoom', 'אתה כבר בחדר הזה, ממכשיר אחר.'],
     ['unauthenticated', 'צריך להתחבר לחשבון כדי לשחק מול אחרים.'],
+    ['suspended', 'החשבון שלך מושעה, ולכן אין משחקים מדורגים כרגע. אפשר עדיין להתאמן לבד או מול בוט.'],
     ['codeTaken', 'כבר יש חדר עם הקוד הזה. נסה קוד אחר.'],
     ['badOptions', 'הגדרות החדר לא תקינות.'],
   ])('explains the refusal %s', async (refusal, body) => {
