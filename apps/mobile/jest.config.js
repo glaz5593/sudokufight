@@ -11,4 +11,10 @@ module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testPathIgnorePatterns: ['/node_modules/', '<rootDir>/app/'],
+  // The Node scripts' pure parts (scripts/lib/*.mjs, and the monorepo's scripts/lib they import) are ES modules:
+  // the server's tests already turn them into CommonJS with this transform (apps/server/jest/script-transform.cjs).
+  // Jest merges it with jest-expo's, which only matches .js/.jsx/.ts/.tsx.
+  transform: {
+    '[\\\\/]scripts[\\\\/]lib[\\\\/][^\\\\/]+\\.mjs$': '<rootDir>/../server/jest/script-transform.cjs',
+  },
 };

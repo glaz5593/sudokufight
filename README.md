@@ -8,6 +8,7 @@
 | תוכנית עבודה בשלבים | [docs/02-WORK-PLAN.md](docs/02-WORK-PLAN.md) |
 | כל ההחלטות שממתינות למשה, במקום אחד | [docs/DECISIONS-PENDING.md](docs/DECISIONS-PENDING.md) |
 | המשימות של משה, צעד אחר צעד (באנגלית): חשבונות, Firebase, פריסת השרת, APK בשני טלפונים, Google Play | [docs/MOSHE-TODO.md](docs/MOSHE-TODO.md) |
+| בניית APK לטלפונים במחשב, בפקודה אחת (`npm run apk`) | [docs/BUILD-APK.md](docs/BUILD-APK.md) |
 | עיצוב (קנבס) | https://claude.ai/artifact/Gi5UdFahu2WP7ECR5Z5pon · פרטים ב־[docs/03-DESIGN.md](docs/03-DESIGN.md) |
 | האפיון המקורי | [docs/00-original-spec-v1.md](docs/00-original-spec-v1.md) |
 | שחרור: הצ'קליסט עד TestFlight ו־Play Closed testing | [docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md) |
@@ -51,6 +52,7 @@ docs/               אפיון, תוכנית, עיצוב
 | `npm run admin:dev` | אתר הניהול בפיתוח (Vite) ב־`http://localhost:5174/admin/`. מפנה את `/admin/api` לשרת בפורט 2567, אז מריצים גם `npm run server` |
 | `npm run admin:build` | בונה את אתר הניהול ל־`apps/admin/dist`. השרת מגיש אותו ב־`/admin` |
 | `npm run mobile` | Metro לאפליקציה (Development Build) |
+| `npm run apk` | בונה במחשב APK של release לטלפוני הבדיקה, מול שרת ה־staging, אל `apps/mobile/apk/`. `-- --install` גם מתקין על הטלפונים שבכבל. פירוט ב־[docs/BUILD-APK.md](docs/BUILD-APK.md) |
 | `npm run android:reverse` | מפנה את פורטים 2567 ו־8081 מהטלפון או מהאמולטור למחשב |
 | `npm run puzzles:import` | מייבא את `assets/puzzles/sudoku-bank-690.csv` אל `packages/engine/data/puzzles.json`, ומדפיס דוח |
 | `npm run puzzles:generate -- --type hard --count 300` | מחולל לוחות. אפשר גם `--pool ranked` ו־`--seed 42` |

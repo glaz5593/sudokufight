@@ -18,6 +18,11 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  * Stage 14: Analytics joins the Firebase plugins (without Apple's advertising identifier, and without Android's
  * AD_ID permission; firebase.json turns the rest of the ad features off), and a store build (eas.json's
  * `production` profile) must have Firebase and a reachable game server, or it fails on EAS before it is built.
+ *
+ * Builds on this PC (`npm run apk`, docs/BUILD-APK.md) get more, never EAS builds: Android build fixes
+ * (LOCAL_BUILD_PLUGINS: the NDK installed here for every library, and on Windows limits for C++: memory and
+ * path length), and with `--server local` the APK may use plain ws:// and http:// (SF_ALLOW_CLEARTEXT), which
+ * a server on this PC's network speaks.
  */
 const LOCAL_ANDROID = './config/firebase/google-services.json';
 const LOCAL_IOS = './config/firebase/GoogleService-Info.plist';
@@ -113,7 +118,31 @@ export interface AppConfigEnv extends EasBuild {
   googleServiceInfoPlist: string | undefined;
   /** The game server the build points at (stage 14: a store build must point at a real one). */
   server?: ServerEnv;
+  /**
+   * SF_ALLOW_CLEARTEXT: "1" from `npm run apk -- --server local` (scripts/build-apk.mjs), an APK for a game
+   * server on this PC's network, which speaks plain ws:// and http://. Android refuses those in release builds
+   * unless the manifest allows cleartext traffic.
+   */
+  allowCleartext?: string | undefined;
 }
+
+/**
+ * Config plugins for builds on this PC only (`npm run apk`, `expo run:android`), never on EAS's servers (the
+ * file says why): every Android library gets the NDK the Android SDK here has, instead of downloading another;
+ * on Windows, C++ compiles 2 files at a time per module (memory), and the app's in a folder short enough for
+ * the 260-character path limit.
+ */
+export const LOCAL_BUILD_PLUGINS: readonly string[] = ['./plugins/with-local-native-build.js'];
+
+/** Not on EAS's servers: a build or a run on this PC. */
+const isLocalBuild = (build: EasBuild): boolean => build.easBuild !== 'true';
+
+/**
+ * Plain http/ws allowed in the APK: only when a local build asks (--server local). Never on EAS's servers, so
+ * no cloud build (and no store build) ever allows it.
+ */
+export const allowsCleartext = (env: AppConfigEnv): boolean =>
+  env.allowCleartext === '1' && isLocalBuild(env);
 
 /**
  * Android's advertising id permission. Firebase Analytics' library asks for it; this app shows no ads and
@@ -133,7 +162,14 @@ export function resolveAppConfig(
   assertStoreBuildHasFirebase(env, { android: android !== null, ios: ios !== null });
   assertStoreBuildHasServer(env, env.server ?? {});
   const extra = { ...base.extra, firebase: { android: android !== null, ios: ios !== null } };
-  if (!android && !ios) return { ...base, extra };
+  const cleartext = allowsCleartext(env) ? { android: { usesCleartextTraffic: true } } : null;
+  const localPlugins = isLocalBuild(env) ? LOCAL_BUILD_PLUGINS : [];
+  if (!android && !ios) {
+    const plugins: NonNullable<ExpoConfig['plugins']> = [...localPlugins];
+    if (cleartext) plugins.push(['expo-build-properties', cleartext]);
+    if (plugins.length === 0) return { ...base, extra };
+    return { ...base, extra, plugins: [...(base.plugins ?? []), ...plugins] };
+  }
 
   return {
     ...base,
@@ -150,8 +186,9 @@ export function resolveAppConfig(
     ios: { ...base.ios, ...(ios ? { googleServicesFile: ios } : null) },
     plugins: [
       ...(base.plugins ?? []),
+      ...localPlugins,
       // React Native Firebase needs static frameworks on iOS.
-      ['expo-build-properties', { ios: { useFrameworks: 'static' } }],
+      ['expo-build-properties', { ios: { useFrameworks: 'static' }, ...cleartext }],
       '@react-native-firebase/app',
       '@react-native-firebase/auth',
       '@react-native-firebase/crashlytics',
@@ -173,4 +210,5 @@ export default ({ config }: ConfigContext): ExpoConfig =>
       host: process.env.EXPO_PUBLIC_SERVER_HOST,
       secure: process.env.EXPO_PUBLIC_SERVER_SECURE,
     },
+    allowCleartext: process.env.SF_ALLOW_CLEARTEXT,
   });

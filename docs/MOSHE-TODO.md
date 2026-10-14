@@ -49,7 +49,7 @@ from time to time: if a button has moved, use the console's own search box.
 | Day 1 to 2 | **B** | Firebase project, email sign-in, Hebrew emails, the Android app and `google-services.json`; B6: Google sign-in for the admin site. | about 1 h, plus 10 min for B6 | none |
 | Day 1 to 2 | **C** | 5 decisions that block these goals. | 30 to 60 min | the avatar-license search may take longer |
 | Day 2 | **D1 to D7** | Staging server: Neon database, Fly app, secrets, deploy, ranked puzzles, checks. **Goal 1 done.** | about 1 h with Claude | Fly's first build: about 5 min |
-| Day 2 to 3 | **E** | EAS: link the project, upload the Firebase file, build the APK, install on 2 phones with ADB, play. **Goal 2 done.** | 2 to 3 h | EAS free queue: from minutes up to 90+ min at peak, plus 10 to 30 min of build |
+| Day 2 to 3 | **E** | EAS: link the project, upload the Firebase file, build the APK (or on this PC with `npm run apk`: E-local), install on the phones with ADB, play. **Goal 2 done.** | 2 to 3 h | EAS free queue: from minutes up to 90+ min at peak, plus 10 to 30 min of build |
 | After Play verifies you | **D8 to D12** | Production server (same steps, separate app and database). | about 1 h | |
 | Same days | **F1 to F9** | Play: create the app, listing, graphics, forms, production AAB, Internal testing, demo accounts. **Goal 3 (a first version uploaded to Google Play) done at F7.** | about half a day | |
 | 14 days | **F10, F11** | Closed testing with at least 12 testers opted in for 14 days in a row. | a few minutes a day | Closed-testing review: hours to a few days, then **14 days, no shortcut** |
@@ -638,6 +638,10 @@ Optional: `SENTRY_DSN` (D8, you set it like the database URL) and `INVITE_URL=ht
 
 ## Part E. Build the APK with EAS, install on two phones with ADB, and test
 
+> **Since 2026-10-14: build the test APKs on this PC (E-local, recommended).** `npm run apk` builds the same kind
+> of APK as E3, as often as you like, without using the 15 cloud builds a month. E3 to E6 stay for the cloud path;
+> the store versions (Part F) still come from EAS.
+
 ### E1. Install EAS CLI, log in, link the project
 
 - [ ] **E1** `eas whoami` prints your username; Claude has the EAS project ID
@@ -694,6 +698,32 @@ If `eas` asks instead of taking a flag: type **file**, visibility **secret**, en
 - "Secret" variables can't be read back, not even by you, and exist only on Expo's build servers. Keep the backup from B3, **and keep the local copy** in `apps/mobile/config/firebase/`: `eas build` first reads the app config on this PC, where a secret variable isn't available, so it uses the local file there.
 - If you ever replace the file (e.g. a new Firebase app), run the same `eas env:set` again.
 - `eas env:set` says the project isn't configured: E1 isn't finished (the project ID isn't in `app.json` yet).
+
+### E-local. Build the test APK on this PC (recommended for the test loop)
+
+- [ ] **E-local** `npm run apk` ends with `APK: ...`, and the app opens on the phones
+
+**Why.** The cloud (E3) gives 15 Android builds a month on the free plan, and its queue can take an hour. `npm run apk` builds the same kind of APK on this PC: a signed release build that talks to the staging server from `eas.json`'s `preview` profile. Full guide, in Hebrew: [docs/BUILD-APK.md](BUILD-APK.md).
+
+**Steps**
+1. Build:
+   ```powershell
+   cd C:\Users\mosheg\Documents\ReactNative\sudoku-fight
+   npm run apk
+   ```
+   The first build takes about 30 to 45 minutes, later ones 2 to 3 minutes (the JS is bundled again every time, so no change is missed). About 5 minutes after a change to the native config (a new package, the icon, Firebase), and longer after an Expo or native library update, which compiles that library again. The APK lands in `apps\mobile\apk\` (the newest 3 are kept).
+2. Install, with the phones ready for ADB (E5) and on USB:
+   ```powershell
+   npm run apk -- --install-only
+   ```
+   It installs the newest APK on every phone `adb` sees, and prints `installed` or `FAILED` (with the reason) for each. `npm run apk -- --install` builds and installs in one go. Without a cable: copy the APK file to the phone and open it there.
+
+**You're done when** each phone opens the app without the "Development mode" badge ("מצב פיתוח").
+
+**Pitfalls**
+- **An APK from this PC and one from the cloud can't update each other**: they are signed with different keys. On a phone that has the cloud build, uninstall it once: `adb -s <SERIAL> uninstall com.mosheg.sudokufight`, or `npm run apk -- --install-only --replace`. This deletes the app's data on that phone (not the account). After that, each new APK from this PC updates the last one and keeps the data.
+- Drive C: the build doesn't start with less than 6 GB free (2 GB once a build is on disk; a first build writes about 4 GB), and stops Gradle under 1 GB. `npm run apk -- --clean-only` deletes the big build folders. Close Android Studio before building: Windows grows its page file on drive C when memory runs short.
+- `npm run apk -- --server local` points the APK at `npm run server` on this PC (same Wi-Fi); `--server production` at production. The PC's address is built into the APK: when it changes, build again.
 
 ### E3. Build the preview APK
 

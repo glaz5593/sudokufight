@@ -5,10 +5,12 @@ import type { ExpoConfig } from 'expo/config';
 
 import appConfig, {
   AD_ID_PERMISSION,
+  allowsCleartext,
   type AppConfigEnv,
   assertStoreBuildHasFirebase,
   assertStoreBuildHasServer,
   isStoreBuild,
+  LOCAL_BUILD_PLUGINS,
   resolveAppConfig,
   STORE_PROFILES,
 } from '../../app.config';
@@ -273,5 +275,77 @@ describe('app.json for the stores (stage 14)', () => {
     // ITSAppUsesNonExemptEncryption = NO (docs/store/LISTING-APPLE.md §6). Adding encryption of our own (not
     // the system's TLS) would make this false, and the answer in App Store Connect with it.
     expect(app.expo.ios?.config?.usesNonExemptEncryption).toBe(false);
+  });
+});
+
+describe('builds on this PC (npm run apk, docs/BUILD-APK.md)', () => {
+  const EAS_PREVIEW = { easBuild: 'true', profile: 'preview', platform: 'android' };
+  const buildProperties = (config: ExpoConfig) =>
+    (config.plugins ?? []).filter((p) => Array.isArray(p) && p[0] === 'expo-build-properties');
+
+  it("every Android library gets this PC's NDK; EAS builds keep their config as it was", () => {
+    expect(resolve().plugins).toEqual([...LOCAL_BUILD_PLUGINS]);
+    expect(resolve({ googleServicesJson: ANDROID_FILE }).plugins).toEqual(
+      expect.arrayContaining([...LOCAL_BUILD_PLUGINS]),
+    );
+    expect(resolve(EAS_PREVIEW).plugins).toBeUndefined();
+    expect(resolve({ ...EAS_PREVIEW, googleServicesJson: ANDROID_FILE }).plugins).not.toEqual(
+      expect.arrayContaining([...LOCAL_BUILD_PLUGINS]),
+    );
+    for (const path of LOCAL_BUILD_PLUGINS) expect(existsSync(join(__dirname, '..', '..', path))).toBe(true);
+  });
+
+  it('the plugin adds its blocks to android/build.gradle and android/app/build.gradle, once', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const plugin = require('../../plugins/with-local-native-build.js') as {
+      addRootBlock: (contents: string) => string;
+      addAppBlock: (contents: string) => string;
+    };
+    const windows = 'System.getProperty("os.name").toLowerCase().contains("windows")';
+    const jobs = '"-DCMAKE_JOB_POOLS=compile=2", "-DCMAKE_JOB_POOL_COMPILE=compile"';
+
+    // The libraries: registered before the root plugins, which configure the app early.
+    const plugins = 'apply plugin: "expo-root-project"\napply plugin: "com.facebook.react.rootproject"\n';
+    const root = plugin.addRootBlock(`allprojects {}\n\n${plugins}`);
+    expect(root.startsWith('allprojects {}\n\n// @generated begin sudoku-fight local-native-build')).toBe(
+      true,
+    );
+    expect(root.endsWith(plugins)).toBe(true);
+    expect(root).toContain('subproject.plugins.withId("com.android.library")');
+    expect(root).toContain('subproject.android.ndkVersion = rootProject.ext.ndkVersion');
+    expect(root).toContain(windows);
+    expect(root).toContain(`subproject.android.defaultConfig.externalNativeBuild.cmake.arguments(${jobs})`);
+    expect(plugin.addRootBlock(root)).toBe(root);
+    // Without the root plugins' line (a future template): at the end.
+    expect(plugin.addRootBlock('allprojects {}\n')).toMatch(/^allprojects \{\}\n\n\/\/ @generated begin/);
+
+    // The app: a short C++ folder, 2 compilers and 2 Metro workers, on Windows.
+    const app = "apply plugin: 'com.google.gms.google-services'\n";
+    const appGradle = plugin.addAppBlock(app);
+    expect(appGradle.startsWith(app)).toBe(true);
+    expect(appGradle).toContain(windows);
+    expect(appGradle).toContain('new File(System.getProperty("user.home"), ".sudoku-fight/cxx")');
+    expect(appGradle).toContain(`android.defaultConfig.externalNativeBuild.cmake.arguments(${jobs})`);
+    expect(appGradle).toContain('extraPackagerArgs = ["--max-workers", "2"]');
+    expect(plugin.addAppBlock(appGradle)).toBe(appGradle);
+  });
+
+  it('--server local (SF_ALLOW_CLEARTEXT=1) allows plain ws:// on Android, never on EAS', () => {
+    expect(allowsCleartext({ ...NO_ENV, allowCleartext: '1' })).toBe(true);
+    expect(allowsCleartext({ ...NO_ENV, allowCleartext: 'true' })).toBe(false);
+    expect(allowsCleartext({ ...NO_ENV })).toBe(false);
+    expect(allowsCleartext({ ...NO_ENV, ...EAS_PREVIEW, allowCleartext: '1' })).toBe(false);
+
+    const cleartext = { android: { usesCleartextTraffic: true } };
+    expect(buildProperties(resolve({ allowCleartext: '1' }))).toEqual([['expo-build-properties', cleartext]]);
+    expect(
+      buildProperties(
+        resolve({ allowCleartext: '1', googleServicesJson: ANDROID_FILE, googleServiceInfoPlist: IOS_FILE }),
+      ),
+    ).toEqual([['expo-build-properties', { ios: { useFrameworks: 'static' }, ...cleartext }]]);
+    expect(buildProperties(resolve())).toEqual([]);
+    expect(
+      buildProperties(resolve({ ...EAS_PREVIEW, allowCleartext: '1', googleServicesJson: ANDROID_FILE })),
+    ).toEqual([['expo-build-properties', { ios: { useFrameworks: 'static' } }]]);
   });
 });

@@ -6,6 +6,7 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
+    "apk": "node scripts/build-apk.mjs",
     "ios": "expo run:ios",
     "test": "jest --config ../../jest.config.js --selectProjects mobile",
     "typecheck": "tsc --noEmit -p tsconfig.json",
