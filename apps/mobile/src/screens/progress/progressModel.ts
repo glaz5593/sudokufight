@@ -85,8 +85,11 @@ export const provisionalGames = (rules: ProgressRules = DEFAULT_PROGRESS_RULES):
 // ---------------------------------------------------------------------------------------------------------
 // The interferences collection (spec §7.1)
 
-/** The ones that come later (spec §7.1 "בעתיד"): ink, earthquake, fog, bubbles. */
-export const FUTURE_INTERFERENCES = ['ink', 'earthquake', 'fog', 'bubbles'] as const;
+/**
+ * The ones that come later (spec §7.1 "בעתיד"; Moshe 2026-10-17, D47: "later"): earthquake, fog, bubbles and
+ * the torch. Ink became a real kind with the scramble and the keypad [D47]; the in-game picker never shows these.
+ */
+export const FUTURE_INTERFERENCES = ['earthquake', 'fog', 'bubbles', 'torch'] as const;
 export type FutureInterference = (typeof FUTURE_INTERFERENCES)[number];
 
 export type CollectionEntry =
@@ -96,7 +99,7 @@ export type CollectionEntry =
 export interface InterferenceCollection {
   /** Open to me: the arsenal's tokens. */
   open: CollectionEntry[];
-  /** V1's above my level [D17] (none in V1), then the future ones ("בקרוב"). */
+  /** The kinds above my level [D17] (the scramble at 2, ink at 3, the keypad at 4), then the future ones ("בקרוב"). */
   locked: CollectionEntry[];
   total: number;
 }

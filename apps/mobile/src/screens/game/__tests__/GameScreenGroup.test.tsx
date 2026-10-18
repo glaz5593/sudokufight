@@ -1,20 +1,20 @@
 // The gesture handler's Jest mocks, before anything loads it (its native module does not exist under Jest).
 import 'react-native-gesture-handler/jestSetup';
 
-import { type CellIndex, cellName, type InterferenceKind, type PlayerId } from '@sudoku-fight/engine';
+import { type CellIndex, cellName, type PlayerId } from '@sudoku-fight/engine';
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
-import { DeviceEventEmitter, StyleSheet, View, type ViewStyle } from 'react-native';
-import { GestureHandlerRootView, State } from 'react-native-gesture-handler';
-import { getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { paletteAt } from '../../../components/player';
 import { answerIn } from '../../../game/testing/practice';
 import i18n from '../../../i18n';
 import { useProfile } from '../../../state/profile';
 import { useSettings } from '../../../state/settings';
-import { dropZoneOf, isolate } from '../arsenal';
+import { useToast } from '../../../components/ui';
+import { isolate } from '../arsenal';
 import { GameScreen, type GameSession } from '../GameScreen';
-import type { Point, Rect } from '../geometry';
+import type { Rect } from '../geometry';
 import { useReactionMutes } from '../reactions';
 import { type Group, group, ME } from '../testing/group';
 import { avatarIdsIn } from '../../../avatars/testing/avatarTesting';
@@ -26,10 +26,11 @@ import { avatarIdsIn } from '../../../avatars/testing/avatarTesting';
  * - One row of compact cards in a fixed seat order (me first), each with its place; widths as components.md
  *   §7.1; the lead bar by place.
  * - Every opponent's lock on the board with that player's avatar, in their colour.
- * - ⚡ on the SECOND opponent's card aims the arsenal at that card only: it is the one drop zone, the others
- *   dim, the ghost carries the route "אני ← Biscuit" with both avatars, and the drop hits Biscuit, not Pip.
+ * - "הפרעה" on the SECOND opponent's card aims the picker at that card only [D45]: it is framed as the target,
+ *   the others dim, the header shows the route "אני ← Biscuit" with both avatars and shapes, and the second
+ *   tap hits Biscuit, not Pip.
  * - A hit between two others shows on the target's card.
- * - Someone surrenders (D36): out, dimmed, a fixed place after everyone still in, no ⚡; the game goes on.
+ * - Someone surrenders (D36): out, dimmed, a fixed place after everyone still in, no "הפרעה"; the game goes on.
  *   My own surrender takes me out the same way; I watch to the end and the results open then.
  */
 
@@ -56,9 +57,6 @@ const CARDS: Record<PlayerId, Rect> = {
   [PIP]: { x: 138, y: 58, width: 114, height: 160 },
   [BISCUIT]: { x: 16, y: 58, width: 114, height: 160 },
 };
-/** Where the finger first touches a token, low in the tray. */
-const TOKEN_AT: Point = { x: 195, y: 1150 };
-const centre = (r: Rect): Point => ({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
 
 type MeasureInWindow = (done: (x: number, y: number, width: number, height: number) => void) => void;
 
@@ -146,48 +144,6 @@ const summaryOf = (id: PlayerId) =>
   screen.getByTestId(id === ME ? 'card-me-summary' : `card-${id}-summary`, hidden).props
     .accessibilityLabel as string;
 
-// ---- the finger on a token (the events the gesture handler's native side sends) ----
-
-function finger(kind: InterferenceKind) {
-  const { handlerTag } = getByGestureTestId(`arsenal-drag-${kind}`);
-  let state: State = State.UNDETERMINED;
-  const at = (p: Point) => ({
-    handlerTag,
-    numberOfPointers: 1,
-    x: 54,
-    y: 68,
-    absoluteX: p.x,
-    absoluteY: p.y,
-    translationX: p.x - TOKEN_AT.x,
-    translationY: p.y - TOKEN_AT.y,
-    velocityX: 0,
-    velocityY: 0,
-  });
-  const become = (next: State, p: Point) => {
-    DeviceEventEmitter.emit('onGestureHandlerStateChange', { ...at(p), state: next, oldState: state });
-    state = next;
-  };
-  return {
-    down: async () => {
-      await act(async () => {
-        become(State.BEGAN, TOKEN_AT);
-        become(State.ACTIVE, { x: TOKEN_AT.x, y: TOKEN_AT.y - 12 });
-      });
-      await step();
-    },
-    move: async (p: Point) => {
-      await act(async () => {
-        DeviceEventEmitter.emit('onGestureHandlerEvent', { ...at(p), state: State.ACTIVE });
-      });
-      await step();
-    },
-    up: async (p: Point) => {
-      await act(async () => become(State.END, p));
-      await step();
-    },
-  };
-}
-
 beforeEach(async () => {
   jest.clearAllMocks();
   jest.useFakeTimers();
@@ -223,7 +179,7 @@ describe('the cards of 3–4 players (spec §6.8, components.md §6–§9)', () 
     // The cards speak their place (components.md §7.4); the others' rating and presence too.
     expect(summaryOf(PIP)).toMatch(/^Pip · מקום 1 · 0 נקודות · חושב, אין טעויות, בוט, דירוג 1305, מחובר$/);
     expect(summaryOf(ME)).toMatch(/^אני · מקום 1 · 0 נקודות/);
-    // My card: "כניעה" (ranked) and reactions; each opponent's: its own ⚡, waiting for my first 2 points.
+    // My card: "כניעה" (ranked) and reactions; each opponent's: its own "הפרעה", waiting for my first 2 points.
     expect(screen.getByRole('button', { name: 'כניעה' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'תגובות' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'הפרעה ל־Pip · חסרות 2 נק׳' })).toBeDisabled();
@@ -307,35 +263,40 @@ describe('the cards of 3–4 players (spec §6.8, components.md §6–§9)', () 
 });
 
 describe('interferences between 3–4 players (spec §7.3, §7.4)', () => {
-  it('⚡ on the second opponent aims at that card only: its drop zone, the route, and the hit on it', async () => {
+  it('"הפרעה" on the second opponent aims at that card only: its frame, the route, and the hit on it', async () => {
     const g = await show();
     await earn(g);
     const myScore = g.host.getView().players[0]!.score;
     await fireEvent.press(screen.getByRole('button', { name: 'הפרעה ל־Biscuit · עלות 2 נק׳' }));
     await step(400);
-    // The tray is aimed at Biscuit; Biscuit's card is the one drop zone; Pip's and mine dim.
-    expect(screen.getByLabelText(`יעד: ${isolate('Biscuit')}`)).toBeOnTheScreen();
-    expect(within(card(BISCUIT)).queryByTestId('drop-zone', hidden)).toBeNull(); // the zone wraps the card
-    expect(
-      within(screen.getByTestId(`group-hud-${BISCUIT}`, hidden)).getByTestId('drop-zone', hidden),
-    ).toBeOnTheScreen();
-    expect(
-      within(screen.getByTestId(`group-hud-${PIP}`, hidden)).queryByTestId('drop-zone', hidden),
-    ).toBeNull();
-    expect(screen.getByRole('button', { name: 'סגירת ארסנל ההפרעות', ...hidden })).toBeOnTheScreen();
-
-    // Drag the fireworks: the ghost carries the route, from me to Biscuit, both avatars.
-    const f = finger('fireworks');
-    await f.down();
-    const ghost = screen.getByTestId('arsenal-ghost', hidden);
-    expect(ghost).toHaveTextContent(`זיקוקים · 2 נק׳אני←${isolate('Biscuit')}`);
-    const route = within(ghost).getByTestId('arsenal-route', hidden);
+    // The picker is aimed at Biscuit: the route in its header, from me (●) to Biscuit (■), both avatars.
+    const route = screen.getByTestId('arsenal-route');
+    expect(route).toHaveAccessibleName(`הפרעה ממני אל ${isolate('Biscuit')}`);
+    expect(route).toHaveTextContent('אני←Biscuit', { exact: false });
     expect(avatarIdsIn(route as unknown as Node)).toEqual(['lava-lamp', 'fox']);
-    // Over Pip's card nothing happens: it is not a drop zone.
-    await f.move(centre(CARDS[PIP]!));
-    await f.move(centre(dropZoneOf(CARDS[BISCUIT]!)));
-    await f.up(centre(dropZoneOf(CARDS[BISCUIT]!)));
+    expect(within(route).getByTestId('glyph-circle', hidden)).toBeOnTheScreen();
+    expect(within(route).getByTestId('glyph-square', hidden)).toBeOnTheScreen();
+    expect(within(route).queryByTestId('glyph-triangle', hidden)).toBeNull();
+    // Biscuit's card is the one target, framed with "יעד"; Pip's is not (it dims).
+    expect(within(card(BISCUIT)).queryByTestId('target-frame', hidden)).toBeNull(); // the frame wraps the card
+    const frame = within(screen.getByTestId(`group-hud-${BISCUIT}`, hidden)).getByTestId(
+      'target-frame',
+      hidden,
+    );
+    expect(within(frame).getByText('יעד', hidden)).toBeOnTheScreen();
+    expect(
+      within(screen.getByTestId(`group-hud-${PIP}`, hidden)).queryByTestId('target-frame', hidden),
+    ).toBeNull();
+    expect(screen.getByRole('button', { name: 'סגירת חלון ההפרעות', ...hidden })).toBeOnTheScreen();
+    // Every kind names Biscuit as its target.
+    expect(screen.getByTestId('arsenal-kind-fireworks')).toHaveAccessibleName(
+      `זיקוקים · 2 נק׳ · הקשה משגרת אל ${isolate('Biscuit')}`,
+    );
+
+    // The second tap: fireworks at Biscuit, once; the picker closes.
+    await fireEvent.press(screen.getByTestId('arsenal-kind-fireworks'));
     await frames(600);
+    expect(screen.queryByTestId('arsenal-sheet')).toBeNull();
 
     const view = g.host.getView();
     const of = (id: PlayerId) => view.players.find((p) => p.id === id)!;
@@ -346,8 +307,18 @@ describe('interferences between 3–4 players (spec §7.3, §7.4)', () => {
     expect(within(card(BISCUIT)).getByTestId('hit-chip', hidden)).toBeOnTheScreen();
     expect(within(card(PIP)).queryByTestId('hit-chip', hidden)).toBeNull();
     // Biscuit can't take another now; Pip can (the next one costs 4).
-    expect(screen.getByRole('button', { name: /^הפרעה ל־Biscuit לא זמינה/ })).toBeDisabled();
+    const busy = screen.getByRole('button', { name: /^הפרעה ל־Biscuit לא זמינה/ });
+    expect(busy).toBeDisabled();
     expect(screen.getByRole('button', { name: /^הפרעה ל־Pip/ })).toBeOnTheScreen();
+    // A tap on Biscuit's dimmed button says why, and opens nothing.
+    useToast.getState().clear();
+    await fireEvent.press(busy);
+    await step(400);
+    expect(screen.queryByTestId('arsenal-sheet')).toBeNull();
+    expect(useToast.getState().current).toMatchObject({ variant: 'warning' });
+    expect(useToast.getState().current?.message).toMatch(
+      new RegExp(`^${isolate('Biscuit')} כבר תחת הפרעה\\. אפשר שוב בעוד`),
+    );
   });
 
   it('a hit between two others: the chip on the target’s card, and a line said', async () => {
@@ -360,15 +331,42 @@ describe('interferences between 3–4 players (spec §7.3, §7.4)', () => {
     expect(within(card(BISCUIT)).getByTestId('hit-chip', hidden)).toBeOnTheScreen();
     expect(within(card(PIP)).queryByTestId('hit-chip', hidden)).toBeNull();
     expect(within(card(ME)).queryByTestId('hit-chip', hidden)).toBeNull();
-    // Not on me: no banner over my screen.
-    expect(screen.queryByTestId('hit-banner')).toBeNull();
+    // Not on me [D46]: no banner over my screen, and my board is not dimmed.
+    expect(screen.queryByTestId('hit-layer-banner', hidden)).toBeNull();
+    expect(screen.queryByTestId('board-hit', hidden)).toBeNull();
     await spoken();
     expect(live()).toHaveTextContent('Pip שלח חתולים אל Biscuit', { exact: false });
+  });
+
+  it('a keypad or a scramble between two others: my board stays bright and my keys in their places [D46]', async () => {
+    const g = await show();
+    const [a, b, c, d] = free(g);
+    await by(g, PIP, (h) => h.solve(a!));
+    await by(g, PIP, (h) => h.solve(b!));
+    await by(g, BISCUIT, (h) => h.solve(c!));
+    await by(g, BISCUIT, (h) => h.solve(d!));
+    await by(g, PIP, (h) => h.interfere(BISCUIT, 'keypad'));
+    await by(g, BISCUIT, (h) => h.interfere(PIP, 'scramble'));
+    await frames(400); // a keypad hit on me would have moved every key by now
+    const view = g.host.getView();
+    expect(view.players.find((p) => p.id === BISCUIT)!.hitBy).toMatchObject({ kind: 'keypad' });
+    expect(view.players.find((p) => p.id === PIP)!.hitBy).toMatchObject({ kind: 'scramble' });
+    expect(screen.queryByTestId('board-hit', hidden)).toBeNull();
+    expect(screen.queryByTestId('hit-dim', hidden)).toBeNull();
+    expect(screen.queryByTestId('hit-scramble', hidden)).toBeNull();
+    expect(screen.queryByTestId('hit-layer-banner', hidden)).toBeNull();
+    for (const digit of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      const place = screen.getByTestId(`key-${digit}-place`) as unknown as {
+        props: { jestAnimatedStyle?: { value: ViewStyle } };
+      };
+      const [move] = place.props.jestAnimatedStyle?.value.transform as { translateX: number }[];
+      expect(Math.abs(move!.translateX)).toBeLessThan(0.5);
+    }
   });
 });
 
 describe('leaving a game of 3–4 (spec §6.6, §6.7, D36)', () => {
-  it('an opponent surrenders: out, dimmed with a fixed last place, no ⚡; the game goes on', async () => {
+  it('an opponent surrenders: out, dimmed with a fixed last place, no "הפרעה"; the game goes on', async () => {
     const g = await show();
     const [a, b] = free(g);
     await by(g, PIP, (h) => h.solve(a!));
@@ -409,7 +407,12 @@ describe('leaving a game of 3–4 (spec §6.6, §6.7, D36)', () => {
     const g = await show({ count: 4 });
     await fireEvent.press(screen.getByRole('button', { name: 'כניעה' }));
     const dialog = screen.getByTestId('ranked-surrender');
-    expect(within(dialog).getByText('תצא מהמשחק, והמשבצות שפתרת יישארו בצבע שלך.')).toBeOnTheScreen();
+    // I have not placed a digit yet: leaving costs me no rating against anyone still in (spec §11.2).
+    expect(
+      within(dialog).getByText(
+        'תצא מהמשחק, והמשבצות שפתרת יישארו בצבע שלך. הדירוג שלך לא ירד מול אף שחקן שנשאר במשחק.',
+      ),
+    ).toBeOnTheScreen();
     await fireEvent.press(within(dialog).getByRole('button', { name: 'כן, להיכנע' }));
     await frames(300);
 
@@ -455,11 +458,11 @@ describe('in English', () => {
     await earn(g);
     await fireEvent.press(screen.getByRole('button', { name: 'Interfere with Pip · costs 2 pts' }));
     await step(400);
-    const f = finger('cats');
-    await f.down();
-    expect(screen.getByTestId('arsenal-ghost', hidden)).toHaveTextContent(`Cats · 2 ptsMe→${isolate('Pip')}`);
-    await f.up(TOKEN_AT);
-    await frames(600);
+    expect(screen.getByText('Pick an interference')).toBeOnTheScreen();
+    expect(screen.getByTestId('arsenal-route')).toHaveTextContent('Me→Pip', { exact: false });
+    expect(screen.getByTestId('arsenal-route')).toHaveAccessibleName(
+      `Interference from me to ${isolate('Pip')}`,
+    );
     await fireEvent.press(screen.getByTestId('arsenal-close'));
     await frames(400);
     await act(async () => g.host.surrender());

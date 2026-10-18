@@ -58,6 +58,11 @@ export interface SheetProps {
    * with `flex: 1`: a long list that scrolls inside it (the country and avatar pickers).
    */
   fill?: boolean;
+  /**
+   * The sheet has left the screen: its exit is over and its native window gone (usePresence's onExited, as
+   * ConfirmModal's). What must not happen under a closing sheet waits for it (the game's results, bug 9).
+   */
+  onExited?: () => void;
   testID?: string;
 }
 
@@ -76,6 +81,7 @@ export function Sheet({
   scrimLabel,
   enter = 'sheet',
   fill = false,
+  onExited,
   testID,
 }: SheetProps) {
   const { t } = useTranslation('ui');
@@ -83,7 +89,11 @@ export function Sheet({
   const { bottom } = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const inMs = enter === 'tray' ? motion.duration.trayRise : motion.duration.sheetIn;
-  const { mounted, progress } = usePresence(visible, { inMs, outMs: motion.duration.sheetOut, reduce });
+  const { mounted, progress } = usePresence(
+    visible,
+    { inMs, outMs: motion.duration.sheetOut, reduce },
+    onExited,
+  );
   const height = useSharedValue(windowHeight);
   const drag = useSharedValue(0);
   const titleRef = useRef<ComponentRef<typeof Text>>(null);

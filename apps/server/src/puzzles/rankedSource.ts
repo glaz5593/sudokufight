@@ -5,7 +5,7 @@ import {
   type Rng,
   selectPuzzle,
 } from '@sudoku-fight/engine';
-import { and, asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 
 import type { Db } from '../db';
 import { puzzleHistory, puzzles } from '../db/schema';
@@ -43,12 +43,15 @@ export interface DbPuzzleSourceOptions {
   resetShare?: number;
 }
 
-/** The ids of a type's ranked pool, in a fixed order (so a seeded Rng picks the same one). */
+/**
+ * The ids of a type's ranked pool, in a fixed order (so a seeded Rng picks the same one). A retired puzzle (one
+ * that left the bank file, [D43]) is not in it: it stays only for the games and histories that point at it.
+ */
 export async function rankedPool(db: Db, gameType: GameType): Promise<string[]> {
   const rows = await db
     .select({ id: puzzles.id })
     .from(puzzles)
-    .where(and(eq(puzzles.pool, 'ranked'), eq(puzzles.gameType, gameType)))
+    .where(and(eq(puzzles.pool, 'ranked'), eq(puzzles.gameType, gameType), isNull(puzzles.retiredAt)))
     .orderBy(asc(puzzles.id));
   return rows.map((r) => r.id);
 }

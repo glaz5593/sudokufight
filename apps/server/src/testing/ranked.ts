@@ -54,11 +54,15 @@ export async function addAccounts(db: Db, accounts: readonly TestAccount[]): Pro
   }
 }
 
-/** Puzzles rows; ids are kept, givens and solution taken as they are. */
+/** Puzzles rows; ids are kept, givens and solution taken as they are. `retired`: left the bank [D43]. */
 export async function addPuzzles(
   db: Db,
   list: readonly GamePuzzle[],
-  { gameType = 'fast', pool = 'ranked' }: { gameType?: GameType; pool?: 'ranked' | 'offline' } = {},
+  {
+    gameType = 'fast',
+    pool = 'ranked',
+    retired = false,
+  }: { gameType?: GameType; pool?: 'ranked' | 'offline'; retired?: boolean } = {},
 ): Promise<void> {
   if (list.length === 0) return;
   await db.insert(puzzles).values(
@@ -69,6 +73,7 @@ export async function addPuzzles(
       givensCount: [...p.givens].filter((c) => c !== '0').length,
       source: 'test',
       pool,
+      retiredAt: retired ? new Date(T0) : null,
     })),
   );
 }

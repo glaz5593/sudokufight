@@ -7,4 +7,10 @@ export {
   rankedPool,
   type RankedPuzzleSource,
 } from './rankedSource';
-export { isRankedPoolReady, rankedPoolSizes, seedRankedPuzzles, type SeedPuzzlesResult } from './seed';
+export {
+  isRankedPoolReady,
+  rankedPoolMatches,
+  rankedPoolSizes,
+  seedRankedPuzzles,
+  type SeedPuzzlesResult,
+} from './seed';

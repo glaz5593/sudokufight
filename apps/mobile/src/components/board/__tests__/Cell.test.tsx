@@ -5,6 +5,7 @@ import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 import i18n from '../../../i18n';
 import { useSettings } from '../../../state/settings';
 import { color, size, tokens } from '../../../theme';
+import { motion } from '../../../theme/motion';
 import { type CellLock, type CellModel, type CellPlayer, emptyCell } from '../boardModel';
 import { Cell, type CellFlash, flashPart, sameCell } from '../Cell';
 import { geometryForCell } from '../geometry';
@@ -191,6 +192,30 @@ describe('Cell', () => {
     expect(styleOf(face()).backgroundColor).toBe(color.board.cell);
   });
 
+  it('queued (#14, D42): my waiting digit in my colour, the half ring, the wifi mark; static, not tappable', async () => {
+    await render(<Cell cell={cell('D5', { kind: 'queued', digit: 7, player: me })} />);
+    expect(screen.getByRole('button', { name: 'D5, 7, ממתין לחיבור' })).toBeDisabled();
+    expect(screen.getByTestId('cell-digit')).toHaveTextContent('7');
+    expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(P[0].digit);
+    expect(screen.getByTestId('cell-ring')).toBeOnTheScreen();
+    expect(screen.queryByTestId('cell-ring-edge')).not.toBeOnTheScreen();
+    expect(
+      within(screen.getByTestId('cell-queued-mark')).getByTestId('icon-wifiOff', {
+        includeHiddenElements: true,
+      }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByTestId('cell-pill')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('cell-pulse')).not.toBeOnTheScreen();
+    expect(styleOf(face()).backgroundColor).toBe(color.board.cell);
+  });
+
+  it('queued, reduced motion: the same, at once', async () => {
+    useSettings.setState({ reduceMotion: 'on' });
+    await render(<Cell cell={cell('D5', { kind: 'queued', digit: 7, player: me })} />);
+    expect(screen.getByTestId('cell-ring')).toHaveAnimatedStyle({ opacity: 0.5 });
+    expect(screen.getByTestId('cell-queued-mark')).toBeOnTheScreen();
+  });
+
   it('wrong digits: the last three, small and dark red at the bottom right; the label reads them all', async () => {
     await render(<Cell cell={cell('D5', { wrong: [1, 2, 3, 4] as Digit[] })} />);
     expect(screen.getByRole('button', { name: 'D5, ריקה, ספרות שגויות: 1, 2, 3, 4' })).toBeOnTheScreen();
@@ -306,6 +331,101 @@ describe('Cell flashes', () => {
     expect(screen.getByTestId('cell-flash-correct-fill')).toHaveAnimatedStyle({
       opacity: tokens.opacity.correctFlash,
     });
+  });
+});
+
+/**
+ * A lock that goes (motion.md `lock.release`): its ring and my pill fade out from the cell itself, with their last
+ * look, then go. Never a Reanimated layout animation (Moshe's black screens of 1.0.0: the game's end clears every
+ * lock, and an `exiting` animation still running when the results replaced the game).
+ */
+describe('Cell: a lock that goes', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('he');
+    useSettings.setState({ reduceMotion: 'off' });
+    jest.useFakeTimers();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  const wait = (ms: number) => act(async () => void jest.advanceTimersByTime(ms));
+  const myLock = cell('F8', { kind: 'myLock', player: me, lock: lock(4) });
+  const solvedByMe = cell('F8', { kind: 'solved', digit: 5, player: me });
+
+  it('my lock goes (a digit placed): the ring and the pill stay, in my colour, while they fade (240 ms)', async () => {
+    await render(<Cell cell={myLock} />);
+    await wait(300); // the ring has faded in
+    expect(screen.getByTestId('cell-ring')).toBeOnTheScreen();
+    expect(screen.getByTestId('cell-pill')).toHaveTextContent('4');
+
+    await screen.rerender(<Cell cell={solvedByMe} />);
+    expect(screen.queryByTestId('cell-ring')).toBeNull();
+    expect(screen.queryByTestId('cell-pill')).toBeNull();
+    const ring = screen.getByTestId('cell-ring-leaving');
+    expect(styleOf(within(ring).getByTestId('cell-ring-line')).borderColor).toBe(P[0].ring);
+    expect(screen.getByTestId('cell-pill-fading')).toHaveTextContent('4');
+    expect(styleOf(screen.getByTestId('cell-pill-fading')).backgroundColor).toBe(P[0].ring);
+
+    await wait(motion.duration.lockAutoRelease - 60);
+    expect(screen.getByTestId('cell-ring-leaving')).toBeOnTheScreen();
+    expect(screen.getByTestId('cell-pill-leaving')).toBeOnTheScreen();
+    await wait(200);
+    expect(screen.queryByTestId('cell-ring-leaving')).toBeNull();
+    expect(screen.queryByTestId('cell-pill-leaving')).toBeNull();
+    // The cell itself is the solved one all along.
+    expect(screen.getByTestId('cell-digit')).toHaveTextContent('5');
+  });
+
+  it('an opponent’s lock that goes fades its ring in their colour', async () => {
+    await render(<Cell cell={cell('A1', { kind: 'oppLock', player: nina, lock: lock(6) })} />);
+    await wait(300);
+    await screen.rerender(<Cell cell={cell('A1')} />);
+    const ring = screen.getByTestId('cell-ring-leaving');
+    expect(styleOf(within(ring).getByTestId('cell-ring-line')).borderColor).toBe(P[1].ring);
+    await wait(motion.duration.lockAutoRelease + 150);
+    expect(screen.queryByTestId('cell-ring-leaving')).toBeNull();
+  });
+
+  it('reduced motion: the 200 ms fade', async () => {
+    useSettings.setState({ reduceMotion: 'on' });
+    await render(<Cell cell={myLock} />);
+    await wait(100);
+    await screen.rerender(<Cell cell={cell('F8')} />);
+    expect(screen.getByTestId('cell-ring-leaving')).toBeOnTheScreen();
+    await wait(motion.duration.reducedFade - 60);
+    expect(screen.getByTestId('cell-ring-leaving')).toBeOnTheScreen();
+    await wait(200);
+    expect(screen.queryByTestId('cell-ring-leaving')).toBeNull();
+    expect(screen.queryByTestId('cell-pill-leaving')).toBeNull();
+  });
+
+  it('a new lock on the cell during the fade takes the ring’s place (my pill still fades away)', async () => {
+    await render(<Cell cell={myLock} />);
+    await wait(300);
+    await screen.rerender(<Cell cell={cell('F8')} />);
+    await wait(100);
+    await screen.rerender(<Cell cell={cell('F8', { kind: 'oppLock', player: nina, lock: lock(8) })} />);
+    expect(screen.queryByTestId('cell-ring-leaving')).toBeNull();
+    const ring = screen.getByTestId('cell-ring');
+    expect(styleOf(within(ring).getByTestId('cell-ring-line')).borderColor).toBe(P[1].ring);
+    expect(screen.getByTestId('cell-pill-leaving')).toBeOnTheScreen();
+    await wait(1000);
+    expect(screen.getByTestId('cell-ring')).toBeOnTheScreen();
+    expect(screen.getByTestId('cell-ring')).toHaveAnimatedStyle({ opacity: 1 });
+    expect(screen.queryByTestId('cell-pill-leaving')).toBeNull();
+    expect(screen.queryByTestId('cell-pill')).toBeNull();
+  });
+
+  it('no layout animation on the ring or the pill (nothing the navigation can cut)', async () => {
+    await render(<Cell cell={myLock} />);
+    for (const id of ['cell-ring', 'cell-pill-slot', 'cell-pill']) {
+      const props = screen.getByTestId(id).props as Record<string, unknown>;
+      expect({ id, exiting: props.exiting, entering: props.entering, layout: props.layout }).toEqual({
+        id,
+        exiting: undefined,
+        entering: undefined,
+        layout: undefined,
+      });
+    }
   });
 });
 

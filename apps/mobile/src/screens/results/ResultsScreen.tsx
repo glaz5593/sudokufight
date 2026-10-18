@@ -308,7 +308,12 @@ function ResultsBody({
 
         {model.rating ? (
           <Animated.View entering={enter.section(1)}>
-            <RatingSection rating={model.rating} gameType={model.gameType} pairs={model.ratingPairs} />
+            <RatingSection
+              rating={model.rating}
+              gameType={model.gameType}
+              pairs={model.ratingPairs}
+              guards={model.ratingGuards}
+            />
           </Animated.View>
         ) : null}
 

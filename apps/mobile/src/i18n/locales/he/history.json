@@ -80,7 +80,13 @@
       "label": "שינוי דירוג: {{delta}}, מ־{{before}} ל־{{after}}",
       "provisional": "דירוג זמני: השינוי כפול ב־10 המשחקים הראשונים",
       "perOpponent": "מחושב מול כל יריב בנפרד",
-      "pairLabel": "מול {{name}}: {{delta}}"
+      "pairLabel": "מול {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "מול {{name}}: הדירוג לא ירד, כי יצאת לפני המהלך הראשון שלך",
+        "leftNotBehind": "מול {{name}}: הדירוג לא ירד, כי לא היית בפיגור כשיצאת",
+        "opponentLeftBeforeMyMove": "מול {{name}}: אין תוספת לדירוג, כי היציאה הייתה לפני המהלך הראשון שלך",
+        "opponentLeftAhead": "מול {{name}}: אין תוספת לדירוג, כי היית בפיגור ברגע היציאה"
+      }
     },
     "ratingOf": "{{before}} → {{after}}",
     "opponentLabel": "{{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}",

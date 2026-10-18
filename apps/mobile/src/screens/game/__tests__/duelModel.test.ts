@@ -70,7 +70,7 @@ describe('the 2-player screen’s choices (model)', () => {
     g.session.close();
   });
 
-  it('the cards’ actions are live (stage 6): my reactions and the opponent’s ⚡ say what the view says', () => {
+  it('the cards’ actions are live (stage 6): my reactions and the opponent’s "הפרעה" say what the view says', () => {
     const g = duel();
     const view = g.host.getView();
     const now = g.clock.now();
@@ -79,9 +79,18 @@ describe('the 2-player screen’s choices (model)', () => {
       canSurrender: true,
       reactionReady: true,
     });
-    // Short of points for the first one (D10): it says how many are missing, it is not "not available".
-    expect(cardModel(view, BOT.id, 0, now).interference).toEqual({ kind: 'points', cost: 2, missing: 2 });
+    // A practice against a bot has no interferences [D44]: no "הפרעה" on its card.
+    expect(cardModel(view, BOT.id, 0, now).interference).toBeNull();
     g.session.close();
+    // With interferences on: short of points for the first one (D10), it says how many are missing.
+    const on = duel({ rules: { interferences: true } });
+    const onView = on.host.getView();
+    expect(cardModel(onView, BOT.id, 0, on.clock.now()).interference).toEqual({
+      kind: 'points',
+      cost: 2,
+      missing: 2,
+    });
+    on.session.close();
   });
 
   it('says when the leader changes, and whether I took the lead or lost it', () => {
@@ -139,7 +148,7 @@ describe('the 2-player screen’s choices (model)', () => {
   });
 
   it('knows when the view goes stale by the clock alone: the end of a target’s second of immunity [D11]', () => {
-    const g = duel();
+    const g = duel({ rules: { interferences: true } });
     try {
       // Nobody busy: nothing to wait for (and nothing at all without interferences).
       expect(staleAt(g.host.getView())).toBeNull();

@@ -19,15 +19,40 @@ const hidden = {
   importantForAccessibility: 'no-hide-descendants',
 } as const;
 
-/** "Reconnecting… 12": replaces the ⚡ button while an opponent is disconnected (§3.3). */
-export function ReconnectPill({ seconds, compact = false }: { seconds: number; compact?: boolean }) {
+/**
+ * "Reconnecting… 12": replaces the ⚡ button while an opponent is disconnected (§3.3). Without `seconds`, the
+ * icon alone: the opponent's connection is lost but still in its soft phase [D42] (no countdown, the game goes
+ * on).
+ */
+export function ReconnectPill({
+  seconds = null,
+  compact = false,
+}: {
+  seconds?: number | null;
+  compact?: boolean;
+}) {
   const h = compact ? metrics.reconnectPill.compactHeight : metrics.reconnectPill.height;
+  const iconOnly = seconds === null;
   return (
-    <View style={[styles.pill, { height: h, borderRadius: h / 2 }]} testID="reconnect-pill" {...hidden}>
-      <Icon name="wifiOff" size={metrics.reconnectPill.icon} color={color.textMuted} />
-      <Text style={[compact ? metrics.interfere.compactCostStyle : text('scoreSm'), styles.text]}>
-        {String(seconds)}
-      </Text>
+    <View
+      style={[
+        styles.pill,
+        { height: h, borderRadius: h / 2 },
+        iconOnly ? [styles.iconOnly, { width: h }] : null,
+      ]}
+      testID={iconOnly ? 'unstable-pill' : 'reconnect-pill'}
+      {...hidden}
+    >
+      <Icon
+        name="wifiOff"
+        size={metrics.reconnectPill.icon}
+        color={iconOnly ? color.status.unstable : color.textMuted}
+      />
+      {iconOnly ? null : (
+        <Text style={[compact ? metrics.interfere.compactCostStyle : text('scoreSm'), styles.text]}>
+          {String(seconds)}
+        </Text>
+      )}
     </View>
   );
 }
@@ -102,6 +127,8 @@ const styles = StyleSheet.create({
     borderWidth: tokens.border.hairline,
     borderColor: color.textMuted,
   },
+  // The soft phase's mark [D42]: a round chip with the wifi-off icon in the amber of the presence dot.
+  iconOnly: { paddingHorizontal: 0, justifyContent: 'center', borderColor: color.status.unstable },
   text: { color: color.text },
   muted: { color: color.textMuted },
   hit: {

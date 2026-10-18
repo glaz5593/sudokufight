@@ -409,18 +409,16 @@ describe('8. gameOver clears every interference (§12)', () => {
 // ---------------------------------------------------------------------------------------------------------
 
 describe('9. Comeback counts only players still in the game (§12)', () => {
-  it('the gap to a player who surrendered stops counting: 14.5 behind, never 21.5, so no Comeback', () => {
+  it('the gap to a player who surrendered stops counting: 14.5 behind, never 20.5, so no Comeback', () => {
     const g = GameDriver.of({ players: 3 });
     g.solve('p1', 'A1', 0); // 8
     g.solve('p1', 'A2', 100); // 6.5 → 14.5
     expect(g.score('p1')).toBe(14.5);
     expect(g.player('p2').maxDeficit).toBe(14.5);
     surrender(g, 'p1', 200);
-    g.miss('p2', 'B1', 1000);
-    g.miss('p2', 'B1', 2000);
-    g.miss('p2', 'B1', 3000); // 1 + 2 + 4
-    expect(g.score('p2')).toBe(-7);
-    expect(g.player('p2').maxDeficit).toBe(14.5); // 7 behind p3, the only opponent still in
+    g.miss('p2', 'B1', 1000); // B1 is worth 6 after A1 and A2
+    expect(g.score('p2')).toBe(-6);
+    expect(g.player('p2').maxDeficit).toBe(14.5); // 6 behind p3, the only opponent still in
     surrender(g, 'p3', 4000);
     expect(g.state.result!.ranking[0]).toMatchObject({ playerId: 'p2', place: 1 });
     expect(award(g, 'comeback')).toBeUndefined();
@@ -470,7 +468,7 @@ describe('10. Fewest mistakes and Fastest go only to players still in the game a
 // ---------------------------------------------------------------------------------------------------------
 
 describe('11. rules.surrenderRanking (§6.6, §6.7) [D36]', () => {
-  /** p3 scores 8 and surrenders, p1 errs (−1), p2 surrenders with 0: p1 is the last one standing. */
+  /** p3 scores 8 and surrenders, p1 errs (−6.5), p2 surrenders with 0: p1 is the last one standing. */
   function play(surrenderRanking?: Rules['surrenderRanking']): GameDriver {
     const g = GameDriver.of({ players: 3, rules: surrenderRanking ? { surrenderRanking } : {} });
     g.solve('p3', 'A1', 1000);
@@ -484,7 +482,7 @@ describe('11. rules.surrenderRanking (§6.6, §6.7) [D36]', () => {
   it("'exitOrder' (default): whoever surrendered ranks below everyone still in the game, by the order of leaving", () => {
     expect(defaultRules('ranked', 'fast').surrenderRanking).toBe('exitOrder');
     expect(ranking(play())).toEqual([
-      ['p1', 1, -1, 'active'],
+      ['p1', 1, -6.5, 'active'],
       ['p2', 2, 0, 'surrendered'],
       ['p3', 3, 8, 'surrendered'],
     ]);
@@ -494,7 +492,7 @@ describe('11. rules.surrenderRanking (§6.6, §6.7) [D36]', () => {
     expect(ranking(play('byScore'))).toEqual([
       ['p3', 1, 8, 'surrendered'],
       ['p2', 2, 0, 'surrendered'],
-      ['p1', 3, -1, 'active'],
+      ['p1', 3, -6.5, 'active'],
     ]);
   });
 
@@ -504,14 +502,14 @@ describe('11. rules.surrenderRanking (§6.6, §6.7) [D36]', () => {
     disconnect(g, 'p4', 100); // 4 players: the game goes on; abandoned at 15100
     g.solve('p3', 'A2', 200); // 6.5
     surrender(g, 'p3', 300);
-    g.miss('p1', 'B1', 400); // −1
+    g.miss('p1', 'B1', 400); // −6
     g.tickTo(15100);
     expect(g.player('p4').status).toBe('abandoned');
     surrender(g, 'p2', 16000);
     expect(ranking(g)).toEqual([
       ['p3', 1, 6.5, 'surrendered'],
       ['p2', 2, 0, 'surrendered'],
-      ['p1', 3, -1, 'active'],
+      ['p1', 3, -6, 'active'],
       ['p4', 4, 8, 'abandoned'],
     ]);
   });
@@ -523,9 +521,16 @@ describe('12. rating settings live in rules.rating (§11.2) [D7, D8, D23, D31, D
   const withRating = (o: Partial<RatingRules>): Partial<Rules> => ({
     rating: { ...DEFAULT_RATING_RULES, ...o },
   });
+  /** Both players have moved and p2 trails, 6.5 – 8, so no leave guard holds (§11.2). */
+  const bothMoved = (rules: Partial<Rules>, ratedGames = 30) => {
+    const g = GameDriver.of({ players: rated([1200, 1200], ratedGames), rules });
+    g.solve('p1', 'A1', 200);
+    g.solve('p2', 'A2', 500);
+    return g;
+  };
   /** Two players; p2 surrenders at 1000. */
   const deltas = (rules: Partial<Rules>, ratedGames = 30) => {
-    const g = GameDriver.of({ players: rated([1200, 1200], ratedGames), rules });
+    const g = bothMoved(rules, ratedGames);
     surrender(g, 'p2', 1000);
     return g.state.result!.ratingChanges.map((c) => [c.playerId, c.delta, c.provisional]);
   };
@@ -539,6 +544,9 @@ describe('12. rating settings live in rules.rating (§11.2) [D7, D8, D23, D31, D
       abandonWinScore: 1,
       initialRating: 1200,
       abandonPenalty: 0,
+      leaverGuard: true,
+      stayerGuard: true,
+      abandonJudgedAt: 'disconnect',
     });
     expect(makeConfig()).not.toHaveProperty('ratingOption');
   });
@@ -571,7 +579,7 @@ describe('12. rating settings live in rules.rating (§11.2) [D7, D8, D23, D31, D
 
   /** p2 disconnects at 1000 and abandons at 16000. */
   const abandoned = (rules: Partial<Rules>) => {
-    const g = GameDriver.of({ players: rated([1200, 1200]), rules });
+    const g = bothMoved(rules);
     disconnect(g, 'p2', 1000);
     g.tickTo(16000);
     return g.state.result!.ratingChanges.map((c) => [c.playerId, c.before, c.delta, c.after]);
@@ -592,6 +600,25 @@ describe('12. rating settings live in rules.rating (§11.2) [D7, D8, D23, D31, D
     expect(abandoned(withRating({ abandonPenalty: 5 }))).toEqual([
       ['p1', 1200, 16, 1216],
       ['p2', 1200, -21, 1179],
+    ]);
+  });
+
+  it('the leave guards reach Elo, and switch off [D32, Moshe 2026-10-15]', () => {
+    /** p2 leads 8 – 6.5 and surrenders. */
+    const ahead = (rules: Partial<Rules>) => {
+      const g = GameDriver.of({ players: rated([1200, 1200]), rules });
+      g.solve('p2', 'A1', 200);
+      g.solve('p1', 'A2', 500);
+      surrender(g, 'p2', 1000);
+      return g.state.result!.ratingChanges.map((c) => [c.playerId, c.delta]);
+    };
+    expect(ahead({})).toEqual([
+      ['p1', 0],
+      ['p2', 0],
+    ]);
+    expect(ahead(withRating({ leaverGuard: false, stayerGuard: false }))).toEqual([
+      ['p1', 16],
+      ['p2', -16],
     ]);
   });
 });
@@ -637,7 +664,7 @@ describe('14. the view (§6.8, §17.2)', () => {
       ['p3', 1, true],
     ]);
     g.solve('p1', 'A1', 0); // 8
-    g.miss('p2', 'A2', 100); // −1
+    g.miss('p2', 'A2', 100); // −6.5
     expect(cards()).toEqual([
       ['p1', 1, true],
       ['p2', 3, false],
@@ -825,7 +852,12 @@ describe('17. LocalGameHost behind the GameHost interface (§17.2, §18)', () =>
     const clock = new ManualClock(0);
     const scheduler = new ManualScheduler(clock);
     const host = new LocalGameHost({
-      config: makeConfig({ mode: 'bot', players: [{ id: 'me' }, { id: 'bot', isBot: true }] }),
+      // Interferences on, so `interfere` goes through too: a bot game has none by default [D44].
+      config: makeConfig({
+        mode: 'bot',
+        players: [{ id: 'me' }, { id: 'bot', isBot: true }],
+        rules: { interferences: true },
+      }),
       playerId: 'me',
       clock,
       scheduler,
@@ -1006,6 +1038,8 @@ describe('19. second review', () => {
         players: rated([1200, 1200]),
         rules: { rating: { ...DEFAULT_RATING_RULES, abandonWinScore } },
       });
+      g.solve('p1', 'A1', 200);
+      g.solve('p2', 'A2', 500); // both moved, the leaver behind: no leave guard holds (§11.2)
       disconnect(g, 'p2', 1000);
       g.tickTo(16000);
       return g.state.result!.ratingChanges[0]!.delta;

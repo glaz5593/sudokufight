@@ -1,0 +1,216 @@
+{
+  "item": "Rating (and XP/level/league/card stats) do not refresh after a ranked game until the app is restarted",
+  "summary": "The app reads the account's ratings (GET /v1/me → useAuth.me.ratings) only at app start (initAuth). After a game there is exactly one re-read: the results route's leave(), which runs only when the player presses \"לבית\" or \"משחק חדש\" on the results screen (apps/mobile/app/results/[id].tsx). Every other way out never re-reads the ratings: Android back or the iOS swipe from results (the results route has no BackHandler), leaving from the game screen (OnlineGame onHome, the black-screen cases), leaving a running game (abandonment), and the app going to the background and back. Home's focus effect re-reads /v1/me only when meOffline is true (HomeScreen.tsx:94). The app-foreground listener refreshes only /v1/me/progress (appProgress.ts startProgress). There is also a race: the server stores the result, ratings and XP in the background after it broadcasts gameOver (GameRecorder.end, queued behind event batches, with retries). So a quick \"לבית\" can read the old row, and nothing reads it again. The fix has four parts: (1) detect the end of a ranked game in the session layer, independent of navigation; (2) show the server-computed rating change at once, in memory only; (3) re-read /v1/me with backoff until the server's games count for the rating key goes up, then refresh progress and the player card; (4) make Home's focus and the app's foreground re-read /v1/me, throttled. This is client-only, with no protocol or server change.",
+  "rootCauses": [
+    {
+      "cause": "Only one refresh point, tied to the results screen's buttons. Any other exit never re-reads /v1/me: Android hardware back or the iOS swipe from /results (it pops to /game-type and leaves the online session in the store), the game screen's home after an end without results (the black-screen reports), and leaving a running game. Home's focus re-reads /v1/me only when the profile came from the phone's cache.",
+      "evidence": "apps/mobile/app/results/[id].tsx:28-37: leave() is the only refreshMe after a game, called from goHome/newGame only. There is no BackHandler in screens/results (grep: none). app/game.tsx:8 router.replace results, so the stack is [index, modes, game-type, results]. apps/mobile/src/screens/home/HomeScreen.tsx:90-98: `if (useAuth.getState().meOffline) void refreshMe();`. ProfileCard, ModesScreen:54, GameTypeScreen:62 and GameScreen:278 all read useAuth.me.ratings.",
+      "confidence": "high"
+    },
+    {
+      "cause": "The app returning to the foreground never re-reads /v1/me, only progress. A full restart (initAuth → GET /v1/me) is the only other refresh, which matches Moshe's 'closed and reopened, then it updated'.",
+      "evidence": "apps/mobile/src/progress/appProgress.ts startProgress(): the AppState 'active' handler calls practiceSync().flush() and refreshMyProgress() only. authStore.ts initAuth/loadProfile is the only other getMe.",
+      "confidence": "high"
+    },
+    {
+      "cause": "Race with the server's background write. GameRoom broadcasts the over events first, and GameRecorder writes the end transaction (ratings games+1, XP, histories) in a queue behind event batches with retries (500 ms doubling, 5 tries). A fast 'לבית' reads the old rating, and Home's refreshMyProgress on focus reads the old XP/league/card. Nothing reads again later.",
+      "evidence": "apps/server/src/rooms/GameRoom.ts:602-611 onGameUpdate (sendEvents, then the recorder runs in the background; match.over() waits on recorder.done). apps/server/src/persistence/recorder.ts end()/enqueue()/withRetries. apps/server/src/ratings/store.ts applyRatingChanges (games + 1 per RatingChange). The server's own fake client already has to poll: apps/server/src/testing/fakeClient/client.ts:779-801 readStoredRating ('GET /v1/me until the game counts in the rating key').",
+      "confidence": "medium"
+    },
+    {
+      "cause": "Leaving a running 2-player ranked game: the session is closed before the end. The server records the abandonment loss about graceMs later, and nothing on the phone reads it.",
+      "evidence": "apps/mobile/src/game/onlineSession.ts close() unsubscribes before any end. app/game.tsx leaveTo → clear() on unmount. GameRoom.ts doc lines 64-70: a consented leave is a disconnect, and the grace ends in abandonment.",
+      "confidence": "medium"
+    }
+  ],
+  "design": "GOAL: after any ranked game, Home's card (ratings per type, league, level/XP bar, games/win%/streak), Modes, GameType (\"הדירוג שלך\") and the surrender estimate show the new numbers without a restart. The server stays authoritative. Nothing changes on the server or in the protocol.\n\n1) CONFIG: apps/mobile/src/config/account.ts. Add to accountConfig:\n  refresh: {\n    /** Home's focus and the app's return to the foreground read GET /v1/me at most this often (ms). */\n    minIntervalMs: 30_000,\n    afterRanked: {\n      /** Waits before each read of GET /v1/me after a ranked game ends, until the server has stored it (ms). */\n      confirmDelaysMs: [1500, 3000, 6000, 12000, 24000],\n      /** A rated game that moved no rating of mine (no RatingChange for me): read me + progress at these waits, nothing to confirm. */\n      unratedDelaysMs: [1500, 6000],\n      /** How long the game's own rating change is shown over older server answers (ms). After that, the server's answer wins. */\n      optimisticTtlMs: 120_000,\n      /** Leaving a running 2-player ranked game: the first read waits rules.graceMs plus this (ms). */\n      afterGraceMarginMs: 2000,\n    },\n  }\nThese are tunables, not literals in code.\n\n2) PURE HELPERS: apps/mobile/src/api/me.ts (no RN; tests in api/__tests__/accountApi.test.ts):\n  - `ratingEntryAfter(entry: RatingEntry, after: number, gamesBefore: number, provisionalGames: number): RatingEntry`.\n    Returns the entry as ratings/store.ts applyRatingChanges will store it: { key: entry.key, rating: after, games: gamesBefore + 1, provisional: gamesBefore + 1 < provisionalGames, peak: Math.max(entry.peak, after) }.\n    Do NOT use RatingChange.provisional. It means \"K doubled in this game\", which is a different flag.\n  - `withRatingEntry(me: Me, entry: RatingEntry): Me`. Replaces the entry with the same key. If no entry has that key, returns the same object; never invents keys.\n  - `export interface PendingRating { meId: string; entry: RatingEntry; expiresAt: number }`\n  - `withPendingRatings(server: Me, pending: ReadonlyMap<string, PendingRating>, now: number): { me: Me; pending: Map<string, PendingRating> }`.\n    A pending entry is kept (and shown in place of the server's entry for its key) only when all of these hold:\n      - p.meId === server.id;\n      - p.expiresAt > now;\n      - the server has that key;\n      - server entry.games < p.entry.games.\n    Otherwise it is dropped (the server confirmed it, it expired, or another account). The returned `pending` holds only the kept ones.\n\n3) NEW apps/mobile/src/game/rankedEnd.ts (pure; imports engine ratingKey and types only):\n  export interface RankedEnd {\n    gameId: string;\n    playerId: PlayerId;          // my id in the game = users.id = Me.id in ranked games\n    key: string;                 // ratingKey(config.gameType, config.players.length, config.rules.rating.option), as the server's fake client does\n    gamesBefore: number;         // config.players[me].ratedGames ?? 0 (the server's count at the start)\n    provisionalGames: number;    // config.rules.rating.provisionalGames\n    change: RatingChange | null; // mine from state.result.ratingChanges, else null\n    expectsStored: boolean;      // the server will add 1 to games in `key` for me\n    waitMs: number;              // extra wait before the first read\n  }\n  - `rankedEndOf(state: GameState, me: PlayerId): RankedEnd | null`.\n    Returns null unless ALL of these hold:\n      - state.status === 'over' and state.result exists;\n      - config.mode === 'ranked';\n      - config.players.length >= 2;\n      - every player has rating !== undefined (a rated room; dev rooms have none, and nothing is stored);\n      - me is one of the players.\n    Then change = mine ?? null, expectsStored = change !== null, waitMs = 0.\n  - `rankedLeftOf(state: GameState, me: PlayerId, marginMs: number): RankedEnd | null`.\n    For a rated game that is NOT over and has exactly 2 players: change null, expectsStored true, waitMs = config.rules.graceMs + marginMs.\n    Returns null for 3–4 players: their game ends (and is stored) only when the whole game ends, so Home's focus and the foreground cover it.\n  - `storedIn(server: Me, end: RankedEnd): boolean`. True when end.expectsStored and the server's entry for end.key has games > end.gamesBefore.\n  This must stay aligned with the server: applyRatingChanges increments games exactly for the players present in result.ratingChanges. The parallel items that change the retire rules will change which players get a RatingChange, and this predicate follows automatically.\n\n4) apps/mobile/src/game/onlineSession.ts:\n  - OnlineSessionDeps gets `onEnd?: (end: { state: GameState; playerId: PlayerId; left: boolean }) => void`.\n  - In onUpdate, in the same `!this.ended && state.status === 'over' && state.result` branch that sends game_end, call it once with left: false, wrapped in try/catch like send().\n  - In close(): before this.unsubscribe(), if !this.ended && this.host.game && this.host.game.status !== 'over', call it with { state: this.host.game, playerId: this.playerId, left: true } (try/catch).\n  - The session stays pure: the decision whether it matters is in rankedEnd.ts.\n\n5) apps/mobile/src/game/gameStore.ts:\n  - GameStoreDeps gets `onlineEnd?: (end: OnlineEnd) => void`. Export `type OnlineEnd` from onlineSession.ts.\n  - defaultGameStoreDeps gets `onlineEnd: onlineGameEnded` (from progress/appProgress, next to practiceFinished).\n  - Pass `onEnd: deps.onlineEnd` into BOTH `new OnlineSession(...)` calls: goOnline, and goRanked's `enter`. A retry/rejoin session therefore reports the end too.\n\n6) NEW apps/mobile/src/progress/rankedRefresh.ts: class RankedRefresh (pure; timers injected, like PracticeSync).\n  deps: {\n    fetchMe(): Promise<Me | null>;\n    refreshProgress(): Promise<void>;\n    showResult(end: RankedEnd): void;\n    timers: { setTimeout; clearTimeout };\n    confirmDelaysMs; unratedDelaysMs;\n    log?;\n  }\n  gameEnded(end: RankedEnd):\n    - Ignore an end of a gameId already finished with left=false. Keep a bounded set of the last 20 ids.\n    - An end with left=false replaces a wait for the same gameId that came from a 'left' (the player came back).\n    - A different game cancels the current wait (only the newest game is followed).\n    - Then: if end.change, call deps.showResult(end). Schedule the attempts: first after end.waitMs + delays[0], then after each following delay. delays = expectsStored ? confirmDelaysMs : unratedDelaysMs.\n  Each attempt:\n    - me = await fetchMe(). If this wait was replaced meanwhile, stop.\n    - If expectsStored && me && storedIn(me, end): await refreshProgress() and finish.\n    - If !expectsStored: call refreshProgress() on each attempt and finish after the last one.\n    - If the attempts run out without confirmation: refreshProgress() once and finish. The optimistic entry then lapses by its TTL, and the throttled Home/foreground reads reconcile.\n    - fetchMe returning null (offline, error) just goes on to the next attempt.\n  stop(): clears the timer and the current wait. Used for sign-out, another account, tests.\n\n7) apps/mobile/src/auth/authStore.ts:\n  - AuthDeps gets optional `now?: () => number` (default Date.now) for tests.\n  - Module state:\n      - `let pendingRatings = new Map<string, PendingRating>()`;\n      - `let lastServerReadAt: number | null = null`;\n      - `let meRequests = 0, meAdopted = 0`.\n    Reset all of them in setAuthDeps, in forgetLocal, and wherever status becomes needsProfile.\n  - adopt(user, me, offline):\n      - shown = withPendingRatings(me, pendingRatings, now()). Keep the returned pending, then set({ ..., me: shown.me }).\n      - meCache.save keeps the server's own `me` (raw), never the optimistic one.\n      - When !offline, set lastServerReadAt = now().\n      - useProfile mirroring is unchanged.\n  - NEW `export async function fetchMe(): Promise<Me | null>`. This is the old refreshMe body, plus:\n      - seq = ++meRequests;\n      - after the await, if seq < meAdopted, return the answer without adopting (a newer answer is already shown);\n      - if the signed-in uid changed meanwhile, return null;\n      - meAdopted = seq; adopt; return the server's Me;\n      - on error: the same notRegistered handling as now, then return null.\n    authDeps() must stay inside the try: appProgress tests run without auth deps.\n  - `refreshMe()` becomes `async () => { await fetchMe(); }`. Same signature, so useSuspendedRefusal, SuspendedScreen, moderation, the results route and match/index keep working.\n  - NEW `export function refreshMeIfStale(minIntervalMs = accountConfig.refresh.minIntervalMs): Promise<void>`.\n      - Does nothing unless status is 'ready'.\n      - Reads when meOffline, when lastServerReadAt === null, or when now() - lastServerReadAt >= minIntervalMs.\n  - NEW `export function showRankedResult(end: RankedEnd): void`. Patches useAuth.me in memory only. It returns without patching unless all of these hold:\n      - status is 'ready' and me exists;\n      - end.change exists;\n      - end.playerId === me.id;\n      - me has an entry for end.key, and that entry's games < gamesBefore + 1.\n    Then:\n      - entry = ratingEntryAfter(current, end.change.after, end.gamesBefore, end.provisionalGames);\n      - pendingRatings.set(end.key, { meId: me.id, entry, expiresAt: now() + accountConfig.refresh.afterRanked.optimisticTtlMs });\n      - set({ me: withRatingEntry(me, entry) }).\n    The number is the server's own result (GameResult computed on the server and mirrored on the phone), the same value the results screen counts to.\n  - auth/index.ts: export fetchMe, refreshMeIfStale, showRankedResult.\n\n8) apps/mobile/src/progress/appProgress.ts:\n  - Singleton `export function rankedRefresh(): RankedRefresh`, built with:\n      - fetchMe;\n      - refreshProgress: () => refreshMyProgress();\n      - showResult: showRankedResult;\n      - setTimeout/clearTimeout;\n      - accountConfig.refresh.afterRanked delays;\n      - the `log` helper.\n  - `export function onlineGameEnded({ state, playerId, left }: OnlineEnd): void`:\n      - if (!currentOwner()) return;\n      - end = left ? rankedLeftOf(state, playerId, afterGraceMarginMs) : rankedEndOf(state, playerId);\n      - if (end) rankedRefresh().gameEnded(end).\n  - startProgress:\n      - In onAuth, when owner is null or changes, call rankedRefresh().stop().\n      - The foreground ('active') handler also calls `void refreshMeIfStale()`.\n      - The returned stop function also calls rankedRefresh().stop().\n  - progress/index.ts: export rankedRefresh, onlineGameEnded, RankedRefresh and its types.\n\n9) apps/mobile/src/screens/home/HomeScreen.tsx: in useFocusEffect, replace `if (useAuth.getState().meOffline) void refreshMe();` with `void refreshMeIfStale();`. Keep refreshMyProgress(). Update the doc comment: Home reads the account again on focus, at most every refresh.minIntervalMs, and at once when it came from the phone.\n\n10) apps/mobile/app/results/[id].tsx: keep leave()'s `if (ranked) void refreshMe()` as an immediate extra read; the pending merge prevents a flicker back. Update the comment to say the session-level refresh (progress/rankedRefresh) covers every other way out.\n\nEDGE CASES:\n- A quick \"לבית\" before the write: Home shows the optimistic value. The early old answer does not override it (games lower and not expired), and a later poll confirms it.\n- Out-of-order GETs: the seq guard.\n- Sign-out or another account mid-wait: stop(), pending cleared, the uid check in fetchMe.\n- The server never stores the game: after confirmDelaysMs run out and optimisticTtlMs passes, the next read shows the server's value (authoritative).\n- Offline after the game: the optimistic value stays until the TTL. The cache keeps the server's copy, so a cold start shows the cached and then the server's value.\n- A RATING_OPTION change between the game and the read (the key is missing in Me): no patch, plain refresh.\n- Dev rooms (no ratings): rankedEndOf returns null.\n- 3–4 player abandonment by leaving: no poll. The throttled Home/foreground reads catch it.\n- A retry session (retryOnline) closing the old one fires a 'left' wait, which the later end supersedes. Harmless extra GETs.\n\nNo new UI strings, so no i18n change. No animation change, so Reduced Motion is not affected. No engine or server change.",
+  "files": [
+    {
+      "path": "apps/mobile/src/config/account.ts",
+      "change": "Add accountConfig.refresh: minIntervalMs 30000; afterRanked: confirmDelaysMs [1500,3000,6000,12000,24000], unratedDelaysMs [1500,6000], optimisticTtlMs 120000, afterGraceMarginMs 2000."
+    },
+    {
+      "path": "apps/mobile/src/api/me.ts",
+      "change": "Add pure helpers: ratingEntryAfter, withRatingEntry, the PendingRating type, and withPendingRatings (server Me plus unexpired pending entries that the server has not counted yet)."
+    },
+    {
+      "path": "apps/mobile/src/game/rankedEnd.ts",
+      "change": "NEW: the RankedEnd type, rankedEndOf(state, me) for a rated ranked game that is over, rankedLeftOf(state, me, marginMs) for leaving a running rated 2-player game, and storedIn(serverMe, end) (games in key > gamesBefore). The key comes from engine ratingKey(gameType, players.length, rules.rating.option)."
+    },
+    {
+      "path": "apps/mobile/src/game/onlineSession.ts",
+      "change": "Add the OnlineSessionDeps.onEnd({state, playerId, left}) callback and export the OnlineEnd type. Called once at gameOver (next to game_end analytics) and from close() when the game is not over (left: true). Wrapped in try/catch."
+    },
+    {
+      "path": "apps/mobile/src/game/gameStore.ts",
+      "change": "Add GameStoreDeps.onlineEnd, with the default onlineGameEnded from progress/appProgress in defaultGameStoreDeps. Pass it as onEnd to both OnlineSession constructions (goOnline, and goRanked's enter)."
+    },
+    {
+      "path": "apps/mobile/src/game/index.ts",
+      "change": "Re-export the OnlineEnd type and the rankedEnd helpers if the module index lists such types."
+    },
+    {
+      "path": "apps/mobile/src/progress/rankedRefresh.ts",
+      "change": "NEW: the RankedRefresh class (injected timers). Shows the result optimistically, polls fetchMe on a backoff until storedIn, then refreshes progress and the card. Handles the unrated and left schedules, dedups by gameId, supersedes 'left', and has stop()."
+    },
+    {
+      "path": "apps/mobile/src/progress/appProgress.ts",
+      "change": "Add the rankedRefresh() singleton and onlineGameEnded(OnlineEnd). In startProgress: stop rankedRefresh on sign-out or another owner and in the returned stop; the foreground handler also calls refreshMeIfStale()."
+    },
+    {
+      "path": "apps/mobile/src/progress/index.ts",
+      "change": "Export rankedRefresh, onlineGameEnded, RankedRefresh and its types."
+    },
+    {
+      "path": "apps/mobile/src/auth/authStore.ts",
+      "change": "Add AuthDeps.now (optional) and module state for pendingRatings, lastServerReadAt and the request seq (reset in setAuthDeps, forgetLocal and needsProfile). adopt() merges pending ratings via withPendingRatings and caches the raw server Me. New exports: fetchMe() (returns the server Me, with a seq guard and a uid check), refreshMeIfStale(), and showRankedResult(end) (in-memory patch plus a pending entry with TTL). refreshMe() becomes a wrapper of fetchMe."
+    },
+    {
+      "path": "apps/mobile/src/auth/index.ts",
+      "change": "Export fetchMe, refreshMeIfStale, showRankedResult."
+    },
+    {
+      "path": "apps/mobile/src/screens/home/HomeScreen.tsx",
+      "change": "Focus effect: refreshMeIfStale() instead of the meOffline-only refreshMe(). Update the doc comment."
+    },
+    {
+      "path": "apps/mobile/app/results/[id].tsx",
+      "change": "Keep leave()'s ranked refreshMe; update the comment to say the session-level refresh covers every other exit (back, swipe, game-screen home, leaving a running game, background)."
+    },
+    {
+      "path": "apps/mobile/src/api/__tests__/accountApi.test.ts",
+      "change": "Tests for ratingEntryAfter, withRatingEntry and withPendingRatings."
+    },
+    {
+      "path": "apps/mobile/src/game/__tests__/rankedEnd.test.ts",
+      "change": "NEW: tests for rankedEndOf, rankedLeftOf and storedIn."
+    },
+    {
+      "path": "apps/mobile/src/progress/__tests__/rankedRefresh.test.ts",
+      "change": "NEW: RankedRefresh with ManualClock/ManualScheduler."
+    },
+    {
+      "path": "apps/mobile/src/game/__tests__/onlineSession.test.ts",
+      "change": "onEnd called once at gameOver (left false), from close() mid-game (left true), not from close() after over, and never thrown through."
+    },
+    {
+      "path": "apps/mobile/src/game/__tests__/gameStoreOnline.test.ts",
+      "change": "startOnline sessions get deps.onlineEnd."
+    },
+    {
+      "path": "apps/mobile/src/game/__tests__/gameStoreRanked.test.ts",
+      "change": "The match's session (enter at 'found') gets deps.onlineEnd; a game over in it calls it once."
+    },
+    {
+      "path": "apps/mobile/src/auth/__tests__/authStore.test.ts",
+      "change": "Tests for showRankedResult, the pending merge in fetchMe/refreshMe, TTL expiry (injected now), raw cache, refreshMeIfStale throttle, the seq guard for out-of-order answers, and sign-out clearing pending."
+    },
+    {
+      "path": "apps/mobile/src/progress/__tests__/appProgress.test.ts",
+      "change": "The foreground also reads GET /v1/me (throttled); onlineGameEnded ignored when signed out; stop() stops rankedRefresh."
+    },
+    {
+      "path": "apps/mobile/src/screens/home/__tests__/HomeAccount.test.tsx",
+      "change": "Home focus re-reads /v1/me when stale even online, and the card shows the server's new rating; no re-read within minIntervalMs."
+    },
+    {
+      "path": "apps/mobile/src/__tests__/ranked.e2e.test.tsx",
+      "change": "Extend: (a) the server stores the game late, after 'לבית' was pressed: Home never flips back to 1200 and ends on the stored rating; (b) leaving results without 'לבית' (router.back(), as Android back does): Home shows the new rating after the poll confirms. Align the match player id with the account's Me.id where the optimistic patch is asserted."
+    },
+    {
+      "path": "docs/01-SPEC.md",
+      "change": "§4.3 (Home): add a line saying that after a ranked game the card's ratings update immediately from the game's result (computed by the server), are confirmed against the server in the background, and that level/XP/league/stats update once the server has stored the game, with no restart needed. Optionally the same note in §12."
+    },
+    {
+      "path": "docs/STAGE9-10-DEVICE-CHECKS.md",
+      "change": "Check 2, step 6: add checks that the new rating shows on Home also when leaving the results with Android Back (or the iOS swipe), when pressing 'לבית' immediately, and after background → foreground without a restart; and that level/XP and the games/win%/streak numbers update within a few seconds."
+    },
+    {
+      "path": "docs/QA-CHECKLIST.md",
+      "change": "Row '5. בית': note that after a ranked game the ratings, level and XP update without restarting the app (also when leaving the results via Back)."
+    },
+    {
+      "path": "docs/RELEASE-CHECKLIST.md",
+      "change": "Optional: line 171 'והדירוג מתעדכן' → 'והדירוג מתעדכן בבית בלי הפעלה מחדש'."
+    }
+  ],
+  "tests": [
+    "rankedEnd.test.ts: rankedEndOf on a rated 2p game that is over (players with rating/ratedGames, option B) → key 'fast', change = mine, gamesBefore = ratedGames, provisionalGames from rules, expectsStored true, waitMs 0",
+    "rankedEndOf with rules.rating.option 'A' → key 'fast-2p'; with 3 players → 'fast-3p'",
+    "rankedEndOf → null when not over / no result / mode practice or bot / any player without rating (dev room) / me not a player; ratedGames missing → gamesBefore 0",
+    "rankedEndOf for a rated game whose ratingChanges has no entry for me → change null, expectsStored false",
+    "rankedLeftOf: running rated 2p game → change null, expectsStored true, waitMs = rules.graceMs + margin; over game, 3–4 players or unrated → null",
+    "storedIn: true only when expectsStored and the server's entry for the key has games > gamesBefore; false for a missing key",
+    "accountApi.test.ts (me.ts): ratingEntryAfter → rating = after, games = gamesBefore+1, provisional = games < provisionalGames (9 → provisional false at 10), peak = max(peak, after)",
+    "withRatingEntry replaces only the matching key and returns the same object for an unknown key",
+    "withPendingRatings: an older server answer (fewer games) keeps the pending entry; a caught-up answer drops it; an expired pending entry gives the server's; a pending entry of another me.id is ignored; the returned pending map has only the kept ones",
+    "rankedRefresh.test.ts (ManualScheduler): gameEnded calls showResult at once, then fetchMe at confirmDelays[0]; not stored → retries at the next delay; stored → refreshProgress once and no more fetches",
+    "rankedRefresh: never stored → exactly confirmDelaysMs.length fetches, then refreshProgress once",
+    "rankedRefresh: fetchMe null (offline) keeps the schedule",
+    "rankedRefresh: the same gameId ended twice → handled once; an end after a 'left' for the same game supersedes it; a newer game cancels the older wait",
+    "rankedRefresh: unrated end (change null, expectsStored false) → no showResult, fetchMe + refreshProgress at each unratedDelaysMs entry",
+    "rankedRefresh: a 'left' end waits waitMs before the first read; stop() cancels pending timers",
+    "onlineSession.test.ts: onEnd called once with left:false when the game ends (also when a fresh snapshot of an over game arrives); close() mid-game calls it with left:true; close() after over does not; an onEnd that throws breaks nothing",
+    "gameStoreOnline/gameStoreRanked: deps.onlineEnd is passed to sessions from startOnline and from a ranked search's 'found'; game over → called once",
+    "authStore.test.ts: showRankedResult patches me.ratings in memory (status ready, playerId === me.id, change present) while ME_CACHE_KEY still holds the server copy; ignored when signed out, playerId differs, change null, or the key is unknown",
+    "authStore: after showRankedResult, refreshMe with the server not yet updated keeps the optimistic entry; after the fake server's row gets games+1, refreshMe shows the server's entry and the pending entry is gone",
+    "authStore: with injected now, after optimisticTtlMs an old server answer replaces the optimistic entry",
+    "authStore: refreshMeIfStale skips within minIntervalMs after initAuth's read, reads after the interval, and always reads when meOffline",
+    "authStore: two fetchMe in flight, the older resolving last is not adopted (seq guard); fetchMe returns the server's Me, and null on network errors",
+    "authStore: signOut/setAuthDeps clear pending ratings (a new sign-in never sees them)",
+    "appProgress.test.ts: foreground('active') calls GET /v1/me when stale (in addition to progress); onlineGameEnded does nothing when nobody is signed in; the stop() of startProgress stops rankedRefresh",
+    "HomeAccount.test.tsx: with the last read older than minIntervalMs, focusing Home re-reads /v1/me online and the card shows the new rating; within the interval no extra GET",
+    "ranked.e2e.test.tsx: 'לבית' pressed before the server stores → Home shows the new rating (optimistic), never flips to 1200, still shows it after the server stores; leaving results via router.back() (like Android back) then going Home → new rating after the poll",
+    "rankedResults.test.tsx: unchanged expectations still pass (leave() calls refreshMe once)",
+    "Run `npm test` (root) before declaring done"
+  ],
+  "docs": [
+    "docs/01-SPEC.md §4.3: the Home card's ratings update right after a ranked game (from the server's result), are confirmed against the server in the background, and level/XP/league/stats follow once stored, with no restart",
+    "docs/STAGE9-10-DEVICE-CHECKS.md check 2 step 6: new device checks (Back/swipe from results, immediate 'לבית', background→foreground, XP/level/stats)",
+    "docs/QA-CHECKLIST.md row '5. בית': rating, level and XP update after a ranked game without restarting",
+    "docs/RELEASE-CHECKLIST.md line 171 (optional wording: 'בלי הפעלה מחדש')"
+  ],
+  "risks": [
+    "Cross-item dependency: the retire / opponent-quit rating rules (other items) change which players get a RatingChange in GameResult.ratingChanges. The client's confirmation (games > gamesBefore when a change exists) relies on the server's applyRatingChanges adding 1 to games exactly for the players present there. If the server ever stores a delta-0 game without adding 1 to games, or adds 1 without a RatingChange, storedIn must follow it.",
+    "Optimistic display: for up to optimisticTtlMs the phone may show a rating the server has not stored (if the write failed for good). It self-corrects on the next read after the TTL. The cache stores only server answers.",
+    "Shared files with other items: onlineSession.ts, gameStore.ts, app/game.tsx and app/results/[id].tsx are likely also touched by the black-screen and connection-grace items. Keep the onEnd hook minimal to ease merging.",
+    "Jest: the global useGameStore now wires onlineGameEnded. Its timers must be stopped (startProgress stop / onAuth owner change) so e2e tests don't leak timers between tests.",
+    "A retryOnline closing the old session fires a 'left' wait that only stops when the new session's end supersedes it: a few extra GET /v1/me. Harmless.",
+    "3–4 player games left mid-way are not polled (they are stored only when the whole game ends). They rely on the throttled Home focus and foreground reads.",
+    "History (/history) and my player card load on open: if opened within ~1 s of the end they can still miss the game until reopened (outside this item)."
+  ],
+  "decisions": [
+    {
+      "question": "להציג בבית את הדירוג החדש מיד בסוף המשחק? המספר הוא מהתוצאה שהשרת חישב, אותו מספר שמסך התוצאות מציג, עוד לפני שהשרת סיים לשמור. או לחכות לאישור מהשרת, שמגיע בדרך כלל תוך 1–3 שניות?",
+      "recommendedDefault": "להציג מיד ולאמת ברקע. אם השרת לא שמר תוך 2 דקות, מוצג הערך של השרת."
+    },
+    {
+      "question": "גם ה־XP, הרמה והליגה בבית יתעדכנו מיד (חישוב בטלפון), או רק אחרי שהשרת שמר?",
+      "recommendedDefault": "רק אחרי שהשרת שמר: הם מגיעים כמה שניות אחרי הדירוג, בלי חישוב כפול בטלפון."
+    },
+    {
+      "question": "כל כמה זמן לכל היותר הבית, וגם חזרה לאפליקציה מהרקע, יקראו מחדש את הפרופיל מהשרת?",
+      "recommendedDefault": "30 שניות (accountConfig.refresh.minIntervalMs), ומיד אם הפרופיל נטען מהטלפון באופליין."
+    },
+    {
+      "question": "כפתור Back של Android במסך התוצאות חוזר היום למסך סוג המשחק. שיתנהג כמו 'לבית'?",
+      "recommendedDefault": "לא לשנות במסגרת הבאג הזה: התיקון לא תלוי בזה. אפשר להחליט בנפרד, יחד עם תיקוני המסך השחור."
+    }
+  ],
+  "sharedFiles": [
+    "apps/mobile/src/game/onlineSession.ts",
+    "apps/mobile/src/game/gameStore.ts",
+    "apps/mobile/app/results/[id].tsx",
+    "apps/mobile/app/game.tsx",
+    "apps/mobile/src/screens/home/HomeScreen.tsx",
+    "apps/mobile/src/auth/authStore.ts",
+    "apps/mobile/src/progress/appProgress.ts",
+    "apps/mobile/src/config/account.ts",
+    "apps/mobile/src/__tests__/ranked.e2e.test.tsx",
+    "packages/engine/src/game/results.ts (ratingChangesFor: changed by the retire/quit rating items; this item reads its output)",
+    "docs/01-SPEC.md",
+    "docs/QA-CHECKLIST.md",
+    "docs/STAGE9-10-DEVICE-CHECKS.md"
+  ],
+  "needsServerDeploy": false
+}

@@ -237,6 +237,31 @@ describe('disconnect in a 2-player game: the game freezes (§16.2) [D4]', () => 
 });
 
 describe('abandonment in a 2-player game (§16.2, §6.7, §11.2) [D8, D32]', () => {
+  it('the leave guards judge an abandonment at the disconnect; a reconnect drops that snapshot (§11.2)', () => {
+    const g = GameDriver.of({ players: rated([1287, 1305]) });
+    g.solve('p2', 'A1', 0); // 8
+    expect('leaveStandings' in g.player('p2')).toBe(false); // none while in the game and connected
+    disconnect(g, 'p2', 1000);
+    expect(g.player('p2').leaveStandings).toEqual([
+      [0, 0],
+      [8, 1],
+    ]);
+    reconnect(g, 'p2', 2000);
+    expect('leaveStandings' in g.player('p2')).toBe(false); // the key is gone, not null
+    g.solve('p1', 'A2', 3000); // 6.5: p1 has moved, and p2 still leads
+    disconnect(g, 'p2', 4000);
+    expect(g.player('p2').leaveStandings).toEqual([
+      [6.5, 1],
+      [8, 1],
+    ]);
+    const over = gameOver(g.tickTo(19000))!;
+    expect(over.ratingChanges.map((c) => [c.playerId, c.delta])).toEqual([
+      ['p1', 0], // the leaver was ahead: no gain
+      ['p2', 0], // nor a loss
+    ]);
+    expect(g.replayMatches()).toBe(true);
+  });
+
   it('not back in 15 s: the lock is released, the player abandons, and the one who stayed wins', () => {
     const g = GameDriver.of({ players: rated([1287, 1305]) });
     g.solve('p2', 'A1', 0); // the one who leaves is ahead on points
@@ -255,10 +280,15 @@ describe('abandonment in a 2-player game (§16.2, §6.7, §11.2) [D8, D32]', () 
       { playerId: 'p1', seat: 0, place: 1, score: 0, mistakes: 0, correct: 0, status: 'active' },
       { playerId: 'p2', seat: 1, place: 2, score: 8, mistakes: 0, correct: 1, status: 'abandoned' },
     ]);
-    // A full win for the one who stayed [D8]: 1287 vs 1305 → +17 (spec §11.2), and a regular loss [D32].
+    // The leaver was ahead when the connection fell, and p1 had not moved yet: the leave guards hold the pair
+    // at 0 for both (§11.2). With moves and the leaver behind it is a full win and a normal loss (below).
     expect(over.ratingChanges).toEqual([
-      { playerId: 'p1', before: 1287, after: 1304, delta: 17, provisional: false },
-      { playerId: 'p2', before: 1305, after: 1288, delta: -17, provisional: false },
+      { playerId: 'p1', before: 1287, after: 1287, delta: 0, provisional: false },
+      { playerId: 'p2', before: 1305, after: 1305, delta: 0, provisional: false },
+    ]);
+    expect(over.ratingPairs!.map((p) => [p.playerId, p.pairs[0]!.guard])).toEqual([
+      ['p1', 'opponentLeftBeforeMyMove'],
+      ['p2', 'leftNotBehind'],
     ]);
     expect(g.state.status).toBe('over');
     expect(g.state.locks).toEqual([]);
@@ -280,8 +310,9 @@ describe('abandonment in a 2-player game (§16.2, §6.7, §11.2) [D8, D32]', () 
         { id: 'p2', rating: 1305, ratedGames: 30 },
       ],
     });
-    disconnect(g, 'p2', 0);
-    const over = gameOver(g.tickTo(15000))!;
+    g.solve('p1', 'A1', 0); // p1 has moved, and the leaver is not ahead: a full win (§11.2)
+    disconnect(g, 'p2', 1000);
+    const over = gameOver(g.tickTo(16000))!;
     expect(over.ratingChanges[0]).toEqual({
       playerId: 'p1',
       before: 1287,
@@ -293,8 +324,10 @@ describe('abandonment in a 2-player game (§16.2, §6.7, §11.2) [D8, D32]', () 
 
   it('the [D8] alternative (a partial win) lives in the rating module, fed by the same ranking', () => {
     const g = GameDriver.of({ players: rated([1287, 1305]) });
-    disconnect(g, 'p2', 0);
-    const over = gameOver(g.tickTo(15000))!;
+    g.solve('p1', 'A1', 0);
+    g.solve('p2', 'A2', 500); // both moved, the leaver trails 6.5 – 8: no leave guard holds (§11.2)
+    disconnect(g, 'p2', 1000);
+    const over = gameOver(g.tickTo(16000))!;
     const input = over.ranking.map((r) => ({
       id: r.playerId,
       rating: r.seat === 0 ? 1287 : 1305,
@@ -468,11 +501,16 @@ describe('abandonment in a 3–4-player game (§16.2, §6.7) [D32]', () => {
       ['p3', 2, 'surrendered', 0], // went out later
       ['p2', 3, 'abandoned', 8], // went out first
     ]);
-    // K_pair = 32 / 2 = 16 with equal ratings: +16, 0, −16.
+    // By place alone (K_pair = 16): +16, 0, −16. But the leave guards (§11.2) hold every pair here: p2 led
+    // when the connection fell, and neither p1 nor p3 had placed a digit when p2 or p3 left.
     expect(over.ratingChanges.map((c) => [c.playerId, c.delta])).toEqual([
-      ['p1', 16],
+      ['p1', 0],
       ['p3', 0],
-      ['p2', -16],
+      ['p2', 0],
+    ]);
+    expect(over.ratingPairs!.find((p) => p.playerId === 'p2')!.pairs).toEqual([
+      { opponentId: 'p1', delta: 0, guard: 'leftNotBehind' },
+      { opponentId: 'p3', delta: 0, guard: 'leftNotBehind' },
     ]);
     expect(g.replayMatches()).toBe(true);
   });
@@ -818,9 +856,10 @@ describe('connection edge cases (§16.2)', () => {
         ['p2', 1, 'active'],
         ['p1', 2, 'abandoned'],
       ]);
+      // Nobody had placed a digit: the leave guards hold the pair for both (§11.2).
       expect(over.ratingChanges.map((c) => [c.playerId, c.delta])).toEqual([
-        ['p2', 16],
-        ['p1', -16],
+        ['p2', 0],
+        ['p1', 0],
       ]);
       expect(g.player('p2')).toMatchObject({ status: 'active', connected: false });
       expect(g.types(g.log).filter((t) => t === 'playerAbandoned')).toHaveLength(1);
@@ -836,7 +875,9 @@ describe('connection edge cases (§16.2)', () => {
 
   it('surrendering while the opponent is disconnected ends the game; the absent opponent wins', () => {
     const g = GameDriver.of({ players: rated([1200, 1200]) });
-    g.select('p1', 'A1', 0);
+    g.solve('p2', 'A2', 0);
+    g.miss('p1', 'B1', 200); // both moved, p1 behind: a normal loss and a full win (§11.2)
+    g.select('p1', 'A1', 300);
     disconnect(g, 'p2', 1000);
     const events = g.playerAct('p1', { type: 'surrender' }, 5000);
     expect(g.types(events)).toEqual(['cellReleased', 'playerSurrendered', 'gameOver']);

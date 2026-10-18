@@ -10,6 +10,8 @@ import {
   type EndReason,
   type GameEvent,
   type GameState,
+  INTERFERENCE_KINDS,
+  isSoftOffline,
   type PlayerStatus,
   type RankEntry,
   ratingKey,
@@ -54,6 +56,8 @@ import { ActionTracker, ClockSync, Pacer } from './stats';
  * A fake player over the network (work plan, stage 7: apps/server/scripts/fake-client.ts, "a Node client that
  * plays like a bot"). It does what the app's RemoteGameHost does, with a FakeBrain instead of a person:
  *
+ * - declares the interference kinds it can show when it joins, as the app does (all of them; none with
+ *   `legacyApp`, as app 1.0.0) [D47];
  * - joins a room by code, or creates one, with the dev identity ({ devUserId, name }); or (stage 9) plays a
  *   ranked game: signs in with a token (registering the account the first time, POST /v1/users), searches in
  *   a matchmaking queue, connects to the match's room when found (D37: that is being ready), counts down, and
@@ -66,7 +70,8 @@ import { ActionTracker, ClockSync, Pacer } from './stats';
  *   answered, and after a drop how long it takes to reconnect and to be in sync again;
  * - makes trouble on demand: drop the connection and come back with the reconnection token, leave for good
  *   (abandonment after the grace, D32), surrender (6.6), or (ranked) never connect after "found" (a no-show);
- * - after an unplanned drop it reconnects by itself while the server holds its seat.
+ * - after an unplanned drop it reconnects by itself while the server holds its seat: the soft phase of a lost
+ *   connection and the grace after it [D42]. It does not play while offline (no `offlineMove`: the app does).
  *
  * `done` resolves with a summary when its game is over (or it left, or lost the connection for good, or its
  * search ended without a game).
@@ -79,8 +84,8 @@ export interface FakeClientTrouble {
   dropForMs?: number;
   /**
    * Ranked: drop the connection to the match's room as soon as its countdown starts (3… 2… 1…), and come
-   * back after this long. The seats are fixed by then [D32]: the game starts at GO either way, and the grace
-   * runs from then on.
+   * back after this long. The seats are fixed by then [D32]: the game starts at GO either way, and the soft
+   * phase [D42] and then the grace run from then on.
    */
   dropInCountdownForMs?: number;
   /** Leave on purpose this long after the start, and never come back. */
@@ -150,6 +155,11 @@ export interface FakeClientOptions {
   seed?: number;
   /** Send interferences per the level's policy (default true). */
   interfere?: boolean;
+  /**
+   * Join as app 1.0.0 does: declare no interference kinds (default false: every kind the engine knows,
+   * INTERFERENCE_KINDS). The room then allows only the legacy three for everyone [D47].
+   */
+  legacyApp?: boolean;
   /** Send reactions per the level's table (default true). */
   react?: boolean;
   /** A ping every this many ms (default 1000; 0 for none). Never over the server's limit (2 a second). */
@@ -288,6 +298,8 @@ export const defaultFakeId = (name: string): string =>
 
 /** The grace after a drop when the game's rules are not known yet (spec §16.2, D4: 15 s). */
 const DEFAULT_GRACE_MS = 15_000;
+/** The soft phase before it, likewise [D42]: 10 s. */
+const DEFAULT_SOFT_GRACE_MS = 10_000;
 
 /** After a ranked game, how long to look for the stored rating (it is written in the background). */
 const STORED_RATING_WAIT_MS = 5000;
@@ -326,6 +338,8 @@ export class FakeClient {
   private searchRoom: Room | null = null;
   /** The search's start on the server's clock (from the last `searching`). */
   private searchStart: number | null = null;
+  /** The last `searching`'s nextRange (null: nobody else to meet; undefined: not said yet). */
+  private nextRange: number | null | undefined = undefined;
   /** The match whose seat reservation is being used (a cancelled match's late seat is let go). */
   private entering: string | null = null;
   /** The match room's GO (its countdown started); null before. */
@@ -505,6 +519,19 @@ export class FakeClient {
     return this.account ? {} : { devUserId: this.playerId, name: this.name };
   }
 
+  /**
+   * The interference kinds this client says it can show [D47]: all the engine knows, as the app does; none
+   * with `legacyApp`, as app 1.0.0 (the room then allows the legacy three).
+   */
+  private get declaredKinds(): { interferenceKinds?: string[] } {
+    return this.opts.legacyApp ? {} : { interferenceKinds: [...INTERFERENCE_KINDS] };
+  }
+
+  /** The options of a join by code: who it is, and the kinds it can show. */
+  private get roomJoinOptions(): Partial<GameRoomJoinOptions> {
+    return { ...this.identity, ...this.declaredKinds };
+  }
+
   private async join(): Promise<void> {
     let room: Room;
     // An account comes in by its token; the room knows it by its users.id and display name.
@@ -512,14 +539,14 @@ export class FakeClient {
     if (this.opts.create) {
       const options = {
         private: true,
-        ...this.identity,
+        ...this.roomJoinOptions,
         ...this.opts.create,
       } as GameRoomCreateOptions;
       room = await this.sdk.create(GAME_ROOM_NAME, options);
     } else {
       const code = normalizeRoomCode(this.opts.code ?? '');
       if (code === null) throw new Error(`"${this.opts.code}" is not a room code`);
-      room = await this.sdk.joinById(code, this.identity);
+      room = await this.sdk.joinById(code, this.roomJoinOptions);
     }
     this.roomCode = room.roomId;
     this.stage = 'lobby';
@@ -562,16 +589,19 @@ export class FakeClient {
       // Dropped before the game. Before the countdown the room gives the seat up at once (rejoin by code
       // while the ready check runs); from the countdown on it holds it like a game's [D32].
       this.log(`connection to the match's room lost (${code}); coming back`);
-      const retryForMs = this.countdownAt === null ? 0 : DEFAULT_GRACE_MS + 1000;
+      const retryForMs = this.countdownAt === null ? 0 : DEFAULT_SOFT_GRACE_MS + DEFAULT_GRACE_MS + 1000;
       this.run(this.comeBack(token, performance.now(), retryForMs));
       return;
     }
     if (this.stage !== 'playing') return this.finish('error', `the server closed the connection (${code})`);
     if (code === CloseCode.CONSENTED) return this.finish('closed', 'the server closed the room');
-    // Dropped (or disconnected by the server): come back while the seat is held.
+    // Dropped (or disconnected by the server): come back while the seat is held, through the soft phase and
+    // the grace that follows it [D42] (an older server's rules have no soft phase).
     this.log(`connection lost (${code}); reconnecting`);
-    const graceMs = this.mirror.state?.config.rules.graceMs ?? DEFAULT_GRACE_MS;
-    this.run(this.comeBack(token, performance.now(), graceMs + 1000));
+    const rules = this.mirror.state?.config.rules;
+    const softGraceMs = rules ? (rules.softGraceMs ?? 0) : DEFAULT_SOFT_GRACE_MS;
+    const graceMs = rules?.graceMs ?? DEFAULT_GRACE_MS;
+    this.run(this.comeBack(token, performance.now(), softGraceMs + graceMs + 1000));
   }
 
   /**
@@ -607,7 +637,7 @@ export class FakeClient {
     }
     if (room === null) {
       try {
-        room = await this.sdk.joinById(this.roomCode, this.identity);
+        room = await this.sdk.joinById(this.roomCode, this.roomJoinOptions);
         via = 'rejoin';
       } catch (error) {
         return this.finish('lostConnection', `could not come back: ${message(error)}`);
@@ -629,7 +659,7 @@ export class FakeClient {
   private async search(): Promise<void> {
     const queue = this.opts.queue!;
     this.sdk.auth.token = this.account!.token;
-    const options: MatchmakingJoinOptions = { queueKey: queue.queueKey };
+    const options: MatchmakingJoinOptions = { queueKey: queue.queueKey, ...this.declaredKinds };
     const room = await this.sdk.joinOrCreate(MATCHMAKING_ROOM_NAME, options);
     this.searchRoom = room;
     this.stage = 'searching';
@@ -643,14 +673,24 @@ export class FakeClient {
     const info = this.match;
     if (room !== this.searchRoom || this.ended || info === null) return;
     switch (m.type) {
-      case 'searching':
-        info.ranges.push(m.range);
+      case 'searching': {
+        // A `searching` also comes when only the next range changed (someone joined or left): one range each.
+        const widened = info.ranges.at(-1) !== m.range;
+        if (widened) info.ranges.push(m.range);
         this.searchStart = m.serverTime - m.elapsedMs;
-        this.log(
-          `${m.requeued ? 'back at the head of the queue' : 'searching'} ${m.queueKey}: rating ${m.rating}, ` +
-            `range ±${m.range}${m.extended ? ' (no cap)' : ''} after ${seconds(m.elapsedMs)}`,
-        );
+        if (widened || m.requeued)
+          this.log(
+            `${m.requeued ? 'back at the head of the queue' : 'searching'} ${m.queueKey}: rating ${m.rating}, ` +
+              `range ±${m.range}${m.extended ? ' (no cap)' : ''} after ${seconds(m.elapsedMs)}`,
+          );
+        // Who else is there (matcher.ts rule 7): said when it turns to nobody, and when someone turns up.
+        if (m.nextRange === null && this.nextRange !== null)
+          this.log(`nobody else is searching ${m.queueKey}`);
+        else if (typeof m.nextRange === 'number' && typeof this.nextRange !== 'number')
+          this.log(`someone is searching: next range ±${m.nextRange}`);
+        this.nextRange = m.nextRange;
         break;
+      }
       case 'timeout':
         info.timeouts++;
         info.searchedMs = m.elapsedMs;
@@ -889,6 +929,10 @@ export class FakeClient {
       case 'reaction':
         if (this.opts.verbose) this.log(`${name(e.playerId)} reacts ${e.emoji}`);
         return;
+      case 'playerConnectionLost': // [D42] the soft phase: a mark, the game goes on
+        if (e.playerId !== me)
+          this.log(`${name(e.playerId)} lost the connection (marked for ${seconds(e.softEndsAt - e.t)})`);
+        return;
       case 'playerDisconnected':
         if (e.playerId !== me) this.log(`${name(e.playerId)} dropped`);
         return;
@@ -921,7 +965,10 @@ export class FakeClient {
     }
   }
 
-  /** After a return: in sync once the snapshot is in and this player is back in a running game. */
+  /**
+   * After a return: in sync once the snapshot is in and this player is back in a running game (back for the
+   * server too: not in the soft phase of his lost connection any more [D42]).
+   */
   private checkInSync(): void {
     const back = this.comingBack;
     const s = this.mirror.state;
@@ -932,7 +979,7 @@ export class FakeClient {
       s.status === 'over' ||
       !me ||
       me.status !== 'active' ||
-      (me.connected && (s.status !== 'paused' || othersAway));
+      (me.connected && !isSoftOffline(me) && (s.status !== 'paused' || othersAway));
     if (!whole) return;
     this.comingBack = null;
     const { mono: _mono, snapshot: _snapshot, ...rest } = back;

@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<title>Spot the mistake</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@keyframes lv-pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div dir="rtl" style="width:390px;height:844px;position:relative;overflow:hidden;box-sizing:border-box;font-family:Rubik,'Segoe UI',system-ui,sans-serif;color:#eef1f6;background:#0f1218;">
+
+  <!-- header: level + chapter + type (start), exit (end) -->
+  <header style="position:absolute;top:48px;left:16px;right:16px;height:56px;display:flex;align-items:center;gap:12px;">
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <h1 style="margin:0;font:700 22px/25px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">שלב 77</h1>
+        <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">פרק 8</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;color:#9aa3b5;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+        <span style="font:500 14px/18px Rubik,sans-serif;white-space:nowrap;">מצא את הטעות</span>
+      </div>
+    </div>
+    <button type="button" aria-label="יציאה מהשלב" style="flex:none;width:44px;height:44px;margin:0;padding:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+  </header>
+
+  <!-- goal -->
+  <div style="position:absolute;top:118px;left:16px;right:16px;display:flex;flex-direction:column;gap:4px;">
+    <p style="margin:0;font:500 15px/20px Rubik,sans-serif;color:#eef1f6;">בלוח מסתתרות 2 ספרות שגויות. הקש עליהן.</p>
+    <p style="margin:0;font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;">הספרות הכהות הן של הלוח, והן תמיד נכונות.</p>
+  </div>
+
+  <!-- progress (start) · time (end) -->
+  <div style="position:absolute;top:174px;left:16px;right:16px;height:28px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <div role="img" aria-label="{{foundAria}}" style="display:flex;align-items:center;gap:8px;">
+      <sc-for list="{{lenses}}" as="l" hint-placeholder-count="2">
+        <span style="flex:none;width:28px;height:28px;box-sizing:border-box;border-radius:8px;display:flex;align-items:center;justify-content:center;background:{{l.bg}};border:1px solid {{l.bd}};">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{l.stroke}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="{{l.fill}}"></circle><path d="M16 16l4.5 4.5"></path></svg>
+        </span>
+      </sc-for>
+      <span style="margin-inline-start:4px;font:500 15px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">נמצאו</span>
+      <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:24px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#eef1f6;">1/2</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <sc-if value="{{wrong}}" hint-placeholder-val="{{ false }}">
+        <span role="status" style="display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 7px;box-sizing:border-box;border-radius:6px;background:rgba(255,77,94,.08);border:1px solid rgba(255,77,94,.55);font:500 12px/1 Rubik,sans-serif;color:#ff4d5e;white-space:nowrap;"><bdi dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:17px;line-height:.8;padding-top:2px;">+5</bdi> ש׳</span>
+      </sc-if>
+      <span style="display:flex;align-items:baseline;gap:5px;white-space:nowrap;">
+        <span style="font:500 15px/1 Rubik,sans-serif;color:#9aa3b5;">זמן</span>
+        <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:24px;line-height:.8;font-variant-numeric:tabular-nums;color:#eef1f6;">{{timeTxt}}</span>
+        <span style="font:500 15px/1 Rubik,sans-serif;color:#9aa3b5;">ש׳</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- star meter: total time on 0–30 s (the level ends at 30 s), marks for 2 mistakes: 3 stars to 12 s, 2 to 20, 1 = both by 30 -->
+  <div dir="ltr" role="progressbar" aria-label="{{meterAria}}" aria-valuemin="0" aria-valuemax="30" aria-valuenow="{{timeTxt}}" style="position:absolute;top:214px;left:16px;width:358px;height:46px;">
+    <sc-for list="{{bands}}" as="b" hint-placeholder-count="3">
+      <span style="position:absolute;top:0;left:{{b.x}};transform:translateX(-50%);display:flex;align-items:center;gap:2px;height:12px;">
+        <sc-for list="{{b.stars}}" as="s" hint-placeholder-count="3">
+          <svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="{{s.fill}}" stroke="{{s.stroke}}" stroke-width="2" stroke-linejoin="round"></path></svg>
+        </sc-for>
+        <sc-if value="{{b.zero}}" hint-placeholder-val="{{ false }}">
+          <span style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:2px;color:#828ba1;">0</span>
+        </sc-if>
+      </span>
+    </sc-for>
+    <div style="position:absolute;top:18px;left:0;width:358px;height:6px;border-radius:3px;background:#1f2430;overflow:hidden;">
+      <span style="position:absolute;top:0;bottom:0;left:0;width:{{fillW}};border-radius:3px;background:#36c9f0;"></span>
+      <sc-for list="{{ticks}}" as="t" hint-placeholder-count="2">
+        <span style="position:absolute;top:0;bottom:0;left:{{t.x}};width:2px;margin-left:-1px;background:#0f1218;"></span>
+      </sc-for>
+    </div>
+    <sc-for list="{{axis}}" as="a" hint-placeholder-count="4">
+      <span style="position:absolute;top:32px;left:{{a.x}};transform:{{a.tx}};font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:2px;font-variant-numeric:tabular-nums;color:#9aa3b5;">{{a.t}}</span>
+    </sc-for>
+  </div>
+
+  <!-- board (LTR): every cell is a tap target -->
+  <div dir="ltr" role="group" aria-label="לוח המשחק · הקש על ספרה שגויה" style="position:absolute;top:276px;left:16px;width:358px;height:358px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:3px;background:#0f1218;border-radius:12px;overflow:hidden;">
+    <sc-for list="{{boxes}}" as="box" hint-placeholder-count="9">
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:1px;background:#c8cdd6;">
+        <sc-for list="{{box.cells}}" as="cell" hint-placeholder-count="9">
+          <button type="button" aria-label="{{cell.aria}}" style="position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:{{cell.bg}};box-shadow:{{cell.ring}};color:{{cell.fg}};font-family:Rubik,sans-serif;font-weight:{{cell.fw}};font-size:22px;line-height:1;">
+            {{cell.v}}
+            <sc-if value="{{cell.owned}}" hint-placeholder-val="{{ false }}">
+              <svg aria-hidden="true" width="6" height="6" viewBox="0 0 24 24" style="position:absolute;top:3px;left:3px;"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#0b6a85"></path></svg>
+            </sc-if>
+            <sc-if value="{{cell.struck}}" hint-placeholder-val="{{ false }}">
+              <span aria-hidden="true" style="position:absolute;top:50%;left:50%;width:24px;height:2px;margin:-1px 0 0 -12px;border-radius:1px;background:#b8102f;transform:rotate(-38deg);"></span>
+              <span aria-hidden="true" style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#40e29f;display:flex;align-items:center;justify-content:center;font:700 11px/1 Rubik,sans-serif;color:#0f1218;animation:lv-pop 420ms cubic-bezier(.34,1.56,.64,1) both;">{{cell.fix}}</span>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- tip card (first three levels of this type; can be closed) -->
+  <div role="note" style="position:absolute;top:652px;left:16px;right:16px;min-height:64px;box-sizing:border-box;padding:10px 12px 10px 6px;display:flex;align-items:center;gap:12px;background:#171b24;border:1px solid #2a3140;border-radius:14px;">
+    <span aria-hidden="true" style="flex:none;width:36px;height:36px;border-radius:50%;background:#1f2430;display:flex;align-items:center;justify-content:center;color:#9aa3b5;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"></path><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"></path></svg>
+    </span>
+    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">
+      <span style="font:500 13px/1 Rubik,sans-serif;color:#9aa3b5;">טיפ</span>
+      <span style="font:400 14px/18px Rubik,sans-serif;color:#eef1f6;">חפש ספרה שמופיעה פעמיים באותה שורה, עמודה או ריבוע.</span>
+    </span>
+    <button type="button" aria-label="סגירת הטיפ" style="flex:none;width:44px;height:44px;margin:0;padding:0;display:flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:12px;color:#9aa3b5;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"wrongTap":false}'>
+class Component extends DCLogic {
+  // Level 77 (chapter 8): 58 givens, 14 of my digits, 9 empty. Two of mine are wrong; the level lasts 30 s at most
+  // (2 mistakes: 3 stars up to 12 s, 2 up to 20 s, 1 = both found by 30 s; mistakes not found are shown at the end).
+  // E7 = 4 (right: 9, clashes with the givens E6 and D7) is already found; B3 = 6 (right: 2) clashes with the given B8 = 6.
+  // Givens alone have a single solution (checked with the engine's solver).
+  fixture() {
+    return {
+      SOL: '453679182982145763167328549629831475738254916541796328274583691396412857815967234',
+      PUZ: '453679182080100063107328509009031405738004016541790320274583601090402800815907234',
+      MINE: [9, 11, 13, 15, 25, 28, 30, 34, 39, 42, 67, 70, 71, 76],
+      WRONG: { 11: '6', 42: '4' },
+      FOUND: [42],
+      TAPPED: 70 // the variant: a tap on my correct 5 in H8
+    };
+  }
+
+  boxes(wrongTap) {
+    const F = this.fixture();
+    const out = [];
+    for (let bx = 0; bx < 9; bx++) {
+      const cells = [];
+      for (let k = 0; k < 9; k++) {
+        const i = (Math.floor(bx / 3) * 3 + Math.floor(k / 3)) * 9 + (bx % 3) * 3 + (k % 3);
+        const name = 'ABCDEFGHI'[Math.floor(i / 9)] + String(i % 9 + 1);
+        const mine = F.MINE.indexOf(i) >= 0;
+        const found = F.FOUND.indexOf(i) >= 0;
+        const given = F.PUZ[i] !== '0';
+        const flash = wrongTap && i === F.TAPPED;
+        let v = '';
+        if (given) v = F.PUZ[i];
+        else if (mine) v = F.WRONG[i] || F.SOL[i];
+        let bg = bx % 2 ? '#eceff4' : '#f7f8fa';
+        let fg = '#0f1218', fw = '600', ring = 'none';
+        if (mine) { bg = '#d6f4fc'; fg = '#0b6a85'; fw = '500'; }
+        if (found) { ring = 'inset 0 0 0 2px #40e29f'; fg = '#b8102f'; }
+        if (flash) { bg = '#ed98a5'; fg = '#b8102f'; fw = '700'; } // 700: bold 22px = large text, 3:1 is enough on the wash
+        let aria = name + ' · ' + (v ? v : 'ריקה');
+        if (given) aria += ' · של הלוח';
+        if (mine && !found) aria += ' · שלך';
+        if (found) aria = name + ' · טעות שנמצאה: 4, הספרה הנכונה 9';
+        cells.push({
+          v: v, bg: bg, fg: fg, fw: fw, ring: ring, aria: aria,
+          owned: mine && !found, struck: found, fix: found ? F.SOL[i] : ''
+        });
+      }
+      out.push({ cells: cells });
+    }
+    return out;
+  }
+
+  renderVals() {
+    const p = this.props || {};
+    const wrong = !!p.wrongTap;
+    const W = 358, MAX = 30;
+    const t = wrong ? 11.2 : 6.2;
+    const x = (s) => (s / MAX * W).toFixed(1) + 'px';
+    const GOLD = { fill: '#ffcf3f', stroke: '#ffcf3f' };
+    const star = (n) => { const a = []; for (let k = 0; k < n; k++) a.push(GOLD); return a; };
+    return {
+      wrong: wrong,
+      timeTxt: t.toFixed(1),
+      fillW: (t / MAX * 100).toFixed(2) + '%',
+      meterAria: 'זמן: ' + t.toFixed(1) + ' שניות מתוך 30 · עכשיו 3 כוכבים · שלושה כוכבים עד 12 שניות, שניים עד 20, אחד אם שתיהן נמצאות עד 30',
+      foundAria: 'נמצאה טעות אחת מתוך 2',
+      lenses: [
+        { bg: 'rgba(64,226,159,.16)', bd: '#40e29f', stroke: '#40e29f', fill: 'rgba(64,226,159,.35)' },
+        { bg: '#1f2430', bd: '#2a3140', stroke: '#677086', fill: 'none' }
+      ],
+      bands: [
+        { x: x(6), stars: star(3), zero: false },
+        { x: x(16), stars: star(2), zero: false },
+        { x: x(25), stars: star(1), zero: false }
+      ],
+      ticks: [{ x: x(12) }, { x: x(20) }],
+      axis: [
+        { t: '0', x: '0px', tx: 'none' },
+        { t: '12', x: x(12), tx: 'translateX(-50%)' },
+        { t: '20', x: x(20), tx: 'translateX(-50%)' },
+        { t: '30', x: W + 'px', tx: 'translateX(-100%)' }
+      ],
+      boxes: this.boxes(wrong)
+    };
+  }
+}
+</script>
+</body>
+</html>

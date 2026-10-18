@@ -10,6 +10,8 @@ import { OnlineSession } from '../../../game/onlineSession';
 import { elapse, FakeTable } from '../../../net/testing/fakeServer';
 import { useSettings } from '../../../state/settings';
 import { motion } from '../../../theme/motion';
+import { FALLBACK_ACTIONS_MS } from '../../FlowFallback';
+import { RESULTS_WATCHDOG_MS } from '../model';
 import { liveOnlineSession, onlineSession, OPP } from '../testing/online';
 
 /** The /game route: the store's practice or online game, or home; its end opens /results/[id]. */
@@ -47,10 +49,27 @@ afterEach(() => {
   useGameStore.setState({ session: null, online: null, view: null, lastUpdate: null });
 });
 
-it('without a practice in the store, goes home', async () => {
+it('without a practice in the store, goes home (a spinner meanwhile, never an empty screen)', async () => {
   await render(<GameRoute />);
   expect(router.replace).toHaveBeenCalledWith('/');
   expect(screen.queryByTestId('game')).toBeNull();
+  expect(screen.getByTestId('flow-fallback')).toBeOnTheScreen();
+  expect(screen.getByText('רגע…')).toBeOnTheScreen();
+});
+
+it('without a game, should Home not come: "לבית" after a moment', async () => {
+  jest.useFakeTimers();
+  try {
+    await render(<GameRoute />);
+    router.replace.mockClear();
+    await act(async () => {
+      jest.advanceTimersByTime(FALLBACK_ACTIONS_MS);
+    });
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
+    expect(router.replace).toHaveBeenCalledWith('/');
+  } finally {
+    jest.useRealTimers();
+  }
 });
 
 it('plays the store’s practice; "סיום אימון" → "כן, לסיים" opens its results', async () => {
@@ -78,6 +97,40 @@ it('plays the store’s practice; "סיום אימון" → "כן, לסיים" o
   await waitFor(() =>
     expect(router.replace).toHaveBeenCalledWith({ pathname: '/results/[id]', params: { id: session!.id } }),
   );
+});
+
+it('the practice’s game screen has a way home ("לבית" should its results not open): Home, the session let go', async () => {
+  jest.useFakeTimers();
+  const clock = new ManualClock(1_700_000_000_000);
+  try {
+    session = await startPractice(
+      { gameType: 'normal' },
+      {
+        repo: null,
+        clock,
+        scheduler: new ManualScheduler(clock),
+        pool: smallPool(1, 'normal'),
+        track: () => undefined,
+      },
+    );
+    session.endPractice();
+    useGameStore.setState({ session, view: session.getView(), lastUpdate: null });
+    const view = await render(<GameRoute />);
+    // The results are asked for, and (router mocked) never come: the watchdog's way out.
+    await act(async () => {
+      jest.advanceTimersByTime(100);
+    });
+    expect(router.replace).toHaveBeenCalledWith({ pathname: '/results/[id]', params: { id: session.id } });
+    await act(async () => {
+      jest.advanceTimersByTime(RESULTS_WATCHDOG_MS);
+    });
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
+    expect(router.dismissTo).toHaveBeenCalledWith('/');
+    await view.unmount();
+    expect(useGameStore.getState().session).toBeNull();
+  } finally {
+    jest.useRealTimers();
+  }
 });
 
 describe('an online game', () => {
@@ -112,7 +165,12 @@ describe('an online game', () => {
       g.table.opponent({ type: 'surrender' });
       await elapse(g.table, 100);
     });
-    expect(router.replace).toHaveBeenCalledWith({ pathname: '/results/[id]', params: { id: 'online-1' } });
+    // The final board holds first (motion.md game.end), and the results open from a timer.
+    expect(router.replace).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(router.replace).toHaveBeenCalledWith({ pathname: '/results/[id]', params: { id: 'online-1' } }),
+    );
+    expect(router.replace).toHaveBeenCalledTimes(1);
     await view.unmount();
     expect(useGameStore.getState().online).toBe(g.session);
     expect(g.session.getView().players.find((p) => p.id === OPP)?.status).toBe('surrendered');

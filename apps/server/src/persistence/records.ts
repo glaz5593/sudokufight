@@ -45,7 +45,8 @@ import { applyRatingChanges, type RatingWrite } from '../ratings';
  * - A restart (`endInterruptedGames`, at boot): a game still running when the server stopped is gone (it lived
  *   in its room's memory); its row is ended as 'serverRestart', unrated.
  * - End (`recordGameEnd`), one transaction: ended_at and end_reason; each seat's final score, mistakes,
- *   place (§6.7: whoever surrendered or abandoned ranks after those still in, a normal loss [D32]), status,
+ *   place (§6.7: whoever surrendered or abandoned ranks after those still in; the rating is a normal loss
+ *   [D32] except where the §11.2 leave guards hold a pair at 0, all in the engine's result), status,
  *   rating after and best move's points (stage 12, for the player card); the ratings themselves
  *   (../ratings); every account's XP (../progress/xp, spec §15: 50 for a win, 20 otherwise, a point per
  *   correct move); the anomaly flags (../cheat). The games row is locked and its ended_at checked first: a

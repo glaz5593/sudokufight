@@ -487,6 +487,21 @@ Remove-Item Env:DATABASE_URL
 - It hangs, then fails with a timeout (`CONNECT_TIMEOUT`, `ETIMEDOUT`): your network blocks outgoing port 5432 (common on office networks). Run it from home or through a phone hotspot.
 - `PostgresError: password authentication failed`: the string was cut while pasting. Copy it again from the password manager.
 
+### D5b. Load the new puzzles into staging (after the 2026-10-15 givens change)
+
+- [ ] **D5b** Staging runs the new server, then the seed retires the old fast and normal puzzles
+
+**Why.** Fast boards now start with 45–50 givens and normal ones with 35–40 (spec §5.2, [D43]); hard boards are unchanged. All 2,000 ranked fast and 2,000 ranked normal puzzles got new ids. The old ones are not deleted (stored games and play histories point at them): the seed marks them `retired_at`, and the server never picks them again.
+
+**Steps** (in this order)
+1. Deploy staging with this change (D6): the new server knows `retired_at`. An older server would still pick the retired puzzles.
+2. Run the same steps as D5.
+
+**You're done when** the output shows `fast 2000 in the pool, 2000 retired (no longer in the file)`, `normal 2000 in the pool, 2000 retired (no longer in the file)` and `hard 2000 in the pool`. A second run retires nothing more.
+
+**Pitfalls**
+- Practice boards change only with the next APK: the offline pool ships inside the app.
+
 ### D6. Deploy staging
 
 - [x] **D6** First deploy finished
@@ -603,6 +618,8 @@ Optional: `SENTRY_DSN` (D8, you set it like the database URL) and `INVITE_URL=ht
 ### D12. Production: puzzles, deploy, checks
 
 - [ ] **D12** Production healthy; legal pages without "draft"
+
+If production already runs a server older than the 2026-10-15 givens change, swap steps 1 and 2: deploy first, then load the puzzles (D5b explains why).
 
 **Steps**
 1. Puzzles (you):

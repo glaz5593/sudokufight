@@ -1,23 +1,27 @@
 // The gesture handler's Jest mocks, before anything loads it (its native module does not exist under Jest).
 import 'react-native-gesture-handler/jestSetup';
 
-import type { GameView, InterferenceKind, PlayerId } from '@sudoku-fight/engine';
+import {
+  type GameView,
+  INTERFERENCE_KINDS,
+  type InterferenceKind,
+  type PlayerId,
+  type Rules,
+} from '@sudoku-fight/engine';
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { useEffect, useState } from 'react';
-import { BackHandler, DeviceEventEmitter, Pressable, StyleSheet, View } from 'react-native';
-import { GestureHandlerRootView, State } from 'react-native-gesture-handler';
-import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
+import { BackHandler, Pressable, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { cardModel, PlayerCard } from '../../../../components/player';
 import { useToast } from '../../../../components/ui';
 import { answerIn, wrongIn } from '../../../../game/testing/practice';
 import i18n from '../../../../i18n';
 import { useSettings } from '../../../../state/settings';
-import { color } from '../../../../theme';
-import type { Point, Rect } from '../../geometry';
+import type { Rect } from '../../geometry';
 import { BOT, type Duel, duel, ME } from '../../testing/duel';
-import { dropZoneOf } from '../arsenalModel';
 import { ArsenalOverlay } from '../ArsenalOverlay';
+import { ARSENAL_CONFIG } from '../config';
 import { type Measurable, useArsenal } from '../useArsenal';
 import { isolate } from '../wording';
 
@@ -32,24 +36,23 @@ const cues = (): string[] => feedback.cue.mock.calls.map((c: unknown[]) => Strin
 const NAME = 'Mr. Hoot';
 /** The opponent's card as Dir-C-Game places it in Hebrew: at the left, under the status bar. */
 const CARD: Rect = { x: 16, y: 48, width: 159, height: 160 };
-const ZONE = dropZoneOf(CARD);
-const INSIDE: Point = { x: ZONE.x + 60, y: ZONE.y + 90 };
-const OUTSIDE: Point = { x: 300, y: 420 };
-/** Where the finger first touches a token, low in the tray. */
-const TOKEN_AT: Point = { x: 195, y: 700 };
+/** All six kinds open: most tests look at every kind, whatever the level table says. */
+const ALL = INTERFERENCE_KINDS;
 
 /** The view around the opponent's card, as the window measures it. */
 const cardNode: Measurable = { measureInWindow: (done) => done(CARD.x, CARD.y, CARD.width, CARD.height) };
 
-/** A small game screen: both cards (the screen spreads `cardProps`), ⚡ on the opponent's, and the overlay. */
+/** A small game screen: both cards (the screen spreads `cardProps`), "הפרעה" on the opponent's, the picker. */
 function Harness({
   game,
   onLaunch,
   showRoute,
+  unlocked,
 }: {
   game: Duel;
   onLaunch: (id: PlayerId, kind: InterferenceKind) => void;
   showRoute?: boolean;
+  unlocked?: readonly InterferenceKind[];
 }) {
   const [view, setView] = useState<GameView>(() => game.host.getView());
   useEffect(() => game.session.subscribe(() => setView(game.host.getView())), [game]);
@@ -60,27 +63,29 @@ function Harness({
     return () => cardRef(BOT.id)(null);
   }, [cardRef]);
   const now = game.clock.now();
+  const open = arsenal.targetId !== null;
   return (
     <GestureHandlerRootView style={StyleSheet.absoluteFill}>
       <PlayerCard
         model={{ ...cardModel(view, ME, 0, now), name: 'אני' }}
-        {...arsenal.cardProps(ME, 'אני')}
+        {...arsenal.cardProps(ME)}
         testID="card-me"
       />
       <View collapsable={false}>
         <PlayerCard
           model={{ ...cardModel(view, BOT.id, 0, now), name: NAME }}
-          {...arsenal.cardProps(BOT.id, NAME)}
+          {...arsenal.cardProps(BOT.id)}
           onInterfere={() => arsenal.toggle(BOT.id)}
-          onInterfereBlocked={arsenal.blocked}
+          onInterfereBlocked={(s) => (open ? arsenal.close() : arsenal.blocked(s, NAME))}
           testID="card-opponent"
         />
       </View>
-      {/* Opens it whatever ⚡ says, to look at tokens that can't go. */}
+      {/* Opens it whatever "הפרעה" says, to look at kinds that can't go. */}
       <Pressable testID="force-open" onPress={() => arsenal.open(BOT.id)} />
       <ArsenalOverlay
         arsenal={arsenal}
         view={view}
+        unlocked={unlocked}
         describe={(id) =>
           id === ME
             ? { name: 'אני', colorIndex: 0, avatarId: 'lava-lamp' }
@@ -93,10 +98,15 @@ function Harness({
 }
 
 let game: Duel | null = null;
-async function show({ showRoute }: { showRoute?: boolean } = {}) {
-  const g = (game = duel());
+async function show({
+  showRoute,
+  unlocked = ALL,
+  rules,
+}: { showRoute?: boolean; unlocked?: readonly InterferenceKind[]; rules?: Partial<Rules> } = {}) {
+  // A 2-player game with interferences on (a practice against a bot has none, D44).
+  const g = (game = duel({ rules: { interferences: true, ...rules } }));
   const onLaunch = jest.fn((id: PlayerId, kind: InterferenceKind) => g.host.interfere(id, kind));
-  await render(<Harness game={g} onLaunch={onLaunch} showRoute={showRoute} />);
+  await render(<Harness game={g} onLaunch={onLaunch} showRoute={showRoute} unlocked={unlocked} />);
   return { g, onLaunch };
 }
 
@@ -111,86 +121,34 @@ async function earn(g: Duel, points = 2) {
   });
 }
 
-/** Lets scheduled work run: the gesture's calls to JS (microtasks) and `ms` of animation frames. */
+/** Lets scheduled work run: `ms` of timers and animation frames. */
 const step = (ms = 16) =>
   act(async () => {
     jest.advanceTimersByTime(ms);
   });
 
-/**
- * A finger on a token, step by step, as the gesture handler's native side reports it (the same events
- * fireGestureHandler sends, which always ends the gesture): down on the token at TOKEN_AT, moves, and up.
- */
-function finger(kind: InterferenceKind) {
-  const { handlerTag } = getByGestureTestId(`arsenal-drag-${kind}`);
-  let state: State = State.UNDETERMINED;
-  const at = (p: Point) => ({
-    handlerTag,
-    numberOfPointers: 1,
-    x: 54,
-    y: 68,
-    absoluteX: p.x,
-    absoluteY: p.y,
-    translationX: p.x - TOKEN_AT.x,
-    translationY: p.y - TOKEN_AT.y,
-    velocityX: 0,
-    velocityY: 0,
-  });
-  const become = (next: State, p: Point) => {
-    DeviceEventEmitter.emit('onGestureHandlerStateChange', { ...at(p), state: next, oldState: state });
-    state = next;
-  };
-  return {
-    down: async () => {
-      await act(async () => {
-        become(State.BEGAN, TOKEN_AT);
-        become(State.ACTIVE, { x: TOKEN_AT.x, y: TOKEN_AT.y - 12 });
-      });
-      await step();
-    },
-    move: async (p: Point) => {
-      await act(async () => {
-        DeviceEventEmitter.emit('onGestureHandlerEvent', { ...at(p), state: State.ACTIVE });
-      });
-      await step();
-    },
-    up: async (p: Point) => {
-      await act(async () => become(State.END, p));
-      await step();
-    },
-  };
-}
-
-/** A pan on a token from TOKEN_AT to `to`, let go there unless `hold`. */
-async function dragTo(kind: InterferenceKind, to: Point, { hold = false } = {}) {
-  const f = finger(kind);
-  await f.down();
-  await f.move({ x: (TOKEN_AT.x + to.x) / 2, y: (TOKEN_AT.y + to.y) / 2 });
-  await f.move(to);
-  if (!hold) await f.up(to);
-  return f;
-}
-
-const tap = async (kind: InterferenceKind) => {
-  await act(async () => {
-    fireGestureHandler(getByGestureTestId(`arsenal-tap-${kind}`), [
-      { state: State.BEGAN },
-      { state: State.ACTIVE },
-      { state: State.END },
-    ]);
-  });
-  await step();
-};
-
-const openFromBolt = async () => {
+/** The first tap: "הפרעה" on the opponent's card; then past the arm delay. */
+const openFromButton = async () => {
   await fireEvent.press(screen.getByTestId('interfere'));
   await step(400);
+};
+/** The second tap: a kind in the picker. */
+const tapKind = async (kind: InterferenceKind) => {
+  await fireEvent.press(screen.getByTestId(`arsenal-kind-${kind}`));
+  await step();
 };
 
 const hidden = { includeHiddenElements: true };
 const live = () => screen.getByTestId('arsenal-live', hidden);
-/** The live region speaks at most every 1.5 s. */
-const spoken = () => step(1600);
+
+const TITLES: Record<InterferenceKind, string> = {
+  fireworks: 'זיקוקים',
+  cats: 'חתולים',
+  warp: 'עיוות',
+  scramble: 'מספרים מתערבלים',
+  ink: 'דיו',
+  keypad: 'מקלדת מתערבלת',
+};
 
 beforeEach(async () => {
   jest.clearAllMocks();
@@ -206,65 +164,198 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-describe('the arsenal (spec §7.3.1, Arsenal)', () => {
+describe('the interference picker (spec §7.3, components.md §13) [D45]', () => {
   it('closed, it draws nothing', async () => {
     await show();
     expect(screen.queryByTestId('arsenal')).not.toBeOnTheScreen();
-    expect(screen.queryByTestId('drop-zone')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('target-frame')).not.toBeOnTheScreen();
   });
 
-  it('⚡ opens it aimed at that card: the drop zone, the tokens with their cost, what to do', async () => {
+  it('"הפרעה" opens it aimed at that card: the target framed, the price, every kind with its price', async () => {
     const { g } = await show();
     await earn(g);
     const score = g.host.getView().players[0]!.score;
-    await openFromBolt();
-    expect(cues()).toContain('arsenalOpen');
+    await openFromButton();
+    expect(cues()).toEqual(['arsenalOpen']);
     expect(screen.getByTestId('arsenal-sheet')).toBeOnTheScreen();
-    expect(screen.getByText('ארסנל ההפרעות')).toBeOnTheScreen();
+    expect(screen.getByText('בחר הפרעה')).toBeOnTheScreen();
     expect(screen.getByLabelText(`יעד: ${isolate(NAME)}`)).toBeOnTheScreen();
-    // The card it was opened from is the one drop zone; ⚡ on it reads "close".
-    // (Behind the modal tray, so screen readers and these queries skip them.)
-    expect(screen.getByTestId('drop-zone', hidden)).toBeOnTheScreen();
-    expect(screen.getByLabelText('סגירת ארסנל ההפרעות', hidden)).toBeOnTheScreen();
-    // The next cost and the ones after it, my score after paying (D10).
+    // The card it was opened from is the target, framed with "יעד"; its button reads "close".
+    // (Behind the modal sheet, so screen readers and these queries skip them.)
+    const frame = screen.getByTestId('target-frame', hidden);
+    expect(within(frame).getByText('יעד', hidden)).toBeOnTheScreen();
+    expect(screen.getByTestId('card-opponent-summary', hidden)).toHaveProp('accessibilityHint', 'יעד ההפרעה');
+    expect(screen.getByLabelText('סגירת חלון ההפרעות', hidden)).toBeOnTheScreen();
+    // The price, the next one, my score before and after (D10).
     expect(screen.getByTestId('arsenal-cost')).toHaveAccessibleName(
-      `ההפרעה הבאה שלך עולה 2 נקודות, אחריה 4, 8. הניקוד שלך ${score}, אחרי שיגור ${score - 2}`,
+      `מחיר ההפרעה 2 נקודות. הניקוד שלך ${score}, ואחרי שיגור ${score - 2}. ההפרעה שאחריה תעלה 4`,
     );
-    expect(screen.getByText('כל הפרעה נמשכת 5 שניות · שיגור בגרירה בלבד')).toBeOnTheScreen();
-    for (const [kind, title] of [
-      ['fireworks', 'זיקוקים'],
-      ['cats', 'חתולים'],
-      ['warp', 'עיוות'],
-    ] as const) {
-      expect(screen.getByTestId(`arsenal-token-${kind}`)).toHaveAccessibleName(
-        `${title} · 2 נק׳ · גרור אל הכרטיס של ${isolate(NAME)}`,
-      );
+    expect(screen.getByTestId('arsenal-price')).toHaveTextContent('⁦−2⁩');
+    expect(screen.getByText('כל הפרעה נמשכת 5 שניות · הקשה משגרת')).toBeOnTheScreen();
+    // Six kinds, in the engine's order, each with its name, its preview and a clear price chip.
+    const grid = screen.getByTestId('arsenal-grid');
+    expect(
+      within(grid)
+        .getAllByRole('button')
+        .map((b) => b.props.testID),
+    ).toEqual(INTERFERENCE_KINDS.map((k) => `arsenal-kind-${k}`));
+    for (const kind of INTERFERENCE_KINDS) {
+      const button = screen.getByTestId(`arsenal-kind-${kind}`);
+      expect(button).toHaveAccessibleName(`${TITLES[kind]} · 2 נק׳ · הקשה משגרת אל ${isolate(NAME)}`);
+      expect(button).toHaveProp('accessibilityState', { disabled: false });
+      expect(screen.getByTestId(`arsenal-kind-${kind}-chip`, hidden)).toHaveTextContent('⁦−2⁩נק׳');
       expect(screen.getByTestId(`token-art-${kind}`, hidden)).toBeOnTheScreen();
     }
-    expect(screen.getByText(`גרור אל הכרטיס של ${isolate(NAME)} כדי לשגר`)).toBeOnTheScreen();
   });
 
-  it('closes from its close button, from the scrim, and from ⚡ again', async () => {
-    const { g } = await show();
+  it('two taps launch it once, at that card: the engine takes it, the sheet closes with a ripple', async () => {
+    const { g, onLaunch } = await show();
     await earn(g);
-    await openFromBolt();
+    const before = g.host.getView().players[0]!.score;
+    await openFromButton();
+    await tapKind('scramble');
+    expect(onLaunch).toHaveBeenCalledTimes(1);
+    expect(onLaunch).toHaveBeenCalledWith(BOT.id, 'scramble');
+    expect(cues()).toEqual(['arsenalOpen', 'launch']);
+    const view = g.host.getView();
+    expect(view.players[1]!.hitBy).toMatchObject({ fromId: ME, kind: 'scramble' });
+    expect(view.players[0]!.score).toBe(before - 2);
+    expect(screen.getByTestId('arsenal-ripple', hidden)).toBeOnTheScreen();
+    expect(live()).toHaveTextContent(`שיגרת מספרים מתערבלים אל ${isolate(NAME)}`);
+    await step(1000);
+    expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('arsenal-ripple', hidden)).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('target-frame', hidden)).not.toBeOnTheScreen();
+    expect(onLaunch).toHaveBeenCalledTimes(1);
+  });
+
+  it('a quick double tap launches once; a second tap on the closing sheet does nothing', async () => {
+    const { g, onLaunch } = await show();
+    await earn(g, 6);
+    await openFromButton();
+    await fireEvent.press(screen.getByTestId('arsenal-kind-fireworks'));
+    await fireEvent.press(screen.getByTestId('arsenal-kind-fireworks'));
+    await fireEvent.press(screen.getByTestId('arsenal-kind-cats'));
+    await step(1000);
+    expect(onLaunch).toHaveBeenCalledTimes(1);
+    expect(cues().filter((c) => c === 'launch')).toHaveLength(1);
+  });
+
+  it(`taps in the first ${ARSENAL_CONFIG.armMs} ms after it opened are ignored, silently`, async () => {
+    const { g, onLaunch } = await show();
+    await earn(g);
+    await fireEvent.press(screen.getByTestId('interfere'));
+    await step(100);
+    await fireEvent.press(screen.getByTestId('arsenal-kind-cats'));
+    expect(onLaunch).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('arsenal-bubble-cats')).not.toBeOnTheScreen();
+    expect(cues()).toEqual(['arsenalOpen']);
+    await step(ARSENAL_CONFIG.armMs);
+    await tapKind('cats');
+    expect(onLaunch).toHaveBeenCalledWith(BOT.id, 'cats');
+  });
+
+  it('a kind I can’t afford is dimmed and says why on a tap, with a light haptic; nothing is launched', async () => {
+    const { onLaunch } = await show();
+    await fireEvent.press(screen.getByTestId('force-open'));
+    await step(400);
+    const button = screen.getByTestId('arsenal-kind-fireworks');
+    expect(button).toHaveAccessibleName('זיקוקים · חסרות 2 נק׳ להפרעה הזאת');
+    expect(button).toHaveProp('accessibilityState', { disabled: true });
+    expect(StyleSheet.flatten(button.props.style)).toMatchObject({ opacity: 0.5 });
+    // Six chips and the price row say what I miss.
+    expect(screen.getAllByText('חסרות 2 נק׳')).toHaveLength(7);
+    await tapKind('fireworks');
+    expect(onLaunch).not.toHaveBeenCalled();
+    expect(screen.getByTestId('arsenal-bubble-fireworks')).toHaveTextContent('חסרות 2 נק׳ להפרעה הזאת');
+    expect(cues()).toEqual(['arsenalOpen', 'nudge']);
+    await step(2100);
+    expect(screen.queryByTestId('arsenal-bubble-fireworks')).not.toBeOnTheScreen();
+  });
+
+  it('a target under interference: every kind is blocked, and a tap says so', async () => {
+    const { g, onLaunch } = await show();
+    await earn(g, 6);
+    await act(async () => void g.host.interfere(BOT.id, 'warp'));
+    await fireEvent.press(screen.getByTestId('force-open'));
+    await step(400);
+    expect(screen.getAllByText('תחת הפרעה')).toHaveLength(6);
+    await tapKind('ink');
+    expect(onLaunch).not.toHaveBeenCalled();
+    expect(screen.getByTestId('arsenal-bubble-ink')).toHaveTextContent(
+      `${isolate(NAME)} כבר תחת הפרעה, אפשר לשגר עוד רגע`,
+    );
+  });
+
+  it('kinds above my level stay in the grid, dimmed, with "רמה N", and can’t be launched [D17, D47]', async () => {
+    const { g, onLaunch } = await show({ unlocked: ARSENAL_CONFIG.unlocked });
+    await earn(g);
+    await openFromButton();
+    for (const [kind, level] of [
+      ['scramble', 2],
+      ['ink', 3],
+      ['keypad', 4],
+    ] as const) {
+      expect(screen.getByTestId(`arsenal-kind-${kind}-chip`, hidden)).toHaveTextContent(`רמה ${level}`);
+      expect(
+        within(screen.getByTestId(`arsenal-kind-${kind}-chip`, hidden)).getByTestId('icon-lock', hidden),
+      );
+      expect(screen.getByTestId(`arsenal-kind-${kind}`)).toHaveProp('accessibilityState', { disabled: true });
+      expect(screen.getByTestId(`arsenal-kind-${kind}`)).toHaveAccessibleName(
+        `${TITLES[kind]} · נפתחת ברמה ${level}`,
+      );
+    }
+    await tapKind('keypad');
+    expect(onLaunch).not.toHaveBeenCalled();
+    expect(screen.getByTestId('arsenal-bubble-keypad')).toHaveTextContent('נפתחת ברמה 4');
+    // The open ones go.
+    await tapKind('warp');
+    expect(onLaunch).toHaveBeenCalledWith(BOT.id, 'warp');
+  });
+
+  it('only the kinds this game allows are shown (a room with an older app, D47)', async () => {
+    const { g } = await show({ rules: { interferenceKinds: ['fireworks', 'cats', 'warp'] } });
+    await earn(g);
+    await openFromButton();
+    const grid = screen.getByTestId('arsenal-grid');
+    expect(within(grid).getAllByRole('button')).toHaveLength(3);
+    for (const kind of ['scramble', 'ink', 'keypad'])
+      expect(screen.queryByTestId(`arsenal-kind-${kind}`)).not.toBeOnTheScreen();
+  });
+
+  it('closes from its close button, from the scrim, from "הפרעה" again and from Android back', async () => {
+    const back = jest.spyOn(BackHandler, 'addEventListener');
+    const { g, onLaunch } = await show();
+    await earn(g);
+    await openFromButton();
     await fireEvent.press(screen.getByTestId('arsenal-close'));
     await step(400);
     expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();
-    expect(screen.queryByTestId('drop-zone')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('target-frame')).not.toBeOnTheScreen();
 
-    await openFromBolt();
+    await openFromButton();
     await fireEvent.press(screen.getByTestId('arsenal-scrim'));
     await step(400);
     expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();
 
-    await openFromBolt();
+    await openFromButton();
     await fireEvent.press(screen.getByTestId('interfere', hidden));
     await step(400);
     expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();
+
+    await openFromButton();
+    const [event, handler] = back.mock.calls.at(-1)!;
+    expect(event).toBe('hardwareBackPress');
+    await act(async () => {
+      expect((handler as () => boolean)()).toBe(true);
+    });
+    await step(400);
+    expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();
+    expect(onLaunch).not.toHaveBeenCalled();
+    back.mockRestore();
   });
 
-  it('short of points ⚡ does not open it: it says why, with a light haptic (§8.1)', async () => {
+  it('a blocked "הפרעה" does not open it: it says why in a toast, with a light haptic (§8.1)', async () => {
     await show();
     await fireEvent.press(screen.getByTestId('interfere'));
     await step(400);
@@ -276,141 +367,22 @@ describe('the arsenal (spec §7.3.1, Arsenal)', () => {
     expect(cues()).toEqual(['nudge']);
   });
 
-  it('ends with "נפתחות בהמשך": the four after V1, locked and "בקרוב" (Arsenal, Interference-Target)', async () => {
-    const { g } = await show();
+  it('closes by itself when the target leaves the game, or the game ends', async () => {
+    const { g, onLaunch } = await show();
     await earn(g);
-    await openFromBolt();
-    const coming = screen.getByTestId('arsenal-coming');
-    expect(coming).toHaveAccessibleName('נפתחות בהמשך: דיו, רעידת אדמה, ערפל, בועות. בקרוב');
-    for (const kind of ['ink', 'earthquake', 'fog', 'bubbles']) {
-      expect(within(coming).getByTestId(`arsenal-coming-${kind}`, hidden)).toBeOnTheScreen();
-    }
-    // Never a token: nothing there can be dragged.
-    expect(screen.queryByTestId('arsenal-token-ink')).not.toBeOnTheScreen();
-  });
-});
-
-describe('the drag launch (spec §7.3.2–4, Interference-Drag; D18: drag only)', () => {
-  it('lift: the ghost carries the name and the cost, the slot says "בגרירה…", the hint says how to cancel', async () => {
-    const { g } = await show();
-    await earn(g);
-    await openFromBolt();
-    await dragTo('fireworks', { x: 200, y: 500 }, { hold: true });
-    expect(cues()).toContain('tokenLift');
-    expect(screen.getByTestId('arsenal-ghost', hidden)).toHaveTextContent('זיקוקים · 2 נק׳');
-    expect(screen.getByText('בגרירה…')).toBeOnTheScreen();
-    expect(screen.getByText('שחרור מחוץ לאזור מבטל')).toBeOnTheScreen();
-    // A second token can't be picked up meanwhile.
-    expect(getByGestureTestId('arsenal-drag-cats').config.enabled).toBe(false);
-  });
-
-  it('over the card: it lights up (drop-hover), says so, and buzzes once per entry', async () => {
-    const { g } = await show();
-    await earn(g);
-    await openFromBolt();
-    await dragTo('cats', INSIDE, { hold: true });
-    expect(cues().filter((c) => c === 'dropZoneEnter')).toHaveLength(1);
-    expect(StyleSheet.flatten(screen.getByTestId('drop-zone', hidden).props.style)).toMatchObject({
-      backgroundColor: color.accentSubtle,
+    await openFromButton();
+    await act(async () => {
+      g.host.dispatch({ type: 'surrender', playerId: BOT.id });
     });
-    expect(screen.getByTestId('card-opponent-summary', hidden)).toHaveProp(
-      'accessibilityHint',
-      `שחרר כאן: שיגור חתולים אל ${isolate(NAME)}`,
-    );
-    await spoken();
-    expect(live()).toHaveTextContent(`מעל הכרטיס של ${isolate(NAME)}: שחרר כדי לשגר`, { exact: false });
-  });
-
-  it('let go on the card: launches once, at that card; the token lands, the tray closes', async () => {
-    const { g, onLaunch } = await show();
-    await earn(g);
-    const before = g.host.getView().players[0]!.score;
-    await openFromBolt();
-    await dragTo('fireworks', INSIDE);
-    expect(onLaunch).toHaveBeenCalledTimes(1);
-    expect(onLaunch).toHaveBeenCalledWith(BOT.id, 'fireworks');
-    expect(cues()).toEqual(expect.arrayContaining(['arsenalOpen', 'tokenLift', 'dropZoneEnter', 'launch']));
-    // The engine took it: the bot is under fireworks and I paid 2.
-    const view = g.host.getView();
-    expect(view.players[1]!.hitBy).toMatchObject({ fromId: ME, kind: 'fireworks' });
-    expect(view.players[0]!.score).toBe(before - 2);
-    // The token shrinks into the card with a ripple out of it; then all of it is gone.
-    expect(screen.getByTestId('arsenal-ripple', hidden)).toBeOnTheScreen();
-    await step(1000);
+    await step(400);
     expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();
-    expect(screen.queryByTestId('arsenal-ghost', hidden)).not.toBeOnTheScreen();
-    expect(screen.queryByTestId('arsenal-ripple', hidden)).not.toBeOnTheScreen();
-    expect(screen.queryByTestId('drop-zone', hidden)).not.toBeOnTheScreen();
-    expect(onLaunch).toHaveBeenCalledTimes(1);
-  });
-
-  it('let go anywhere else: nothing is launched, the token flies back, the tray stays', async () => {
-    const { g, onLaunch } = await show();
-    await earn(g);
-    const before = g.host.getView().players[0]!.score;
-    await openFromBolt();
-    await dragTo('warp', OUTSIDE);
     expect(onLaunch).not.toHaveBeenCalled();
-    expect(cues()).not.toContain('launch');
-    expect(g.host.getView().players[0]!.score).toBe(before);
-    // Still on its way back to the slot (the settle spring), then home.
-    expect(screen.getByTestId('arsenal-ghost', hidden)).toBeOnTheScreen();
-    await step(1000);
-    expect(screen.queryByTestId('arsenal-ghost', hidden)).not.toBeOnTheScreen();
-    expect(screen.queryByText('בגרירה…')).not.toBeOnTheScreen();
-    expect(screen.getByTestId('arsenal-sheet')).toBeOnTheScreen();
-    await spoken();
-    expect(live()).toHaveTextContent('השיגור בוטל', { exact: false });
   });
 
-  it('passing over the card and letting go outside it cancels: only the release point counts', async () => {
+  it('if my score drops under the price while it is open, the kinds turn blocked and the row says so', async () => {
     const { g, onLaunch } = await show();
     await earn(g);
-    await openFromBolt();
-    const f = await dragTo('cats', INSIDE, { hold: true });
-    await f.move(OUTSIDE);
-    expect(StyleSheet.flatten(screen.getByTestId('drop-zone', hidden).props.style).backgroundColor).not.toBe(
-      color.accentSubtle,
-    );
-    await f.move(INSIDE);
-    await f.move(OUTSIDE);
-    await f.up(OUTSIDE);
-    await step(1000);
-    expect(onLaunch).not.toHaveBeenCalled();
-    // Each entry buzzed once; the tray is still open, aimed at the same card.
-    expect(cues().filter((c) => c === 'dropZoneEnter')).toHaveLength(2);
-    expect(screen.getByTestId('drop-zone', hidden)).toBeOnTheScreen();
-  });
-
-  it('3–4 players: the ghost also shows the route, "אני ← NinaVolt" (spec §7.3.5)', async () => {
-    const { g } = await show({ showRoute: true });
-    await earn(g);
-    await openFromBolt();
-    await dragTo('cats', { x: 200, y: 500 }, { hold: true });
-    const ghost = screen.getByTestId('arsenal-ghost', hidden);
-    expect(ghost).toHaveTextContent(`חתולים · 2 נק׳אני←${isolate(NAME)}`);
-    // The tag: from me (P1, ●) to the card it was opened from (its seat colour, ▲), both avatars.
-    const route = within(ghost).getByTestId('arsenal-route', hidden);
-    expect(within(route).getByTestId('arsenal-route-avatar-0', hidden)).toBeOnTheScreen();
-    expect(within(route).getByTestId('arsenal-route-avatar-1', hidden)).toBeOnTheScreen();
-    expect(within(route).getByTestId('glyph-circle', hidden)).toBeOnTheScreen();
-    expect(within(route).getByTestId('glyph-triangle', hidden)).toBeOnTheScreen();
-  });
-
-  it('2 players: no route tag on the ghost', async () => {
-    const { g } = await show();
-    await earn(g);
-    await openFromBolt();
-    await dragTo('cats', { x: 200, y: 500 }, { hold: true });
-    expect(screen.getByTestId('arsenal-ghost', hidden)).toBeOnTheScreen();
-    expect(screen.queryByTestId('arsenal-route', hidden)).not.toBeOnTheScreen();
-  });
-
-  it('if my score drops under the cost mid-drag, the drop does not launch', async () => {
-    const { g, onLaunch } = await show();
-    await earn(g);
-    await openFromBolt();
-    const f = await dragTo('fireworks', INSIDE, { hold: true });
+    await openFromButton();
     // Wrong digits until I can't pay any more (spec §6.5: each one costs points).
     await act(async () => {
       for (const cell of g.cells.slice(-6)) {
@@ -420,179 +392,64 @@ describe('the drag launch (spec §7.3.2–4, Interference-Drag; D18: drag only)'
       }
     });
     expect(g.host.getView().interference!.missingPoints).toBeGreaterThan(0);
-    await f.up(INSIDE);
-    await step(1000);
+    await tapKind('fireworks');
     expect(onLaunch).not.toHaveBeenCalled();
-    expect(g.host.getView().players[1]!.hitBy).toBeNull();
-    // The three tokens and the cost row say what I miss; no "score after launch" for a launch that can't be.
-    expect(screen.getAllByText(/^חסרות [\d.]+ נק׳$/)).toHaveLength(4);
     expect(screen.getByTestId('arsenal-after')).toHaveTextContent(/^חסרות [\d.]+ נק׳$/);
-    expect(screen.queryByText(/אחרי שיגור/)).not.toBeOnTheScreen();
     expect(screen.getByTestId('arsenal-cost')).toHaveAccessibleName(/, חסרות [\d.]+ נקודות$/);
   });
 
-  it('a token I can’t afford can’t start a drag; its pill says how much I miss', async () => {
-    const { onLaunch } = await show();
-    await fireEvent.press(screen.getByTestId('force-open'));
-    await step(400);
-    expect(screen.getByTestId('arsenal-token-fireworks')).toHaveAccessibleName(
-      'זיקוקים · חסרות 2 נק׳ להפרעה הזאת',
-    );
-    expect(screen.getAllByText('חסרות 2 נק׳')).toHaveLength(4); // three tokens and the cost row
-    // The gesture is off, so the native side never starts it (fireGestureHandler honours that).
-    const pan = getByGestureTestId('arsenal-drag-fireworks');
-    expect(pan.config.enabled).toBe(false);
-    await act(async () => {
-      fireGestureHandler(pan, [
-        { state: State.BEGAN, absoluteX: TOKEN_AT.x, absoluteY: TOKEN_AT.y },
-        { state: State.ACTIVE, absoluteX: INSIDE.x, absoluteY: INSIDE.y },
-        { state: State.END, absoluteX: INSIDE.x, absoluteY: INSIDE.y },
-      ]);
-    });
-    await step();
-    expect(onLaunch).not.toHaveBeenCalled();
-    expect(cues()).not.toContain('tokenLift');
-    expect(screen.queryByTestId('arsenal-ghost', hidden)).not.toBeOnTheScreen();
-  });
-
-  it('a tap never launches (D18): it explains, for 2 seconds', async () => {
-    const { g, onLaunch } = await show();
-    await earn(g);
-    await openFromBolt();
-    await tap('cats');
-    expect(onLaunch).not.toHaveBeenCalled();
-    expect(screen.getByTestId('arsenal-bubble-cats')).toHaveTextContent(
-      `גרור אל ${isolate(NAME)} — הקשה לא משגרת`,
-    );
-    await step(2100);
-    expect(screen.queryByTestId('arsenal-bubble-cats')).not.toBeOnTheScreen();
-  });
-
-  it('a screen reader’s activate on a token explains too, and does not launch', async () => {
-    const { g, onLaunch } = await show();
-    await earn(g);
-    await openFromBolt();
-    await fireEvent(screen.getByTestId('arsenal-token-warp'), 'accessibilityAction', {
-      nativeEvent: { actionName: 'activate' },
-    });
-    expect(onLaunch).not.toHaveBeenCalled();
-    expect(screen.getByTestId('arsenal-bubble-warp')).toBeOnTheScreen();
-  });
-
-  it('closes by itself when the target leaves the game', async () => {
+  it('nothing of the drag is left: no gesture on a kind, no ghost, no "נפתחות בהמשך"', async () => {
     const { g } = await show();
     await earn(g);
-    await openFromBolt();
-    await act(async () => {
-      g.host.dispatch({ type: 'surrender', playerId: BOT.id });
-    });
-    await step(400);
-    expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();
+    await openFromButton();
+    expect(screen.queryByTestId('arsenal-ghost', hidden)).not.toBeOnTheScreen();
+    expect(screen.queryByText('בגרירה…', hidden)).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('arsenal-coming', hidden)).not.toBeOnTheScreen();
+    expect(screen.queryByText(/גרור/, hidden)).not.toBeOnTheScreen();
   });
 });
 
-describe('the tray goes away under a held token', () => {
-  /** The drag is over: no ghost, no slot saying "בגרירה…", and the card is no drop zone. */
-  const expectNoDrag = () => {
-    expect(screen.queryByTestId('arsenal-ghost', hidden)).not.toBeOnTheScreen();
-    expect(screen.queryByText('בגרירה…', hidden)).not.toBeOnTheScreen();
-    expect(screen.queryByTestId('drop-zone', hidden)).not.toBeOnTheScreen();
-  };
-
-  it('the target leaves mid-drag: the ghost goes with the tray, and letting go later launches nothing', async () => {
-    const { g, onLaunch } = await show();
+describe('3–4 players: the route in the header (original §17)', () => {
+  it('"אני ← Mr. Hoot" with both avatars and shapes; one target, no way to change it in here', async () => {
+    const { g, onLaunch } = await show({ showRoute: true });
     await earn(g);
-    await openFromBolt();
-    const f = await dragTo('fireworks', INSIDE, { hold: true });
-    expect(screen.getByTestId('arsenal-ghost', hidden)).toBeOnTheScreen();
-    await act(async () => {
-      g.host.dispatch({ type: 'surrender', playerId: BOT.id });
-    });
-    await step(1000);
-    expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();
-    expectNoDrag();
-    await f.up(INSIDE);
-    await step(1000);
-    expectNoDrag();
-    expect(onLaunch).not.toHaveBeenCalled();
+    await openFromButton();
+    const route = screen.getByTestId('arsenal-route');
+    expect(route).toHaveAccessibleName(`הפרעה ממני אל ${isolate(NAME)}`);
+    expect(route).toHaveTextContent(`אני←${NAME}`, { exact: false });
+    // From me (P1, ●) to the card it was opened from (its seat colour, ▲), both avatars.
+    expect(within(route).getByTestId('arsenal-route-avatar-0', hidden)).toBeOnTheScreen();
+    expect(within(route).getByTestId('arsenal-route-avatar-1', hidden)).toBeOnTheScreen();
+    expect(within(route).getByTestId('glyph-circle', hidden)).toBeOnTheScreen();
+    expect(within(route).getByTestId('glyph-triangle', hidden)).toBeOnTheScreen();
+    expect(screen.queryByTestId('arsenal-target')).not.toBeOnTheScreen();
+    await tapKind('ink');
+    expect(onLaunch).toHaveBeenCalledWith(BOT.id, 'ink');
   });
 
-  it('the game ends mid-drag: the tray closes, the ghost goes, nothing is launched or charged', async () => {
-    const { g, onLaunch } = await show();
+  it('2 players: the target line, no route', async () => {
+    const { g } = await show();
     await earn(g);
-    await openFromBolt();
-    await dragTo('cats', INSIDE, { hold: true });
-    // I fill the rest of the board: the game is over, the bot still in it.
-    await act(async () => {
-      for (const cell of g.cells) {
-        if (g.host.getView().status === 'over') break;
-        if (g.host.getView().grid[cell] !== 0) continue;
-        g.host.select(cell);
-        g.host.place(cell, answerIn(g.puzzle, cell));
-      }
-    });
-    const view = g.host.getView();
-    expect(view.status).toBe('over');
-    expect(view.players[1]!.status).toBe('active');
-    const score = view.players[0]!.score;
-    await step(1000);
-    expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();
-    expectNoDrag();
-    expect(onLaunch).not.toHaveBeenCalled();
-    expect(g.host.getView().players[0]!.score).toBe(score);
-  });
-
-  it('Android back mid-drag closes the tray and ends the drag; the token can open again cleanly', async () => {
-    const back = jest.spyOn(BackHandler, 'addEventListener');
-    const { g, onLaunch } = await show();
-    await earn(g);
-    await openFromBolt();
-    const f = await dragTo('warp', INSIDE, { hold: true });
-    const [event, handler] = back.mock.calls.at(-1)!;
-    expect(event).toBe('hardwareBackPress');
-    await act(async () => {
-      expect((handler as () => boolean)()).toBe(true);
-    });
-    await step(1000);
-    expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();
-    expectNoDrag();
-    await f.up(INSIDE);
-    await step(1000);
-    expect(onLaunch).not.toHaveBeenCalled();
-    // Opened again: no ghost left over, every token can be picked up.
-    await openFromBolt();
-    expect(screen.queryByTestId('arsenal-ghost', hidden)).not.toBeOnTheScreen();
-    expect(screen.queryByText('בגרירה…')).not.toBeOnTheScreen();
-    for (const kind of ['fireworks', 'cats', 'warp'] as const) {
-      expect(getByGestureTestId(`arsenal-drag-${kind}`).config.enabled).toBe(true);
-    }
-    back.mockRestore();
+    await openFromButton();
+    expect(screen.getByTestId('arsenal-target')).toBeOnTheScreen();
+    expect(screen.queryByTestId('arsenal-route')).not.toBeOnTheScreen();
   });
 });
 
 describe('reduced motion (spec §22)', () => {
   beforeEach(() => useSettings.setState({ reduceMotion: 'on' }));
 
-  it('a cancel snaps: the ghost is gone at once, no flight back', async () => {
+  it('a tap still launches, once; still previews, no ripple', async () => {
     const { g, onLaunch } = await show();
     await earn(g);
-    await openFromBolt();
-    await dragTo('fireworks', { x: 200, y: 500 }, { hold: true });
-    // The ghost still follows the finger: it is what is being dragged.
-    expect(screen.getByTestId('arsenal-ghost', hidden)).toBeOnTheScreen();
-    await dragTo('fireworks', OUTSIDE);
-    expect(screen.queryByTestId('arsenal-ghost', hidden)).not.toBeOnTheScreen();
-    expect(onLaunch).not.toHaveBeenCalled();
-  });
-
-  it('a drop on the card still launches, once; no flight into the card and no ripple', async () => {
-    const { g, onLaunch } = await show();
-    await earn(g);
-    await openFromBolt();
-    await dragTo('cats', INSIDE);
+    await openFromButton();
+    const art = screen.getAllByTestId('token-art-motion', hidden)[0]!;
+    const early = JSON.stringify(art.props.jestAnimatedStyle?.value ?? art.props.style);
+    await step(900);
+    expect(JSON.stringify(art.props.jestAnimatedStyle?.value ?? art.props.style)).toEqual(early);
+    await tapKind('cats');
     expect(onLaunch).toHaveBeenCalledTimes(1);
     expect(onLaunch).toHaveBeenCalledWith(BOT.id, 'cats');
-    expect(screen.queryByTestId('arsenal-ghost', hidden)).not.toBeOnTheScreen();
     expect(screen.queryByTestId('arsenal-ripple', hidden)).not.toBeOnTheScreen();
     await step(400);
     expect(screen.queryByTestId('arsenal-sheet')).not.toBeOnTheScreen();

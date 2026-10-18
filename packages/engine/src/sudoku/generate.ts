@@ -1,5 +1,5 @@
 import type { GameType } from '../gameType';
-import { randomInt, type Rng } from '../util/random';
+import { type Rng, shuffled } from '../util/random';
 import { boxOf, CELL_COUNT, colOf, DIGITS, rowOf } from './board';
 import { DEFAULT_GRADING, type Difficulty, gradePuzzle, type GradingRules } from './grade';
 import { countSolutions } from './solver';
@@ -12,15 +12,6 @@ import { countSolutions } from './solver';
  * 2. Givens are removed in random order, keeping a unique solution, until the grade reaches the target or
  *    no more can be removed.
  */
-
-function shuffled<T>(rng: Rng, items: readonly T[]): T[] {
-  const a = items.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = randomInt(rng, i + 1);
-    [a[i], a[j]] = [a[j]!, a[i]!];
-  }
-  return a;
-}
 
 /** A random complete, valid grid. */
 export function generateSolvedGrid(rng: Rng): number[] {

@@ -185,7 +185,12 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
           <Text
             style={[
               text('caption'),
-              e.ratingDelta === null ? styles.muted : e.ratingDelta < 0 ? styles.danger : styles.success,
+              // A 0 (a draw, or a pair the leave guards held, spec §11.2) is muted: nothing won or lost.
+              e.ratingDelta === null || e.ratingDelta === 0
+                ? styles.muted
+                : e.ratingDelta < 0
+                  ? styles.danger
+                  : styles.success,
             ]}
             testID={`history-card-${e.id}-rating`}
           >

@@ -17,12 +17,14 @@ import {
   type Grid,
   type InterferenceKind,
   type Lang,
+  missedPoints,
   type MoveScore,
   parseGrid,
   type PlayerId,
   rankPlayers,
   type ReleaseReason,
   replay as replayStates,
+  type ScoreY,
   type Technique,
   techniqueName,
   toView,
@@ -43,8 +45,10 @@ import { playerIdentity } from '../game/identity';
  * Steps (spec §13.1, "שלב אחד הוא פעולה אחת"; original §21): one per action, plus the start.
  * - start: the board before anyone played (gameCreated, gameStarted and the first turn, if any);
  * - select (cellLocked) · correct (placedCorrect) · wrong (placedWrong) · interference;
- * - a state change: disconnect · reconnect · surrender · abandon · release (a lock let go by "ביטול בחירה",
- *   or one that ran out of time).
+ * - a state change: offline (a lost connection's soft phase [D42]) · disconnect · reconnect · surrender ·
+ *   abandon · release (a lock let go by "ביטול בחירה", or one that ran out of time).
+ *   A digit entered offline and sent on the return (placed* with `offline`) is a correct or wrong step like any
+ *   other, marked `offline`.
  * Events that are part of an action join its step instead of making their own:
  * - after it, at the same moment: the release after a mistake or a disconnect, a freeze and a resume (the
  *   game froze because someone disconnected; it goes on because they came back or left), a new turn, a
@@ -67,6 +71,8 @@ export type StepKind =
   | 'correct'
   | 'wrong'
   | 'interference'
+  /** The connection was lost: the soft phase began, the game went on [D42]. */
+  | 'offline'
   | 'disconnect'
   | 'reconnect'
   | 'surrender'
@@ -93,6 +99,8 @@ export interface ReplayStep {
   cost: number | null;
   /** A release: why ('cancel' or 'timeout'). */
   releaseReason: ReleaseReason | null;
+  /** A digit entered while the connection was lost, sent when it was back [D42]. */
+  offline: boolean;
   /** The game ended with this step. */
   ends: boolean;
   /** The events this step covers: log[from..to]; `main` is its own event (null for the start). */
@@ -160,6 +168,14 @@ export interface Replay {
   subjects: (number | null)[][];
   /** The single leader after each step (spec §6.7 ranking), for the turning point. */
   leaders: (PlayerId | null)[];
+  /**
+   * Every mistake of this game was charged as missed points (spec §6.5, Moshe's decision of 2026-10-15): its
+   * penalty is what the right digit would have scored there, so a wrong move can show its calculation. False
+   * for a game played before that rule, under the 1, 2, 4, 8 ladder: each player's first mistake there cost 1,
+   * which missed points never are (1.5 at least). Its wrong moves keep their recorded penalties and show no
+   * penalty line. True for a game without mistakes.
+   */
+  penaltiesAreMissedPoints: boolean;
   /** Explanations already worked out, by the step of their move. */
   cache: Map<number, Explanation | null>;
 }
@@ -190,6 +206,12 @@ export interface PlayerExplanation {
   points: number | null;
   penalty: number | null;
   scoreLine: string | null;
+  /**
+   * A wrong move (spec §6.5, §13.2): its penalty's calculation, i.e. what the right digit would have scored
+   * there, "points = 9 − 4 + (9 − 3) / 2 = 8". Null for a game played before that rule (see
+   * `Replay.penaltiesAreMissedPoints`), and when the log has no solution.
+   */
+  penaltyLine: string | null;
   /** A choice that was let go of: why. */
   releaseReason: ReleaseReason | null;
 }
@@ -246,6 +268,7 @@ function roleOf(e: GameEvent): Role {
     case 'placedCorrect':
     case 'placedWrong':
     case 'interference':
+    case 'playerConnectionLost':
     case 'playerDisconnected':
     case 'playerReconnected':
     case 'playerSurrendered':
@@ -295,6 +318,7 @@ const KIND_OF: Partial<Record<GameEvent['type'], StepKind>> = {
   placedCorrect: 'correct',
   placedWrong: 'wrong',
   interference: 'interference',
+  playerConnectionLost: 'offline',
   playerDisconnected: 'disconnect',
   playerReconnected: 'reconnect',
   playerSurrendered: 'surrender',
@@ -330,6 +354,7 @@ function stepOf(
     interference: null,
     cost: null,
     releaseReason: null,
+    offline: false,
     ends: events.slice(g.from, g.to + 1).some((x) => x.type === 'gameOver'),
     from: g.from,
     to: g.to,
@@ -359,6 +384,7 @@ function stepOf(
         points: e.points,
         breakdown: e.breakdown,
         scoreLine: formatScoreLine(e.breakdown),
+        offline: e.offline === true,
       };
     case 'placedWrong':
       return {
@@ -368,6 +394,7 @@ function stepOf(
         digit: e.digit,
         answer: answerOf(e.cell),
         penalty: e.penalty,
+        offline: e.offline === true,
       };
     case 'interference':
       return {
@@ -377,6 +404,7 @@ function stepOf(
         interference: e.kind,
         cost: e.cost,
       };
+    case 'playerConnectionLost':
     case 'playerDisconnected':
     case 'playerReconnected':
     case 'playerSurrendered':
@@ -446,6 +474,9 @@ export function buildReplay(events: readonly GameEvent[], options: ReplayOptions
   });
 
   const steps = groupsOf(log).map((g, k) => stepOf(k, g, log, startedAt, solution));
+  const penaltiesAreMissedPoints = steps.every(
+    (s) => s.kind !== 'wrong' || missedPointsOf(states, s, config.rules.scoreY)?.points === s.penalty,
+  );
   const seatOf = new Map(players.map((p) => [p.id, p.seat]));
 
   // Each player's move to explain, step by step.
@@ -486,6 +517,7 @@ export function buildReplay(events: readonly GameEvent[], options: ReplayOptions
     keyMoments: keyMomentsOf(steps, leaders),
     subjects,
     leaders,
+    penaltiesAreMissedPoints,
     cache: new Map(),
   };
 }
@@ -494,9 +526,23 @@ export function buildReplay(events: readonly GameEvent[], options: ReplayOptions
 // One step
 
 /** The grid just before step `s`'s own event: the board its explanation is worked out on (spec §13.2). */
-function gridBefore(replay: Replay, s: ReplayStep): Grid {
+function gridBeforeIn(states: readonly GameState[], s: ReplayStep): Grid {
   const main = s.main ?? s.from;
-  return replay.states[Math.max(0, main - 1)]!.grid;
+  return states[Math.max(0, main - 1)]!.grid;
+}
+
+function gridBefore(replay: Replay, s: ReplayStep): Grid {
+  return gridBeforeIn(replay.states, s);
+}
+
+/**
+ * What step `s`'s cell was worth to the right digit on the board before it (spec §6.5): a wrong move's
+ * penalty under the missed-points rule. Null without the solution or a cell to score.
+ */
+function missedPointsOf(states: readonly GameState[], s: ReplayStep, y: ScoreY): MoveScore | null {
+  if (s.cell === null || s.answer === null) return null;
+  const grid = gridBeforeIn(states, s);
+  return grid[s.cell] === 0 ? missedPoints(grid, s.cell, s.answer, y) : null;
 }
 
 /** The engine's explanation of the cell of step `s`, on the board before it; null when it can't be made. */
@@ -535,6 +581,7 @@ function explanationOf(replay: Replay, k: number, seat: number, lang: Lang): Pla
     points: null,
     penalty: null,
     scoreLine: null,
+    penaltyLine: null,
     releaseReason: null,
   };
   if (subject === null) return none;
@@ -569,6 +616,11 @@ function explanationOf(replay: Replay, k: number, seat: number, lang: Lang): Pla
       wrongText = null;
     }
   }
+  let penaltyLine: string | null = null;
+  if (s.kind === 'wrong' && replay.penaltiesAreMissedPoints) {
+    const missed = missedPointsOf(replay.states, s, after.config.rules.scoreY);
+    penaltyLine = missed ? formatScoreLine(missed) : null;
+  }
   return {
     ...none,
     status,
@@ -584,6 +636,7 @@ function explanationOf(replay: Replay, k: number, seat: number, lang: Lang): Pla
     points: s.points,
     penalty: s.penalty,
     scoreLine: s.scoreLine,
+    penaltyLine,
     releaseReason,
   };
 }

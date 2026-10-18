@@ -2,7 +2,15 @@ import type { CreateUserRequest, Me, UpdateMeRequest } from '@sudoku-fight/proto
 import { create } from 'zustand';
 
 import { type AccountApi, AccountApiError, isAccountApiError, isOfflineError } from '../api/accountApi';
-import type { MeCache } from '../api/me';
+import {
+  type MeCache,
+  type PendingRating,
+  ratingEntryAfter,
+  withPendingRatings,
+  withRatingEntry,
+} from '../api/me';
+import { accountConfig } from '../config/account';
+import type { RankedEnd } from '../game/rankedEnd';
 import { useProfile } from '../state/profile';
 import { toAuthError } from './errors';
 import { useRegistrationDraft } from './registrationDraft';
@@ -58,11 +66,35 @@ export interface AuthDeps {
   onIdentity?: (meId: string | null) => void;
   /** Something went wrong that the player can't fix (for Crashlytics). */
   report?: (error: unknown, where: string) => void;
+  /** The phone's clock (tests); Date.now by default. */
+  now?: () => number;
 }
 
 let deps: AuthDeps | null = null;
 let defaults: (() => AuthDeps) | null = null;
 let starting: Promise<void> | null = null;
+
+/**
+ * After a ranked game (showRankedResult): its rating by key, shown over older answers of GET /v1/me until the
+ * server counts the game or it expires (api/me.ts withPendingRatings). Memory only: the cache keeps the server's.
+ */
+let pendingRatings = new Map<string, PendingRating>();
+/** When the server's profile was last adopted; null: not this run (refreshMeIfStale). */
+let lastServerReadAt: number | null = null;
+/** GET /v1/me reads started, the newest one adopted, and those still out: an older answer never wins. */
+let meRequests = 0;
+let meAdopted = 0;
+let meInFlight = 0;
+
+const now = (): number => (deps?.now ?? Date.now)();
+
+/** The account's refresh state starts over (another wiring, a sign-out, a profile gone). */
+function forgetRefreshState(): void {
+  pendingRatings = new Map();
+  lastServerReadAt = null;
+  // A read still out belongs to what was before.
+  meAdopted = meRequests;
+}
 
 /** The app's wiring (auth/index.ts installs it); tests install theirs with setAuthDeps. */
 export function setDefaultAuthDeps(make: () => AuthDeps): void {
@@ -81,6 +113,7 @@ export function authDeps(): AuthDeps {
 export function setAuthDeps(next: AuthDeps | null): void {
   deps = next;
   starting = null;
+  forgetRefreshState();
   useAuth.setState(
     {
       status: 'loading',
@@ -103,9 +136,21 @@ const providerState = (provider: AuthProvider): Pick<AuthState, 'provider' | 'go
   google: provider.google !== undefined,
 });
 
-/** The profile from the server or the phone: kept, saved, and mirrored where the game screens read it. */
-async function adopt(user: AuthUser, me: Me, offline: boolean): Promise<void> {
-  set({ status: 'ready', user, me, meOffline: offline, loadError: null });
+/**
+ * The profile from the server or the phone: kept, saved, and mirrored where the game screens read it. A ranked
+ * game's rating the server has not counted yet stays shown over it (pendingRatings); the phone saves the
+ * server's own profile. `seq`: the GET /v1/me read it answers (fetchMe); any other server answer is newer than
+ * every read still out.
+ */
+async function adopt(user: AuthUser, me: Me, offline: boolean, seq = meRequests): Promise<void> {
+  const at = now();
+  const shown = withPendingRatings(me, pendingRatings, at);
+  pendingRatings = shown.pending;
+  if (!offline) {
+    lastServerReadAt = at;
+    meAdopted = Math.max(meAdopted, seq);
+  }
+  set({ status: 'ready', user, me: shown.me, meOffline: offline, loadError: null });
   // The game screens and the modes screen show "my" avatar from the local profile store.
   useProfile.setState({ name: me.displayName, avatarId: me.avatarId, country: me.country });
   authDeps().onIdentity?.(me.id);
@@ -121,6 +166,7 @@ async function forgetLocal(): Promise<void> {
   await meCache.clear().catch((error: unknown) => report(error, 'meCache.clear'));
   useRegistrationDraft.getState().reset();
   authDeps().onIdentity?.(null);
+  forgetRefreshState();
   set({ status: 'signedOut', user: null, me: null, meOffline: false, loadError: null });
 }
 
@@ -139,6 +185,7 @@ async function loadProfile(user: AuthUser, strict: boolean): Promise<void> {
     if (isAccountApiError(error) && error.code === 'notRegistered') {
       // No profile on the server (never made, or deleted): the registration goes on from step 1.
       await meCache.clear().catch(() => undefined);
+      forgetRefreshState();
       set({ status: 'needsProfile', user, me: null, meOffline: false, loadError: null });
       return;
     }
@@ -293,6 +340,7 @@ export async function registerWithGoogle(profile: CreateUserRequest): Promise<Go
   try {
     await adoptCreated(user, await createOrFetch(api, profile));
   } catch (error) {
+    forgetRefreshState();
     set({ status: 'needsProfile', user, me: null, meOffline: false, loadError: null });
     throw error;
   }
@@ -321,6 +369,7 @@ export async function signUpAndRegister(
   try {
     await adoptCreated(user, await createOrFetch(api, profile));
   } catch (error) {
+    forgetRefreshState();
     set({ status: 'needsProfile', user, me: null, meOffline: false, loadError: null });
     throw error;
   }
@@ -368,20 +417,79 @@ export async function updateProfile(patch: UpdateMeRequest): Promise<Me> {
   return me;
 }
 
-/** GET /v1/me again (e.g. after the email was verified, or when Home comes back online). */
-export async function refreshMe(): Promise<void> {
-  const user = useAuth.getState().user;
-  if (!user || useAuth.getState().status !== 'ready') return;
+/**
+ * GET /v1/me again, adopted, and the server's answer returned (a ranked game's refresh checks it counts the game:
+ * progress/rankedRefresh.ts). Null when nobody is ready, the read fails (offline, an error), or another account
+ * signed in meanwhile. An answer older than one already adopted is returned but not adopted.
+ */
+export async function fetchMe(): Promise<Me | null> {
+  const { user, status } = useAuth.getState();
+  if (!user || status !== 'ready') return null;
+  const seq = ++meRequests;
+  meInFlight++;
   try {
-    await adopt(user, await authDeps().api.getMe(), false);
+    const me = await authDeps().api.getMe();
+    const after = useAuth.getState();
+    if (after.status !== 'ready' || after.user?.uid !== user.uid) return null;
+    if (seq <= meAdopted) return me;
+    await adopt(after.user, me, false, seq);
+    return me;
   } catch (error) {
-    if (isAccountApiError(error) && error.code === 'notRegistered') {
+    if (
+      isAccountApiError(error) &&
+      error.code === 'notRegistered' &&
+      useAuth.getState().user?.uid === user.uid
+    ) {
       await authDeps()
         .meCache.clear()
         .catch(() => undefined);
+      forgetRefreshState();
       set({ status: 'needsProfile', me: null, meOffline: false });
     }
+    return null;
+  } finally {
+    meInFlight--;
   }
+}
+
+/** GET /v1/me again (e.g. after the email was verified, when Home comes back online, after a ranked game). */
+export async function refreshMe(): Promise<void> {
+  await fetchMe();
+}
+
+/**
+ * Home coming into view and the app back in the foreground: GET /v1/me when the last server answer is older
+ * than `minIntervalMs` (a ranked game may have moved the ratings since), at once when the profile came from the
+ * phone, and not while a read is out.
+ */
+export async function refreshMeIfStale(
+  minIntervalMs: number = accountConfig.refresh.minIntervalMs,
+): Promise<void> {
+  const { status, meOffline } = useAuth.getState();
+  if (status !== 'ready' || meInFlight > 0) return;
+  if (!meOffline && lastServerReadAt !== null && now() - lastServerReadAt < minIntervalMs) return;
+  await fetchMe();
+}
+
+/**
+ * A ranked game just ended (progress/rankedRefresh.ts): my new rating in its key, at once, in memory. The number
+ * is the server's own result (the game's RatingChange, the one the results screen counts to); the entry is as
+ * the server will store it (api/me.ts ratingEntryAfter). Older answers of GET /v1/me don't hide it until the
+ * server counts the game, or refresh.afterRanked.optimisticTtlMs passes (the server's answer then wins). Nothing
+ * when the game is not this account's, has no change for me, or the server already counts it.
+ */
+export function showRankedResult(end: RankedEnd): void {
+  const { status, me } = useAuth.getState();
+  if (status !== 'ready' || !me || !end.change || end.playerId !== me.id) return;
+  const current = me.ratings.find((r) => r.key === end.key);
+  if (!current || current.games >= end.gamesBefore + 1) return;
+  const entry = ratingEntryAfter(current, end.change.after, end.gamesBefore, end.provisionalGames);
+  pendingRatings.set(entry.key, {
+    meId: me.id,
+    entry,
+    expiresAt: now() + accountConfig.refresh.afterRanked.optimisticTtlMs,
+  });
+  set({ me: withRatingEntry(me, entry) });
 }
 
 /**

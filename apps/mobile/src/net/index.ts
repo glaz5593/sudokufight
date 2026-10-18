@@ -4,7 +4,8 @@
  * check before a game (spec §16.1).
  *
  * Pure (no React Native or Expo; runs in Node against the real server, import these files directly there):
- * remoteGameHost, onlineClient, devRooms, matchmaking, clockSync, metrics, rollingStats, errors.
+ * remoteGameHost (with offlinePlay, the soft phase's play offline [D42]), onlineClient, devRooms, matchmaking,
+ * clockSync, metrics, rollingStats, errors.
  * Wired to the phone: device and matchmakingDevice (SDK clients, clock, timers, AppState, analytics; loaded
  * lazily by the screens that start a game, they bring the SDK), identity (kv-store) and connectivity.
  */
@@ -53,11 +54,13 @@ export {
 } from './matchmaking';
 export {
   answers,
+  type InFlight,
   type MetricsTrack,
   NetMetrics,
   type NetMetricsOptions,
   type NetMetricsSummary,
 } from './metrics';
+export { OfflinePlayBook, type QueuedEntry, type QueuedMove } from './offlinePlay';
 export {
   createOnlineClient,
   type DevRoomOptions,

@@ -10,7 +10,7 @@ import { isSuspended } from '../../api/me';
 import type { AvatarIdOrNone } from '../../avatars';
 import { useAuth } from '../../auth/authStore';
 import { Icon } from '../../components/Icon';
-import { Avatar, SeatGlyph } from '../../components/player';
+import { Avatar, paletteAt, SeatGlyph } from '../../components/player';
 import { useConnectivityWatch } from '../../net/connectivity';
 import { cue } from '../../services/feedback';
 import { useProfile } from '../../state/profile';
@@ -32,8 +32,10 @@ import { OfflineActions, OfflineBanner } from './OfflineBanner';
 import { Chip, GUTTER, ScreenHeader, SectionLabel } from './parts';
 
 /**
- * "משחק חדש" (spec §5.1, the Modes board in direction C): exactly five options, ranked 2 · 3 · 4 and the two
- * practices. The practices open the game type (a bot practice goes on to the bot selection); a ranked table
+ * "משחק חדש" (spec §5.1, the Modes board in direction C): exactly five options, ranked 2 · 3 · 4, then practice
+ * against a bot and solo practice. Each is a row of its own, compact enough that a sixth type fits on a 360 × 780
+ * phone without scrolling (Moshe's device test, 15.10.2026; the budget is in ModesAndGameType.test). The
+ * practices open the game type (a bot practice goes on to the bot selection); a ranked table
  * (2 players since stage 9, 3 and 4 since stage 10) opens the game type of a ranked game, then the search,
  * and shows my rating in that type, in its queue's rating key (spec §11.1: `normal`, or `normal-3p` under
  * RATING_OPTION A). An option this build has not opened (homeModel AVAILABLE_MODES) says "בקרוב".
@@ -86,7 +88,8 @@ export function ModesScreen() {
         style={styles.header}
       />
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: (offline ? 0 : bottom) + space[12] }]}
+        testID="modes-scroll"
+        contentContainerStyle={[styles.content, { paddingBottom: (offline ? 0 : bottom) + CONTENT_BOTTOM }]}
       >
         {offline ? <OfflineBanner checking={connectivity.checking} /> : null}
         {MODE_GROUPS.map((group) => (
@@ -160,9 +163,9 @@ function Group({
 }: CardContext & { group: ModeGroup; onOpen: (option: ModeOption) => void }) {
   const { t } = useTranslation('home');
   const { t: tm } = useTranslation('match');
+  // Every option is a row of its own, ranked 3 and 4 too; the rows are compact so a sixth type fits (Moshe's
+  // device test, 15.10.2026).
   const options = MODE_OPTIONS.filter((o) => o.group === group);
-  // The Modes board: the 2-player card across the width, then 3 and 4 side by side.
-  const [wide, ...pair] = group === 'ranked' ? options : [];
   const note =
     context.suspended && group === 'ranked'
       ? t('moderation:suspended.chip')
@@ -171,24 +174,16 @@ function Group({
         : group === 'ranked'
           ? tm('offline.rankedNote')
           : tm('offline.practiceNote');
-  const card = (o: ModeOption, compact = false) => (
-    <ModeCard key={o.key} option={o} onPress={() => onOpen(o)} compact={compact} {...context} />
-  );
   return (
-    <View style={styles.group}>
+    <View style={styles.group} testID={`modes-group-${group}`}>
       <SectionLabel
         icon={group === 'ranked' ? (context.offline ? 'lock' : 'trophy') : 'target'}
         title={t(`modes.groups.${group}.title`)}
         note={note}
       />
-      {wide ? (
-        <>
-          {card(wide)}
-          <View style={styles.pair}>{pair.map((o) => card(o, true))}</View>
-        </>
-      ) : (
-        options.map((o) => card(o))
-      )}
+      {options.map((o) => (
+        <ModeCard key={o.key} option={o} onPress={() => onOpen(o)} {...context} />
+      ))}
     </View>
   );
 }
@@ -201,8 +196,7 @@ function ModeCard({
   ratings,
   rankedType,
   onPress,
-  compact = false,
-}: CardContext & { option: ModeOption; onPress: () => void; compact?: boolean }) {
+}: CardContext & { option: ModeOption; onPress: () => void }) {
   const { t } = useTranslation('home');
   const { t: tm } = useTranslation('match');
   const ranked = option.group === 'ranked';
@@ -250,7 +244,6 @@ function ModeCard({
       onPress={onPress}
       style={({ pressed }) => [
         styles.card,
-        compact ? styles.cardCompact : styles.cardRow,
         available ? styles.cardAvailable : styles.cardSoon,
         (needsConnection || barred) && styles.cardOffline,
         pressed && styles.cardPressed,
@@ -258,11 +251,11 @@ function ModeCard({
       testID={`mode-${option.key}`}
     >
       <Leading option={option} avatarId={avatarId} />
-      <View style={[styles.texts, compact && styles.textsCompact]}>
+      <View style={styles.texts}>
         <Text style={[styles.title, !available && styles.titleSoon]} numberOfLines={1}>
           {title}
         </Text>
-        <Text style={styles.tagline} numberOfLines={compact ? 2 : 1}>
+        <Text style={styles.tagline} numberOfLines={1}>
           {tagline}
         </Text>
         <View style={styles.chips}>
@@ -278,9 +271,7 @@ function ModeCard({
           ))}
         </View>
       </View>
-      {available && !compact ? (
-        <Icon name="chevronForward" size={size.icon.chevron} color={color.iconFaint} />
-      ) : null}
+      {available ? <Icon name="chevronForward" size={size.icon.chevron} color={color.iconFaint} /> : null}
     </Pressable>
   );
 }
@@ -299,24 +290,51 @@ function OfflineChip({ label, testID }: { label: string; testID?: string }) {
 
 /** The picture at the start of a card: the seats of a ranked table, my avatar, or the bot. */
 function Leading({ option, avatarId }: { option: ModeOption; avatarId: AvatarIdOrNone }) {
-  if (option.mode === 'solo') return <Avatar avatarId={avatarId} size="card" colorIndex={0} />;
+  if (option.mode === 'solo') {
+    return <Avatar avatarId={avatarId} size="card" colorIndex={0} testID="mode-solo-avatar" />;
+  }
+  if (option.mode === 'bot') return <BotLead />;
   return (
     <View style={styles.leadBox}>
-      {option.mode === 'bot' ? (
-        <Icon name="bot" size={size.icon.header} color={color.textMuted} />
-      ) : (
-        <View style={styles.seats}>
-          {Array.from({ length: option.players }, (_, seat) => (
-            <SeatGlyph key={seat} colorIndex={seat} size={SEAT_GLYPH} />
-          ))}
-        </View>
-      )}
+      <View style={styles.seats}>
+        {Array.from({ length: option.players }, (_, seat) => (
+          <SeatGlyph key={seat} colorIndex={seat} size={SEAT_GLYPH} />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * The bot practice's picture (Moshe's device test, 15.10.2026: the old one was not clear enough): the robot in
+ * the opponent's colour, in a frame the size of my avatar's on the solo card, as the Modes board drew it.
+ * Decorative: the card's label says what it is, and its shape tells it apart from the avatar without colour.
+ */
+function BotLead() {
+  return (
+    <View
+      style={styles.botLead}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      testID="mode-bot-lead"
+    >
+      <Icon name="bot" size={BOT_GLYPH} color={BOT_PALETTE.ring} />
     </View>
   );
 }
 
 /** The seat shapes on a ranked card: four fit in the 44 box. */
 const SEAT_GLYPH = 9;
+/**
+ * The bot is my one opponent, so this phone shows it in P2 (theme paletteForSeat): its frame and its robot, as
+ * the Modes board drew them.
+ */
+const BOT_COLOR_INDEX = 1;
+const BOT_PALETTE = paletteAt(BOT_COLOR_INDEX);
+/** The robot in the bot's frame: the Modes board's 26 in a 40 box, scaled to the 44 frame (no token). */
+const BOT_GLYPH = 28;
+/** Under the last row, above the navigation bar's inset. */
+const CONTENT_BOTTOM = space[8];
 /** The Modes board's chips (22). */
 const CHIP_HEIGHT = 22;
 /** Offline: the ranked cards stay readable but plainly out of reach. */
@@ -327,17 +345,20 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: GUTTER.screen },
   me: { flexDirection: 'row', alignItems: 'center', gap: space[4], flexShrink: 1, minWidth: 0 },
   meName: { ...text('label'), color: color.textMuted, flexShrink: 1 },
-  content: { paddingHorizontal: GUTTER.screen, paddingTop: space[6], gap: space[10] },
-  group: { gap: space[6] },
-  pair: { flexDirection: 'row', gap: space[6] },
+  // Compact (Moshe's device test, 15.10.2026): six rows and the footnote fit on a 360 × 780 phone.
+  content: { paddingHorizontal: GUTTER.screen, paddingTop: space[4], gap: space[8] },
+  group: { gap: space[4] },
   card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[6],
+    minHeight: size.listRow,
+    paddingVertical: space[3],
+    paddingHorizontal: space[6],
     borderRadius: radius.card,
     borderWidth: tokens.border.hairline,
     borderColor: color.border,
-    padding: space[8],
   },
-  cardRow: { flexDirection: 'row', alignItems: 'center', gap: space[7], minHeight: size.listRow },
-  cardCompact: { flex: 1, minWidth: 0, gap: space[6] },
   cardAvailable: { backgroundColor: color.surface },
   cardSoon: { backgroundColor: color.bg },
   cardOffline: { borderStyle: 'dashed', opacity: OFFLINE_CARD_OPACITY },
@@ -350,6 +371,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  botLead: {
+    width: size.avatar.card.frame,
+    height: size.avatar.card.frame,
+    borderRadius: size.avatar.card.frameRadius,
+    borderWidth: size.avatar.card.border,
+    borderColor: BOT_PALETTE.ring,
+    backgroundColor: color.surface2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   seats: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -357,12 +388,12 @@ const styles = StyleSheet.create({
     gap: space[1],
     maxWidth: size.touch - space[6],
   },
-  texts: { flex: 1, minWidth: 0, alignItems: 'flex-start', gap: space[2] },
-  textsCompact: { flex: 0 },
-  title: { ...text('h1'), color: color.text },
+  // The title's and the tagline's line heights already space them; the chips sit 2 under the tagline.
+  texts: { flex: 1, minWidth: 0, alignItems: 'flex-start' },
+  title: { ...text('sheetTitle'), color: color.text },
   titleSoon: { color: color.textMuted },
   tagline: { ...text('caption'), color: color.textMuted },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space[3], marginTop: space[3] },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space[3], marginTop: space[1] },
   footnote: { ...text('caption'), color: color.textMuted, textAlign: 'center' },
   offlineChip: {
     flexDirection: 'row',

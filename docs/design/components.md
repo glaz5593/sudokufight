@@ -34,7 +34,7 @@ the work plan. It does not appear on any board, so add it to `locales/he.json` a
 | `color.textMuted` | `#9aa3b5` | Secondary text, icons (7.4:1 on bg, 6.1:1 on surface2) |
 | `color.textFaint` | `#828ba1` | Third text level (timestamps, hints). C's `#677086` lifted to pass: 5.5:1 on bg, 5.05:1 on surface, 4.55:1 on surface2. |
 | `color.iconFaint` | `#677086` | **Decorative only** (C's faint gray): chevrons, separator dots, locked-token art. 3.8:1 on bg and 3.5:1 on surface, so it fails 4.5:1. Never use it for text that carries information. |
-| `color.accent` | `#ffcf3f` | The one primary action, rating numbers, the active nav item, the "#1" rank badge, the drop target |
+| `color.accent` | `#ffcf3f` | The one primary action, rating numbers, the active nav item, the "#1" rank badge, the interference target frame |
 | `color.onAccent` | `#241a00` | Text on accent (11.7:1) |
 | `color.danger` | `#ff4d5e` | Mistakes, penalties, surrender, errors (5.8:1 on bg). **Not** for small text on the light board (3.05:1). Use `color.board.wrongDigit` there. |
 | `color.players[n].ring` | P1 `#36c9f0` · P2 `#ff9440` · P3 `#a2e28e` · P4 `#a57af0` | Avatar frame, score number, lock ring, lead-bar segment, glyph on dark backgrounds |
@@ -74,6 +74,9 @@ P3 ■ and P4 ◆ are round 1's lime and magenta, calmed for C to green `#a2e28e
   modal) · 24 (sheet top corners).
 - **Icons [C]:** 24×24 viewBox, stroke 2, round caps and joins, `currentColor`. Drawn at 20–24. The icon set is round 1's list
   (DS-Foundations §08).
+  - **Bot** (Moshe's device test, 15.10.2026: "not clear enough"): redrawn after DS-Components' bot chip, with a mouth, solid eyes
+    twice as large (r 1 under the 2 stroke) and an antenna ball. Used on the Modes card (at 28, §2), Match-Timeout's "play a bot"
+    and the results' opponents of a bot game.
 
 ### 0.5 Motion, haptics and reduced motion (DS-Motion → C)
 | Token | Value | Use |
@@ -107,7 +110,7 @@ medium knock ("taken") when you tap an opponent's lock. The full list is `motion
 - **Contrast:** text needs ≥4.5:1. Non-text cues need ≥3:1, or a redundant non-colour cue (shape, avatar, text).
 - **Focus ring** (keyboard, switch control): 2-dp `color.accent` outline, offset 2 [R1→C].
 - **One primary (gold) action per screen** [R1].
-- **Example data** must follow the known-fixes list in `docs/03-DESIGN.md`: the best move is ≤10.5 points, a provisional rating
+- **Example data** must follow the known-fixes list in `docs/03-DESIGN.md`: the best move is ≤6.5 points on fast, ≤9.5 on normal and ≤12 on hard (the bank after D43), a provisional rating
   says "10 משחקים", the league thresholds follow §11.3, and there is no "עונה 3".
 
 ---
@@ -219,9 +222,13 @@ The frame is a **border, not a filled plate** [C]. Image size = outer − 2 × (
 | 96 | Profile screen | 2 / 3 | 86 | 24 / 19 | [R1→C] |
 
 - **Frame colour:** `color.players[n].ring` during a game, and also on Home for "me" (P1) [C]. Outside a game, other players use `color.border` (neutral) [R1→C].
+  - **Exception, the bot on the Modes card** (Moshe's device test, 15.10.2026; as the Modes board drew it): no avatar but the robot
+    icon at 28 in P2's ring, in a 44 frame (radius 14, border 2) of P2's ring on `color.surface2`. The bot is my one opponent, so
+    this phone shows it as P2. It stands next to the solo row's "my avatar at 44 in my P1 frame"; the picture is decorative (the
+    row's label says it), and its shape tells it apart without colour.
 - **No avatar:** id `av00` (`NO_AVATAR_ID`; a deleted or missing account): the placeholder from `packages/avatars`, drawn in code. The avatars themselves are our own animated characters (`packages/avatars`, spec §3.4), not image files.
 - **Badges** [R1→C]:
-  - **Presence dot** [new in C, from R1]: 10 dp (12 on 44+). Sits at the bottom-end corner with a −3 offset and a 2 dp border in the background colour behind it. Connected → `color.status.online`. Reconnecting → `color.textMuted`. Left → no dot.
+  - **Presence dot** [new in C, from R1]: 10 dp (12 on 44+). Sits at the bottom-end corner with a −3 offset and a 2 dp border in the background colour behind it. Connected → `color.status.online`. **Unstable** (the connection is lost, still inside its soft phase, D42, Moshe 2026-10-15) → `color.status.unstable` (amber, the warning colour), and the image is **not** greyed: the game goes on as usual. Reconnecting (the grace, after the soft phase) → `color.textMuted`. Left → no dot. Static, so reduced motion changes nothing.
   - **Bot chip:** height 18, padding 0 5, radius 9, background `color.bg`, 1 dp `color.textMuted`, bot icon 11 plus "בוט" Rubik 700 10 `color.text`. Sits at the top-start corner (−7, −9).
   - **Result badge (Home recent games)** [C]: a 20 dp circle at top-end (−6, −6), background `color.border`, 2 dp `color.bg` ring, letter Rubik 700 12 `color.text` ("נ").
 - **States:**
@@ -232,7 +239,7 @@ The frame is a **border, not a filled plate** [C]. Image size = outer − 2 × (
 - **Avatar picker** (Register-Fighter, Edit profile; Moshe's device test, 14.10.2026, replaces the stage and strip): a field as high as the name's (44): the chosen avatar at 34 in my P1 frame, its name, "שינוי ⌄". A tap opens the sheet in its `fill` form (§13), "בחר אווטאר" with "הבחירה שלך: …" under it: all 101 in a grid of 72 dp frames (as many to a row as fit, at least 8 apart: 4 on a 360 dp phone), under a sticky header per kind (Rubik 500 16 `color.textMuted`). Each one is a radio, still (no idle, no reaction); the chosen one in my P1 frame with a tick badge, a locked one [D17] grey with a lock badge. A tap chooses and closes; the field's avatar smiles and bounces (reduced motion: the smile only). The grid is virtualized and opens on the chosen avatar's row.
 - **Fighter card** (Register-Fighter's preview "ככה יראו אותך בזירה", Register-Account's "הלוחם מוכן"): one full-width card, `color.surface`, 1 dp P1 border, radius 14, padding 12: the avatar at 52 in my P1 frame, ● and the name (Rubik 700 16, one line, room for 16 characters on a 360 dp phone), and under it the flag 13 with the country's name and a note ("חדש" / "✓ הלוחם מוכן"). No VS and no opponent.
 
-**Tokens:** `color.players[n].ring`, `color.border`, `color.bg`, `color.status.online`, `color.status.offline`, `color.textMuted`.
+**Tokens:** `color.players[n].ring`, `color.border`, `color.bg`, `color.status.online`, `color.status.unstable`, `color.status.offline`, `color.textMuted`.
 
 ---
 
@@ -266,7 +273,8 @@ added above in C styling.
 | Locking | Timer ring 14 dp (stroke 2, track `color.border`, arc `players[n].ring`, starts at 12 o'clock, drains linearly) plus "בוחרת · A8" | Text [C]. Ring [R1→C, spec §6.8 "עם טיימר"] |
 | Thinking (no lock) | "חושבת…" `color.textMuted`. The ellipsis blinks at 1.2 s. Reduced motion: static. | [R1] |
 | Paused (game frozen or under interference) | "מושהה · A8" `color.textMuted`, ring frozen | [R1] |
-| Reconnecting | "מתנתקת…" plus a countdown pill: height 30, radius 15, background `color.bg`, 1 dp `color.textMuted`, wifi-off icon 14, seconds Teko 600 20 `color.text`. **This pill replaces the interference button.** | [R1→C] |
+| Without a connection, soft phase (D42) | The activity stays as it is ("בוחרת · A8", "חושבת…"): the game goes on. **The icon-only pill replaces the interference button:** a round chip as high as the countdown pill (30; 24 on the compact card), background `color.bg`, 1 dp `color.status.unstable`, wifi-off icon 14 in `color.status.unstable`, no seconds. With the amber presence dot (§2) and no grey. The card's label adds "ללא חיבור" (mine too). Static: no pulse, so reduced motion changes nothing. | [new, Moshe 2026-10-15] |
+| Reconnecting | "מתנתקת…" plus a countdown pill: height 30, radius 15, background `color.bg`, 1 dp `color.textMuted`, wifi-off icon 14, seconds Teko 600 20 `color.text`. **This pill replaces the interference button.** Only after the soft phase (D42). | [R1→C] |
 | Left (abandoned) | Text "נטשה". The card goes to opacity .5 and the avatar to grayscale. | [R1→C] |
 | Turn-based variant (D1 = turns) | "התור שלה" replaces "בוחרת" | spec §6.8 |
 
@@ -278,11 +286,11 @@ The gendered forms in the design ("בוחרת", "שלחה") need a grammatical-g
 | default | As drawn |
 | leader | No change on the card in 2P. The lead is shown by the lead bar and its tag (§9) [C]. |
 | correct move (any player) | The "+3.5" chip flies from the cell to the delta slot next to the score (key press t0: pops at t0+140, leaves at t0+440, lands at t0+800; `motion.md` §4.2). The score counts up over 650ms (t0+800 → t0+1450). The delta stays next to the score for 2400ms after landing, then fades (240ms). The 2400ms is an assumption; no board specifies it. |
-| wrong move | No shake on the card (the cell already shook). The score turns `color.danger` and returns to the seat colour while it counts down (650ms). A "−2" chip (`color.bg`, `color.danger` text) flies from the cell to the delta slot. **Me:** the mistake text pops (scale .8 → 1), briefly turns `color.danger` (600ms) and then becomes e.g. "2 טעויות" (`motion.md` §4.3). |
+| wrong move | No shake on the card (the cell already shook). The score turns `color.danger` and returns to the seat colour while it counts down (650ms). A "−6.5" chip (`color.bg`, `color.danger` text) flies from the cell to the delta slot. **Me:** the mistake text pops (scale .8 → 1), briefly turns `color.danger` (600ms) and then becomes e.g. "2 טעויות" (`motion.md` §4.3). |
 | sent an interference | The score drops by the cost. "−8" floats in `color.textMuted` (a cost, not a penalty) [new] |
 | under interference (others see it) | Hit chip at the avatar top-end: height 18, radius 9, `color.surface2`, 1 dp `color.border`, interference icon 12 plus seconds left Teko 600 14 `color.textMuted` [new, spec §7.4 "תג קטן על הכרטיס של מי שנפגע"] |
-| drop target (arsenal open from this card) | The card gets a container (radius 12, padding 6, background `color.surface`) with a 2 dp **dashed** `color.accent` outline whose dashes march (800ms loop; solid and still under reduced motion), and stays **above the scrim**. While the finger is over it, the container fills with `color.accentSubtle` (`motion.md` `dropzone.*`). A "גרור לכאן" chip sits on its bottom edge: height 24, radius 6, `color.accent` background, Rubik 700 13 `color.onAccent`. Accessible drop label: "שחרר כאן: שיגור זיקוקים אל NinaVolt" [R1→C]. |
-| dimmed (not the drop target) | Opacity .4 (`opacity.dimmedCard`) [spec §7.3; round 1 used .38] |
+| target (the picker is open from this card, D45) | The card gets a container (radius 12, padding 6, background `color.surface`) with a 2 dp **solid** `color.accent` outline, and stays **above the scrim**. A "יעד" / "Target" chip sits on its bottom edge: height 20, radius 6, `color.accent` background, Rubik 700 12 `color.onAccent`. No march, no breathing, no hover state (there is no drag). Accessibility hint while targeted: the picker is open for this player. **Old (drag, replaced by two taps, D45):** the dashed marching outline, the hover fill and the "גרור לכאן" chip. |
+| dimmed (not the target) | Opacity .4 (`opacity.dimmedCard`), under the scrim, not tappable [spec §7.3; round 1 used .38] |
 | reconnecting / left / surrendered | See §3.3 |
 
 ### 3.5 VS badge [C]
@@ -372,9 +380,9 @@ tabular, LTR "#1".
 | Avatar | 34 framed in `players[n].ring` (§2). Presence dot at bottom-end, flag 13 at bottom-start. |
 | Name row (mt 5) | Glyph 7 in `players[n].ring` (● ▲ ■ ◆), gap 4, name Rubik 500 11 (`type.plateNameCompact`) `color.text` with ellipsis, horizontal padding 5 |
 | Rating (mt 2) | Teko 600 15 `color.accent`, height 12 |
-| Score (mt 2, h 24) | Teko 600 28 `players[n].ring` plus mistake pips: each pip has height 14, padding 0 3, radius 4, 1 dp `color.danger` at 70%, Teko 600 13 `color.danger` ("−1", "−2"). Show the last 2. Five or more mistakes show "×n" first. |
+| Score (mt 2, h 24) | Teko 600 28 `players[n].ring` plus mistake pips: each pip has height 14, padding 0 3, radius 4, 1 dp `color.danger` at 70%, Teko 600 13 `color.danger`. Each pip is the real penalty of that mistake, as the engine charged it (`PlayerView.mistakePenalties`, spec §6.5: what the right digit was worth there, e.g. "−8", "−6.5"). Show the last 2 where they fit: a 3-player card (114 dp) without "×n". A 4-player card (78 dp, mine 106) shows the last one only, and so does any card with "×n" (half points make two pips about 100–111 dp next to the score; penalty design, decision 3). Five or more mistakes show "×n" first. Should they still not fit (a large system font), the pips shrink and the oldest is cut, never the score. The design boards (`screens/*.dc.html`) still show "−1" and "−2", sample values from the old 1, 2, 4, 8 ladder, which Moshe removed on 2026-10-15. Take the layout from them, not the numbers. |
 | Activity (mt 3, h 16) | Timer ring 16 (stroke 2, track `color.border`, arc `players[n].ring`, seconds Teko 600 11 `color.text` inside), then "בוחר" Rubik 500 11 `color.textMuted`, then the cell name Teko 600 17 `color.text` |
-| Action strip | Absolute: start 5, end 5, bottom 4, height 32. **Opponent:** interference button (§8.1) at full width. **Me:** [כניעה][תגובות], each flex 1, gap 4, transparent, 1 dp `color.border`, radius 8, icon 17 `color.textMuted`. `hitSlop` top and bottom 6, giving a 44 dp target. |
+| Action strip | Absolute: start 5, end 5, bottom 4, height 32. **Opponent:** the compact "הפרעה" button (§8.1) at full width (not in a game without interferences, D44). **Me:** [כניעה][תגובות], each flex 1, gap 4, transparent, 1 dp `color.border`, radius 8, icon 17 `color.textMuted`. `hitSlop` top and bottom 6, giving a 44 dp target. |
 
 ### 7.3 States
 Same as §3.4, plus:
@@ -385,7 +393,7 @@ Same as §3.4, plus:
 
 ### 7.4 Accessibility
 - Group label example: "Aiko_M · מקום 1 · 39 נקודות · בוחרת D4"†.
-- Interference button: "הפרעה ל־Aiko_M · 4 נק׳" [R1]. While the arsenal is open: "הפרעה ל־Aiko_M · 4 נק׳ · ארסנל פתוח" [R1].
+- Interference button: "הפרעה ל־Aiko_M · 4 נק׳" [R1] (the price is in the label, not on the button). While the picker is open from this card: "סגירת חלון ההפרעות".
 
 **Tokens:** as §3, plus `color.surface`.
 
@@ -393,24 +401,30 @@ Same as §3.4, plus:
 
 ## 8. Card actions
 
-### 8.1 Interference button (⚡ on an opponent card) [C]
-- **Anatomy:** bolt icon plus the next cost.
-- Height **44**, padding 0 11, gap 6, radius 12.
-- Background `players[0].ring` at 8%, border 1 dp `players[0].ring` at 55%. **It is in my colour, because it is my action** [C].
-- Bolt 18, filled `players[0].ring`. Label "2 נק׳" in Rubik 500 14 `color.text`.
-- Compact version: height 32 with `hitSlop` (§7.2), bolt 14, cost Teko 600 18, "נק׳" Rubik 500 10.
+### 8.1 Interference button ("הפרעה" on each opponent card) [new, D45]
+**Moshe's decision, 2026-10-17 (spec §6.8, §7.3, D45).** The old "⚡ + next cost" button (drawn on Game-2P, Game-Bot, Game-3P and
+Game-4P) is replaced. Original §10: "אצל היריב: לחצן הפרעה". The tap on an opponent's own button is also the target choice (§17).
+- **Anatomy:** an icon button in the reactions-button family (§1.4): the new `interfere` icon (an outline bolt with impact sparks,
+  stroke 2, not filled) plus the word **"הפרעה"** / **"Interfere"**. **No price on the button.** The price is in the picker (§13)
+  and in the accessibility label.
+- Height **44** (as the reactions button), radius 12, padding 0 10, gap 6. Background `color.interfere.bg`, 1 dp
+  `color.interfere.border` (P1 at 8% / 55%: **in my colour, because it is my action** [C]). Icon 20 `color.interfere.icon`, label
+  Rubik 600 14 `color.interfere.label`, one line.
+- **Compact (3–4P, §7.2 action strip):** height 32 plus `hitSlop` 6 (a 44 dp target), icon 16, label Rubik 600 12, one line,
+  shrinking to fit (min scale .75) so "Interfere" fits the 68 dp strip of a 78 dp card.
+- Every opponent card has its own button: 2P (the end of the status row) and 3–4P (each compact card). Never on my card.
 
 | State | Visual | Label |
 |---|---|---|
-| available | As above | "הפרעה ל־NinaVolt · עלות 2 נק׳" [design] |
+| available | As above | "הפרעה ל־NinaVolt · עלות 2 נק׳" |
 | pressed | Background at 16% | — |
-| expanded (arsenal open from this card) | Fill `players[0].ring`, icon and text `color.bg`, `expanded: true` | "סגירת ארסנל ההפרעות" [R1] |
-| unaffordable (score < cost, D10) | Opacity .5. Label becomes "חסרות 3 נק׳" (spec §7.2). Tapping shows an error toast "אין מספיק נקודות להפרעה הבאה (8 נק׳)" [R1] and plays a light haptic. `disabled`. The status text ellipsises if it needs the room. | "הפרעה ל־NinaVolt · חסרות 3 נק׳"† |
-| target under interference, or in its 1 s immunity (D11) | Opacity .5, `disabled` | "…לא זמינה, היא כבר תחת הפרעה"† |
-| opponent reconnecting | Hidden. The reconnect pill replaces it (§3.3). | "בזמן ניתוק אין הפרעות" [R1] |
-| solo practice | Not rendered (no opponents). It **is** rendered against a bot (spec §7.2). | — |
+| expanded (picker open from this card) | Fill `players[0].ring`, icon and text `color.bg`, `expanded: true`. A tap closes the picker. | "סגירת חלון ההפרעות" |
+| blocked: not enough points (D10), target under interference or in its 1 s immunity (D11), game not running | Opacity .5 (`opacity.inactivePlayer`), `accessibilityState.disabled`. **The tap still answers:** a short toast with the reason and a light haptic, and the picker does not open. Points: error toast "אין מספיק נקודות להפרעה הבאה (8 נק׳)". Busy: warning toast "NinaVolt כבר תחת הפרעה. אפשר שוב בעוד 2 שניות". Not running: info toast. | "הפרעה ל־NinaVolt · חסרות 3 נק׳"† / "…כבר תחת הפרעה"† |
+| opponent reconnecting or soft-offline (D42), out | Hidden. The reconnect pill (or the unstable mark) takes the slot (§3.3). | — |
+| solo practice, practice vs a bot (D44) | **Not rendered**: no interferences in a game against a known bot (spec §7.2). The bot card's status row holds only its activity line. | — |
 
-Launching is **by drag only** (D18). Tapping opens the arsenal (§13) and never launches.
+Launching is **two taps** (D45): this button, then a kind in the picker (§13). There is no drag. D18 (an accessible alternative to
+drag) is obsolete: both taps are the screen reader's normal "activate", so they work with TalkBack and VoiceOver.
 
 ### 8.2 Reaction button, picker and float
 - **Button:** the icon button "תגובות" on my card (§1.4) [C].
@@ -515,7 +529,8 @@ Top-start (top-left, the board is LTR) **owner glyph** · top-end **lock seconds
 | 10 | **Lock paused** (my interference, game freeze) | as #5 | — | The pulse stops. The pill shows a pause glyph (two 2 × 7 bars). The opponent lock keeps its look. | [R1→C] |
 | 11 | **Taken** (tap on an opponent's lock) | as #6 | — | Shake 300ms plus a short haptic (`impact(Medium)`, `motion.md` §7). No penalty (§6.2.3). Announced as "תפוסה". | [R1] |
 | 12 | **Correct (transient)** | Settles to #3 or #4 | Digit pop 420ms (`pop` spring) | Tint flash: `players[n].ring` at 60% (`opacity.correctFlash`) fading to 0 over 700ms. A "+3.5" chip (`color.bg`, radius 8, Teko 600 22 in `players[n].ring`; a bare ring colour on the light board would be 1.8:1) pops above the cell and flies to the card (§3.4). | [R1→C] |
-| 13 | **Wrong (transient)** | unchanged | The digit appears in `color.board.wrongDigit` | Flash: `color.danger` at 55% fading to 0 over 550ms, plus shake 300ms. A "−2" chip (`color.bg`, `color.danger` text) flies to the card. The digit then becomes a small wrong mark (#7), and the cell is **released to everyone** (D3). | [R1→C] |
+| 13 | **Wrong (transient)** | unchanged | The digit appears in `color.board.wrongDigit` | Flash: `color.danger` at 55% fading to 0 over 550ms, plus shake 300ms. A "−6.5" chip (`color.bg`, `color.danger` text; the penalty, spec §6.5) flies to the card. The digit then becomes a small wrong mark (#7), and the cell is **released to everyone** (D3). | [R1→C] |
+| 14 | **Queued offline** (my digit entered while my connection is lost, waiting to be sent and judged; spec §16.2, D42) | `cell` / `cellAlt` (no tint: nothing is mine yet) | Digit Rubik 500 `players[0].digit` | The pending ring of #9 (`players[0].ring` at 50%, no edge, no pill, no pulse), and a **wifi-off icon** at top-end (3, 3), `size.solverGlyph` (6 dp scaled), in `players[0].glyph`. Not tappable. **Static**: it appears with the ring's normal fade-in, and under reduced motion at once. On the server's answer it becomes #12 then #3, or #13; a move that did not count shakes like #11 and shows a short warning toast ("D5 נתפסה בזמן שלא היה לך חיבור · בלי קנס"). Label: "D5, 7, ממתין לחיבור". Precedence: filled > queued > lock > pending > empty. | [new, Moshe 2026-10-15] |
 
 **"Cell under interference":** there is no per-cell interference state in V1. The interference is a full-screen overlay until D35 is
 approved. What it changes on the board is the **paused lock** (#10) for the victim (§6.2.7).
@@ -568,7 +583,7 @@ iOS `announceForAccessibility`) that announces opponent moves and leader changes
 | Key | 9 keys at flex 1 (about 36.2 wide), height 60, background `color.surface2`, border 1 dp `players[0].ring` at 50%, radius 10, column with gap 5 |
 | Digit | Teko 600 **32**, line-height .8, padding-top 4, `color.text` |
 | Remaining count | Rubik 500 12 `color.textMuted`. It is 9 minus the occurrences on the board (givens plus solved, **not** wrong marks). |
-| Order | Always 1–9 from left to right, in both languages |
+| Order | Always 1–9 from left to right, in both languages. The one exception: during a `keypad` hit on me (D47, 5 s) the keys change places; each key keeps its own digit, count and state (§15.4) |
 
 | State | Visual | Label |
 |---|---|---|
@@ -590,29 +605,61 @@ iOS `announceForAccessibility`) that announces opponent moves and leader changes
 
 ---
 
-## 13. Drawer / bottom sheet (from Arsenal) [R1→C]
-**Anatomy:** scrim › sheet (handle, header, content). In the arsenal, the source card stays above the scrim as the drop target.
+## 13. Drawer / bottom sheet, and the interference picker [R1→C; the picker: new, D45]
+
+> **Arsenal.dc.html and Interference-Target.dc.html: ישן: גרירה — הוחלף בשתי הקשות (D45).** Both boards still draw the drag
+> tray (big tokens, the "גרור אל…" hint, the drag ghost, the dashed drop zone). Until they are redrawn, this section, §3.4 ("target")
+> and §8.1 win. Interference-Drag.dc.html was deleted on 2026-10-18. Moshe's decision of 2026-10-17 (spec §7.3) replaces the drag
+> of original §16 by two taps: the "הפרעה" button on an opponent's card (§8.1), then a kind in this picker.
+
+**Anatomy:** scrim › sheet (handle, header, content). In the interference picker the target card stays above the scrim, framed
+(§3.4 "target"), and the scrim has a hole over it.
 
 | Part | Spec |
 |---|---|
-| Scrim | Full screen, `color.scrim` (`rgba(7,9,12,.72)`). Tap → close. Label "סגירת הארסנל וחזרה ללוח" [R1]. Fade 240ms. |
+| Scrim | Full screen, `color.scrim` (`rgba(7,9,12,.72)`). Tap → close. Picker label "סגירת חלון ההפרעות וחזרה ללוח"†. Fade 240ms. Other cards under it can't be tapped. |
 | Sheet | Full width, bottom 0, radius **24** on the top corners (the Foundations token said 28, but every sheet drawn uses 24), background `color.surface`, top border 1 dp `color.border`, padding 10 16 (16 + bottom safe area), max height 85%. No glow or gradient. `fill`: always 85% high, the content filling it (a long scrolling list: the country and avatar pickers). |
-| Handle | 40 × 4, radius 2, `color.border`, centred, `aria-hidden`. Dragging down past 25% of the height (or a fast fling) closes the sheet. |
-| Header (mt 10, h 48) | Title Rubik 700 22 `color.text` ("ארסנל ההפרעות"). Subtitle row Rubik 500 13 `color.textMuted`: "יעד:", a mini avatar 18 (radius 5, 1.5 dp ring in the target's `players[n].ring`), the name in Rubik 500 `color.text`, and a flag at 12. A close icon button 44 sits at the end ("סגירה"). |
-| Content (arsenal) | Next-cost row, h 60: `color.surface2`, 1 dp `color.border`, radius 12, text "ההפרעה הבאה שלך: 2 נק׳ · אחריה 4, 8…" with the cost in Teko 600 30 `color.accent`; my score in Teko 600 28 `players[0].ring` with "אחרי שיגור: 53". Info line Rubik 500 13 `color.textMuted`: "כל הפרעה נמשכת 5 שניות · שיגור בגרירה בלבד". **Tokens:** 108 × 136, `color.surface2`, 1 dp `color.border`, radius 18, illustration 56, name, and a cost pill (h 20, radius 10, `color.bg`, Teko 600 16 `color.accent`). **Locked tokens:** h 76, background `color.bg`, 1 dp `color.border`, radius 14, `color.iconFaint` art, plus a "רמה 18" chip. Hint pill: "גרור אל הכרטיס של NinaVolt כדי לשגר". |
-| Drag ghost | While dragging: icon 34, "זיקוקים · 8 נק׳" Rubik 700 12, and in 3–4P the route "אני ← NinaVolt" in Rubik 500 11 `color.textMuted`. `color.surface2`, 1 dp `color.accent`, radius 14, lift scale 1.08 (round 1; `motion.md` `token.lift`). Round 1's tilt and glow are dropped. Dropping outside the target cancels, and the token returns with the `settle` spring (about 300ms, `launch.cancel`). |
-| Tap on a token | A hint bubble, not a launch: "גרור אל NinaVolt — הקשה לא משגרת" [R1], `color.accent` background, Rubik 500 12 `color.onAccent`, radius 10, gone after 2 s. |
+| Handle | 40 × 4, radius 2, `color.border`, centred, `aria-hidden`. Dragging down past 25% of the height (or a fast fling) closes the sheet. This pull-to-close is the only gesture left in the picker. |
+| Header (mt 8, h 48) | Title Rubik 700 22 `color.text`: "בחר הפרעה"†. A close icon button 44 at the end ("סגירה"). **Target line**, Rubik 500 13 `color.textMuted`. **2P:** "יעד:", a mini avatar 18 (radius 5, 1.5 dp ring in the target's `players[n].ring`), the seat glyph (▲ ■ ◆), the name in Rubik 500 `color.text`, and a flag at 12. **3–4P:** the route "[my avatar, ●] אני ← [their avatar, ▲] Biscuit", both rings in seat colours with their glyphs; one accessibility element, "הפרעה ממני אל Biscuit"†. The target never changes inside the sheet (spec §17). |
+| Price row (mt 10, h 48) | `color.surface2`, 1 dp `color.border`, radius 12; one accessibility element. Start: "מחיר" (muted) and the price "‎−2 נק׳" (the number in Teko 600 30 `color.accent`, through `signedText()`, so the minus never jumps in Hebrew), then muted "· הבאה: 4". End: "הניקוד שלך" and the score before and after the launch ("53 ← 51" in Hebrew, "53 → 51" in English) in Teko 600 22 `players[0].ring`, through `scoreText()`. Short of points: the end says "חסרות 3 נק׳". Target busy: "NinaVolt כבר תחת הפרעה · 2 שנ׳". |
+| Grid (mt 12) | **3 columns × 2 rows**, gap 8, flex-wrap; the reading order follows the app direction. Column width = (window − 32 − 2 × 8) / 3: 104 at 360, 114 at 390. Order: `INTERFERENCE_KINDS` (זיקוקים, חתולים, עיוות, מספרים מתערבלים, דיו, מקלדת מתערבלת). Only the kinds in `view.rules.interferenceKinds` are shown (spec §7.2, D47); the rest are hidden, not locked. **No "בקרוב" row** in the game: future kinds stay on the Interferences collection screen. |
+| Kind button | A plain Pressable (no gesture). Height 100, radius 16, `color.surface2`, 1 dp `color.border`, padding-top 8. Preview art 40 (the §16 "Preview": a live loop; still under reduced motion, or when locked or blocked). Name Rubik 600 13/16, centred, up to 2 lines ("מספרים / מתערבלים"). Price chip: mt 6, h 22, radius 11, `color.bg`, one text "‎−2 נק׳" with the number in Teko 600 17 `color.accent` and the unit in Rubik 500 11. Pressed: border `color.accent`, background `color.accentSubtle`, scale .96 (`press` spring; no scale under reduced motion). |
+| Locked kind (D17) | Stays in its place, opacity .5, still art, the chip shows a lock and "רמה 3" in `color.textMuted`. A tap explains ("נפתחת ברמה 3"†) and never launches. |
+| Blocked kind | Opacity .5; the chip shows "חסרות 3 נק׳" or "תחת הפרעה". A tap explains (a 2 s bubble, announced, cue `nudge`) and never launches. |
+| Info line (mt 10) | Rubik 500 12 `color.textMuted`, centred: "כל הפרעה נמשכת 5 שניות · הקשה משגרת"†. |
 
-- **Motion:** enter `translateY(100% → 0)` with standard easing: 240ms for the arsenal tray (round 1 "מגש הארסנל עולה", `motion.duration.trayRise`), 320ms for other sheets (`sheetIn`). Exit 240ms. Reduced motion: 200ms fade.
+- **No scrolling** (Moshe: all kinds visible at once): 14 (handle) + 56 (header) + 58 (price) + 12 + 2 × 100 + 8 (grid) + 26 (info)
+  + 16 + bottom inset ≈ 390 dp + inset. At a 48 dp inset that is 438 dp, under 85% of a 780 dp screen (663) and of a 640 dp screen
+  (544). The layout is a pure function of width, height, inset and the number of kinds, with a Jest test for 360×780 and 360×640.
+- **Launch (the second tap, D45):**
+  - Taps in the first **250 ms** after the sheet opens are ignored, silently (`ARSENAL_CONFIG`, a setting). A fast double tap on
+    "הפרעה" therefore never launches.
+  - A launchable kind launches at once, with no confirm: one launch per opening (a second tap before the answer sends nothing), the
+    launch cue (sound and haptic), the announcement "שיגרת זיקוקים אל NinaVolt"†, `host.interfere(target, kind)`, the sheet closes
+    in 200 ms, and a ripple runs on the target card (full motion only).
+  - The sender toast "זיקוקים ← NinaVolt" and the cost on my card come from the host's confirmation, as before.
+  - Refused by the server after the sheet closed (the target just turned busy, the score changed): a warning toast "ההפרעה לא
+    נשלחה, ולא ירדו לך נקודות"†.
+- **3–4 players (spec §17, never the wrong target):** the target is set only by the tap on that opponent's own button. There is no
+  default and no target row in the sheet. The target card is framed above the scrim, the others dimmed under it. To hit someone
+  else: close the sheet and tap their "הפרעה". If the target goes out or disconnects, or the game ends, the sheet closes by itself.
+- **Motion:** enter `translateY(100% → 0)` with standard easing: 240ms for the interference picker (round 1 "מגש הארסנל עולה",
+  `motion.duration.trayRise`), 320ms for other sheets (`sheetIn`). Exit 240ms (200ms after a launch). Reduced motion: 200ms fade.
 - **A11y:**
-  - RN `Modal` with `accessibilityViewIsModal`. Group label "ארסנל ההפרעות" [R1]. Initial focus on the title.
+  - `accessibilityViewIsModal`, role dialog, label "חלון ההפרעות"†. Initial focus on the title. The picker is an overlay, not an
+    RN `Modal` (no native window), so it never holds up the move to the results.
   - Android back and the iOS escape gesture close it.
-  - Each token's label: "זיקוקים · 2 נק׳ · גרור אל הכרטיס של NinaVolt" [R1].
-  - Drag only (D18). The long-press alternative for screen-reader users is pending approval.
-- **RTL:** header and content mirror. The numbers are LTR isolates.
+  - Each kind's label names the kind, the price and the target: "זיקוקים · 2 נק׳ · הקשה משגרת אל NinaVolt"†; a locked or blocked
+    kind says why. Activating it launches; there is no long-press alternative (D18 is obsolete).
+- **RTL:** header and content mirror. The numbers are LTR isolates. The grid follows the app direction (it is not the keypad).
+
+**Old (drag, replaced by two taps, D45; kept here only to read the old boards):** a next-cost row of 60 dp with "שיגור בגרירה
+בלבד", tokens of 108 × 136, a separate row of locked tokens (76 dp) with "רמה 18" chips, the hint pill "גרור אל הכרטיס של NinaVolt
+כדי לשגר", the drag ghost (lift 1.08, `token.lift`), the cancel spring (`launch.cancel`), and the tap bubble "גרור אל NinaVolt,
+הקשה לא משגרת". None of these is built any more.
 
 **Tokens:** `color.scrim`, `color.surface`, `color.surface2`, `color.border`, `color.text`, `color.textMuted`, `color.iconFaint`,
-`color.accent`, `color.onAccent`, `color.bg`, `color.players[n].ring`.
+`color.accent`, `color.accentSubtle`, `color.onAccent`, `color.bg`, `color.players[n].ring`.
 
 ---
 
@@ -635,6 +682,7 @@ There are two shells with the same content model: icon, title, body, actions, an
 **Variants:**
 - **Practice:** title "לסיים את האימון?", buttons "כן, לסיים" and "ביטול" (§6.6).
 - **3–4P** (D36): body copy TBD. The player leaves the game, and their solved cells keep their colour.
+- **No rating lost** (2P, the leave guards of spec §11.2, Moshe 2026-10-15): when a surrender now costs no rating (I have not placed a digit yet, or I am not behind), the Body is one plain line in the same Rubik 400 15/1.45 `color.textMuted`, with **no Teko number**: "המשחק ייחשב כהפסד · הדירוג שלך לא ירד, כי עוד לא ביצעת מהלך" / "…, כי אין לך פיגור". 3–4P with nobody still in ahead of me: the 3–4P body plus "הדירוג שלך לא ירד מול אף שחקן שנשאר במשחק."
 
 ### 14.2 Centred dialog (outside a game, e.g. "אין חיבור לאינטרנט")
 - Width min(342, screen − 48), padding 20, radius 20, `color.surface`, 1 dp `color.border`, column gap 8.
@@ -678,9 +726,39 @@ There are two shells with the same content model: icon, title, body, actions, an
   - Subtitle "זה עלה לה 2 נק׳ · המשחק ממשיך" in Rubik 400 12 `color.textMuted`.
   - Countdown ring 38 (stroke 3, track `color.border`, arc `color.accent`, draining over 5 s, linear) with the seconds in Teko 600 22 `color.accent`.
 - **Motion:** round 1's slam becomes a drop-in: 16 dp with the `settle` spring (about 300ms), out 240ms (`motion.md` `hit.banner`). Reduced motion: fade.
-- **A11y:** `role=alert`. The timer's label is "נותרו 3 שניות" [R1], announced only when the banner appears.
+- **A11y:** `role=alert`. The timer's label is "נותרו 3 שניות" [R1], announced only when the banner appears. The announcement also
+  says the board is dimmed (§15.3) and that my lock timer is stopped.
+- **A kind this app does not know** (sent by a newer app, D47): a generic title "NinaVolt שלח/ה לך הפרעה!"†, the dim of §15.3, no
+  effect, no rumble. Never a crash or a raw i18n key.
 
-**Tokens:** `color.toast.*`, `color.iconBg.*`, `color.surface2`, `color.text`, `color.textMuted`, `color.success`, `color.accent`, `color.danger`, `color.border`, `color.bg`.
+### 15.3 Board dim during a hit [new, D46]
+Moshe's request of 2026-10-17 (spec §7.2): every hit darkens the victim's board.
+- A layer of `color.scrim` (`#07090c`) at **60%** opacity (`HIT_DIM` in `apps/mobile/src/components/interference/config.ts`), the
+  **same for every kind**, over the **board only**: inside the board slot, under the kind's effect and the banner. It follows the
+  board's radius, and warp tilts it with the board. The keypad and the cards stay bright, so play goes on.
+- **Timing:** from the hit's own clock: fade in 240 ms, hold, and gone exactly at `endsAt`. Frozen while the game is frozen. It
+  never pulses.
+- **Readability (tokens):** given digits about 3.5:1 and P1 digits about 2.4:1 on their cells under the dim: readable with effort.
+  A Jest test keeps every digit colour at 2:1 or more under the dim.
+- **Reduced motion:** the same dim, static, with a 200 ms fade (opacity only).
+- **Who sees it:** only the victim. The sender and third players see the small hit chip on the victim's card (§3.4).
+- **A11y:** the layer is hidden from the screen reader; the banner announces the dim (§15.2).
+
+### 15.4 The new kinds (D47): scramble, ink, keypad [new]
+Three kinds Moshe asked for on 2026-10-17 (spec §7.1). No board draws them. Same 5 s, same cost, same banner and dim. Each is
+seeded from the game and the interference event's `seq` (deterministic, no `Math.random()`), and none changes what a tap or a key
+enters.
+
+| Kind | What the victim sees | Reduced motion | Preview art (40 dp, picker) |
+|---|---|---|---|
+| `scramble` "מספרים מתערבלים" | Every filled cell (given or solved; not queued, not wrong marks) shows rolling fake digits in the **sender's** ring colour, so they read as fake. At each step about 30% of the cells show their real digit. At most 2.5 changes per second. Visual only: taps go through to the cell, and cell labels keep the real values. | A static "?" in every filled cell for the 5 s. | A 2 × 2 mini grid whose digits swap |
+| `ink` "דיו" | About 5 dark blots (a thin rim in the sender's colour) cover about 40% of the board; they splat in 300 ms, hold, and fade over the last 1.5 s. | The same blots, still; gone at the end. | A blot that splats and fades |
+| `keypad` "מקלדת מתערבלת" | The nine digit keys swap places every 1.5 s, sliding in about 200 ms. Each key always shows (and enters) its own digit, with its count and its disabled state. "ביטול בחירה" stays put. A key never moves under a finger (a shuffle waits for the release), and a press during a move (and shortly after) is ignored with the nudge, never sent. Back to 1–9 at the end. | One shuffle for the whole 5 s, with a fade. | Keys that swap |
+
+- The keypad grid itself stays LTR (§0.6); only the order of its keys changes, for 5 s.
+- Haptics and sounds per kind: `motion.md` §7–§8.
+
+**Tokens:** `color.toast.*`, `color.iconBg.*`, `color.surface2`, `color.text`, `color.textMuted`, `color.success`, `color.accent`, `color.danger`, `color.border`, `color.bg`, `color.scrim`, `color.players[n].ring`.
 
 ---
 
@@ -723,13 +801,13 @@ There are two shells with the same content model: icon, title, body, actions, an
 ## 18. Checklist for `/dev/design-system` (stage 3 "סיום")
 Render each of these in Hebrew and in English. The board and keypad must look identical in both.
 - **Buttons:** primary (hero, lg, md) × {default, pressed, disabled, loading} · secondary plain and row · ghost · icon (default, expanded, disabled, loading) · danger.
-- **Avatars:** 22/34/36/44/52/72/96 × P1–P4 plus neutral · presence (connected, reconnecting) · bot chip · result badge · disconnected.
+- **Avatars:** 22/34/36/44/52/72/96 × P1–P4 plus neutral · presence (connected, unstable [D42], reconnecting) · bot chip · result badge · disconnected.
 - **Flags and ratings:** flags at 12/13/15/18 · rating at 44/22/16/15 plus provisional · league badge `text` and `icon` for all 5 tiers.
-- **Player cards:** 2P card (me and opponent) × {default, locking, thinking, paused, reconnecting, left, correct, wrong, under interference, drop target, dimmed} · compact cards for 3P and 4P with rank badges #1–#4.
-- **Card actions:** interference button × {available, expanded, unaffordable, immune} · reaction picker plus float.
+- **Player cards:** 2P card (me and opponent) × {default, locking, thinking, paused, reconnecting, left, correct, wrong, under interference, target (picker open), dimmed} · compact cards for 3P and 4P with rank badges #1–#4.
+- **Card actions:** the "הפרעה" button, 2P and compact, × {available, expanded, blocked: points / busy / not running (each with its toast)} · no button on a bot card (D44) · reaction picker plus float.
 - **Bars and strip:** lead bar 2P (me leading, opponent leading, tie, negative score) and 4P · lock strip × {none, locked, urgent, paused}.
-- **Board:** every cell state in §11.3 (#1–#13, except #8, which is not used), all four player colours and glyphs, and wrong digits on the empty, tint and lock backgrounds.
+- **Board:** every cell state in §11.3 (#1–#14, except #8, which is not used; #14 queued [D42] as a close-up), all four player colours and glyphs, and wrong digits on the empty, tint and lock backgrounds.
 - **Keypad:** armed, idle, pressed, complete digit, tried-wrong digit · cancel selection (enabled and disabled).
-- **Overlays:** sheet (arsenal content) · in-game confirm modal (surrender and practice) · centred dialog · toasts (all 5) · interference banner.
+- **Overlays:** the interference picker (§13: 2P target line and 3–4P route, price row, the 3 × 2 grid with a locked and a blocked kind, no scroll at 360 × 640) · in-game confirm modal (surrender and practice) · centred dialog · toasts (all 5) · interference banner (and the generic one for an unknown kind) · the board dim (§15.3) · scramble, ink and the keypad shuffle (§15.4).
 - **Navigation:** bottom nav with each tab active.
 - **Reduced motion:** toggle it and check every row above again.

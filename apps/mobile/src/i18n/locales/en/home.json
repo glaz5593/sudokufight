@@ -220,7 +220,7 @@
     "levels": {
       "1": {
         "title": "Novice",
-        "behavior": "Slow, makes a fair few mistakes, and hardly ever interferes"
+        "behavior": "Slow, makes a fair few mistakes, and lets you learn"
       },
       "2": {
         "title": "Amateur",
@@ -228,7 +228,7 @@
       },
       "3": {
         "title": "Advanced",
-        "behavior": "Steady and thoughtful. When behind, it interferes"
+        "behavior": "Steady and thoughtful, and hard to overtake"
       },
       "4": {
         "title": "Master",
@@ -236,7 +236,7 @@
       },
       "5": {
         "title": "Grandmaster",
-        "behavior": "Fast, precise, and interferes without mercy"
+        "behavior": "Fast, precise, and merciless"
       }
     }
   },

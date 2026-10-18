@@ -38,13 +38,17 @@ export const FAKE_CLIENT_USAGE = `Usage: npm run fake-client -- (--code <code> |
   --speed <x>              think x times faster than a person (default 1)
   --no-interfere           never send interferences
   --no-react               never send reactions
+  --legacy-app             join as app 1.0.0: declare no interference kinds (the room allows only the
+                           old three: fireworks, cats, warp)
   --seed <n>               the random seed (printed in the summary)
   --ping-every <ms>        a ping every this many ms for RTT (default 1000, 0: none)
 
   with --create:
   --game-type <type>       fast | normal | hard (default fast)
   --players <2-4>          the game starts when this many are in (default 2)
-  --grace <s>              grace period after a drop (default 15)
+  --grace <s>              grace period of a disconnect (default 15)
+  --soft-grace <s>         soft phase of a lost connection before the grace: a mark only, the game goes
+                           on (default 10, 0: off, every drop is a disconnect at once)
   --rules <json>           other dev rule overrides, e.g. '{"thinkTimeMs":5000}'
   --rated                  a rated room (ranked pool, ratings move, the game is stored): every player
                            joins with --account
@@ -92,6 +96,7 @@ const VALUE_FLAGS = [
   'game-type',
   'players',
   'grace',
+  'soft-grace',
   'rules',
   'queue',
   'token',
@@ -111,6 +116,7 @@ const SWITCHES = [
   'no-show',
   'no-interfere',
   'no-react',
+  'legacy-app',
   'json',
   'quiet',
   'verbose',
@@ -170,7 +176,7 @@ function build(
 ): FakeClientCli {
   const create = switches.has('create');
   const queued = values.get('queue');
-  for (const flag of ['game-type', 'players', 'grace', 'rules'] as const)
+  for (const flag of ['game-type', 'players', 'grace', 'soft-grace', 'rules'] as const)
     if (values.has(flag) && !create) throw new ArgError(`--${flag} goes with --create`);
   if (switches.has('rated') && !create) throw new ArgError('--rated goes with --create');
   // A rated room takes accounts only: its creator plays as one.
@@ -225,6 +231,8 @@ function build(
   };
   const seed = integer(values, 'seed', 0, 2 ** 31 - 1);
   if (seed !== undefined) options.seed = seed;
+  // App 1.0.0 declares no interference kinds: the room keeps to the legacy three [D47].
+  if (switches.has('legacy-app')) options.legacyApp = true;
 
   if (create) {
     const gameType = values.get('game-type') ?? 'fast';
@@ -233,6 +241,9 @@ function build(
     const rules = parseRules(values.get('rules'));
     const grace = number(values, 'grace', 0.1, 120);
     if (grace !== undefined) rules.graceMs = Math.round(grace * 1000);
+    // [D42] The server takes 0–60 s (0: off).
+    const softGrace = number(values, 'soft-grace', 0, 60);
+    if (softGrace !== undefined) rules.softGraceMs = Math.round(softGrace * 1000);
     options.create = {
       gameType: gameType as GameType,
       playerCount: integer(values, 'players', 2, 4) ?? 2,

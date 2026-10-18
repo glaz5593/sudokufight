@@ -16,6 +16,14 @@
     "body": "This screen hit an error. We reported it, and you can try again.",
     "retry": "Try again"
   },
+  "fallback": {
+    "loading": "One moment…",
+    "title": "This screen didn't load",
+    "body": "You can go on to the results or go home.",
+    "bodyHome": "You can go home and carry on from there.",
+    "results": "To the results",
+    "home": "Home"
+  },
   "appVersion": {
     "version": "Version {{version}}",
     "build": "build {{build}}",

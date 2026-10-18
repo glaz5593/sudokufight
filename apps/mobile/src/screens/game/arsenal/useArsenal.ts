@@ -6,124 +6,126 @@ import type { InterferenceModel } from '../../../components/player';
 import { useToast } from '../../../components/ui';
 import { cue } from '../../../services/feedback';
 import type { Rect } from '../geometry';
-import { dropLabel } from './wording';
+import { isolate } from './wording';
 
 /** Anything that can say where it is in the window: a React Native View. */
 export interface Measurable {
   measureInWindow: (callback: (x: number, y: number, width: number, height: number) => void) => void;
 }
 
-/** The drop-target props of a player card (PlayerCard's own props, components.md §3.4). */
+/** The picker's props of a player card (PlayerCard's own props, components.md §3.4). */
 export interface ArsenalCardProps {
-  /** This card is the drop zone: the arsenal was opened from its ⚡. */
-  dropTarget: boolean;
-  /** The finger is over it, mid-drag. */
-  dropHover: boolean;
-  /** Another card is the drop zone: this one dims to 40 %. */
+  /** This card is the target: the picker was opened from its "הפרעה" button [D45]. */
+  targeted: boolean;
+  /** Another card is the target: this one dims to 40 %. */
   dimmed: boolean;
-  /** The drop zone's accessible hint ("שחרר כאן: שיגור זיקוקים אל NinaVolt"). */
-  dropLabel?: string;
-  /** Its ⚡ shows "expanded" (and its label becomes "סגירת ארסנל ההפרעות"). */
+  /** Its "הפרעה" button shows "expanded" (and its label becomes "סגירת חלון ההפרעות"). */
   interferenceExpanded: boolean;
 }
 
 export interface UseArsenalOptions {
   /**
-   * A token was dropped on the drop zone: launch it. Called once per drop, with the card the arsenal was
-   * opened from (spec §7.3.4); the screen calls `host.interfere(targetId, kind)`.
+   * A kind was tapped in the picker: launch it at the card the picker was opened from (original §17), once per
+   * opening. The screen calls `host.interfere(targetId, kind)`.
    */
   onLaunch: (targetId: PlayerId, kind: InterferenceKind) => void;
 }
 
 /**
- * The arsenal's state, for the screen and for <ArsenalOverlay> (spec §7.3): which opponent's ⚡ opened it (the
- * one drop zone), which token is being dragged and whether the finger is over the zone. The screen spreads
- * `cardProps(id, name)` on every PlayerCard, attaches `cardRef(id)` to the view around each opponent's card
- * (so the zone can be measured), opens it from ⚡ (`toggle`), and renders <ArsenalOverlay arsenal={…} />.
- * The overlay drives the drag; this only keeps the state and plays the cues of motion.md §7–§8.
+ * The interference picker's state, for the screen and for <ArsenalOverlay> [D45: two taps, no drag]: which
+ * opponent's "הפרעה" button opened it (the one target). The screen spreads `cardProps(id)` on every card,
+ * attaches `cardRef(id)` to the view around each opponent's card (so the scrim's hole can be measured), opens
+ * it from the button (`toggle`), and renders <ArsenalOverlay arsenal={…} />. The second tap, on a kind in the
+ * picker, is `launch(kind)`. This keeps the state and plays the cues of motion.md §7–§8.
  */
 export interface ArsenalController {
-  /** The opponent whose ⚡ opened the arsenal; null while it is closed. */
+  /** The opponent whose button opened the picker; null while it is closed. */
   targetId: PlayerId | null;
-  /** The token in the finger (from lift until the ghost has landed or returned). */
-  dragKind: InterferenceKind | null;
-  /** The finger is over the drop zone. */
-  hover: boolean;
-  /** ⚡ on `targetId`'s card: opens the arsenal aimed at that card (cue `arsenalOpen`). */
+  /** "הפרעה" on `targetId`'s card: opens the picker aimed at that card (cue `arsenalOpen`). */
   open: (targetId: PlayerId) => void;
   close: () => void;
-  /** ⚡ again on the card it is open from closes it (the button reads "סגירת ארסנל ההפרעות" then). */
+  /** "הפרעה" again on the card it is open from closes it (the button reads "סגירת חלון ההפרעות" then). */
   toggle: (targetId: PlayerId) => void;
   /**
-   * ⚡ while it can't be used (components.md §8.1): short of points it says why ("אין מספיק נקודות להפרעה
-   * הבאה (8 נק׳)") with a light haptic; the other states are silent.
+   * "הפרעה" while it can't be used (components.md §8.1): a short toast with the reason and a light haptic.
+   * Short of points: "אין מספיק נקודות להפרעה הבאה (8 נק׳)"; the target busy: "NinaVolt כבר תחת הפרעה. אפשר שוב
+   * בעוד 2 שניות"; the game not running: "אי אפשר להפריע כרגע". `name` is the target's display name.
    */
-  blocked: (state: InterferenceModel) => void;
+  blocked: (state: InterferenceModel, name: string) => void;
+  /**
+   * The second tap: launches `kind` at the card the picker was opened from and closes it (cue `launch`). Once
+   * per opening: the target is cleared at once, so a quick double tap sends one. False when it was closed.
+   */
+  launch: (kind: InterferenceKind) => boolean;
   /** A ref for the view around a player's card (needs `collapsable={false}` on Android). */
   cardRef: (playerId: PlayerId) => (node: Measurable | null) => void;
-  /** The drop-target props of a player's card; `name` is the target's display name. */
-  cardProps: (playerId: PlayerId, name: string) => ArsenalCardProps;
-
-  // ---- for <ArsenalOverlay> ----
+  /** The picker's props of a player's card. */
+  cardProps: (playerId: PlayerId) => ArsenalCardProps;
   /** Where a player's card is in the window (nothing happens if it is not mounted). */
   measureCard: (playerId: PlayerId, done: (rect: Rect) => void) => void;
-  /** A token left its slot (cue: the whoosh and a light haptic). */
-  lift: (kind: InterferenceKind) => void;
-  /** The finger entered or left the drop zone (cue `dropZoneEnter` on each entry). */
-  setHover: (inside: boolean) => void;
-  /** The finger let go: inside the zone it launches (once) and the arsenal closes; elsewhere nothing. */
-  release: (kind: InterferenceKind, launch: boolean) => void;
-  /** The ghost has landed or gone back: the drag is over. */
-  settle: () => void;
 }
-
-interface State {
-  targetId: PlayerId | null;
-  dragKind: InterferenceKind | null;
-  hover: boolean;
-}
-
-const CLOSED: State = { targetId: null, dragKind: null, hover: false };
 
 export function useArsenal({ onLaunch }: UseArsenalOptions): ArsenalController {
   const { t } = useTranslation('game');
-  const [state, setState] = useState<State>(CLOSED);
-  // The latest state and callback, for the handlers (they run outside render).
-  const latest = useRef(state);
+  const [targetId, setTargetId] = useState<PlayerId | null>(null);
+  // The latest target and callback, for the handlers (they run outside render). The target is also cleared
+  // here at once on a launch, before React renders again.
+  const latest = useRef(targetId);
   const launchRef = useRef(onLaunch);
   useLayoutEffect(() => {
-    latest.current = state;
+    latest.current = targetId;
     launchRef.current = onLaunch;
   });
 
-  // Kept in step with each call (not with renders), so an entry buzzes once however the calls batch.
-  const hovering = useRef(false);
   const nodes = useRef(new Map<PlayerId, Measurable>());
   const refs = useRef(new Map<PlayerId, (node: Measurable | null) => void>());
 
-  const open = useCallback((targetId: PlayerId) => {
+  const open = useCallback((id: PlayerId) => {
     cue('arsenalOpen');
-    hovering.current = false;
-    setState({ targetId, dragKind: null, hover: false });
+    latest.current = id;
+    setTargetId(id);
   }, []);
-  // Closing ends a drag too: the token's slot leaves with the tray, so its gesture may never end (only a
-  // launch closes it with a token still landing, through `release`).
   const close = useCallback(() => {
-    hovering.current = false;
-    setState(CLOSED);
+    latest.current = null;
+    setTargetId(null);
   }, []);
-  const toggle = useCallback(
-    (targetId: PlayerId) => (latest.current.targetId === targetId ? close() : open(targetId)),
-    [open, close],
-  );
+  const toggle = useCallback((id: PlayerId) => (latest.current === id ? close() : open(id)), [open, close]);
   const blocked = useCallback(
-    (s: InterferenceModel) => {
-      if (s.kind !== 'points') return;
-      cue('nudge');
-      useToast.getState().show({ variant: 'error', message: t('arsenal.notEnough', { cost: s.cost }) });
+    (s: InterferenceModel, name: string) => {
+      const toast = useToast.getState();
+      switch (s.kind) {
+        case 'points':
+          cue('nudge');
+          toast.show({ variant: 'error', message: t('arsenal.notEnough', { cost: s.cost }) });
+          return;
+        case 'busy':
+          cue('nudge');
+          toast.show({
+            variant: 'warning',
+            message: t('arsenal.busyToast', { count: s.secondsLeft, name: isolate(name) }),
+          });
+          return;
+        case 'notRunning':
+          cue('nudge');
+          toast.show({ variant: 'info', message: t('arsenal.notNow') });
+          return;
+        default:
+          // Disconnected or out: the button is hidden, nothing to say.
+          return;
+      }
     },
     [t],
   );
+  const launch = useCallback((kind: InterferenceKind) => {
+    const id = latest.current;
+    if (id === null) return false;
+    // Closed right away, so a second tap before the screen updates can't launch again.
+    latest.current = null;
+    setTargetId(null);
+    cue('launch');
+    launchRef.current(id, kind);
+    return true;
+  }, []);
 
   const cardRef = useCallback((playerId: PlayerId) => {
     let ref = refs.current.get(playerId);
@@ -138,66 +140,21 @@ export function useArsenal({ onLaunch }: UseArsenalOptions): ArsenalController {
   }, []);
   const measureCard = useCallback((playerId: PlayerId, done: (rect: Rect) => void) => {
     nodes.current.get(playerId)?.measureInWindow((x, y, width, height) => {
-      // An unmounted or flattened view measures as nothing: keep the zone it had.
+      // An unmounted or flattened view measures as nothing: keep the hole it had.
       if (width > 0 && height > 0) done({ x, y, width, height });
     });
   }, []);
 
-  const lift = useCallback((kind: InterferenceKind) => {
-    cue('tokenLift');
-    setState((s) => ({ ...s, dragKind: kind, hover: false }));
-  }, []);
-  const setHover = useCallback((inside: boolean) => {
-    if (inside && !hovering.current) cue('dropZoneEnter');
-    hovering.current = inside;
-    setState((s) => (s.hover === inside ? s : { ...s, hover: inside }));
-  }, []);
-  const release = useCallback((kind: InterferenceKind, launch: boolean) => {
-    hovering.current = false;
-    const targetId = latest.current.targetId;
-    if (!launch || targetId === null) {
-      setState((s) => ({ ...s, hover: false }));
-      return;
-    }
-    cue('launch');
-    // Closed right away, so a second drop can't reach the same zone; the ghost still lands (dragKind).
-    latest.current = { ...latest.current, targetId: null, hover: false };
-    setState((s) => ({ ...s, targetId: null, hover: false }));
-    launchRef.current(targetId, kind);
-  }, []);
-  const settle = useCallback(() => setState((s) => ({ ...s, dragKind: null, hover: false })), []);
-
   const cardProps = useCallback(
-    (playerId: PlayerId, name: string): ArsenalCardProps => {
-      const target = state.targetId === playerId;
-      return {
-        dropTarget: target,
-        dropHover: target && state.hover,
-        dimmed: state.targetId !== null && !target,
-        dropLabel: target ? dropLabel(state.dragKind, name, t) : undefined,
-        interferenceExpanded: target,
-      };
+    (playerId: PlayerId): ArsenalCardProps => {
+      const target = targetId === playerId;
+      return { targeted: target, dimmed: targetId !== null && !target, interferenceExpanded: target };
     },
-    [state, t],
+    [targetId],
   );
 
   return useMemo(
-    () => ({
-      targetId: state.targetId,
-      dragKind: state.dragKind,
-      hover: state.hover,
-      open,
-      close,
-      toggle,
-      blocked,
-      cardRef,
-      cardProps,
-      measureCard,
-      lift,
-      setHover,
-      release,
-      settle,
-    }),
-    [state, open, close, toggle, blocked, cardRef, cardProps, measureCard, lift, setHover, release, settle],
+    () => ({ targetId, open, close, toggle, blocked, launch, cardRef, cardProps, measureCard }),
+    [targetId, open, close, toggle, blocked, launch, cardRef, cardProps, measureCard],
   );
 }

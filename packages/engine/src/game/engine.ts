@@ -1,8 +1,8 @@
-import { CELL_COUNT, digitCount, isCellIndex, isDigit } from '../sudoku/board';
-import { mistakePenalty, moveScore } from '../sudoku/scoring';
+import { CELL_COUNT, type CellIndex, type Digit, digitCount, isCellIndex, isDigit } from '../sudoku/board';
+import { missedPoints, moveScore } from '../sudoku/scoring';
 import type { Clock } from '../util/clock';
 import type { Rng } from '../util/random';
-import { evolve } from './evolve';
+import { evolve, isSoftOffline } from './evolve';
 import { gameResult } from './results';
 import type { ReleaseReason } from './rules';
 import type {
@@ -11,6 +11,7 @@ import type {
   GameConfig,
   GameEvent,
   GameState,
+  Lock,
   LockTimer,
   NewEvent,
   PlayerAction,
@@ -25,12 +26,21 @@ import type {
  *   createGame(config, { clock, rng })  → the first state and the gameCreated event
  *   applyAction(state, action, now)     → { state, events } (a new state; the old one is untouched)
  *                                         or { state, events, rejected }
- *   tick(state, now)                    → { state, events } for timers that are due (locks, interferences, grace)
+ *   tick(state, now)                    → { state, events } for timers that are due (locks, interferences,
+ *                                         the soft phase, grace)
  *   nextDeadline(state)                 → when tick next has something to do, so a host needs one timer
+ *   abandonmentAt(state, playerId)      → when an away player abandons if not back (a seat is held that long)
  *
  * `now` is the injected clock's reading. applyAction first runs the timers that are due, so events always
  * come out in time order, and time never runs backwards: a `now` earlier than the last event counts as that
  * event's time. Every change goes through an event and the reducer (./evolve), which makes replay exact.
+ *
+ * A lost connection [D42] (spec §16.2): `disconnect` with `soft` starts a soft phase of rules.softGraceMs
+ * (playerConnectionLost): the player is marked, and nothing else changes (no freeze, no release, every timer
+ * runs, interferences at him are refused). Back in time: playerReconnected, and the game never stopped. Not
+ * back: at softEndsAt the hard phase starts, exactly as a disconnect did before (playerDisconnected with the
+ * grace of [D4], a freeze or a release). Moves he made on his phone meanwhile arrive after the return as
+ * `offlineMove`, each decided on the board as it is when it arrives.
  */
 
 export interface Transition {
@@ -117,6 +127,19 @@ export function nextDeadline(state: GameState): number | null {
   return nextDue(state)?.at ?? null;
 }
 
+/**
+ * When `playerId`, away now, abandons the game if he is not back (spec §16.2) [D4, D42]: the end of his grace,
+ * or, in the soft phase, the end of the grace that will follow it. Null when he is not away, or nothing runs.
+ */
+export function abandonmentAt(state: GameState, playerId: PlayerId): number | null {
+  if (state.status !== 'running' && state.status !== 'paused') return null;
+  const p = playerOf(state, playerId);
+  if (!p || p.status !== 'active') return null;
+  if (p.graceEndsAt !== null) return p.graceEndsAt;
+  if (isSoftOffline(p)) return p.softEndsAt! + state.config.rules.graceMs;
+  return null;
+}
+
 // ---------------------------------------------------------------------------------------------------------
 // Helpers
 
@@ -126,13 +149,27 @@ const inGame = (s: GameState) => s.players.filter((p) => p.status === 'active');
 const isPractice = (s: GameState) => s.config.mode !== 'ranked';
 const isBot = (s: GameState, p: PlayerState) => s.config.players[p.seat]?.isBot === true;
 
-/** The next player (in seat order after `after`) who can take a turn. */
+/**
+ * What a wrong digit in `cell` costs (spec §6.5, Moshe's decision of 2026-10-15): the points the right digit
+ * would score there on the board as it is now (wrong marks are never on the grid, so `s.grid` is the board
+ * before the entry), with the game's Y rule [D13]. The same for every mode and every mistake number.
+ */
+function wrongDigitPenalty(s: GameState, cell: CellIndex): number {
+  const right = Number(s.config.puzzle.solution[cell]);
+  if (!isDigit(right)) throw new Error(`No solution digit for cell ${cell}`);
+  return missedPoints(s.grid, cell, right, s.config.rules.scoreY).points;
+}
+
+/**
+ * The next player (in seat order after `after`) who can take a turn: in the game and connected, and not in
+ * the soft phase of a lost connection [D42] (he could not play it; a turn he already holds runs out as usual).
+ */
 function nextTurnPlayer(s: GameState, after: PlayerId | null): PlayerState | undefined {
   const n = s.players.length;
   const from = after === null ? -1 : (playerOf(s, after)?.seat ?? -1);
   for (let k = 1; k <= n; k++) {
     const p = s.players[(from + k + n) % n]!;
-    if (p.status === 'active' && p.connected) return p;
+    if (p.status === 'active' && p.connected && !isSoftOffline(p)) return p;
   }
   return undefined;
 }
@@ -180,7 +217,7 @@ function repairTurn(tx: Tx, after: PlayerId | null, at: number): void {
 
 /**
  * After someone leaves: if only two players are left and one of them is away, the game freezes now, as it
- * would have when they disconnected (spec §16.2) [D4].
+ * would have when they disconnected (spec §16.2) [D4]. A player in the soft phase is not away yet [D42].
  */
 function freezeIfNeeded(tx: Tx, at: number): void {
   const s = tx.state;
@@ -193,6 +230,84 @@ function freezeIfNeeded(tx: Tx, at: number): void {
 function release(tx: Tx, playerId: PlayerId, reason: ReleaseReason, at: number): void {
   const lock = lockOf(tx.state, playerId);
   if (lock) tx.emit({ type: 'cellReleased', playerId, cell: lock.cell, reason }, at);
+}
+
+/** `digit` was already tried wrongly in `cell`, by anyone or by `me`, as the rules say [D12]. */
+function digitTried(s: GameState, cell: CellIndex, digit: Digit, me: PlayerId): boolean {
+  const rules = s.config.rules;
+  return s.wrong[cell]!.some(
+    (w) => w.digit === digit && (rules.wrongDigitDisabledFor === 'everyone' || w.playerId === me),
+  );
+}
+
+/** A new lock for `me` on `cell`, with the full think time; it starts stopped under interference [D11]. */
+function lockCell(tx: Tx, me: PlayerState, cell: CellIndex, now: number): void {
+  const rules = tx.state.config.rules;
+  const stopped = rules.pauseLockWhileInterfered && me.hitBy !== null;
+  tx.emit(
+    {
+      type: 'cellLocked',
+      playerId: me.id,
+      cell,
+      expiresAt: stopped ? null : now + rules.thinkTimeMs,
+      remainingMs: rules.thinkTimeMs,
+    },
+    now,
+  );
+}
+
+/**
+ * `digit` in the cell of `lock`, which `meId` holds, every check done: placedCorrect (the board completes →
+ * gameOver) or placedWrong (the penalty of §6.5, and the release of [D3]). The think time is the lock's,
+ * or for a move made offline [D42] the one the phone measured (clamped by the caller); the event says
+ * `offline: true` then.
+ */
+function placeDigit(
+  tx: Tx,
+  meId: PlayerId,
+  lock: Lock,
+  digit: Digit,
+  now: number,
+  offline?: { thinkMs: number },
+): void {
+  const s = tx.state;
+  const rules = s.config.rules;
+  const me = playerOf(s, meId)!;
+  const flag = offline ? { offline: true as const } : {};
+
+  if (Number(s.config.puzzle.solution[lock.cell]) === digit) {
+    const breakdown = moveScore(s.grid, lock.cell, digit, rules.scoreY);
+    const left = lock.expiresAt === null ? lock.remainingMs : lock.expiresAt - now;
+    tx.emit(
+      {
+        type: 'placedCorrect',
+        playerId: me.id,
+        cell: lock.cell,
+        digit,
+        points: breakdown.points,
+        breakdown,
+        score: me.score + breakdown.points,
+        thinkMs: offline ? offline.thinkMs : Math.max(0, rules.thinkTimeMs - left),
+        ...flag,
+      },
+      now,
+    );
+    if (tx.state.grid.every((v) => v !== 0)) return endGame(tx, 'boardComplete', now);
+    if (s.turn?.playerId === me.id) passTurn(tx, me.id, now);
+    return;
+  }
+
+  const mistakes = me.mistakes + 1;
+  const penalty = wrongDigitPenalty(s, lock.cell);
+  const score = rules.negativeScore ? me.score - penalty : Math.max(0, me.score - penalty);
+  tx.emit(
+    { type: 'placedWrong', playerId: me.id, cell: lock.cell, digit, penalty, mistakes, score, ...flag },
+    now,
+  );
+  if (rules.afterMistake === 'release') {
+    release(tx, me.id, 'mistake', now);
+    if (s.turn?.playerId === me.id) passTurn(tx, me.id, now);
+  }
 }
 
 function endGame(tx: Tx, reason: EndReason, at: number): void {
@@ -217,7 +332,7 @@ function endIfLastStanding(tx: Tx, leaver: PlayerState, at: number): boolean {
   return false;
 }
 
-/** Resumes a frozen game once nobody still in it is disconnected. */
+/** Resumes a frozen game once nobody still in it is disconnected (the soft phase does not hold it [D42]). */
 function resumeIfClear(tx: Tx, reason: 'reconnect' | 'abandon', at: number): void {
   const s = tx.state;
   if (s.status !== 'paused' || s.pausedAt === null) return;
@@ -240,17 +355,28 @@ function resumeIfClear(tx: Tx, reason: 'reconnect' | 'abandon', at: number): voi
 type Due =
   | { kind: 'interferenceEnd'; at: number; playerId: PlayerId }
   | { kind: 'grace'; at: number; playerId: PlayerId }
+  | { kind: 'softEnd'; at: number; playerId: PlayerId }
   | { kind: 'lockExpire'; at: number; playerId: PlayerId }
   | { kind: 'turnExpire'; at: number; playerId: PlayerId };
 
-const DUE_ORDER: Record<Due['kind'], number> = { interferenceEnd: 0, grace: 1, lockExpire: 2, turnExpire: 3 };
+const DUE_ORDER: Record<Due['kind'], number> = {
+  interferenceEnd: 0,
+  grace: 1,
+  softEnd: 2,
+  lockExpire: 3,
+  turnExpire: 4,
+};
 
 function nextDue(s: GameState): Due | null {
   if (s.status !== 'running' && s.status !== 'paused') return null;
   const due: Due[] = [];
-  for (const p of s.players)
-    if (p.status === 'active' && !p.connected && p.graceEndsAt !== null)
+  // The grace and the soft phase are never frozen: they run while the game is paused too.
+  for (const p of s.players) {
+    if (p.status !== 'active') continue;
+    if (!p.connected && p.graceEndsAt !== null)
       due.push({ kind: 'grace', at: p.graceEndsAt, playerId: p.id });
+    else if (isSoftOffline(p)) due.push({ kind: 'softEnd', at: p.softEndsAt!, playerId: p.id });
+  }
   if (s.status === 'running') {
     for (const p of s.players)
       if (p.hitBy) due.push({ kind: 'interferenceEnd', at: p.hitBy.endsAt, playerId: p.id });
@@ -331,6 +457,10 @@ function handleDue(tx: Tx, due: Due): void {
     case 'turnExpire':
       passTurn(tx, due.playerId, at);
       return;
+    case 'softEnd':
+      // Not back within the soft phase [D42]: the hard phase starts now, its grace counted from now.
+      goHard(tx, due.playerId, at);
+      return;
     case 'grace': {
       const leaver = playerOf(s, due.playerId)!;
       release(tx, due.playerId, 'abandon', at);
@@ -347,7 +477,15 @@ function handleDue(tx: Tx, due: Due): void {
 // ---------------------------------------------------------------------------------------------------------
 // Actions
 
-const PLAYER_ACTIONS = new Set(['select', 'release', 'place', 'interfere', 'react', 'surrender']);
+const PLAYER_ACTIONS = new Set([
+  'select',
+  'release',
+  'place',
+  'interfere',
+  'react',
+  'surrender',
+  'offlineMove',
+]);
 
 function decide(tx: Tx, action: Action, now: number): void {
   const s = tx.state;
@@ -365,27 +503,51 @@ function decide(tx: Tx, action: Action, now: number): void {
   if (action.type === 'disconnect' || action.type === 'reconnect') {
     const p = playerOf(s, action.playerId) ?? reject('unknownPlayer');
     if (p.status !== 'active') reject('notActive');
-    return action.type === 'disconnect' ? disconnect(tx, p, now) : reconnect(tx, p, now);
+    return action.type === 'disconnect'
+      ? disconnect(tx, p, now, action.soft === true)
+      : reconnect(tx, p, now);
   }
   playerAction(tx, action, now);
 }
 
-function disconnect(tx: Tx, p: PlayerState, now: number): void {
-  const s = tx.state;
+/**
+ * A connection report. `soft` (the connection dropped) starts the soft phase when the rules have one [D42];
+ * otherwise (a deliberate leave) the player is away at once. A deliberate leave during the soft phase
+ * hardens it now; a second drop report is refused.
+ */
+function disconnect(tx: Tx, p: PlayerState, now: number, soft: boolean): void {
+  const softGraceMs = tx.state.config.rules.softGraceMs ?? 0;
+  if (isSoftOffline(p)) {
+    if (soft) reject('alreadyDisconnected');
+    return goHard(tx, p.id, now);
+  }
   if (!p.connected) reject('alreadyDisconnected');
-  tx.emit({ type: 'playerDisconnected', playerId: p.id, graceEndsAt: now + s.config.rules.graceMs }, now);
-  if (inGame(s).length <= s.config.rules.freezeUpToPlayers) {
-    // Two players still in the game: it freezes for both; locks are kept and timers stop [D4].
-    if (tx.state.status === 'running') tx.emit({ type: 'gamePaused', reason: 'disconnect' }, now);
+  if (soft && softGraceMs > 0) {
+    // A mark only: no freeze, no release; his lock and every timer run on, and may run out as usual.
+    tx.emit({ type: 'playerConnectionLost', playerId: p.id, softEndsAt: now + softGraceMs }, now);
     return;
   }
-  // 3–4 players: the game goes on; the lock is released (spec §16.2).
-  release(tx, p.id, 'disconnect', now);
-  repairTurn(tx, p.id, now);
+  goHard(tx, p.id, now);
 }
 
+/**
+ * The player is away (spec §16.2) [D4]: the grace starts (`at` + graceMs). Two players still in the game: it
+ * freezes for both; locks are kept and timers stop. 3–4 players: the game goes on, and his lock is released.
+ */
+function goHard(tx: Tx, playerId: PlayerId, at: number): void {
+  const s = tx.state;
+  tx.emit({ type: 'playerDisconnected', playerId, graceEndsAt: at + s.config.rules.graceMs }, at);
+  if (inGame(s).length <= s.config.rules.freezeUpToPlayers) {
+    if (tx.state.status === 'running') tx.emit({ type: 'gamePaused', reason: 'disconnect' }, at);
+    return;
+  }
+  release(tx, playerId, 'disconnect', at);
+  repairTurn(tx, playerId, at);
+}
+
+/** Back: from the hard phase (the game resumes if nobody else is away), or from the soft phase [D42]. */
 function reconnect(tx: Tx, p: PlayerState, now: number): void {
-  if (p.connected) reject('alreadyConnected');
+  if (p.connected && !isSoftOffline(p)) reject('alreadyConnected');
   tx.emit({ type: 'playerReconnected', playerId: p.id }, now);
   resumeIfClear(tx, 'reconnect', now);
   repairTurn(tx, null, now);
@@ -396,7 +558,8 @@ function playerAction(tx: Tx, action: PlayerAction, now: number): void {
   const rules = s.config.rules;
   const me = playerOf(s, action.playerId) ?? reject('unknownPlayer');
   if (me.status !== 'active') reject('notActive');
-  if (!me.connected) reject('disconnected');
+  // Away, hard or soft: a host reports the return before any action of his reaches the engine [D42].
+  if (!me.connected || isSoftOffline(me)) reject('disconnected');
   const paused = s.status === 'paused';
 
   switch (action.type) {
@@ -414,17 +577,7 @@ function playerAction(tx: Tx, action: PlayerAction, now: number): void {
       const mine = lockOf(s, me.id);
       if (rules.turnModel === 'turns' && mine) reject('alreadyHeld'); // one lock per turn
       if (mine) release(tx, me.id, 'switch', now);
-      const stopped = rules.pauseLockWhileInterfered && me.hitBy !== null;
-      tx.emit(
-        {
-          type: 'cellLocked',
-          playerId: me.id,
-          cell,
-          expiresAt: stopped ? null : now + rules.thinkTimeMs,
-          remainingMs: rules.thinkTimeMs,
-        },
-        now,
-      );
+      lockCell(tx, me, cell, now);
       return;
     }
 
@@ -442,56 +595,53 @@ function playerAction(tx: Tx, action: PlayerAction, now: number): void {
       if (lock.cell !== action.cell) reject('notLockedCell');
       const digit = action.digit;
       if (!isDigit(digit)) reject('badDigit');
-      const tried = s.wrong[lock.cell]!.some(
-        (w) => w.digit === digit && (rules.wrongDigitDisabledFor === 'everyone' || w.playerId === me.id),
-      );
-      if (tried) reject('digitTried');
+      if (digitTried(s, lock.cell, digit, me.id)) reject('digitTried');
+      if (digitCount(s.grid, digit) >= 9) reject('digitComplete');
+      placeDigit(tx, me.id, lock, digit, now);
+      return;
+    }
+
+    case 'offlineMove': {
+      // [D42] A digit entered while the connection was lost, decided now on the board as it is now. Every check
+      // comes before the first event: a move that lost its cell leaves no trace and costs nothing.
+      if (paused) reject('paused');
+      if (rules.turnModel === 'turns') reject('notYourTurn');
+      const open = me.offlineWindow;
+      if (!open || now > open.until || open.left <= 0) reject('offlineClosed');
+      const cell = action.cell;
+      if (!isCellIndex(cell)) reject('badCell');
+      const digit = action.digit;
+      if (!isDigit(digit)) reject('badDigit');
+      if (s.grid[cell] !== 0) reject('cellFilled');
+      const holder = s.locks.find((l) => l.cell === cell);
+      if (holder && holder.playerId !== me.id) reject('cellTaken');
+      if (digitTried(s, cell, digit, me.id)) reject('digitTried');
       if (digitCount(s.grid, digit) >= 9) reject('digitComplete');
 
-      const correct = Number(s.config.puzzle.solution[lock.cell]) === digit;
-      if (correct) {
-        const breakdown = moveScore(s.grid, lock.cell, digit, rules.scoreY);
-        const left = lock.expiresAt === null ? lock.remainingMs : lock.expiresAt - now;
-        tx.emit(
-          {
-            type: 'placedCorrect',
-            playerId: me.id,
-            cell: lock.cell,
-            digit,
-            points: breakdown.points,
-            breakdown,
-            score: me.score + breakdown.points,
-            thinkMs: Math.max(0, rules.thinkTimeMs - left),
-          },
-          now,
-        );
-        if (tx.state.grid.every((v) => v !== 0)) return endGame(tx, 'boardComplete', now);
-        if (s.turn?.playerId === me.id) passTurn(tx, me.id, now);
-        return;
+      if (!holder) {
+        // He chose it while offline: lock it now, as select would. His own re-lock wait does not apply: on
+        // his phone he never let it go.
+        if (lockOf(s, me.id)) release(tx, me.id, 'switch', now);
+        lockCell(tx, me, cell, now);
       }
-
-      const mistakes = me.mistakes + 1;
-      const penalty = mistakePenalty(mistakes, rules.mistakePenaltyCap);
-      const score = rules.negativeScore ? me.score - penalty : Math.max(0, me.score - penalty);
-      tx.emit(
-        { type: 'placedWrong', playerId: me.id, cell: lock.cell, digit, penalty, mistakes, score },
-        now,
-      );
-      if (rules.afterMistake === 'release') {
-        release(tx, me.id, 'mistake', now);
-        if (s.turn?.playerId === me.id) passTurn(tx, me.id, now);
-      }
+      const claimed = Number.isFinite(action.thinkMs) ? Math.round(action.thinkMs) : rules.thinkTimeMs;
+      const thinkMs = Math.min(rules.thinkTimeMs, Math.max(0, claimed));
+      placeDigit(tx, me.id, lockOf(tx.state, me.id)!, digit, now, { thinkMs });
       return;
     }
 
     case 'interfere': {
       if (paused) reject('paused');
+      // Off in solo practice and against a known bot [D44].
       if (!rules.interferences) reject('interferencesOff');
+      // Only the room's kinds: a kind some player's app can't show never reaches it [D47].
       if (!rules.interferenceKinds.includes(action.kind)) reject('badKind');
       const target = playerOf(s, action.targetId);
       if (!target || target.id === me.id) return reject('badTarget');
       if (target.status !== 'active') reject('targetOut');
       if (!target.connected) reject('targetDisconnected');
+      // In the soft phase he can't see it either [D42].
+      if (isSoftOffline(target) && !rules.interfereSoftOffline) reject('targetDisconnected');
       if (target.hitBy || target.immuneUntil > now) reject('targetBusy');
       const cost = rules.interferenceCostBase ** (me.interferencesSent + 1);
       if (rules.interferenceNeedsScore && me.score < cost) reject('notEnoughPoints');

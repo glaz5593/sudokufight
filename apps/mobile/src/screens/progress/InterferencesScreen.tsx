@@ -14,10 +14,12 @@ import { Chip, ScreenHeader, SectionLabel } from '../home/parts';
 import { type CollectionEntry, interferenceCollection, interferenceFacts } from './progressModel';
 
 /**
- * The interferences collection (spec §7.1; Interferences.dc.html in direction C): the three of V1, open from
- * the start [D17], each with its live preview (the arsenal's own token art: tap one to watch it, the others
- * hold still; with reduced motion all hold still), and the four that come later, locked with "בקרוב" (דיו,
- * רעידת אדמה, ערפל, בועות). The rules in short: 5 seconds, the cost doubling, drag only.
+ * The interferences collection (spec §7.1; Interferences.dc.html in direction C): the six kinds of the game,
+ * each opening at its level [D17] (fireworks, cats and warp from the start; the scramble at 2, ink at 3 and the
+ * keypad at 4, D47), the open ones with their live preview (the arsenal's own token art: tap one to watch it,
+ * the others hold still; with reduced motion all hold still), the locked ones with the level that opens them,
+ * and the four that come later, locked with "בקרוב" (רעידת אדמה, ערפל, בועות, פנס). The rules in short:
+ * 5 seconds, the cost doubling, and two taps to launch [D45].
  */
 
 export interface InterferencesScreenProps {
@@ -75,8 +77,8 @@ export function InterferencesScreen({ level, onBack, testID = 'interferences' }:
           <Fact icon="bolt" value={ltr(`${facts.costs.join('·')}…`)} label={t('interferences.facts.cost')} />
           <Fact
             icon="target"
-            value={t('interferences.facts.dragValue')}
-            label={t('interferences.facts.drag')}
+            value={t('interferences.facts.launchValue')}
+            label={t('interferences.facts.launch')}
           />
         </View>
 
@@ -140,8 +142,9 @@ export function InterferencesScreen({ level, onBack, testID = 'interferences' }:
               </View>
               <View style={styles.grow}>
                 <Text style={[text('rowTitle'), styles.muted]}>{name}</Text>
+                {/* What it does; when it opens is on the chip. */}
                 <Text style={[text('caption'), styles.faint]}>
-                  {entry.future ? t(`interferences.description.${entry.kind}`) : when}
+                  {t(`interferences.description.${entry.kind}`)}
                 </Text>
               </View>
               <Chip label={when} />

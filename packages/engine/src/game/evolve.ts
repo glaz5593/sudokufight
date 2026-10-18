@@ -1,5 +1,5 @@
 import { CELL_COUNT, parseGrid } from '../sudoku/board';
-import type { GameConfig, GameEvent, GameState, LockTimer, PlayerState } from './types';
+import type { GameConfig, GameEvent, GameState, LeaveStanding, LockTimer, PlayerState } from './types';
 
 /**
  * The reducer: the only place where state changes, always because of an event. Replaying the event log
@@ -32,8 +32,11 @@ export function initialState(config: GameConfig, createdAt: number): GameState {
       connected: true,
       graceEndsAt: null,
       outOrder: null,
+      // No leaveStandings until a leaving is judged (§11.2), no softEndsAt and no offlineWindow until a lost
+      // connection and a return [D42]: the keys stay out of the snapshot.
       score: 0,
       mistakes: 0,
+      mistakePenalties: [],
       correct: 0,
       pointsGained: 0,
       interferencesSent: 0,
@@ -82,6 +85,34 @@ function trackDeficits(s: GameState): void {
   }
 }
 
+/** Everyone's [score, moves] now, by seat (spec §11.2, the leave guards); moves are digit entries only. */
+export function standingsOf(s: GameState): LeaveStanding[] {
+  return s.players.map((p): LeaveStanding => [p.score, p.correct + p.mistakes]);
+}
+
+/**
+ * In the soft phase of a lost connection [D42]: marked only, still `connected`, the game goes on as usual.
+ * `!= null` also reads a null that a hand-built or re-encoded state may carry as "not soft".
+ */
+export function isSoftOffline(p: Pick<PlayerState, 'softEndsAt'>): boolean {
+  return p.softEndsAt != null;
+}
+
+/** One less offline move left in the window, which closes after its last one [D42]. */
+function useOfflineMove(p: PlayerState): void {
+  const w = p.offlineWindow;
+  if (!w) return;
+  // A new object: the previous state shares the old one (draft copies players shallowly).
+  if (w.left > 1) p.offlineWindow = { until: w.until, left: w.left - 1 };
+  else delete p.offlineWindow;
+}
+
+/** A lost connection ends the soft phase and the offline window of the return before it [D42]. */
+function clearOffline(p: PlayerState): void {
+  delete p.softEndsAt;
+  delete p.offlineWindow;
+}
+
 /** Applies lock timers carried by an event. */
 function applyTimers(s: GameState, timers: readonly LockTimer[]): void {
   for (const t of timers) {
@@ -104,6 +135,10 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
   s.seq = e.seq;
   s.lastEventAt = Math.max(s.lastEventAt, e.t);
   const rules = s.config.rules;
+  // An offline window that has run out goes with the next event, so the snapshot does not carry it [D42]. Not
+  // inside a freeze: no move can come in then ('paused'), so the window stands still until the game goes on.
+  if (s.status !== 'paused')
+    for (const p of s.players) if (p.offlineWindow && e.t > p.offlineWindow.until) delete p.offlineWindow;
 
   switch (e.type) {
     case 'gameStarted':
@@ -165,6 +200,7 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
       p.lastCorrectAt = e.t;
       if (!p.bestMove || e.points > p.bestMove.points)
         p.bestMove = { cell: e.cell, digit: e.digit, points: e.points, breakdown: e.breakdown };
+      if (e.offline) useOfflineMove(p);
       trackDeficits(s);
       break;
     }
@@ -173,7 +209,10 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
       const p = player(s, e.playerId);
       s.wrong[e.cell] = [...s.wrong[e.cell]!, { digit: e.digit, playerId: e.playerId }];
       p.mistakes = e.mistakes;
+      // `?? []`: a snapshot from a server older than the field. Old logs replay their own penalties.
+      p.mistakePenalties = [...(p.mistakePenalties ?? []), e.penalty];
       p.score = e.score;
+      if (e.offline) useOfflineMove(p);
       trackDeficits(s);
       break;
     }
@@ -205,10 +244,26 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
       player(s, e.playerId).lastReactionAt = e.t;
       break;
 
+    case 'playerConnectionLost': {
+      // The soft phase [D42]: a mark only. Still connected; nothing else changes for anyone.
+      const p = player(s, e.playerId);
+      clearOffline(p);
+      p.softEndsAt = e.softEndsAt;
+      // The leave guards judge an abandonment at the connection loss it followed (§11.2): this is the FIRST
+      // loss event, so the snapshot is taken here and the hard phase that may follow keeps it.
+      p.leaveStandings = p.leaveStandings ?? standingsOf(s);
+      break;
+    }
+
     case 'playerDisconnected': {
       const p = player(s, e.playerId);
       p.connected = false;
       p.graceEndsAt = e.graceEndsAt;
+      clearOffline(p);
+      // The leave guards judge an abandonment at the connection loss it followed (§11.2). Taken at the FIRST
+      // loss event and kept until a reconnect clears it: after a soft phase (playerConnectionLost) the hard
+      // phase keeps the snapshot of the drop, hence `??`.
+      p.leaveStandings = p.leaveStandings ?? standingsOf(s);
       break;
     }
 
@@ -216,15 +271,33 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
       const p = player(s, e.playerId);
       p.connected = true;
       p.graceEndsAt = null;
+      // `p` is this event's own copy (draft): deleting the keys leaves the previous state alone.
+      delete p.leaveStandings;
+      delete p.softEndsAt;
+      // Back: the moves made offline may come in now [D42]. Only when offline play is on (rules of an older
+      // game lack the fields: no window, so it replays as it was played).
+      const max = rules.offlineMovesMax ?? 0;
+      if ((rules.softGraceMs ?? 0) > 0 && max > 0)
+        p.offlineWindow = { until: e.t + (rules.offlineMovesWindowMs ?? 0), left: max };
+      else delete p.offlineWindow;
       break;
     }
 
     case 'playerAbandoned':
     case 'playerSurrendered': {
       const p = player(s, e.playerId);
+      // The moment this leaving is judged (§11.2): a surrender now; an abandonment at the disconnect it
+      // followed, or now with abandonJudgedAt 'graceEnd' (or with no snapshot, e.g. from an older server).
+      if (
+        e.type === 'playerSurrendered' ||
+        rules.rating.abandonJudgedAt !== 'disconnect' ||
+        !p.leaveStandings
+      )
+        p.leaveStandings = standingsOf(s);
       p.status = e.type === 'playerAbandoned' ? 'abandoned' : 'surrendered';
       p.outOrder = s.players.reduce((n, q) => Math.max(n, q.outOrder ?? 0), 0) + 1;
       p.graceEndsAt = null;
+      clearOffline(p);
       if (e.type === 'playerAbandoned') p.connected = false;
       s.locks = s.locks.filter((l) => l.playerId !== e.playerId);
       if (s.turn?.playerId === e.playerId) s.turn = null;
@@ -247,6 +320,13 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
       for (const p of s.players) {
         if (p.hitBy) p.hitBy.endsAt += d;
         if (p.immuneUntil > pausedAt) p.immuneUntil += d;
+        // [D42] An offline window stood still in the freeze: what was left of it at the freeze (or all of it,
+        // for a return during the freeze) runs from now. Its moves are as many as they were.
+        const w = p.offlineWindow;
+        if (w) {
+          const openedAt = w.until - (rules.offlineMovesWindowMs ?? 0);
+          p.offlineWindow = { until: w.until + e.t - Math.max(pausedAt, openedAt), left: w.left };
+        }
       }
       s.cooldowns = s.cooldowns.map((c) => ({ ...c, until: c.until + d }));
       if (s.turn?.endsAt != null) s.turn = { ...s.turn, endsAt: s.turn.endsAt + d };
@@ -260,8 +340,12 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
       s.pausedAt = null;
       s.locks = [];
       s.turn = null;
-      // Nothing is running any more: no interference stays on screen over the results (spec §12).
-      for (const p of s.players) p.hitBy = null;
+      // Nothing is running any more: no interference stays on screen over the results (spec §12), no soft
+      // phase and no offline window either [D42].
+      for (const p of s.players) {
+        p.hitBy = null;
+        clearOffline(p);
+      }
       s.result = result;
       break;
     }

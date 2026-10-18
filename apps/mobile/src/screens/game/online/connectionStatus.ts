@@ -11,7 +11,8 @@ import type { ConnectionStatus, RoomRefusal } from '../connection/connectionMode
  *
  * - connecting (the SDK's create or join) → connecting, step 'server'; in the room but before its first word
  *   → step 'room'; the lobby → the lobby; the game → online (with the last return, for the "synced" banner).
- * - reconnecting → reconnecting with its attempt, or resyncing once a room took the player back.
+ * - reconnecting → reconnecting with its attempt, or resyncing once a room took the player back; both with the
+ *   ends of the soft phase and of the grace as the host reckons them [D42].
  * - closed: after the game, or left on purpose → online (the model shows the result, or nothing); a refusal or
  *   a connection that could not come back → failed, with the small support code (spec §16.3). No network and
  *   no answer look the same from here (the app has no network-state module), so both are 'unreachable'.
@@ -34,8 +35,16 @@ export function connectionStatusOf(info: OnlineInfo): ConnectionStatus {
     case 'reconnecting': {
       const r = info.reconnect;
       if (!r) return { kind: 'reconnecting', attempt: 1, lostAt: 0 };
-      if (r.resyncing) return { kind: 'resyncing', lostAt: r.lostAt };
-      return { kind: 'reconnecting', attempt: Math.max(1, r.attempt), lostAt: r.lostAt };
+      // [D42] The soft phase, then the grace, as the host reckons them from when it noticed the loss, and
+      // whether the host plays on here meanwhile.
+      const times = {
+        lostAt: r.lostAt,
+        softEndsAt: r.softEndsAt,
+        playable: info.offlinePlay?.playable ?? false,
+        graceEndsAt: r.graceEndsAt,
+      };
+      if (r.resyncing) return { kind: 'resyncing', ...times };
+      return { kind: 'reconnecting', attempt: Math.max(1, r.attempt), ...times };
     }
 
     case 'closed':

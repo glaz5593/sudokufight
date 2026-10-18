@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<title>New game</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div dir="rtl" style="width:390px;height:844px;position:relative;overflow:hidden;box-sizing:border-box;font-family:Rubik,'Segoe UI',system-ui,sans-serif;color:#eef1f6;background:#0f1218;">
+
+  <header style="position:absolute;top:48px;left:16px;right:16px;height:56px;display:flex;align-items:center;gap:12px;">
+    <button type="button" aria-label="חזרה" style="flex:none;width:44px;height:44px;margin:0;padding:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;cursor:pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+    </button>
+    <h1 style="flex:1;min-width:0;margin:0;font:700 28px/34px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">משחק חדש</h1>
+    <div style="flex:none;display:flex;align-items:center;gap:8px;min-width:0;">
+      <span dir="ltr" style="font:500 13px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">MosheG</span>
+      <div aria-hidden="true" style="flex:none;width:34px;height:34px;box-sizing:border-box;padding:1px;border:2px solid #36c9f0;border-radius:10px;">
+        <div style="width:28px;height:28px;border-radius:7px;background:#1f2430;display:flex;align-items:center;justify-content:center;"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg></div>
+      </div>
+    </div>
+  </header>
+
+  <div style="position:absolute;top:112px;left:16px;right:16px;display:flex;flex-direction:column;gap:16px;">
+
+    <section aria-label="מדורג" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;min-height:20px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"></path><path d="M12 13v4M8 21h8M9.5 17h5"></path></svg>
+        <h2 style="margin:0;font:500 13px/1 Rubik,sans-serif;color:#9aa3b5;">מדורג</h2>
+        <span aria-hidden="true" style="flex:1;height:1px;background:#2a3140;"></span>
+        <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">יריבים אמיתיים, בזמן אמת</span>
+      </div>
+
+      <button type="button" aria-label="מדורג · 2 שחקנים · אחד על אחד · אותו לוח · הדירוג שלך במשחק רגיל: 1287" style="width:100%;min-height:64px;margin:0;padding:6px 12px;box-sizing:border-box;display:flex;align-items:center;gap:12px;background:#171b24;border:1px solid #2a3140;border-radius:14px;color:#eef1f6;text-align:right;cursor:pointer;">
+        <span aria-hidden="true" style="flex:none;width:44px;height:44px;border-radius:12px;background:#1f2430;display:flex;align-items:center;justify-content:center;">
+          <span style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px;max-width:32px;">
+            <svg width="9" height="9" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg>
+            <svg width="9" height="9" viewBox="0 0 24 24"><path d="M12 4l8 15H4z" fill="#ff9440"></path></svg>
+          </span>
+        </span>
+        <span style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;">
+          <span style="font:700 18px/23px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">2 שחקנים</span>
+          <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">אחד על אחד · אותו לוח</span>
+          <span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;">
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">דירוג 1287 · רגיל</span>
+          </span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#677086" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;"><path d="M15 5l-7 7 7 7"></path></svg>
+      </button>
+
+      <button type="button" aria-label="מדורג · 3 שחקנים · כולם נגד כולם · דירוג" style="width:100%;min-height:64px;margin:0;padding:6px 12px;box-sizing:border-box;display:flex;align-items:center;gap:12px;background:#171b24;border:1px solid #2a3140;border-radius:14px;color:#eef1f6;text-align:right;cursor:pointer;">
+        <span aria-hidden="true" style="flex:none;width:44px;height:44px;border-radius:12px;background:#1f2430;display:flex;align-items:center;justify-content:center;">
+          <span style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px;max-width:32px;">
+            <svg width="9" height="9" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg>
+            <svg width="9" height="9" viewBox="0 0 24 24"><path d="M12 4l8 15H4z" fill="#ff9440"></path></svg>
+            <svg width="9" height="9" viewBox="0 0 24 24"><path d="M5 5h14v14H5z" fill="#a2e28e"></path></svg>
+          </span>
+        </span>
+        <span style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;">
+          <span style="font:700 18px/23px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">3 שחקנים</span>
+          <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">כולם נגד כולם</span>
+          <span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;">
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">דירוג</span>
+          </span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#677086" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;"><path d="M15 5l-7 7 7 7"></path></svg>
+      </button>
+
+      <button type="button" aria-label="מדורג · 4 שחקנים · כולם נגד כולם · דירוג" style="width:100%;min-height:64px;margin:0;padding:6px 12px;box-sizing:border-box;display:flex;align-items:center;gap:12px;background:#171b24;border:1px solid #2a3140;border-radius:14px;color:#eef1f6;text-align:right;cursor:pointer;">
+        <span aria-hidden="true" style="flex:none;width:44px;height:44px;border-radius:12px;background:#1f2430;display:flex;align-items:center;justify-content:center;">
+          <span style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px;max-width:32px;">
+            <svg width="9" height="9" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg>
+            <svg width="9" height="9" viewBox="0 0 24 24"><path d="M12 4l8 15H4z" fill="#ff9440"></path></svg>
+            <svg width="9" height="9" viewBox="0 0 24 24"><path d="M5 5h14v14H5z" fill="#a2e28e"></path></svg>
+            <svg width="9" height="9" viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9z" fill="#a57af0"></path></svg>
+          </span>
+        </span>
+        <span style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;">
+          <span style="font:700 18px/23px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">4 שחקנים</span>
+          <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">כולם נגד כולם</span>
+          <span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;">
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">דירוג</span>
+          </span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#677086" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;"><path d="M15 5l-7 7 7 7"></path></svg>
+      </button>
+    </section>
+
+    <section aria-label="אימון" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;min-height:20px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4.5"></circle><path d="M12 12h.01"></path></svg>
+        <h2 style="margin:0;font:500 13px/1 Rubik,sans-serif;color:#9aa3b5;">אימון</h2>
+        <span aria-hidden="true" style="flex:1;height:1px;background:#2a3140;"></span>
+        <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">בלי לחץ, בלי דירוג</span>
+      </div>
+
+      <button type="button" aria-label="אימון מול בוט · 5 רמות · ללא דירוג · עובד גם בלי אינטרנט" style="width:100%;min-height:64px;margin:0;padding:6px 12px;box-sizing:border-box;display:flex;align-items:center;gap:12px;background:#171b24;border:1px solid #2a3140;border-radius:14px;color:#eef1f6;text-align:right;cursor:pointer;">
+        <span aria-hidden="true" style="flex:none;width:44px;height:44px;box-sizing:border-box;border:2px solid #ff9440;border-radius:14px;background:#1f2430;display:flex;align-items:center;justify-content:center;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff9440" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="7.5" width="15" height="13" rx="3.5"></rect><path d="M12 7.5V5"></path><circle cx="12" cy="4" r="1"></circle><circle cx="9" cy="12.5" r="1"></circle><circle cx="15" cy="12.5" r="1"></circle><path d="M9.5 16.5h5"></path><path d="M1.5 12v4M22.5 12v4"></path></svg>
+        </span>
+        <span style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;">
+          <span style="font:700 18px/23px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">אימון מול בוט</span>
+          <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">5 רמות</span>
+          <span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;">
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">ללא דירוג</span>
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">עובד גם בלי אינטרנט</span>
+          </span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#677086" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;"><path d="M15 5l-7 7 7 7"></path></svg>
+      </button>
+
+      <button type="button" aria-label="אימון לבד · לוח מלא · בקצב שלך · ללא דירוג · עובד גם בלי אינטרנט" style="width:100%;min-height:64px;margin:0;padding:6px 12px;box-sizing:border-box;display:flex;align-items:center;gap:12px;background:#171b24;border:1px solid #2a3140;border-radius:14px;color:#eef1f6;text-align:right;cursor:pointer;">
+        <span aria-hidden="true" style="flex:none;width:44px;height:44px;box-sizing:border-box;padding:2px;border:2px solid #36c9f0;border-radius:14px;">
+          <span style="display:flex;width:36px;height:36px;border-radius:10px;background:#1f2430;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg></span>
+        </span>
+        <span style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;">
+          <span style="font:700 18px/23px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">אימון לבד · לוח מלא</span>
+          <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">בקצב שלך</span>
+          <span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;">
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">ללא דירוג</span>
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">עובד גם בלי אינטרנט</span>
+          </span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#677086" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;"><path d="M15 5l-7 7 7 7"></path></svg>
+      </button>
+
+      <a href="Main.dc.html" aria-label="אימון בשלבים · שלבים של חצי דקה · עד 3 כוכבים · שלב 14 · 29 כוכבים · עובד גם בלי אינטרנט" style="width:100%;min-height:64px;margin:0;padding:6px 12px;box-sizing:border-box;display:flex;align-items:center;gap:12px;background:#171b24;border:1px solid #2a3140;border-radius:14px;color:#eef1f6;text-align:right;text-decoration:none;">
+        <span aria-hidden="true" style="position:relative;flex:none;display:block;width:44px;height:44px;border-radius:10px;overflow:hidden;background:#f7f8fa;">
+          <span style="position:absolute;top:0;bottom:0;left:14px;width:1px;background:#c8cdd6;"></span>
+          <span style="position:absolute;top:0;bottom:0;left:29px;width:1px;background:#c8cdd6;"></span>
+          <span style="position:absolute;left:0;right:0;top:14px;height:1px;background:#c8cdd6;"></span>
+          <span style="position:absolute;left:0;right:0;top:29px;height:1px;background:#c8cdd6;"></span>
+          <span dir="ltr" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-top:4px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:24px;line-height:.8;color:#0f1218;">14</span>
+        </span>
+        <span style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;">
+          <span style="font:700 18px/23px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">אימון בשלבים</span>
+          <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">שלבים של חצי דקה · עד 3 כוכבים</span>
+          <span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;">
+            <span style="display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">
+              <span>שלב 14 ·</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+              <span dir="ltr" style="color:#eef1f6;">29</span>
+            </span>
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">עובד גם בלי אינטרנט</span>
+          </span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#677086" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;"><path d="M15 5l-7 7 7 7"></path></svg>
+      </a>
+    </section>
+
+    <p style="margin:0;font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;text-align:center;">מדורג דורש חיבור לאינטרנט · אימון זמין תמיד</p>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

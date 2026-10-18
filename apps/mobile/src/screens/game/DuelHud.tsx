@@ -21,10 +21,11 @@ import { CardMenuTrigger } from './reactions';
  * The cards come from the view (cardModel), with the scores the screen shows now (held back while a chip
  * flies to them). Each card reports where it is, so chips can land on it and reactions rise from it.
  *
- * The actions of work plan stage 6 (spec §7.3, §8): my card's reactions button opens my picker; ⚡ on the
- * opponent's card opens the arsenal aimed at that card, which then becomes the one drop zone (the arsenal's
- * `cardProps` on both cards: the target framed, the other dimmed). A long press on the opponent's card opens
- * its menu (mute their reactions, D19). What each button can do comes from the view; the HUD only wires it.
+ * The actions of work plan stage 6 (spec §7.3, §8): my card's reactions button opens my picker; "הפרעה" on the
+ * opponent's card opens the interference picker aimed at that card [D45] (the arsenal's `cardProps` on both
+ * cards: the target framed with "יעד", the other dimmed). Against a bot there is no "הפרעה" [D44]: the view
+ * has no interferences, so the card has no button. A long press on the opponent's card opens its menu (mute
+ * their reactions, D19). What each button can do comes from the view; the HUD only wires it.
  */
 export interface DuelHudProps {
   me: CardModel;
@@ -47,14 +48,14 @@ export interface DuelHudProps {
   onReactions?: () => void;
   /** My picker is open. */
   reactionsExpanded?: boolean;
-  /** ⚡ on the opponent's card when it can be sent: opens (or closes) the arsenal aimed at it (spec §7.3.1). */
+  /** "הפרעה" on the opponent's card when it can be sent: opens (or closes) the picker aimed at it [D45]. */
   onInterfere?: () => void;
-  /** ⚡ while it can't be sent (short of points says why, §8.1). */
+  /** "הפרעה" while it can't be sent: the screen says why (§8.1). */
   onInterfereBlocked?: (state: InterferenceModel) => void;
-  /** Each card's drop-target state while the arsenal is open (useArsenal's `cardProps`). */
-  myDrop?: ArsenalCardProps;
-  opponentDrop?: ArsenalCardProps;
-  /** The view around the opponent's card, measured in the window as the arsenal's drop zone. */
+  /** Each card's target state while the interference picker is open (useArsenal's `cardProps`). */
+  myTarget?: ArsenalCardProps;
+  opponentTarget?: ArsenalCardProps;
+  /** The view around the opponent's card, measured in the window for the picker's scrim hole. */
   opponentRef?: (node: Measurable | null) => void;
   /** The opponent card's menu (D19): whether they are muted, and what opens it (a long press). */
   opponentMenu?: { muted: boolean; onOpen: () => void };
@@ -82,8 +83,8 @@ export function DuelHud({
   reactionsExpanded = false,
   onInterfere,
   onInterfereBlocked,
-  myDrop,
-  opponentDrop,
+  myTarget,
+  opponentTarget,
   opponentRef,
   opponentMenu,
   onCardLayout,
@@ -112,7 +113,7 @@ export function DuelHud({
       botLevel={opponentBotLevel}
       onInterfere={onInterfere}
       onInterfereBlocked={onInterfereBlocked}
-      {...opponentDrop}
+      {...opponentTarget}
       testID="card-opponent"
     />
   );
@@ -130,11 +131,11 @@ export function DuelHud({
           onSurrender={onSurrender}
           onReactions={onReactions}
           reactionsExpanded={reactionsExpanded}
-          {...myDrop}
+          {...myTarget}
           testID="card-me"
         />
       </View>
-      {/* Not flattened on Android: the arsenal measures this view in the window (its drop zone). */}
+      {/* Not flattened on Android: the picker measures this view in the window (its scrim's hole). */}
       <View ref={opponentRef} collapsable={false} onLayout={onTheirs} testID={`${testID}-theirs`}>
         {opponentMenu ? (
           <CardMenuTrigger name={theirName} muted={opponentMenu.muted} onOpen={opponentMenu.onOpen}>

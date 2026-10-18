@@ -31,7 +31,7 @@
  */
 import type { AddressInfo } from 'node:net';
 
-import { eloChanges, type GameConfig, type GameType } from '@sudoku-fight/engine';
+import { eloChanges, type GameConfig, type GameType, INTERFERENCE_KINDS } from '@sudoku-fight/engine';
 import {
   type AdminGameDetail,
   type AdminGameRow,
@@ -378,6 +378,10 @@ describe('RATING_OPTION=B (the default): one rating per game type', () => {
       .orderBy(asc(gameEvents.seq));
     expect(events[0]!.type).toBe('gameCreated');
     expect((events[0]!.payload as { config: GameConfig }).config.puzzle.solution).toBe(PUZZLE.solution);
+    // Both (fake) apps declared every kind when they searched: the game allows all of them [D47].
+    expect((events[0]!.payload as { config: GameConfig }).config.rules.interferenceKinds).toEqual([
+      ...INTERFERENCE_KINDS,
+    ]);
     expect(events.at(-1)!.type).toBe('gameOver');
 
     // ...and the admin API, behind its sign-in, is what reads it (spec §27.3).
@@ -416,7 +420,9 @@ describe('RATING_OPTION=B (the default): one rating per game type', () => {
     // One `searching` per widening: 50, 75, … 300, each the formula's range for its searching time.
     expect(searching[0]).toMatchObject({ elapsedMs: 0, range: 50, extended: false });
     for (const m of searching) expect(m.range).toBe(matchRange(m.elapsedMs, false, RANGE));
-    const ranges = searching.map((m) => m.range);
+    // Cyd is alone in normal-2p: every one of them says so at once (nextRange null, matcher.ts rule 7).
+    for (const m of searching) expect(m.nextRange).toBeNull();
+    const ranges = searching.map((m) => m.range).filter((r, k, all) => k === 0 || r !== all[k - 1]);
     expect(ranges.at(-1)).toBe(300);
     for (let k = 1; k < ranges.length; k++) {
       expect(ranges[k]! - ranges[k - 1]!).toBeGreaterThan(0);
@@ -427,7 +433,7 @@ describe('RATING_OPTION=B (the default): one rating per game type', () => {
     expect(capped.elapsedMs).toBeGreaterThanOrEqual(10 * RANGE.stepMs);
     // Then the timeout, at the deadline: the app's Match-Timeout screen.
     const [timeout] = of(cy, 'timeout');
-    expect(timeout).toMatchObject({ queueKey: 'normal-2p', range: 300, extended: false });
+    expect(timeout).toMatchObject({ queueKey: 'normal-2p', range: 300, extended: false, nextRange: null });
     expect(timeout!.elapsedMs).toBeGreaterThanOrEqual(TIMEOUT_MS);
     const timeoutAt = cy.messages.find((x) => x.m.type === 'timeout')!.at;
     expect(timeoutAt - cy.startedAt).toBeGreaterThanOrEqual(TIMEOUT_MS - 50);
@@ -440,6 +446,7 @@ describe('RATING_OPTION=B (the default): one rating per game type', () => {
       'range > 300',
     );
     expect(beyond.range).toBe(matchRange(beyond.elapsedMs, true, RANGE));
+    for (const m of of(dee, 'searching')) expect(m.nextRange).toBeNull();
     expect(of(dee, 'timeout')).toHaveLength(1);
     await dee.client.stop();
   }, 30_000);
@@ -534,7 +541,7 @@ describe('RATING_OPTION=B (the default): one rating per game type', () => {
   }, 30_000);
 
   it('both players drop in the countdown: the seats are held [D32], they come back, the game is played and rated', async () => {
-    // Jo is back before GO; Kai after it, while the game waits for him (two players: frozen).
+    // Jo is back before GO; Kai after it, in the soft phase his game starts with [D42] (it goes on meanwhile).
     const [jo, kai] = await Promise.all([
       searcher('Jo1', 'fast-2p', { trouble: { dropInCountdownForMs: 50 } }),
       searcher('Kai', 'fast-2p', { trouble: { dropInCountdownForMs: COUNTDOWN_MS + 400 } }),

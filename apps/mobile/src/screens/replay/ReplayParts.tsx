@@ -96,6 +96,7 @@ export function ExplanationCard({
     x.status === 'wrong' ? t('explain.played', { digit: x.played, answer: x.answer }) : null,
     why,
     x.scoreLine ? `${t('explain.scoreLine')}: ${ltr(x.scoreLine)}` : null,
+    x.penaltyLine ? `${t('explain.penaltyLine')}: ${ltr(x.penaltyLine)}` : null,
   ]
     .filter(Boolean)
     .join(' ');
@@ -146,6 +147,14 @@ export function ExplanationCard({
           <Text style={[text('micro'), styles.muted]}>{t('explain.scoreLine')}</Text>
           <Text style={[text('label'), styles.strong, styles.ltr]} testID={testID && `${testID}-score`}>
             {ltr(x.scoreLine)}
+          </Text>
+        </View>
+      ) : null}
+      {x.penaltyLine ? (
+        <View style={styles.formula}>
+          <Text style={[text('micro'), styles.muted]}>{t('explain.penaltyLine')}</Text>
+          <Text style={[text('label'), styles.strong, styles.ltr]} testID={testID && `${testID}-penalty`}>
+            {ltr(x.penaltyLine)}
           </Text>
         </View>
       ) : null}

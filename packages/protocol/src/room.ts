@@ -37,22 +37,33 @@ export interface DevJoinOptions {
   devUserId: string;
   /** The display name: 3–16 characters, Hebrew or English letters, digits, `_` and `.` (spec §3.1). */
   name: string;
+  /**
+   * The interference kinds this app can show [D47], as in MatchmakingJoinOptions: the room's game allows only
+   * the kinds every seat declared (roomInterferenceKinds), unless `rules.interferenceKinds` of the create
+   * options set them. Absent: LEGACY_INTERFERENCE_KINDS.
+   */
+  interferenceKinds?: string[];
 }
 
-/** Rules a dev or test room may change (e.g. a short grace period for tests); refused in production. */
+/**
+ * Rules a dev or test room may change (e.g. a short grace period for tests, or softGraceMs 0 for a drop that is
+ * hard at once [D42]); refused in production. `interferenceKinds` sets the room's kinds outright, in place of
+ * the intersection of what the seats declared [D47] (unknown kinds are refused as badOptions).
+ */
 export type GameRoomRuleOverrides = Partial<
   Pick<
     Rules,
     | 'graceMs'
+    | 'softGraceMs'
     | 'thinkTimeMs'
     | 'turnPickMs'
     | 'turnModel'
     | 'interferences'
+    | 'interferenceKinds'
     | 'interferenceMs'
     | 'interferenceImmunityMs'
     | 'relockCooldownMs'
     | 'reactionCooldownMs'
-    | 'mistakePenaltyCap'
   >
 >;
 

@@ -1,7 +1,8 @@
 # מועמדים לצלילים הסופיים
 
 שלב "צלילים סופיים וכיול עוצמות" בתוכנית העבודה.
-לכל אחד מ־30 הצלילים בטבלה של `docs/design/motion.md`, סעיף 8, יש כאן **קובץ מועמד אחד**, בשם של הצליל.
+לכל אחד מ־29 צלילים בטבלה של `docs/design/motion.md`, סעיף 8, יש כאן **קובץ מועמד אחד**, בשם של הצליל.
+לשלושת צלילי ההפרעות החדשים (`hit_scramble`, ‏`hit_ink`, ‏`hit_keypad`, ‏D47) עוד אין מועמד. המועמד של `interfere_whoosh` נמחק ב־2026-10-18: הצליל היה של הגרירה, ואין יותר גרירה (D45).
 
 **האפליקציה עדיין משמיעה את ה־placeholders.** משה שומע, בוחר, ומקדם מועמד לפי `assets/sounds/README.md`.
 
@@ -16,14 +17,14 @@
 ## רישיון
 
 - **הכל CC0 1.0.** הקרדיטים ונוסח הרישיון: `LICENSE.txt` בתיקייה הזו.
-- 26 קבצים מ־7 חבילות של Kenney.
+- 25 קבצים מ־7 חבילות של Kenney.
 - 4 קבצים מ־OpenGameArt, כל אחד בדף שמסומן CC0: זיקוקים, חתולים, צחקוק והקשת אצבעות. ל־Kenney אין צלילים כאלה.
 - שאר החבילות שנבדקו ולא נבחר מהן: Casino Audio, ‏Voiceover Pack ו־Voiceover Pack: Fighter.
 
 ## פורמט ועיבוד
 
 - **‏WAV, ‏16 ביט, מונו, ‏44.1 kHz.** החבילות של Kenney מגיעות ב־OGG, ו־iOS לא מנגן OGG. לכן הקבצים פוענחו (Web Audio של Chrome) ונשמרו כ־WAV.
-- **הגודל:** 1.36 MB לכל 30 הקבצים. החבילות עצמן לא נכנסו לפרויקט.
+- **הגודל:** 1.33 MB לכל 29 הקבצים. החבילות עצמן לא נכנסו לפרויקט.
 - מה נעשה לכל קובץ:
   1. השקט בהתחלה הוסר (מתחת ל־‎−50 dBFS), וגם הזנב השקט בסוף (60 dB מתחת לשיא).
   2. כשהמקור ארוך מהמותר בסעיף 8, נלקח קטע או קיצור, עם דעיכה בסוף (עמודת "עיבוד").
@@ -46,7 +47,6 @@
 | `wrong` | [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds) | `error_007.ogg` | הגברה ‎−0.1 dB (שיא) | 192 | ‎−10.6 | ‎−1.6 |
 | `lock_tick` | [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds) | `tick_004.ogg` | הגברה ‎−0.1 dB (שיא) | 52 | ‎−12.2 | ‎+5.9 |
 | `arsenal_open` | [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds) | `maximize_008.ogg` | הגברה ‎−2.1 dB | 224 | ‎−10.0 | ‎+0.2 |
-| `interfere_whoosh` | [Kenney RPG Audio](https://kenney.nl/assets/rpg-audio) | `knifeSlice.ogg` | עד 0.5 ש׳, דעיכה 80 ms, הגברה ‎+0.3 dB | 408 | ‎−10.0 | ‎−1.6 |
 | `interfere_launch` | [Kenney Sci-fi Sounds](https://kenney.nl/assets/sci-fi-sounds) | `explosionCrunch_002.ogg` | עד 0.6 ש׳, דעיכה 250 ms, הגברה ‎0.0 dB (שיא) | 600 | ‎−11.3 | ‎+1.9 |
 | `hit_fireworks` | [OpenGameArt, rubberduck](https://opengameart.org/content/25-cc0-bang-firework-sfx) | `fw_04.ogg` | דעיכה 300 ms, הגברה ‎−0.9 dB (שיא) | 2244 | ‎−18.1 | ‎−5.6 |
 | `hit_cats` | [OpenGameArt, Kerzoven](https://opengameart.org/content/cat-purr-meow) | `cat_mewfood.wav` | דעיכה 100 ms, הגברה ‎+2.5 dB | 1125 | ‎−10.0 | ‎−3.8 |
@@ -83,7 +83,6 @@
 | `wrong` | זמזום נמוך, 192 ms. ברור גם ברמקול של טלפון | Interface Sounds ‏`error_008` (רך יותר, ושקט ב־8 dB) |
 | `lock_tick` | טיק של 52 ms, כמו שעון | Interface Sounds ‏`tick_002` |
 | `arsenal_open` | החלקה נמוכה ועולה, C4 עד G4 | Interface Sounds ‏`maximize_007` (גבוה יותר) |
-| `interfere_whoosh` | "ווש" של אוויר: רעש, בלי צלצול של מתכת | RPG Audio ‏`cloth1` (רך יותר, של בד) |
 | `interfere_launch` | פיצוץ "פריך", מקוצר ל־0.6 שניות | Impact Sounds ‏`impactPunch_medium_000` (חבטה) |
 | `hit_fireworks` | הקלטה של זיקוקים אמיתיים: פיצוצים ופצפוצים, 2.2 שניות | מאותו דף: `fw_loop.ogg` (לופ של 15 שניות, לוקחים ממנו קטע) |
 | `hit_cats` | שני "מיאו" אמיתיים | OpenGameArt, ‏"Kitten Mew" של AntumDeluge ‏(`kitten_mew-1.wav`) |

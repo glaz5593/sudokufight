@@ -1,4 +1,4 @@
-import { type HostUpdate, THINK_TIME_MS } from '@sudoku-fight/engine';
+import { type HostUpdate, missedPoints, THINK_TIME_MS } from '@sudoku-fight/engine';
 import { MUTED_REACTION_EMOJI } from '@sudoku-fight/protocol';
 
 import { effectsOf, matchEffectsOf, type UiEffect } from '../effects';
@@ -7,12 +7,19 @@ import { answerIn, emptyCellsOf, PUZZLE, testHost, wrongIn } from '../testing/pr
 const EMPTY = emptyCellsOf(PUZZLE);
 const [A, B, C] = EMPTY as [number, number, number];
 
-/** A real game (me and a bot, or me alone) whose updates are turned into effects as they come. */
+/**
+ * A real game (me and a bot, or me alone) whose updates are turned into effects as they come. Interferences
+ * are on, so the match effects can be seen (a practice against a bot has none by default, D44).
+ */
 function game(players: 'solo' | 'withBot' = 'withBot') {
   const t =
     players === 'solo'
       ? testHost()
-      : testHost({ mode: 'bot', players: [{ id: 'me' }, { id: 'bot', isBot: true }] });
+      : testHost({
+          mode: 'bot',
+          players: [{ id: 'me' }, { id: 'bot', isBot: true }],
+          rules: { interferences: true },
+        });
   const updates: HostUpdate[] = [];
   t.host.subscribe((u) => updates.push(u));
   /** The effects of the updates since the last call. */
@@ -51,6 +58,8 @@ describe('effectsOf (spec §6.2–§6.5)', () => {
     g.host.select(A);
     g.next();
     const digit = wrongIn(PUZZLE, A);
+    // The engine's penalty (§6.5): what the right digit would have scored there.
+    const penalty = missedPoints(g.host.getView().grid, A, answerIn(PUZZLE, A)).points;
     g.host.place(A, digit);
     expect(g.next()).toEqual([
       {
@@ -58,9 +67,9 @@ describe('effectsOf (spec §6.2–§6.5)', () => {
         seq: expect.any(Number),
         cell: A,
         digit,
-        penalty: 1,
+        penalty,
         playerId: 'me',
-        score: -1,
+        score: -penalty,
         byMe: true,
       },
       { kind: 'released', seq: expect.any(Number), cell: A, reason: 'mistake', playerId: 'me', byMe: true },
@@ -93,18 +102,74 @@ describe('effectsOf (spec §6.2–§6.5)', () => {
     expect(g.host.getView().players[0]!.score).toBe(0);
   });
 
-  it('other refusals carry the reason, and the cell when the action had one', () => {
+  it('other refusals carry the reason, the refused action, and the cell when the action had one', () => {
     const g = game('solo');
     g.host.select(A);
     g.host.release();
     g.next();
     g.host.select(A); // the re-lock wait [D2]
-    expect(g.next()).toEqual([{ kind: 'refused', reason: 'cooldown', cell: A }]);
+    expect(g.next()).toEqual([{ kind: 'refused', reason: 'cooldown', action: 'select', cell: A }]);
     g.host.release(); // nothing to let go of
-    expect(g.next()).toEqual([{ kind: 'refused', reason: 'noLock' }]);
+    expect(g.next()).toEqual([{ kind: 'refused', reason: 'noLock', action: 'release' }]);
     const given = [...PUZZLE.givens].findIndex((c) => c !== '0');
     g.host.select(given);
-    expect(g.next()).toEqual([{ kind: 'refused', reason: 'cellFilled', cell: given }]);
+    expect(g.next()).toEqual([{ kind: 'refused', reason: 'cellFilled', action: 'select', cell: given }]);
+  });
+
+  it('a refused interference says it was an interference, whatever the reason [D45]', () => {
+    const g = game();
+    g.host.interfere('bot', 'cats'); // no points yet
+    expect(g.next()).toEqual([{ kind: 'refused', reason: 'notEnoughPoints', action: 'interfere' }]);
+    // The bot drops and the game freezes: the engine says 'paused' before anything about the interference.
+    g.host.dispatch({ type: 'disconnect', playerId: 'bot' });
+    expect(g.host.getView().status).toBe('paused');
+    g.next();
+    g.host.interfere('bot', 'cats');
+    expect(g.next()).toEqual([{ kind: 'refused', reason: 'paused', action: 'interfere' }]);
+    // A select refused for the same reason is a select's refusal, not an interference's.
+    g.host.select(A);
+    expect(g.next()).toEqual([{ kind: 'refused', reason: 'paused', action: 'select', cell: A }]);
+  });
+
+  it('a move made offline [D42]: scored as any, marked offline; refused, it is lost (no penalty)', () => {
+    const g = game();
+    g.host.dispatch({ type: 'disconnect', playerId: 'me', soft: true });
+    g.scheduler.advance(3000);
+    g.host.dispatch({ type: 'reconnect', playerId: 'me' });
+    g.next();
+    g.host.dispatch({
+      type: 'offlineMove',
+      playerId: 'me',
+      cell: A,
+      digit: answerIn(PUZZLE, A),
+      thinkMs: 2000,
+    });
+    const fx = g.next();
+    expect(fx.map((x) => x.kind)).toEqual(['locked', 'correct']);
+    expect(fx[1]).toMatchObject({ kind: 'correct', cell: A, byMe: true, offline: true });
+    g.host.dispatch({
+      type: 'offlineMove',
+      playerId: 'me',
+      cell: B,
+      digit: wrongIn(PUZZLE, B),
+      thinkMs: 500,
+    });
+    expect(g.next().find((x) => x.kind === 'wrong')).toMatchObject({ cell: B, offline: true });
+    // Online moves carry no mark.
+    g.host.select(C);
+    g.host.place(C, answerIn(PUZZLE, C));
+    expect(g.next().find((x) => x.kind === 'correct')).not.toHaveProperty('offline');
+
+    // The server refused one on the return (the cell was taken meanwhile): the player lost it.
+    const refused: HostUpdate = {
+      kind: 'rejected',
+      action: { type: 'offlineMove', cell: A, digit: 4, thinkMs: 900 },
+      reason: 'cellTaken',
+      view: g.host.getView(),
+    };
+    expect(effectsOf(refused, 'me')).toEqual([
+      { kind: 'offlineLost', cell: A, digit: 4, reason: 'cellTaken' },
+    ]);
   });
 
   it('releases by cancel, switch and timeout', () => {

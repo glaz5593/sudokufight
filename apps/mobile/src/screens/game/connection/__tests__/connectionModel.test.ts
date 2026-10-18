@@ -272,11 +272,121 @@ describe('connectionModel: my connection (Self-Reconnecting)', () => {
     });
   });
 
+  it('inside the soft phase [D42]: only the mark (no overlay, input not blocked); after it, Self-Reconnecting', () => {
+    const game = rankedGame();
+    const lostAt = game.now();
+    const status: ConnectionStatus = {
+      kind: 'reconnecting',
+      attempt: 2,
+      lostAt,
+      softEndsAt: lostAt + 10_000,
+      graceEndsAt: lostAt + 25_000,
+    };
+    const offline = connectionModel(game.view(), status, lostAt + 3200, { softGraceMs: 10_000 });
+    expect(offline).toEqual({ kind: 'selfOffline', softEndsAt: lostAt + 10_000, secondsLeft: 7 });
+    expect(blocksInput(offline)).toBe(false);
+    expect(holdsResults(offline)).toBe(false);
+    // Past it: the hard phase, counting down to the end of the grace (soft + grace after the loss).
+    expect(connectionModel(game.view(), status, lostAt + 10_000, { softGraceMs: 10_000 })).toEqual({
+      kind: 'selfReconnecting',
+      phase: 'lost',
+      attempt: 2,
+      secondsLeft: 15,
+      remainingMs: 15_000,
+      graceMs: GRACE,
+      syncItems: ['board', 'score', 'locks', 'timers'],
+    });
+    // Without the host's own end of the grace: lostAt + the soft phase + the grace.
+    const bare: ConnectionStatus = { kind: 'reconnecting', attempt: 1, lostAt };
+    expect(connectionModel(game.view(), bare, lostAt + 12_000, { softGraceMs: 10_000 })).toMatchObject({
+      phase: 'lost',
+      remainingMs: 13_000,
+    });
+  });
+
+  it('resyncing inside the soft phase is still only the mark; the synced banner only follows a hard outage', () => {
+    const game = rankedGame();
+    const lostAt = game.now();
+    const status: ConnectionStatus = { kind: 'resyncing', lostAt, softEndsAt: lostAt + 10_000 };
+    expect(connectionModel(game.view(), status, lostAt + 1000)).toMatchObject({ kind: 'selfOffline' });
+    expect(connectionModel(game.view(), status, lostAt + 10_000)).toMatchObject({
+      kind: 'selfReconnecting',
+      phase: 'syncing',
+    });
+    // The host sets resyncedAt only after the hard phase: a soft return is 'online' with none.
+    expect(connectionModel(game.view(), { kind: 'online', resyncedAt: null }, lostAt + 2000)).toEqual({
+      kind: 'none',
+    });
+  });
+
+  it('the soft phase means nothing to me once I am out of the game (3–4 players)', () => {
+    const game = rankedGame([MOSHE_INFO, NINA_INFO, AIKO_INFO]);
+    game.surrender(ME);
+    const status: ConnectionStatus = {
+      kind: 'reconnecting',
+      attempt: 1,
+      lostAt: T0,
+      softEndsAt: T0 + 10_000,
+    };
+    expect(connectionModel(game.view(), status, T0 + 1000)).toMatchObject({
+      kind: 'selfReconnecting',
+      phase: 'lost',
+    });
+  });
+
   it('comes before a frozen opponent: my own view is stale meanwhile', () => {
     const game = rankedGame();
     game.disconnect(NINA);
     const model = connectionModel(game.view(), { kind: 'reconnecting', attempt: 1, lostAt: T0 }, T0);
     expect(model.kind).toBe('selfReconnecting');
+  });
+
+  it('my soft phase in a game frozen for the opponent (nothing to play here): the freeze screen stays [D42]', () => {
+    const game = rankedGame();
+    game.disconnect(NINA); // hard: the game is frozen, 15 s for her
+    const lostAt = game.now() + 2000;
+    const status: ConnectionStatus = {
+      kind: 'reconnecting',
+      attempt: 1,
+      lostAt,
+      softEndsAt: lostAt + 10_000,
+      playable: false,
+      graceEndsAt: lostAt + 25_000,
+    };
+    // Not the mark of a soft phase (that would lift the freeze and leave the board open, every tap refused).
+    const frozen = connectionModel(game.view(), status, lostAt + 1000, { softGraceMs: 10_000 });
+    expect(frozen).toMatchObject({ kind: 'opponentReconnecting', playerId: NINA, secondsLeft: 12 });
+    expect(blocksInput(frozen)).toBe(true);
+    const back: ConnectionStatus = { ...status, kind: 'resyncing' };
+    expect(connectionModel(game.view(), back, lostAt + 1500, { softGraceMs: 10_000 })).toMatchObject({
+      kind: 'opponentReconnecting',
+    });
+    // Past my soft phase: my own connection first, as always.
+    expect(connectionModel(game.view(), status, lostAt + 10_000, { softGraceMs: 10_000 })).toMatchObject({
+      kind: 'selfReconnecting',
+      phase: 'lost',
+    });
+  });
+
+  it('a running game the host can not play on here (no offline moves, or turns): Self-Reconnecting at once', () => {
+    const game = rankedGame();
+    const lostAt = game.now();
+    const status: ConnectionStatus = {
+      kind: 'reconnecting',
+      attempt: 1,
+      lostAt,
+      softEndsAt: lostAt + 10_000,
+      playable: false,
+      graceEndsAt: lostAt + 25_000,
+    };
+    for (const view of [game.view(), withTurns(game.view())]) {
+      const model = connectionModel(view, status, lostAt + 1000, { softGraceMs: 10_000 });
+      expect(model).toMatchObject({ kind: 'selfReconnecting', phase: 'lost', remainingMs: 24_000 });
+      expect(blocksInput(model)).toBe(true);
+    }
+    // A status that does not say (hand-made, or an older host): the soft phase's mark, as before.
+    const { playable: _playable, ...unsaid } = status;
+    expect(connectionModel(game.view(), unsaid, lostAt + 1000)).toMatchObject({ kind: 'selfOffline' });
   });
 });
 
@@ -318,6 +428,21 @@ describe('connectionModel: a disconnected opponent (Opponent-Reconnecting)', () 
     game.advance(5000);
     game.reconnect(NINA);
     expect(connectionModel(game.view(), ONLINE, game.now())).toEqual({ kind: 'none' });
+  });
+
+  it('an opponent in the soft phase [D42]: the game runs, nothing is shown (their card has the mark)', () => {
+    const game = rankedGame();
+    game.disconnect(NINA, { soft: true });
+    expect(game.view().status).toBe('running');
+    expect(game.view().players[1]).toMatchObject({ connected: true, softEndsAt: game.now() + 10_000 });
+    expect(connectionModel(game.view(), ONLINE, game.now())).toEqual({ kind: 'none' });
+    // Not back by its end: the freeze, counting the grace after it.
+    game.advance(10_000);
+    expect(connectionModel(game.view(), ONLINE, game.now())).toMatchObject({
+      kind: 'opponentReconnecting',
+      playerId: NINA,
+      secondsLeft: 15,
+    });
   });
 
   it('does not freeze a game of 3 (the cards show it)', () => {
@@ -366,6 +491,8 @@ describe('connectionModel: a disconnected opponent (Opponent-Reconnecting)', () 
 describe('connectionModel: the game is over', () => {
   it('shows "the opponent left" when a 2-player game is won by abandonment', () => {
     const game = rankedGame();
+    game.solve(ME); // I have moved, and Nina was not ahead: a full win (spec §11.2)
+    const myScore = game.view().players.find((p) => p.id === ME)!.score;
     game.disconnect(NINA);
     game.advance(GRACE);
     const view = game.view();
@@ -376,13 +503,49 @@ describe('connectionModel: the game is over', () => {
       playerId: NINA,
       name: 'NinaVolt',
       colorIndex: 1,
-      me: { id: ME, name: 'MosheG', score: 0 },
+      me: { id: ME, name: 'MosheG', score: myScore },
       opponentScore: 0,
       ratingDelta: view.result!.ratingChanges.find((c) => c.playerId === ME)!.delta,
+      ratingGuard: null,
       gameType: view.gameType,
       graceSeconds: 15,
     });
     expect((model as Extract<ConnectionModel, { kind: 'opponentLeft' }>).ratingDelta).toBeGreaterThan(0);
+  });
+
+  it('says why my rating did not move when the opponent left before my first move (spec §11.2)', () => {
+    const game = rankedGame();
+    game.disconnect(NINA);
+    game.advance(GRACE);
+    expect(connectionModel(game.view(), ONLINE, game.now())).toMatchObject({
+      kind: 'opponentLeft',
+      ratingDelta: 0,
+      ratingGuard: 'opponentLeftBeforeMyMove',
+    });
+  });
+
+  it('says why my rating did not move when the opponent left ahead of me (spec §11.2)', () => {
+    const game = rankedGame();
+    game.solve(NINA);
+    game.miss(ME); // I have moved, and trail
+    const [me, nina] = game.view().players;
+    expect(nina!.score).toBeGreaterThan(me!.score);
+    game.disconnect(NINA);
+    game.advance(GRACE);
+    expect(connectionModel(game.view(), ONLINE, game.now())).toMatchObject({
+      kind: 'opponentLeft',
+      ratingDelta: 0,
+      ratingGuard: 'opponentLeftAhead',
+    });
+  });
+
+  it('a result stored without ratingPairs has no reason', () => {
+    const game = rankedGame();
+    game.disconnect(NINA);
+    game.advance(GRACE);
+    const view = game.view();
+    delete view.result!.ratingPairs;
+    expect(connectionModel(view, ONLINE, game.now())).toMatchObject({ ratingGuard: null });
   });
 
   it('shows it whatever the socket does now (the result is known)', () => {
@@ -394,6 +557,36 @@ describe('connectionModel: the game is over', () => {
     expect(
       connectionModel(game.view(), { kind: 'reconnecting', attempt: 1, lostAt: T0 }, game.now()).kind,
     ).toBe('opponentLeft');
+  });
+
+  it('says the time a lost connection had: the soft phase and the grace [D42]', () => {
+    const game = rankedGame();
+    game.solve(ME);
+    game.disconnect(NINA, { soft: true });
+    game.advance(10_000 + GRACE);
+    expect(connectionModel(game.view(), ONLINE, game.now(), { softGraceMs: 10_000 })).toMatchObject({
+      kind: 'opponentLeft',
+      graceSeconds: 25,
+    });
+    // The host saw it begin as a drop: the same.
+    expect(
+      connectionModel(game.view(), ONLINE, game.now(), { softGraceMs: 10_000, hardLeavers: [] }),
+    ).toMatchObject({ graceSeconds: 25 });
+  });
+
+  it('a leave that was hard at once (no soft phase): the grace alone, the time the opponent really had [D42]', () => {
+    const game = rankedGame();
+    game.solve(ME);
+    game.disconnect(NINA); // a deliberate leave, or a seat empty at GO
+    game.advance(GRACE);
+    expect(game.view().status).toBe('over');
+    expect(
+      connectionModel(game.view(), ONLINE, game.now(), { softGraceMs: 10_000, hardLeavers: [NINA] }),
+    ).toMatchObject({ kind: 'opponentLeft', graceSeconds: 15 });
+    // Only for that opponent: another's hard leave says nothing about hers.
+    expect(
+      connectionModel(game.view(), ONLINE, game.now(), { softGraceMs: 10_000, hardLeavers: [AIKO] }),
+    ).toMatchObject({ graceSeconds: 25 });
   });
 
   it('has no rating change in an unrated game, and says the grace that ran out', () => {
@@ -441,6 +634,7 @@ const label = (m: ConnectionModel): string =>
 describe('what the screen does around the model', () => {
   const kinds: [ConnectionModel, boolean, boolean][] = [
     [{ kind: 'none' }, false, false],
+    [{ kind: 'selfOffline', softEndsAt: T0, secondsLeft: 4 }, false, false],
     [{ kind: 'connecting', step: 'server' }, true, false],
     [lobbyOf(lobby()), true, false],
     [
@@ -505,6 +699,7 @@ describe('what the screen does around the model', () => {
         me: { id: ME, name: null, score: 0 },
         opponentScore: 0,
         ratingDelta: null,
+        ratingGuard: null,
         gameType: 'fast',
         graceSeconds: 15,
       },

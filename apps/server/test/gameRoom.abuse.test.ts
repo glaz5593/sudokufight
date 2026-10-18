@@ -10,7 +10,8 @@
  * - Seats and tokens: a full room, a started game, forged and used reconnection tokens, and what a stolen one
  *   can do (a bearer secret: noted for stage 8).
  * - Leaving and the grace: everybody leaves (the game is kept), a reconnection that dies half way, a return
- *   just after the grace ran out, coming back after the end.
+ *   just after the grace ran out, coming back after the end. A connection that drops gets the soft phase of
+ *   [D42] first (here a short one, then the grace); leaving on purpose does not.
  * - Memory: after many games every room is closed and no game timer is left.
  */
 import type { AddressInfo } from 'node:net';
@@ -122,6 +123,8 @@ afterAll(async () => {
 const [C1, C2] = emptyCells(PUZZLE) as [number, number];
 /** Short graces everywhere, so every room of this file closes soon after its test. */
 const GRACE_MS = 600;
+/** And a short soft phase of a lost connection before them [D42] (the default is 10 s). */
+const SOFT_GRACE_MS = 200;
 
 async function until(done: () => boolean, what: string, ms = 4000): Promise<void> {
   const end = Date.now() + ms;
@@ -214,7 +217,7 @@ async function create(id: string, options: Partial<GameRoomCreateOptions> = {}):
     private: true,
     ...joinOptions(id),
     ...rest,
-    rules: { graceMs: GRACE_MS, ...rules },
+    rules: { graceMs: GRACE_MS, softGraceMs: SOFT_GRACE_MS, ...rules },
   });
   return new Player(room, id);
 }
@@ -390,6 +393,7 @@ describe('garbage on the wire', () => {
       interfere: wide,
       react: wide,
       surrender: wide,
+      offlineMove: wide,
       ping: wide,
     };
     Object.assign(room, { gate: new MessageGate({ now: Date.now, limits, abuseLimit: wide }) });
@@ -611,8 +615,8 @@ describe('seats and tokens', () => {
 // ---------------------------------------------------------------------------------------------------------
 
 describe('leaving and the grace (spec §16.2)', () => {
-  it('a phone that goes silent (airplane mode: no goodbye, no answers) is noticed within 4.5 s, and its grace starts then', async () => {
-    const [ana, ben] = await startTwo({ rules: { graceMs: 15_000 } });
+  it('a phone that goes silent (airplane mode: no goodbye, no answers) is noticed within 4.5 s, and its soft phase starts then', async () => {
+    const [ana, ben] = await startTwo({ rules: { graceMs: 15_000, softGraceMs: 10_000 } }); // the defaults
     const { pingInterval, pingMaxRetries } = HEARTBEAT;
     // The transport ticks at this interval and cuts after these retries (app.ts hands it HEARTBEAT).
     expect(server.transport).toMatchObject({ pingIntervalMS: pingInterval, pingMaxRetries });
@@ -633,7 +637,7 @@ describe('leaving and the grace (spec §16.2)', () => {
     };
     socket.removeAllListeners('pong');
     await until(
-      () => ben.events.some((e) => e.type === 'playerDisconnected'),
+      () => ben.events.some((e) => e.type === 'playerConnectionLost'),
       'the drop',
       4 * pingInterval * (pingMaxRetries + 1),
     );
@@ -641,13 +645,16 @@ describe('leaving and the grace (spec §16.2)', () => {
     // without an answer, then terminate(). On time, that is within pingInterval * (pingMaxRetries + 1) ms.
     expect(cut).toBe(true);
     expect(pings).toBeLessThanOrEqual(pingMaxRetries);
-    // Work plan, stage 7: 20 s of airplane mode is abandonment, so the drop must be noticed well before 5 s.
+    // The device checks time airplane mode from the moment the network dies [D42]: about 5 s shows the other
+    // player only the mark, about 14 s "Reconnecting… 15", about 30 s ends in abandonment. So the drop must be
+    // noticed well before 5 s.
     expect(pingInterval * (pingMaxRetries + 1)).toBeLessThan(5000);
-    const dropped = ben.events.find((e) => e.type === 'playerDisconnected')!;
-    expect(dropped.type === 'playerDisconnected' && dropped.graceEndsAt - dropped.t).toBe(15_000);
-    await ben.event('gamePaused');
+    const lost = ben.events.find((e) => e.type === 'playerConnectionLost')!;
+    expect(lost.type === 'playerConnectionLost' && lost.softEndsAt - lost.t).toBe(10_000);
+    // A mark only: the game goes on (the grace and the freeze come at the soft phase's end).
+    expect(roomOf(ben.code)!.currentGame!.state.status).toBe('running');
     expect(await ana.gone()).toBe(1006); // cut, not closed
-    ben.act('surrender'); // end it here, rather than 15 s later
+    ben.act('surrender'); // end it here, rather than 25 s later
     await ben.event('gameOver');
     await leaveAll(ben);
   }, 30_000);
@@ -690,6 +697,9 @@ describe('leaving and the grace (spec §16.2)', () => {
       client,
       CloseCode.FAILED_TO_RECONNECT,
     );
+    // Not a goodbye: a lost connection, its soft phase first [D42], then the grace and the freeze.
+    await ana.event('playerConnectionLost');
+    expect(ana.events.find((e) => e.type === 'playerConnectionLost')).toMatchObject({ playerId: 'ben' });
     await ana.event('playerDisconnected');
     await ana.event('gamePaused');
     expect(room.currentGame!.state.players.find((p) => p.id === 'ben')!.connected).toBe(false);
@@ -703,15 +713,15 @@ describe('leaving and the grace (spec §16.2)', () => {
   it('back just after the grace ran out, before the engine timer fired: a snapshot, the abandonment, one solution', async () => {
     const [ana, ben] = await startTwo({ rules: { graceMs: 300 } });
     const token = ben.room.reconnectionToken;
-    scheduler.hold = true; // the engine's grace timer will be late
+    scheduler.hold = true; // the engine's timers will be late: the soft phase's end [D42], then the grace's
     let back: Player;
     try {
       void ben.room.leave(false);
-      await ana.event('playerDisconnected');
-      // Just past graceEndsAt (the server's clock is this process's): Colyseus holds the seat
-      // RECONNECT_SLACK_MS (1 s) more, so the sooner the return starts after the grace, the more of that it has.
-      const dropped = ana.events.find((e) => e.type === 'playerDisconnected')!;
-      const graceEndsAt = dropped.type === 'playerDisconnected' ? dropped.graceEndsAt : 0;
+      await ana.event('playerConnectionLost');
+      // Just past the grace that follows the soft phase (the server's clock is this process's): Colyseus holds
+      // the seat RECONNECT_SLACK_MS (1 s) more, so the sooner the return starts after it, the more of that it has.
+      const lost = ana.events.find((e) => e.type === 'playerConnectionLost')!;
+      const graceEndsAt = lost.type === 'playerConnectionLost' ? lost.softEndsAt + 300 : 0;
       await until(() => Date.now() > graceEndsAt + 20, 'the end of the grace');
       back = new Player(await sdk.reconnect(token), 'ben');
       await until(() => back.of('solution').length > 0, 'the solution');
@@ -720,7 +730,13 @@ describe('leaving and the grace (spec §16.2)', () => {
     }
     await Promise.all([back.fence(), ana.fence()]);
     expect(back.messages[0]!.type).toBe('snapshot');
-    expect(back.events.map((e) => e.type)).toEqual(['playerAbandoned', 'gameOver']);
+    // Both late timers run before the return is taken, in order: the hard phase, then the abandonment.
+    expect(back.events.map((e) => e.type)).toEqual([
+      'playerDisconnected',
+      'gamePaused',
+      'playerAbandoned',
+      'gameOver',
+    ]);
     expect(back.of('solution')).toHaveLength(1);
     expect(ana.of('solution')).toHaveLength(1);
     expect(back.mirror().result?.ranking.map((r) => r.playerId)).toEqual(['ana', 'ben']);

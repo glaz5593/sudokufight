@@ -38,6 +38,12 @@ export interface GameConfig {
 
 export type PlayerStatus = 'active' | 'surrendered' | 'abandoned';
 
+/**
+ * One player's [score, moves] at the moment a leaving is judged (spec §11.2, the leave guards): moves = correct
+ * + mistakes, digit entries only. A tuple, to keep the 4-player snapshot within its budget (spec §18).
+ */
+export type LeaveStanding = readonly [score: number, moves: number];
+
 export interface BestMove {
   cell: CellIndex;
   digit: Digit;
@@ -49,14 +55,37 @@ export interface PlayerState {
   id: PlayerId;
   seat: number;
   status: PlayerStatus;
+  /** False from the hard phase of a lost connection on (spec §16.2); still true in the soft phase [D42]. */
   connected: boolean;
   /** Set while disconnected (spec §16.2). */
   graceEndsAt: number | null;
+  /**
+   * The soft phase of a lost connection [D42]: the player is only marked, the game goes on as usual, and at this
+   * time the hard phase starts (playerDisconnected, graceEndsAt = softEndsAt + graceMs). Absent otherwise, and in
+   * older snapshots: the key is left out, not set to null, for the snapshot budget (spec §18). isSoftOffline().
+   */
+  softEndsAt?: number;
+  /**
+   * After a return [D42]: moves made offline (`offlineMove`) are taken until `until` (inclusive), `left` more at
+   * most. Absent when none are (the key is left out, as above). A new loss of the connection ends it. It stands
+   * still while the game is frozen (no move is taken then): gameResumed moves `until` on, so a return during a
+   * freeze has its whole window from the resume.
+   */
+  offlineWindow?: { until: number; left: number };
   /** 1 for the first player out (surrendered or abandoned), 2 for the next … */
   outOrder: number | null;
+  /**
+   * By seat: everyone's [score, moves] at the moment this player's leaving is judged (spec §11.2): taken at a
+   * surrender, and at the connection loss (kept through the grace, cleared on reconnect) for an abandonment
+   * (rules.rating.abandonJudgedAt). Absent while in the game and connected (and in older snapshots): the key
+   * itself is left out, not set to null, because a 4-player snapshot is close to its 4 KB budget (spec §18).
+   */
+  leaveStandings?: LeaveStanding[];
 
   score: number;
   mistakes: number;
+  /** The penalty of each of this player's mistakes, oldest first (§6.5); length = mistakes. */
+  mistakePenalties: number[];
   correct: number;
   /** Sum of the points of correct moves, before penalties and interference costs. */
   pointsGained: number;
@@ -140,6 +169,12 @@ export interface GameState {
 /**
  * What a player can do (spec §18, client → server). De-duplication by clientSeq and rate limits are the
  * server's job (spec §21); the engine sees each action once.
+ *
+ * `offlineMove` [D42]: a digit the player entered on his phone while his connection was lost, sent when he is
+ * back (within rules.offlineMovesWindowMs of playerReconnected, at most rules.offlineMovesMax). It is decided
+ * now, on the board as it is now: if the cell is still free for him it is locked (if he does not hold it) and
+ * placed like any digit, with `offline: true` and his own think time clamped to [0, thinkTimeMs]; otherwise it is
+ * refused with no penalty (cellFilled, cellTaken, digitTried, digitComplete): he lost the cell.
  */
 export type PlayerAction = { playerId: PlayerId } & (
   | { type: 'select'; cell: CellIndex }
@@ -148,11 +183,18 @@ export type PlayerAction = { playerId: PlayerId } & (
   | { type: 'interfere'; targetId: PlayerId; kind: InterferenceKind }
   | { type: 'react'; emoji: string }
   | { type: 'surrender' }
+  | { type: 'offlineMove'; cell: CellIndex; digit: Digit; thinkMs: number }
 );
 
-/** What the host does: start the game, report connections. */
+/**
+ * What the host does: start the game, report connections. A `disconnect` with `soft` is a connection that
+ * dropped: it starts the soft phase when rules.softGraceMs > 0 [D42]. Without it (a deliberate leave, and the
+ * default) the player is disconnected at once, the grace of [D4] runs, and a soft phase already running hardens.
+ */
 export type SystemAction =
-  { type: 'start' } | { type: 'disconnect'; playerId: PlayerId } | { type: 'reconnect'; playerId: PlayerId };
+  | { type: 'start' }
+  | { type: 'disconnect'; playerId: PlayerId; soft?: boolean }
+  | { type: 'reconnect'; playerId: PlayerId };
 
 export type Action = PlayerAction | SystemAction;
 
@@ -191,7 +233,9 @@ export type RejectReason =
   | 'badEmoji'
   | 'tooSoon'
   | 'alreadyConnected'
-  | 'alreadyDisconnected';
+  | 'alreadyDisconnected'
+  /** An `offlineMove` without an open window: no return just before it, too late, or too many [D42]. */
+  | 'offlineClosed';
 
 // ---------------------------------------------------------------------------------------------------------
 // Events (spec §18, server → client). Every event has an increasing seq and the time it happened.
@@ -238,7 +282,8 @@ export interface GameResult {
   ratingChanges: RatingChange[];
   /**
    * The same changes split by opponent (spec §11.2, Results-4P): present exactly when ratingChanges is not
-   * empty. Absent from results stored before it existed (a ranked game's replay of an older game).
+   * empty. Absent from results stored before it existed (a ranked game's replay of an older game). A pair
+   * held at 0 by a leave guard carries the guard's reason (`guard`), so the results can explain the 0.
    */
   ratingPairs?: RatingPairs[];
   awards: Award[];
@@ -271,6 +316,8 @@ type EventBody =
       breakdown: MoveScore;
       score: number;
       thinkMs: number;
+      /** Entered while the connection was lost, sent on the return (`offlineMove`) [D42]. */
+      offline?: true;
     }
   | {
       type: 'placedWrong';
@@ -280,6 +327,8 @@ type EventBody =
       penalty: number;
       mistakes: number;
       score: number;
+      /** As placedCorrect.offline [D42]. */
+      offline?: true;
     }
   | {
       type: 'interference';
@@ -302,6 +351,11 @@ type EventBody =
       locks: LockTimer[];
     }
   | { type: 'reaction'; playerId: PlayerId; emoji: string }
+  /**
+   * The connection dropped: the soft phase [D42]. Only a mark; the game goes on as usual. At `softEndsAt`, if he
+   * is not back, playerDisconnected follows (the hard phase of spec §16.2).
+   */
+  | { type: 'playerConnectionLost'; playerId: PlayerId; softEndsAt: number }
   | { type: 'playerDisconnected'; playerId: PlayerId; graceEndsAt: number }
   | { type: 'playerReconnected'; playerId: PlayerId }
   | { type: 'playerAbandoned'; playerId: PlayerId }

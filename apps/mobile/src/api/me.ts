@@ -153,3 +153,65 @@ export function leagueRating(ratings: readonly RatingEntry[]): number | null {
   const settled = ratings.filter((r) => !r.provisional);
   return settled.length === 0 ? null : Math.max(...settled.map((r) => r.rating));
 }
+
+/**
+ * A rating entry as the server stores it after one more game in its key (apps/server ratings/store.ts
+ * applyRatingChanges): the new rating, one more game, provisional while under `provisionalGames`, and the peak.
+ * Not RatingChange.provisional: that one says the game's K was doubled, which is another flag.
+ */
+export function ratingEntryAfter(
+  entry: RatingEntry,
+  after: number,
+  gamesBefore: number,
+  provisionalGames: number,
+): RatingEntry {
+  const games = gamesBefore + 1;
+  return {
+    key: entry.key,
+    rating: after,
+    games,
+    provisional: games < provisionalGames,
+    peak: Math.max(entry.peak, after),
+  };
+}
+
+/** `me` with `entry` in place of the entry of its key; the same object when it has no such key (none is made up). */
+export function withRatingEntry(me: Me, entry: RatingEntry): Me {
+  if (!me.ratings.some((r) => r.key === entry.key)) return me;
+  return { ...me, ratings: me.ratings.map((r) => (r.key === entry.key ? entry : r)) };
+}
+
+/**
+ * A ranked game's rating, shown before the server's GET /v1/me has it (auth/authStore.ts showRankedResult): the
+ * server computed it (the game's result), and is still storing it.
+ */
+export interface PendingRating {
+  /** Whose (Me.id): another account never sees it. */
+  meId: string;
+  /** The entry as the server will store it (ratingEntryAfter). */
+  entry: RatingEntry;
+  /** Until when it may be shown over an older answer of the server. */
+  expiresAt: number;
+}
+
+/**
+ * The server's Me, with the pending ratings it does not count yet: a pending entry is shown in place of the
+ * server's while it is this account's, not expired, and the server's entry of its key has fewer games (the
+ * server has not stored that game yet). The others are dropped (stored, expired, or another account's): the
+ * returned `pending` holds only the kept ones.
+ */
+export function withPendingRatings(
+  server: Me,
+  pending: ReadonlyMap<string, PendingRating>,
+  now: number,
+): { me: Me; pending: Map<string, PendingRating> } {
+  let me = server;
+  const kept = new Map<string, PendingRating>();
+  for (const p of pending.values()) {
+    const stored = server.ratings.find((r) => r.key === p.entry.key);
+    if (p.meId !== server.id || p.expiresAt <= now || !stored || stored.games >= p.entry.games) continue;
+    kept.set(p.entry.key, p);
+    me = withRatingEntry(me, p.entry);
+  }
+  return { me, pending: kept };
+}

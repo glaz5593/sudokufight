@@ -87,12 +87,20 @@ describe('avatars [D17]', () => {
   });
 });
 
-describe('interferences [D17]', () => {
-  it('every kind has an unlockLevel, 0 in V1: all three open at any level', () => {
+describe('interferences [D17, D47]', () => {
+  it('every kind has an unlockLevel: the first three open from the start, then scramble 2, ink 3, keypad 4', () => {
     expect(Object.keys(INTERFERENCE_UNLOCK_LEVELS).sort()).toEqual([...INTERFERENCE_KINDS].sort());
     expect(unlockedKinds(null)).toEqual(['fireworks', 'cats', 'warp']);
     expect(unlockedKinds(1)).toEqual(['fireworks', 'cats', 'warp']);
+    expect(unlockedKinds(2)).toEqual(['fireworks', 'cats', 'warp', 'scramble']);
+    expect(unlockedKinds(3)).toEqual(['fireworks', 'cats', 'warp', 'scramble', 'ink']);
+    expect(unlockedKinds(4)).toEqual([...INTERFERENCE_KINDS]);
+    expect(unlockedKinds(30)).toEqual([...INTERFERENCE_KINDS]);
     expect(ARSENAL_CONFIG.unlocked).toEqual(['fireworks', 'cats', 'warp']);
+  });
+
+  it('a kind the table does not name stays locked', () => {
+    expect(unlockedKinds(99, { fireworks: 0 })).toEqual(['fireworks']);
   });
 
   it('a kind above my level stays out of the arsenal until I reach it', () => {

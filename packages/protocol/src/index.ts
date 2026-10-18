@@ -25,11 +25,26 @@ import type { GameRoomCountdown, LobbyPlayer } from './room';
  *   and reconnect, and never carries the solution of a running game (spec §21).
  */
 
+/**
+ * Changes that only add (a new event, a new optional field, a new client message) keep the version: an older
+ * app ignores what it does not know, and a newer app checks the rules before it uses something new. So the
+ * soft phase of [D42] (the `playerConnectionLost` event, PlayerState.softEndsAt / offlineWindow, the optional
+ * `offline` of placedCorrect / placedWrong, the `offlineMove` message) is version 1: an app plays offline only
+ * when the snapshot's rules.softGraceMs > 0, so it never sends `offlineMove` to a server without it.
+ * The interference kinds an app declares on joining [D47] (`interferenceKinds`, interferenceKinds.ts) only add
+ * too: an older server ignores them and keeps its rooms to the kinds it has, which the snapshot's
+ * rules.interferenceKinds tells the app.
+ */
 export const PROTOCOL_VERSION = 1;
 
 // ---------------------------------------------------------------------------------------------------------
 // GameHost
 
+/**
+ * Online, the host may let the player go on while his connection is lost (the soft phase [D42], spec §16.2):
+ * a select takes the cell on the phone, a digit is queued and drawn as waiting, and the moves go to the server
+ * as `offlineMove` on the return; one that lost its cell comes back as a refusal of an `offlineMove`.
+ */
 export interface GameHost {
   /** The player on this device. */
   readonly playerId: PlayerId;
@@ -56,6 +71,12 @@ export const asGameHost = (host: LocalGameHost): GameHost => host;
 /**
  * Client → server, sent as `room.send(message.type, message)`. `clientSeq` is a positive integer that grows
  * with every action (gaps are fine), so the server can drop duplicates (spec §21).
+ *
+ * `offlineMove` {cell, digit, thinkMs} [D42]: a digit the player entered while his connection was lost, sent
+ * in the order made right after the return (the snapshot, then playerReconnected opens a window of
+ * rules.offlineMovesWindowMs for rules.offlineMovesMax moves). Applied: cellLocked if needed, then
+ * placedCorrect / placedWrong with `offline: true`. Lost (the cell is no longer free for him): `rejected` with
+ * the engine's reason, to the sender only, and no penalty. Only to a server whose rules have softGraceMs > 0.
  */
 export type ClientMessage = ({ clientSeq: number } & ClientAction) | { type: 'ping'; t: number };
 
@@ -123,6 +144,7 @@ export const CLIENT_MESSAGE_TYPES = [
   'interfere',
   'react',
   'surrender',
+  'offlineMove',
   'ping',
 ] as const satisfies readonly ClientMessage['type'][];
 
@@ -146,6 +168,7 @@ export * from './telemetry';
 export * from './admin';
 export * from './account';
 export * from './matchmaking';
+export * from './interferenceKinds';
 export * from './history';
 export * from './progress';
 export * from './moderation';

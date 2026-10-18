@@ -1,5 +1,5 @@
 {
- "note": "Generated from assets/sudoku.csv (690 puzzles, format puzzle,solution). Scores per spec §14.",
+ "note": "Generated from assets/sudoku.csv (690 puzzles, format puzzle,solution). Scores per spec §14. A wrong digit costs what the right digit would have scored there at that moment (spec §6.5).",
  "bankStats": {
   "puzzles": 690,
   "minGivens": 30,
@@ -670,7 +670,7 @@
    "players": [
     {
      "seat": 0,
-     "score": 73.5,
+     "score": 68.5,
      "mistakes": 1,
      "correct": 15,
      "interferences": 0,
@@ -1023,8 +1023,8 @@
      "seat": 0,
      "cell": "D2",
      "digit": 4,
-     "penalty": 1,
-     "score": 47,
+     "penalty": 6,
+     "score": 42,
      "expl": {
       "technique": "nakedSingle",
       "cell": "D2",
@@ -1061,7 +1061,7 @@
      "X": 6,
      "Y": 3,
      "points": 6,
-     "score": 53,
+     "score": 48,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A1",
@@ -1095,7 +1095,7 @@
      "X": 6,
      "Y": 6,
      "points": 4.5,
-     "score": 57.5,
+     "score": 52.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "D7",
@@ -1132,7 +1132,7 @@
      "X": 7,
      "Y": 7,
      "points": 3,
-     "score": 60.5,
+     "score": 55.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "C7",
@@ -1167,7 +1167,7 @@
      "X": 8,
      "Y": 8,
      "points": 1.5,
-     "score": 62,
+     "score": 57,
      "expl": {
       "technique": "nakedSingle",
       "cell": "B7",
@@ -1204,7 +1204,7 @@
      "X": 6,
      "Y": 4,
      "points": 5.5,
-     "score": 67.5,
+     "score": 62.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E4",
@@ -1242,7 +1242,7 @@
      "X": 5,
      "Y": 5,
      "points": 6,
-     "score": 73.5,
+     "score": 68.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "G2",
@@ -2031,7 +2031,7 @@
    "players": [
     {
      "seat": 0,
-     "score": 43.5,
+     "score": 40,
      "mistakes": 1,
      "correct": 9,
      "interferences": 0,
@@ -2557,8 +2557,8 @@
      "seat": 0,
      "cell": "E3",
      "digit": 2,
-     "penalty": 1,
-     "score": 32.5,
+     "penalty": 4.5,
+     "score": 29,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E3",
@@ -2600,7 +2600,7 @@
      "X": 7,
      "Y": 7,
      "points": 3,
-     "score": 35.5,
+     "score": 32,
      "expl": {
       "technique": "nakedSingle",
       "cell": "G2",
@@ -2631,7 +2631,7 @@
      "X": 6,
      "Y": 6,
      "points": 4.5,
-     "score": 40,
+     "score": 36.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E2",
@@ -2673,7 +2673,7 @@
      "X": 7,
      "Y": 6,
      "points": 3.5,
-     "score": 43.5,
+     "score": 40,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E3",
@@ -3481,7 +3481,7 @@
    "players": [
     {
      "seat": 0,
-     "score": 55,
+     "score": 52,
      "mistakes": 1,
      "correct": 11,
      "interferences": 0,
@@ -3493,7 +3493,7 @@
     },
     {
      "seat": 1,
-     "score": 39.5,
+     "score": 31.5,
      "mistakes": 2,
      "correct": 8,
      "interferences": 0,
@@ -3806,8 +3806,8 @@
      "seat": 1,
      "cell": "H1",
      "digit": 4,
-     "penalty": 1,
-     "score": 17.5,
+     "penalty": 6,
+     "score": 12.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "H1",
@@ -3883,7 +3883,7 @@
      "X": 6,
      "Y": 4,
      "points": 5.5,
-     "score": 23,
+     "score": 18,
      "expl": {
       "technique": "nakedSingle",
       "cell": "B2",
@@ -3920,7 +3920,7 @@
      "X": 6,
      "Y": 6,
      "points": 4.5,
-     "score": 27.5,
+     "score": 22.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "F3",
@@ -3995,7 +3995,7 @@
      "X": 6,
      "Y": 5,
      "points": 5,
-     "score": 32.5,
+     "score": 27.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "B1",
@@ -4024,8 +4024,8 @@
      "seat": 0,
      "cell": "E9",
      "digit": 3,
-     "penalty": 1,
-     "score": 41.5,
+     "penalty": 4,
+     "score": 38.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E9",
@@ -4056,7 +4056,7 @@
      "X": 7,
      "Y": 5,
      "points": 4,
-     "score": 36.5,
+     "score": 31.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E9",
@@ -4087,7 +4087,7 @@
      "X": 8,
      "Y": 6,
      "points": 2.5,
-     "score": 44,
+     "score": 41,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A2",
@@ -4122,7 +4122,7 @@
      "X": 7,
      "Y": 6,
      "points": 3.5,
-     "score": 47.5,
+     "score": 44.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "I6",
@@ -4149,8 +4149,8 @@
      "seat": 1,
      "cell": "A5",
      "digit": 5,
-     "penalty": 2,
-     "score": 34.5,
+     "penalty": 5,
+     "score": 26.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A5",
@@ -4183,7 +4183,7 @@
      "X": 7,
      "Y": 5,
      "points": 4,
-     "score": 51.5,
+     "score": 48.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "C1",
@@ -4221,7 +4221,7 @@
      "X": 6,
      "Y": 5,
      "points": 5,
-     "score": 39.5,
+     "score": 31.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A5",
@@ -4254,7 +4254,7 @@
      "X": 7,
      "Y": 6,
      "points": 3.5,
-     "score": 55,
+     "score": 52,
      "expl": {
       "technique": "nakedSingle",
       "cell": "I1",
@@ -5066,7 +5066,7 @@
     },
     {
      "seat": 2,
-     "score": 33,
+     "score": 23.5,
      "mistakes": 2,
      "correct": 7,
      "interferences": 0,
@@ -5277,8 +5277,8 @@
      "seat": 2,
      "cell": "D5",
      "digit": 6,
-     "penalty": 1,
-     "score": 12,
+     "penalty": 6.5,
+     "score": 6.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "D5",
@@ -5429,7 +5429,7 @@
      "X": 5,
      "Y": 5,
      "points": 6,
-     "score": 18,
+     "score": 12.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "B9",
@@ -5464,7 +5464,7 @@
      "X": 6,
      "Y": 6,
      "points": 4.5,
-     "score": 22.5,
+     "score": 17,
      "expl": {
       "technique": "nakedSingle",
       "cell": "C9",
@@ -5502,7 +5502,7 @@
      "X": 6,
      "Y": 5,
      "points": 5,
-     "score": 27.5,
+     "score": 22,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A5",
@@ -5530,8 +5530,8 @@
      "seat": 2,
      "cell": "C6",
      "digit": 7,
-     "penalty": 2,
-     "score": 25.5,
+     "penalty": 6,
+     "score": 16,
      "expl": {
       "technique": "nakedSingle",
       "cell": "C6",
@@ -5567,7 +5567,7 @@
      "X": 6,
      "Y": 5,
      "points": 5,
-     "score": 30.5,
+     "score": 21,
      "expl": {
       "technique": "nakedSingle",
       "cell": "F1",
@@ -5830,7 +5830,7 @@
      "X": 8,
      "Y": 6,
      "points": 2.5,
-     "score": 33,
+     "score": 23.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "B3",
@@ -6682,7 +6682,7 @@
    "players": [
     {
      "seat": 0,
-     "score": 30.5,
+     "score": 26.5,
      "mistakes": 1,
      "correct": 8,
      "interferences": 0,
@@ -6694,7 +6694,7 @@
     },
     {
      "seat": 1,
-     "score": 2.5,
+     "score": -4.5,
      "mistakes": 2,
      "correct": 1,
      "interferences": 0,
@@ -7100,8 +7100,8 @@
      "seat": 1,
      "cell": "D3",
      "digit": 9,
-     "penalty": 1,
-     "score": -1,
+     "penalty": 5.5,
+     "score": -5.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "D3",
@@ -7208,8 +7208,8 @@
      "seat": 1,
      "cell": "E5",
      "digit": 1,
-     "penalty": 2,
-     "score": -3,
+     "penalty": 4.5,
+     "score": -10,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E5",
@@ -7275,7 +7275,7 @@
      "X": 6,
      "Y": 4,
      "points": 5.5,
-     "score": 2.5,
+     "score": -4.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "D3",
@@ -7377,8 +7377,8 @@
      "seat": 0,
      "cell": "B3",
      "digit": 2,
-     "penalty": 1,
-     "score": 16.5,
+     "penalty": 5,
+     "score": 12.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "B3",
@@ -7416,7 +7416,7 @@
      "X": 7,
      "Y": 7,
      "points": 3,
-     "score": 19.5,
+     "score": 15.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "C8",
@@ -7447,7 +7447,7 @@
      "X": 8,
      "Y": 6,
      "points": 2.5,
-     "score": 22,
+     "score": 18,
      "expl": {
       "technique": "nakedSingle",
       "cell": "C1",
@@ -7475,7 +7475,7 @@
      "X": 6,
      "Y": 6,
      "points": 4.5,
-     "score": 26.5,
+     "score": 22.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "B3",
@@ -7548,7 +7548,7 @@
      "X": 7,
      "Y": 5,
      "points": 4,
-     "score": 30.5,
+     "score": 26.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "H3",
@@ -8479,7 +8479,7 @@
     },
     {
      "seat": 1,
-     "score": 27.5,
+     "score": 22.5,
      "mistakes": 1,
      "correct": 5,
      "interferences": 0,
@@ -8792,8 +8792,8 @@
      "seat": 1,
      "cell": "H1",
      "digit": 4,
-     "penalty": 1,
-     "score": 17.5,
+     "penalty": 6,
+     "score": 12.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "H1",
@@ -8869,7 +8869,7 @@
      "X": 6,
      "Y": 4,
      "points": 5.5,
-     "score": 23,
+     "score": 18,
      "expl": {
       "technique": "nakedSingle",
       "cell": "B2",
@@ -8906,7 +8906,7 @@
      "X": 6,
      "Y": 6,
      "points": 4.5,
-     "score": 27.5,
+     "score": 22.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "F3",
@@ -9720,7 +9720,7 @@
    "players": [
     {
      "seat": 0,
-     "score": 41.5,
+     "score": 36.5,
      "mistakes": 4,
      "correct": 15,
      "interferences": 0,
@@ -9732,7 +9732,7 @@
     },
     {
      "seat": 1,
-     "score": 96.5,
+     "score": 90,
      "mistakes": 2,
      "correct": 28,
      "interferences": 0,
@@ -9788,8 +9788,8 @@
      "seat": 0,
      "cell": "H4",
      "digit": 9,
-     "penalty": 1,
-     "score": 6.5,
+     "penalty": 6,
+     "score": 1.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "H4",
@@ -9827,7 +9827,7 @@
      "X": 5,
      "Y": 4,
      "points": 6.5,
-     "score": 13,
+     "score": 8,
      "expl": {
       "technique": "nakedSingle",
       "cell": "B3",
@@ -9938,7 +9938,7 @@
      "X": 6,
      "Y": 4,
      "points": 5.5,
-     "score": 18.5,
+     "score": 13.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "D4",
@@ -9968,8 +9968,8 @@
      "seat": 0,
      "cell": "G6",
      "digit": 2,
-     "penalty": 2,
-     "score": 16.5,
+     "penalty": 5.5,
+     "score": 8,
      "expl": {
       "technique": "nakedSingle",
       "cell": "G6",
@@ -10033,8 +10033,8 @@
      "seat": 0,
      "cell": "B9",
      "digit": 5,
-     "penalty": 4,
-     "score": 12.5,
+     "penalty": 5,
+     "score": 3,
      "expl": {
       "technique": "nakedSingle",
       "cell": "B9",
@@ -10124,7 +10124,7 @@
      "X": 5,
      "Y": 5,
      "points": 6,
-     "score": 18.5,
+     "score": 9,
      "expl": {
       "technique": "nakedSingle",
       "cell": "C6",
@@ -10164,7 +10164,7 @@
      "X": 5,
      "Y": 5,
      "points": 6,
-     "score": 24.5,
+     "score": 15,
      "expl": {
       "technique": "nakedSingle",
       "cell": "I8",
@@ -10377,8 +10377,8 @@
      "seat": 1,
      "cell": "H1",
      "digit": 6,
-     "penalty": 1,
-     "score": 45.5,
+     "penalty": 4.5,
+     "score": 42,
      "expl": {
       "technique": "nakedSingle",
       "cell": "H1",
@@ -10411,7 +10411,7 @@
      "X": 8,
      "Y": 6,
      "points": 2.5,
-     "score": 27,
+     "score": 17.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "G9",
@@ -10444,7 +10444,7 @@
      "X": 7,
      "Y": 6,
      "points": 3.5,
-     "score": 49,
+     "score": 45.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E4",
@@ -10479,7 +10479,7 @@
      "X": 6,
      "Y": 6,
      "points": 4.5,
-     "score": 53.5,
+     "score": 50,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E9",
@@ -10513,7 +10513,7 @@
      "X": 7,
      "Y": 6,
      "points": 3.5,
-     "score": 57,
+     "score": 53.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E1",
@@ -10544,7 +10544,7 @@
      "X": 7,
      "Y": 7,
      "points": 3,
-     "score": 30,
+     "score": 20.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "I5",
@@ -10568,8 +10568,8 @@
      "seat": 1,
      "cell": "A1",
      "digit": 5,
-     "penalty": 2,
-     "score": 55,
+     "penalty": 5,
+     "score": 48.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A1",
@@ -10608,7 +10608,7 @@
      "X": 6,
      "Y": 5,
      "points": 5,
-     "score": 60,
+     "score": 53.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A1",
@@ -10647,7 +10647,7 @@
      "X": 7,
      "Y": 5,
      "points": 4,
-     "score": 64,
+     "score": 57.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A8",
@@ -10677,8 +10677,8 @@
      "seat": 0,
      "cell": "A9",
      "digit": 6,
-     "penalty": 8,
-     "score": 22,
+     "penalty": 3.5,
+     "score": 17,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A9",
@@ -10713,7 +10713,7 @@
      "X": 7,
      "Y": 6,
      "points": 3.5,
-     "score": 67.5,
+     "score": 61,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A7",
@@ -10748,7 +10748,7 @@
      "X": 8,
      "Y": 7,
      "points": 2,
-     "score": 24,
+     "score": 19,
      "expl": {
       "technique": "nakedSingle",
       "cell": "F8",
@@ -10785,7 +10785,7 @@
      "X": 7,
      "Y": 6,
      "points": 3.5,
-     "score": 71,
+     "score": 64.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A5",
@@ -10818,7 +10818,7 @@
      "X": 7,
      "Y": 5,
      "points": 4,
-     "score": 75,
+     "score": 68.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "F2",
@@ -10854,7 +10854,7 @@
      "X": 8,
      "Y": 7,
      "points": 2,
-     "score": 26,
+     "score": 21,
      "expl": {
       "technique": "nakedSingle",
       "cell": "E3",
@@ -10882,7 +10882,7 @@
      "X": 8,
      "Y": 7,
      "points": 2,
-     "score": 77,
+     "score": 70.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "F4",
@@ -10915,7 +10915,7 @@
      "X": 7,
      "Y": 6,
      "points": 3.5,
-     "score": 80.5,
+     "score": 74,
      "expl": {
       "technique": "nakedSingle",
       "cell": "G2",
@@ -10946,7 +10946,7 @@
      "X": 7,
      "Y": 6,
      "points": 3.5,
-     "score": 29.5,
+     "score": 24.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "H1",
@@ -10979,7 +10979,7 @@
      "X": 8,
      "Y": 7,
      "points": 2,
-     "score": 82.5,
+     "score": 76,
      "expl": {
       "technique": "nakedSingle",
       "cell": "C7",
@@ -11016,7 +11016,7 @@
      "X": 7,
      "Y": 7,
      "points": 3,
-     "score": 85.5,
+     "score": 79,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A9",
@@ -11047,7 +11047,7 @@
      "X": 7,
      "Y": 7,
      "points": 3,
-     "score": 32.5,
+     "score": 27.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "H2",
@@ -11078,7 +11078,7 @@
      "X": 8,
      "Y": 7,
      "points": 2,
-     "score": 87.5,
+     "score": 81,
      "expl": {
       "technique": "nakedSingle",
       "cell": "D9",
@@ -11114,7 +11114,7 @@
      "X": 7,
      "Y": 6,
      "points": 3.5,
-     "score": 36,
+     "score": 31,
      "expl": {
       "technique": "nakedSingle",
       "cell": "F3",
@@ -11145,7 +11145,7 @@
      "X": 8,
      "Y": 6,
      "points": 2.5,
-     "score": 90,
+     "score": 83.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "C2",
@@ -11181,7 +11181,7 @@
      "X": 8,
      "Y": 7,
      "points": 2,
-     "score": 92,
+     "score": 85.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "F5",
@@ -11209,7 +11209,7 @@
      "X": 8,
      "Y": 7,
      "points": 2,
-     "score": 38,
+     "score": 33,
      "expl": {
       "technique": "nakedSingle",
       "cell": "D3",
@@ -11242,7 +11242,7 @@
      "X": 8,
      "Y": 8,
      "points": 1.5,
-     "score": 39.5,
+     "score": 34.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "C5",
@@ -11275,7 +11275,7 @@
      "X": 8,
      "Y": 7,
      "points": 2,
-     "score": 41.5,
+     "score": 36.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "D2",
@@ -11306,7 +11306,7 @@
      "X": 8,
      "Y": 8,
      "points": 1.5,
-     "score": 93.5,
+     "score": 87,
      "expl": {
       "technique": "nakedSingle",
       "cell": "H6",
@@ -11334,7 +11334,7 @@
      "X": 8,
      "Y": 8,
      "points": 1.5,
-     "score": 95,
+     "score": 88.5,
      "expl": {
       "technique": "nakedSingle",
       "cell": "A2",
@@ -11362,7 +11362,7 @@
      "X": 8,
      "Y": 8,
      "points": 1.5,
-     "score": 96.5,
+     "score": 90,
      "expl": {
       "technique": "nakedSingle",
       "cell": "I3",

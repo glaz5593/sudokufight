@@ -38,7 +38,7 @@ Sudoku Fight turns sudoku into a live competition. Up to 4 players solve the sam
 ONE BOARD, EVERYONE SOLVES
 • All players work on the same board at once. Place a correct digit and the cell turns your color.
 • Harder moves score more: a digit that needs a clever deduction is worth more than an easy one.
-• Mistakes cost points, and the penalty grows with each one. Speed alone won't win.
+• A wrong digit costs exactly what the right one would have earned. Speed alone won't win.
 • Lock a cell while you think, but only for a few seconds.
 
 INTERFERENCES AND REACTIONS
@@ -75,7 +75,7 @@ In Hebrew and English. The board always reads left to right.
 לוח אחד, כולם פותרים
 • כל השחקנים משחקים על אותו לוח בו־זמנית. ספרה נכונה צובעת את המשבצת בצבע שלכם.
 • מהלך קשה שווה יותר: ספרה שדורשת הסקה חכמה שווה יותר מספרה קלה.
-• טעות עולה בנקודות, והקנס גדל עם כל טעות. מהירות לבד לא מספיקה.
+• ספרה שגויה עולה בדיוק את מה שהספרה הנכונה הייתה מכניסה. מהירות לבד לא מספיקה.
 • נועלים משבצת בזמן שחושבים, אבל רק לכמה שניות.
 
 הפרעות ותגובות
@@ -177,7 +177,7 @@ Demo account: <demo1 email> / <password>. Its email is verified, so ranked play 
 How to try it:
 1. Sign in with the demo account.
 2. Practice works without other players: Home → Play → "Practice vs bot" (or "Solo practice"). It also works offline.
-3. Ranked play (Home → Play → "Ranked · 2 players") needs a real opponent. If no other player is online, the search ends after about a minute with "No opponent at your level yet": tap "Play a bot meanwhile" to play a game against a bot right away. To see a ranked game between two people, sign in on a second device with the second demo account (<demo2 email> / <password>) and start the same search on both.
+3. Ranked play (Home → Play → "Ranked · 2 players") needs a real opponent. If no other player is searching, the search screen says so right away ("No one else is searching for this game right now") and offers "Play a bot meanwhile", which starts a game against a bot at once; after about a minute the search ends with the same option. To see a ranked game between two people, sign in on a second device with the second demo account (<demo2 email> / <password>) and start the same search on both.
 4. Replay with explanations: History → any game → Replay.
 
 Account deletion (Guideline 5.1.1(v)): Settings → Delete account → confirm → enter the password. It deletes the account on our server and the Firebase sign-in at once.

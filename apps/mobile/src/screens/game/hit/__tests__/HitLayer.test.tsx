@@ -24,7 +24,10 @@ const feedback = jest.requireMock<{ cue: jest.Mock }>('../../../../services/feed
 const cues = (): string[] => feedback.cue.mock.calls.map((c: unknown[]) => String(c[0]));
 
 const hidden = { includeHiddenElements: true };
-const KINDS: InterferenceKind[] = ['fireworks', 'cats', 'warp'];
+/** The kinds whose effect plays in the hit layer's region; the scramble and the keypad play on the board and the keypad [D47]. */
+const KINDS: InterferenceKind[] = ['fireworks', 'cats', 'warp', 'ink'];
+/** What a hit says at its start [D46]: who sent what, that the board is dimmed, how long, the paused timer. */
+const START_HE = (title: string) => `${title} הלוח מוחשך, נותרו 5 שניות. הטיימר שלך עצור`;
 const START = 10_000;
 const NINA = isolateName('NinaVolt');
 const BOARD = { x: 16, y: 288, width: 358, height: 358 };
@@ -214,7 +217,15 @@ describe('HitLayer: the banner (spec §7.4, components.md §15.2)', () => {
     );
     await rerender(layer(hitOn({ kind: 'warp' })));
     expect(screen.getByTestId('hit-layer-banner-title')).toHaveTextContent(`${NINA} warped your screen!`);
-    expect(spoken).toHaveBeenCalledWith(`${NINA} sent you fireworks! 5 seconds left, your timer is paused`);
+    expect(spoken).toHaveBeenCalledWith(
+      `${NINA} sent you fireworks! Your board is dimmed, 5 seconds left. Your timer is paused`,
+    );
+    await rerender(layer(hitOn({ kind: 'scramble', id: 2 })));
+    expect(screen.getByTestId('hit-layer-banner-title')).toHaveTextContent(`${NINA} scrambled your digits!`);
+    await rerender(layer(hitOn({ kind: 'ink', id: 3 })));
+    expect(screen.getByTestId('hit-layer-banner-title')).toHaveTextContent(`${NINA} splashed ink on you!`);
+    await rerender(layer(hitOn({ kind: 'keypad', id: 4 })));
+    expect(screen.getByTestId('hit-layer-banner-title')).toHaveTextContent(`${NINA} scrambled your keypad!`);
   });
 });
 
@@ -238,7 +249,7 @@ describe('HitLayer: screen readers', () => {
   it('hear the start once and the end once', async () => {
     const hit = hitOn();
     const { rerender } = await render(layer(hit));
-    expect(spoken.mock.calls).toEqual([[`${NINA} שלח/ה לך זיקוקים! נותרו 5 שניות, הטיימר שלך עצור`]]);
+    expect(spoken.mock.calls).toEqual([[START_HE(`${NINA} שלח/ה לך זיקוקים!`)]]);
     clock.advance(2_000);
     await rerender(layer(hit));
     expect(spoken).toHaveBeenCalledTimes(1);
@@ -256,7 +267,7 @@ describe('HitLayer: screen readers', () => {
     const { rerender } = await render(layer(hit, { announce }));
     await rerender(layer(null, { announce }));
     expect(announce.mock.calls).toEqual([
-      [`${NINA} שלח/ה לך חתולים! נותרו 5 שניות, הטיימר שלך עצור`],
+      [START_HE(`${NINA} שלח/ה לך חתולים!`)],
       ['ההפרעה נגמרה, הטיימר שלך ממשיך'],
     ]);
     expect(spoken).not.toHaveBeenCalled();
@@ -279,6 +290,9 @@ describe('HitLayer: sound and haptics (motion.md §7)', () => {
     ['fireworks', 'hitFireworks', 'hitBurst'],
     ['cats', 'hitCats', 'hitPulse'],
     ['warp', 'hitWarp', 'hitPulse'],
+    ['scramble', 'hitScramble', 'hitPulse'],
+    ['ink', 'hitInk', 'hitPulse'],
+    ['keypad', 'hitKeypad', 'hitPulse'],
   ] as const)('%s: its cue once at the start, then its rumble while it lasts', async (kind, start, knock) => {
     jest.useFakeTimers();
     const hit = hitOn({ kind });
@@ -289,7 +303,7 @@ describe('HitLayer: sound and haptics (motion.md §7)', () => {
     await together(4_000);
     expect(cues()[0]).toBe(start);
     expect(cues().slice(1)).toEqual(rumbleOf(kind, 5000).times.map(() => knock));
-    expect(cues().length).toBeGreaterThan(3);
+    expect(cues().length).toBeGreaterThan(2);
   });
 
   it('drops the knocks that come after the end or too late (back from the background): no burst of them', async () => {
@@ -363,9 +377,9 @@ describe('HitLayer: sound and haptics (motion.md §7)', () => {
     await rerender(layer(hitOn({ kind: 'cats', id: 9, endsAt: clock.now() + 5000 }), { announce }));
     expect(cues()).toEqual(['hitCats', 'hitCats']);
     expect(announce.mock.calls).toEqual([
-      [`${NINA} שלח/ה לך חתולים! נותרו 5 שניות, הטיימר שלך עצור`],
+      [START_HE(`${NINA} שלח/ה לך חתולים!`)],
       ['ההפרעה נגמרה, הטיימר שלך ממשיך'],
-      [`${NINA} שלח/ה לך חתולים! נותרו 5 שניות, הטיימר שלך עצור`],
+      [START_HE(`${NINA} שלח/ה לך חתולים!`)],
     ]);
   });
 
@@ -384,8 +398,14 @@ describe('HitLayer: sound and haptics (motion.md §7)', () => {
 });
 
 describe('HitLayer from a real game (LocalGameHost against the bot)', () => {
-  it('shows the bot’s cats from the view, and goes when the engine ends them', async () => {
+  it('a practice against a bot has no interferences, either way [D44]', () => {
     const g = duel();
+    expect(g.host.getView().rules.interferences).toBe(false);
+    expect(g.host.getView().interference).toBeNull();
+  });
+
+  it('shows the bot’s cats from the view, and goes when the engine ends them (a game with interferences)', async () => {
+    const g = duel({ rules: { interferences: true } });
     g.bot.solve(g.cells[0]!); // the bot needs the points for it (D10)
     const nameOf = (id: string) => identityOf(g.host.getView(), id).name ?? '';
     expect(hitOf(g.host.getView(), { nameOf })).toBeNull();
@@ -402,6 +422,7 @@ describe('HitLayer from a real game (LocalGameHost against the bot)', () => {
       endsAt: g.clock.now() + 5000,
       remainingMs: 5000,
       totalMs: 5000,
+      gameId: view.gameId,
     });
 
     const show = () => {
@@ -419,5 +440,52 @@ describe('HitLayer from a real game (LocalGameHost against the bot)', () => {
     expect(screen.queryByTestId('hit-layer', hidden)).toBeNull();
     expect(spoken).toHaveBeenLastCalledWith('ההפרעה נגמרה, הטיימר שלך ממשיך');
     g.session.close();
+  });
+});
+
+describe('HitLayer: the kinds of 2026-10-17, and a kind this app does not know [D47]', () => {
+  it.each([
+    ['scramble', 'ערבב/ה לך את המספרים!', 'הספרות שמתערבלות אינן אמיתיות'],
+    ['keypad', 'ערבב/ה לך את המקלדת!', 'המקשים מחליפים מקומות, וכל מקש מזין את הספרה שכתובה עליו'],
+  ] as const)(
+    '%s: the banner, no effect in the region (it plays on the board or the keypad), and a note for screen readers',
+    async (kind, title, note) => {
+      await render(layer(hitOn({ kind })));
+      expect(screen.getByTestId('hit-layer-banner-title')).toHaveTextContent(`${NINA} ${title}`);
+      expect(region().children).toHaveLength(0);
+      expect(spoken.mock.calls).toEqual([[`${START_HE(`${NINA} ${title}`)}. ${note}`]]);
+    },
+  );
+
+  it('ink: its blots in the region, the same ones for the same hit (seeded by the game and the event)', async () => {
+    await render(layer(hitOn({ kind: 'ink', gameId: 'g-1', id: 4 }), { scope: 'board', boardRect: BOARD }));
+    expect(screen.getByTestId('hit-ink', hidden)).toHaveStyle({ width: 358, height: 358 });
+    expect(screen.getByTestId('hit-layer-banner-title')).toHaveTextContent(`${NINA} התיז/ה עליך דיו!`);
+  });
+
+  it('a kind it does not know (a newer player’s): the generic banner, no effect, the warp’s cue and no rumble, no crash', async () => {
+    jest.useFakeTimers();
+    const dragons = hitOn({ kind: 'dragons' as InterferenceKind });
+    const { rerender } = await render(layer(dragons));
+    expect(screen.getByTestId('hit-layer-banner-title')).toHaveTextContent(`${NINA} שלח/ה לך הפרעה!`);
+    expect(region().children).toHaveLength(0);
+    expect(spoken.mock.calls).toEqual([[START_HE(`${NINA} שלח/ה לך הפרעה!`)]]);
+    await together(5_000);
+    await rerender(layer(dragons));
+    expect(cues()).toEqual(['hitWarp']);
+    expect(rumbleOf('dragons' as InterferenceKind, 5000)).toEqual({ times: [], cue: 'hitPulse' });
+    expect(screen.queryByTestId('hit-layer', hidden)).toBeNull();
+  });
+
+  it('speaks English for the new kinds and the generic one', async () => {
+    await i18n.changeLanguage('en');
+    const { rerender } = await render(layer(hitOn({ kind: 'scramble' })));
+    expect(spoken).toHaveBeenLastCalledWith(
+      `${NINA} scrambled your digits! Your board is dimmed, 5 seconds left. Your timer is paused. The shuffling digits aren't real`,
+    );
+    await rerender(layer(hitOn({ kind: 'dragons' as InterferenceKind, id: 5 })));
+    expect(screen.getByTestId('hit-layer-banner-title')).toHaveTextContent(
+      `${NINA} sent you an interference!`,
+    );
   });
 });

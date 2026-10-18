@@ -44,8 +44,15 @@ describe('protocol', () => {
       'interfere',
       'react',
       'surrender',
+      'offlineMove',
       'ping',
     ]);
+  });
+
+  it('carries a move made offline as an action with its own think time [D42]', () => {
+    const msg: ClientMessage = { type: 'offlineMove', cell: 31, digit: 7, thinkMs: 2500, clientSeq: 9 };
+    expect(msg.type === 'offlineMove' && msg.thinkMs).toBe(2500);
+    expect(CLIENT_MESSAGE_TYPES).toContain(msg.type);
   });
 
   it('lists the server messages: the events of spec §18 travel inside `events`', () => {
@@ -109,7 +116,8 @@ describe('a client mirror (how RemoteGameHost will work, stage 7)', () => {
         gameType: 'fast',
         puzzle: PUZZLE,
         players: [{ id: 'me' }, { id: 'bot', isBot: true }],
-        rules: defaultRules('bot', 'fast'),
+        // Interferences on, so the hit below reaches the mirror too: a bot game has none by default [D44].
+        rules: defaultRules('bot', 'fast', { interferences: true }),
       },
       playerId: 'me',
       clock,
@@ -136,10 +144,58 @@ describe('a client mirror (how RemoteGameHost will work, stage 7)', () => {
     host.dispatch({ type: 'select', playerId: 'bot', cell: parseCellName('A2') });
     clock.set(500);
     host.interfere('bot', 'cats');
+    expect(mirror.players[1]!.hitBy).toMatchObject({ fromId: 'me', kind: 'cats' });
     scheduler.advance(9000); // the bot's lock times out, the interference ends
     host.react('😎');
+    // A mistake: its penalty (§6.5) reaches the mirror through the public event alone.
+    const b1 = parseCellName('B1'); // its answer is 3; after A1 it is worth 6.5
+    host.dispatch({ type: 'select', playerId: 'bot', cell: b1 });
+    host.dispatch({ type: 'place', playerId: 'bot', cell: b1, digit: 9 });
+    expect(host.state.players[1]).toMatchObject({ mistakes: 1, mistakePenalties: [6.5], score: -6.5 });
+    expect(mirror.players[1]!.mistakePenalties).toEqual([6.5]);
     expect(mirror.seq).toBe(host.state.seq);
     expect(JSON.stringify(mirror)).not.toContain(PUZZLE.solution);
+  });
+
+  it('the soft phase and a move made offline reach the mirror through the public events alone [D42]', () => {
+    const clock = new ManualClock(0);
+    const scheduler = new ManualScheduler(clock);
+    const host = new LocalGameHost({
+      config: {
+        id: 'g',
+        mode: 'ranked',
+        gameType: 'fast',
+        puzzle: PUZZLE,
+        players: [{ id: 'me' }, { id: 'nina' }],
+        rules: defaultRules('ranked', 'fast'),
+      },
+      playerId: 'me',
+      clock,
+      scheduler,
+    });
+    let mirror = publicState(host.state);
+    const views: unknown[] = [];
+    host.subscribe((u) => {
+      if (u.kind !== 'events') return;
+      for (const e of u.events) mirror = evolve(mirror, e);
+      expect(toView(mirror, 'me', clock.now())).toEqual(u.view);
+      views.push(u.view);
+    });
+
+    clock.set(1000);
+    host.dispatch({ type: 'disconnect', playerId: 'nina', soft: true });
+    expect(mirror.players[1]).toMatchObject({ connected: true, softEndsAt: 11000 });
+    expect(toView(mirror, 'me', 1000).players[1]!.softEndsAt).toBe(11000);
+    clock.set(4000);
+    host.dispatch({ type: 'reconnect', playerId: 'nina' });
+    expect(mirror.players[1]!.offlineWindow).toEqual({ until: 9000, left: 8 });
+    const a1 = parseCellName('A1');
+    host.dispatch({ type: 'offlineMove', playerId: 'nina', cell: a1, digit: 8, thinkMs: 2500 });
+    expect(mirror.grid[a1]).toBe(8);
+    expect(mirror.players[1]).toMatchObject({ score: 8, thinkMsTotal: 2500, offlineWindow: { left: 7 } });
+    expect(mirror).toEqual(publicState(host.state));
+    expect(views).toHaveLength(3);
+    expect(host.state.status).toBe('running'); // never frozen
   });
 });
 

@@ -10,6 +10,8 @@ import {
   type GameEvent,
   type GameEventType,
   initialState,
+  INTERFERENCE_KINDS,
+  LEGACY_INTERFERENCE_KINDS,
   ManualClock,
   ManualScheduler,
   plausibleWrongDigits,
@@ -304,7 +306,7 @@ describe('FakeBrain: a game against the server game', () => {
           { id: 'ana', level: 2, config: mistakes(0.4) },
           { id: 'ben', level: 3, config: mistakes(0.4) },
         ],
-        { afterMistake, mistakePenaltyCap: 8 },
+        { afterMistake },
       );
       t.run();
       expect(t.game.state.result!.reason).toBe('boardComplete');
@@ -400,13 +402,10 @@ describe('FakeBrain: trouble', () => {
 
   it('stands still while hit by an interference [D11]; reacts and interferes per its level', () => {
     // Overlord interferes whatever the score, and reacts to mistakes; everyone errs often here.
-    const t = new Table(
-      [
-        { id: 'ana', level: 5, config: mistakes(0.3) },
-        { id: 'ben', level: 5, config: mistakes(0.3) },
-      ],
-      { mistakePenaltyCap: 4 },
-    );
+    const t = new Table([
+      { id: 'ana', level: 5, config: mistakes(0.3) },
+      { id: 'ben', level: 5, config: mistakes(0.3) },
+    ]);
     t.run();
     expect(t.game.state.result!.reason).toBe('boardComplete');
     const hits = t.events('interference') as Extract<GameEvent, { type: 'interference' }>[];
@@ -421,6 +420,31 @@ describe('FakeBrain: trouble', () => {
     }
     expect(t.dropped).toEqual([]);
     expect(t.rejections.map((r) => r.reason)).not.toContain('tooSoon');
+  });
+
+  it.each([
+    ['every kind (two new apps)', [...INTERFERENCE_KINDS]],
+    ['the legacy three (an app 1.0.0 at the table, --legacy-app)', [...LEGACY_INTERFERENCE_KINDS]],
+    ['one kind', ['keypad' as const]],
+  ])('sends only the kinds the room allows [D47]: %s', (_why, kinds) => {
+    const eager = (level: 5) => ({
+      levels: BOT_CONFIG.levels.map((l) =>
+        l.level === level ? { ...l, interference: { maxPerGame: null, minDeficit: null, chance: 1 } } : l,
+      ),
+    });
+    const t = new Table(
+      [
+        { id: 'ana', level: 5, config: eager(5) },
+        { id: 'ben', level: 5, config: eager(5) },
+      ],
+      { interferenceKinds: kinds },
+    );
+    t.run();
+    const sent = t.sent.filter((s) => s.action.type === 'interfere');
+    expect(sent.length).toBeGreaterThan(1);
+    for (const s of sent) expect(kinds).toContain((s.action as { kind: string }).kind);
+    expect(t.rejections.map((r) => r.reason)).not.toContain('badKind');
+    expect(t.events('interference').length).toBeGreaterThan(1);
   });
 
   it('stops for good once its player is out (surrendered), while the others play on', () => {

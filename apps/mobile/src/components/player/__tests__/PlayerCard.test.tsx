@@ -80,7 +80,7 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
     expect(screen.getByTestId('me-score', hidden)).toHaveAnimatedProps({ text: ltr('−2') });
   });
 
-  it("the opponent's card is mirrored, reads 'בוחרת · A8' and offers ⚡ in my colour", async () => {
+  it("the opponent's card is mirrored, reads 'בוחרת · A8' and offers 'הפרעה' in my colour [D45]", async () => {
     const onInterfere = jest.fn();
     await render(
       <PlayerCard model={nina()} gender="female" country="DE" onInterfere={onInterfere} testID="nina" />,
@@ -93,14 +93,35 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
     expect(screen.getByTestId('glyph-triangle', hidden)).toBeTruthy();
     expect(styleOf(screen.getByTestId('nina-score', hidden)).color).toBe(rgba(tokens.color.players[1].ring));
 
+    // The word and the 'interfere' glyph only; the price is in its label (and in the picker), not on it.
     const zap = screen.getByRole('button', { name: 'הפרעה ל־NinaVolt · עלות 2 נק׳' });
-    expect(zap).toHaveTextContent('2 נק׳');
-    expect(styleOf(zap)).toMatchObject({ height: size.touch, backgroundColor: color.interfere.bg });
+    expect(zap).toHaveTextContent('הפרעה', { exact: true });
+    expect(screen.getByTestId('icon-interfere', hidden)).toBeTruthy();
+    expect(screen.queryByText(/נק׳/)).toBeNull();
+    expect(screen.getByTestId('interfere-label', hidden).props.numberOfLines).toBe(1);
+    // As tall as the reactions button (components.md §1.4).
+    expect(styleOf(zap)).toMatchObject({
+      height: size.touch,
+      backgroundColor: color.interfere.bg,
+      borderColor: color.interfere.border,
+    });
+    expect(zap).toHaveProp('accessibilityState', { disabled: false, expanded: false });
     await fireEvent.press(zap);
     expect(onInterfere).toHaveBeenCalledTimes(1);
   });
 
-  it('short of points: "חסרות 3 נק׳", dimmed, and a tap gives the reason instead (§7.2)', async () => {
+  it('while the picker is open from it: filled in my colour, "סגירת חלון ההפרעות"', async () => {
+    const onInterfere = jest.fn();
+    await render(<PlayerCard model={nina()} interferenceExpanded onInterfere={onInterfere} />);
+    const zap = screen.getByRole('button', { name: 'סגירת חלון ההפרעות' });
+    expect(zap).toHaveProp('accessibilityState', { disabled: false, expanded: true });
+    expect(styleOf(zap)).toMatchObject({ backgroundColor: tokens.color.players[0].ring });
+    expect(zap).toHaveTextContent('הפרעה');
+    await fireEvent.press(zap);
+    expect(onInterfere).toHaveBeenCalledTimes(1);
+  });
+
+  it('short of points: dimmed, "disabled" to screen readers, and a tap gives the reason instead (§7.2)', async () => {
     const onInterfere = jest.fn();
     const onBlocked = jest.fn();
     const view = twoPlayerView({
@@ -108,7 +129,7 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
     });
     await render(<PlayerCard model={nina(view)} onInterfere={onInterfere} onInterfereBlocked={onBlocked} />);
     const zap = screen.getByRole('button', { name: 'הפרעה ל־NinaVolt · חסרות 3 נק׳' });
-    expect(zap).toHaveTextContent('חסרות 3 נק׳');
+    expect(zap).toHaveTextContent('הפרעה', { exact: true });
     expect(zap).toBeDisabled();
     expect(styleOf(zap).opacity).toBe(tokens.opacity.inactivePlayer);
     await fireEvent.press(zap);
@@ -116,8 +137,9 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
     expect(onBlocked).toHaveBeenCalledWith({ kind: 'points', cost: 8, missing: 3 });
   });
 
-  it('a busy target cannot be tapped at all (D11)', async () => {
+  it('a busy target (D11): dimmed, and a tap says why (the seconds left) instead of opening the picker', async () => {
     const onBlocked = jest.fn();
+    const onInterfere = jest.fn();
     const view = twoPlayerView({
       interference: {
         nextCost: 2,
@@ -125,11 +147,35 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
         targets: [{ playerId: 'nina', blockedBy: 'busy', busyUntil: NOW + 2000 }],
       },
     });
-    await render(<PlayerCard model={nina(view)} onInterfereBlocked={onBlocked} />);
+    await render(<PlayerCard model={nina(view)} onInterfere={onInterfere} onInterfereBlocked={onBlocked} />);
     const zap = screen.getByRole('button', { name: 'הפרעה ל־NinaVolt לא זמינה, כבר תחת הפרעה' });
     expect(zap).toBeDisabled();
+    expect(styleOf(zap).opacity).toBe(tokens.opacity.inactivePlayer);
     await fireEvent.press(zap);
-    expect(onBlocked).not.toHaveBeenCalled();
+    expect(onInterfere).not.toHaveBeenCalled();
+    expect(onBlocked).toHaveBeenCalledWith({ kind: 'busy', cost: 2, secondsLeft: 2 });
+  });
+
+  it('a game that is not running: dimmed, and a tap says so', async () => {
+    const onBlocked = jest.fn();
+    const view = twoPlayerView({
+      interference: {
+        nextCost: 2,
+        missingPoints: 0,
+        targets: [{ playerId: 'nina', blockedBy: 'notRunning' }],
+      },
+    });
+    await render(<PlayerCard model={nina(view)} onInterfereBlocked={onBlocked} />);
+    const zap = screen.getByRole('button', { name: 'הפרעה ל־NinaVolt לא זמינה כרגע' });
+    expect(zap).toBeDisabled();
+    await fireEvent.press(zap);
+    expect(onBlocked).toHaveBeenCalledWith({ kind: 'notRunning', cost: 2 });
+  });
+
+  it('no "הפרעה" when the game has no interferences (a practice against a bot, D44)', async () => {
+    await render(<PlayerCard model={nina(twoPlayerView({ interference: null }))} />);
+    expect(screen.queryByTestId('interfere')).toBeNull();
+    expect(screen.queryByTestId('icon-interfere', hidden)).toBeNull();
   });
 
   it('a disconnected opponent: grey avatar, "מתנתק…" and the countdown pill instead of ⚡', async () => {
@@ -149,6 +195,36 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
     expect(screen.getByTestId('activity', hidden)).toHaveTextContent('מתנתק…');
     expect(screen.getByTestId('presence-reconnecting', hidden)).toBeTruthy();
     expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('an opponent without a connection, in its soft phase [D42]: the amber dot and the wifi mark, not grey', async () => {
+    const view = {
+      ...withPlayer(twoPlayerView(), 'nina', { softEndsAt: NOW + 8000 }),
+      interference: {
+        nextCost: 2,
+        missingPoints: 0,
+        targets: [{ playerId: 'nina', blockedBy: 'disconnected' as const }],
+      },
+    };
+    await render(<PlayerCard model={nina(view)} testID="nina" />);
+    expect(screen.getByLabelText(/^NinaVolt · 39.5 נקודות · בוחר A8, .*ללא חיבור$/)).toBeTruthy();
+    const pill = screen.getByTestId('unstable-pill', hidden);
+    expect(pill).not.toHaveTextContent(/\d/);
+    expect(screen.queryByTestId('reconnect-pill', hidden)).toBeNull();
+    expect(styleOf(screen.getByTestId('presence-unstable', hidden)).backgroundColor).toBe(
+      color.status.unstable,
+    );
+    // The game goes on: the avatar keeps its colours.
+    expect(styleOf(screen.getByTestId('nina-avatar-image', hidden)).opacity ?? 1).toBe(1);
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('my card without my connection [D42]: "ללא חיבור" said, surrender and reactions off', async () => {
+    const view = withPlayer(twoPlayerView(), 'moshe', { softEndsAt: NOW + 8000 });
+    await render(<PlayerCard model={me(view)} />);
+    expect(screen.getByLabelText(/ללא חיבור$/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'כניעה' })).toBeDisabled();
+    expect(screen.getByTestId('presence-unstable', hidden)).toBeTruthy();
   });
 
   it('an opponent who left: half opacity and no actions', async () => {
@@ -188,14 +264,25 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
     expect(screen.getByLabelText(/דירוג 1305, מחוברת?$/)).toBeTruthy();
   });
 
-  it('becomes the drop target with a "גרור לכאן" chip, or dims when another card is', async () => {
-    await render(<PlayerCard model={nina()} dropTarget dropLabel="שחרר כאן: שיגור זיקוקים אל NinaVolt" />);
-    expect(screen.getByTestId('drop-zone')).toBeTruthy();
-    expect(screen.getByText('גרור לכאן')).toBeTruthy();
-    expect(styleOf(screen.getByTestId('drop-zone'))).toMatchObject({
-      borderColor: color.accent,
-      borderStyle: 'dashed',
-    });
+  it('the picker’s target: a still, solid frame with a "יעד" chip and the hint; never "גרור לכאן" [D45]', async () => {
+    for (const reduceMotion of ['off', 'on'] as const) {
+      useSettings.setState({ reduceMotion });
+      const { unmount } = await render(<PlayerCard model={nina()} targeted testID="nina" />);
+      const frame = screen.getByTestId('target-frame');
+      expect(screen.getByText('יעד')).toBeTruthy();
+      expect(screen.queryByText('גרור לכאן')).toBeNull();
+      expect(styleOf(frame)).toMatchObject({ borderColor: color.accent, borderWidth: 2 });
+      expect(styleOf(frame).borderStyle).toBeUndefined();
+      expect(styleOf(frame).transform).toBeUndefined();
+      expect(screen.getByTestId('nina-summary')).toHaveProp('accessibilityHint', 'יעד ההפרעה');
+      await unmount();
+    }
+  });
+
+  it('not the target: no frame and no hint', async () => {
+    await render(<PlayerCard model={nina()} dimmed testID="nina" />);
+    expect(screen.queryByTestId('target-frame')).toBeNull();
+    expect(screen.getByTestId('nina-summary').props.accessibilityHint).toBeUndefined();
   });
 
   it('speaks English too', async () => {
@@ -204,7 +291,10 @@ describe('PlayerCard (2 players, Dir-C-Game)', () => {
     expect(
       screen.getByLabelText('NinaVolt · 39.5 points · Choosing A8, No mistakes, Rating 1305, Online'),
     ).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Interfere with NinaVolt · costs 2 pts' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Interfere with NinaVolt · costs 2 pts' })).toHaveTextContent(
+      'Interfere',
+      { exact: true },
+    );
   });
 });
 
@@ -214,17 +304,27 @@ describe('PlayerCardCompact (3–4 players)', () => {
     useSettings.setState({ reduceMotion: 'system' });
   });
 
-  it('shows the place, the shape, the penalty pips and a full-width ⚡ strip', async () => {
+  it('shows the place, the shape, the penalty pips and a full-width "הפרעה" strip', async () => {
     const view = fourPlayerView();
     await render(
       <PlayerCardCompact model={cardModel(view, 'nina', 0, NOW)} country="DE" width={78} testID="nina" />,
     );
     expect(screen.getByText('#4', hidden)).toBeTruthy();
     expect(screen.getByTestId('glyph-triangle', hidden)).toBeTruthy();
-    expect(screen.getByTestId('pips', hidden)).toHaveTextContent(ltr('−1') + ltr('−2'));
+    // The penalties the engine charged (§6.5), halves included: in a 78-dp card the last one only.
+    expect(screen.getByTestId('pips', hidden)).toHaveTextContent(ltr('−4.5'), { exact: true });
     const zap = screen.getByRole('button', { name: 'הפרעה ל־NinaVolt · עלות 4 נק׳' });
     expect(styleOf(zap).height).toBe(32);
     expect(zap.props.hitSlop).toEqual({ top: 6, bottom: 6 });
+    // The word only, shrunk to fit the 4-player card's strip ("Interfere" in English).
+    expect(zap).toHaveTextContent('הפרעה', { exact: true });
+    const label = screen.getByTestId('interfere-label', hidden);
+    expect(label.props).toMatchObject({
+      numberOfLines: 1,
+      adjustsFontSizeToFit: true,
+      minimumFontScale: 0.75,
+    });
+    expect(screen.getByTestId('icon-interfere', hidden)).toBeTruthy();
     expect(styleOf(screen.getByTestId('nina'))).toMatchObject({ width: 78, backgroundColor: color.surface });
   });
 
@@ -247,9 +347,40 @@ describe('PlayerCardCompact (3–4 players)', () => {
     expect(screen.getByText('#3', hidden)).toBeTruthy();
   });
 
+  it('an opponent in the soft phase [D42]: the wifi mark in the ⚡ strip, the amber dot, "ללא חיבור"', async () => {
+    const view = withPlayer(fourPlayerView(), 'aiko', { softEndsAt: NOW + 6000 });
+    await render(<PlayerCardCompact model={cardModel(view, 'aiko', 0, NOW)} gender="female" />);
+    expect(screen.getByLabelText(/^Aiko_M · מקום 1 · 39 נקודות · בוחרת D4, .*ללא חיבור$/)).toBeTruthy();
+    expect(screen.getByTestId('unstable-pill', hidden)).toBeTruthy();
+    expect(screen.getByTestId('presence-unstable', hidden)).toBeTruthy();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
   it('shows "×n" before the pips from five mistakes', async () => {
-    const view = withPlayer(fourPlayerView(), 'nina', { mistakes: 6 });
+    const view = withPlayer(fourPlayerView(), 'nina', {
+      mistakes: 6,
+      mistakePenalties: [8, 7.5, 6, 6.5, 5, 3.5],
+    });
     await render(<PlayerCardCompact model={cardModel(view, 'nina', 0, NOW)} />);
-    expect(screen.getByTestId('pips', hidden)).toHaveTextContent(ltr('×6') + ltr('−16') + ltr('−32'));
+    expect(screen.getByTestId('pips', hidden)).toHaveTextContent(ltr('×6') + ltr('−5') + ltr('−3.5'));
+  });
+
+  it('two pips where they fit (a 3-player card), one beside "×n"; they never push the score out', async () => {
+    const view = fourPlayerView();
+    const card = await render(
+      <PlayerCardCompact model={cardModel(view, 'nina', 0, NOW)} width={114} testID="nina" />,
+    );
+    expect(screen.getByTestId('pips', hidden)).toHaveTextContent(ltr('−5.5') + ltr('−4.5'));
+    // Should a big system font still overflow them: they give way and cut the oldest, never the score.
+    expect(styleOf(screen.getByTestId('pips', hidden))).toMatchObject({
+      flexShrink: 1,
+      overflow: 'hidden',
+      justifyContent: 'flex-end',
+    });
+    const many = withPlayer(view, 'nina', { mistakes: 6, mistakePenalties: [8, 7.5, 6, 6.5, 5, 3.5] });
+    await card.rerender(
+      <PlayerCardCompact model={cardModel(many, 'nina', 0, NOW)} width={114} testID="nina" />,
+    );
+    expect(screen.getByTestId('pips', hidden)).toHaveTextContent(ltr('×6') + ltr('−3.5'), { exact: true });
   });
 });

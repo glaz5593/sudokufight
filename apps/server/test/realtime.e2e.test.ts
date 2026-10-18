@@ -6,11 +6,13 @@
  *
  * - A full two-player game on a real bank puzzle: both clients end with the server's exact final state, and
  *   the ranking is the engine's ranking of it.
- * - A drop of 1 s: the other side sees the freeze, the dropped client comes back with its reconnection token,
- *   and both are in sync within 2 s (spec §18).
+ * - A drop of 1 s inside the soft phase of a lost connection [D42]: the other side sees only the mark and
+ *   the game goes on; the dropped client comes back with its reconnection token, in sync within 2 s.
+ * - A drop of 1 s with the soft phase off (as before [D42]): the other side sees the freeze, the dropped client
+ *   comes back with its reconnection token, and both are in sync within 2 s (spec §18).
  * - A connection that dies by itself (the server's socket is cut): the client reconnects on its own.
- * - A client that leaves for good, or stays away longer than the grace (airplane mode), is abandoned after
- *   the (shortened) grace, and the other wins [D8, D32].
+ * - A client that leaves for good, or stays away longer than the (shortened) soft phase and grace (airplane
+ *   mode), is abandoned, and the other wins [D8, D32].
  * - A code that is no room: a clear refusal.
  * - The command line (scripts/fake-client.ts) creates a room, prints its code, plays and prints a summary.
  *
@@ -192,9 +194,41 @@ describe('fake players on the real server', () => {
     expect(a.correct! + b.correct!).toBe(emptyCount(final.config.puzzle.givens));
   }, 40_000);
 
-  it('a drop of 1 s: the other sees the freeze, the dropped one comes back, and both are in sync within 2 s', async () => {
+  it('a drop of 1 s inside the soft phase [D42]: the other sees only the mark, nothing freezes, both in sync', async () => {
     const { ana, ben, game } = await pair(
-      { rules: { graceMs: 3000, interferenceMs: 300 } },
+      { rules: { softGraceMs: 3000, graceMs: 3000, interferenceMs: 300 } },
+      { trouble: { dropAfterMs: 800, dropForMs: 1000 } },
+    );
+    const benSaw = eventLog(ben);
+    const back = await nextResync(ana);
+
+    expect(back.via).toBe('reconnect');
+    expect(back.downMs).toBeGreaterThanOrEqual(1000);
+    expect(back.syncMs).toBeLessThan(2000); // spec §18: back in sync within 2 s
+    // Ben saw the mark and the return; the game went on all along.
+    const lost = first(benSaw, 'playerConnectionLost')!;
+    expect(lost.e).toMatchObject({ playerId: ana.playerId });
+    const returned = first(benSaw, 'playerReconnected')!;
+    expect(returned.at - back.startedAt).toBeLessThan(2000);
+    for (const type of ['playerDisconnected', 'gamePaused', 'gameResumed'] as const)
+      expect(first(benSaw, type)).toBeUndefined();
+    // In sync: at the seq where Ana was whole again (back for the server too), all three agree exactly.
+    const serverThen = publicState(replay(game.events)[back.seq - 1]!);
+    expect(ana.mirror.stateAt(back.seq)).toEqual(serverThen);
+    expect(ben.mirror.stateAt(back.seq)).toEqual(serverThen);
+    expect(serverThen.players.find((p) => p.id === ana.playerId)!.softEndsAt).toBeUndefined();
+
+    const [a, b] = await Promise.all([ana.done, ben.done]);
+    expect([a.outcome, b.outcome]).toEqual(['over', 'over']);
+    expect(a.resyncs).toHaveLength(1);
+    for (const s of [a, b]) expectHealthy(s);
+    expect(ana.state).toEqual(publicState(game.state));
+    expect(ben.state).toEqual(publicState(game.state));
+  }, 40_000);
+
+  it('a drop of 1 s with the soft phase off: the other sees the freeze, the dropped one comes back, both in sync within 2 s', async () => {
+    const { ana, ben, game } = await pair(
+      { rules: { graceMs: 3000, softGraceMs: 0, interferenceMs: 300 } },
       { trouble: { dropAfterMs: 800, dropForMs: 1000 } },
     );
     const benSaw = eventLog(ben);
@@ -279,10 +313,11 @@ describe('fake players on the real server', () => {
     expect(ben.state).toEqual(publicState(game.state));
   }, 40_000);
 
-  it('away longer than the grace (airplane mode): abandoned, the other wins, and there is no way back', async () => {
+  it('away longer than the soft phase and the grace (airplane mode): abandoned, the other wins, no way back', async () => {
+    // Abandonment 1.5 s after the drop [D42]; the seat is held 1 s more, and the finished room lasts 1 s.
     const { ana, ben } = await pair(
-      { rules: { graceMs: 1000 } },
-      { trouble: { dropAfterMs: 300, dropForMs: 2500 } },
+      { rules: { softGraceMs: 500, graceMs: 1000 } },
+      { trouble: { dropAfterMs: 300, dropForMs: 3500 } },
     );
     const [a, b] = await Promise.all([ana.done, ben.done]);
 

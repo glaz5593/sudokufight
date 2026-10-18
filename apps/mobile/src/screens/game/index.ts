@@ -22,6 +22,7 @@ export {
 export { GroupHud, type GroupHudProps } from './GroupHud';
 export { botLevelOf, identityOf, playerIdentity, type PlayerIdentity, type PlayerLike } from './identity';
 export {
+  DIALOG_GONE_CEILING_MS,
   endDelayMs,
   FLASH_CLEAR_MS,
   formatClock,
@@ -34,11 +35,13 @@ export {
   type LeadShift,
   MOVE_TIMELINE,
   type MoveTimeline,
+  ONLINE_END_HOLD_MS,
   opponentOf,
   opponentsOf,
   outOfGame,
   type OutOfGame,
   reactionCue,
+  RESULTS_WATCHDOG_MS,
   seatOrder,
   soloStats,
   type SoloStats,

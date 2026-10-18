@@ -153,7 +153,7 @@ describe('wording (namespace "player")', () => {
     );
   });
 
-  it('labels the ⚡ button in every state (§8.1)', () => {
+  it('labels the "הפרעה" button in every state (§8.1)', () => {
     expect(interferenceLabel('NinaVolt', { kind: 'available', cost: 2 }, heT)).toBe(
       'הפרעה ל־NinaVolt · עלות 2 נק׳',
     );
@@ -164,7 +164,7 @@ describe('wording (namespace "player")', () => {
       'הפרעה ל־NinaVolt לא זמינה, כבר תחת הפרעה',
     );
     expect(interferenceLabel('NinaVolt', { kind: 'available', cost: 2 }, heT, true)).toBe(
-      'סגירת ארסנל ההפרעות',
+      'סגירת חלון ההפרעות',
     );
   });
 

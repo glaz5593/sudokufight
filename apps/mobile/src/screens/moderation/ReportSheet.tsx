@@ -21,6 +21,8 @@ export interface ReportSheetProps {
   onClose: () => void;
   /** The clock, for "בעוד 12 דקות" after the hourly quota (tests pass theirs). */
   now?: () => number;
+  /** The sheet has left the screen (Sheet's onExited). */
+  onExited?: () => void;
   testID?: string;
 }
 
@@ -41,6 +43,7 @@ export function ReportSheet({
   onSend,
   onClose,
   now = Date.now,
+  onExited,
   testID = 'report-sheet',
 }: ReportSheetProps) {
   const { t } = useTranslation('moderation');
@@ -78,6 +81,7 @@ export function ReportSheet({
       onClose={onClose}
       title={t('report.title', { name: who })}
       closeLabel={t('report.done')}
+      onExited={onExited}
       testID={testID}
     >
       {phase === 'thanks' ? (

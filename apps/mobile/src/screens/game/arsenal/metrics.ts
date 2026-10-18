@@ -2,75 +2,72 @@ import { radius, size, space } from '../../../theme';
 import { rubikStyle, tekoStyle } from '../../../components/player/metrics';
 
 /**
- * Dimensions of the arsenal (components.md §13, motion.md §4.4) that tokens.json does not name. They live here,
- * in one place, derived from tokens where one exists, so the components hold no raw numbers.
+ * Dimensions of the interference picker (components.md §13, motion.md §4.4) that tokens.json does not name.
+ * They live here, in one place, derived from tokens where one exists, so the components hold no raw numbers.
+ * pickerLayout (arsenalModel) adds them up to prove that every kind fits without a scroll [D45].
  */
 export const arsenalMetrics = {
-  /** The tray: padding 10 16, then the header (mt 10, h 48). */
-  sheet: { paddingTop: space[5], paddingX: space[8], headerTop: space[5], headerHeight: size.buttonModal },
-  /** "יעד:" with the target's mini avatar (a 1.5 dp ring in their colour). */
-  subtitle: { gap: space[3], avatarRing: 1.5, avatarRadius: radius.sm },
-  /** The next-cost row: h 60, radius 12; the cost in Teko 30 (accent), my score in Teko 28 (P1). */
-  costRow: {
-    height: space[15] + space[2],
-    top: space[6],
+  /** The sheet: padding 10 16 (16 + the inset at its foot), the handle, at most 85 % of the window. */
+  sheet: {
+    paddingTop: space[5],
+    paddingX: space[8],
+    paddingBottom: space[8],
+    handle: size.sheetHandle.height,
+    maxShare: 0.85,
+  },
+  /** The title "בחר הפרעה" (h1) and under it the target line, or the route in 3–4 players. */
+  header: { top: space[4], height: space[14] + space[2], gap: space[2] },
+  /** "יעד:" / the route with the mini avatars (a 1.5 dp ring in their colour) and the seat shapes. */
+  subtitle: { gap: space[3], avatarRing: 1.5, avatarRadius: radius.sm, glyph: 7 },
+  /** The price row: h 48, radius 12; the price in Teko 30 (accent), my score in Teko 22 (P1). */
+  price: {
+    top: space[5],
+    height: size.buttonModal,
     paddingX: space[6],
     radius: radius.lg,
     gap: space[4],
-    costStyle: tekoStyle(30),
-    scoreStyle: tekoStyle(28),
+    priceStyle: tekoStyle(30),
+    scoreStyle: tekoStyle(22),
   },
-  /** "כל הפרעה נמשכת 5 שניות · שיגור בגרירה בלבד". */
-  info: { top: space[5] },
-  /** Tokens 108 × 136, radius 18, art 56, a cost pill h 20 / radius 10 in Teko 16. */
-  token: {
-    width: 108,
-    height: 136,
-    radius: 18,
-    art: space[15],
-    top: space[6],
-    paddingTop: space[4] + 1,
+  /** The grid of kinds: columns from ARSENAL_CONFIG, gap 8. */
+  grid: { top: space[6], gap: space[4] },
+  /**
+   * A kind button: h 104, radius 16, the preview 36, the name (Rubik 600 13, up to 2 lines, so the chips line
+   * up), and the price chip (h 22, radius 11, the number in Teko 17).
+   */
+  button: {
+    height: 104,
+    radius: space[8],
+    paddingTop: space[3],
+    paddingX: space[2],
+    art: 36,
     nameTop: space[1],
-    nameStyle: rubikStyle(16, '700'),
-    pill: { height: space[9], radius: radius.md, paddingX: space[4], gap: space[2], icon: space[5] },
-    pillStyle: tekoStyle(16),
-    pillTextStyle: rubikStyle(12, '500'),
-    dashed: 2,
+    nameLines: 2,
+    nameStyle: rubikStyle(13, '600'),
+    chipTop: space[2],
+    chip: { height: 22, radius: 11, paddingX: space[4], gap: space[1], icon: space[6] },
+    chipNumberStyle: tekoStyle(17),
+    chipTextStyle: rubikStyle(11, '500'),
+    pressedScale: 0.96,
   },
-  /** The tap hint bubble over a token: radius 10, Rubik 500 12, gone after 2 s. */
-  bubble: { radius: radius.md, paddingX: space[5], paddingY: space[3], gap: space[3], holdMs: 2000 },
-  /** The hint pill under the tokens ("גרור אל הכרטיס של NinaVolt כדי לשגר"). */
-  hint: {
-    top: space[8],
-    height: space[13] - space[3],
-    radius: radius.pill,
-    paddingX: space[7],
-    icon: space[8],
-  },
-  /** The drag ghost: icon 34, "זיקוקים · 8 נק׳" Rubik 700 12, radius 14, lifted to 1.08. */
-  ghost: {
-    art: 34,
-    radius: radius.xl,
+  /** "כל הפרעה נמשכת 5 שניות · הקשה משגרת": mt 10, one line. */
+  info: { top: space[5], height: space[8] },
+  /**
+   * The reason bubble over a blocked kind: radius 10, Rubik 500 12, gone after 2 s. It may run `overhang` past
+   * its button on each side, so a long reason still fits.
+   */
+  bubble: {
+    radius: radius.md,
     paddingX: space[5],
-    paddingY: space[4],
-    gap: space[4],
-    lift: 1.08,
-    /** It floats this far above the finger, so the finger never hides it. */
-    aboveFinger: space[6],
-    textStyle: rubikStyle(12, '700'),
-    routeStyle: rubikStyle(11, '500'),
-    /** The 3–4 player route tag (spec §7.3.5): mini avatars (22, a 1.5 dp ring), shapes 7, gap 4. */
-    routeTop: space[2],
-    routeGap: space[2],
-    routeRing: 1.5,
-    routeGlyph: 7,
+    paddingY: space[3],
+    holdMs: 2000,
+    overhang: space[15] + space[14],
+    style: rubikStyle(12),
   },
   /** The launch ripple: a stroke ring out of the target card, 1 → 1.15, opacity .6 → 0, 480 ms. */
   ripple: { width: 2, from: 0.6, scale: 1.15, ms: 480 },
-  /** The token shrinks into the card in 240 ms on a launch; the sheet closes in 200 ms (motion.md `launch`). */
-  launch: { shrinkMs: 240, closeMs: 200 },
-  /** Movement before a press becomes a drag (the tap's slop is the same, so it is one or the other). */
-  dragSlop: space[4],
-  /** A downward drag of the header this far (or a fling) closes the tray; RNGH speeds are per second. */
+  /** The sheet closes in 200 ms after a launch (motion.md `launch`). */
+  launch: { closeMs: 200 },
+  /** A downward drag of the header this far (or a fling) closes the sheet; RNGH speeds are per second. */
   closeDragActivate: space[4],
 } as const;

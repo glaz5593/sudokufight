@@ -43,6 +43,8 @@ describe('resultsModel against a bot (spec §12)', () => {
       correct: game.cells.length,
       opponents: [{ ...botRow, score: 0, mistakes: 0, place: 2 }],
     });
+    // Practice moves no rating, so no leave guard either (spec §11.2).
+    expect(model.ratingGuards).toEqual([]);
     expect(model.awards.map((a) => a.kind)).toEqual(result.awards.map((a) => a.kind));
     expect(model.awards.find((a) => a.kind === 'bestMove')).toEqual({
       kind: 'bestMove',

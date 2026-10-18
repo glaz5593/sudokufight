@@ -498,6 +498,8 @@ describe('history and replay, end to end (work plan stages 9–11)', () => {
         continue;
       }
       await place(run, cell, wrongDone ? answerIn(bot.puzzle, cell) : wrongDigit(bot.puzzle, cell));
+      // A human's pace: a fast board has only 31–36 empty cells (45–50 givens), and Pip thinks 15–25 s.
+      await pause(run);
       wrongDone = true;
       if (++moves > 200) throw new Error('the game does not end');
     }

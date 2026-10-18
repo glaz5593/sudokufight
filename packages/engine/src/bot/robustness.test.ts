@@ -23,6 +23,12 @@ import { attachBot, type BotHandle, type BotTrace } from './runner';
 
 type Puzzle = GameConfig['puzzle'];
 
+/**
+ * Practice against a bot has no interferences [D44]. These tables turn them on (as the fake client plays
+ * ranked), so the bot is also tried under hits and with hits of its own; `rules` can turn them off again.
+ */
+const INTERFERENCES_ON: Partial<Rules> = { interferences: true };
+
 /** The bot's own timers: how many are live now, the most at once, and how many it ever set. */
 class TrackingScheduler implements Scheduler {
   readonly live = new Set<unknown>();
@@ -74,7 +80,7 @@ function table(o: {
     gameType,
     puzzle: o.puzzle ?? PUZZLE,
     players: [{ id: HUMAN }, bot],
-    rules: defaultRules('bot', gameType, o.rules),
+    rules: defaultRules('bot', gameType, { ...INTERFERENCES_ON, ...o.rules }),
     seed: o.seed ?? 1,
   };
   const host = new LocalGameHost({ config, playerId: HUMAN, clock, scheduler });
@@ -219,6 +225,16 @@ describe('a bot against a human who does anything (spec §9)', () => {
     for (const level of [1, 3, 5] as const) {
       const t = table({ level, seed: 40 + level, rules, puzzle: bankPuzzles('fast', 2)[1]! });
       playChaos(t, 40 + level);
+    }
+  });
+
+  it('in a default game against a bot nothing is ever sent, either way, and the bot plays clean [D44]', () => {
+    for (const level of [1, 5] as const) {
+      const t = table({ level, seed: 60 + level, rules: { interferences: false } });
+      expect(defaultRules('bot', 'fast').interferences).toBe(false); // what practice plays
+      playChaos(t, 60 + level);
+      expect(eventsOf(t.host.events, 'interference')).toEqual([]);
+      expect(t.traces.some((x) => x.type === 'action' && x.action.type === 'interfere')).toBe(false);
     }
   });
 
@@ -407,7 +423,7 @@ describe('the [D11] alternative: its lock timer runs on while it is hit', () => 
   it('it still enters the digit of the lock it holds in time, then stands still until the hit ends', () => {
     let checked = 0;
     for (let seed = 1; seed <= 40; seed++) {
-      const g = botGame({ level: 1, seed, rules: { pauseLockWhileInterfered: false } });
+      const g = botGame({ level: 1, seed, rules: { ...INTERFERENCES_ON, pauseLockWhileInterfered: false } });
       // Points to pay for the interference, in a cell the bot is not after.
       const target = plansOf(g.traces).at(-1);
       const cell = eligibleCells(g.host.state, HUMAN, 0).find(
@@ -454,7 +470,7 @@ describe('three at the table: two bots and a human who does anything', () => {
       gameType: 'fast',
       puzzle: bankPuzzles('fast', 3)[2]!,
       players: [{ id: HUMAN }, ...levels.map((l) => botPlayer(l))],
-      rules: defaultRules('bot', 'fast'),
+      rules: defaultRules('bot', 'fast', INTERFERENCES_ON),
       seed: 9,
     };
     const host = new LocalGameHost({ config, playerId: HUMAN, clock, scheduler });

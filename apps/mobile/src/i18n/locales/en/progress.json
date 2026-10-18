@@ -171,8 +171,8 @@
     "facts": {
       "seconds": "seconds each",
       "cost": "the cost doubles with each launch",
-      "drag": "only, onto the opponent's card",
-      "dragValue": "Drag"
+      "launch": "taps: “Interfere” on an opponent's card, then the interference",
+      "launchValue": "2"
     },
     "arsenal": "Your arsenal",
     "tapHint": "Tap to preview",
@@ -185,21 +185,24 @@
     "soon": "Coming soon",
     "atLevel": "Opens at level {{level}}",
     "lockedLabel": "{{name}}, locked, {{when}}",
-    "howTo": "In a game: tap the bolt on an opponent's card, and drag an interference onto it.",
+    "howTo": "In a game: tap “Interfere” on an opponent's card, then pick an interference.",
     "future": {
-      "ink": "Ink",
       "earthquake": "Earthquake",
       "fog": "Fog",
-      "bubbles": "Bubbles"
+      "bubbles": "Bubbles",
+      "torch": "Torch"
     },
     "description": {
       "fireworks": "A colourful volley of fireworks over the screen",
       "cats": "A caravan of cats racing across the screen",
       "warp": "The screen bends and flickers",
+      "scramble": "The digits on the board shuffle and swap",
       "ink": "Ink blots that fade away",
+      "keypad": "The digit keys trade places",
       "earthquake": "The screen shakes",
       "fog": "Fog that slowly clears",
-      "bubbles": "Bubbles you have to pop"
+      "bubbles": "Bubbles you have to pop",
+      "torch": "The board goes dark except for a torch's light"
     }
   },
   "home": {

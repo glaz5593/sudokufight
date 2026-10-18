@@ -8,7 +8,8 @@ import { useSettings } from '../../../state/settings';
 import { InterferencesScreen } from '../InterferencesScreen';
 
 /**
- * The interferences collection (spec §7.1; work plan stage 12): 3 open with their previews, 4 locked "בקרוב";
+ * The interferences collection (spec §7.1; work plan stage 12): six kinds opening at their levels [D17, D47] with
+ * their previews, four locked "בקרוב";
  * a tapped one previews (its art runs), and with reduced motion every preview holds still.
  */
 
@@ -38,40 +39,70 @@ beforeEach(async () => {
 });
 
 describe('InterferencesScreen', () => {
-  it('3 of 7 open: fireworks, cats and warp with previews; ink, earthquake, fog and bubbles locked "בקרוב"', async () => {
+  it('6 of 10 open at level 14, each with its preview; earthquake, fog, bubbles and the torch locked "בקרוב"', async () => {
     const onBack = jest.fn();
     await render(<InterferencesScreen level={14} onBack={onBack} />);
     expect(screen.getByRole('header', { name: 'הפרעות' })).toBeOnTheScreen();
     expect(screen.getByTestId('interferences-count')).toHaveProp(
       'accessibilityLabel',
-      '3 מתוך 7 הפרעות פתוחות',
+      '6 מתוך 10 הפרעות פתוחות',
     );
-    expect(screen.getByTestId('interferences-count')).toHaveTextContent(`${ltr('3/7')}נפתחו`);
+    expect(screen.getByTestId('interferences-count')).toHaveTextContent(`${ltr('6/10')}נפתחו`);
     expect(screen.getByTestId('interferences-level')).toHaveTextContent('רמה 14');
-    for (const kind of ['fireworks', 'cats', 'warp'])
+    for (const kind of ['fireworks', 'cats', 'warp', 'scramble', 'ink', 'keypad'])
       expect(screen.getByTestId(`interferences-art-${kind}`, hidden)).toBeTruthy();
     expect(screen.getByTestId('interferences-open-fireworks')).toHaveProp(
       'accessibilityLabel',
       'זיקוקים, זמין. מטח זיקוקים צבעוני על המסך',
     );
-    for (const [kind, name] of [
-      ['ink', 'דיו'],
-      ['earthquake', 'רעידת אדמה'],
-      ['fog', 'ערפל'],
-      ['bubbles', 'בועות'],
-    ])
-      expect(screen.getByTestId(`interferences-locked-${kind}`)).toHaveProp(
-        'accessibilityLabel',
-        `${name}, נעול, בקרוב`,
-      );
+    expect(screen.getByTestId('interferences-open-scramble')).toHaveProp(
+      'accessibilityLabel',
+      'מספרים מתערבלים, זמין. הספרות בלוח מתערבלות ומתחלפות',
+    );
+    expect(screen.getByTestId('interferences-open-ink')).toHaveProp(
+      'accessibilityLabel',
+      'דיו, זמין. כתמי דיו שנמחקים בהדרגה',
+    );
+    expect(screen.getByTestId('interferences-open-keypad')).toHaveProp(
+      'accessibilityLabel',
+      'מקלדת מתערבלת, זמין. מקשי הספרות מחליפים מקומות',
+    );
+    const locked = screen.getAllByTestId(/^interferences-locked-/);
+    expect(locked.map((l) => l.props.accessibilityLabel)).toEqual([
+      'רעידת אדמה, נעול, בקרוב',
+      'ערפל, נעול, בקרוב',
+      'בועות, נעול, בקרוב',
+      'פנס, נעול, בקרוב',
+    ]);
     await fireEvent.press(screen.getByRole('button', { name: 'חזרה' }));
     expect(onBack).toHaveBeenCalled();
   });
 
-  it('the rules in short: 5 seconds, 2·4·8…, drag only', async () => {
+  it('at level 1, the scramble, ink and the keypad wait for levels 2, 3 and 4 [D17]', async () => {
+    await render(<InterferencesScreen level={1} onBack={jest.fn()} />);
+    expect(screen.getByTestId('interferences-count')).toHaveProp(
+      'accessibilityLabel',
+      '3 מתוך 10 הפרעות פתוחות',
+    );
+    expect(screen.getAllByTestId(/^interferences-open-/)).toHaveLength(3);
+    const locked = screen.getAllByTestId(/^interferences-locked-/);
+    expect(locked.slice(0, 3).map((l) => l.props.accessibilityLabel)).toEqual([
+      'מספרים מתערבלים, נעול, נפתח ברמה 2',
+      'דיו, נעול, נפתח ברמה 3',
+      'מקלדת מתערבלת, נעול, נפתח ברמה 4',
+    ]);
+    expect(screen.getByTestId('interferences-locked-ink')).toHaveTextContent('כתמי דיו שנמחקים בהדרגה', {
+      exact: false,
+    });
+  });
+
+  it('the rules in short: 5 seconds, 2·4·8…, two taps (no drag) [D45]', async () => {
     await render(<InterferencesScreen level={1} onBack={jest.fn()} />);
     expect(screen.getByLabelText('5 שניות לכל הפרעה')).toBeOnTheScreen();
     expect(screen.getByLabelText(`${ltr('2·4·8…')} העלות מוכפלת בכל שיגור`)).toBeOnTheScreen();
+    expect(screen.getByLabelText('2 הקשות: "הפרעה" בכרטיס היריב, ואז ההפרעה')).toBeOnTheScreen();
+    expect(screen.getByText('במשחק: הקש על "הפרעה" בכרטיס היריב, ובחר הפרעה.')).toBeOnTheScreen();
+    expect(screen.queryByText(/גרירה|גרור/)).toBeNull();
   });
 
   it('a tap previews that one; the others hold still', async () => {
@@ -101,6 +132,13 @@ describe('InterferencesScreen', () => {
       'accessibilityLabel',
       'Fog, locked, Coming soon',
     );
+    expect(screen.getByTestId('interferences-locked-keypad')).toHaveProp(
+      'accessibilityLabel',
+      'Scrambled keypad, locked, Opens at level 4',
+    );
+    expect(
+      screen.getByLabelText("2 taps: “Interfere” on an opponent's card, then the interference"),
+    ).toBeOnTheScreen();
     expect(screen.queryByTestId('interferences-level')).toBeNull();
   });
 });

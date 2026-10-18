@@ -195,14 +195,25 @@ describe('Register-Account board: my fighter', () => {
 describe('Splash board', () => {
   const t = (lng: 'he' | 'en') => i18n.getFixedT(lng, 'account');
 
-  it("the tips say the rules' numbers: the normal game's lock and the doubling penalty", () => {
+  it("the tips say the rules: the normal game's lock, and a mistake costs the right digit's points (§6.5)", () => {
     const seconds = THINK_TIME_MS.normal / 1000;
     expect(splashTip(t('he'), 'lock')).toBe(`משבצת שבחרת ננעלת רק לך: ${seconds} שניות במשחק רגיל.`);
-    expect(splashTip(t('he'), 'mistake')).toBe('טעות עולה ביוקר: כל טעות כפולה מהקודמת.');
+    expect(splashTip(t('he'), 'mistake')).toBe(
+      'טעות עולה בדיוק את הנקודות שהספרה הנכונה הייתה מקבלת. עדיף לחשוב עוד רגע.',
+    );
+    expect(splashTip(t('en'), 'mistake')).toBe(
+      'A mistake costs exactly the points the right digit would have earned. Better to think a moment longer.',
+    );
     expect(splashTip(t('en'), 'lock')).toBe(
       `A cell you pick is locked to you alone: ${seconds} seconds in a Normal game.`,
     );
-    expect(splashTip(t('en'), 'drag')).toBe("Send an interference by dragging it onto your opponent's card.");
+    // [D45] Two taps, no drag.
+    expect(splashTip(t('en'), 'interfere')).toBe(
+      "Send an interference in two taps: “Interfere” on your opponent's card, then the one you pick.",
+    );
+    expect(splashTip(t('he'), 'interfere')).toBe(
+      'הפרעה שולחים בשתי הקשות: ׳הפרעה׳ בכרטיס של היריב, ואז ההפרעה שבחרת.',
+    );
   });
 
   it('the Hebrew name shows under the wordmark in Hebrew…', async () => {

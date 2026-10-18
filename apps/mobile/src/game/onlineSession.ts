@@ -23,7 +23,8 @@ import { gameEndProps, gameStartProps } from './analyticsProps';
  * Unlike a practice nothing is saved on the phone: the server keeps the ranked game (spec §16.2; stage 9
  * stores it). Analytics (spec §22): game_start when this session sees the game begin (its first snapshot is
  * the game as created, before the start: a rejoin mid-game is not a new start) and game_end when it sees
- * the end; `reconnect` and `latency_sample` come from the host itself.
+ * the end; `reconnect` and `latency_sample` come from the host itself. The end (or leaving a running game) also
+ * goes to `onEnd`, so the account's rating follows the game however the screens are left.
  *
  * Before the game there is no view: `online` (the host's OnlineInfo) says what to show instead (connecting,
  * the lobby, a refusal). Pure: no React Native; the host comes in ready made (net/device.ts on the phone, a
@@ -46,6 +47,11 @@ export interface SessionConnection {
   subscribe(listener: (info: OnlineInfo) => void): () => void;
   /** The game's grace period (its rules; a dev room may shorten it); null before the game. */
   readonly graceMs: number | null;
+  /**
+   * The game's soft phase before that grace [D42] (rules.softGraceMs; 0 from an older server without one);
+   * null before the game.
+   */
+  readonly softGraceMs: number | null;
 }
 
 export type OnlineTrack = (name: 'game_start' | 'game_end', props: Record<string, string | number>) => void;
@@ -70,6 +76,18 @@ export interface OnlineProfile {
 
 export type OnlineProfiles = Readonly<Partial<Record<PlayerId, OnlineProfile>>>;
 
+/**
+ * How this session's game ended for this player: it is over (`left` false), or the session closed while it ran
+ * (`left` true: the server's grace runs, then abandonment [D32]). The session says it whatever the screens do
+ * (Android back from the results, the game screen's home, leaving a running game); what it means for the
+ * account's numbers is decided elsewhere (game/rankedEnd.ts, progress/rankedRefresh.ts).
+ */
+export interface OnlineEnd {
+  state: GameState;
+  playerId: PlayerId;
+  left: boolean;
+}
+
 export interface OnlineSessionDeps {
   host: RemoteGameHost;
   request: OnlineRequest;
@@ -78,6 +96,8 @@ export interface OnlineSessionDeps {
   onError?: (error: OnlineError) => void;
   /** The players' avatars and countries, when known before the game (a ranked match's "found"). */
   profiles?: OnlineProfiles | null;
+  /** The game's end, once (see OnlineEnd); a listener that throws breaks nothing. */
+  onEnd?: (end: OnlineEnd) => void;
 }
 
 let sessions = 0;
@@ -102,14 +122,16 @@ export class OnlineSession {
   private closed = false;
   private readonly unsubscribe: () => void;
   private readonly track: OnlineTrack | undefined;
+  private readonly onEnd: ((end: OnlineEnd) => void) | undefined;
 
-  constructor({ host, request, track, onError, profiles = null }: OnlineSessionDeps) {
+  constructor({ host, request, track, onError, profiles = null, onEnd }: OnlineSessionDeps) {
     this.key = `online-${++sessions}`;
     this.host = host;
     this.request = request;
     this.profiles = profiles;
     this.clock = host.clock;
     this.track = track;
+    this.onEnd = onEnd;
     const self = this;
     this.connection = {
       get info() {
@@ -118,6 +140,9 @@ export class OnlineSession {
       subscribe: (listener) => self.host.subscribeOnline(listener),
       get graceMs() {
         return self.graceMs;
+      },
+      get softGraceMs() {
+        return self.softGraceMs;
       },
     };
     // Before any screen: the start and the end are counted however the screens come and go.
@@ -177,6 +202,12 @@ export class OnlineSession {
     return this.host.game?.config.rules.graceMs ?? null;
   }
 
+  /** The game's soft phase of a lost connection [D42] (0 when its rules have none); null before the game. */
+  get softGraceMs(): number | null {
+    const rules = this.host.game?.config.rules;
+    return rules ? (rules.softGraceMs ?? 0) : null;
+  }
+
   getView(): GameView {
     return this.host.getView();
   }
@@ -203,6 +234,10 @@ export class OnlineSession {
   close(): void {
     if (this.closed) return;
     this.closed = true;
+    // Left while the game runs: the server ends it for this player when the grace runs out.
+    const game = this.host.game;
+    if (!this.ended && game && game.status !== 'over')
+      this.ends({ state: game, playerId: this.playerId, left: true });
     this.unsubscribe();
     this.host.close();
   }
@@ -221,6 +256,7 @@ export class OnlineSession {
     if (!this.ended && state.status === 'over' && state.result) {
       this.ended = true;
       this.send('game_end', gameEndProps(state.config.mode, state.result, this.playerId));
+      this.ends({ state, playerId: this.playerId, left: false });
     }
   }
 
@@ -229,6 +265,14 @@ export class OnlineSession {
       this.track?.(name, props);
     } catch {
       // Analytics never breaks a game.
+    }
+  }
+
+  private ends(end: OnlineEnd): void {
+    try {
+      this.onEnd?.(end);
+    } catch {
+      // The account's refresh never breaks a game.
     }
   }
 }

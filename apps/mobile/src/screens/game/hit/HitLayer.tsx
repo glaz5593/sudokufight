@@ -1,4 +1,5 @@
-import type { Clock } from '@sudoku-fight/engine';
+import { type Clock, type InterferenceKind, isInterferenceKind } from '@sudoku-fight/engine';
+import type { TFunction } from 'i18next';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LayoutChangeEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -20,7 +21,7 @@ import { space } from '../../../theme';
 import { useReduceMotion } from '../../../theme/motion';
 import type { Rect } from '../geometry';
 import { HitBanner } from './HitBanner';
-import { type HitInfo, hitSeconds, isHitOn, isolateName } from './hitModel';
+import { type HitInfo, hitSeconds, hitSeedOf, isHitOn, isolateName } from './hitModel';
 import { type HitAnnounce, useHitFeedback } from './useHitFeedback';
 
 export interface HitLayerProps {
@@ -63,7 +64,11 @@ export interface HitLayerProps {
  * motion (spec §22) the effect is a static cover of the same area for the same time.
  *
  * Screen readers: the effect is hidden from them; the banner is an alert they can reach, and the layer
- * announces the start ("… נותרו 5 שניות, הטיימר שלך עצור") and the end.
+ * announces the start ("… הלוח מוחשך, נותרו 5 שניות. הטיימר שלך עצור", D46: the board's dim is
+ * BoardHitLayer's, inside the board) and the end. For the scramble it adds that the rolling digits are not real,
+ * and for the keypad that every key still enters its own digit [D47].
+ *
+ * A kind this app doesn't know (a newer player's): the generic banner "NinaVolt שלח/ה לך הפרעה!", no effect.
  */
 export function HitLayer({
   hit,
@@ -88,14 +93,14 @@ export function HitLayer({
   const elapsed = useHitClock(shown, clock);
 
   const seconds = shown ? hitSeconds(shown, now) : 0;
-  const title = shown ? t(`hit.title.${shown.kind}`, { name: isolateName(shown.fromName) }) : '';
+  const title = shown ? hitTitle(shown.kind, shown.fromName, t) : '';
   const subtitle =
     shown?.cost === undefined || shown.cost === null
       ? t('hit.goesOn')
       : t('hit.cost', { cost: formatScore(shown.cost) });
   const time = t('hit.seconds', { count: seconds });
-  // Said once, as the hit starts: what happened, and for how long.
-  const startLine = shown ? t('hit.started', { title, time }) : '';
+  // Said once, as the hit starts: what happened, that the board is dimmed, and for how long.
+  const startLine = shown ? startLineOf(shown.kind, t('hit.started', { title, time }), t) : '';
 
   useHitFeedback({
     hit: shown,
@@ -113,6 +118,7 @@ export function HitLayer({
   }, []);
 
   const colors = useMemo(() => effectColors(shown?.fromColorIndex ?? 1), [shown?.fromColorIndex]);
+  const seed = shown ? hitSeedOf(shown) : 0;
 
   if (!shown) return null;
 
@@ -153,6 +159,7 @@ export function HitLayer({
             fadeOutMs={HIT_FADE_OUT_MS}
             scope={onBoard ? 'board' : 'screen'}
             board={board}
+            seed={seed}
           />
         </View>
       </View>
@@ -171,6 +178,21 @@ export function HitLayer({
       />
     </View>
   );
+}
+
+type GameT = TFunction<'game'>;
+
+/** The banner's title: the kind's own ("NinaVolt שלח/ה לך זיקוקים!"), or the generic one for a kind unknown here. */
+export function hitTitle(kind: InterferenceKind, fromName: string, t: GameT): string {
+  const name = isolateName(fromName);
+  return isInterferenceKind(kind) ? t(`hit.title.${kind}`, { name }) : t('hit.title.generic', { name });
+}
+
+/** The start's announcement, with what the screen reader should know about the kind [D47]. */
+export function startLineOf(kind: InterferenceKind, line: string, t: GameT): string {
+  return kind === 'scramble' || kind === 'keypad'
+    ? t('hit.withNote', { line, note: t(`hit.note.${kind}`) })
+    : line;
 }
 
 const styles = StyleSheet.create({

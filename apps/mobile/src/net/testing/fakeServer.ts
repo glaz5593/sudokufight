@@ -8,6 +8,7 @@ import {
   type GameConfig,
   type GameEvent,
   type GameState,
+  isSoftOffline,
   ManualClock,
   ManualScheduler,
   nextDeadline,
@@ -210,7 +211,10 @@ export interface FakeTableOptions {
 /**
  * The server and the network around one RemoteGameHost (me) and a scripted opponent: a room with a code, the
  * engine game, a delay each way, the server's clock `skewMs` off the phone's, and the server's side of
- * reconnecting (a seat held for the token during the grace, a rejoin by code).
+ * reconnecting (a seat held for the token during the soft phase and the grace, a rejoin by code). Like
+ * GameRoom, a dropped connection gets the soft phase first [D42] (rules.softGraceMs, default 10 s; 0 = hard
+ * at once), a goodbye is hard; the engine's own timers end the soft phase. Moves made offline (`offlineMove`)
+ * go to the engine like any action.
  */
 export class FakeTable implements OnlineClient {
   readonly clock = new ManualClock(1_000_000);
@@ -218,6 +222,8 @@ export class FakeTable implements OnlineClient {
   readonly host: RemoteGameHost;
   readonly tracked: { name: string; props: Record<string, unknown> }[] = [];
   readonly logs: string[] = [];
+  /** What the host survived and reported (RemoteHostDeps.report). */
+  readonly reports: { error: unknown; context: string }[] = [];
   readonly rooms: FakeRoom[] = [];
   readonly calls: { kind: 'create' | 'join' | 'reconnect' | 'reserved'; arg: unknown }[] = [];
   game: FakeGame | null = null;
@@ -262,6 +268,7 @@ export class FakeTable implements OnlineClient {
       appState: o.appState ?? null,
       track: (name, props) => this.tracked.push({ name, props }),
       log: (line) => this.logs.push(line),
+      report: (error, context) => this.reports.push({ error, context }),
       options: o.options,
     });
   }
@@ -300,7 +307,9 @@ export class FakeTable implements OnlineClient {
       if (code !== CODE) throw sdkError(`room "${code}" not found`, 522);
       if (!this.game) return this.newRoom();
       const me = this.game.state.players.find((p) => p.id === ME)!;
-      if (me.connected || this.unnoticed) throw sdkError(`alreadyInRoom: ${ME} is connected already`, 526);
+      // Away is away in the soft phase too [D42]: the room takes me back by code.
+      const away = !me.connected || isSoftOffline(me);
+      if (!away || this.unnoticed) throw sdkError(`alreadyInRoom: ${ME} is connected already`, 526);
       this.lastClientSeq = 0; // a rejoin starts the count over
       const room = this.newRoom();
       this.welcomeBack(room);
@@ -432,12 +441,29 @@ export class FakeTable implements OnlineClient {
 
   private heldIfDropped = false;
 
-  /** The server notices my connection is gone: the engine's disconnect (the grace starts), the seat held. */
+  /**
+   * The server notices my connection is gone, as GameRoom does: a drop is soft (the soft phase, rules.softGraceMs
+   * [D42]; the engine makes it hard at once when the rules have none), a goodbye hard (and it hardens a soft
+   * phase). The seat is held for a drop.
+   */
   notice(): void {
     this.unnoticed = false;
     this.seatHeld = this.heldIfDropped;
-    if (this.game?.state.players.find((p) => p.id === ME)?.connected)
-      this.game.apply({ type: 'disconnect', playerId: ME });
+    const me = this.game?.state.players.find((p) => p.id === ME);
+    if (!me?.connected) return;
+    const soft = this.heldIfDropped;
+    if (soft && isSoftOffline(me)) return;
+    this.game!.apply({ type: 'disconnect', playerId: ME, soft });
+  }
+
+  /** The game's rules (e.g. its soft phase and grace, to pass them by). */
+  get rules(): Rules {
+    return this.config.rules;
+  }
+
+  /** My state at the server now. */
+  get meAtServer(): GameState['players'][number] | null {
+    return this.game?.state.players.find((p) => p.id === ME) ?? null;
   }
 
   /** A message reaches the server `oneWayMs` after it was sent; its answer takes as long again. */

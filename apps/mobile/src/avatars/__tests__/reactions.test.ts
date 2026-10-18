@@ -95,8 +95,10 @@ const player = (id: string, more: Partial<PlayerView> = {}): PlayerView => ({
   status: 'active',
   connected: true,
   graceEndsAt: null,
+  softEndsAt: null,
   score: 0,
   mistakes: 0,
+  mistakePenalties: [],
   correct: 0,
   place: 1,
   isLeader: false,
@@ -173,6 +175,12 @@ describe('the table (AVATAR_REACTIONS, spec §3.4)', () => {
     ]);
     expect(face('p2').reaction).toBeNull();
     expect(face('me').reaction).toBeNull();
+  });
+
+  it('a lost connection in its soft phase [D42] plays nothing either (only the card is marked)', () => {
+    const events = [ev({ type: 'playerConnectionLost', playerId: 'p2', softEndsAt: T0 + 10_000 })];
+    expect(cuesOf(events).cues).toEqual([]);
+    expect(facesAfter(events)('p2').reaction).toBeNull();
   });
 
   it.each([

@@ -127,6 +127,10 @@ export class FakeMatchmaking implements MatchmakingConnector {
 
   // -- the server's side ---------------------------------------------------------------------------------
 
+  /**
+   * A `searching`. `nextRange` (who else is there, matcher.ts rule 7) defaults to `range`: someone is
+   * around, so the range shows. null: nobody else is searching. `legacy`: an older server, no nextRange.
+   */
   searching({
     elapsedMs = 0,
     extended = false,
@@ -138,12 +142,16 @@ export class FakeMatchmaking implements MatchmakingConnector {
           MATCH_RANGE.initial + MATCH_RANGE.step * Math.floor(elapsedMs / MATCH_RANGE.stepMs),
         ),
     timeoutInMs = MATCH_TIMEOUT_MS - elapsedMs,
+    nextRange = range,
+    legacy = false,
   }: {
     elapsedMs?: number;
     extended?: boolean;
     requeued?: boolean;
     range?: number;
     timeoutInMs?: number;
+    nextRange?: number | null;
+    legacy?: boolean;
   } = {}): void {
     const now = this.serverNow();
     this.room.deliver({
@@ -156,14 +164,21 @@ export class FakeMatchmaking implements MatchmakingConnector {
       timeoutAt: now + timeoutInMs,
       serverTime: now,
       ...(requeued ? { requeued } : {}),
+      ...(legacy ? {} : { nextRange }),
     });
   }
 
+  /**
+   * A `timeout`; `nextRange` null: nobody else was searching (default: someone at the cap). `legacy`: an
+   * older server, no nextRange.
+   */
   timeout({
     elapsedMs = MATCH_TIMEOUT_MS,
     range = MATCH_RANGE.cap,
     extended = false,
     windowMs = 60_000,
+    nextRange = MATCH_RANGE.cap as number | null,
+    legacy = false,
   } = {}): void {
     this.room.deliver({
       type: 'timeout',
@@ -172,6 +187,7 @@ export class FakeMatchmaking implements MatchmakingConnector {
       range,
       extended,
       keepSearchingUntil: this.serverNow() + windowMs,
+      ...(legacy ? {} : { nextRange }),
     });
   }
 
@@ -242,6 +258,8 @@ export class FakeMatchHost {
     pendingCell: null,
     hasGame: false,
     resyncedAt: null,
+    offlinePlay: null,
+    queuedMoves: [],
     startsAt: null,
   };
   readonly sync = { synced: false };

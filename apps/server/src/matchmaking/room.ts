@@ -20,8 +20,9 @@ import { MatchmakingRefusal, type MatchmakingService, type MatchSession } from '
  * the MatchmakingService, one per process, shared by every matchmaking room (Colyseus opens another room
  * when one is full; the queues are the service's, not a room's).
  *
- * `client.joinOrCreate('matchmaking', { queueKey })` with the account's ID token as `client.auth.token`:
- * the static onAuth checks the token (registered players only), onJoin puts the player in the queue.
+ * `client.joinOrCreate('matchmaking', { queueKey, interferenceKinds })` with the account's ID token as
+ * `client.auth.token`: the static onAuth checks the token (registered players only), onJoin puts the player in
+ * the queue with the interference kinds the app declared [D47].
  * Messages: `cancel`, `keepSearching`, `ping` (protocol: MatchmakingClientMessage). Leaving the room while
  * searching cancels the search; after "found" it changes nothing [D32].
  */
@@ -84,8 +85,9 @@ export abstract class MatchmakingRoom extends Room {
   override async onJoin(client: Client, options: unknown): Promise<void> {
     const identity: unknown = client.auth;
     if (!isIdentity(identity)) throw refuse(ErrorCode.AUTH_FAILED, 'unauthenticated', 'no identity');
-    const queueKey = (typeof options === 'object' && options !== null ? options : {}) as {
+    const joinOptions = (typeof options === 'object' && options !== null ? options : {}) as {
       queueKey?: unknown;
+      interferenceKinds?: unknown;
     };
     const session: MatchSession = {
       id: client.sessionId,
@@ -93,7 +95,8 @@ export abstract class MatchmakingRoom extends Room {
       close: () => client.leave(CloseCode.CONSENTED),
     };
     try {
-      await this.deps.service.enqueue(session, identity, queueKey.queueKey);
+      // The kinds the app can show [D47]: the service treats a malformed list as none (the legacy kinds).
+      await this.deps.service.enqueue(session, identity, joinOptions.queueKey, joinOptions.interferenceKinds);
     } catch (error) {
       if (error instanceof MatchmakingRefusal) {
         const code = error.error === 'unauthenticated' ? ErrorCode.AUTH_FAILED : ErrorCode.APPLICATION_ERROR;

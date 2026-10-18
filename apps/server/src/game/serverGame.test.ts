@@ -4,6 +4,7 @@ import {
   type GameEvent,
   ManualClock,
   ManualScheduler,
+  missedPoints,
   type Rules,
   toPublicEvent,
 } from '@sudoku-fight/engine';
@@ -93,10 +94,13 @@ describe('ServerGame', () => {
     expect(correct).toMatchObject({ type: 'placedCorrect', playerId: 'ana', cell: C1 });
     expect(correct.type === 'placedCorrect' && correct.points).toBeGreaterThan(0);
 
+    // A mistake costs what the right digit would have scored there now (§6.5).
+    const penalty = missedPoints(game.state.grid, C2, digitAt(PUZZLE, C2)).points;
+    expect(penalty).toBeGreaterThanOrEqual(1.5);
     game.act('ben', { type: 'select', cell: C2 });
     game.act('ben', { type: 'place', cell: C2, digit: wrongDigitAt(PUZZLE, C2) });
     expect(events().slice(-2)).toMatchObject([
-      { type: 'placedWrong', playerId: 'ben', penalty: 1, mistakes: 1, score: -1 },
+      { type: 'placedWrong', playerId: 'ben', penalty, mistakes: 1, score: -penalty },
       { type: 'cellReleased', playerId: 'ben', reason: 'mistake' },
     ]);
   });
@@ -167,6 +171,87 @@ describe('ServerGame', () => {
     ]);
     expect(game.isOver).toBe(true);
     expect(scheduler.pending).toBe(0);
+  });
+
+  it('a lost connection [D42]: the soft phase first (the game goes on), then the grace from its end', () => {
+    const { game, scheduler, clock, events, types } = setup({
+      rules: { softGraceMs: 10_000, graceMs: 15_000 },
+    });
+    game.start();
+    game.act('ana', { type: 'select', cell: C1 }); // expires at T0 + 8000
+    clock.advance(1000);
+    expect(game.disconnect('ben', { soft: true }).rejected).toBeUndefined();
+    expect(events().at(-1)).toEqual({
+      type: 'playerConnectionLost',
+      playerId: 'ben',
+      softEndsAt: T0 + 11_000,
+      seq: 4,
+      t: T0 + 1000,
+    });
+    // A mark only: nothing froze, and ana's lock runs out on time.
+    expect(game.state.status).toBe('running');
+    scheduler.advance(7000);
+    expect(events().at(-1)).toMatchObject({ type: 'cellReleased', reason: 'timeout', t: T0 + 8000 });
+    expect(game.act('ana', { type: 'select', cell: C2 }).rejected).toBeUndefined();
+    // His own actions wait for his return; a second drop report changes nothing.
+    expect(game.act('ben', { type: 'select', cell: C3 }).rejected).toBe('disconnected');
+    expect(game.disconnect('ben', { soft: true }).rejected).toBe('alreadyDisconnected');
+
+    // The timer fires at softEndsAt: the hard phase, as a disconnect was before (two players: a freeze).
+    scheduler.advance(2999);
+    expect(types()).not.toContain('playerDisconnected');
+    scheduler.advance(1);
+    expect(events().slice(-2)).toMatchObject([
+      { type: 'playerDisconnected', playerId: 'ben', graceEndsAt: T0 + 26_000, t: T0 + 11_000 },
+      { type: 'gamePaused', reason: 'disconnect', t: T0 + 11_000 },
+    ]);
+    // And at the grace's end: abandonment, 25 s after the drop.
+    scheduler.advance(14_999);
+    expect(game.isOver).toBe(false);
+    scheduler.advance(1);
+    expect(
+      events()
+        .slice(-2)
+        .map((e) => [e.type, e.t]),
+    ).toEqual([
+      ['playerAbandoned', T0 + 26_000],
+      ['gameOver', T0 + 26_000],
+    ]);
+    expect(scheduler.pending).toBe(0);
+  });
+
+  it('back within the soft phase [D42]: only playerReconnected, and a move made offline is applied', () => {
+    const { game, scheduler, clock, events, types } = setup();
+    game.start();
+    game.disconnect('ben', { soft: true });
+    expect(scheduler.pending).toBe(1); // the end of the soft phase
+    clock.advance(4000);
+    game.reconnect('ben');
+    expect(events().at(-1)).toEqual({ type: 'playerReconnected', playerId: 'ben', seq: 4, t: T0 + 4000 });
+    expect(game.state.players[1]!.offlineWindow).toEqual({ until: T0 + 9000, left: 8 });
+    expect(scheduler.pending).toBe(0); // nothing left to wait for: the soft timer went with him
+
+    clock.advance(100);
+    const digit = digitAt(PUZZLE, C2);
+    expect(game.act('ben', { type: 'offlineMove', cell: C2, digit, thinkMs: 2500 }).rejected).toBeUndefined();
+    expect(events().slice(-2)).toMatchObject([
+      { type: 'cellLocked', playerId: 'ben', cell: C2 },
+      { type: 'placedCorrect', playerId: 'ben', cell: C2, digit, thinkMs: 2500, offline: true },
+    ]);
+    scheduler.advance(30_000);
+    expect(types()).not.toContain('gamePaused');
+    expect(types()).not.toContain('playerDisconnected');
+  });
+
+  it('with the soft phase off (softGraceMs 0) a lost connection is hard at once, as before', () => {
+    const { game, events } = setup({ rules: { softGraceMs: 0, graceMs: 15_000 } });
+    game.start();
+    game.disconnect('ben', { soft: true });
+    expect(
+      events()
+        .slice(-2)
+        .map((e) => e.type),
+    ).toEqual(['playerDisconnected', 'gamePaused']);
   });
 
   it('with three players a disconnect does not freeze the game: the lock goes, and the game goes on', () => {

@@ -1,4 +1,5 @@
 import type { ActionResult } from '../game/engine';
+import { isSoftOffline } from '../game/evolve';
 import type { ClientAction, HostUpdate, LocalGameHost } from '../game/host';
 import type { GameEvent, GameState, PlayerId, RejectReason } from '../game/types';
 import type { CellIndex } from '../sudoku/board';
@@ -191,7 +192,8 @@ class BotRunner {
     // Frozen game, not started yet, or under interference: stand still, as the lock timer does [D11]. With
     // the [D11] alternative its lock's timer runs on under interference: it still finishes that lock in time.
     const hitStops = me.hitBy !== null && !(lock && lock.expiresAt !== null);
-    if (s.status !== 'running' || !me.connected || hitStops) return this.freeze(now);
+    // Away (in the soft phase of a lost connection too [D42]): the engine would refuse every move.
+    if (s.status !== 'running' || !me.connected || isSoftOffline(me) || hitStops) return this.freeze(now);
     if (this.frozen) this.thaw(now);
 
     const plan = this.plan;

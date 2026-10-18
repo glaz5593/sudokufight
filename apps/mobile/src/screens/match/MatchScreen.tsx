@@ -1,14 +1,14 @@
 import type { Clock } from '@sudoku-fight/engine';
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
-import { BackHandler, StyleSheet, View } from 'react-native';
+import { BackHandler } from 'react-native';
 
 import type { AvatarIdOrNone } from '../../avatars';
 import { systemClock } from '../../game/clock';
 import { useNow } from '../../game/useNow';
 import type { MatchEntry, MatchmakingClient, MatchPhase } from '../../net/matchmaking';
 import { cue } from '../../services/feedback';
-import { color } from '../../theme';
 import { useReduceMotion } from '../../theme/motion';
+import { FlowFallback } from '../FlowFallback';
 import { CountdownView } from './CountdownView';
 import { FoundView } from './FoundView';
 import { MatchErrorView } from './MatchErrorView';
@@ -25,7 +25,7 @@ export interface MatchScreenProps {
   onPlay: () => void;
   /** The search was called off ("ביטול חיפוש", Android back): back where it was started. */
   onLeave: () => void;
-  /** Timeout → "שחק מול בוט בינתיים". */
+  /** "שחק מול בוט בינתיים": from the timeout, or from the search when nobody else is searching. */
   onBot: () => void;
   /** A failure → "עבור לאימון". */
   onPractice: () => void;
@@ -112,6 +112,12 @@ export function MatchScreen({
     leave(onLeave);
   }, [match, leave, onLeave]);
 
+  // "שחק מול בוט בינתיים" (the timeout, or nobody else searching): out of the queue, then a bot game.
+  const toBot = useCallback(() => {
+    match.cancel();
+    leave(onBot);
+  }, [match, leave, onBot]);
+
   // Android back: cancels a search; from "found" on there is no way out but abandonment [D32].
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -136,7 +142,7 @@ export function MatchScreen({
 
   switch (model.kind) {
     case 'search':
-      return <SearchView key="search" model={model} reduce={reduce} onCancel={cancel} />;
+      return <SearchView key="search" model={model} reduce={reduce} onCancel={cancel} onBot={toBot} />;
     case 'timeout':
       return (
         <TimeoutView
@@ -144,10 +150,7 @@ export function MatchScreen({
           model={model}
           reduce={reduce}
           onKeepSearching={() => match.keepSearching()}
-          onBot={() => {
-            match.cancel();
-            leave(onBot);
-          }}
+          onBot={toBot}
           onHome={() => {
             match.cancel();
             leave(onHome);
@@ -182,10 +185,7 @@ export function MatchScreen({
       );
     }
     case 'cancelled':
-      return <View style={styles.blank} />;
+      // The way back runs at once (the effect above); should it not, never an empty screen.
+      return <FlowFallback reason="match: cancelled screen stayed" onHome={onHome} />;
   }
 }
-
-const styles = StyleSheet.create({
-  blank: { flex: 1, backgroundColor: color.bg },
-});

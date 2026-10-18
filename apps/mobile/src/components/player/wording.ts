@@ -104,8 +104,10 @@ export function cardLabel(
   if (m.isBot) extras.push(t('bot'));
   if (m.isBot && botLevel) extras.push(botLevel);
   if (m.rating !== null) extras.push(t('rating.label', { value: Math.round(m.rating) }));
-  // My own connection shows as a banner, and "left" / "reconnecting" are already the activity phrase.
-  if (!m.isMe && m.presence === 'online' && m.out === null) extras.push(presenceText(m.presence, t, gender));
+  // My own connection shows as a banner, and "left" / "reconnecting" are already the activity phrase. The soft
+  // phase of a lost connection [D42] has no banner: "ללא חיבור" on any card, mine too.
+  if (m.out === null && (m.presence === 'unstable' || (!m.isMe && m.presence === 'online')))
+    extras.push(presenceText(m.presence, t, gender));
   if (m.hit) extras.push(t('card.hit', { time: secondsText(m.hit.secondsLeft, t) }));
   return [head.join(sep), ...extras].join(list);
 }

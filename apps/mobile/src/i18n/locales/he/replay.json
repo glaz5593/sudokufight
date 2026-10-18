@@ -40,11 +40,13 @@
     "interference": "{{name}} · הפרעה על {{target}} · {{delta}}",
     "disconnect": "{{name}} · התנתקות",
     "reconnect": "{{name}} · חזרה למשחק",
+    "offline": "{{name}} · בלי חיבור",
     "surrender": "{{name}} · כניעה",
     "endPractice": "{{name}} · סיום אימון",
     "abandon": "{{name}} · נטישה",
     "over": "המשחק נגמר",
-    "paused": "המשחק מוקפא"
+    "paused": "המשחק מוקפא",
+    "offlineSuffix": "נשלח כשהחיבור חזר"
   },
   "explain": {
     "title": "הסבר לכל שחקן",
@@ -62,6 +64,7 @@
     "why": "למה {{digit}} לא מתאים: {{text}}",
     "noLogic": "התשובה: {{cell}} → {{digit}}",
     "scoreLine": "חישוב הניקוד",
+    "penaltyLine": "הקנס: כמה הייתה שווה הספרה הנכונה",
     "released": {
       "cancel": "הבחירה בוטלה",
       "timeout": "הזמן נגמר",

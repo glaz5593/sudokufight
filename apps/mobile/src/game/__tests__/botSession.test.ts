@@ -13,6 +13,7 @@ import {
   toView,
 } from '@sudoku-fight/engine';
 
+import { cardModel } from '../../components/player';
 import { allOfflinePuzzles } from '../offlinePool';
 import { outcomeOf } from '../outcome';
 import { openPracticeRepo, type PracticeRepo } from '../practiceRepo';
@@ -96,7 +97,11 @@ describe('a practice against a bot (spec §9)', () => {
       rules: defaultRules('bot', 'normal'),
       seed: 7,
     });
-    expect(created.config.rules.interferences).toBe(true);
+    // [D44] The player knows it is a bot: no interferences, either way.
+    expect(created.config.rules.interferences).toBe(false);
+    expect(s.getView().interference).toBeNull();
+    // So the bot's card has no "הפרעה" button.
+    expect(cardModel(s.getView(), 'bot-3', 0, r.clock.now()).interference).toBeNull();
     expect(s).toMatchObject({ mode: 'bot', gameType: 'normal', botLevel: 3, playerId: ME, seed: 7 });
     expect(r.track).toHaveBeenCalledWith('game_start', { mode: 'bot', type: 'normal', players: 2 });
     await s.flush();

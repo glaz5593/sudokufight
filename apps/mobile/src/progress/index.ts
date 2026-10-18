@@ -5,8 +5,10 @@
  */
 export {
   currentOwner,
+  onlineGameEnded,
   practiceFinished,
   practiceSync,
+  rankedRefresh,
   refreshMyProgress,
   setProgressFetch,
   signedInProgressApi,
@@ -30,6 +32,7 @@ export {
   type SyncOutcome,
   type SyncStatus,
 } from './practiceSync';
+export { RankedRefresh, type RankedRefreshDeps, REMEMBERED_ENDS } from './rankedRefresh';
 export {
   adoptCard,
   adoptProgress,

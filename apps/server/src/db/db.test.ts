@@ -329,6 +329,41 @@ describe('migration 0006: retired names and suspended sign-ins (spec §3.5)', ()
   }, 30_000);
 });
 
+describe('migration 0007: retired puzzles (spec §20) [D43]', () => {
+  it('keeps every puzzle of a database that has 0006 already, all of them still in the pool', async () => {
+    const migrations = foldersBefore(7);
+    const dataDir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-pglite-'));
+    try {
+      const before = await createDb(
+        { database: { kind: 'pglite', dataDir } },
+        { migrationsFolder: migrations },
+      );
+      for (const id of ['p1', 'p2'])
+        await before.db
+          .execute(sql`insert into puzzles (id, givens, solution, game_type, givens_count, source, pool)
+                                    values (${id}, ${'0'.repeat(81)}, ${'1'.repeat(81)}, 'fast', 17, 'old', 'ranked')`);
+      await before.close();
+
+      const after = await createDb({ database: { kind: 'pglite', dataDir } });
+      try {
+        const rows = await after.db
+          .select({ id: puzzles.id, retiredAt: puzzles.retiredAt })
+          .from(puzzles)
+          .orderBy(puzzles.id);
+        expect(rows).toEqual([
+          { id: 'p1', retiredAt: null },
+          { id: 'p2', retiredAt: null },
+        ]);
+      } finally {
+        await after.close();
+      }
+    } finally {
+      rmSync(migrations, { recursive: true, force: true });
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
+
 describe('one process per PGlite folder', () => {
   let dir: string;
   beforeEach(() => {

@@ -7,7 +7,6 @@ export { Avatar, type AvatarProps, type GameResultKind } from './Avatar';
 export { HitChip, RankBadge, ReconnectPill, VsBadge } from './Badges';
 export { CardIconButton, type CardIconButtonProps } from './CardIconButton';
 export { CountUpText, type CountUpTextProps } from './CountUpText';
-export { DropZone, type DropZoneProps } from './DropZone';
 export { Flag, type FlagProps, type FlagSize } from './Flag';
 export { InterferenceButton, type InterferenceButtonProps } from './InterferenceButton';
 export { LeadBar, type LeadBarProps } from './LeadBar';
@@ -18,6 +17,7 @@ export { PlayerCardCompact, type PlayerCardCompactProps } from './PlayerCardComp
 export { Rating, type RatingProps, type RatingSize } from './Rating';
 export { DeltaLabel, type ScoreDelta, ScoreNumber } from './Score';
 export { SeatGlyph, type SeatGlyphProps } from './SeatGlyph';
+export { TargetFrame, type TargetFrameProps } from './TargetFrame';
 export { TimerRing, type TimerRingProps } from './TimerRing';
 export { ActivityLine, MistakesText } from './ActivityLine';
 

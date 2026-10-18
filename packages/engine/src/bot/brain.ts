@@ -1,3 +1,4 @@
+import { isSoftOffline } from '../game/evolve';
 import type { InterferenceKind } from '../game/rules';
 import type { GameState, PlayerId, PlayerState } from '../game/types';
 import type { GameType } from '../gameType';
@@ -367,8 +368,9 @@ export function canInterfere(state: GameState, fromId: PlayerId, targetId: Playe
   const me = playerOf(state, fromId);
   const target = playerOf(state, targetId);
   if (!me || !target || me === target) return false;
-  if (me.status !== 'active' || !me.connected) return false;
+  if (me.status !== 'active' || !me.connected || isSoftOffline(me)) return false;
   if (target.status !== 'active' || !target.connected) return false;
+  if (isSoftOffline(target) && !rules.interfereSoftOffline) return false; // [D42]
   if (target.hitBy || target.immuneUntil > now) return false;
   const cost = rules.interferenceCostBase ** (me.interferencesSent + 1);
   return !rules.interferenceNeedsScore || me.score >= cost;
@@ -376,7 +378,12 @@ export function canInterfere(state: GameState, fromId: PlayerId, targetId: Playe
 
 /**
  * Whether to send an interference now, and on whom (spec §9 table) [D40]: the level's policy (how many a
- * game, how far behind), then its chance. The target is the leading opponent that can take one.
+ * game, how far behind), then its chance. The target is the leading opponent that can take one; the kind is
+ * one of the game's `rules.interferenceKinds` (a room's kinds [D47]).
+ *
+ * In a game with interferences off it never sends one [D44]: practice against a bot has none, so the bot
+ * never interferes there. It returns before drawing from `rng`, so a bot game's random stream (and its
+ * replay) does not depend on the policy.
  */
 export function decideInterference(
   state: GameState,
@@ -385,6 +392,7 @@ export function decideInterference(
   now: number,
   rng: Rng,
 ): { targetId: PlayerId; kind: InterferenceKind } | null {
+  if (!state.config.rules.interferences) return null; // [D44]
   const policy = level.interference;
   const me = playerOf(state, botId);
   if (!me || policy.chance <= 0) return null;
@@ -407,7 +415,7 @@ export function decideInterference(
 /** Whether the engine would take a reaction from `id` now: in the game, and the rate limit [D19]. */
 export function canReact(state: GameState, id: PlayerId, now: number): boolean {
   const me = playerOf(state, id);
-  if (!me || me.status !== 'active' || !me.connected) return false;
+  if (!me || me.status !== 'active' || !me.connected || isSoftOffline(me)) return false;
   if (state.status !== 'running') return false;
   const cooldown = state.config.rules.reactionCooldownMs;
   return me.lastReactionAt === null || now - me.lastReactionAt >= cooldown;

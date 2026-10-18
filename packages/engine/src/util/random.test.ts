@@ -1,4 +1,4 @@
-import { createRng, pick, randomInt } from './random';
+import { createRng, pick, randomInt, seedFromString, shuffled } from './random';
 import { ManualClock } from './clock';
 
 describe('seeded randomness', () => {
@@ -25,6 +25,36 @@ describe('seeded randomness', () => {
   it('picks from a list and refuses an empty one', () => {
     expect(['a', 'b']).toContain(pick(createRng(2), ['a', 'b']));
     expect(() => pick(createRng(2), [])).toThrow(RangeError);
+  });
+});
+
+describe('shuffled', () => {
+  it('returns a permutation, the same for the same seed, and leaves the input alone', () => {
+    const items = Array.from({ length: 20 }, (_, i) => i);
+    const a = shuffled(createRng(9), items);
+    expect([...a].sort((x, y) => x - y)).toEqual(items);
+    expect(a).not.toEqual(items);
+    expect(shuffled(createRng(9), items)).toEqual(a);
+    expect(shuffled(createRng(10), items)).not.toEqual(a);
+    expect(items).toEqual(Array.from({ length: 20 }, (_, i) => i));
+    expect(shuffled(createRng(1), [])).toEqual([]);
+  });
+});
+
+describe('seedFromString (one seed per puzzle id)', () => {
+  it('is stable, a 32-bit unsigned integer, and differs between texts and between salts', () => {
+    const s = seedFromString('0123456789abcdef', 20261015);
+    expect(seedFromString('0123456789abcdef', 20261015)).toBe(s);
+    expect(Number.isInteger(s) && s >= 0 && s < 2 ** 32).toBe(true);
+    expect(seedFromString('0123456789abcdee', 20261015)).not.toBe(s);
+    expect(seedFromString('0123456789abcdef', 20261016)).not.toBe(s);
+    expect(seedFromString('0123456789abcdef')).not.toBe(s);
+    // FNV-1a of the empty text is its basis.
+    expect(seedFromString('')).toBe(0x811c9dc5);
+    for (const text of ['a', 'zz', 'פאזל', 'x'.repeat(200)]) {
+      const v = seedFromString(text, 7);
+      expect(Number.isInteger(v) && v >= 0 && v < 2 ** 32).toBe(true);
+    }
   });
 });
 

@@ -10,8 +10,9 @@
  *   npm run dev:lan -- --no-server         # the details only (the server runs in another window)
  *
  * 1. Picks the PC's LAN IPv4: the Wi-Fi or Ethernet adapter's, never WSL's, a VM's or a VPN's (lib/lan.mjs).
- * 2. With the local PGlite: loads the ranked pool if a game type has none (db:seed-puzzles --if-empty), after
- *    the sample data with --seed. Both before the server starts: a PGlite folder opens in one process only.
+ * 2. With the local PGlite: loads the ranked pool if a game type has none or it differs from the bank file
+ *    (db:seed-puzzles --if-empty), after the sample data with --seed. Both before the server starts: a PGlite
+ *    folder opens in one process only.
  * 3. Starts `npm run server` (it listens on every interface, the LAN's too) with PORT, waits for /health, and
  *    checks the server answers on the LAN address as well.
  * 4. Prints, in Hebrew: the URLs, the .env.local lines, the admin site and its password, the Windows Firewall
@@ -225,7 +226,7 @@ async function main() {
       say('נתוני דוגמה לאתר הניהול (npm run seed)…');
       if ((await exitCodeOf(npm(['run', 'seed']))) !== 0) fail('npm run seed נכשל: הפירוט למעלה.');
     }
-    say('המאגר המדורג: נטען רק אם חסר (npm run db:seed-puzzles -- --if-empty)…');
+    say('המאגר המדורג: נטען רק אם חסר או השתנה (npm run db:seed-puzzles -- --if-empty)…');
     if ((await exitCodeOf(npm(['run', 'db:seed-puzzles', '--', '--if-empty']))) !== 0)
       fail('טעינת המאגר המדורג נכשלה: הפירוט למעלה.');
   }

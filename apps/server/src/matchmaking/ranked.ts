@@ -47,7 +47,10 @@ export interface RankedMatchSetup {
   /** Every player must connect within this; the room holds the seats a little longer. */
   readyTimeoutMs: number;
   countdownMs: number;
-  /** Rule overrides for the game (MatchmakingConfig.gameRules: tests and development; none in production). */
+  /**
+   * Rule overrides for the game: MatchmakingConfig.gameRules (tests and development; none in production),
+   * and always `interferenceKinds`, the kinds every player's app declared on joining [D47].
+   */
   rules: GameRoomRuleOverrides;
 }
 

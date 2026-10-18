@@ -33,6 +33,31 @@ export const accountConfig = {
   nameCheckDebounceMs: 300,
   /** HTTP calls to the account API give up after this long (then: "no connection"). */
   requestTimeoutMs: 15_000,
+  /**
+   * Reading the account again (GET /v1/me), so the ratings, the league, the level and the card's numbers follow a
+   * ranked game without restarting the app (Moshe's device test of 1.0.0, 2026-10-15; spec §4.3). The server is
+   * the authority: the phone only shows the server's own numbers sooner (progress/rankedRefresh.ts).
+   */
+  refresh: {
+    /** Home coming into view and the app back in the foreground read GET /v1/me at most this often (ms). */
+    minIntervalMs: 30_000,
+    afterRanked: {
+      /**
+       * The waits before each read of GET /v1/me after a ranked game ends, until the server shows it stored (its
+       * games count in the rating key went up). The server writes in the background, usually within 1–3 s.
+       */
+      confirmDelaysMs: [1500, 3000, 6000, 12_000, 24_000],
+      /** A ranked game that moved no rating of mine: GET /v1/me and my progress again at these waits (ms). */
+      unratedDelaysMs: [1500, 6000],
+      /**
+       * How long the game's own rating change (the server's result, as the results screen shows it) is shown over
+       * older answers of GET /v1/me (ms). After that the server's answer wins.
+       */
+      optimisticTtlMs: 120_000,
+      /** Leaving a running 2-player ranked game: the first read waits the game's grace (rules.graceMs) plus this. */
+      afterGraceMarginMs: 2000,
+    },
+  },
 } as const;
 
 export type AccountConfig = typeof accountConfig;

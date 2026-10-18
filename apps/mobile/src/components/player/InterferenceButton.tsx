@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { color, radius, size, text, tokens } from '../../theme';
+import { color, radius, size, tokens } from '../../theme';
 import { Icon } from '../Icon';
 import type { InterferenceModel } from './cardModel';
 import { withAlpha } from './format';
@@ -14,11 +14,14 @@ export interface InterferenceButtonProps {
   state: InterferenceModel;
   /** The compact card's strip version (height 32, a 44-dp target through hitSlop). */
   compact?: boolean;
-  /** The arsenal is open from this card. */
+  /** The interference picker is open from this card. */
   expanded?: boolean;
-  /** Tap when it can be sent: opens the arsenal (launching is by drag only, D18). */
+  /** Tap when it can be sent: opens the picker aimed at this card (the first of the two taps, D45). */
   onPress?: () => void;
-  /** Tap while short of points: the screen shows "אין מספיק נקודות…" and a light haptic (§8.1). */
+  /**
+   * Tap while it can't be sent (short of points, the target busy, the game not running): the screen says why in
+   * a short toast with a light haptic (components.md §8.1). While the picker is open it closes it instead.
+   */
   onBlockedPress?: (state: InterferenceModel) => void;
   testID?: string;
 }
@@ -28,8 +31,14 @@ const ME = paletteAt(0);
 const PRESSED_BG = withAlpha(ME.ring, tokens.opacity.iconBadgeFill);
 
 /**
- * The ⚡ button on an opponent's card with the cost of my next interference (components.md §8.1). Hidden while
- * the opponent is disconnected (the reconnect pill takes its place) or out of the game.
+ * The "הפרעה" button on an opponent's card (original §10 "אצל היריב: לחצן הפרעה"; components.md §8.1) [D45]:
+ * an icon button in the reactions button's family, as tall as it, with the 'interfere' glyph and the word only.
+ * Its price is in the picker and in its accessible label ("הפרעה ל־NinaVolt · עלות 2 נק׳"), not on it.
+ *
+ * Blocked (short of points, the target under interference or immune, the game not running), it is dimmed and
+ * reads as disabled, but a tap still answers, with the reason (`onBlockedPress`). Hidden while the opponent is
+ * disconnected (the reconnect pill takes its place) or out of the game. While the picker is open from it, it is
+ * filled in my colour and reads "סגירת חלון ההפרעות": a tap closes it.
  */
 export function InterferenceButton({
   name,
@@ -44,18 +53,14 @@ export function InterferenceButton({
   if (state.kind === 'disconnected' || state.kind === 'out') return null;
 
   const available = state.kind === 'available';
-  // Short of points it still answers a tap (with the reason), but reads as disabled.
-  const pressable = available || state.kind === 'points';
   const fg = expanded ? color.bg : color.interfere.label;
   const iconColor = expanded ? color.bg : color.interfere.icon;
-  const caption =
-    state.kind === 'points' && !compact ? t('interfere.missing', { count: state.missing }) : null;
+  const m = metrics.interfere;
 
   return (
     <Pressable
       onPress={() => (available ? onPress?.() : onBlockedPress?.(state))}
-      // Leave `disabled` unset while short of points: Pressable would overwrite accessibilityState.disabled.
-      disabled={pressable ? undefined : true}
+      // Never `disabled`: a blocked tap says why. (Pressable would also overwrite accessibilityState.disabled.)
       hitSlop={compact ? { top: metrics.compact.hitSlop, bottom: metrics.compact.hitSlop } : undefined}
       accessibilityRole="button"
       accessibilityLabel={interferenceLabel(name, state, t, expanded)}
@@ -63,28 +68,21 @@ export function InterferenceButton({
       testID={testID}
       style={({ pressed }) => [
         compact ? styles.compact : styles.regular,
-        pressed && available && { backgroundColor: PRESSED_BG },
+        pressed && available && !expanded && { backgroundColor: PRESSED_BG },
         expanded && styles.expanded,
-        !available && { opacity: tokens.opacity.inactivePlayer },
+        !available && !expanded && { opacity: tokens.opacity.inactivePlayer },
       ]}
     >
-      <Icon
-        name="bolt"
-        size={compact ? metrics.interfere.compactIcon : metrics.interfere.icon}
-        color={iconColor}
-      />
-      {compact ? (
-        <View style={styles.compactCost}>
-          <Text style={[metrics.interfere.compactCostStyle, { color: fg }]}>{String(state.cost)}</Text>
-          <Text style={[metrics.interfere.compactUnitStyle, { color: expanded ? fg : color.textMuted }]}>
-            {t('interfere.unit')}
-          </Text>
-        </View>
-      ) : (
-        <Text style={[text('buttonSm'), { color: fg }]} numberOfLines={1}>
-          {caption ?? t('interfere.cost', { cost: state.cost })}
-        </Text>
-      )}
+      <Icon name="interfere" size={compact ? m.compactIcon : m.icon} color={iconColor} />
+      <Text
+        style={[compact ? m.compactLabelStyle : m.labelStyle, styles.label, { color: fg }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit={compact}
+        minimumFontScale={compact ? m.minFontScale : undefined}
+        testID={testID ? `${testID}-label` : undefined}
+      >
+        {t('interfere.button')}
+      </Text>
     </Pressable>
   );
 }
@@ -105,6 +103,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     height: metrics.compact.actionHeight,
+    paddingHorizontal: metrics.interfere.compactPaddingX,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -114,6 +113,6 @@ const styles = StyleSheet.create({
     borderColor: color.interfere.border,
     backgroundColor: color.interfere.bg,
   },
-  compactCost: { flexDirection: 'row', alignItems: 'baseline', gap: metrics.interfere.compactGap },
+  label: { flexShrink: 1 },
   expanded: { backgroundColor: ME.ring, borderColor: ME.ring },
 });

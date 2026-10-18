@@ -1,0 +1,922 @@
+{
+  "workflow": "wf_e750eff6-7ae",
+  "date": "2026-10-18",
+  "logs": [
+    "Implement done: core ✓, docs ✓, mobile-picker ✓, mobile-effects ✓",
+    "Review: 12 findings, 11 confirmed"
+  ],
+  "core": {
+    "lane": "core",
+    "done": true,
+    "summary": "Engine: INTERFERENCE_KINDS is now ['fireworks','cats','warp','scramble','ink','keypad']. I added LEGACY_INTERFERENCE_KINDS (the first three), isInterferenceKind() and INTERFERENCES_BY_MODE = {solo:false, bot:false, ranked:true} [D44], and defaultRules now reads its interferences value from that map. All new names are exported through the existing `export *` chain. view.interference is now also null when rules.interferenceKinds is empty [D47]. engine.ts only got comments. bot/brain decideInterference returns null first thing when rules.interferences is off, so it draws nothing from the RNG; levels.ts docs say the policy applies only where interferences are on (the fake client in ranked, or an override). Engine tests that used bot mode as an interference harness (brain, runner, robustness, regressions §17, protocol index mirror test) now pass rules {interferences:true}, so they keep their old coverage. New tests: D44 (off in bot games both ways, no panel, an override turns them on, Overlord at chance 1 sends nothing and draws no RNG in a whole game), kinds order/legacy/isInterferenceKind, an it.each over all six kinds (cost 2^n by order, stops the target's lock, ends after interferenceMs), a legacy room refuses scramble/ink/keypad with badKind at no cost, and empty kinds gives view.interference null. Protocol: a new interferenceKinds.ts with MAX_DECLARED_INTERFERENCE_KINDS=16, MAX_INTERFERENCE_KIND_LENGTH=32, parseDeclaredInterferenceKinds() and roomInterferenceKinds(declared, cap?), all tested. MatchmakingJoinOptions and DevJoinOptions gained interferenceKinds?: string[]. GameRoomRuleOverrides allows 'interferenceKinds'. PROTOCOL_VERSION stays 1, with a comment saying why. Server: the matchmaking room passes options.interferenceKinds to service.enqueue, which parses them (malformed counts as absent, never a refusal) and stores them per entry. claim() sets setup.rules.interferenceKinds to the intersection, capped by any configured gameRules kinds. GameRoom private rooms store each seat's declared kinds from the join/create options and use their intersection at startGame unless the dev rules set them. The zod create schema accepts rules.interferenceKinds (known kinds only) and the creator's interferenceKinds. The fake client declares all kinds, and a new legacyApp option / --legacy-app flag declares none. The seed only picks kinds the game allows. Mobile: net/matchmaking.ts sends {queueKey, interferenceKinds:[...INTERFERENCE_KINDS]}, and net/onlineClient.ts (the private/dev room create/join) declares them too. Both have tests. ENGINE_VERSION and PROTOCOL_VERSION were not bumped.",
+    "filesChanged": [
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/rules.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/view.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/engine.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/bot/brain.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/bot/levels.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/bot/brain.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/bot/runner.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/bot/robustness.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/regressions.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/interference.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/interferenceKinds.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/interferenceKinds.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/matchmaking.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/room.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/index.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/index.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/matchmaking/room.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/matchmaking/service.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/matchmaking/service.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/matchmaking/ranked.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/rooms/GameRoom.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/options.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/options.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/seed/rankedGame.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/testing/fakeClient/client.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/testing/fakeClient/cli.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/testing/fakeClient/cli.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/testing/fakeClient/brain.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/gameRoom.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/matchmaking.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/ranked.e2e.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/appMatchmaking.contract.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/matchmaking.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/__tests__/matchmaking.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/onlineClient.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/__tests__/onlineClient.test.ts"
+    ],
+    "filesDeleted": [],
+    "checks": [
+      {
+        "cmd": "npx jest packages apps/server apps/mobile/src/net",
+        "result": "132 suites, 5710 tests, all passed (run twice, the second after the last edits)"
+      },
+      {
+        "cmd": "npx eslint <all 37 changed files>",
+        "result": "clean"
+      },
+      {
+        "cmd": "npx prettier --check <changed files>",
+        "result": "all formatted (prettier --write run only on my files)"
+      },
+      {
+        "cmd": "npm run typecheck (tsc -b)",
+        "result": "packages/* and apps/server: no errors. Remaining errors are only in mobile files of other lanes: Record<InterferenceKind,…> now needs scramble/ink/keypad (screens/game/arsenal/config.ts, screens/game/model.ts HIT_CUES, screens/game/hit/hitModel.ts rumbleOf missing return, tests unlocks.test.tsx, progressModel.test.ts, interference.e2e.test.tsx)"
+      },
+      {
+        "cmd": "npx jest apps/mobile (once, to list breakages)",
+        "result": "17 suites / 52 tests fail, all in mobile-lane code (see notesForOtherLanes); apps/mobile/src/net all pass"
+      },
+      {
+        "cmd": "free space on C:",
+        "result": "about 10 GB, no cleanup needed"
+      }
+    ],
+    "openIssues": [
+      "Docs not done by this lane (not listed for core): docs/01-SPEC.md edits (§4.1 row 16, §6.8, §7.1–§7.4, §9, §18 interferenceKinds join option, §22, §24 D17/D18/D40 + new D44–D47), DECISIONS-PENDING, 02-WORK-PLAN, design docs. The exact Hebrew text is in interference-rules.json `design` §5.",
+      "Design deviation (small): rules.interferenceKinds in a dev create (zod) accepts only kinds the engine knows (z.enum), not any 32-char string; the creator's own declared interferenceKinds accepts any string ≤32 (max 16). A bad declaration in a private-room CREATE is refused as badOptions (dev-only path); in a join by code or in matchmaking it counts as none (legacy), never a refusal.",
+      "In a match room the kinds come only from matchmaking (setup.rules); in a private room a dev rules.interferenceKinds override wins outright over the seats' declarations.",
+      "I also edited apps/mobile/src/net/onlineClient.ts (+ its test), because the task asked for the private/dev room join too; it is not in my 'own files' list. The change is small: whoAmI adds interferenceKinds:[...INTERFERENCE_KINDS] to every create/join."
+    ],
+    "notesForOtherLanes": [
+      "Engine/protocol exports are final: INTERFERENCE_KINDS = ['fireworks','cats','warp','scramble','ink','keypad'], type InterferenceKind, LEGACY_INTERFERENCE_KINDS, isInterferenceKind(v), INTERFERENCES_BY_MODE (from @sudoku-fight/engine). From @sudoku-fight/protocol: roomInterferenceKinds(declared, cap?), parseDeclaredInterferenceKinds(v), MAX_DECLARED_INTERFERENCE_KINDS (16), MAX_INTERFERENCE_KIND_LENGTH (32). Also DevJoinOptions.interferenceKinds?, MatchmakingJoinOptions.interferenceKinds?, and GameRoomRuleOverrides now includes interferenceKinds.",
+      "defaultRules('bot', …).interferences is now false: in a bot game view.interference is null, the engine refuses 'interfere' with interferencesOff, and the bot never interferes. A test that needs interferences in a local duel must pass rules {interferences:true} (or use mode 'ranked').",
+      "TypeScript errors now in mobile (they need the new kinds): screens/game/arsenal/config.ts INTERFERENCE_UNLOCK_LEVELS needs scramble 2, ink 3, keypad 4 [D17]; screens/game/model.ts HIT_CUES needs scramble/ink/keypad; screens/game/hit/hitModel.ts:87 rumbleOf needs a default branch (an unknown kind: no rumble, no throw); tests progress/__tests__/unlocks.test.tsx, screens/progress/__tests__/progressModel.test.ts and __tests__/interference.e2e.test.tsx build 3-key Records.",
+      "Mobile test suites failing after the core change (17 suites, 52 tests). Bot games now have no interferences: game/__tests__/botSession.test.ts (bot rules), game/__tests__/effects.test.ts (matchEffectsOf on the bot), game/__tests__/hooks.test.tsx, game/__tests__/useAvatarFaces.test.tsx, screens/game/hit/__tests__/HitLayer.test.tsx ('HitLayer from a real game (LocalGameHost against the bot)'), screens/game/__tests__/duelModel.test.ts (opponent ⚡ / immunity), GameScreenDuel.test.tsx, GameScreenFaces.test.tsx, GameScreenScope.test.tsx, __tests__/interference.e2e.test.tsx. These need re-hosting on ranked or {interferences:true}, or the new D44 expectations. Six kinds instead of three, plus drag removal: screens/game/arsenal/__tests__/arsenalModel.test.ts, ArsenalOverlay.test.tsx (drag tests, 'all three open in V1', 'ink … locked soon'), progress/__tests__/unlocks.test.tsx ('every kind has an unlockLevel, 0 in V1'), screens/progress/__tests__/progressModel.test.ts, InterferencesScreen.test.tsx ('3 of 7 open … ink … locked'), ProgressScreen.test.tsx, __tests__/progress.e2e.test.tsx. The in-game picker and the collection screen must now treat ink as a real kind; the collection's 'coming soon' row is earthquake/fog/bubbles/torch.",
+      "apps/mobile/src/net/onlineClient.ts (private/dev rooms) now sends interferenceKinds:[...INTERFERENCE_KINDS] in every create and join, and net/matchmaking.ts does the same in the matchmaking join. A ranked match of two new apps gets all six kinds in snapshot.state.config.rules.interferenceKinds. If any player declared none (app 1.0.0), it gets only the legacy three. The picker must show only view.rules.interferenceKinds.",
+      "Docs (01-SPEC §7/§9/§18/§22/§24 with D44–D47, DECISIONS-PENDING, WORK-PLAN, design docs) were not touched by core. Whoever owns docs should take the text from interference-rules.json `design` §5, plus a §18 line: the join option `interferenceKinds`, the room uses the intersection, absent = the first three, PROTOCOL_VERSION stays 1.",
+      "game/session.ts startBotPractice doc comment (no interferences in bot practice, D44) and the BotSelect copy for levels 1/3/5 (home.json he+en) are mobile-lane items from the design; core did not touch them."
+    ],
+    "testsAdded": [
+      "packages/engine/src/game/interference.test.ts: INTERFERENCES_BY_MODE + defaultRules for every GAME_MODES entry; off against a bot both ways (interferencesOff, no charge, view.interference null); a rules override turns them on; six kinds in order; legacy = first three; isInterferenceKind; it.each over all six kinds (cost 2^n by order, stops the target's lock, ends after interferenceMs, replay matches); unknown kinds badKind; a legacy room refuses scramble/ink/keypad with badKind at no cost; empty kinds → no panel",
+      "packages/engine/src/bot/brain.test.ts: canInterfere false in a default bot game and with no kinds; decideInterference null in a default bot game even fully eager, and draws no RNG",
+      "packages/engine/src/bot/runner.test.ts: 'practice against a bot: no interferences, either way [D44]' (whole game with eager Overlord, human's interfere refused, no panel)",
+      "packages/engine/src/bot/robustness.test.ts: chaos game in a default bot game sends no interference either way and the bot plays clean",
+      "packages/protocol/src/interferenceKinds.test.ts: roomInterferenceKinds (all→6, absent→legacy, intersection, unknown ignored, order, cap, empty room) and parseDeclaredInterferenceKinds (valid, copy, malformed → undefined, limits)",
+      "packages/protocol/src/index.test.ts: the mirror sees the hit (rules {interferences:true})",
+      "apps/server/src/matchmaking/service.test.ts: 'the interference kinds of a match [D47]' (two new apps → 6, new+old → 3, malformed → 3, unknown ignored/order, config cap kept with other overrides, 3 players with one old app → 3, requeued player keeps declared kinds)",
+      "apps/server/src/game/options.test.ts: rules.interferenceKinds valid/invalid, creator's declared kinds valid/invalid",
+      "apps/server/src/testing/fakeClient/brain.test.ts: the brain sends only the room's kinds (all, legacy, one kind)",
+      "apps/server/src/testing/fakeClient/cli.test.ts: --legacy-app",
+      "apps/server/test/gameRoom.test.ts: private room kinds (all declare → 6 and scramble goes through; one declares nothing → legacy, scramble rejected badKind with no score change or hit, warp still works; malformed join → legacy; intersection order; dev override wins)",
+      "apps/server/test/matchmaking.test.ts: real-server matchmaking: two new apps → 6 kinds (scramble passes the kind check, refused only notEnoughPoints); new + 1.0.0 → legacy, scramble badKind, score 0, no hit",
+      "apps/server/test/ranked.e2e.test.ts + appMatchmaking.contract.test.ts: the stored/received game config has all six kinds when both apps declare them",
+      "apps/mobile/src/net/__tests__/matchmaking.test.ts and onlineClient.test.ts: joins send interferenceKinds = INTERFERENCE_KINDS"
+    ]
+  },
+  "docs": {
+    "lane": "docs",
+    "done": true,
+    "summary": "I updated every doc the interference rulings touch (D44–D47, Moshe 2026-10-17). I did not edit docs/00-original-spec-v1.md or docs/handoff/**.\n\n**01-SPEC.md**\n- §4.1: the drag screen is gone from the screen table. A new note marks Arsenal and Interference-Target as old and lists what has no board yet.\n- §6.8: each opponent's card gets a \"הפרעה\" icon button with no price. A blocked button is dimmed, and a tap shows a toast plus a light haptic. There is no button on a bot's card.\n- §7.1: the catalogue now has ids, unlock levels (0/0/0/2/3/4) and the D47 rules: scramble, ink and keypad, each with a Reduced Motion version and seeded randomness.\n- §7.2: adds no interferences against a known bot (D44, replacing original §20 and the §10 button in bot games), one price for every kind, the 60% board-only dim (D46), and room kinds for mixed app versions with \"server before app\".\n- §7.3: rewritten as \"two taps\" (D45). It quotes original §16, records Moshe's decision, keeps the §17 target rule, and adds the 250 ms guard.\n- Smaller edits:\n  - §7.4: the victim's board is dimmed.\n  - §9: a bot note and the reactions line.\n  - §15: interference unlocking is now ✓.\n  - §16.2: the \"⚡\" wording.\n  - §18: the `interfere` note and the `interferenceKinds` join option.\n  - §22: Reduced Motion.\n- §24: D17 updated, D18 cancelled (replaced by D45), D40 updated, and new rows D44–D47 marked \"✓ החלטת משה 2026-10-17\". D44 and up were still free.\n\n**Design files**\n- Deleted docs/design/screens/Interference-Drag.dc.html and its canvas.json entry. Arsenal and Interference-Target are retitled as old in canvas.json.\n- components.md:\n  - §8.1 and §13 are rewritten for the button and the 3×2 picker. §13 starts with \"ישן: גרירה — הוחלף בשתי הקשות (D45)\" for the two old screens.\n  - §3.4 has the new target frame.\n  - New §15.3 (board dim) and §15.4 (the three new kinds).\n  - Keypad note, accessibility updates, and the §18 checklist.\n- motion.md:\n  - §4.4: drag rows removed; added `picker.open`, `kind.press`, `hit.dim` and the new effects with their Reduced Motion versions.\n  - Updated springs, the timeline, the overlay order, haptics, and sounds (28 V1 files).\n\n**Checklists and other docs**\n- QA-CHECKLIST: the interference block is rewritten with rows for the button, picker, target, dim, the three new kinds, no interferences against a bot, mixed versions and the collection screen. Changed rows are ☐. Also updated the bot row, Reduced Motion, the Wi-Fi mark and open item 11.\n- STAGE7: new check 6 (picker at 360×780 and 360×640, toasts, dim, new kinds live and with Reduced Motion, TalkBack, 3–4 players, bot, and `--legacy-app` plus a real 1.0.0 APK after deploy).\n- STAGE9-10: the 4-player target check.\n- DECISIONS-PENDING: 2.3 closed, 2.7 note, new 2.18 (D44–D47 decided, tunables listed), D17 and D40 rows, summary count.\n- Deploy and release:\n  - RELEASE-CHECKLIST: D18 removed from the pending list, plus a QA row that says the server goes first.\n  - DEPLOY-PRODUCTION §5: a \"server before app\" note.\n- 02-WORK-PLAN: dated notes. 03-DESIGN: canvas row and known fixes. store/ASSETS: screenshot 3.\n- tokens.json: one `_notes` citation of the deleted file.",
+    "filesChanged": [
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/components.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/motion.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/canvas.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/tokens.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/03-DESIGN.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/QA-CHECKLIST.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/STAGE7-DEVICE-CHECKS.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/STAGE9-10-DEVICE-CHECKS.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/DECISIONS-PENDING.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/RELEASE-CHECKLIST.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/DEPLOY-PRODUCTION.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/02-WORK-PLAN.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/store/ASSETS.md"
+    ],
+    "filesDeleted": [
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/screens/Interference-Drag.dc.html"
+    ],
+    "checks": [
+      {
+        "cmd": "node -e JSON.parse(docs/design/tokens.json) && JSON.parse(docs/design/canvas.json)",
+        "result": "both parse (json ok)"
+      },
+      {
+        "cmd": "node gen-tokens generate() vs apps/mobile/src/theme/tokens.generated.ts (values compared)",
+        "result": "same values: the tokens.json edit is under _notes, which the generator drops"
+      },
+      {
+        "cmd": "npx jest apps/mobile/src/__tests__/contrast.test.ts apps/server/src/legal/legal.test.ts",
+        "result": "2 suites, 158 tests passed (both read docs/design/tokens.json)"
+      },
+      {
+        "cmd": "grep -rn Interference-Drag docs (excluding handoff)",
+        "result": "only deliberate 'deleted on 2026-10-18' notes in 01-SPEC, components.md and the tokens.json _notes; no board in docs/design/screens links to it"
+      },
+      {
+        "cmd": "grep -n D4[4-9] in 01-SPEC.md before editing",
+        "result": "D44-D47 were free; added as new rows after D43"
+      },
+      {
+        "cmd": "grep in code for --legacy-app, roomInterferenceKinds, GameRoom dev override of rules.interferenceKinds",
+        "result": "all exist (core lane), so the STAGE7 check 6 commands are valid"
+      },
+      {
+        "cmd": "git diff --stat docs/00-original-spec-v1.md docs/handoff",
+        "result": "no changes"
+      },
+      {
+        "cmd": "powershell (Get-PSDrive C).Free/1GB",
+        "result": "about 10.1 GB free"
+      }
+    ],
+    "openIssues": [
+      "The mobile config names in the docs are not in the code yet, because the mobile lanes are still working: HIT_DIM in apps/mobile/src/components/interference/config.ts (0.6, the same for every kind) and the 250 ms delay in ARSENAL_CONFIG (apps/mobile/src/screens/game/arsenal/config.ts). If the final names differ, the docs need a one-word fix (01-SPEC §7.2, components.md §13/§15.3, DECISIONS-PENDING 2.18).",
+      "motion.md §7/§8 give the new kinds' haptics (light knock about every 600 ms for scramble, one per blot for ink, one per shuffle for keypad) and sound files hit_scramble / hit_ink / hit_keypad, with interfere_whoosh removed. These are design proposals; the mobile-effects lane may name or time them differently.",
+      "No design boards exist for the new button, the picker, the board dim or scramble/ink/keypad. Arsenal and Interference-Target are marked old until Moshe asks for them to be redrawn (QA-CHECKLIST open item 12).",
+      "Device-only checks are listed in STAGE7-DEVICE-CHECKS check 6 and in the QA-CHECKLIST interference rows. The mixed-version check with a real 1.0.0 APK is possible only after the server is deployed to staging.",
+      "Testing the new kinds from the sending side on a phone needs an account at level 2-4. There is no dev tool to raise a level, so check 6 uses fake-client as the sender (--create --rules '{\"interferenceKinds\":[...]}').",
+      "Not changed: the store listing text (LISTING-APPLE) still names only fireworks, cats or a warp. It is still true; whether to change it is Moshe's call.",
+      "The 4-player QA wording uses the 78 dp compact card and adjustsFontSizeToFit from the UI design. Check it against the final PlayerCardCompact once the mobile lane lands."
+    ],
+    "notesForOtherLanes": [
+      "mobile lanes: the docs say HIT_DIM = 60% scrim (#07090c) over the board only, the same for every kind (the ruling: no byKind scramble 0.5). They also say the picker ignores taps for 250 ms after opening, set in ARSENAL_CONFIG. Use these names or tell the main session so the docs follow.",
+      "mobile lanes: drag wording still sits in the locale files: he/en game.json arsenal.info and arsenal.hint ('שיגור בגרירה בלבד', 'גרור אל הכרטיס של…'), account.json 'drag', and dev.json around lines 335-337. Code comments also cite the deleted Interference-Drag board (TokenCard.tsx, ArsenalOverlay.tsx, ArsenalOverlay.test.tsx).",
+      "mobile lanes: docs/design/tokens.json still has motion loop.dropZoneMarch / dropZoneBreathe. If you remove them (then npm run tokens), also drop the two lines and the closing note in docs/design/motion.md §10. I changed only one _notes string in tokens.json (no generated change).",
+      "mobile-effects lane: motion.md §8 now lists sound files hit_scramble, hit_ink and hit_keypad, and drops interfere_whoosh. components.md §15.2 asks for a generic banner title 'NinaVolt שלח/ה לך הפרעה!' for a kind the app does not know, with the dim and no rumble.",
+      "core lane: STAGE7 check 6 relies on `npm run fake-client -- --create --rules '{\"interferenceKinds\":[\"scramble\"]}'` (the dev override wins over the declared intersection) and on `--legacy-app` with --code and with --queue. Both exist now; please keep them."
+    ]
+  },
+  "mobileA": {
+    "lane": "mobile-picker",
+    "done": true,
+    "summary": "I built the two-tap interference picker and removed all the drag code. The button on each opponent's card is now an icon button with a new 'interfere' glyph and the single word \"הפרעה\" / \"Interfere\" (2P: 44 tall; compact: 32 tall with hitSlop and a label that shrinks to fit). There is no price on the button; the price stays in its accessibility label. A blocked button (points, busy, notRunning) is dimmed and marked disabled for screen readers, but a tap still goes through: useArsenal.blocked(state, name) shows a short toast with the reason (error \"אין מספיק נקודות…\", warning \"<name> כבר תחת הפרעה. אפשר שוב בעוד N שניות\", info \"אי אפשר להפריע כרגע\") and plays cue 'nudge' (light haptic). DropZone became TargetFrame: a still, solid accent frame with an \"יעד\" chip and the hint \"יעד ההפרעה\". The picker (ArsenalOverlay rewritten, with new KindButton, LaunchRipple and RouteLine) shows a header: \"יעד: …\" in 2P, or the route \"אני ← Biscuit\" with both avatars and seat shapes in 3–4P, where the target can't be changed. Under it is a price row (\"⁦−2⁩ נק׳ · הבאה: 4\", then my score before and after), and a 3-column grid of only the kinds in view.rules.interferenceKinds, each with a preview, a name and a price chip with an isolated minus. Kinds above my level stay in the grid, dimmed, with a lock and \"רמה N\". A tap launches once per opening; taps in the first ARSENAL_CONFIG.armMs (250 ms) are ignored; a blocked kind only explains (bubble, announcement, nudge). The pure pickerLayout() shows that all six kinds fit with no scroll at 360×780, 360×640 and 320×568. config.ts now has INTERFERENCE_UNLOCK_LEVELS {fireworks/cats/warp 0, scramble 2, ink 3, keypad 4}, armMs 250 and columns 3. GameScreen and the HUDs use myTarget/opponentTarget/targetOf. GameScreen also shows a warning toast \"ההפרעה לא נשלחה, ולא ירדו לך נקודות\" when the host refuses an interference (new isInterferenceRefusal). For D44: the tokenLift/dropZoneEnter cues are gone; testHost and duel() accept a `rules` override; the session.ts comment, the BotSelect copy for levels 1/3/5 and the splash tip (key 'drag' → 'interfere') no longer mention interfering by drag; every test that used a bot game as its source of hits now runs with {interferences:true} or on the ranked fake server. New tests check that a bot practice has no \"הפרעה\" button and no hit: unit, screen, e2e through the real app routes, and botSession. The full interference flow (two taps, the hit on me, reduced motion, a legacy room with three kinds) now runs end to end in a new ranked e2e test on the fake server.",
+    "filesChanged": [
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/Icon.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/InterferenceButton.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/TargetFrame.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/PlayerCard.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/PlayerCardCompact.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/index.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/metrics.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/__tests__/PlayerCard.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/__tests__/cardModel.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/__tests__/helpers.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/ArsenalOverlay.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/KindButton.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/LaunchRipple.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/RouteLine.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/arsenalModel.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/config.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/index.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/metrics.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/useArsenal.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/wording.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/__tests__/ArsenalOverlay.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/__tests__/arsenalModel.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/__tests__/useArsenal.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/GameScreen.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/DuelHud.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/GroupHud.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/services/feedback.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/testing/practice.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/testing/duel.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/session.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/dev/CardSection.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/dev/__tests__/sections.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/account/SplashScreen.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/account/__tests__/AccountDesign.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/home/__tests__/BotSelect.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/progress/__tests__/unlocks.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenGroup.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenDuel.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenFaces.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenScope.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/duelModel.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/__tests__/botSession.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/__tests__/effects.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/__tests__/hooks.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/__tests__/useAvatarFaces.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/interference.e2e.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/interferenceRanked.e2e.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/a11yAudit.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/game.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/game.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/player.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/player.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/home.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/home.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/dev.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/dev.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/account.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/account.json"
+    ],
+    "filesDeleted": [
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/DropZone.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/TokenCard.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/drag.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/DragGhost.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/ComingRow.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/__tests__/ComingRow.test.tsx"
+    ],
+    "checks": [
+      {
+        "cmd": "npx jest apps/mobile (full run, once)",
+        "result": "238 suites, 3049 tests: 1 failure, in GameScreenDuel ('an interference on me…'). The cause was mobile-effects' new hit.started wording ('הלוח מוחשך'). I fixed the expectation to build the line from the i18n key, and the suite now passes (24/24)."
+      },
+      {
+        "cmd": "npx jest apps/mobile/src/screens/game apps/mobile/src/components apps/mobile/src/__tests__/interferenceRanked.e2e.test.tsx (final targeted run)",
+        "result": "74 suites, 1036 tests: 1 failure, in arsenal/__tests__/TokenArt.test.tsx ('scramble loops on its own clock'). That is a new test of mobile-effects, still in progress, not mine. Everything else passes."
+      },
+      {
+        "cmd": "npx jest arsenal/__tests__ (arsenalModel, useArsenal, ArsenalOverlay)",
+        "result": "60 passed"
+      },
+      {
+        "cmd": "npx jest interference.e2e.test.tsx + interferenceRanked.e2e.test.tsx + a11yAudit -t picker",
+        "result": "all passed"
+      },
+      {
+        "cmd": "npx jest reducedMotion, noLayoutAnimationsInGame, services, SoundAudition, i18nCheck, i18nParity, components/dev, AccountDesign, BotSelect",
+        "result": "all passed (after TargetFrame's useCardOpacity was made to decide on reduced motion)"
+      },
+      {
+        "cmd": "npm run typecheck",
+        "result": "the only error is apps/mobile/src/components/interference/scrambleModel.ts(71) TS7022 (mobile-effects' file, in progress). All my files are clean."
+      },
+      {
+        "cmd": "npx eslint <my 49 files>",
+        "result": "clean"
+      },
+      {
+        "cmd": "npx prettier --check <my files + 10 locale JSONs>",
+        "result": "all formatted (prettier --write run only on my files)"
+      },
+      {
+        "cmd": "npm run i18n:check",
+        "result": "0 errors, 0 warnings (1935 keys)"
+      },
+      {
+        "cmd": "free space on C:",
+        "result": "about 10 GB, no cleanup needed"
+      }
+    ],
+    "openIssues": [
+      "Docs not done by this lane; they are not in my file list: 01-SPEC (§7.3 two taps, D44–D47, D18 closed), components.md §3.4/§8.1/§13, motion.md §4.4. Another lane has already deleted docs/design/screens/Interference-Drag.dc.html.",
+      "Deviation from the UI design: the kind button is 104 dp tall, not 100, so that a 2-line name ('מספרים מתערבלים') plus the preview (36) and the chip fit without overlapping. pickerLayout includes it: 402 dp + inset, which fits 320×568 with a 48 inset.",
+      "Deviation: the picker header uses a new key arsenal.me ('אני'/'Me') with the route arrow. The old arsenal.route key and routeText() are removed, and RouteLine reads as one element: arsenal.routeLabel.",
+      "The price row shows the score change as three texts in a row ([score] [arrow] [after]), not the single key arsenal.scoreChange, so the order stays right in both directions without forcing a writing direction.",
+      "useArsenal.blocked() now takes (state, name). GameScreen passes nameOf(targetId).",
+      "Not built here (mobile-effects' items): the board dim and effects, the TokenArt previews of scramble/ink/keypad, the keypad shuffle wiring, the hit.* keys.",
+      "Device check: the two-tap feel, the 250 ms arm guard, the English 'Interfere' in the 4-player compact strip (adjustsFontSizeToFit), and how the bubble reads near the screen edge."
+    ],
+    "notesForOtherLanes": [
+      "mobile-effects: in GameScreenDuel.test.tsx the 'an interference on me…' live-region expectation now builds the line from i18n ('game:hit.started' with hit.seconds), so later changes to the copy don't break it. Tests that need a bot to hit me now pass duel({ rules: { interferences: true } }); GameScreenScope.test.tsx and GameScreenFaces.test.tsx got that one-line change.",
+      "mobile-effects: I added the kind-name keys game.json arsenal.kind.{scramble,ink,keypad} and interference.{scramble,ink,keypad} (he: 'מספרים מתערבלים', 'דיו', 'מקלדת מתערבלת'; en: 'Scrambled digits', 'Ink', 'Scrambled keypad'; in-sentence en: 'scrambled digits', 'ink', 'a scrambled keypad') and arsenal.kindGeneric ('הפרעה'/'Interference'), the fallback of kindTitle/kindWord for a kind this app doesn't know. Change the wording if you prefer, but keep the keys.",
+      "mobile-effects: TokenArt is used by KindButton as <TokenArt kind size={36} still={reduce || !ready} />, with testID token-art-<kind> and an inner 'token-art-motion'. The new arsenal/__tests__/TokenArt.test.tsx currently fails 'scramble loops on its own clock'.",
+      "Small edit outside my file list: screens/account/SplashScreen.tsx tip key 'drag' → 'interfere' (account.json he/en splash.tips.interfere, the 'drag' key removed), and its test in AccountDesign.test.tsx.",
+      "TargetFrame's useCardOpacity (the card dim when another card is the target) now changes at once under reduced motion; reducedMotion.test needed a decision there.",
+      "GameScreen: I edited only the arsenal and HUD parts: the header comment paragraphs about interferences, HUD props myTarget/opponentTarget/targetOf, onInterfereBlockedAt(targetId, state) with names, and the 'refused' toast for interference reasons (isInterferenceRefusal from ./arsenal). The board slot and the hit layer are untouched.",
+      "Docs lane: the text for 01-SPEC §7.3 and components.md §13 matches what was built: button = 'interfere' glyph + 'הפרעה'; picker = header (target line, or the route in 3–4P), price row, 3×2 grid, 250 ms arm guard, one launch per opening, 'רמה N' on locked kinds, kinds outside the room's interferenceKinds hidden, no 'coming soon' row."
+    ],
+    "testsAdded": [
+      "screens/game/arsenal/__tests__/arsenalModel.test.ts: six kinds; no arsenal in a default bot game [D44]; unlock levels 0/0/0/2/3/4 and locked kinds with 'רמה N' / 'נפתחת ברמה N'; kinds outside rules.interferenceKinds hidden (and an unknown kind ignored); targetFrameOf; isInterferenceRefusal; pickerLayout fits with no scroll at 360×780, 360×640, 320×568 (inset 48) and 390×844, column 104 at 360 and 114 at 390; priceText isolates the minus ('⁦−2⁩ נק׳'); the new kind names in he/en, and the generic fallback for an unknown kind",
+      "screens/game/arsenal/__tests__/useArsenal.test.tsx: targeted/dimmed/expanded cardProps; launch once per opening (a double tap sends one); launch while closed does nothing; blocked() toasts for points/busy (plural seconds)/notRunning with 'nudge', in he and en; hidden states say nothing",
+      "screens/game/arsenal/__tests__/ArsenalOverlay.test.tsx (rewritten): the button opens it aimed at the card (frame 'יעד', hint, close label, price row label, six buttons with label/chip/preview); two taps launch exactly once (the engine's hit, score −2, ripple, live line); a quick double tap launches once; taps inside armMs are ignored; unaffordable and busy kinds are disabled and explain with 'nudge'; locked kinds dimmed with a lock and 'רמה N', not launchable; legacy room shows three kinds; closes from close/scrim/button/back and when the target leaves; score drop while open; no drag remnants; 3–4P route with both avatars and glyph-circle/glyph-triangle and no target line; reduced motion: still previews, no ripple, launch works",
+      "components/player/__tests__/PlayerCard.test.tsx: 'הפרעה' text + icon-interfere, no price on it, 44 tall; expanded fill and close label; points/busy/notRunning dimmed + disabled, and a tap calls onBlockedPress; no button without interferences [D44]; TargetFrame 'יעד', solid and still under both motion settings, hint; compact label numberOfLines 1 + adjustsFontSizeToFit (min .75)",
+      "components/player/__tests__/cardModel.test.ts: a real bot game has rules.interferences false, view.interference null, no button on the bot card; the same players in ranked do get it",
+      "game/__tests__/botSession.test.ts: bot practice config has rules.interferences false, view.interference null, no button on the bot card",
+      "screens/game/__tests__/GameScreenDuel.test.tsx: no 'הפרעה', no picker against a bot, and the bot's interfere is refused (interferencesOff) with no hit [D44]; two taps launch once in a 2P game with interferences on; a blocked button shows the toast with 'nudge'; a host refusal shows 'ההפרעה לא נשלחה, ולא ירדו לך נקודות'",
+      "screens/game/__tests__/GameScreenGroup.test.tsx: 'הפרעה' on Biscuit gives the route 'אני←Biscuit' (avatars lava-lamp/fox, ● and ■), only Biscuit framed, labels name Biscuit; the second tap hits only Biscuit and I pay 2; Biscuit's dimmed button then shows the busy toast; English route 'Me→Pip'",
+      "__tests__/interference.e2e.test.tsx (rewritten): through the app's routes, the BotSelect copy has no interfering; against Overlord there is no 'הפרעה', no interference events either way, and no hit layer after Overlord can pay [D44]; the reactions test is kept",
+      "__tests__/interferenceRanked.e2e.test.tsx (new): on the ranked fake server, two taps launch at the server (once, score −2, sender toast, analytics, cues), a blocked button toast with 'nudge'; the opponent hits me (whole-screen layer, banner, gone at its end); reduced motion static cover; a legacy room shows three kinds",
+      "components/dev/__tests__/sections.test.tsx: the 'targeted' specimen with 'יעד', no drop specimens, every button state shows 'הפרעה' (2P and compact), no button on the bot specimen",
+      "progress/__tests__/unlocks.test.tsx: unlockedKinds by level 1/2/3/4/30 and a kind the table does not name stays locked",
+      "screens/account/__tests__/AccountDesign.test.tsx: the two-tap splash tip in he and en"
+    ]
+  },
+  "mobileB": {
+    "lane": "mobile-effects",
+    "done": true,
+    "summary": "I built the hit side of the interference rework. [D46] A new BoardHitLayer sits inside the board slot, inside the board's WarpFrame, after <Board>. It darkens the board only, for every kind, with the solid scrim colour #07090c at HIT_DIM.opacity 0.6 (tokens.json opacity.hitDim, provenance Moshe 2026-10-17). The dim fades in over 240 ms (200 ms with reduced motion, opacity only), runs from the hit clock (frozen with the game) and is gone exactly at endsAt. It is pointerEvents none and hidden from accessibility. The screen reader now hears \"… הלוח מוחשך, נותרו 5 שניות. הטיימר שלך עצור\", plus a note for the scramble and the keypad. Fireworks no longer draws its own night wash. [D47] scramble: one Skia picture over the board covers every given or solved cell (never locks, pending or queued cells). The fake digits are drawn as a segment display in the sender's colour, seeded per (gameId, event seq) via hitSeedOf. Each cell changes at most every 400 ms with staggered phases and shows its true digit in about 30 % of steps, never the same digit twice in a row. The solver glyph and wrong-digit corners stay visible, taps go through, and reduced motion shows a still \"?\" on every filled cell. ink: five seeded Skia blots (dark ink, a rim in the sender's colour, drops) cover about 40 % of the board, splat in one after another and fade over the last 1.5 s; reduced motion shows one still frame. keypad: KeypadShuffler (pure, clock-injected) plus the useKeypadShuffle hook. A seeded order every 1.5 s moves every key, sliding in 200 ms. Each key still enters its printed digit and keeps its own count and state, and the row stays LTR. No key moves while a finger is on the row (raw touch events), and moves wait 300 ms after a lift. A press that starts during the slide plus a 150 ms guard is dropped with a nudge. Reduced motion uses one order with a fade. Every switch on the kind has a safe default: HitEffect returns null, the cue falls back to the warp's, there is no rumble, the banner says \"{{name}} שלח/ה לך הפרעה!\", TokenArt shows a still bolt, and BoardHitLayer still dims. I also added the TokenArt previews, the cues and placeholder sounds (hit_scramble, hit_ink, hit_keypad), the new collection state (6 kinds unlocking at levels 0/0/0/2/3/4, the facts say \"2 הקשות\", four \"בקרוב\": earthquake, fog, bubbles, torch), a design-system specimen (board under each kind, live and reduced motion) and he+en strings. The whole mobile suite passes (243 suites, 3141 tests), and typecheck, eslint, prettier and i18n:check are clean.",
+    "filesChanged": [
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/config.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/scrambleModel.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/Scramble.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/inkModel.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/Ink.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/keypadModel.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/HitEffect.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/Fireworks.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/palette.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/effectProps.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/index.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/testing/skiaMock.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/__tests__/models.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/__tests__/effects.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/__tests__/newKinds.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/BoardHitLayer.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/useKeypadShuffle.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/HitLayer.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/hitModel.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/index.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/__tests__/HitLayer.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/__tests__/hitModel.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/__tests__/BoardHitLayer.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/__tests__/useKeypadShuffle.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/Keypad.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/geometry.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/__tests__/Keypad.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/model.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/GameScreen.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenHit.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/TokenArt.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/__tests__/TokenArt.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/services/feedback.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/services/sfx.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/scripts/gen-placeholder-sounds.mjs",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/assets/sounds/placeholder/hit_scramble.wav",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/assets/sounds/placeholder/hit_ink.wav",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/assets/sounds/placeholder/hit_keypad.wav",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/assets/sounds/candidates/SOURCES.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/assets/sounds/README.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/dev/soundCandidates.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/dev/OverlaySection.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/dev/__tests__/sections.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/SoundAuditionScreen.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/progress/progressModel.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/progress/InterferencesScreen.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/progress/__tests__/progressModel.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/progress/__tests__/InterferencesScreen.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/progress/__tests__/ProgressScreen.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/progress.e2e.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/contrast.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/interferenceKinds.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/noLayoutAnimationsInGame.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/game.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/game.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/progress.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/progress.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/dev.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/dev.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/tokens.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/theme/tokens.generated.ts"
+    ],
+    "filesDeleted": [
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/assets/sounds/candidates/interfere_whoosh.wav",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/assets/sounds/placeholder/interfere_whoosh.wav"
+    ],
+    "checks": [
+      {
+        "cmd": "npx jest apps/mobile (once, at the end)",
+        "result": "243 suites, 3141 tests, all passed"
+      },
+      {
+        "cmd": "npm run typecheck",
+        "result": "0 errors (whole repo)"
+      },
+      {
+        "cmd": "npx eslint <all my changed files>",
+        "result": "clean (fixed one react-hooks/refs error in Keypad.tsx: disabled now reads `act`, not the ref-using onPress)"
+      },
+      {
+        "cmd": "npx prettier --check <my changed files + he/en game/dev/progress.json>",
+        "result": "all formatted (prettier --write was run only on my files)"
+      },
+      {
+        "cmd": "npm run i18n:check",
+        "result": "14 namespaces, 1939 keys, 0 errors, 0 warnings"
+      },
+      {
+        "cmd": "node apps/mobile/scripts/gen-placeholder-sounds.mjs",
+        "result": "32 files written. hit_scramble/hit_ink/hit_keypad are new and interfere_whoosh.wav was removed; every other placeholder is byte-identical (no git diff)."
+      },
+      {
+        "cmd": "npm run tokens -w @sudoku-fight/mobile (+ prettier on tokens.generated.ts)",
+        "result": "regenerated; diff is opacity.hitDim 0.6, plus the 'unstable' status colour already present in tokens.json from the batch"
+      },
+      {
+        "cmd": "contrast under the 0.6 dim (contrast.test.ts)",
+        "result": "given 3.53:1 (cell) / 3.33:1 (cellAlt), P1–P4 solved digits 2.39 / 2.38 / 2.31 / 2.29:1, wrong marks 2.74:1. Every digit is at least 2:1 and the given digit at most 4.5:1, so 0.6 satisfies both bounds."
+      },
+      {
+        "cmd": "free space on C:",
+        "result": "about 10 GB, no cleanup needed"
+      }
+    ],
+    "openIssues": [
+      "Interpretation: FUTURE_INTERFERENCES = ['earthquake','fog','bubbles','torch']. I added the torch ('פנס' / 'Torch', with a description), following DECISIONS ('Earthquake, fog, bubbles, torch: later') and the spec §7.1 future row in interference-rules.json. Before this it was not on the list; ink moved out of it. The collection is now 6 kinds + 4 'בקרוב' = 10.",
+      "Design choice: the scramble covers EVERY filled cell (no 24-tile cap), drawn as ONE Skia picture per frame on the UI thread. The fake digits are line segments (a segment display), which reads as clearly not the board's font. That means no fonts and no Text nodes mounted. The UI design's RN slot-machine tiles were capped at 24 because of Text mounting cost. Needs a look on a mid Android: frame time with about 60 tiles, and readability.",
+      "Keypad fairness detail (from the rules design): a press whose touch STARTS while the keys slide (200 ms) or within 150 ms after is not entered, and gets a light nudge through useKeypadShuffle's onRefused (GameScreen passes cue('nudge')). Every press after the keys settle enters the printed digit. A finger on the keypad row (raw onTouchStart/End/Cancel, changedTouches) defers moves until it lifts, plus a 300 ms freeze. A finger count with no touch event for 10 s is dropped, so a lost lift can't freeze the keys. All values are in KEYPAD in config.ts.",
+      "Removed interfere_whoosh entirely: the SoundId, its placeholder, its CC0 candidate wav, its SOURCES.md rows and its dev.json cue name. The picker lane had removed the only cue that used it (tokenLift), and feedback.test 'uses every sound file' requires every SoundId to have a cue. SOURCES.md and assets/sounds/README.md now say 29 candidates; the three new hit sounds have no CC0 candidate yet (placeholders only).",
+      "Device-only checks: the 60 % dim's look on a phone, the scramble's readability and performance, the ink blots' look, the keypad slide and the finger guards on real touch hardware (Android and iOS changedTouches semantics), and the reduced-motion variants.",
+      "Docs I did not touch (not in my list): docs/design/motion.md §8 sound table (add hit_scramble/hit_ink/hit_keypad, drop interfere_whoosh) and §4.4 (the dim, scramble, ink and keypad effects); docs/design/components.md; the 01-SPEC §7.1/§7.2/§22/§24 edits for D46/D47 (exact text in interference-rules.json design §5)."
+    ],
+    "notesForOtherLanes": [
+      "GameScreen.tsx (small edits, all mine): the import from './hit' now also takes BoardHitLayer and useKeypadShuffle; a module-level `const nudgeKey = () => cue('nudge')` sits after `breadcrumb`; `const keypadShuffle = useKeypadShuffle({ hit, now, clock: session.clock, reduce, onRefused: nudgeKey })` comes right after the `hit` useMemo; `<BoardHitLayer hit={hit} now={now} clock={session.clock} cells={board.cells} width={side} />` is inside the board's WarpFrame after <Board>; <Keypad> gets `order={keypadShuffle.order} guard={keypadShuffle.guard}`.",
+      "Keypad API (components/board/Keypad.tsx): new optional props `order` and `guard: KeypadGuard` (type exported from Keypad.tsx). Each key's Pressable is now wrapped in an Animated.View with testID `key-<d>-place`; the testIDs key-<d>, key-<d>-digit and key-<d>-count are unchanged. A key with a guard voids a press whose pressIn came before guard.settled(), so tests that press under a keypad hit should fire 'pressIn' first, after the keys settle (KEYPAD.moveMs + guardMs).",
+      "i18n (game.json): hit.started is now '{{title}} הלוח מוחשך, {{time}}. הטיימר שלך עצור' / '{{title}} Your board is dimmed, {{time}}. Your timer is paused'. New keys: hit.title.{scramble,ink,keypad,generic}, hit.withNote, hit.note.{scramble,keypad}. progress.json: facts.drag/dragValue were replaced by facts.launch/launchValue ('2 הקשות…'); new future.torch and description.{scramble,keypad,torch}; future.ink removed. dev.json: overlays.hit.* and sounds.cues.hit_{scramble,ink,keypad}; sounds.cues.interfere_whoosh removed.",
+      "HitInfo has a new optional `gameId`; hitOf() fills it from view.gameId. hitSeedOf(hit) seeds the scramble, the ink and the keypad from (gameId, event seq, kind, sender). EffectProps has an optional `seed`. EffectColors.night was removed (Fireworks' wash is gone) and EffectColors.ink added. HIT_CUES is exported from screens/game/model.ts, and hitCue() falls back to 'hitWarp' for unknown kinds.",
+      "GameScreen's live line for a hit between two others (`t(`interference.${e.interference}`)`) would read the raw key for a kind this app doesn't know. It doesn't throw; consider a fallback if you own that line.",
+      "Shared tests I edited additively: __tests__/noLayoutAnimationsInGame.test.ts (lists BoardHitLayer, Scramble, Ink and Keypad), __tests__/contrast.test.ts (the D46 dim block), __tests__/SoundAuditionScreen.test.tsx (LENGTH_MS: +3 hit sounds, −interfere_whoosh), __tests__/progress.e2e.test.tsx (the collection test no longer depends on the player's level) and components/dev/__tests__/sections.test.tsx (one new describe at the end)."
+    ],
+    "testsAdded": [
+      "components/interference/__tests__/newKinds.test.ts: [D46] dim config (0.6, 240/200/240 ms, #07090c, solidOf). [D47] scramble plan: deterministic per seed; a cell filled later changes no other; never the same digit twice in a row; true share 0.24–0.36; never two changes within 400 ms (≤2.5/s) and staggered phases; roll frames; rumble. Board geometry: cellRect is LTR with box gaps; the tile hides the digit but clears the solver glyph and the wrong digits; segment glyphs are clipped to the tile; '?' glyph. Ink: deterministic, 5 blots inside the board, ordered landings, coverage 25–55 % for several seeds, splat/hold/fade pose, rumble. Keypad plan: one permutation per 1.5 s, every key moves each step, reduced motion keeps order 0, slotOf, rumble. KeypadShuffler: first order at once, a move every 1.5 s, 1–9 exactly at 5 s; no move under a finger (one or two fingers) and a 300 ms freeze after the lift; settled() guard; reduced motion holds one order; frozen game; hit dropped early; stuck finger count released after 10 s.",
+      "components/interference/__tests__/effects.test.tsx: ink live and still (added to KINDS); scramble, keypad and an unknown kind draw nothing in the region; Fireworks has no night wash; Scramble live and still canvases are untouchable.",
+      "components/interference/__tests__/models.test.ts: effect colours now include ink instead of night.",
+      "screens/game/hit/__tests__/BoardHitLayer.test.tsx: nothing without a hit or after it; every kind dims at 0.6 in the solid scrim colour; fade in and out and gone at endsAt; frozen; reduced motion; untouchable and hidden from accessibility; a tap reaches the Board under it; an unknown kind still dims; the scramble covers only given and solved cells on their own colour (bot-solved cells on P2's tint); cells key round-trip; scramble tiles drawn under the dim, a still '?' under reduced motion, none for other kinds.",
+      "screens/game/hit/__tests__/useKeypadShuffle.test.tsx: with the real Keypad, the keys move every 1.5 s from the hit's seed and return to 1–9; other kinds leave them alone; a press during the move is dropped through onRefused and a later one enters the printed digit; no move under a finger; reduced motion keeps one order.",
+      "screens/game/hit/__tests__/HitLayer.test.tsx: new start lines; ink in the region; cue and rumble for all six kinds; scramble and keypad: banner, empty region, screen-reader notes; unknown 'dragons': generic banner, no effect, the warp's cue, no rumble, no throw; English for the new kinds; D44: a default bot duel has no interferences, and the real-game test uses duel({ rules: { interferences: true } }).",
+      "screens/game/hit/__tests__/hitModel.test.ts: hitOf carries gameId; rumble for scramble, ink and keypad; every engine kind has a rumble inside 5 s and its own start cue; an unknown kind (and 'toString') falls back safely; hitSeedOf is stable and differs by game, event and kind.",
+      "components/board/__tests__/Keypad.test.tsx: keys slide to their slots in 200 ms and back, and the row stays LTR; each key enters its printed digit and keeps its count and state; a press started while moving is refused; the row reports finger deltas; reduced motion fades without a slide.",
+      "screens/game/__tests__/GameScreenHit.test.tsx: in a real duel, the dim sits inside board-slot (not over the keypad) and is gone after 5 s; the scramble draws in the board slot, the keypad stays put and a tap still selects; under a keypad hit every key moves, the printed digit still solves the cell, and the keys are back after the hit.",
+      "screens/game/arsenal/__tests__/TokenArt.test.tsx: the scramble, ink and keypad previews loop live and hold a fixed frame when still; the scramble's still frame is '?'; the keypad keeps its digits; an unknown kind gets a hidden still bolt.",
+      "__tests__/interferenceKinds.test.tsx: every INTERFERENCE_KINDS entry has its effect (or is the board's or keypad's), its own start cue with a sound and the Warning haptic, a rumble, a TokenArt preview live and still, an unlock level, and he+en keys (hit.title, arsenal.kind, interference, progress description, the dev sound name); an unknown kind falls back without throwing.",
+      "__tests__/contrast.test.ts: under the 0.6 dim every digit colour stays at least 2:1 and the given digit drops to at most 4.5:1.",
+      "screens/progress tests (progressModel, InterferencesScreen, ProgressScreen) and __tests__/progress.e2e.test.tsx: the collection shows 6 kinds unlocking at 2/3/4 and four 'בקרוב' (earthquake, fog, bubbles, torch); the facts say two taps and nothing mentions dragging.",
+      "components/dev/__tests__/sections.test.tsx: the design-system hit specimen plays a scramble (dim, tiles, reduced-motion '?') and ink, and ends after 5 s."
+    ]
+  },
+  "verify": {
+    "lane": "verify",
+    "done": true,
+    "summary": "The full verify run was already green after the four lanes: lint, typecheck, i18n and Jest (379/379 suites, 8856 tests), plus a repo-wide prettier check. Nothing failed, so I made no fixes for failures. I then cross-checked the lane reports against the code. The key constants match the rulings and the docs: INTERFERENCES_BY_MODE is solo/bot false and ranked true; INTERFERENCE_KINDS is in the ruled order; the unlock levels are 0/0/0/2/3/4; ARSENAL_CONFIG.armMs is 250; HIT_DIM is 0.6 from tokens.opacity.hitDim; the duration is 5000 ms. The docs (01-SPEC, components.md, DECISIONS-PENDING) name exactly HIT_DIM and ARSENAL_CONFIG, and docs/00-original-spec-v1.md is untouched. Earthquake is not built; it appears only in the 'later' list. I cleaned up the drag leftovers that other lanes flagged but did not own. (1) The dev design-system 'sheet' specimen in dev.json (he and en) still said 'launch by dragging only' and 'drag onto the opponent's card'. It now describes two taps, and its locked example is ink at level 3 instead of cats at level 18. (2) docs/design/tokens.json still had the unused loops dropZoneMarch/dropZoneBreathe and the sound note 'whoosh on drag, burst on drop'. I removed the loops, updated the interferenceSent and interferenceHit sound notes, regenerated tokens.generated.ts and formatted it (the diff is only those lines), and fixed the matching motion.md §10 lines and its closing note. (3) Two stale comments that mentioned the drag (jest.setup.ts, TokenArt.tsx). (4) In GameScreen, the live line for a hit between two other players read t(`interference.${kind}`), which shows a raw key for a kind this app doesn't know. It now uses the existing kindWord(), which falls back to the generic word (D47 mixed versions). After the fixes I re-ran everything: all green, with the same totals.",
+    "filesChanged": [
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/dev.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/dev.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/tokens.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/theme/tokens.generated.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/motion.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/jest.setup.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/TokenArt.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/GameScreen.tsx"
+    ],
+    "checks": [
+      {
+        "cmd": "npm run lint (before fixes)",
+        "result": "pass, 0 warnings"
+      },
+      {
+        "cmd": "npm run typecheck (before fixes)",
+        "result": "pass"
+      },
+      {
+        "cmd": "npm run i18n:check (before fixes)",
+        "result": "app: 14 namespaces, 1939 keys; admin: 330 keys; 0 errors, 0 warnings"
+      },
+      {
+        "cmd": "npx jest (before fixes)",
+        "result": "Test Suites: 379 passed, 379 total; Tests: 8856 passed, 8856 total; Snapshots: 2 passed"
+      },
+      {
+        "cmd": "npx prettier --check . (before fixes)",
+        "result": "All matched files use Prettier code style"
+      },
+      {
+        "cmd": "npm run tokens -w @sudoku-fight/mobile + prettier on tokens.generated.ts",
+        "result": "regenerated; diff vs HEAD only adds hitDim/status.unstable (earlier work), drops dropZone loops, and updates the 2 sound notes"
+      },
+      {
+        "cmd": "npm run lint (after fixes)",
+        "result": "pass, 0 warnings"
+      },
+      {
+        "cmd": "npm run typecheck (after fixes)",
+        "result": "pass"
+      },
+      {
+        "cmd": "npm run i18n:check (after fixes)",
+        "result": "0 errors, 0 warnings (1939 app keys, 330 admin keys)"
+      },
+      {
+        "cmd": "npx jest (after fixes, full run)",
+        "result": "Test Suites: 379 passed, 379 total; Tests: 8856 passed, 8856 total; Snapshots: 2 passed, 2 total; 294 s"
+      },
+      {
+        "cmd": "npx prettier --check . (after fixes)",
+        "result": "All matched files use Prettier code style"
+      },
+      {
+        "cmd": "free space on C:",
+        "result": "10.0 GB before and after"
+      }
+    ],
+    "openIssues": [
+      "No failures needed a decision from Moshe; verify is green.",
+      "Device-only checks remain as the lanes reported: the two-tap feel and the 250 ms arm guard; the 60% board dim; scramble readability and frame time on a mid-range Android; the ink blots; the keypad slide and finger guards on real touch hardware; the reduced-motion variants; the English 'Interfere' in the 4-player compact strip; and the mixed-version check with a real 1.0.0 APK (possible only after the server is deployed to staging; deploy the server before the app).",
+      "docs/design/screens/Arsenal.dc.html and Interference-Target.dc.html still show the old drag wording. The docs lane marked them old until Moshe asks for new boards (QA-CHECKLIST open item 12). No design boards exist for the new button, picker, dim, or scramble/ink/keypad.",
+      "The three new hit sounds (hit_scramble, hit_ink, hit_keypad) are placeholders with no CC0 candidate yet; Moshe needs to supply them.",
+      "The store listing (LISTING-APPLE) still names only fireworks, cats or a warp. It is still true; changing it is Moshe's call."
+    ],
+    "notesForOtherLanes": [
+      "main session: verify is fully green after the integration fixes (379 suites, 8856 tests). The only code behaviour change is in GameScreen.tsx: the 'hit between two others' live line now uses kindWord(e.interference, t), so an unknown kind reads as the generic word instead of a raw i18n key.",
+      "main session: the tokens.json drop-zone loops are removed and tokens.generated.ts is regenerated. motion.md §10 no longer lists them and its closing note now says they were removed on 2026-10-18."
+    ],
+    "testsAdded": []
+  },
+  "findings": [
+    {
+      "lane": "core",
+      "title": "An empty or legacy-free kinds declaration from one client turns interferences off for the whole ranked table",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/interferenceKinds.ts",
+      "severity": "low",
+      "real": true,
+      "reason": "I confirmed this in the code. In packages/protocol/src/interferenceKinds.ts, parseDeclaredInterferenceKinds (line 27) keeps any array of up to 16 short strings, including [] and ['x']. The test at interferenceKinds.test.ts:63 expects [] to be kept. At line 44, roomInterferenceKinds replaces only an undefined declaration with LEGACY_INTERFERENCE_KINDS, so a declaration of [] makes the intersection []. Both server paths pass the client's raw value straight through. In matchmaking: room.ts:99, then service.ts:279 (enqueue), then service.ts:717 (matchRules). In private rooms: GameRoom.ts:516 (joinLobby), then GameRoom.ts:614 (gameRules). With an empty list, the engine refuses every kind with badKind (engine.ts:638), and view.ts:166 sets canInterfere=false, so view.interference is null for every player. One modified client can therefore switch interferences off for the whole ranked table, including between the honest players. That goes against D44 (INTERFERENCES_BY_MODE.ranked = true) and the CLAUDE.md rule that the server is authoritative. Honest apps never send such a list: onlineClient.ts:138 and matchmaking.ts:159 always send all of INTERFERENCE_KINDS. Every app since 1.0.0 supports the legacy three, so a declaration without them can only be a lie. One part of the claim is overstated: making yourself immune is weak, because a tampered client can already refuse to draw the effects, which only run on the victim's device. The real harm is that one client switches off a ranked mechanic for everyone, which it could not do without this path. Severity is low and nothing crashes. The suggested fix is cheap and correct: make the legacy three a minimum for every declaration, and update the protocol tests that expect [] (line 63) and [['cats'],['warp']] → [] (line 35)."
+    },
+    {
+      "lane": "docs",
+      "title": "QA rows whose requirements changed still show ✓ in Hebrew/English, against the block's own rule",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/QA-CHECKLIST.md",
+      "severity": "medium",
+      "real": true,
+      "reason": "The claim is true, but its impact is smaller than stated. In the working tree, git diff of docs/QA-CHECKLIST.md shows that this lane edited all four rows and kept עברית/אנגלית at ✓ | ✓:\n- Row 72 (Game-Bot) gained \"אין כפתור הפרעה בכרטיס הבוט, והבוט לא שולח הפרעות (D44…)\".\n- Rows 87 and 88 (Hit-Fireworks, Hit-Cats) gained \"הלוח מוחשך (D46)\".\n- Row 89 (Hit-Warp) gained \"ההחשכה מתעוותת יחד עם הלוח (D46)\".\n\nThe same lane added line 78: \"השורות שהשתנו מסומנות ☐ גם בעברית ובאנגלית, עד בדיקת הקוד מול components.md (… 15.3 …)\". It also kept lines 7-8, where ✓ means a code check against the canvas boards was done. The canvas has no board for the D46 dim, and row 72 itself says its board is outdated (\"בלוח יש כפתור, והוא ישן\"). So the ✓ marks contradict the document's own rule. The rule comes from the document itself, not from DECISIONS.md or CLAUDE.md.\n\nWhy the impact is smaller:\n- The code does implement both. BoardHitLayer.tsx dims the board at HIT_DIM 0.6 for every kind. GameScreen.tsx:1366-1376 puts BoardHitLayer inside WarpFrame region=\"board\", so the dim does warp with the board. components.md line 424 says the button is not rendered against a bot (D44).\n- The new rows 86 (the D46 dim, \"בכל סוג\", ☐) and 93 (D44, no button on the bot card, ☐) already put most of this in front of a QA pass that looks for ☐.\n- What has no ☐ row anywhere is row 89's own detail, that the dim warps with the board.\n\nSo this is a real but low-severity inconsistency in the docs. The suggested fix is trivial and matches line 78: set row 72 and rows 87-89 to ☐ in the עברית and אנגלית columns. No code needs to change."
+    },
+    {
+      "lane": "docs",
+      "title": "01-SPEC header still says every original requirement remains except 'pending' proposals",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md",
+      "severity": "low",
+      "real": true,
+      "reason": "I confirmed the claim. It is a real defect, but low severity. docs/01-SPEC.md line 7 still says \"כל דרישה מהאפיון המקורי נשארה, חוץ מהצעות שמסומנות 'ממתינה לאישור'\", the same text as in HEAD; this batch did not change it. That sentence is now false inside the same document. In §24, D45 (line 1067) says it replaces the drag of original §16, and D44 (line 1066) says it replaces \"להשתמש בהפרעות\" (§20) and \"לחצן הפרעה\" (§10) in bot games. D14 (line 1036) already replaced the penalty ladder of §13. All three are marked \"✓ החלטת משה\", and none is a \"ממתינה לאישור\" proposal. §7.3 (lines 493-495) also says the drag is \"replaced explicitly\". So the header contradicts §7.3 and §24, and this batch's D44 and D45 add to a mismatch that D14 started. Two things lower the real risk: §7.3 and §24 state the replacement clearly, and CLAUDE.md says to build what the §24 status column says. A careful later session would probably not rebuild drag. Still, the header is the first rule a reader meets, and together with CLAUDE.md's \"המקור גובר\" it is misleading. The proposed fix is a one-line change to the header bullet only, adding an exception for requirements Moshe explicitly replaced (D14, D44, D45, marked ✓ in §24), and it does not touch 00-original-spec-v1.md, so it is correct and safe."
+    },
+    {
+      "lane": "docs",
+      "title": "Spec §7.2 D35 rule ('whole screen until approved') has no exception for the new board/keypad-only kinds",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md",
+      "severity": "low",
+      "real": true,
+      "reason": "Confirmed, but it is a low-severity wording gap in the docs. Nothing in the code is wrong. docs/01-SPEC.md line 468-471, the D35 bullet in §7.2, says \"עד שתאושר, ההפרעה פועלת על כל המסך\". Its only exception is the D46 dim (\"ההחשכה של D46 ... תמיד על הלוח בלבד\"). It does not mention the new kinds. §7.1 of the same file (lines 443-445) gives the new kinds a narrower area: ink covers \"חלק מהלוח\", scramble works on \"הספרות בלוח\", and keypad works on \"מקשי הספרות\". The code follows §7.1. Ink.tsx (lines 33-37) builds its blot plan from the board rect inside the hit region, so it stays on the board even in 'screen' scope. HitEffect.tsx (lines 15-17 and 27-30) draws nothing for 'scramble' or 'keypad', because those kinds act on the board's digits and on the keypad. Two sibling docs already state the exception: DECISIONS-PENDING.md 2.7 (line 185, \"גם הסוגים החדשים פועלים על חלק מסוים...\") and motion.md (line 155, \"except the board-only kinds below\"). The spec, which is the source of truth, does not. So with D35 still pending, its general rule and its own §7.1 disagree. Points against the claim: §7.1 is explicit, so a careful reader would let the specific rule win. The design's exact text for the D35 note (interference-rules.json §5) asked only for the dim line, and that line was written word for word. No DECISIONS.md ruling is broken, since D47 there does not set an area for ink. Nothing fails at runtime. Even so, the inconsistency in the source of truth is real, and the suggested one-line fix matches DECISIONS-PENDING 2.7. It is a docs-only fix."
+    },
+    {
+      "lane": "docs",
+      "title": "Design canvas note and live boards still prescribe the drag; only Arsenal and Interference-Target are flagged old",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/canvas.json",
+      "severity": "low",
+      "real": true,
+      "reason": "I checked the files and the claim holds. It is a low-severity documentation defect.\n- docs/design/canvas.json line 66: the sticky note \"d-interfere\" still reads \"החלטה פתוחה D4 · הפרעות — הפעלה: לחיצה על ⚡ ... וגרירה אל הכרטיס של אותו יריב מפעילה\". The note mislabels the topic as open decision D4, which in 01-SPEC is Grace Period. It also describes the drag as the current design, against D45. The lane's diff of canvas.json changed only the Arsenal and Interference-Target titles to \"(old: drag ...)\" and removed Interference-Drag. It left this note as it was.\n- docs/design/screens/Interferences.dc.html lines 81 and 83 show the tile \"גרירה\" with \"בלבד, אל כרטיס היריב\" (the reviewer quoted it as one line, but it is split across two). Line 246 shows \"במשחק: הקש על הברק בכרטיס היריב וגרור\". Its canvas title is still \"Interferences collection\", with no \"old\" mark.\n- Splash.dc.html line 114 has the tip \"הפרעה שולחים בגרירה אל הכרטיס של היריב.\". DS-Motion has drag specimens at lines 548, 603-604 and 1060, and DS-Components at lines 439 and 462. None of these is flagged.\n- 01-SPEC.md line 242 and QA-CHECKLIST row 197 name only Arsenal and Interference-Target as old. QA row 95 uses the Interferences board as the reference for /interferences.\n- The app is correct: he/progress.json line 188 says howTo \"הקש על \\\"הפרעה\\\" בכרטיס היריב, ובחר הפרעה\". InterferencesScreen.test.tsx line 105 checks that no \"גרירה\" or \"גרור\" appears.\n\nThe best counter-argument is that the DECISIONS.md parenthetical asks only to delete Interference-Drag and mark Arsenal and Interference-Target as old in components.md, and the lane did that. But the same ruling says \"Remove all drag code, tests, design docs\". The canvas note still presents the drag as the current, open design, and the board QA uses for /interferences still says to drag. So the design docs contradict D45, and a QA pass against that board would wrongly report the app's two-tap text as a mismatch.\n\nThere is no runtime or test failure, so the severity is low. The fix: rewrite the note in C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/canvas.json (two taps, D45, decided). Then mark Interferences, Splash and the DS drag specimens as old in the canvas titles, in the 01-SPEC §4.1 note and in QA row 95."
+    },
+    {
+      "lane": "docs",
+      "title": "Work plan still states bot interferences (stage 5) and 'unlock level 0 for all in V1 (D17)' (stage 12)",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/02-WORK-PLAN.md",
+      "severity": "low",
+      "real": true,
+      "reason": "I confirmed it. The claim is true, and the severity is low. These are only documentation lines; no code is affected.\n\nWhat the current docs/02-WORK-PLAN.md says:\n- **Line 266 (stage 5):** \"הבוט משגר הפרעות **ברמת המנוע**\". This contradicts D44. In 01-SPEC, §9 (line 538) and §24 (D40 and D44 at lines 1062 and 1066) now say there are no interferences against a bot. The BOT_CONFIG column is used only by the fake-client.\n- **Line 480 (stage 12):** \"שדה `unlockLevel` ... ב־V1 הערך של כולם הוא 0 (D17)\". This contradicts D17 as updated by D47. 01-SPEC line 1039 now says ✓ 0/0/0/2/3/4. The code agrees: INTERFERENCE_UNLOCK_LEVELS in apps/mobile/src/screens/game/arsenal/config.ts gives fireworks/cats/warp 0, scramble 2, ink 3, keypad 4.\n- **Line 479:** \"3 פתוחות ו־4 נעולות\" is out of date, since there are now six kinds and three of them unlock by level.\n\nThe git diff shows the lane added the dated D44–D47 note only to stage 6 (line 282), and also updated line 541 (V1.1). Stages 5 and 12 were left unchanged.\n\nWhat softens it:\n- §24 of the spec is the source of truth (CLAUDE.md), and it is already updated.\n- Stages 5 and 12 are already built.\n- interference-rules.json and interference-ui.json asked only for the stage 6 note, and the lane did that.\n- The stage 6 note itself keeps the original items as history.\n\nEven so, CLAUDE.md requires reading the work plan before each stage. Line 480 cites D17 with a value that is no longer true, and line 266 contradicts D44. So this is a real inconsistency between the work plan and the §24 statuses. The suggested fix (a dated note on stage 5 and on stage 12, in the same style as stage 6) is correct and cheap."
+    },
+    {
+      "lane": "mobile-picker",
+      "title": "Interference refused for a general reason (paused, gameOver, disconnected, notActive) gives no 'not sent' toast after the launch cue and the 'launched' announcement",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/arsenalModel.ts",
+      "severity": "low",
+      "real": true,
+      "reason": "I confirmed this in the code. It is low severity and mainly matters for 'paused'.\n\n1. **Which refusals get the toast.** INTERFERENCE_REFUSALS (arsenalModel.ts:138-146) holds only interferencesOff, badKind, badTarget, targetOut, targetDisconnected, targetBusy and notEnoughPoints. GameScreen.tsx:842-850 shows the arsenal.refused toast only when isInterferenceRefusal(e.reason) is true.\n\n2. **The refusal carries no action type.** effectsOf (effects.ts:68-76) turns any 'rejected' update into { kind: 'refused', reason }. GameScreen therefore cannot tell a refused interfere from a refused select or place. That is why 'paused' had to be left out.\n\n3. **The missing reasons do happen.**\n   - The engine refuses an interfere with notActive or disconnected (engine.ts:560-562), gameOver (engine.ts:500), and 'paused' first of all in the interfere case (engine.ts:634).\n   - RemoteGameHost.act() refuses with 'disconnected' when the room is not live (remoteGameHost.ts:517-521). playOffline does not play interferences offline.\n\n4. **The cue and announcement come first.** The launch is optimistic. useArsenal.launch plays cue('launch') and calls onLaunch (useArsenal.ts:119-128). ArsenalOverlay.onKind then announces 'arsenal.live.launched' and may draw the ripple (ArsenalOverlay.tsx:233-236), all before the host answers.\n\n5. **A real race exists.** In a duel (freezeUpToPlayers=2), the opponent's hard drop, or the end of their soft phase, freezes the game on the server. A kind tapped before the paused view arrives (while blockedBy is still null) comes back refused with 'paused'. No toast follows. The player heard \"launched\" and gets no correction.\n   - The pause overlay does show and no points are taken, so the harm is small.\n   - The reviewer's 3–4 player example only applies once two players are left in the game.\n\n6. **This departs from the lane's own design.** interference-ui.json says to map a 'refused' effect with reason targetBusy, notEnoughPoints, targetOut, targetDisconnected, interferencesOff, badKind **or paused** to the arsenal.refused toast. The code leaves 'paused' out, and arsenalModel.test.ts:228 asserts isInterferenceRefusal('paused') === false. DECISIONS.md does not rule otherwise.\n\n7. **The fix is right.** The proposed fix (carry action.type in the 'refused' UiEffect and toast for any refused interfere) addresses the root cause, without making a refused select show the interference toast.\n\n8. **Not a hard-rule break.** The gameOver and notActive cases matter little: the results screen follows, or the button is hidden. This breaks no CLAUDE.md rule; it is a UX and accessibility gap against the investigated design."
+    },
+    {
+      "lane": "mobile-picker",
+      "title": "A quick double tap on \"הפרעה\" opens the picker and closes it at once: the 250 ms arm guard skips the button's toggle and the scrim",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/useArsenal.ts",
+      "severity": "low",
+      "real": false,
+      "reason": "The mechanics are described correctly, but this isn't a defect. In useArsenal.ts:92, toggle() closes with no time check. InterferenceButton.tsx has no debounce. While the hole is unmeasured, the Scrim (ArsenalOverlay.tsx:428-435) is one full-screen Pressable wired to close. The close button and Android back are not guarded by `armed`, which only gates onKind (line 222).\n\nThe reviewer misreads what the guard is for:\n- config.ts:21-24 says the 250 ms guard exists so the opening tap or a quick double tap \"can't launch by mistake\". The reviewer quotes it as \"can't [act]\", which changes its meaning.\n- docs/design/components.md (D45 launch section) also limits it to launching: taps in the first 250 ms are ignored, so \"A fast double tap on 'הפרעה' therefore never launches.\"\n- interference-ui.json says the guard \"guards against a fast tap passing through\" to a kind.\n\nDECISIONS.md only says \"250 ms input guard after the popup opens (config)\". It sets no rule for closing.\n\nThe design asks for the toggle-close. components.md, the InterferenceButton docs and GameScreen all say that tapping the button again while the picker is open closes it, and the button then reads \"סגירת חלון ההפרעות\". The scrim also closes on a tap, and the reactions button (togglePicker) toggles the same way with no guard. So a deliberate double tap on a toggle closes it, as designed. The guard still does its real job: a double tap never launches an interference. ArsenalOverlay.test.tsx:232 and :244 already test this.\n\nThe claim that one physical tap \"registers twice\" isn't supported: a single press on an RN Pressable fires onPress once. No CLAUDE.md rule or DECISIONS.md ruling is broken, and nothing fails. At most this is an optional UX polish, not a confirmed bug."
+    },
+    {
+      "lane": "mobile-picker",
+      "title": "Drag-era leftovers in comments (token flying to the card, ghost, drop)",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/GameScreen.tsx",
+      "severity": "low",
+      "real": true,
+      "reason": "I checked all three comments in the current code, and each one still describes the drag that was removed.\n1. apps/mobile/src/screens/game/GameScreen.tsx:1477 reads \"{/* Over the board: the tray, and the token flying from it to the card (spec §7.3). */}\". The element under it is <ArsenalOverlay>, which now renders the two-tap picker. There is no tray and no flying token any more.\n2. apps/mobile/src/screens/game/arsenal/TokenArt.tsx:31 reads \"/** The box, in dp (56 on a token, 34 on the ghost). */\". TokenArt is now used only by KindButton (m.button.art = 36 in metrics.ts:43), PlayerCardScreen and InterferencesScreen. Nothing uses 56 or 34. The doc comment above it also still says \"locked tokens\".\n3. apps/mobile/src/screens/game/arsenal/useSenderFeedback.ts:23 reads \"Call it from the host's confirmation, not from the drop\". There is no drop any more.\nNone of this changes behaviour: they are comments only, and no test or game rule is affected. They do contradict D45 (\"remove all drag code, drag tests, drag design docs\") and the lane's claim that nothing of the drag is left, so the finding is real but low severity. The suggested rewording fits the code: \"the interference picker\", \"the picker's 36-dp preview\", \"not from the second tap\". In ArsenalOverlay.tsx, `Gesture`/`GestureDetector`/`dragClosesSheet` are still imported. I did not trace what they do now, and they are outside this claim."
+    },
+    {
+      "lane": "mobile-effects",
+      "title": "iOS: keypad finger count double-counts multi-touch starts, so a phantom finger can cancel a keypad hit or keep the keys scrambled after it",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/Keypad.tsx",
+      "severity": "medium",
+      "real": true,
+      "reason": "I could not refute it. The claim matches the code.\n\n1. The finger count works as described. In apps/mobile/src/components/board/Keypad.tsx:61, `fingersIn` returns `changedTouches.length`. Lines 81-82 and 87-89 add or subtract that number on the row's raw onTouchStart, onTouchEnd and onTouchCancel. That number goes straight into `KeypadShuffler.touches` (apps/mobile/src/components/interference/keypadModel.ts:117), through the guard in useKeypadShuffle.ts:59. The shuffler keeps only a running number. It does not track touch identifiers or check against `nativeEvent.touches`.\n\n2. iOS sends events the way the reviewer says. The project uses React Native 0.86.3, which only has the new architecture (Fabric). In node_modules/react-native/React/Fabric/RCTSurfaceTouchHandler.mm, `_dispatchActiveTouches` builds one TouchEvent whose changedTouches holds every touch from the same touchesBegan or touchesEnded set. It then calls `onTouchStart` or `onTouchEnd` once for each unique event emitter. TouchEventEmitter.cpp uses a plain `dispatchEvent` for touchStart, touchEnd and touchCancel, so these are not merged. Only touchMove is merged, through `dispatchUniqueEvent`. Each copy bubbles to its target's ancestors.\n\nScenario (a): two fingers land on two keys in the same frame. That is two emitters, so the row gets +2 twice (+4). If the fingers lift separately, it gets -1 and -1, so the count stays at 2. Scenario (b): one finger lands on a key and one on the board in the same frame. The row gets +2. The board finger's lift goes only to the board's emitter, which is not inside the row, so the count stays at 1.\n\n3. The failure is real. `sync()` (keypadModel.ts:175) delays every shuffle while `fingersAt(now) > 0`. The extra count is only dropped after STUCK_FINGERS_MS = 10 000 ms with no keypad event, and every key tap moves `touchedAt` forward (+1 then -1, so the count never reaches 0). So:\n- A 5 s 'keypad' hit that arrives within 10 s of the extra count never shuffles. The paid hit does nothing, which breaks D47 (the keys must swap every 1.5 s).\n- If the extra count appears after the keys have moved, they stay out of order after endsAt for as long as the player keeps tapping keys. That breaks spec §7.1 (\"outside these 5 s the keypad is always 1-9\").\n\n4. The tests don't catch it. Keypad.test.tsx:278-282 and useKeypadShuffle.test.tsx:128-131 only fire one event with one changed touch each time.\n\nHow likely: it needs two touches that begin, or end, in the same iOS touch frame (about 8-16 ms), so it happens occasionally, not every game. Even so, the code is wrong and the failure is real. The fix the reviewer proposes is sound: track touch identifiers in a Set, and drop any identifier that is missing from `nativeEvent.touches`."
+    },
+    {
+      "lane": "mobile-effects",
+      "title": "Keypad reduced-motion swap: withDelay skips its delay under the system Reduce Motion setting, so keys jump while still visible",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/Keypad.tsx",
+      "severity": "low",
+      "real": true,
+      "reason": "I checked the code and the claim holds. Keypad.tsx:179 calls `x.set(withDelay(half, withTiming(shift, timing(0))))` and passes no third argument.\n\nHow Reanimated 4.5.1 treats this:\n- In delay.ts, an omitted argument leaves the delay's `reduceMotion` undefined (`getReduceMotionForAnimation(undefined)`).\n- `decorateAnimation` (util.ts, the isHigherOrder branch) then fills it in at start with `getReduceMotionFromConfig()`, which returns the system setting (`isReduceMotionOnUI.value`).\n- delay.ts:50 (`if (now - startTime >= delayMs || animation.reduceMotion)`) then starts the inner animation at once. The inner `withTiming` uses `timing(0)` (ReduceMotion.Never, 0 ms), so the key jumps to its new slot on the first frame.\n- The opacity `withSequence` is not affected. Its children set `reduceMotion` explicitly, false via Never, and `findNextNonReducedMotionAnimationIndex` does not skip them. The fade-out and fade-in still play.\n\nWhen it happens: `guard.reduce` comes from `useReduceMotion()` (GameScreen.tsx:308 into useKeypadShuffle). The setting's default is 'system' (state/settings.ts:41). With the default setting and the phone's Reduce Motion on, all the keys teleport to the new order while fully visible, then blink out and back. With the app setting 'on' and the system off, the delay works and the fade hides the move.\n\nWhy it matters:\n- It breaks D47's reduced-motion ruling (\"one permutation with a fade\"), which is meant to hide the move.\n- It also contradicts the file's own rule in components/board/animation.ts: \"the system setting must not skip a variant that was already chosen\".\n- The project already passes the flag elsewhere for the same reason, e.g. connection/motion.ts:102 `withDelay(..., NEVER_REDUCE)`.\n- Jest does not catch it because the system flag is off in tests.\n\nSeverity is low: the result is still static, so the CLAUDE.md Reduced Motion rule itself is not violated, and the input guard still voids presses during the swap. It is a real defect against the ruling.\n\nFix: `withDelay(half, withTiming(shift, timing(0)), ReduceMotion.Never)`."
+    },
+    {
+      "lane": "mobile-effects",
+      "title": "No test for D46 'only the victim sees it' (sender and third players keep a bright board and an unshuffled keypad)",
+      "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenHit.test.tsx",
+      "severity": "low",
+      "real": true,
+      "reason": "I checked the claim in the code and it holds. It is a low-severity gap in the tests, not a bug: the app behaves correctly today.\n\n1. **No screen test covers the sender or a third player.** All three tests in GameScreenHit.test.tsx (lines 63-111) use hitBy(), where the bot hits me. None renders the screen of the player who sent the hit, or of a player who watches it.\n2. **The sender test in GameScreenDuel does not check this.** \"two taps…\" (lines 402-425) checks only the view (players[1].hitBy, the score) and that the picker closes. It never looks for board-hit or hit-dim, and never reads the key-<d>-place positions.\n3. **The third-player test in GameScreenGroup checks nothing on my screen.** In \"a hit between two others\" (line 335), the line commented \"Not on me\" calls queryByTestId('hit-banner') without `hidden`. The banner inside the game screen is rendered as 'hit-layer-banner' (HitLayer.tsx:177), so that query finds nothing whatever happens. It does not check board-hit, hit-dim or the keys either.\n4. **The rule exists.** docs/01-SPEC.md:483 says \"רק מי שנפגע רואה אותה. השולח והשחקנים האחרים לא\", and docs/design/components.md:744 says the same.\n\nWhy it works today: GameScreen.tsx builds one `hit` from hitOf(view), which reads me.hitBy (hitModel.ts:54-56). That same value feeds HitLayer (line 1398), BoardHitLayer (line 1375) and useKeypadShuffle (line 957). One test already guards this indirectly: interferenceRanked.e2e.test.tsx:194, on the sender's side, checks that 'hit-layer-region' is absent. If hitOf ever returned the sender's hit, that test would fail.\n\nBut no test would catch the refactor the reviewer describes: if the board's dim, the scrambled digits or the moving keys were ever fed from somewhere other than the view's me.hitBy (for example, the interference event), they could appear on the sender's or a watcher's screen. Nothing fails today, and no rule from DECISIONS.md or CLAUDE.md is broken (CLAUDE.md requires a test for every engine rule; this is screen behaviour). So it is a valid, low-severity gap.\n\nThe fix the reviewer suggests is sound: in the sender and third-player tests, check that board-hit (with hidden) is absent and that every key's translateX is 0. The GameScreenGroup check should also query 'hit-layer-banner' with `hidden`."
+    }
+  ],
+  "fixes": [
+    {
+      "lane": "fix:core",
+      "done": true,
+      "summary": "Fixed the confirmed defect: a client could send a kinds declaration of [] or ['x'] and switch interferences off for a whole ranked table. The fix is in roomInterferenceKinds (packages/protocol/src/interferenceKinds.ts). A missing declaration still means exactly LEGACY_INTERFERENCE_KINDS. Any declaration that was sent now counts as [...LEGACY_INTERFERENCE_KINDS, ...declared]. So the legacy three (fireworks, cats, warp) are a minimum that no client declaration can remove. New kinds (scramble, ink, keypad) still need every player's app to declare them. Only the server's own `cap` (config gameRules.interferenceKinds, or a dev create's rules.interferenceKinds) can narrow a room below the legacy three. parseDeclaredInterferenceKinds is unchanged: it still keeps [] and unknown strings. Both server paths (matchmaking matchRules, and the private room's gameRules) go through roomInterferenceKinds, so one change covers both. I updated the doc comments, then the protocol tests that expected the old behaviour: [['cats'],['warp']] used to give [], the unknown-strings case gave ['cats','keypad'], and [] was kept with no room check. I added floor tests in protocol, matchmaking service (2 and 3 players) and the private GameRoom; the GameRoom one checks that a warp still goes through after a [] declaration. I added one bullet to docs/01-SPEC.md §7.2 'סוגים במשחק [D47]' describing the floor. ENGINE_VERSION and PROTOCOL_VERSION are not touched.",
+      "filesChanged": [
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/interferenceKinds.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/interferenceKinds.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/matchmaking/service.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/gameRoom.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md"
+      ],
+      "checks": [
+        {
+          "cmd": "npx jest packages/protocol/src/interferenceKinds.test.ts apps/server/src/matchmaking/service.test.ts apps/server/test/gameRoom.test.ts apps/server/src/game/options.test.ts",
+          "result": "4 suites, 115 tests passed"
+        },
+        {
+          "cmd": "npx jest packages/protocol apps/server/test/matchmaking.test.ts apps/server/test/appMatchmaking.contract.test.ts",
+          "result": "9 suites, 125 tests passed"
+        },
+        {
+          "cmd": "npx jest ... -t \"floor|tampered|unknown strings\"",
+          "result": "7 targeted new/updated tests ran and passed"
+        },
+        {
+          "cmd": "npx eslint <4 changed ts files>",
+          "result": "clean (exit 0)"
+        },
+        {
+          "cmd": "npx tsc -b packages/protocol apps/server",
+          "result": "exit 0 (includes apps/server/test)"
+        },
+        {
+          "cmd": "npm run typecheck",
+          "result": "Fails only in another lane's in-progress mobile files: Keypad.tsx, Keypad.test.tsx and newKinds.test.ts say 'touches' does not exist on KeypadGuard/KeypadShuffler. None of these files is touched by this fix."
+        },
+        {
+          "cmd": "npx prettier --write <4 changed ts files>",
+          "result": "done (docs/ is prettier-ignored)"
+        }
+      ],
+      "testsAdded": [
+        "protocol interferenceKinds.test.ts: 'the legacy three are a floor: a declaration without them (a tampered client) can’t empty the room [D44]'",
+        "protocol interferenceKinds.test.ts: 'a list without the legacy kinds is kept as sent, and the room adds them back (the floor)'",
+        "protocol interferenceKinds.test.ts: updated 'only the new kinds every app declared, on top of the legacy three', 'unknown strings…', and the cap test (adds [ALL, []] with cap ['ink','cats'] gives ['cats'])",
+        "server service.test.ts: 'a declaration without the legacy three (a tampered client) still gets them: it can’t switch interferences off [D44]' (2p with [], ['x'], ['fog','dragons']; 3p table with one []; ['keypad'] + ALL gives legacy + keypad)",
+        "server service.test.ts: updated 'unknown kinds in a declaration are ignored' expectation",
+        "server gameRoom.test.ts: 'a declaration without the legacy three (a tampered client) still gets them: interferences stay on [D44]' (ben declares [], kinds = legacy, ana's warp goes through)",
+        "server gameRoom.test.ts: 'a creator who declares only unknown strings still gets the legacy three'",
+        "server gameRoom.test.ts: updated 'only the kinds both declared, in the engine’s order'"
+      ],
+      "openIssues": [
+        "npm run typecheck currently fails only in mobile Keypad/newKinds files ('touches' missing on KeypadGuard/KeypadShuffler). This comes from another lane's in-progress work, not from this fix."
+      ],
+      "notesForOtherLanes": [
+        "docs lane: I added one sub-bullet to docs/01-SPEC.md §7.2 under 'סוגים במשחק [D47]', right after the LEGACY_INTERFERENCE_KINDS bullet. It says the legacy three are a floor the server adds to every declaration, so an empty or junk list can't switch off interferences in ranked [D44]. Please keep it if you rewrite that section.",
+        "server lane: I adjusted the expectations in apps/server/src/matchmaking/service.test.ts and apps/server/test/gameRoom.test.ts and added tests to both: declarations without the legacy kinds now yield legacy plus any new kinds every app declared. No server source file changed.",
+        "mobile/client lanes: honest apps already send all of INTERFERENCE_KINDS, so their behaviour does not change."
+      ]
+    },
+    {
+      "lane": "fix:docs",
+      "done": true,
+      "summary": "I fixed all five confirmed docs defects. Each fix is covered by a new Jest test (apps/mobile/src/__tests__/interferenceDocs.test.ts, 18 tests) that reads the docs the way a reviewer would.\n(1) QA-CHECKLIST: rows Game-Bot (72) and Hit-Fireworks/Cats/Warp (87–89) are now ☐ in the Hebrew and English columns, as the block's own rule on line 78 says.\n(2) 01-SPEC header: the bullet now has a second exception, requirements Moshe replaced explicitly (\"✓ החלטת משה\" in §24): D14, D44, and D45 with \"אין לבנות גרירה מחדש\". It also mentions the avatars decision (§33, spec 3.4). The original spec is not touched.\n(3) 01-SPEC §7.2 D35 bullet: a new line says the D35 scope covers fireworks, cats and warp only; scramble and ink stay on the board and keypad on the keypad (§7.1). The D35 row in §24 got a matching short note. I did the same in 03-DESIGN.md and in QA open item 12.\n(4) canvas.json: the 'd-interfere' note is rewritten as decided D45 (two taps, no drag, no bot interferences per D44, D10/D11 noted). Its fill is now blue instead of orange, and it no longer mislabels the topic as D4. Board titles now say \"(old: …, D45)\" for Interferences, Splash, DS-Components, DS-Motion and DS-Foundations, and \"(old: …, D44)\" for Game-Bot. The 01-SPEC §4.1 note, 03-DESIGN.md, QA row 95, QA row 40 (Splash), QA rows 128–129 (DS) and QA open item 11 list these old drag leftovers.\n(5) 02-WORK-PLAN: dated notes in the stage 6 style were added to stage 5 (the bot never interferes, D44/D40; BOT_CONFIG is used only by the fake-client) and to stage 12 (six kinds; unlock levels 0/0/0/2/3/4 per D17/D47; four \"coming soon\" kinds in the collection; avatars still 0). The original stage items are kept as history.\nThe test ties the stage 12 note to INTERFERENCE_UNLOCK_LEVELS and the Hebrew kind names. It also checks that every board whose HTML still mentions drag carries an \"(old: … D45)\" title, and that every QA row on such a board says it is old.",
+      "filesChanged": [
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/QA-CHECKLIST.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/02-WORK-PLAN.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/03-DESIGN.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/canvas.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/interferenceDocs.test.ts"
+      ],
+      "checks": [
+        {
+          "cmd": "npx jest --selectProjects mobile --testPathPattern interferenceDocs",
+          "result": "PASS, 18/18 tests"
+        },
+        {
+          "cmd": "npx jest --selectProjects mobile apps/mobile/src/__tests__/interferenceDocs.test.ts (the path filter was ignored, so the whole mobile project ran)",
+          "result": "Before the last two test adjustments: 243/244 suites passed. The only failures were in the new docs test, and they are fixed now. All other mobile suites passed (3169 tests)."
+        },
+        {
+          "cmd": "npx eslint --max-warnings 0 apps/mobile/src/__tests__/interferenceDocs.test.ts",
+          "result": "clean"
+        },
+        {
+          "cmd": "npm run typecheck",
+          "result": "clean (after fixing noUncheckedIndexedAccess errors in the new test)"
+        },
+        {
+          "cmd": "npm run i18n:check",
+          "result": "0 errors, 0 warnings"
+        },
+        {
+          "cmd": "node -e require('./docs/design/canvas.json')",
+          "result": "valid JSON, 55 boards"
+        },
+        {
+          "cmd": "npx prettier --write apps/mobile/src/__tests__/interferenceDocs.test.ts",
+          "result": "formatted (docs/ is prettier-ignored)"
+        }
+      ],
+      "openIssues": [
+        "The design board HTML files (Interferences.dc.html, Splash.dc.html, DS-Motion/DS-Components/DS-Foundations, Game-Bot.dc.html) were not edited. Following the existing Arsenal/Interference-Target approach, they are marked old in the canvas titles and in the docs instead of being redrawn.",
+        "The published claude.ai canvas artifact was not republished. Only the local docs/design/canvas.json changed.",
+        "QA row 40 (Splash) stays ✓ | ✓ in Hebrew and English. The app's tip already says two taps, and the row now notes that the board's drag tip is old. The line-78 rule covers only the interference block. QA rows 128–129 (DS) also stay ✓ and gained a note that the board's drag specimens are old."
+      ],
+      "testsAdded": [
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/interferenceDocs.test.ts"
+      ],
+      "notesForOtherLanes": [
+        "New test apps/mobile/src/__tests__/interferenceDocs.test.ts checks: the 01-SPEC header and the §7.2 D35 line; that canvas.json titles mark every board that still mentions drag as '(old: … D45)'; that QA interference rows (screen 16.* or citing D44–D47) and the Game-Bot/Hit-* rows are ☐ in Hebrew and English; and that the stage 5/12 notes in 02-WORK-PLAN match INTERFERENCE_UNLOCK_LEVELS and the Hebrew kind names in he/game.json 'interference'. If another lane changes the unlock levels, the Hebrew kind names or these doc lines, this test will need the same change."
+      ]
+    },
+    {
+      "lane": "fix:mobile-picker",
+      "done": true,
+      "summary": "Fix 1 (refused interference with a general reason). The 'refused' UiEffect in effects.ts now carries the type of the action that was refused (`action: ClientAction['type']`), taken from update.action in effectsOf. isInterferenceRefusal in arsenalModel.ts no longer takes the reason. It now takes the action type and returns true only for 'interfere'; the INTERFERENCE_REFUSALS reason set is gone. GameScreen shows the 'arsenal.refused' warning toast (\"ההפרעה לא נשלחה, ולא ירדו לך נקודות\") for any refused interfere, whatever the reason: paused, gameOver, notActive, the host's own offline 'disconnected', or the earlier target and points reasons. A select or a digit refused with the same reason (for example 'paused' or 'disconnected') still shows no interference toast. Tests: effects.test.ts now expects `action` on the existing refusals. A new effects test shows that an interfere refused with notEnoughPoints, and then with 'paused' after the bot drops, carries action 'interfere', and that a select refused with 'paused' carries 'select'. The arsenalModel test now checks the decision by action, not reason. A new GameScreenDuel test freezes the game (the bot disconnects, status 'paused'). In it a refused select shows no toast, and a refused interfere shows the warning with no points taken and no hit on the target. Under the old reason set this test would fail. Fix 2 (drag-era comments). GameScreen.tsx:1477 now reads 'the interference picker and its launch ripple'. In TokenArt.tsx the size doc now names the picker's 36-dp preview on each kind button (56 on the collection, 32 on a player card), and 'locked tokens' and 'the token's label' became 'locked kinds' and 'the kind button's label'. useSenderFeedback.ts now says 'not from the second tap', and notes that the screen's 'not sent' warning covers a refusal. No string, behaviour or i18n key changed besides the toast condition.",
+      "filesChanged": [
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/effects.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/__tests__/effects.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/arsenalModel.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/__tests__/arsenalModel.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/GameScreen.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenDuel.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/TokenArt.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/arsenal/useSenderFeedback.ts"
+      ],
+      "checks": [
+        {
+          "cmd": "npx jest src/game/__tests__ src/screens/game/arsenal src/screens/game/__tests__/GameScreenDuel.test.tsx src/screens/game/__tests__/GameScreenOnlineGroup.test.tsx src/__tests__/interference.e2e.test.tsx (in apps/mobile)",
+          "result": "21 suites passed, 243 tests passed"
+        },
+        {
+          "cmd": "npx prettier --check <8 changed files>",
+          "result": "All matched files use Prettier code style"
+        },
+        {
+          "cmd": "npx eslint <8 changed files>",
+          "result": "clean, no output"
+        },
+        {
+          "cmd": "npm run typecheck",
+          "result": "No errors in my files. 8 errors remain, all from another lane in progress: Keypad.test.tsx(186,282) and components/interference/__tests__/newKinds.test.ts use 'touches', which KeypadGuard and KeypadShuffler do not have"
+        },
+        {
+          "cmd": "powershell (Get-PSDrive C).Free/1GB",
+          "result": "9.95 GB free"
+        }
+      ],
+      "openIssues": [
+        "npm run typecheck still fails, but not in my files. Keypad.test.tsx and components/interference/__tests__/newKinds.test.ts use a 'touches' member that KeypadGuard and KeypadShuffler do not have (the keypad lane is still working on it).",
+        "ArsenalOverlay.tsx still has a downward swipe on the sheet header that closes the picker (arsenal-close-drag, metrics.sheet drag threshold). This is the usual bottom-sheet close, not the removed drag-to-launch, and neither defect covered it. I left it as it is."
+      ],
+      "notesForOtherLanes": [
+        "apps/mobile/src/game/effects.ts: the 'refused' UiEffect now has a required field `action: ClientAction['type']` (effectsOf fills it from update.action). Any code or test that builds a 'refused' UiEffect by hand, or checks one with toEqual, must include it. The only place in the repo that did was effects.test.ts, which I updated.",
+        "isInterferenceRefusal (exported from screens/game/arsenal) now takes the refused action's type, not the RejectReason: isInterferenceRefusal(e.action). It is true only for 'interfere'."
+      ],
+      "testsAdded": [
+        "apps/mobile/src/game/__tests__/effects.test.ts: 'a refused interference says it was an interference, whatever the reason [D45]'",
+        "apps/mobile/src/screens/game/__tests__/GameScreenDuel.test.tsx: 'refused for a general reason (the game froze before my tap arrived): still \"not sent\" [D45]'",
+        "apps/mobile/src/screens/game/arsenal/__tests__/arsenalModel.test.ts: rewritten 'the refusals of an interference, told apart from the other refusals by the action, not the reason'"
+      ]
+    },
+    {
+      "lane": "fix:mobile-effects",
+      "done": true,
+      "summary": "Fixed all three confirmed defects in the mobile-effects lane.\n\n(1) iOS phantom finger. The keypad no longer adds up `changedTouches.length`. A new pure function, `fingersOnKeys` in Keypad.tsx, keeps a Set of touch identifiers:\n- On start, a finger joins only when it is in this copy's iOS `targetTouches`. Android sends no targetTouches and one finger per event, so there every changed touch counts.\n- On end or cancel, the ended ids are removed.\n- On every event, any id missing from `nativeEvent.touches` is dropped, so a lift the row never heard leaves no phantom.\n- The row reports the absolute count. `KeypadGuard.touches(delta)` became `fingers(count)`, and `KeypadShuffler.touches(delta)` became `fingers(count)` (private field renamed to `down`). The 10 s STUCK_FINGERS_MS fallback stays. useKeypadShuffle passes `shuffler.fingers`.\n\n(2) Reduced-motion swap. `withDelay` (and the fade `withSequence`) now get `ReduceMotion.Never`, so the phone's own Reduce Motion no longer skips the delay. Before, the keys jumped in sight. A new test turns on the system setting with `<ReducedMotionConfig mode={ReduceMotion.Always}>`. I checked that it fails without the fix and passes with it.\n\n(3) D46 'only the victim sees it' had no test on the sender's or a watcher's screen:\n- GameScreenHit has a new `it.each` for scramble, keypad and cats where I hit the bot. It checks there is no board-hit, hit-dim, hit-scramble or hit-layer-banner on my screen, and that all nine keys stay at translateX 0 after 1.6 s.\n- GameScreenDuel 'two taps…' now checks there is no board-hit or banner on the sender's screen.\n- In GameScreenGroup, 'a hit between two others' now queries the real 'hit-layer-banner' (with hidden) and board-hit. A new group test has Pip send keypad to Biscuit and Biscuit send scramble to Pip, and checks my board and keys stay untouched.\n\nThe iOS scenarios from the finding are now Keypad and useKeypadShuffle tests: two keys in one frame give 2 fingers, not 4, then 0 after both lifts, and a later keypad hit still shuffles; a key finger plus a board finger in the same frame count as 1.",
+      "filesChanged": [
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/Keypad.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/keypadModel.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/useKeypadShuffle.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/__tests__/Keypad.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/interference/__tests__/newKinds.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/hit/__tests__/useKeypadShuffle.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenHit.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenDuel.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenGroup.test.tsx"
+      ],
+      "checks": [
+        {
+          "cmd": "npx jest src/components/board src/components/interference src/screens/game/hit src/screens/game/__tests__/GameScreenHit.test.tsx GameScreenDuel.test.tsx GameScreenGroup.test.tsx GameScreen.test.tsx (apps/mobile)",
+          "result": "16 suites, 319 tests passed"
+        },
+        {
+          "cmd": "npx jest src/__tests__/interference (apps/mobile)",
+          "result": "4 suites, 67 tests passed"
+        },
+        {
+          "cmd": "Temporarily removed ReduceMotion.Never from withDelay and ran the new 'phone's own Reduce Motion' Keypad test",
+          "result": "Test failed without the fix (translateX already at the new slot mid-fade); file restored, passes with the fix"
+        },
+        {
+          "cmd": "npx prettier --check <9 changed files>",
+          "result": "All matched files use Prettier code style"
+        },
+        {
+          "cmd": "npx eslint <9 changed files>",
+          "result": "clean (after moving the ref access out of a render-time factory to satisfy react-hooks/refs)"
+        },
+        {
+          "cmd": "npm run typecheck",
+          "result": "No errors in my files; 6 errors remain in apps/mobile/src/__tests__/interferenceDocs.test.ts (lines 109-170, possibly-undefined), another lane's file in progress"
+        },
+        {
+          "cmd": "powershell (Get-PSDrive C).Free/1GB",
+          "result": "9.9 GB free"
+        }
+      ],
+      "openIssues": [
+        "Device-only check: on a real iPhone, put two fingers on two keys in one frame, and one finger on a key with one on the board in the same frame, during a 'keypad' hit. Confirm the keys still swap every 1.5 s and return to 1-9 at the end. The fix relies on the touch `identifier` and the iOS Fabric `targetTouches` list (RCTSurfaceTouchHandler.mm _dispatchActiveTouches, TouchEventEmitter.cpp touchEventPayload), which I read in the source but could not run here.",
+        "Device-only check: with the iPhone or Android system Reduce Motion on (app setting 'system'), a keypad hit should show one fade per swap, with the keys moving only while hidden.",
+        "Known limitation, not changed: on Android all pointers of a gesture go to the view the first finger touched. If the first finger is on the board and a second lands on a key, the row never hears the second, so a key could move under it. This is not a phantom or freeze. It is the same as before the fix."
+      ],
+      "testsAdded": [
+        "Keypad.test.tsx: 'iOS: two fingers that land on two keys in one frame are two, not four, and both lifts free the keys'",
+        "Keypad.test.tsx: 'iOS: a finger that lands on the board in the same frame as one on a key is not on the keys'",
+        "Keypad.test.tsx: 'a finger whose lift the row never heard is dropped at the next event: no phantom finger' (fingersOnKeys unit)",
+        "Keypad.test.tsx: 'with the phone's own Reduce Motion on: the keys still move only while faded out, never in sight'",
+        "Keypad.test.tsx: rewrote 'tells the guard how many fingers are on the keys…' for absolute counts by id",
+        "useKeypadShuffle.test.tsx: 'iOS: two fingers that land on two keys in one frame leave no phantom: the next hit still shuffles'",
+        "newKinds.test.ts: 'takes the count the keypad gives as it is: the same count heard twice is not more fingers' (+ existing shuffler tests moved to fingers(count))",
+        "GameScreenHit.test.tsx: it.each scramble/keypad/cats 'only the victim sees a hit: my %s on the bot leaves my board bright and my keys in place [D46]'",
+        "GameScreenGroup.test.tsx: 'a keypad or a scramble between two others: my board stays bright and my keys in their places [D46]'",
+        "GameScreenGroup.test.tsx 'a hit between two others': now queries 'hit-layer-banner' (hidden) and board-hit",
+        "GameScreenDuel.test.tsx 'two taps…': asserts no board-hit / hit-layer-banner on the sender"
+      ],
+      "notesForOtherLanes": [
+        "API change: KeypadGuard.touches(delta) is now KeypadGuard.fingers(count), the absolute number of fingers on the keys, counted by touch id in Keypad's fingersOnKeys. KeypadShuffler.touches(delta) is now KeypadShuffler.fingers(count). The only callers were Keypad.tsx, useKeypadShuffle.ts and their tests, all updated. Any new code that builds a KeypadGuard must provide `fingers`.",
+        "Small test-only edits in files other lanes may own: GameScreenDuel.test.tsx ('two taps…' gained two assertions at the end) and GameScreenGroup.test.tsx (in 'a hit between two others' the banner query is now 'hit-layer-banner' with hidden, plus a board-hit check; one new test after it). No production code in those lanes was touched.",
+        "npm run typecheck currently fails only in apps/mobile/src/__tests__/interferenceDocs.test.ts (TS2339 and TS2532 at lines 109-170). That file is not mine and is presumably being worked on by the docs lane."
+      ]
+    }
+  ],
+  "final": {
+    "lane": "verify",
+    "done": true,
+    "summary": "I ran the full integration check from C:/Users/mosheg/Documents/ReactNative/sudoku-fight after the review fixes. Everything passed on the first run, so I changed no files. npm run lint (eslint . --max-warnings 0) finished with no errors or warnings. npm run typecheck (expo routes:types plus tsc -b) was clean, and the tsconfig it regenerates was left unchanged. npm run i18n:check found 0 errors and 0 warnings across 14 app namespaces (1939 keys) and the admin locale (330 keys). The full Jest run (npx jest, all projects) passed 380 of 380 suites and 8891 of 8891 tests, plus 2 snapshots, in about 314 s. The npm verify script does not include prettier, so I ran npx prettier --check . separately: every file matched Prettier style. As a sanity check I searched for drag code left over from the removed drag activation and found none. The only gesture left in ArsenalOverlay.tsx is the standard swipe-down that closes the picker sheet (tagged [D45: two taps, no drag]), and the other 'drag' matches are the replay timeline scrubber and the 'baby-dragon' avatar id. INTERFERENCE_KINDS in packages/engine/src/game/rules.ts matches the ruled order ['fireworks','cats','warp','scramble','ink','keypad']. Free space on C: was about 9.9 GB before the runs, so I did not need to clear the Jest cache.",
+    "filesChanged": [],
+    "checks": [
+      {
+        "cmd": "npm run lint",
+        "result": "PASS: eslint . --max-warnings 0, no output (0 errors, 0 warnings)"
+      },
+      {
+        "cmd": "npm run typecheck",
+        "result": "PASS: routes:types + tsc -b, no errors; apps/mobile/tsconfig.json unchanged"
+      },
+      {
+        "cmd": "npm run i18n:check",
+        "result": "PASS: app 14 namespaces, 1939 keys; admin 330 keys; 0 errors, 0 warnings"
+      },
+      {
+        "cmd": "npx jest (npm test)",
+        "result": "PASS: Test Suites 380 passed / 380 total; Tests 8891 passed / 8891 total; Snapshots 2 passed / 2 total; Time 313.967 s"
+      },
+      {
+        "cmd": "npx prettier --check .",
+        "result": "PASS: All matched files use Prettier code style"
+      },
+      {
+        "cmd": "powershell (Get-PSDrive C).Free/1GB",
+        "result": "9.94 GB free before the runs"
+      }
+    ],
+    "openIssues": [
+      "None. Everything passed on the first run and no file needed a change.",
+      "Device-only checks (not covered by Jest): the scramble/keypad/ink effects and the 60% board dim on a real phone at 360x780, including Reduced Motion on and a screen reader; the mixed-version room kinds against an installed app 1.0.0 (deploy the server before the app)."
+    ],
+    "notesForOtherLanes": [
+      "The only remaining Gesture.Pan in the interference picker (apps/mobile/src/screens/game/arsenal/ArsenalOverlay.tsx, testID 'arsenal-close-drag') is the swipe-down that closes the sheet, not drag-to-target activation, so it is consistent with D45. Remove it only if Moshe wants no gesture at all on the sheet."
+    ]
+  }
+}

@@ -147,7 +147,9 @@ export function startPractice({ gameType }: PracticeOptions, deps: PracticeDeps)
 
 /**
  * A practice against a bot (spec §5.1, §9): me in seat 0 and the engine's bot of `level` in seat 1, under the
- * engine's rules for mode 'bot'. The bot plays until the game is over or the session closes.
+ * engine's rules for mode 'bot'. The bot plays until the game is over or the session closes. No interferences,
+ * either way [D44]: the player knows it is a bot, so the rules turn them off (the bot never sends one, and no
+ * card shows "הפרעה").
  */
 export function startBotPractice(
   { gameType, level }: BotPracticeOptions,

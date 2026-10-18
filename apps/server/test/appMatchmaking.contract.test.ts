@@ -13,6 +13,8 @@
  *   the engine's solver: the server never sends the solution of a running game).
  * - GET /v1/me (the app's account client) shows each one's new rating in the queue's rating key, exactly the
  *   engine's eloChanges for the final places, and the result the hosts got says the same.
+ * - The app declares every interference kind it can show when it searches, so two apps' game allows all of
+ *   them [D47].
  * - A lonely search ends in the timeout (scaled), and "keep searching" goes on without the cap.
  * - A second search from the same account is refused ('alreadyQueued'), and a cancel lets it go.
  * - A Firebase account whose email is not verified is refused ('emailNotVerified', D22): the code the app's
@@ -25,7 +27,7 @@
 import type { AddressInfo } from 'node:net';
 
 import { Client } from '@colyseus/sdk';
-import { type Digit, eloChanges, type GameType } from '@sudoku-fight/engine';
+import { type Digit, eloChanges, type GameType, INTERFERENCE_KINDS } from '@sudoku-fight/engine';
 import {
   devToken,
   MATCH_RANGE,
@@ -241,6 +243,8 @@ describe("the app's matchmaking on the real server", () => {
     const a = search(ana);
     await until(() => infoOf(a).phase === 'searching', 'the first search');
     expect(infoOf(a).search).toMatchObject({ rating: 1200, range: MATCH_RANGE.initial, extended: false });
+    // Alone in fast-2p so far: the server says nobody else is searching (the app's "alone" notice).
+    expect(infoOf(a).search!.nextRange).toBeNull();
     const b = search(ben);
 
     // "found": each sees the other, and takes its seat in the match's room at once (D37).
@@ -272,6 +276,9 @@ describe("the app's matchmaking on the real server", () => {
     // Spec §21: no solution while the game runs.
     expect(sa.host.game!.config.puzzle.solution).toBe('');
     expect(sa.host.game!.config.mode).toBe('ranked');
+    // Both apps declared every interference kind they can show when they searched: the game allows all [D47].
+    expect(sa.host.game!.config.rules.interferenceKinds).toEqual([...INTERFERENCE_KINDS]);
+    expect(sa.getView().rules.interferenceKinds).toEqual([...INTERFERENCE_KINDS]);
 
     // The game, through the GameHost interface.
     const stops = [drive(sa.host, 80), drive(sb.host, 240)];
@@ -318,8 +325,10 @@ describe("the app's matchmaking on the real server", () => {
   it('a lonely search times out; "keep searching" goes on without the cap', async () => {
     const solo = await account('SoloApp');
     const s = search(solo, 'hard-2p');
+    await until(() => infoOf(s).phase === 'searching', 'the search');
+    expect(infoOf(s).search!.nextRange).toBeNull();
     await until(() => infoOf(s).phase === 'timeout', 'the timeout', TIMEOUT_MS + 3000);
-    expect(infoOf(s).timeout).toMatchObject({ range: MATCH_RANGE.cap, extended: false });
+    expect(infoOf(s).timeout).toMatchObject({ range: MATCH_RANGE.cap, extended: false, nextRange: null });
     expect(s.tracked).toEqual([
       { name: 'matchmaking_wait', props: { sec: expect.any(Number), result: 'timeout' } },
     ]);

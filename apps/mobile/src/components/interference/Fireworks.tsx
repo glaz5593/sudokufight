@@ -4,7 +4,6 @@ import {
   Group,
   PaintStyle,
   Picture,
-  Rect,
   Skia,
   type SkPicture,
   StrokeCap,
@@ -20,8 +19,9 @@ import { hitAlpha } from './hitClock';
 /**
  * Fireworks over the region (spec §7.1; Hit-Fireworks; motion.md §4.4), drawn by Skia. The whole frame is one
  * picture recorded on the UI thread from the hit's clock (`elapsed`), a few hundred particles at most: no
- * React render per frame. Under the bursts, a night wash dims what is behind (the interference's job is to
- * get in the way of reading the board; it never hides it completely).
+ * React render per frame. What is behind is darkened by the board's dim, the same for every kind [D46]
+ * (screens/game/hit/BoardHitLayer): the fireworks no longer draw a night wash of their own, which together with
+ * the dim would make the board almost unreadable.
  *
  * Reduced motion (spec §22): one frozen frame with the same bursts in the same places, over the same area,
  * for the same 5 s.
@@ -29,9 +29,6 @@ import { hitAlpha } from './hitClock';
 export function Fireworks(props: EffectProps) {
   return props.reduce ? <FireworksStill {...props} /> : <FireworksLive {...props} />;
 }
-
-/** How dark the night wash gets (of `color.scrim`). */
-export const NIGHT_OPACITY = 0.55;
 
 type Hexes = readonly [string, string, string];
 
@@ -76,7 +73,6 @@ function FireworksLive({
     [colors.sender, colors.accent, colors.light],
   );
   const alpha = useDerivedValue(() => hitAlpha(elapsed.get(), totalMs, fadeInMs, fadeOutMs));
-  const wash = useDerivedValue(() => alpha.get() * NIGHT_OPACITY);
   const picture = useDerivedValue(() =>
     recordFireworks(plan, hexes, elapsed.get(), alpha.get(), width, height),
   );
@@ -87,7 +83,6 @@ function FireworksLive({
       pointerEvents="none"
       testID={testID ?? 'hit-fireworks'}
     >
-      <Rect x={0} y={0} width={width} height={height} color={colors.night} opacity={wash} />
       <Picture picture={picture} />
     </Canvas>
   );
@@ -125,7 +120,6 @@ function FireworksStill({
       testID={testID ?? 'hit-fireworks-still'}
     >
       <Group opacity={alpha}>
-        <Rect x={0} y={0} width={width} height={height} color={colors.night} opacity={NIGHT_OPACITY} />
         <Picture picture={picture} />
       </Group>
     </Canvas>

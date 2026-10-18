@@ -8,8 +8,9 @@ import { ratings, users } from '../db/schema';
  * Ratings in the database (spec §11, §19): read when a ranked game starts, written when it ends.
  *
  * The numbers come from the engine (ratingChangesFor → eloChanges: pairwise Elo [D31], K doubled while
- * provisional [D23], places by §6.7 so a surrender or an abandonment is a normal loss [D32, D8]). Here they
- * are only stored.
+ * provisional [D23], places by §6.7 so a surrender or an abandonment is a normal loss [D32, D8], except in the
+ * pairs the leave guards of §11.2 hold at 0). Here they are only stored. Every seat with a RatingChange counts
+ * the game (games + 1), a change of 0 included: a game the guards held still counts.
  */
 
 /** A player's rating in the game's key before the game: the engine's PlayerInfo.rating and ratedGames. */

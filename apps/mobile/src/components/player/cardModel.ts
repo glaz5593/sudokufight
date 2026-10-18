@@ -3,7 +3,6 @@ import {
   type CellIndex,
   type GameView,
   type InterferenceKind,
-  mistakePenalty,
   type PlayerId,
   type PlayerView,
   type TimerView,
@@ -11,6 +10,7 @@ import {
 
 import { tokens } from '../../theme';
 import { secondsOf } from './format';
+import { metrics } from './metrics';
 import { sameData } from './sameProps';
 
 /**
@@ -23,7 +23,11 @@ import { sameData } from './sameProps';
 // ---------------------------------------------------------------------------------------------------------
 // Types
 
-export type Presence = 'online' | 'reconnecting' | 'left';
+/**
+ * 'unstable': the connection is lost, inside its soft phase [D42]: still in the game, which goes on as usual
+ * (an amber dot and a wifi mark; the avatar is not greyed). 'reconnecting': the hard phase (the grace).
+ */
+export type Presence = 'online' | 'unstable' | 'reconnecting' | 'left';
 
 export interface LockActivity {
   kind: 'locking';
@@ -91,7 +95,7 @@ export interface MyActions {
 export interface MistakePips {
   /** Five or more mistakes: "×n" first. */
   overflow: number | null;
-  /** The penalties of the last two mistakes, oldest first (−1, −2, −4 …). */
+  /** The penalties of the last two mistakes as the engine charged them, oldest first (e.g. −8, −6.5). */
   penalties: number[];
 }
 
@@ -158,11 +162,25 @@ export function colorIndexFor(seat: number, mySeat: number | null, seats: readon
   return i < 0 ? seat % PALETTE_SIZE : Math.min(1 + i, PALETTE_SIZE - 1);
 }
 
-/** The penalty pips of the compact card (§7.2): the last two, and "×n" from five mistakes on. */
-export function mistakePips(mistakes: number): MistakePips {
-  const penalties: number[] = [];
-  for (let k = Math.max(1, mistakes - 1); k <= mistakes; k++) penalties.push(mistakePenalty(k));
-  return { overflow: mistakes >= 5 ? mistakes : null, penalties };
+/**
+ * The penalty pips of the compact card (§7.2): the last two penalties, and "×n" from five mistakes on. The
+ * values come from the engine (`PlayerView.mistakePenalties`, spec §6.5); a snapshot from an older server may
+ * hold fewer than `mistakes`, and then the pips show what there is.
+ */
+export const mistakePips = (mistakes: number, penalties: readonly number[]): MistakePips => ({
+  overflow: mistakes >= 5 ? mistakes : null,
+  penalties: penalties.slice(-2),
+});
+
+/**
+ * The pips a compact card of `width` dp has room for (§7.2): both penalties from metrics.compact.twoPipsMinWidth
+ * (a 3-player card) without "×n"; the last one only in a narrower card (4 players: 106 and 78) or beside "×n".
+ * Width unknown: both, as drawn.
+ */
+export function pipsForWidth(pips: MistakePips, width: number | undefined): MistakePips {
+  if (width === undefined || pips.penalties.length < 2) return pips;
+  const room = width >= metrics.compact.twoPipsMinWidth && pips.overflow === null;
+  return room ? pips : { ...pips, penalties: pips.penalties.slice(-1) };
 }
 
 function activityOf(view: GameView, p: PlayerView, now: number): Activity {
@@ -222,6 +240,8 @@ export function cardModel(view: GameView, playerId: PlayerId, mySeat: number | n
   if (!p) throw new RangeError(`No player ${playerId} in game ${view.gameId}`);
   const isMe = mySeat !== null && p.seat === mySeat;
   const seats = view.players.map((x) => x.seat);
+  // [D42] In the soft phase of a lost connection: still connected for the game, only marked.
+  const soft = p.softEndsAt != null;
   return {
     playerId: p.id,
     seat: p.seat,
@@ -232,10 +252,11 @@ export function cardModel(view: GameView, playerId: PlayerId, mySeat: number | n
     rating: p.rating,
     score: p.score,
     mistakes: p.mistakes,
-    pips: mistakePips(p.mistakes),
+    pips: mistakePips(p.mistakes, p.mistakePenalties ?? []),
     place: p.place,
     isLeader: p.isLeader,
-    presence: p.status === 'abandoned' ? 'left' : p.connected ? 'online' : 'reconnecting',
+    presence:
+      p.status === 'abandoned' ? 'left' : !p.connected ? 'reconnecting' : soft ? 'unstable' : 'online',
     out: p.status === 'active' ? null : p.status,
     activity: activityOf(view, p, now),
     hit: p.hitBy && {
@@ -245,11 +266,12 @@ export function cardModel(view: GameView, playerId: PlayerId, mySeat: number | n
       paused: p.hitBy.expiresAt === null,
     },
     interference: isMe ? null : interferenceOf(view, p, now),
+    // Without my connection (its soft phase) neither goes out: the surrender waits for the return [D42].
     mine: isMe
       ? {
           practice: view.mode !== 'ranked',
-          canSurrender: p.status === 'active' && view.status !== 'over' && view.status !== 'waiting',
-          reactionReady: view.reactionReadyAt <= now,
+          canSurrender: p.status === 'active' && view.status !== 'over' && view.status !== 'waiting' && !soft,
+          reactionReady: view.reactionReadyAt <= now && !soft,
         }
       : null,
   };

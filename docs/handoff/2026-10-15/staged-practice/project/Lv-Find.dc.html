@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<title>Find the digit</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@keyframes lv-knob{0%,100%{box-shadow:0 0 0 0 rgba(54,201,240,0)}50%{box-shadow:0 0 0 5px rgba(54,201,240,.28)}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div dir="rtl" lang="he" style="width:390px;height:844px;position:relative;overflow:hidden;box-sizing:border-box;font-family:Rubik,'Segoe UI',system-ui,sans-serif;color:#eef1f6;background:#0f1218;">
+
+  <!-- Header: level + the round's question; exit at the end -->
+  <header style="position:absolute;top:48px;left:16px;right:16px;height:56px;display:flex;align-items:center;gap:12px;">
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+      <h1 style="margin:0;font:700 22px/25px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">שלב 8</h1>
+      <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">איפה ה־6? · פרק 1</span>
+    </div>
+    <button type="button" aria-label="יציאה מהשלב" style="flex:none;width:44px;height:44px;margin:0;padding:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;cursor:pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+  </header>
+
+  <!-- Star slider: the level's time (one find). Moshe's scale: 3 stars to 5 s, 2 to 10, 1 to 20; at 20 s the level ends with 0 -->
+  <div role="progressbar" aria-label="זמן בשלב" aria-valuemin="0" aria-valuemax="20" aria-valuenow="3.2" aria-valuetext="3.2 שניות. עכשיו 3 כוכבים. 3 כוכבים עד 5 שניות, 2 עד 10, כוכב אחד עד 20. ב־20 שניות השלב נגמר" style="position:absolute;top:110px;left:16px;right:16px;height:52px;">
+    <!-- stars above each band (start = right = 0 s) -->
+    <div aria-hidden="true" style="position:absolute;top:0;right:0;width:25%;height:12px;display:flex;justify-content:center;gap:2px;">
+      <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+    </div>
+    <div aria-hidden="true" style="position:absolute;top:0;right:25%;width:25%;height:12px;display:flex;justify-content:center;gap:2px;">
+      <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+    </div>
+    <div aria-hidden="true" style="position:absolute;top:0;right:50%;width:50%;height:12px;display:flex;justify-content:center;gap:2px;">
+      <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+    </div>
+
+    <!-- track, fill from the start side, tick cuts at 5 / 10 (the end is 20) -->
+    <div aria-hidden="true" style="position:absolute;top:18px;left:0;right:0;height:6px;border-radius:3px;background:#1f2430;overflow:hidden;">
+      <span style="position:absolute;top:0;bottom:0;right:0;width:16%;border-radius:3px;background:#36c9f0;"></span>
+      <span style="position:absolute;top:0;bottom:0;right:25%;width:2px;margin-right:-1px;background:#0f1218;"></span>
+      <span style="position:absolute;top:0;bottom:0;right:50%;width:2px;margin-right:-1px;background:#0f1218;"></span>
+    </div>
+    <!-- the knob: where the level's time is now (3.2 of 20 s) -->
+    <span aria-hidden="true" style="position:absolute;top:13px;right:16%;width:16px;height:16px;margin-right:-8px;box-sizing:border-box;border-radius:50%;background:#36c9f0;border:3px solid #0f1218;animation:lv-knob 1.6s ease-in-out infinite;"></span>
+
+    <!-- current value under the knob -->
+    <span aria-hidden="true" style="position:absolute;top:32px;right:16%;transform:translateX(50%);height:18px;padding:0 5px;box-sizing:border-box;display:flex;align-items:center;border-radius:6px;background:#1f2430;border:1px solid #36c9f0;">
+      <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:16px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#36c9f0;">3.2</span>
+    </span>
+    <!-- tick seconds -->
+    <span aria-hidden="true" dir="ltr" style="position:absolute;top:35px;right:25%;transform:translateX(50%);font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#9aa3b5;">5</span>
+    <span aria-hidden="true" dir="ltr" style="position:absolute;top:35px;right:50%;transform:translateX(50%);font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#9aa3b5;">10</span>
+    <span aria-hidden="true" style="position:absolute;top:35px;left:0;display:flex;align-items:baseline;gap:3px;white-space:nowrap;">
+      <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#9aa3b5;">20</span>
+      <span style="font:400 12px/1 Rubik,sans-serif;color:#9aa3b5;">ש׳ · סוף</span>
+    </span>
+  </div>
+
+  <!-- One find per level; when a star drops -->
+  <div style="position:absolute;top:168px;left:16px;right:16px;height:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <span style="font:500 15px/1 Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">מציאה אחת בשלב</span>
+    <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">כוכב יורד ב־5 ש׳ וב־10 ש׳</span>
+  </div>
+
+  <!-- Board (always LTR). Box 5 is the area; the rest is dimmed; every 6 already on the board is a dark chip -->
+  <div dir="ltr" role="group" aria-label="הלוח. ריבוע 5 מודגש. ה־6 כבר בלוח ב־C5, D3, F9, G1 ו־H7" style="position:absolute;top:198px;left:16px;width:358px;height:358px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:3px;background:#0f1218;border-radius:12px;overflow:hidden;">
+    <sc-for list="{{boxes}}" as="box" hint-placeholder-count="9">
+      <div style="position:relative;z-index:{{box.z}};display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:1px;background:#c8cdd6;box-shadow:{{box.ring}};">
+        <sc-for list="{{box.cells}}" as="cell" hint-placeholder-count="9">
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:{{cell.bg}};color:{{cell.fg}};font-family:Rubik,sans-serif;font-weight:{{cell.fw}};font-size:22px;line-height:1;">
+            {{cell.txt}}
+            <sc-if value="{{cell.chip}}" hint-placeholder-val="{{ false }}">
+              <span style="width:30px;height:30px;border-radius:6px;background:#0f1218;display:flex;align-items:center;justify-content:center;font:600 20px/1 Rubik,sans-serif;color:#f7f8fa;">{{cell.chipTxt}}</span>
+            </sc-if>
+            <sc-if value="{{cell.owned}}" hint-placeholder-val="{{ false }}">
+              <svg aria-hidden="true" width="7" height="7" viewBox="0 0 24 24" style="position:absolute;top:3px;left:3px;"><path d="{{cell.shape}}" fill="{{cell.fg}}"></path></svg>
+            </sc-if>
+            <sc-if value="{{cell.tap}}" hint-placeholder-val="{{ false }}">
+              <button type="button" aria-label="{{cell.aria}}" style="position:absolute;inset:0;margin:0;padding:0;border:0;background:transparent;cursor:pointer;"></button>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- The target: big digit, a thin ring for the level's 20 s, the time so far -->
+  <section aria-label="היעד: ה־6 בריבוע 5" style="position:absolute;top:572px;left:16px;right:16px;height:96px;box-sizing:border-box;padding:0 16px;display:flex;align-items:center;gap:14px;background:#171b24;border:1px solid #2a3140;border-radius:14px;">
+    <div role="img" aria-label="נשארו 16.8 שניות לשלב" style="position:relative;flex:none;width:64px;height:64px;">
+      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true" style="position:absolute;inset:0;">
+        <circle cx="32" cy="32" r="29" fill="none" stroke="#1f2430" stroke-width="3"></circle>
+        <circle cx="32" cy="32" r="29" fill="none" stroke="#36c9f0" stroke-width="3" stroke-linecap="round" stroke-dasharray="182.21" stroke-dashoffset="29.15" transform="rotate(-90 32 32)"></circle>
+      </svg>
+      <span aria-hidden="true" style="position:absolute;top:9px;left:9px;width:46px;height:46px;box-sizing:border-box;border-radius:10px;background:#0f1218;border:1px solid #2a3140;display:flex;align-items:center;justify-content:center;">
+        <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:40px;line-height:.8;padding-top:5px;color:#f7f8fa;">6</span>
+      </span>
+    </div>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">
+      <span style="font:700 16px/19px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">הקש איפה ה־6 חייב להיות</span>
+      <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">בריבוע 5 · בלי מקלדת, רק הקשה</span>
+    </div>
+    <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:28px;line-height:.8;padding-top:4px;font-variant-numeric:tabular-nums;color:#36c9f0;">3.2</span>
+      <span style="font:400 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">ש׳ עד עכשיו</span>
+    </div>
+  </section>
+
+  <!-- Hint (first levels of the type) -->
+  <div style="position:absolute;top:684px;left:16px;right:16px;display:flex;align-items:flex-start;gap:10px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:1px;"><path d="M9 18h6M10 21h4"></path><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"></path></svg>
+    <p style="margin:0;font:400 13px/18px Rubik,sans-serif;color:#9aa3b5;">כל 6 חוסם את השורה ואת העמודה שלו. בריבוע 5 נשארה רק משבצת אחת שאף 6 לא חוסם.</p>
+  </div>
+
+  <!-- The rules of a tap, as chips -->
+  <div style="position:absolute;top:740px;left:16px;right:16px;display:flex;flex-wrap:wrap;gap:8px;">
+    <span style="display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">הקשה שגויה: <bdi dir="ltr">+5</bdi> ש׳</span>
+    <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">שתי הקשות שגויות: השלב נגמר</span>  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Level 8 (a find level in chapter 1 on the Main map; levels 7-9 are one notch harder): 48 givens, the area is
+  // box 5 with 4 empty cells (D4 E4 E5 F4). One find per level, 3.2 s so far (3 stars up to 5 s, 2 up to 10, 1 up to 20).
+  // The 6: rows D (D3) and F (F9) and column 5 (C5) block D4, F4 and E5, so the 6 can only go in E4 (checked).
+  // Board: bank #1 relabelled (1<->3, 4<->9, 5<->7), so the solution is NOT a ranked-bank solution; unique, checked.
+  fixture() {
+    return {
+      GIVEN: '809103204107004003050060891906042085340005910075081006604009307001728640092430108',
+      SOL: '869153274127894563453267891916342785348675912275981436684519327531728649792436158',
+      OWN: {},
+      DIGIT: '6',
+      REGION: 4
+    };
+  }
+
+  boxes() {
+    const F = this.fixture();
+    const ROWS = 'ABCDEFGHI';
+    const P = [
+      { tint: '#d6f4fc', digit: '#0b6a85', shape: 'M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z' },
+      { tint: '#ffe8d4', digit: '#9a4a0c', shape: 'M12 4l8 15H4z' }
+    ];
+    const out = [];
+    for (let bx = 0; bx < 9; bx++) {
+      const area = bx === F.REGION;
+      const cells = [];
+      for (let k = 0; k < 9; k++) {
+        const i = (Math.floor(bx / 3) * 3 + Math.floor(k / 3)) * 9 + (bx % 3) * 3 + (k % 3);
+        const own = F.OWN[i];
+        const owned = own !== undefined;
+        const v = owned ? F.SOL[i] : (F.GIVEN[i] === '0' ? '' : F.GIVEN[i]);
+        const target = !owned && v === F.DIGIT;
+        let bg = area ? '#ffffff' : (bx % 2 ? '#d3d8e0' : '#dce0e7');
+        let fg = area ? '#0f1218' : '#4b5363';
+        let fw = '600';
+        if (owned) { bg = P[own].tint; fg = P[own].digit; fw = '500'; }
+        cells.push({
+          bg: bg, fg: fg, fw: fw,
+          txt: target ? '' : v,
+          chip: target, chipTxt: target ? v : '',
+          owned: owned, shape: owned ? P[own].shape : '',
+          tap: area && v === '',
+          aria: 'משבצת ' + ROWS[Math.floor(i / 9)] + ((i % 9) + 1) + ', ריקה'
+        });
+      }
+      out.push({ cells: cells, ring: area ? '0 0 0 2px #eef1f6' : 'none', z: area ? '1' : '0' });
+    }
+    return out;
+  }
+
+  renderVals() {
+    return { boxes: this.boxes() };
+  }
+}
+</script>
+</body>
+</html>

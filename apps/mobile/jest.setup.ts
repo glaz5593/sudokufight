@@ -18,7 +18,7 @@ jest.mock('expo-sqlite/kv-store', () => {
 jest.mock('expo-updates', () => ({ reloadAsync: jest.fn(() => Promise.resolve()) }));
 
 // The gesture handler's native module doesn't exist under Jest: its own mocks, so screens with gestures (the
-// arsenal's drag) render, and tests can drive them (react-native-gesture-handler/jest-utils).
+// interference picker's swipe-down to close) render, and tests can drive them (react-native-gesture-handler/jest-utils).
 require('react-native-gesture-handler/jestSetup');
 
 // Skia draws natively and its ESM build doesn't load under Jest: the game screen's interference effects draw

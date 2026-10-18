@@ -7,7 +7,19 @@ import {
   type FetchInit,
   isOfflineError,
 } from '../accountApi';
-import { createMeCache, isMe, leagueRating, ME_CACHE_KEY, nextRenameAt, ratingsByType, readMe } from '../me';
+import {
+  createMeCache,
+  isMe,
+  leagueRating,
+  ME_CACHE_KEY,
+  nextRenameAt,
+  type PendingRating,
+  ratingEntryAfter,
+  ratingsByType,
+  readMe,
+  withPendingRatings,
+  withRatingEntry,
+} from '../me';
 import { memoryStorage } from '../../auth/testing/testAuth';
 
 const BASE = 'http://game.test:2567';
@@ -344,5 +356,77 @@ describe('the profile as the app keeps it', () => {
     });
     expect(leagueRating(SAMPLE_ME.ratings)).toBeNull();
     expect(leagueRating(optionA)).toBe(1290);
+  });
+});
+
+describe('a ranked game’s rating before the server stores it (Moshe’s device test of 1.0.0)', () => {
+  const fast = SAMPLE_ME.ratings[0]!;
+
+  it('ratingEntryAfter: the entry as the server stores it after one more game', () => {
+    expect(ratingEntryAfter(fast, 1232, 0, 10)).toEqual({
+      key: 'fast',
+      rating: 1232,
+      games: 1,
+      provisional: true,
+      peak: 1232,
+    });
+    // The 10th game ends the provisional period (games < provisionalGames), whatever K the game used.
+    expect(ratingEntryAfter({ ...fast, games: 9, peak: 1400 }, 1350, 9, 10)).toEqual({
+      key: 'fast',
+      rating: 1350,
+      games: 10,
+      provisional: false,
+      peak: 1400,
+    });
+    // A loss keeps the peak.
+    expect(ratingEntryAfter({ ...fast, rating: 1300, peak: 1310 }, 1285, 3, 10).peak).toBe(1310);
+  });
+
+  it('withRatingEntry replaces the entry of its key only; an unknown key changes nothing', () => {
+    const entry = ratingEntryAfter(fast, 1232, 0, 10);
+    const next = withRatingEntry(SAMPLE_ME, entry);
+    expect(next.ratings.map((r) => [r.key, r.rating, r.games])).toEqual([
+      ['fast', 1232, 1],
+      ['normal', 1200, 0],
+      ['hard', 1200, 0],
+    ]);
+    expect(SAMPLE_ME.ratings[0]!.rating).toBe(1200);
+    expect(withRatingEntry(SAMPLE_ME, { ...entry, key: 'fast-2p' })).toBe(SAMPLE_ME);
+  });
+
+  it('withPendingRatings: shown over an older answer; dropped once stored, expired, or another account’s', () => {
+    const entry = ratingEntryAfter(fast, 1232, 0, 10);
+    const pending = new Map<string, PendingRating>([
+      ['fast', { meId: SAMPLE_ME.id, entry, expiresAt: 5000 }],
+    ]);
+    // The server has not stored the game yet (0 games): the game's rating stays.
+    const older = withPendingRatings(SAMPLE_ME, pending, 1000);
+    expect(older.me.ratings[0]).toEqual(entry);
+    expect(older.me.ratings.slice(1)).toEqual(SAMPLE_ME.ratings.slice(1));
+    expect([...older.pending.keys()]).toEqual(['fast']);
+
+    // Stored (1 game): the server's own entry, and nothing pending.
+    const stored = { ...fast, rating: 1231, games: 1, peak: 1231 };
+    const caughtUp = withPendingRatings(withRatingEntry(SAMPLE_ME, stored), pending, 1000);
+    expect(caughtUp.me.ratings[0]).toEqual(stored);
+    expect(caughtUp.pending.size).toBe(0);
+
+    // Expired: the server's answer wins, even an older one.
+    const expired = withPendingRatings(SAMPLE_ME, pending, 5000);
+    expect(expired.me).toBe(SAMPLE_ME);
+    expect(expired.pending.size).toBe(0);
+
+    // Another account's pending entry is never shown.
+    const other = withPendingRatings({ ...SAMPLE_ME, id: 'user-2' }, pending, 1000);
+    expect(other.me.ratings[0]).toEqual(fast);
+    expect(other.pending.size).toBe(0);
+
+    // A key the server does not list (the rating option changed): dropped, nothing made up.
+    const gone = new Map<string, PendingRating>([
+      ['fast-2p', { meId: SAMPLE_ME.id, entry: { ...entry, key: 'fast-2p' }, expiresAt: 5000 }],
+    ]);
+    const missing = withPendingRatings(SAMPLE_ME, gone, 1000);
+    expect(missing.me).toBe(SAMPLE_ME);
+    expect(missing.pending.size).toBe(0);
   });
 });

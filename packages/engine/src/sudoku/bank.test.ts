@@ -1,5 +1,17 @@
-import { bankSummary, buildBank, checkPuzzle, mergeIntoBank, parsePuzzleCsv, puzzleId } from './bank';
+import {
+  bankSummary,
+  buildBank,
+  checkPuzzle,
+  fitBankGivens,
+  mergeIntoBank,
+  parsePuzzleCsv,
+  type PuzzleRecord,
+  puzzleId,
+} from './bank';
 import { bankRows } from '../testing/fixtures';
+import { filledCount, parseGrid } from './board';
+import { DEFAULT_GIVENS, digitCounts } from './givens';
+import { gradePuzzle } from './grade';
 
 const PUZZLE = '004300209005009001070060043006002087190007400050083000600000105003508690042910300';
 const SOLUTION = '864371259325849761971265843436192587198657432257483916689734125713528694542916378';
@@ -105,5 +117,103 @@ describe('bank file helpers', () => {
       offline: { fast: 3, normal: 0, hard: 0 },
       ranked: { fast: 2, normal: 0, hard: 0 },
     });
+  });
+});
+
+describe('fitBankGivens: the givens range per game type (§5.2, §20) [D43]', () => {
+  const csv = (from: number, to: number): PuzzleRecord[] =>
+    buildBank(bankRows().slice(from, to), 'csv').puzzles;
+
+  it('fills a puzzle short of givens: new givens, id, grade and count, the old id in baseId', () => {
+    const [p] = csv(0, 1);
+    const { puzzles, report } = fitBankGivens([p!]);
+    const q = puzzles[0]!;
+    expect(q.id).toBe(puzzleId(q.givens));
+    expect(q.id).not.toBe(p!.id);
+    expect(q.baseId).toBe(p!.id);
+    expect(q.givensCount).toBe(filledCount(parseGrid(q.givens)));
+    expect(q.givensCount).toBeGreaterThanOrEqual(DEFAULT_GIVENS.fast!.min);
+    expect(q.givensCount).toBeLessThanOrEqual(DEFAULT_GIVENS.fast!.max);
+    const grade = gradePuzzle(parseGrid(q.givens));
+    expect(q).toMatchObject({
+      solution: p!.solution,
+      gameType: 'fast',
+      difficulty: grade.difficulty,
+      techniques: grade.techniques,
+      source: p!.source,
+      pool: p!.pool,
+    });
+    expect(q.difficulty).toBe('fast');
+    // The original givens are all still there.
+    for (let i = 0; i < 81; i++) if (p!.givens[i] !== '0') expect(q.givens[i]).toBe(p!.givens[i]);
+    expect(report.byKey['offline/fast']).toMatchObject({ before: 1, filled: 1, inRange: 0, after: 1 });
+    expect(report.byKey['offline/fast'].givens.min).toBe(q.givensCount);
+    expect(report.dropped).toEqual([]);
+    // A second fit leaves it as it is: the same object, and baseId still points at the first puzzle.
+    const again = fitBankGivens(puzzles);
+    expect(again.puzzles[0]).toBe(q);
+    expect(again.report.byKey['offline/fast']).toMatchObject({ inRange: 1, filled: 0 });
+  });
+
+  it('is deterministic and does not depend on the order or on the other puzzles; refitting changes nothing', () => {
+    const input = csv(0, 8);
+    const a = fitBankGivens(input).puzzles;
+    expect(fitBankGivens(input).puzzles).toEqual(a);
+    const reversed = fitBankGivens([...input].reverse()).puzzles;
+    expect(reversed).toEqual([...a].reverse());
+    expect(fitBankGivens(input.slice(3, 4)).puzzles).toEqual([a[3]]);
+    // Same order as the input.
+    expect(a.map((p) => p.baseId)).toEqual(input.map((p) => p.id));
+    const again = fitBankGivens(a);
+    expect(again.puzzles).toEqual(a);
+    again.puzzles.forEach((p, k) => expect(p).toBe(a[k]));
+    // Another salt, other givens.
+    expect(fitBankGivens(input, { salt: 1 }).puzzles[0]!.givens).not.toBe(a[0]!.givens);
+  });
+
+  it('leaves hard puzzles exactly as they are (Moshe, 2026-10-15)', () => {
+    const [a] = csv(0, 1);
+    const hard: PuzzleRecord = { ...a!, gameType: 'hard', difficulty: 'hard', pool: 'ranked' };
+    const { puzzles, report } = fitBankGivens([hard]);
+    expect(puzzles[0]).toBe(hard);
+    expect(report.byKey['ranked/hard']).toMatchObject({ before: 1, noRange: 1, filled: 0, after: 1 });
+    expect(report.dropped).toEqual([]);
+  });
+
+  it('the first CSV rows: 45–50 givens, fast, every digit shown, one solution', () => {
+    for (const p of fitBankGivens(csv(0, 3)).puzzles) {
+      expect(p.givensCount).toBeGreaterThanOrEqual(45);
+      expect(p.givensCount).toBeLessThanOrEqual(50);
+      expect(p.gameType).toBe('fast');
+      expect(p.difficulty).toBe('fast');
+      expect(digitCounts(parseGrid(p.givens)).every((n) => n > 0)).toBe(true);
+      expect(checkPuzzle(p.givens, p.solution)).toEqual({ ok: true, givens: p.givens, solution: p.solution });
+    }
+  });
+
+  it('leaves out and lists what cannot fit, and drops a puzzle that fits onto one already kept', () => {
+    const [a, b, c] = csv(0, 3);
+    // A fast board filled to 45–50 is too full for "normal" (35–40).
+    const filled = fitBankGivens([b!]).puzzles[0]!;
+    const tooMany = { ...filled, id: b!.id, gameType: 'normal' as const, pool: 'ranked' as const };
+    const { puzzles, report } = fitBankGivens([a!, tooMany, c!, a!]);
+    expect(puzzles.map((p) => p.baseId)).toEqual([a!.id, c!.id]);
+    expect(report.dropped).toEqual([
+      { id: b!.id, pool: 'ranked', gameType: 'normal', reason: 'tooMany' },
+      { id: a!.id, pool: 'offline', gameType: 'fast', reason: 'duplicate' },
+    ]);
+    expect(report.byKey['ranked/normal']).toMatchObject({ before: 1, tooMany: 1, after: 0 });
+    expect(report.byKey['offline/fast']).toMatchObject({ before: 3, filled: 2, duplicates: 1, after: 2 });
+
+    // A grade no fill can keep: one empty cell is always a naked single, never a "normal" board.
+    const lost = fitBankGivens([{ ...a!, gameType: 'normal', difficulty: 'normal' }], {
+      rules: { ...DEFAULT_GIVENS, normal: { min: 80, max: 80 } },
+      attempts: 1,
+    });
+    expect(lost.puzzles).toEqual([]);
+    expect(lost.report.dropped).toEqual([
+      { id: a!.id, pool: 'offline', gameType: 'normal', reason: 'gradeLost' },
+    ]);
+    expect(lost.report.byKey['offline/normal']).toMatchObject({ before: 1, gradeLost: 1, after: 0 });
   });
 });

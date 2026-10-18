@@ -1,3 +1,4 @@
+import { INTERFERENCE_KINDS } from '@sudoku-fight/engine';
 import { MATCH_RANGE, MATCH_TIMEOUT_MS } from '@sudoku-fight/protocol';
 
 import {
@@ -303,6 +304,49 @@ describe('MatchmakingClient: the timeout (spec §10)', () => {
   });
 });
 
+describe('MatchmakingClient: who else is searching (nextRange)', () => {
+  it('mirrors the server: null (nobody else), then a range once someone is there', async () => {
+    const { table, mm, client } = fakeSetup();
+    await client.start();
+    mm.searching({ nextRange: null });
+    expect(client.info.search).toMatchObject({ range: 50, nextRange: null });
+    const startedAt = client.info.search!.startedAt;
+    await elapse(table, 2000, 500);
+    // Someone joined: the same search (its start, its range), now with a next range.
+    mm.searching({ elapsedMs: 2000, nextRange: 75 });
+    expect(client.info.search).toMatchObject({ range: 50, nextRange: 75, startedAt });
+    mm.searching({ elapsedMs: 2500, nextRange: null });
+    expect(client.info.search!.nextRange).toBeNull();
+    client.close();
+  });
+
+  it('an older server says nothing: undefined (unknown), not null', async () => {
+    const { mm, client } = fakeSetup();
+    await client.start();
+    mm.searching({ legacy: true });
+    expect(client.info.search).not.toHaveProperty('nextRange');
+    expect(client.info.search!.nextRange).toBeUndefined();
+    mm.timeout({ legacy: true });
+    expect(client.info.timeout!.nextRange).toBeUndefined();
+    expect(client.info.search!.nextRange).toBeUndefined();
+    client.close();
+  });
+
+  it('the timeout carries it, and "keep searching" keeps it until the next `searching`', async () => {
+    const { mm, client } = fakeSetup();
+    await client.start();
+    mm.searching({ nextRange: 150 });
+    mm.timeout({ nextRange: null });
+    expect(client.info.timeout).toMatchObject({ range: 300, nextRange: null });
+    expect(client.info.search!.nextRange).toBeNull();
+    client.keepSearching();
+    expect(client.info).toMatchObject({ phase: 'searching', search: { extended: true, nextRange: null } });
+    mm.searching({ elapsedMs: 60_000, extended: true, nextRange: 400 });
+    expect(client.info.search!.nextRange).toBe(400);
+    client.close();
+  });
+});
+
 describe('MatchmakingClient: a match that falls through', () => {
   it('requeued: the match room is let go, back to searching at the head of the queue, then a new match', async () => {
     const { mm, client, entries, events } = fakeSetup();
@@ -445,7 +489,15 @@ describe('createMatchmakingConnector: the SDK', () => {
     const connector = createMatchmakingConnector({ sdk: s, token: async () => 'id-token' });
     const like = await connector.join('hard-2p');
     expect(s.auth.token).toBe('id-token');
-    expect(s.joinOrCreate).toHaveBeenCalledWith('matchmaking', { queueKey: 'hard-2p' });
+    // With every interference kind this app can show [D47]: the match allows only what all apps declared.
+    expect(s.joinOrCreate).toHaveBeenCalledWith('matchmaking', {
+      queueKey: 'hard-2p',
+      interferenceKinds: [...INTERFERENCE_KINDS],
+    });
+    expect(s.joinOrCreate.mock.calls[0]![1]).toEqual({
+      queueKey: 'hard-2p',
+      interferenceKinds: ['fireworks', 'cats', 'warp', 'scramble', 'ink', 'keypad'],
+    });
     expect(room.reconnection.enabled).toBe(false);
     const cb = jest.fn();
     like.onMessage('searching', cb);
@@ -481,5 +533,58 @@ describe('createMatchmakingConnector: the SDK', () => {
 describe('the match room code', () => {
   it('is the room the reservation names', () => {
     expect(RESERVATION.roomId).toBe(CODE);
+  });
+});
+
+/** Release builds send the log lines to Crashlytics as breadcrumbs, and what the search survived as non-fatals. */
+describe('MatchmakingClient: diagnostics', () => {
+  function reporting() {
+    const table = new FakeTable();
+    const mm = new FakeMatchmaking(table.clock, table.scheduler);
+    const logs: string[] = [];
+    const reports: { error: unknown; context: string }[] = [];
+    const client = new MatchmakingClient('normal-2p', {
+      connector: mm,
+      clock: table.clock,
+      scheduler: table.scheduler,
+      enter: (m) => new FakeMatchEntry(() => table.clock.now(), m.reservation),
+      log: (line) => logs.push(line),
+      report: (error, context) => reports.push({ error, context }),
+    });
+    return { table, mm, client, logs, reports };
+  }
+
+  it('a listener that throws: reported, and the others still told', async () => {
+    const { mm, client, reports } = reporting();
+    const boom = new Error('a screen failed');
+    const infos: MatchmakingInfo[] = [];
+    client.subscribe(() => {
+      throw boom;
+    });
+    client.subscribe((info) => infos.push(info));
+    await client.start();
+    mm.searching();
+    expect(infos.at(-1)?.phase).toBe('searching');
+    expect(reports).toContainEqual({ error: boom, context: 'listener failed' });
+  });
+
+  it('a message that cannot be handled: reported (with its log line), never thrown', async () => {
+    const { mm, client, reports, logs } = reporting();
+    await client.start();
+    mm.searching();
+    expect(() => mm.room.deliver({ type: 'found', players: null } as never)).not.toThrow();
+    expect(reports).toHaveLength(1);
+    expect(reports[0]!.context).toBe('message failed');
+    expect(logs.some((l) => l.startsWith('message failed: '))).toBe(true);
+  });
+
+  it('the log never names a player (it goes to crash reports): ratings only', async () => {
+    const { mm, client, logs } = reporting();
+    await client.start();
+    mm.searching();
+    mm.found();
+    expect(logs).toContain(`found: vs ${MATCH_PLAYERS[1]!.rating}`);
+    for (const p of MATCH_PLAYERS) expect(logs.join('\n')).not.toContain(p.name);
+    expect(logs.join('\n')).not.toContain(RESERVATION.sessionId);
   });
 });

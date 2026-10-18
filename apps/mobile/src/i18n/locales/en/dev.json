@@ -189,6 +189,7 @@
     "neutral": "Neutral",
     "badges": "Badges and states",
     "online": "Online",
+    "unstable": "No connection (soft phase)",
     "reconnecting": "Reconnecting",
     "left": "Left",
     "bot": "Bot",
@@ -212,7 +213,7 @@
   },
   "cards": {
     "pair": "Card pair in a 2-player game",
-    "pairNote": "Tap ⚡ to open or close the arsenal, and tap reactions to open or close the picker.",
+    "pairNote": "Tap “Interfere” to open or close the interference picker, and tap reactions to open or close the picker.",
     "opponent": "Opponent's card",
     "mine": "My card",
     "states": {
@@ -225,9 +226,8 @@
       "surrendered": "Surrendered",
       "correct": "Correct move",
       "unaffordable": "I am short of points",
-      "expanded": "Arsenal open",
-      "dropTarget": "Drop target",
-      "dropHover": "Finger over the target",
+      "expanded": "Interference picker open",
+      "targeted": "Interference target",
       "dimmed": "Dimmed",
       "bot": "Bot",
       "default": "Default",
@@ -239,12 +239,11 @@
       "selfReconnecting": "I am reconnecting",
       "practice": "Practice against a bot"
     },
-    "dropLabel": "Drop here: fireworks at {{name}}",
     "compact3": "Compact · 3 players",
     "compact4": "Compact · 4 players",
     "compact4Out": "Compact · 4 players, one surrendered",
     "interference": "Interference button",
-    "interferenceNote": "When the opponent disconnects or leaves the game, the button is not shown.",
+    "interferenceNote": "“Interfere” on every opponent's card, with no price on it (the price is in the picker and the accessibility label). When you can't interfere it is dimmed, and a tap says why. When the opponent disconnects or leaves the game, the button is not shown, nor in a practice against a bot.",
     "interferenceStates": {
       "available": "Available",
       "expanded": "Open",
@@ -296,6 +295,7 @@
       "urgent": "My lock, last 3 seconds",
       "paused": "My lock, stopped by an interference",
       "pending": "Waiting for the lock",
+      "queued": "A digit waiting for the connection",
       "oppLock": "An opponent's lock"
     }
   },
@@ -324,17 +324,23 @@
     "sendNote": "Each tap sends the next type. Toasts arrive one after another at the top of the screen."
   },
   "overlays": {
+    "hit": {
+      "caption": "The board during an interference (D46, D47)",
+      "reduce": "Reduced motion, here only",
+      "play": "Play: 5 seconds",
+      "note": "Every interference dims the board to 60%. Pick a kind and play it. Scrambled digits cover the digits, and a scrambled keypad moves the keys. No sound or haptics here."
+    },
     "sheet": {
       "caption": "Sheet (arsenal)",
       "open": "Open the sheet",
       "title": "Interference arsenal",
       "subtitle": "Target: {{name}}",
       "scrim": "Close the arsenal and return to the board",
-      "body": "Each interference lasts 5 seconds · launch by dragging only",
+      "body": "Each interference lasts 5 seconds · two taps: Interfere, then the kind",
       "rowTitle": "Fireworks",
-      "rowSub": "2 pts · drag onto the opponent's card",
-      "lockedTitle": "Cats",
-      "lockedSub": "Unlocks at level 18"
+      "rowSub": "2 pts · a tap launches it at the opponent",
+      "lockedTitle": "Ink",
+      "lockedSub": "Unlocks at level 3"
     },
     "surrender": {
       "caption": "Surrender confirm",
@@ -454,11 +460,13 @@
       "wrong": "Wrong digit · low buzz, no drama",
       "lock_tick": "My lock, last 3 seconds · quiet clock tick",
       "arsenal_open": "Open the arsenal · soft drawer slide",
-      "interfere_whoosh": "Drag a token · whoosh",
       "interfere_launch": "The launch lands · pop or burst",
       "hit_fireworks": "Hit by fireworks · crackle and pops",
       "hit_cats": "Hit by cats · meows",
       "hit_warp": "Hit by warp · warbling wobble",
+      "hit_scramble": "Hit by scrambled digits · slot machine rattle",
+      "hit_ink": "Hit by ink · wet splat",
+      "hit_keypad": "Hit by scrambled keypad · key clicks and a slide",
       "react_laugh": "Reaction 😂 · short chuckle",
       "react_scream": "Reaction 😱 · gasp",
       "react_cool": "Reaction 😎 · finger snap",

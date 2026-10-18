@@ -71,6 +71,16 @@ describe('cell labels (components.md §11.5, work plan §3)', () => {
     expect(cellLabel(cell('D5', { kind: 'pending', player: moshe }), tHe)).toBe(
       'D5, ריקה, ממתינה לאישור הנעילה',
     );
+    // My digit waiting for the connection [D42].
+    expect(cellLabel(cell('D5', { kind: 'queued', digit: 7, player: moshe }), tHe)).toBe(
+      'D5, 7, ממתין לחיבור',
+    );
+    expect(cellLabel(cell('D5', { kind: 'queued', digit: 7, player: moshe, wrong: [2] }), tHe)).toBe(
+      'D5, 7, ממתין לחיבור, ספרות שגויות: 2',
+    );
+    expect(cellLabel(cell('D5', { kind: 'queued', digit: 7, player: moshe }), tEn)).toBe(
+      'D5, 7, waiting for the connection',
+    );
   });
 
   it('reads all the wrong digits, oldest first, even the ones the cell has no room to draw', () => {

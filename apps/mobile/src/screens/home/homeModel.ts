@@ -25,7 +25,7 @@ import { botLevelOf } from '../game/identity';
 // ---------------------------------------------------------------------------------------------------------
 // Game modes (spec §5.1): exactly five options.
 
-export type ModeKey = 'ranked2' | 'ranked3' | 'ranked4' | 'solo' | 'bot';
+export type ModeKey = 'ranked2' | 'ranked3' | 'ranked4' | 'bot' | 'solo';
 export type ModeGroup = 'ranked' | 'practice';
 
 export interface ModeOption {
@@ -36,22 +36,26 @@ export interface ModeOption {
   players: number;
 }
 
-/** In the order of the Modes board: ranked 2 · 3 · 4, then solo practice and practice against a bot. */
+/**
+ * In the order of the screen: ranked 2 · 3 · 4, then practice against a bot and solo practice (Moshe's device
+ * test, 15.10.2026: the bot above solo).
+ */
 export const MODE_OPTIONS: readonly ModeOption[] = [
   { key: 'ranked2', group: 'ranked', mode: 'ranked', players: 2 },
   { key: 'ranked3', group: 'ranked', mode: 'ranked', players: 3 },
   { key: 'ranked4', group: 'ranked', mode: 'ranked', players: 4 },
-  { key: 'solo', group: 'practice', mode: 'solo', players: 1 },
   { key: 'bot', group: 'practice', mode: 'bot', players: 2 },
+  { key: 'solo', group: 'practice', mode: 'solo', players: 1 },
 ];
 
 export const MODE_GROUPS: readonly ModeGroup[] = ['ranked', 'practice'];
 
 /**
  * The options that can be played in this build: all five (ranked 2 players since stage 9, 3 and 4 since stage
- * 10). A setting: an option left out shows "בקרוב" (with its player count out of RANKED_TABLES_OPEN below).
+ * 10), in the screen's order. A setting: an option left out shows "בקרוב" (with its player count out of
+ * RANKED_TABLES_OPEN below).
  */
-export const AVAILABLE_MODES: readonly ModeKey[] = ['ranked2', 'ranked3', 'ranked4', 'solo', 'bot'];
+export const AVAILABLE_MODES: readonly ModeKey[] = ['ranked2', 'ranked3', 'ranked4', 'bot', 'solo'];
 
 export const isAvailable = (key: ModeKey): boolean => AVAILABLE_MODES.includes(key);
 

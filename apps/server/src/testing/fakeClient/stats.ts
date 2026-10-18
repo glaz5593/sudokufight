@@ -75,6 +75,7 @@ export function answers(action: ClientAction, e: GameEvent, me: PlayerId): boole
     case 'release':
       return e.type === 'cellReleased' && e.playerId === me && e.reason === 'cancel';
     case 'place':
+    case 'offlineMove': // made offline [D42]: answered the same way (after its cellLocked, if any)
       return (
         (e.type === 'placedCorrect' || e.type === 'placedWrong') &&
         e.playerId === me &&

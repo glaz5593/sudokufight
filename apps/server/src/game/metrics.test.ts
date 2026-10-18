@@ -1,4 +1,4 @@
-import { GameMetrics, LatencyStats } from './metrics';
+import { ConnectionStats, GameMetrics, LatencyStats } from './metrics';
 
 describe('LatencyStats', () => {
   it('gives nearest-rank percentiles and the max', () => {
@@ -42,6 +42,53 @@ describe('GameMetrics', () => {
       pings: 1,
       dropped: { unknownType: 0, malformed: 0, rateLimited: 1, duplicate: 1 },
       kicks: 1,
+      connections: { soft: 0, backInSoft: 0, hard: 0, backHard: 0 },
+      offlineMoves: { applied: 0, lost: {} },
     });
+  });
+
+  it('counts lost connections, returns and moves made offline [D42]', () => {
+    const m = new GameMetrics();
+    m.connection('soft');
+    m.connection('soft');
+    m.connection('backInSoft');
+    m.connection('hard'); // the second one's soft phase ran out
+    m.connection('backHard');
+    m.connection('hard'); // a deliberate leave
+    m.offlineMove();
+    m.offlineMove();
+    m.offlineMove('cellTaken');
+    m.offlineMove('cellTaken');
+    m.offlineMove('offlineClosed');
+    const report = m.report();
+    expect(report.connections).toEqual({ soft: 2, backInSoft: 1, hard: 2, backHard: 1 });
+    expect(report.offlineMoves).toEqual({ applied: 2, lost: { cellTaken: 2, offlineClosed: 1 } });
+    // A copy: the report does not move on with the counts.
+    m.offlineMove('digitTried');
+    expect(report.offlineMoves.lost).toEqual({ cellTaken: 2, offlineClosed: 1 });
+  });
+});
+
+describe('ConnectionStats (one game: its summary line)', () => {
+  it('says nothing when nobody lost the connection and no move was made offline', () => {
+    expect(new ConnectionStats().summary()).toBe('');
+  });
+
+  it('sums up the connections and the moves made offline, with the reasons for the lost ones', () => {
+    const s = new ConnectionStats();
+    s.connection('soft');
+    s.connection('backInSoft');
+    s.connection('soft');
+    s.connection('hard');
+    expect(s.summary()).toBe('lost connections 2 (back in the soft phase 1), hard disconnects 1 (back 0)');
+    s.offlineMove();
+    s.offlineMove('cellTaken');
+    s.offlineMove('cellFilled');
+    expect(s.summary()).toBe(
+      'lost connections 2 (back in the soft phase 1), hard disconnects 1 (back 0); ' +
+        'offline moves 1 applied, 2 lost (cellTaken 1, cellFilled 1)',
+    );
+    expect(s.connections).toEqual({ soft: 2, backInSoft: 1, hard: 1, backHard: 0 });
+    expect(s.offlineMoves).toEqual({ applied: 1, lost: { cellTaken: 1, cellFilled: 1 } });
   });
 });

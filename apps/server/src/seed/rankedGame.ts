@@ -7,7 +7,6 @@ import {
   type GameConfig,
   type GameEvent,
   type GameState,
-  INTERFERENCE_KINDS,
   REACTIONS,
   type RejectReason,
   type Rng,
@@ -93,13 +92,15 @@ export function playRankedGame(rng: Rng, config: GameConfig, start: number): Pla
     if (bot.cell === null) {
       if (chance(rng, 0.02)) act({ type: 'react', playerId: bot.id, emoji: pick(rng, REACTIONS) }, t);
       const others = bots.filter((b) => b !== bot && inGame(b));
-      if (others.length > 0 && chance(rng, 0.03)) {
+      // Only the kinds the game allows [D47] (all of them under the default rules).
+      const kinds = state.config.rules.interferenceKinds;
+      if (others.length > 0 && kinds.length > 0 && chance(rng, 0.03)) {
         act(
           {
             type: 'interfere',
             playerId: bot.id,
             targetId: pick(rng, others).id,
-            kind: pick(rng, INTERFERENCE_KINDS),
+            kind: pick(rng, kinds),
           },
           t,
         );

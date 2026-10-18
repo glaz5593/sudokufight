@@ -80,7 +80,13 @@
       "label": "Rating change: {{delta}}, from {{before}} to {{after}}",
       "provisional": "Provisional rating: changes count double in your first 10 games",
       "perOpponent": "Counted against each opponent separately",
-      "pairLabel": "vs {{name}}: {{delta}}"
+      "pairLabel": "vs {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "vs {{name}}: no rating lost, you left before your first move",
+        "leftNotBehind": "vs {{name}}: no rating lost, you weren't behind when you left",
+        "opponentLeftBeforeMyMove": "vs {{name}}: no rating gained, they left before your first move",
+        "opponentLeftAhead": "vs {{name}}: no rating gained, you were behind when they left"
+      }
     },
     "ratingOf": "{{before}} → {{after}}",
     "opponentLabel": "{{name}} · {{score}} points · {{mistakes}} · rating {{delta}}",

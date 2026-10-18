@@ -1,4 +1,9 @@
-import { ManualClock, ManualScheduler } from '@sudoku-fight/engine';
+import {
+  INTERFERENCE_KINDS,
+  LEGACY_INTERFERENCE_KINDS,
+  ManualClock,
+  ManualScheduler,
+} from '@sudoku-fight/engine';
 import type { MatchmakingServerMessage, MatchSeatReservation } from '@sudoku-fight/protocol';
 
 import { quietLog } from '../testing';
@@ -139,11 +144,14 @@ function setup({
     config: { ...DEFAULT_MATCHMAKING, ...config },
   });
   const sessions = new Map<string, FakeSession>();
-  /** A player joins the queue on a connection of their own. */
-  const join = async (userId: string, queueKey: unknown = 'fast-2p') => {
+  /**
+   * A player joins the queue on a connection of their own. `kinds`: the join option `interferenceKinds`
+   * (absent, as app 1.0.0, when not given) [D47].
+   */
+  const join = async (userId: string, queueKey: unknown = 'fast-2p', kinds?: unknown) => {
     const session = new FakeSession(`s-${userId}-${sessions.size}`, (id) => service.left(id));
     sessions.set(userId, session);
-    await service.enqueue(session, { userId, name: userId }, queueKey);
+    await service.enqueue(session, { userId, name: userId }, queueKey, kinds);
     return session;
   };
   /** Moves time on and lets the rooms' promises settle. */
@@ -168,6 +176,8 @@ describe('searching', () => {
         extended: false,
         timeoutAt: T0 + 60 * S,
         serverTime: T0,
+        // Nobody else in the queue (matcher.ts rule 7).
+        nextRange: null,
       },
     ]);
     await advance(4500);
@@ -252,6 +262,7 @@ describe('timeout (spec §10)', () => {
       range: 300,
       extended: false,
       keepSearchingUntil: T0 + 120 * S,
+      nextRange: null,
     });
     expect(ana.closed).toBe(false);
     expect(service.queued('fast-2p')).toEqual([]);
@@ -424,6 +435,99 @@ describe('a match', () => {
   });
 });
 
+describe('the interference kinds of a match [D47]: only what every app can show', () => {
+  const ALL = [...INTERFERENCE_KINDS];
+  const LEGACY = [...LEGACY_INTERFERENCE_KINDS];
+
+  /** Two players declare these kinds and are matched; returns the match room's rules. */
+  async function matched(a: unknown, b: unknown, config: Partial<MatchmakingConfig> = {}) {
+    const t = setup({ config });
+    await t.join('ana', 'fast-2p', a);
+    await t.join('ben', 'fast-2p', b);
+    await t.advance(500);
+    expect(t.rooms).toHaveLength(1);
+    return t.rooms[0]!.link.setup.rules;
+  }
+
+  it('two new apps: all six kinds', async () => {
+    expect((await matched(ALL, ALL)).interferenceKinds).toEqual(ALL);
+  });
+
+  it('a new app and app 1.0.0 (no field): the legacy three, for both', async () => {
+    expect((await matched(ALL, undefined)).interferenceKinds).toEqual(LEGACY);
+    expect((await matched(undefined, ALL)).interferenceKinds).toEqual(LEGACY);
+    expect((await matched(undefined, undefined)).interferenceKinds).toEqual(LEGACY);
+  });
+
+  it('a malformed declaration counts as none (never a refusal): the legacy three', async () => {
+    const tooMany = Array.from({ length: 17 }, () => 'cats');
+    for (const bad of [
+      'cats',
+      42,
+      { cats: true },
+      [7],
+      tooMany,
+      ['x'.repeat(33)],
+      ALL.concat([null as never]),
+    ])
+      expect((await matched(ALL, bad)).interferenceKinds).toEqual(LEGACY);
+  });
+
+  it('unknown kinds in a declaration are ignored; the order is the engine’s', async () => {
+    const newer = ['fog', ...ALL].reverse();
+    expect((await matched(newer, ALL)).interferenceKinds).toEqual(ALL);
+    expect((await matched(['keypad', 'fog', ...LEGACY], ALL)).interferenceKinds).toEqual([
+      ...LEGACY,
+      'keypad',
+    ]);
+  });
+
+  it('a declaration without the legacy three (a tampered client) still gets them: it can’t switch interferences off [D44]', async () => {
+    for (const lie of [[], ['x'], ['fog', 'dragons']])
+      expect((await matched(ALL, lie)).interferenceKinds).toEqual(LEGACY);
+    // 3–4 players: the honest players keep them too.
+    const t = setup();
+    await t.join('ana', 'fast-3p', ALL);
+    await t.join('ben', 'fast-3p', []);
+    await t.join('cal', 'fast-3p', ALL);
+    await t.advance(500);
+    expect(t.rooms[0]!.link.setup.rules.interferenceKinds).toEqual(LEGACY);
+    // Only new kinds need every app's word.
+    expect((await matched(['keypad'], ALL)).interferenceKinds).toEqual([...LEGACY, 'keypad']);
+  });
+
+  it('within the configured kinds (development overrides), with the other overrides kept', async () => {
+    const rules = await matched(ALL, ALL, {
+      gameRules: { graceMs: 500, interferenceKinds: ['ink', 'cats'] },
+    });
+    expect(rules).toEqual({ graceMs: 500, interferenceKinds: ['ink', 'cats'] });
+    const legacy = await matched(ALL, undefined, { gameRules: { interferenceKinds: ['ink', 'cats'] } });
+    expect(legacy.interferenceKinds).toEqual(['cats']);
+  });
+
+  it('3–4 players: one old app keeps the whole table on the legacy three', async () => {
+    const t = setup();
+    await t.join('ana', 'fast-3p', ALL);
+    await t.join('ben', 'fast-3p', ALL);
+    await t.join('cal', 'fast-3p');
+    await t.advance(500);
+    expect(t.rooms[0]!.link.setup.rules.interferenceKinds).toEqual(LEGACY);
+  });
+
+  it('a player put back in the queue after a no-show keeps the kinds he declared', async () => {
+    const t = setup();
+    const ana = await t.join('ana', 'fast-2p', ALL);
+    await t.join('ben', 'fast-2p', ALL);
+    await t.advance(500);
+    t.rooms[0]!.link.join('ana'); // ben never comes
+    await t.advance(10 * S);
+    expect(ana.last('matchCancelled')).toMatchObject({ requeued: true, missing: ['ben'] });
+    await t.join('cyd', 'fast-2p', ALL);
+    await t.advance(500);
+    expect(t.rooms[1]!.link.setup.rules.interferenceKinds).toEqual(ALL);
+  });
+});
+
 describe('the ready check (spec §10, D37)', () => {
   it('a no-show: the match is off, the room closes, the others go back to the head of the queue', async () => {
     const t = setup({ players: { dan: { rating: 1600 } } });
@@ -450,7 +554,13 @@ describe('the ready check (spec §10, D37)', () => {
     expect(room.calls).toEqual(['cancel']);
     expect(ana.last('matchCancelled')).toMatchObject({ requeued: true, missing: ['ben'] });
     // The time since the match (10.5 s) doesn't count as searching: ana had searched 1 s.
-    expect(ana.last('searching')).toMatchObject({ requeued: true, elapsedMs: 1000, range: 50 });
+    // Dan is 400 away (beyond ±300): nobody ana could meet now.
+    expect(ana.last('searching')).toMatchObject({
+      requeued: true,
+      elapsedMs: 1000,
+      range: 50,
+      nextRange: null,
+    });
     // Head of the queue, before dan who has waited longer; her original order of service kept.
     const queue = t.service.queued('fast-2p');
     expect(queue.map((x) => x.userId)).toEqual(['ana', 'dan']);
@@ -663,5 +773,115 @@ describe('blocks (spec §3.5)', () => {
     await t.advance(500);
     expect(dan.last('found').players.map((p) => p.id)).toEqual(['ana', 'cyd', 'dan']);
     expect(t.service.queued('fast-3p').map((x) => x.userId)).toEqual(['ben']);
+  });
+});
+
+describe('who else is searching: `nextRange` (matcher.ts rule 7)', () => {
+  it('alone: null at once, and no more messages while nothing changes', async () => {
+    const { join, advance } = setup();
+    const ana = await join('ana');
+    expect(ana.last('searching').nextRange).toBeNull();
+    await advance(4500);
+    expect(ana.sent).toHaveLength(1);
+  });
+
+  it('someone in another queue does not count; someone in this one does, within a round, and leaving says so too', async () => {
+    const { join, advance, service } = setup({ players: { cyd: { rating: 1500 } } });
+    const ana = await join('ana');
+    await join('bob', 'hard-2p');
+    await join('dan', 'fast-3p');
+    await advance(1000);
+    expect(ana.sent).toHaveLength(1);
+
+    const cyd = await join('cyd'); // 300 away: in reach, not in range yet
+    expect(cyd.last('searching')).toMatchObject({ range: 50, nextRange: 300 });
+    await advance(500);
+    expect(ana.of('searching')).toHaveLength(2);
+    expect(ana.last('searching')).toMatchObject({ range: 50, nextRange: 300, serverTime: T0 + 1500 });
+
+    service.cancel(cyd.id);
+    await advance(500);
+    expect(ana.of('searching')).toHaveLength(3);
+    expect(ana.last('searching')).toMatchObject({ range: 50, nextRange: null, serverTime: T0 + 2000 });
+    // The range widens as always meanwhile (D6), and says "nobody" each time.
+    await advance(3000);
+    expect(ana.last('searching')).toMatchObject({ range: 75, nextRange: null });
+  });
+
+  it('two players who blocked each other are both told nobody is there (the block is not revealed)', async () => {
+    const t = setup({ blocks: { ana: ['ben'], ben: ['ana'] } });
+    const ana = await t.join('ana');
+    const ben = await t.join('ben');
+    await t.advance(2000);
+    for (const s of [ana, ben]) expect(s.of('searching').map((m) => m.nextRange)).toEqual([null]);
+  });
+
+  it('a table of 3: one other is not enough (null); the third makes the match', async () => {
+    const t = setup();
+    const ana = await t.join('ana', 'fast-3p');
+    const ben = await t.join('ben', 'fast-3p');
+    await t.advance(1000);
+    expect(ana.last('searching').nextRange).toBeNull();
+    expect(ben.last('searching').nextRange).toBeNull();
+    const cyd = await t.join('cyd', 'fast-3p');
+    expect(cyd.last('searching').nextRange).toBe(50);
+    await t.advance(500);
+    expect(ana.last('found').players.map((p) => p.id)).toEqual(['ana', 'ben', 'cyd']);
+  });
+
+  it('`timeout` says it too: null alone, the next range when someone is there', async () => {
+    const lonely = setup();
+    const ana = await lonely.join('ana');
+    await lonely.advance(60 * S);
+    expect(ana.last('timeout').nextRange).toBeNull();
+
+    const late = setup({ players: { ben: { rating: 1500 } } });
+    const ana2 = await late.join('ana');
+    await late.advance(55 * S);
+    await late.join('ben'); // 300 away: ana is at ±300, ben at ±50
+    await late.advance(5 * S);
+    expect(ana2.last('timeout')).toMatchObject({ range: 300, nextRange: 300 });
+  });
+
+  it('"keep searching" alone: still null; back from a no-show: the next range among who is there', async () => {
+    const t = setup();
+    const ana = await t.join('ana');
+    await t.advance(60 * S);
+    t.service.keepSearching(ana.id);
+    expect(ana.last('searching')).toMatchObject({ extended: true, nextRange: null });
+
+    const u = setup();
+    const cy = await u.join('cy');
+    const dee = await u.join('dee');
+    await u.advance(500);
+    u.rooms[0]!.link.join('cy');
+    await u.advance(DEFAULT_MATCHMAKING.readyTimeoutMs);
+    expect(dee.last('matchCancelled').requeued).toBe(false);
+    expect(cy.last('searching')).toMatchObject({ requeued: true, nextRange: null });
+  });
+
+  it('a match that falls through for everyone: each one is back with the others counted (no "nobody" flash)', async () => {
+    const t = setup({ failOpen: true });
+    const ana = await t.join('ana');
+    const ben = await t.join('ben');
+    await t.advance(500);
+    for (const s of [ana, ben]) {
+      expect(s.last('matchCancelled')).toMatchObject({ reason: 'error', requeued: true });
+      expect(s.last('searching')).toMatchObject({ requeued: true, nextRange: 50 });
+    }
+  });
+
+  it('no `searching` after `found`', async () => {
+    const t = setup();
+    const ana = await t.join('ana');
+    t.clock.advance(2 * S);
+    const ben = await t.join('ben');
+    expect(ana.sent).toHaveLength(1); // ben is told at once; ana would learn at the next round
+    expect(ben.last('searching').nextRange).toBe(50);
+    await t.advance(500);
+    expect(ana.types).toEqual(['searching', 'found']);
+    expect(ben.types).toEqual(['searching', 'found']);
+    await t.advance(5 * S);
+    expect(ana.types).toEqual(['searching', 'found']);
   });
 });

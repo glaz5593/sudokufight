@@ -1,6 +1,7 @@
-import { parseCellName } from '@sudoku-fight/engine';
+import { missedPoints, parseCellName } from '@sudoku-fight/engine';
 
 import { boardModel } from '../../board';
+import { demoAnswer } from '../../board/demo';
 import { cardModel, cardModels, leadModel, lockModel } from '../../player';
 import {
   AIKO,
@@ -62,9 +63,12 @@ describe('design-system fixtures', () => {
   it('scores move as the engine scores them', () => {
     expect(s.correctDelta).toBeGreaterThan(0);
     expect(card(s.correct, NINA).score).toBe(card(s.locking, NINA).score + s.correctDelta);
-    // My second mistake costs 2 (1, 2, 4 …).
-    expect(s.wrongDelta).toBe(-2);
+    // My second mistake costs what F8's right digit would have scored there (§6.5).
+    const f8 = parseCellName('F8');
+    expect(s.wrongDelta).toBe(-missedPoints(s.wrong.view.grid, f8, demoAnswer('F8')).points);
+    expect(s.wrongDelta).toBeLessThan(-1);
     expect(card(s.wrong, ME).mistakes).toBe(2);
+    expect(s.wrong.view.players[0]!.mistakePenalties).toHaveLength(2);
     expect(scoreChange(s.locking.view, s.hit.view, ME)).toBe(-2);
   });
 

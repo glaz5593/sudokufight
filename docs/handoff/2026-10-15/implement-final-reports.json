@@ -1,0 +1,823 @@
+[
+  {
+    "label": "canvas:review+publish",
+    "result": "Both publishes succeeded. The canvas now holds all 12 artboards and `canvas.json`.\n\n**Publishing**\n- My first try at call (a) was refused: \"You haven't viewed the latest version of this artifact, so nothing was published. Re-read it…\". I read the artifact; the canvas still had none of its own files. Then I sent the same call again.\n- (a) canvas.json + Main: \"Updated the Artifact at https://claude.ai/artifact/AMPft1sb9u3LaVsmvJCL6N (Version 6, version id 1792252696-7915) … Its own files now: project/Main.dc.html, project/canvas.json\".\n- (b) Modes + the other 10 artboards: \"Updated the Artifact … (Version 7, version id 1792252709-6315) … Its own files now: Idea-1/2/3, Level-Result, Lv-Box, Lv-Find, Lv-Race, Lv-Sprint, Main, Map-Gate, Modes, Plan .dc.html, canvas.json\". Nothing outside `project/` was sent. The canvas is private.\n\n**What I fixed** (all in `C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/handoff/2026-10-15/staged-practice/project/`)\n- **Lv-Find:**\n  - Changed to level 8. Level 7 is a \"fill the box\" level on the map.\n  - Its board's solution was puzzle #1 of the ranked bank, which the plan rules out. I swapped the digits 1↔3, 4↔9, 5↔7. All positions, the 6 and the 2 stay the same, and the board still has one solution.\n- **Lv-Race:** changed to level 14, the current race level that the map's button opens. The subtitle is now \"מרוץ מול הבוט · 5 סבבים · פרק 2\".\n- **Lv-Box:** changed to level 13, because 14 is a race level on the map.\n- **Map-Gate:** follows plan §4.5 now.\n  - It shows up to 3 levels to replay instead of 6, each a full row with \"שחק\".\n  - The main button is \"שחק את שלב 19\" (level 19, 0 stars, is the first to replay).\n  - The text says \"צריך 20 כוכבים בפרק 2\".\n- **Main:**\n  - The current level's button reads \"המשך · שלב 14\", as in the plan.\n  - A locked level's screen-reader label now says why it is locked (closed chapter, or play level 14 first).\n- **Idea-3:**\n  - `width:{{cat.w}}px` breaks the hole-only rule, so it is now `{{cat.wpx}}`.\n  - The calm variant's clock was 0:44 and didn't match the cats' timing. It is now 0:46: the cats come at 0:43, and at 0:41 three of their five seconds are left.\n- **Idea-1 / Idea-2:** the red digit on a wrong-tap flash is now bold (700). It has only 3.1–3.25:1 contrast, which is enough only for bold large text. Idea-2's label for −6 now has an LRM.\n- **Plan page:**\n  - A rule with one star was read as \"1 כוכבים\"; it now reads \"כוכב אחד\".\n  - The page height is now 11,000 in both `$preview` (was 10,500) and the Plan entry in `canvas.json` (was 3,200). This is an estimate; I didn't render it.\n\n**What I checked by script:**\n- **Boards:** all 8 boards are valid sudoku, with exactly one solution, and none is a ranked-bank solution. Every claimed single and spot, owned digit, wrong mark, keypad count and score matches. That includes the duel at 21 vs 14 and Idea-2's 6.5, 5.5 and 6.\n- **File format:** all 12 files pass every format rule in the task.\n\n**Hebrew summary for Moshe:**\n- 300 שלבים ב־30 פרקים של 10. השלב העשירי בכל פרק הוא שלב בוס של 2–3 חלקים.\n- סוג 1, \"איפה הספרה\": מקישים על המקום. ★★★ עד 5 ש׳ לסבב, ★★ עד 10, ★ עד 15, והסבב נגמר ב־20 ש׳. יש 3–5 סבבים, והכוכבים לפי הזמן הכולל.\n- סוג 2, \"מרוץ מול הבוט\": ★★★ ב־4–5 מקומות מתוך 5, ★★ ב־3, ★ ב־2, ו־0 ב־0–1.\n- סוג 3, \"מלא את הריבוע\": ★★★ עד זמן היעד T, ★★ עד 2T, ★ עד 3T. ה־T הוא 45–63 ש׳.\n- סוג 4, \"דו־קרב ל־30\": ★★★ בפער של 15 ומעלה, ★★ בפער של 8 ומעלה, ★ בניצחון, ו־0 אם הבוט הגיע ראשון.\n- רעיונות נוספים שנבחרו: \"מצא את הטעות\" (מפרק 4), \"צייד הנקודות\" (מפרק 7) ו\"סערת הפרעות\" (מפרק 9). עוד חמישה רעיונות נשמרו לגרסה מאוחרת.\n- נעילות: שלב נפתח אחרי ששיחקת את הקודם, בכל תוצאה. פרק נפתח רק עם 20 מתוך 30 כוכבים בפרק שלפניו.\n- קושי: הלוח מתרוקן מ־50 ספרות ל־22, הבוט מתחזק מ־Pip עד Maestro (ובבוס: Overlord), והפרעות מתחילות מפרק 8. ★★★ בפרקים 26–30 רק לשחקנים מעולים.\n- תגמול: ‏10 XP לכל כוכב חדש ו־50 XP לכל פרק שנפתח. אין השפעה על הדירוג ואין טבלת מובילים. הכל עובד בלי אינטרנט.\n- שאלות פתוחות: יש 21. העיקריות, עם ההמלצה:\n  - שורה שישית במסך \"משחק חדש\": סותר את \"חמש אפשרויות בלבד\" במקור, ולכן צריך אישור מפורש. ההמלצה: כן.\n  - סוג 1 בין 15 ל־20 ש׳: ההמלצה 0 כוכבים. החלופה: ★ עד 20.\n  - השער: 20 בפרק הקודם, לא מצטבר.\n  - יציאה מהשלב באישור נחשבת \"שוחק\".\n  - סנכרון לחשבון כבר בגרסה הראשונה.\n  - בלי רמזים ובלי \"חיים\"."
+  },
+  {
+    "label": "grace:engine+protocol",
+    "result": {
+      "item": "grace:engine+protocol (D42 soft phase, sections 0–2 of grace.json) + retire snapshot at the first loss event",
+      "done": true,
+      "summary": "The engine and protocol parts of Moshe's soft phase (D42) are built and tested. The leave-guard snapshot is now taken at the first loss event.\n\nWhat a drop does now:\n- A dropped connection gets a 10 s soft phase. The player is only marked; nothing freezes, nothing is released, and every timer keeps running.\n- If he is not back by then, today's hard phase starts at softEndsAt: 15 s of grace, then a freeze (2 players) or a release (3–4 players). Abandonment is therefore 25 s after the drop.\n- After any return he may send up to 8 moves made offline (`offlineMove`) within 5 s. Each is decided on the board as it is when it arrives. If the cell is taken, filled, the digit was tried, or all nine of it are placed, the move is refused with no trace and no penalty.\n\nENGINE (packages/engine)\n- rules.ts: four new rules with defaults: softGraceMs 10000, offlineMovesMax 8, offlineMovesWindowMs 5000, interfereSoftOffline false. The header names D42. Older configs that lack them read as off, so old logs replay unchanged.\n- types.ts:\n  - PlayerState gets optional `softEndsAt?` and `offlineWindow?: {until, left}`.\n  - The disconnect action gets `soft?`.\n  - New PlayerAction `offlineMove {cell, digit, thinkMs}`, new RejectReason 'offlineClosed', and a new event `playerConnectionLost {playerId, softEndsAt}`.\n  - placedCorrect and placedWrong get an optional `offline?: true`.\n- engine.ts:\n  - disconnect(soft) and a goHard() extracted from today's code.\n  - A new 'softEnd' timer that also runs while the game is paused. DUE_ORDER is now interferenceEnd 0, grace 1, softEnd 2, lockExpire 3, turnExpire 4.\n  - reconnect accepts a soft player. A soft player's own actions are refused 'disconnected'.\n  - Interference at a soft target is refused 'targetDisconnected' unless the rule allows it. The 'turns' rotation skips soft players.\n  - `place` now goes through placeDigit; the new helpers are digitTried and lockCell.\n  - The `offlineMove` handler does every check before the first event. It locks the cell if needed (releasing his other lock as 'switch'), ignores his own re-lock wait, clamps thinkMs to [0, thinkTimeMs] (NaN counts as thinkTimeMs), and marks the move `offline: true`.\n  - New export abandonmentAt(state, id).\n- evolve.ts:\n  - playerConnectionLost sets softEndsAt and takes the leave-guard snapshot with `??`, so the first loss wins and the hard phase keeps it.\n  - playerDisconnected clears the soft fields.\n  - playerReconnected deletes leaveStandings and softEndsAt, and opens the window only when softGraceMs > 0 and offlineMovesMax > 0.\n  - Each offline move takes one off the window, which closes after its last move.\n  - Surrender, abandonment and gameOver clear both fields. A window whose time has passed is dropped at the next event.\n  - New export isSoftOffline(p).\n- view.ts:\n  - PlayerView.softEndsAt is `number|null`.\n  - A soft target is blocked as 'disconnected'.\n  - While I am soft, every target that could otherwise be hit (or lacks only the points) shows 'notRunning'.\n- New offline.ts, exported from the game index:\n  - Types OfflineMove, LocalLock and OfflinePlay.\n  - offlinePlayable, withOfflinePlay (the overlay the offline phone draws), offlineSelectRefusal, offlinePlaceRefusal and unsettledOfflineMoves.\n- testing/game.ts: new driver helpers disconnect(id, {soft, at}), reconnect(id, at) and offlineMove(id, cell, {digit, thinkMs, at}).\n- Bot brain canInterfere/canReact and the runner treat a soft player like a disconnected one, as the engine does.\n\nPROTOCOL\n- CLIENT_MESSAGE_TYPES gets 'offlineMove'.\n- The docs for GameHost, ClientMessage and PROTOCOL_VERSION are updated: the change is additive, and the version stays 1.\n- GameRoomRuleOverrides gets 'softGraceMs'.\n\nTESTS\n- New softDisconnect.test.ts (39 tests) and offline.test.ts (8 tests).\n- flow.test: playLongGame now includes a soft drop, a return and an offline move, and ALL_EVENT_TYPES includes playerConnectionLost.\n- protocol index.test: the new message list, an offlineMove message, and a client-mirror test for the soft phase and an offline move.\n\nDOCS\n- 01-SPEC:\n  - §16.2 rewritten with Moshe's quote and the full rule. It notes that the original's \"Reconnecting... 15\" keeps its 15 but now comes after the soft phase.\n  - §6.2 has a new item 9.\n  - §11.2: an abandonment is judged at the first loss.\n  - §18: an offlineMove row, a playerConnectionLost row, `offline` on placed*, an offline-play and versioning note, and a note on the snapshot size.\n  - §21: the think time of an offline move is clamped.\n  - §24: a new D42 row ✓ (Moshe 2026-10-15), and the D4 row now mentions the soft phase.\n- DECISIONS-PENDING: a note in 2.11, a new item 2.17 with sub-decisions א–יב as ☐ (the section-2 count is now 17), and a note in 3.3.\n- 00-original-spec-v1.md is untouched.",
+      "filesChanged": [
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/rules.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/types.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/engine.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/evolve.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/view.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/offline.ts (new)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/index.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/softDisconnect.test.ts (new)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/offline.test.ts (new)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/flow.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/testing/game.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/bot/brain.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/bot/runner.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/index.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/room.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/protocol/src/index.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/gate.ts (compile fix)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/gate.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/wire.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/testing/fakeClient/stats.ts (compile fix)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/testing/fakeClient/stats.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/gameRoom.abuse.test.ts (compile fix)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/metrics.ts (compile fix)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/__tests__/metrics.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/__fixtures__/gameView.ts (compile fix: softEndsAt null)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/avatars/__tests__/reactions.test.ts (compile fix: softEndsAt null)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/DECISIONS-PENDING.md"
+      ],
+      "checks": [
+        {
+          "cmd": "npx jest --selectProjects engine protocol (baseline before changes)",
+          "result": "32 suites, 949 tests passed"
+        },
+        {
+          "cmd": "npx jest --selectProjects engine protocol (after)",
+          "result": "34 suites, 998 tests passed (incl. new softDisconnect.test.ts 39 and offline.test.ts 8)"
+        },
+        {
+          "cmd": "npx jest --selectProjects server (full)",
+          "result": "77 suites, 1111 tests passed. The wire.test change was in this run; the gate.test and stats.test additions were run separately afterwards: 2 suites, 39 tests passed"
+        },
+        {
+          "cmd": "npx jest apps/server/src/game/gate.test.ts apps/server/src/game/wire.test.ts",
+          "result": "2 suites, 31 tests passed"
+        },
+        {
+          "cmd": "npx jest --selectProjects mobile (full)",
+          "result": "236 suites, 2901 tests passed (the metrics.test addition was run separately afterwards and passed)"
+        },
+        {
+          "cmd": "npx tsc -b",
+          "result": "clean"
+        },
+        {
+          "cmd": "npx tsc --noEmit -p apps/mobile/tsconfig.json",
+          "result": "clean"
+        },
+        {
+          "cmd": "npm run typecheck -w @sudoku-fight/engine",
+          "result": "clean (src, tests, scripts)"
+        },
+        {
+          "cmd": "npx eslint --max-warnings 0 <all changed ts files>",
+          "result": "clean (after collapsing a commented case fallthrough in stats.ts and metrics.ts)"
+        },
+        {
+          "cmd": "npx prettier --check <all changed code files>",
+          "result": "All matched files use Prettier code style"
+        },
+        {
+          "cmd": "npm run i18n:check",
+          "result": "0 errors, 0 warnings (no strings changed)"
+        },
+        {
+          "cmd": "temporary measurement of the wire.test 4-player snapshot (file removed afterwards)",
+          "result": "3989 B without D42; 4067 B with the four new rules (+78); 4105 B with ben's open offline window (+38)"
+        },
+        {
+          "cmd": "git ls-files --eol on the edited docs; file on the new .ts files",
+          "result": "all LF"
+        },
+        {
+          "cmd": "powershell (Get-PSDrive C).Free/1GB",
+          "result": "about 11.2 GB free throughout; no cleanup needed"
+        }
+      ],
+      "deviations": [
+        "PlayerState.softEndsAt and offlineWindow are OPTIONAL keys (absent rather than `null`). This follows the retire item's note about the snapshot budget. Use the new isSoftOffline(p) (game/evolve) or `p.softEndsAt ?? null`. PlayerView.softEndsAt is `number | null` and required, as designed.",
+        "The offline window opens on playerReconnected only when softGraceMs > 0 and offlineMovesMax > 0. So with softGraceMs 0 the state looks exactly as before, and older configs replay unchanged.",
+        "Window lifetime beyond the design: a new loss event (playerConnectionLost or playerDisconnected) clears an open window. evolve drops a window whose `until` has passed at the next event (lazy expiry, to keep snapshots lean). The key is deleted after its last move instead of being kept with left 0.",
+        "An offlineMove from a player who is still soft is refused 'disconnected', like every other action. The design made offlineMove an exception there. In practice the room reports the return before it passes on any message.",
+        "offlinePlaceRefusal takes a `now` argument (state, me, play, cell, digit, now), so expiry is computed from the clock and not from timers. Like select, it refuses after softEndsAt and when the queue is full.",
+        "offlineSelectRefusal reasons beyond the design: 'alreadyHeld' for my own running local lock, and 'gameOver' / 'notStarted' for those statuses. The 'can I play at all' reasons come before the cell reasons.",
+        "In the engine, a non-finite thinkMs counts as the full thinkTimeMs, and thinkMs is rounded before it is clamped.",
+        "Bot brain canInterfere/canReact and the bot runner's freeze treat a soft player like a disconnected one, so they keep mirroring the engine. Not in the design's file list.",
+        "Compile fixes in apps that go beyond a one-liner: apps/server/src/game/gate.ts now has the design §3 offlineMove shape (strict; cell, digit, thinkMs int 0..600000), DEFAULT_MESSAGE_LIMITS.offlineMove {8, 1000} and the parse case. SHAPES and the limits are typed Record<ClientMessageType>, so they had to have the new entry. A test was added to gate.test.ts. answers() in fakeClient/stats.ts and mobile net/metrics.ts handle offlineMove (placedCorrect or placedWrong on that cell), with one test case each. gameRoom.abuse.test limits got offlineMove. The two hand-built PlayerView fixtures got softEndsAt: null.",
+        "apps/server/src/game/wire.test.ts: the 4-player snapshot may now be up to 4096+128 B; the 2-player limit is still 4096. It measures 4105 B: the four new rules add 78 B, and ben's still-open offline window adds 38 B. The reason is written in the test and in spec §18. It is flagged in DECISIONS-PENDING 2.17 יב.",
+        "Docs: only the rule documents are updated in this step: 01-SPEC and DECISIONS-PENDING. QA-CHECKLIST rows 12 and 25 plus a new row, the STAGE7-DEVICE-CHECKS edits, the 02-WORK-PLAN stage-7 note, components.md and tokens.json describe server and UI behaviour that is not built yet. They are left to the server and mobile steps.",
+        "flow.test.ts playLongGame now includes a soft drop by p3, a return and an offline move on H1, so that the test of every event type sees playerConnectionLost."
+      ],
+      "openIssues": [
+        "Snapshot budget: in the worst case (4 players, 36-character ids, two leavers, one player back 1 s earlier with an open offline window) the snapshot is 4105 B, 9 B over spec §18's 4 KB target. The wire test allows 4224 for 4 players. Main session or Moshe should decide: accept it, or slim the snapshot. One option is to drop the derivable `givens: boolean[]` (about 83 B). The server step's planned soft drop in busyGame will add about 20 B more (the softEndsAt key).",
+        "Nothing changes for the user until the server step makes GameRoom.onDrop a soft disconnect and the mobile step plays offline. Until then ServerGame.disconnect is hard, exactly as before.",
+        "After the server deploy, the gate already accepts offlineMove, and the engine opens an offline window after every reconnect. An offlineMove from an old client can't happen, and a new client sends it only when rules.softGraceMs > 0. Harmless, but note it for the deploy order.",
+        "The offline window opens after every return, including after a hard phase, so the queue can still be sent then (decision ד). It also opens in the 'turns' model, where every offlineMove is refused 'notYourTurn'."
+      ],
+      "notesForOtherItems": [
+        "GRACE server step:\n- Call the engine with `{type:'disconnect', playerId, soft: true}` for a dropped socket. ServerGame.disconnect needs a `{soft}` option; the default stays hard.\n- Use `abandonmentAt(state, id)` (exported from the engine) for the reconnection hold. It returns graceEndsAt, else softEndsAt + graceMs, else null when nothing runs or the game is over.\n- Still to do: options.ts rulesSchema softGraceMs ms(0, 60000), GameRoom onDrop/onLeave/launch/holdSeatBeforeGame, metrics, fakeClient (client.ts deadline, cli --soft-grace), testing/game.ts, gameRoom soft-phase tests, and softGraceMs: 0 in the server tests that expect an immediate freeze.\n- gate.ts offlineMove (shape, the 8/s limit, parse) is ALREADY done, with a test in gate.test.ts.",
+        "GRACE server step, wire.test.ts:\n- The 4-player snapshot limit is now 4096+128 (measured 4105). A soft drop in busyGame adds about 20 B. Keep the measurement comment current.\n- placedCorrect/placedWrong with `offline: true` add about 9 B per event; check them against the 200 B event limit.",
+        "GRACE server and mobile steps, the engine's refusals:\n- A soft player's every action is refused 'disconnected', offlineMove included. The room must report the return before it passes on queued messages.\n- offlineMove refusals:\n  - 'paused' and 'notYourTurn' (always in 'turns');\n  - 'offlineClosed' (no window, now > until, or no moves left);\n  - 'badCell' and 'badDigit';\n  - 'cellFilled', 'cellTaken', 'digitTried' and 'digitComplete', with no trace and no penalty.\n- An accepted move gives [cellReleased 'switch' if he held another cell] + [cellLocked if he did not hold this one] + placedCorrect or placedWrong{offline:true} (+ cellReleased 'mistake' after a wrong digit [D3]).",
+        "GRACE mobile step, the engine helpers in packages/engine/src/game/offline.ts:\n- offlinePlayable(state, me)\n- withOfflinePlay(state, me, play, now)\n- offlineSelectRefusal(state, me, play, cell, now)\n- offlinePlaceRefusal(state, me, play, cell, digit, now). It takes `now`; the design had no `now` here.\n- unsettledOfflineMoves<M extends OfflineMove>(state, me, moves), which keeps extra fields such as clientSeq.\nThe types are OfflineMove {cell, digit, thinkMs}, LocalLock {cell, lockedAt, expiresAt} and OfflinePlay {softEndsAt, lock, queued}.",
+        "GRACE mobile step, state and view fields:\n- PlayerState.softEndsAt and offlineWindow are optional (absent, not null). Read them with isSoftOffline(p) (game/evolve) or `?? null`.\n- PlayerView.softEndsAt is a REQUIRED `number | null`. Any new hand-built PlayerView needs it; components/player/__fixtures__/gameView.ts and avatars reactions.test already have it.\n- Interference targets: a soft opponent is blocked 'disconnected'. While I am soft, targets that could otherwise be hit (or lack only the points) show 'notRunning'. 'busy' and 'out' still show.",
+        "GRACE mobile step, reconnect behaviour:\n- After a soft-only return, the snapshot or playerReconnected opens offlineWindow {until: t + 5000, left: 8}. There is no gamePaused or gameResumed.\n- After softEndsAt, the server's events are playerDisconnected (graceEndsAt = softEndsAt + 15000) plus gamePaused (2 players) or cellReleased 'disconnect' (3–4 players).",
+        "GRACE mobile step, what is ready:\n- net/metrics.ts answers() already handles 'offlineMove', with a test. unanswered() is still to do.\n- The protocol's CLIENT_MESSAGE_TYPES includes 'offlineMove', so `room.send('offlineMove', {clientSeq, cell, digit, thinkMs})` type-checks.",
+        "Leave-guard snapshot (retire): taken at playerConnectionLost, kept through playerDisconnected (`??`), deleted on playerReconnected, and cleared by abandon, surrender and gameOver as before. The mobile rankedEnd.rankedLeftOf needs no change: a deliberate leave is still hard at once.",
+        "Docs still to write in the later grace steps:\n- QA-CHECKLIST rows 12 (Game-3P) and 25 (Self-Reconnecting), plus a row for the opponent's soft mark and the queued cell.\n- STAGE7-DEVICE-CHECKS: check 2 (5 s airplane), a new 15 s check, check 3 (about 35 s), check 4 (background), and a new same-cell check.\n- 02-WORK-PLAN stage 7: abandonment after 25 s.\n- components.md: §11.3 #14 queued, §2 unstable dot, §3.3 icon-only pill.\n- tokens.json color.status.unstable.\nSpec §16.2 already describes the full D42 behaviour, including the amber dot and wifi icon, the waiting digits and the lost-move toast text. Keep it in sync if the UI deviates.",
+        "DECISIONS-PENDING: new item 2.17 (D42), and the section-2 count is now 17. 2.17 says 'שלב 1 מתוך 3 (מנוע ופרוטוקול) בנוי'; update that line when the server and mobile steps land. 2.11 also notes the soft phase as built in the engine.",
+        "ENGINE_VERSION and PROTOCOL_VERSION were not bumped."
+      ]
+    }
+  },
+  {
+    "label": "grace:server",
+    "result": {
+      "item": "grace:server (D42 soft phase, section 3 of grace.json: apps/server + server and contract tests)",
+      "done": true,
+      "summary": "The server side of Moshe's soft phase (D42) is built and tested.\n\nWhat the server does now:\n- A connection that drops gets the soft phase first. That covers no goodbye, a dead socket, the heartbeat, the app going to the background, an abuse kick, and a reconnection whose socket died halfway.\n  - GameRoom.onDrop and the non-consented onLeave call `game.disconnect(id, {soft: true})`.\n  - The player is only marked (playerConnectionLost) and the game goes on. The engine's own softEnd timer starts today's 15 s grace at softEndsAt.\n  - The seat is held until `abandonmentAt(state, id)` plus RECONNECT_SLACK_MS, so for the soft phase and the grace. Abandonment comes 25 s after the drop.\n- A deliberate leave (CONSENTED) stays hard at once, and it also hardens a soft phase.\n- launch(): a seat that dropped before the game (countdown, rated set-up) starts soft. A seat that left on purpose starts hard. holdSeatBeforeGame adds softGraceMs to the hold.\n- `offlineMove` goes through the ordinary action path. A refused move goes to its sender only, as `rejected`, with no trace.\n- The black-screen end-of-game seat handling is unchanged: holdSeatAfterGame, sawEnd and autoDispose.\n\nMetrics:\n- metrics.ts has a new ConnectionStats class, used once per server inside GameMetrics and once per room.\n- GameMetricsReport gets `connections {soft, backInSoft, hard, backHard}` and `offlineMoves {applied, lost by reason}`.\n- The room counts these from the engine's events: playerConnectionLost, playerDisconnected (tracked in a hardAway set), playerReconnected, and placed* with offline:true. Lost offline moves are counted from refusals.\n- The '[game X] over …' log line gets a connections and offline-moves part when anything happened.\n\nOther server pieces:\n- options.ts: rulesSchema takes softGraceMs from 0 to 60000.\n- serverGame.ts: `disconnect(id, {soft = false} = {})`.\n- app.ts: the HEARTBEAT comment now gives the new timings: about 5 s shows the mark, about 14 s the freeze, about 28–30 s abandonment. It also points to DECISIONS 3.3.\n- Fake client:\n  - The reconnect deadline is softGraceMs + graceMs + 1 s (rules without softGraceMs count it as 0). A countdown drop retries for 10 + 15 + 1 s.\n  - New log line for playerConnectionLost.\n  - checkInSync also requires the player to be out of the soft phase.\n  - New CLI flag `--soft-grace <s>` (0–60).\n\nTests:\n- Unit tests:\n  - serverGame: a soft drop, then hard at softEndsAt, then abandonment at +25 s; a return within the soft phase with an offline move; softGraceMs 0 is hard at once.\n  - metrics: the new counters and the summary line.\n  - options: the softGraceMs range.\n  - cli: --soft-grace.\n  - wire: the busy game has a soft drop with a return and an offline move, and dan is still soft. Measured: snapshot 3026 B for 2 players and 4163 B for 4 (the limit is 4096+128). playerConnectionLost is 113 B, an offline placedCorrect 197 B.\n- gameRoom.test, new describe for the soft phase:\n  - a mark only, no freeze, and the return;\n  - not back: the hard phase at softEndsAt, then abandonment;\n  - a consented leave is hard at once;\n  - the token still works past grace + slack, which proves the hold covers the soft phase;\n  - offline moves: one applied and broadcast, one refused cellTaken to the sender only, one refused offlineClosed, plus the summary line;\n  - metrics in /dev/metrics.\n- matchmaking.test: new tests for a countdown drop (soft at GO) and a countdown leave (hard at GO).\n- remoteHost.contract: a new soft-drop test (the other host sees only the mark and plays on, no freeze, back in sync). The background test now expects the mark, not the freeze.\n- realtime.e2e: a new soft 1 s drop test.\n- Existing tests that assume an immediate hard drop use softGraceMs 0 (1 s drop, past the grace, disconnects describe) or short soft phases (abuse 200 ms, end 400 ms, airplane case 500 ms), keeping their intent. The 'late timers' abuse test now expects both late timers in order.\n\nDocs:\n- 01-SPEC:\n  - §16.2: the seat hold, and the return is reported before any message is read;\n  - more cases that count as a lost connection (abuse kick, reconnection that died);\n  - §10: what happens on a drop or a leave in the countdown;\n  - §18: the new size numbers and the new server metrics.\n- DECISIONS-PENDING:\n  - 2.17 now says steps 1–2 of 3 are built, with an interim note about the current app against the new server, plus updated sizes and locations;\n  - 2.11 updated;\n  - 3.3 gets the timings from the moment the network dies.\n- 02-WORK-PLAN stage 7: a note that abandonment is now 25 s after the drop is noticed, not 15.",
+      "filesChanged": [
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/rooms/GameRoom.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/metrics.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/metrics.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/options.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/options.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/serverGame.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/serverGame.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/wire.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/app.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/testing/fakeClient/client.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/testing/fakeClient/cli.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/testing/fakeClient/cli.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/gameRoom.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/gameRoom.end.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/gameRoom.abuse.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/remoteHost.contract.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/realtime.e2e.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/ranked.e2e.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/matchmaking.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/DECISIONS-PENDING.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/02-WORK-PLAN.md"
+      ],
+      "checks": [
+        {
+          "cmd": "npx tsc -b (whole repo)",
+          "result": "exit 0, no errors"
+        },
+        {
+          "cmd": "npx jest --selectProjects server (no --forceExit)",
+          "result": "77 suites, 1137 tests passed; Jest exited cleanly"
+        },
+        {
+          "cmd": "npx jest --selectProjects engine protocol",
+          "result": "34 suites, 998 tests passed"
+        },
+        {
+          "cmd": "npx jest --runTestsByPath gameRoom.test / gameRoom.abuse / gameRoom.end / remoteHost.contract / realtime.e2e / matchmaking (each on its own)",
+          "result": "all passed (24, 18, 5, 7, 9, 8 tests)"
+        },
+        {
+          "cmd": "npx prettier --write <19 changed .ts files> && npx eslint --max-warnings 0 <same files>",
+          "result": "formatted (4 files reformatted); lint OK"
+        },
+        {
+          "cmd": "git ls-files --eol on edited docs and sources",
+          "result": "all LF, unchanged"
+        },
+        {
+          "cmd": "git show HEAD:packages/engine/src/game/evolve.ts (shipped 1.0.0 engine)",
+          "result": "switch has no default/throw for unknown event types: an old app skips playerConnectionLost (seq still advances), so it is safe against the new server"
+        },
+        {
+          "cmd": "powershell (Get-PSDrive C).Free/1GB",
+          "result": "11.2 GB free"
+        }
+      ],
+      "deviations": [
+        "metrics: the report also has `connections.backHard` (returns from the hard phase), next to the design's {soft, backInSoft, hard}. It keeps the summary line readable.",
+        "Applied offline moves are counted from the engine's events (placed* with offline:true) in onGameUpdate, not in onClientMessage after act(). An offline move that fills the last cell ends the game inside act(), and the game's summary line would otherwise miss it. Lost ones are counted from the refusal in onClientMessage, as designed.",
+        "apps/server/src/testing/game.ts was not changed: it has no room helpers to pass softGraceMs through. Tests pass `rules: { softGraceMs }` directly in their own create/startTwo helpers.",
+        "remoteHost.contract: the new test covers the soft drop as the other host sees it (mark only, no freeze, back in sync). It does not cover the dropped host queuing a cell offline and having it applied, or rejected, on return: that needs RemoteGameHost's offline play, which is the mobile step. gameRoom.test covers the same offlineMove outcomes at the server with raw SDK clients.",
+        "STAGE7-DEVICE-CHECKS, QA-CHECKLIST, components.md and tokens.json were left for the grace:mobile+docs step, because those checks and rows describe the app's UI (the mark, the waiting digits). Only the server-side docs were updated here: 01-SPEC §10/§16.2/§18, DECISIONS-PENDING 2.11/2.17/3.3, and 02-WORK-PLAN stage 7.",
+        "Added a test the design did not list: in matchmaking.test, a drop in the countdown starts the game soft and a leave in the countdown starts it hard (covers launch()). For it, that file's match rooms now have gameRules {softGraceMs 1000, graceMs 1000}."
+      ],
+      "openIssues": [
+        "Snapshot size: the 4-player worst case is now 4,163 B, 67 B over the 4 KB target. wire.test allows 4096+128, leaving 61 B of headroom. The decision is still pending (DECISIONS-PENDING 2.17 יב: accept it, or slim the snapshot, e.g. drop `givens`).",
+        "Interim compatibility until the mobile step lands: the current app (1.0.0 and the working tree) against this server ignores playerConnectionLost and softEndsAt, which is safe. But the dropped player's app does not play offline, still shows 'החיבור שלך אבד' at once, and may give up reconnecting around 15–20 s while the server still holds the seat until about 26 s. Deploy order stays: server first, then the APK. No deploy was done.",
+        "Needs a server deploy (engine + server) together with the next APK. ENGINE_VERSION and PROTOCOL_VERSION were not bumped, as DECISIONS.md asks."
+      ],
+      "notesForOtherItems": [
+        "GRACE mobile, what the server sends:\n- Every non-consented close is a soft drop: room.leave(false), a dead socket, the heartbeat, the background (RemoteGameHost uses leave(false)), an abuse kick, and a reconnection that died halfway.\n- room.leave(true) is hard at once.\n- The seat is held for abandonmentAt + 1 s, that is soft + grace + 1 s from the server's notice.\n- On return, the server sends the snapshot (it may still show me with softEndsAt), then playerReconnected (which opens offlineWindow {until t+5000, left 8}), before reading any of my messages. Send queued offlineMove only after the snapshot.\n- The mobile fakeServer should mirror this: soft when rules.softGraceMs > 0 and the close is not consented, hard otherwise.",
+        "GRACE mobile, remoteHost.contract.test.ts (apps/server/test), what to keep or update:\n- Add the offline-play contract test: the dropped host queues a cell and it is applied on return; a cell the other took meanwhile comes back as a rejected offlineMove (cellTaken).\n- Two tests set softGraceMs 0 on purpose: 'a drop of 1 s with the soft phase off' and 'a drop past the grace'.\n- Their b.tracked expectations are exact: `{ name: 'reconnect', props: { durationMs, success } }`. When you add `phase` and `queued` to the reconnect telemetry, update those toContainEqual calls.\n- The new soft-drop test and the background test assume `metrics.sync.count === 1` after one return, and that the other host's statuses never include 'reconnecting'.",
+        "GRACE mobile, the fake client (apps/server/src/testing/fakeClient/client.ts):\n- It does not play offline (no offlineMove).\n- checkInSync now waits for !isSoftOffline(me), so a resync is counted when playerReconnected arrives, not at the snapshot. RemoteGameHost.checkInSync should do the same (design 4.3).",
+        "GRACE mobile, /dev/metrics: GameMetricsReport has `connections {soft, backInSoft, hard, backHard}` and `offlineMoves {applied, lost: Partial<Record<RejectReason, number>>}`. The per-game log line ends with 'lost connections N (back in the soft phase M), hard disconnects H (back B); offline moves A applied, L lost (reason n, …)' when anything happened.",
+        "GRACE docs, still to write in grace:mobile+docs:\n- QA-CHECKLIST rows 12 and 25, plus a row for the soft mark and the queued cell;\n- STAGE7-DEVICE-CHECKS checks 2, 3 and 4, a new 15 s check, and a same-cell check;\n- components.md;\n- tokens.json color.status.unstable.\nDECISIONS-PENDING 2.17 now reads 'שלבים 1 ו־2 מתוך 3 … בנויים ובדוקים', with an interim bullet about the current app against the new server. Rewrite both when the app lands. 2.11 says 'המנוע והשרת כבר בנויים כך; האפליקציה בשלב הבא'.",
+        "Spec numbers, if a later step changes the snapshot again: 01-SPEC §18 now says 4,163 B (67 over) and 113 B / 197 B for playerConnectionLost / offline placedCorrect. Keep it in step with wire.test's comment.",
+        "Old app safety, checked: the shipped 1.0.0 engine's evolve has no default case, so it skips playerConnectionLost (seq still advances) and ignores softEndsAt/offlineWindow in snapshots. The design's 'an old app ignores it' holds."
+      ]
+    }
+  },
+  {
+    "label": "grace:mobile+docs",
+    "result": {
+      "item": "grace:mobile+docs (D42 soft phase, section 4 of grace.json: apps/mobile, plus the docs for the whole grace item)",
+      "done": true,
+      "summary": "The app part of Moshe's soft phase (D42) is built and tested, and the grace item's docs are finished. The full suite passes: 372 suites, 8,623 tests. The project typecheck (tsc -b), i18n:check, ESLint on apps/mobile/src and the Prettier check are clean.\n\nWhat the player sees now, in a ranked game:\n- **When my connection drops:** for 10 s nothing covers the game, and screen readers hear one line. My card shows an amber dot. Surrender and reactions are off, and any open surrender dialog, arsenal or reaction picker closes.\n  - I keep playing: tapping a cell locks it on the phone with the usual countdown.\n  - A digit stays on the board as \"waiting\": my colour, a half-strength ring and a small wifi-off mark. It is announced once (\"D5: 7 ממתין לחיבור\") and does not animate, so Reduced Motion changes nothing.\n- **Back within the 10 s:** the waiting digits are sent in order (offlineMove) and turn right or wrong as usual. No \"back in the game\" banner appears.\n  - If the opponent took the cell meanwhile, the cell shakes and a short warning appears: \"D5 נתפסה בזמן שלא היה לך חיבור · בלי קנס\". No penalty.\n  - A cell I locked on the phone but left empty is selected again if it is still free.\n- **Not back by the end of my phone's 10 s:** the existing \"החיבור שלך אבד\" screen appears, counting down to soft + grace (25 s). The phone lock is dropped, and the waiting digits stay and are sent on the return.\n- **An opponent who drops:** their card gets the amber dot, and a wifi icon (no seconds) takes the place of ⚡. The avatar is not greyed, the game goes on, and nobody can interfere with them. After 10 s: today's freeze with \"Reconnecting... 15\" for 2 players, or the grey card with its countdown for 3–4.\n- **The \"opponent left\" screen** now says 25 seconds without a connection (soft phase + grace).\n- **Faster detection:** if an action gets no reply of any kind from the server for 2.5 s, the phone treats the connection as lost (answerTimeoutMs), instead of waiting 6 s of silence.\n- **Older server** (its rules have no softGraceMs): the app behaves exactly as before.\n\nMain code pieces:\n- **New `net/offlinePlay.ts`** (OfflinePlayBook): the local lock and the queue, built on the engine helpers, with every time read from the clock.\n- **`RemoteGameHost`:**\n  - turns the select or digit the server had not answered at the drop (`NetMetrics.unanswered()`) into the local lock or the first queued move;\n  - draws the view with the offline overlay, and redraws when a lock or the soft phase runs out;\n  - after the snapshot, sends the queue minus moves the snapshot already settles, and turns a refused one into a 'rejected' offlineMove update;\n  - shows the \"back\" banner only after a hard outage, and does not count the game as back in sync while I am still in the soft phase;\n  - reports `reconnect` with `phase` and `queued`.\n- **Screens and models:** connectionModel gets the 'selfOffline' model (does not block input). ConnectionLayer only announces it. The board gets a 'queued' cell kind. Card presence gets 'unstable'.\n- **Replay:** a dropped connection is its own step (\"NinaVolt · בלי חיבור\"), and digits sent on return end with \"נשלח כשהחיבור חזר\".\n- **Also:** the color.status.unstable token (#ffcf3f) with two contrast entries; he+en strings; the mobile fake server now gives a dropped connection the soft phase, like the real server.\n- **New contract test against the real server:** a digit made offline counts on return, and one on a cell the other player took meanwhile is refused with cellTaken.\n\nDocs:\n- **01-SPEC:**\n  - §16.2: how the phone detects the drop on its own, carrying unanswered actions over, the waiting-digit look, the hard screen only after the phone's own soft phase, the shake plus warning, \"25 שניות בלי חיבור\", and the older-server case;\n  - §22: the reconnect telemetry now has phase and queued.\n- **DECISIONS-PENDING:** 2.17 says all three steps are built, and has the app behaviour and both mixed-version notes. New sub-decisions יג (no banner after a soft return) and יד (answerTimeoutMs). 2.11 updated.\n- **QA-CHECKLIST:** rows 12 and 25 updated, a new soft-phase row, and the airplane-mode step in \"איך בודקים\".\n- **STAGE7-DEVICE-CHECKS:**\n  - a timing note (±4 s);\n  - check 2 now covers only the mark;\n  - new checks 2א (15 s) and 2ב (same cell);\n  - check 3 is now about 35 s;\n  - check 4 covers the background, short and longer than 10 s.\n- **02-WORK-PLAN:** a stage 7 line about the app part.\n- **components.md:** §2 the unstable dot, §3.3 the icon-only pill, §11.3 #14 the queued cell, §18 the design-system checklist. The design-system screen shows the unstable avatar and the queued cell.\n- **tokens.json:** the new color.status.unstable token and its two contrast entries.\n\nENGINE_VERSION and PROTOCOL_VERSION were not bumped. No APK, no deploy and no commit.",
+      "filesChanged": [
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/offlinePlay.ts (new)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/__tests__/offlinePlay.test.ts (new)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/remoteGameHost.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/__tests__/remoteGameHost.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/metrics.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/__tests__/metrics.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/index.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/testing/fakeServer.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/testing/fakeMatchmaking.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/onlineSession.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/__tests__/onlineSession.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/effects.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/__tests__/effects.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/connectionModel.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/ConnectionLayer.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/index.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/testing/games.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/__tests__/connectionModel.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/__tests__/ConnectionLayer.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/online/connectionStatus.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/online/__tests__/connectionStatus.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/GameScreen.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenOnline.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenOnlineGroup.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/boardModel.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/labels.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/Cell.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/__tests__/boardModel.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/__tests__/labels.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/board/__tests__/Cell.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/cardModel.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/wording.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/Badges.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/PlayerCard.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/PlayerCardCompact.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/Avatar.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/__tests__/cardModel.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/__tests__/PlayerCard.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/dev/IdentitySection.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/dev/BoardSection.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/dev/__tests__/sections.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/replay/replayModel.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/replay/ReplayScreen.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/replay/testing/games.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/replay/__tests__/replayModel.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/replay/__tests__/ReplayScreen.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/avatars/reactions.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/avatars/__tests__/reactions.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/a11yAudit.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/theme/tokens.generated.ts (regenerated by npm run tokens + prettier)",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/game.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/game.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/player.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/player.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/board.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/board.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/replay.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/replay.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/dev.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/dev.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/remoteHost.contract.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/tokens.json",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/components.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/DECISIONS-PENDING.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/QA-CHECKLIST.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/STAGE7-DEVICE-CHECKS.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/02-WORK-PLAN.md"
+      ],
+      "checks": [
+        {
+          "cmd": "npm test (root, all projects)",
+          "result": "372 suites, 8623 tests passed (exit 0)"
+        },
+        {
+          "cmd": "npx tsc -b (root)",
+          "result": "clean"
+        },
+        {
+          "cmd": "npx tsc --noEmit -p apps/mobile",
+          "result": "clean"
+        },
+        {
+          "cmd": "npm run i18n:check",
+          "result": "app: 14 namespaces, 1923 keys · 0 errors, 0 warnings"
+        },
+        {
+          "cmd": "npx eslint --max-warnings 0 apps/mobile/src (+ apps/server/test/remoteHost.contract.test.ts)",
+          "result": "clean"
+        },
+        {
+          "cmd": "npx prettier --check <changed files>",
+          "result": "All matched files use Prettier code style"
+        },
+        {
+          "cmd": "npx jest --selectProjects server --testPathPattern remoteHost.contract --verbose",
+          "result": "8/8 passed, incl. the new 'playing on offline [D42]' contract test against the real server"
+        },
+        {
+          "cmd": "npx jest src/net (mobile)",
+          "result": "remoteGameHost 57+ tests (15 new in the D42 describe), offlinePlay 8 new, metrics incl. unanswered() — all pass"
+        },
+        {
+          "cmd": "npx jest src/__tests__/a11yAudit.test.tsx -t connection",
+          "result": "8 passed (new soft-phase route he+en; 'my connection lost' now after 11 s)"
+        },
+        {
+          "cmd": "npx jest contrast/noRawColors/reducedMotion/i18nParity/i18nCheck/noLayoutAnimationsInGame/DesignSystemScreen/dev sections",
+          "result": "11 suites, 241 tests passed"
+        },
+        {
+          "cmd": "powershell (Get-PSDrive C).Free/1GB",
+          "result": "about 11.1 GB free throughout (no cleanup needed)"
+        }
+      ],
+      "deviations": [
+        "connectionModel's new `softGraceMs` option defaults to 0 (nothing known) rather than the view's rules, so existing callers and tests keep their meaning; GameScreen passes session.connection.softGraceMs. The host's ReconnectInfo always carries softEndsAt/graceEndsAt, so the fallback is rarely used.",
+        "'offlineLost': shake + cue + a warning toast (icon wifiOff). The game's own live region does NOT repeat the line, because the toast already announces it (polite live region / iOS announce); the design said 'plus announce' — the toast is that announcement, avoiding a double read.",
+        "NetMetrics.unanswered() returns InFlight records {clientSeq, action, at} (copies) instead of bare ClientAction[], so the host can compute thinkMs and the local lock time from the send time.",
+        "flushOffline sends the queue whenever the snapshot's game is not over and I am active (also when paused by another away player: the server then refuses them 'paused', as the design's edge-case section describes), instead of only 'running or paused only by me'.",
+        "startOfflinePlay emits an empty-events update at once, so the screen redraws my mark and my lock the moment the loss is noticed (not in the design, needed by the screen).",
+        "The 'connecting'-during-the-game status is not mapped to selfOffline: the host never returns to 'connecting' after the start (a rejoin by code happens inside 'reconnecting'), and that status has no softEndsAt.",
+        "The icon-only ReconnectPill has testID 'unstable-pill' and is drawn in color.status.unstable (amber border and icon); the countdown pill keeps 'reconnect-pill'.",
+        "Optional design-system additions done: an 'unstable' avatar specimen (IdentitySection) and a 'queued' cell close-up (BoardSection), with new dev.json keys avatars.unstable and board.cells.queued (he+en).",
+        "Server contract test (apps/server/test/remoteHost.contract.test.ts) touched in this step: tracked reconnect props now include phase/queued, plus the new offline-play contract test."
+      ],
+      "openIssues": [
+        "Device checks still to run by Moshe (STAGE7 checks 2, 2א, 2ב, 3, 4; QA rows 12 and 25). Expect ±4 s between the two phones, because each starts counting the soft phase when it notices the drop.",
+        "Not covered by the design, left as is:\n- A lock released on the phone while the server's lock still runs comes back after a soft return. No 'release' is sent at the return.\n- A local lock that runs out offline plays no 'lockExpired' cue or announcement, because no event comes.\n- A soft return still plays the avatar's 'reconnected' smile (playerReconnected).",
+        "answerTimeoutMs = 2.5 s may cause brief false 'ללא חיבור' marks on very slow networks (DECISIONS-PENDING 2.17 יד). Tune it after device testing.",
+        "Unchanged from the earlier steps: the snapshot size decision (DECISIONS-PENDING 2.17 יב, 4,163 B for 4 players) and the final ENGINE_VERSION bump at integration. Rollout order: deploy the server first, then a new APK."
+      ],
+      "notesForOtherItems": [
+        "INTERFERENCE items (shared files):\n- PlayerCard and PlayerCardCompact put the pills in the ⚡ slot, in this order: `activity.kind === 'reconnecting'` → the ReconnectPill countdown; `presence === 'unstable'` → the icon-only `<ReconnectPill />` (testID 'unstable-pill'); otherwise the InterferenceButton.\n- The new per-opponent interfere button must keep this precedence: no button at a soft-offline or disconnected opponent.\n- `inactiveCard(model)` (exported from PlayerCard.tsx) greys only out / reconnecting / left, never 'unstable'.",
+        "INTERFERENCE items, GameScreen:\n- `selfOffline` (connection.kind === 'selfOffline') does not block input.\n- An adjust-in-render block closes the surrender dialog, the arsenal (closeArsenal) and the reactions picker when entering it, and Android back skips the surrender while offline.\n- A new popup or arsenal must also close there, or be refused. While I am soft, the view gives every target 'notRunning'.",
+        "Shapes now required in hand-built fixtures and exact-object tests:\n- OnlineInfo has required `offlinePlay` and `queuedMoves`.\n- ReconnectInfo has required `softEndsAt: number|null` and `graceEndsAt: number`.\n- ConnectionStatus 'reconnecting' and 'resyncing' have optional softEndsAt/graceEndsAt, and connectionStatusOf always maps them.\n- The Presence union adds 'unstable'. CardModel.mine.canSurrender and reactionReady are false while I am soft.\n- ReplayStep has a new required `offline: boolean`, and StepKind adds 'offline' (the playerConnectionLost step).",
+        "Mobile tests:\n- FakeTable (net/testing/fakeServer.ts) now gives a dropped connection the soft phase (default rules softGraceMs 10 s). A test that wants today's immediate freeze or overlay must pass `rules: { softGraceMs: 0 }`.\n- New helpers: `table.rules`, `table.meAtServer`, rankedGame's `disconnect(id, { soft: true })`, and replay `softDropDuel()`.",
+        "Effects: a 'rejected' update whose action is an offlineMove becomes the UiEffect `{kind:'offlineLost', cell, digit, reason}`. correct and wrong effects may carry `offline: true`.",
+        "RemoteHostOptions has new `defaultSoftGraceMs` (10 s) and `answerTimeoutMs` (2.5 s). An action with no reply of any kind from the server for 2.5 s now drops the connection. Tests with `pong: false` and actions will see the drop earlier than silenceTimeoutMs.",
+        "Telemetry: `reconnect` props are now {durationMs, success, phase: 'soft'|'hard', queued} (spec §22 updated). Any server or admin code that validates these props should accept the extra keys.",
+        "Docs: DECISIONS-PENDING 2.17 now reads 'כל שלושת השלבים … בנויים ובדוקים', with new sub-items יג and יד after יב. The section-2 summary count is unchanged (17). components.md §11.3 now runs #1–#14 (#14 = queued offline)."
+      ]
+    }
+  },
+  {
+    "label": "integrate+verify",
+    "result": {
+      "item": "integration: ENGINE_VERSION bump + full gate (npm run verify + prettier) for Moshe's 2026-10-15 batch",
+      "done": true,
+      "summary": "I raised ENGINE_VERSION once for the whole batch, from '0.1.0' to '0.2.0', in C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/index.ts. PROTOCOL_VERSION was not changed. No test or doc needed an update: every test that checks the version reads the ENGINE_VERSION constant (HelloScreen.test, SettingsAndPlaceholders.test, server app.test, practiceRepo.test). The only literal '0.1.0' left in practiceRepo.test stands for an old stored game, and that is on purpose. The '0.1.0' values in docs are the app and server package versions, not the engine version.\n\nThe full gate passed on the first run, so nothing else needed fixing:\n- `npm run lint` passed with 0 problems.\n- `npm run typecheck` (routes:types + tsc -b) passed with no errors.\n- `npm run i18n:check`: 14 namespaces and 1923 app keys, plus 330 admin keys, with 0 errors and 0 warnings.\n- Jest: 372 of 372 suites and 8623 of 8623 tests passed, plus 2 of 2 snapshots, across 6 projects.\n\nI ran the gate twice: first each part separately (Jest took 327 s), then the literal `npm run verify` from start to finish, which exited 0 (Jest took 311 s).\n\nI ran `npx prettier --check --ignore-unknown` on every changed or untracked file in git status, 296 files in chunks of 60. Every chunk printed \"All matched files use Prettier code style!\". The .prettierignore file skips *.md, docs/, assets/ and the generated puzzle data, so those were not checked.\n\nI did no commit, build, APK or deploy, and ran nothing against staging or production. Drive C had about 11.15 GB free before and after the runs, so %TEMP%\\jest was not cleaned.\n\nOne scope note: the \"interference improvements\" block in DECISIONS.md (dated 2026-10-17) is not implemented in the tree. There is no INTERFERENCES_BY_MODE and no scramble or ink kinds, and Interference-Drag.dc.html still exists. DECISIONS.md says to implement it after the grace review, and it is not one of this batch's ten items, so I left it alone.",
+      "filesChanged": [
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/index.ts"
+      ],
+      "checks": [
+        {
+          "cmd": "npm run lint",
+          "result": "clean (eslint . --max-warnings 0, no output)"
+        },
+        {
+          "cmd": "npm run typecheck",
+          "result": "clean (expo routes:types + tsc -b, no errors)"
+        },
+        {
+          "cmd": "npm run i18n:check",
+          "result": "app: 14 namespaces, 1923 keys · admin: 330 keys · 0 error(s), 0 warning(s)"
+        },
+        {
+          "cmd": "npx jest --silent (full monorepo)",
+          "result": "Test Suites: 372 passed, 372 total; Tests: 8623 passed, 8623 total; Snapshots: 2 passed; Time 327 s"
+        },
+        {
+          "cmd": "npm run verify",
+          "result": "EXIT=0: lint, typecheck and i18n clean; Test Suites: 372 passed, 372 total; Tests: 8623 passed, 8623 total; Snapshots 2 passed; 6 projects; 311 s"
+        },
+        {
+          "cmd": "npx prettier --check --ignore-unknown <all 296 changed/untracked files from git status, 60 per call>",
+          "result": "All matched files use Prettier code style! (every chunk); *.md, docs/, assets/ and generated data are skipped by .prettierignore"
+        },
+        {
+          "cmd": "npx prettier --check packages/engine/src/index.ts",
+          "result": "All matched files use Prettier code style!"
+        },
+        {
+          "cmd": "powershell (Get-PSDrive C).Free/1GB",
+          "result": "11.15 GB free (no %TEMP%\\jest cleanup needed)"
+        }
+      ],
+      "deviations": [
+        "Only the ENGINE_VERSION constant was bumped. packages/engine/package.json \"version\" stays 0.1.0: nothing reads it, and changing it would also change package-lock.json.",
+        "No test or doc changes were needed for the bump: every test reads ENGINE_VERSION from the code, and no doc names the engine version."
+      ],
+      "openIssues": [
+        "Not failures: the Jest output, which is not silent under `npm run verify`, still shows console noise. There are about 70 React 'not wrapped in act(...)' warnings, mostly in a11yAudit, resultsRanked, ModesRanked, GameScreenRenders and appVersion tests, mostly from i18n.changeLanguage or timers. There are also expo-router 'No route named …' warnings and expected log lines ([online], [progress], [admin]). The gate does not fail on these. I did not check whether any of them are new in this batch.",
+        "The interference improvements (DECISIONS.md, Moshe 2026-10-17) are not in the tree yet: no INTERFERENCES_BY_MODE, no new kinds, docs/design/screens/Interference-Drag.dc.html still exists. They are planned after the grace review and are not part of this integration.",
+        "Still open from the README: the adversarial review of every item against Moshe's words, then version:bump, commit, deploy and APK, only with Moshe's OK."
+      ],
+      "notesForOtherItems": [
+        "ENGINE_VERSION is now '0.2.0' (packages/engine/src/index.ts). Do not bump it again for this batch. PROTOCOL_VERSION is unchanged.",
+        "Baseline for later items or a review pass: 372 suites and 8623 tests, all passing; lint, typecheck and i18n clean; prettier clean on all 296 changed or untracked files."
+      ]
+    }
+  },
+  {
+    "label": "review:rating-refresh",
+    "result": {
+      "findings": [
+        {
+          "title": "Polling stops after ~46.5 s and nothing re-reads when the 2-minute TTL runs out, so an unconfirmed rating can stay on Home indefinitely",
+          "file": "apps/mobile/src/progress/rankedRefresh.ts",
+          "line": 117,
+          "severity": "low",
+          "failure": "The ruling in DECISIONS.md says to re-read /v1/me with backoff until the games count goes up and give up after 2 min. SPEC §4.3 and DECISIONS-PENDING 3.24 promise: \"אם השרת לא שמר את המשחק תוך 2 דקות, מוצג הערך של השרת\". In the code, the reads happen at 1.5, 4.5, 10.5, 22.5 and 46.5 s (the sum of confirmDelaysMs). After the last one, finish() refreshes progress once and stops. optimisticTtlMs (120 s) is only checked inside adopt(), so the optimistic entry goes away only when some later GET /v1/me is adopted. Scenario: the server's GameRecorder exhausts its retries and never stores the game, and the player stays on Home (no new focus, no foreground). Home keeps showing the rating the server never stored, past 2 minutes and with no end. A second case: the server stores the game later than 46.5 s, for example after a slow DB or a soft-grace abandonment whose leave was not delivered. Then the only progress refresh already ran before the store, so XP, level, league and games/win%/streak stay old until the player leaves Home and comes back.",
+          "fix": "Make the client act at the TTL. One option: when the attempts run out unconfirmed, schedule one more read (fetchMe, then refreshProgress) at optimisticTtlMs after the end. Pass the TTL into RankedRefreshDeps; do not hard-code it. The other option: keep the last raw server Me in authStore, and from showRankedResult set a timer at expiresAt that sets me again from withPendingRatings(lastServerMe, pendingRatings, now()). Either way, test it with ManualScheduler: no confirmation, then at 120 s Home shows the server's value."
+        },
+        {
+          "title": "refreshMyProgress has no ordering guard, so an older progress answer can overwrite the one read after the store was confirmed",
+          "file": "apps/mobile/src/progress/appProgress.ts",
+          "line": 141,
+          "severity": "low",
+          "failure": "The fix works in two steps. Home's focus (and the foreground handler) call refreshMyProgress() at once, possibly before the server has stored the game. RankedRefresh calls refreshProgress() only after a GET /v1/me shows the game stored. refreshMyProgress, adoptProgress and adoptCard take whatever answer comes back last, with no request sequence (unlike fetchMe, which got a seq/meAdopted guard in this item). Scenario: the player taps \"לבית\" at T+1.4 s, and Home's progress GET goes out while the game is not yet stored. The server stores at T+1.45 s. RankedRefresh reads at T+1.5 s, sees the game stored, and its progress GET returns the new XP at T+1.9 s. Then Home's slower first GET (a slow mobile network) returns at T+2.3 s, and adoptProgress writes the old XP, level, league and games/win%/streak over the new ones. RankedRefresh has already finished, and Home is still in focus, so the card stays old until the next focus or foreground. That is the symptom Moshe reported, for the progress half of the card.",
+          "fix": "Add a request sequence to refreshMyProgress, the same way as in fetchMe: `const seq = ++progressRequests;` before the calls, and after the await `if (seq < progressAdopted) return; progressAdopted = seq;` before adoptProgress/adoptCard. Reset both counters when the owner changes (forgetProgress / onAuth). Add an appProgress test: two refreshMyProgress calls in flight, the first one resolving last, and the later answer must stay."
+        }
+      ]
+    }
+  },
+  {
+    "label": "review:keep-awake+new-game",
+    "result": {
+      "findings": [
+        {
+          "title": "The foreground re-take cannot restore keep-awake after the Android Activity is recreated, because the native manager skips addFlags while the tag is still held",
+          "file": "apps/mobile/src/services/keepAwake.ts",
+          "line": 65,
+          "severity": "low",
+          "failure": "In expo-keep-awake 57.0.2 on Android, ExpoKeepAwakeManager.activate(tag) calls addFlags(FLAG_KEEP_SCREEN_ON) only `if (!isActivated)`, that is, only when the tag set is empty. The flag lives on the Activity's window. MainActivity's configChanges leave out fontScale and density. Concrete case: Moshe sends the app to the background and changes the system font size or display size, so Android recreates MainActivity with a new window that does not have the flag. RN then stops the old surface and mounts a new root. The old root's cleanup calls deactivateKeepAwake('sudoku-fight') while there is no current Activity (ReactHost.onHostDestroy cleared it). That call rejects before `tags.remove`, so 'sudoku-fight' stays in the set. The new root's activate, and the AppState 'active' re-take this hook adds, both hit `isActivated == true` and never add the flag to the new window. The screen then turns off on the phone's timeout for the rest of the run. That is exactly the failure Moshe reported. The comment's claim that the re-take on foreground recovers a failed activation holds only when the tag was never stored. Whether it happens depends on timing (the deactivate can also land after the new Activity resumes), but nothing in the code prevents it.",
+          "fix": "Re-apply the flag on every return to the foreground, not just re-add the tag. In the 'active' listener, release and take in sequence, for example `safely(() => keepAwake.deactivateKeepAwake(tag).catch(report).then(() => keepAwake.activateKeepAwakeAsync(tag)))`. When our tag is the only one, deactivate clears the flag on the current window and empties the set, and activate then adds the flag to the current window. The screen does not blink, because both calls run while the app is in the foreground. Add a keepAwake.test case with a fake module that copies the native short-circuit (it adds the 'flag' only when the set is empty), simulates a lost window, and asserts that the flag is back after appState.set('active')."
+        }
+      ]
+    }
+  },
+  {
+    "label": "review:matchmaking",
+    "result": {
+      "findings": [
+        {
+          "title": "Screen reader announces a stale rating range after the 'nobody else' notice goes away",
+          "file": "apps/mobile/src/screens/match/SearchView.tsx",
+          "line": 60,
+          "severity": "low",
+          "failure": "`rangeLine` is set once, the first time a range shows (`if (m.range && !m.alone && rangeLine === null)`), and never cleared. `line = m.alone ? aloneTitle : rangeLine`. Example: Ana starts while Ben is in reach, so the initial ±50 range '1150 עד 1250' is announced. Ben leaves, so Ana is alone and the notice is announced. At 30 s Cyd joins and `alone` turns false. `line` goes back to the old rangeLine, so the Announcer (re-announces whenever `line` changes) says 'מחפש יריב בטווח דירוג 1150 עד 1250'. The card on screen shows ±200 (1000–1400), so TalkBack/VoiceOver users hear the wrong numbers. The existing test covers only the alone-first order, where rangeLine is still null.",
+          "fix": "Reset the line while alone so it is rebuilt from the current range when someone turns up. For example, add `if (m.alone && rangeLine !== null) setRangeLine(null);` next to the existing adjust-in-render. Add a MatchScreen test for range → alone → someone (at a later elapsedMs) that expects the current range in announced()."
+        },
+        {
+          "title": "Timeout 'alone' text says nobody searched during the whole minute, but nextRange is only checked at the timeout moment",
+          "file": "apps/server/src/matchmaking/service.ts",
+          "line": 458,
+          "severity": "low",
+          "failure": "`timeout.nextRange` is `queue.nextRangeOf(ticket)`, checked only at the moment of the timeout. TimeoutView then shows 'עדיין אין שחקנים אחרים…' with timeout.aloneBody: 'חיפשנו דקה שלמה, ואף שחקן אחר לא חיפש משחק כזה' / 'We searched a whole minute and no one else looked for this game'. Example: Ben (250 away) searches from 10 s to 45 s, so Ana sees the range card with Ben in it. Ben then matches with Cyd, or cancels. At 60 s Ana gets nextRange null, and the screen says nobody looked for this game all minute, which contradicts what she just saw. The same happens on the extended search's second timeout.",
+          "fix": "Either track it on the server: add `Entry.sawOthers` (set in sendSearching when nextRange !== null, reset on a new search) and send the timeout as alone only when nextRange is null and sawOthers is false. Or reword timeout.aloneBody_* (he/en) to the present tense, e.g. 'חיפשנו {{time}}, וכרגע אין אף שחקן אחר שמחפש משחק כזה…'. Add a service.test case: a candidate joins and leaves mid-search, then the timeout."
+        }
+      ]
+    }
+  },
+  {
+    "label": "verify:rating-refresh",
+    "result": {
+      "real": false,
+      "reason": "The code does what the claim says, but this is the behaviour the approved design chose, not a defect. The scenario is also very narrow.\n\nWhat the code does (confirmed): reads after a ranked game happen at 1.5, 4.5, 10.5, 22.5 and 46.5 s (confirmDelaysMs in apps/mobile/src/config/account.ts:49). After the last read, finish() refreshes progress once and stops (apps/mobile/src/progress/rankedRefresh.ts:117-119). The 120 s TTL is checked only in withPendingRatings, which adopt() calls (apps/mobile/src/api/me.ts:212, apps/mobile/src/auth/authStore.ts:147). So an expired optimistic entry is dropped only on the next GET /v1/me. That read comes from Home focus or the app returning to the foreground (refreshMeIfStale, 30 s throttle: HomeScreen.tsx:98, appProgress.ts:196), or from the results screen's leave.\n\nWhy it is not a defect:\n1. The ruling for this item (DECISIONS.md, rating-refresh) is \"As designed\". The design file docs/handoff/2026-10-15/designs/rating-refresh.json fixes this exact schedule: confirmDelaysMs [1500,3000,6000,12000,24000]. It defines optimisticTtlMs as \"how long the game's own rating change is shown over older server answers; after that, the server's answer wins\". So it is a guard on what an answer may override, not a timer.\n2. The same design lists this exact case as an accepted risk: \"Optimistic display: for up to optimisticTtlMs the phone may show a rating the server has not stored (if the write failed for good). It self-corrects on the next read after the TTL.\" Its risk list also says late or unpolled stores \"rely on the throttled Home focus and foreground reads\". The ruling's \"(give up after 2 min)\" summarises that TTL. It does not order polling to continue for 2 minutes.\n3. The existing authStore test (\"a game the server never stores: after optimisticTtlMs the server's answer wins\") encodes the same lazy meaning: the correction happens on the next read.\n\nHow narrow the scenario is:\n- Case 1 needs two things together. First, the server's GameRecorder must fail for good: all 5 tries fail (waits of 500 ms doubling, about 7.5 s in all), which means the database is down. Second, the player must then sit on Home for more than 2 minutes without navigating anywhere or sending the app to the background. Any focus or foreground event corrects it.\n- Case 2 (stored after 46.5 s) needs a pathologically slow database. A left 2-player game has no optimistic value at all (change is null). Its reads start at graceMs 15 s + 2 s and go on to about 63.5 s, which covers an abandonment at about 25-30 s.\n\nNeither case is what Moshe reported. He said the rating did not update until a restart, and the polling and optimistic display fix that."
+    }
+  },
+  {
+    "label": "verify:rating-refresh",
+    "result": {
+      "real": true,
+      "reason": "The claim holds up against the code. In apps/mobile/src/progress/appProgress.ts:141-158, refreshMyProgress takes no request sequence. It sets status 'loading', awaits Promise.all(myProgress, player card), checks only that the owner is the same, and then calls adoptProgress/adoptCard without conditions. progressStore.ts:74-81 also writes whatever comes in, with no updatedAt comparison and no in-flight dedupe. So when two calls overlap, the one that resolves last wins.\n\nBoth callers are wired to run in exactly the post-game window:\n- HomeScreen.tsx:93-101 calls refreshMyProgress() on every focus, so the moment the player taps \"to home\".\n- The AppState 'active' handler in appProgress.ts:191-197 does the same.\n- RankedRefresh calls it through rankedRefresh() (appProgress.ts:111) only after a GET /v1/me shows the game stored (rankedRefresh.ts:113-115, finish -> progress).\n\nThe server stores the result in the background, 1-3 s after the end and with retries (rating-refresh.json cause #2: GameRecorder writes games+1, XP and histories in one end transaction). confirmDelaysMs[0] is 1500 ms and waitMs is 0 for a normal end. So a Home GET that the server answered before the store, and a RankedRefresh GET issued shortly after the store, can be in flight together.\n\nHome's call also waits on Promise.all with the card GET. One slow leg is enough for its old progress to be adopted after RankedRefresh's new one. That can be a new TCP/TLS connection while Home fires refreshHome, refreshMeIfStale and 2 progress GETs at once, or a slow mobile link.\n\nNothing corrects it afterwards. RankedRefresh does exactly one progress read after confirmation and then stops (wait=null). Home's useFocusEffect does not fire again while Home stays in focus. The foreground handler needs an app state change. So the old XP, level, league and games/win%/streak stay on the card, which is Moshe's symptom (\"doesn't update automatically; after reopening it did\"). This matches the ruling in DECISIONS.md, which says to refresh progress/card after the server confirms. The same item added a seq/meAdopted guard to fetchMe (authStore.ts:85-96, 428-435) for out-of-order answers, and its design lists that test (rating-refresh.json test line 159). The progress half of the same flow got no such guard, which is an inconsistent gap.\n\nCaveat: the window is timing-dependent and narrow. The old answer has to arrive more than about one round trip after a request that was sent after the store. So this is a real but low-probability race, not the main cause of the reported symptom. The proposed fix (a seq counter in refreshMyProgress, reset in forgetProgress/on owner change, plus a two-in-flight test) is appropriate."
+    }
+  },
+  {
+    "label": "review:penalty",
+    "result": {
+      "findings": [
+        {
+          "title": "Penalty pips with halves no longer fit the 78dp compact card in 4-player games",
+          "file": "apps/mobile/src/components/player/PlayerCardCompact.tsx",
+          "line": 196,
+          "severity": "medium",
+          "failure": "The pips now show the engine's real penalties (cardModel.ts:169, `penalties.slice(-2)`), which are usually 4–9 points and often halves. Before, they were the ladder's −1 and −2. I measured the advance widths in apps/mobile/android/app/src/main/assets/fonts/Teko_600SemiBold.ttf: score at Teko 28, each pip at Teko 13 + 2×3 padding + 2×1 border, scoreGap 3, pip gap 2. The design's own 4P fixture (ranked4p seat 1 after D3 −5.5 and E5 −4.5, score −10) gives a score row of about 102dp. Other cases: '26.5' with −8, −6.5 is about 99dp, and '−15.5' with −8, −7.5 is about 111dp. Every opponent card in 4P is 78dp wide (compactCardWidth), and mine is 106. In the old fixture state (pips −1, −2, score −3) the row was about 74dp and fit. The scoreRow has no shrink and no clipping, so after two opening mistakes the row runs past the card edge, into the 6dp gap and over the next card, or gets cut off. A 3P card (114dp) also overflows once ×n is added. QA-CHECKLIST row 13 only says to check this on a device, and the numbers show it fails.",
+          "fix": "Use the design's own fallback (decision 3: 'if it doesn't fit, switch to one'). In compact cards narrower than about 110dp (4P: 78 and 106), make mistakePips keep only the last penalty, for example by passing the card width or a `maxPips` from compactCardWidth. Also give the Pips view `flexShrink: 1` with `overflow: 'hidden'`, so the score is never pushed out. Add a unit test that checks the pip count per card width, and confirm on a device in a 4P game as QA row 13 asks."
+        },
+        {
+          "title": "Spec §6.5 example points to an example that does not exist and has the wrong answer",
+          "file": "docs/01-SPEC.md",
+          "line": 394,
+          "severity": "low",
+          "failure": "Moshe asked for the spec to be updated to the new method, and 01-SPEC is the source of truth for the rules. The new §6.5 says: \"דוגמה: ב־D5 של הדוגמה בסעיף 6.4 (התשובה 9), ספרה שגויה עולה ‎−3.5\". §6.4 has no cell in its example, only \"X = 7, Y = 6 → 3.5\". The spec's only D5 example (§13.2 table, line 637, and the original spec's \"D5 → 7\") has the answer 7, not 9. A reader checking the rule against the spec cannot reproduce the example, and it contradicts the spec's own D5 → 7.",
+          "fix": "Rewrite the example without a cell reference, for example: \"דוגמה: אם הספרה הנכונה הייתה מקבלת שם X = 7, Y = 6 (הדוגמה בסעיף 6.4, ‎+3.5), ספרה שגויה באותה משבצת עולה ‎−3.5\". Keep the LRM before the signed number."
+        }
+      ]
+    }
+  },
+  {
+    "label": "review:grace",
+    "result": {
+      "findings": [
+        {
+          "title": "Offline moves are thrown away ('paused') when the other player is still away at my return, although no one took those cells",
+          "file": "apps/mobile/src/net/remoteGameHost.ts",
+          "line": 704,
+          "severity": "medium",
+          "failure": "Two-player ranked game, both phones on the same Wi-Fi, and the router drops for about 18 s. The server notices both via heartbeat at about T+4, so both are soft until about T+14, then both go hard and the game gets gamePaused. A queued 3 digits offline on free cells. A comes back at T+16: the snapshot is paused, the server's reconnect keeps it paused because B is still away, and flushOffline sends every offlineMove at once. The engine (engine.ts:607, `if (paused) reject('paused')`) refuses each one. A gets the toast \"המהלך ב־X לא נספר · בלי קנס\" for every move. B comes back at T+17, the game resumes, and B's queued moves (flushed after his snapshot) all count. A came back first and loses every offline move with no conflict, which breaks the ruling \"offline move lost only if the cell isn't free for him on return\" and Moshe's \"only the one who was offline loses the cell that both marked\". Even if the phone waited, the window (until = playerReconnected + 5 s, evolve.ts:279) can close before B returns, giving 'offlineClosed'.",
+          "fix": "In flushOffline, while the state is 'paused' and I am active, keep the queue unsent. Flush it from onEvents when gameResumed arrives, then send the held-cell select. In the engine (evolve), when gameResumed arrives, open or extend the offline window of every player whose window opened while paused: until = resume time + offlineMovesWindowMs, left unchanged. Add engine tests (window carried across a pause; offlineMove applied after the resume) and a remoteGameHost test for the deferred flush."
+        },
+        {
+          "title": "'selfOffline' is shown even when the host does not play offline: it hides the freeze screen and lets a surrender be lost silently",
+          "file": "apps/mobile/src/screens/game/connection/connectionModel.ts",
+          "line": 324,
+          "severity": "low",
+          "failure": "Step 4 returns selfOffline (blocksInput false) whenever status.softEndsAt is in the future. That is true for every game with softGraceMs > 0, even when startOfflinePlay did not start because offlinePlayable is false. Example: a 2-player game frozen because B is in his hard phase (A sees the blocking 'opponentReconnecting' screen), then A's network blips. The model switches to selfOffline, so the freeze screen disappears for up to 10 s and nothing blocks input. A's card still has canSurrender true: the overlay is not applied, so the view does not mark him soft. A taps surrender and confirms. host.surrender → playOffline returns false → rejected 'disconnected' → the 'refused' effect does nothing. The dialog closes and the surrender never happens. In the same way, with turnModel 'turns' or offlineMovesMax 0, the board looks live for 10 s while every tap is silently refused. `OnlineInfo.offlinePlay.playable` exists, but nothing in the UI reads it.",
+          "fix": "Map `info.offlinePlay?.playable` into the reconnecting/resyncing ConnectionStatus. Return selfOffline only when it is true. When it is false and the view is paused, fall through to step 5 (the blocking opponent-freeze screen). Otherwise keep the previous Self-Reconnecting behaviour, or at least block the board. Make mine.canSurrender and reactionReady false whenever my connection is lost (from the status), not only when the offline overlay marks me soft. Add connectionModel tests for the paused and not-playable cases."
+        },
+        {
+          "title": "\"The opponent left\" says 25 seconds without a connection even after a deliberate leave (actually 15 s)",
+          "file": "apps/mobile/src/screens/game/connection/connectionModel.ts",
+          "line": 265,
+          "severity": "low",
+          "failure": "Two-player ranked game: B presses Home mid-game. That is a consented leave, so it is hard at once (no soft phase). A sees the Opponent-Reconnecting ring count down from 15, and B is abandoned after 15 s. Then OpponentLeft shows \"הזמן נגמר · 25 שניות בלי חיבור\", because opponentLeftOf now always gets softGraceMs + graceMs. Before this change it said 15, which was right for both a drop and a leave.",
+          "fix": "Pick graceSeconds per opponent. Use soft + grace only when that opponent's absence began with playerConnectionLost after his last playerReconnected; use graceMs for a leave that was hard from the start. Track this in the session/host from the events it applies, or keep the loss start time on the abandoned player in the engine state. Add a connectionModel test for both paths."
+        },
+        {
+          "title": "A resent offlineMove can be rate-limited with no answer, leaving a queued cell stuck for the rest of the game",
+          "file": "apps/server/src/game/gate.ts",
+          "line": 34,
+          "severity": "low",
+          "failure": "The gate drops an over-limit message without any answer (token bucket, offlineMove 8 per 1000 ms). The phone removes a queue entry only on placed*{offline} (answered) or on `rejected` with its clientSeq. Example: the first flush sends 8 moves, the server applies 5 and rejects 3 (cells taken), and the connection drops again before the rejections arrive. The reconnect comes 250 ms later (about 2 tokens refilled). The snapshot prunes the 5 applied moves and the 3 rejected ones are resent. One or more is rate-limited (and counted as an abuse violation), so it gets no answer and keeps its clientSeq. boardModel then shows that cell as 'queued' with my digit, interactive: false, for the rest of the game (until another drop). The entry also counts toward the offline queue cap later.",
+          "fix": "Have the gate answer a rate-limited action with `rejected` (e.g. 'tooSoon') so the phone can handle it: for offlineMove, mark the entry unsent and resend it, or drop it as lost. Or set offlineMove's limit to 2 × offlineMovesMax. Either way, also give sent-but-unanswered offline entries a timeout in OfflinePlayBook after which they return to unsent, so no cell can stay 'queued' forever. Add a remoteGameHost test with an unanswered offlineMove."
+        },
+        {
+          "title": "A lock cancelled while offline comes back as mine after a return within the soft phase",
+          "file": "apps/mobile/src/net/remoteGameHost.ts",
+          "line": 733,
+          "severity": "low",
+          "failure": "A holds X on the server when the connection drops. startOfflinePlay carries it as the local lock. Offline, A taps \"ביטול בחירה\", so offline.release clears the local lock and nothing more. He returns within the soft phase: X's server lock is still running (the server kept it, by design). offline.end() returns null, and flushOffline sends nothing for it (no queued move, no held cell). The snapshot shows X locked by A again with its countdown, a cell he explicitly let go of, and B stays blocked from X until it runs out.",
+          "fix": "In flushOffline, after the queued moves: if the snapshot shows my lock on a cell that is neither `held` nor a queued cell, and offline play had dropped it (the local lock was released or moved), send `release`. The existing select of `held` already covers the moved case through 'switch'. Add a remoteGameHost test: carried lock, cancel offline, return within soft, so 'release' is sent."
+        }
+      ]
+    }
+  },
+  {
+    "label": "verify:matchmaking",
+    "result": {
+      "real": true,
+      "reason": "I tried to refute this and couldn't. The scenario can happen, and the behaviour is wrong.\n\n1. `SearchView` keeps its state between server messages. `MatchScreen.tsx:145` renders `<SearchView key=\"search\" .../>` with a fixed key, so `rangeLine` survives every `searching` message while the screen stays in 'search'.\n\n2. The range line is built once and never rebuilt. `SearchView.tsx:61` sets `rangeLine` only when `m.range && !m.alone && rangeLine === null`. Nothing ever sets it back to null.\n\n3. Line 69 is `line = m.alone ? aloneTitle : rangeLine`. The `Announcer` (`game/connection/Announcer.tsx`) speaks whenever `line` changes:\n   - iOS: through a `useEffect` on `[line]`.\n   - Android: through a live region on the text.\n\n4. The server really sends this order. Per `service.ts:46-49` and `:379-381`, it sends a new `searching` whenever `queue.nextRange(userId)` changes. That value changes whenever someone Ana could meet joins or leaves (`matcher.ts` `nextRanges`, rule 7). The client copies each `nextRange` (`net/matchmaking.ts:519`), and `matchModel.ts:176` sets `alone = nextRange === null`.\n\nSo the order range → alone → someone is easy to reach:\n- Ben is in reach (inside the maximum range) but outside Ana's starting ±50, so Ana's `nextRange` is not null and the starting range is spoken.\n- Ben cancels, so `nextRange` becomes null, `alone` turns true and the notice is spoken.\n- Cyd joins later, so `nextRange` is not null again and `alone` turns false.\n\nAt that point `line` goes back to the old `rangeLine`, and screen-reader users hear the starting numbers. The card shows the current, wider `m.range`.\n\nThis is not intended behaviour:\n- The existing test `MatchScreen.test.tsx:285` (\"someone turns up: the notice goes and the range is back (and said)\") expects the current range to be spoken: 1162–1412 at 15 s.\n- That test only covers the order where the notice comes first, while `rangeLine` is still null. That is why it passes.\n- The comment at line 68 says the range comes back \"again only if it ends and comes back\". Saying numbers that differ from what the card shows breaks that intent and gives screen-reader users wrong information.\n\nThe ruling and Moshe's words don't excuse it. The matchmaking ruling (\"nextRange … null → no other players are searching\") requires the range to return when someone appears, so the spoken range should be the current one.\n\nThe proposed fix is sound: reset `rangeLine` while `alone`, so it is rebuilt from the current range when someone turns up. A test for range → alone → someone at a later elapsedMs is also needed.\n\nSeverity: minor accessibility bug, screen readers only.\n\nFile: C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/match/SearchView.tsx (lines 60-69)."
+    }
+  },
+  {
+    "label": "review:black-screen",
+    "result": {
+      "findings": [
+        {
+          "title": "A report sheet or block dialog opened during the online end hold is not waited for: the results replace the screen with the native Modal still up",
+          "file": "apps/mobile/src/screens/game/GameScreen.tsx",
+          "line": 622,
+          "severity": "medium",
+          "failure": "showResults() checks for an open native window only once, when the end arrives (`const modal = dialogUp.current || modUp.current`). The new online hold then keeps the finished game interactive for 600 ms, and nothing closes or disables the opponent's card menu at the end. The menu is a Popover, the connection model at a surrender end is 'none', so the `blocked` adjust does not run, and CardMenu's moderation items are still wired. Concrete case: in a 2-player ranked game Moshe has the opponent's card menu open (or opens it), the opponent surrenders, and within the 600 ms Moshe taps 'דווח על שחקן' (or 'חסום שחקן'). modFlow.openReport mounts ReportSheet, a native RN Modal that is still entering. When the hold timer fires, `later(delay, done)` brings waits to 0 and open() calls onEnded → router.replace('/results/..') with the Modal on screen. This is the bug-9 'native window torn down with the screen' black-screen class. DECISIONS.md says to close every native Modal and wait for it before the results, and the new 01-SPEC §12 line says 'התוצאות לא נפתחות כשחלון עדיין פתוח'. The window only exists because of the new hold, since before this item the online end navigated at once. The surrender and 'סיום אימון' buttons are safe because canSurrender is false at 'over'.",
+          "fix": "(1) In showResults' open(), check `dialogUp.current || modUp.current` again before calling openResults. If a window is up, call setConfirmOpen(false) and closeMods.current(), set whenModalsGone.current to open, and arm a new DIALOG_GONE_CEILING_MS fallback instead of navigating. (2) Also stop new windows once the game is over: when the end is seen, call closeMenu()/closePicker()/closeArsenal(), and give CardMenu `moderation={null}` when view.status === 'over' (or make modFlow.openReport/openBlock no-ops once ended.current is true). Add a GameScreenOnline test: the opponent surrenders with the card menu open, 'דווח על שחקן' is tapped during ONLINE_END_HOLD_MS, and onEnded is not called until the sheet's onExited (or the sheet never opens)."
+        }
+      ]
+    }
+  },
+  {
+    "label": "verify:matchmaking",
+    "result": {
+      "real": false,
+      "reason": "The scenario can happen, but the code does what the approved design says, so this is not an implementation defect.\n\nHow the scenario happens: in apps/server/src/matchmaking/service.ts:458, timedOut() sends `nextRange: queue.nextRangeOf(ticket)`. matcher.ts:424 computes this from the tickets still in the queue at that moment only. matchModel.ts:187 sets alone = timeout.nextRange === null. TimeoutView.tsx:51-56 then shows timeout.aloneTitle/aloneBody. In he/match.json:91 the body reads 'חיפשנו {{time}}, ואף שחקן אחר לא חיפש משחק כזה'. So if a compatible player is in the queue mid-search and then cancels or is matched elsewhere, the past-tense body is wrong. This also happens on the second timeout after \"keep searching\", because searchStart is kept and the body says \"2 דקות\".\n\nWhy the behaviour is still not wrong given Moshe's words and the rulings:\n1. DECISIONS.md, matchmaking: \"Recommended defaults as in the design … 60 s timeout stays with its own wording for the alone case\". The design (designs/matchmaking.json) says the timeout's nextRange \"is computed at the timeout instant\" (design §1c / §3d). §10 of the design gives these exact aloneTitle/aloneBody strings, and its test list pins the body 'חיפשנו דקה שלמה, ואף שחקן אחר לא חיפש משחק כזה…'. The code matches the design word for word.\n2. Moshe's words (\"אם לא יהיה טווח הבא זה אומר שאין\") define null as \"there are none now\", and the server sends exactly that.\n3. The design already uses the \"no one else\" wording loosely on purpose. A blocked player (the block must not be revealed), or one beyond ±300, can search the whole minute and still give null and the same \"אף שחקן אחר לא חיפש\" text (design §11 edge cases). Being imprecise about timing fits that accepted looseness. It is not a deviation from the design.\n4. The claim says Ana \"sees the range card with Ben in it\", and SearchView.tsx:106-121 shows otherwise. The range card shows only her own widening range. No other player is ever shown, and the design's decision \"no next-range marker\" confirms this. So nothing she was shown contradicts the timeout text in any explicit way.\n5. The proposed server fix (sawOthers) would make alone=false while nextRange is null. That would require a non-null nextRange when nobody is there, or new semantics, which breaks the protocol meaning the design set. The alternative is rewording to the present tense. That changes copy Moshe approved through the ruling, so it would be a suggestion for Moshe, not a bug fix.\n\nAt most this is an optional copy refinement to offer Moshe (for example, a present-tense aloneBody). It is not a defect against his request or the rulings."
+    }
+  },
+  {
+    "label": "verify:penalty",
+    "result": {
+      "real": true,
+      "reason": "Confirmed in the code. In C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md:394, the line \"דוגמה: ב־D5 של הדוגמה בסעיף 6.4 (התשובה 9), ספרה שגויה עולה ‎−3.5\" is new in the uncommitted diff, so this batch added it. The §6.4 example it points to (line 382) names no cell and no answer. It is only \"X = 7, Y = 6 → 2 + 1.5 = 3.5\". The spec's only worked D5 example says the answer is 7, not 9: the §13.2 table at line 637 (\"D5 → 7 ... לכן רק 7\") and line 638 (\"לכן D5 = 7\"). The original spec (00-original-spec-v1.md:589, \"D5 → 7\") says the same. So the example refers to a cell example that does not exist, and the answer it gives (9) contradicts the spec's own D5 example. The −3.5 figure itself is right for X=7, Y=6, so only the cell reference and \"התשובה 9\" are wrong. This is real: DECISIONS.md tells the batch to write the new penalty rule into 01-SPEC as Moshe's decision, Moshe asked for the spec to be updated, and 01-SPEC is the source of truth for the rules. A reader who checks the rule cannot reproduce this example, and it contradicts the spec elsewhere. It is a small documentation defect and does not affect the engine. The proposed fix is fine: drop the cell reference, tie −3.5 to the §6.4 X=7, Y=6 example, and keep the LRM before the signed number."
+    }
+  },
+  {
+    "label": "verify:penalty",
+    "result": {
+      "real": true,
+      "reason": "אומת מהקוד ומהגופן. הבאג אמיתי ומגיעים אליו במשחק רגיל.\n\n1) מסלול הנתונים: ‏cardModel.ts:169 ‏(`mistakePips`) מעביר את `penalties.slice(-2)` מתוך `PlayerView.mistakePenalties`. ‏Pips ב־PlayerCardCompact.tsx:196 מציג כל ערך כ־`signedText(-p)`. ב־GroupHud.tsx כרטיס של יריב ב־4 שחקנים מקבל `width` של 78 (‏compactCardWidth/groupCardWidths). ב־styles.scoreRow יש רק `flexDirection: 'row'` ו־gap 3. אין לו flexShrink, ‏maxWidth או overflow. ב־Yoga, ב־RN, ברירת המחדל היא flexShrink 0, ולכן השורה מקבלת את רוחב התוכן. היא ממורכזת בתוך summary (‏alignItems center), ובכרטיס עצמו אין overflow hidden. לכן השורה גולשת משני צדי הכרטיס.\n\n2) מדידה: קראתי בעצמי את hmtx/cmap של Teko_600SemiBold.ttf. ב־Teko אין תכונת tnum, ולכן הספרות פרופורציונליות. ‏LRI ו־PDI לא קיימים בגופן, ורוחבם אפס. בדקתי לפי הניקוד ב־Teko 28 וכל נקודה ב־Teko 13 + 8 ‏(padding ומסגרת). הרוחב הפנימי של הכרטיס הוא כ־76 (‏78 פחות המסגרת):\n- ‏−10 עם ‎−5.5 ‎−4.5: ‏102.2.\n- הפיקסצ'ר של nina ב־4P ‏(2.5 עם ‎−5.5 ‎−4.5): ‏95.2.\n- ‏−15 עם ‎−8 ‎−7 (בלי חצאים): ‏83.7.\n- ‏26.5 עם ‎−8 ‎−6.5: ‏99.4.\n- ‏−15.5 עם ‎−8 ‎−7.5: ‏110.9.\n- לעומת המצב הישן, ‎−3 עם ‎−1 ‎−2: ‏73.6, ונכנס.\n\nהקנסות ב־penalty.json הם 1.5 עד 13.5, ובפתיחה בערך 6 עד 9. לכן שתי טעויות מוקדמות ב־4P מספיקות כדי לגלוש. גם ב־3P ‏(114) יש גלישה כשמופיע ‎×n, למשל ‏30.5 עם ×5 ‎−6.5 ‎−5.5: ‏130.1.\n\n3) לגבי הכללים: ‏DECISIONS.md קובע \"Everything else: take the design's recommended default\". ההחלטה השלישית ב־penalty.json אומרת \"להמשיך עם שתיים... ולבדוק במכשיר. אם לא נכנס, לעבור לאחת\". גם ב־risks מופיע בדיוק הסיכון הזה. המספרים מראים שהשורה לא נכנסת, אז לפי ההנחיה של העיצוב עצמו המימוש הנוכחי שגוי. זה לא סותר את דברי משה: הוא שינה את חוק הקנס, לא את התצוגה.\n\nהסתייגות לגבי התיקון המוצע: נקודה אחת לבדה לא תמיד מספיקה. למשל ‎−15.5 עם ‎−7.5 יוצא 87.4, יותר מ־76. לכן חלק ה־`flexShrink: 1` / `overflow: 'hidden'` (או הקטנה דומה) הכרחי, ולא רק `maxPips`. גם הגדלת הגופן במערכת (allowFontScaling) מחמירה את הגלישה."
+    }
+  },
+  {
+    "label": "review:givens",
+    "result": {
+      "findings": [
+        {
+          "title": "The online loading tip still promises 'up to 10.5 points a cell', but on the refilled boards a fast move is worth at most 6.5",
+          "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/loadingModel.ts",
+          "line": 49,
+          "severity": "medium",
+          "failure": "TOP_MOVE_POINTS = 10.5 is documented 'Change it with the bank', and ConnectingView.tsx:222 passes it into the 'score' tip on every online match loading: 'ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד 10.5 נק׳ למשבצת'. I measured the best opening move with moveScore on the regenerated packages/engine/data/puzzles.json. Ranked/offline fast: max 6.5 (1748 of 2000 ranked at 6). Normal: max 9.5. Hard: max 12. Before this item, ranked fast went up to 12. So a player who sees the tip while loading a fast ranked game can never score more than 6.5, and on hard the tip understates. The item re-measured spec §6.4 (fast 5–6.5, normal 7.5–9.5, hard 9–12) but did not touch the constant. The guarding test (loadingModel.test.ts ~L128-153) still computes the max from the raw assets/puzzles/sudoku-bank-690.csv (30–36 givens), which no longer ships anywhere. So it keeps passing at 10.5 and the drift goes unnoticed.",
+          "fix": "Make the max per game type, e.g. TOP_MOVE_POINTS: Record<GameType, number> = { fast: 6.5, normal: 9.5, hard: 12 }, and in ConnectingView pass match.gameType to TipCard: max: formatScore(TOP_MOVE_POINTS[match.gameType]). Rewrite the loadingModel test to compute the best opening move per gameType over packages/engine/data/puzzles.json (both pools) instead of the CSV, so the next bank change fails the test."
+        },
+        {
+          "title": "Some normal boards still have one digit far above all the others (6 vs ≤4), against Moshe's 'ולא לאחד יותר מכולם משמעותית'",
+          "file": "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/sudoku/givens.ts",
+          "line": 172,
+          "severity": "low",
+          "failure": "addGivens can only add givens, never remove them. When the generator's sparse base already had 6 of one digit, the fill to 35–40 leaves that digit at 6 while the others reach 3–4. fitGivens returns 'filled' without any balance check. bankData.test/offlinePool.test accept spread ≤3 for normal, so this passes. In the regenerated bank, 5 normal boards (1 offline, 4 ranked) have one digit at 6 and every other digit at ≤4, e.g. ranked 35 givens [4,3,6,4,3,4,4,3,4] and [6,3,4,3,4,4,4,4,4], offline 37 [4,4,3,6,4,4,4,4,4]. 6 more have a 6 next to a single 5. On such a board the player sees one digit 50% more often than any other. That is exactly the imbalance Moshe asked to avoid, and docs/QA-CHECKLIST row 8 says 'אף ספרה לא בולטת'. The fill cannot repair these boards: lifting the other digits to 5 would need more than 40 givens. Future puzzles:generate runs can add more of them (a base with 7 of a digit breaks the test only after the bank is written).",
+          "fix": "In fitGivens, after a successful addGivens, reject an unbalanced result: for example, the most common digit more than 1 above the next one, or givensSpread > 2 for normal. Return a new status such as 'unbalanced' (retry within attempts, then drop it like gradeLost). Report it in fitBankGivens/puzzles-givens and count it as a miss in puzzles-generate. Re-run npm run puzzles:givens and backfill the ~5 dropped normal puzzles with puzzles:generate (keep ≥2000 ranked / ≥200 offline). Then npm run pool. Tighten bankData.test/offlinePool.test to the same rule (top digit ≤ second + 1, or MAX_SPREAD.normal = 2)."
+        }
+      ]
+    }
+  },
+  {
+    "label": "verify:grace",
+    "result": {
+      "real": true,
+      "reason": "The defect is real. I traced every step in the code and the scenario is reachable.\n\n1) Server. Both drops go through GameRoom.onDrop and game.disconnect({soft:true}), so each player gets playerConnectionLost. At softEndsAt the engine's timer calls goHard. The first call emits playerDisconnected plus gamePaused (freezeUpToPlayers 2). The second emits only playerDisconnected, because the game is already paused.\n\n2) A comes back at T+16. GameRoom.onReconnect calls welcomeBack, which sends the snapshot first: status paused, A still not connected. Then game.reconnect(A) emits playerReconnected(A), and evolve.ts:279 opens offlineWindow until t+5000. resumeIfClear (engine.ts:339) returns at once because B is still !connected, so the game stays paused.\n\n3) Phone. onSnapshot calls flushOffline(held) unconditionally (remoteGameHost.ts:695). flushOffline (line 704) checks only for status 'over' and for me not being 'active'. Nothing checks for 'paused', so every queued move goes out right away as offlineMove. The held-cell select is sent too.\n\n4) Server again. onClientMessage calls game.act directly, with no deferral (serverGame.act/apply). In engine.ts playerAction, A passes the connected/soft check (he has reconnected), then line 607 `if (paused) reject('paused')`.\n\n5) Phone again. The 'rejected' case calls offline.rejected(clientSeq), which drops the entry for good. effects.ts:71 maps any rejection of an offlineMove to 'offlineLost', which shows \"המהלך ב־{{cell}} לא נספר · בלי קנס\" (he/game.json:245). That happens for every move, although the cells are free.\n\n6) B comes back later. His reconnect emits gameResumed before his offlineMoves arrive, so all of his moves count.\n\nNothing covers this case. No remoteGameHost test returns while the other player is still away. softDisconnect.test.ts:601 only checks that the engine refuses 'paused', which is correct as an engine guard; the bug is that the client sends the moves at that moment.\n\nThis contradicts the rulings in DECISIONS.md (\"offline move lost only if the cell isn't free for him on return\"; \"soft-phase moves still count if he returns before abandonment\"). It also contradicts grace.json decision 4 (\"They still count, as long as he is back before abandonment\"), the design's own \"When both players were offline, the first to arrive wins\", and Moshe's words, under which only the offline player loses, and only a cell that both of them marked. Here A comes back first, well before abandonment (about T+29), and loses every move with no conflict.\n\nThe window problem is also real. offlineWindow.until = reconnect time + 5000 (rules.ts:189). evolve.ts:139 drops an expired window at the next event, so a client that just waited would get 'offlineClosed' whenever B returns more than 5 s after A. The proposed fix (hold the flush while paused, flush on gameResumed, extend the window across the pause in evolve) addresses both parts.\n\nThe only limit on reachability: both players must be in the hard phase at the same time, and A must return first. A shared-network or router outage gives exactly that, so the scenario is uncommon but reachable."
+    }
+  },
+  {
+    "label": "verify:grace",
+    "result": {
+      "real": true,
+      "reason": "I traced the path in the code and confirmed the defect; I did not run a test.\n\nPath:\n1. remoteGameHost.lose() (remoteGameHost.ts:913) always sets `lost.softEndsAt = lostAt + softGraceMs` when softGraceMs > 0. The default in engine rules.ts:187 is 10000.\n2. startOfflinePlay() (line 936) returns early when `offlinePlayable(state, me)` is false. In engine offline.ts:42 that function requires `state.status === 'running'`, 'simultaneous', `p.connected` and `offlineMovesMax > 0`. So `offline.active` stays false.\n3. connectionStatusOf (connectionStatus.ts:39) still copies `r.softEndsAt` into the 'reconnecting'/'resyncing' status. It never reads `offlinePlay.playable`. Only remoteGameHost and tests read that field.\n4. connectionModel step 4 (connectionModel.ts:322-325) runs before step 5, the opponent freeze. It returns selfOffline whenever `now < softEndsAt` and I am active. blocksInput(selfOffline) is false.\n\nThe scenario can happen with default ranked rules:\n- In a 2-player game, B drops. After his 10 s soft phase, engine goHard emits gamePaused (engine.ts:537-541). A sees 'opponentReconnecting'.\n- A's network then blips. The status has softEndsAt in the future, so the model becomes selfOffline. The freeze overlay fades out.\n- getView() applies the offline overlay only when `offline.active` (offlinePlay.ts:143). So A's PlayerView has no softEndsAt, and cardModel.ts:232 gives soft = false. A's card shows no 'unstable' mark and `canSurrender` stays true (cardModel.ts:261). Nothing else gates it: PlayerCard.tsx:182 uses only `!model.mine.canSurrender`.\n- The cards sit above the freeze in any case (OpponentReconnecting `top={freezeTop}`), and the engine accepts a surrender while paused.\n- GameScreen closes the dialog when selfOffline starts (lines 1161-1168), but A can open it again from the card. Confirming calls onlineSession.surrender → host.surrender → act(). With room null, playOffline returns false (`!this.offline.active`), and act() emits rejected 'disconnected'. The 'refused' effect in GameScreen.tsx:805-809 only clears pendingCell and shows nothing. The confirmed surrender is lost silently.\n- Board taps during that window are refused the same silent way. The designed path, turnModel 'turns' or offlineMovesMax 0, has the same gap, though default ranked rules do not use it.\n\nWhy this is wrong against Moshe's words and the rulings:\n- DECISIONS.md (grace) says \"surrender disabled while offline\". The design's recommendedDefault says \"the button is greyed and its dialog closes\". Here the button is enabled and the action disappears.\n- Moshe asked to \"לסמן על המשתמש שהוא בלי תקשורת ולהמשיך את המשחק כרגיל\". In this case my card gets no mark, and the existing freeze screen, which is what \"as usual\" means here, disappears for up to 10 s.\n- The tests cover only a running game. There is no connectionModel test for 'paused' or for \"not playable\".\n\nThe proposed fix has the right direction. Two notes on it:\n- Falling through to step 5 alone does not fix the surrender, because the cards stay tappable above the freeze. The canSurrender/reactionReady gating on the connection status is also needed.\n- Severity is moderate: it needs an opponent in his hard phase plus my own blip within his 15 s grace."
+    }
+  },
+  {
+    "label": "review:retire-rating",
+    "result": {
+      "findings": [
+        {
+          "title": "The 2-player surrender dialog promises 'your rating won't drop', but the server judges the guard at its own later moment, so an opponent's move in flight can turn the promise into a loss",
+          "file": "apps/mobile/src/screens/game/connection/surrenderEstimate.ts",
+          "line": 42,
+          "severity": "low",
+          "failure": "A ranked 2-player game at 1.5 vs 1.5. I open the surrender dialog. GameView.leaveGuards gives 'leftNotBehind', so RankedSurrender shows connection.surrender.bodyNoLoss.leftNotBehind: 'המשחק ייחשב כהפסד · הדירוג שלך לא ירד, כי אין לך פיגור', with no hedge. The old '-15' was at least labelled 'משוער'. The opponent places a digit (+3.5) at time T. My phone gets that event about RTT/2 later, and I tap 'כן, להיכנע' inside that window. The server applies the opponent's placedCorrect first. Then evolve's playerSurrendered takes leaveStandings = standingsOf(s), and I am now behind. leaverGuardReason returns null and the results show -15 (or -30 while provisional). This breaks the explicit promise and Moshe's rule as I experienced it: I left while my screen showed I was not behind. The same happens when the body flips live from 'won't drop' to the red number just as I tap. The 3-4 player bodyManyNoLoss has the same race.",
+          "fix": "Judge guard (a) of a surrender against the standings the client actually saw. Add the last event seq the client had applied to the `surrender` message (gate.ts SHAPES.surrender). ServerGame keeps a short ring buffer of standingsOf by seq, or re-evolves from the log. If that seq is within a small bound (for example 2 s, so it cannot be abused), the engine takes the leaver's snapshot as the more favourable of 'now' and 'at seenSeq' for guard (a). Add an engine test where an opponent's move lands between seenSeq and the surrender. If that is out of scope, at least hedge the copy in he and en (bodyNoLoss.* and bodyManyNoLoss) as an estimate of the current state, the way the '-15' body is."
+        }
+      ]
+    }
+  },
+  {
+    "label": "verify:keep-awake+new-game",
+    "result": {
+      "real": true,
+      "reason": "Confirmed from the code. It is an edge case and depends on timing. Every link in the chain checks out:\n\n(1) ExpoKeepAwakeManager.kt (expo-keep-awake 57.0.2) calls addFlags(FLAG_KEEP_SCREEN_ON) only when `tags` is empty. deactivate() reads `currentActivity` (AppContext.throwingActivity, which throws MissingActivity) before `tags.remove(tag)`, so a deactivate with no current Activity rejects and leaves 'sudoku-fight' in the set.\n\n(2) The set outlives the Activity. ReactHost is held by MainApplication, and KeepAwakeModule/manager is per React instance.\n\n(3) The AndroidManifest MainActivity configChanges leave out fontScale and density, so a font-size or display-size change recreates the Activity. The new window does not have the flag.\n\n(4) The window with no current Activity is real in release builds. Expo's ReactActivityDelegateWrapper.onDestroy posts the old delegate.onDestroy to Dispatchers.Main. That call runs ReactDelegate.onHostDestroy, which does unloadApp (stopping the old surface, which unmounts the root and runs our cleanup's deactivate) and then reactHost.onHostDestroy(old), which sets currentActivity to null and also clears ReactContext.mCurrentActivity. The new Activity's loadApp/onResume are held back behind expo-updates' DelayLoadAppHandler: EX_UPDATES_ANDROID_DELAY_LOAD_APP=true in the generated release BuildConfig, and the handler is returned when devSupport is off. That handler does an IO hop and then a Main hop. So the old onHostDestroy runs first, and onHostResume(new) runs only after it. If the old root's deactivate executes in that gap (a race against the JS unmount; nothing prevents it), the tag stays stuck. The new root's activate and every later AppState 'active' re-take then short-circuit, and the screen sleeps for the rest of the run. That breaks Moshe's \"האפליקציה צריכה לשמור על מסך דלוק\" (\"the app must keep the screen on\") and DECISIONS.md (\"app-wide while the app is open\"). Under the developer option \"Don't keep activities\", the same failure is deterministic, with no race.\n\nSide finding: in a debug build there is no delay load, so the order flips. The new root's activate is a no-op (the tag is still held), then the old root's deactivate empties the set. The flag is lost until the next foreground. The current re-take does recover in that case.\n\nCaveat on the proposed fix: release-then-take on 'active' only helps on the next return from the background. The 'active' event from onHostResume(new) can reach JS before the new root's effect registers its listener. A complete fix should also release-then-take on mount, i.e. in the initial take(). The test should then cover both mount and foreground with a fake module that copies the native empty-set check."
+    }
+  },
+  {
+    "label": "verify:grace",
+    "result": {
+      "real": true,
+      "reason": "Confirmed from the code and by a throwaway Jest run, which I deleted afterwards. In startOfflinePlay (remoteGameHost.ts:939-943) my server lock becomes the local lock. While offline, act() goes to playOffline, and 'release' only calls OfflinePlayBook.release (offlinePlay.ts:107-113), which sets this.lock = null. Nothing is queued or remembered. On a soft return, the engine's reconnect (engine.ts:549-554, evolve 'playerReconnected') leaves the locks alone, which matches the ruling \"his server lock keeps running\". offline.end() then returns null, so flushOffline (remoteGameHost.ts:704-741) sends only the queued offlineMoves plus a select of `held`. No release ever goes out.\n\nThe run used liveTable (fast, thinkTimeMs 8000). Steps: select c0, answered; cut the connection; release, after which the local view shows lock null; back after 1 s; elapse 1.5 s. Results:\n- status: live\n- phase: 'soft'\n- frames sent: only [{select, cell 1, clientSeq 1}]\n- server locks: still [{me, cell 1, expiresAt 1008320}]\n- my view: lock on cell 1 again, with 5420 ms left\n\nSo the cell I explicitly let go of comes back as mine with its countdown, and the opponent stays blocked from it until it runs out.\n\nThe window is wide. Think time is 8/12/18 s and the soft phase is 10 s, so this is the normal short-blip case, especially in normal and hard games. The same hole applies to a 'release' that was in flight and unanswered at the loss (carried at line 947).\n\nIt goes against Moshe's \"להמשיך את המשחק כרגיל\": a cancel normally frees the cell. The rulings do not cover it. \"His server lock keeps running\" is about what the server does during the soft phase, not about dropping the player's explicit cancel. The design reconciles the other local intent on return (re-select a held cell, ruling \"re-selected on return if free\"), but not a release.\n\nRelated edge: if the lock moved offline to Y and Y is taken by the time he returns, the select of Y is refused 'cellTaken' and X also stays locked. The proposed fix would cover this too if it releases whenever the snapshot shows my lock on a cell that is neither `held` nor queued.\n\nNo existing test covers it. apps/mobile/src/net/__tests__/remoteGameHost.test.ts has no \"carried lock, then cancel offline\" case."
+    }
+  },
+  {
+    "label": "verify:givens",
+    "result": {
+      "real": true,
+      "reason": "I checked the claim against the code and it holds. TOP_MOVE_POINTS = 10.5 (apps/mobile/src/screens/game/connection/loadingModel.ts:49) is still marked \"Change it with the bank\". This item did not touch loadingModel.ts, ConnectingView.tsx or loadingModel.test.ts; git diff shows no change to them. ConnectingView.tsx:222 passes the constant into the 'score' tip (\"...עד {{max}} נק׳ למשבצת\"). OnlineGame.tsx:64 builds `match` through matchLoadingOf for every ranked online match while it is in the connecting step, and tipOf(session.key) picks 'score' for about 1 in 4 matches, so the bad tip is reachable.\n\nI measured the regenerated packages/engine/data/puzzles.json myself, re-implementing the same §6.4 formula as moveScore. The best opening move per board:\n- fast ranked: 2000 boards, 45–50 givens, max 6.5 (1748 at 6)\n- fast offline: max 6.5\n- normal ranked and offline: max 9.5\n- hard: max 12\n\nThe committed HEAD bank gave 10.5 for fast offline and 12 for every ranked pool, so 10.5 was valid only for the old raw CSV.\n\nThe board only fills: the interferences fireworks, cats and warp are visual only, and wrong marks are not on the grid. So no move later in a fast game can be worth more than its best opening move, and 10.5 per cell can never be scored on a fast board.\n\nThe updated docs/01-SPEC.md §6.4 now states fast 5–6.5, normal 7.5–9.5, hard 9–12, so the tip contradicts the spec this item rewrote. That follows from Moshe's givens decision (fast 45–50, normal 35–40, hard unchanged).\n\nThe guarding test (loadingModel.test.ts:121-153) still computes the max from assets/puzzles/sudoku-bank-690.csv. The file still exists, but its raw 30–36-given boards no longer ship in any pool, so the test still passes at 10.5 and does not catch the drift.\n\nThe hard understatement (12 vs 10.5) already existed for ranked before this item. The fast and normal overstatement is new."
+    }
+  },
+  {
+    "label": "verify:black-screen",
+    "result": {
+      "real": true,
+      "reason": "I confirmed this from the code and from a test I ran. showResults (apps/mobile/src/screens/game/GameScreen.tsx:622) checks `dialogUp.current || modUp.current` only once, when the end arrives. After that, `later(delay, done)` alone decides when open() runs, and open() calls openResults → onEnded without checking again.\n\nNothing stops a new window from opening during the 600 ms hold:\n- connectionModel returns NONE for status 'over' (opponentLeftOf is null when the opponent surrendered rather than abandoned). So `blocked` is false and the close-on-block adjust never runs.\n- useReactions never resets menuFor at the end.\n- CardMenu still gets `moderation` because the condition is only `ranked && menuFor !== null`.\n- modFlow.openReport mounts ReportSheet, which is a native RN Modal through components/ui/Sheet.\n\nTo check reachability I wrote a throwaway Jest test using the GameScreenOnline harness, then deleted it. Steps: open the card menu, have the opponent surrender, wait 100 ms, tap card-menu-report, then wait ONLINE_END_HOLD_MS. onEnded was called once, and the report-sheet was still on screen at that moment (`sheetAtResults [true]`).\n\nThis breaks DECISIONS.md: \"Close every native Modal (report sheet, block dialog, any Sheet) and wait for it before navigating to results\". The black-client design also says showResults \"waits for the hold AND for every modal to be gone\". 01-SPEC §12 says \"התוצאות לא נפתחות כשחלון עדיין פתוח\".\n\nTwo caveats:\n- The race is narrow: Moshe has to tap within the hold. Nothing ties it to the black screens Moshe actually saw.\n- The claim that the window \"only exists because of the new hold\" is overstated. A ranked board-complete end already held for 1100 ms with the same exposure.\n\nNeither caveat refutes the defect. Re-checking the open windows inside open(), and turning off moderation once ended.current is true, would both close the gap."
+    }
+  },
+  {
+    "label": "verify:grace",
+    "result": {
+      "real": true,
+      "reason": "The defect is real in the code, but the trigger in the claim is wrong and the bug is minor.\n\nWhy the claimed scenario fails: pressing the phone's Home button is not a deliberate leave. RemoteGameHost.onAppState('background') calls room.leave(false), which only closes the socket (Colyseus Room.leave(false) runs connection.close() and sends no LEAVE_ROOM). The server then treats it as a dropped connection: GameRoom.onDrop calls game.disconnect(id, {soft:true}). So the 10 s soft phase runs, then the 15 s grace, and \"25 שניות בלי חיבור\" is correct there. Also, in a 2-player game the current app gives the player no way to leave on purpose mid-game. Android back and the end button open the surrender dialog, and a surrender goes straight to results (opponentLeftOf returns null). OutStrip's leave exists only in 3–4 player games.\n\nWhy the defect is still real: connectionModel.ts:265 always passes softGraceMs + graceMs to opponentLeftOf. It does this whatever way the opponent's absence began, and GameScreen passes softGraceMs = 10000 from the session. Some absences are hard from the start, with graceEndsAt = now + graceMs and no soft phase:\n- A deliberate leave (GameRoom.onLeave with CONSENTED goes to disconnect(soft:false), then engine goHard).\n- A seat whose sessionId is null at GO. GameRoom.launch calls game.disconnect(id) without soft for it. onLeave clears sessionId during the countdown or 'starting' phase for any close code, including a reconnection that failed halfway.\n\nIn those cases the opponent is abandoned 15 s after the absence began. A first sees the Opponent-Reconnecting ring count down from 15, then OpponentLeft says 25.\n\nReachable concretely through:\n- the dev fake opponent's `--leave-after` (client.ts leave() runs room.leave(true) mid-game). README.md:227 documents it for testing exactly this screen.\n- the fake client stopping mid-game (finish() runs leave(true)).\n- the pre-GO left seats above.\n- the protocol-mismatch shutdown (leave(true)) right at the snapshot.\n\nThis contradicts the ruling \"deliberate leave = hard at once\": the screen states a time the player never had. The existing tests only cover soft = 0 (says 15) and a soft drop with soft = 10000 (says 25). None covers a hard-from-start leave with softGraceMs 10000. Severity is low: a wrong number in one line of text. In production between two current apps it is reached only through edge paths, not the Home button."
+    }
+  },
+  {
+    "label": "verify:givens",
+    "result": {
+      "real": false,
+      "reason": "The data in the claim is accurate, but it does not break any rule that was set. I checked packages/engine/data/puzzles.json: 5 of 2,300 normal boards have one digit at 6 and every other digit at 4 or less (offline bb36475a74d1a5ac [4,4,3,6,4,4,4,4,4]; ranked 17a359e0a899acce, 36c2c3f72f69e6ad (36 givens, not 35 as the claim says), b8ffa6cd781a99c3, b8e42b7b7bbf2d71). Comparing with the bank at HEAD confirms the cause: the 6 was already in the generator's base (for example base 2,1,6,2,3,3,3,3,3 at 26 givens became 4,3,6,4,3,4,4,3,4). addGivens only adds givens, and fitGivens has no balance check. Even so, this is not wrong given the rulings and Moshe's words:\n(1) DECISIONS.md asks only for a \"digit-balanced fill\". The fill is balanced: each new given goes to the scarcest digit, and on these boards it added no given at all to the digit with 6. It cut the base spread from 5 to 3.\n(2) Moshe's words \"תמלא ... ותקפיד למלא לכל המספרים ולא לאחד יותר מכולם משמעותית\" are about how the fill hands out givens. Here every digit is shown and the fill gave nothing extra to any one digit.\n(3) The spec, which is the source of truth for rules, defines \"no digit stands out\" with a number. docs/01-SPEC.md §5.2 line 322 says: \"הפער בין הספרה הנפוצה לנדירה הוא לכל היותר 2 ב'מהיר' ו־3 ב'רגיל'\". docs/DECISIONS-PENDING.md 2.15 gave Moshe the same bound: \"ואף אחת לא בולטת (פער של 2 לכל היותר ב'מהיר', 3 ב'רגיל')\", status ✓ (Moshe, 15.10.2026). All the flagged boards have a spread of exactly 3, so they are within the documented bound. bankData.test and offlinePool.test enforce that bound on purpose; it is not a loophole. QA-CHECKLIST row 8 (\"אף ספרה לא בולטת\") points to the same rule.\n(4) Two extra givens on a 35–37 given board, on 0.2% of normal boards, can hardly be called \"significantly more than all of them\".\nThe proposed fix, top digit at most 1 above the second or spread ≤2, is a stricter rule than the spec and the decision Moshe was told about. If anyone wants it, it is a new proposal for Moshe to approve, not a defect. The point about future generator runs (a base with 7 of a digit) is speculative: today the bank and the tests are consistent."
+    }
+  },
+  {
+    "label": "verify:retire-rating",
+    "result": {
+      "real": false,
+      "reason": "The race can happen, but the behaviour isn't wrong under Moshe's rule and the rulings, so this is not a defect.\n\nWhat the code does:\n- The dialog is recomputed from the live GameView on every render (GameScreen.tsx:1382-1383).\n- The `surrender` message carries only clientSeq (gate.ts:79).\n- The engine handles it when the server processes it (engine.ts:681, emits playerSurrendered).\n- evolve.ts:289-294 then snapshots standingsOf(s) at that moment.\n\nSo an opponent move that reaches the server first can turn guard (a) off. The window is about one network round trip, a few hundred ms at most, and is common to every real-time element of a server-authoritative game.\n\nWhy it is still not wrong:\n1. DECISIONS.md (retire) says \"judged ... at the moment of surrender for surrender\". 01-SPEC §11.2 says \"מתי בודקים: ... בכניעה, רגע הכניעה\". The only authoritative moment is the server's. At that moment the opponent did have an advantage, so -15 is exactly Moshe's rule (\"הדירוג לא יפגע אם ליריב אין יתרון עלי\"), applied correctly.\n2. The copy \"המשחק ייחשב כהפסד · הדירוג שלך לא ירד, כי אין לך פיגור\" is word for word the string retire.json specified, and DECISIONS.md approved that design (\"Defaults as designed\"). It states the current reason, which is accurate when shown and updates live.\n3. The old \"משוער\" hedge was about the Elo estimate (games count, K), not about network races.\n4. The proposed fix goes against CLAUDE.md \"השרת סמכותי\" and opens an abuse path. A client-reported seenSeq with \"the more favourable of now and seenSeq\" lets any client claim a seq up to 2 s old, giving every surrender a free look-back that dodges a just-scored lead. No ruling asks for client-view judging.\n\nAt most, hedging the bodyNoLoss/bodyManyNoLoss copy is an optional wording change, not a broken rule."
+    }
+  },
+  {
+    "label": "verify:grace",
+    "result": {
+      "real": true,
+      "reason": "I tried to refute this and couldn't. Every link in the chain is in the code. The only thing that makes it rare is timing.\n\nWhat the code does:\n\n1. **A rate-limited message gets no answer.**\n   - `gate.ts:188` returns `dropped` with reason `rateLimited`.\n   - `GameRoom.ts:824-835` sends `rejected` only for `malformed` or `unknownType`, so a rate-limited `offlineMove` is dropped silently. It also counts as an abuse violation.\n\n2. **The rate limit carries over across reconnects.**\n   - The gate is created once per room (`GameRoom.ts:337`), and its buckets are keyed by `playerId`. Neither `onReconnect` nor `newSession` resets them.\n   - The `RateLimiter` token bucket holds at most 8 tokens and refills 8 per second (1 every 125 ms).\n\n3. **On the phone, a sent entry has no way out except an answer, a new drop, or the end of the game.**\n   - `OfflinePlayBook` removes an entry only through `answered()` (my offline `placed*` event), `rejected(clientSeq)` or `clear()`.\n   - `resetUnanswered()` runs only in `goOffline()`. `entriesToSend()` runs only in `flushOffline()`, which runs only on a snapshot.\n   - There is no timeout for offline entries. `pendingTimeoutMs` covers only a pending select.\n   - `answerTimeoutMs` does not save it either: it drops the connection only when nothing at all was heard, and pongs and other events keep arriving. The test at `remoteGameHost.test.ts:846` says this outright: \"only the answer is missing (a rate limit), nothing is wrong with the connection\".\n\n4. **The resend goes through the same bucket.**\n   - `unsettledOfflineMoves` keeps moves the server refused (by design: \"the server refuses it\"), so they are sent again with new clientSeqs.\n\n5. **It shows on the board.**\n   - `boardModel.ts:219` orders the cell states as filled > queued > lock.\n   - While the cell is still empty (for example, refused as `cellTaken` because of the other player's lock), it shows as 'queued' with my digit and can't be tapped.\n\n**Can it happen?**\n- Attempt 1 of a reconnect has no delay (`comeBack()`; the 250 ms is the wait before attempt 2).\n- Colyseus 0.18's `checkReconnectionToken` forcibly closes the old connection when a reconnect arrives with its token. So a token reconnect does not wait for the server's heartbeat to notice the drop, and a full cycle under 1 s is possible. Ways to get there:\n  - The OS closes the socket on a network switch (`onLeave`), followed by an immediate reconnect.\n  - A quick background and foreground.\n- The condition: N moves sent in the first flush, M of them sent again, and the second flush arriving less than (N+M-8)×125 ms after the first. Examples:\n  - 8 sent, 3 refused: under 375 ms.\n  - 8 sent, all 8 refused: under 1 s.\n\nSo it is reachable, but it is a narrow race:\n- It needs 5 or more moves made offline (8 at most).\n- The second drop must land in the single round-trip after the server got the moves but before the phone got the answers.\n- The reconnect must finish fast.\n\nThe claim's \"250 ms\" detail is slightly off, but that only makes the race easier.\n\n**Is the behaviour wrong?** Yes. The 'grace' ruling in `DECISIONS.md` says an offline move is lost only when the cell isn't free for him on return, with no penalty and a short message. Here the move is never judged and no message comes.\n\n**Where the claim overstates:**\n- \"For the rest of the game\" is too strong. Once someone fills the cell, filled takes precedence and the queued digit disappears from the board.\n- Even so, the entry stays in the queue:\n  - It still counts toward `offlineMovesMax` on the next loss.\n  - At the next drop it is sent again, and the \"did not count\" message comes long after the move was made.\n\nReal, but rare."
+    }
+  },
+  {
+    "label": "fix-confirmed",
+    "result": {
+      "item": "Fix 12 CONFIRMED defects (keep-awake, grace x5, black-screen, rating-refresh, penalty x2, matchmaking, givens)",
+      "done": true,
+      "summary": "All 12 defects are fixed at the root, and each has a test that reproduces it. `npm run verify` is green: lint, `tsc -b` and i18n (0 errors) pass, and Jest passes 372 suites with 8644 tests. Prettier is clean on every changed file. No new UI strings.\n\n1. **Keep-awake** (`services/keepAwake.ts`): every take now releases the tag first, then takes it. This happens on mount and on every return to the foreground. The take is skipped if the hook has let go in the meantime. The test uses a fake module that copies Android's ExpoKeepAwakeManager: the flag is set only when the tag set is empty, and calls fail when there is no Activity. It covers a recreated window, a tag left by a failed release, a fast unmount, and start-up failures.\n\n2. **Offline moves when both players dropped**:\n   - Engine (`evolve.ts`): an offline window does not expire while the game is frozen. On `gameResumed`, a window opened during the freeze runs a full `offlineMovesWindowMs` from the resume. A window opened before the freeze keeps the time it had left.\n   - Phone (`remoteGameHost.ts`): `flushOffline` holds the queue, the held cell and the releases while the game is paused. It sends them all when the next event shows the game is no longer paused (`flushOnResume`). A new disconnect clears the hold.\n   - Tests: two engine tests and a remoteGameHost test (both offline, I return first, the moves wait and then count).\n\n3. **`selfOffline` without offline play**:\n   - `ConnectionStatus` now carries `playable`, mapped from `offlinePlay.playable`.\n   - `connectionModel` returns `selfOffline` only when the phone can play on. In a game already frozen for the opponent, the freeze screen stays. In any other case it shows Self-Reconnecting at once.\n   - In GameScreen, `withoutServer()` turns off `canSurrender` and `reactionReady` on my card while `online.status === 'reconnecting'`.\n   - Tests in connectionModel and connectionStatus, plus a GameScreenOnline test (frozen game, then my connection drops: the freeze stays and Surrender is disabled).\n\n4. **\"The opponent left\" seconds**: RemoteGameHost tracks how each other player's absence began (`absences`; `playerConnectionLost` means a drop, a bare `playerDisconnected` means a hard leave) and exposes it as `OnlineInfo.hardLeavers`. `opponentLeftOf` uses `graceMs` alone for a hard leaver, and the soft phase plus the grace otherwise. Tests in connectionModel and remoteGameHost.\n\n5. **Rate-limited `offlineMove`**:\n   - Each queue entry now keeps `sentAt`. A sent move with no answer after `offlineAnswerTimeoutMs` (3000) is sent again (`watchOfflineAnswers`, `resetSentBy`).\n   - A refusal of an `offlineMove` whose queue entry is already gone (an old copy) is silent, so there is no false 'lost' toast.\n   - The server gate's `offlineMove` limit went from 8 to 16 per second (two bursts).\n   - Tests in offlinePlay, remoteGameHost and gate.\n\n6. **Lock cancelled offline**: `OfflinePlayBook` records the cells let go of offline (cancel, or a switch to another cell). `end()` now returns a `ReturnPlan {held, letGo}`. On return, if the server still shows my lock on one of those cells, and it is not the held cell or a queued one, the phone sends `release` before the moves. Two remoteGameHost tests: cancel offline, and a switch to a cell that was taken meanwhile.\n\n7. **Native window during the end hold** (GameScreen):\n   - `showResults` checks for open windows again inside `open()`. If one is up, it closes it, waits for it to leave, and has its own ceiling (`go`).\n   - When the game is over, the card menu, the picker and the arsenal close. CardMenu gets no moderation items. `openReport` and `openBlock` are guarded by `ended.current`.\n   - GameScreenOnline test: the menu is open when the opponent surrenders.\n\n8. **Older progress answer overwriting a newer one** (`appProgress.ts`): reads are numbered (`progressReads` / `progressTaken`), and an answer older than one already taken is dropped. When the account changes, reads still in flight are dropped too. Test: two reads in flight, the older one answers last.\n\n9. **Pips too wide**: new `pipsForWidth()` in `cardModel` with `metrics.compact.twoPipsMinWidth = 110`. A 3-player card shows two pips; a 4-player card, or any card with ×n, shows the last one only. The pips also shrink and clip from the start (oldest first), and the score row is capped at the card width. Tests in cardModel and PlayerCard.\n\n10. **Spec §6.5 example**: rewritten without D5, using X = 7, Y = 6 → ‎−3.5, with the LRM kept.\n\n11. **Stale range announcement** (`SearchView`): the spoken range line is reset while nobody else is searching. MatchScreen test: range → alone → someone at 15 s announces the current range.\n\n12. **Loading tip**: `TOP_MOVE_POINTS` is now per game type (fast 6.5, normal 9.5, hard 12), and ConnectingView passes `match.gameType`. The test now measures the best opening move per game type over `packages/engine/data/puzzles.json` (both pools) instead of the CSV.\n\nDocs updated:\n- 01-SPEC §16.2: the frozen return, the release of a lock let go of offline, the resend, the no-offline-play case, and \"15 seconds\" after a deliberate leave.\n- 01-SPEC §22: why keep-awake releases before taking.\n- QA-CHECKLIST: rows 13 and 25, the tip line, and keep-awake check 8.\n- STAGE7-DEVICE-CHECKS: new check 2ג.\n- DECISIONS-PENDING and components.md: the best-move numbers; components.md also has the pip rule.",
+      "filesChanged": [
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/services/keepAwake.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/services/__tests__/keepAwake.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/evolve.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/types.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/softDisconnect.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/offlinePlay.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/__tests__/offlinePlay.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/remoteGameHost.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/net/__tests__/remoteGameHost.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/gate.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/gate.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/connectionModel.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/__tests__/connectionModel.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/online/connectionStatus.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/online/__tests__/connectionStatus.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/GameScreen.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenOnline.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/progress/appProgress.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/progress/__tests__/appProgress.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/cardModel.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/metrics.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/PlayerCardCompact.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/__tests__/cardModel.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/__tests__/PlayerCard.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/match/SearchView.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/match/__tests__/MatchScreen.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/loadingModel.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/ConnectingView.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/__tests__/loadingModel.test.ts",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/__tests__/ConnectingView.test.tsx",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/QA-CHECKLIST.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/DECISIONS-PENDING.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/components.md",
+        "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/STAGE7-DEVICE-CHECKS.md"
+      ],
+      "checks": [
+        {
+          "cmd": "npm run verify (eslint . --max-warnings 0, routes:types + tsc -b, i18n:check, jest)",
+          "result": "exit 0; i18n 0 errors; Jest 372 suites / 8644 tests passed"
+        },
+        {
+          "cmd": "npx prettier --check on all 35 changed files (code + docs)",
+          "result": "All matched files use Prettier code style (after --write on remoteGameHost.test.ts and ConnectingView.tsx)"
+        },
+        {
+          "cmd": "npx jest packages/engine/src/game/softDisconnect.test.ts",
+          "result": "41 passed (2 new: frozen window from the resume; pre-freeze window keeps its remainder)"
+        },
+        {
+          "cmd": "npx jest apps/mobile/src/net",
+          "result": "all passed incl. 5 new remoteGameHost tests and new offlinePlay tests"
+        },
+        {
+          "cmd": "npx jest apps/mobile/src/screens/game/__tests__/GameScreenOnline.test.tsx",
+          "result": "29 passed (2 new: card menu at the end; frozen + my blip keeps freeze, surrender disabled)"
+        },
+        {
+          "cmd": "npx jest apps/mobile/src/services/__tests__/keepAwake.test.tsx",
+          "result": "9 passed (native-like fake: recreated window, stuck tag, fast unmount)"
+        },
+        {
+          "cmd": "powershell (Get-PSDrive C).Free/1GB",
+          "result": "11.1 GB free; no cleanup needed"
+        }
+      ],
+      "deviations": [
+        "Item 4: I track how the absence began on the phone, in RemoteGameHost (exposed as OnlineInfo.hardLeavers), not in engine state. The snapshot-size budget is about 100 B. Fallback: an opponent first seen already hard in a snapshot counts as a drop (soft + grace = 25 s), as before.",
+        "Item 5: I did not add a new 'rejected' reason for rate-limited messages. Instead the server limit is 16/s (two bursts) and the phone resends a move with no answer after offlineAnswerTimeoutMs = 3000. A late refusal of an old copy is now silent (no false 'lost' toast). One more consequence: an offlineMove refused after the end cleared the queue no longer shows a toast either.",
+        "Item 6: the release is sent only for cells the player let go of offline (cancel, or a switch to another cell), not for every server lock that is neither held nor queued. A lock that only ran out with the soft phase is still kept through a hard-phase freeze, as before.",
+        "Item 7: the extra check inside open() covers any remaining race. The main protection is that, once the game is over, the card menu closes and loses its report/block items. The new test therefore checks that no window can open during the hold. The late-wait branch itself is not exercised by a test, because there is no longer a way to open a window during the hold.",
+        "Item 2: a window opened before the freeze also stands still during it (it keeps its remaining time from the resume). The proposal only covered windows opened during the freeze."
+      ],
+      "openIssues": [
+        "The gate limit change (offlineMove 16/s) and the engine change (offline window stands still during a freeze) need a server deploy. With an old server, a frozen return's held-back moves can get 'offlineClosed' if the other player returns more than 5 s later. ENGINE_VERSION was not bumped, per DECISIONS.md (integration step).",
+        "Device-only checks: STAGE7 new check 2ג (cancel while offline; both phones offline, the first back waits for the freeze to end); QA row 8 keep-awake after a font/display-size change in the background (release build only); QA row 13 pip widths at a large system font.",
+        "Cases where the new ReturnPlan.letGo is not released: if the game freezes at the return and the connection drops again before it resumes, the held-back plan (held cell and let-go releases) is dropped. The next loss restarts letGo, so the server's kept lock may come back to the player. This is an edge case and I accepted it."
+      ],
+      "notesForOtherItems": [
+        "OfflinePlayBook API changed: end(now) returns ReturnPlan {held, letGo} (was CellIndex|null). markSent(entry, clientSeq, at) has a new phone-time argument. QueuedEntry has a new sentAt. There are new oldestSentAt / resetSentBy(at).",
+        "RemoteHostOptions.offlineAnswerTimeoutMs (default 3000) is new. OnlineInfo.hardLeavers?: readonly PlayerId[] is new (optional, so hand-built OnlineInfo literals still compile).",
+        "ConnectionStatus reconnecting/resyncing have an optional playable (connectionStatusOf fills it from offlinePlay.playable; absent means true). ConnectionModelOptions.hardLeavers is new. Exact-object tests of reconnecting statuses must include playable.",
+        "TOP_MOVE_POINTS is now Record<GameType, number>, not a number. The new pipsForWidth(pips, width) is in components/player/cardModel; a 4-player compact card shows one pip.",
+        "GameScreen: new `over` adjust-in-render that closes the arsenal, picker and card menu when the game ends. CardMenu moderation is null once the game is over. The new withoutServer() turns off canSurrender/reactionReady while online.status === 'reconnecting'. The interference item touches the same file (⚡ slot, card menu): keep these.",
+        "evolve.ts: offline-window expiry is skipped while the pre-event status is 'paused', and gameResumed re-times every offlineWindow. A replay of a game played before this change that had a pause together with an offline window can differ; this relies on the planned ENGINE_VERSION bump."
+      ]
+    }
+  }
+]

@@ -17,6 +17,12 @@ const timeLeft = (lock: CellLock, t: BoardT): string =>
 
 /** E.g. "D5, ריקה, נעולה על ידי NinaVolt, 4 שניות" or "D5, 7, נפתרה על ידי MosheG". */
 export function cellLabel(cell: CellModel, t: BoardT): string {
+  // My waiting digit [D42]: "D5, 7, ממתין לחיבור".
+  if (cell.kind === 'queued') {
+    const parts = [cell.name, t('cell.queued', { digit: cell.digit ?? '' })];
+    if (cell.wrong.length) parts.push(t('cell.wrong', { digits: cell.wrong.join(t('separator.list')) }));
+    return parts.join(t('separator.list'));
+  }
   const parts: string[] = [cell.name, cell.digit === null ? t('cell.empty') : String(cell.digit)];
   const p = cell.player;
   switch (cell.kind) {

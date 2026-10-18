@@ -1,0 +1,223 @@
+{
+  "item": "Game types fast / normal / hard look the same: set the starting givens to fast 45–50, normal 35–40, hard 24–28 (keep), adding givens from the solution with a seeded, digit-balanced fill",
+  "summary": "No routing bug: the app and the server both pass the chosen game type all the way to puzzle selection. The cause is the data. The type is defined only by the techniques a puzzle needs (grade.ts), and the generator strips givens down to 22 for every type. So \"fast\" ranked puzzles have 22–30 givens (avg ~26), next to hard's 22–29. Offline fast has 30–36, offline normal and hard 22–28. Every type looks sparse, the way Moshe saw it. Fix: a new engine rule DEFAULT_GIVENS (fast 45–50, normal 35–40, hard 24–28). A pure, seeded engine function adds givens from the solution, scarcest digit first, and keeps the puzzle's technique grade. A script rewrites packages/engine/data/puzzles.json, and the generator and importer apply the same step. Then the mobile offline file is regenerated, and the server retires (not deletes) the old ranked rows through a new retired_at column. A dry run on the real bank: fast 2690/2690 fit (digit spread ≤2); normal 2294/2300 keep \"needs hidden single\"; hard 1813 already in range plus 483/486 lifted to 24–28 and still hard. About 10 ranked puzzles need backfill from the generator to stay at ≥2000 per type.",
+  "rootCauses": [
+    {
+      "cause": "DATA, not routing: the generator removes givens down to minGivens=22 for every target type, as long as the grade stays at or below the target. So 'fast' and 'normal' ranked puzzles are as sparse as 'hard' ones (ranked fast 22–30 givens, normal 22–28, hard 22–29; offline normal and hard 22–28; offline fast 30–36 from the CSV). Game type is defined only by technique, never by the number of givens, so the boards look alike.",
+      "evidence": "packages/engine/src/sudoku/generate.ts:66 (minGivens = 22), :83 (removes until filled <= minGivens), :97 (best = the last state that still has the target grade, i.e. the sparsest); packages/engine/src/sudoku/grade.ts:28-32 (levels by technique only); measured from packages/engine/data/puzzles.json with a scratch script: offline fast 690 (30–36), offline normal 300 (22–28), offline hard 300 (22–28), ranked fast 2000 (22–30), ranked normal 2000 (22–28), ranked hard 2000 (22–29).",
+      "confidence": "high"
+    },
+    {
+      "cause": "Ruled out: a selection bug that sends every type to the hard pool. The type is honoured end to end. Mobile: GameTypeScreen.start → startAndOpen({mode, gameType: selected}) → gameStore.startPractice/startBotPractice({gameType}) → session.openPractice → choosePuzzle → pool.ids(gameType) → offlinePool.poolIds filters by p.gameType. The bot path goes through /bot-select?gameType → BotSelectScreen → startAndOpen. Server ranked: service.ts:625 setup.gameType → GameRoom.claimMatch → this.gameType → rankedGames.createConfig → dbPuzzleSource.pickFor(gameType) → rankedPool filters game_type. Unrated rooms: bankPuzzleSource.pick(this.gameType).",
+      "evidence": "apps/mobile/src/screens/home/GameTypeScreen.tsx:75-93, startGame.ts:48-51, game/gameStore.ts:231-233, game/session.ts:140 and :175, game/offlinePool.ts:48; apps/server/src/matchmaking/service.ts:625, rooms/GameRoom.ts:299, :541-554, persistence/rankedGames.ts:73, puzzles/rankedSource.ts:51, game/puzzles.ts:72-86.",
+      "confidence": "high"
+    }
+  ],
+  "design": "GOAL\nThe number of givens at the start is the visible property of a game type: fast 45–50, normal 35–40, hard 24–28. Each type keeps its technique grade, so spec §5.2 and the i18n strings (\"דורש בודד נסתר\", \"דורש זוגות או צמצומים\") stay true. Missing givens are added from the solution. Adding correct givens never breaks the unique solution. The fill is random with a seeded engine Rng, deterministic and independent of order. It is balanced across digits: every digit appears, and none sticks out.\n\nA. RULE / CONFIG (engine, new file packages/engine/src/sudoku/givens.ts)\n  export interface GivensRange { readonly min: number; readonly max: number }\n  export type GivensRules = Readonly<Record<GameType, GivensRange>>;\n  /** Givens at the start per game type (Moshe, 2026-10-15) [D42]. */\n  export const DEFAULT_GIVENS: GivensRules = { fast: {min:45,max:50}, normal: {min:35,max:40}, hard: {min:24,max:28} };\n  export const DEFAULT_FIT = { attempts: 5, slack: 1, salt: 20261015 } as const;   // tuning, not literals in code\n  Update the gameType.ts doc comment: \"board difficulty (givens range and techniques) and pace together [D5, D42]\".\n\nB. ENGINE PURE FUNCTIONS\n 1. packages/engine/src/util/random.ts\n    - export function shuffled<T>(rng: Rng, items: readonly T[]): T[]. Move it from generate.ts unchanged (Fisher-Yates with randomInt), so generator output stays byte-identical, and make generate.ts import it.\n    - export function seedFromString(text: string, salt = 0): number. 32-bit FNV-1a over the text with basis (0x811c9dc5 ^ salt) >>> 0, returns uint32. Gives a stable per-puzzle seed.\n 2. givens.ts\n    - digitCounts(grid: Grid): number[] gives the length-9 count of givens per digit 1..9. givensSpread(grid): number = max − min of digitCounts.\n    - addGivens(givens: Grid, solution: Grid, target: number, rng: Rng, { keepGrade = null, slack = DEFAULT_FIT.slack, grading = DEFAULT_GRADING }: AddGivensOptions = {}): number[] | null\n      * RangeError if target is not an integer in 0..81, or if !agreesWith(givens, solution). If target <= filledCount(givens), returns a copy.\n      * Water-filling loop while filled < target:\n        minC = the smallest count among digits that still have hidden cells (count < 9).\n        For level = minC .. minC + slack:\n          for each digit d with count === level, in shuffled order:\n            cells = hidden cells whose solution is d and not blocked;\n            order = shuffled(rng, cells) then stable sort by the box's current givens count, ascending (spreads givens over boxes);\n            for each cell c: set out[c] = d.\n              If keepGrade != null and gradePuzzle(out, grading).difficulty !== keepGrade: undo, mark c blocked, continue.\n              Otherwise accept (counts++), and go to the next given.\n        If nothing could be placed, return null.\n      * Uniqueness is guaranteed because every added given agrees with the unique solution. Grade checks run only when keepGrade is set.\n    - fitGivens(givens, solution, gameType, rng, { rules = DEFAULT_GIVENS, attempts = DEFAULT_FIT.attempts, slack, grading } = {}): FitGivens\n      type FitGivens = {status:'inRange'} | {status:'filled'; givens:number[]; attempts:number} | {status:'tooMany'} | {status:'gradeLost'}\n      n = filledCount(givens); r = rules[gameType].\n        n in [r.min, r.max] → inRange (the puzzle is untouched: its id and history are kept).\n        n > r.max → tooMany.\n        Otherwise target = r.min + randomInt(rng, r.max − r.min + 1).\n          For k = 1..attempts: out = addGivens(givens, solution, target, rng, {keepGrade: gameType, slack, grading}); return filled if out.\n          After the loop: gradeLost.\n 3. packages/engine/src/sudoku/bank.ts\n    - PuzzleRecord gets an optional field, last in key order: baseId?: string, \"the id of the puzzle these givens were added to\". Bank file version stays 1. The server zod schemas strip unknown keys and gen-offline-pool keeps only 4 fields, so nothing downstream changes.\n    - export function fitBankGivens(puzzles: readonly PuzzleRecord[], { rules = DEFAULT_GIVENS, salt = DEFAULT_FIT.salt, attempts, slack, grading } = {}): { puzzles: PuzzleRecord[]; report: FitBankReport }\n      For each record p, in order: rng = createRng(seedFromString(p.id, salt)); res = fitGivens(parseGrid(p.givens), parseGrid(p.solution), p.gameType, rng, ...).\n        inRange → p unchanged.\n        filled → g = gridToString(res.givens); grade = gradePuzzle(res.givens, grading);\n          new record = { ...p, id: puzzleId(g), givens: g, difficulty: grade.difficulty, techniques: grade.techniques, givensCount: filledCount(res.givens), baseId: p.baseId ?? p.id }. It stays at the same position in the array, so offline order is preserved.\n        tooMany / gradeLost → left out and listed in report.dropped.\n      Duplicate ids after the fit are dropped (first wins) and counted.\n      FitBankReport = { byKey: Record<`${PuzzlePool}/${GameType}`, {before, inRange, filled, tooMany, gradeLost, duplicates, after, givens:{min,max,avg}, maxSpread}>; dropped: {id, pool, gameType, reason}[] }.\n      Idempotent: running it on its own output changes nothing, because everything is in range.\n    - Export everything through sudoku/index.ts (export * from './givens').\n\nC. SCRIPTS (packages/engine/scripts)\n 1. NEW puzzles-givens.ts. Engine package.json: \"puzzles:givens\": \"tsx scripts/puzzles-givens.ts\". Root package.json: \"puzzles:givens\": \"npm run puzzles:givens -w @sudoku-fight/engine --\".\n    Usage: npm run puzzles:givens [-- --dry-run] [--salt 20261015]\n    Steps:\n      - readBank(), then fitBankGivens(bank, {salt}).\n      - Safety net: checkPuzzle(givens, solution) must be ok for every changed record, else throw.\n      - Print one line per pool/type: before → after, in range, filled, dropped (tooMany/gradeLost), givens min–max avg, max digit spread.\n      - Print the shortfalls: offline < 200 per type (spec §20) or < its count before the run; ranked < 2000 per type (spec §20, server test). For each, print the exact backfill command (see D).\n      - Unless --dry-run: writeBank(puzzles), then printSummary.\n 2. puzzles-generate.ts\n    - Call generatePuzzle(rng, type, { minGivens: type === 'hard' ? DEFAULT_GIVENS.hard.min : undefined }).\n    - Build the record, then pass it through fitBankGivens([record], {salt: seed}).\n    - Skip it if dropped (count it like a miss).\n    - Dedupe on the FITTED id; the current ids.has check uses the pre-fit id.\n    - Header comment: puzzles land in the type's givens range.\n 3. puzzles-import.ts: after buildBank, run fitBankGivens(puzzles) before mergeIntoBank, and print a fit line. Without this, re-importing the CSV would re-add the 690 sparse originals (their original ids are no longer in the bank). With it, the fitted ids are identical to the bank's (seeded by the original id), so nothing is duplicated. buildBank itself stays unchanged: it validates and grades the raw CSV, and bank.test expects 30–36 givens.\n\nD. REGENERATION (exact, from the repo root; small files only)\n  1. npm run puzzles:givens -- --dry-run   # read the report\n  2. npm run puzzles:givens                # rewrites packages/engine/data/puzzles.json\n  3. Backfill the ranked shortfalls the script prints. Dry-run estimate: normal about 5, hard about 4 (3 gradeLost + 1 with 29 givens).\n     npm run puzzles:generate -- --type normal --count <N> --pool ranked --seed 20261015\n     npm run puzzles:generate -- --type hard --count <M> --pool ranked --seed 20261016\n     If offline normal should stay at 300 (dry run: 299): npm run puzzles:generate -- --type normal --count 1 --seed 20261017\n  4. npm run puzzles:givens -- --dry-run   # must report 0 filled and 0 dropped (idempotent)\n  5. npm run pool -w @sudoku-fight/mobile  # rewrites apps/mobile/src/game/data/offline-puzzles.json (same size, ~300 KB)\n  6. npm run db:generate -w @sudoku-fight/server -- --name retired_puzzles   # drizzle/0007_retired_puzzles.sql plus meta. The number may differ if another item adds a migration first.\n  7. npm run lint && npm run typecheck && npm test\n  8. Local dev DB (server stopped): npm run db:seed-puzzles\n  Do NOT deploy and do NOT build an APK in this task. Later, with Moshe: deploy the staging server first, then run npm run db:seed-puzzles with the staging DATABASE_URL (docs/MOSHE-TODO.md D5). The new offline pool reaches the phones with Moshe's next APK.\n\nE. MEASURED (dry-run simulation on today's bank; seeded greedy fill, slack 1, 5 attempts; ~50 s for all 7290)\n  - offline fast 690: all filled to 45–50 (spread across the range), all still naked-singles; digit spread 0–1, a single puzzle at 2.\n  - offline normal 300: 299 filled to 35–40 and still 'normal' (needs hidden single), 1 gradeLost; spread ≤2, two at 3.\n  - offline hard 300: 243 already in range (untouched), 57 lifted to 24–28, all still hard.\n  - ranked fast 2000/2000.\n  - ranked normal 1995 (5 gradeLost).\n  - ranked hard: 1570 in range, 426 lifted, 3 gradeLost, 1 tooMany (29 givens).\n  - Every filled puzzle has all 9 digits.\n  - The plain random fill (no grade keeping) was rejected: 298 of 300 normal became naked-singles-only, and 49 of 57 lifted hard puzzles stopped being hard.\n\nF. MOBILE\n  - No app code change. offline-puzzles.json is regenerated.\n  - Old practice history (sqlite puzzle_plays) refers to old ids. selectPuzzle → currentCycle keeps only plays in the current pool, so those plays are ignored, harmlessly.\n  - Old practice replays still work: replaySource.ts:48 loads the saved event log, and its gameCreated event carries config.puzzle (givens and solution). Nothing looks the puzzle up by id.\n  - Tests that use PUZZLE = allOfflinePuzzles()[0] read the cells from the data (emptyCellsOf, answerIn), so they adapt. The first puzzle becomes the fitted CSV row 1.\n\nG. SERVER: retire old ranked puzzles, never delete them\n  games.puzzle_id references puzzles.id without cascade, and puzzle_history cascades on delete, so old rows must stay.\n  - schema.ts puzzles: add retiredAt: timestamptz('retired_at') (nullable). Migration 0007 is ALTER TABLE puzzles ADD COLUMN retired_at timestamptz, additive and safe on Neon. createDb runs migrations, so seed-puzzles applies it too.\n  - rankedSource.ts rankedPool(): add isNull(puzzles.retiredAt). rankedHistories stays as it is (selectPuzzle filters by pool).\n  - seed.ts:\n    * rankedPoolSizes(): count only isNull(retiredAt).\n    * seedRankedPuzzles(db, bank, { now = new Date() } = {}):\n      - The upsert also sets retiredAt: null on insert and on conflict, so a returning puzzle comes back.\n      - Then, in the same transaction, for each gameType whose byType count in the file is > 0: UPDATE puzzles SET retired_at = now WHERE pool = 'ranked' AND game_type = type AND retired_at IS NULL AND id NOT IN (the file's ranked ids of that type), using notInArray (≤ ~2000 params).\n      - A type the file has no ranked puzzles of is never retired.\n      - The result gains retired: Record<GameType, number>.\n    * New rankedPoolMatches(db, bank): Promise<boolean>. True when, for every type, the set of active ranked ids equals the file's ranked ids.\n  - scripts/seed-puzzles.ts:\n    * Read the bank before the --if-empty check. The check becomes isRankedPoolReady(sizes) && rankedPoolMatches(db, bank); doc: \"only if the pool is missing or differs from the bank file\". Without this, dev:lan's local PGlite would keep the old puzzles.\n    * Print the retired count per type.\n    * Header doc: \"puzzles that left the file are retired (retired_at), not deleted: stored games keep them.\"\n  - scripts/dev-lan.mjs line 228: message \"נטען רק אם חסר או השתנה\".\n  - testing/ranked.ts addPuzzles: an optional retired?: boolean.\n  - Unrated dev rooms (game/puzzles.ts bankPuzzleSource) read the file inside the image, so a deploy picks the new puzzles up.\n  - Order on staging and prod: deploy first (migration plus retire-aware queries), then seed. The old server code would pick retired rows.\n\nH. DOCS (see the docs list)\n  - Spec §5.2 gets a givens row, and the bullet ties the type to givens plus technique plus pace.\n  - §19 puzzles gets retired_at.\n  - §20 describes the fit step, the command and the retirement.\n  - §24 gets a new row D42 ✓ (Moshe, 2026-10-15), and D5's text mentions givens.\n  - §6.4's \"בפועל\" sentence is re-measured on the new bank.\n\nEDGE CASES\n  - A puzzle already in range is untouched (same id, history kept). This covers 1813 hard puzzles, some of them with one digit missing (allowed in sudoku).\n  - Hard above 28 is dropped.\n  - Two originals can't realistically fit to the same givens; dedupe anyway.\n  - A ranked fitted puzzle colliding with an offline one is covered by the existing mobile test \"holds no ranked puzzle\".\n  - Determinism: the seed comes from the original id plus the salt, so the result doesn't depend on order or on the other puzzles. Same input, same file.",
+  "files": [
+    {
+      "path": "packages/engine/src/sudoku/givens.ts",
+      "change": "NEW: DEFAULT_GIVENS (fast 45–50, normal 35–40, hard 24–28), DEFAULT_FIT {attempts 5, slack 1, salt 20261015}, digitCounts, givensSpread, addGivens (seeded, scarcest-digit-first, emptiest-box tie-break, optional keepGrade), fitGivens (inRange | filled | tooMany | gradeLost)."
+    },
+    {
+      "path": "packages/engine/src/sudoku/givens.test.ts",
+      "change": "NEW: unit tests for the rule values, addGivens and fitGivens (see the tests list)."
+    },
+    {
+      "path": "packages/engine/src/sudoku/bank.ts",
+      "change": "PuzzleRecord.baseId?: string; new fitBankGivens(puzzles, opts) → {puzzles, report: FitBankReport} (per-id seeded rng, new id = puzzleId(new givens), re-grade, keeps array order, drops tooMany/gradeLost, dedupes)."
+    },
+    {
+      "path": "packages/engine/src/sudoku/bank.test.ts",
+      "change": "Add fitBankGivens tests: determinism, order independence, idempotence, record fields, drop reporting. Existing buildBank tests stay unchanged."
+    },
+    {
+      "path": "packages/engine/src/sudoku/index.ts",
+      "change": "export * from './givens'."
+    },
+    {
+      "path": "packages/engine/src/util/random.ts",
+      "change": "Move shuffled() here from generate.ts (same algorithm) and export it; add seedFromString(text, salt) (FNV-1a 32-bit)."
+    },
+    {
+      "path": "packages/engine/src/util/random.test.ts",
+      "change": "Tests for shuffled (a permutation, deterministic) and seedFromString (stable, uint32, different salts give different seeds)."
+    },
+    {
+      "path": "packages/engine/src/sudoku/generate.ts",
+      "change": "Import shuffled from util/random (delete the local copy). No behaviour change."
+    },
+    {
+      "path": "packages/engine/src/gameType.ts",
+      "change": "Doc comment: type = givens range plus technique grade plus pace [D5, D42]."
+    },
+    {
+      "path": "packages/engine/src/sudoku/bankData.test.ts",
+      "change": "NEW: checks the real packages/engine/data/puzzles.json (see the tests list)."
+    },
+    {
+      "path": "packages/engine/scripts/puzzles-givens.ts",
+      "change": "NEW script: reads the bank, runs fitBankGivens, checks every changed puzzle with checkPuzzle, prints a per pool/type report and the shortfalls (offline <200, ranked <2000) with the exact generate commands, writes the bank unless --dry-run; flags --dry-run and --salt."
+    },
+    {
+      "path": "packages/engine/scripts/puzzles-generate.ts",
+      "change": "Hard: minGivens = DEFAULT_GIVENS.hard.min. Every generated record goes through fitBankGivens; dropped ones count as misses; dedupe on the fitted id; doc comment updated."
+    },
+    {
+      "path": "packages/engine/scripts/puzzles-import.ts",
+      "change": "Apply fitBankGivens to the imported puzzles before mergeIntoBank, and print a fit line. Doc comment updated."
+    },
+    {
+      "path": "packages/engine/package.json",
+      "change": "Script \"puzzles:givens\": \"tsx scripts/puzzles-givens.ts\"."
+    },
+    {
+      "path": "package.json",
+      "change": "Root script \"puzzles:givens\": \"npm run puzzles:givens -w @sudoku-fight/engine --\"."
+    },
+    {
+      "path": "packages/engine/data/puzzles.json",
+      "change": "REGENERATED by npm run puzzles:givens plus the ranked backfill. Every puzzle in its type's range; filled ones have new ids and baseId."
+    },
+    {
+      "path": "apps/mobile/src/game/data/offline-puzzles.json",
+      "change": "REGENERATED by npm run pool -w @sudoku-fight/mobile."
+    },
+    {
+      "path": "apps/mobile/src/game/__tests__/offlinePool.test.ts",
+      "change": "Add: givens of every puzzle within DEFAULT_GIVENS[gameType]; fast and normal have all 9 digits and digit spread ≤3."
+    },
+    {
+      "path": "apps/server/src/db/schema.ts",
+      "change": "puzzles.retiredAt: timestamptz('retired_at'), nullable, with a doc comment (left the bank, kept for stored games, never picked)."
+    },
+    {
+      "path": "apps/server/drizzle/0007_retired_puzzles.sql (+ meta/0007_snapshot.json, meta/_journal.json)",
+      "change": "Generated by drizzle-kit: ALTER TABLE \"puzzles\" ADD COLUMN \"retired_at\" timestamp with time zone. Number it after any migration other items add."
+    },
+    {
+      "path": "apps/server/src/puzzles/rankedSource.ts",
+      "change": "rankedPool(): add isNull(puzzles.retiredAt); update the doc comment."
+    },
+    {
+      "path": "apps/server/src/puzzles/seed.ts",
+      "change": "seedRankedPuzzles: retiredAt null on insert/update; retires active ranked rows of each covered type that are missing from the file; result.retired per type; optional now param. rankedPoolSizes: count active only. New rankedPoolMatches(db, bank). Header doc: retire, never delete."
+    },
+    {
+      "path": "apps/server/src/puzzles/index.ts",
+      "change": "Export rankedPoolMatches."
+    },
+    {
+      "path": "apps/server/scripts/seed-puzzles.ts",
+      "change": "Read the bank first. --if-empty skips only when the pool is ready AND matches the file. Print retired counts. Update the header/help text."
+    },
+    {
+      "path": "apps/server/src/testing/ranked.ts",
+      "change": "addPuzzles gains an optional retired?: boolean (sets retiredAt)."
+    },
+    {
+      "path": "apps/server/src/puzzles/puzzles.test.ts",
+      "change": "Update the first seed expectation to include retired:{fast:0,normal:0,hard:0}; add the retire / un-retire / type-coverage / FK-safe / rankedPoolMatches tests, and a no-retired-pick test in the ranked source block; real-bank test also asserts the givens ranges."
+    },
+    {
+      "path": "scripts/dev-lan.mjs",
+      "change": "Message at line ~228: the ranked pool loads 'רק אם חסר או השתנה'."
+    }
+  ],
+  "tests": [
+    "packages/engine/src/sudoku/givens.test.ts: DEFAULT_GIVENS equals {fast 45–50, normal 35–40, hard 24–28}, and every range has min ≤ max inside 17..81.",
+    "givens.test: addGivens from an all-zero grid with a full solution to target 45 puts exactly 5 of every digit (spread 0); to 47, seven digits at 5 and two at 6; box counts spread ≤2.",
+    "givens.test: addGivens keeps every original given, adds only solution digits (agreesWith), returns exactly `target` givens, and the result has a unique solution (hasUniqueSolution) for CSV row 0 filled to 45.",
+    "givens.test: the scarcest digit first: givens with no 9 at all, target = filled + 1, gives the new given a 9, whatever the seed.",
+    "givens.test: deterministic: same seed, same grid; a different seed, a different grid (CSV row 0).",
+    "givens.test: keepGrade: a generated 'normal' puzzle (generatePuzzle(createRng(11),'normal',{attempts:40})) filled to 35 with keepGrade 'normal' still grades 'normal', with hiddenSingle in its techniques; a generated 'hard' one lifted to 24 stays 'hard'.",
+    "givens.test: keepGrade impossible returns null: a hard puzzle with target 70 and keepGrade 'hard'.",
+    "givens.test: RangeError for target -1, 82 or 1.5, and for givens that disagree with the solution; target ≤ filled returns an equal copy.",
+    "givens.test: fitGivens returns 'inRange' for a puzzle inside its range (unchanged), 'tooMany' for hard with 29+ givens, 'filled' with a count in range for a CSV fast puzzle (30–36 → 45–50, still fast), and 'gradeLost' with custom rules that can't keep the grade.",
+    "givens.test: digitCounts and givensSpread on a known grid.",
+    "bank.test (fitBankGivens): a filled record gets id = puzzleId(givens), baseId = the old id, givensCount = filledCount, difficulty = gameType, techniques re-graded, same source and pool; an in-range record is returned as the same object.",
+    "bank.test (fitBankGivens): deterministic and order-independent (the reversed input gives the same records as a set); idempotent (fitting the output again changes nothing); dropped puzzles are listed with their reason; duplicate ids are counted.",
+    "bank.test (fitBankGivens): the first 3 CSV rows, buildBank then fitBankGivens: all 45–50 givens, fast, unique (checkPuzzle ok).",
+    "random.test: shuffled returns a permutation and is deterministic per seed; seedFromString is stable, uint32, and differs between salts and between texts.",
+    "generate.test: unchanged, and must still pass; shuffled moved, same output.",
+    "packages/engine/src/sudoku/bankData.test.ts (the real data file), part 1: every record's givensCount === filledCount(givens) and lies in DEFAULT_GIVENS[gameType]; id === puzzleId(givens); difficulty === gameType; ids unique.",
+    "bankData.test, part 2: per pool and type, fast and normal plus every record with baseId have all 9 digits; spread ≤2 for fast and ≤3 for normal.",
+    "bankData.test, part 3: offline ≥200 per type, ranked ≥2000 per type; fitBankGivens(bank) changes nothing (the file is fitted); a stride sample of 20 per pool/type passes checkPuzzle, and gradePuzzle(givens).difficulty === gameType.",
+    "bankData.test (or bank.test, timeout 30 s): re-importing the CSV (buildBank then fitBankGivens) gives exactly the bank's offline fast ids, so puzzles:import adds no duplicates.",
+    "apps/mobile/src/game/__tests__/offlinePool.test.ts: the existing 'is the whole offline pool of the bank' (needs npm run pool), plus the new givens-range and digit-balance checks.",
+    "apps/server/src/puzzles/puzzles.test.ts, retirement: seed [r1,r2 fast, r3 normal], then [r2,r4 fast, r3 normal] → retired {fast:1,normal:0,hard:0}; rankedPool(fast) = [r2,r4]; rankedPoolSizes {fast:2,normal:1,hard:0}; row r1 still present with retiredAt set; seeding r1 again un-retires it.",
+    "puzzles.test: a type the file has no ranked puzzle of is not retired (file [r2 fast] leaves r3 normal active).",
+    "puzzles.test: a games row that references a puzzle about to be retired → the seed succeeds and the game row is intact (FK safe).",
+    "puzzles.test: dbPuzzleSource never picks a retired puzzle (add 10 fast, retire 5, 40 picks are all among the active ones).",
+    "puzzles.test: rankedPoolMatches is true right after a seed and false when the file differs (an id added or removed).",
+    "puzzles.test, real bank: the existing 2000+ per type test stays; also assert givensCount within DEFAULT_GIVENS for every ranked puzzle.",
+    "Must still pass after the data change (run and fix only if needed): packages/engine/src/bot/simulation.test.ts (run.digits > 2000 becomes tighter, est. ~2100–2200 per level; typeMs fast<normal<hard; the 'About 50 gaps' comment becomes ~33), bot/robustness.test.ts, all mobile e2e and GameScreen tests that use allOfflinePuzzles()[0], apps/server ranked/fourPlayers e2e, db.test, deploy.test.",
+    "Full run before declaring done: npm run lint && npm run typecheck && npm test."
+  ],
+  "docs": [
+    "docs/01-SPEC.md §5.2: add a table row 'גלויים בפתיחה | 45–50 | 35–40 | 24–28'. Bullet: the type is defined by the givens range AND the technique AND the pace (Moshe, 2026-10-15) [D5, D42]. A board short of givens gets more from the solution: random with a fixed seed, the digit with the fewest givens first, so every digit appears and none sticks out, without changing the technique the board needs.",
+    "docs/01-SPEC.md §6.4: the 'בפועל' sentence (max 10.5, mostly 8–9.5, measured on the 690) is out of date. Re-measure per type on the new bank and write the numbers; a fast board's best first move drops from ~8.9 to ~6.1 points.",
+    "docs/01-SPEC.md §19: puzzles row gets retired_at (a puzzle that left the bank: kept for stored games, never picked).",
+    "docs/01-SPEC.md §20: the 690 have 30–36 givens in the CSV and 45–50 in the bank. New bullet 'התאמת מספר הגלויים' with the command npm run puzzles:givens. The generator and importer output puzzles in range. Ranked puzzles that leave the bank are retired in the DB, not deleted, and replays don't depend on them (the puzzle is in the event log).",
+    "docs/01-SPEC.md §24: add row D42 'מספר הגלויים בפתיחה לפי סוג' — מהיר 45–50, רגיל 35–40, קשה 24–28; מילוי מהפתרון עם seed קבוע, מאוזן בין הספרות, בלי לשנות את הטכניקה — status ✓ (משה, 2026-10-15). D5's default text: 'קושי הלוח (מספר הגלויים והטכניקה) וגם קצב הזמן'.",
+    "docs/02-WORK-PLAN.md stage 1 'מאגר לוחות': one bullet on the givens ranges and npm run puzzles:givens (optional, historical plan).",
+    "docs/QA-CHECKLIST.md row 8 (GameType): count the givens at the start of each type: fast 45–50, normal 35–40, hard 24–28; no digit missing in fast/normal.",
+    "README.md commands table: new row 'npm run puzzles:givens' (fits the bank to the givens ranges, deterministic; -- --dry-run). db:seed-puzzles row: also retires ranked puzzles that left the file (not deleted). puzzles:import and puzzles:generate rows: output lands in the type's givens range.",
+    "docs/DEPLOY-PRODUCTION.md §7: the run retires (does not delete) ranked puzzles missing from the file, and prints how many. After the 2026-10-15 givens change: deploy first, then run it.",
+    "docs/MOSHE-TODO.md D5 (English file): run npm run db:seed-puzzles again on STAGING after the server with this change is deployed; expected output: 2000+ per type in the pool and about 6000 retired.",
+    "docs/store/ASSET-LICENSES.md §4.1: in the bank and the app, the 690 Kaggle puzzles carry extra givens from their own solution (45–50); CC0 allows modification. §4.2: generator puzzles fitted the same way.",
+    "docs/DECISIONS-PENDING.md 1.8 (closed): one line that the 690 are now filled to 45–50 givens (optional)."
+  ],
+  "risks": [
+    "Gameplay balance of fast and normal changes with the fewer empty cells (fast ~31–36 instead of ~45–51, normal ~41–46 instead of ~53–59). Points per move drop: by moveScore, a fast board's best first move averages 6.1 instead of 8.9, with a max of 6.5. Totals, XP per correct move (§15) and the ability to pay for interferences (2^n, D10) all shrink. 'Golden move ≥9.5' and 'perfect_move ≥10.5' become possible only on normal/hard. This also interacts with the separate item that changes the mistake penalty to 'the points you would have got'.",
+    "Estimated durations on the GameType card (homeModel DURATION_MIN 4–6 / 6–9 / 9–14 min) will overstate fast and normal (roughly 25–30% shorter games).",
+    "Bot simulation test thresholds get tighter (run.digits > 2000 per level, est. ~2100–2200 now) and the per-type move-time ordering must still hold. Run it; if the digit count falls short, adjust the threshold to the new board sizes rather than the bot.",
+    "Migration numbering: other items in this batch may add a migration too; generate 0007 after merging theirs, never hand-number it. The drizzle meta snapshot must be regenerated, not edited by hand.",
+    "Order on staging/prod: deploy the server (migration plus retire-aware queries) BEFORE running db:seed-puzzles. If the seed runs first, the old server code still picks old rows and also sees new ones (a mixed pool).",
+    "Until the new APK, phones keep the old offline pool (practice still shows the sparse boards). Ranked games change as soon as the server is deployed and seeded. Old app plus new server is compatible (no protocol change).",
+    "~10 ranked puzzles (normal ~5, hard ~4) are dropped by the fit, so the ranked pool must be backfilled with the generator, or the server test '≥2000 per type' fails. The exact counts come from the script's report.",
+    "The fit grades the board after every added given (gradePuzzle). The whole bank takes ~50 s in a script, fine; keep heavy data checks in tests to stride samples so the suite stays fast.",
+    "Hard puzzles already in 24–28 are left untouched (ids and histories kept); some of them have one digit with no given (normal in sudoku). If Moshe also wants every digit present on hard, that changes ~200 ranked/28 offline ids and may cost the hard grade (see decisions)."
+  ],
+  "decisions": [
+    {
+      "question": "לוחות 'רגיל': להשאיר את הדרישה 'דורש בודד נסתר' בזמן המילוי (בוחרים משבצות שלא הופכות את הלוח לקל)? במילוי אקראי לגמרי, 298 מתוך 300 לוחות רגיל הופכים ללוחות שנפתרים בבודד גלוי בלבד, כלומר 'מהיר' עם פחות גלויים.",
+      "recommendedDefault": "כן: מילוי אקראי ומאוזן שמשמר את הטכניקה (גם 'קשה' נשאר קשה). כך האפיון (5.2) והטקסט בכרטיסים נשארים נכונים."
+    },
+    {
+      "question": "לוחות 'קשה' שכבר יש בהם 24–28 גלויים, אבל ספרה אחת לא מופיעה בהם בכלל (כ־200 מדורגים ו־28 אופליין): להוסיף להם גלויים?",
+      "recommendedDefault": "לא לגעת בהם: הם כבר בטווח, וספרה חסרה מותרת בסודוקו. שינוי ישנה את המזהים ועלול לגרום להם להפסיק להיות 'קשה'."
+    },
+    {
+      "question": "לוח שאי אפשר למלא בלי שיאבד את הרמה שלו, או לוח 'קשה' עם יותר מ־28 גלויים (בערך 10 לוחות מדורגים ולוח אופליין אחד): מה לעשות איתם?",
+      "recommendedDefault": "להוציא אותם מהמאגר ולהשלים לוחות חדשים מהמחולל, כך שיישארו לפחות 2,000 לכל סוג."
+    },
+    {
+      "question": "הלוחות המדורגים הישנים במסד (staging, ואחר כך production): להוציא אותם אוטומטית מהבחירה בכל הרצה של db:seed-puzzles?",
+      "recommendedDefault": "כן, אוטומטית: הם מסומנים כ'פרשו' (retired_at) ולא נמחקים, כדי שמשחקים ישנים, היסטוריה ו־Replay יישארו תקינים. בטיחות: סוג שאין לו לוחות בקובץ לא נוגעים בו."
+    },
+    {
+      "question": "להציג בכרטיסי 'סוג משחק' את מספר הגלויים (למשל '45–50 גלויים')?",
+      "recommendedDefault": "לא עכשיו: ההבדל ייראה בלוח עצמו, ובכרטיס יש כבר שלוש עובדות בשורה."
+    },
+    {
+      "question": "המשך המשוער בכרטיסים (מהיר 4–6, רגיל 6–9, קשה 9–14 דק׳) ומאזן הניקוד (פחות נקודות למהלך במהיר וברגיל, ולכן גם פחות XP ופחות נקודות להפרעות): לעדכן עכשיו?",
+      "recommendedDefault": "להשאיר עכשיו, ולמדוד מחדש אחרי שמשה ישחק בלוחות החדשים. בסעיף 6.4 באפיון כן לעדכן את המשפט 'בפועל' למספרים שנמדדו."
+    }
+  ],
+  "sharedFiles": [
+    "docs/01-SPEC.md (§5.2, §6.4, §19, §20, §24 decisions table: other items add rows/edits too)",
+    "README.md (commands table)",
+    "docs/QA-CHECKLIST.md",
+    "docs/MOSHE-TODO.md",
+    "docs/DEPLOY-PRODUCTION.md",
+    "package.json (root scripts)",
+    "apps/server/src/db/schema.ts and apps/server/drizzle/* (migration numbering and meta snapshots if another item adds a migration)",
+    "packages/engine/src/sudoku/index.ts / packages/engine/src/index.ts (exports)",
+    "packages/engine/data/puzzles.json and apps/mobile/src/game/data/offline-puzzles.json (regenerated data; any item touching puzzles must rebase on them)",
+    "packages/engine/src/bot/simulation.test.ts (thresholds; bot items may touch it)",
+    "apps/mobile/src/screens/home/homeModel.ts and apps/mobile/src/i18n/locales/{he,en}/home.json (only if the GameType card decisions change; the New Game screen items touch home.json too)",
+    "packages/engine/src/sudoku/scoring.ts / game rules (the mistake-penalty item changes scoring that these boards affect)"
+  ],
+  "needsServerDeploy": true
+}

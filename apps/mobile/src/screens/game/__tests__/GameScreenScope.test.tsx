@@ -42,7 +42,8 @@ afterEach(() => {
 });
 
 it('with the scope set to the board, an interference on me covers the board alone [D35]', async () => {
-  const g = (game = duel());
+  // Interferences on: a practice against a bot has none [D44].
+  const g = (game = duel({ rules: { interferences: true } }));
   await render(<GameScreen session={g.session} onEnded={jest.fn()} />);
   // A 390 × 844 screen as on Dir-C-Game: the board's room at 288, the board 358 wide inside its gutters.
   const layout = (testID: string, x: number, y: number, width: number, height: number) =>

@@ -1,8 +1,26 @@
-import { eloChanges, type EloPlayer, eloPairs, type RatingChange, type RatingPairs } from '../rating';
-import type { Award, EndReason, GameResult, GameState, PlayerState, PlayerStats, RankEntry } from './types';
+import {
+  eloChanges,
+  type EloPlayer,
+  eloPairs,
+  type PairGuard,
+  type RatingChange,
+  type RatingPairs,
+} from '../rating';
+import type {
+  Award,
+  EndReason,
+  GameResult,
+  GameState,
+  LeaveStanding,
+  PlayerId,
+  PlayerState,
+  PlayerStats,
+  RankEntry,
+} from './types';
 
 /**
- * End of game (spec §6.7, §11.2, §12): ranking, rating changes, awards and per-player numbers.
+ * End of game (spec §6.7, §11.2, §12): ranking, rating changes (with the leave guards), awards and per-player
+ * numbers.
  */
 
 /**
@@ -44,34 +62,40 @@ export function rankPlayers(state: GameState): RankEntry[] {
 
 /**
  * Ranked games where every player came with a rating get Elo changes by place (spec §11.2) [D31, D32, D8];
- * others get none. An abandoning player also loses rules.rating.abandonPenalty (the [D32] alternative; 0 by
- * default).
+ * others get none. A surrender or an abandonment is a normal loss and a full win for whoever stays, except in
+ * a pair a leave guard holds (leaveGuardsFor). An abandoning player also loses rules.rating.abandonPenalty
+ * (the [D32] alternative; 0 by default), unless guard (a) held him harmless against everyone (penaltyFor).
  */
 export function ratingChangesFor(state: GameState, ranking: RankEntry[]): RatingChange[] {
-  const input = eloInput(state, ranking);
+  const guards = leaveGuardsFor(state);
+  const input = eloInput(state, ranking, guards);
   if (!input) return [];
-  const changes = eloChanges(input, state.config.rules.rating);
-  const penalty = state.config.rules.rating.abandonPenalty;
-  if (!penalty) return changes;
-  return changes.map((c) => {
-    if (ranking.find((r) => r.playerId === c.playerId)?.status !== 'abandoned') return c;
+  return eloChanges(input, state.config.rules.rating).map((c) => {
+    const penalty = penaltyFor(state, c.playerId, guards);
+    if (!penalty) return c;
     const delta = c.delta - penalty;
     return { ...c, delta, after: c.before + delta };
   });
 }
 
 /** The Elo input of a game whose rating moves (ranked, every player with a rating), by place; else null. */
-function eloInput(state: GameState, ranking: RankEntry[]): EloPlayer[] | null {
+function eloInput(
+  state: GameState,
+  ranking: RankEntry[],
+  guards: ReadonlyMap<PlayerId, PairGuard[]>,
+): EloPlayer[] | null {
   const { mode, players } = state.config;
   if (mode !== 'ranked' || players.length < 2 || players.some((p) => p.rating === undefined)) return null;
   return ranking.map((r) => {
     const info = players[r.seat]!;
+    const mine = guards.get(r.playerId);
     return {
       id: r.playerId,
       rating: info.rating!,
       games: info.ratedGames ?? 0,
       place: r.place,
       abandoned: r.status === 'abandoned',
+      ...(mine?.length ? { guards: mine } : null),
     };
   });
 }
@@ -79,17 +103,101 @@ function eloInput(state: GameState, ranking: RankEntry[]): EloPlayer[] | null {
 /**
  * Each player's rating change of ratingChangesFor, split by opponent (Results-4P: "מחושב מול כל יריב
  * בנפרד"): the rating module's eloPairs over the same input, plus an abandoning player's penalty, so that a
- * player's Σ pairs − penalty is their RatingChange delta. Empty when ratingChangesFor is.
+ * player's Σ pairs − penalty is their RatingChange delta. A pair a leave guard held is 0 and carries the
+ * guard's reason. Empty when ratingChangesFor is.
  */
 export function ratingPairsFor(state: GameState, ranking: RankEntry[]): RatingPairs[] {
-  const input = eloInput(state, ranking);
+  const guards = leaveGuardsFor(state);
+  const input = eloInput(state, ranking, guards);
   if (!input) return [];
-  const pairs = eloPairs(input, state.config.rules.rating);
+  return eloPairs(input, state.config.rules.rating).map((p) => {
+    const penalty = penaltyFor(state, p.playerId, guards);
+    return penalty ? { ...p, penalty } : p;
+  });
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Leave guards (spec §11.2; [D32] and [D8] as amended by Moshe, 2026-10-15)
+
+/**
+ * Guard (a), for the player who left: he loses nothing to `stayer` if he had not placed a digit yet, or if
+ * `stayer` was not ahead of him (equal scores included). Both standings are taken at the moment he left.
+ */
+export function leaverGuardReason(
+  leaver: LeaveStanding,
+  stayer: LeaveStanding,
+): 'leftBeforeMoving' | 'leftNotBehind' | null {
+  if (leaver[1] === 0) return 'leftBeforeMoving';
+  if (stayer[0] <= leaver[0]) return 'leftNotBehind';
+  return null;
+}
+
+/**
+ * Guard (b), for the player who stayed: he gains nothing from `leaver` if he himself had not placed a digit
+ * yet, or if `leaver` was ahead of him. Both standings are taken at the moment `leaver` left.
+ */
+export function stayerGuardReason(
+  stayer: LeaveStanding,
+  leaver: LeaveStanding,
+): 'opponentLeftBeforeMyMove' | 'opponentLeftAhead' | null {
+  if (stayer[1] === 0) return 'opponentLeftBeforeMyMove';
+  if (leaver[0] > stayer[0]) return 'opponentLeftAhead';
+  return null;
+}
+
+/** Out of the game (surrendered or abandoned) in the order of leaving; null while still in it. */
+const outAt = (p: PlayerState): number | null => (p.status === 'active' ? null : (p.outOrder ?? 0));
+
+/**
+ * Every pair with at least one player out of the game, judged at the moment the first of the two left (the
+ * leaver of the pair; the other one is its stayer, even if he left later): guard (a) for the leaver and guard
+ * (b) for the stayer, each when its rules.rating switch is on and its condition held then. By player id, the
+ * guards on that player's pairs. A pair whose leaver has no standings (a state from an older engine) gets none.
+ */
+export function leaveGuardsFor(state: GameState): Map<PlayerId, PairGuard[]> {
+  const { leaverGuard, stayerGuard } = state.config.rules.rating;
+  const guards = new Map<PlayerId, PairGuard[]>();
+  const add = (id: PlayerId, guard: PairGuard) => guards.set(id, [...(guards.get(id) ?? []), guard]);
+  const players = state.players;
+  for (let i = 0; i < players.length; i++) {
+    for (let j = i + 1; j < players.length; j++) {
+      const a = players[i]!;
+      const b = players[j]!;
+      const outA = outAt(a);
+      const outB = outAt(b);
+      if (outA === null && outB === null) continue;
+      const [leaver, stayer] = outB === null || (outA !== null && outA < outB) ? [a, b] : [b, a];
+      const standings = leaver.leaveStandings;
+      const mine = standings?.[leaver.seat];
+      const theirs = standings?.[stayer.seat];
+      if (!mine || !theirs) continue;
+      const a1 = leaverGuard ? leaverGuardReason(mine, theirs) : null;
+      if (a1) add(leaver.id, { opponentId: stayer.id, kind: 'noLoss', reason: a1 });
+      const b1 = stayerGuard ? stayerGuardReason(theirs, mine) : null;
+      if (b1) add(stayer.id, { opponentId: leaver.id, kind: 'noGain', reason: b1 });
+    }
+  }
+  return guards;
+}
+
+/**
+ * rules.rating.abandonPenalty for a player who abandoned, unless guard (a) held him harmless against every
+ * opponent still in the game when he left (the pairs judged at his own leaving); else 0. Surrenders never pay.
+ */
+function penaltyFor(
+  state: GameState,
+  playerId: PlayerId,
+  guards: ReadonlyMap<PlayerId, PairGuard[]>,
+): number {
   const penalty = state.config.rules.rating.abandonPenalty;
-  if (!penalty) return pairs;
-  return pairs.map((p) =>
-    ranking.find((r) => r.playerId === p.playerId)?.status === 'abandoned' ? { ...p, penalty } : p,
+  const me = state.players.find((p) => p.id === playerId);
+  if (!penalty || me?.status !== 'abandoned') return 0;
+  const myOut = outAt(me) ?? 0;
+  const stillIn = state.players.filter((p) => p !== me && (outAt(p) ?? Infinity) > myOut);
+  const harmless = new Set(
+    (guards.get(playerId) ?? []).filter((g) => g.kind === 'noLoss').map((g) => g.opponentId),
   );
+  return stillIn.length > 0 && stillIn.every((p) => harmless.has(p.id)) ? 0 : penalty;
 }
 
 export function statsFor(state: GameState): PlayerStats[] {

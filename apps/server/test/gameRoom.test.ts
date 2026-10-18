@@ -1,9 +1,12 @@
 /**
  * Stage 7: the game room on the real server (Colyseus + Express + an in-memory PGlite, one port), with real
- * SDK clients over WebSocket. Two players join by code, play, drop and come back, abandon and surrender.
+ * SDK clients over WebSocket. Two players join by code, play, drop and come back, abandon and surrender. A
+ * lost connection's soft phase [D42]: only a mark while the game goes on, the return, and the moves made
+ * offline that arrive after it.
  *
  * Real time, so the rules that take time are shortened per room through the dev create options (a grace
- * period of a fraction of a second), and a finished room closes after 300 ms.
+ * period of a fraction of a second; softGraceMs 0 where a drop must be hard at once, as before [D42]), and a
+ * finished room closes after 300 ms.
  */
 import type { AddressInfo } from 'node:net';
 
@@ -16,6 +19,9 @@ import {
   type GameEvent,
   type GameEventType,
   type GameState,
+  INTERFERENCE_KINDS,
+  LEGACY_INTERFERENCE_KINDS,
+  missedPoints,
   publicState,
 } from '@sudoku-fight/engine';
 import {
@@ -326,13 +332,15 @@ describe('playing', () => {
     expect(correct.points).toBeGreaterThanOrEqual(1.5);
     expect(correct.score).toBe(correct.points);
 
+    // A mistake costs what the right digit would have scored there now (§6.5), on the server's board.
+    const penalty = missedPoints(serverState(ana.code).grid, C2, digitAt(PUZZLE, C2)).points;
     ben.act({ type: 'select', cell: C2 });
     ben.act({ type: 'place', cell: C2, digit: wrongDigitAt(PUZZLE, C2) });
     expect(await ana.event('placedWrong')).toMatchObject({
       playerId: 'ben',
-      penalty: 1,
+      penalty,
       mistakes: 1,
-      score: -1,
+      score: -penalty,
     });
     await leaveAll(ana, ben);
   });
@@ -392,27 +400,129 @@ describe('playing', () => {
   });
 
   it('a client that keeps sending junk or flooding is disconnected; for the game it dropped', async () => {
-    const [ana, ben] = await startTwo({ rules: { graceMs: 600 } });
+    const [ana, ben] = await startTwo({ rules: { graceMs: 600, softGraceMs: 300 } });
     for (let k = 0; k < 25; k++) ana.raw('place', { cell: 1 }); // no clientSeq: malformed
     await ana.until(() => ana.left !== null, 'the kick');
     expect(ana.left).toBe(CloseCode.WITH_ERROR);
+    // A drop like any other [D42]: the soft phase (it may come back with its token), then the grace.
+    expect(await ben.event('playerConnectionLost')).toMatchObject({ playerId: 'ana' });
     expect(await ben.event('playerDisconnected')).toMatchObject({ playerId: 'ana' });
     expect(log.lines.filter((l) => l.includes('ana disconnected: too many bad messages'))).toHaveLength(1);
     await leaveAll(ben);
   });
 
   it('three players: the game starts with the third, and goes on when one drops (no freeze)', async () => {
-    const ana = await create('ana', { playerCount: 3, rules: { graceMs: 600 } });
+    const ana = await create('ana', { playerCount: 3, rules: { graceMs: 600, softGraceMs: 300 } });
     const ben = await join(ana.code, 'ben');
     expect(ana.events).toEqual([]);
     const cyd = await join(ana.code, 'cyd');
     await Promise.all([ana, ben, cyd].map((p) => p.event('gameStarted')));
     void ben.room.leave(false);
+    await ana.event('playerConnectionLost'); // the soft phase [D42], then the grace: no freeze in either
     await ana.event('playerDisconnected');
     cyd.act({ type: 'select', cell: C1 });
     expect(await ana.event('cellLocked')).toMatchObject({ playerId: 'cyd' });
     expect(ana.events.map((e) => e.type)).not.toContain('gamePaused');
     await leaveAll(ana, cyd);
+  });
+});
+
+describe('the interference kinds of a private room [D47]: only what every seat’s app can show', () => {
+  const ALL = [...INTERFERENCE_KINDS];
+  const LEGACY = [...LEGACY_INTERFERENCE_KINDS];
+
+  /** Ana creates and Ben joins, each declaring `kinds` (undefined: nothing, as app 1.0.0). */
+  async function startDeclaring(
+    a: unknown,
+    b: unknown,
+    options: Partial<GameRoomCreateOptions> = {},
+  ): Promise<[Player, Player]> {
+    // As sent over the wire, malformed or not.
+    const declared = (kinds: unknown) =>
+      kinds === undefined ? {} : { interferenceKinds: kinds as string[] };
+    const ana = await create('ana', { ...options, ...declared(a) });
+    const ben = new Player(
+      await colyseus.sdk.joinById(ana.code, { ...joinOptions('ben'), ...declared(b) }),
+      'ben',
+    );
+    await Promise.all([ana.event('gameStarted'), ben.event('gameStarted')]);
+    return [ana, ben];
+  }
+
+  const kindsOf = async (p: Player) => (await p.message('snapshot')).state.config.rules.interferenceKinds;
+
+  /** Ana solves A1 (8 points): enough for a first interference (2). */
+  async function anaScores(ana: Player): Promise<number> {
+    ana.act({ type: 'select', cell: C1 });
+    ana.act({ type: 'place', cell: C1, digit: digitAt(PUZZLE, C1) });
+    return (await ana.event('placedCorrect')).score;
+  }
+
+  it('both apps declare every kind: all six, and a new kind goes through', async () => {
+    const [ana, ben] = await startDeclaring(ALL, ALL);
+    expect(await kindsOf(ana)).toEqual(ALL);
+    expect(await kindsOf(ben)).toEqual(ALL);
+    await anaScores(ana);
+    ana.act({ type: 'interfere', targetId: 'ben', kind: 'scramble' });
+    expect(await ben.event('interference')).toMatchObject({
+      fromId: 'ana',
+      targetId: 'ben',
+      kind: 'scramble',
+      cost: 2,
+    });
+    await leaveAll(ana, ben);
+  });
+
+  it('an app that declares nothing (1.0.0): the old three for both; a new kind is refused, at no cost', async () => {
+    const [ana, ben] = await startDeclaring(ALL, undefined);
+    expect(await kindsOf(ana)).toEqual(LEGACY);
+    expect(await kindsOf(ben)).toEqual(LEGACY);
+    const score = await anaScores(ana);
+    const seq = ana.act({ type: 'interfere', targetId: 'ben', kind: 'scramble' });
+    expect(await ana.message('rejected')).toEqual({ type: 'rejected', clientSeq: seq, reason: 'badKind' });
+    await Promise.all([ana.fence(), ben.fence()]);
+    expect(ben.events.filter((e) => e.type === 'interference')).toEqual([]);
+    const server = serverState(ana.code);
+    expect(server.players.find((p) => p.id === 'ana')).toMatchObject({ score, interferencesSent: 0 });
+    expect(server.players.find((p) => p.id === 'ben')!.hitBy).toBeNull();
+    // An old kind goes through as ever.
+    ana.act({ type: 'interfere', targetId: 'ben', kind: 'warp' });
+    expect(await ben.event('interference')).toMatchObject({ kind: 'warp', cost: 2 });
+    await leaveAll(ana, ben);
+  });
+
+  it('a malformed declaration on joining counts as none (never a refusal)', async () => {
+    const [ana, ben] = await startDeclaring(ALL, ['cats', 7]);
+    expect(await kindsOf(ben)).toEqual(LEGACY);
+    await leaveAll(ana, ben);
+  });
+
+  it('only the kinds both declared, in the engine’s order', async () => {
+    const [ana, ben] = await startDeclaring(['keypad', 'fog', ...LEGACY, 'ink'], ALL);
+    expect(await kindsOf(ana)).toEqual([...LEGACY, 'ink', 'keypad']);
+    await leaveAll(ana, ben);
+  });
+
+  it('a declaration without the legacy three (a tampered client) still gets them: interferences stay on [D44]', async () => {
+    const [ana, ben] = await startDeclaring(ALL, []);
+    expect(await kindsOf(ana)).toEqual(LEGACY);
+    expect(await kindsOf(ben)).toEqual(LEGACY);
+    await anaScores(ana);
+    ana.act({ type: 'interfere', targetId: 'ben', kind: 'warp' });
+    expect(await ben.event('interference')).toMatchObject({ fromId: 'ana', kind: 'warp', cost: 2 });
+    await leaveAll(ana, ben);
+  });
+
+  it('a creator who declares only unknown strings still gets the legacy three', async () => {
+    const [ana, ben] = await startDeclaring(['x'], ALL);
+    expect(await kindsOf(ben)).toEqual(LEGACY);
+    await leaveAll(ana, ben);
+  });
+
+  it('the creator’s rules.interferenceKinds (development) set the kinds outright', async () => {
+    const [ana, ben] = await startDeclaring(ALL, ALL, { rules: { interferenceKinds: ['ink', 'cats'] } });
+    expect(await kindsOf(ben)).toEqual(['ink', 'cats']);
+    await leaveAll(ana, ben);
   });
 });
 
@@ -458,9 +568,10 @@ describe('the end of the game', () => {
   });
 });
 
+// The grace of [D4] with the soft phase off (softGraceMs 0): a drop is hard at once, as it was before [D42].
 describe('disconnects (spec §16.2)', () => {
   it('back within the grace: the other saw the drop and the freeze, and both are in sync again', async () => {
-    const [ana, ben] = await startTwo({ rules: { graceMs: 3000 } });
+    const [ana, ben] = await startTwo({ rules: { graceMs: 3000, softGraceMs: 0 } });
     ana.act({ type: 'select', cell: C1 });
     await ben.event('cellLocked');
     const token = ben.room.reconnectionToken;
@@ -502,7 +613,7 @@ describe('disconnects (spec §16.2)', () => {
   });
 
   it('not back in time: abandonment, and in two players the other wins [D8]', async () => {
-    const [ana, ben] = await startTwo({ rules: { graceMs: 300 } });
+    const [ana, ben] = await startTwo({ rules: { graceMs: 300, softGraceMs: 0 } });
     void ben.room.leave(false);
     await ana.event('playerDisconnected');
     expect(await ana.event('playerAbandoned')).toMatchObject({ playerId: 'ben' });
@@ -517,11 +628,12 @@ describe('disconnects (spec §16.2)', () => {
   });
 
   it('leaving on purpose is a disconnect too [D32]: the grace runs, and the player may rejoin by code', async () => {
-    const [ana, ben] = await startTwo({ rules: { graceMs: 3000 } });
+    const [ana, ben] = await startTwo({ rules: { graceMs: 3000 } }); // the default soft phase: not for a leave
     ben.seq = 40;
     await ben.room.leave(); // consented
     expect(await ana.event('playerDisconnected')).toMatchObject({ playerId: 'ben' });
     await ana.event('gamePaused');
+    expect(ana.events.map((e) => e.type)).not.toContain('playerConnectionLost'); // hard at once [D42]
 
     const again = await join(ana.code, 'ben');
     const snapshot = await again.message('snapshot');
@@ -538,6 +650,146 @@ describe('disconnects (spec §16.2)', () => {
   });
 });
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const typesOf = (p: Player) => p.events.map((e) => e.type);
+
+describe('the soft phase of a lost connection [D42] (spec §16.2)', () => {
+  it('a drop: only a mark while the game goes on; back within it, playerReconnected and never a freeze', async () => {
+    const [ana, ben] = await startTwo({ rules: { softGraceMs: 3000, graceMs: 3000 } });
+    const token = ben.room.reconnectionToken;
+    ben.act({ type: 'select', cell: C2 });
+    await ana.event('cellLocked');
+
+    void ben.room.leave(false); // the connection drops (no goodbye)
+    const lost = await ana.event('playerConnectionLost');
+    expect(lost.playerId).toBe('ben');
+    expect(lost.softEndsAt - lost.t).toBe(3000);
+    // The game goes on for ana, and ben's lock is still his (its timer runs).
+    ana.act({ type: 'select', cell: C1 });
+    ana.act({ type: 'place', cell: C1, digit: digitAt(PUZZLE, C1) });
+    expect(await ana.event('placedCorrect')).toMatchObject({ playerId: 'ana', cell: C1 });
+    expect(serverState(ana.code).status).toBe('running');
+    expect(serverState(ana.code).locks).toMatchObject([{ playerId: 'ben', cell: C2 }]);
+
+    const back = new Player(await colyseus.sdk.reconnect(token), 'ben');
+    const snapshot = await back.message('snapshot');
+    expect(snapshot.state.status).toBe('running'); // the game as it is: ben marked, then his return
+    expect(snapshot.state.players[1]).toMatchObject({ connected: true, softEndsAt: lost.softEndsAt });
+    await back.event('playerReconnected');
+    expect(await ana.event('playerReconnected')).toMatchObject({ playerId: 'ben' });
+    await Promise.all([ana.fence(), back.fence()]);
+    // Never frozen, never hard: nothing of the connection-problem UI had anything to show.
+    for (const type of ['playerDisconnected', 'gamePaused', 'gameResumed'] as const)
+      expect(typesOf(ana)).not.toContain(type);
+    const server = publicState(serverState(ana.code));
+    expect(server.players[1]!.softEndsAt).toBeUndefined();
+    expect(server.players[1]!.offlineWindow).toMatchObject({ left: 8 }); // for the moves made offline
+    expect(back.mirror()).toEqual(server);
+    await leaveAll(ana, back);
+  });
+
+  it('not back: the grace starts when the soft phase ends (two players: the freeze), then abandonment', async () => {
+    const [ana, ben] = await startTwo({ rules: { softGraceMs: 300, graceMs: 300 } });
+    void ben.room.leave(false);
+    const lost = await ana.event('playerConnectionLost');
+    const hard = await ana.event('playerDisconnected');
+    expect(hard).toMatchObject({ playerId: 'ben', t: lost.softEndsAt, graceEndsAt: lost.softEndsAt + 300 });
+    expect(await ana.event('gamePaused')).toMatchObject({ reason: 'disconnect', t: lost.softEndsAt });
+    expect(await ana.event('playerAbandoned')).toMatchObject({ playerId: 'ben', t: hard.graceEndsAt });
+    const over = await ana.event('gameOver');
+    expect(over.ranking.map((r) => [r.playerId, r.place, r.status])).toEqual([
+      ['ana', 1, 'active'],
+      ['ben', 2, 'abandoned'],
+    ]);
+    await ana.until(() => ana.left !== null, 'the room to close');
+  });
+
+  it('leaving on purpose has no soft phase: the grace and the freeze at once', async () => {
+    const [ana, ben] = await startTwo({ rules: { softGraceMs: 3000, graceMs: 3000 } });
+    await ben.room.leave(); // consented
+    const left = await ana.event('playerDisconnected');
+    expect(left.graceEndsAt - left.t).toBe(3000);
+    await ana.event('gamePaused');
+    expect(typesOf(ana)).not.toContain('playerConnectionLost');
+    await leaveAll(ana);
+  });
+
+  it('the seat is held through the soft phase and the grace: the token still works just before abandonment', async () => {
+    // Back 2.5 s after the drop: past the grace alone and its slack (1 + 1 s), within the soft phase + the grace.
+    const [ana, ben] = await startTwo({ rules: { softGraceMs: 2000, graceMs: 1000 } });
+    const token = ben.room.reconnectionToken;
+    void ben.room.leave(false);
+    const hard = await ana.event('playerDisconnected');
+    await sleep(Math.max(0, hard.graceEndsAt - 500 - Date.now()));
+    const back = new Player(await colyseus.sdk.reconnect(token), 'ben');
+    await back.event('gameResumed');
+    expect(await ana.event('playerReconnected')).toMatchObject({ playerId: 'ben' });
+    expect(typesOf(ana)).not.toContain('playerAbandoned');
+    await leaveAll(ana, back);
+  });
+
+  it('moves made offline come after the return: applied and seen by all, or lost to their sender only', async () => {
+    const [ana, ben] = await startTwo({ rules: { softGraceMs: 5000, graceMs: 3000 } });
+    // No return, no offline moves.
+    const early = ben.act({ type: 'offlineMove', cell: C1, digit: digitAt(PUZZLE, C1), thinkMs: 1000 });
+    expect(await ben.message('rejected')).toEqual({
+      type: 'rejected',
+      clientSeq: early,
+      reason: 'offlineClosed',
+    });
+    const token = ben.room.reconnectionToken;
+
+    void ben.room.leave(false);
+    await ana.event('playerConnectionLost');
+    // Meanwhile ana takes C1, which ben is playing on his phone.
+    ana.act({ type: 'select', cell: C1 });
+    await ana.event('cellLocked');
+
+    const back = new Player(await colyseus.sdk.reconnect(token), 'ben');
+    back.seq = ben.seq;
+    await back.event('playerReconnected');
+    // In the order he made them: the taken cell, a right digit, a wrong one (with a think time to clamp).
+    const taken = back.act({ type: 'offlineMove', cell: C1, digit: digitAt(PUZZLE, C1), thinkMs: 4000 });
+    back.act({ type: 'offlineMove', cell: C2, digit: digitAt(PUZZLE, C2), thinkMs: 2500 });
+    back.act({ type: 'offlineMove', cell: C3, digit: wrongDigitAt(PUZZLE, C3), thinkMs: 99_999 });
+    expect(await back.message('rejected')).toEqual({
+      type: 'rejected',
+      clientSeq: taken,
+      reason: 'cellTaken',
+    });
+    expect(await ana.event('placedCorrect')).toMatchObject({
+      playerId: 'ben',
+      cell: C2,
+      thinkMs: 2500,
+      offline: true,
+    });
+    expect(await ana.event('placedWrong')).toMatchObject({
+      playerId: 'ben',
+      cell: C3,
+      mistakes: 1,
+      offline: true,
+    });
+    await Promise.all([ana.fence(), back.fence()]);
+    // The lost one left no trace and cost nothing; ana never heard of it.
+    expect(ana.of('rejected')).toEqual([]);
+    const benLocks = ana.events.flatMap((e) =>
+      e.type === 'cellLocked' && e.playerId === 'ben' ? [e.cell] : [],
+    );
+    expect(benLocks).toEqual([C2, C3]);
+    const server = publicState(serverState(ana.code));
+    expect(server.players[1]).toMatchObject({ mistakes: 1, offlineWindow: { left: 6 } });
+    expect(back.mirror()).toEqual(server);
+
+    // The game's summary line counts them.
+    ana.act({ type: 'surrender' });
+    await back.event('gameOver');
+    const summary = log.lines.find((l) => l.startsWith(`[game ${ana.code}] over`));
+    expect(summary).toContain('lost connections 1 (back in the soft phase 1), hard disconnects 0 (back 0)');
+    expect(summary).toContain('offline moves 2 applied, 2 lost (offlineClosed 1, cellTaken 1)');
+    await Promise.all([ana, back].map((p) => p.until(() => p.left !== null, 'the room to close')));
+  });
+});
+
 describe('measures (spec §18)', () => {
   it('GET /dev/metrics: action handling times and the rest', async () => {
     const res = await fetch(`${url}/dev/metrics`, { headers: { connection: 'close' } });
@@ -550,8 +802,13 @@ describe('measures (spec §18)', () => {
     expect(report.dropped.rateLimited).toBeGreaterThan(0);
     expect(report.kicks).toBe(1);
     expect(report.pings).toBeGreaterThan(0);
-    const types: ClientMessageType[] = ['select', 'place', 'react', 'surrender'];
+    const types: ClientMessageType[] = ['select', 'place', 'react', 'surrender', 'offlineMove'];
     for (const t of types) expect(report.actions.byType[t]).toBeGreaterThan(0);
+    // [D42] Connections and moves made offline.
+    expect(report.connections.soft).toBeGreaterThanOrEqual(6);
+    expect(report.connections.backInSoft).toBeGreaterThanOrEqual(2);
+    expect(report.connections.hard).toBeGreaterThan(report.connections.backHard);
+    expect(report.offlineMoves).toEqual({ applied: 2, lost: { offlineClosed: 1, cellTaken: 1 } });
   });
 
   it('logged nothing unexpected', () => {

@@ -1,5 +1,6 @@
 import { parseCellName, parseGrid } from './board';
-import { formatScoreLine, interferenceCost, mistakePenalty, moveScore } from './scoring';
+import * as scoring from './scoring';
+import { formatScoreLine, interferenceCost, missedPoints, moveScore } from './scoring';
 import { designScenarios, gridFrom } from '../testing/fixtures';
 
 describe('moveScore (§6.4)', () => {
@@ -75,7 +76,6 @@ describe('moveScore (§6.4)', () => {
     for (const [name, scenario] of Object.entries(designScenarios())) {
       const grid = parseGrid(scenario.puzzle);
       const score = new Map<number, number>();
-      const mistakes = new Map<number, number>();
       for (const e of scenario.log) {
         const cell = parseCellName(e.cell);
         if (e.type === 'correct') {
@@ -94,10 +94,10 @@ describe('moveScore (§6.4)', () => {
           score.set(e.seat, (score.get(e.seat) ?? 0) + s.points);
           grid[cell] = e.digit;
         } else {
-          const k = (mistakes.get(e.seat) ?? 0) + 1;
-          mistakes.set(e.seat, k);
-          expect(mistakePenalty(k)).toBe(e.penalty);
-          score.set(e.seat, (score.get(e.seat) ?? 0) - mistakePenalty(k));
+          // §6.5: what the right digit would have scored there, on the board as it was.
+          const penalty = missedPoints(grid, cell, Number(scenario.solution[cell]) as 1).points;
+          expect({ name, cell: e.cell, penalty }).toEqual({ name, cell: e.cell, penalty: e.penalty });
+          score.set(e.seat, (score.get(e.seat) ?? 0) - penalty);
         }
         expect(score.get(e.seat)).toBe(e.score);
       }
@@ -107,19 +107,52 @@ describe('moveScore (§6.4)', () => {
   });
 });
 
-describe('mistakePenalty (§6.5)', () => {
-  it('doubles with every mistake: −1, −2, −4, −8, −16', () => {
-    expect([1, 2, 3, 4, 5].map((k) => mistakePenalty(k))).toEqual([1, 2, 4, 8, 16]);
+describe('missedPoints (§6.5)', () => {
+  it('is what the right digit would score in that cell now (the spec example D5 → 3.5)', () => {
+    const grid = gridFrom({ D1: 1, D2: 2, D3: 3, D4: 4, D6: 5, D7: 6, D8: 7, A5: 8, B5: 1, C5: 2, G5: 3 });
+    const right = missedPoints(grid, parseCellName('D5'), 9);
+    expect(right).toEqual(moveScore(grid, parseCellName('D5'), 9));
+    expect(right).toMatchObject({ X: 7, Y: 4, points: 4.5 });
+    // The same cell costs less as the board fills (here column 5).
+    grid[parseCellName('H5')] = 4;
+    grid[parseCellName('I5')] = 6;
+    expect(missedPoints(grid, parseCellName('D5'), 9)).toMatchObject({ X: 7, Y: 6, points: 3.5 });
   });
 
-  it('can be capped (the [D14] proposal), but is not by default', () => {
-    expect(mistakePenalty(6)).toBe(32);
-    expect([3, 4, 5, 6].map((k) => mistakePenalty(k, 8))).toEqual([4, 8, 8, 8]);
+  it('ranges from 13.5 on an empty board to 1.5 for the last cell', () => {
+    expect(missedPoints(new Array<number>(81).fill(0), 0, 1).points).toBe(13.5);
+    const last = parseGrid(
+      '864371259325849761971265843436192587198657432257483916689734125713528694542916378',
+    );
+    last[0] = 0;
+    expect(missedPoints(last, 0, 8).points).toBe(1.5);
   });
 
-  it('refuses a mistake number below 1', () => {
-    expect(() => mistakePenalty(0)).toThrow(RangeError);
-    expect(() => mistakePenalty(1.5)).toThrow(RangeError);
+  it('[D13] follows the Y rule of the game', () => {
+    const more = gridFrom({ A2: 5, A3: 6, B1: 7, C1: 8, A4: 1, A5: 2 });
+    expect(missedPoints(more, 0, 3).points).toBe(7.5);
+    expect(missedPoints(more, 0, 3, 'distinct').points).toBe(8.5);
+  });
+});
+
+describe('the retired §13 ladder (Moshe, 2026-10-15: no option to keep it)', () => {
+  it('is gone: the scoring module has no ladder function', () => {
+    for (const name of ['doublingPenalty', 'mistakePenalty']) expect(scoring).not.toHaveProperty(name);
+  });
+
+  it('a penalty is never below 1.5, so a cost of 1 (the ladder’s first step) exists only in old logs', () => {
+    const solution = parseGrid(
+      '864371259325849761971265843436192587198657432257483916689734125713528694542916378',
+    );
+    let lowest = Infinity;
+    // Every cell, on boards from almost full down to empty (all of them subsets of the solution).
+    for (let filled = 80; filled >= 0; filled -= 8) {
+      for (let cell = 0; cell < 81; cell++) {
+        const grid = solution.map((d, k) => (k !== cell && (k + cell) % 81 < filled ? d : 0));
+        lowest = Math.min(lowest, missedPoints(grid, cell, solution[cell] as 1).points);
+      }
+    }
+    expect(lowest).toBe(1.5);
   });
 });
 

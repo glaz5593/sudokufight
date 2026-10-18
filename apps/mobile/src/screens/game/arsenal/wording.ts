@@ -1,11 +1,12 @@
 import type { InterferenceKind } from '@sudoku-fight/engine';
 import type { TFunction } from 'i18next';
 
+import { signedText } from '../../../components/player/format';
 import type { ArsenalToken, TokenBlock } from './arsenalModel';
 
 /**
- * The arsenal's words (namespace "game", keys `arsenal.*`), as pure functions of the model and t(), so the
- * components and their tests share them.
+ * The interference picker's words (namespace "game", keys `arsenal.*`), as pure functions of the model and t(),
+ * so the components and their tests share them.
  */
 export type GameT = TFunction<'game'>;
 
@@ -18,60 +19,68 @@ const PDI = '⁩';
  */
 export const isolate = (name: string): string => `${FSI}${name}${PDI}`;
 
-/** The token's title: "זיקוקים" / "Fireworks". */
-export const kindTitle = (kind: InterferenceKind, t: GameT): string => t(`arsenal.kind.${kind}`);
+/**
+ * The kind's title: "זיקוקים" / "Fireworks". A kind this app has no words for (a newer peer's, D47) gets the
+ * generic word rather than a raw key.
+ */
+export const kindTitle = (kind: InterferenceKind, t: GameT): string =>
+  t(`arsenal.kind.${kind}`, { defaultValue: t('arsenal.kindGeneric') });
 
 /** The kind inside a sentence: "זיקוקים" / "fireworks". */
-export const kindWord = (kind: InterferenceKind, t: GameT): string => t(`interference.${kind}`);
+export const kindWord = (kind: InterferenceKind, t: GameT): string =>
+  t(`interference.${kind}`, { defaultValue: t('arsenal.kindGeneric') });
 
-/** The cost as a pill shows it: "8 נק׳". */
+/** The cost as the accessible labels say it: "8 נק׳". */
 export const costText = (cost: number, t: GameT): string => t('arsenal.cost', { cost });
 
-/** What the drag ghost says (spec §7.3.2): "זיקוקים · 8 נק׳". */
-export const ghostText = (kind: InterferenceKind, cost: number, t: GameT): string =>
-  t('arsenal.ghost', { kind: kindTitle(kind, t), cost });
+/**
+ * The price on a kind's chip and in the price row: "⁦−2⁩ נק׳", the minus in an LTR isolate so it stays before
+ * the number in Hebrew (CLAUDE.md).
+ */
+export const priceText = (cost: number, t: GameT): string =>
+  t('arsenal.priceValue', { cost: signedText(-cost) });
 
 /** The sender's confirmation (spec §7.4): "זיקוקים ← NinaVolt". */
 export const senderText = (kind: InterferenceKind, name: string, t: GameT): string =>
   t('arsenal.sent', { kind: kindTitle(kind, t), name: isolate(name) });
 
-/** The 3–4 player route on the ghost (spec §7.3.5): "אני ← NinaVolt". */
-export const routeText = (name: string, t: GameT): string => t('arsenal.route', { name: isolate(name) });
-
-/**
- * The drop zone's accessible label while the arsenal is open (components.md §3.4): "שחרר כאן: שיגור זיקוקים אל
- * NinaVolt" during a drag; before one, what to drop there.
- */
-export const dropLabel = (kind: InterferenceKind | null, name: string, t: GameT): string =>
-  kind === null
-    ? t('arsenal.dropIdle', { name: isolate(name) })
-    : t('arsenal.drop', { kind: kindWord(kind, t), name: isolate(name) });
-
-/** The short word on a token's pill when it can't be dragged: "חסרות 3 נק׳", "נעול", "תחת הפרעה". */
+/** The short words on a kind's chip when it can't be launched: "חסרות 3 נק׳", "רמה 3", "תחת הפרעה". */
 export function blockedPill(token: ArsenalToken, t: GameT): string {
   switch (token.blockedReason) {
     case null:
-      return costText(token.cost, t);
+      return priceText(token.cost, t);
     case 'points':
       return t('arsenal.missing', { count: token.missing });
     case 'locked':
-      return t('arsenal.locked');
+      return token.unlockLevel === null
+        ? t('arsenal.locked')
+        : t('arsenal.level', { level: token.unlockLevel });
     case 'busy':
       return t('arsenal.busy');
     case 'notRunning':
     case 'disconnected':
     case 'out':
       return t('arsenal.unavailable');
+    default:
+      // A reason this app does not know yet (a newer engine's).
+      return t('arsenal.unavailable');
   }
 }
 
-/** Why a token can't be dragged, as a sentence (the hint bubble on a tap). */
-export const blockedSentence = (reason: TokenBlock, token: ArsenalToken, name: string, t: GameT): string =>
-  t(`arsenal.reason.${reason}`, { count: token.missing, name: isolate(name) });
+/** Why a kind can't be launched, as a sentence (the bubble on a tap, and the accessible label). */
+export function blockedSentence(reason: TokenBlock, token: ArsenalToken, name: string, t: GameT): string {
+  if (reason === 'locked' && token.unlockLevel !== null)
+    return t('arsenal.reason.level', { level: token.unlockLevel });
+  return t(`arsenal.reason.${reason}`, {
+    count: token.missing,
+    name: isolate(name),
+    defaultValue: t('arsenal.reason.notRunning'),
+  });
+}
 
 /**
- * A token's accessible label (components.md §13): "זיקוקים · 2 נק׳ · גרור אל הכרטיס של NinaVolt", or why it
- * can't be dragged now.
+ * A kind's accessible label (components.md §13): "זיקוקים · 2 נק׳ · הקשה משגרת אל NinaVolt", or why it can't
+ * go now. Activating it launches (D45), so the price is always in it.
  */
 export function tokenLabel(token: ArsenalToken, name: string, t: GameT): string {
   const kind = kindTitle(token.kind, t);
@@ -80,9 +89,3 @@ export function tokenLabel(token: ArsenalToken, name: string, t: GameT): string 
   }
   return t('arsenal.labelBlocked', { kind, reason: blockedSentence(token.blockedReason, token, name, t) });
 }
-
-/** What a tap on a token says (components.md §13: a tap never launches). */
-export const tapHint = (token: ArsenalToken, name: string, t: GameT): string =>
-  token.blockedReason === null
-    ? t('arsenal.tapHint', { name: isolate(name) })
-    : blockedSentence(token.blockedReason, token, name, t);

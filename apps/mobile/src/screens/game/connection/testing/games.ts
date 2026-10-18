@@ -1,7 +1,7 @@
 /* Test-only: ranked games on a manual clock, driven through the engine's own connection actions. */
 import type { GameView, PlayerId, PlayerInfo } from '@sudoku-fight/engine';
 
-import { testHost } from '../../../../game/testing/practice';
+import { answerIn, PUZZLE, testHost, wrongIn } from '../../../../game/testing/practice';
 
 /** The games start at this time (the "server" clock of these tests). */
 export const T0 = 1_000_000;
@@ -18,9 +18,14 @@ export interface RankedGame {
   now(): number;
   /** Moves the clock, running the engine's timers (grace, locks) as they fall due. */
   advance(ms: number): void;
-  disconnect(playerId: PlayerId): void;
+  /** Hard at once (a goodbye); `soft`: a dropped connection, its soft phase first [D42]. */
+  disconnect(playerId: PlayerId, options?: { soft?: boolean }): void;
   reconnect(playerId: PlayerId): void;
   surrender(playerId: PlayerId): void;
+  /** `playerId` locks the first empty cell and places its right digit (a move, spec §11.2). */
+  solve(playerId: PlayerId): void;
+  /** `playerId` locks the first empty cell and places a wrong digit (a move too, at a cost). */
+  miss(playerId: PlayerId): void;
 }
 
 /** A ranked game, started, with me in seat 0 (MosheG vs NinaVolt by default, both rated). */
@@ -34,8 +39,18 @@ export function rankedGame(players: PlayerInfo[] = [MOSHE_INFO, NINA_INFO]): Ran
     view: () => host.getView(),
     now: () => clock.now(),
     advance: (ms) => scheduler.advance(ms),
-    disconnect: (playerId) => act({ type: 'disconnect', playerId }),
+    disconnect: (playerId, { soft = false } = {}) => act({ type: 'disconnect', playerId, soft }),
     reconnect: (playerId) => act({ type: 'reconnect', playerId }),
     surrender: (playerId) => act({ type: 'surrender', playerId }),
+    solve: (playerId) => {
+      const cell = host.getView().grid.findIndex((v) => v === 0);
+      act({ type: 'select', playerId, cell });
+      act({ type: 'place', playerId, cell, digit: answerIn(PUZZLE, cell) });
+    },
+    miss: (playerId) => {
+      const cell = host.getView().grid.findIndex((v) => v === 0);
+      act({ type: 'select', playerId, cell });
+      act({ type: 'place', playerId, cell, digit: wrongIn(PUZZLE, cell) });
+    },
   };
 }

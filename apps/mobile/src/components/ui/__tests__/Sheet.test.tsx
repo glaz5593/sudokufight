@@ -108,6 +108,33 @@ describe('Sheet', () => {
     },
   );
 
+  it.each([
+    ['full motion', 'off', motion.duration.sheetOut],
+    ['reduced motion', 'on', motion.duration.reducedFade],
+  ] as const)(
+    'says once that it has left the screen (onExited), after its exit (%s)',
+    async (_name, reduceMotion, outMs) => {
+      useSettings.setState({ reduceMotion });
+      const onExited = jest.fn();
+      const sheet = (visible: boolean) => (
+        <Sheet visible={visible} onClose={jest.fn()} title="דיווח" onExited={onExited} testID="sheet">
+          <Text>תוכן</Text>
+        </Sheet>
+      );
+      await render(sheet(true));
+      await act(async () => void jest.advanceTimersByTime(motion.duration.sheetIn));
+      expect(onExited).not.toHaveBeenCalled();
+      await screen.rerender(sheet(false));
+      await act(async () => void jest.advanceTimersByTime(outMs - 50));
+      expect(onExited).not.toHaveBeenCalled();
+      await act(async () => void jest.advanceTimersByTime(50 + motion.duration.tapFeedbackMax));
+      expect(screen.queryByText('תוכן')).not.toBeOnTheScreen();
+      expect(onExited).toHaveBeenCalledTimes(1);
+      await act(async () => void jest.advanceTimersByTime(1000));
+      expect(onExited).toHaveBeenCalledTimes(1);
+    },
+  );
+
   it('reopens if shown again during its exit', async () => {
     await render(arsenal(true));
     await screen.rerender(arsenal(false));

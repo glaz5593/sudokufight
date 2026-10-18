@@ -222,13 +222,13 @@ describe('cats', () => {
 });
 
 describe('effect colours', () => {
-  it('are the sender’s seat colour, gold and C’s white, never my P1', () => {
+  it('are the sender’s seat colour, gold and C’s white, never my P1, and C’s ground for ink', () => {
     const colors = effectColors(1);
     expect(colors).toEqual({
       sender: tokens.color.players[1]!.ring,
       accent: color.accent,
       light: color.text,
-      night: color.scrim,
+      ink: color.bg,
     });
     expect(effectColors(3).sender).toBe(tokens.color.players[3]!.ring);
     expect(Object.values(effectColors(2))).not.toContain(tokens.color.players[0]!.ring);

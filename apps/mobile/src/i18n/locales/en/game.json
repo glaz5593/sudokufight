@@ -111,6 +111,9 @@
       "announceSyncing": "You're back in the game. Syncing",
       "announceSynced": "You're back in the game. The board and the scores are synced"
     },
+    "offline": {
+      "announce": "No connection. Keep playing; your moves are sent when it's back"
+    },
     "left": {
       "timeUp": "Time's up · {{seconds}} seconds without a connection",
       "title": "{{name}} left the game",
@@ -118,6 +121,10 @@
       "win": "You win by abandonment",
       "rating": "rating",
       "ratingLabel": "Rating change: {{delta}}, {{type}}",
+      "ratingUnchanged": {
+        "opponentLeftBeforeMyMove": "Rating unchanged: they left before your first move",
+        "opponentLeftAhead": "Rating unchanged: you were behind when they left"
+      },
       "toResults": "See results",
       "home": "Home"
     },
@@ -152,7 +159,12 @@
       "title": "Are you sure you want to surrender?",
       "body": "The game counts as a loss",
       "bodyRating": "The game counts as a loss · estimated rating change {{delta}}",
+      "bodyNoLoss": {
+        "leftBeforeMoving": "The game counts as a loss · your rating won't drop: you haven't made a move yet",
+        "leftNotBehind": "The game counts as a loss · your rating won't drop: you're not behind"
+      },
       "bodyMany": "You leave the game, and the cells you solved keep your colour.",
+      "bodyManyNoLoss": "You leave the game, and the cells you solved keep your colour. Your rating won't drop against anyone still in the game.",
       "confirm": "Yes, surrender",
       "cancel": "Cancel",
       "footnote": "The game goes on in the background",
@@ -200,7 +212,7 @@
       "tips": {
         "score": "The emptier the row, column and box, the more a move is worth: up to {{max}} points a cell.",
         "lastCell": "The last cell on the board is always worth just {{points}} points: everything around it is full.",
-        "mistakes": "Each mistake costs twice the one before: 1, 2, 4, 8… Better to think a moment longer.",
+        "mistakes": "A mistake takes away exactly what the right digit was worth in that cell. A cell worth a lot costs a lot to get wrong.",
         "interference": "Each interference costs twice the one before. Save it for the right moment."
       }
     }
@@ -227,18 +239,28 @@
     "oppSurrendered": "{{name}} surrendered and is out, place {{place}}",
     "oppAbandoned": "{{name}} did not come back in time and is out, place {{place}}",
     "hitOther": "{{from}} sent {{kind}} to {{name}}",
-    "outMine": "You are out in place {{place}}. The game goes on to the end"
+    "outMine": "You are out in place {{place}}. The game goes on to the end",
+    "queued": "{{cell}}: {{digit}} waiting for the connection",
+    "offlineLostTaken": "{{cell}} was taken while you were offline · no penalty",
+    "offlineLost": "Your move on {{cell}} did not count · no penalty"
   },
   "interference": {
     "fireworks": "fireworks",
     "cats": "cats",
-    "warp": "warp"
+    "warp": "warp",
+    "scramble": "scrambled digits",
+    "ink": "ink",
+    "keypad": "a scrambled keypad"
   },
   "hit": {
     "title": {
       "fireworks": "{{name}} sent you fireworks!",
       "cats": "{{name}} sent you cats!",
-      "warp": "{{name}} warped your screen!"
+      "warp": "{{name}} warped your screen!",
+      "scramble": "{{name}} scrambled your digits!",
+      "ink": "{{name}} splashed ink on you!",
+      "keypad": "{{name}} scrambled your keypad!",
+      "generic": "{{name}} sent you an interference!"
     },
     "cost": "It cost {{cost}} pts · the game goes on",
     "goesOn": "The game goes on · your timer is paused",
@@ -247,62 +269,67 @@
     "seconds_many": "{{count}} seconds left",
     "seconds_other": "{{count}} seconds left",
     "banner": "{{title}} {{subtitle}}, {{time}}",
-    "started": "{{title}} {{time}}, your timer is paused",
+    "started": "{{title}} Your board is dimmed, {{time}}. Your timer is paused",
+    "withNote": "{{line}}. {{note}}",
+    "note": {
+      "scramble": "The shuffling digits aren't real",
+      "keypad": "The keys trade places, and each key enters the digit on it"
+    },
     "ended": "The interference is over, your timer runs again",
     "meow": "Meow!",
     "mew": "Mew!"
   },
   "arsenal": {
-    "title": "Interference arsenal",
+    "title": "Pick an interference",
     "target": "Target:",
     "targetLabel": "Target: {{name}}",
-    "scrim": "Close the arsenal and go back to the board",
-    "next": "Your next interference:",
+    "me": "Me",
+    "routeLabel": "Interference from me to {{name}}",
+    "scrim": "Close and go back to the board",
+    "price": "Price",
+    "priceValue": "{{cost}} pts",
+    "nextPrice": "· Next: {{cost}}",
     "unit": "pts",
-    "later": "· then {{costs}}…",
     "score": "Your score",
-    "after": "After launch: {{score}}",
-    "costLabel": "Your next interference costs {{cost}} points, then {{costs}}. Your score is {{score}}, {{after}} after launch",
-    "costLabelShort": "Your next interference costs {{cost}} points, then {{costs}}. Your score is {{score}}, {{missing}} points short",
-    "info": "Each interference lasts {{seconds}} seconds · launch by dragging only",
-    "hint": "Drag onto {{name}}'s card to launch",
-    "cancelHint": "Release outside the zone to cancel",
-    "comingTitle": "Coming later",
-    "comingLabel": "Coming later: {{names}}. Coming soon",
-    "tapHint": "Drag onto {{name}} — a tap doesn't launch",
-    "dragging": "Dragging…",
+    "costLabel": "This interference costs {{cost}} points. Your score is {{score}}, {{after}} after launch. The next one costs {{next}}",
+    "costLabelShort": "This interference costs {{cost}} points. Your score is {{score}}, {{missing}} points short",
+    "info": "Each interference lasts {{seconds}} seconds · tap to launch",
     "cost": "{{cost}} pts",
     "missing": "{{count}} pts short",
     "locked": "Locked",
+    "level": "Level {{level}}",
     "busy": "Under interference",
     "unavailable": "Unavailable",
-    "ghost": "{{kind}} · {{cost}} pts",
-    "route": "Me → {{name}}",
     "routeArrow": "→",
     "sent": "{{kind}} → {{name}}",
-    "drop": "Drop here: launch {{kind}} at {{name}}",
-    "dropIdle": "Drag an interference here from the arsenal to launch it at {{name}}",
     "notEnough": "Not enough points for the next interference ({{cost}} pts)",
-    "label": "{{kind}} · {{cost}} pts · drag onto {{name}}'s card",
+    "busyToast_one": "{{name}} is already under interference. Try again in 1 second",
+    "busyToast_two": "{{name}} is already under interference. Try again in {{count}} seconds",
+    "busyToast_many": "{{name}} is already under interference. Try again in {{count}} seconds",
+    "busyToast_other": "{{name}} is already under interference. Try again in {{count}} seconds",
+    "notNow": "You can't interfere right now",
+    "refused": "The interference wasn't sent, and no points were taken",
+    "label": "{{kind}} · {{cost}} pts · tap to launch at {{name}}",
     "labelBlocked": "{{kind}} · {{reason}}",
+    "kindGeneric": "Interference",
     "kind": {
       "fireworks": "Fireworks",
       "cats": "Cats",
-      "warp": "Warp"
+      "warp": "Warp",
+      "scramble": "Scrambled digits",
+      "ink": "Ink",
+      "keypad": "Scrambled keypad"
     },
     "reason": {
       "points": "{{count}} pts short for this interference",
       "busy": "{{name}} is already under interference, try again in a moment",
       "notRunning": "You can't launch an interference right now",
       "locked": "This interference is still locked",
+      "level": "Opens at level {{level}}",
       "out": "{{name}} is out of the game",
       "disconnected": "{{name}} is not connected right now"
     },
     "live": {
-      "lift": "Dragging {{kind}}. Release on {{name}}'s card to launch",
-      "over": "Over {{name}}'s card: release to launch",
-      "left": "Outside the drop zone: releasing here cancels",
-      "cancelled": "Launch cancelled",
       "launched": "You launched {{kind}} at {{name}}"
     }
   },

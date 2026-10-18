@@ -7,6 +7,7 @@ import { MatchmakingClient } from '../../../net/matchmaking';
 import { FakeMatchEntry, FakeMatchmaking, MATCH_PLAYERS } from '../../../net/testing/fakeMatchmaking';
 import { cue } from '../../../services/feedback';
 import { color } from '../../../theme';
+import { FALLBACK_ACTIONS_MS } from '../../FlowFallback';
 import { iso, type Setup, setUp, styleOf, wait } from '../../game/connection/testing/setup';
 import { MatchScreen } from '../MatchScreen';
 
@@ -164,6 +165,20 @@ describe('Searching (Match-Search)', () => {
     expect(handlers.onLeave).toHaveBeenCalledTimes(1);
   });
 
+  it('cancelled: never an empty screen; should the way back not come, "לבית" after a moment', async () => {
+    const { client, mm, server, handlers } = await show();
+    await server(() => mm.searching());
+    await fireEvent.press(screen.getByRole('button', { name: 'ביטול חיפוש' }));
+    expect(client.info.phase).toBe('cancelled');
+    // The route leaves at once (onLeave); here it stays, as if that got lost.
+    expect(screen.getByTestId('flow-fallback')).toBeOnTheScreen();
+    expect(screen.getByText('רגע…')).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'לבית' })).toBeNull();
+    await wait(FALLBACK_ACTIONS_MS);
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
+    expect(handlers.onHome).toHaveBeenCalledTimes(1);
+  });
+
   it('a match that fell through: back at the head of the queue, and the screen says so', async () => {
     const { mm, server } = await show();
     await server(() => mm.searching());
@@ -231,6 +246,153 @@ describe('Nobody found (Match-Timeout)', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'חזרה לבית' }));
     expect(second.mm.room.left).toBe(true);
     expect(second.handlers.onHome).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Nobody else is searching (the server’s nextRange is null)', () => {
+  const ALONE = 'כרגע אין שחקנים אחרים שמחפשים משחק כזה';
+
+  it('says so at once instead of the range, offers a bot, and the search (and its clock) goes on', async () => {
+    const { mm, server, advance } = await show();
+    await server(() => mm.searching({ nextRange: null }));
+    expect(screen.getByRole('header')).toHaveTextContent('מחפש יריב…');
+    expect(screen.getByTestId('match-search-alone-title')).toHaveTextContent(ALONE);
+    expect(screen.getByTestId('match-search-alone-body')).toHaveTextContent(
+      'ממשיכים לחפש: כשעוד שחקן יחפש משחק כזה, נמצא לך יריב כאן. אפשר גם לשחק מול בוט בינתיים.',
+    );
+    expect(
+      screen.getByLabelText(
+        `${ALONE}. ממשיכים לחפש: כשעוד שחקן יחפש משחק כזה, נמצא לך יריב כאן. אפשר גם לשחק מול בוט בינתיים.`,
+      ),
+    ).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'שחק מול בוט בינתיים' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'ביטול חיפוש' })).toBeOnTheScreen();
+    // No range, no "widening", no "avoiding recent opponents": nobody is there to range over.
+    expect(screen.queryByTestId('match-search-range')).not.toBeOnTheScreen();
+    expect(screen.queryByText('הטווח מתרחב ככל שהחיפוש נמשך')).not.toBeOnTheScreen();
+    expect(screen.queryByText('נמנעים מיריבים ששיחקת מולם לאחרונה')).not.toBeOnTheScreen();
+    // The radar and the empty seat stay: the search goes on.
+    expect(screen.getByTestId('match-search-radar')).toBeOnTheScreen();
+    expect(screen.getAllByTestId('empty-seat')).toHaveLength(1);
+    expect(env.announced()).toEqual([ALONE]);
+    await advance(3000, 500);
+    expect(screen.getByTestId('match-search-elapsed')).toHaveTextContent('0:03');
+    // Said once, not again as the range widens behind the notice.
+    await server(() => mm.searching({ elapsedMs: 5000, nextRange: null }));
+    expect(env.announced()).toEqual([ALONE]);
+  });
+
+  it('someone turns up: the notice goes and the range is back (and said)', async () => {
+    const { mm, server } = await show();
+    await server(() => mm.searching({ nextRange: null }));
+    await server(() => mm.searching({ elapsedMs: 15_000, nextRange: 150 }));
+    expect(screen.queryByTestId('match-search-alone')).not.toBeOnTheScreen();
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦1162–1412⁩');
+    expect(screen.getByText('נמנעים מיריבים ששיחקת מולם לאחרונה')).toBeOnTheScreen();
+    expect(env.announced()).toEqual([ALONE, 'מחפש יריב בטווח דירוג 1162 עד 1412']);
+  });
+
+  it('a range, then nobody, then someone later: the range said is the one on the card then', async () => {
+    const { mm, server } = await show();
+    await server(() => mm.searching());
+    const first = 'מחפש יריב בטווח דירוג 1237 עד 1337';
+    expect(env.announced()).toEqual([first]);
+    await server(() => mm.searching({ elapsedMs: 5000, nextRange: null }));
+    expect(env.announced()).toEqual([first, ALONE]);
+    await server(() => mm.searching({ elapsedMs: 15_000, nextRange: 150 }));
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦1162–1412⁩');
+    expect(env.announced()).toEqual([first, ALONE, 'מחפש יריב בטווח דירוג 1162 עד 1412']);
+  });
+
+  it('"שחק מול בוט בינתיים" leaves the queue first, then the bot game', async () => {
+    const { client, mm, server, handlers } = await show();
+    await server(() => mm.searching({ nextRange: null }));
+    await fireEvent.press(screen.getByRole('button', { name: 'שחק מול בוט בינתיים' }));
+    expect(mm.room.sent).toEqual([{ type: 'cancel' }]);
+    expect(mm.room.left).toBe(true);
+    expect(client.info.phase).toBe('cancelled');
+    expect(handlers.onBot).toHaveBeenCalledTimes(1);
+    expect(handlers.onLeave).not.toHaveBeenCalled();
+  });
+
+  it('the search went on behind it: a match found meanwhile shows the VS, with its chime', async () => {
+    const { mm, server } = await show();
+    await server(() => mm.searching({ nextRange: null }));
+    await server(() => mm.found());
+    expect(screen.getByRole('header')).toHaveTextContent('נמצא יריב!');
+    expect(cues).toHaveBeenCalledWith('matchFound');
+  });
+
+  it('an older server that does not say: the range as before, no notice', async () => {
+    const { mm, server } = await show();
+    await server(() => mm.searching({ legacy: true }));
+    expect(screen.queryByTestId('match-search-alone')).not.toBeOnTheScreen();
+    expect(screen.getByTestId('match-search-range-value')).toHaveTextContent('⁦1237–1337⁩');
+  });
+
+  it('a table of 3: "not enough players"', async () => {
+    const { mm, server } = await show('he', 'off', 'normal-3p');
+    await server(() => mm.searching({ nextRange: null }));
+    expect(screen.getByTestId('match-search-alone-title')).toHaveTextContent(
+      'כרגע אין מספיק שחקנים שמחפשים משחק כזה',
+    );
+    expect(screen.getByTestId('match-search-alone-body')).toHaveTextContent(
+      'ממשיכים לחפש: כשיחפשו מספיק שחקנים, נמצא לך יריבים כאן. אפשר גם לשחק מול בוט בינתיים.',
+    );
+  });
+
+  it('speaks English', async () => {
+    const { mm, server } = await show('en');
+    await server(() => mm.searching({ nextRange: null }));
+    expect(screen.getByTestId('match-search-alone-title')).toHaveTextContent(
+      'No one else is searching for this game right now',
+    );
+    expect(screen.getByRole('button', { name: 'Play a bot meanwhile' })).toBeOnTheScreen();
+    expect(env.announced()).toEqual(['No one else is searching for this game right now']);
+  });
+
+  it('the timeout says nobody else was searching, without "no range limit"', async () => {
+    const { mm, server } = await show();
+    await server(() => mm.searching({ nextRange: null }));
+    await server(() => mm.timeout({ nextRange: null }));
+    expect(screen.getByRole('header')).toHaveTextContent('עדיין אין שחקנים אחרים שמחפשים משחק כזה');
+    expect(screen.getByTestId('match-timeout-body')).toHaveTextContent(
+      'חיפשנו דקה שלמה, ואף שחקן אחר לא חיפש משחק כזה. אפשר להמשיך לחכות, או להתאמן מול בוט בינתיים.',
+    );
+    expect(screen.queryByText('בלי הגבלת טווח')).not.toBeOnTheScreen();
+    // The same three ways on.
+    expect(screen.getByRole('button', { name: 'המשך לחפש' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'שחק מול בוט בינתיים' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'חזרה לבית' })).toBeOnTheScreen();
+    expect(env.announced().at(-1)).toBe(
+      'עדיין אין שחקנים אחרים שמחפשים משחק כזה. חיפשנו דקה שלמה, ואף שחקן אחר לא חיפש משחק כזה. אפשר להמשיך לחכות, או להתאמן מול בוט בינתיים.',
+    );
+    // "המשך לחפש": back to the notice until the server says otherwise.
+    await fireEvent.press(screen.getByRole('button', { name: 'המשך לחפש' }));
+    expect(screen.getByTestId('match-search-alone-title')).toHaveTextContent(ALONE);
+  });
+
+  it('the timeout in English, at a table of 4', async () => {
+    const { mm, server } = await show('en', 'off', 'hard-4p');
+    await server(() => mm.searching({ nextRange: null }));
+    await server(() => mm.timeout({ nextRange: null }));
+    expect(screen.getByRole('header')).toHaveTextContent(
+      'Still not enough players are searching for this game',
+    );
+    expect(screen.getByTestId('match-timeout-body')).toHaveTextContent(
+      'We searched a whole minute and not enough players looked for this game. You can keep waiting, or practice against a bot meanwhile.',
+    );
+    expect(screen.queryByText('No range limit')).not.toBeOnTheScreen();
+  });
+
+  it('reduced motion: the notice only fades in (no movement), and the radar stands still', async () => {
+    const { mm, server, advance } = await show('he', 'on');
+    await server(() => mm.searching({ nextRange: null }));
+    await advance(200, 100);
+    expect(screen.getByTestId('match-search-alone')).toHaveAnimatedStyle({ opacity: 1 });
+    const arc = screen.getByTestId('match-search-radar-arc', { includeHiddenElements: true });
+    await advance(1000, 100);
+    expect(arc).toHaveAnimatedStyle({ transform: [{ rotate: '0deg' }] });
   });
 });
 

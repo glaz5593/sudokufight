@@ -1,8 +1,9 @@
-import { cellName } from '@sudoku-fight/engine';
+import { cellName, missedPoints, type Rules } from '@sudoku-fight/engine';
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { Dimensions, StyleSheet } from 'react-native';
 
 import { formatScore, ltr, scoreText, signedText } from '../../../components/player';
+import { useToast } from '../../../components/ui';
 import { answerIn } from '../../../game/testing/practice';
 import i18n from '../../../i18n';
 import { useProfile } from '../../../state/profile';
@@ -31,8 +32,12 @@ const cues = (): string[] => feedback.cue.mock.calls.map((c: unknown[]) => Strin
 const hidden = { includeHiddenElements: true };
 
 let game: Duel | null = null;
-async function show(onEnded = jest.fn()) {
-  game = duel();
+/**
+ * The game screen on a practice against a bot. A practice has no interferences [D44]: the tests of the
+ * interference UI pass `rules: { interferences: true }` (a 2-player game where they are on).
+ */
+async function show(onEnded = jest.fn(), rules?: Partial<Rules>) {
+  game = duel({ rules });
   await render(<GameScreen session={game.session} onEnded={onEnded} />);
   return { ...game, onEnded };
 }
@@ -101,10 +106,10 @@ describe('GameScreen against a bot (spec §6.8, §9)', () => {
     const row = screen.getByTestId('duel-hud');
     expect(row.children[0]).toBe(screen.getByTestId('duel-hud-mine'));
 
-    // "סיום אימון" works (spec §6.6); so do reactions (§8); ⚡ waits for my first 2 points (§7.2, D10).
+    // "סיום אימון" works (spec §6.6); so do reactions (§8); no "הפרעה" against a bot [D44].
     expect(screen.getByRole('button', { name: 'סיום אימון' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'תגובות' })).toBeEnabled();
-    expect(screen.getByRole('button', { name: 'הפרעה ל־Mr. Hoot · חסרות 2 נק׳' })).toBeDisabled();
+    expect(screen.queryByTestId('interfere', hidden)).toBeNull();
     expect(screen.getByLabelText('בחר משבצת')).toBeOnTheScreen();
   });
 
@@ -196,28 +201,34 @@ describe('the bot’s moves (spec §6.4, §6.5; motion.md §4.2: in its colour, 
     await layOut();
     const a = g.cells[0]!;
     const name = cellName(a);
+    const before = g.host.getView().grid.slice();
     let digit = 0;
     await act(async () => {
       digit = g.bot.miss(a);
     });
+    // The engine's penalty (§6.5): what the right digit would have scored in that cell.
+    const wrong = g.host.events.find((e) => e.type === 'placedWrong')!;
+    const penalty = wrong.type === 'placedWrong' ? wrong.penalty : NaN;
+    expect(penalty).toBe(missedPoints(before, a, answerIn(g.puzzle, a)).points);
     expect(screen.getByTestId(`cell-${name}`)).toHaveProp(
       'accessibilityLabel',
       `${name}, ריקה, ספרות שגויות: ${digit}`,
     );
     expect(screen.getByTestId('cell-wrong', hidden)).toHaveTextContent(String(digit));
-    const seq = g.host.events.find((e) => e.type === 'placedWrong')!.seq;
-    expect(screen.getByTestId(`flight-${seq}`, hidden)).toHaveTextContent(signedText(-1));
+    expect(screen.getByTestId(`flight-${wrong.seq}`, hidden)).toHaveTextContent(signedText(-penalty));
     await frames(1_500);
-    expect(theirScore()).toHaveAnimatedProps({ text: scoreText(-1) });
-    expect(screen.getByTestId('card-opponent-delta', hidden)).toHaveTextContent(signedText(-1));
+    expect(theirScore()).toHaveAnimatedProps({ text: scoreText(-penalty) });
+    expect(screen.getByTestId('card-opponent-delta', hidden)).toHaveTextContent(signedText(-penalty));
+    const points = i18n.t('player:points', { count: -penalty, score: scoreText(-penalty) });
     expect(
-      screen.getByLabelText(`Mr. Hoot · ${scoreText(-1)} נקודה · חושב, טעות אחת, בוט, רמה 3, מתקדם, מחובר`),
+      screen.getByLabelText(`Mr. Hoot · ${points} · חושב, טעות אחת, בוט, רמה 3, מתקדם, מחובר`),
     ).toBeOnTheScreen();
-    // Its mistake is silent; the bot at −1 puts me in the lead (0), and that one is mine: cued and said.
+    // Its mistake is silent; the bot below zero puts me in the lead (0), and that one is mine: cued and said.
     expect(cues()).toEqual(['leadTake']);
     await spoken();
+    const lead = i18n.t('game:live.leadMine', { count: penalty, gap: formatScore(penalty) });
     expect(live()).toHaveTextContent(
-      `Mr. Hoot טעה: ${digit} לא מתאימה ל־${ltr(name)}, ${signedText(-1)}, אתה מוביל בנקודה אחת`,
+      `Mr. Hoot טעה: ${digit} לא מתאימה ל־${ltr(name)}, ${signedText(-penalty)}, ${lead}`,
     );
   });
 
@@ -289,7 +300,7 @@ describe('the bot’s reactions and interferences', () => {
   });
 
   it('an interference on me: my lock strip stops, my card shows the hit with its 5 s; the bot pays', async () => {
-    const g = await show();
+    const g = await show(undefined, { interferences: true });
     await act(async () => g.bot.solve(g.cells[0]!)); // the bot needs the points for it (D10)
     const name = cellName(g.cells[1]!);
     await fireEvent.press(screen.getByTestId(`cell-${name}`));
@@ -306,10 +317,12 @@ describe('the bot’s reactions and interferences', () => {
     expect(screen.getByTestId('card-opponent-delta', hidden)).toHaveTextContent(signedText(-2));
     expect(cues()).toEqual(['hitFireworks']);
     await spoken();
-    expect(live()).toHaveTextContent(
-      `${isolateName('Mr. Hoot')} שלח/ה לך זיקוקים! נותרו 5 שניות, הטיימר שלך עצור`,
-      { exact: false },
-    );
+    // The start line as the hit layer says it (its wording is the hit layer's, D46: the board is dimmed).
+    const started = i18n.t('game:hit.started', {
+      title: `${isolateName('Mr. Hoot')} שלח/ה לך זיקוקים!`,
+      time: i18n.t('game:hit.seconds', { count: 5 }),
+    });
+    expect(live()).toHaveTextContent(started, { exact: false });
 
     // The timer stands still while it lasts, and runs again after the 5 s.
     await act(async () => g.scheduler.advance(3_000));
@@ -325,9 +338,37 @@ describe('the bot’s reactions and interferences', () => {
   });
 });
 
-describe('interfering with the bot (spec §7.2, D11)', () => {
-  it('⚡ rests while the bot is under my hit and in its second of immunity, and is ready right after it', async () => {
+describe('no interferences against a bot [D44]', () => {
+  it('no "הפרעה" on the bot’s card, no picker, and the bot can’t interfere with me', async () => {
     const g = await show();
+    await layOut();
+    await act(async () => {
+      for (const cell of g.cells) {
+        if (g.host.getView().players[0]!.score >= 6) break;
+        g.host.select(cell);
+        g.host.place(cell, answerIn(g.puzzle, cell));
+      }
+      g.bot.solve(g.cells.at(-1)!);
+      g.bot.solve(g.cells.at(-2)!);
+    });
+    await frames(2_000);
+    const view = g.host.getView();
+    expect(view.rules.interferences).toBe(false);
+    expect(view.interference).toBeNull();
+    expect(screen.queryByTestId('interfere', hidden)).toBeNull();
+    expect(screen.queryByLabelText(/^הפרעה ל־/, hidden)).toBeNull();
+    expect(screen.queryByTestId('arsenal-sheet', hidden)).toBeNull();
+    // The engine refuses the bot's interference (the bot's brain never tries one): no hit on me.
+    expect(() => g.bot.interfere('cats')).toThrow(/interferencesOff/);
+    await frames(300);
+    expect(g.host.getView().players[0]!.hitBy).toBeNull();
+    expect(screen.queryByTestId('hit-layer-region', hidden)).toBeNull();
+  });
+});
+
+describe('interfering with the opponent (spec §7.2, D11)', () => {
+  it('"הפרעה" rests while the opponent is under my hit and in its second of immunity, then is ready', async () => {
+    const g = await show(undefined, { interferences: true });
     await layOut();
     await act(async () => {
       for (const cell of g.cells) {
@@ -346,20 +387,105 @@ describe('interfering with the bot (spec §7.2, D11)', () => {
     expect(bolt()).toBeDisabled();
     expect(bolt()).toHaveProp('accessibilityLabel', 'הפרעה ל־Mr. Hoot לא זמינה, כבר תחת הפרעה');
 
-    // The hit ends; its second of immunity still holds ⚡ back.
+    // The hit ends; its second of immunity still holds "הפרעה" back.
     await act(async () => g.scheduler.advance(endsAt - g.clock.now()));
     await frames(250);
     expect(g.host.getView().players[1]!.hitBy).toBeNull();
     expect(bolt()).toBeDisabled();
-    // The second passes with no move from anyone: ⚡ is ready at once, at the next cost.
+    // The second passes with no move from anyone: "הפרעה" is ready at once, at the next cost.
     await act(async () => g.clock.advance(busyUntil - g.clock.now()));
     await frames(300); // a tick
     expect(bolt()).toBeEnabled();
     expect(bolt()).toHaveProp('accessibilityLabel', 'הפרעה ל־Mr. Hoot · עלות 4 נק׳');
   });
+
+  it('two taps: "הפרעה" opens the picker aimed at the opponent, a kind launches it once', async () => {
+    const g = await show(undefined, { interferences: true });
+    await layOut();
+    await act(async () => {
+      for (const cell of g.cells) {
+        if (g.host.getView().players[0]!.score >= 2) break;
+        g.host.select(cell);
+        g.host.place(cell, answerIn(g.puzzle, cell));
+      }
+    });
+    await frames(1_000);
+    const before = g.host.getView().players[0]!.score;
+    await fireEvent.press(screen.getByRole('button', { name: 'הפרעה ל־Mr. Hoot · עלות 2 נק׳' }));
+    await frames(400);
+    expect(screen.getByTestId('arsenal-sheet')).toBeOnTheScreen();
+    expect(cues()).toContain('arsenalOpen');
+    await fireEvent.press(screen.getByTestId('arsenal-kind-warp'));
+    await frames(600);
+    expect(screen.queryByTestId('arsenal-sheet')).toBeNull();
+    expect(cues().filter((c) => c === 'launch')).toHaveLength(1);
+    const view = g.host.getView();
+    expect(view.players[1]!.hitBy).toMatchObject({ kind: 'warp' });
+    expect(view.players[0]!.score).toBe(before - 2);
+    // Only the victim sees it [D46]: no dim, no effect, no banner on the sender's screen.
+    expect(screen.queryByTestId('board-hit', hidden)).toBeNull();
+    expect(screen.queryByTestId('hit-layer-banner', hidden)).toBeNull();
+  });
+
+  it('a blocked "הפרעה" says why in a short toast, with a light haptic', async () => {
+    await show(undefined, { interferences: true });
+    useToast.getState().clear();
+    await fireEvent.press(screen.getByRole('button', { name: 'הפרעה ל־Mr. Hoot · חסרות 2 נק׳' }));
+    await frames(400);
+    expect(screen.queryByTestId('arsenal-sheet')).toBeNull();
+    expect(useToast.getState().current).toMatchObject({
+      variant: 'error',
+      message: 'אין מספיק נקודות להפרעה הבאה (2 נק׳)',
+    });
+    expect(cues()).toContain('nudge');
+  });
+
+  it('an interference the host refuses (the picker already closed) says nothing was sent or charged', async () => {
+    const g = await show(undefined, { interferences: true });
+    useToast.getState().clear();
+    // Short of points: the engine refuses it, no score changes.
+    await act(async () => void g.host.interfere(g.host.getView().players[1]!.id, 'cats'));
+    await frames(300);
+    expect(useToast.getState().current).toMatchObject({
+      variant: 'warning',
+      message: 'ההפרעה לא נשלחה, ולא ירדו לך נקודות',
+    });
+    expect(g.host.getView().players[0]!.score).toBe(0);
+  });
+
+  it('refused for a general reason (the game froze before my tap arrived): still "not sent" [D45]', async () => {
+    const g = await show(undefined, { interferences: true });
+    await act(async () => {
+      for (const cell of g.cells) {
+        if (g.host.getView().players[0]!.score >= 2) break;
+        g.host.select(cell);
+        g.host.place(cell, answerIn(g.puzzle, cell));
+      }
+    });
+    await frames(1_000);
+    const before = g.host.getView().players[0]!.score;
+    const bot = g.host.getView().players[1]!.id;
+    // The opponent drops and the game freezes (spec §16.2): the host refuses with 'paused'.
+    await act(async () => void g.host.dispatch({ type: 'disconnect', playerId: bot }));
+    expect(g.host.getView().status).toBe('paused');
+    await frames(300);
+    useToast.getState().clear();
+    // A select refused for the same reason is no interference: no "not sent".
+    await act(async () => void g.host.select(g.cells.at(-1)!));
+    await frames(300);
+    expect(useToast.getState().current).toBeNull();
+    await act(async () => void g.host.interfere(bot, 'warp'));
+    await frames(300);
+    expect(useToast.getState().current).toMatchObject({
+      variant: 'warning',
+      message: 'ההפרעה לא נשלחה, ולא ירדו לך נקודות',
+    });
+    expect(g.host.getView().players[0]!.score).toBe(before);
+    expect(g.host.getView().players[1]!.hitBy).toBeNull();
+  });
 });
 
-describe('an interference on me, on screen (spec §7.4, §22; D35)', () => {
+describe('an interference on me, on screen (spec §7.4, §22; D35; interferences on, D44)', () => {
   const region = () => screen.getByTestId('hit-layer-region', hidden);
   const hitMe = async (g: Duel) => {
     await act(async () => g.bot.solve(g.cells[0]!)); // the bot's points pay for it (D10)
@@ -369,7 +495,7 @@ describe('an interference on me, on screen (spec §7.4, §22; D35)', () => {
   };
 
   it('plays over the whole screen with its banner, its cue once, and is gone exactly at its end', async () => {
-    const g = await show();
+    const g = await show(undefined, { interferences: true });
     await layOut();
     const endsAt = await hitMe(g);
     const { width, height } = Dimensions.get('window');
@@ -391,7 +517,7 @@ describe('an interference on me, on screen (spec §7.4, §22; D35)', () => {
   });
 
   it('two hits in a row with no frame between them (back from the background): the next starts afresh', async () => {
-    const g = await show();
+    const g = await show(undefined, { interferences: true });
     await layOut();
     await act(async () => {
       for (const cell of g.cells) {
@@ -432,7 +558,7 @@ describe('an interference on me, on screen (spec §7.4, §22; D35)', () => {
 
   it('with reduced motion: a static cover of the same area for the same 5 s, no rumble', async () => {
     useSettings.setState({ reduceMotion: 'on' });
-    const g = await show();
+    const g = await show(undefined, { interferences: true });
     await layOut();
     const endsAt = await hitMe(g);
     const { width, height } = Dimensions.get('window');

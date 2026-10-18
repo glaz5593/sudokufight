@@ -16,6 +16,7 @@ import { Avatar } from '../../components/player/Avatar';
 import { NEVER_REDUCE } from '../../components/player/anim';
 import { paletteAt } from '../../components/player/metrics';
 import { SeatGlyph } from '../../components/player/SeatGlyph';
+import { Icon } from '../../components/Icon';
 import { Button } from '../../components/ui/Button';
 import { color, radius, space, text, tokens } from '../../theme';
 import { motion } from '../../theme/motion';
@@ -32,6 +33,8 @@ export interface SearchViewProps {
   reduce: boolean;
   /** "ביטול חיפוש". */
   onCancel: () => void;
+  /** "שחק מול בוט בינתיים", under the "nobody else is searching" notice: out of the queue, into a bot game. */
+  onBot: () => void;
   testID?: string;
 }
 
@@ -41,22 +44,32 @@ export interface SearchViewProps {
  * `search.sweep`, 2400 ms; reduced motion: it stands still, the time still runs), my rating, the rating
  * range as numbers and as a bar that widens as the server widens it (every 5 s, up to ±300; "keep searching"
  * lifts the cap), the empty seats blinking "מחפש…", "נמנעים מיריבים ששיחקת מולם לאחרונה", and "ביטול חיפוש".
- * A screen reader hears the range once the search runs, and why the search started over when a match fell
+ * When the server says nobody else (not enough players, at a table of 3–4) this player could meet is searching
+ * (`alone`: its nextRange is null), a notice takes the range's place at once ("כרגע אין שחקנים אחרים שמחפשים
+ * משחק כזה", motion.md `search.alone`) with "שחק מול בוט בינתיים"; the search goes on meanwhile (the radar and
+ * the time run), and the range comes back as soon as someone is there. A screen reader hears the range once
+ * the search runs (or that nobody else is searching), and why the search started over when a match fell
  * through; never the seconds.
  */
-export function SearchView({ model: m, reduce, onCancel, testID = 'match-search' }: SearchViewProps) {
+export function SearchView({ model: m, reduce, onCancel, onBot, testID = 'match-search' }: SearchViewProps) {
   const { t } = useTranslation('match');
   const insets = useSafeAreaInsets();
   const enter = useEnter(reduce);
   const time = clockText(m.elapsedMs);
-  // Said once, as the search starts (not at every widening): the range it starts with.
+  // Said once, as the search starts (not at every widening): the range it starts with. While nobody else is
+  // searching it is forgotten, so the range that comes back with someone is said as it is then.
   const [rangeLine, setRangeLine] = useState<string | null>(null);
-  if (m.range && rangeLine === null) {
+  if (m.alone && rangeLine !== null) setRangeLine(null);
+  if (m.range && !m.alone && rangeLine === null) {
     setRangeLine(t('search.announce', { low: m.range.low, high: m.range.high, count: m.openSeats }));
   }
   // At a table of 3–4 the one who did not come is one of several (spec §10).
   const requeued = t('search.requeued', { count: m.openSeats });
-  const announcement = rangeLine ? joinSentences([m.requeued && requeued, rangeLine], t) : null;
+  const aloneTitle = t('search.alone.title', { count: m.openSeats });
+  const aloneBody = t('search.alone.body', { count: m.openSeats });
+  // Nobody else: said once as it begins (again only if it ends and comes back).
+  const line = m.alone ? aloneTitle : rangeLine;
+  const announcement = line ? joinSentences([m.requeued && requeued, line], t) : null;
 
   return (
     <View style={styles.root} testID={testID}>
@@ -83,7 +96,16 @@ export function SearchView({ model: m, reduce, onCancel, testID = 'match-search'
 
           <Radar me={m.me} reduce={reduce} active={!m.connecting} testID={`${testID}-radar`} />
 
-          {m.range ? (
+          {m.alone ? (
+            <AloneNotice
+              title={aloneTitle}
+              body={aloneBody}
+              bot={t('search.alone.bot')}
+              onBot={onBot}
+              reduce={reduce}
+              testID={`${testID}-alone`}
+            />
+          ) : m.range ? (
             <View style={styles.range} testID={`${testID}-range`}>
               <View
                 style={styles.rangeCard}
@@ -119,7 +141,7 @@ export function SearchView({ model: m, reduce, onCancel, testID = 'match-search'
             </View>
           </View>
 
-          <Text style={styles.note}>{t('search.avoidRecent')}</Text>
+          {m.alone ? null : <Text style={styles.note}>{t('search.avoidRecent')}</Text>}
         </Animated.View>
       </ScrollView>
       <View style={[styles.footer, { paddingBottom: insets.bottom + space[8] }]}>
@@ -136,6 +158,52 @@ export function SearchView({ model: m, reduce, onCancel, testID = 'match-search'
       </View>
       <Announcer line={announcement} testID={`${testID}-live`} />
     </View>
+  );
+}
+
+/**
+ * Nobody else to meet is searching (Match-Search, direction C's card): what is going on, and a bot meanwhile.
+ * Fades in where the range was (motion.md `search.alone`; reduced motion: the 200 ms fade only). No numbers:
+ * a later version that shows the next range must isolate it (ltr()).
+ */
+function AloneNotice({
+  title,
+  body,
+  bot,
+  onBot,
+  reduce,
+  testID,
+}: {
+  title: string;
+  body: string;
+  bot: string;
+  onBot: () => void;
+  reduce: boolean;
+  testID: string;
+}) {
+  const { t } = useTranslation('match');
+  const enter = useEnter(reduce);
+  return (
+    <Animated.View style={[styles.alone, enter]} testID={testID}>
+      <View style={styles.aloneText} accessible accessibilityLabel={joinSentences([title, body], t)}>
+        <Icon name="alert" size={tokens.size.icon.inline} color={color.textMuted} />
+        <Text style={styles.aloneTitle} testID={`${testID}-title`}>
+          {title}
+        </Text>
+        <Text style={styles.aloneBody} testID={`${testID}-body`}>
+          {body}
+        </Text>
+      </View>
+      <Button
+        label={bot}
+        onPress={onBot}
+        variant="secondary"
+        size="md"
+        icon="bot"
+        style={styles.stretch}
+        testID={`${testID}-bot`}
+      />
+    </Animated.View>
   );
 }
 
@@ -279,6 +347,21 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     backgroundColor: color.surface,
   },
+  // As wide as the actions (centred by the column), with C's card look.
+  alone: {
+    width: '100%',
+    maxWidth: metrics.actionsMaxWidth,
+    padding: space[7],
+    gap: space[5],
+    borderRadius: radius.card,
+    borderWidth: tokens.border.hairline,
+    borderColor: color.border,
+    backgroundColor: color.surface,
+  },
+  aloneText: { alignItems: 'center', gap: space[3] },
+  aloneTitle: { ...text('rowTitle'), color: color.text, textAlign: 'center' },
+  aloneBody: { ...text('body'), color: color.textMuted, textAlign: 'center' },
+  stretch: { alignSelf: 'stretch' },
   rangeTitle: { ...text('micro'), color: color.textMuted },
   rangeValue: { ...text('scoreCompact'), color: color.accent },
   note: { ...text('caption'), color: color.textMuted, textAlign: 'center' },

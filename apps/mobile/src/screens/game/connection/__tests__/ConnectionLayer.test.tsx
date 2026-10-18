@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { AccessibilityInfo } from 'react-native';
 
 import { ConnectionLayer, type ConnectionLayerProps } from '../ConnectionLayer';
 import { connectionModel, type ConnectionModel, lobbyOf } from '../connectionModel';
@@ -64,6 +65,25 @@ describe('ConnectionLayer', () => {
       ),
     );
     expect(shown()).toEqual(['self-reconnecting']);
+  });
+
+  it('my connection in its soft phase [D42]: nothing drawn, touches go through, said once', async () => {
+    const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility').mockImplementation(() => {});
+    try {
+      const model: ConnectionModel = { kind: 'selfOffline', softEndsAt: 10_000, secondsLeft: 9 };
+      const view = await render(layer(model));
+      expect(shown()).toEqual([]);
+      expect(screen.getByTestId('connection-layer')).toHaveProp('pointerEvents', 'box-none');
+      const line = 'אין חיבור. אפשר להמשיך לשחק, והמהלכים יישלחו כשהחיבור יחזור';
+      expect(screen.getByTestId('self-offline-announcer', hidden)).toHaveTextContent(line);
+      // The countdown goes on underneath: still once.
+      await view.rerender(layer({ ...model, secondsLeft: 8 }));
+      expect(announce.mock.calls).toEqual([[line]]);
+      await view.rerender(layer({ kind: 'none' }));
+      expect(screen.queryByTestId('self-offline-announcer', hidden)).toBeNull();
+    } finally {
+      announce.mockRestore();
+    }
   });
 
   it('shows "the opponent left" with its avatars, and goes to the results', async () => {

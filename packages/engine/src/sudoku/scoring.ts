@@ -25,6 +25,7 @@ import {
  * X is the highest of the four and Y the second highest after sorting, so a tie at the top gives Y = X [D13].
  * The [D13] alternative: Y is the highest value below X (all four equal → Y = X).
  *   points = 9 − X + (9 − Y) / 2                      1.5 … 13.5 in steps of 0.5
+ * A wrong digit costs what the right one would have scored in that cell at that moment (§6.5, `missedPoints`).
  */
 
 /** How Y is picked [D13]: second after sorting (default), or the second distinct value. */
@@ -58,13 +59,13 @@ export const formatScoreLine = (s: Pick<MoveScore, 'X' | 'Y' | 'points'>): strin
   `points = 9 − ${s.X} + (9 − ${s.Y}) / 2 = ${s.points}`;
 
 /**
- * The penalty for a player's k-th mistake in a game (k ≥ 1): 1, 2, 4, 8, 16 … = 2^(k−1).
- * The ladder never resets during a game. `cap` is the [D14] proposal (e.g. 8); null keeps the original rule.
+ * The penalty for a wrong digit in `cell` (spec §6.5; Moshe's decision of 2026-10-15, which replaces the
+ * 1, 2, 4, 8 … ladder of the original §13 for good: there is no rule to bring it back): what the RIGHT digit
+ * would have scored there at that moment, i.e. the §6.4 formula on the board before the entry with the
+ * solution's digit. 1.5 … 13.5, whatever the mistake number, and the same whichever wrong digit was entered.
  */
-export function mistakePenalty(k: number, cap: number | null = null): number {
-  if (!Number.isInteger(k) || k < 1) throw new RangeError(`Mistake number must be 1 or more, got ${k}`);
-  const p = 2 ** (k - 1);
-  return cap === null ? p : Math.min(p, cap);
+export function missedPoints(grid: Grid, cell: CellIndex, right: Digit, y: ScoreY = 'sorted'): MoveScore {
+  return moveScore(grid, cell, right, y);
 }
 
 /** The cost of a player's n-th interference in a game (n ≥ 1): 2, 4, 8 … = 2^n [D10]. */

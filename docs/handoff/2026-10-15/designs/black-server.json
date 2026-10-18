@@ -1,0 +1,220 @@
+{
+  "item": "Black screen at the end of an online game (opponent surrendered or left mid-game; sometimes after my own surrender). Angle: server + protocol and the client/server contract at game end.",
+  "summary": "I traced the whole end of a game: the server's order of messages, room disposal, the result and rating write, and how the app consumes them. The server cannot put a blank screen up by itself. It sends events with gameOver, then solution, then closes the room after 60 s. The results come from the in-memory session, never from an HTTP fetch, and the game ids are the same everywhere. So none of the suspected races applies: a 404 on /history, results lost before the client reads them, the client leaving before its results, or an id mismatch. The strongest lead is a correlation, not a confirmed cause. Every end that is not a full board opens the results with 0 ms delay, synchronously inside the Colyseus onMessage callback of the 'events' frame. The board-complete end, the one that works on the phone, waits 1.1 s on a timer. That fits all three reports: the opponent's surrender is always synchronous, my own surrender is synchronous only when the server's answer lands after the dialog has exited (\"sometimes\"), and \"לתוצאות\" (to results) after an abandonment comes from a button press. Real contract gaps were also found. A finished room auto-disposes about 1 s after the last connected client is gone. A drop after the end holds no seat. A player who was away when the game ended (screen off, background) and returns after their 16 s window finds no room, gets lostConnection with a stale state, and never sees the result. Nothing tells the client when the result and ratings are stored. There is also no diagnostic trail: in release builds the host log lines are dropped, and a hung JS thread is never reported to Crashlytics.",
+  "rootCauses": [
+    {
+      "cause": "Online results are opened synchronously inside the server's 'events' message callback (0 ms hold for every end except a full board), immediately followed by the 'solution' frame re-emitting into the game screen being replaced. This is the only end path that navigates from inside the WebSocket callback. Practice ends wait for the dialog's onExited, the board-complete end waits 1.1 s, and 'לתוצאות' is a press. That matches 'opponent surrendered → black' (always) and 'I surrendered → sometimes' (only when gameOver arrives after the dialog's onExited, so waits===0 → open() runs synchronously). The mechanism on the device is not proven (no repro, no crash reported); bug 9 had the same symptom on a 0-delay end.",
+      "evidence": "apps/mobile/src/screens/game/model.ts:101-104 (endDelayMs returns 0 unless boardComplete); GameScreen.tsx:739-749 ('ended' → showResults(e.gameId, endDelayMs)); GameScreen.tsx:536-565 (waits===0 → open() at once, line 562) → onEnded → app/game.tsx:8 router.replace; called from RemoteGameHost.onEvents → emit (remoteGameHost.ts:537-566), itself run from room.onMessage (remoteGameHost.ts:457-458). Server sends 'solution' as a separate frame right after the events (GameRoom.ts:602,609) → remoteGameHost.ts:498-504 emits again into the screen mid-transition. The practice path was fixed only for its dialog (commit 97b16d6, botPracticeEnd.e2e.test.tsx:36).",
+      "confidence": "medium (correlation; not reproduced)"
+    },
+    {
+      "cause": "A finished room vanishes before an away player can read the result. At gameOver autoDispose=true disposes the room 1 s after the last client is gone and the last reservation lapsed. A drop in phase 'over' gives up the seat with no reservation. A player away at the end (screen off → AppState background → disconnect; or a drop) and back after grace+1 s finds no room: reconnect 'tokenExpired', then the join by code fails with 'notFound'/'roomGone' (FATAL), and the host shuts down with 'lostConnection' and a stale running/paused state. The result is the connection-error screen, or an invisible one if its Reanimated enter never runs after resume, instead of the result the server holds. Moshe's 'keep the screen on' item makes this path easy to hit.",
+      "evidence": "apps/server/src/rooms/GameRoom.ts:610-611 (autoDispose = true at gameOver), 344-347 (onDrop in 'over': seat.sessionId = null, no allowReconnection), 355-360 (reservation = grace+1 s only), 621-624 (closeAfterGameMs ceiling 60 s, GAME_ROOM_DEFAULTS 177-183); Colyseus node_modules/@colyseus/core/build/Room.mjs:225-240 (autoDispose setter → resetAutoDisposeTimeout(1)), 1351-1357 (_disposeIfEmpty: no clients, no reserved seats), 1209-1221 (lapsed reservation → resetAutoDisposeTimeout). Client: remoteGameHost.ts:814-828 (background = disconnect while not over), 198-206 (notFound/roomGone FATAL), 713 (shutdown lostConnection); connectionModel.ts step 2 → full-screen ConnectionError (ConnectionError.tsx:49,74 opacity enter).",
+      "confidence": "high that the gap exists; medium as a cause of what Moshe saw"
+    },
+    {
+      "cause": "No signal that the end is stored. Ratings, history and match.over() are written in the background after gameOver, but the room never tells the client. refreshMe() on leaving the results can read the old rating, a quick 'משחק חדש' (new game) is refused 'alreadyQueued' until the write is done, and a replay right away gets 409. This is not a black screen, but it is the same contract and the cause of the 'rating does not update' item.",
+      "evidence": "GameRoom.ts:606-607 (recorder.done → match.over, client not told); persistence/recorder.ts end() (background transaction, retries 500 ms ×2^n, 5 tries); matchmaking/service.ts:243-244 (alreadyQueued while playing); app/results/[id].tsx:28-32 (refreshMe on leave only); the server's own fake client polls GET /v1/me for it (src/testing/fakeClient/client.ts:771-800 readStoredRating).",
+      "confidence": "high (for the rating symptom); low for the black screen"
+    },
+    {
+      "cause": "After the end, a silent socket or a gap still runs the reconnect loop against a finished, possibly disposed room (token, then code, then FATAL → shutdown('lostConnection')). Harmless while the results are up, because connectionModel shows nothing for an over view, but it adds network work and status churn during and after the transition.",
+      "evidence": "remoteGameHost.ts:603-606 (silence → dropConnection), 634-642 (gap → dropConnection), 664-670 (dropConnection → lose('drop') with no 'over' check); only onLeave (572) and onAppState (817) treat an over game specially.",
+      "confidence": "low"
+    },
+    {
+      "cause": "Unobservable failure. In release builds the host's log lines are dropped. A JS-thread hang, or a native transition stuck at alpha 0, during the replace leaves a blank #0f1218 screen with no Crashlytics report. Breadcrumbs exist ('opening the results', 'results: loading') but are sent only with a crash or non-fatal. This explains why Firebase shows nothing; it does not explain what happened.",
+      "evidence": "apps/mobile/src/net/device.ts:31-33 (log only in __DEV__); services/crashlytics.ts (log() only travels with a report); GameScreen.tsx:258,544 and ResultsScreen.tsx:77-79 breadcrumbs; theme bg #0f1218 (tokens.generated.ts:18).",
+      "confidence": "high (as a diagnosis gap)"
+    }
+  ],
+  "design": "## 0. What the server does today at the end (verified, for the implementer)\n- Surrender (2 players): onClientMessage → ServerGame.act → onUpdate → recorder.push → onGameUpdate. It broadcasts `events` [cellReleased?, playerSurrendered, gameOver(lastPlayerStanding, ranking, ratingChanges, awards)] (GameRoom.ts:602), sets phase 'over', chains recorder.done.then(match.over) (606-607), broadcasts `solution` (609), sets autoDispose = true (611), and arms closeTimer = closeAfterGameMs (60 s) → disconnect(4000).\n- Opponent killed the app: onDrop → engine disconnect (2p: gamePaused), allowReconnection(grace+1 s). When the grace timer fires: playerAbandoned + gameOver, then the same steps as above.\n- Consented leave: onLeave → engine disconnect → same.\n- Client: RemoteGameHost.onLeave with an over state → shutdown('gameOver'). connectionStatusOf maps that to 'online'. connectionModel shows opponentLeft or nothing.\n- Results: read from the store's OnlineSession (app/results/[id].tsx:15-22), with no HTTP call. The ids are one UUID end to end: GameRoom.startGame randomUUID → config.id → view.gameId → games.id.\n- Unknown server message types only console.warn in SDK 0.18.5 (sdk/build/Room.mjs:571), so an additive message is safe for old APKs.\n\n## 1. Server: a finished room waits until every player has the end (GameRoom.ts)\nNew fields:\n- `private readonly sawEnd = new Set<PlayerId>()`: players who were sent the end while connected, or got it on return.\n- `private closeAt: number | null = null`.\n- Helper `private everyoneSawEnd(): boolean { return this.seats.every((s) => this.sawEnd.has(s.playerId)); }`.\n\nonGameUpdate, on reaching 'over', after the `solution` broadcast:\n- For each seat whose sessionId is among `this.clients` (NOT just sessionId !== null: a dropped seat keeps its sessionId during its reservation but is not in clients), add the player to sawEnd.\n- `this.closeAt = this.deps.now() + this.deps.closeAfterGameMs`.\n- Replace `this.autoDispose = true` with `this.autoDispose = this.everyoneSawEnd()`.\n- Keep closeTimer as the hard ceiling.\n\nwelcomeBack, when phase === 'over': after the snapshot and solution (and `stored`, see §2), `this.sawEnd.add(seat.playerId); this.autoDispose = this.everyoneSawEnd();`. The setter re-arms Colyseus' 1 s auto-dispose check.\n\nonDrop, when phase === 'over': replace `seat.sessionId = null; return;` with: keep seat.sessionId (onReconnect finds the seat by session), set `seat.away = true`, and call `this.allowReconnection(client, Math.max(1, ((this.closeAt ?? now) - now) / 1000)).catch(() => undefined)`. When that reservation lapses, Colyseus calls onLeave (isDrop) and the existing code nulls the seat. disconnect() at closeAt rejects any pending reservation.\n\nonReconnect: unchanged (it already clears away and calls welcomeBack).\n\nEffect:\n- Normal case (everyone connected at the end, then everyone leaves): unchanged, the room closes about 1 s later.\n- A player away at the end, or one who drops after it: the room lives until they come back by token or code, or until closeAt (60 s).\n\nAlso update the header comment (lines 50-103, step \"3. Over\").\n\n## 2. Protocol + server: `stored` message (shared with the \"rating does not update\" item; build it once)\nIn packages/protocol/src/index.ts, add to ServerMessage:\n```ts\n/** A rated game's end is stored (spec §19): result, ratings, history written; matchmaking takes its players again.\n * Sent once to everyone in the room after `solution`, and again to a player back in the finished room.\n * ok:false — the end could not be written (ratings did not move). Unrated rooms never send it. */\n| { type: 'stored'; gameId: string; ok: boolean }\n```\nAdd 'stored' to SERVER_MESSAGE_TYPES, after 'solution'. PROTOCOL_VERSION stays 1 (the change is additive).\n\nGameRoom:\n- Add `private stored: { gameId: string; ok: boolean } | null = null`.\n- In onGameUpdate at over, if this.recorder:\n```ts\nvoid this.recorder.done.then((o) => {\n  this.stored = { gameId: state.config.id, ok: o.ok };\n  if (this.opened) this.broadcastMessage({ type: 'stored', ...this.stored });\n});\n```\n  Chain it as part of, or alongside, the existing match.over() chain.\n- welcomeBack phase 'over': `if (this.stored) this.sendTo(client, { type: 'stored', ...this.stored })`.\n- Fake client (src/testing/fakeClient/client.ts onMessage switch ~807): add `case 'stored'`. Optionally finish on it instead of polling readStoredRating.\n\n## 3. Client: never open the results from inside the server's message\n- apps/mobile/src/screens/game/model.ts: add `export const ONLINE_END_HOLD_MS = 600` with a doc comment: an online game's end (surrender, abandonment) holds the board this long before the results, so the end's frames (events, solution) land first and the navigation never runs inside the server's message. Change the signature to `endDelayMs(reason, reduce, online = false)`:\n  - boardComplete: unchanged.\n  - otherwise: `online ? (reduce ? motion.duration.reducedFade : ONLINE_END_HOLD_MS) : 0`.\n- GameScreen.tsx 'ended' case (739-749): `showResults(e.gameId, endDelayMs(reason, reduce, isOnline))`. showResults then always goes through `later()` online, because delay > 0 → waits > 0.\n- Unchanged: the dialog wait (dialogUp/onExited/DIALOG_GONE_CEILING_MS); the practice path (delay 0, as fixed for bug 9); 'לתוצאות' (a press); the mount-time over effect (944-947, runs in an effect, not the socket callback).\n- The hold respects Reduced Motion (200 ms).\n\n## 4. Client: an over game never reconnects (remoteGameHost.ts)\n- In dropConnection(): if `this.state?.status === 'over'`, then `const room = this.room; this.goOffline(); void room?.leave(true).catch(() => undefined); return this.shutdown('gameOver', null);`. This covers the silence path (603-606) and the gap timer (640).\n- onLeave already returns shutdown('gameOver') for an over state.\n- New `case 'stored'`: `this.stored = { gameId: m.gameId, ok: m.ok }; this.notifyOnline();`. Ignore it if `this.state?.config.id !== m.gameId`.\n- Add `stored?: { ok: boolean } | null` to OnlineInfo (optional, like startsAt, so the fakes keep compiling) and fill it in makeInfo.\n- Update the header doc.\n\n## 5. Client: diagnostics, so the next black screen leaves a trace\n- net/device.ts: `log: (line) => { if (__DEV__) console.log(`[online] ${line}`); else crashReporter().log(`online: ${line}`); }`. Breadcrumbs only, never sent alone. The token is never in a line (documented in RemoteGameHost).\n- app/game.tsx, results watchdog: keep `const resultsTimer = useRef<ReturnType<typeof setTimeout> | null>(null)`. The route's onEnded becomes:\n```ts\n(id) => {\n  crashReporter().log(`game route: results ${id}`);\n  openResults(id);\n  resultsTimer.current = setTimeout(() => {\n    crashReporter().log('game route: results did not open');\n    crashReporter().recordError(new Error('results did not open'), 'game end');\n    openResults(id);\n  }, RESULTS_WATCHDOG_MS);\n}\n```\n  The existing unmount cleanup clears the timer. Export `RESULTS_WATCHDOG_MS = 3000` from screens/game/model.ts. Wrap the callback body in try/catch: a throw out of a timer is fatal in release.\n- Also log `game route: nothing to show (leaving=…)` when GameRoute returns null (app/game.tsx:65).\n- app/results/[id].tsx: `crashReporter().log(`results route: ${id} ${online?.id === id ? 'online' : 'practice'}`)` once on mount.\n\n## 6. Client: consuming `stored` (owned together with the rating item)\n- OnlineSession: `get stored()` from host.online, plus an `onStored` dep called once when ok becomes true.\n- gameStore: pass `deps.onRankedStored ?? (() => void refreshMe())` into the OnlineSession built in goRanked/goOnline. The default calls refreshMe; inject it to keep the store test-pure.\n- The results route keeps refreshMe() on leave as the fallback. That covers old servers, and a room closed before the write finished.\n\n## 7. Optional, needs a decision: results from the server when the room is gone\nWhen the host closes with 'lostConnection' and error code notFound or roomGone, while holding a ranked game that is not over, the ConnectionError offers \"לתוצאות\" (to results). That button:\n- calls GET /v1/games/:id/replay (retrying 409 notFinished every 1 s, up to 10 times);\n- evolves the events from gameCreated into the final GameState;\n- shows the results through a new `loadRankedResults(id, api)` in resultsModel.ts.\n\nIt needs new i18n keys (he+en), e.g. `game:connection.error.toResults`, `game:results.fetching`. It is not needed for the black screen.\n\n## Config values\n- ONLINE_END_HOLD_MS = 600 (reduced motion: motion.duration.reducedFade = 200).\n- RESULTS_WATCHDOG_MS = 3000.\n- GAME_ROOM_DEFAULTS.closeAfterGameMs = 60_000, unchanged: now the ceiling for an away player, no longer reached only when someone stays connected.\n- Rules and engine: no change.\n\n## Edge cases\n- 3–4 players: a surrendered player who stays sees the end; one who left is 'away' and keeps the room up to 60 s (acceptable).\n- A rejoin by code to an over room (onJoin → welcomeBack) adds the player to sawEnd and may let the room dispose 1 s after they leave.\n- A match room cancelled before GO (onMatchCancel) has no game: untouched.\n- A server restart cuts a game (serverRestart): untouched.\n- Old APK + new server: 'stored' is only warned about in the console.\n- New APK + old server: no 'stored' → refreshMe on leave as today.\n- A rejected surrender while offline: unchanged.",
+  "files": [
+    {
+      "path": "apps/server/src/rooms/GameRoom.ts",
+      "change": "Add the fields sawEnd, closeAt and stored, and the helper everyoneSawEnd(). onGameUpdate: fill sawEnd from this.clients, set closeAt, set autoDispose = everyoneSawEnd() instead of true, and broadcast 'stored' when recorder.done settles (guarded by this.opened). onDrop in phase 'over': hold the seat (away = true, allowReconnection until closeAt) instead of nulling it. welcomeBack in phase 'over': re-send 'stored', add the player to sawEnd, recompute autoDispose. Update the header comment (step 3 'Over')."
+    },
+    {
+      "path": "packages/protocol/src/index.ts",
+      "change": "Add the ServerMessage variant { type: 'stored'; gameId; ok } with its doc comment. Add 'stored' to SERVER_MESSAGE_TYPES after 'solution'."
+    },
+    {
+      "path": "packages/protocol/src/index.test.ts",
+      "change": "Add 'stored' to the expected SERVER_MESSAGE_TYPES list (line ~52)."
+    },
+    {
+      "path": "apps/server/src/testing/fakeClient/client.ts",
+      "change": "Add case 'stored' to the game-room onMessage switch (~807-861). Optionally finish on stored instead of polling readStoredRating."
+    },
+    {
+      "path": "apps/mobile/src/net/remoteGameHost.ts",
+      "change": "dropConnection(): an over game shuts down as 'gameOver' and never starts lose()/comeBack. Handle the 'stored' message. Add OnlineInfo.stored?: {ok:boolean}|null and fill it in makeInfo. Update the header doc."
+    },
+    {
+      "path": "apps/mobile/src/net/testing/fakeServer.ts",
+      "change": "FakeTable: add sendStored(ok = true) (delivers { type:'stored', gameId, ok }) and closeRoom(code = 4000) (the server closing the room), for the new tests."
+    },
+    {
+      "path": "apps/mobile/src/net/device.ts",
+      "change": "In release builds, send the host's log lines to crashReporter().log as breadcrumbs (dev builds keep console.log)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/model.ts",
+      "change": "Add ONLINE_END_HOLD_MS = 600 and RESULTS_WATCHDOG_MS = 3000 with doc comments. endDelayMs(reason, reduce, online = false) returns the online hold (200 ms with Reduced Motion) for every online end except boardComplete."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/GameScreen.tsx",
+      "change": "The 'ended' case (739-749) passes isOnline to endDelayMs, so online results always open from a timer (later()), never synchronously inside the host's update. Update the showResults doc comment (530-535)."
+    },
+    {
+      "path": "apps/mobile/app/game.tsx",
+      "change": "Results watchdog: after openResults, a timer of RESULTS_WATCHDOG_MS records a non-fatal 'results did not open' and calls openResults once more; the existing unmount cleanup cancels it. Add breadcrumbs for results requested and for rendering nothing (line 65). Wrap the timer callback in try/catch."
+    },
+    {
+      "path": "apps/mobile/app/results/[id].tsx",
+      "change": "Breadcrumb on mount (id, online or practice). Keep refreshMe on leave as the fallback when no 'stored' arrives."
+    },
+    {
+      "path": "apps/mobile/src/game/onlineSession.ts",
+      "change": "(Shared with the rating item.) Add a stored getter and an optional onStored dep, called once when stored.ok becomes true."
+    },
+    {
+      "path": "apps/mobile/src/game/gameStore.ts",
+      "change": "(Shared with the rating item.) Add an optional deps.onRankedStored, defaulting to refreshMe, passed to each OnlineSession made in goOnline/goRanked."
+    },
+    {
+      "path": "apps/server/test/gameRoom.end.test.ts",
+      "change": "NEW: its own server with closeAfterGameMs 4000 and graceMs 800 via rules. Covers the finished-room lifetime tests (see the tests list)."
+    },
+    {
+      "path": "apps/server/test/gameRoom.ranked.test.ts",
+      "change": "Add the 'stored' test: order and DB state, plus the re-send on return."
+    },
+    {
+      "path": "apps/server/test/remoteHost.contract.test.ts",
+      "change": "Add an opponent-surrender end-to-end test and a background-at-the-end return test with the app's RemoteGameHost."
+    },
+    {
+      "path": "apps/mobile/src/net/__tests__/remoteGameHost.test.ts",
+      "change": "Add tests: over game + silence or cut socket → closed as gameOver with no reconnect calls; 'stored' handling."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/__tests__/model.test.ts",
+      "change": "Add endDelayMs tests for online, practice and reduce."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/__tests__/GameScreenOnline.test.tsx",
+      "change": "Add the opponent-surrender hold test and a reduced-motion variant. Update 'surrender (spec §6.6)…' (line 318) to pass ONLINE_END_HOLD_MS before expecting onEnded."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/__tests__/gameRoute.test.tsx",
+      "change": "Update 'the game, and its end opens the results' (line 106) to advance fake timers by the hold. Add the watchdog tests."
+    },
+    {
+      "path": "apps/mobile/src/__tests__/ranked.e2e.test.tsx",
+      "change": "Add the opponent-surrender and my-surrender flows through the real routes (results visible, no error screen, no blank route)."
+    },
+    {
+      "path": "apps/mobile/src/net/__tests__/device.test.ts",
+      "change": "Add a test: in release, log lines go to crashReporter().log, and never a reconnection token."
+    },
+    {
+      "path": "docs/01-SPEC.md",
+      "change": "§16.2: a finished game's room waits up to 60 s for a player who was away at the end; back in time, they get the result. §18 server→client table: add `solution` (currently missing) and `stored`. §12: online results open after a short hold (0.6 s; 0.2 s with Reduced Motion) after a surrender or abandonment."
+    },
+    {
+      "path": "docs/QA-CHECKLIST.md",
+      "change": "Rows 11, 18 and 25 and the 'ניצחון בנטישה' (win by abandonment) row: add the black-screen regression checks (opponent surrenders; my surrender ×5; opponent kills the app; screen off at the end)."
+    },
+    {
+      "path": "docs/STAGE9-10-DEVICE-CHECKS.md",
+      "change": "Add device steps: opponent surrenders → results; I surrender 5 times → results each time; my screen off while the opponent leaves, back within 60 s → result shown; Crashlytics breadcrumbs present on a forced non-fatal."
+    }
+  ],
+  "tests": [
+    "SERVER apps/server/test/gameRoom.end.test.ts (new): 'a player away at the end gets it on return: the room waits past their token window (rejoin by code → snapshot status over, my place 1, then solution)'. Steps: ana leave(false), ben surrenders, ben leaves, wait grace+1.5 s, ana joinById.",
+    "SERVER gameRoom.end.test.ts: 'a drop after the end keeps the seat: back with the reconnection token, the finished snapshot and the solution again'.",
+    "SERVER gameRoom.end.test.ts: 'everyone had the end and left: the room closes within ~1.5 s, not after closeAfterGameMs' (matchMaker.getLocalRoomById(code) undefined; a join is refused 'not found').",
+    "SERVER gameRoom.end.test.ts: 'closeAfterGameMs is the ceiling: an away player who never returns does not keep the room' (a server with closeAfterGameMs 1500).",
+    "SERVER gameRoom.end.test.ts: 'both away, abandonment ends the game: the winner, back by code, gets the result'.",
+    "SERVER apps/server/test/gameRoom.test.ts 'the end of the game': the existing two tests must still pass unchanged (the room closes when everyone leaves).",
+    "SERVER apps/server/test/gameRoom.ranked.test.ts: 'stored: after gameOver and solution everyone gets { type:\"stored\", gameId, ok:true }; at that moment the ratings rows already have the new values; a player back in the finished room gets it after the snapshot and solution'.",
+    "CONTRACT apps/server/test/remoteHost.contract.test.ts: 'the opponent surrenders: both hosts end with the server's exact result and the solution, stay live until the room closes, then close as gameOver; no reconnect token was used'.",
+    "CONTRACT remoteHost.contract.test.ts: 'in the background when the game ends: back in the foreground after the token window, the host rejoins by code and holds the finished game (status over, solution) instead of closing with lostConnection'.",
+    "PROTOCOL packages/protocol/src/index.test.ts: SERVER_MESSAGE_TYPES equals [...,'solution','stored','pong'] or the agreed order.",
+    "MOBILE src/net/__tests__/remoteGameHost.test.ts: 'after the end, a silent server (pong off, 7 s) or a cut socket (1006) closes the host as gameOver: no reconnect or join calls, closeReason gameOver'.",
+    "MOBILE remoteGameHost.test.ts: 'stored: online.stored set once with ok; a stored for another gameId is ignored; absent stored leaves online.stored null'.",
+    "MOBILE src/screens/game/__tests__/model.test.ts: 'endDelayMs: practice ends 0, online surrender/abandon ONLINE_END_HOLD_MS, reduced motion 200, boardComplete unchanged'.",
+    "MOBILE src/screens/game/__tests__/GameScreenOnline.test.tsx: 'the opponent surrenders: onEnded is not called while the events are delivered; called once after ONLINE_END_HOLD_MS'; plus a reduced-motion variant (200 ms).",
+    "MOBILE GameScreenOnline.test.tsx: update the existing surrender test to advance the hold; assert onEnded is called once and only after the dialog's onExited and the hold.",
+    "MOBILE src/screens/game/__tests__/gameRoute.test.tsx: update the 'its end opens the results' test for the hold; add 'results did not open within RESULTS_WATCHDOG_MS: one non-fatal recorded and router.replace called again' and 'unmounting the route cancels the watchdog (no report)'.",
+    "MOBILE src/__tests__/ranked.e2e.test.tsx: '2 players, the opponent surrenders mid-game: \"ניצחון!\" results, results-score shown, no error-screen, the pathname never stays /game blank; Home afterwards'.",
+    "MOBILE ranked.e2e.test.tsx: 'my surrender in a ranked match: \"הפסד\" results after the dialog leaves; no error-screen'.",
+    "MOBILE src/net/__tests__/device.test.ts: 'release builds put the host's log lines in Crashlytics' log (breadcrumbs), never a reconnection token'.",
+    "MOBILE (shared with the rating item) src/game/__tests__/onlineSession.test.ts: 'stored ok → onStored called once; ok:false → not called'."
+  ],
+  "docs": [
+    "docs/01-SPEC.md §16.2: add that a finished game's room waits up to 60 s for a player who was away at the end, and that back in time they get the result.",
+    "docs/01-SPEC.md §18 server→client table: add rows for `solution` (sent only after gameOver; currently missing) and `stored` (gameId, ok).",
+    "docs/01-SPEC.md §12: online results open after a short hold (0.6 s; 0.2 s with Reduced Motion) after a surrender or abandonment.",
+    "docs/QA-CHECKLIST.md: rows 11 (Game-2P), 18 (Surrender), 25 (Opponent-Left) and 'ניצחון בנטישה' (win by abandonment): add the black-screen regression checks.",
+    "docs/STAGE9-10-DEVICE-CHECKS.md: new device steps for the opponent's surrender, my repeated surrenders, the opponent killing the app, and my screen off at the end.",
+    "apps/server/src/rooms/GameRoom.ts header comment ('Life of a room', step 3 'Over').",
+    "packages/protocol/src/index.ts ServerMessage doc for 'stored'.",
+    "apps/mobile/src/net/remoteGameHost.ts header: an over game never reconnects; the stored message."
+  ],
+  "risks": [
+    "The leading cause (navigation inside the WebSocket callback) is a correlation and was not reproduced on a device. The fix is cheap and preventive, and the watchdog plus the Crashlytics breadcrumbs will show the failing step if the black screen comes back. A pure JS-thread hang would still not be reported.",
+    "These files are also edited by the 'grace without communication' item (remoteGameHost silence/reconnect logic, GameRoom onDrop/onLeave) and the rating items (gameOver ratingChanges, refreshMe, 'stored'). Merge in one order and keep §1 and §4 compatible with the new offline grace.",
+    "Rooms may now linger up to closeAfterGameMs (60 s) after a non-consented drop following the end. This is bounded and small.",
+    "Server deploy and APK skew: the server must be deployed for the room-lifetime fix and 'stored'. Old APKs only console.warn on 'stored'. A new APK on an old server gets no 'stored' and falls back to refreshMe on leave.",
+    "Test timing churn: tests that expected onEnded synchronously on an online end (GameScreenOnline surrender, gameRoute online end, ranked e2e) must advance the hold. Practice timing is deliberately unchanged, to avoid re-breaking the bug-9 tests.",
+    "The watchdog may call openResults twice if the first replace was only slow (more than 3 s). expo-router's replace to the same route is idempotent enough, but log it.",
+    "Item 1 (keep the screen on) reduces the background-at-the-end path. Without it, the 60 s room window is the only protection."
+  ],
+  "decisions": [
+    {
+      "question": "כמה זמן להשאיר את הלוח אחרי כניעה או נטישה במשחק אונליין, לפני מעבר אוטומטי לתוצאות?",
+      "recommendedDefault": "0.6 שניות (0.2 שניות עם הפחתת תנועה), כהגדרה ONLINE_END_HOLD_MS. אימון נשאר כמו היום."
+    },
+    {
+      "question": "כמה זמן חדר של משחק שהסתיים מחכה לשחקן שלא היה מחובר ברגע הסיום (מסך כבוי, רקע)?",
+      "recommendedDefault": "60 שניות, closeAfterGameMs הקיים. רק כשמישהו לא קיבל את הסיום; אחרת החדר נסגר מיד כמו היום."
+    },
+    {
+      "question": "שחקן שחוזר אחרי שהחדר כבר נסגר: להביא את התוצאה מההיסטוריה בשרת עכשיו, או בשלב אחר?",
+      "recommendedDefault": "בשלב אחר. עכשיו נשאר מסך שגיאת החיבור הקיים. זה דורש מחרוזות חדשות ומסך טעינה, ולא קשור למסך השחור."
+    },
+    {
+      "question": "הודעת שרת חדשה 'stored' (התוצאה והדירוג נשמרו): לבנות אותה כאן, יחד עם הבאג של הדירוג שלא מתעדכן?",
+      "recommendedDefault": "כן, פעם אחת ומשותפת לשני הסעיפים. השרת בסעיף הזה, ורענון הדירוג באפליקציה בסעיף הדירוג."
+    },
+    {
+      "question": "לשלוח את לוג החיבור של המשחק כ־breadcrumbs ל־Crashlytics בגרסת release (בלי טוקנים), כדי לאבחן מסך שחור הבא?",
+      "recommendedDefault": "כן."
+    }
+  ],
+  "sharedFiles": [
+    "packages/protocol/src/index.ts",
+    "packages/protocol/src/index.test.ts",
+    "apps/server/src/rooms/GameRoom.ts",
+    "apps/mobile/src/net/remoteGameHost.ts",
+    "apps/mobile/src/net/testing/fakeServer.ts",
+    "apps/mobile/src/net/device.ts",
+    "apps/mobile/src/game/onlineSession.ts",
+    "apps/mobile/src/game/gameStore.ts",
+    "apps/mobile/src/screens/game/GameScreen.tsx",
+    "apps/mobile/src/screens/game/model.ts",
+    "apps/mobile/app/game.tsx",
+    "apps/mobile/app/results/[id].tsx",
+    "apps/server/src/testing/fakeClient/client.ts",
+    "apps/server/test/remoteHost.contract.test.ts",
+    "apps/server/test/gameRoom.ranked.test.ts",
+    "apps/mobile/src/__tests__/ranked.e2e.test.tsx",
+    "apps/mobile/src/screens/game/__tests__/GameScreenOnline.test.tsx",
+    "docs/01-SPEC.md",
+    "docs/QA-CHECKLIST.md",
+    "docs/STAGE9-10-DEVICE-CHECKS.md"
+  ],
+  "needsServerDeploy": true
+}

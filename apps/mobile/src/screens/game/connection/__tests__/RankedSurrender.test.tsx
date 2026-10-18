@@ -57,18 +57,42 @@ describe('RankedSurrender (Hebrew)', () => {
   });
 
   it('shows the estimated rating change in red, kept in order inside Hebrew', async () => {
-    await render(surrender({ ratingDelta: -15 }));
+    await render(surrender({ rating: { delta: -15, guard: null } }));
     const body = screen.getByTestId('ranked-surrender-body');
     expect(body).toHaveTextContent('המשחק ייחשב כהפסד · שינוי דירוג משוער ⁦−15⁩');
     expect(body).toHaveProp('accessibilityLabel', 'המשחק ייחשב כהפסד · שינוי דירוג משוער ⁦−15⁩');
     expect(screen.getByText('⁦−15⁩')).toHaveStyle({ color: color.danger });
   });
 
+  it.each([
+    ['leftBeforeMoving', 'המשחק ייחשב כהפסד · הדירוג שלך לא ירד, כי עוד לא ביצעת מהלך'],
+    ['leftNotBehind', 'המשחק ייחשב כהפסד · הדירוג שלך לא ירד, כי אין לך פיגור'],
+  ] as const)(
+    "says my rating won't drop when a leave guard holds (§11.2, %s): muted, with no red number",
+    async (guard, line) => {
+      await render(surrender({ rating: { delta: 0, guard } }));
+      const body = screen.getByTestId('ranked-surrender-body');
+      expect(body).toHaveTextContent(line);
+      expect(body).toHaveStyle({ color: color.textMuted });
+      // No red Teko delta: the body is one plain line, with no isolated number in it.
+      expect(screen.queryByText(/⁦/)).not.toBeOnTheScreen();
+    },
+  );
+
+  it("says my rating won't drop in a game of 3–4 when nobody still in is ahead (§11.2)", async () => {
+    await render(surrender({ players: 4, noLossMany: true }));
+    expect(
+      screen.getByText(
+        'תצא מהמשחק, והמשבצות שפתרת יישארו בצבע שלך. הדירוג שלך לא ירד מול אף שחקן שנשאר במשחק.',
+      ),
+    ).toBeOnTheScreen();
+  });
+
   it('says I leave the game in a game of 3–4 [D36], without a score line', async () => {
     await render(
       surrender({
         players: 3,
-        ratingDelta: -15,
+        rating: { delta: -15, guard: null },
         summary: {
           myName: 'MosheG',
           myScore: 1,
@@ -116,7 +140,7 @@ describe('RankedSurrender (English)', () => {
   });
 
   it('asks in English', async () => {
-    await render(surrender({ ratingDelta: -15 }));
+    await render(surrender({ rating: { delta: -15, guard: null } }));
     expect(screen.getByRole('header', { name: 'Are you sure you want to surrender?' })).toBeOnTheScreen();
     expect(screen.getByTestId('ranked-surrender-body')).toHaveTextContent(
       'The game counts as a loss · estimated rating change ⁦−15⁩',
@@ -126,6 +150,26 @@ describe('RankedSurrender (English)', () => {
     expect(second).toHaveAccessibleName('Yes, surrender');
     expect(screen.getByLabelText('Confirm surrender')).toHaveProp('role', 'dialog');
     expect(screen.getByText('The game goes on in the background')).toBeOnTheScreen();
+  });
+
+  it('explains a guarded surrender in English', async () => {
+    await render(surrender({ rating: { delta: 0, guard: 'leftNotBehind' } }));
+    expect(screen.getByTestId('ranked-surrender-body')).toHaveTextContent(
+      "The game counts as a loss · your rating won't drop: you're not behind",
+    );
+    await render(surrender({ rating: { delta: 0, guard: 'leftBeforeMoving' } }));
+    expect(
+      screen.getByText("The game counts as a loss · your rating won't drop: you haven't made a move yet"),
+    ).toBeOnTheScreen();
+  });
+
+  it('and the 3–4 player body with nothing to lose, in English', async () => {
+    await render(surrender({ players: 3, noLossMany: true }));
+    expect(
+      screen.getByText(
+        "You leave the game, and the cells you solved keep your colour. Your rating won't drop against anyone still in the game.",
+      ),
+    ).toBeOnTheScreen();
   });
 
   it('and the 3–4 player body in English', async () => {

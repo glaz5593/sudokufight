@@ -9,6 +9,7 @@ import {
   type GameEvent,
   ManualClock,
   ManualScheduler,
+  missedPoints,
   replay,
 } from '@sudoku-fight/engine';
 import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
@@ -275,16 +276,20 @@ describe('solo practice, end to end (work plan stage 4)', () => {
       'אימון לבד · מהיר',
     );
 
-    // The first empty cell: a wrong digit first. It stays small and red, costs 1, and the cell is free again.
+    // The first empty cell: a wrong digit first. It stays small and red, costs what the right digit would have
+    // scored there (§6.5), and the cell is free again.
     const empty = emptyCellsOf(puzzle);
     const [a, ...rest] = empty as [CellIndex, ...CellIndex[]];
+    const penalty = missedPoints(session.getView().grid, a, answerIn(puzzle, a)).points;
     await place(run, a, wrongDigit(puzzle, a));
     expect(within(screen.getByTestId(`cell-${cellName(a)}`)).getByTestId('cell-wrong')).toBeOnTheScreen();
     expect(screen.getByTestId('solo-hud-summary')).toHaveProp(
       'accessibilityLabel',
       expect.stringContaining('טעות אחת'),
     );
-    expect(session.getView().players[0]!.score).toBe(-1);
+    const wrong = session.events.find((e) => e.type === 'placedWrong');
+    expect(wrong).toMatchObject({ penalty, score: -penalty });
+    expect(session.getView().players[0]!.score).toBe(-penalty);
 
     // Then the right digits, cell by cell, to the last one.
     await place(run, a, answerIn(puzzle, a));
@@ -299,7 +304,7 @@ describe('solo practice, end to end (work plan stage 4)', () => {
     // The score is the sum of the moves' points, less the one penalty (spec §6.4, §6.5).
     const points = placedPoints(session.events);
     expect(points).toHaveLength(empty.length);
-    expect(me).toMatchObject({ score: points.reduce((s, p) => s + p, 0) - 1, mistakes: 1 });
+    expect(me).toMatchObject({ score: points.reduce((s, p) => s + p, 0) - penalty, mistakes: 1 });
 
     expect(await screen.findByRole('header', { name: 'הלוח הושלם!' })).toBeOnTheScreen();
     expect(screen.getByTestId('results-score')).toHaveTextContent(scoreText(me.score));

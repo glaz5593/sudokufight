@@ -52,8 +52,9 @@ async function frames(ms: number, frame = 50) {
 }
 
 let close: (() => void) | null = null;
-async function showDuel(): Promise<Duel> {
-  const g = duel();
+/** A 2-player game against a bot; `interferences` turns them on (a practice has none, D44). */
+async function showDuel({ interferences = false }: { interferences?: boolean } = {}): Promise<Duel> {
+  const g = duel(interferences ? { rules: { interferences: true } } : {});
   close = () => g.session.close();
   await render(
     <GestureHandlerRootView style={StyleSheet.absoluteFill}>
@@ -113,7 +114,7 @@ describe('against a bot: each card’s face', () => {
   });
 
   it('an interference on me: dizzy while it lasts; the bot winks as it sends it', async () => {
-    const g = await showDuel();
+    const g = await showDuel({ interferences: true });
     await act(async () => g.bot.solve(g.cells[0]!)); // the bot needs the points (D10)
     await act(async () => g.clock.advance(3_000));
     await frames(1_500);

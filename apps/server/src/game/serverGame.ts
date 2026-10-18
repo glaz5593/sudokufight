@@ -22,8 +22,9 @@ import {
  * player, and the updates go to a room that sends them to everyone.
  *
  * - Time: every action is applied at clock.now() (the server is authoritative); one timer, re-armed after
- *   every change at the engine's nextDeadline(), runs tick() for locks, interferences, grace periods. A
- *   frozen two-player game (gamePaused) has only grace deadlines, so the lock timers stop with it.
+ *   every change at the engine's nextDeadline(), runs tick() for locks, interferences, the soft phase of a lost
+ *   connection [D42] and grace periods. A frozen two-player game (gamePaused) has only soft-phase and grace
+ *   deadlines, so the lock timers stop with it.
  * - Updates: onUpdate gets the engine's own events (with the solution in gameCreated: make them public with
  *   toPublicEvent before they leave the server) and the state after them, in order, one at a time, even when
  *   the receiver acts while being told.
@@ -105,9 +106,13 @@ export class ServerGame {
     return this.apply({ ...action, playerId });
   }
 
-  /** The player's connection dropped: the grace period starts (spec §16.2). */
-  disconnect(playerId: PlayerId): ActionResult {
-    return this.apply({ type: 'disconnect', playerId });
+  /**
+   * The player is away (spec §16.2). `soft`: the connection dropped (no goodbye), so the soft phase starts
+   * when the rules have one [D42]: he is only marked, and the grace [D4] follows at its end. Without it (a
+   * deliberate leave, the default) the grace starts now; a deliberate leave in the soft phase hardens it.
+   */
+  disconnect(playerId: PlayerId, { soft = false }: { soft?: boolean } = {}): ActionResult {
+    return this.apply({ type: 'disconnect', playerId, soft });
   }
 
   reconnect(playerId: PlayerId): ActionResult {

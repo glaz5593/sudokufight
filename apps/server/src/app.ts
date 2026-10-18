@@ -64,10 +64,13 @@ export const health = (): HealthReport => ({ ok: true, engine: ENGINE_VERSION, p
  * The WebSocket heartbeat. The server pings every connection each `pingInterval` ms, and cuts one that has
  * not answered `pingMaxRetries` pings in a row. A phone that goes silent without closing its socket (airplane
  * mode, a dead network: no FIN reaches the server) is noticed (pingMaxRetries, pingMaxRetries + 1] intervals
- * after its last answer, 3–4.5 s here, and only then does its grace start (spec §16.2). The stage 7 checks
- * need that well under 5 s: 5 s of airplane mode must show the other player "Reconnecting… 15", and 20 s must
- * end in abandonment (15 s of grace after the drop is noticed). A healthy connection answers within a round
- * trip; it takes 3 s without any answer to be cut (a stall that long is a drop, and the app reconnects).
+ * after its last answer, 3–4.5 s here, and only then does its soft phase start (spec §16.2) [D42]: 10 s in
+ * which the other players see only a mark and the game goes on, then the 15 s grace of [D4]. So, from the
+ * moment the network dies: about 5 s of airplane mode shows the others only the mark; about 14 s shows them
+ * "Reconnecting… 15" (and freezes a two-player game); about 28–30 s ends in abandonment. A healthy connection
+ * answers within a round trip; it takes 3 s without any answer to be cut (a stall that long is a drop, and the
+ * app reconnects). The soft phase now absorbs such false drops (nobody sees them but as a mark), so the
+ * heartbeat could be relaxed later (DECISIONS-PENDING 3.3).
  */
 export const HEARTBEAT = { pingInterval: 1500, pingMaxRetries: 2 } as const;
 

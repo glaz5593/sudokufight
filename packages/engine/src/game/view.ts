@@ -1,9 +1,19 @@
 import type { GameType } from '../gameType';
 import { type CellIndex, type Digit, DIGITS, digitCount } from '../sudoku/board';
-import { evolve } from './evolve';
-import { rankPlayers } from './results';
+import { evolve, isSoftOffline } from './evolve';
+import { leaverGuardReason, rankPlayers } from './results';
 import type { GameMode, InterferenceKind, TurnModel } from './rules';
-import type { BestMove, GameConfig, GameEvent, GameResult, GameState, PlayerId, PlayerStatus } from './types';
+import type {
+  BestMove,
+  GameConfig,
+  GameEvent,
+  GameResult,
+  GameState,
+  LeaveStanding,
+  PlayerId,
+  PlayerState,
+  PlayerStatus,
+} from './types';
 
 /**
  * What a player's screen may know (spec §17.2, §21): everything on the table, never the solution while the
@@ -31,8 +41,15 @@ export interface PlayerView {
   status: PlayerStatus;
   connected: boolean;
   graceEndsAt: number | null;
+  /**
+   * The soft phase of a lost connection [D42]: marked as without a connection ("ללא חיבור") while the game goes
+   * on as usual; the hard phase (graceEndsAt, `connected` false) starts at this time if he is not back.
+   */
+  softEndsAt: number | null;
   score: number;
   mistakes: number;
+  /** Each mistake's penalty, oldest first (§6.5), as the engine charged it. */
+  mistakePenalties: number[];
   correct: number;
   /** The current place (1–4, shared on a tie), as the game would end now (spec §6.8). */
   place: number;
@@ -48,7 +65,11 @@ export interface PlayerView {
 
 export interface InterferenceTarget {
   playerId: PlayerId;
-  /** Why it can't be sent now; null when it can. 'notRunning': the game has not started, is frozen or is over. */
+  /**
+   * Why it can't be sent now; null when it can. 'disconnected': the target is away, in the soft phase too
+   * (unless rules.interfereSoftOffline) [D42]. 'notRunning': the game has not started, is frozen or is over,
+   * or my own connection is lost (soft phase: nothing can be sent).
+   */
   blockedBy: 'out' | 'disconnected' | 'busy' | 'points' | 'notRunning' | null;
   /** Only with 'busy': when the target can take one again (end of the interference plus the immunity) [D11]. */
   busyUntil?: number;
@@ -98,11 +119,18 @@ export interface GameView {
   cooldowns: { cell: CellIndex; until: number }[];
   /**
    * The cost of my next interference, and whether each opponent can take it now [D10, D11]. Null when
-   * interferences are off or I can't send any (spectator, left the game, disconnected).
+   * interferences are off (solo practice, a game against a bot [D44]), when the game allows no kind [D47], or
+   * when I can't send any (spectator, left the game, disconnected).
    */
   interference: { nextCost: number; missingPoints: number; targets: InterferenceTarget[] } | null;
   /** When I may react again. */
   reactionReadyAt: number;
+  /**
+   * If I surrendered now, the opponents I would lose no rating to, and why (guard (a) of spec §11.2), from
+   * the scores and moves of now. Null outside ranked games, for a spectator, once I am out of the game, or
+   * with rules.rating.leaverGuard off.
+   */
+  leaveGuards: { opponentId: PlayerId; reason: 'leftBeforeMoving' | 'leftNotBehind' }[] | null;
 
   result: GameResult | null;
   /** Only once the game is over (for the replay). */
@@ -134,9 +162,13 @@ export function toView(state: GameState, viewer: PlayerId | null, now: number): 
   });
 
   let interference: GameView['interference'] = null;
-  if (me && rules.interferences && me.status === 'active' && me.connected) {
+  // Off in solo practice and against a known bot [D44]; with no kind allowed, nothing to send [D47].
+  const canInterfere = rules.interferences && rules.interferenceKinds.length > 0;
+  if (me && canInterfere && me.status === 'active' && me.connected) {
     const nextCost = rules.interferenceCostBase ** (me.interferencesSent + 1);
     const missingPoints = rules.interferenceNeedsScore ? Math.max(0, nextCost - me.score) : 0;
+    // [D42] While my own connection is lost (soft phase) nothing can go out.
+    const cantSend = state.status !== 'running' || isSoftOffline(me);
     interference = {
       nextCost,
       missingPoints,
@@ -146,11 +178,11 @@ export function toView(state: GameState, viewer: PlayerId | null, now: number): 
           const blockedBy: InterferenceTarget['blockedBy'] =
             p.status !== 'active'
               ? 'out'
-              : !p.connected
+              : !p.connected || (isSoftOffline(p) && !rules.interfereSoftOffline)
                 ? 'disconnected'
                 : p.hitBy || p.immuneUntil > t
                   ? 'busy'
-                  : state.status !== 'running'
+                  : cantSend
                     ? 'notRunning'
                     : missingPoints > 0
                       ? 'points'
@@ -160,6 +192,17 @@ export function toView(state: GameState, viewer: PlayerId | null, now: number): 
           return { playerId: p.id, blockedBy, busyUntil };
         }),
     };
+  }
+
+  let leaveGuards: GameView['leaveGuards'] = null;
+  if (state.config.mode === 'ranked' && me?.status === 'active' && rules.rating.leaverGuard) {
+    const standing = (p: PlayerState): LeaveStanding => [p.score, p.correct + p.mistakes];
+    leaveGuards = state.players
+      .filter((p) => p !== me && p.status === 'active')
+      .flatMap((p) => {
+        const reason = leaverGuardReason(standing(me), standing(p));
+        return reason ? [{ opponentId: p.id, reason }] : [];
+      });
   }
 
   const ranking = rankPlayers(state);
@@ -201,8 +244,10 @@ export function toView(state: GameState, viewer: PlayerId | null, now: number): 
         status: p.status,
         connected: p.connected,
         graceEndsAt: p.graceEndsAt,
+        softEndsAt: p.softEndsAt ?? null,
         score: p.score,
         mistakes: p.mistakes,
+        mistakePenalties: (p.mistakePenalties ?? []).slice(),
         correct: p.correct,
         place,
         isLeader: p.status === 'active' && place === leaderPlace && state.players.length > 1,
@@ -234,6 +279,7 @@ export function toView(state: GameState, viewer: PlayerId | null, now: number): 
       : [],
     interference,
     reactionReadyAt: me?.lastReactionAt != null ? me.lastReactionAt + rules.reactionCooldownMs : 0,
+    leaveGuards,
     // A copy: a screen that sorts or edits it must not reach into the game's own state.
     result: state.result && (JSON.parse(JSON.stringify(state.result)) as GameResult),
     solution: state.status === 'over' ? state.config.puzzle.solution : null,

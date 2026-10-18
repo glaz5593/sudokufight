@@ -31,12 +31,13 @@ export type FeedbackCue =
   | 'surrender'
   // Interferences (spec §7)
   | 'arsenalOpen'
-  | 'tokenLift'
-  | 'dropZoneEnter'
   | 'launch'
   | 'hitFireworks'
   | 'hitCats'
   | 'hitWarp'
+  | 'hitScramble'
+  | 'hitInk'
+  | 'hitKeypad'
   | 'hitBurst'
   | 'hitPulse'
   // Reactions (spec §9)
@@ -81,7 +82,7 @@ export const CUES: Readonly<Record<FeedbackCue, CueSpec>> = {
   lockTick: c('lock_tick', 'light'),
   /** A digit key. Silent on purpose: the result (correct / wrong) follows within about 150 ms. */
   keyPress: c(null, null),
-  /** A blocked action: a keypad key with no cell selected, or ⚡ without enough points. */
+  /** A blocked action: a keypad key with no cell selected, a blocked "הפרעה", or a kind that can't go now. */
   nudge: c(null, 'light'),
   /** My digit is correct (at `placedCorrect`). */
   correct: c('correct', 'success'),
@@ -103,18 +104,18 @@ export const CUES: Readonly<Record<FeedbackCue, CueSpec>> = {
   /** "כן, להיכנע", and "כן, לסיים" in practice. */
   surrender: c(null, 'heavy'),
 
-  /** Open the arsenal (⚡). */
+  /** Open the interference picker ("הפרעה" on an opponent's card, the first of two taps, D45). */
   arsenalOpen: c('arsenal_open', 'selection'),
-  /** Lift a token (drag start). */
-  tokenLift: c('interfere_whoosh', 'light'),
-  /** The drag enters the drop zone, once per entry. */
-  dropZoneEnter: c(null, 'selection'),
-  /** Drop inside the zone: two medium knocks. */
+  /** A kind tapped in the picker, launched (the second tap): two medium knocks. */
   launch: c('interfere_launch', 'launch'),
   /** An interference hits me, at its start. */
   hitFireworks: c('hit_fireworks', 'warning'),
   hitCats: c('hit_cats', 'warning'),
   hitWarp: c('hit_warp', 'warning'),
+  /** [D47] The three kinds of 2026-10-17: the digits scramble, ink splashes, the keys trade places. */
+  hitScramble: c('hit_scramble', 'warning'),
+  hitInk: c('hit_ink', 'warning'),
+  hitKeypad: c('hit_keypad', 'warning'),
   /** The rumble while it lasts: a fireworks burst (≥ 700 ms apart). */
   hitBurst: c(null, 'medium'),
   /** The rumble while it lasts: a cat enters, or a warp beat every 1100 ms. */

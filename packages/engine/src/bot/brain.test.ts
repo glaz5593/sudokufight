@@ -495,10 +495,16 @@ describe('chooseDigit and plausibleWrongDigits (spec §9: a plausible mistake, n
   });
 });
 
+/**
+ * Practice against a bot has no interferences [D44]; the policy below is what the bot does where they are on
+ * (the fake client in ranked, or a rules override), so these games turn them on.
+ */
+const INTERFERENCES_ON: ConfigOptions = { rules: { interferences: true } };
+
 describe('canInterfere (spec §7.2) [D10, D11]', () => {
   const at = 1000;
   const base = () => {
-    const g = game(5);
+    const g = game(5, INTERFERENCES_ON);
     g.tickTo(at);
     return g.state;
   };
@@ -535,6 +541,21 @@ describe('canInterfere (spec §7.2) [D10, D11]', () => {
     expect(canInterfere(s, B, B, at)).toBe(false);
     expect(canInterfere(s, B, 'nobody', at)).toBe(false);
   });
+
+  it('never in a default game against a bot, nor when the game allows no kind [D44, D47]', () => {
+    const g = game(5);
+    g.tickTo(at);
+    const s = withPlayers(g.state, { [B]: { score: 9 } });
+    expect(s.config.rules.interferences).toBe(false);
+    expect(canInterfere(s, B, ME, at)).toBe(false);
+    expect(engineTakes(s)).toBe(false);
+    const none = withPlayers(base(), { [B]: { score: 9 } });
+    const noKinds = {
+      ...none,
+      config: { ...none.config, rules: { ...none.config.rules, interferenceKinds: [] } },
+    };
+    expect(canInterfere(noKinds, B, ME, at)).toBe(false);
+  });
 });
 
 describe('decideInterference (spec §9 table) [D40]', () => {
@@ -545,7 +566,7 @@ describe('decideInterference (spec §9 table) [D40]', () => {
     botP: Partial<PlayerState>,
     o: ConfigOptions = {},
   ) => {
-    const g = game(level, o);
+    const g = game(level, { ...o, rules: { interferences: true, ...o.rules } });
     g.tickTo(at);
     return withPlayers(g.state, { [ME]: me, [bot(level)]: botP });
   };
@@ -603,12 +624,29 @@ describe('decideInterference (spec §9 table) [D40]', () => {
     const g = GameDriver.of({
       mode: 'bot',
       players: [{ id: ME }, { id: 'p2' }, botPlayer(5)],
+      ...INTERFERENCES_ON,
     });
     g.tickTo(at);
     const s = withPlayers(g.state, { [ME]: { score: 5 }, p2: { score: 8 }, [bot(5)]: { score: 9 } });
     expect(decideInterference(s, bot(5), sure(5), at, createRng(1))?.targetId).toBe('p2');
     const busy = withPlayers(s, { p2: { immuneUntil: at + 500 } });
     expect(decideInterference(busy, bot(5), sure(5), at, createRng(1))?.targetId).toBe(ME);
+  });
+
+  it('never in a default game against a bot, and draws nothing from the RNG [D44]', () => {
+    // Overlord, made as eager as can be: every chance taken, whatever the score, no limit a game.
+    const eager: BotLevel = { ...sure(5), interference: { maxPerGame: null, minDeficit: null, chance: 1 } };
+    const g = game(5);
+    g.tickTo(at);
+    const s = withPlayers(g.state, { [ME]: { score: 30 }, [bot(5)]: { score: 30 } });
+    expect(s.config.rules.interferences).toBe(false);
+    const rng = createRng(7);
+    const untouched = createRng(7);
+    for (let k = 0; k < 50; k++) expect(decideInterference(s, bot(5), eager, at, rng)).toBeNull();
+    expect(rng.next()).toBe(untouched.next()); // the stream is where it was
+    // The same state with interferences on: it would send one at once.
+    const on = { ...s, config: { ...s.config, rules: { ...s.config.rules, interferences: true } } };
+    expect(decideInterference(on, bot(5), eager, at, createRng(7))).not.toBeNull();
   });
 });
 

@@ -4,11 +4,28 @@ import { AppState } from 'react-native';
 import { serverEndpoint } from '../../config/server';
 import { systemClock, timeoutScheduler } from '../../game/clock';
 import { track } from '../../services/analytics';
-import { createDevRoom, DEV_PING_EVERY_MS, deviceHost, deviceHostDeps, joinDevRoom } from '../device';
+import {
+  createDevRoom,
+  DEV_PING_EVERY_MS,
+  deviceHost,
+  deviceHostDeps,
+  joinDevRoom,
+  onlineLog,
+} from '../device';
 import { resetDevIdentityCache } from '../identity';
+import { matchmakingLog } from '../matchmakingDevice';
 
 jest.mock('@colyseus/sdk', () => ({ Client: jest.fn() }));
 jest.mock('../../services/analytics', () => ({ track: jest.fn() }));
+jest.mock('../../services/crashlytics', () => {
+  const reporter = { enabled: true, recordError: jest.fn(), setUser: jest.fn(), log: jest.fn() };
+  return { crashReporter: () => reporter };
+});
+const crash = jest
+  .requireMock<{ crashReporter: () => { recordError: jest.Mock; log: jest.Mock } }>(
+    '../../services/crashlytics',
+  )
+  .crashReporter();
 
 function fakeSdk() {
   const room = {
@@ -74,5 +91,58 @@ describe('the online game wired to the phone', () => {
       expect.objectContaining({ devUserId: expect.any(String) }),
     );
     joined.close();
+  });
+});
+
+/**
+ * Moshe's black screens of 1.0.0 left nothing in Crashlytics: the host's and the search's log lines now go to its
+ * log (breadcrumbs that travel with the next report), and what they survived goes as a non-fatal.
+ */
+describe('diagnostics wired to Crashlytics', () => {
+  beforeEach(() => {
+    crash.log.mockClear();
+    crash.recordError.mockClear();
+  });
+
+  it('the host: its log lines as breadcrumbs, what it survived as non-fatals', () => {
+    fakeSdk();
+    const deps = deviceHostDeps();
+    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    try {
+      deps.log!('connection lost (1006)');
+    } finally {
+      log.mockRestore();
+    }
+    expect(crash.log).toHaveBeenCalledWith('[online] connection lost (1006)');
+    const boom = new Error('a screen failed');
+    deps.report!(boom, 'listener failed');
+    expect(crash.recordError).toHaveBeenCalledWith(boom, 'online: listener failed');
+  });
+
+  it('a real host’s lines never carry the reconnection token', async () => {
+    const { room } = fakeSdk();
+    const host = deviceHost();
+    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    try {
+      await createDevRoom({ gameType: 'fast' }).then(({ host: h }) => h.close());
+      host.close();
+    } finally {
+      log.mockRestore();
+    }
+    const lines = crash.log.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
+    expect(lines).not.toContain(room.reconnectionToken);
+    expect(lines).not.toContain('secret');
+  });
+
+  it('matchmaking: the same, with its own prefix', () => {
+    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    try {
+      matchmakingLog('in the queue normal-2p');
+      onlineLog('back in the room');
+    } finally {
+      log.mockRestore();
+    }
+    expect(crash.log).toHaveBeenCalledWith('[matchmaking] in the queue normal-2p');
+    expect(crash.log).toHaveBeenCalledWith('[online] back in the room');
   });
 });

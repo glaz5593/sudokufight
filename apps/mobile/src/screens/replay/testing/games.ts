@@ -196,3 +196,38 @@ export function fourPlayerGame(): Table {
   }
   return table;
 }
+
+/**
+ * A ranked duel with a lost connection in its soft phase [D42]: NinaVolt's connection drops, the game goes on
+ * (I play), she is back within the soft phase and sends two digits entered offline (one right, one wrong);
+ * then the board is filled.
+ */
+export function softDropDuel(id = 'ranked-soft', at?: number): Table {
+  const players: PlayerInfo[] = [
+    { id: 'me', name: 'Moshe', rating: 1287, ratedGames: 12 },
+    { id: 'nina', name: 'NinaVolt', rating: 1305, ratedGames: 12 },
+  ];
+  const table = new Table(configOf('ranked', players, { id }), at);
+  table.move('me', table.empty()[0]!, 1_000);
+  table.act({ type: 'disconnect', playerId: 'nina', soft: true });
+  table.move('me', table.empty()[0]!, 1_000);
+  table.wait(1_000);
+  table.act({ type: 'reconnect', playerId: 'nina' });
+  const right = table.empty()[0]!;
+  table.act({
+    type: 'offlineMove',
+    playerId: 'nina',
+    cell: right,
+    digit: table.answer(right),
+    thinkMs: 1_500,
+  });
+  const wrong = table.empty()[0]!;
+  table.act({ type: 'offlineMove', playerId: 'nina', cell: wrong, digit: table.wrong(wrong), thinkMs: 800 });
+  table.wait(1_000);
+  let k = 0;
+  while (table.state.status === 'running') {
+    table.move(k % 4 === 3 ? 'nina' : 'me', table.empty()[0]!, 1_000);
+    k++;
+  }
+  return table;
+}

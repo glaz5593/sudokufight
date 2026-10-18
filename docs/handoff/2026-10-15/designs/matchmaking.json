@@ -1,0 +1,232 @@
+{
+  "item": "\"Find opponent\" when nobody else is searching: the server's `searching` (and `timeout`) message carries `nextRange` (null = nobody else to meet), and the app says so right away",
+  "summary": "ההודעה שמשה מתכוון אליה היא `searching` (MatchmakingServerMessage ב־packages/protocol/src/matchmaking.ts). השרת שולח אותה מ־MatchmakingService.sendSearching ב־apps/server/src/matchmaking/service.ts. אין בה היום רשימת שחקנים: יש בה רק הדירוג שלי, הטווח (±50, ועוד 25 כל 5 ש׳, עד ±300, לפי D6), הזמן ו־timeoutAt. הרשימה היחידה של שחקנים מגיעה ב־`found`. לכן מי שמחפש לבד רואה \"טווח שמתרחב\" במשך 60 שניות, ואז Match-Timeout עם \"חיפשנו … בטווח 900–1500\", למרות שאין אף אחד בתור.\nהתיקון: השרת מוסיף ל־`searching` ול־`timeout` שדה `nextRange`: הטווח הצר ביותר על הסולם של D6 שבו יש מספיק שחקנים שאפשר להתאים איתם (groupSize−1 שחקנים, באותו תור, בלי חסימה לשום כיוון, בטווח המרבי של שניהם, ולא יריב אחרון). כשאין כאלה, הערך הוא `null`.\nהשרת שולח `searching` מחדש כשהערך משתנה, כלומר כשמישהו מצטרף או יוצא. כשהערך `null`, האפליקציה מחליפה מיד את כרטיס הטווח בהודעה \"כרגע אין שחקנים אחרים שמחפשים משחק כזה\", עם כפתור \"שחק מול בוט בינתיים\".\nהחיפוש ממשיך בשרת כרגיל: מי שמצטרף נמצא, ופסק הזמן של 60 ש׳ נשאר. כברירת מחדל הטווח ממשיך להתרחב לפי D6, בלי קפיצה. Match-Timeout מקבל נוסח משלו למי שחיפש לבד.",
+  "rootCauses": [
+    {
+      "cause": "The `searching` message carries only this player's time-based range. The server never says whether anyone compatible is in the queue, so the app shows a widening range even when the player is alone.",
+      "evidence": "packages/protocol/src/matchmaking.ts:169-185 (searching: queueKey, rating, elapsedMs, range, extended, timeoutAt, serverTime, requeued?); apps/server/src/matchmaking/service.ts:407-423 sendSearching(); service.ts:366-370 tick() re-sends only when rangeOf() changes",
+      "confidence": "high"
+    },
+    {
+      "cause": "The app has no 'alone' state. SearchView always shows the range card, the RangeBar and 'הטווח מתרחב ככל שהחיפוש נמשך'. TimeoutView always says 'חיפשנו … שחקנים זמינים בטווח X' and 'בלי הגבלת טווח'.",
+      "evidence": "apps/mobile/src/screens/match/SearchView.tsx:86-102 and 122; apps/mobile/src/screens/match/TimeoutView.tsx:46-49 and 91; apps/mobile/src/screens/match/matchModel.ts:156-179 (no field for others)",
+      "confidence": "high"
+    }
+  ],
+  "design": "SCOPE: Matchmaking only. The game rules and the engine do not change. The server stays authoritative. D6 matching stays as it is (time-based widening and mutual range); the new information is advisory and drives the UI.\n\n1. PROTOCOL (packages/protocol/src/matchmaking.ts)\na) New pure helper next to matchRange():\n   export function rangeCovering(distance: number, extended = false, rules: MatchRangeRules = MATCH_RANGE): number\n   - Returns the narrowest range on the D6 grid (initial + k*step, k >= 0) that is >= distance.\n   - Formula: distance <= initial gives initial; otherwise initial + ceil((distance - initial) / step) * step.\n   - Clamped to rules.cap unless extended.\n   - Examples: 0 or 50 gives 50; 51 gives 75; 150 gives 150; 151 gives 175; 300 gives 300.\nb) In the `searching` variant add:\n   nextRange?: number | null;\n   Doc: \"The narrowest range (D6 grid) at which enough players this one could be matched with are within reach: groupSize−1 of them. They are in the same queue, not blocked either way, within both players' maximum range (±cap, or no cap after keep searching), and not a recent opponent (after the 80% reset). It may be <= range: they are covered already, and the match waits on their side of the mutual range. null: not enough such players are searching now; the app says 'nobody else is searching' at once. Absent from older servers: unknown, and the app shows the range as before.\"\nc) Add the same optional `nextRange?: number | null` to the `timeout` variant. It is computed at the timeout instant.\nd) Update the flow comment at the top of the file:\n   - Item 1: \"`searching`: on joining, whenever the range widens (every 5 s), and whenever nextRange changes (someone joined or left).\"\n   - Add an \"Other ends\" note about nextRange null.\ne) Make the field optional, not required, for compatibility:\n   - A new app on an old server sees undefined, which means \"unknown\": no 'alone' UI.\n   - An old app on a new server ignores the field.\n   - Deploy the server first.\n\n2. SERVER MATCHER (apps/server/src/matchmaking/matcher.ts). Pure, with no clock.\na) Extract from matchTick(): export function recentMap(tickets: readonly Ticket[], config = DEFAULT_MATCHER): Map<string, Set<string>>\n   - It is the existing `new Map(order.map(t => [t.userId, recentOpponents(t, order, config)]))`.\n   - matchTick() uses it, with no change in behaviour.\nb) New: export function nextRanges(tickets: readonly Ticket[], groupSize: number, config = DEFAULT_MATCHER): Map<string, number | null>\n   - recent = recentMap(tickets, config).\n   - For each ticket t, the candidates are the tickets o with:\n     - o.userId !== t.userId;\n     - !blockedPair(t, o) (both ways; spec §3.5);\n     - reachable(t, o, config) (both caps; extended has no cap);\n     - !recent.get(t.userId).has(o.userId) && !recent.get(o.userId).has(t.userId) (original §7 and the 80% reset, the same test as matchTick's compatible() minus the time-based mutual range).\n   - Sort the candidate distances |o.rating − t.rating| in ascending order. need = groupSize − 1.\n   - The value is null when distances.length < need. Otherwise it is rangeCovering(distances[need−1], t.extended, config.range).\n   - No time dependency: caps and recent sets depend only on the queue's tickets. So the value changes only when the queue changes.\n   - Optional optimisation (note in a comment): sort by rating once and scan outward from t, stopping after `need` candidates.\n   - For 3–4 players the value is a necessary condition, not a sufficient one: the chosen candidates must also accept each other pairwise. null is exact: no group can form until the queue changes.\nc) MatchQueue:\n   - Add `private version = 0`. Bump it in add(), remove() (when a ticket was there) and tick() (when anything was taken out).\n   - Add `private memo: { version: number; ranges: Map<string, number | null> } | null = null`.\n   - nextRange(userId: string): number | null: memoised nextRanges(this.list(), this.groupSize, this.config).get(userId) ?? null.\n   - nextRangeOf(ticket: Ticket): number | null: for a ticket that has just left (timed out). Returns nextRanges([...this.list(), ticket], ...).get(ticket.userId) ?? null.\nd) Add a rule 7 to the header comment: \"Next range (what the app is told): …, never a rule of matching.\"\n\n3. SERVER SERVICE (apps/server/src/matchmaking/service.ts)\na) Entry: add `lastNextRange: number | null | undefined` (the nextRange in the last `searching` sent). Initialise it to undefined in enqueue().\nb) sendSearching(entry, requeued, now):\n   - Compute nextRange = this.queueFor(entry).nextRange(t.userId).\n   - Set entry.lastNextRange = nextRange.\n   - Add `nextRange` to the message (always present from this server).\nc) tick():\n   - Pass the queue to timedOut: `for (const ticket of timedOut) this.timedOut(queue, ticket, now)`.\n   - The loop over queue.list() sends when the range or the next range changed:\n     if (entry && (rangeOf(ticket, now, queue.config) !== entry.lastRange || queue.nextRange(ticket.userId) !== entry.lastNextRange)) this.sendSearching(entry, false, now);\n   - Effect: whoever is waiting learns within <= tickMs (500 ms) that someone joined, left, cancelled, timed out or got matched elsewhere.\n   - Matched tickets are out of the queue before this loop, so no stale `searching` follows a `found`.\nd) timedOut(queue: MatchQueue, ticket, now): add `nextRange: queue.nextRangeOf(ticket)` to the `timeout` message.\ne) The paths through search() (join, keepSearching, requeue after a failed ready check) need nothing more: sendSearching computes nextRange after queue.add().\nf) Update the header doc (\"A `searching` goes out when a player's range widens or their next range changes\").\ng) Covered without changes elsewhere:\n   - Suspended accounts never enter the queue (room.ts onAuth / identity.ts refuse `suspended`).\n   - Players in a pending match, or on the Timeout screen (phase timedOut), are not in the queue, so they don't count.\n   - Other queues (another game type or another player count) are separate MatchQueue objects, so they don't count.\n   - room.ts, games.ts, store.ts and ranked.ts: no change.\nh) Config: no new literal. Grid and cap come from MatcherConfig.range (MATCH_RANGE, D6).\n   - \"Jump to next range\" is NOT built (see decisions). If Moshe wants it later: MatcherConfig.jumpToNextRange (default false), with rangeOf = max(timeRange, min(nextRange, cap)). Do not add it now.\n\n4. FAKE CLIENT (apps/server/src/testing/fakeClient/client.ts, onMatchmaking case 'searching')\n- Push m.range into info.ranges only when it differs from the last one. Messages that only change nextRange must not add duplicates.\n- Log one line when nextRange becomes null (\"nobody else is searching <queue>\") and when it becomes a number again (\"someone is searching: next range ±X\").\n- No change to the CLI summary (cli.ts), so cli.test.ts is unaffected.\n\n5. APP CLIENT (apps/mobile/src/net/matchmaking.ts)\n- SearchInfo: add `nextRange?: number | null`. Doc: null means nobody (enough) else is searching; undefined means the server didn't say.\n- TimeoutInfo: add `nextRange?: number | null`.\n- onMessage:\n  - 'searching': set nextRange: m.nextRange.\n  - 'timeout': set timeout.nextRange = m.nextRange. Also update this.search with { range, extended, ...(m.nextRange !== undefined ? { nextRange: m.nextRange } : {}) }.\n- keepSearching() keeps the last nextRange until the server's next `searching`. No other logic: the client only mirrors the server.\n- Update the file's header comment.\n- apps/mobile/src/net/testing/fakeMatchmaking.ts:\n  - searching({ nextRange }): the default is `range`, meaning \"someone is around\", so existing tests keep showing the range card. Passing `nextRange: null` makes the player alone. Passing undefined explicitly is not possible through the default, so use a separate flag `legacy: true` to omit the field.\n  - timeout({ nextRange = MATCH_RANGE.cap }).\n\n6. SCREEN MODEL (apps/mobile/src/screens/match/matchModel.ts). Pure.\n- The 'search' variant gets `alone: boolean`, equal to `search !== null && search.nextRange === null`. It is false while connecting, and false for an old server (undefined).\n- The 'timeout' variant gets `alone: boolean`, equal to `info.timeout?.nextRange === null`.\n- `range` stays in the model; the view decides what to show.\n- Update the doc list.\n\n7. SEARCH VIEW (apps/mobile/src/screens/match/SearchView.tsx)\n- New prop onBot: () => void.\n- When m.alone:\n  - Hide the range block (rangeCard, RangeBar, widening/noCap note) and the 'avoidRecent' note.\n  - Render the alone notice in their place: an Animated.View with useEnter(reduce), so reduced motion makes it appear at once, testID `${testID}-alone`.\n  - Card style (direction C): alignSelf stretch, maxWidth metrics.actionsMaxWidth, padding space[7], gap space[5], radius.card, hairline color.border, background color.surface.\n  - Inside the card:\n    - An accessible text group (accessibilityLabel = title + body joined with joinSentences). It holds Icon 'alert' (color.textMuted, size tokens.size.icon.inline) and the title (text('rowTitle'), color.text, centered, testID `${testID}-alone-title`), t('search.alone.title', { count: m.openSeats }). Below it the body (text('body'), color.textMuted, centered, testID `${testID}-alone-body`), t('search.alone.body', { count: m.openSeats }).\n    - Below that group, NOT inside the accessible group: Button label t('search.alone.bot'), variant 'secondary', size 'md', icon 'bot', stretch, testID `${testID}-alone-bot`, onPress onBot.\n- Keep everything else as it is:\n  - title 'מחפש יריב…', elapsed clock, radar sweep (reduced-motion aware), my rating, empty seats blinking, requeued line, footer 'ביטול חיפוש'.\n  - The search keeps running. If someone arrives the next `searching` (nextRange != null) brings the range back. A match goes to Found with the existing 'matchFound' cue.\n- Announcer:\n  - The existing rangeLine is set only when `m.range && !m.alone` (said once, as today).\n  - announcement = joinSentences([m.requeued && requeued, m.alone ? aloneTitle : rangeLine], t).\n  - So a screen reader hears \"nobody else is searching\" once. When someone arrives it hears the range line. Never the seconds.\n- No numbers are shown in the notice. If a later version shows nextRange, it must go through ltr(), because a signed number needs LRI/PDI.\n\n8. TIMEOUT VIEW (apps/mobile/src/screens/match/TimeoutView.tsx)\n- When m.alone:\n  - title = t('timeout.aloneTitle', { count: openSeats });\n  - body = t('timeout.aloneBody', { count: openSeats, time: t('timeout.minutes', …) });\n  - hide the keepNote ('בלי הגבלת טווח' means nothing when nobody is there). keepHint stays.\n- The buttons and their behaviour are unchanged: keep searching, bot, home.\n\n9. MATCH SCREEN (apps/mobile/src/screens/match/MatchScreen.tsx)\n- Factor `const toBot = useCallback(() => { match.cancel(); leave(onBot); }, …)`. Pass it to both SearchView (new onBot) and TimeoutView.\n- \"Play a bot meanwhile\" cancels the search, as the timeout's button already does.\n- app/match/index.tsx needs no change: onBot already opens a bot game of the same gameType with 'replace'.\n\n10. I18N (apps/mobile/src/i18n/locales/he/match.json and en/match.json). Hebrew plural forms are _one, _two, _many, _other, as in the file; count = openSeats (1 for 2p).\n- search.alone.title_one: he 'כרגע אין שחקנים אחרים שמחפשים משחק כזה' / en 'No one else is searching for this game right now'\n- search.alone.title_two/_many/_other: he 'כרגע אין מספיק שחקנים שמחפשים משחק כזה' / en 'Not enough players are searching for this game right now'\n- search.alone.body_one: he 'ממשיכים לחפש: כשעוד שחקן יחפש משחק כזה, נמצא לך יריב כאן. אפשר גם לשחק מול בוט בינתיים.' / en \"We'll keep searching: as soon as someone else looks for this game, you'll be matched here. You can also play a bot meanwhile.\"\n- search.alone.body_two/_many/_other: he 'ממשיכים לחפש: כשיחפשו מספיק שחקנים, נמצא לך יריבים כאן. אפשר גם לשחק מול בוט בינתיים.' / en \"We'll keep searching: as soon as enough players look for this game, you'll be matched here. You can also play a bot meanwhile.\"\n- search.alone.bot: he 'שחק מול בוט בינתיים' / en 'Play a bot meanwhile'. This is the same text as timeout.bot, so the Apple review notes stay true.\n- timeout.aloneTitle_one: he 'עדיין אין שחקנים אחרים שמחפשים משחק כזה' / en 'Still no one else is searching for this game'\n- timeout.aloneTitle_two/_many/_other: he 'עדיין אין מספיק שחקנים שמחפשים משחק כזה' / en 'Still not enough players are searching for this game'\n- timeout.aloneBody_one: he 'חיפשנו {{time}}, ואף שחקן אחר לא חיפש משחק כזה. אפשר להמשיך לחכות, או להתאמן מול בוט בינתיים.' / en 'We searched {{time}} and no one else looked for this game. You can keep waiting, or practice against a bot meanwhile.'\n- timeout.aloneBody_two/_many/_other: he 'חיפשנו {{time}}, ולא היו מספיק שחקנים שמחפשים משחק כזה. אפשר להמשיך לחכות, או להתאמן מול בוט בינתיים.' / en 'We searched {{time}} and not enough players looked for this game. You can keep waiting, or practice against a bot meanwhile.'\n- Run `npm run i18n:check` (scripts/i18n-check.mjs: parity, placeholders, Hebrew plural forms).\n\n11. EDGE CASES\n- Two players join together: the first may see the notice for at most tickMs (500 ms) before 'found'. This is acceptable; a client delay is listed as a decision.\n- The only other searcher is blocked (either way): null, so 'nobody'. The block is not revealed.\n- The only other searcher is a recent opponent: the 80% reset makes them a candidate (pool of 1), so nextRange is a number, consistent with the matcher, which will match them.\n- A recent opponent plus a new far player: nextRange covers the new one, matching the matcher's choice.\n- The other player is beyond ±300 and neither has extended: null. They can't meet in this search; the 60 s timeout and 'keep searching' still apply. Only I extended: still null (their cap).\n- 3p with one other: null ('not enough players'). With two others: the second-nearest distance.\n- Requeued after a no-show: the requeued line and the alone notice can both show.\n- The 60 s timeout stays while alone. It drops forgotten phones from the queue; D37 auto-ready would otherwise seat an AFK player.\n\n12. PRIVACY\n- nextRange only reveals that at least groupSize−1 anonymous players exist within a 25-point bucket of the player's own rating, in the same queue.\n- No ids, names, counts or exact ratings (ratings are public on the leaderboard and the VS screen anyway).\n- Blocked and recent players are filtered out before the value is computed, so nothing about a block leaks.\n\n13. PERFORMANCE\n- nextRanges is O(n²) per queue, but memoised by MatchQueue.version. It is recomputed only when the queue changes, not every 500 ms tick.\n- recentMap is the same cost matchTick already pays.",
+  "files": [
+    {
+      "path": "packages/protocol/src/matchmaking.ts",
+      "change": "Add rangeCovering(distance, extended, rules). Add optional `nextRange?: number | null` to the `searching` and `timeout` variants of MatchmakingServerMessage, with full doc. Update the flow comment (searching is also sent when nextRange changes; null means nobody else)."
+    },
+    {
+      "path": "packages/protocol/src/matchmaking.test.ts",
+      "change": "Tests for rangeCovering: the D6 grid, the clamp to the cap unless extended, custom rules."
+    },
+    {
+      "path": "apps/server/src/matchmaking/matcher.ts",
+      "change": "Extract recentMap() from matchTick() (no behaviour change). Add the pure nextRanges(tickets, groupSize, config). MatchQueue: add version, a memo, nextRange(userId), nextRangeOf(ticket). Add rule 7 to the header comment."
+    },
+    {
+      "path": "apps/server/src/matchmaking/matcher.test.ts",
+      "change": "New describe 'next range (who else is searching)': alone, a distance on the grid, already covered, blocked either way, recent vs reset, out of reach / extended, 3p and 4p, MatchQueue memo invalidation, nextRangeOf for a removed ticket, the cap clamp."
+    },
+    {
+      "path": "apps/server/src/matchmaking/service.ts",
+      "change": "Entry.lastNextRange. sendSearching() includes nextRange from queueFor(entry).nextRange(). tick() re-sends when the range or nextRange changed, and passes the queue to timedOut(queue, ticket, now), which adds nextRange: queue.nextRangeOf(ticket) to `timeout`. Update the header doc."
+    },
+    {
+      "path": "apps/server/src/matchmaking/service.test.ts",
+      "change": "Add `nextRange: null` to the exact first `searching` (test 'sends `searching` on joining…') and to the exact `timeout` (test 'after 60 s: `timeout`…'). Add `nextRange: null` to the requeued `searching` expectation in 'a no-show…' (dan is 400 away, beyond the cap). New tests listed in `tests`."
+    },
+    {
+      "path": "apps/server/src/testing/fakeClient/client.ts",
+      "change": "In onMatchmaking 'searching': push m.range to info.ranges only when it differs from the last one. Log when nextRange turns null or a number."
+    },
+    {
+      "path": "apps/server/test/ranked.e2e.test.ts",
+      "change": "'the range widens by 25 every 5 s…': assert every one of Cyd's `searching` messages has nextRange null (Cyd is alone in normal-2p), and Dee's extended ones too. Keep the monotonic-range assertion on deduped ranges."
+    },
+    {
+      "path": "apps/server/test/matchmaking.test.ts",
+      "change": "First test: Ana's first `searching` has nextRange null (alone), and Ben's has 50. Lonely test: `timeout` has nextRange null."
+    },
+    {
+      "path": "apps/server/test/appMatchmaking.contract.test.ts",
+      "change": "First test: infoOf(a).search.nextRange is null before Ben searches. Lonely test: search.nextRange null and timeout.nextRange null."
+    },
+    {
+      "path": "apps/mobile/src/net/matchmaking.ts",
+      "change": "SearchInfo.nextRange?, TimeoutInfo.nextRange?, mirrored from the `searching` and `timeout` messages (undefined from an old server). Update the header comment."
+    },
+    {
+      "path": "apps/mobile/src/net/testing/fakeMatchmaking.ts",
+      "change": "searching({ nextRange }), with default = range (someone around) and a `legacy` flag to omit the field. timeout({ nextRange = MATCH_RANGE.cap })."
+    },
+    {
+      "path": "apps/mobile/src/net/__tests__/matchmaking.test.ts",
+      "change": "The client mirrors nextRange (number, null, undefined from a legacy message). The timeout carries it. keepSearching keeps the last value until the next `searching`."
+    },
+    {
+      "path": "apps/mobile/src/screens/match/matchModel.ts",
+      "change": "`alone: boolean` on the 'search' model (search.nextRange === null) and the 'timeout' model (timeout.nextRange === null). Update the doc."
+    },
+    {
+      "path": "apps/mobile/src/screens/match/__tests__/matchModel.test.ts",
+      "change": "Add alone:false to the exact connecting and timeout expectations. New cases: alone true when nextRange null; false when a number or undefined; timeout alone."
+    },
+    {
+      "path": "apps/mobile/src/screens/match/SearchView.tsx",
+      "change": "New onBot prop. When m.alone: hide the range card, bar, widening/noCap note and avoidRecent, and show the alone notice card (useEnter fade, Icon 'alert', title, body, 'שחק מול בוט בינתיים' button). The Announcer says the alone title once and the range line once someone is in. Update the doc comment."
+    },
+    {
+      "path": "apps/mobile/src/screens/match/TimeoutView.tsx",
+      "change": "When m.alone: aloneTitle and aloneBody, and no keepNote."
+    },
+    {
+      "path": "apps/mobile/src/screens/match/MatchScreen.tsx",
+      "change": "Shared toBot callback (cancel, then leave(onBot)) passed to SearchView and TimeoutView."
+    },
+    {
+      "path": "apps/mobile/src/screens/match/__tests__/MatchScreen.test.tsx",
+      "change": "New describe 'Nobody else is searching' (see tests). Existing tests keep passing, since the fake's default nextRange is non-null."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/match.json",
+      "change": "search.alone.{title_*,body_*,bot}; timeout.{aloneTitle_*,aloneBody_*}."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/match.json",
+      "change": "Same keys in English."
+    },
+    {
+      "path": "docs/01-SPEC.md",
+      "change": "§10: a new bullet 'אין שחקנים אחרים' describing nextRange, the immediate notice, the bot option, the search going on in the background, and the 60 s timeout kept. §24, D6 row: add to the alternatives 'קפיצה ישר לטווח שבו יש שחקן: מהיר, פחות הוגן'."
+    },
+    {
+      "path": "docs/DECISIONS-PENDING.md",
+      "change": "D6 row (table 3.1): add the 'jump to next range' alternative. Optionally a new §3.22 for the decisions listed here (jump, showing other queues, bot-while-searching)."
+    },
+    {
+      "path": "docs/QA-CHECKLIST.md",
+      "change": "Row '10. חיפוש' (Match-Search): note the alone notice with 'שחק מול בוט בינתיים'. Row '10. אין התאמה' (Match-Timeout): note the alone title/body and no 'בלי הגבלת טווח'."
+    },
+    {
+      "path": "docs/STAGE9-10-DEVICE-CHECKS.md",
+      "change": "Rewrite 'בדיקה 1' (one phone alone): expect the notice 'כרגע אין שחקנים אחרים שמחפשים משחק כזה' right away, the radar and clock running, the bot button opening a bot game of the same type, Match-Timeout at 1:00 with the alone text, and 'המשך לחפש' returning to the notice. The range widening is now seen only with two phones whose ratings differ by more than 50, and is covered by ranked.e2e. Add a check: phone B joins the same queue while A shows the notice, and A finds B (VS) within a second."
+    },
+    {
+      "path": "docs/store/LISTING-APPLE.md",
+      "change": "Review notes (line ~180): 'If no other player is searching, the search screen says so right away (\"No one else is searching for this game right now\") and offers \"Play a bot meanwhile\"; after about a minute the search ends with the same option.'"
+    },
+    {
+      "path": "docs/RELEASE-CHECKLIST.md",
+      "change": "Row 'Match-Timeout, ומשם שחק מול בוט בינתיים': mention the immediate alone notice, which is what Apple reviewers will see first."
+    },
+    {
+      "path": "docs/design/motion.md",
+      "change": "§4.6: add row `search.alone`. Trigger: nobody else is searching. 200 (stateChange), standard. The notice card fades in where the range was. Reduced motion: appears at once."
+    },
+    {
+      "path": "README.md",
+      "change": "Matchmaking section: one bullet on `nextRange` (null means nobody else to meet; sent again when the queue changes)."
+    }
+  ],
+  "tests": [
+    "packages/protocol/src/matchmaking.test.ts: rangeCovering(0)=50, (50)=50, (51)=75, (150)=150, (151)=175, (300)=300. (350) without extended = 300 (cap); with extended = 350. Custom rules {initial:40, step:20, cap:290}: 280 gives 280; 285 gives 290 (clamped).",
+    "matcher.test.ts 'next range': alone in the queue gives null.",
+    "matcher.test.ts: ana 1200 and ben 1330 (2p) give both 150. ben 1351 gives 175 (grid).",
+    "matcher.test.ts: a candidate already within range (1220) gives 50 (<= current range).",
+    "matcher.test.ts: blocked either way (ana blocked ben, or ben blocked ana) gives null for both. A third, unblocked player gives that player's distance.",
+    "matcher.test.ts: recent opponent R (1205) plus new N (1450): ana's nextRange is 250 (R excluded, as the matcher would). Remove N: R becomes a candidate through the 80% reset, giving 50.",
+    "matcher.test.ts: other at 1600, both capped: null. Both extended: 400. Only ana extended: null.",
+    "matcher.test.ts 3p: one other gives null. Others at +30 and +120 give 125. 4p: three others needed. With two, null.",
+    "matcher.test.ts MatchQueue: nextRange is memoised and changes after add/remove/tick. nextRangeOf(removed ticket) counts the remaining tickets. matchTick results are unchanged by the recentMap refactor (existing tests).",
+    "service.test.ts: a lonely join gets `searching` with nextRange null, and no extra message for 4.5 s (existing count stays 1).",
+    "service.test.ts: someone joins another queue (hard-2p or fast-3p): ana gets no new message. cyd joins fast-2p at 1500: within tickMs ana gets `searching` with the same range and nextRange 300. cyd cancels: within tickMs ana gets nextRange null.",
+    "service.test.ts: two blocked players in one queue both stay at nextRange null.",
+    "service.test.ts: fast-3p, ana and ben both get null. The third joins and they are found.",
+    "service.test.ts: `timeout` while alone has nextRange null. ben (1500) joins at 55 s, so ana's `timeout` at 60 s has nextRange 300.",
+    "service.test.ts: keepSearching while alone gives `searching` with extended true and nextRange null. Requeued after a no-show: `searching` includes nextRange.",
+    "service.test.ts: after `found`, no `searching` is sent to the matched players.",
+    "apps/server/test/matchmaking.test.ts, ranked.e2e.test.ts, appMatchmaking.contract.test.ts: the assertions listed in `files`.",
+    "mobile net/__tests__/matchmaking.test.ts: client.info.search.nextRange follows the messages (null, then 75). A legacy message gives undefined. `timeout` sets timeout.nextRange and search.nextRange. keepSearching keeps the last value.",
+    "mobile matchModel.test.ts: alone true/false/false (null, number, undefined). timeout alone. Add alone:false to the exact objects of the existing tests.",
+    "MatchScreen.test.tsx 'Nobody else is searching' (he): mm.searching({ nextRange: null }) shows the title 'מחפש יריב…'. Also match-search-alone-title 'כרגע אין שחקנים אחרים שמחפשים משחק כזה', the body, and the button 'שחק מול בוט בינתיים'. No match-search-range, no 'נמנעים מיריבים…'. The elapsed clock still runs. announced() = ['כרגע אין שחקנים אחרים שמחפשים משחק כזה'].",
+    "MatchScreen.test.tsx: mm.searching({ elapsedMs: 15_000, nextRange: 150 }) removes the notice, shows the range card '⁦1162–1412⁩', and announces 'מחפש יריב בטווח דירוג 1162 עד 1412'.",
+    "MatchScreen.test.tsx: pressing the notice's bot button sends { type: 'cancel' }, sets mm.room.left true, calls onBot once and not onLeave.",
+    "MatchScreen.test.tsx: while the notice shows, mm.found() shows Found ('נמצא יריב!') with the matchFound cue (the search went on in the background).",
+    "MatchScreen.test.tsx: normal-3p alone gives 'כרגע אין מספיק שחקנים שמחפשים משחק כזה'. English: 'No one else is searching for this game right now' and 'Play a bot meanwhile'.",
+    "MatchScreen.test.tsx: timeout alone gives the header 'עדיין אין שחקנים אחרים שמחפשים משחק כזה', the body 'חיפשנו דקה שלמה, ואף שחקן אחר לא חיפש משחק כזה…', and no 'בלי הגבלת טווח'. English too.",
+    "MatchScreen.test.tsx: reduced motion on: the notice is visible at once (opacity 1) and the radar arc stays at 0deg.",
+    "npm run i18n:check passes (he/en parity, Hebrew plural forms). Then npm test for protocol, server and mobile."
+  ],
+  "docs": [
+    "docs/01-SPEC.md §10: a new bullet 'אין שחקנים אחרים' (nextRange; the notice at once; the bot option; the search goes on; the 60 s timeout stays; D6 widening unchanged).",
+    "docs/01-SPEC.md §24 D6 row: add the alternative 'קפיצה ישר לטווח שבו יש שחקן'.",
+    "docs/DECISIONS-PENDING.md: the D6 row alternative; optionally §3.22 with the open decisions below.",
+    "docs/QA-CHECKLIST.md: the Match-Search and Match-Timeout rows.",
+    "docs/STAGE9-10-DEVICE-CHECKS.md: rewrite check 1; add the check 'B joins while A sees the notice'.",
+    "docs/store/LISTING-APPLE.md: review notes (line ~180).",
+    "docs/RELEASE-CHECKLIST.md: the Match-Timeout / bot row.",
+    "docs/design/motion.md §4.6: the search.alone row.",
+    "README.md: the Matchmaking section bullet."
+  ],
+  "risks": [
+    "Deploy order: the field is optional so old and new apps and servers mix safely. But the 'alone' UI appears only once the server is deployed. Deploy the server before the app build that relies on it.",
+    "More `searching` messages (one per queue change per waiting player, at most 2/s). This is handled idempotently by the app. The fake client's ranges list must dedupe, or ranked.e2e's 'monotonic +25' assertion breaks.",
+    "For 3–4 players, a non-null nextRange is a lower bound: the candidates must also accept each other pairwise and not be blocked between themselves. Only null is exact. The UI uses only null/non-null, so this is safe.",
+    "Brief flicker: a player who joins alone may see the notice for up to 500 ms before 'found' when someone joins right after. This is acceptable; a client-side delay is offered as a decision.",
+    "Performance: nextRanges is O(n²) per queue change (memoised by version). It is fine at V1 scale. Note the outward-scan optimisation if queues grow to thousands.",
+    "Device check 1 in STAGE9-10 (watching the range widen on one phone) is no longer possible alone. The widening is now verified by ranked.e2e, or with two phones whose ratings differ by more than 50.",
+    "The Apple review notes and the release checklist describe the old behaviour (bot only after about a minute). They must be updated with the code.",
+    "Shared screens: the 'keep screen awake' item and the 'connection grace period' item may also touch MatchScreen.tsx and net/matchmaking.ts. The 'new game screen' item touches the bot icon (components/Icon.tsx); this design only uses the existing 'bot' and 'alert' icons.",
+    "Hebrew text is written in masculine/neutral form ('שחק מול בוט', 'נמצא לך'). The open gender question (DECISIONS-PENDING 3.12) applies."
+  ],
+  "decisions": [
+    {
+      "question": "האם הטווח צריך לקפוץ ישר ל־nextRange (לשחקן הקרוב), במקום להתרחב ב־25 כל 5 שניות? זה מהיר יותר, אבל פחות הוגן, ובתור קטן זה כמעט מבטל את D6.",
+      "recommendedDefault": "לא. D6 נשאר כמו שהוא, ו־nextRange משמש רק כדי לומר מיד \"אין אף אחד\". אם תרצה בהמשך: הגדרה MatcherConfig.jumpToNextRange, כבויה כברירת מחדל."
+    },
+    {
+      "question": "כשאין אף אחד בתור שבחרת, האם להגיד שיש שחקנים שמחפשים בתור אחר? למשל: \"שחקן מחפש עכשיו ב'רגיל · 2 שחקנים'\". זה שימושי בבדיקות עם חבר שבחר סוג אחר.",
+      "recommendedDefault": "לא בשינוי הזה. אפשר להוסיף בהמשך שדה busyQueues בהודעה."
+    },
+    {
+      "question": "כשאין אף אחד, אילו כפתורים יופיעו מתחת להודעה?",
+      "recommendedDefault": "\"שחק מול בוט בינתיים\", ובתחתית \"ביטול חיפוש\" (כמו היום). בלי \"חזרה לבית\" נוסף."
+    },
+    {
+      "question": "האם לבטל את פסק הזמן של 60 שניות כשמחפשים לבד?",
+      "recommendedDefault": "לא. הוא נשאר, עם נוסח \"עדיין אין שחקנים אחרים…\". בלי פסק זמן, טלפון שנשכח בתור עלול להיכנס למשחק בלי שחקן (\"מוכן\" אוטומטי, D37)."
+    },
+    {
+      "question": "\"שחק מול בוט בינתיים\": האם החיפוש ימשיך ברקע בזמן משחק הבוט, ויקטע אותו כשנמצא יריב?",
+      "recommendedDefault": "לא. הכפתור מבטל את החיפוש, כמו היום במסך פסק הזמן. זה פיצ'ר נפרד וגדול יותר."
+    },
+    {
+      "question": "כשיש שחקנים, האם להציג על פס הטווח סימן לטווח הבא (איפה השחקן הקרוב)?",
+      "recommendedDefault": "לא. מציגים רק את ההודעה \"אין אף אחד\". השדה כבר יגיע מהשרת, ואפשר להוסיף את הסימן בהמשך."
+    },
+    {
+      "question": "האם לחכות רגע (למשל שנייה וחצי) לפני שמציגים \"אין אף אחד\", כדי שלא תהבהב כשמישהו מצטרף באותו רגע?",
+      "recommendedDefault": "לא. ההודעה מופיעה מיד, כמו שביקשת. ההבהוב האפשרי קצר מחצי שנייה, ולאחריו מסך \"נמצא יריב\"."
+    }
+  ],
+  "sharedFiles": [
+    "packages/protocol/src/matchmaking.ts",
+    "apps/server/src/matchmaking/service.ts",
+    "apps/mobile/src/net/matchmaking.ts",
+    "apps/mobile/src/screens/match/MatchScreen.tsx",
+    "apps/mobile/src/i18n/locales/he/match.json",
+    "apps/mobile/src/i18n/locales/en/match.json",
+    "docs/01-SPEC.md",
+    "docs/DECISIONS-PENDING.md",
+    "docs/QA-CHECKLIST.md",
+    "docs/STAGE9-10-DEVICE-CHECKS.md",
+    "docs/store/LISTING-APPLE.md",
+    "docs/RELEASE-CHECKLIST.md",
+    "README.md"
+  ],
+  "needsServerDeploy": true
+}

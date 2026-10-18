@@ -69,12 +69,6 @@ export const SOUND_CANDIDATES: Partial<Record<SoundId, SoundCandidate>> = {
     file: 'maximize_008.ogg',
     ms: 224,
   },
-  interfere_whoosh: {
-    source: require('../../../../../assets/sounds/candidates/interfere_whoosh.wav') as number,
-    origin: 'Kenney · RPG Audio',
-    file: 'knifeSlice.ogg',
-    ms: 408,
-  },
   interfere_launch: {
     source: require('../../../../../assets/sounds/candidates/interfere_launch.wav') as number,
     origin: 'Kenney · Sci-fi Sounds',

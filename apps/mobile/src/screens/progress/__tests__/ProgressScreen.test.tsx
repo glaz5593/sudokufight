@@ -96,7 +96,7 @@ describe('ProgressScreen', () => {
   it('the interferences collection, my card, and the bottom navigation', async () => {
     const { onOpenInterferences, onOpenMyCard, onTab } = await show();
     expect(screen.getByTestId('progress-interferences')).toHaveTextContent(
-      'אוסף ההפרעות3 פתוחות · 4 נעולות',
+      'אוסף ההפרעות6 פתוחות · 4 נעולות',
       {
         exact: false,
       },

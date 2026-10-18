@@ -1,5 +1,5 @@
 import { Client, type EndpointSettings } from '@colyseus/sdk';
-import type { GameType } from '@sudoku-fight/engine';
+import { type GameType, INTERFERENCE_KINDS } from '@sudoku-fight/engine';
 import {
   type ClientMessage,
   type ClientMessageType,
@@ -129,14 +129,18 @@ export function roomOf(room: SdkRoomLike): RoomLike {
 export function createOnlineClient({ endpoint, sdk, identity }: OnlineClientOptions): OnlineClient {
   const client: SdkClientLike = sdk ?? new Client(endpoint ?? 'ws://localhost:2567');
 
-  /** Who is joining: the dev identity goes into the options; a token into the SDK's Authorization header. */
+  /**
+   * Who is joining: the dev identity goes into the options; a token into the SDK's Authorization header. And
+   * every interference kind this app can show [D47]: the room allows only what every seat's app declared.
+   */
   const whoAmI = async (): Promise<Partial<DevJoinOptions>> => {
     const id = await identity();
+    const kinds = { interferenceKinds: [...INTERFERENCE_KINDS] };
     if (id.kind === 'token') {
       client.auth.token = id.token;
-      return {};
+      return kinds;
     }
-    return { devUserId: id.devUserId, name: id.name };
+    return { devUserId: id.devUserId, name: id.name, ...kinds };
   };
 
   /** Runs an SDK call; every failure comes out as an OnlineError. */

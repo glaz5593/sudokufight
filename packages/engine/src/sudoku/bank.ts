@@ -1,5 +1,7 @@
-import type { GameType } from '../gameType';
+import { GAME_TYPES, type GameType } from '../gameType';
+import { createRng, seedFromString } from '../util/random';
 import { agreesWith, filledCount, gridToString, isSolvedGrid, parseGrid } from './board';
+import { DEFAULT_FIT, DEFAULT_GIVENS, fitGivens, givensSpread, type GivensRules } from './givens';
 import { DEFAULT_GRADING, type Difficulty, gradePuzzle, type GradingRules } from './grade';
 import type { Technique } from './logic';
 import { countSolutions } from './solver';
@@ -29,6 +31,11 @@ export interface PuzzleRecord {
   givensCount: number;
   source: string;
   pool: PuzzlePool;
+  /**
+   * The id of the puzzle these givens were added to (fitBankGivens, spec §20) [D43]; absent on a puzzle kept
+   * as it was imported or generated.
+   */
+  baseId?: string;
 }
 
 export type PuzzleCheck =
@@ -160,6 +167,142 @@ export function buildBank(
     };
   }
   return { puzzles, report };
+}
+
+export type FitBankKey = `${PuzzlePool}/${GameType}`;
+
+export interface FitBankStats {
+  /** Puzzles of this pool and type before the fit. */
+  before: number;
+  /** The type has no givens range (hard): kept exactly as they are. */
+  noRange: number;
+  /** Already within the givens range: kept as they are. */
+  inRange: number;
+  /** Givens added: a new id, the old one in baseId. */
+  filled: number;
+  /** Dropped: more givens than the type allows. */
+  tooMany: number;
+  /** Dropped: no fill kept the type's grade. */
+  gradeLost: number;
+  /** Dropped: the fit gave a puzzle that is already in the bank. */
+  duplicates: number;
+  /** Puzzles of this pool and type after the fit. */
+  after: number;
+  /** Givens of the puzzles after the fit. */
+  givens: { min: number; max: number; avg: number };
+  /** The largest givensSpread among the puzzles after the fit. */
+  maxSpread: number;
+}
+
+export interface FitBankReport {
+  byKey: Record<FitBankKey, FitBankStats>;
+  dropped: {
+    id: string;
+    pool: PuzzlePool;
+    gameType: GameType;
+    reason: 'tooMany' | 'gradeLost' | 'duplicate';
+  }[];
+}
+
+export interface FitBankOptions {
+  rules?: GivensRules;
+  /** Mixed into each puzzle's seed (DEFAULT_FIT.salt). */
+  salt?: number;
+  attempts?: number;
+  slack?: number;
+  grading?: GradingRules;
+}
+
+/**
+ * Brings every puzzle of a bank into its type's givens range (spec §5.2, §20) [D43], with fitGivens; a type
+ * without a range (hard) is left exactly as it is.
+ * Each puzzle gets its own Rng, seeded from its id and `salt`, so the result does not depend on the order or on
+ * the other puzzles, and the same bank always gives the same file. A puzzle within its range is returned as the
+ * same object. A filled one gets the new givens, a new id (from the new givens), its new grade and givens
+ * count, and `baseId` (the id it was filled from), at the same place in the list. Puzzles that can't fit are
+ * left out and listed. Running it on its own output changes nothing.
+ */
+export function fitBankGivens(
+  puzzles: readonly PuzzleRecord[],
+  {
+    rules = DEFAULT_GIVENS,
+    salt = DEFAULT_FIT.salt,
+    attempts = DEFAULT_FIT.attempts,
+    slack = DEFAULT_FIT.slack,
+    grading = DEFAULT_GRADING,
+  }: FitBankOptions = {},
+): { puzzles: PuzzleRecord[]; report: FitBankReport } {
+  const byKey = {} as Record<FitBankKey, FitBankStats>;
+  for (const pool of PUZZLE_POOLS)
+    for (const type of GAME_TYPES)
+      byKey[`${pool}/${type}`] = {
+        before: 0,
+        noRange: 0,
+        inRange: 0,
+        filled: 0,
+        tooMany: 0,
+        gradeLost: 0,
+        duplicates: 0,
+        after: 0,
+        givens: { min: 0, max: 0, avg: 0 },
+        maxSpread: 0,
+      };
+  const report: FitBankReport = { byKey, dropped: [] };
+  const out: PuzzleRecord[] = [];
+  const ids = new Set<string>();
+  for (const p of puzzles) {
+    const stats = byKey[`${p.pool}/${p.gameType}`];
+    stats.before++;
+    const rng = createRng(seedFromString(p.id, salt));
+    const fit = fitGivens(parseGrid(p.givens), parseGrid(p.solution), p.gameType, rng, {
+      rules,
+      attempts,
+      slack,
+      grading,
+    });
+    let record: PuzzleRecord;
+    if (fit.status === 'inRange' || fit.status === 'noRange') {
+      record = p;
+    } else if (fit.status === 'filled') {
+      const givens = gridToString(fit.givens);
+      const grade = gradePuzzle(fit.givens, grading);
+      record = {
+        ...p,
+        id: puzzleId(givens),
+        givens,
+        difficulty: grade.difficulty,
+        techniques: grade.techniques,
+        givensCount: filledCount(fit.givens),
+        baseId: p.baseId ?? p.id,
+      };
+    } else {
+      stats[fit.status]++;
+      report.dropped.push({ id: p.id, pool: p.pool, gameType: p.gameType, reason: fit.status });
+      continue;
+    }
+    if (ids.has(record.id)) {
+      stats.duplicates++;
+      report.dropped.push({ id: p.id, pool: p.pool, gameType: p.gameType, reason: 'duplicate' });
+      continue;
+    }
+    ids.add(record.id);
+    stats[fit.status]++;
+    out.push(record);
+  }
+  for (const key of Object.keys(byKey) as FitBankKey[]) {
+    const kept = out.filter((p) => `${p.pool}/${p.gameType}` === key);
+    const stats = byKey[key];
+    stats.after = kept.length;
+    if (kept.length === 0) continue;
+    const counts = kept.map((p) => p.givensCount);
+    stats.givens = {
+      min: Math.min(...counts),
+      max: Math.max(...counts),
+      avg: Math.round((counts.reduce((a, b) => a + b, 0) / counts.length) * 10) / 10,
+    };
+    stats.maxSpread = Math.max(...kept.map((p) => givensSpread(parseGrid(p.givens))));
+  }
+  return { puzzles: out, report };
 }
 
 /** The bank file (packages/engine/data/puzzles.json). */

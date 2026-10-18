@@ -152,8 +152,12 @@ function CellCloseUps() {
   const { t } = useTranslation('dev');
   const cells = useMemo(() => {
     const s = twoPlayerScenes();
-    const model = (snap: Snapshot, pendingCell: CellIndex | null = null) =>
-      boardModel(snap.view, snap.mySeat, snap.now, { avatars: DS_AVATARS, pendingCell });
+    const model = (snap: Snapshot, pendingCell: CellIndex | null = null, queued: CellIndex | null = null) =>
+      boardModel(snap.view, snap.mySeat, snap.now, {
+        avatars: DS_AVATARS,
+        pendingCell,
+        queued: queued === null ? null : [{ cell: queued, digit: 7 }],
+      });
     const pick = (list: CellModel[], kind: CellKind) => list.find((c) => c.kind === kind) ?? null;
     const locking = model(s.locking).cells;
     const firstEmpty = pick(locking, 'empty')?.index ?? null;
@@ -162,6 +166,8 @@ function CellCloseUps() {
       { key: 'urgent', cell: pick(model(s.urgent).cells, 'myLock') },
       { key: 'paused', cell: pick(model(s.myLockPaused).cells, 'myLock') },
       { key: 'pending', cell: pick(model(s.locking, firstEmpty).cells, 'pending') },
+      // My digit waiting for the connection (#14, D42).
+      { key: 'queued', cell: pick(model(s.locking, null, firstEmpty).cells, 'queued') },
       { key: 'oppLock', cell: pick(locking, 'oppLock') },
     ] as const;
   }, []);

@@ -16,6 +16,7 @@
     "lockedByMe": "נעולה אצלך",
     "lockedBy": "נעולה על ידי {{name}}",
     "pending": "ממתינה לאישור הנעילה",
+    "queued": "{{digit}}, ממתין לחיבור",
     "timerStopped": "הטיימר עצור",
     "seconds_one": "שנייה אחת",
     "seconds_two": "{{count}} שניות",

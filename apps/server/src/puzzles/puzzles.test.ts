@@ -1,7 +1,7 @@
-import { createRng, GAME_TYPES } from '@sudoku-fight/engine';
+import { createRng, DEFAULT_GIVENS, GAME_TYPES } from '@sudoku-fight/engine';
 import { asc, eq } from 'drizzle-orm';
 
-import { puzzleHistory, puzzles } from '../db/schema';
+import { games, puzzleHistory, puzzles } from '../db/schema';
 import { createTestDb, type TestDb } from '../testing';
 import { addAccounts, addPuzzles, standInPuzzles, T0 } from '../testing/ranked';
 import {
@@ -9,6 +9,8 @@ import {
   dbPuzzleSource,
   EmptyPoolError,
   isRankedPoolReady,
+  rankedPool,
+  rankedPoolMatches,
   rankedPoolSizes,
   readPuzzleBank,
   seedRankedPuzzles,
@@ -59,6 +61,7 @@ describe('npm run db:seed-puzzles: seedRankedPuzzles', () => {
       ranked: 3,
       byType: { fast: 2, normal: 1, hard: 0 },
       skipped: 2,
+      retired: { fast: 0, normal: 0, hard: 0 },
     });
     const rows = await t.db.select().from(puzzles).orderBy(asc(puzzles.id));
     expect(rows.map((r) => [r.id, r.gameType, r.pool, r.givensCount])).toEqual([
@@ -93,8 +96,93 @@ describe('npm run db:seed-puzzles: seedRankedPuzzles', () => {
       expect(sizes[type]).toBe(result.byType[type]);
       expect(sizes[type]).toBeGreaterThanOrEqual(2000);
     }
+    expect(result.retired).toEqual({ fast: 0, normal: 0, hard: 0 });
+    expect(await rankedPoolMatches(t.db, bank)).toBe(true);
     expect(await t.db.select().from(puzzles).where(eq(puzzles.pool, 'offline'))).toEqual([]);
+    // Givens at the start (§5.2) [D43]: fast 45–50, normal 35–40; hard has no range (kept as it was).
+    const outOfRange = bank.filter((p) => {
+      const range = DEFAULT_GIVENS[p.gameType];
+      return (
+        p.pool === 'ranked' && range !== null && (p.givensCount < range.min || p.givensCount > range.max)
+      );
+    });
+    expect(outOfRange.map((p) => p.id)).toEqual([]);
   }, 60_000);
+
+  describe('puzzles that left the file are retired, never deleted [D43]', () => {
+    const v1 = () => [
+      bankPuzzle('r1', 'fast', 'ranked'),
+      bankPuzzle('r2', 'fast', 'ranked'),
+      bankPuzzle('r3', 'normal', 'ranked'),
+    ];
+    const v2 = () => [
+      bankPuzzle('r2', 'fast', 'ranked'),
+      bankPuzzle('r4', 'fast', 'ranked'),
+      bankPuzzle('r3', 'normal', 'ranked'),
+    ];
+    const NOW = new Date(T0 + 3_600_000);
+    const retiredAtOf = async (id: string) =>
+      (await t.db.select({ at: puzzles.retiredAt }).from(puzzles).where(eq(puzzles.id, id)))[0]?.at;
+
+    it('retires what left the file, keeps the row; a puzzle that comes back is in the pool again', async () => {
+      await seedRankedPuzzles(t.db, v1());
+      const result = await seedRankedPuzzles(t.db, v2(), { now: NOW });
+      expect(result.retired).toEqual({ fast: 1, normal: 0, hard: 0 });
+      expect(await rankedPool(t.db, 'fast')).toEqual(['r2', 'r4']);
+      expect(await rankedPoolSizes(t.db)).toEqual({ fast: 2, normal: 1, hard: 0 });
+      expect(await retiredAtOf('r1')).toEqual(NOW);
+      // Again with the same file: nothing more to retire, and r1 keeps its date.
+      expect((await seedRankedPuzzles(t.db, v2())).retired).toEqual({ fast: 0, normal: 0, hard: 0 });
+      expect(await retiredAtOf('r1')).toEqual(NOW);
+
+      // r1 is back in the file: in the pool again.
+      const back = await seedRankedPuzzles(t.db, [...v2(), bankPuzzle('r1', 'fast', 'ranked')]);
+      expect(back.retired).toEqual({ fast: 0, normal: 0, hard: 0 });
+      expect(await rankedPool(t.db, 'fast')).toEqual(['r1', 'r2', 'r4']);
+      expect(await retiredAtOf('r1')).toBeNull();
+    });
+
+    it('leaves alone a game type the file has no ranked puzzle of', async () => {
+      await seedRankedPuzzles(t.db, v1());
+      const result = await seedRankedPuzzles(t.db, [bankPuzzle('r2', 'fast', 'ranked')]);
+      expect(result.retired).toEqual({ fast: 1, normal: 0, hard: 0 });
+      expect(await rankedPool(t.db, 'normal')).toEqual(['r3']);
+    });
+
+    it('a stored game and a play history keep their puzzle: retiring it breaks no reference', async () => {
+      await addAccounts(t.db, [{ id: 'ana' }]);
+      await seedRankedPuzzles(t.db, v1());
+      await t.db.insert(games).values({
+        id: 'g1',
+        mode: 'ranked',
+        gameType: 'fast',
+        playerCount: 2,
+        puzzleId: 'r1',
+        rules: {},
+        startedAt: new Date(T0),
+      });
+      await t.db.insert(puzzleHistory).values({ userId: 'ana', puzzleId: 'r1', playedAt: new Date(T0) });
+      await seedRankedPuzzles(t.db, v2());
+      expect(await t.db.select({ puzzleId: games.puzzleId }).from(games)).toEqual([{ puzzleId: 'r1' }]);
+      expect(await t.db.select({ puzzleId: puzzleHistory.puzzleId }).from(puzzleHistory)).toEqual([
+        { puzzleId: 'r1' },
+      ]);
+    });
+
+    it('rankedPoolMatches: true right after a seed, false when the file has a puzzle more or less', async () => {
+      expect(await rankedPoolMatches(t.db, v1())).toBe(false);
+      await seedRankedPuzzles(t.db, v1());
+      expect(await rankedPoolMatches(t.db, v1())).toBe(true);
+      expect(await rankedPoolMatches(t.db, v2())).toBe(false);
+      expect(await rankedPoolMatches(t.db, [...v1(), bankPuzzle('r5', 'normal', 'ranked')])).toBe(false);
+      expect(await rankedPoolMatches(t.db, v1().slice(1))).toBe(false);
+      // Offline puzzles, and a type the file has none of, don't count.
+      expect(await rankedPoolMatches(t.db, [...v1(), bankPuzzle('o1', 'hard', 'offline')])).toBe(true);
+      await seedRankedPuzzles(t.db, v2());
+      expect(await rankedPoolMatches(t.db, v2())).toBe(true);
+      expect(await rankedPoolMatches(t.db, v1())).toBe(false);
+    });
+  });
 });
 
 describe('the ranked puzzle source (spec §20: no repeats)', () => {
@@ -174,6 +262,13 @@ describe('the ranked puzzle source (spec §20: no repeats)', () => {
     for (let k = 0; k < 40; k++) after.add((await source.pickFor('fast', ['ana'])).id);
     expect(after.size).toBeGreaterThan(2);
     expect([...after].some((id) => id <= 'fast-008')).toBe(true);
+  });
+
+  it('never a retired puzzle (one that left the bank) [D43]', async () => {
+    await addPuzzles(t.db, standInPuzzles(5, 'gone'), { gameType: 'fast', retired: true });
+    const source = dbPuzzleSource({ db: t.db, rng: createRng(4) });
+    for (let k = 0; k < 40; k++) expect((await source.pickFor('fast', ['ana', 'ben'])).id).toMatch(/^fast-/);
+    expect(await rankedPoolSizes(t.db)).toMatchObject({ fast: 10 });
   });
 
   it('an empty ranked pool is an error that says what to run', async () => {

@@ -4,6 +4,7 @@ import type { MatchPlayer } from '@sudoku-fight/protocol';
 import { FakeMatchmaking, MATCH_ID, MATCH_PLAYERS, RESERVATION } from '../../net/testing/fakeMatchmaking';
 import { CODE, elapse, FakeTable, settle } from '../../net/testing/fakeServer';
 import { createGameStore, type GameStoreDeps, type RankedDeps } from '../gameStore';
+import type { OnlineEnd } from '../onlineSession';
 import { smallPool } from '../testing/practice';
 
 /**
@@ -19,6 +20,7 @@ function storeWith(tables: FakeTable[]) {
   const clock = new ManualClock(1_700_000_000_000);
   const used: FakeTable[] = [];
   const tracked: { name: string; props: Record<string, unknown> }[] = [];
+  const ends: OnlineEnd[] = [];
   const ranked = (): RankedDeps => ({
     connector: mm,
     clock: first.clock,
@@ -35,9 +37,10 @@ function storeWith(tables: FakeTable[]) {
     repo: () => Promise.resolve(null),
     session: { clock, scheduler: new ManualScheduler(clock), pool: smallPool(2), track: () => undefined },
     onlineTrack: (name, props) => tracked.push({ name, props }),
+    onlineEnd: (end) => ends.push(end),
     ranked,
   };
-  return { useStore: createGameStore(deps), mm, used, tracked };
+  return { useStore: createGameStore(deps), mm, used, tracked, ends };
 }
 
 describe('the game store: a ranked game (stage 9)', () => {
@@ -175,5 +178,26 @@ describe('the game store: a ranked game (stage 9)', () => {
     expect(useStore.getState().online?.host.roomCode).toBeNull();
     expect(useStore.getState().retryOnline()).toBeNull();
     useStore.getState().clear();
+  });
+
+  it('the match’s room reports its game’s end to deps.onlineEnd, once', async () => {
+    const table = new FakeTable();
+    const { useStore, mm, ends } = storeWith([table]);
+    useStore.getState().startRanked({ gameType: 'fast', players: 2 });
+    await settle();
+    mm.searching();
+    mm.found();
+    await settle();
+    mm.countdown(3000);
+    await elapse(table, 3000, 100);
+    table.startGame();
+    await elapse(table, 200);
+    expect(ends).toEqual([]);
+    table.opponent({ type: 'surrender' });
+    await elapse(table, 200);
+    expect(ends).toHaveLength(1);
+    expect(ends[0]).toMatchObject({ left: false, state: { status: 'over' } });
+    useStore.getState().clear();
+    expect(ends).toHaveLength(1);
   });
 });

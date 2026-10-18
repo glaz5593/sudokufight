@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { type InterferenceKind, ManualClock } from '@sudoku-fight/engine';
 import { act, render, screen } from '@testing-library/react-native';
 import { useEffect } from 'react';
@@ -8,13 +11,16 @@ import i18n from '../../../i18n';
 import type { InterferenceScope } from '../config';
 import { HitEffect } from '../HitEffect';
 import { effectColors } from '../palette';
+import { Scramble } from '../Scramble';
+import { scrambleDraws, scramblePlan } from '../scrambleModel';
 import { WarpFrame } from '../Warp';
 import { NO_WARP, warpPose, warpStill, warpTransform } from '../warpModel';
 
 // Skia draws natively; under Jest a canvas is a plain view (testing/skiaMock.ts).
 jest.mock('@shopify/react-native-skia', () => jest.requireActual('../testing/skiaMock').skiaModule);
 
-const KINDS: InterferenceKind[] = ['fireworks', 'cats', 'warp'];
+/** The kinds that draw in the hit layer's region (the scramble and the keypad draw on the board and the keypad). */
+const KINDS: InterferenceKind[] = ['fireworks', 'cats', 'warp', 'ink'];
 const hidden = { includeHiddenElements: true };
 
 function Effect({
@@ -74,6 +80,67 @@ describe('the 5 s effects', () => {
     await render(<Effect kind="cats" reduce />);
     expect(screen.getByText('Meow!', hidden)).toBeTruthy();
     expect(screen.getByText('Mew!', hidden)).toBeTruthy();
+  });
+
+  it.each(['scramble', 'keypad', 'dragons'] as InterferenceKind[])(
+    '%s draws nothing in the region (the board and the keypad play it; an unknown kind: nothing, no crash) [D47]',
+    async (kind) => {
+      const { toJSON } = await render(<Effect kind={kind} reduce={false} />);
+      expect(toJSON()).toBeNull();
+    },
+  );
+
+  it('fireworks draw no night wash of their own any more: the board’s dim replaces it [D46]', () => {
+    // A wash would be a full-region rect under the bursts; together with the dim the board would be ~75 % dark.
+    const code = readFileSync(join(__dirname, '..', 'Fireworks.tsx'), 'utf8');
+    expect(code).not.toMatch(/<Rect|NIGHT_OPACITY|colors.night/);
+  });
+});
+
+describe('Scramble (the board’s tiles) [D47]', () => {
+  const tiles = scrambleDraws(
+    scramblePlan(
+      [
+        { cell: 0, digit: 5, background: 0 },
+        { cell: 40, digit: 9, background: 2 },
+      ],
+      3,
+      5000,
+    ),
+    (cell) => ({ x: (cell % 9) * 40, y: Math.floor(cell / 9) * 40, width: 38 }),
+  );
+
+  function Tiles({ reduce }: { reduce: boolean }) {
+    const elapsed = useSharedValue(1000);
+    return (
+      <Scramble
+        tiles={tiles}
+        backgrounds={['#f7f8fa', '#eceff4', '#d6f4fc']}
+        ink="#ff9440"
+        cell={38}
+        width={358}
+        height={358}
+        elapsed={elapsed}
+        totalMs={5000}
+        fadeInMs={240}
+        fadeOutMs={240}
+        reduce={reduce}
+      />
+    );
+  }
+
+  it('rolls live over the board, untouchable', async () => {
+    await render(<Tiles reduce={false} />);
+    const canvas = screen.getByTestId('hit-scramble', hidden);
+    expect(canvas).toHaveStyle({ width: 358, height: 358 });
+    expect(canvas).toHaveProp('pointerEvents', 'none');
+    expect(screen.queryByTestId('hit-scramble-still', hidden)).toBeNull();
+  });
+
+  it('with reduced motion: a still "?" on every filled cell instead', async () => {
+    await render(<Tiles reduce />);
+    expect(screen.getByTestId('hit-scramble-still', hidden)).toHaveStyle({ width: 358, height: 358 });
+    expect(screen.queryByTestId('hit-scramble', hidden)).toBeNull();
   });
 });
 

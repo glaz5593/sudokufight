@@ -15,6 +15,8 @@ const base: OnlineInfo = {
   pendingCell: null,
   hasGame: false,
   resyncedAt: null,
+  offlinePlay: null,
+  queuedMoves: [],
 };
 const info = (o: Partial<OnlineInfo>): OnlineInfo => ({ ...base, ...o });
 const lobby = {
@@ -60,14 +62,35 @@ describe('connectionStatusOf', () => {
       attempt: 2,
       since: 100,
       lostAt: 900,
+      softEndsAt: 10_900,
+      graceEndsAt: 25_900,
       deadline: 99,
       resyncing: false,
     };
-    expect(connectionStatusOf(info({ status: 'reconnecting', hasGame: true, reconnect }))).toEqual({
+    // The soft phase and the grace ends [D42], in the server's clock like lostAt, and whether the host plays
+    // on here meanwhile (its offlinePlay).
+    const offlinePlay = { since: 900, softEndsAt: 10_900, playable: true };
+    expect(
+      connectionStatusOf(info({ status: 'reconnecting', hasGame: true, reconnect, offlinePlay })),
+    ).toEqual({
       kind: 'reconnecting',
       attempt: 2,
       lostAt: 900,
+      softEndsAt: 10_900,
+      playable: true,
+      graceEndsAt: 25_900,
     });
+    // The game was frozen, or 'turns', or no offline moves: the host does not play on.
+    expect(
+      connectionStatusOf(
+        info({
+          status: 'reconnecting',
+          hasGame: true,
+          reconnect,
+          offlinePlay: { ...offlinePlay, playable: false },
+        }),
+      ),
+    ).toMatchObject({ kind: 'reconnecting', playable: false });
     // In the background no attempt has been made yet: still "attempt 1" on the screen.
     expect(
       connectionStatusOf(
@@ -80,9 +103,20 @@ describe('connectionStatusOf', () => {
     ).toMatchObject({ kind: 'reconnecting', attempt: 1 });
     expect(
       connectionStatusOf(
-        info({ status: 'reconnecting', hasGame: true, reconnect: { ...reconnect, resyncing: true } }),
+        info({
+          status: 'reconnecting',
+          hasGame: true,
+          reconnect: { ...reconnect, resyncing: true },
+          offlinePlay,
+        }),
       ),
-    ).toEqual({ kind: 'resyncing', lostAt: 900 });
+    ).toEqual({ kind: 'resyncing', lostAt: 900, softEndsAt: 10_900, playable: true, graceEndsAt: 25_900 });
+    // A game without a soft phase (an older server's rules): none.
+    expect(
+      connectionStatusOf(
+        info({ status: 'reconnecting', hasGame: true, reconnect: { ...reconnect, softEndsAt: null } }),
+      ),
+    ).toMatchObject({ kind: 'reconnecting', softEndsAt: null, graceEndsAt: 25_900 });
   });
 
   it('closed: the end, or leaving, show nothing of their own', () => {

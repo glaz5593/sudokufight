@@ -217,3 +217,36 @@ describe('the resolver', () => {
     expect(() => lookup('color.nothing')).toThrow('No colour token');
   });
 });
+
+describe('[D46] the board under an interference’s dim (Moshe 2026-10-17: readable with effort)', () => {
+  // The dim is the scrim's colour, solid, at opacity.hitDim (components/interference: HIT_DIM, HIT_DIM_COLOR).
+  const dim = `rgba(${parseColor(tokens.color.scrim).slice(0, 3).join(',')},${tokens.opacity.hitDim})`;
+  const dimmed = (hex: string) => over(dim, hex);
+  const board = tokens.color.board;
+  /** Every digit the board draws, on the ground it is drawn on. */
+  const pairs: [usage: string, fg: string, bg: string][] = [
+    ['given digit on a cell', board.given, board.cell],
+    ['given digit on a checkerboard cell', board.given, board.cellAlt],
+    ...tokens.color.players.map((p, k): [string, string, string] => [
+      `P${k + 1} solved digit on its tint`,
+      p.digit,
+      p.tint,
+    ]),
+    ['wrong digit mark on a cell', board.wrongDigit, board.cell],
+    ['wrong digit mark on a checkerboard cell', board.wrongDigit, board.cellAlt],
+  ];
+
+  it('is 60 % of the solid scrim colour', () => {
+    expect(tokens.opacity.hitDim).toBe(0.6);
+    expect(toHex(parseColor(tokens.color.scrim))).toBe('#07090c');
+  });
+
+  it.each(pairs)('%s stays at least 2:1', (_usage, fg, bg) => {
+    expect(contrast(dimmed(fg), dimmed(bg))).toBeGreaterThanOrEqual(2);
+  });
+
+  it('really disturbs: the given digit drops to 4.5:1 or less (from about 18:1)', () => {
+    expect(contrast(board.given, board.cell)).toBeGreaterThan(15);
+    expect(contrast(dimmed(board.given), dimmed(board.cell))).toBeLessThanOrEqual(4.5);
+  });
+});

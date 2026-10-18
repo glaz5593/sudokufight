@@ -147,3 +147,38 @@ describe('a game of 4 on the server', () => {
     expect(g.onEnded).toHaveBeenCalledWith('online-1');
   });
 });
+
+describe('a lost connection in a game of 4 (D42)', () => {
+  it('the soft phase: only the mark on her card, her lock kept; after it, the grey card with its countdown', async () => {
+    const g = await live();
+    const c0 = cells[0] as CellIndex;
+    await serverAct(g, NINA, { type: 'select', cell: c0 });
+    await act(async () => {
+      g.table.game!.apply({ type: 'disconnect', playerId: NINA, soft: true });
+    });
+    await pass(g.table, 100);
+    // The game goes on, nothing over it; her card has the wifi mark (no countdown), her lock still runs.
+    expect(g.session.getView().status).toBe('running');
+    expect(screen.queryByTestId('opponent-reconnecting')).toBeNull();
+    expect(within(card(NINA)).getByTestId('unstable-pill', hidden)).toBeOnTheScreen();
+    expect(within(card(NINA)).queryByTestId('reconnect-pill', hidden)).toBeNull();
+    expect(within(card(NINA)).getByTestId('presence-unstable', hidden)).toBeOnTheScreen();
+    expect(summaryOf(NINA)).toMatch(/ללא חיבור$/);
+    expect(screen.getByTestId(`cell-${cellName(c0)}`)).toHaveProp(
+      'accessibilityLabel',
+      expect.stringContaining('נעולה על ידי NinaVolt'),
+    );
+    // No interference at her meanwhile.
+    expect(screen.queryByRole('button', { name: /^הפרעה ל־NinaVolt/ })).toBeNull();
+
+    // Not back by its end: the hard phase, her lock let go, the countdown pill; the game still goes on.
+    await pass(g.table, 10_000);
+    expect(g.session.getView().status).toBe('running');
+    expect(within(card(NINA)).getByTestId('reconnect-pill', hidden)).toHaveTextContent(/\d/);
+    expect(within(card(NINA)).getByTestId('presence-reconnecting', hidden)).toBeOnTheScreen();
+    expect(screen.getByTestId(`cell-${cellName(c0)}`)).toHaveProp(
+      'accessibilityLabel',
+      expect.not.stringContaining('NinaVolt'),
+    );
+  }, 30_000);
+});

@@ -33,7 +33,8 @@
     "licenses": "node scripts/licenses.mjs",
     "verify": "npm run lint && npm run typecheck && npm run i18n:check && npm test",
     "puzzles:import": "npm run puzzles:import -w @sudoku-fight/engine --",
-    "puzzles:generate": "npm run puzzles:generate -w @sudoku-fight/engine --"
+    "puzzles:generate": "npm run puzzles:generate -w @sudoku-fight/engine --",
+    "puzzles:givens": "npm run puzzles:givens -w @sudoku-fight/engine --"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

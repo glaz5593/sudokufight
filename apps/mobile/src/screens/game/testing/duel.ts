@@ -9,6 +9,7 @@ import {
   type ManualScheduler,
   type PlayerAction,
   type PlayerInfo,
+  type Rules,
 } from '@sudoku-fight/engine';
 
 import type { OfflinePuzzle } from '../../../game/offlinePool';
@@ -42,12 +43,17 @@ export interface Duel {
 
 type WithoutPlayer<A> = A extends unknown ? Omit<A, 'playerId'> : never;
 
-/** Me and a bot (mode 'bot', the engine's rules for it), on the pool's first puzzle. */
+/**
+ * Me and a bot (mode 'bot', the engine's rules for it), on the pool's first puzzle. A practice against a bot has
+ * no interferences [D44]; a test of the interference UI in a 2-player game passes `rules: { interferences:
+ * true }`.
+ */
 export function duel({
   puzzle = PUZZLE,
   bot = BOT,
-}: { puzzle?: OfflinePuzzle; bot?: PlayerInfo } = {}): Duel {
-  const { host, clock, scheduler } = testHost({ mode: 'bot', players: [{ id: ME }, bot], puzzle });
+  rules,
+}: { puzzle?: OfflinePuzzle; bot?: PlayerInfo; rules?: Partial<Rules> } = {}): Duel {
+  const { host, clock, scheduler } = testHost({ mode: 'bot', players: [{ id: ME }, bot], puzzle, rules });
   const dispatch = (action: WithoutPlayer<PlayerAction>) => {
     const result = host.dispatch({ ...action, playerId: bot.id } as PlayerAction);
     if (result.rejected) throw new Error(`The bot's ${action.type} was refused: ${result.rejected}`);

@@ -26,6 +26,7 @@ import type {
   OpponentResult,
   Outcome,
   RankingRow,
+  RatingGuardRow,
   RatingPairRow,
   RatingResult,
 } from './resultsModel';
@@ -226,7 +227,10 @@ export function RankingSection({
     onOpenPlayer && !r.isMe && !r.isBot ? () => onOpenPlayer(r.playerId) : undefined;
   const delta = (r: RankingRow) =>
     r.rating ? (
-      <Text style={[text('caption'), r.rating.delta < 0 ? styles.danger : styles.success]}>
+      <Text
+        style={[text('caption'), deltaStyle(r.rating.delta, styles.success)]}
+        testID={`results-ranking-${r.playerId}-delta`}
+      >
         {signedText(r.rating.delta)}
       </Text>
     ) : null;
@@ -330,19 +334,31 @@ function ratingText(n: number): string {
 }
 
 /**
+ * The colour of a rating change: a loss in danger, a gain in `gain`, and a 0 muted (nothing won: a pair a
+ * leave guard held, spec §11.2, or a draw between equals).
+ */
+function deltaStyle(delta: number, gain: { color: string }) {
+  return delta < 0 ? styles.danger : delta === 0 ? styles.muted : gain;
+}
+
+/**
  * The new rating counts from the old one as the sections land (motion.md §4.7 `ratingCountAt`), on the UI
  * thread (CountUpText: no frame of the count renders in React). Reduced motion: the new rating at once. A game
  * of 3–4 players also shows the change against each opponent (Results-4P: "מחושב מול כל יריב בנפרד"), in
- * tenths that add up to the change.
+ * tenths that add up to the change. A pair a leave guard held at 0 (spec §11.2) gets a caption that says why,
+ * whatever the number of players.
  */
 export function RatingSection({
   rating,
   gameType,
   pairs = [],
+  guards = [],
 }: {
   rating: RatingResult;
   gameType: GameType;
   pairs?: readonly RatingPairRow[];
+  /** My pairs a leave guard held at 0 (spec §11.2): one caption each, saying why. */
+  guards?: readonly RatingGuardRow[];
 }) {
   const { t } = useTranslation('history');
   const { t: tg } = useTranslation('game');
@@ -361,9 +377,14 @@ export function RatingSection({
   const pairLabels = pairs.map((p) =>
     t('results.rating.pairLabel', { name: displayName(p, tp), delta: signedText(p.delta) }),
   );
+  const captions = guards.map((g) => ({
+    playerId: g.playerId,
+    line: t(`results.rating.guard.${g.reason}`, { name: displayName(g, tp) }),
+  }));
   const label = [
     t('results.rating.label', { delta, before, after }),
     ...(pairs.length ? [`${t('results.rating.perOpponent')}: ${pairLabels.join(tg('listSep'))}`] : []),
+    ...captions.map((c) => c.line),
   ].join('. ');
   return (
     <View
@@ -394,7 +415,7 @@ export function RatingSection({
         />
         <View style={styles.numbers}>
           <Text
-            style={[text('rating'), rating.delta < 0 ? styles.danger : styles.success]}
+            style={[text('rating'), deltaStyle(rating.delta, styles.success)]}
             testID="results-rating-delta"
           >
             {delta}
@@ -412,7 +433,7 @@ export function RatingSection({
                   {displayName(p, tp)}
                 </Text>
                 <Text
-                  style={[text('label'), p.delta < 0 ? styles.danger : styles.accent]}
+                  style={[text('label'), deltaStyle(p.delta, styles.accent)]}
                   testID={`results-rating-pair-${p.playerId}-delta`}
                 >
                   {signedText(p.delta)}
@@ -422,6 +443,15 @@ export function RatingSection({
           ))}
         </View>
       ) : null}
+      {captions.map((c) => (
+        <Text
+          key={c.playerId}
+          style={[text('caption'), styles.muted]}
+          testID={`results-rating-guard-${c.playerId}`}
+        >
+          {c.line}
+        </Text>
+      ))}
       {rating.provisional ? (
         <Text style={[text('caption'), styles.muted]}>{t('results.rating.provisional')}</Text>
       ) : null}

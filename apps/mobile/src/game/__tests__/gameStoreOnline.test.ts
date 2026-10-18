@@ -2,6 +2,7 @@ import { ManualClock, ManualScheduler } from '@sudoku-fight/engine';
 
 import { CODE, elapse, FakeTable } from '../../net/testing/fakeServer';
 import { createGameStore, type GameStoreDeps } from '../gameStore';
+import type { OnlineEnd } from '../onlineSession';
 import { smallPool } from '../testing/practice';
 
 /** The game store's online game (stage 7): at most one game at a time, retries, and letting go. */
@@ -11,6 +12,7 @@ jest.mock('../../services/analytics', () => ({ track: jest.fn() }));
 function storeWith(tables: FakeTable[]) {
   const clock = new ManualClock(1_700_000_000_000);
   const made: FakeTable[] = [];
+  const ends: OnlineEnd[] = [];
   const deps: GameStoreDeps = {
     repo: () => Promise.resolve(null),
     session: { clock, scheduler: new ManualScheduler(clock), pool: smallPool(2), track: () => undefined },
@@ -21,8 +23,9 @@ function storeWith(tables: FakeTable[]) {
       return table.host;
     },
     onlineTrack: () => undefined,
+    onlineEnd: (end) => ends.push(end),
   };
-  return { useStore: createGameStore(deps), made };
+  return { useStore: createGameStore(deps), made, ends };
 }
 
 describe('the game store online', () => {
@@ -119,5 +122,35 @@ describe('the game store online', () => {
     useStore.getState().clear();
     expect(useStore.getState()).toMatchObject({ online: null, session: null, view: null });
     expect(online.online.status).toBe('closed');
+  });
+
+  it('every session reports its game’s end to deps.onlineEnd (the account’s rating follows it)', async () => {
+    const table = new FakeTable();
+    const rejoin = new FakeTable();
+    const { useStore, ends } = storeWith([table, rejoin]);
+    const online = useStore.getState().startOnline({ kind: 'create', options: {} });
+    await online.ready;
+    table.lobby();
+    table.startGame();
+    await elapse(table, 300);
+    // "נסה שוב" closes the running session (leaving it), and the new one reports too.
+    const again = useStore.getState().retryOnline()!;
+    expect(ends.map((e) => e.left)).toEqual([true]);
+    await again.ready;
+    useStore.getState().clear();
+    expect(ends.map((e) => e.left)).toEqual([true]);
+
+    const third = new FakeTable();
+    const { useStore: store2, ends: ends2 } = storeWith([third]);
+    const played = store2.getState().startOnline({ kind: 'create', options: {} });
+    await played.ready;
+    third.lobby();
+    third.startGame();
+    await elapse(third, 300);
+    store2.getState().endPractice();
+    await elapse(third, 200);
+    expect(ends2.map((e) => [e.left, e.state.status])).toEqual([[false, 'over']]);
+    store2.getState().clear();
+    expect(ends2).toHaveLength(1);
   });
 });

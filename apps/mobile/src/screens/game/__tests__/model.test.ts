@@ -1,6 +1,7 @@
 import { cellName, parseCellName } from '@sudoku-fight/engine';
 
 import { boardGeometry } from '../../../components/board';
+import { gameEndConfig } from '../../../config/gameEnd';
 import { answerIn, emptyCellsOf, PUZZLE, testHost, wrongIn } from '../../../game/testing/practice';
 import { motion } from '../../../theme/motion';
 import { boardSide, cellCenter, centerOf, within } from '../geometry';
@@ -10,6 +11,8 @@ import {
   formatClock,
   formatSeconds,
   MOVE_TIMELINE,
+  ONLINE_END_HOLD_MS,
+  RESULTS_WATCHDOG_MS,
   soloStats,
 } from '../model';
 
@@ -73,15 +76,43 @@ describe('the move timeline (motion.md §5)', () => {
     expect(MOVE_TIMELINE.penalty).toEqual({ appearAt: 300, flyAt: 300, landAt: 660 });
   });
 
-  it('holds a full board before the results (700 + 400 ms; 200 with reduced motion), and never an ended one', () => {
+  it('holds a full board before the results (700 + 400 ms; 200 with reduced motion), and never an ended practice', () => {
     expect(endDelayMs('boardComplete', false)).toBe(1_100);
     expect(endDelayMs('boardComplete', true)).toBe(motion.duration.reducedFade);
     expect(endDelayMs('practiceEnded', false)).toBe(0);
     expect(endDelayMs(undefined, false)).toBe(0);
+    // A practice against a bot that ends otherwise: the dialog's exit is the wait.
+    expect(endDelayMs('lastPlayerStanding', false)).toBe(0);
+    expect(endDelayMs('boardComplete', false, true)).toBe(1_100);
+    expect(endDelayMs('boardComplete', true, true)).toBe(motion.duration.reducedFade);
+  });
+
+  it('online, a surrender or an abandonment holds the final board (motion.md game.end; Moshe’s black screens)', () => {
+    expect(ONLINE_END_HOLD_MS).toBe(gameEndConfig.onlineHoldMs);
+    expect(ONLINE_END_HOLD_MS).toBe(600);
+    expect(endDelayMs('lastPlayerStanding', false, true)).toBe(ONLINE_END_HOLD_MS);
+    expect(endDelayMs(undefined, false, true)).toBe(ONLINE_END_HOLD_MS);
+    expect(endDelayMs('lastPlayerStanding', true, true)).toBe(motion.duration.reducedFade);
+    // Longer than every fade the end starts on the screen: a lock's ring and pill, a closing dialog.
+    for (const reduce of [false, true]) {
+      const hold = endDelayMs('lastPlayerStanding', reduce, true);
+      expect(hold).toBeGreaterThanOrEqual(
+        reduce ? motion.duration.reducedFade : motion.duration.lockAutoRelease + 50,
+      );
+      expect(hold).toBeGreaterThanOrEqual(
+        reduce ? motion.duration.reducedFade : motion.duration.sheetOut + 50,
+      );
+    }
   });
 
   it('the ceiling on waiting for the end dialog to leave is well past its exit', () => {
     expect(DIALOG_GONE_CEILING_MS).toBeGreaterThan(motion.duration.sheetOut + 500);
+  });
+
+  it('the results watchdog waits past the longest way to them (the hold, then a dialog’s ceiling)', () => {
+    expect(RESULTS_WATCHDOG_MS).toBe(gameEndConfig.resultsWatchdogMs);
+    expect(RESULTS_WATCHDOG_MS).toBeGreaterThan(DIALOG_GONE_CEILING_MS + ONLINE_END_HOLD_MS);
+    expect(RESULTS_WATCHDOG_MS).toBeGreaterThan(endDelayMs('boardComplete', false) + 1_000);
   });
 });
 

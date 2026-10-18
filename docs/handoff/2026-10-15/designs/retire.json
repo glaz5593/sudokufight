@@ -1,0 +1,298 @@
+{
+  "item": "Rating rules when a player retires (surrender or abandonment) mid-game: \"leave guards\" (D32 amended by Moshe, 2026-10-15)",
+  "summary": "Today a player who surrenders or abandons (grace runs out) takes a normal Elo loss, and every opponent ranked above them gets a full win. This follows spec §11.2 / D32 / D8 and is implemented in packages/engine/src/game/results.ts (ratingChangesFor, ratingPairsFor, eloInput), using pairwise Elo in packages/engine/src/rating/elo.ts (pairPart, eloChanges, eloPairs). Moshe wants two guards per pair that involves a leaver, judged at the moment of leaving. (a) The leaver loses nothing to an opponent who was not ahead of him (opp.score <= his), or if he had not placed a digit yet. (b) The player who stays gains nothing from the leaver if he himself had not placed a digit yet, or if the leaver was ahead of him (leaver.score > his). Nothing in the engine state records scores at the moment someone left, so evolve needs a small snapshot per player. Elo needs per-pair clamps, and the result needs per-pair reasons so the UI can explain a 0. The surrender dialog's \"estimated rating change -15\" (apps/mobile/src/screens/game/connection/surrenderEstimate.ts) and the \"opponent left\" chip must reflect it too. The server only stores what the engine computes, so the server change is a deploy plus test and comment updates. Many existing engine, server and mobile tests encode the old rule with leavers who never moved, and they will flip.",
+  "rootCauses": [],
+  "design": "GOAL\nPairwise Elo stays as it is (S by place, §6.7 ranking unchanged, D8 abandonWinScore unchanged). On top of it, every pair (X, Y) in which at least one player left (status 'surrendered' or 'abandoned') is JUDGED at one moment:\n- leaver = the one of the two who left first (smaller PlayerState.outOrder; if only one is out, that one).\n- stayer = the other one, even if he left later.\n- The moment is the leaver's surrender. For an abandonment it is the disconnect it followed, by default; see rules.rating.abandonJudgedAt.\n- standings = everyone's [score, moves] at that moment; moves = correct + mistakes (digit entries only).\nFor that pair:\n- (a) leaverGuard: if leaver.moves == 0 then reason 'leftBeforeMoving'; else if stayer.score <= leaver.score then reason 'leftNotBehind'. Either one gives the leaver's part of this pair \"noLoss\", i.e. part = max(0, part).\n- (b) stayerGuard: if stayer.moves == 0 then reason 'opponentLeftBeforeMyMove'; else if leaver.score > stayer.score then reason 'opponentLeftAhead'. Either one gives the stayer's part \"noGain\", i.e. part = min(0, part).\n- Otherwise the old rule holds: a normal loss for the leaver and a full win for the stayer [D8].\n- When both reasons of one side hold, the \"no move\" reason is reported first.\n- Clamp, not void: under the default exitOrder ranking (and always with 2 players) the leaver is always ranked below the stayer, so the guarded part is exactly 0. Clamp only differs under the D36 'byScore' alternative, where a surrendered leaver may outrank a stayer: the leaver keeps a gain, and the stayer keeps a loss.\n- Pairs without a leaver are unchanged.\n- Surrender and abandonment are treated the same (consistent with D32).\n- What counts as a \"move\":\n  - Counts: placedCorrect or placedWrong.\n  - Does not count: select/lock (free, reversible, can be accidental or AFK), interference (with interferenceNeedsScore=true it already needs earlier correct moves; with the alternative off it is not playing the board), reaction, lock timeout.\n\nWORKED EXAMPLES (verify by running the tests)\n2 players, near() board T (every T cell = 1.5 points). p1 = 1287, p2 = 1305, both with 10 games, K = 32.\n- p1 solves 2, p2 solves 1, p2 surrenders: p1 +17, p2 -17 (normal).\n- p1 solves 1, p2 solves 2, p2 surrenders: p1 0 ('opponentLeftAhead'), p2 0 ('leftNotBehind').\n- Equal scores (1.5 / 1.5), p2 surrenders: p2 0 ('leftNotBehind'), p1 +17 (p2 was not strictly ahead).\n- p1 solves 1, p2 surrenders with no move: p2 0 ('leftBeforeMoving'), p1 +17.\n- p2 makes one wrong digit (score < 0) and surrenders, p1 has not moved: p2 -17 (p1 at 0 is ahead), p1 0 ('opponentLeftBeforeMyMove').\n- Nobody moved: both 0.\n\n4 players at 1200 with 10 games each, K_pair = 32/3:\n- Before p2 surrenders: p1 has 3 (2 moves), p2 1.5, p3 has not moved, p4 made one wrong digit.\n- Then p3 solves 1 and p4 surrenders; p1 and p3 finish the board.\n- Final places: p1, p3, p4, p2.\n- Changes: p1 +16, p3 0 (vs p2 held: 'opponentLeftBeforeMyMove'), p4 -11 (vs p2 held: 'opponentLeftAhead'), p2 -5 (vs p3 and p4 held: 'leftNotBehind').\n- Without the guards: +16, +5, -5, -16.\n\n3 players at 1200, K_pair = 16:\n- p3 solves 2 and disconnects. p1 solves 3 during the grace. p3 abandons, then p1 finishes the board; p2 never moves.\n- abandonJudgedAt='disconnect': p1 +8, p2 -8, p3 0.\n- abandonJudgedAt='graceEnd': p1 +16, p2 -8, p3 -8.\n\nENGINE: packages/engine/src/game/rules.ts\nRatingRules gains three fields, with these values in DEFAULT_RATING_RULES:\n- leaverGuard: boolean = true (rule a)\n- stayerGuard: boolean = true (rule b)\n- abandonJudgedAt: 'disconnect' | 'graceEnd' = 'disconnect'\nBoth guards off = the old D32 behaviour. Document them as \"[D32, Moshe 2026-10-15]\".\nNo server env is needed: rankedGames.createConfig already spreads DEFAULT_RATING_RULES. Old stored configs lack these fields, which reads as off; results are never recomputed from old logs.\n\nENGINE: packages/engine/src/game/types.ts\n- export type LeaveStanding = readonly [score: number, moves: number]. A tuple on purpose: the 4-player snapshot is 3742 of 4096 bytes today (measured, wire.test busy game).\n- PlayerState.leaveStandings: LeaveStanding[] | null, by seat: everyone's [score, correct + mistakes] at the moment this player's leaving is judged.\n  - null while in the game and connected.\n  - While disconnected it holds the snapshot taken at the disconnect.\n- Update the GameResult.ratingPairs doc (pairs may carry `guard`).\n\nENGINE: packages/engine/src/game/evolve.ts\n- initialState: leaveStandings: null.\n- Add a helper standingsOf(s) = s.players.map(p => [p.score, p.correct + p.mistakes]).\n- playerDisconnected: p.leaveStandings = standingsOf(s).\n- playerReconnected: p.leaveStandings = null.\n- playerSurrendered: p.leaveStandings = standingsOf(s).\n- playerAbandoned: if (rules.rating.abandonJudgedAt !== 'disconnect' || !p.leaveStandings) then p.leaveStandings = standingsOf(s); otherwise keep the disconnect snapshot.\n- With 2 players the game is frozen during the grace, so both settings give the same result there.\n- Pure and derived from events, so replay and replayMatches still hold; nothing new on the events.\n\nENGINE: packages/engine/src/rating/elo.ts\n- export type LeaveGuardReason = 'leftBeforeMoving' | 'leftNotBehind' | 'opponentLeftBeforeMyMove' | 'opponentLeftAhead'.\n- export interface PairGuard { opponentId: string; kind: 'noLoss' | 'noGain'; reason: LeaveGuardReason }.\n- EloPlayer.guards?: readonly PairGuard[].\n- RatingPair.guard?: LeaveGuardReason. Present only when the guard actually held this pair at 0, i.e. the raw part was < 0 for noLoss or > 0 for noGain.\n- pairPart returns { part, held }:\n  - raw = K_pair * (S - E), with abandonWinScore applied first as today.\n  - If noLoss and raw < 0, or noGain and raw > 0: { part: 0, held: reason }.\n  - Return a literal 0, never -0.\n- eloChanges: delta = Math.round(sum) || 0.\n- eloPairs:\n  - Held pairs are fixed at exactly 0 tenths and excluded from apportionTenths. Without this, the 4-player example would give p4's held pair -0.1: floors -54, -54, 0, then the \"least owed\" take-back hits the 0 pair.\n  - Should: apportioning must not push a noLoss pair below 0 or a noGain pair above 0 (bounds per pair; still feasible because total = round(Σ) and the remaining pairs absorb it).\n  - Copy `guard` onto held pairs.\n- Keep Σ pairs − penalty = delta.\n\nENGINE: packages/engine/src/game/results.ts\n- export function leaverGuardReason(leaver: LeaveStanding, stayer: LeaveStanding): 'leftBeforeMoving' | 'leftNotBehind' | null\n- export function stayerGuardReason(stayer: LeaveStanding, leaver: LeaveStanding): 'opponentLeftBeforeMyMove' | 'opponentLeftAhead' | null\n- export function leaveGuardsFor(state: GameState): Map<PlayerId, PairGuard[]>\n  - For every unordered pair with at least one player out: pick leaver and stayer by outOrder; std = leaver.leaveStandings (skip the pair if null, e.g. an old in-flight state).\n  - If rules.rating.leaverGuard: reason = leaverGuardReason(std[leaver.seat], std[stayer.seat]); push { opponentId: stayer.id, kind: 'noLoss', reason } to the leaver.\n  - If rules.rating.stayerGuard: reason = stayerGuardReason(...); push { opponentId: leaver.id, kind: 'noGain', reason } to the stayer.\n- eloInput adds guards: leaveGuardsFor(state).get(id).\n- Penalty (abandonPenalty, the D32 alternative, default 0):\n  - It applies to an abandoned player only if at least one pair judged at his own leaving is not guarded by (a).\n  - It is waived when he left \"harmless\" against every opponent who was still in at that moment.\n  - Use one helper, penaltyFor(state, playerId), in both ratingChangesFor and ratingPairsFor so they stay consistent.\n- Update the header comments (§11.2, D8, D32).\n\nENGINE: packages/engine/src/game/view.ts\n- GameView.leaveGuards: { opponentId: PlayerId; reason: 'leftBeforeMoving' | 'leftNotBehind' }[] | null\n  - Meaning: \"if I surrendered now, the opponents I would lose no rating to\".\n  - null when: not 'ranked', no viewer, viewer not 'active', or rules.rating.leaverGuard is off.\n  - Otherwise: for each active opponent, the leaverGuardReason(mine now, theirs now) values that are not null.\n- This keeps the logic out of the UI (CLAUDE.md).\n- Required field; update the full-literal fixture apps/mobile/src/components/player/__fixtures__/gameView.ts (twoPlayerView, fourPlayerView): leaveGuards: null.\n\nPROTOCOL (packages/protocol)\n- No code change. GameResult, GameView and GameState are the engine's, re-exported.\n- The new fields are optional or additive, so do NOT bump PROTOCOL_VERSION (a bump would cut off installed apps).\n\nSERVER (apps/server)\n- No logic change: ratings/store.ts applyRatingChanges just stores the engine delta. games still gets +1 for every seat (see decision 3).\n- Must redeploy, because the engine runs in the server.\n- Update the stale comments:\n  - apps/server/src/ratings/store.ts header (\"a surrender or an abandonment is a normal loss\").\n  - apps/server/src/persistence/records.ts header (\"a normal loss [D32]\").\n  - apps/server/src/matchmaking/service.ts (~line 58, \"leaving is abandonment, a normal loss [D32]\").\n  - apps/server/src/progress/xp.ts (~line 25): XP and win/loss stats still go by place only; the guards are rating-only.\n\nMOBILE (apps/mobile), all strings via t(), he and en\n1. apps/mobile/src/screens/game/connection/surrenderEstimate.ts\n   - Replace surrenderRatingDelta with surrenderRatingEstimate(view: Pick<GameView, 'mode'|'gameType'|'players'|'me'|'leaveGuards'>, myRatings): SurrenderEstimate | null, where SurrenderEstimate = { delta: number; guard: 'leftBeforeMoving' | 'leftNotBehind' | null }.\n   - 2 players only, as today. If view.leaveGuards has the opponent: { delta: 0, guard } (even without a ratings entry). Otherwise the existing eloChanges loss with guard: null.\n2. apps/mobile/src/screens/game/connection/RankedSurrender.tsx\n   - Prop `rating?: SurrenderEstimate | null` replaces `ratingDelta`.\n   - When guard is set, the body is t(`connection.surrender.bodyNoLoss.${guard}`) in plain muted text, with no red Teko number.\n   - Otherwise RatingBody as today.\n   - Optional: 3–4 players with every active opponent guarded gets bodyManyNoLoss.\n3. apps/mobile/src/screens/game/GameScreen.tsx (~lines 74 and 1251): rating={surrenderRatingEstimate(view, myRatings)}.\n4. apps/mobile/src/screens/game/connection/connectionModel.ts (opponentLeftOf, ~line 347)\n   - OpponentLeftModel gains ratingGuard: 'opponentLeftBeforeMyMove' | 'opponentLeftAhead' | null, from view.result.ratingPairs?.find(me)?.pairs[0]?.guard ?? null.\n   - OpponentLeft.tsx shows a micro line t(`connection.left.ratingUnchanged.${guard}`) under the star chip, adds it to the chip's accessibilityLabel, and colours the delta muted when it is 0.\n5. apps/mobile/src/screens/results/resultsModel.ts\n   - RatingPairRow gains guard: LeaveGuardReason | null.\n   - ResultsModel gains ratingGuards: { playerId; name: string | null; reason: LeaveGuardReason }[]: my pairs with a guard, for ANY player count. Read result.ratingPairs for my id even when players == 2; the pair rows stay 3–4 only.\n   - Absent ratingPairs (old results) gives [].\n6. apps/mobile/src/screens/results/ResultsVersus.tsx RatingSection\n   - New `guards` prop: one caption per guard, t(`results.rating.guard.${reason}`, { name }) with displayName and the same name isolation the pair labels use. testID `results-rating-guard-${playerId}`. Append the captions to the card's accessibilityLabel.\n   - delta === 0 uses the muted colour, not success. Apply this in RatingSection's delta (line ~397), the pair rows (line ~415) and RankingSection's caption (line ~229).\n   - ResultsScreen.tsx (~line 311) passes guards={model.ratingGuards}.\n7. Optional polish: apps/mobile/src/screens/history/HistoryCard.tsx (~line 188), muted for a 0 delta.\n\ni18n keys (apps/mobile/src/i18n/locales/{he,en}/…)\nhistory.json, results.rating.guard.*:\n- leftBeforeMoving: he \"מול {{name}}: הדירוג לא ירד, כי יצאת לפני המהלך הראשון שלך\" / en \"vs {{name}}: no rating lost, you left before your first move\"\n- leftNotBehind: he \"מול {{name}}: הדירוג לא ירד, כי לא היית בפיגור כשיצאת\" / en \"vs {{name}}: no rating lost, you weren't behind when you left\"\n- opponentLeftBeforeMyMove: he \"מול {{name}}: אין תוספת לדירוג, כי היציאה הייתה לפני המהלך הראשון שלך\" / en \"vs {{name}}: no rating gained, they left before your first move\"\n- opponentLeftAhead: he \"מול {{name}}: אין תוספת לדירוג, כי היית בפיגור ברגע היציאה\" / en \"vs {{name}}: no rating gained, you were behind when they left\"\n\ngame.json, connection.surrender.bodyNoLoss.*:\n- leftBeforeMoving: he \"המשחק ייחשב כהפסד · הדירוג שלך לא ירד, כי עוד לא ביצעת מהלך\" / en \"The game counts as a loss · your rating won't drop: you haven't made a move yet\"\n- leftNotBehind: he \"המשחק ייחשב כהפסד · הדירוג שלך לא ירד, כי אין לך פיגור\" / en \"The game counts as a loss · your rating won't drop: you're not behind\"\n\ngame.json, connection.left.ratingUnchanged.*:\n- opponentLeftBeforeMyMove: he \"הדירוג לא השתנה: היציאה הייתה לפני המהלך הראשון שלך\" / en \"Rating unchanged: they left before your first move\"\n- opponentLeftAhead: he \"הדירוג לא השתנה: היית בפיגור ברגע היציאה\" / en \"Rating unchanged: you were behind when they left\"\n\nNotes on the strings:\n- The Hebrew avoids verbs gendered by the opponent; the results screen has no gender.\n- No signed numbers inside these strings.\n- npm run i18n:check requires the same keys and placeholders in he and en.\n\nDOCS\n- docs/01-SPEC.md\n  - §11.2: replace the \"כניעה ונטישה [D32]\" bullet with the guards (Hebrew text: who is the leaver of a pair, the judging moment, (a), (b), what a move is, the rules.rating fields).\n  - §6.6: \"2 שחקנים: כניעה היא הפסד מיידי\" gets \"(הדירוג: סעיף 11.2)\".\n  - §12: a line saying that a pair held by a guard is explained on the results screen.\n  - §18: the gameOver row becomes `ranking[], ratingChanges[], ratingPairs[] (guard), awards[]`.\n  - §24 D32 status: \"✓ הפסד רגיל, חוץ מהגנות היציאה שבסעיף 11.2 (משה, 2026-10-15); אי־הגעה וקנס: ☐\".\n  - §24 D8 note: \"ניצחון מלא, חוץ מהגנה (ב)\".\n- docs/DECISIONS-PENDING.md\n  - 2.12: \"אחרי 15 שניות השחקן מפסיד, והדירוג משתנה\" becomes \"…לפי הגנות היציאה\".\n  - Table row D8 in 3.1.\n  - A new item listing the sub-decisions below with status ☐.\n- docs/QA-CHECKLIST.md\n  - Row 18 Surrender: the guarded body.\n  - \"ניצחון בנטישה\" row: 0 plus a reason line.\n  - Results rows: guard captions and a muted 0.\n- docs/STAGE9-10-DEVICE-CHECKS.md\n  - Line 142 (abandonment rating).\n  - Check 5/6: the +32/+10.67 example holds only if nobody left.\n- docs/design/components.md §14.1: Body variant \"הדירוג שלך לא ירד\" in textMuted, with no Teko number.",
+  "files": [
+    {
+      "path": "packages/engine/src/game/rules.ts",
+      "change": "RatingRules: add leaverGuard (true), stayerGuard (true) and abandonJudgedAt ('disconnect' | 'graceEnd', default 'disconnect') to the interface and DEFAULT_RATING_RULES; update the header doc for D32 and D8."
+    },
+    {
+      "path": "packages/engine/src/game/types.ts",
+      "change": "Add `export type LeaveStanding = readonly [score: number, moves: number]` and PlayerState.leaveStandings: LeaveStanding[] | null (by seat). Update the GameResult.ratingPairs doc (pairs may carry a guard)."
+    },
+    {
+      "path": "packages/engine/src/game/evolve.ts",
+      "change": "initialState: leaveStandings null. Add a standingsOf(s) helper. Set leaveStandings on playerDisconnected, clear it on playerReconnected, set it on playerSurrendered, and on playerAbandoned keep the disconnect snapshot or retake it per rules.rating.abandonJudgedAt."
+    },
+    {
+      "path": "packages/engine/src/rating/elo.ts",
+      "change": "Add the LeaveGuardReason and PairGuard types, EloPlayer.guards? and RatingPair.guard?. pairPart applies the noLoss/noGain clamp and reports the held reason (literal 0, never -0). eloChanges: Math.round(sum) || 0. eloPairs: held pairs are fixed at 0 and excluded from apportionTenths, apportioning respects the sign bounds of guarded pairs, and held pairs get the guard reason. Update the header doc."
+    },
+    {
+      "path": "packages/engine/src/game/results.ts",
+      "change": "Add exported leaverGuardReason, stayerGuardReason and leaveGuardsFor(state). Pairs are judged at the first leaver's leaveStandings, honouring the leaverGuard and stayerGuard toggles. eloInput passes guards. Add a penaltyFor helper (abandonPenalty waived when (a) holds against everyone still in at the exit) used by both ratingChangesFor and ratingPairsFor. Update the docs."
+    },
+    {
+      "path": "packages/engine/src/game/view.ts",
+      "change": "GameView.leaveGuards: { opponentId; reason: 'leftBeforeMoving' | 'leftNotBehind' }[] | null, computed in toView for the viewer: ranked, viewer active, leaverGuard on, against active opponents, from current scores and correct + mistakes."
+    },
+    {
+      "path": "packages/engine/src/rating/elo.test.ts",
+      "change": "New describe for the guard clamps, held-pair annotation, held pairs never moved by apportioning, and a property test over random guards."
+    },
+    {
+      "path": "packages/engine/src/game/endgame.test.ts",
+      "change": "New describe 'leave guards (§11.2) [D32]'. Update the existing tests that assume a normal loss from leavers who never moved: the D8 surrender and abandonment tests, '3 players: places from surrenders', the D36 byScore rating numbers, the 2-player byScore test, abandonWinScore, both abandonPenalty tests, and the defaults object."
+    },
+    {
+      "path": "packages/engine/src/game/connection.test.ts",
+      "change": "Update the 2-player abandonment tests: 'not back in 15 s' (p2 ahead → 0/0 now), 'provisional winner +34' (p1 must move first) and 'the [D8] alternative' (p1 must move first). Update the 3–4 player abandonment test, whose +16/0/-16 becomes all 0 unless restructured. Add a reconnect-clears-snapshot test."
+    },
+    {
+      "path": "packages/engine/src/game/regressions.test.ts",
+      "change": "Section 12: the deltas() and abandoned() helpers must have p1 move first (no-move leavers now give 0). The '[D8] a partial win…is about 2 players' test (twoPlayers 16/8) needs moves too. Add the new fields to the defaults object."
+    },
+    {
+      "path": "apps/server/src/game/wire.test.ts",
+      "change": "Make the 4-player snapshot case include a surrender and an in-grace disconnect, so the 4 KB budget covers the new leaveStandings and rules fields (today 3742 bytes)."
+    },
+    {
+      "path": "apps/server/src/persistence/persistence.test.ts",
+      "change": "'surrender…is a normal loss': ben must have moved and be behind. 'abandonment…normal loss too': ana moved and ben left with no move, so it becomes ana 1304, ben unchanged 1305, games 13. In the 3/4-player test, the engineChanges helper must pass the engine's guards (leaveGuardsFor) because dan surrenders before any move. Add 'a leaver who was ahead: no rating moves, games still +1'."
+    },
+    {
+      "path": "apps/server/test/fourPlayers.e2e.test.ts",
+      "change": "formulaFor must build its eloChanges/eloPairs input with guards from leaveGuardsFor(final state). The fixed deltaOf(c) = -32 and deltaOf(d) = -11 assume a normal loss; replace them with derived expectations, since Dan leaves at 150 ms, likely before any move."
+    },
+    {
+      "path": "apps/server/src/ratings/store.ts",
+      "change": "Header comment only: the engine applies the leave guards; still games + 1 per seat."
+    },
+    {
+      "path": "apps/server/src/persistence/records.ts",
+      "change": "Header comment only: 'a normal loss [D32]' becomes a reference to the §11.2 leave guards."
+    },
+    {
+      "path": "apps/server/src/matchmaking/service.ts",
+      "change": "Comment (~line 58) only: abandonment rating per §11.2 guards."
+    },
+    {
+      "path": "apps/server/src/progress/xp.ts",
+      "change": "Comment (~line 25) only: XP and win/loss stay by place; the guards are rating-only."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/surrenderEstimate.ts",
+      "change": "surrenderRatingDelta becomes surrenderRatingEstimate, returning { delta, guard } | null and using view.leaveGuards (0 when guarded)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/RankedSurrender.tsx",
+      "change": "Prop ratingDelta becomes rating: SurrenderEstimate | null. A guarded body uses t('connection.surrender.bodyNoLoss.<reason>') with no red delta. Optional 3–4 player bodyManyNoLoss."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/GameScreen.tsx",
+      "change": "Import and pass rating={surrenderRatingEstimate(view, myRatings)} (~lines 74 and 1251)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/connectionModel.ts",
+      "change": "OpponentLeftModel.ratingGuard from result.ratingPairs (my pair's guard)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/OpponentLeft.tsx",
+      "change": "Show t('connection.left.ratingUnchanged.<reason>') under the rating chip and include it in the chip's a11y label; colour the delta muted when 0."
+    },
+    {
+      "path": "apps/mobile/src/screens/results/resultsModel.ts",
+      "change": "RatingPairRow.guard; ResultsModel.ratingGuards (my guarded pairs, any player count, read from result.ratingPairs even for 2 players)."
+    },
+    {
+      "path": "apps/mobile/src/screens/results/ResultsVersus.tsx",
+      "change": "RatingSection takes guards, renders one caption per guard (testID results-rating-guard-<id>) and adds them to the a11y label. A 0 delta is muted in RatingSection, the pair rows and the RankingSection rows."
+    },
+    {
+      "path": "apps/mobile/src/screens/results/ResultsScreen.tsx",
+      "change": "Pass guards={model.ratingGuards} to RatingSection (~line 311)."
+    },
+    {
+      "path": "apps/mobile/src/screens/history/HistoryCard.tsx",
+      "change": "Optional: a 0 rating delta is muted instead of success (~line 188)."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/history.json",
+      "change": "results.rating.guard.{leftBeforeMoving,leftNotBehind,opponentLeftBeforeMyMove,opponentLeftAhead} with {{name}}."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/history.json",
+      "change": "The same keys in English."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/game.json",
+      "change": "connection.surrender.bodyNoLoss.{leftBeforeMoving,leftNotBehind}; connection.left.ratingUnchanged.{opponentLeftBeforeMyMove,opponentLeftAhead}; optional connection.surrender.bodyManyNoLoss."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/game.json",
+      "change": "The same keys in English."
+    },
+    {
+      "path": "apps/mobile/src/components/player/__fixtures__/gameView.ts",
+      "change": "twoPlayerView and fourPlayerView literals get leaveGuards: null (new required GameView field)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/__tests__/designFidelity.test.tsx",
+      "change": "Move the surrenderRatingDelta tests to surrenderRatingEstimate. The -15/-30 cases need view.leaveGuards: [] (or me behind with moves). Add the guarded cases (0 with reason)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/__tests__/RankedSurrender.test.tsx",
+      "change": "New prop shape; guarded body in he and en with no red delta; unguarded -15 stays."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/__tests__/connectionModel.test.ts",
+      "change": "'shows the opponent left' needs me to move first so ratingDelta > 0 holds. Add a case where Nina leaves before my move: ratingDelta 0 and ratingGuard 'opponentLeftBeforeMyMove'."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/__tests__/OpponentLeft.test.tsx",
+      "change": "Reason line rendered (he and en), a11y label, muted 0."
+    },
+    {
+      "path": "apps/mobile/src/screens/results/__tests__/resultsDuelModel.test.ts",
+      "change": "ratingGuards for a guarded duel; empty for a full game; empty for an old result without ratingPairs."
+    },
+    {
+      "path": "apps/mobile/src/screens/results/__tests__/resultsRanked.test.tsx",
+      "change": "Guard captions for a 2-player guarded game and for a 4-player game with a leaver; a11y label; muted 0."
+    },
+    {
+      "path": "docs/01-SPEC.md",
+      "change": "§11.2 guards text, §6.6 pointer, §12 explanation line, §18 gameOver row, §24 D32 and D8 status/notes."
+    },
+    {
+      "path": "docs/DECISIONS-PENDING.md",
+      "change": "2.12 'בנוי עכשיו' text; D8 row in 3.1; a new item with the leave-guard sub-decisions (☐)."
+    },
+    {
+      "path": "docs/QA-CHECKLIST.md",
+      "change": "Surrender row 18, 'ניצחון בנטישה' row and the results rows: the guarded wording and the 0 display."
+    },
+    {
+      "path": "docs/STAGE9-10-DEVICE-CHECKS.md",
+      "change": "Line 142 abandonment note; check 5/6 example caveat."
+    },
+    {
+      "path": "docs/design/components.md",
+      "change": "§14.1 Body: add the guarded variant (textMuted, no Teko number)."
+    }
+  ],
+  "tests": [
+    "elo.test.ts: noLoss holds a loss at exactly 0 and keeps a win; noGain holds a win at 0 and keeps a loss (no -0: Object.is(delta, -0) is false).",
+    "elo.test.ts: a guard affects only its own pair (4 players, guard vs one opponent; the other pairs are unchanged).",
+    "elo.test.ts: eloPairs puts `guard` only on pairs it actually held; Σ pairs − penalty = delta still holds.",
+    "elo.test.ts: apportioning never moves a held pair. Equal 1200s with 4 players, me 3rd with a held win vs 4th: pairs -5.5, -5.5, 0 (not -5.5, -5.4, -0.1).",
+    "elo.test.ts: a 1000-game property test with random guards: Σ pairs = delta, held pairs are 0, noLoss pairs >= 0, noGain pairs <= 0, no -0.",
+    "elo.test.ts: abandonWinScore 0.5 combined with a noGain guard gives 0.",
+    "endgame.test.ts (new describe 'leave guards §11.2 [D32]'), 2 players 1287/1305 on near(T): leaver behind with moves → p1 +17, p2 -17 (normal).",
+    "endgame.test.ts: leaver ahead → p1 0 ('opponentLeftAhead'), p2 0 ('leftNotBehind'), and ratingPairs carry those guards.",
+    "endgame.test.ts: equal scores at the surrender → p2 0 ('leftNotBehind'), p1 +17.",
+    "endgame.test.ts: leaver with no move → p2 0 ('leftBeforeMoving'), p1 +17.",
+    "endgame.test.ts: stayer with no move and leaver behind (one wrong digit) → p1 0 ('opponentLeftBeforeMyMove'), p2 -17.",
+    "endgame.test.ts: nobody moved → both 0.",
+    "endgame.test.ts: abandonment behaves the same as surrender (ahead → 0/0; behind with moves → ±17).",
+    "endgame.test.ts: abandonJudgedAt with 3 players at 1200: 'disconnect' → p1 +8, p2 -8, p3 0; 'graceEnd' → p1 +16, p2 -8, p3 -8.",
+    "endgame.test.ts: a reconnect discards the disconnect snapshot; the last disconnect before the abandonment counts.",
+    "endgame.test.ts: 4 players at 1200 with two leavers → p1 +16, p3 0, p4 -11, p2 -5 (guards on p3–p2, p4–p2, p2–p3, p2–p4); without guards +16, +5, -5, -16.",
+    "endgame.test.ts: a pair of two leavers is judged at the first leaver's moment (covered by p2 vs p4 above).",
+    "endgame.test.ts: D36 'byScore' plus guards uses clamp semantics: a surrendered leaver ranked above a stayer keeps the gain; the stayer's loss is kept.",
+    "endgame.test.ts: with provisional K the guarded pair is still 0 (not ±34).",
+    "endgame.test.ts: abandonPenalty 10: waived when (a) holds against everyone at the exit (0); applied when not (-17 -10 = -27); a surrender never pays it; ratingPairs.penalty matches.",
+    "endgame.test.ts: toggles: leaverGuard=false → the leaver ahead loses -17 while the stayer stays 0; stayerGuard=false → the stayer gets +17; both false → the old D32 numbers.",
+    "endgame.test.ts: what counts as a move: a player who only locked a cell (and let it time out) or sent a reaction is 'no move'; a wrong digit counts.",
+    "endgame.test.ts: evolve snapshot: g.player('p2').leaveStandings equals the [score, moves] of every seat at the surrender, null before; set at disconnect, null after reconnect; replayMatches() is true.",
+    "endgame.test.ts and regressions.test.ts: rules.rating defaults include leaverGuard true, stayerGuard true and abandonJudgedAt 'disconnect'.",
+    "endgame.test.ts: practice and bot games still give ratingChanges [] whatever the guards.",
+    "view test (endgame.test.ts or flow.test.ts): GameView.leaveGuards: 2 players at the start → [{p2, 'leftBeforeMoving'}] for p1; after p1 scores and leads → 'leftNotBehind'; after p2 overtakes → []; bot, solo, spectator or a player already out → null; leaverGuard off → null.",
+    "Update the existing engine tests listed in files: endgame (D8 surrender and abandon, 3-player surrenders, D36 byScore numbers, 2-player byScore, abandonWinScore, abandonPenalty x2, defaults); connection (2-player abandon, provisional +34, D8 alternative, 3–4 player abandon); regressions section 12 (deltas, abandoned, twoPlayers).",
+    "apps/server/src/game/wire.test.ts: the 4-player snapshot with a surrender and an in-grace disconnect is still <= 4096 bytes.",
+    "apps/server/src/persistence/persistence.test.ts: the updated surrender, abandonment and 3/4-player tests, plus 'leaver ahead: ratings unchanged, games +1 for both'.",
+    "apps/server/test/fourPlayers.e2e.test.ts: stored ratings equal the formula with the engine's guards; the pairs still add up.",
+    "Mobile designFidelity.test.tsx: surrenderRatingEstimate returns { delta: -15, guard: null } when unguarded (provisional -30); { delta: 0, guard } when view.leaveGuards lists the opponent; null for 3–4 players or bot.",
+    "Mobile RankedSurrender.test.tsx: guarded body text in he and en, no red delta element; unguarded -15 kept.",
+    "Mobile connectionModel.test.ts and OpponentLeft.test.tsx: ratingGuard and the reason line; a 0 chip is muted; English variant.",
+    "Mobile resultsDuelModel.test.ts and resultsRanked.test.tsx: ratingGuards in the model for 2 and 4 players; captions rendered with names, included in the a11y label; a 0 delta is muted; an old result without ratingPairs gives no captions.",
+    "Run npm run verify (lint, typecheck, i18n:check, npm test) before declaring done."
+  ],
+  "docs": [
+    "docs/01-SPEC.md: §11.2 'כניעה ונטישה [D32]' rewritten with the leave guards (who is the leaver of a pair, the judging moment, the abandonment judged at its disconnect, (a), (b), a move = a digit entry correct or wrong, rules.rating leaverGuard/stayerGuard/abandonJudgedAt)",
+    "docs/01-SPEC.md: §6.6 2 players, pointer to 11.2 for the rating; §12 the results explain a pair held by a guard; §18 gameOver row adds ratingPairs[] (guard)",
+    "docs/01-SPEC.md §24: D32 status '✓ הפסד רגיל חוץ מהגנות היציאה (סעיף 11.2, משה 2026-10-15); אי־הגעה וקנס ☐'; D8 note 'חוץ מהגנה (ב)'",
+    "docs/DECISIONS-PENDING.md: 2.12 'בנוי עכשיו' wording; the D8 row in table 3.1; a new item with the open sub-decisions (equal scores, abandonment judging moment, games count, XP/wins, abuse threshold)",
+    "docs/QA-CHECKLIST.md: Surrender row 18 (guarded wording), 'ניצחון בנטישה' row (0 plus reason), results rows (guard captions, muted 0)",
+    "docs/STAGE9-10-DEVICE-CHECKS.md: line 142 abandonment note; check 5/6 4-player example holds only if nobody left",
+    "docs/design/components.md §14.1 Body: the guarded variant",
+    "Code header comments: packages/engine/src/game/results.ts, rules.ts, rating/elo.ts; apps/server/src/ratings/store.ts, persistence/records.ts, matchmaking/service.ts, progress/xp.ts"
+  ],
+  "risks": [
+    "Abuse: a weaker player can make one quick correct move (he is then ahead) and immediately surrender or kill the app, so he loses nothing and the opponent gains nothing. This lets him dodge strong opponents. It follows Moshe's words literally; mitigations (a minimum number of moves or a minimum lead before (a) applies, or the D32 search block in DECISIONS-PENDING 2.12) are left as a decision.",
+    "Rating inflation: the guards are asymmetric. A leaver with no move loses 0 while a stayer who moved and leads still gets the full win, so Elo is no longer zero-sum in those games (small drift up).",
+    "Test churn: many existing engine, server and mobile tests use leavers who never moved, and their expected deltas flip to 0. Rewrite them so they keep their original intent (D8, D32, abandonPenalty), not just new numbers.",
+    "apportionTenths: without excluding held pairs, a guarded pair can show -0.1 or +0.1 in Results-4P, contradicting the 'unchanged' caption. Excluding them is a must.",
+    "-0: Math.round of a small negative gives -0, and Jest toEqual tells 0 and -0 apart. Normalise with `|| 0` and return a literal 0 from the clamps.",
+    "Snapshot budget: a 4-player snapshot is 3742 of 4096 bytes today (measured). Use the tuple encoding and one PlayerState field, and extend wire.test with leavers.",
+    "Deploy order: the rating is computed on the server. Deploy the server before shipping the app. An old server with a new app makes the surrender dialog promise 'won't drop' while the server applies the loss; a new server with an old app just shows 0 without an explanation.",
+    "Cross-item coupling: the 'connection grace / offline' item may change when the engine's disconnect and freeze happen (it touches evolve, engine, connectionModel and OpponentLeft). abandonJudgedAt='disconnect' snapshots at the engine's playerDisconnected, whatever triggers it. The mistake-penalty item changes err() penalties: write the guard tests to depend only on the sign of a score, not on exact penalty values.",
+    "Old stored configs lack the new rules.rating fields, which reads as guards off. That is harmless, because results are stored in the gameOver event and never recomputed; any future code that recomputes old results must not assume the defaults.",
+    "Clamp vs void only diverges under the non-default D36 'byScore'. If Moshe later turns byScore on, the clamp semantics (leaver keeps gains, stayer keeps losses) must be confirmed."
+  ],
+  "decisions": [
+    {
+      "question": "נטישה (הזמן לחזרה נגמר): מתי בודקים מי הוביל ומי כבר שיחק? ברגע הניתוק שהוביל לנטישה, או בסוף 15 השניות? זה משנה רק כשהמשחק ממשיך בזמן הניתוק (3–4 שחקנים, ואולי גם 2 אחרי שינוי ה'זמן חסד' של התקשורת). ההגדרה: rules.rating.abandonJudgedAt",
+      "recommendedDefault": "ברגע הניתוק ('disconnect'): מי שהוביל כשהתקשורת נפלה לא נענש על מה שהיריב הרוויח בזמן שהוא היה מנותק"
+    },
+    {
+      "question": "ניקוד שווה ברגע היציאה: מי שיצא לא מפסיד (ליריב אין יתרון), ומי שנשאר מקבל ניצחון מלא (לפורש לא היה יתרון). להשאיר כך, או שבתיקו בניקוד אף אחד לא מקבל ולא מפסיד?",
+      "recommendedDefault": "כמו הניסוח של משה: מי שיצא לא מפסיד, ומי שנשאר (אם ביצע מהלך) מקבל ניצחון מלא"
+    },
+    {
+      "question": "משחק שבו הדירוג של שחקן נשאר בלי שינוי בגלל ההגנות: האם הוא נספר ב'משחקים' של מפתח הדירוג (10 המשחקים הזמניים, K כפול, הצגת הליגה)?",
+      "recommendedDefault": "נספר (games + 1), כמו היום. הסיכון: אפשר 'לשרוף' משחקים זמניים בכניעה מיידית. אם זה יקרה, אפשר לא לספור משחק שכל הזוגות שלו נעצרו"
+    },
+    {
+      "question": "XP וסטטיסטיקה: מי שנשאר בלי לבצע מהלך עדיין מקבל 'ניצחון' ו־50 XP, ומי שיצא מקבל 'הפסד' ו־20 XP. לשנות גם את זה?",
+      "recommendedDefault": "לא לשנות. ההגנות חלות על הדירוג בלבד, כמו שמשה ביקש"
+    },
+    {
+      "question": "ניצול: שחקן חלש יכול לבצע מהלך נכון אחד, להוביל, ולהיכנע מיד, וכך לא להפסיד דירוג מול יריב חזק. להוסיף סף (למשל מינימום מהלכים או פער מינימלי) לפני שהגנה (א) חלה?",
+      "recommendedDefault": "בלי סף, לפי המילים של משה. לעקוב, ואם יהיו ניצולים, להוסיף הגדרה של מינימום מהלכים"
+    },
+    {
+      "question": "מה נחשב 'צעד': רק הזנת ספרה (נכונה או שגויה). בחירת משבצת, הפרעה ותגובה לא נחשבות. מאשר?",
+      "recommendedDefault": "כן: ספרה נכונה או שגויה בלבד"
+    },
+    {
+      "question": "abandonPenalty (קנס נטישה נוסף, היום 0): האם לוותר עליו כשהגנה (א) חלה מול כל השחקנים שנשארו?",
+      "recommendedDefault": "לוותר עליו: 'הדירוג לא ייפגע' כולל את הקנס"
+    },
+    {
+      "question": "בחלופה של D36 ('byScore': מי שנכנע נשאר בטבלה לפי הניקוד), ההגנה היא 'לא מפסיד / לא מקבל' (clamp), ולא 'הזוג לא נספר בכלל'. מאשר?",
+      "recommendedDefault": "clamp. בברירת המחדל (סדר יציאה) ובכל משחק של 2 שחקנים אין הבדל בין השתיים"
+    }
+  ],
+  "sharedFiles": [
+    "packages/engine/src/game/rules.ts",
+    "packages/engine/src/game/types.ts",
+    "packages/engine/src/game/evolve.ts",
+    "packages/engine/src/game/engine.ts (connection-grace item; not edited here but behaviour-coupled)",
+    "packages/engine/src/game/results.ts",
+    "packages/engine/src/game/view.ts",
+    "packages/engine/src/rating/elo.ts",
+    "packages/engine/src/game/endgame.test.ts",
+    "packages/engine/src/game/connection.test.ts",
+    "packages/engine/src/game/regressions.test.ts",
+    "apps/server/src/game/wire.test.ts",
+    "apps/mobile/src/i18n/locales/he/game.json",
+    "apps/mobile/src/i18n/locales/en/game.json",
+    "apps/mobile/src/i18n/locales/he/history.json",
+    "apps/mobile/src/i18n/locales/en/history.json",
+    "apps/mobile/src/screens/game/GameScreen.tsx",
+    "apps/mobile/src/screens/game/connection/connectionModel.ts",
+    "apps/mobile/src/screens/game/connection/OpponentLeft.tsx",
+    "apps/mobile/src/screens/results/ResultsScreen.tsx",
+    "apps/mobile/src/screens/results/ResultsVersus.tsx",
+    "apps/mobile/src/screens/results/resultsModel.ts",
+    "apps/mobile/src/components/player/__fixtures__/gameView.ts",
+    "docs/01-SPEC.md",
+    "docs/DECISIONS-PENDING.md",
+    "docs/QA-CHECKLIST.md",
+    "docs/STAGE9-10-DEVICE-CHECKS.md"
+  ],
+  "needsServerDeploy": true
+}

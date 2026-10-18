@@ -105,7 +105,7 @@ export function Avatar({
         />
       </View>
 
-      {presence === 'online' || presence === 'reconnecting' ? (
+      {presence === 'online' || presence === 'unstable' || presence === 'reconnecting' ? (
         <View
           testID={`presence-${presence}`}
           style={[
@@ -115,7 +115,7 @@ export function Avatar({
               height: dot,
               borderRadius: dot / 2,
               borderColor: backdrop,
-              backgroundColor: presence === 'online' ? color.status.online : color.textMuted,
+              backgroundColor: PRESENCE_DOT[presence],
             },
           ]}
         />
@@ -135,6 +135,13 @@ export function Avatar({
     </View>
   );
 }
+
+/** The presence dot (components.md §2): green, amber while the connection is lost in its soft phase [D42], grey. */
+const PRESENCE_DOT = {
+  online: color.status.online,
+  unstable: color.status.unstable,
+  reconnecting: color.textMuted,
+} as const;
 
 const styles = StyleSheet.create({
   dot: {

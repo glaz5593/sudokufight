@@ -34,6 +34,28 @@ export const px = (g: BoardGeometry, dp: number): number => Math.max(1, Math.rou
 /** A font size at this board's scale, to half a dp. */
 export const fontPx = (g: BoardGeometry, dp: number): number => Math.round(dp * g.scale * 2) / 2;
 
+/** A rect in the board's own coordinates (dp from its top-left corner). */
+export interface CellRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Where row or column `k` (0–8) starts: whole boxes with their gap, then cells with their lines. */
+const startOf = (k: number, g: BoardGeometry): number =>
+  Math.floor(k / 3) * (3 * g.cell + 2 * grid + boxGap) + (k % 3) * (g.cell + grid);
+
+/**
+ * Where a cell (index 0–80, row by row) is drawn on the board, in the board's own coordinates: always LTR, so
+ * column 1 is on the left in Hebrew too (CLAUDE.md). For what is drawn over the board, like an interference.
+ */
+export function cellRect(g: BoardGeometry, cell: number): CellRect {
+  const row = Math.floor(cell / 9);
+  const col = cell % 9;
+  return { x: startOf(col, g), y: startOf(row, g), width: g.cell, height: g.cell };
+}
+
 /**
  * The extra touch area around a cell. Inside the board each side reaches halfway across the line or box gap to
  * its neighbour, so the whole board is tappable without two cells sharing a point; on the board's outer edge

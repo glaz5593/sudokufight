@@ -9,6 +9,7 @@
     "test": "jest --config ../../jest.config.js --selectProjects engine",
     "typecheck": "tsc -p tsconfig.src.json && tsc -p tsconfig.test.json && tsc -p tsconfig.scripts.json",
     "puzzles:import": "tsx scripts/puzzles-import.ts",
-    "puzzles:generate": "tsx scripts/puzzles-generate.ts"
+    "puzzles:generate": "tsx scripts/puzzles-generate.ts",
+    "puzzles:givens": "tsx scripts/puzzles-givens.ts"
   }
 }

@@ -7,9 +7,11 @@ import type { AvatarId, CountryCode, NO_AVATAR_ID } from './account';
  * the messages, shared by the server and the app.
  *
  * The flow, on one connection to the `matchmaking` room (`client.joinOrCreate(MATCHMAKING_ROOM_NAME,
- * { queueKey })`, with the account's ID token as `client.auth.token`: registered players only):
- * 1. `searching`: on joining, and again whenever the range widens (every 5 s). The app ticks the clock itself
- *    in between (elapsedMs at serverTime).
+ * { queueKey, interferenceKinds })`, with the account's ID token as `client.auth.token`: registered players
+ * only):
+ * 1. `searching`: on joining, again whenever the range widens (every 5 s), and whenever `nextRange` changes
+ *    (someone this player could meet joined the queue or left it). The app ticks the clock itself in between
+ *    (elapsedMs at serverTime).
  * 2. `found`: the opponents' public profiles and this player's seat reservation in the ranked game room. The
  *    app joins it at once (`client.consumeSeatReservation(reservation)`) and keeps this connection open: no
  *    cancelling after "found" [D32].
@@ -17,6 +19,10 @@ import type { AvatarId, CountryCode, NO_AVATAR_ID } from './account';
  * 4. `countdown`: everyone is in; GO at `startsAt` (3… 2… 1… GO!). From here the game is on: leaving is
  *    abandonment [D32]. At GO the game room sends the snapshot, so the board appears to everyone at once.
  * 5. `started`: the game started; the server closes this connection.
+ *
+ * Nobody else: `nextRange: null` in `searching` says nobody (not enough players, at a table of 3–4) this
+ * player could be matched with is searching now. The app says so at once and offers a bot meanwhile; the
+ * search goes on (whoever joins is found), and the range widens and times out as always [D6].
  *
  * Other ends:
  * - `timeout`: nobody found in MATCH_TIMEOUT_MS. The app offers "keep searching (no range limit)", "play a
@@ -102,6 +108,24 @@ export function matchRange(
   return extended ? grown : Math.min(rules.cap, grown);
 }
 
+/**
+ * The narrowest range on the D6 grid (initial + k × step, k ≥ 0) that covers a rating `distance` away: the
+ * `nextRange` of a `searching` message. Clamped to the cap unless `extended` ("keep searching" has none).
+ * E.g. 0 or 50 → 50, 51 → 75, 151 → 175, 300 → 300.
+ */
+export function rangeCovering(
+  distance: number,
+  extended = false,
+  rules: MatchRangeRules = MATCH_RANGE,
+): number {
+  const d = Math.max(0, distance);
+  const grown =
+    d <= rules.initial
+      ? rules.initial
+      : rules.initial + Math.ceil((d - rules.initial) / rules.step) * rules.step;
+  return extended ? grown : Math.min(rules.cap, grown);
+}
+
 /** No match after this long → `timeout` (spec §10: 60 s). */
 export const MATCH_TIMEOUT_MS = 60_000;
 /** After `timeout`, how long the server waits for `keepSearching` before it closes the connection. */
@@ -119,6 +143,12 @@ export const COUNTDOWN_MS = COUNTDOWN_STEPS.length * COUNTDOWN_STEP_MS;
 /** The options of `client.joinOrCreate(MATCHMAKING_ROOM_NAME, options)`. Who it is comes from the token. */
 export interface MatchmakingJoinOptions {
   queueKey: QueueKey;
+  /**
+   * The interference kinds this app can show (interferenceKinds.ts) [D47]: the app sends every kind it knows
+   * (INTERFERENCE_KINDS). The match's game allows only the kinds every player declared. Absent (app 1.0.0),
+   * or not a list of at most MAX_DECLARED_INTERFERENCE_KINDS short strings: LEGACY_INTERFERENCE_KINDS.
+   */
+  interferenceKinds?: string[];
 }
 
 /** Client → server, sent as `room.send(message.type, message)`. */
@@ -182,6 +212,17 @@ export type MatchmakingServerMessage =
       serverTime: number;
       /** Back at the head of the queue after a match fell through. */
       requeued?: boolean;
+      /**
+       * The narrowest range (D6 grid: rangeCovering) at which enough players this one could be matched with
+       * are within reach: groupSize − 1 of them. They are in the same queue, not blocked either way, within
+       * both players' maximum range (±cap, or no cap after "keep searching"), and not a recent opponent
+       * (after the 80% reset). It may be ≤ `range`: they are covered already, and the match waits on their
+       * side of the mutual range (or, at a table of 3–4, on the others accepting each other).
+       * null: not enough such players are searching now; the app says "nobody else is searching" at once.
+       * Absent (an older server): unknown, and the app shows the range as before.
+       * Advisory only: matching still follows the time-based range [D6].
+       */
+      nextRange?: number | null;
     }
   | {
       type: 'found';
@@ -222,6 +263,8 @@ export type MatchmakingServerMessage =
       range: number;
       extended: boolean;
       keepSearchingUntil: number;
+      /** As in `searching`, at the timeout's instant (null: nobody else was there to meet). */
+      nextRange?: number | null;
     }
   /** The search was cancelled at the player's request; the server closes the connection. */
   | { type: 'cancelled' }

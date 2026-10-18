@@ -322,7 +322,11 @@ export function cuesOf(
       case 'playerAbandoned':
         add(e, e.playerId, 'abandoned');
         break;
+      case 'playerConnectionLost':
+        // The soft phase of a lost connection [D42]: only a mark on the card, the game goes on. No face.
+        break;
       case 'playerDisconnected':
+        // The hard phase (the grace).
         add(e, e.playerId, 'disconnected');
         break;
       case 'playerReconnected':

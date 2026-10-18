@@ -49,7 +49,21 @@ describe('matchScreenModel', () => {
       range: null,
       openSeats: 1,
       requeued: false,
+      alone: false,
     });
+  });
+
+  it('alone: only when the server says nobody else is searching (null), not when it says nothing', () => {
+    const alone = (nextRange: number | null | undefined) => {
+      const s = nextRange === undefined ? search : { ...search, nextRange };
+      const m = matchScreenModel(info({ phase: 'searching', search: s }), self, T);
+      return m.kind === 'search' && m.alone;
+    };
+    expect([alone(null), alone(75), alone(300), alone(undefined)]).toEqual([true, false, false, false]);
+    // The range stays in the model: the view decides what to show.
+    expect(
+      matchScreenModel(info({ phase: 'searching', search: { ...search, nextRange: null } }), self, T),
+    ).toMatchObject({ alone: true, range: { half: 75 } });
   });
 
   it('searching: the search time, my rating and the range around it', () => {
@@ -85,6 +99,16 @@ describe('matchScreenModel', () => {
       header: { gameType: 'normal', players: 2 },
       elapsedMs: 60_000,
       range: { low: 987, high: 1587, half: 300, extended: false, widened: 1 },
+      alone: false,
+    });
+    const nobody = { ...timeout, nextRange: null };
+    expect(matchScreenModel(info({ phase: 'timeout', search, timeout: nobody }), self, T)).toMatchObject({
+      kind: 'timeout',
+      alone: true,
+    });
+    const someone = { ...timeout, nextRange: 300 };
+    expect(matchScreenModel(info({ phase: 'timeout', search, timeout: someone }), self, T)).toMatchObject({
+      alone: false,
     });
   });
 

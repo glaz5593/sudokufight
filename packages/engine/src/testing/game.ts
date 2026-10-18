@@ -124,6 +124,27 @@ export class GameDriver {
     return this.act({ ...action, playerId }, at);
   }
 
+  /** A connection report: `soft` for a connection that dropped (the soft phase [D42]), hard by default. */
+  disconnect(playerId: string, { soft = false, at }: { soft?: boolean; at?: number } = {}): GameEvent[] {
+    return this.act(soft ? { type: 'disconnect', playerId, soft } : { type: 'disconnect', playerId }, at);
+  }
+
+  reconnect(playerId: string, at?: number): GameEvent[] {
+    return this.act({ type: 'reconnect', playerId }, at);
+  }
+
+  /** A move made offline and sent on the return [D42]: `digit` defaults to the right one. */
+  offlineMove(
+    playerId: string,
+    cell: string,
+    { digit = answer(cell), thinkMs = 2000, at }: { digit?: number; thinkMs?: number; at?: number } = {},
+  ): GameEvent[] {
+    return this.act(
+      { type: 'offlineMove', playerId, cell: parseCellName(cell), digit: digit as Digit, thinkMs },
+      at,
+    );
+  }
+
   /** Moves time to `at` (absolute) and runs the timers. */
   tickTo(at: number): GameEvent[] {
     this.now = at;

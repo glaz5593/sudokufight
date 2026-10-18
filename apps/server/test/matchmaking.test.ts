@@ -3,16 +3,18 @@
  * SDK clients signed in with development tokens of registered accounts. Two players join the `fast-2p` queue,
  * both get a seat reservation in the same rated game room, connect (D37: ready), count down and play; a
  * search is cancelled; a lonely search times out and goes on with "keep searching"; a no-show cancels the
- * match and sends the other player back to the head of the queue.
+ * match and sends the other player back to the head of the queue; a player who drops in the countdown starts
+ * the game with the connection lost (the soft phase [D42]), one who leaves in it starts it disconnected.
  *
- * Real time, so the timings are shortened: a 50 ms round, an 800 ms timeout, a 1.5 s ready check and a
- * 200 ms countdown.
+ * Real time, so the timings are shortened: a 50 ms round, an 800 ms timeout, a 1.5 s ready check, a 200 ms
+ * countdown, and a soft phase and a grace of 1 s each.
  */
 import type { AddressInfo } from 'node:net';
 
 import { CloseCode } from '@colyseus/core';
 import { Client, type Room as SdkRoom } from '@colyseus/sdk';
 import { ColyseusTestServer } from '@colyseus/testing';
+import { INTERFERENCE_KINDS, LEGACY_INTERFERENCE_KINDS } from '@sudoku-fight/engine';
 import {
   ACCOUNT_PATHS,
   devToken,
@@ -43,6 +45,8 @@ let url = '';
 const TIMEOUT_MS = 800;
 const READY_MS = 1500;
 const COUNTDOWN_MS = 200;
+const SOFT_GRACE_MS = 1000;
+const GRACE_MS = 1000;
 
 beforeAll(async () => {
   t = await createTestDb();
@@ -61,6 +65,7 @@ beforeAll(async () => {
         keepSearchingWindowMs: 2000,
         readyTimeoutMs: READY_MS,
         countdownMs: COUNTDOWN_MS,
+        gameRules: { softGraceMs: SOFT_GRACE_MS, graceMs: GRACE_MS },
       },
     },
   });
@@ -161,8 +166,14 @@ class Inbox<M extends { type: string }> {
 
 type Search = Inbox<MatchmakingServerMessage>;
 
-async function search(client: Client, queueKey: unknown = 'fast-2p'): Promise<Search> {
-  const room = await client.joinOrCreate(MATCHMAKING_ROOM_NAME, { queueKey });
+/** `interferenceKinds`: what the app declares it can show [D47]; left out, as app 1.0.0 does, by default. */
+async function search(
+  client: Client,
+  queueKey: unknown = 'fast-2p',
+  interferenceKinds?: unknown,
+): Promise<Search> {
+  const options = interferenceKinds === undefined ? { queueKey } : { queueKey, interferenceKinds };
+  const room = await client.joinOrCreate(MATCHMAKING_ROOM_NAME, options);
   return new Inbox<MatchmakingServerMessage>(room, MATCHMAKING_SERVER_MESSAGE_TYPES);
 }
 
@@ -201,8 +212,12 @@ describe('matchmaking', () => {
       elapsedMs: 0,
       range: 50,
       extended: false,
+      // Alone in the queue: nobody else is searching (matcher.ts rule 7).
+      nextRange: null,
     });
     const benSearch = await search(ben.client);
+    // Ana is there, the same rating: within the first range.
+    expect(await benSearch.message('searching')).toMatchObject({ range: 50, nextRange: 50 });
 
     const [a, b] = await Promise.all([anaSearch.message('found'), benSearch.message('found')]);
     expect(a.reservation.roomId).toBe(b.reservation.roomId);
@@ -245,6 +260,65 @@ describe('matchmaking', () => {
     await leave(anaGame, benGame);
   });
 
+  describe('the game allows only the interference kinds every app declared [D47]', () => {
+    /** Two players declare these kinds, are matched and play: the game's kinds and both game rooms. */
+    async function matchedGame(uid: string, a: unknown, b: unknown) {
+      const ana = await player(`${uid}_a`, `${uid}_A`.slice(0, 16));
+      const ben = await player(`${uid}_b`, `${uid}_B`.slice(0, 16));
+      const anaSearch = await search(ana.client, 'fast-2p', a);
+      const benSearch = await search(ben.client, 'fast-2p', b);
+      const [fa, fb] = await Promise.all([anaSearch.message('found'), benSearch.message('found')]);
+      const [anaGame, benGame] = await Promise.all([enter(ana.client, fa), enter(ben.client, fb)]);
+      const started = (g: Inbox<ServerMessage>) =>
+        g.until(
+          () => g.of('events').some((m) => m.events.some((e) => e.type === 'gameStarted')),
+          'gameStarted',
+        );
+      await Promise.all([started(anaGame), started(benGame)]);
+      const kinds = (await anaGame.message('snapshot')).state.config.rules.interferenceKinds;
+      expect((await benGame.message('snapshot')).state.config.rules.interferenceKinds).toEqual(kinds);
+      const room = colyseus.getRoomById<GameRoom>(fa.reservation.roomId);
+      return { ana, ben, anaGame, benGame, kinds, room };
+    }
+
+    /** Ana interferes on Ben with `kind`, before scoring anything; resolves with the refusal's reason. */
+    async function interfereRefused(anaGame: Inbox<ServerMessage>, benId: string, kind: string) {
+      anaGame.room.send('interfere', { type: 'interfere', targetId: benId, kind, clientSeq: 1 });
+      return (await anaGame.message('rejected')).reason;
+    }
+
+    it('two new apps: all six kinds; a new kind passes the kind check (refused only for points)', async () => {
+      const { ben, anaGame, benGame, kinds } = await matchedGame(
+        'kk_new',
+        [...INTERFERENCE_KINDS],
+        [...INTERFERENCE_KINDS],
+      );
+      expect(kinds).toEqual([...INTERFERENCE_KINDS]);
+      expect(await interfereRefused(anaGame, ben.me.id, 'scramble')).toBe('notEnoughPoints');
+      await leave(anaGame, benGame);
+    });
+
+    it('a new app meets app 1.0.0: the old three; a new kind is refused (badKind) and costs nothing', async () => {
+      const { ana, ben, anaGame, benGame, kinds, room } = await matchedGame(
+        'kk_mix',
+        [...INTERFERENCE_KINDS],
+        undefined,
+      );
+      expect(kinds).toEqual([...LEGACY_INTERFERENCE_KINDS]);
+      expect(await interfereRefused(anaGame, ben.me.id, 'scramble')).toBe('badKind');
+      const players = room.currentGame!.state.players;
+      expect(players.find((p) => p.id === ana.me.id)).toMatchObject({ score: 0, interferencesSent: 0 });
+      expect(players.find((p) => p.id === ben.me.id)!.hitBy).toBeNull();
+      expect(
+        benGame
+          .of('events')
+          .flatMap((m) => m.events)
+          .some((e) => e.type === 'interference'),
+      ).toBe(false);
+      await leave(anaGame, benGame);
+    });
+  });
+
   it('cancel: `cancelled`, then the server closes the connection', async () => {
     const cy = await player('mm_cy', 'MM_Cy');
     const s = await search(cy.client);
@@ -264,7 +338,7 @@ describe('matchmaking', () => {
     const started = Date.now();
     const timeout = await s.message('timeout');
     expect(Date.now() - started).toBeGreaterThanOrEqual(TIMEOUT_MS - 100);
-    expect(timeout).toMatchObject({ queueKey: 'hard-2p', range: 50, extended: false });
+    expect(timeout).toMatchObject({ queueKey: 'hard-2p', range: 50, extended: false, nextRange: null });
     expect(timeout.elapsedMs).toBeGreaterThanOrEqual(TIMEOUT_MS);
     expect(s.left).toBeNull(); // the connection waits for the player's choice
 
@@ -295,6 +369,40 @@ describe('matchmaking', () => {
     expect(await eveGame.closed()).toBe(CloseCode.CONSENTED);
     await leave(eveSearch);
   });
+
+  it.each([
+    ['drops', 'mm_ivy', 'MM_Ivy', 'mm_iva', 'MM_Iva'],
+    ['leaves on purpose', 'mm_jay', 'MM_Jay', 'mm_joe', 'MM_Joe'],
+  ] as const)(
+    'one who %s in the countdown is in the game from GO: a lost connection, or a disconnect [D32, D42]',
+    async (how, awayId, awayName, stayId, stayName) => {
+      const away = await player(awayId, awayName);
+      const stay = await player(stayId, stayName);
+      const awaySearch = await search(away.client);
+      const staySearch = await search(stay.client);
+      const [fa, fs] = await Promise.all([awaySearch.message('found'), staySearch.message('found')]);
+      const awayGame = await enter(away.client, fa);
+      const stayGame = await enter(stay.client, fs);
+      await awayGame.message('countdown');
+      // No goodbye: the seat is held, and the game starts with that connection lost (the soft phase, then the
+      // grace). A goodbye: the seat stays the player's [D32], and the game starts with the grace at once.
+      if (how === 'drops') void awayGame.room.leave(false);
+      else await awayGame.room.leave();
+
+      const events = () => stayGame.of('events').flatMap((m) => m.events);
+      const first = how === 'drops' ? 'playerConnectionLost' : 'playerDisconnected';
+      const at = await stayGame.until(() => events().find((e) => e.type === first), `${first} at GO`);
+      const types = events().map((e) => e.type);
+      if (at.type === 'playerConnectionLost') {
+        expect(types).toEqual(['gameStarted', 'playerConnectionLost']); // and the game goes on
+        expect(at).toMatchObject({ playerId: away.me.id, softEndsAt: at.t + SOFT_GRACE_MS });
+      } else {
+        expect(types).toEqual(['gameStarted', 'playerDisconnected', 'gamePaused']);
+        expect(at).toMatchObject({ playerId: away.me.id });
+      }
+      await leave(stayGame, awaySearch, staySearch);
+    },
+  );
 
   it('is for registered players only, in the open queues', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);

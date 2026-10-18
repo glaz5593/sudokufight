@@ -7,10 +7,17 @@
  * - A whole two-player game between two hosts, each solving from the givens with the engine's solver (the
  *   server never sends the solution of a running game): both end with the server's exact final state and
  *   result, and the solution arrives only after the end.
- * - A drop of 1 s (the socket dies and the network is down for a second): 'reconnecting', the other side sees
- *   the freeze, and once the network is back the host is in sync within 2 s (spec §18).
- * - A drop past the (shortened) grace: the other host wins by abandonment [D8], and the dropped one gives up.
- * - The app in the background (AppState): a disconnect; back in the foreground it reconnects at once.
+ * - A drop inside the soft phase of a lost connection [D42]: the other host sees only the mark and plays on,
+ *   nothing freezes, and the dropped one is back in sync. The dropped host plays on offline: a digit it queued
+ *   counts on the return, and one on a cell the other took meanwhile comes back refused (cellTaken).
+ * - With the soft phase off (softGraceMs 0, as before [D42]): a drop of 1 s (the socket dies and the network is
+ *   down for a second): 'reconnecting', the other side sees the freeze, and once the network is back the host
+ *   is in sync within 2 s (spec §18); a drop past the (shortened) grace: the other host wins by abandonment
+ *   [D8], and the dropped one gives up.
+ * - A surrender mid-game: both hosts hold the server's result and the solution, and close as 'gameOver' when
+ *   the room closes, with no reconnect against the finished room.
+ * - The app in the background (AppState): a lost connection (the other host sees the mark); back in the
+ *   foreground it reconnects at once.
  * - The round trip measured on 200 pings, and its p95 reported (the same machine, so tiny; the device
  *   checks measure it against staging).
  *
@@ -21,7 +28,7 @@ import type { AddressInfo } from 'node:net';
 
 import { matchMaker } from '@colyseus/core';
 import type { WebSocketClient } from '@colyseus/ws-transport';
-import { type Digit, type GameState, publicState, toView } from '@sudoku-fight/engine';
+import { type Digit, type GameState, type HostUpdate, publicState, toView } from '@sudoku-fight/engine';
 
 // The app's code (pure TypeScript, no React Native): what the phone runs.
 import { OnlineSession } from '../../mobile/src/game/onlineSession';
@@ -312,10 +319,109 @@ describe("the app's RemoteGameHost on the real server", () => {
     expect(a.host.online.closeReason).toBe('gameOver');
   }, 90_000);
 
-  it('a drop of 1 s: reconnecting, the other sees the freeze, and back in sync within 2 s', async () => {
+  it('a drop inside the soft phase [D42]: the other host sees only the mark and plays on; no freeze, back in sync', async () => {
     const a = phone('Moshe');
     const b = phone('Nina');
-    const { room } = await table(a, b, { graceMs: 15_000 });
+    const { room } = await table(a, b, { graceMs: 15_000 }); // and the default soft phase of 10 s
+    await until(() => inSync(b.host, room), 'b current');
+
+    b.net.down();
+    socketOf(room, b.host).ref.terminate();
+    await until(() => b.host.online.status === 'reconnecting', 'reconnecting', 2000);
+    // Nina is marked on Moshe's screen, and his game goes on: he plays while she is away.
+    const nina = () => a.host.getView().players.find((p) => p.id === b.host.playerId)!;
+    await until(() => nina().softEndsAt !== null, 'the mark', 2000);
+    expect(nina()).toMatchObject({ connected: true, graceEndsAt: null });
+    expect(nina().softEndsAt! - a.host.serverNow()).toBeGreaterThan(8000);
+    const stop = drive(a.host);
+    await until(
+      () => a.host.getView().players.some((p) => p.id === a.host.playerId && p.correct > 0),
+      'a move while she is away',
+    );
+    stop();
+    expect(a.host.getView().status).toBe('running');
+
+    await new Promise((r) => setTimeout(r, 1000)); // down for a second and more
+    b.net.up();
+    await until(() => inSync(b.host, room) && nina().softEndsAt === null, 'back in sync', 5000);
+    await until(() => inSync(a.host, room), 'a current', 2000);
+    expectInSync(b.host, room);
+    // Nothing froze, nothing went hard: the server's own log says so.
+    const types = room.currentGame!.events.map((e) => e.type);
+    expect(types).toContain('playerConnectionLost');
+    expect(types).toContain('playerReconnected');
+    for (const type of ['playerDisconnected', 'gamePaused', 'gameResumed']) expect(types).not.toContain(type);
+    expect(a.statuses).not.toContain('reconnecting');
+  }, 30_000);
+
+  it('playing on offline [D42]: a digit made offline counts on the return; one on a cell taken meanwhile is refused', async () => {
+    const a = phone('Moshe');
+    const b = phone('Nina');
+    const { room } = await table(a, b, { graceMs: 15_000 }); // and the default soft phase of 10 s
+    await until(() => inSync(b.host, room), 'b current');
+    const solution = solveGivens(b.host.game!.config.puzzle.givens).solution;
+    const updates: HostUpdate[] = [];
+    b.host.subscribe((u) => updates.push(u));
+
+    b.net.down();
+    socketOf(room, b.host).ref.terminate();
+    await until(() => b.host.online.status === 'reconnecting', 'reconnecting', 2000);
+    // Nina plays on, on her phone: two digits wait for the connection.
+    const v = b.host.getView();
+    const free = v.grid.flatMap((d, i) => (d === 0 && !v.players.some((p) => p.lock?.cell === i) ? [i] : []));
+    const [mine, contested] = free as [number, number];
+    for (const cell of [mine, contested]) {
+      b.host.select(cell);
+      b.host.place(cell, Number(solution[cell]) as Digit);
+    }
+    expect(b.host.online.queuedMoves.map((q) => q.cell)).toEqual([mine, contested]);
+    // Moshe, online, takes the second cell meanwhile (Moshe's own rule: the one who was offline loses it).
+    const nina = () => a.host.getView().players.find((p) => p.id === b.host.playerId)!;
+    await until(() => nina().softEndsAt !== null, 'the mark', 3000);
+    a.host.select(contested);
+    await until(
+      () => a.host.getView().players.find((p) => p.id === a.host.playerId)!.lock?.cell === contested,
+      'his lock',
+      2000,
+    );
+
+    b.net.up();
+    await until(
+      () => inSync(b.host, room) && b.host.online.queuedMoves.length === 0,
+      'the moves settled',
+      5000,
+    );
+    const server = serverState(room);
+    expect(server.grid[mine]).toBe(Number(solution[mine]));
+    expect(server.grid[contested]).toBe(0);
+    expect(server.locks).toContainEqual(
+      expect.objectContaining({ playerId: a.host.playerId, cell: contested }),
+    );
+    // Lost, with no penalty, said to the player's screen as a refused offlineMove.
+    expect(updates).toContainEqual(
+      expect.objectContaining({
+        kind: 'rejected',
+        action: expect.objectContaining({ type: 'offlineMove', cell: contested }),
+        reason: 'cellTaken',
+      }),
+    );
+    expect(server.players.find((p) => p.id === b.host.playerId)!.mistakes).toBe(0);
+    const offline = room.currentGame!.events.filter(
+      (e) => (e.type === 'placedCorrect' || e.type === 'placedWrong') && e.offline,
+    );
+    expect(offline.map((e) => 'cell' in e && e.cell)).toEqual([mine]);
+    expect(b.tracked).toContainEqual({
+      name: 'reconnect',
+      props: { durationMs: expect.any(Number), success: true, phase: 'soft', queued: 2 },
+    });
+    await until(() => inSync(b.host, room), 'b current', 2000);
+    expectInSync(b.host, room);
+  }, 30_000);
+
+  it('a drop of 1 s with the soft phase off: reconnecting, the other sees the freeze, back in sync within 2 s', async () => {
+    const a = phone('Moshe');
+    const b = phone('Nina');
+    const { room } = await table(a, b, { graceMs: 15_000, softGraceMs: 0 });
     const stop = drive(a.host);
     await until(() => a.host.getView().players.some((p) => p.correct > 0), 'a move');
     stop();
@@ -349,7 +455,7 @@ describe("the app's RemoteGameHost on the real server", () => {
     expect(b.statuses).toContain('reconnecting');
     expect(b.tracked).toContainEqual({
       name: 'reconnect',
-      props: { durationMs: expect.any(Number), success: true },
+      props: { durationMs: expect.any(Number), success: true, phase: 'hard', queued: 0 },
     });
     console.log(
       `[stage 7] back in sync ${syncedMs} ms after the network returned; reconnect ` +
@@ -363,7 +469,7 @@ describe("the app's RemoteGameHost on the real server", () => {
   it('a drop past the grace: the other host wins by abandonment, the dropped one gives up', async () => {
     const a = phone('Moshe');
     const b = phone('Nina', { options: { serverNoticeMs: 0 } });
-    const { room } = await table(a, b, { graceMs: 1500 });
+    const { room } = await table(a, b, { graceMs: 1500, softGraceMs: 0 });
 
     b.net.down();
     socketOf(room, b.host).ref.terminate();
@@ -379,20 +485,50 @@ describe("the app's RemoteGameHost on the real server", () => {
     expect(b.host.online.closeReason).toBe('lostConnection');
     expect(b.tracked).toContainEqual({
       name: 'reconnect',
-      props: { durationMs: expect.any(Number), success: false },
+      props: { durationMs: expect.any(Number), success: false, phase: 'hard', queued: 0 },
     });
   }, 30_000);
 
-  it('the app in the background is a disconnect; back in the foreground it reconnects at once', async () => {
+  // Moshe's device test of 1.0.0 (15.10.2026): the opponent gave up mid-game, and his screen went black.
+  it('the opponent gives up: both hosts hold the server’s result and the solution, then close as gameOver', async () => {
+    const a = phone('Moshe');
+    const b = phone('Nina');
+    const { room } = await table(a, b);
+    b.host.surrender();
+    await until(
+      () => a.host.getView().status === 'over' && a.host.solution !== null && b.host.solution !== null,
+      'the end and the solution',
+      5000,
+    );
+    const view = a.host.getView();
+    expect(view.result?.reason).toBe('lastPlayerStanding');
+    expect(view.result?.ranking.find((r) => r.playerId === a.host.playerId)?.place).toBe(1);
+    expect(view.players.find((p) => p.id === b.host.playerId)?.status).toBe('surrendered');
+    expectInSync(a.host, room);
+    expectInSync(b.host, room);
+    // The room closes after the game (closeAfterGameMs here 1 s); nothing tries to come back to it.
+    await until(() => [a, b].every((p) => p.host.online.status === 'closed'), 'the room closing', 5000);
+    for (const p of [a, b]) {
+      expect(p.host.online.closeReason).toBe('gameOver');
+      expect(p.statuses).not.toContain('reconnecting');
+      expect(p.net.tokens).toEqual([]);
+      expect(p.host.getView().status).toBe('over');
+    }
+  }, 30_000);
+
+  it('the app in the background is a lost connection: the other sees the mark; back in the foreground it reconnects at once', async () => {
     const app = fakeAppState();
     const a = phone('Moshe', { appState: app });
     const b = phone('Nina');
-    const { room } = await table(a, b, { graceMs: 15_000 });
+    const { room } = await table(a, b, { graceMs: 15_000 }); // and the default soft phase of 10 s
 
     app.set('background');
     expect(a.host.online.status).toBe('reconnecting');
     expect(a.host.online.reconnect).toMatchObject({ cause: 'background', attempt: 0 });
-    await until(() => b.host.getView().status === 'paused', 'the freeze', 3000);
+    // Not a goodbye [D42]: Nina sees Moshe marked, and her game goes on (more than 10 s would freeze it).
+    const moshe = () => b.host.getView().players.find((p) => p.id === a.host.playerId)!;
+    await until(() => moshe().softEndsAt !== null, 'the mark', 3000);
+    expect(b.host.getView().status).toBe('running');
     await new Promise((r) => setTimeout(r, 500));
     // Still waiting: nothing is tried while in the background.
     expect(a.net.tokens).toEqual([]);
@@ -401,7 +537,9 @@ describe("the app's RemoteGameHost on the real server", () => {
     app.set('active');
     await until(() => inSync(a.host, room) && a.host.metrics.sync.count === 1, 'in sync again', 2000);
     expect(Date.now() - activeAt).toBeLessThan(2000);
-    await until(() => b.host.getView().status === 'running', 'the game resumed', 2000);
+    await until(() => moshe().softEndsAt === null, 'his return', 2000);
+    expect(b.host.getView().status).toBe('running');
+    expect(room.currentGame!.events.map((e) => e.type)).not.toContain('gamePaused');
     expectInSync(a.host, room);
   }, 30_000);
 

@@ -12,8 +12,8 @@ export interface EffectColors {
   accent: string;
   /** "White": C's text colour, never a pure white flash (motion.md: no full-screen white flashes). */
   light: string;
-  /** The dark wash under fireworks (a night sky over the board). */
-  night: string;
+  /** Ink [D47]: C's darkest colour, the screen's own ground, for the blots' bodies. */
+  ink: string;
 }
 
 export function effectColors(fromColorIndex: number): EffectColors {
@@ -21,9 +21,24 @@ export function effectColors(fromColorIndex: number): EffectColors {
     sender: paletteAt(fromColorIndex).ring,
     accent: color.accent,
     light: color.text,
-    night: color.scrim,
+    ink: color.bg,
   };
 }
+
+/**
+ * A colour of the tokens without its alpha, as #rrggbb: `rgba(7,9,12,0.72)` → `#07090c`, and a hex colour as
+ * it is. The board's dim [D46] is the scrim's colour at its own strength (HIT_DIM.opacity), not the scrim's
+ * 0.72 on top of it.
+ */
+export function solidOf(value: string): string {
+  const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(value);
+  if (!rgb) return value;
+  const hex = (v: string) => Math.min(255, Number(v)).toString(16).padStart(2, '0');
+  return `#${hex(rgb[1]!)}${hex(rgb[2]!)}${hex(rgb[3]!)}`;
+}
+
+/** The colour of the board's dim during a hit [D46]: color.scrim, solid (#07090c). */
+export const HIT_DIM_COLOR = solidOf(color.scrim);
 
 /** One cat's colours. `line` is the outline that keeps it readable on the light board and the dark screen. */
 export interface CatPalette {

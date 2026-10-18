@@ -49,6 +49,18 @@ describe('parseFakeClientArgs', () => {
     expect(run('--create').options.create).toEqual({ gameType: 'fast', playerCount: 2 });
   });
 
+  it('--soft-grace: the soft phase of a lost connection [D42], in seconds (0 turns it off)', () => {
+    expect(run('--create --soft-grace 2.5 --grace 3').options.create?.rules).toEqual({
+      softGraceMs: 2500,
+      graceMs: 3000,
+    });
+    expect(run('--create --soft-grace 0').options.create?.rules).toEqual({ softGraceMs: 0 });
+    // It wins over --rules, as --grace does.
+    expect(run('--create --rules {"softGraceMs":9000} --soft-grace=1').options.create?.rules).toEqual({
+      softGraceMs: 1000,
+    });
+  });
+
   it('every option, also as --flag=value', () => {
     const cli = run(
       '--url=wss://staging.example.dev --code XVGWGD --name משה_1 --id moshe-1 --level=5 --speed 20 --seed 9 ' +
@@ -70,6 +82,18 @@ describe('parseFakeClientArgs', () => {
       },
       json: true,
       quiet: true,
+    });
+  });
+
+  it('--legacy-app: join as app 1.0.0, declaring no interference kinds [D47]', () => {
+    expect(run('--queue fast-2p --legacy-app').options.legacyApp).toBe(true);
+    expect(run('--code XVGWGD --legacy-app').options.legacyApp).toBe(true);
+    expect(run('--create --legacy-app').options.legacyApp).toBe(true);
+    // By default it declares every kind, as the app does (the option is left out).
+    expect(run('--queue fast-2p').options).not.toHaveProperty('legacyApp');
+    expect(parse('--code XVGWGD --legacy-app=yes')).toEqual({
+      kind: 'error',
+      error: '--legacy-app takes no value',
     });
   });
 
@@ -148,6 +172,9 @@ describe('parseFakeClientArgs', () => {
     ['--code XVGWGD --speed fast', '--speed'],
     ['--code XVGWGD --players 3', '--players goes with --create'],
     ['--code XVGWGD --rules {}', '--rules goes with --create'],
+    ['--code XVGWGD --soft-grace 1', '--soft-grace goes with --create'],
+    ['--create --soft-grace 61', '--soft-grace: a number from 0 to 60'],
+    ['--create --soft-grace -1', '--soft-grace'],
     ['--create --rules nope', '--rules: not JSON'],
     ['--create --rules [1]', '--rules: a JSON object'],
     ['--create --game-type quick', '--game-type'],
@@ -193,6 +220,7 @@ describe('parseFakeClientArgs', () => {
       '--keep-searching',
       '--no-show',
       '--drop-in-countdown',
+      '--soft-grace',
     ])
       expect(FAKE_CLIENT_USAGE).toContain(flag);
   });

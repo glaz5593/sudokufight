@@ -11,10 +11,14 @@ import type { MatchmakingFailureCode, MatchmakingInfo } from '../../net/matchmak
  *
  * - search: connecting, then searching: the search time, my rating, the range (rating ± range, as the server
  *   widens it; "keep searching" lifts the cap), the empty seats, and a line when a match fell through.
+ *   `alone`: the server says nobody (not enough players, at a table of 3–4) this player could meet is
+ *   searching now (`nextRange` null): the screen says so instead of the range, and offers a bot meanwhile.
+ *   Never while connecting, nor with an older server that does not say.
  * - found: the VS: every player (me in P1's colour and ●, the others ▲ ■ ◆ in seat order), ready or still
  *   connecting (D37: connected = ready), whether we met lately.
  * - countdown: 3 · 2 · 1 · GO at the server's time; after GO "GO!" holds until the board is here.
- * - timeout: how long it searched and in what range (spec §10: keep searching, a bot, home).
+ * - timeout: how long it searched and in what range (spec §10: keep searching, a bot, home); `alone` when
+ *   nobody else was searching at all.
  * - failed / cancelled / play: an error to show, a screen to leave, the game to open.
  */
 
@@ -70,12 +74,16 @@ export type MatchScreenModel =
       openSeats: number;
       /** Back at the head of the queue after a match fell through. */
       requeued: boolean;
+      /** Nobody else to meet is searching now (the server's nextRange is null). */
+      alone: boolean;
     }
   | {
       kind: 'timeout';
       header: MatchHeader;
       elapsedMs: number;
       range: RatingRange | null;
+      /** Nobody else to meet was searching at the timeout. */
+      alone: boolean;
     }
   | {
       kind: 'found';
@@ -165,6 +173,7 @@ export function matchScreenModel(
         range: search ? rangeOf(search.rating, search.range, search.extended) : null,
         openSeats: Math.max(1, header.players - 1),
         requeued: info.fellThrough !== null || (search?.requeued ?? false),
+        alone: search !== null && search.nextRange === null,
       };
     }
     case 'timeout': {
@@ -175,6 +184,7 @@ export function matchScreenModel(
         header,
         elapsedMs: t?.elapsedMs ?? 0,
         range: t && rating !== undefined ? rangeOf(rating, t.range, t.extended) : null,
+        alone: t?.nextRange === null,
       };
     }
     case 'found': {

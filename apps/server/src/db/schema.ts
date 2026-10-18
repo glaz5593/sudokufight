@@ -145,6 +145,11 @@ export const puzzles = pgTable(
     source: text('source').notNull(),
     /** 'offline' ships in the app; 'ranked' never leaves the server (spec §21). */
     pool: text('pool', { enum: PUZZLE_POOLS }).notNull(),
+    /**
+     * When the puzzle left the bank file (`npm run db:seed-puzzles`, spec §20) [D43]: kept for the games and
+     * histories that point at it, never picked for a new game. Null: in the pool.
+     */
+    retiredAt: timestamptz('retired_at'),
   },
   (t) => [
     index('puzzles_pool_type_idx').on(t.pool, t.gameType),

@@ -1,0 +1,377 @@
+{
+  "summary": "Mobile UI design for Moshe's 2026-10-17 interference rework. (1) Known-bot games: the UI adds no rule of its own. Once the engine angle turns `rules.interferences` off for mode 'bot', `view.interference` is null, the bot card has no button, the picker never opens and the bot never sends (brain.ts already checks the rule). What remains for the UI is copy, fixtures and tests. (2) The button on each opponent's card becomes a 44-dp icon button in the reactions-button family. It shows a new 'interfere' glyph and only the word \"הפרעה\". The price stays in its accessibility label. Blocked states are dimmed, and a tap on one gives the reason in a toast. (3) The arsenal tray becomes a two-tap picker in the same non-Modal overlay, with the scrim hole over the target card. It has a header (2P: target line; 3–4P: the route \"אני ← Biscuit\" with both avatars), a clear price row (\"‎−2 נק׳\" and the score after launch), and a 3×2 grid of compact 100-dp buttons. Each button has a live preview, a name and a price chip. All six types fit with no scroll on 360×780 and 360×640. A tap launches at once, after a 250 ms arm delay. All drag code, the ghost, the drop-zone breathing and the drag cues are removed. (4) Every hit darkens the board: a dim layer at 0.8×scrim inside the board slot, under the effect, that tilts with warp and quake. It fades in and out with the hit clock and is static under Reduced Motion. The screen reader is told the board is dimmed. (5) Three new types are proposed: 'scramble' (מספרים מתערבלים: slot-machine tiles that hide and roll the digits of filled cells; visual only, so taps go through), 'ink' (Skia blots) and 'earthquake' (the content shakes in tremors, with crack lines). Each has a Reduced Motion variant, a TokenArt preview, a cue and a rumble, and every switch on the type falls back safely for unknown types. The design also lists the i18n keys (he+en), the files, the tests, the documents and the overlaps with the grace-period work running now.",
+  "design": "MOBILE-UI DESIGN: interference rework (Moshe, 2026-10-17). Read-only analysis; nothing was changed.\n\n== 0. Ground rules kept ==\n- The UI decides no rules. Cost, who can be hit, busy/immune and allowed types all come from GameView (view.interference, view.rules.interferenceKinds, players[].hitBy).\n- Every number is in config or tokens.\n- All text goes through t() (he+en).\n- Every animation has a Reduced Motion (RM) variant.\n- Signed numbers use signedText()/scoreText() (LRI…PDI).\n- The board stays LTR.\n\n== 1. Games against a known bot (UI side) ==\n- Engine angle: defaultRules('bot').interferences=false (or a dedicated rule, e.g. interferencesWithKnownBot=false; their call). Nothing in the UI checks isBot.\n- What follows automatically:\n  - view.interference===null, so cardModel().interference===null.\n  - InterferenceButton is not rendered on the bot card.\n  - arsenalModel() returns null, so the picker can't open.\n  - HitLayer never plays, because the bot brain checks rules.interferences (brain.ts:367).\n  - The status row of the bot card holds only its ActivityLine.\n- What the UI must still change:\n  - BotSelect copy that promises interferences: home.json levels 1, 3 and 5 (wording in the i18n list).\n  - progress \"howTo\".\n  - Tests that used the bot duel as the source of hits: give testHost a rules override.\n  - A new test: a default bot game has no \"הפרעה\" button and no hits.\n- Original §20 (\"הבוט צריך… להשתמש בהפרעות\") stays valid for a bot the player does not know about. None exists in V1: the server has no ranked fill-in bots.\n\n== 2. The card button (\"הפרעה\") ==\n- Placement: unchanged. It sits in the status row of each opponent's card: the end side in 2P (PlayerCard), the compact strip in 3–4P (PlayerCardCompact).\n  - This follows original §10 (\"אצל היריב: לחצן הפרעה\").\n  - It makes the first tap also the target choice, which is what original §17 needs.\n- 2P look (components.md §1.4 family, like the reactions button):\n  - Height 44 (size.touch), radius 12, paddingX 10, gap 6.\n  - Background color.interfere.bg, 1 dp border color.interfere.border (P1 8%/55%: my action).\n  - New Icon 'interfere' at 20 dp in color.interfere.icon.\n  - Label t('player:interfere.button') = \"הפרעה\" / \"Interfere\", Rubik 600 14, color.interfere.label, numberOfLines 1.\n  - No cost on the button.\n- Compact look:\n  - Height 32 plus hitSlop 6; icon 16; label Rubik 600 12, numberOfLines 1, adjustsFontSizeToFit with minimumFontScale 0.75.\n  - Reason: the 4P opponent card is 78 wide, so the strip is 68, and English \"Interfere\" is about 50 dp.\n- New glyph in Icon.tsx: `interfere`, 24 box, stroke 2, not filled. An outline bolt with impact sparks, a starting path to tune at 16/20 dp on /dev/design-system:\n  - `<Path d=\"M13.5 2.5L6 13h5.5l-1.5 8.5L17.5 11H12l1.5-8.5z\"/>`\n  - `<Path d=\"M19.5 5l2-1.5M20.5 9H23M4.5 15l-2 1M3.5 19.5l-2 .5\"/>`\n  - 'bolt' (filled) stays for cost pills and the hit chip.\n- States (the InterferenceModel type is unchanged):\n  - **available:** normal.\n  - **points / busy / notRunning** (and any future blockedBy, e.g. the grace item's): opacity tokens.opacity.inactivePlayer (.5) and accessibilityState.disabled=true. The Pressable is NOT disabled: a tap calls onBlockedPress(state). Toasts from useArsenal.blocked:\n    - points: error toast arsenal.notEnough (\"אין מספיק נקודות להפרעה הבאה (8 נק׳)\") plus cue 'nudge'.\n    - busy: warning toast arsenal.busyToast with count=state.secondsLeft, plus 'nudge'.\n    - notRunning: info toast arsenal.notNow.\n  - **disconnected / out:** hidden, as today. The grace item puts its icon-only 'unstable' pill in this slot.\n  - **expanded** (picker open from this card): fill P1 ring, icon and label color.bg, accessibilityState.expanded, label \"סגירת חלון ההפרעות\". A tap closes the picker.\n- Accessibility label: unchanged, and it keeps the price: \"הפרעה ל־NinaVolt · עלות 2 נק׳\" (interferenceLabel).\n\n== 3. The picker (ArsenalOverlay rewritten; file and hook names kept to limit conflicts with the parallel GameScreen edits) ==\n\n**Shell (kept as is):**\n- Absolute non-Modal overlay rendered last in GameScreen. No native window, so the results flow (bug 9) is not affected.\n- Scrim (color.scrim) with a hole over the target card: scrimPieces plus measureCard through cardRef.\n- Tray rises in motion.duration.trayRise 240 ms; RM: 200 ms fade.\n- Header pull-to-close (the one Pan gesture left), Android back, close button, focus on the title, accessibilityViewIsModal, role dialog.\n\n**Target frame (replaces DropZone, renamed TargetFrame):**\n- Solid 2 dp color.accent outline, radius 12, padding 6, background color.surface.\n- Chip \"יעד\" / \"Target\" on the bottom edge: h 20, radius 6, accent background, Rubik 700 12 onAccent.\n- No breathing, no march, no hover state.\n- The other cards dim to opacity.dimmedCard .4, as today.\n- Card accessibilityHint while targeted: player:card.targetHint.\n\n**Layout (all in arsenal/metrics.ts; budget for 360×780 with a bottom inset up to 48):**\n- Sheet padding 10/16, bottom 16+inset; handle 40×4.\n- **Header** (mt 8, h 48):\n  - Title t('arsenal.title') \"בחר הפרעה\", Rubik 700 22, plus the close IconButton 44.\n  - Subtitle in 2P: the existing TargetLine \"יעד: [avatar 18, ring in their colour] NinaVolt 🇩🇪\".\n  - Subtitle in 3–4P: RouteLine, i.e. RouteFace moved out of DragGhost: \"[my avatar ●] אני ← [their avatar ▲] Biscuit 🇩🇪\", both rings in seat colours with SeatGlyph. Accessible as one element, arsenal.routeLabel \"הפרעה ממני אל Biscuit\".\n- **Price row** (mt 10, h 48, radius 12, surface2, 1 dp border; one accessibility element, label arsenal.costLabel / costLabelShort):\n  - Start: \"מחיר\" (label, muted), the value t('arsenal.priceValue',{cost:signedText(-cost)}) = \"⁦−2⁩ נק׳\" with the number in Teko 600 30 accent, then muted \"· הבאה: 4\" (arsenal.nextPrice, from laterCosts[0]).\n  - End: \"הניקוד שלך\" and t('arsenal.scoreChange',{score,after}) = \"53 ← 51\" (en \"53 → 51\"), Teko 600 22 in the P1 ring colour, through scoreText().\n  - When short of points: the end shows \"חסרות 3 נק׳\" instead.\n- **Grid** (mt 12):\n  - ARSENAL_CONFIG.columns = 3, gap 8, flexDirection row with flexWrap; reading order follows the app direction.\n  - Column width = (windowWidth − 32 − 2·8)/3: 104 at 360, 114 at 390.\n  - Order is INTERFERENCE_KINDS: fireworks, cats, warp, scramble, ink, earthquake.\n- **KindButton** (new, replaces TokenCard; a Pressable, no gestures):\n  - Height 100, radius 16, surface2, 1 dp color.border, paddingTop 8.\n  - TokenArt at 40 dp: live loop, still under RM or when blocked or locked.\n  - Name t('arsenal.kind.<k>'), Rubik 600 13/16, centred, up to 2 lines (\"מספרים / מתערבלים\").\n  - Price chip: mt 6, h 22, radius 11, background color.bg, one Text \"⁦−2⁩ נק׳\" with the number in Teko 600 17 accent and the unit in Rubik 500 11.\n  - Blocked chip text: \"חסרות 3 נק׳\", \"תחת הפרעה\", or \"נעול\" with a lock icon, in textMuted; button opacity .5.\n  - Pressed: border accent, background accentSubtle, scale .96 with the motion 'press' spring; RM: no scale.\n- **Info line** (mt 10): arsenal.info \"כל הפרעה נמשכת 5 שניות · הקשה משגרת\", Rubik 500 12 muted, centred.\n- **ComingRow:** removed from the in-game picker (decision). The collection screen keeps the future types.\n- **Height check:** 14 + 56 + 58 + 12 + (2·100+8) + 26 + 16 + inset ≈ 390 + inset.\n  - 438 dp at a 48 inset: under 85% of 780 (663) and under 85% of 640 (544). Never scrolls.\n  - Expose a pure pickerLayout({width,height,bottomInset,count}) → {columns,columnWidth,rows,sheetHeight,maxHeight,fits} and test it.\n\n**Launch (second tap):**\n1. Taps in the first ARSENAL_CONFIG.armDelayMs=250 ms after opening are ignored, silently. This guards against a fast tap passing through.\n2. A blocked type does not launch. It shows the existing 2 s bubble with blockedSentence, announces it, and plays cue 'nudge'.\n3. A launchable type calls arsenal.launch(kind), which:\n   - clears latest.targetId synchronously, so only one launch per opening (a double tap sends one);\n   - plays cue('launch') (interfere_launch sound and the launch haptic);\n   - announces arsenal.live.launched \"שיגרת זיקוקים אל NinaVolt\";\n   - calls onLaunch(targetId, kind), i.e. host.interfere;\n   - closes the tray in m.launch.closeMs (200 ms);\n   - plays the existing LaunchRipple on the hole, full motion only.\n4. Sender toast and \"−2\" on my card stay as today, from the host's confirmation.\n5. If the host refuses after the optimistic close (the target turned busy, the score changed): GameScreen maps a 'refused' UiEffect whose reason is one of targetBusy, notEnoughPoints, targetOut, targetDisconnected, interferencesOff, badKind or paused to a warning toast arsenal.refused (\"ההפרעה לא נשלחה, ולא ירדו לך נקודות\").\n\n**Controller API (useArsenal):**\n- Keeps: targetId, open, close, toggle, cardRef, measureCard.\n- blocked(state) now covers points, busy and notRunning.\n- New: launch(kind).\n- cardProps(id) returns {targeted, dimmed, interferenceExpanded}; it no longer takes a name.\n- Removed: dragKind, hover, lift, setHover, release, settle, dropLabel.\n- Cues removed: tokenLift, dropZoneEnter. The interfere_whoosh mapping goes too.\n\n**Files removed:**\n- drag.ts.\n- DragGhost.tsx: LaunchRipple moves to LaunchRipple.tsx, RouteFace to RouteLine.tsx.\n- TokenCard.tsx.\n- ComingRow.tsx.\n- In arsenalModel: dropZoneOf and inZone become targetFrameOf (the frame outset without the chip hang), used only for the hole and the ripple.\n\n**3–4 players (original §17, no wrong target by mistake):**\n- The target is set only by the explicit tap on that opponent's own card button. There is no default and no target row in the sheet.\n- The header shows the route with both avatars and shapes.\n- The target card stays bright and framed above the scrim, and the others are dimmed under it.\n- Every KindButton label names the target: \"זיקוקים · 2 נק׳ · הקשה משגרת אל Biscuit\".\n- One launch closes the sheet. To hit someone else: close it (scrim or back) and tap that card's \"הפרעה\".\n- If the target becomes out or disconnected, or the game ends, the sheet closes by itself (the existing model.gone). If it becomes busy, the buttons turn blocked.\n\n**Screen readers:**\n- Activating a button launches. D18's long-press alternative is no longer needed.\n- Labels: arsenal.label, or labelBlocked with the reason.\n- The live region keeps 'launched' and the reason lines.\n\n== 4. Darkening the board during a hit (every type) ==\n**Placement:**\n- New screens/game/hit/BoardHitLayer.tsx, rendered inside the board slot as a sibling after <Board>, inside the inner WarpFrame/HitFrame (region \"board\"). Warp and earthquake therefore tilt it with the board, in either D35 scope.\n- absoluteFill over the board, pointerEvents \"none\", accessibilityElementsHidden / importantForAccessibility no-hide-descendants.\n- Stacking: Board → scramble tiles (for 'scramble' only) → dim. HitLayer then draws the type's effect and the banner above everything, as today.\n\n**Dim:**\n- An Animated.View with background color.scrim and radius px(g, radius.board).\n- opacity = HIT_DIM.byKind[kind] × hitAlpha(elapsed, totalMs, fadeIn, HIT_FADE_OUT_MS), from its own useHitClock(hit, clock). It is gone exactly at endsAt and stands still while the game is frozen.\n- Default 0.8 (new token opacity.hitDim), about 58% #07090c:\n  - a light cell #f7f8fa becomes about #6d6e71;\n  - given digits stay about 3.8:1 and solved P1/P2 digits about 2.5–3:1, so they are readable with effort.\n- Per type (config): fireworks .8, cats .8, warp .7, scramble .6, ink .7, earthquake .8.\n- Fireworks' own NIGHT_OPACITY wash is removed; together the two would reach about 75%.\n- The dim never pulses (photosensitivity).\n- RM: the same static dim (opacity only); fade in 200 ms, out 240 ms.\n- Scope: always the board, whatever D35 says (\"להחשיך את הלוח\"). Cards, keypad and banner stay bright, so play goes on.\n- Screen reader:\n  - hit.started becomes \"{{title}} הלוח מוחשך, {{time}}. הטיימר שלך עצור\".\n  - For 'scramble' it appends hit.scrambleNote \"הספרות שמתערבלות אינן אמיתיות\".\n  - Cell labels keep the real values.\n\n== 5. New types (UI side; the ids must match the engine angle's INTERFERENCE_KINDS) ==\n- Proposed: 'scramble' (מספרים מתערבלים), 'ink' (דיו) and 'earthquake' (רעידת אדמה). The ids of ink and earthquake match progressModel's future list and i18n.\n- FUTURE_INTERFERENCES becomes ['fog', 'bubbles'].\n- INTERFERENCE_UNLOCK_LEVELS gets the three new types at 0 (D17: V1 all open).\n- Per-type touch points: HIT_CUES (model.ts), rumbleOf (hitModel), HitEffect, the frame pose (HitFrame), BoardHitLayer, HIT_DIM.byKind, TokenArt and the i18n keys.\n  - Each Record<InterferenceKind, …> keeps TypeScript exhaustive.\n  - Each switch also gets a runtime `default`: dim only, cue 'hitWarp', no rumble, title hit.title.generic, TokenArt a still bolt. An unknown type from a newer peer must never crash an older app; today rumbleOf returning undefined would throw in useHitFeedback.\n\n**5a. scramble (visual only, on the board):**\n- components/interference/scrambleModel.ts (pure): scramblePlan({cells, seed, totalMs, cfg}).\n  - Picks min(cfg.maxTiles 24, round(filled × cfg.share .5)) of the given/solved cells.\n  - Seeded PRNG (mulberry32) from the hit's event seq (hitKey hash as fallback). Never Math.random.\n  - Each tile: {cell, phaseMs, periodMs ∈ [380, 620], digits: Digit[], one per step over totalMs, each ≠ the real digit and ≠ the previous one, jitter 1.5 dp}.\n- Scramble.tsx, one per tile:\n  - An Animated.View at cellRect(g, cell) (new helper in components/board/geometry.ts), inset 14% so the owner glyph and wrong-digit corners stay visible.\n  - overflow hidden, radius 4, background = the cell's own colour (cell, cellAlt or owner tint, from the board model), so the real digit is hidden.\n  - Inside, a column of the 9 digits: Text in the digitCell type at fontPx(g).\n  - Worklet translateY = −(d−1)·tileHeight, with a 160 ms roll on the 'standard' curve at each step boundary, plus translateX jitter per step.\n  - Fake digits drawn in the sender's ring colour by default ('marked'); 'blend' (the cell's own digit colour) is a decision. Config SCRAMBLE.style.\n  - Cost: 18–24 tiles × 2 animated styles, about 200 Text nodes mounted once at the start (≈10–25 ms on a mid Android), no JS per frame. The plan is useMemo'd on the hit key.\n- Taps go through (pointerEvents none). Only filled cells are covered, so selecting and placing work normally. The engine values never change.\n- RM: tiles static at their first fake digit, with a 1 dp dashed frame in the sender's colour so they read as fake; no roll, no jitter; same 5 s.\n- HitEffect('scramble') returns null in the HitLayer region.\n- Rumble: hitPulse every 600 ms. Cue: hitScramble.\n\n**5b. ink (Skia, over the board inside the effect region, using EffectProps.board):**\n- inkModel.ts:\n  - INK.blots = 6, radius 11–16% of the board side, inside the board with a margin.\n  - 4 blob SVG variants (100-unit box) with rotation.\n  - Splat at 120 + i·160 ms: scale .25 → 1.08 → 1 in 260 ms.\n  - Erase from 2400–3200 ms: scale to .7 and opacity to 0 by totalMs − fadeOut.\n  - Colours: body color.bg, a 3 dp rim in the sender's colour, 2–3 droplets.\n- Ink.tsx: one Canvas and one Picture recorded per frame on the UI thread, like Fireworks.\n- RM: a frozen frame at INK.stillAtMs 1200, alpha fade only.\n- Rumble: hitPulse per splat. Cue: hitInk.\n\n**5c. earthquake:**\n- quakeModel.ts:\n  - Tremors [[150,1500],[2000,3300],[3700,4700]].\n  - Amplitude 6 dp in screen scope, 4 dp in board scope; rotation ±1°.\n  - Deterministic noise: sum of sines at 13 Hz and 17.3 Hz, times an envelope with 120 ms ramps.\n  - quakePose(t, alpha, region) returns the transforms.\n  - quakeRumble: hitBurst at each tremor start, hitPulse every 300 ms inside a tremor.\n- Warp.tsx: WarpFrame generalised into HitFrame (kept as an alias, or the two GameScreen usages renamed).\n  - Pose by type: warp → warpPose / warpStill; earthquake → quakePose, or identity under RM.\n- Earthquake.tsx (HitEffect): Skia crack paths growing from the board edges during tremors (stroke color.bg 2.5 dp with a 1 dp color.text highlight) and dust specks.\n- RM: no shake, cracks fully drawn, no dust, no rumble.\n- Cue: hitEarthquake.\n\n**5d. TokenArt previews (40 dp, `still` under RM, blocked or locked):**\n- scramble: a 2×2 mini grid whose two digits swap every 800 ms.\n- ink: a blot that splats and fades (1600 ms loop).\n- earthquake: a mini board outline that jitters in bursts, with a zigzag crack.\n\n**5e. Feedback:**\n- feedback.ts: hitScramble, hitInk and hitEarthquake with the 'warning' haptic.\n- New placeholder sounds hit_scramble, hit_ink and hit_earthquake via scripts/gen-placeholder-sounds.mjs, added to sfx.ts with volume 0.6.\n\n== 6. Performance on a mid phone ==\n- Picker: 6 previews ≈ 13 UI-thread animated styles.\n- Hit: 1 dim style, plus up to 48 scramble styles or one Skia picture (ink, cracks).\n- Everything is driven by useHitClock frame callbacks. Nothing renders through React per frame.\n- BoardHitLayer is memoised on the hit key and the board cells, so the 250 ms countdown tick does not re-render the tiles.\n- The tile count is capped in config.\n\n== 7. What the other angles must supply ==\n- Engine:\n  - INTERFERENCE_KINDS = ['fireworks','cats','warp','scramble','ink','earthquake'].\n  - The rule that turns interferences off in mode 'bot'.\n  - No GameView shape change is needed: the UI uses hitBy.kind, the event seq (for seeds) and interference.targets[].blockedBy / busyUntil.\n- Server / protocol:\n  - The server's kind validation and the progress \"favourite\" stats must accept the new types.\n  - An old app must not receive types it can't draw: a minimum app version, or rules.interferenceKinds limited to what every seat supports.\n\n== 8. Overlaps with the grace-period item now in progress (docs/handoff/2026-10-15/designs/grace.json) ==\n- PlayerCard.tsx and PlayerCardCompact.tsx: they put an icon-only 'unstable' ReconnectPill in the same ⚡ slot I restyle. Land after them and keep their branch.\n- Badges.tsx (ReconnectPill): touched by both.\n- cardModel.ts: presence 'unstable'; reactionReady false while I'm soft. My InterferenceModel is unchanged, and a soft target arrives as 'disconnected' (hidden).\n- view.ts: when I am soft, every target is 'notRunning'. My button shows that as blocked with arsenal.notNow.\n- GameScreen.tsx: they close the dialog, arsenal and picker on selfOffline (keep close()), add the 'offlineLost' effect and pass queuedMoves to boardModel. I edit the HUD props, the board slot (BoardHitLayer next to <Board>), the 'refused' toasts and the header comment. Same file, so merge by hand.\n- Cell.tsx and boardModel.ts: they add the 'queued' cell kind. Scramble must not cover queued cells (only given and solved). cellRect is a new helper in geometry.ts, not in Cell.tsx.\n- i18n he/en game.json and player.json: both add keys.\n- packages/engine rules.ts and view.ts: the engine angle of this item and the grace item touch the same files.\n- Icon.tsx is already modified in the working tree; add 'interfere' with care.\n\nI have not touched the repo.",
+  "files": [
+    {
+      "path": "apps/mobile/src/components/Icon.tsx",
+      "change": "Add the `interfere` stroke glyph: an outline bolt with impact sparks (paths in the design). Not in FILLED. 'bolt' is kept for cost pills and the hit chip. Already modified in the working tree; merge carefully."
+    },
+    {
+      "path": "apps/mobile/src/components/player/InterferenceButton.tsx",
+      "change": "Redesign as an icon button plus 'הפרעה' with no cost.\n- 2P: h 44, radius 12, P1 tint and border, icon 20.\n- Compact: h 32 + hitSlop, icon 16, label 12 with adjustsFontSizeToFit (min .75).\n- Visible blocked states (points, busy, notRunning, and any future blockedBy): opacity .5 and accessibilityState.disabled, but still pressable; the tap calls onBlockedPress(state).\n- Hidden for disconnected and out.\n- Expanded: P1 fill.\n- Remove the cost and 'missing' captions and the compact cost/unit texts. The accessibility label (interferenceLabel) keeps the price."
+    },
+    {
+      "path": "apps/mobile/src/components/player/metrics.ts",
+      "change": "interfere: icon 20, compactIcon 16, labelStyle rubikStyle(14,'600'), compactLabelStyle rubikStyle(12,'600'), minFontScale .75, paddingX 10; drop compactCostStyle and compactUnitStyle. dropTarget becomes targetFrame {padding 6, outline 2, chipHeight 20, chipPaddingX 8, chipStyle rubikStyle(12,'700')}, with breatheScale removed."
+    },
+    {
+      "path": "apps/mobile/src/components/player/DropZone.tsx",
+      "change": "Rename to TargetFrame.tsx. A static solid 2 dp accent frame with an 'יעד' chip (player:card.target); no breathing, no marching dashes, no hover. Keep useCardOpacity and cardOpacity. Prop `active` becomes `targeted`; drop `hover`."
+    },
+    {
+      "path": "apps/mobile/src/components/player/PlayerCard.tsx",
+      "change": "Props dropTarget, dropHover and dropLabel become `targeted`; wrap in TargetFrame; accessibilityHint = t('card.targetHint') while targeted; new InterferenceButton. Overlaps with the grace item's icon-only 'unstable' pill in the same slot: keep their branch."
+    },
+    {
+      "path": "apps/mobile/src/components/player/PlayerCardCompact.tsx",
+      "change": "Same prop renames and TargetFrame as PlayerCard; compact InterferenceButton with the label. Same grace-item overlap."
+    },
+    {
+      "path": "apps/mobile/src/components/player/index.ts",
+      "change": "Export TargetFrame instead of DropZone."
+    },
+    {
+      "path": "apps/mobile/src/components/player/wording.ts",
+      "change": "interferenceLabel: the expanded label becomes player:interfere.close 'סגירת חלון ההפרעות'. Otherwise unchanged; the price stays in the accessibility label."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/ArsenalOverlay.tsx",
+      "change": "Rewrite the body as the two-tap picker:\n- Keep: scrim with the hole, measure, presence animation, header pull-to-close, BackHandler, focus on the title, live region.\n- Remove: useDragValues, DragGhost, TokenCard, the hint pill, cancelHint, 'carried' state and ComingRow.\n- Add: header with TargetLine (2P) or RouteLine (3–4P); PriceRow; a 3-column grid of KindButton; the info line; an `armed` state (ARSENAL_CONFIG.armDelayMs); onPress → arsenal.launch(kind) and LaunchRipple (full motion only); blocked taps show the bubble and an announcement."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/KindButton.tsx",
+      "change": "NEW (replaces TokenCard). A Pressable 100 dp tall, radius 16: TokenArt 40, name up to 2 lines, price chip '⁦−2⁩ נק׳' (or the blocked text), pressed scale .96 (none under RM). accessibilityLabel from tokenLabel; accessibilityState.disabled when blocked; no gestures."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/TokenCard.tsx",
+      "change": "DELETE (drag token)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/drag.ts",
+      "change": "DELETE (drag shared values)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/DragGhost.tsx",
+      "change": "DELETE. Move LaunchRipple to LaunchRipple.tsx and RouteFace/route row to RouteLine.tsx, used in the 3–4P picker header."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/LaunchRipple.tsx",
+      "change": "NEW: LaunchRipple, moved unchanged from DragGhost.tsx."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/RouteLine.tsx",
+      "change": "NEW: \"[my avatar ●] אני ← [their avatar ▲] Name 🇩🇪\" for the 3–4P header (RouteFace with SeatGlyph). One accessibility element labelled arsenal.routeLabel."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/ComingRow.tsx",
+      "change": "DELETE, if Moshe accepts removing 'נפתחות בהמשך' from the in-game picker. Otherwise update it to fog and bubbles and keep it under a window-height guard."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/arsenalModel.ts",
+      "change": "- Remove dropZoneOf and inZone. Add targetFrameOf(card) (outset only), used for the scrim hole and the ripple.\n- Keep relativeTo and scrimPieces.\n- The model adds nextCost (= laterCosts[0]); tokens cover all six types automatically.\n- Add the pure pickerLayout({width,height,bottomInset,count}) → {columns,columnWidth,rows,sheetHeight,maxHeight,fits}."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/useArsenal.ts",
+      "change": "New API:\n- targetId, open, close, toggle, cardRef, measureCard.\n- blocked(state): points → error toast plus 'nudge'; busy → warning toast arsenal.busyToast{count, name} plus 'nudge'; notRunning → info toast arsenal.notNow.\n- launch(kind): once; clears the target synchronously; cue('launch'); onLaunch(target, kind).\n- cardProps(id) → {targeted, dimmed, interferenceExpanded}.\nRemove dragKind, hover, lift, setHover, release and settle."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/wording.ts",
+      "change": "Remove ghostText, dropLabel and tapHint. Add priceText(cost,t) = t('arsenal.priceValue',{cost: signedText(-cost)}). tokenLabel uses the new arsenal.label ('הקשה משגרת אל …'). Keep routeText, senderText, blockedPill, blockedSentence, kindTitle, kindWord and isolate."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/metrics.ts",
+      "change": "Replace token, ghost, hint, bubble and dragSlop metrics with: header, priceRow (h 48, Teko 30 price, Teko 22 score), grid (columns from config, gap 8), button (h 100, radius 16, art 40, name rubik 13/16 600, chip h 22 radius 11, Teko 17), info (mt 10). Keep sheet, subtitle, ripple, launch.closeMs and closeDragActivate."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/config.ts",
+      "change": "INTERFERENCE_UNLOCK_LEVELS adds scramble/ink/earthquake: 0. ARSENAL_CONFIG adds columns 3, armDelayMs 250, showComing false."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/TokenArt.tsx",
+      "change": "Add the Scramble, Ink and Earthquake previews (UI-thread loops, `still` frames) and a default still-bolt fallback for unknown types."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/arsenal/index.ts",
+      "change": "Update exports: no DragGhost, inZone, dropZoneOf, ghostText, dropLabel or tapHint; add KindButton, LaunchRipple, RouteLine, pickerLayout, targetFrameOf and priceText."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/GameScreen.tsx",
+      "change": "- HUD props: myDrop/opponentDrop/dropOf become myTarget/opponentTarget/targetOf (arsenal.cardProps(id)).\n- Render <BoardHitLayer> next to <Board> inside the board's frame.\n- WarpFrame becomes HitFrame (both usages).\n- onEffect 'refused' with an interfere reason → warning toast arsenal.refused.\n- onInterfereBlocked covers every blocked state.\n- Update the header comment (two taps, board dim, no interferences vs a known bot).\nOverlap: the grace item edits this file now."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/DuelHud.tsx",
+      "change": "Rename the props ArsenalCardProps myDrop/opponentDrop to myTarget/opponentTarget; update the doc comments; keep opponentRef (collapsable={false}) for the hole measurement."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/GroupHud.tsx",
+      "change": "Rename dropOf(id, name) to targetOf(id); doc comments ('הפרעה' button aims at that card; no drag)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/hit/BoardHitLayer.tsx",
+      "change": "NEW. Inside the board slot, pointerEvents none, hidden from accessibility. Draws the Scramble tiles (type 'scramble') and then the dim (color.scrim × HIT_DIM.byKind[kind] × hitAlpha), from useHitClock. RM: static dim and static tiles. Memoised on the hit key and the cells."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/hit/HitLayer.tsx",
+      "change": "Title via hit.title.<kind> with defaultValue hit.title.generic. startLine uses the new hit.started ('הלוח מוחשך') and appends hit.scrambleNote for scramble. HitEffect handles the new types (null for scramble)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/hit/hitModel.ts",
+      "change": "rumbleOf: scramble (hitPulse every 600 ms), ink (hitPulse per splat), earthquake (quakeRumble), and a default with no knocks. Add hitSeedOf(hit) for the plans (id or hash of hitKey)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/hit/index.ts",
+      "change": "Export BoardHitLayer."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/model.ts",
+      "change": "HIT_CUES adds scramble → hitScramble, ink → hitInk, earthquake → hitEarthquake; hitCue falls back to 'hitWarp' for unknown types."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/config.ts",
+      "change": "Add HIT_DIM {opacity: tokens.opacity.hitDim (.8), byKind}, SCRAMBLE {share .5, maxTiles 24, periodMs [380,620], rollMs 160, jitter 1.5, inset .14, style 'marked'}, INK {blots 6, radius [.11,.16], splatMs 260, eraseFrom [2400,3200], stillAtMs 1200}, QUAKE {tremors, amplitude {screen 6, board 4}, rotateDeg 1, rampMs 120}."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/HitEffect.tsx",
+      "change": "Cases: ink → <Ink>, earthquake → <Earthquake>, scramble → null (drawn by BoardHitLayer), default → null."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/Warp.tsx",
+      "change": "Generalise WarpFrame into HitFrame: pose by type (warpPose/warpStill, quakePose / identity under RM); keep `WarpFrame` as an alias export or rename the call sites."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/Fireworks.tsx",
+      "change": "Remove the NIGHT_OPACITY wash (live and still): the board dim replaces it; otherwise the board would be about 75% dark."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/scrambleModel.ts",
+      "change": "NEW pure plan: seeded PRNG (mulberry32); picks the tiles (given/solved only); digit sequences never equal to the real digit or the previous one; phases and jitter."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/Scramble.tsx",
+      "change": "NEW slot-machine tiles: an Animated.View per tile at cellRect inset, a digit column with the translateY roll and jitter worklets; RM static with a dashed sender frame."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/inkModel.ts",
+      "change": "NEW pure blot plan and timings (splat, erase), drawFn for the Picture."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/Ink.tsx",
+      "change": "NEW Skia effect (live picture per frame; RM frozen frame)."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/quakeModel.ts",
+      "change": "NEW tremors, deterministic noise, quakePose, quakeRumble, crack paths."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/Earthquake.tsx",
+      "change": "NEW Skia cracks and dust overlay; RM cracks static."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/palette.ts",
+      "change": "EffectColors adds ink: color.bg (rim uses sender)."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/index.ts",
+      "change": "Export HitFrame, Ink, Earthquake, Scramble, the plans and HIT_DIM."
+    },
+    {
+      "path": "apps/mobile/src/components/interference/testing/skiaMock.ts",
+      "change": "Mock any Skia APIs the new effects use (e.g. Skia.Path.MakeFromSVGString)."
+    },
+    {
+      "path": "apps/mobile/src/components/board/geometry.ts",
+      "change": "Add cellRect(g, cell) → {x,y,width,height} in board coordinates (box gap and grid aware, always LTR)."
+    },
+    {
+      "path": "apps/mobile/src/services/feedback.ts",
+      "change": "Remove the tokenLift and dropZoneEnter cues; add hitScramble, hitInk and hitEarthquake (sound plus 'warning' haptic)."
+    },
+    {
+      "path": "apps/mobile/src/services/sfx.ts",
+      "change": "Add hit_scramble, hit_ink and hit_earthquake placeholders (volume 0.6); drop the interfere_whoosh mapping if nothing else uses it."
+    },
+    {
+      "path": "apps/mobile/scripts/gen-placeholder-sounds.mjs",
+      "change": "Generate the three new hit placeholders (assets/sounds/placeholder/hit_scramble.wav, hit_ink.wav, hit_earthquake.wav)."
+    },
+    {
+      "path": "apps/mobile/src/components/dev/soundCandidates.ts",
+      "change": "Add the three hit sounds; remove interfere_whoosh."
+    },
+    {
+      "path": "apps/mobile/src/screens/progress/progressModel.ts",
+      "change": "FUTURE_INTERFERENCES = ['fog','bubbles'] (ink and earthquake are V1 now)."
+    },
+    {
+      "path": "apps/mobile/src/screens/progress/InterferencesScreen.tsx",
+      "change": "Facts: 'drag only' becomes '2 taps' (facts.launch / facts.launchValue); it shows 6 open."
+    },
+    {
+      "path": "apps/mobile/src/components/dev/CardSection.tsx",
+      "change": "Design-system specimens: 'targeted' instead of dropTarget/dropHover; the new button states (available, points, busy, expanded) with the label 'הפרעה'."
+    },
+    {
+      "path": "apps/mobile/src/components/dev/OverlaySection.tsx",
+      "change": "Show the picker (2P and 3–4P header) and a dimmed board with each hit type, live and RM."
+    },
+    {
+      "path": "apps/mobile/src/game/testing/practice.ts",
+      "change": "testHost accepts `rules?: Partial<Rules>` passed into defaultRules(mode, type, overrides)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/testing/duel.ts",
+      "change": "duel({ rules }) passes overrides through, so UI tests can still exercise interferences in a 2P local game once bot rules turn them off."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/game.json",
+      "change": "Hebrew:\n- arsenal.title 'בחר הפרעה'\n- arsenal.scrim 'סגירה וחזרה ללוח'\n- new: arsenal.routeLabel 'הפרעה ממני אל {{name}}', arsenal.price 'מחיר', arsenal.priceValue '{{cost}} נק׳', arsenal.nextPrice 'הבאה: {{cost}}', arsenal.scoreChange '{{score}} ← {{after}}'\n- arsenal.costLabel 'מחיר ההפרעה {{cost}} נקודות. הניקוד שלך {{score}}, ואחרי שיגור {{after}}. ההפרעה שאחריה תעלה {{next}}'\n- arsenal.costLabelShort 'מחיר ההפרעה {{cost}} נקודות. הניקוד שלך {{score}}, חסרות {{missing}} נקודות'\n- arsenal.info 'כל הפרעה נמשכת {{seconds}} שניות · הקשה משגרת'\n- arsenal.label '{{kind}} · {{cost}} נק׳ · הקשה משגרת אל {{name}}'\n- arsenal.kind: scramble 'מספרים מתערבלים', ink 'דיו', earthquake 'רעידת אדמה'\n- arsenal.busyToast: _one '{{name}} כבר תחת הפרעה. אפשר שוב בעוד שנייה', _two '… בעוד 2 שניות', _many/_other '… בעוד {{count}} שניות'\n- arsenal.notNow 'אי אפשר להפריע כרגע'\n- arsenal.refused 'ההפרעה לא נשלחה, ולא ירדו לך נקודות'\n- interference: scramble 'מספרים מתערבלים', ink 'דיו', earthquake 'רעידת אדמה'\n- hit.title: scramble '{{name}} ערבב/ה לך את המספרים!', ink '{{name}} התיז/ה עליך דיו!', earthquake '{{name}} שלח/ה לך רעידת אדמה!', generic '{{name}} שלח/ה לך הפרעה!'\n- hit.started '{{title}} הלוח מוחשך, {{time}}. הטיימר שלך עצור'\n- hit.scrambleNote 'הספרות שמתערבלות אינן אמיתיות'\n- DELETE: arsenal.next, later, after, hint, cancelHint, tapHint, dragging, ghost, drop, dropIdle, comingTitle, comingLabel, live.lift, live.over, live.left, live.cancelled\n- Keep routeArrow, route, sent, cost, unit, missing, locked, busy, unavailable, reason.*, notEnough, labelBlocked, live.launched.\nOverlap: the grace item adds connection keys to this file."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/game.json",
+      "change": "English mirror:\n- arsenal.title 'Pick an interference'\n- arsenal.scrim 'Close and go back to the board'\n- routeLabel 'From me to {{name}}', price 'Price', priceValue '{{cost}} pts', nextPrice 'Next: {{cost}}', scoreChange '{{score}} → {{after}}'\n- costLabel 'This interference costs {{cost}} points. Your score is {{score}}, {{after}} after launch. The next one costs {{next}}'\n- costLabelShort 'This interference costs {{cost}} points. Your score is {{score}}, {{missing}} points short'\n- info 'Each interference lasts {{seconds}} seconds · tap to launch'\n- label '{{kind}} · {{cost}} pts · tap to launch at {{name}}'\n- kind: scramble 'Scrambled digits', ink 'Ink', earthquake 'Earthquake'\n- busyToast_one '{{name}} is already under interference. Try again in 1 second', _other '… in {{count}} seconds'\n- notNow 'You can't interfere right now'\n- refused 'The interference wasn't sent, and no points were taken'\n- interference: scramble 'scrambled digits', ink 'ink', earthquake 'an earthquake'\n- hit.title: scramble '{{name}} scrambled your digits!', ink '{{name}} splashed ink on you!', earthquake '{{name}} sent you an earthquake!', generic '{{name}} sent you an interference!'\n- hit.started '{{title}} Your board is dimmed, {{time}}. Your timer is paused'\n- hit.scrambleNote 'The shuffling digits aren't real'\n- Same deletions as Hebrew."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/player.json",
+      "change": "New interfere.button 'הפרעה'; interfere.close 'סגירת חלון ההפרעות'; new card.target 'יעד' and card.targetHint 'יעד ההפרעה'. DELETE interfere.cost, interfere.unit, interfere.missing and card.drop."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/player.json",
+      "change": "interfere.button 'Interfere'; interfere.close 'Close the interference picker'; card.target 'Target'; card.targetHint 'Interference target'; same deletions."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/progress.json",
+      "change": "- interferences.facts.launch \"הקשות: 'הפרעה' בכרטיס היריב, ואז ההפרעה\", facts.launchValue '2'; delete facts.drag and dragValue.\n- howTo \"במשחק: הקש על 'הפרעה' בכרטיס היריב, ובחר הפרעה.\"\n- description.scramble 'הספרות בלוח מתערבלות ומתחלפות'.\n- Delete future.ink and future.earthquake (keep their descriptions)."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/progress.json",
+      "change": "facts.launch 'taps: “Interfere” on a rival's card, then the interference', launchValue '2'; howTo 'In a game: tap “Interfere” on a rival's card, then pick an interference.'; description.scramble 'The digits on the board shuffle and swap'; same deletions."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/home.json",
+      "change": "botSelect.levels: 1.behavior 'איטי, טועה לא מעט, ונותן לך ללמוד'; 3.behavior 'יציב ושקול, וקשה לעקוף אותו'; 5.behavior 'מהיר, מדויק, ובלי רחמים' (no interference promise)."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/home.json",
+      "change": "botSelect.levels: 1 'Slow, makes a fair few mistakes, and lets you learn'; 3 'Steady and thoughtful, and hard to overtake'; 5 'Fast, precise, and merciless'."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/dev.json",
+      "change": "Card specimens: 'targeted' replaces dropTarget/dropHover/dropLabel; sound list: the three new hit sounds, interfere_whoosh removed (en mirror too)."
+    },
+    {
+      "path": "docs/design/tokens.json",
+      "change": "Add opacity.hitDim 0.8 with a provenance note (Moshe 2026-10-17); usage text of the interfere contrast pairs becomes 'label הפרעה'; then run `npm run tokens` to regenerate apps/mobile/src/theme/tokens.generated.ts."
+    },
+    {
+      "path": "apps/mobile/src/theme/tokens.generated.ts",
+      "change": "Regenerated (opacity.hitDim)."
+    }
+  ],
+  "tests": [
+    "arsenal/__tests__/ArsenalOverlay.test.tsx: REWRITE as the two-tap picker.\n- The 'הפרעה' button opens it aimed at that card: title 'בחר הפרעה', target line, the target card framed ('יעד', testID target-frame) above the scrim, others dimmed.\n- Price row label: arsenal.costLabel with cost, score, after and next.\n- Six KindButtons, each with name, chip '⁦−2⁩ נק׳' and label 'זיקוקים · 2 נק׳ · הקשה משגרת אל ⁨Mr. Hoot⁩'.\n- A tap launches once with (BOT, kind); cues 'arsenalOpen' then 'launch'; the engine shows hitBy and my score −2; the tray closes; ripple under full motion, none under RM.\n- A quick double tap launches once.\n- A tap inside the arm delay does nothing.\n- Blocked: a token short of points is accessibilityState.disabled; a tap does not launch and shows the reason bubble; same for busy.\n- Closes from close, the scrim, Android back and the card button again; closes when the target leaves or the game ends.\n- 3–4P (showRoute): the header has the route with both avatars and shapes.\n- RM: fade, still previews.\n- No 'arsenal-drag-*' gesture ids, no 'arsenal-ghost', no 'בגרירה…', no ComingRow.\n(The harness needs duel({ rules: { interferences: true } }).)",
+    "arsenal/__tests__/arsenalModel.test.ts: drop the dropZoneOf/inZone cases. Keep scrimPieces/relativeTo and add targetFrameOf. Six tokens, the new three unlocked at level 0. nextCost. Words: priceText isolates the minus ('⁦−2⁩ נק׳'), the new label and blockedSentence in he and en. pickerLayout: fits with no scroll at 360×780, 360×640 and 320×568 with a 48 inset, 3 columns, column width 104 at 360.",
+    "arsenal/__tests__/useArsenal.test.tsx: remove the lift/hover/release/settle tests. launch(kind) launches once at the opened target and closes; it does nothing when closed or after a launch. blocked(): points → error toast plus 'nudge'; busy → warning toast with the seconds plus 'nudge'; notRunning → info toast. cardProps → targeted/dimmed/expanded (3–4P: one targeted, the others dimmed). TokenArt renders all six types, still under RM, and a default for an unknown type.",
+    "arsenal/__tests__/ComingRow.test.tsx: delete (or update to fog/bubbles if Moshe keeps the row).",
+    "components/player/__tests__/PlayerCard.test.tsx: the interference button shows the text 'הפרעה' and icon-interfere, no cost text; the accessibility label still 'הפרעה ל־NinaVolt · עלות 2 נק׳'; points/busy/notRunning are dimmed with disabled state and the tap calls onBlockedPress(state); disconnected/out hidden; expanded fill and close label; the compact variant has numberOfLines 1 and adjustsFontSizeToFit; TargetFrame shows 'יעד', no 'גרור לכאן', no breathing under either motion setting.",
+    "components/player/__tests__/cardModel.test.ts: a default bot game (mode 'bot' rules after the engine change) gives interference null on the bot card; ranked is unchanged.",
+    "screens/game/__tests__/GameScreenDuel.test.tsx: new test 'against a bot there is no הפרעה button, no picker, and the bot never interferes (rules)'. Move the existing hit/immunity tests ('an interference on me…', '⚡ rests while the bot is under my hit…', 'two hits in a row') to duel({ rules: { interferences: true } }) and rename them to the 'הפרעה' button. A 'refused' interfere shows the arsenal.refused toast.",
+    "screens/game/__tests__/GameScreenGroup.test.tsx: tap 'הפרעה ל־Biscuit · עלות 2 נק׳' → the header route 'אני ← Biscuit' with avatars [lava-lamp, fox]; Biscuit's card is target-framed, Pip's is not; tap 'זיקוקים' → only Biscuit is hit and I pay 2; Biscuit's button is now blocked and Pip's is available; the sheet is closed after one launch.",
+    "__tests__/interference.e2e.test.tsx: rewrite. Bot practice no longer has interferences: assert no button against Overlord. Move the launch/hit end-to-end flow to an online 2P ranked game on the fake server (as ranked.e2e.test.tsx), with two taps, the hit banner with the dimmed board, RM as a static cover. Update HIT_CUE with the new types.",
+    "screens/game/hit/__tests__/HitLayer.test.tsx: banners for scramble/ink/earthquake in he/en; the generic title for an unknown type with no crash and no rumble; the start announcement contains 'הלוח מוחשך', plus the scramble note; existing timing tests unchanged.",
+    "screens/game/hit/__tests__/BoardHitLayer.test.tsx (NEW): renders nothing without a hit; the dim (testID hit-dim) sits over the board with opacity = byKind × alpha and is gone at endsAt; frozen while endsAt is null; RM static; scramble tiles only on given/solved cells, never the real digit, pointerEvents none (a tap on a covered cell still reaches Board.onCellPress); RM tiles static with a dashed frame; hidden from accessibility.",
+    "screens/game/hit/__tests__/hitModel.test.ts: rumbleOf for scramble/ink/earthquake (times inside totalMs, cues); default empty; hitSeedOf stable for one hit.",
+    "components/interference/__tests__/models.test.ts: scramblePlan is deterministic per seed, respects maxTiles/share, avoids the real digit and repeats, picks only filled cells; inkPlan blots inside the board with ordered timings; quakePose is zero outside tremors and under RM, with amplitude ≤ config; HIT_DIM within 0..1 for every type.",
+    "components/interference/__tests__/effects.test.tsx: render Ink and Earthquake live and still with the Skia mock (testIDs hit-ink, hit-ink-still, hit-earthquake, hit-earthquake-still); Fireworks has no night wash; HitFrame shakes for earthquake and tilts for warp, identity under RM.",
+    "screens/game/__tests__/GameScreenScope.test.tsx: in both D35 scopes the dim is inside the board slot (under the effect), and HitFrame moves the board/screen for earthquake.",
+    "screens/game/__tests__/GameScreenFaces.test.tsx: the bot hit test uses duel({ rules: { interferences: true } }).",
+    "game/__tests__/botSession.test.ts: line 99 expects rules.interferences false for a bot practice (after the engine change).",
+    "__tests__/reducedMotion.test.ts and __tests__/noLayoutAnimationsInGame.test.ts: cover the new effects, BoardHitLayer and KindButton (no entering/exiting layout animations; RM variants static).",
+    "__tests__/a11yAudit.test.tsx: the card button and every KindButton have labels; the picker is a modal group with focus on the title.",
+    "__tests__/contrast.test.ts: still passes after the tokens.json usage update (same colours).",
+    "__tests__/i18nParity.test.ts and i18nCheck.test.ts: he/en parity for every new key; no orphan keys after the deletions.",
+    "services/__tests__/sfx.test.ts and __tests__/SoundAuditionScreen.test.tsx: the three new hit sounds; interfere_whoosh removed.",
+    "screens/progress/__tests__/InterferencesScreen.test.tsx and progressModel.test.ts: 6 open, fog/bubbles coming, the facts say 2 taps.",
+    "screens/home/__tests__/BotSelect.test.tsx: the new level 1/3/5 behaviour strings (line ~177).",
+    "components/dev/__tests__/sections.test.tsx and fixtures.test.ts: the targeted specimens and the new button states.",
+    "Run `npm test` in apps/mobile (and the engine tests from the engine angle) before calling the item done."
+  ],
+  "docs": [
+    "docs/01-SPEC.md §7.1: catalog: מספרים מתערבלים, דיו and רעידת אדמה marked V1; ערפל and בועות stay 'בעתיד'. The opening line: 'ב־V1 שש ההפרעות פתוחות מההתחלה' (D17).",
+    "docs/01-SPEC.md §7.2: add 'החשכת הלוח' (≈58%, a setting) and the rule 'אין הפרעות במשחק מול בוט שהשחקן יודע שהוא בוט (אימון מול בוט), לא ממני ולא מהבוט'. Mark it החלטה של משה 2026-10-17 and quote original §20 ('להשתמש בהפרעות'), which stays valid for an unknown bot (none in V1). Change 'הפרעות זמינות במשחק מדורג ובמשחק מול בוט' to 'רק במשחק מדורג'.",
+    "docs/01-SPEC.md §7.3: rewrite as 'שיגור בשתי הקשות'. Quote original §16 (Drag & Drop, 'הפרעה לא תופעל בלחיצה רגילה'), then Moshe's decision 2026-10-17 and his reason (גרירה קשה ומבזבזת זמן; שתי הקשות במקומות שונים מספיקות). Steps: the 'הפרעה' button on the opponent's card, the picker with every type and its price, a tap launches, the 250 ms arm guard. 3–4P (§17): the target is the card you tapped, the route 'אני ← Biscuit' in the header, the target framed and the others dimmed. D18 closed.",
+    "docs/01-SPEC.md §7.4: the victim's board is dimmed under the effect; scramble digits are visual only.",
+    "docs/01-SPEC.md §9: bot table column 'הפרעות [D40]' becomes '— (אין הפרעות במשחק מול בוט, החלטת משה 2026-10-17)'; the 'הפרעות ותגובות' line keeps only the reactions.",
+    "docs/01-SPEC.md §24: new rows D44 (שתי הקשות במקום גרירה), D45 (אין הפרעות מול בוט ידוע) and D46 (שלושה סוגים חדשים + החשכת הלוח), each marked ✓ החלטת משה 2026-10-17. D18 and D40 marked 'נסגרה, הוחלפה ב־D44/D45'. Never edit docs/00-original-spec-v1.md.",
+    "docs/design/components.md:\n- §3.4: the 'drop target' row becomes 'target (picker open from this card)': static frame plus an 'יעד' chip; 'dimmed' unchanged.\n- §7.4: compact button label.\n- §8.1: rewrite (icon 'interfere' plus 'הפרעה', no cost, states and tap reasons, a11y label with the price; 'solo/bot practice: not rendered').\n- §13: rewrite as the 'Interference picker' (header, route in 3–4P, price row, 3×2 grid, button anatomy, arm delay, launch, a11y), removing the drag ghost and tap bubble text.\n- New §15.3 'Board dim during a hit'.\n- §17: remove the D18 point.\n- §18 checklist: picker, button states, dim, new effects.",
+    "docs/design/motion.md §4.4:\n- arsenal.open becomes picker.open.\n- Remove token.lift, dropzone.active, dropzone.hover and launch.cancel.\n- launch becomes 'tap → press .96, ripple 480 ms, close 200 ms'.\n- Add hit.dim (fade 240 in/out, static under RM).\n- Effect rows for scramble/ink/earthquake with their RM covers.\n- Also update §5 timelines, §7 haptics (remove tokenLift/dropZoneEnter; add the new hit cues and rumbles), §8 sounds (three placeholders) and §10 motion tokens.",
+    "docs/design/tokens.json: opacity.hitDim 0.8 plus a note; update the interfere contrast 'usage' text. Then run `npm run tokens`.",
+    "docs/design/screens and canvas.json: delete Interference-Drag.dc.html and its canvas entry; retitle Arsenal.dc.html and Interference-Target.dc.html as '(ישן: גרירה, הוחלף ב־components.md §13)' until redrawn; note on Game-Bot that the bot card has no button.",
+    "docs/03-DESIGN.md line 18: 'ארסנל, גרירה, בחירת יעד…' becomes 'חלון הפרעות בשתי הקשות, בחירת יעד ב־4 שחקנים, זיקוקים, חתולים, עיוות, מספרים מתערבלים, דיו, רעידת אדמה, החשכת הלוח…'.",
+    "docs/02-WORK-PLAN.md stage 6 (lines 49, 282, 286, 289): add a dated note 'שונה 2026-10-17: שתי הקשות, בלי הפרעות מול בוט' rather than rewriting history.",
+    "docs/DECISIONS-PENDING.md §2.3 (D18): closed by Moshe's decision 2026-10-17; no drag at all.",
+    "docs/QA-CHECKLIST.md row 16 and line 186; docs/STAGE9-10-DEVICE-CHECKS.md line 162: replace the drag checks with two-tap, target, dim and new-effect checks (and 'אין כפתור הפרעה מול בוט').",
+    "docs/RELEASE-CHECKLIST.md line 43: remove D18 from the 'pending' list.",
+    "docs/store/ASSETS.md line 106: screenshot 3 caption becomes 'שולחים הפרעה בשתי הקשות' (scene: the picker open)."
+  ],
+  "risks": [
+    "Accidental launches. Without the drag, one mis-tap in the picker spends points. Mitigations: two taps in different places, the 250 ms arm delay, one launch per opening, a clear price chip, and the toast and ripple after the launch. Device-test this with Moshe.",
+    "Older apps and new types. In the field, rumbleOf() returning undefined makes useHitFeedback throw, and HitEffect renders nothing, if a peer sends 'scramble'. Every per-type switch needs a runtime default (in this design), and the server/protocol angle must gate the new types: a minimum app version, or rules.interferenceKinds limited to what every seat supports.",
+    "Merge conflicts with the grace-period item running now:\n- PlayerCard/PlayerCardCompact: the same ⚡ slot gets their 'unstable' pill.\n- Badges.tsx, cardModel.ts and wording.ts.\n- GameScreen.tsx: their offlineLost and closing on selfOffline next to my HUD prop renames and BoardHitLayer.\n- Cell.tsx/boardModel.ts ('queued' cells must not be covered by scramble).\n- i18n game.json/player.json.\n- engine rules.ts/view.ts.\nLand this after the grace item, or merge by hand. Keep useArsenal.close() stable.",
+    "Test coverage of hits drops when bot games stop interfering. Many tests drive hits through the bot duel (ArsenalOverlay, GameScreenDuel, GameScreenFaces, GameScreenScope, HitLayer 'real game', interference.e2e). They must move to a rules override or to the online/ranked fixtures, or coverage is lost silently.",
+    "Scramble fairness. Fake digits that look real could trick a player into a penalised wrong digit. The default 'marked' style (sender colour, dashed frame under RM) avoids this but is less disruptive. This is Moshe's call.",
+    "Darkness level. 0.8×scrim leaves solved digits around 2.5–3:1. That is intended to disturb, but it is below the 3:1 non-text and 4.5:1 text minimums for 5 s. It is a temporary interference and keeps the D35/§22 spirit; still, confirm on a real phone outdoors.",
+    "Warp/quake alignment. The dim and the scramble tiles must be inside the board's frame (BoardHitLayer next to <Board>). If they are put in HitLayer instead, they stay upright while the board tilts or shakes.",
+    "Performance. Scramble mounts about 200 Text nodes at the start of a hit (one-off ≈10–25 ms on a mid Android). The cap is SCRAMBLE.maxTiles. The earthquake transform on the whole screen in 'screen' scope also shakes the cards and keypad, which is intended by D35, so check for jank with the Skia overlays.",
+    "Vestibular comfort and taps. The earthquake makes taps land on neighbouring cells. RM turns the shaking off, but players without RM may find it harsh. The amplitude and tremors are config.",
+    "English label length. 'Interfere' in the 4P compact strip (68 dp) relies on adjustsFontSizeToFit; the 2P English card leaves less room for the activity line, which may truncate.",
+    "Screen-reader behaviour change. Activating a picker button now launches (it used to explain only). Announce the price in the label, which this design does.",
+    "Analytics and server stats. interference_sent kinds expand; the server progress 'favourite interference' and the client progressGuards must accept the new ids (automatic once INTERFERENCE_KINDS changes).",
+    "Spec integrity. Original §16 (drag) and §20 (bots use interferences) are overridden only by Moshe's explicit 2026-10-17 request. Record it in 01-SPEC as his decision with the original quoted, and never edit 00-original-spec-v1.md."
+  ],
+  "decisions": [
+    {
+      "question": "אילו סוגי הפרעה חדשים להוסיף עכשיו? (ביקשת 'מספרים מתערבלים או כמה נוספים')",
+      "recommendedDefault": "שלושה, ובסך הכול 6, שנכנסים ברשת 3×2 בלי גלילה: מספרים מתערבלים, דיו (כתמים שנמחקים בהדרגה) ורעידת אדמה (הלוח רועד ונסדק). 'ערפל' ו'בועות' נשארים 'בקרוב'."
+    },
+    {
+      "question": "כמה להחשיך את הלוח בזמן הפרעה?",
+      "recommendedDefault": "כ־58% כהות (0.8 מה־scrim). הספרות עדיין קריאות במאמץ, ניגודיות של כ־2.5–3.8:1. זו הגדרה אחת, ואפשר גם 0.7 (רך יותר) או 0.9 (כמעט חשוך)."
+    },
+    {
+      "question": "במספרים מתערבלים: האם הספרות המזויפות ייראו בדיוק כמו אמיתיות?",
+      "recommendedDefault": "לא. הן בצבע של מי ששלח את ההפרעה ומתגלגלות כל הזמן, כך שברור שהן מזויפות. ספרה מזויפת שנראית אמיתית עלולה לגרום לשחקן לטעות ולקבל קנס על משהו שלא הוא עשה."
+    },
+    {
+      "question": "ב־3–4 שחקנים: איך בוחרים במי להפריע?",
+      "recommendedDefault": "לפי הכרטיס שעליו לוחצים: לכל יריב יש לחצן 'הפרעה' משלו. בראש החלון יופיע 'אני ← Biscuit' עם שני האווטרים, והכרטיס שלו ממוסגר ומואר. אין שורת יעדים בחלון ואין ברירת מחדל. כדי להפריע למישהו אחר סוגרים את החלון ולוחצים 'הפרעה' על הכרטיס שלו."
+    },
+    {
+      "question": "איפה הלחצן 'הפרעה'?",
+      "recommendedDefault": "בכרטיס של כל יריב, במקום הלחצן הנוכחי. כך כתוב במקור (§10: 'אצל היריב: לחצן הפרעה'), והלחיצה עליו גם בוחרת את היעד. הוא יהיה לחצן אייקון באותו גודל כמו הסמיילי, עם המילה 'הפרעה' בלבד. החלופה, ליד הסמיילי בכרטיס שלי, מוסיפה ב־3–4 שחקנים הקשה שלישית לבחירת היעד."
+    },
+    {
+      "question": "להשאיר בחלון ההפרעות את השורה 'נפתחות בהמשך' (ההפרעות הנעולות)?",
+      "recommendedDefault": "להוריד. היא תופסת מקום ומסיחה באמצע משחק. ההפרעות העתידיות נשארות במסך 'אוסף ההפרעות'."
+    },
+    {
+      "question": "לחיצה על 'הפרעה' כשאי אפשר להפריע (היריב כבר תחת הפרעה, המשחק לא רץ): מה קורה?",
+      "recommendedDefault": "הלחצן עמום, והלחיצה מציגה הודעה קצרה עם הסיבה ורטט קל. למשל: 'NinaVolt כבר תחת הפרעה. אפשר שוב בעוד 2 שניות'. היום רק חוסר נקודות מוצג."
+    },
+    {
+      "question": "מתי נפתחים שלושת הסוגים החדשים?",
+      "recommendedDefault": "מההתחלה, כמו שלושת הקיימים (D17: ב־V1 הכול פתוח). טבלת רמות תיקבע ב־V1.1."
+    },
+    {
+      "question": "השהיה קצרה לפני שהחלון מגיב, כדי שהקשה כפולה לא תשגר בטעות?",
+      "recommendedDefault": "כן, 250 מ״ש מפתיחת החלון. זו הגדרה, ואפשר גם 0."
+    },
+    {
+      "question": "מה הכיתוב באנגלית על הלחצן?",
+      "recommendedDefault": "'Interfere'. בכרטיס הקטן של 4 שחקנים הגופן יקטן מעט כדי שהמילה תיכנס."
+    },
+    {
+      "question": "מה לעשות עם מסכי העיצוב הישנים של הגרירה?",
+      "recommendedDefault": "למחוק את Interference-Drag, ולסמן את Arsenal ואת Interference-Target כ'ישן: גרירה' עד שיצוירו מחדש. עד אז המימוש עובד לפי components.md."
+    }
+  ]
+}

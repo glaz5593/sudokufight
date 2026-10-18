@@ -1,16 +1,18 @@
 import { type CellIndex, type Digit, DIGITS, parseCellName } from '../sudoku/board';
-import { mistakePenalty, moveScore } from '../sudoku/scoring';
-import { answer, GameDriver, PUZZLE, solveAll, wrongDigit } from '../testing/game';
-import { defaultRules } from './rules';
+import { missedPoints, moveScore } from '../sudoku/scoring';
+import { answer, GameDriver, PUZZLE, solveAll } from '../testing/game';
+import { defaultRules, type Rules } from './rules';
 import type { Action } from './types';
 
 /*
  * Digit entry, correct and wrong moves (spec §6.3, §6.4, §6.5) with the decisions [D2] (the wait before a
- * re-lock after a mistake), [D3], [D12], [D13], [D14], [D15]. PUZZLE (bank #1) is the board unless a test
- * builds its own:
+ * re-lock after a mistake), [D3], [D12], [D13], [D15]. PUZZLE (bank #1) is the board unless a test builds its
+ * own:
  *   A1 = 8 (row 4, col 2, box 3, num 3 → X 4, Y 3 → 8)    A2 = 6 (4, 4, 3, 4 → X 4, Y 4 → 7.5)
  *   A8 = 5                                                  B4 = 8 (3, 3, 3, 3 → X 3, Y 3 → 9)
  *   B7 = 7 (3, 5, 5, 3 → X 5, Y 5 → 6)
+ * A wrong digit costs what the right one would score there at that moment (§6.5, Moshe's decision of
+ * 2026-10-15): on the opening board A1 8, A2 7.5, A5 8, A6 6.5, A8 6.5, B1 7.
  */
 
 const A1 = parseCellName('A1');
@@ -156,7 +158,7 @@ describe('entering a digit (§6.3)', () => {
     const g = GameDriver.of();
     g.select('p1', 'A1');
     const events = g.place('p1', 'A1', 4);
-    expect(events[0]).toMatchObject({ type: 'placedWrong', digit: 4, penalty: 1 });
+    expect(events[0]).toMatchObject({ type: 'placedWrong', digit: 4, penalty: 8 });
     // And the right digit is accepted whoever enters it.
     g.select('p2', 'A1');
     expect(g.place('p2', 'A1', 8)[0]).toMatchObject({ type: 'placedCorrect', playerId: 'p2', digit: 8 });
@@ -196,8 +198,8 @@ describe('a digit already tried wrongly in this cell (§6.3) [D12]', () => {
   it("[D12 'everyone'] is refused for every player in that cell, with no penalty", () => {
     const g = GameDriver.of({ players: 3 });
     g.select('p1', 'A1', 0);
-    g.place('p1', 'A1', 5); // wrong: A1 is 8
-    expect(g.player('p1')).toMatchObject({ mistakes: 1, score: -1 });
+    g.place('p1', 'A1', 5); // wrong: A1 is 8, worth 8 there
+    expect(g.player('p1')).toMatchObject({ mistakes: 1, score: -8 });
 
     g.select('p2', 'A1', 0);
     expect(g.reject(placeAt('p2', A1, 5))).toBe('digitTried');
@@ -213,7 +215,7 @@ describe('a digit already tried wrongly in this cell (§6.3) [D12]', () => {
     // Whoever tried it is refused too (relocking after the one-second wait of §6.2.6).
     g.select('p1', 'A1', 1000);
     expect(g.reject(placeAt('p1', A1, 5))).toBe('digitTried');
-    expect(g.player('p1')).toMatchObject({ mistakes: 1, score: -1 });
+    expect(g.player('p1')).toMatchObject({ mistakes: 1, score: -8 });
     expect(g.state.wrong[A1]).toEqual([{ digit: 5, playerId: 'p1' }]);
   });
 
@@ -225,7 +227,7 @@ describe('a digit already tried wrongly in this cell (§6.3) [D12]', () => {
     expect(g.place('p2', 'A8', 5)[0]).toMatchObject({ type: 'placedCorrect', cell: A8, digit: 5 });
   });
 
-  it('every tried digit is refused, and a new wrong digit still costs the next step of the ladder', () => {
+  it("every tried digit is refused, and a new wrong digit costs the cell's value again", () => {
     const g = GameDriver.of();
     g.select('p1', 'A1', 0);
     g.place('p1', 'A1', 5);
@@ -237,7 +239,7 @@ describe('a digit already tried wrongly in this cell (§6.3) [D12]', () => {
     expect(g.place('p1', 'A1', 7)[0]).toMatchObject({
       type: 'placedWrong',
       digit: 7,
-      penalty: 2,
+      penalty: 8,
       mistakes: 2,
     });
     expect(g.state.wrong[A1]).toEqual([
@@ -245,8 +247,8 @@ describe('a digit already tried wrongly in this cell (§6.3) [D12]', () => {
       { digit: 6, playerId: 'p2' },
       { digit: 7, playerId: 'p1' },
     ]);
-    expect(g.player('p1')).toMatchObject({ mistakes: 2, score: -3 });
-    expect(g.player('p2')).toMatchObject({ mistakes: 1, score: -1 });
+    expect(g.player('p1')).toMatchObject({ mistakes: 2, score: -16 });
+    expect(g.player('p2')).toMatchObject({ mistakes: 1, score: -8 });
   });
 
   it("[D12 'mistaker'] is refused only for whoever tried it; anyone else pays for it", () => {
@@ -259,14 +261,14 @@ describe('a digit already tried wrongly in this cell (§6.3) [D12]', () => {
       type: 'placedWrong',
       playerId: 'p2',
       digit: 5,
-      penalty: 1,
+      penalty: 8,
       mistakes: 1,
-      score: -1,
+      score: -8,
     });
 
     g.select('p1', 'A1', 1000);
     expect(g.reject(placeAt('p1', A1, 5))).toBe('digitTried');
-    expect(g.player('p1')).toMatchObject({ mistakes: 1, score: -1 });
+    expect(g.player('p1')).toMatchObject({ mistakes: 1, score: -8 });
     expect(g.state.wrong[A1]).toEqual([
       { digit: 5, playerId: 'p1' },
       { digit: 5, playerId: 'p2' },
@@ -291,8 +293,8 @@ describe('a digit with all nine on the board (§6.3)', () => {
   it('is refused from the moment the ninth one is placed', () => {
     const g = GameDriver.of({ puzzle: ONE_EIGHT_LEFT });
     g.select('p1', 'A2');
-    // While A1 is open, 8 is just a wrong digit in A2.
-    expect(g.place('p1', 'A2', 8)[0]).toMatchObject({ type: 'placedWrong', penalty: 1 });
+    // While A1 is open, 8 is just a wrong digit in A2, which costs what its 6 is worth there.
+    expect(g.place('p1', 'A2', 8)[0]).toMatchObject({ type: 'placedWrong', penalty: 6.5 });
     // The ninth 8: num = 8, so X = 8 → 9 − 8 + (9 − 4)/2 = 3.5.
     g.select('p2', 'A1');
     expect(g.place('p2', 'A1', 8)[0]).toMatchObject({
@@ -458,10 +460,10 @@ describe('a correct digit (§6.4)', () => {
 
   it('adds the points to whatever the score is, also a negative one', () => {
     const g = GameDriver.of();
-    g.miss('p1', 'A2'); // −1
+    g.miss('p1', 'A2'); // −7.5
     g.select('p1', 'A1');
-    expect(g.place('p1', 'A1', 8)[0]).toMatchObject({ points: 8, score: 7 });
-    expect(g.player('p1')).toMatchObject({ score: 7, pointsGained: 8 });
+    expect(g.place('p1', 'A1', 8)[0]).toMatchObject({ points: 8, score: 0.5 });
+    expect(g.player('p1')).toMatchObject({ score: 0.5, pointsGained: 8 });
   });
 
   it('keeps the best move as the highest-scoring correct move', () => {
@@ -539,75 +541,136 @@ describe('a correct digit (§6.4)', () => {
 // ---------------------------------------------------------------------------------------------------------
 
 describe('a wrong digit (§6.5)', () => {
-  it("costs 1, 2, 4, 8, 16, 32 for a player's 1st…6th mistake, 2^(k−1) [D14: no cap by default]", () => {
+  it('costs what the right digit would have scored in that cell at that moment', () => {
+    const g = GameDriver.of();
+    const before = g.state.grid.slice();
+    expect(missed(g, 'p1', 'A1')).toMatchObject({ type: 'placedWrong', penalty: 8, mistakes: 1, score: -8 });
+    // The same formula as a correct move (§6.4), on the board before the entry, with the solution's digit.
+    expect(missedPoints(before, A1, 8).points).toBe(8);
+    expect(moveScore(before, A1, 8).points).toBe(8);
+  });
+
+  it("does not depend on the mistake number: six misses cost each cell's value", () => {
     const g = GameDriver.of();
     const cells = ['A1', 'A2', 'A5', 'A6', 'A8', 'B1'];
+    const before = g.state.grid.slice();
     const penalties: number[] = [];
     const scores: number[] = [];
     cells.forEach((cell, k) => {
-      g.select('p1', cell);
-      const [e] = g.place('p1', cell, wrongDigit(cell));
-      expect(e).toMatchObject({ type: 'placedWrong', mistakes: k + 1, penalty: mistakePenalty(k + 1) });
-      penalties.push(g.last('placedWrong')!.penalty);
+      const e = missed(g, 'p1', cell);
+      // Wrong marks are not on the board, so every cell is still scored on the opening board.
+      expect(e).toMatchObject({
+        mistakes: k + 1,
+        penalty: missedPoints(before, parseCellName(cell), answer(cell)).points,
+      });
+      penalties.push(e.penalty);
       scores.push(g.score('p1'));
     });
-    expect(penalties).toEqual([1, 2, 4, 8, 16, 32]);
-    expect(scores).toEqual([-1, -3, -7, -15, -31, -63]);
+    expect(penalties).toEqual([8, 7.5, 8, 6.5, 6.5, 7]);
+    expect(scores).toEqual([-8, -15.5, -23.5, -30, -36.5, -43.5]);
     expect(g.player('p1').mistakes).toBe(6);
   });
 
-  it('the fourth mistake costs 8', () => {
-    const g = GameDriver.of();
-    for (const cell of ['A1', 'A2', 'A5']) g.miss('p1', cell);
-    expect(g.score('p1')).toBe(-7);
-    g.miss('p1', 'A6');
-    expect(g.last('placedWrong')).toMatchObject({ mistakes: 4, penalty: 8, score: -15 });
-  });
+  it('follows the board: the same cell costs less as its row, column, box and digit fill', () => {
+    const fresh = GameDriver.of();
+    expect(missed(fresh, 'p1', 'A2')).toMatchObject({ penalty: 7.5 });
+    const later = GameDriver.of();
+    later.solve('p2', 'A1');
+    expect(missed(later, 'p1', 'A2')).toMatchObject({ penalty: 6.5, score: -6.5 });
 
-  it('each player has a ladder of their own', () => {
-    const g = GameDriver.of({ players: 3 });
-    g.miss('p1', 'A1'); // p1: 1
-    g.miss('p1', 'A2'); // p1: 2
-    expect(missed(g, 'p2', 'A5')).toMatchObject({ playerId: 'p2', penalty: 1, mistakes: 1, score: -1 });
-    g.miss('p1', 'A6'); // p1: 4
-    expect(missed(g, 'p2', 'A8')).toMatchObject({ playerId: 'p2', penalty: 2, mistakes: 2, score: -3 });
-    expect(missed(g, 'p3', 'B1')).toMatchObject({ playerId: 'p3', penalty: 1, mistakes: 1, score: -1 });
-    expect(g.player('p1')).toMatchObject({ mistakes: 3, score: -7 });
-  });
-
-  it('the ladder never resets during the game, not even after correct moves', () => {
+    // Correct moves in between: each mistake is charged on the board as it is then.
     const g = GameDriver.of();
     let gained = 0;
     const solve = (cell: string) => {
       g.solve('p1', cell);
       gained += g.last('placedCorrect')!.points;
     };
-    g.miss('p1', 'A2');
+    const penalties: number[] = [];
+    const miss = (cell: string) => {
+      const before = g.state.grid.slice();
+      const e = missed(g, 'p1', cell);
+      expect(e.penalty).toBe(missedPoints(before, parseCellName(cell), answer(cell)).points);
+      penalties.push(e.penalty);
+    };
+    miss('A2');
     solve('A1');
     solve('B4');
-    expect(missed(g, 'p1', 'A5')).toMatchObject({ penalty: 2, mistakes: 2 });
+    miss('A5');
     solve('B7');
-    expect(missed(g, 'p1', 'A6')).toMatchObject({ penalty: 4, mistakes: 3 });
-    expect(missed(g, 'p1', 'A8')).toMatchObject({ penalty: 8, mistakes: 4 });
-    expect(g.score('p1')).toBe(gained - 15);
-    expect(g.player('p1').correct).toBe(3);
+    miss('A6');
+    miss('A8');
+    expect(penalties).toEqual([7.5, 6.5, 6, 5]);
+    expect(gained).toBe(22);
+    expect(g.score('p1')).toBe(gained - 25);
+    expect(g.player('p1')).toMatchObject({ correct: 3, mistakes: 4 });
+  });
+
+  it('is the same rule for every player, and each player counts their own mistakes', () => {
+    const g = GameDriver.of({ players: 3 });
+    g.miss('p1', 'A1'); // 8
+    g.miss('p1', 'A2'); // 7.5
+    expect(missed(g, 'p2', 'A5')).toMatchObject({ playerId: 'p2', penalty: 8, mistakes: 1, score: -8 });
+    g.miss('p1', 'A6'); // 6.5
+    expect(missed(g, 'p2', 'A8')).toMatchObject({ playerId: 'p2', penalty: 6.5, mistakes: 2, score: -14.5 });
+    expect(missed(g, 'p3', 'B1')).toMatchObject({ playerId: 'p3', penalty: 7, mistakes: 1, score: -7 });
+    expect(g.player('p1')).toMatchObject({ mistakes: 3, score: -22 });
   });
 
   it('the event tells the digit, the penalty, the mistake count and the score, and nothing of the right digit', () => {
     const g = GameDriver.of();
     g.select('p1', 'A1', 0);
     const events = g.place('p1', 'A1', 5, 2000);
+    // No breakdown and no answer: they would tell everyone how many of the right digit are on the board.
     expect(events[0]).toEqual({
       type: 'placedWrong',
       playerId: 'p1',
       cell: A1,
       digit: 5,
-      penalty: 1,
+      penalty: 8,
       mistakes: 1,
-      score: -1,
+      score: -8,
       seq: expect.any(Number),
       t: 2000,
     });
+  });
+
+  it("[D13] follows the game's Y rule: with 'distinct' a wrong digit in A2 costs 8", () => {
+    const g = GameDriver.of({ rules: { scoreY: 'distinct' } });
+    expect(missed(g, 'p1', 'A2')).toMatchObject({ penalty: 8, score: -8 });
+  });
+
+  it("lists each penalty in the player's state and in every view, oldest first, and replays exactly", () => {
+    const g = GameDriver.of();
+    expect(g.player('p1').mistakePenalties).toEqual([]);
+    g.miss('p1', 'A2'); // 7.5
+    g.solve('p2', 'A1');
+    g.miss('p1', 'A5'); // 7 after A1
+    expect(g.player('p1').mistakePenalties).toEqual([7.5, 7]);
+    expect(g.player('p1').mistakePenalties).toHaveLength(g.player('p1').mistakes);
+    expect(g.player('p2').mistakePenalties).toEqual([]);
+    for (const viewer of ['p1', 'p2', null]) {
+      expect(g.view(viewer).players[0]!.mistakePenalties).toEqual([7.5, 7]);
+    }
+    // The view's list is a copy.
+    const v = g.view('p1');
+    v.players[0]!.mistakePenalties.push(99);
+    expect(g.player('p1').mistakePenalties).toEqual([7.5, 7]);
+    expect(g.replayMatches()).toBe(true);
+  });
+
+  it('has no switch (Moshe, 2026-10-15): no mode has a penalty rule, and an old config cannot bring the ladder back', () => {
+    for (const mode of ['solo', 'bot', 'ranked'] as const) {
+      const rules = defaultRules(mode, 'normal');
+      expect(rules).not.toHaveProperty('mistakePenalty');
+      expect(rules).not.toHaveProperty('mistakePenaltyCap');
+    }
+    // A config written by an older build (the in-between 'doubling' switch, or the [D14] cap) is ignored.
+    const stale = { mistakePenalty: 'doubling', mistakePenaltyCap: 1 } as Partial<Rules>;
+    const g = GameDriver.of({ rules: stale });
+    const penalties = ['A1', 'A2', 'A5', 'A6', 'A8', 'B1'].map((cell) => missed(g, 'p1', cell).penalty);
+    expect(penalties).toEqual([8, 7.5, 8, 6.5, 6.5, 7]);
+    expect(g.score('p1')).toBe(-43.5);
+    expect(g.player('p1').mistakePenalties).toEqual(penalties);
   });
 
   it('is not a correct move: the board, the counters and the best move stay as they were', () => {
@@ -733,15 +796,19 @@ describe('the cell after a mistake (§6.5) [D3]', () => {
     expect(g.lock('p1')).toMatchObject({ cell: A1, lockedAt: 0, expiresAt: 8000 });
     expect(g.state.cooldowns).toEqual([]); // nothing was released, so there is no wait [D2]
     expect(g.reject({ type: 'select', playerId: 'p2', cell: A1 }, 2000)).toBe('cellTaken');
-    // The same digit is still refused, a new wrong one costs the next step, the right one ends the lock.
+    // The same digit is still refused, a new wrong one costs the cell's value again, the right one ends the lock.
     expect(g.reject(placeAt('p1', A1, 5), 2500)).toBe('digitTried');
     expect(g.place('p1', 'A1', 6, 3000)[0]).toMatchObject({
       type: 'placedWrong',
-      penalty: 2,
+      penalty: 8,
       mistakes: 2,
-      score: -3,
+      score: -16,
     });
-    expect(g.place('p1', 'A1', 8, 5000)[0]).toMatchObject({ type: 'placedCorrect', thinkMs: 5000, score: 5 });
+    expect(g.place('p1', 'A1', 8, 5000)[0]).toMatchObject({
+      type: 'placedCorrect',
+      thinkMs: 5000,
+      score: -8,
+    });
     expect(g.lock('p1')).toBeUndefined();
     expect(g.state.wrong[A1]).toEqual([
       { digit: 5, playerId: 'p1' },
@@ -756,55 +823,32 @@ describe('the cell after a mistake (§6.5) [D3]', () => {
     expect(g.deadline).toBe(8000);
     const [e] = g.tickTo(8000);
     expect(e).toMatchObject({ type: 'cellReleased', playerId: 'p1', cell: A1, reason: 'timeout' });
-    expect(g.score('p1')).toBe(-1);
+    expect(g.score('p1')).toBe(-8);
   });
 });
 
 // ---------------------------------------------------------------------------------------------------------
 
-describe('[D14] penalty cap (§6.5)', () => {
-  it('with the proposal (cap 8): 1, 2, 4, 8, 8, 8', () => {
-    const g = GameDriver.of({ rules: { mistakePenaltyCap: 8 } });
-    const penalties: number[] = [];
-    for (const cell of ['A1', 'A2', 'A5', 'A6', 'A8', 'B1']) {
-      g.miss('p1', cell);
-      penalties.push(g.last('placedWrong')!.penalty);
-    }
-    expect(penalties).toEqual([1, 2, 4, 8, 8, 8]);
-    expect(g.score('p1')).toBe(-31);
-    expect(g.player('p1').mistakes).toBe(6);
-  });
-
-  it('any cap works: cap 4 → 1, 2, 4, 4', () => {
-    const g = GameDriver.of({ rules: { mistakePenaltyCap: 4 } });
-    const penalties = ['A1', 'A2', 'A5', 'A6'].map((cell) => {
-      g.miss('p1', cell);
-      return g.last('placedWrong')!.penalty;
-    });
-    expect(penalties).toEqual([1, 2, 4, 4]);
-    expect(g.score('p1')).toBe(-11);
-  });
-});
-
 describe('[D15] score below zero (§6.5)', () => {
   it('by default the score may go below zero', () => {
     const g = GameDriver.of();
-    expect(missed(g, 'p1', 'A1')).toMatchObject({ score: -1 });
-    expect(missed(g, 'p1', 'A2')).toMatchObject({ score: -3 });
-    expect(g.score('p1')).toBe(-3);
-    expect(g.view('p2').players[0]!.score).toBe(-3);
+    expect(missed(g, 'p1', 'A1')).toMatchObject({ score: -8 });
+    expect(missed(g, 'p1', 'A2')).toMatchObject({ score: -15.5 });
+    expect(g.score('p1')).toBe(-15.5);
+    expect(g.view('p2').players[0]!.score).toBe(-15.5);
   });
 
-  it('with negativeScore: false the score stops at zero, and the ladder still climbs', () => {
+  it('with negativeScore: false the score stops at zero, and the event still carries the full penalty', () => {
     const g = GameDriver.of({ rules: { negativeScore: false } });
-    expect(missed(g, 'p1', 'A2')).toMatchObject({ penalty: 1, mistakes: 1, score: 0 });
+    expect(missed(g, 'p1', 'A2')).toMatchObject({ penalty: 7.5, mistakes: 1, score: 0 });
     g.solve('p1', 'A1'); // 8 (A2 holds only a wrong mark)
     expect(g.score('p1')).toBe(8);
-    expect(missed(g, 'p1', 'A5')).toMatchObject({ penalty: 2, mistakes: 2, score: 6 });
-    expect(missed(g, 'p1', 'A6')).toMatchObject({ penalty: 4, mistakes: 3, score: 2 });
-    expect(missed(g, 'p1', 'A8')).toMatchObject({ penalty: 8, mistakes: 4, score: 0 });
+    expect(missed(g, 'p1', 'A5')).toMatchObject({ penalty: 7, mistakes: 2, score: 1 });
+    expect(missed(g, 'p1', 'A6')).toMatchObject({ penalty: 6, mistakes: 3, score: 0 });
+    expect(missed(g, 'p1', 'A8')).toMatchObject({ penalty: 6, mistakes: 4, score: 0 });
+    expect(g.player('p1').mistakePenalties).toEqual([7.5, 7, 6, 6]);
     g.solve('p1', 'B4');
-    expect(g.score('p1')).toBe(g.last('placedCorrect')!.points); // counts up from zero, not from −6
+    expect(g.score('p1')).toBe(g.last('placedCorrect')!.points); // counts up from zero, not from −18.5
   });
 });
 
@@ -972,9 +1016,9 @@ describe('the last cell (§6.4, §6.7)', () => {
   it('a wrong digit does not end the game, even with one other empty cell left', () => {
     const g = GameDriver.of({ puzzle: SIX_HOLES });
     for (const cell of ['A1', 'A2', 'B4', 'C7']) g.solve('p1', cell);
-    // Left: B1 (3) and C1 (9). A 9 in B1 is wrong but not complete yet.
+    // Left: B1 (3) and C1 (9). A 9 in B1 is wrong but not complete yet; a near-full board makes it cheap.
     g.select('p2', 'B1');
-    expect(g.place('p2', 'B1', 9)[0]).toMatchObject({ type: 'placedWrong', penalty: 1 });
+    expect(g.place('p2', 'B1', 9)[0]).toMatchObject({ type: 'placedWrong', penalty: 1.5 });
     expect(g.state.status).toBe('running');
     expect(g.types()).not.toContain('gameOver');
   });

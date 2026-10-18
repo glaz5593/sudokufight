@@ -292,7 +292,7 @@ describe('progress, end to end (work plan stage 12 "סיום")', () => {
     expect(screen.queryByLabelText(/הכרטיס שלי/)).toBeNull();
   });
 
-  it('the interferences collection, from the progress tab: 3 open, 4 locked "בקרוב" (stage 12)', async () => {
+  it('the interferences collection, from the progress tab: 3 open, 3 at their levels, 4 "בקרוב" (stage 12, D47)', async () => {
     await installSignedInPlayer({ displayName: 'MosheG' });
     await initAuth();
     stop = startProgress();
@@ -302,14 +302,20 @@ describe('progress, end to end (work plan stage 12 "סיום")', () => {
     await fireEvent.press(await screen.findByTestId('progress-interferences'));
     await settle();
     expect(app.pathname()).toBe('/interferences');
-    expect(await screen.findByLabelText('3 מתוך 7 הפרעות פתוחות')).toBeTruthy();
-    expect(screen.getAllByTestId(/^interferences-open-/)).toHaveLength(3);
-    const locked = screen.getAllByTestId(/^interferences-locked-/);
-    expect(locked.map((l) => l.props.accessibilityLabel)).toEqual([
-      'דיו, נעול, בקרוב',
+    // The three first open from the start; the scramble, ink and the keypad at levels 2, 3 and 4 [D17] (this
+    // player's level depends on the games the tests before this one played).
+    const count = await screen.findByLabelText(/^\d+ מתוך 10 הפרעות פתוחות$/);
+    const open = screen.getAllByTestId(/^interferences-open-/).length;
+    expect(open).toBeGreaterThanOrEqual(3);
+    expect(count.props.accessibilityLabel).toBe(`${open} מתוך 10 הפרעות פתוחות`);
+    const locked = screen.getAllByTestId(/^interferences-locked-/).map((l) => l.props.accessibilityLabel);
+    expect(open + locked.length).toBe(10);
+    expect(locked.slice(0, -4).every((l) => /, נעול, נפתח ברמה [234]$/.test(l))).toBe(true);
+    expect(locked.slice(-4)).toEqual([
       'רעידת אדמה, נעול, בקרוב',
       'ערפל, נעול, בקרוב',
       'בועות, נעול, בקרוב',
+      'פנס, נעול, בקרוב',
     ]);
   });
 });

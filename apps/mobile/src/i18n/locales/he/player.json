@@ -21,6 +21,8 @@
     "online_female": "מחוברת",
     "reconnecting": "מתנתק",
     "reconnecting_female": "מתנתקת",
+    "unstable": "ללא חיבור",
+    "unstable_female": "ללא חיבור",
     "left": "נטש",
     "left_female": "נטשה"
   },
@@ -80,7 +82,8 @@
   },
   "card": {
     "hit": "תחת הפרעה, {{time}}",
-    "drop": "גרור לכאן"
+    "target": "יעד",
+    "targetHint": "יעד ההפרעה"
   },
   "actions": {
     "surrender": "כניעה",
@@ -88,16 +91,14 @@
     "reactions": "תגובות"
   },
   "interfere": {
-    "cost": "{{cost}} נק׳",
-    "unit": "נק׳",
-    "missing": "חסרות {{count}} נק׳",
+    "button": "הפרעה",
     "label": "הפרעה ל־{{name}} · עלות {{cost}} נק׳",
     "labelMissing": "הפרעה ל־{{name}} · חסרות {{count}} נק׳",
     "labelBusy": "הפרעה ל־{{name}} לא זמינה, כבר תחת הפרעה",
     "labelNotRunning": "הפרעה ל־{{name}} לא זמינה כרגע",
     "labelDisconnected": "בזמן ניתוק אין הפרעות",
     "labelOut": "{{name}} כבר לא במשחק",
-    "close": "סגירת ארסנל ההפרעות"
+    "close": "סגירת חלון ההפרעות"
   },
   "lead": {
     "tie": "שוויון",

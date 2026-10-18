@@ -10,7 +10,11 @@ import {
   type GameView,
   type HostUpdate,
   type InterferenceKind,
+  isSoftOffline,
+  type LocalLock,
+  offlinePlayable,
   type PlayerId,
+  type RejectReason,
   type Scheduler,
   toView,
 } from '@sudoku-fight/engine';
@@ -26,7 +30,8 @@ import {
 
 import { ClockSync, type ClockSyncOptions, TokenBucket } from './clockSync';
 import { OnlineError, onlineErrorOf } from './errors';
-import { type MetricsTrack, NetMetrics, type NetMetricsOptions } from './metrics';
+import { type InFlight, type MetricsTrack, NetMetrics, type NetMetricsOptions } from './metrics';
+import { OfflinePlayBook, type QueuedMove, type ReturnPlan } from './offlinePlay';
 import type { DevRoomOptions, OnlineClient, RoomLike } from './onlineClient';
 
 /**
@@ -40,21 +45,41 @@ import type { DevRoomOptions, OnlineClient, RoomLike } from './onlineClient';
  *   like LocalGameHost's; an 'events' update with no events means the picture changed without an event (a
  *   snapshot, or the solution after the end). Actions go out with a growing clientSeq that carries on from
  *   the snapshot's lastClientSeq; refusals come back as 'rejected'. While offline an action is refused here
- *   with 'disconnected' (spec §16.2: the board is locked while reconnecting).
+ *   with 'disconnected' (spec §16.2: the board is locked while reconnecting), but in the soft phase (below).
  * - Optimistic select (spec §18): a tapped cell shows as pending (`pendingCell`, for boardModel's pending
  *   option) until its lock or refusal arrives, or `pendingTimeoutMs` passes (a rate-limited message gets no
  *   answer at all). A digit's result only ever comes from the server.
  * - The clock: ping/pong every `pingEveryMs` (a burst at every join), and the offset from ClockSync;
  *   serverNow() = phone time + offset, the clock the view's deadlines (expiresAt) are in.
- * - Connection (spec §16.2): a drop (or `silenceTimeoutMs` without a word from the server) turns to
- *   'reconnecting' and comes back with the reconnection token, with backoff, until the grace period is over
- *   (+ the time the server may take to notice, + 1 s); when the server holds no seat for the token but the
- *   room is alive, it rejoins by code with the same identity. Giving up is 'closed' with 'lostConnection'.
- *   The token is a bearer secret: in memory only, never logged.
+ * - Connection (spec §16.2): a drop (or `silenceTimeoutMs` without a word from the server, or an action with
+ *   nothing heard for `answerTimeoutMs`) turns to 'reconnecting' and comes back with the reconnection token,
+ *   with backoff, until the soft phase and the grace period are over (+ the time the server may take to
+ *   notice, + 1 s); when the server holds no seat for the token but the room is alive, it rejoins by code with
+ *   the same identity. Giving up is 'closed' with 'lostConnection'. The token is a bearer secret: in memory
+ *   only, never logged. Once the game is over nothing reconnects: a drop, a silence or a gap after the end
+ *   closes the host as 'gameOver' (the result is here already).
+ * - The soft phase [D42] (Moshe, 2026-10-15): for rules.softGraceMs after the loss the game goes on for
+ *   everyone, and this player plays on here (OfflinePlayBook): a tap locks the cell locally with its own
+ *   countdown, and a digit is queued as "waiting" (`online.queuedMoves`); interferences, reactions and the
+ *   surrender stay refused. The select or digit the server had not answered when the connection went is
+ *   carried into it. Back (the snapshot), the queue goes out as `offlineMove` in order (the moves the
+ *   snapshot already settles are dropped) and a cell held here without a digit is selected again; the server
+ *   decides each on the board as it is then, and a refused one comes back as 'rejected' (lost, no penalty).
+ *   A lock of mine the server kept on a cell let go of here is released there first. A game frozen at the
+ *   return (another player still away, or me until the server's playerReconnected) would refuse all of it
+ *   ('paused'): it waits for gameResumed, and the engine keeps the move window for it meanwhile. A sent move
+ *   with no answer after `offlineAnswerTimeoutMs` (the server dropped it) goes out again.
+ *   A return inside the soft phase shows no "back, all synced" banner (`resyncedAt` is left as it was).
+ *   After the phone's own soft phase nothing more is played here (the hard phase: the board locked); the
+ *   queue waits for the return. An older server (rules without softGraceMs) gets none of this.
+ * - Diagnostics: `log` lines say what happened (no token, no names), and `report` gets what the host survived
+ *   but must not hide (a listener that threw, a message that broke the mirror); release builds send both to
+ *   Crashlytics (net/device.ts).
  * - AppState (work plan, stage 7): the app going to the background during a game is a disconnect (the socket
  *   closes, the token is kept); back in the foreground it reconnects at once.
  * - Measures (spec §18): see NetMetrics; reconnect time is from starting to come back to the snapshot, sync
- *   time from the snapshot to the game being current again. A return is reported as track('reconnect').
+ *   time from the snapshot to the game being current again (this player out of the soft phase too). A return
+ *   is reported as track('reconnect'), with its phase ('soft' or 'hard') and the moves queued offline.
  * - Ranked matches (stage 9): enterReserved() takes the seat matchmaking reserved (net/matchmaking.ts); the
  *   room's 3… 2… 1… shows as `online.startsAt`, and the game comes at GO like any other.
  *
@@ -94,6 +119,13 @@ export interface ReconnectInfo {
   since: number;
   /** The same moment in the server's clock, like the view's deadlines (for the countdowns). */
   lostAt: number;
+  /**
+   * The end of the soft phase as this phone reckons it (server clock: lostAt + rules.softGraceMs) [D42]: until
+   * then the game goes on and nothing about the connection is shown. Null when the game has none.
+   */
+  softEndsAt: number | null;
+  /** When the server calls it abandonment, as this phone reckons it (lostAt + the soft phase + the grace). */
+  graceEndsAt: number;
   /** Phone time after which it gives up. */
   deadline: number;
   /** A room took this player back; the fresh snapshot is on its way. */
@@ -119,8 +151,24 @@ export interface OnlineInfo {
   pendingCell: CellIndex | null;
   /** A game is here (the first snapshot came): getView() works. */
   hasGame: boolean;
-  /** Server time when the latest return's snapshot came (the "back in the game" banner); null before any. */
+  /**
+   * Server time when the latest return's snapshot came after the hard phase (the "back in the game" banner);
+   * null before any. A return inside the soft phase leaves it as it was [D42].
+   */
   resyncedAt: number | null;
+  /**
+   * While the connection is lost and the game has a soft phase [D42]: since when, until when (server clock),
+   * and whether this player plays on here meanwhile. Null otherwise.
+   */
+  offlinePlay: { since: number; softEndsAt: number; playable: boolean } | null;
+  /** Digits entered offline, waiting for the server's answer (the board shows them as "waiting"); oldest first. */
+  queuedMoves: readonly QueuedMove[];
+  /**
+   * The other players whose absence (still on, or ended by abandonment) began hard, with no soft phase [D42]: a
+   * deliberate leave, a seat empty at GO. "The opponent left" counts their grace alone. Absent or empty when
+   * none is known: an absence first seen in a snapshot counts as a dropped connection.
+   */
+  hardLeavers?: readonly PlayerId[];
   /**
    * A ranked match's room (stage 9): GO, in the server's clock, once everyone is in and its 3… 2… 1… runs
    * (protocol GameRoomCountdown); the snapshot follows at GO. Null (or absent) otherwise.
@@ -158,6 +206,21 @@ export interface RemoteHostOptions {
   serverNoticeMs: number;
   /** The grace period before there is a game to read it from. */
   defaultGraceMs: number;
+  /**
+   * The soft phase before there is a game to read it from [D42] (a drop in a match's countdown is soft at GO).
+   * A game's rules without one (an older server) count as 0.
+   */
+  defaultSoftGraceMs: number;
+  /**
+   * An action sent, and nothing at all heard from the server for this long: the connection is taken for lost
+   * at once (a dead network sends no close) [D42]. A false alarm costs a moment of play offline. 0: off.
+   */
+  answerTimeoutMs: number;
+  /**
+   * A move made offline that was sent and has no answer after this long (the server dropped the message, e.g.
+   * over its rate limit, while the connection itself is fine) is sent again [D42]. 0: off.
+   */
+  offlineAnswerTimeoutMs: number;
   clock: ClockSyncOptions;
   metrics: Omit<NetMetricsOptions, 'track'>;
 }
@@ -175,6 +238,9 @@ export const DEFAULT_REMOTE_HOST_OPTIONS: RemoteHostOptions = {
   reconnectSlackMs: 1000,
   serverNoticeMs: 4500,
   defaultGraceMs: 15_000,
+  defaultSoftGraceMs: 10_000,
+  answerTimeoutMs: 2_500,
+  offlineAnswerTimeoutMs: 3_000,
   clock: {},
   metrics: {},
 };
@@ -188,10 +254,22 @@ export interface RemoteHostDeps {
   appState?: AppStateLike | null;
   /** Analytics (latency_sample, reconnect). */
   track?: MetricsTrack;
-  /** Diagnostics. Never gets the reconnection token. */
+  /**
+   * Diagnostics (release builds: Crashlytics breadcrumbs, net/device.ts). Never gets the reconnection token,
+   * a name or anything else about a player: what happened, codes and counts.
+   */
   log?: (line: string) => void;
+  /**
+   * An error the host survived but must not hide (release builds: a Crashlytics non-fatal): a listener that
+   * threw while being told an update ('listener failed', 'online listener failed'), or a server message that
+   * broke the mirror ('message failed', the host then fetches a fresh snapshot).
+   */
+  report?: (error: unknown, context: HostFailure) => void;
   options?: Partial<RemoteHostOptions>;
 }
+
+/** What RemoteHostDeps.report is told about. */
+export type HostFailure = 'listener failed' | 'online listener failed' | 'message failed';
 
 const CONSENTED = 4000;
 /** Errors after which coming back is pointless: the room is gone, or it won't take this player. */
@@ -249,8 +327,31 @@ export class RemoteGameHost implements GameHost {
   private lost: ReconnectInfo | null = null;
   private resyncedAt: number | null = null;
   private startsAt: number | null = null;
-  /** After a drop: when coming back started, and when its snapshot came. */
-  private comingBack: { startedAt: number; snapshotAt: number | null } | null = null;
+  /**
+   * After a drop: when coming back started, and when its snapshot came; then whether the return was inside the
+   * soft phase, and how many moves made offline it brought (for track('reconnect')).
+   */
+  private comingBack: {
+    startedAt: number;
+    snapshotAt: number | null;
+    phase: 'soft' | 'hard';
+    queued: number;
+  } | null = null;
+  /** Playing on while the connection is lost [D42]: the local lock and the queue. */
+  private readonly offline = new OfflinePlayBook();
+  /** Wakes the picture of the play offline when something in it runs out (a lock, the soft phase). */
+  private offlineTimer: unknown = null;
+  /** What was on its way when the connection last went (NetMetrics.unanswered()), for the play offline. */
+  private inFlightAtLoss: InFlight[] = [];
+  /** A return's moves made offline (and its cells), held back while the game is frozen [D42]. */
+  private flushOnResume: ReturnPlan | null = null;
+  /** The watch for the answers of moves made offline (offlineAnswerTimeoutMs). */
+  private offlineAnswerTimer: unknown = null;
+  /** How each other player's absence began [D42]: a drop ('soft') or 'hard' at once; none while they are here. */
+  private readonly absences = new Map<PlayerId, 'soft' | 'hard'>();
+  /** Phone time of the last action sent, and the watch for its answer (answerTimeoutMs). */
+  private lastSentAt = 0;
+  private answerTimer: unknown = null;
   private backgrounded = false;
   private readonly sleepers = new Set<() => void>();
   private appStateSub: { remove(): void } | null = null;
@@ -323,10 +424,15 @@ export class RemoteGameHost implements GameHost {
     return this.me ?? '';
   }
 
-  /** The game as this player sees it now. Only once a game is here (`online.hasGame`). */
+  /**
+   * The game as this player sees it now. Only once a game is here (`online.hasGame`). While the connection is
+   * lost in the soft phase [D42], with the play offline on it: the local lock, and the player marked.
+   */
   getView(): GameView {
     if (!this.state) throw new Error('No game yet: wait for the first snapshot');
-    return toView(this.state, this.me, this.serverNow());
+    const now = this.serverNow();
+    const shown = this.me !== null ? this.offline.overlay(this.state, this.me, now) : this.state;
+    return toView(shown, this.me, now);
   }
 
   subscribe(onEvent: (update: HostUpdate) => void): () => void {
@@ -408,24 +514,73 @@ export class RemoteGameHost implements GameHost {
 
   private act(action: ClientAction): void {
     if (this.closed || !this.state) return;
-    const room = this.room;
-    if (room === null || this.status !== 'live') {
-      this.emit({ kind: 'rejected', action, reason: 'disconnected', view: this.getView() });
+    const clientSeq = this.room !== null && this.status === 'live' ? this.send(action) : null;
+    if (clientSeq === null) {
+      // Offline: played here in the soft phase [D42], else refused (spec §16.2: the board is locked).
+      if (!this.playOffline(action))
+        this.emit({ kind: 'rejected', action, reason: 'disconnected', view: this.getView() });
       return;
     }
+    if (action.type === 'select') this.setPending(action.cell, clientSeq);
+  }
+
+  /** Sends an action now; its clientSeq, or null when it could not go (the connection is taken for lost). */
+  private send(action: ClientAction): number | null {
+    const room = this.room;
+    if (room === null) return null;
     const clientSeq = ++this.clientSeq;
     try {
       room.send(action.type, { ...action, clientSeq } as ClientMessage);
     } catch (error) {
       this.log(`send ${action.type} failed: ${messageOf(error)}`);
       this.dropConnection();
-      this.emit({ kind: 'rejected', action, reason: 'disconnected', view: this.getView() });
-      return;
+      return null;
     }
-    this.metrics.sent(clientSeq, action, this.now());
+    const at = this.now();
+    this.metrics.sent(clientSeq, action, at);
     this.sent.set(clientSeq, action);
     if (this.sent.size > SENT_KEPT) this.sent.delete(this.sent.keys().next().value!);
-    if (action.type === 'select') this.setPending(action.cell, clientSeq);
+    this.lastSentAt = at;
+    this.watchAnswer();
+    return clientSeq;
+  }
+
+  /**
+   * An action while the connection is lost, played here in the soft phase [D42]: a select locks the cell
+   * locally, "ביטול בחירה" lets it go, a digit joins the queue. A refusal is the engine's reason, as the server
+   * would give it. False when nothing is played here (no soft phase, it ran out, the app in the background, or
+   * an action that needs the server: interferences, reactions, the surrender).
+   */
+  private playOffline(action: ClientAction): boolean {
+    const state = this.state;
+    const me = this.me;
+    if (!state || me === null || !this.offline.active || this.backgrounded) return false;
+    const now = this.serverNow();
+    let refusal: RejectReason | null;
+    switch (action.type) {
+      case 'select':
+        refusal = this.offline.select(state, me, action.cell, now);
+        break;
+      case 'release':
+        refusal = this.offline.release(now);
+        break;
+      case 'place':
+        refusal = this.offline.place(state, me, action.cell, action.digit, now);
+        break;
+      default:
+        return false;
+    }
+    if (refusal) {
+      this.emit({ kind: 'rejected', action, reason: refusal, view: this.getView() });
+      return true;
+    }
+    if (action.type === 'place') {
+      this.log(`a move queued offline (${this.offline.size})`);
+      this.notifyOnline();
+    }
+    this.scheduleOfflineWake();
+    this.emit({ kind: 'events', events: [], view: this.getView() });
+    return true;
   }
 
   private setPending(cell: CellIndex, clientSeq: number): void {
@@ -491,8 +646,25 @@ export class RemoteGameHost implements GameHost {
         const action = this.sent.get(m.clientSeq);
         this.sent.delete(m.clientSeq);
         if (this.pending?.clientSeq === m.clientSeq) this.clearPending();
-        if (action && this.state)
-          this.emit({ kind: 'rejected', action, reason: m.reason, view: this.getView() });
+        // A move made offline that did not count [D42]: the cell was no longer free for me. No penalty.
+        const lost = this.offline.rejected(m.clientSeq);
+        if (lost) {
+          this.log(`a move made offline did not count: ${m.reason}`);
+          this.notifyOnline();
+        }
+        // A move made offline whose entry is gone: a copy sent again after its first one was answered, or a
+        // queue the end cleared. Nothing was lost, nothing to say.
+        if (action?.type === 'offlineMove' && !lost) {
+          this.log(`an old copy of a move made offline refused: ${m.reason}`);
+          return;
+        }
+        const refused: ClientAction | undefined =
+          action ??
+          (lost
+            ? { type: 'offlineMove', cell: lost.cell, digit: lost.digit, thinkMs: lost.thinkMs }
+            : undefined);
+        if (refused && this.state)
+          this.emit({ kind: 'rejected', action: refused, reason: m.reason, view: this.getView() });
         return;
       }
       case 'solution':
@@ -526,12 +698,154 @@ export class RemoteGameHost implements GameHost {
     this.clearGapTimer();
     this.clientSeq = Math.max(this.clientSeq, m.lastClientSeq ?? 0);
     this.clearPending(false);
-    if (this.comingBack) this.comingBack.snapshotAt = this.now();
-    if (this.lost) this.resyncedAt = this.serverNow();
+    // Back. Inside the soft phase [D42] nothing froze and nobody was told: no "back, all synced" banner. Past
+    // it (by this phone's reckoning, or the snapshot shows me away), the banner as before.
+    const lost = this.lost;
+    const mine = m.state.players.find((p) => p.id === m.playerId);
+    const hard =
+      lost !== null &&
+      (lost.softEndsAt === null ||
+        this.serverNow() >= lost.softEndsAt ||
+        (mine?.status === 'active' && !mine.connected));
+    if (this.comingBack) {
+      this.comingBack.snapshotAt = this.now();
+      this.comingBack.phase = hard ? 'hard' : 'soft';
+      this.comingBack.queued = this.offline.size;
+    }
+    if (hard) this.resyncedAt = this.serverNow();
+    this.trackAbsences(m.state);
+    // The server's word replaces the play offline; its queue goes out below.
+    const plan = this.offline.end(this.serverNow());
+    this.clearOfflineTimer();
     this.lost = null;
     this.setStatus('live');
     this.checkInSync();
     this.emit({ kind: 'events', events: [], view: this.getView() });
+    this.flushOffline(plan);
+  }
+
+  /**
+   * Back with moves made offline [D42]: they go to the server in the order they were made, as `offlineMove`
+   * (the server takes my return before any message of mine); those the snapshot already settles are not sent
+   * again. First a lock of mine the server kept on a cell I let go of here is released there (else it would
+   * come back as mine, and block the others, until it ran out). Then a cell held here without a digit is
+   * selected again, when it is still free (the server says "taken" otherwise). A game that ended meanwhile, or
+   * that I am out of, drops them quietly. A frozen game would refuse each of them ('paused'), however free its
+   * cell: all of it waits for the game to go on (onEvents), the engine's window waiting with it.
+   */
+  private flushOffline(plan: ReturnPlan): void {
+    const state = this.state;
+    const me = this.me;
+    if (!state || me === null || this.closed) return;
+    const p = state.players.find((x) => x.id === me);
+    if (state.status === 'over' || p?.status !== 'active') {
+      this.flushOnResume = null;
+      if (this.offline.size) {
+        this.log(`the game went on without the ${this.offline.size} moves made offline`);
+        this.offline.clear();
+        this.notifyOnline();
+      }
+      return;
+    }
+    if (state.status === 'paused') {
+      const waiting = this.flushOnResume;
+      if (!waiting && (this.offline.size || plan.held !== null || plan.letGo.length))
+        this.log(`the game is frozen: ${this.offline.size} moves made offline wait for it to go on`);
+      this.flushOnResume = waiting
+        ? { held: waiting.held ?? plan.held, letGo: [...new Set([...waiting.letGo, ...plan.letGo])] }
+        : plan;
+      return;
+    }
+    this.flushOnResume = null;
+    const queuedAt = (cell: CellIndex) => this.offline.queued.some((q) => q.cell === cell);
+    const mine = state.locks.find((l) => l.playerId === me);
+    if (mine && plan.letGo.includes(mine.cell) && mine.cell !== plan.held && !queuedAt(mine.cell)) {
+      if (this.send({ type: 'release' }) === null) return; // the connection went again
+      this.log('released at the server: the cell let go of offline');
+    }
+    const before = this.offline.size;
+    const entries = this.offline.entriesToSend(state, me);
+    let sent = 0;
+    for (const entry of entries) {
+      const action: ClientAction = {
+        type: 'offlineMove',
+        cell: entry.cell,
+        digit: entry.digit,
+        thinkMs: entry.thinkMs,
+      };
+      const clientSeq = this.send(action);
+      if (clientSeq === null) return; // the connection went again: they wait for the next return
+      this.offline.markSent(entry, clientSeq, this.now());
+      sent++;
+    }
+    if (sent) {
+      this.log(`sent ${sent} moves made offline`);
+      this.watchOfflineAnswers();
+    }
+    const held = plan.held;
+    if (
+      held !== null &&
+      state.grid[held] === 0 &&
+      !state.locks.some((l) => l.cell === held && l.playerId === me) &&
+      !queuedAt(held)
+    )
+      this.act({ type: 'select', cell: held });
+    if (this.offline.size !== before) this.notifyOnline();
+  }
+
+  /**
+   * The moves made offline that were sent wait for their answer (placed* with `offline`, or 'rejected'). One
+   * with none after offlineAnswerTimeoutMs was dropped by the server (its rate limit answers nothing) while the
+   * connection is fine: it is sent again, so no cell stays "waiting" for good. An answer to the old copy that
+   * comes after all is taken as usual; a refusal of it is ignored (the new copy gets its own).
+   */
+  private watchOfflineAnswers(): void {
+    const timeoutMs = this.opts.offlineAnswerTimeoutMs;
+    if (this.offlineAnswerTimer !== null || !(timeoutMs > 0)) return;
+    const oldest = this.offline.oldestSentAt;
+    if (oldest === null) return;
+    this.offlineAnswerTimer = this.deps.scheduler.setTimeout(
+      () => {
+        this.offlineAnswerTimer = null;
+        if (this.closed || this.room === null || this.status !== 'live') return;
+        const again = this.offline.resetSentBy(this.now() - timeoutMs);
+        if (again) {
+          this.log(`${again} moves made offline got no answer: sending them again`);
+          this.notifyOnline();
+          this.flushOffline({ held: null, letGo: [] });
+        }
+        this.watchOfflineAnswers();
+      },
+      Math.max(0, oldest + timeoutMs - this.now()),
+    );
+  }
+
+  private clearOfflineAnswerTimer(): void {
+    if (this.offlineAnswerTimer !== null) this.deps.scheduler.clearTimeout(this.offlineAnswerTimer);
+    this.offlineAnswerTimer = null;
+  }
+
+  /**
+   * How the other players' absences began [D42], from the events (and a snapshot's picture): a drop starts with
+   * the soft phase (playerConnectionLost), a deliberate leave or a seat empty at GO with playerDisconnected. An
+   * absence first seen in a snapshot, already hard, is not known: it counts as a drop. True when it changed.
+   */
+  private trackAbsence(e: GameEvent): boolean {
+    if (!('playerId' in e) || e.playerId === this.me) return false;
+    const id = e.playerId;
+    const was = this.absences.get(id);
+    if (e.type === 'playerConnectionLost') this.absences.set(id, 'soft');
+    else if (e.type === 'playerDisconnected' && was === undefined) this.absences.set(id, 'hard');
+    else if (e.type === 'playerReconnected') this.absences.delete(id);
+    return this.absences.get(id) !== was;
+  }
+
+  private trackAbsences(state: GameState): void {
+    for (const p of state.players) {
+      if (p.id === this.me) continue;
+      if (isSoftOffline(p)) this.absences.set(p.id, 'soft');
+      else if (p.connected && p.status === 'active') this.absences.delete(p.id);
+    }
   }
 
   private onEvents(events: readonly GameEvent[]): void {
@@ -551,6 +865,13 @@ export class RemoteGameHost implements GameHost {
 
     const me = this.me ?? '';
     this.metrics.events(applied, me, this.now(), this.sync.synced ? this.sync.offsetMs : null);
+    // A move made offline is answered [D42]: no longer "waiting". Someone's absence began, or ended.
+    let changed = false;
+    for (const e of applied) {
+      if (this.offline.answered(e, me)) changed = true;
+      if (this.trackAbsence(e)) changed = true;
+    }
+    if (changed) this.notifyOnline();
     const pending = this.pending;
     if (
       pending &&
@@ -563,6 +884,12 @@ export class RemoteGameHost implements GameHost {
       this.clearPending();
     this.checkInSync();
     this.emit({ kind: 'events', events: applied, view: this.getView() });
+    // The game goes on (or ended) after a frozen return: what the return held back goes now [D42].
+    const waiting = this.flushOnResume;
+    if (waiting && this.state?.status !== 'paused') {
+      this.flushOnResume = null;
+      this.flushOffline(waiting);
+    }
   }
 
   /** The room is gone: closed by the server, dropped, or kicked. */
@@ -648,22 +975,39 @@ export class RemoteGameHost implements GameHost {
 
   // -- losing the connection and coming back -------------------------------------------------------------
 
-  /** Offline: whatever was on the way is lost. */
+  /**
+   * Offline: whatever was on the way is lost; what it was is kept for the play offline [D42], and moves made
+   * offline that were sent and not answered go out again after the next return.
+   */
   private goOffline(): void {
     this.room = null;
     this.stopTicking();
+    this.clearAnswerTimer();
     this.sync.forgetInFlight();
+    this.inFlightAtLoss = this.metrics.unanswered();
     this.metrics.dropped();
+    this.offline.resetUnanswered();
+    this.clearOfflineAnswerTimer();
+    // A frozen return's held-back moves wait for the next return instead (they stay in the queue).
+    this.flushOnResume = null;
     this.sent.clear();
     this.clearPending(false);
     this.ahead.clear();
     this.clearGapTimer();
   }
 
-  /** Lets go of the socket (the server sees a drop and holds the seat) and comes back with the token. */
+  /**
+   * Lets go of the socket (the server sees a drop and holds the seat) and comes back with the token. Not after
+   * the end: a finished game has nothing to come back to (its result and solution are here), so the host
+   * closes as 'gameOver' instead of a reconnect loop against a room that is closing.
+   */
   private dropConnection(): void {
     const room = this.room;
     if (!room) return;
+    if (this.state?.status === 'over') {
+      this.log('the connection went after the end: closing');
+      return this.shutdown('gameOver', null);
+    }
     this.goOffline();
     void room.leave(false).catch(() => undefined);
     this.lose('drop');
@@ -672,17 +1016,26 @@ export class RemoteGameHost implements GameHost {
   private lose(cause: ReconnectInfo['cause']): void {
     if (this.closed) return;
     const now = this.now();
+    const inFlight = this.inFlightAtLoss;
+    this.inFlightAtLoss = [];
     if (!this.lost) {
-      const graceMs = this.state?.config.rules.graceMs ?? this.opts.defaultGraceMs;
+      const rules = this.state?.config.rules;
+      const graceMs = rules?.graceMs ?? this.opts.defaultGraceMs;
+      // [D42] The soft phase comes first, then the grace. Rules without one (an older server) have none.
+      const softGraceMs = rules ? (rules.softGraceMs ?? 0) : this.opts.defaultSoftGraceMs;
       const { serverNoticeMs, reconnectSlackMs } = this.opts;
+      const lostAt = this.serverNow();
       this.lost = {
         cause,
         attempt: 0,
         since: now,
-        lostAt: this.serverNow(),
-        deadline: now + graceMs + serverNoticeMs + reconnectSlackMs,
+        lostAt,
+        softEndsAt: softGraceMs > 0 ? lostAt + softGraceMs : null,
+        graceEndsAt: lostAt + softGraceMs + graceMs,
+        deadline: now + softGraceMs + graceMs + serverNoticeMs + reconnectSlackMs,
         resyncing: false,
       };
+      this.startOfflinePlay(inFlight);
     } else {
       this.lost = { ...this.lost, cause, attempt: 0, resyncing: false };
     }
@@ -690,10 +1043,104 @@ export class RemoteGameHost implements GameHost {
     if (!this.backgrounded) void this.comeBack();
   }
 
+  /**
+   * The connection is lost with a soft phase ahead [D42]: this player plays on here until its end, from where
+   * he stood. My lock of the moment keeps running here (as it does on the server, where it may run out); what
+   * the server had not answered is carried in, in order: a select becomes the lock here, a digit the first
+   * queued move, "ביטול בחירה" lets go. Nothing for a game that can't be played so ('turns', an older server).
+   */
+  private startOfflinePlay(inFlight: readonly InFlight[]): void {
+    const state = this.state;
+    const me = this.me;
+    const lost = this.lost;
+    if (!state || me === null || lost?.softEndsAt == null || !offlinePlayable(state, me)) return;
+    const now = this.serverNow();
+    const offset = this.sync.offsetMs;
+    const mine = state.locks.find((l) => l.playerId === me);
+    const lock: LocalLock | null = mine
+      ? { cell: mine.cell, lockedAt: mine.lockedAt, expiresAt: mine.expiresAt ?? now + mine.remainingMs }
+      : null;
+    this.offline.start(lost.lostAt, lost.softEndsAt, lock);
+    for (const { action, at } of inFlight) {
+      const t = at + offset;
+      if (action.type === 'select') this.offline.select(state, me, action.cell, t);
+      else if (action.type === 'release') this.offline.release(t);
+      else if (action.type === 'place') this.offline.place(state, me, action.cell, action.digit, t);
+    }
+    this.offline.expire(now);
+    this.log(`playing on offline${this.offline.size ? `, ${this.offline.size} moves queued` : ''}`);
+    this.scheduleOfflineWake();
+    // The picture changed: I am marked, and my lock is the one here.
+    this.emit({ kind: 'events', events: [], view: this.getView() });
+  }
+
+  /**
+   * The picture of the play offline changes by itself when a lock (mine here, or another's) or the soft phase
+   * runs out: one timer to draw it again then. Every time is read from the clock when it fires, not counted.
+   */
+  private scheduleOfflineWake(): void {
+    this.clearOfflineTimer();
+    const state = this.state;
+    const me = this.me;
+    if (!state || me === null || this.closed || !this.offline.active) return;
+    const now = this.serverNow();
+    const at = this.offline.nextWake(state, me, now);
+    if (at === null) return;
+    this.offlineTimer = this.deps.scheduler.setTimeout(
+      () => {
+        this.offlineTimer = null;
+        if (this.closed || !this.offline.active) return;
+        this.offline.expire(this.serverNow());
+        this.notifyOnline();
+        this.emit({ kind: 'events', events: [], view: this.getView() });
+        this.scheduleOfflineWake();
+      },
+      Math.max(0, at - now),
+    );
+  }
+
+  private clearOfflineTimer(): void {
+    if (this.offlineTimer !== null) this.deps.scheduler.clearTimeout(this.offlineTimer);
+    this.offlineTimer = null;
+  }
+
+  /**
+   * After an action, the server should say something soon (its answer, a pong): nothing at all for
+   * answerTimeoutMs after the last send means the network is gone, without the close a socket would see
+   * [D42]. Then the play offline starts at once, not only after silenceTimeoutMs without a word.
+   */
+  private watchAnswer(): void {
+    const { answerTimeoutMs } = this.opts;
+    if (this.answerTimer !== null || !(answerTimeoutMs > 0)) return;
+    const room = this.room;
+    const sentAt = this.lastSentAt;
+    this.answerTimer = this.deps.scheduler.setTimeout(
+      () => {
+        this.answerTimer = null;
+        if (room === null || room !== this.room || this.closed) return;
+        // Far too late: this app was not running (suspended), the silence was ours.
+        if (this.now() - sentAt > 2 * answerTimeoutMs) return;
+        if (this.lastHeardAt < sentAt) {
+          this.log('no answer from the server');
+          this.dropConnection();
+          return;
+        }
+        // Heard since that send; a later one may still be waiting for a word.
+        if (this.lastSentAt > sentAt && this.lastHeardAt < this.lastSentAt) this.watchAnswer();
+      },
+      Math.max(0, answerTimeoutMs - (this.now() - sentAt)),
+    );
+  }
+
+  private clearAnswerTimer(): void {
+    if (this.answerTimer !== null) this.deps.scheduler.clearTimeout(this.answerTimer);
+    this.answerTimer = null;
+  }
+
   /** Tries to come back until it does, the deadline passes, or the room can't take this player any more. */
   private async comeBack(): Promise<void> {
     const run = ++this.run;
-    this.comingBack = { startedAt: this.now(), snapshotAt: null };
+    this.comingBack = { startedAt: this.now(), snapshotAt: null, phase: 'hard', queued: 0 };
     let lastError: OnlineError | null = null;
     for (let attempt = 1; ; attempt++) {
       if (this.isStale(run) || !this.lost) return;
@@ -790,7 +1237,10 @@ export class RemoteGameHost implements GameHost {
     return this.closed || this.backgrounded || run !== this.run;
   }
 
-  /** After a return: the game is current once the snapshot is in and this player is back in a running game. */
+  /**
+   * After a return: the game is current once the snapshot is in and this player is back in a running game, out
+   * of the soft phase too (the snapshot may still show him in it, until the server's playerReconnected) [D42].
+   */
   private checkInSync(): void {
     const back = this.comingBack;
     const s = this.state;
@@ -801,12 +1251,17 @@ export class RemoteGameHost implements GameHost {
       s.status === 'over' ||
       !me ||
       me.status !== 'active' ||
-      (me.connected && (s.status !== 'paused' || othersAway));
+      (me.connected && !isSoftOffline(me) && (s.status !== 'paused' || othersAway));
     if (!current) return;
     this.comingBack = null;
     const now = this.now();
     this.metrics.cameBack(back.snapshotAt - back.startedAt, now - back.snapshotAt);
-    this.trackSafely('reconnect', { durationMs: Math.round(now - back.startedAt), success: true });
+    this.trackSafely('reconnect', {
+      durationMs: Math.round(now - back.startedAt),
+      success: true,
+      phase: back.phase,
+      queued: back.queued,
+    });
   }
 
   // -- the app in the background -------------------------------------------------------------------------
@@ -841,17 +1296,28 @@ export class RemoteGameHost implements GameHost {
     if (this.closed) return;
     const failedReturn = this.comingBack !== null && reason === 'lostConnection';
     const startedAt = this.comingBack?.startedAt ?? 0;
+    const softEndsAt = this.lost?.softEndsAt ?? null;
+    const phase = softEndsAt !== null && this.serverNow() < softEndsAt ? 'soft' : 'hard';
+    const queued = this.offline.size;
     this.closed = true;
     this.run++;
     const room = this.room;
     this.goOffline();
+    // Nothing more is played or sent: a finished game's moves made offline go with it.
+    this.offline.clear();
+    this.clearOfflineTimer();
     if (room) void room.leave(true).catch(() => undefined);
     this.wakeSleepers();
     this.appStateSub?.remove();
     this.appStateSub = null;
     const now = this.now();
     if (failedReturn)
-      this.trackSafely('reconnect', { durationMs: Math.round(now - startedAt), success: false });
+      this.trackSafely('reconnect', {
+        durationMs: Math.round(now - startedAt),
+        success: false,
+        phase,
+        queued,
+      });
     this.metrics.flush(now);
     this.comingBack = null;
     this.lost = null;
@@ -901,6 +1367,12 @@ export class RemoteGameHost implements GameHost {
       pendingCell: this.pending?.cell ?? null,
       hasGame: this.state !== null,
       resyncedAt: this.resyncedAt,
+      offlinePlay:
+        this.lost && this.lost.softEndsAt !== null
+          ? { since: this.lost.lostAt, softEndsAt: this.lost.softEndsAt, playable: this.offline.active }
+          : null,
+      queuedMoves: this.offline.queued,
+      hardLeavers: [...this.absences].filter(([, began]) => began === 'hard').map(([id]) => id),
       startsAt: this.startsAt,
     };
   }
@@ -912,6 +1384,7 @@ export class RemoteGameHost implements GameHost {
         listener(this.info);
       } catch (error) {
         this.log(`online listener failed: ${messageOf(error)}`);
+        this.report(error, 'online listener failed');
       }
     }
   }
@@ -929,6 +1402,7 @@ export class RemoteGameHost implements GameHost {
             listener(next);
           } catch (error) {
             this.log(`listener failed: ${messageOf(error)}`);
+            this.report(error, 'listener failed');
           }
         }
       }
@@ -944,11 +1418,15 @@ export class RemoteGameHost implements GameHost {
       step();
     } catch (error) {
       this.log(`message failed: ${messageOf(error)}`);
+      this.report(error, 'message failed');
       if (room === this.room) this.dropConnection();
     }
   }
 
-  private trackSafely(name: 'reconnect', props: { durationMs: number; success: boolean }): void {
+  private trackSafely(
+    name: 'reconnect',
+    props: { durationMs: number; success: boolean; phase: 'soft' | 'hard'; queued: number },
+  ): void {
     try {
       this.deps.track?.(name, props);
     } catch {
@@ -958,6 +1436,14 @@ export class RemoteGameHost implements GameHost {
 
   private log(line: string): void {
     this.deps.log?.(line);
+  }
+
+  private report(error: unknown, context: HostFailure): void {
+    try {
+      this.deps.report?.(error, context);
+    } catch {
+      // Reporting never breaks a game.
+    }
   }
 }
 

@@ -115,14 +115,16 @@ export const metrics = {
   reconnectPill: { height: 30, compactHeight: 26, paddingX: 10, gap: 6, icon: 14 },
   /** §3.4: hit chip on a player under interference. */
   hitChip: { height: 18, radius: 9, paddingX: 5, gap: 3, icon: 12, offset: -6, secondsStyle: tekoStyle(14) },
-  /** §3.4: drop target container. */
-  dropTarget: {
+  /**
+   * §3.4: the target frame around the card the interference picker is open from [D45]: a static 2 dp accent
+   * outline 6 dp outside the card, and an "יעד" chip on its bottom edge.
+   */
+  targetFrame: {
     padding: 6,
     outline: 2,
-    breatheScale: 1.02,
-    chipHeight: 24,
+    chipHeight: 20,
     chipPaddingX: 8,
-    chipStyle: rubikStyle(13, '700'),
+    chipStyle: rubikStyle(12, '700'),
   },
   /** §5.1 rating sizes 22 (lists) and 16 (2P card); 44 and 15 are type tokens. */
   rating: { listStyle: tekoStyle(22), provisionalChipHeight: 18, provisionalPaddingX: 6 },
@@ -162,16 +164,29 @@ export const metrics = {
     /** Makes the 32-dp action strip a 44-dp target (§7.2). */
     hitSlop: 6,
     pip: { height: 14, paddingX: 3, radius: 4, gap: 2, style: tekoStyle(13) },
+    /**
+     * §7.2: two penalty pips beside the score need about 100–111 dp (Teko 28 and 13, half points: "−15.5"
+     * with −8 −7.5); a narrower card, or one with "×n" too, shows the last one only (penalty design, decision 3).
+     */
+    twoPipsMinWidth: 110,
   },
-  /** §8.1 interference button. */
+  /**
+   * §8.1 the "הפרעה" button [D45]: as tall as the reactions button (44; compact 32 with a 44-dp target through
+   * hitSlop), the 'interfere' glyph and the word only, no price. The compact label shrinks to fit a 4-player
+   * opponent card (68 dp of strip) in English.
+   */
   interfere: {
-    paddingX: 11,
+    paddingX: 10,
     gap: 6,
-    icon: 18,
-    compactIcon: 14,
+    icon: 20,
+    compactIcon: 16,
     compactGap: 3,
+    compactPaddingX: 3,
+    labelStyle: rubikStyle(14, '600'),
+    compactLabelStyle: rubikStyle(12, '600'),
+    minFontScale: 0.75,
+    /** The reconnect pill's seconds in the compact strip (Badges), in the slot the button leaves. */
     compactCostStyle: tekoStyle(18),
-    compactUnitStyle: rubikStyle(10),
   },
   /** §9 lead bar and its tag. */
   lead: {

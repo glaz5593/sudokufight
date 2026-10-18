@@ -5,6 +5,7 @@ import {
   type MatchRangeRules,
   matchRange,
   type QueueKey,
+  rangeCovering,
 } from '@sudoku-fight/protocol';
 
 /**
@@ -49,6 +50,13 @@ import {
  *
  * 6. Timeout: a ticket still unmatched at its deadline (60 s of searching) leaves the queue with 'timeout'.
  *    Matching runs first, so a ticket that can match at that very moment does.
+ *
+ * 7. Next range (what the app is told, never a rule of matching): for each ticket, the narrowest range on
+ *    the D6 grid that covers groupSize − 1 players it could be matched with (the same tests as a group's,
+ *    rules 2–3, without the time-based range: same queue, not blocked either way, within both maximum
+ *    ranges, not a recent opponent). null when there are not that many: nobody to meet until the queue
+ *    changes, and the app says so at once. It depends on the queue's tickets alone, not on the time. For
+ *    3–4 players a number is a lower bound (the others must also accept each other); null is exact.
  *
  * Group size is the queue's number of players (2–4). For 3–4 players every pair in the group is checked;
  * an anchor looks at its `maxCandidates` nearest-rated candidates only, so a busy queue stays cheap.
@@ -158,6 +166,51 @@ export function lastMet(a: Ticket, b: Ticket): number | null {
   return last;
 }
 
+/** Every ticket's recent opponents (recentOpponents) over the whole queue, by user id. */
+export function recentMap(
+  tickets: readonly Ticket[],
+  config: MatcherConfig = DEFAULT_MATCHER,
+): Map<string, Set<string>> {
+  return new Map(tickets.map((t) => [t.userId, recentOpponents(t, tickets, config)]));
+}
+
+/**
+ * Rule 7: each ticket's next range, by user id. The narrowest D6 range (rangeCovering) that covers
+ * `groupSize − 1` players the ticket could be matched with: in this queue, not blocked either way, within
+ * both maximum ranges, and not a recent opponent of either (after the 80% reset, as matchTick sees it).
+ * null: not that many are searching. Pure, and independent of the time: it changes only with the queue.
+ * O(n²) per call (MatchQueue memoises it per change of the queue); a busy queue could sort by rating once
+ * and scan outward from each ticket instead.
+ */
+export function nextRanges(
+  tickets: readonly Ticket[],
+  groupSize: number,
+  config: MatcherConfig = DEFAULT_MATCHER,
+): Map<string, number | null> {
+  const need = Math.max(1, groupSize - 1);
+  const recent = recentMap(tickets, config);
+  const result = new Map<string, number | null>();
+  for (const t of tickets) {
+    const mine = recent.get(t.userId)!;
+    const distances = tickets
+      .filter(
+        (o) =>
+          o.userId !== t.userId &&
+          !blockedPair(t, o) &&
+          reachable(t, o, config) &&
+          !mine.has(o.userId) &&
+          !recent.get(o.userId)!.has(t.userId),
+      )
+      .map((o) => Math.abs(o.rating - t.rating))
+      .sort((a, b) => a - b);
+    result.set(
+      t.userId,
+      distances.length < need ? null : rangeCovering(distances[need - 1]!, t.extended, config.range),
+    );
+  }
+  return result;
+}
+
 /** Served first: requeued tickets, then the oldest, then the first to arrive. */
 export function serviceOrder(a: Ticket, b: Ticket): number {
   return Number(b.priority) - Number(a.priority) || a.enqueuedAt - b.enqueuedAt || a.seq - b.seq;
@@ -221,7 +274,7 @@ export function matchTick(
   if (groupSize < 2) throw new RangeError(`A group has 2–4 players, not ${groupSize}`);
   const order = [...tickets].sort(serviceOrder);
   // Computed once per round, over the whole queue as it was at the start of the round.
-  const recent = new Map(order.map((t) => [t.userId, recentOpponents(t, order, config)]));
+  const recent = recentMap(order, config);
   const isRecent = (a: Ticket, b: Ticket) =>
     recent.get(a.userId)!.has(b.userId) || recent.get(b.userId)!.has(a.userId);
   const compatible = (a: Ticket, b: Ticket) =>
@@ -297,6 +350,9 @@ export interface NewTicket {
 export class MatchQueue {
   private readonly tickets = new Map<string, Ticket>();
   private seq = 0;
+  /** Bumped by every change of the tickets: the next ranges are computed once per change. */
+  private version = 0;
+  private memo: { version: number; ranges: Map<string, number | null> } | null = null;
 
   constructor(
     readonly key: QueueKey,
@@ -335,12 +391,13 @@ export class MatchQueue {
       seq: ++this.seq,
     };
     this.tickets.set(ticket.userId, ticket);
+    this.version++;
     return ticket;
   }
 
   remove(userId: string): Ticket | undefined {
     const ticket = this.tickets.get(userId);
-    this.tickets.delete(userId);
+    if (this.tickets.delete(userId)) this.version++;
     return ticket;
   }
 
@@ -349,6 +406,23 @@ export class MatchQueue {
     const result = matchTick([...this.tickets.values()], this.groupSize, now, this.config);
     for (const g of result.groups) for (const t of g.tickets) this.tickets.delete(t.userId);
     for (const t of result.timedOut) this.tickets.delete(t.userId);
+    if (result.groups.length > 0 || result.timedOut.length > 0) this.version++;
     return result;
+  }
+
+  /** Rule 7: the player's next range in this queue as it is now (null: nobody to meet, or not queued). */
+  nextRange(userId: string): number | null {
+    let memo = this.memo;
+    if (memo === null || memo.version !== this.version) {
+      memo = { version: this.version, ranges: nextRanges(this.list(), this.groupSize, this.config) };
+      this.memo = memo;
+    }
+    return memo.ranges.get(userId) ?? null;
+  }
+
+  /** The next range of a ticket that has just left (timed out), against the tickets still here. */
+  nextRangeOf(ticket: Ticket): number | null {
+    const others = this.list().filter((t) => t.userId !== ticket.userId);
+    return nextRanges([...others, ticket], this.groupSize, this.config).get(ticket.userId) ?? null;
   }
 }

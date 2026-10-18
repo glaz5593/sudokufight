@@ -213,6 +213,43 @@ describe('boardModel: a pending tap (optimistic display, spec §18)', () => {
   });
 });
 
+describe('boardModel: digits waiting for the connection (D42)', () => {
+  const queued = (cell: string, digit: Digit) => ({ cell: parseCellName(cell) as CellIndex, digit });
+
+  it('shows my waiting digit in my colour, not tappable, and not my lock', () => {
+    const g = new DemoGame();
+    const m = boardModel(g.view('moshe'), 0, 0, { queued: [queued('D5', 7), queued('E5', 3)] });
+    expect(at(m, 'D5')).toMatchObject({
+      kind: 'queued',
+      digit: 7,
+      interactive: false,
+      lock: null,
+      player: { colorIndex: 0, isMe: true },
+    });
+    expect(at(m, 'E5')).toMatchObject({ kind: 'queued', digit: 3 });
+    expect(m.myLock).toBeNull();
+    expect(kinds(m).filter((k) => k === 'queued')).toHaveLength(2);
+  });
+
+  it('filled > queued > lock > pending > empty', () => {
+    const g = new DemoGame().solve('nina', 'A1', 900).select('moshe', 'D5', 1000).select('nina', 'A8', 1000);
+    const m = boardModel(g.view('moshe'), 0, 1100, {
+      queued: [queued('A1', 4), queued('D5', 2), queued('A8', 6), queued('E5', 1)],
+      pendingCell: parseCellName('E5') as CellIndex,
+    });
+    expect(at(m, 'A1')).toMatchObject({ kind: 'solved', digit: demoAnswer('A1') });
+    expect(at(m, 'D5')).toMatchObject({ kind: 'queued', digit: 2 });
+    expect(at(m, 'A8')).toMatchObject({ kind: 'queued', digit: 6 });
+    expect(at(m, 'E5')).toMatchObject({ kind: 'queued', digit: 1 });
+    // A spectator has no queue.
+    expect(
+      boardModel(g.view(null), null, 1100, { queued: [queued('E5', 1)] }).cells.some(
+        (c) => c.kind === 'queued',
+      ),
+    ).toBe(false);
+  });
+});
+
 describe('boardModel: wrong digits (spec §6.5) and the keypad (spec §6.3, D12)', () => {
   it('keeps every player’s wrong digits, oldest first, each once, after the cell is solved too', () => {
     const g = new DemoGame({ players: 3 })

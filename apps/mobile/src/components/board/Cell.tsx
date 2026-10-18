@@ -1,10 +1,10 @@
 import type { CellIndex, Digit } from '@sudoku-fight/engine';
-import { memo, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type Insets, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, {
   cancelAnimation,
-  FadeOut,
+  type SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -13,9 +13,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import Svg, { Path, Rect } from 'react-native-svg';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { AvatarArt } from '../../avatars';
 import { color, type PlayerPalette, size, text, tokens } from '../../theme';
+import { Icon } from '../Icon';
 import { motion, useReduceMotion } from '../../theme/motion';
 import {
   PENDING_RING_OPACITY,
@@ -34,6 +36,12 @@ import { cellHint, cellLabel } from './labels';
  * One board cell (components.md §11.2–11.4, motion.md §4.1–4.3). It draws a CellModel and plays the flashes it
  * is given; it decides nothing. Fixed corners: owner glyph top-left, lock seconds top-right, wrong digits
  * bottom-right, digit or mini avatar in the centre (the board is always LTR, so left and right are physical).
+ *
+ * A lock that goes (motion.md `lock.release`) fades its ring and pill out from the cell itself: the cell keeps
+ * drawing their last look while they fade (240 ms; reduced motion: the 200 ms fade), then drops them. Never a
+ * Reanimated layout animation (`exiting`): the game's end clears every lock at once, and a layout animation
+ * still running when the results replaced the game screen is the best fit for Moshe's black screens of 1.0.0.
+ * Nothing on the game screen uses layout animations (src/__tests__/noLayoutAnimationsInGame.test.ts).
  */
 
 export type CellFlashKind =
@@ -76,6 +84,84 @@ const AVATAR_LIFT = size.lockBadge.inset;
 /** The pause mark in my pill (components.md §11.3 #10): two 2 × 7 bars, drawn like an icon. */
 const PAUSE_GLYPH = { width: 6, height: 7, bar: 2 } as const;
 
+/** How a lock's ring looks: what its fading copy keeps drawing once the lock has gone. */
+interface RingLook {
+  ringColor: string;
+  edgeColor: string | null;
+  strength: number;
+  enterMs: number;
+}
+
+const sameRing = (a: RingLook, b: RingLook) =>
+  a.ringColor === b.ringColor &&
+  a.edgeColor === b.edgeColor &&
+  a.strength === b.strength &&
+  a.enterMs === b.enterMs;
+
+/** My lock's seconds pill as it was drawn. */
+interface PillLook {
+  lock: CellLock;
+  palette: PlayerPalette;
+}
+
+const samePill = (a: PillLook, b: PillLook) => a.palette === b.palette && sameLock(a.lock, b.lock);
+
+/** The JS side gives up waiting for a fade's end this long after it should have ended. */
+const GONE_SAFETY_MS = 100;
+
+/**
+ * A part of the cell (a lock's ring, my pill) that was there a moment ago and no longer is: true from the render
+ * it goes in until `gone`, while it fades out. Derived while rendering, so the part stays mounted in the very
+ * frame its lock goes; a new lock on the cell ends it. The cell's state changes only when the part comes or goes
+ * (not on every tick of my pill's seconds): the part keeps its own last look (useLastLook).
+ */
+function useLeaving(present: boolean): [boolean, () => void] {
+  const [held, setHeld] = useState({ was: present, leaving: false });
+  let shown = held;
+  if (present !== held.was) {
+    shown = { was: present, leaving: !present };
+    setHeld(shown);
+  }
+  const gone = useCallback(() => setHeld((h) => (h.leaving ? { ...h, leaving: false } : h)), []);
+  return [shown.leaving, gone];
+}
+
+/** What a part draws: its look now, or (its lock gone) the last one it had, while it fades out. */
+function useLastLook<T>(look: T | null, same: (a: T, b: T) => boolean): T | null {
+  const [kept, setKept] = useState<T | null>(look);
+  if (look !== null && (kept === null || !same(look, kept))) {
+    setKept(look);
+    return look;
+  }
+  return look ?? kept;
+}
+
+/**
+ * A part whose lock has gone fades to 0 (motion.md `lock.release`: 240 ms, `exit`; reduced motion: the 200 ms
+ * fade), then calls onGone. A JS timer is the safety net should the UI thread's end never come.
+ */
+function useFadeAway(level: SharedValue<number>, leaving: boolean, reduce: boolean, onGone?: () => void) {
+  const done = useRef(onGone);
+  useEffect(() => {
+    done.current = onGone;
+  });
+  useEffect(() => {
+    if (!leaving) return;
+    const ms = reduce ? motion.duration.reducedFade : motion.duration.lockAutoRelease;
+    const finish = () => done.current?.();
+    level.set(
+      withTiming(0, timing(ms, 'exit'), (finished) => {
+        if (finished) scheduleOnRN(finish);
+      }),
+    );
+    const safety = setTimeout(finish, ms + GONE_SAFETY_MS);
+    return () => {
+      clearTimeout(safety);
+      cancelAnimation(level);
+    };
+  }, [leaving, reduce, level]);
+}
+
 function cornerRadius(corner: BoardCorner | null | undefined, r: number): ViewStyle | null {
   if (!corner) return null;
   return {
@@ -99,6 +185,8 @@ function CellView({
   const reduce = useReduceMotion();
   const palette: PlayerPalette | null = cell.player ? (players[cell.player.colorIndex] ?? null) : null;
   const base = cell.alt ? color.board.cellAlt : color.board.cell;
+  // My tap waiting for the server (#9), and my digit waiting for the connection (#14, [D42]): the half ring.
+  const waiting = cell.kind === 'pending' || cell.kind === 'queued';
   const tint = (cell.kind === 'solved' || cell.kind === 'myLock') && palette ? palette.tint : null;
   const radius = px(g, tokens.radius.board);
   const cornerStyle = cornerRadius(corner, radius);
@@ -116,8 +204,20 @@ function CellView({
   }, [flashId, flashKind, reduce, shakeX]);
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shakeX.get() }] }));
 
-  const lockRingColor =
-    cell.kind === 'pending' ? players[0].ring : cell.lock && palette ? palette.ring : null;
+  const lockRingColor = waiting ? players[0].ring : cell.lock && palette ? palette.ring : null;
+  // The lock's ring and my pill; once the lock goes, their last look fades out (motion.md `lock.release`).
+  const ringLook: RingLook | null = lockRingColor
+    ? {
+        ringColor: lockRingColor,
+        edgeColor: !waiting && palette ? palette.lockEdge : null,
+        strength: waiting ? PENDING_RING_OPACITY : 1,
+        enterMs: cell.kind === 'oppLock' ? motion.duration.stateChange : motion.duration.tapFeedbackMax,
+      }
+    : null;
+  const [ringLeaving, ringGone] = useLeaving(ringLook !== null);
+  const pillLook: PillLook | null =
+    cell.kind === 'myLock' && palette && cell.lock ? { lock: cell.lock, palette } : null;
+  const [pillLeaving, pillGone] = useLeaving(pillLook !== null);
   const lifted = cell.kind === 'oppLock' && cell.wrong.length > 0;
   const wrongShown = shownWrongDigits(cell);
   const interactive = cell.interactive && !!onCellPress;
@@ -159,28 +259,26 @@ function CellView({
           <PulseBand palette={palette} g={g} cornerStyle={cornerStyle} />
         ) : null}
 
-        {lockRingColor ? (
-          <LockRing
-            ringColor={lockRingColor}
-            edgeColor={cell.kind !== 'pending' && palette ? palette.lockEdge : null}
-            strength={cell.kind === 'pending' ? PENDING_RING_OPACITY : 1}
-            enterMs={cell.kind === 'oppLock' ? motion.duration.stateChange : motion.duration.tapFeedbackMax}
-            g={g}
-            reduce={reduce}
-            corner={corner}
-          />
+        {ringLook || ringLeaving ? (
+          <LockRing look={ringLook} g={g} reduce={reduce} corner={corner} onGone={ringGone} />
         ) : null}
 
         {cell.digit !== null ? (
           <CellDigit
             digit={cell.digit}
             given={cell.kind === 'given'}
-            digitColor={cell.kind === 'solved' && palette ? palette.digit : color.board.given}
+            digitColor={
+              (cell.kind === 'solved' || cell.kind === 'queued') && palette
+                ? palette.digit
+                : color.board.given
+            }
             g={g}
             popId={flash?.kind === 'correct' ? flash.id : undefined}
             reduce={reduce}
           />
         ) : null}
+
+        {cell.kind === 'queued' && palette ? <QueuedMark palette={palette} g={g} /> : null}
 
         {cell.kind === 'oppLock' && cell.player ? (
           <MiniAvatar player={cell.player} g={g} lifted={lifted} reduce={reduce} />
@@ -188,8 +286,8 @@ function CellView({
 
         {cell.kind === 'solved' && palette ? <SeatGlyph palette={palette} g={g} /> : null}
 
-        {cell.kind === 'myLock' && palette && cell.lock ? (
-          <SecondsPill lock={cell.lock} palette={palette} g={g} reduce={reduce} />
+        {pillLook || pillLeaving ? (
+          <SecondsPill look={pillLook} g={g} reduce={reduce} onGone={pillGone} />
         ) : null}
 
         {wrongShown.length ? (
@@ -261,59 +359,62 @@ function PulseBand({
 
 /**
  * The 3 dp lock ring plus its 1 dp inner edge (components.md §11.3 #5, #6, #9). It fades in when the lock
- * appears and out when it goes; `strength` is 0.5 while my tap waits for the server.
+ * appears, and out when it goes (`look` null: it keeps its last look, and the cell keeps it until `onGone`);
+ * `strength` is 0.5 while my tap waits for the server.
  */
 function LockRing({
-  ringColor,
-  edgeColor,
-  strength,
-  enterMs,
+  look,
   g,
   reduce,
   corner,
+  onGone,
 }: {
-  ringColor: string;
-  edgeColor: string | null;
-  strength: number;
-  enterMs: number;
+  look: RingLook | null;
   g: BoardGeometry;
   reduce: boolean;
   corner: BoardCorner | null | undefined;
+  onGone?: () => void;
 }) {
-  const opacity = useSharedValue(reduce ? strength : 0);
+  const shown = useLastLook(look, sameRing);
+  const leaving = look === null;
+  const strength = shown?.strength ?? 1;
+  const enterMs = shown?.enterMs ?? motion.duration.stateChange;
+  const opacity = useSharedValue(reduce || leaving ? strength : 0);
   useEffect(() => {
+    if (leaving) return;
     opacity.set(reduce ? strength : withTiming(strength, timing(enterMs)));
-  }, [opacity, strength, reduce, enterMs]);
+  }, [opacity, strength, reduce, enterMs, leaving]);
+  useFadeAway(opacity, leaving, reduce, onGone);
   const style = useAnimatedStyle(() => ({ opacity: opacity.get() }));
+  if (!shown) return null;
+  const { ringColor, edgeColor } = shown;
   const ring = px(g, lockRing);
   const radius = px(g, tokens.radius.board);
-  // The release fade is a layout animation on a wrapper, apart from the animated opacity (Reanimated's rule).
   return (
     <Animated.View
       pointerEvents="none"
-      exiting={FadeOut.duration(motion.duration.lockAutoRelease)}
-      style={StyleSheet.absoluteFill}
+      testID={leaving ? 'cell-ring-leaving' : 'cell-ring'}
+      style={[StyleSheet.absoluteFill, style]}
     >
-      <Animated.View pointerEvents="none" testID="cell-ring" style={[StyleSheet.absoluteFill, style]}>
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          { borderWidth: ring, borderColor: ringColor },
+          cornerRadius(corner, radius),
+        ]}
+        testID="cell-ring-line"
+      />
+      {edgeColor ? (
         <View
+          testID="cell-ring-edge"
           style={[
-            StyleSheet.absoluteFill,
-            { borderWidth: ring, borderColor: ringColor },
-            cornerRadius(corner, radius),
+            styles.edge,
+            { top: ring, left: ring, right: ring, bottom: ring },
+            { borderWidth: px(g, lockEdge), borderColor: edgeColor },
+            cornerRadius(corner, Math.max(0, radius - ring)),
           ]}
         />
-        {edgeColor ? (
-          <View
-            testID="cell-ring-edge"
-            style={[
-              styles.edge,
-              { top: ring, left: ring, right: ring, bottom: ring },
-              { borderWidth: px(g, lockEdge), borderColor: edgeColor },
-              cornerRadius(corner, Math.max(0, radius - ring)),
-            ]}
-          />
-        ) : null}
-      </Animated.View>
+      ) : null}
     </Animated.View>
   );
 }
@@ -409,46 +510,82 @@ function SeatGlyph({ palette, g }: { palette: PlayerPalette; g: BoardGeometry })
   );
 }
 
-/** My lock's seconds (top-right). Gold and blinking in the last seconds; a pause mark while stopped. */
+/**
+ * My digit waiting for the connection (components.md §11.3 #14, [D42]): a small wifi-off mark at the top-right,
+ * in my glyph colour, where my lock's seconds were. Static (no pulse, no blink), so reduced motion changes
+ * nothing; the screen reader hears "ממתין לחיבור" in the cell's label.
+ */
+function QueuedMark({ palette, g }: { palette: PlayerPalette; g: BoardGeometry }) {
+  const side = px(g, size.solverGlyph.size);
+  const inset = px(g, size.lockBadge.inset);
+  return (
+    <View style={[styles.glyph, { top: inset, right: inset }]} testID="cell-queued-mark">
+      <Icon name="wifiOff" size={side} color={palette.glyph} />
+    </View>
+  );
+}
+
+/**
+ * My lock's seconds (top-right). Gold and blinking in the last seconds; a pause mark while stopped. When the
+ * lock goes (`look` null) it fades out as it last was, until `onGone`.
+ */
 function SecondsPill({
-  lock,
-  palette,
+  look,
   g,
   reduce,
+  onGone,
 }: {
-  lock: CellLock;
-  palette: PlayerPalette;
+  look: PillLook | null;
   g: BoardGeometry;
   reduce: boolean;
+  onGone?: () => void;
 }) {
-  const scale = useSharedValue(reduce ? 1 : POP_FROM);
+  const shown = useLastLook(look, samePill);
+  const leaving = look === null;
+  const scale = useSharedValue(reduce || leaving ? 1 : POP_FROM);
   const blink = useSharedValue(1);
+  const presence = useSharedValue(1);
   useEffect(() => {
-    scale.set(reduce ? 1 : withSpring(1, springs.pop));
-  }, [scale, reduce]);
-  const urgent = lock.urgent;
+    if (!leaving) scale.set(reduce ? 1 : withSpring(1, springs.pop));
+  }, [scale, reduce, leaving]);
+  const urgent = shown?.lock.urgent ?? false;
   useEffect(() => {
     cancelAnimation(blink);
     blink.set(1);
-    if (urgent && !reduce)
+    if (urgent && !reduce && !leaving)
       blink.set(
         withRepeat(withTiming(URGENT_BLINK_LOW, timing(motion.loop.lockUrgentBlink / 2, 'loop')), -1, true),
       );
     return () => cancelAnimation(blink);
-  }, [blink, urgent, reduce]);
+  }, [blink, urgent, reduce, leaving]);
+  // Back to full when a new lock takes the place of a leaving pill.
+  useEffect(() => {
+    if (!leaving) presence.set(1);
+  }, [presence, leaving]);
+  useFadeAway(presence, leaving, reduce, onGone);
   const style = useAnimatedStyle(() => ({ opacity: blink.get(), transform: [{ scale: scale.get() }] }));
+  const slotStyle = useAnimatedStyle(() => ({ opacity: presence.get() }));
 
+  if (!shown) return null;
+  const { lock, palette } = shown;
   const badge = size.lockBadge;
   const fg = urgent ? color.onAccent : palette.onRing;
   const glyphH = px(g, PAUSE_GLYPH.height);
   return (
     <Animated.View
-      testID="cell-pill-slot"
-      exiting={FadeOut.duration(motion.duration.lockAutoRelease)}
-      style={[styles.pillSlot, { top: px(g, badge.inset), right: px(g, badge.inset) }]}
+      testID={leaving ? 'cell-pill-leaving' : 'cell-pill-slot'}
+      style={[styles.pillSlot, { top: px(g, badge.inset), right: px(g, badge.inset) }, slotStyle]}
     >
       <Animated.View
-        testID={lock.paused ? 'cell-pill-paused' : urgent ? 'cell-pill-urgent' : 'cell-pill'}
+        testID={
+          leaving
+            ? 'cell-pill-fading'
+            : lock.paused
+              ? 'cell-pill-paused'
+              : urgent
+                ? 'cell-pill-urgent'
+                : 'cell-pill'
+        }
         style={[
           styles.pill,
           {

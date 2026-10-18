@@ -1,4 +1,4 @@
-import { cellName, ManualClock, ManualScheduler } from '@sudoku-fight/engine';
+import { cellName, ManualClock, ManualScheduler, missedPoints } from '@sudoku-fight/engine';
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 
 import { formatScore, ltr, scoreText, signedText } from '../../../components/player';
@@ -8,7 +8,8 @@ import { answerIn, emptyCellsOf, smallPool, wrongIn } from '../../../game/testin
 import i18n from '../../../i18n';
 import { useProfile } from '../../../state/profile';
 import { useSettings } from '../../../state/settings';
-import { GameScreen } from '../GameScreen';
+import { FALLBACK_ACTIONS_MS } from '../../FlowFallback';
+import { GameScreen, type GameSession } from '../GameScreen';
 
 jest.mock(
   'react-native-safe-area-context',
@@ -179,27 +180,31 @@ describe('GameScreen (solo practice)', () => {
     await layOut();
     const name = cellName(b);
     const digit = wrongIn(puzzle, b);
+    const before = session.getView().grid.slice();
     await press(`cell-${name}`);
     await press(`key-${digit}`);
 
     expect(cues()).toEqual(['cellSelect', 'wrong']);
-    expect(myScore(session)).toBe(-1);
+    // The engine's penalty (§6.5): what the right digit would have scored in that cell.
+    const wrong = session.events.find((e) => e.type === 'placedWrong')!;
+    const penalty = wrong.type === 'placedWrong' ? wrong.penalty : NaN;
+    expect(penalty).toBe(missedPoints(before, b, answerIn(puzzle, b)).points);
+    expect(myScore(session)).toBe(-penalty);
     const cell = screen.getByTestId(`cell-${name}`);
     expect(cell).toHaveProp('accessibilityLabel', `${name}, ריקה, ספרות שגויות: ${digit}`);
     expect(screen.getByTestId('cell-wrong', hidden)).toHaveTextContent(String(digit));
     expect(screen.getByTestId('cell-flash-digit', hidden)).toHaveTextContent(String(digit));
     // The cell is let go of after a mistake [D3].
     expect(screen.getByLabelText('בחר משבצת')).toBeOnTheScreen();
-    const seq = session.events.find((e) => e.type === 'placedWrong')!.seq;
-    expect(screen.getByTestId(`flight-${seq}`, hidden)).toHaveTextContent(signedText(-1));
+    expect(screen.getByTestId(`flight-${wrong.seq}`, hidden)).toHaveTextContent(signedText(-penalty));
 
     await frames(1_500);
-    expect(score()).toHaveAnimatedProps({ text: scoreText(-1) });
-    expect(screen.getByTestId('solo-hud-delta', hidden)).toHaveTextContent(signedText(-1));
+    expect(score()).toHaveAnimatedProps({ text: scoreText(-penalty) });
+    expect(screen.getByTestId('solo-hud-delta', hidden)).toHaveTextContent(signedText(-penalty));
     expect(screen.getByTestId('mistakes', hidden)).toHaveTextContent('1 טעות');
     expect(feedback.cueCountUp).not.toHaveBeenCalled(); // count ticks are for gains only
     expect(screen.getByTestId('game-live')).toHaveTextContent(
-      `טעות: ${digit} לא מתאימה ל־${ltr(name)}, ${signedText(-1)}`,
+      `טעות: ${digit} לא מתאימה ל־${ltr(name)}, ${signedText(-penalty)}`,
     );
   });
 
@@ -288,12 +293,42 @@ describe('GameScreen (solo practice)', () => {
     expect(screen.getByRole('button', { name: 'Yes, end it' })).toBeOnTheScreen();
   });
 
-  it('a game already over goes straight to its results', async () => {
+  it('a game already over goes straight to its results (from a timer, not inside the render)', async () => {
     const game = await practice();
     running = game.session;
     game.session.endPractice();
     const onEnded = jest.fn();
     await render(<GameScreen session={game.session} onEnded={onEnded} />);
+    expect(onEnded).not.toHaveBeenCalled();
+    await frames(50);
     expect(onEnded).toHaveBeenCalledWith(game.session.id);
+    expect(onEnded).toHaveBeenCalledTimes(1);
+  });
+
+  it('a view without my seat: never an empty screen, a way home after a moment', async () => {
+    const game = await practice();
+    running = game.session;
+    const s = game.session;
+    const strangerView = () => ({ ...s.getView(), me: 'stranger' });
+    const session: GameSession = {
+      id: s.id,
+      clock: s.clock,
+      playerId: 'stranger',
+      getView: strangerView,
+      subscribe: (fn) => s.subscribe(fn),
+      endPractice: () => s.endPractice(),
+      host: Object.assign(Object.create(s.host) as typeof s.host, { getView: strangerView }),
+    };
+    const onHome = jest.fn();
+    await render(<GameScreen session={session} onEnded={jest.fn()} onHome={onHome} />);
+    expect(screen.queryByTestId('game')).toBeNull();
+    expect(screen.getByTestId('flow-fallback')).toBeOnTheScreen();
+    expect(screen.getByText('רגע…')).toBeOnTheScreen();
+    await frames(FALLBACK_ACTIONS_MS);
+    expect(screen.getByRole('header', { name: 'המסך לא נטען' })).toBeOnTheScreen();
+    // The game runs: no results to go to.
+    expect(screen.queryByRole('button', { name: 'לתוצאות' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
+    expect(onHome).toHaveBeenCalledTimes(1);
   });
 });

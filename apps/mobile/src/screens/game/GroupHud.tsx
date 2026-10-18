@@ -31,14 +31,14 @@ import { CardMenuTrigger } from './reactions';
  * so an interference target never moves; only each card's place badge (#1–#4) changes. 3 players: 114 each;
  * 4 players: mine 106 and 78 for the others (groupCardWidths).
  *
- * Every card comes from the view (cardModel). Mine has "כניעה" and "תגובות"; every opponent's has a compact ⚡
- * with the cost of my next interference, which opens the arsenal aimed at THAT card (spec §7.3.1): it becomes
- * the one drop zone, framed, and every other card dims (the arsenal's `cardProps`). A player who is out
- * (surrendered or gone, D36) is dimmed with a fixed place, and has no ⚡. A hit on anyone shows on their card
- * (the hit chip, spec §7.4). A long press on an opponent's card opens its menu (mute their reactions, D19).
+ * Every card comes from the view (cardModel). Mine has "כניעה" and "תגובות"; every opponent's has a compact
+ * "הפרעה", which opens the interference picker aimed at THAT card (original §17) [D45]: it is framed as the
+ * target, and every other card dims (the arsenal's `cardProps`); no drag. A player who is out (surrendered or
+ * gone, D36) is dimmed with a fixed place, and has no "הפרעה". A hit on anyone shows on their card (the hit
+ * chip, spec §7.4). A long press on an opponent's card opens its menu (mute their reactions, D19).
  *
  * Each card reports where it is (for the score chips and the reactions), and the view around each opponent's
- * card is measured in the window as its drop zone.
+ * card is measured in the window for the picker's scrim hole.
  */
 export interface GroupHudProps {
   /** In seat order, mine first (seatOrder). */
@@ -53,13 +53,13 @@ export interface GroupHudProps {
   /** My card's reactions button (spec §8). */
   onReactions?: () => void;
   reactionsExpanded?: boolean;
-  /** ⚡ on an opponent's card when it can be sent: the arsenal aimed at that card (spec §7.3.1). */
+  /** "הפרעה" on an opponent's card when it can be sent: the picker aimed at that card [D45]. */
   onInterfere?: (playerId: PlayerId) => void;
-  /** ⚡ while it can't be sent. */
+  /** "הפרעה" while it can't be sent: the screen says why. */
   onInterfereBlocked?: (playerId: PlayerId, state: InterferenceModel) => void;
-  /** Each card's drop-target state while the arsenal is open (useArsenal's `cardProps`). */
-  dropOf?: (playerId: PlayerId, name: string) => ArsenalCardProps;
-  /** A ref for the view around an opponent's card, measured as its drop zone. */
+  /** Each card's target state while the interference picker is open (useArsenal's `cardProps`). */
+  targetOf?: (playerId: PlayerId) => ArsenalCardProps;
+  /** A ref for the view around an opponent's card, measured for the picker's scrim hole. */
   cardRef?: (playerId: PlayerId) => (node: Measurable | null) => void;
   /** An opponent card's menu (D19); null for none. */
   menuOf?: (playerId: PlayerId) => { muted: boolean; onOpen: () => void } | null;
@@ -83,7 +83,7 @@ export function GroupHud({
   reactionsExpanded = false,
   onInterfere,
   onInterfereBlocked,
-  dropOf,
+  targetOf,
   cardRef,
   menuOf,
   onCardLayout,
@@ -110,7 +110,7 @@ export function GroupHud({
           reactionsExpanded={reactionsExpanded}
           onInterfere={onInterfere}
           onInterfereBlocked={onInterfereBlocked}
-          dropOf={dropOf}
+          targetOf={targetOf}
           cardRef={card.isMe ? undefined : cardRef?.(card.playerId)}
           menu={card.isMe ? null : (menuOf?.(card.playerId) ?? null)}
           onCardLayout={onCardLayout}
@@ -133,7 +133,7 @@ interface GroupCardProps {
   reactionsExpanded: boolean;
   onInterfere?: (playerId: PlayerId) => void;
   onInterfereBlocked?: (playerId: PlayerId, state: InterferenceModel) => void;
-  dropOf?: (playerId: PlayerId, name: string) => ArsenalCardProps;
+  targetOf?: (playerId: PlayerId) => ArsenalCardProps;
   cardRef: ((node: Measurable | null) => void) | undefined;
   menu: { muted: boolean; onOpen: () => void } | null;
   onCardLayout?: (playerId: PlayerId, rect: Rect) => void;
@@ -153,7 +153,7 @@ const GroupCard = memo(function GroupCard({
   reactionsExpanded,
   onInterfere,
   onInterfereBlocked,
-  dropOf,
+  targetOf,
   cardRef,
   menu,
   onCardLayout,
@@ -182,12 +182,12 @@ const GroupCard = memo(function GroupCard({
       {...(card.isMe
         ? { onSurrender, onReactions, reactionsExpanded }
         : { onInterfere: interfere, onInterfereBlocked: blocked })}
-      {...dropOf?.(id, name)}
+      {...targetOf?.(id)}
       testID={card.isMe ? 'card-me' : `card-${id}`}
     />
   );
   return (
-    // Not flattened on Android: the arsenal measures the view around an opponent's card in the window.
+    // Not flattened on Android: the picker measures the view around an opponent's card in the window.
     <View
       ref={cardRef}
       collapsable={false}

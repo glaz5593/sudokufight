@@ -2,7 +2,8 @@
 // module is already in place as the mock (see the jest.mock below).
 import 'react-native-reanimated';
 import { cellName, type Digit, type GameState, type PlayerId, type PlayerInfo } from '@sudoku-fight/engine';
-import type { HistoryGame, HistoryPage, MatchPlayer } from '@sudoku-fight/protocol';
+import type { HistoryGame, HistoryPage, MatchPlayer, Me } from '@sudoku-fight/protocol';
+import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
 
 import RootLayout from '../../app/_layout';
@@ -19,6 +20,7 @@ import ReplayRoute from '../../app/replay/[id]';
 import ResultsRoute from '../../app/results/[id]';
 import SettingsRoute from '../../app/settings';
 import VerifyEmailRoute from '../../app/verify-email';
+import { refreshMe, useAuth } from '../auth/authStore';
 import { installSignedInPlayer, type TestAuth } from '../auth/testing/testAuth';
 import { signedText } from '../components/player';
 import type { RankedDeps } from '../game/gameStore';
@@ -29,6 +31,7 @@ import i18n from '../i18n';
 import { setHealthCheck } from '../net/connectivity';
 import { FakeMatchmaking } from '../net/testing/fakeMatchmaking';
 import { elapse, FakeTable, ME, OPP } from '../net/testing/fakeServer';
+import { rankedRefresh } from '../progress/appProgress';
 import type { HistoryApi } from '../screens/history/historyApi';
 import { track } from '../services/analytics';
 import { useProfile } from '../state/profile';
@@ -47,6 +50,8 @@ import { motion } from '../theme/motion';
  * 2. Nobody found in 60 s: "המשך לחפש" lifts the range's cap; then "שחק מול בוט בינתיים" starts a bot practice.
  * 3. No connection (spec §16.1): the ranked cards dimmed with "דורש חיבור", the banner, "עבור לאימון".
  * 4. "מדורג · 4": three opponents found, all four counted down, the game played to the end, the podium.
+ * 5. The rating after the game without a restart (Moshe's device test of 1.0.0): "לבית" before the server
+ *    stored the game, and the results left with Android's back.
  *
  * Along the way the analytics of spec §22 are checked: matchmaking_wait{sec,result}, game_start, game_end.
  */
@@ -91,6 +96,14 @@ const mockApp: { db: SqlJsDb | null; history: (HistoryApi & { calls: string[] })
 jest.mock('react-native-reanimated', () => jest.requireActual('react-native-reanimated'));
 jest.mock('expo-sqlite', () => ({ openDatabaseAsync: async () => mockApp.db }));
 jest.mock('../services/analytics', () => ({ track: jest.fn() }));
+// What the app reports (Moshe's black screens of 1.0.0): a game's end must report nothing.
+jest.mock('../services/crashlytics', () => {
+  const reporter = { enabled: true, recordError: jest.fn(), setUser: jest.fn(), log: jest.fn() };
+  return { crashReporter: () => reporter };
+});
+const crash = jest
+  .requireMock<{ crashReporter: () => { recordError: jest.Mock } }>('../services/crashlytics')
+  .crashReporter();
 // The phone's matchmaking wiring brings the network SDK: the fake servers instead.
 jest.mock('../net/matchmakingDevice', () => ({ deviceMatchmakingDeps: () => mockNet.deps() }));
 // The history and the replay as wired in the app (the phone's database), with the server's routes in memory.
@@ -357,6 +370,7 @@ beforeEach(async () => {
 afterEach(async () => {
   await act(async () => {
     useGameStore.getState().clear();
+    rankedRefresh().stop();
   });
   setHealthCheck(null);
   jest.useRealTimers();
@@ -621,5 +635,240 @@ describe('ranked games, end to end (work plan stages 9–10)', () => {
       expect.objectContaining({ mode: 'ranked', result: myPlace === 1 ? 'win' : 'loss' }),
     ]);
     app.unmount();
+  });
+  describe('the rating after the game, without restarting the app (Moshe’s device test of 1.0.0)', () => {
+    /** The account on the server: `id` as given, every rating back at 1200 with no games. */
+    function freshAccount(id?: string): { row: { me: Me }; original: Me } {
+      const row = auth.server.users.get(auth.provider.currentUser()!.uid)!;
+      const original = row.me;
+      row.me = {
+        ...row.me,
+        id: id ?? row.me.id,
+        ratings: row.me.ratings.map((r) => ({ ...r, rating: 1200, games: 0, provisional: true, peak: 1200 })),
+      };
+      return { row, original };
+    }
+
+    /** The server stores the game: my rating and one more game in the game's key. */
+    function storeOnServer(row: { me: Me }, rating: number) {
+      row.me = {
+        ...row.me,
+        ratings: row.me.ratings.map((r) =>
+          r.key === PUZZLE.gameType ? { ...r, rating, games: 1, peak: Math.max(r.peak, rating) } : r,
+        ),
+      };
+    }
+
+    const shownRating = () => useAuth.getState().me?.ratings.find((r) => r.key === PUZZLE.gameType)?.rating;
+    const gets = () => auth.server.calls.filter((c) => c === 'GET /v1/me').length;
+
+    /** Home → a 2-player search → found → GO; then Nina gives up, and I win: the results. */
+    async function playAndWin(app: App): Promise<GameState> {
+      await search(app, 2, 'מצא יריב');
+      const { mm, table } = net();
+      await server(() => mm.searching());
+      await server(() => mm.found({ players: [ME_MATCH, NINA] }));
+      await pass(100);
+      await server(() => mm.ready([ME]));
+      await countDownAndStart(app, [ME, OPP]);
+      // A right digit of mine first: an opponent who leaves before my first move gives me no rating (§11.2).
+      const game = table.game!;
+      const cell = game.state.grid.findIndex((d) => d === 0);
+      await press(`cell-${cellName(cell)}`);
+      await pass(100);
+      await press(`key-${Number(game.state.config.puzzle.solution[cell])}`);
+      await pass(150);
+      expect(game.state.players.find((p) => p.id === ME)!.correct).toBe(1);
+      await server(() => void table.opponent({ type: 'surrender' }));
+      const final = table.game!.state;
+      expect(final.status).toBe('over');
+      await passUntil(() => app.pathname() === `/results/${final.config.id}`);
+      return final;
+    }
+
+    it('"לבית" before the server stored it: Home shows the new rating at once, never 1200 again', async () => {
+      mockNet.players = [ME_MATCH, NINA].map(infoOf);
+      // A ranked game knows me by the account's id (Me.id): the game's player id here.
+      const { row, original } = freshAccount(ME);
+      try {
+        const app = await launch();
+        await act(async () => refreshMe());
+        expect(screen.getByTestId(`rating-${PUZZLE.gameType}`)).toHaveTextContent(/1200זמני$/);
+
+        const final = await playAndWin(app);
+        const mine = final.result!.ratingChanges.find((c) => c.playerId === ME)!;
+        const after = Math.round(mine.after);
+        expect(after).toBeGreaterThan(1200);
+        // From the end on, the account shows the game's rating, and never the old one again.
+        expect(shownRating()).toBe(mine.after);
+        const seen: (number | undefined)[] = [];
+        const unsubscribe = useAuth.subscribe(() => seen.push(shownRating()));
+
+        await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
+        await waitFor(() => expect(app.pathname()).toBe('/'));
+        const card = () => screen.getByTestId(`rating-${PUZZLE.gameType}`);
+        await waitFor(() => expect(card()).toHaveTextContent(new RegExp(`${after}זמני$`)));
+        // The server is still writing: the reads (results' "לבית", the follow-up's) answer 1200, 0 games.
+        const before = gets();
+        await pass(5000, 250);
+        expect(gets()).toBeGreaterThan(before);
+        expect(card()).toHaveTextContent(new RegExp(`${after}זמני$`));
+        expect(rankedRefresh().following).toMatchObject({ gameId: final.config.id });
+
+        // Stored: the next read confirms it, and the reads stop.
+        storeOnServer(row, mine.after);
+        await passUntil(() => rankedRefresh().following === null, 30_000, 250);
+        const confirmed = gets();
+        await pass(30_000, 1000);
+        expect(gets()).toBe(confirmed);
+        expect(card()).toHaveTextContent(new RegExp(`${after}זמני$`));
+        unsubscribe();
+        expect(seen.length).toBeGreaterThan(0);
+        expect(seen.every((r) => r === mine.after)).toBe(true);
+        app.unmount();
+      } finally {
+        row.me = { ...row.me, id: original.id };
+      }
+    });
+
+    it('the results left with Android’s back (no "לבית"): the new rating comes once the server stored it', async () => {
+      mockNet.players = [ME_MATCH, NINA].map(infoOf);
+      const { row } = freshAccount();
+      const app = await launch();
+      await act(async () => refreshMe());
+      expect(screen.getByTestId(`rating-${PUZZLE.gameType}`)).toHaveTextContent(/1200זמני$/);
+
+      const final = await playAndWin(app);
+      const mine = final.result!.ratingChanges.find((c) => c.playerId === ME)!;
+      const after = Math.round(mine.after);
+      // Android's back on the results: the game type, the session still in the store, nothing read on the way.
+      await act(async () => router.back());
+      await waitFor(() => expect(app.pathname()).toBe('/game-type'));
+      expect(shownRating()).toBe(1200);
+
+      // The server stores the game a moment later; the follow-up reads it, with no screen doing anything.
+      await pass(1000, 250);
+      storeOnServer(row, mine.after);
+      await passUntil(() => shownRating() === mine.after, 30_000, 250);
+      expect(rankedRefresh().following).toBeNull();
+
+      // Home shows it.
+      await act(async () => router.dismissTo('/'));
+      await waitFor(() => expect(app.pathname()).toBe('/'));
+      await waitFor(() =>
+        expect(screen.getByTestId(`rating-${PUZZLE.gameType}`)).toHaveTextContent(
+          new RegExp(`${after}זמני$`),
+        ),
+      );
+      app.unmount();
+    });
+  });
+
+  /**
+   * Moshe's device test of 1.0.0 (15.10.2026): "הוא סיים את המשחק באמצע, קיבלתי מסך שחור. לפעמים גם קיבלתי מסך
+   * שחור כשאני פרשתי". Every end that is not a full board, through the real routes: the final board holds
+   * (motion.md `game.end`; 200 ms here, reduced motion), then the results; never an empty route, never a
+   * fallback, nothing reported.
+   */
+  describe('the end of a ranked game in the middle, never a black screen (Moshe’s device test of 1.0.0)', () => {
+    /** Home → a 2-player search → found → GO: the board, and my lock on its first free cell. */
+    async function playWithALock(app: App): Promise<{ table: FakeTable }> {
+      await search(app, 2, 'מצא יריב');
+      const { mm, table } = net();
+      await server(() => mm.searching());
+      await server(() => mm.found({ players: [ME_MATCH, NINA] }));
+      await pass(100);
+      await server(() => mm.ready([ME]));
+      await countDownAndStart(app, [ME, OPP]);
+      const cell = table.game!.state.grid.findIndex((d) => d === 0);
+      await press(`cell-${cellName(cell)}`);
+      await pass(100);
+      expect(table.game!.state.locks.some((l) => l.playerId === ME)).toBe(true);
+      return { table };
+    }
+
+    /** Nothing went wrong on the way: no fallback, no report. */
+    function noBlackScreen() {
+      expect(screen.queryByTestId('flow-fallback')).toBeNull();
+      expect(screen.queryByTestId('results-fallback')).toBeNull();
+      expect(crash.recordError).not.toHaveBeenCalled();
+    }
+
+    beforeEach(() => {
+      mockNet.players = [ME_MATCH, NINA].map(infoOf);
+      crash.recordError.mockClear();
+    });
+
+    it('the opponent gives up while I hold a lock: the board holds, then "ניצחון!"; "לבית" goes home', async () => {
+      const app = await launch();
+      const { table } = await playWithALock(app);
+      await server(() => void table.opponent({ type: 'surrender' }));
+      const id = table.game!.state.config.id;
+      await pass(100);
+      // Over, and still the final board for a moment.
+      expect(app.pathname()).toBe('/game');
+      expect(screen.getByTestId('game')).toBeOnTheScreen();
+      await passUntil(() => app.pathname() === `/results/${id}`);
+      expect(await screen.findByTestId('results-title')).toHaveTextContent('ניצחון!');
+      expect(screen.getByText(/היריב נכנע לפני שהלוח התמלא/)).toBeOnTheScreen();
+      noBlackScreen();
+      await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
+      await waitFor(() => expect(app.pathname()).toBe('/'));
+      expect(useGameStore.getState().online).toBeNull();
+      noBlackScreen();
+      app.unmount();
+    });
+
+    it('I give up while holding a lock: "הפסד", after the dialog and the hold', async () => {
+      const app = await launch();
+      const { table } = await playWithALock(app);
+      await fireEvent.press(screen.getByRole('button', { name: 'כניעה' }));
+      await pass(400);
+      await fireEvent.press(
+        within(screen.getByTestId('ranked-surrender')).getByRole('button', { name: 'כן, להיכנע' }),
+      );
+      const id = table.game!.state.config.id;
+      await pass(100);
+      expect(table.game!.state.status).toBe('over');
+      expect(app.pathname()).toBe('/game');
+      await passUntil(() => app.pathname() === `/results/${id}`);
+      expect(await screen.findByTestId('results-title')).toHaveTextContent('הפסד');
+      noBlackScreen();
+      app.unmount();
+    });
+
+    it('the opponent leaves the game: "the opponent left", then "לתוצאות" → "ניצחון!"', async () => {
+      const app = await launch();
+      const { table } = await playWithALock(app);
+      await server(() => void table.game!.apply({ type: 'disconnect', playerId: OPP }));
+      const graceMs = table.game!.state.config.rules.graceMs;
+      await passUntil(() => screen.queryByTestId('opponent-left') !== null, graceMs + 5000, 250);
+      expect(app.pathname()).toBe('/game');
+      // The results wait for "לתוצאות".
+      await pass(3000, 250);
+      expect(app.pathname()).toBe('/game');
+      await fireEvent.press(screen.getByRole('button', { name: 'לתוצאות' }));
+      await passUntil(() => app.pathname() === `/results/${table.game!.state.config.id}`);
+      expect(await screen.findByTestId('results-title')).toHaveTextContent('ניצחון!');
+      noBlackScreen();
+      app.unmount();
+    });
+
+    it('"לבית" on "the opponent left": Home, and the finished game let go', async () => {
+      const app = await launch();
+      const { table } = await playWithALock(app);
+      await server(() => void table.game!.apply({ type: 'disconnect', playerId: OPP }));
+      const graceMs = table.game!.state.config.rules.graceMs;
+      await passUntil(() => screen.queryByTestId('opponent-left') !== null, graceMs + 5000, 250);
+      await fireEvent.press(
+        within(screen.getByTestId('opponent-left')).getByRole('button', { name: 'לבית' }),
+      );
+      await waitFor(() => expect(app.pathname()).toBe('/'));
+      await pass(500);
+      expect(useGameStore.getState().online).toBeNull();
+      expect(screen.getByTestId('home-scroll')).toBeOnTheScreen();
+      noBlackScreen();
+      app.unmount();
+    });
   });
 });

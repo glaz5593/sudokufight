@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<title>Level map</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@keyframes lv-current{0%,100%{box-shadow:0 0 0 2px #0f1218,0 0 0 4px #ffcf3f}50%{box-shadow:0 0 0 2px #0f1218,0 0 0 4px #ffcf3f,0 0 0 9px rgba(255,207,63,.28)}}
+@keyframes lv-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes lv-shake-b{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div dir="rtl" style="width:390px;height:844px;position:relative;overflow:hidden;box-sizing:border-box;font-family:Rubik,'Segoe UI',system-ui,sans-serif;color:#eef1f6;background:#0f1218;">
+
+  <header style="position:absolute;top:48px;left:16px;right:16px;height:56px;display:flex;align-items:center;gap:12px;">
+    <a href="Modes.dc.html" aria-label="חזרה" style="flex:none;width:44px;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;text-decoration:none;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+    </a>
+    <h1 style="flex:1;min-width:0;margin:0;font:700 28px/34px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">אימון בשלבים</h1>
+    <button type="button" aria-label="{{totalAria}}" style="flex:none;height:44px;margin:0;padding:0;border:0;background:transparent;display:flex;align-items:center;cursor:pointer;">
+      <span style="display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;box-sizing:border-box;border-radius:999px;background:#1f2430;border:1px solid #2a3140;">
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+        <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:20px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#eef1f6;white-space:nowrap;">{{total}}</span>
+      </span>
+    </button>
+  </header>
+
+  <div data-lv-scroll="main" role="region" aria-label="מפת השלבים" tabindex="0" style="position:absolute;top:104px;left:0;right:0;bottom:224px;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;">
+    <div style="position:relative;width:390px;height:{{mapH}};">
+
+      <sc-for list="{{conns}}" as="c" hint-placeholder-count="25">
+        <span aria-hidden="true" style="position:absolute;left:{{c.left}};top:{{c.top}};width:{{c.len}};height:2px;border-radius:1px;background:{{c.color}};transform-origin:0 50%;transform:{{c.rot}};"></span>
+      </sc-for>
+
+      <sc-for list="{{heads}}" as="h" hint-placeholder-count="3">
+        <div style="position:absolute;left:16px;right:16px;top:{{h.top}};height:32px;display:flex;align-items:center;gap:8px;background:#0f1218;">
+          <h2 style="margin:0;font:700 16px/1 Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">{{h.title}}</h2>
+          <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">{{h.name}}</span>
+          <span aria-hidden="true" style="flex:1;height:1px;background:#2a3140;"></span>
+          <span role="img" aria-label="{{h.aria}}" style="display:flex;align-items:center;gap:4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="{{h.starFill}}" stroke="{{h.starStroke}}" stroke-width="2" stroke-linejoin="round"></path></svg>
+            <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:20px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#eef1f6;">{{h.count}}</span>
+          </span>
+        </div>
+      </sc-for>
+
+      <sc-for list="{{gates}}" as="g" hint-placeholder-count="2">
+        <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{ g.pick }}" aria-label="{{g.aria}}" aria-pressed="{{g.pressed}}" style="position:absolute;left:{{g.left}};top:{{g.top}};width:{{g.w}};height:44px;margin:0;padding:0;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <span style="display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;box-sizing:border-box;border-radius:999px;background:#171b24;border:1px solid {{g.border}};">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 7.5-1.9"></path></svg>
+              <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:20px;line-height:.8;padding-top:3px;color:#eef1f6;">20</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+            </span>
+          </button>
+        </sc-if>
+        <sc-if value="{{ g.closed }}" hint-placeholder-val="{{ false }}">
+          <button type="button" onClick="{{ g.pick }}" aria-label="{{g.aria}}" aria-pressed="{{g.pressed}}" style="position:absolute;left:{{g.left}};top:{{g.top}};width:{{g.w}};height:52px;margin:0;padding:0 14px;box-sizing:border-box;display:flex;align-items:center;gap:10px;background:#171b24;border:1px dashed {{g.border}};border-radius:12px;color:#eef1f6;text-align:right;cursor:pointer;animation:{{g.anim}};">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;">
+              <span style="font:500 14px/1 Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">נפתח ב־20 כוכבים</span>
+              <span style="display:flex;height:4px;border-radius:2px;background:#2a3140;overflow:hidden;"><span style="width:{{g.fill}};border-radius:2px;background:#ffcf3f;"></span></span>
+            </span>
+            <span style="flex:none;display:flex;align-items:center;gap:4px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+              <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#eef1f6;">{{g.count}}</span>
+            </span>
+          </button>
+        </sc-if>
+      </sc-for>
+
+      <sc-for list="{{nodes}}" as="n" hint-placeholder-count="25">
+        <button type="button" onClick="{{ n.pick }}" aria-label="{{n.aria}}" aria-pressed="{{n.pressed}}" style="position:absolute;left:{{n.left}};top:{{n.top}};width:{{n.w}};height:{{n.h}};margin:0;padding:0;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;animation:{{n.shake}};">
+          <span style="position:relative;display:block;flex:none;width:{{n.w}};height:{{n.w}};border-radius:10px;overflow:hidden;background:{{n.bg}};box-shadow:{{n.ring}};animation:{{n.anim}};">
+            <span aria-hidden="true" style="position:absolute;top:0;bottom:0;left:{{n.l1}};width:1px;background:{{n.line}};"></span>
+            <span aria-hidden="true" style="position:absolute;top:0;bottom:0;left:{{n.l2}};width:1px;background:{{n.line}};"></span>
+            <span aria-hidden="true" style="position:absolute;left:0;right:0;top:{{n.l1}};height:1px;background:{{n.line}};"></span>
+            <span aria-hidden="true" style="position:absolute;left:0;right:0;top:{{n.l2}};height:1px;background:{{n.line}};"></span>
+            <span dir="ltr" aria-hidden="true" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-top:4px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:{{n.fs}};line-height:.8;color:{{n.fg}};">{{n.num}}</span>
+          </span>
+          <span aria-hidden="true" style="display:flex;gap:2px;height:12px;visibility:{{n.starsVis}};">
+            <sc-for list="{{n.stars}}" as="s" hint-placeholder-count="3">
+              <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="{{s.fill}}" stroke="{{s.stroke}}" stroke-width="2" stroke-linejoin="round"></path></svg>
+            </sc-for>
+          </span>
+          <sc-if value="{{ n.boss }}" hint-placeholder-val="{{ false }}">
+            <span aria-hidden="true" style="position:absolute;top:-12px;left:20px;width:28px;height:20px;box-sizing:border-box;border-radius:6px;background:#0f1218;border:1px solid #2a3140;display:flex;align-items:center;justify-content:center;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{n.crown}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"></path></svg>
+            </span>
+          </sc-if>
+          <sc-if value="{{ n.hasBot }}" hint-placeholder-val="{{ false }}">
+            <span aria-hidden="true" style="position:absolute;top:50px;right:-8px;width:22px;height:22px;box-sizing:border-box;border-radius:7px;background:#1f2430;border:2px solid #ff9440;display:flex;align-items:center;justify-content:center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff9440" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="7.5" width="15" height="13" rx="3.5"></rect><path d="M12 7.5V5"></path><path d="M9.5 16.5h5"></path></svg>
+            </span>
+          </sc-if>
+          <sc-if value="{{ n.locked }}" hint-placeholder-val="{{ false }}">
+            <span aria-hidden="true" style="position:absolute;top:-6px;left:-6px;width:20px;height:20px;box-sizing:border-box;border-radius:50%;background:#0f1218;border:1px solid #2a3140;display:flex;align-items:center;justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+            </span>
+          </sc-if>
+          <sc-if value="{{ n.current }}" hint-placeholder-val="{{ false }}">
+            <span aria-hidden="true" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;box-sizing:border-box;border-radius:7px;background:#1f2430;border:2px solid #36c9f0;display:flex;align-items:center;justify-content:center;">
+              <svg width="8" height="8" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg>
+            </span>
+          </sc-if>
+        </button>
+      </sc-for>
+
+      <p style="position:absolute;left:16px;right:16px;top:{{footTop}};margin:0;text-align:center;font:400 13px/16px Rubik,sans-serif;color:#828ba1;">עוד 275 שלבים בהמשך · 30 פרקים</p>
+    </div>
+  </div>
+
+  <section role="region" aria-label="השלב שנבחר" aria-live="polite" style="position:absolute;left:0;right:0;bottom:0;box-sizing:border-box;padding:12px 16px 28px;display:flex;flex-direction:column;background:#171b24;border-top:1px solid #2a3140;border-radius:24px 24px 0 0;">
+    <div style="display:flex;align-items:center;gap:12px;height:40px;">
+      <span aria-hidden="true" style="flex:none;width:40px;height:40px;border-radius:50%;background:{{sel.iconBg}};color:{{sel.iconFg}};display:flex;align-items:center;justify-content:center;">
+        <sc-if value="{{ sel.iFind }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4.5"></circle><path d="M12 12h.01"></path></svg></sc-if>
+        <sc-if value="{{ sel.iBot }}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="7.5" width="15" height="13" rx="3.5"></rect><path d="M12 7.5V5"></path><circle cx="12" cy="4" r="1"></circle><circle cx="9" cy="12.5" r="1"></circle><circle cx="15" cy="12.5" r="1"></circle><path d="M9.5 16.5h5"></path><path d="M1.5 12v4M22.5 12v4"></path></svg></sc-if>
+        <sc-if value="{{ sel.iBox }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9.3 4v16M14.7 4v16M4 9.3h16M4 14.7h16"></path></svg></sc-if>
+        <sc-if value="{{ sel.iDuel }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path><path d="M19 21l2-2"></path><path d="M14.5 6.5L18 3h3v3l-3.5 3.5"></path><path d="M5 14l4 4"></path><path d="M7 17l-3 3"></path><path d="M3 19l2 2"></path></svg></sc-if>
+        <sc-if value="{{ sel.iCrown }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"></path></svg></sc-if>
+        <sc-if value="{{ sel.iLock }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></sc-if>
+        <sc-if value="{{ sel.iOpen }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 7.5-1.9"></path></svg></sc-if>
+      </span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+        <h2 style="margin:0;font:700 16px/20px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{sel.title}}</h2>
+        <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{sel.sub}}</span>
+      </div>
+      <sc-if value="{{ sel.showStars }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <span role="img" aria-label="{{sel.starsAria}}" style="display:flex;gap:2px;">
+            <sc-for list="{{sel.stars}}" as="s" hint-placeholder-count="3">
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="{{s.fill}}" stroke="{{s.stroke}}" stroke-width="2" stroke-linejoin="round"></path></svg>
+            </sc-for>
+          </span>
+          <span style="font:400 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">{{sel.best}}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ sel.showNext }}" hint-placeholder-val="{{ true }}">
+        <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:999px;border:1px solid #ffcf3f;background:rgba(255,207,63,.1);font:700 12px/1 Rubik,sans-serif;color:#ffcf3f;white-space:nowrap;">השלב הבא</span>
+      </sc-if>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px;min-height:18px;margin-top:8px;">
+      <sc-if value="{{ sel.isReason }}" hint-placeholder-val="{{ false }}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+      </sc-if>
+      <p style="margin:0;font:400 14px/18px Rubik,sans-serif;color:{{sel.goalColor}};">{{sel.goal}}</p>
+    </div>
+
+    <sc-if value="{{ sel.showScale }}" hint-placeholder-val="{{ true }}">
+      <div role="list" aria-label="כמה כוכבים אפשר לקבל" style="display:flex;height:44px;margin-top:10px;box-sizing:border-box;background:#1f2430;border:1px solid #2a3140;border-radius:10px;overflow:hidden;">
+        <sc-for list="{{sel.scale}}" as="r" hint-placeholder-count="3">
+          <div role="listitem" aria-label="{{r.aria}}" style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-inline-start:1px solid {{r.div}};">
+            <span aria-hidden="true" style="display:flex;gap:2px;height:12px;">
+              <sc-for list="{{r.stars}}" as="x" hint-placeholder-count="3">
+                <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+              </sc-for>
+            </span>
+            <span aria-hidden="true" style="font:500 13px/1 Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">{{r.text}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ sel.showBar }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:10px;height:44px;margin-top:10px;">
+        <div role="progressbar" aria-label="{{sel.barAria}}" aria-valuemin="0" aria-valuemax="20" aria-valuenow="{{sel.barNow}}" style="flex:1;height:6px;display:flex;border-radius:3px;background:#2a3140;overflow:hidden;"><span style="width:{{sel.barW}};border-radius:3px;background:#ffcf3f;"></span></div>
+        <span aria-hidden="true" style="flex:none;display:flex;align-items:center;gap:4px;">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+          <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#eef1f6;">{{sel.barText}}</span>
+        </span>
+      </div>
+    </sc-if>
+
+    <a href="{{sel.href}}" style="display:flex;align-items:center;justify-content:center;width:100%;height:52px;margin:12px 0 0;padding:0 26px;box-sizing:border-box;background:#ffcf3f;border:0;border-radius:12px;transform:skewX(-8deg);box-shadow:0 4px 0 #b88f00;text-decoration:none;">
+      <span style="display:block;transform:skewX(8deg);font:700 20px/1 Rubik,sans-serif;color:#241a00;white-space:nowrap;">{{sel.cta}}</span>
+    </a>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Chapter 1 done (23 stars), chapter 2 in progress (current = level 14, 6 stars so far), chapter 3 behind its gate.
+  // Level kinds follow the plan (section 4.1): ch.1 = 5 x find + 4 x box + boss (a box with 5 missing);
+  // ch.2 = 3 x find, race, box + boss (a race vs Pip); ch.3 adds the duel to 30. Every level lasts 30 s at most.
+  // LV[n] = [kind, best stars, best result].
+  data() {
+    return {
+      CUR: 14,
+      CH: [
+        { n: 1, name: 'צעדים ראשונים', from: 1, to: 10, gate: null },
+        { n: 2, name: 'Pip מאתגר', from: 11, to: 20, gate: { open: true, have: 23 } },
+        { n: 3, name: 'דו־קרב ראשון', from: 21, to: 25, gate: { open: false, have: 6 } }
+      ],
+      LV: {
+        1: ['find', 3, '3.9 ש׳'], 2: ['box', 2, '13.2 ש׳'], 3: ['find', 3, '4.4 ש׳'], 4: ['find', 2, '7.1 ש׳'],
+        5: ['box', 1, '18.6 ש׳'], 6: ['find', 3, '4.7 ש׳'], 7: ['box', 2, '12.4 ש׳'], 8: ['find', 3, '4.2 ש׳'],
+        9: ['box', 1, '17.3 ש׳'], 10: ['boss', 3, '9.8 ש׳'],
+        11: ['race', 2, '3 מתוך 5'], 12: ['find', 3, '4.6 ש׳'], 13: ['box', 1, '17.8 ש׳'], 14: ['race'],
+        15: ['find'], 16: ['box'], 17: ['race'], 18: ['find'], 19: ['box'], 20: ['boss'],
+        21: ['duel'], 22: ['find'], 23: ['race'], 24: ['duel'], 25: ['box']
+      }
+    };
+  }
+
+  // Star thresholds per kind, from the plan (every level 30 s at most; find: one target, ends at 20 s; race: 5 spots
+  // in 30 s; box in chapters 1-2: 4 missing cells, ends at 20 s; duel: the lead at 30 points or 30 s; boss: one challenge).
+  kinds() {
+    const LRI = '⁦', PDI = '⁩';
+    return {
+      find: { name: 'איפה הספרה?', icon: 'Find', tone: 'neutral', vs: '', href: 'Lv-Find.dc.html',
+        goal: 'מציאה אחת. השלב נגמר ב־20 ש׳.',
+        scale: [[3, 'עד 5 ש׳'], [2, 'עד 10 ש׳'], [1, 'עד 20 ש׳']] },
+      race: { name: 'מרוץ מול הבוט', icon: 'Bot', tone: 'bot', vs: 'מול Pip', href: 'Lv-Race.dc.html',
+        goal: '5 מקומות מול Pip, עד 30 ש׳. מי שמוצא ראשון לוקח.',
+        scale: [[3, LRI + '4–5' + PDI + ' מקומות'], [2, '3 מקומות'], [1, '2 מקומות']] },
+      box: { name: 'מלא את הריבוע', icon: 'Box', tone: 'neutral', vs: '', href: 'Lv-Box.dc.html',
+        goal: 'מלא את 4 המשבצות החסרות בריבוע, עד 20 ש׳.',
+        scale: [[3, 'עד 10 ש׳'], [2, 'עד 15 ש׳'], [1, 'עד 20 ש׳']] },
+      box3: { name: 'מלא את הריבוע', icon: 'Box', tone: 'neutral', vs: '', href: 'Lv-Box.dc.html',
+        goal: 'מלא את 5 המשבצות החסרות בריבוע, עד 25 ש׳.',
+        scale: [[3, 'עד 12 ש׳'], [2, 'עד 18 ש׳'], [1, 'עד 25 ש׳']] },
+      duel: { name: 'דו־קרב ל־30', icon: 'Duel', tone: 'bot', vs: 'מול Pip', href: 'Lv-Sprint.dc.html',
+        goal: 'מול Pip, עד 30 נקודות או 30 ש׳. הכוכבים לפי הפער.',
+        scale: [[3, 'פער 15 ומעלה'], [2, 'פער 8 ומעלה'], [1, 'מוביל בסוף']] },
+      boss1: { name: 'שלב בוס', icon: 'Crown', tone: 'gold', vs: '', href: 'Lv-Box.dc.html',
+        goal: 'ריבוע עם 5 משבצות חסרות, עד 20 ש׳.',
+        scale: [[3, 'עד 10 ש׳'], [2, 'עד 15 ש׳'], [1, 'עד 20 ש׳']] },
+      boss2: { name: 'שלב בוס', icon: 'Crown', tone: 'gold', vs: 'הבוס: Pip, מהיר ב־10%', href: 'Lv-Race.dc.html',
+        goal: 'מרוץ מול הבוס: 5 מקומות, עד 30 ש׳.',
+        scale: [[3, LRI + '4–5' + PDI + ' מקומות'], [2, '3 מקומות'], [1, '2 מקומות']] }
+    };
+  }
+
+  kindKey(n) {
+    const k = this.data().LV[n][0];
+    if (k === 'box' && n > 20) return 'box3'; // chapter 3: 5 missing cells
+    return k === 'boss' ? (n <= 10 ? 'boss1' : 'boss2') : k;
+  }
+
+  starRow(k) {
+    const out = [];
+    for (let i = 0; i < 3; i++) out.push(i < k ? { fill: '#ffcf3f', stroke: '#ffcf3f' } : { fill: 'none', stroke: '#677086' });
+    return out;
+  }
+
+  starsText(k) {
+    return k === 1 ? 'כוכב אחד מתוך 3' : k + ' כוכבים מתוך 3';
+  }
+
+  selected() {
+    const s = this.state || {};
+    return s.sel === undefined ? this.data().CUR : s.sel;
+  }
+
+  seg(a, b, color) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    return {
+      left: a.x + 'px', top: (a.y - 1) + 'px', len: Math.sqrt(dx * dx + dy * dy).toFixed(1) + 'px',
+      rot: 'rotate(' + (Math.atan2(dy, dx) * 180 / Math.PI).toFixed(2) + 'deg)', color: color
+    };
+  }
+
+  // The path: top to bottom, level 1 first; centre x from the right edge, period 6; step 56 (boss 64).
+  layout() {
+    const D = this.data(), K = this.kinds(), self = this;
+    const s = this.state || {};
+    const sel = this.selected();
+    const shakeN = s.shake || 0;
+    const shakeAnim = function (id) {
+      return s.shook === id ? ((shakeN % 2 ? 'lv-shake' : 'lv-shake-b') + ' .3s ease-in-out') : 'none';
+    };
+    const PAT = [64, 146, 228, 310, 228, 146], W = 390;
+    const heads = [], gates = [], nodes = [], pts = [], conns = [];
+    let y = 16, total = 0, scroll = 0, lastN = 1;
+
+    D.CH.forEach(function (ch) {
+      let chStars = 0;
+      for (let n = ch.from; n <= ch.to; n++) chStars += D.LV[n][1] || 0;
+      total += chStars;
+      if (D.CUR >= ch.from && D.CUR <= ch.to) scroll = y - 8;
+      heads.push({
+        top: y + 'px', title: 'פרק ' + ch.n, name: ch.name, count: chStars + '/30',
+        aria: 'פרק ' + ch.n + ': ' + chStars + ' כוכבים מתוך 30',
+        starFill: chStars ? '#ffcf3f' : 'none', starStroke: chStars ? '#ffcf3f' : '#677086'
+      });
+      y += 44;
+
+      if (ch.gate) {
+        const g = ch.gate, id = 'g' + ch.n, h = g.open ? 44 : 52, w = g.open ? 120 : 220, isSel = sel === id;
+        gates.push({
+          open: g.open, closed: !g.open, top: y + 'px', left: ((W - w) / 2) + 'px', w: w + 'px',
+          fill: Math.min(100, Math.round(g.have / 20 * 100)) + '%', count: g.have + '/20',
+          border: isSel ? '#eef1f6' : (g.open ? '#2a3140' : '#677086'),
+          aria: g.open
+            ? 'פרק ' + ch.n + ' פתוח · נפתח ב־20 כוכבים מפרק ' + (ch.n - 1)
+            : 'פרק ' + ch.n + ' נעול · ' + g.have + ' מתוך 20 כוכבים בפרק ' + (ch.n - 1),
+          pressed: isSel ? 'true' : 'false', anim: shakeAnim(id),
+          pick: function () { self.setState({ sel: id, shook: g.open ? null : id, shake: shakeN + 1 }); }
+        });
+        pts.push({ x: W / 2, y: y + h / 2, reached: g.open });
+        y += h + 16;
+      } else {
+        y += 4;
+      }
+
+      let prev = null, last = null;
+      for (let n = ch.from; n <= ch.to; n++) {
+        const lv = D.LV[n], boss = lv[0] === 'boss', half = boss ? 34 : 28, size = half * 2;
+        const cxR = PAT[(n - 1) % 6];
+        const cy = prev === null ? y + half : prev + (boss ? 64 : 56);
+        prev = cy;
+        const st = n < D.CUR ? 'played' : (n === D.CUR ? 'current' : 'locked');
+        const locked = st === 'locked', isSel = sel === n, k = lv[1] || 0;
+        const kind = K[self.kindKey(n)];
+        let ring = 'none', anim = 'none';
+        if (st === 'current') {
+          ring = '0 0 0 2px #0f1218, 0 0 0 4px #ffcf3f';
+          anim = 'lv-current 1.6s ease-in-out infinite';
+        } else if (isSel) {
+          ring = '0 0 0 2px #0f1218, 0 0 0 4px #eef1f6';
+        }
+        let aria = 'שלב ' + n + ' · ' + kind.name + ' · ' + self.starsText(k);
+        if (st === 'current') aria = 'שלב ' + n + ' · ' + kind.name + ' · השלב הבא';
+        if (locked) {
+          if (ch.gate && !ch.gate.open) aria = 'שלב ' + n + ' · נעול · פרק ' + ch.n + ' נפתח ב־20 כוכבים';
+          else if (n === D.CUR + 1) aria = 'שלב ' + n + ' · נעול · קודם משחקים את שלב ' + D.CUR;
+          else aria = 'שלב ' + n + ' · נעול';
+        }
+        nodes.push({
+          num: String(n), left: (W - cxR - half) + 'px', top: (cy - half) + 'px',
+          w: size + 'px', h: (size + 16) + 'px', l1: (boss ? 22 : 18) + 'px', l2: (boss ? 45 : 37) + 'px',
+          fs: (boss ? 34 : 30) + 'px',
+          bg: locked ? '#1f2430' : '#f7f8fa', line: locked ? '#2a3140' : '#c8cdd6', fg: locked ? '#828ba1' : '#0f1218',
+          ring: ring, anim: anim, starsVis: locked ? 'hidden' : 'visible', stars: self.starRow(st === 'played' ? k : 0),
+          locked: locked, current: st === 'current', boss: boss, hasBot: boss && n > 10,
+          crown: locked ? '#677086' : '#ffcf3f',
+          aria: aria, pressed: isSel ? 'true' : 'false', shake: shakeAnim(n),
+          pick: function () { self.setState({ sel: n, shook: locked ? n : null, shake: shakeN + 1 }); }
+        });
+        pts.push({ x: W - cxR, y: cy, reached: !locked });
+        last = { cy: cy, half: half };
+        lastN = n;
+      }
+      y = last.cy + last.half + 16 + 28;
+    });
+
+    for (let i = 1; i < pts.length; i++) {
+      conns.push(this.seg(pts[i - 1], pts[i], pts[i].reached ? '#677086' : '#2a3140'));
+    }
+    // The path keeps going past the last drawn level (26 is next).
+    const lp = pts[pts.length - 1], nx = W - PAT[lastN % 6];
+    conns.push(this.seg(lp, { x: (lp.x + nx) / 2, y: lp.y + 28 }, '#2a3140'));
+
+    return { heads: heads, gates: gates, nodes: nodes, conns: conns, total: total, scroll: scroll, footTop: y, mapH: y + 64 };
+  }
+
+  selInfo() {
+    const D = this.data(), K = this.kinds(), sel = this.selected();
+    const IC = { neutral: ['rgba(154,163,181,.16)', '#9aa3b5'], bot: ['rgba(255,148,64,.16)', '#ff9440'], gold: ['rgba(255,207,63,.16)', '#ffcf3f'] };
+    const LRI = '⁦', PDI = '⁩';
+    const curKind = K[this.kindKey(D.CUR)];
+    const out = {
+      iFind: false, iBot: false, iBox: false, iDuel: false, iCrown: false, iLock: false, iOpen: false,
+      iconBg: IC.neutral[0], iconFg: IC.neutral[1],
+      title: '', sub: '', goal: '', goalColor: '#9aa3b5', isReason: false,
+      showStars: false, stars: [], starsAria: '', best: '', showNext: false,
+      showScale: false, scale: [], showBar: false, barW: '0%', barText: '', barNow: '0', barAria: '',
+      cta: 'המשך · שלב ' + D.CUR, href: curKind.href
+    };
+    const icon = function (name, tone) { out['i' + name] = true; out.iconBg = IC[tone][0]; out.iconFg = IC[tone][1]; };
+
+    if (sel === 'g2' || sel === 'g3') {
+      const ch = D.CH[sel === 'g2' ? 1 : 2], g = ch.gate, prev = ch.n - 1;
+      icon(g.open ? 'Open' : 'Lock', 'neutral');
+      out.title = 'פרק ' + ch.n + (g.open ? ' פתוח' : ' נעול');
+      out.sub = ch.name + ' · שלבים ' + LRI + ch.from + '–' + (ch.from + 9) + PDI;
+      out.isReason = !g.open;
+      out.goalColor = g.open ? '#9aa3b5' : '#eef1f6';
+      out.goal = g.open
+        ? 'נפתח: צברת ' + g.have + ' כוכבים בפרק ' + prev + ', והשער דורש 20.'
+        : 'צריך 20 כוכבים בפרק ' + prev + '. יש לך ' + g.have + ', חסרים ' + (20 - g.have) + '.';
+      const have = Math.min(20, g.have);
+      out.showBar = true;
+      out.barW = Math.round(have / 20 * 100) + '%';
+      out.barText = have + '/20';
+      out.barNow = String(have);
+      out.barAria = 'כוכבים לשער: ' + have + ' מתוך 20';
+      return out;
+    }
+
+    const n = sel, lv = D.LV[n], kind = K[this.kindKey(n)], chNo = Math.ceil(n / 10), ch = D.CH[chNo - 1];
+    const st = n < D.CUR ? 'played' : (n === D.CUR ? 'current' : 'locked');
+    out.showScale = true;
+    out.scale = kind.scale.map(function (r, i) {
+      const xs = [];
+      for (let j = 0; j < r[0]; j++) xs.push({ j: j });
+      return { stars: xs, text: r[1], div: i ? '#2a3140' : 'transparent', aria: (r[0] === 1 ? 'כוכב אחד' : r[0] + ' כוכבים') + ': ' + r[1] };
+    });
+
+    if (st === 'locked') {
+      icon('Lock', 'neutral');
+      out.title = 'שלב ' + n + ' · נעול';
+      out.sub = 'פרק ' + chNo + ' · ' + kind.name;
+      out.isReason = true;
+      out.goalColor = '#eef1f6';
+      if (ch.gate && !ch.gate.open) {
+        out.goal = 'פרק ' + chNo + ' נעול: צריך 20 כוכבים בפרק ' + (chNo - 1) + '. יש לך ' + ch.gate.have + '.';
+      } else if (n === D.CUR + 1) {
+        out.goal = 'שחק את שלב ' + D.CUR + ' קודם.';
+      } else {
+        out.goal = 'שחק את שלב ' + (n - 1) + ' קודם. אתה בשלב ' + D.CUR + '.';
+      }
+      return out;
+    }
+
+    icon(kind.icon, kind.tone);
+    out.title = 'שלב ' + n + ' · ' + kind.name;
+    out.sub = 'פרק ' + chNo + ' · ' + (kind.vs || ch.name);
+    out.goal = kind.goal;
+    out.href = kind.href;
+    if (st === 'current') {
+      out.showNext = true;
+      out.cta = 'המשך · שלב ' + n;
+    } else {
+      out.showStars = true;
+      out.stars = this.starRow(lv[1]);
+      out.starsAria = 'הכי טוב: ' + this.starsText(lv[1]);
+      out.best = 'שיא ' + lv[2];
+      out.cta = 'שחק שוב · שלב ' + n;
+    }
+    return out;
+  }
+
+  componentDidMount() {
+    // Open with the current chapter in view (chapter 2, level 14 inside it). If the frame cannot be reached, the
+    // map simply opens at chapter 1.
+    const top = this.layout().scroll;
+    this.scrollTimer = setTimeout(function () {
+      try {
+        const el = document.querySelector('[data-lv-scroll="main"]');
+        if (el && el.scrollTop === 0) el.scrollTop = top;
+      } catch (e) { /* keep the top */ }
+    }, 80);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.scrollTimer);
+  }
+
+  renderVals() {
+    const L = this.layout();
+    return {
+      total: L.total + '/900',
+      totalAria: L.total + ' כוכבים מתוך 900 · מעבר לפרק',
+      mapH: L.mapH + 'px',
+      footTop: L.footTop + 'px',
+      conns: L.conns,
+      heads: L.heads,
+      gates: L.gates,
+      nodes: L.nodes,
+      sel: this.selInfo()
+    };
+  }
+}
+</script>
+</body>
+</html>

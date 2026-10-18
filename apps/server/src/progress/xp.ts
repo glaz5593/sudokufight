@@ -22,7 +22,8 @@ import { keysOf, type ProgressSettings } from './settings';
  * What a result is, everywhere the server says it (the player card, its stats and streaks):
  * - a win: first place alone (the engine's place 1 with nobody else at 1);
  * - a tie: first place shared (D16: equal score and mistakes; Elo counts it half a win between them);
- * - a loss: any later place (surrender and abandonment included, spec §6.7 [D32]).
+ * - a loss: any later place (surrender and abandonment included, spec §6.7 [D32]). The leave guards of §11.2
+ *   are about the rating only: XP, wins and losses still go by place, even in a game whose rating they held.
  * XP goes by §15's own words: "מקום 1 במשחק מדורג" earns 50, so a shared first place earns 50 too (it is
  * place 1, and the app's "how to earn XP" says so); every later place earns the 20 of "any other result".
  * Against a bot §15 says "ניצחון", so a tie there earns 20 (./practice).

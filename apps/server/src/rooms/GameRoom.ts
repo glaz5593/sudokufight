@@ -12,10 +12,12 @@ import {
   ServerError,
 } from '@colyseus/core';
 import {
+  abandonmentAt,
   defaultRules,
   type GameConfig,
   type GameEvent,
   type GameType,
+  isSoftOffline,
   type PlayerId,
   type Scheduler,
   toPublicEvent,
@@ -24,14 +26,16 @@ import {
   type GameRoomError,
   type GameRoomRuleOverrides,
   MUTED_REACTION_EMOJI,
+  parseDeclaredInterferenceKinds,
   PROTOCOL_VERSION,
+  roomInterferenceKinds,
   type ServerMessage,
 } from '@sudoku-fight/protocol';
 
 import { type Identity, IdentityError, type IdentityVerifier, isIdentity } from '../auth';
 import type { NodeEnv } from '../config';
 import { DEFAULT_ABUSE_LIMIT, DEFAULT_MESSAGE_LIMITS, MessageGate, type MessageLimits } from '../game/gate';
-import { GameMetrics, LatencyStats } from '../game/metrics';
+import { type ConnectionChange, ConnectionStats, GameMetrics, LatencyStats } from '../game/metrics';
 import { type GameRoomSetup, parseCreateOptions, RoomOptionsError } from '../game/options';
 import type { PuzzleSource } from '../game/puzzles';
 import { generateRoomCode } from '../game/roomCode';
@@ -55,23 +59,36 @@ import type { GameRecorder, RankedGames } from '../persistence';
  * Life of a room:
  * 1. Lobby. `create('game', { private: true, … })` makes a room whose id is a 6-character code; others join
  *    with joinById(code). Everyone gets a `lobby` message on every join and leave. A drop or a leave in the
- *    lobby frees the seat.
+ *    lobby frees the seat. Each app declares the interference kinds it can show (`interferenceKinds` in its
+ *    create or join options); the game allows only the kinds every seat declared [D47].
  * 2. Playing. When the last seat is taken the game is created and started at once (D37: ready on connect; a
  *    match room counts down first, see below): each client gets a `snapshot` (the game before the start,
  *    seq 1), then everyone gets the `events` of the start, and from then on every engine update as `events`.
  *    - An action is checked by the MessageGate (shape, rate limit, clientSeq), then applied at the server's
  *      time. A refusal goes to its sender only (`rejected`).
- *    - A drop: the engine's 'disconnect' (graceEndsAt, and a freeze in a two-player game) and Colyseus's
- *      allowReconnection for the same grace. Back in time: a fresh `snapshot` to that client, then the
- *      engine's 'reconnect' (playerReconnected, gameResumed) to everyone. Not back: the engine's grace timer
- *      makes it abandonment (2 players: the other wins [D8]; 3–4: the game goes on).
- *    - Leaving on purpose (a consented leave) is a disconnect too: the grace runs and it ends in abandonment
- *      [D32: leaving after "found" is abandonment]; meanwhile the player may rejoin by code (same identity),
- *      and gets a fresh `snapshot`. Giving up on purpose is the `surrender` message (6.6).
+ *    - A drop (no goodbye: a dead socket, the heartbeat, the app in the background) is a lost connection
+ *      [D42]: the engine's soft 'disconnect' (playerConnectionLost) marks the player for rules.softGraceMs and
+ *      nothing else changes; the game goes on for everyone. Not back by its end: the engine's own timer starts
+ *      the grace of [D4] then (playerDisconnected with graceEndsAt, a freeze in a two-player game). Colyseus's
+ *      allowReconnection holds the seat for both (abandonmentAt). Back in time: a fresh `snapshot` to that
+ *      client, then the engine's 'reconnect' (playerReconnected, and gameResumed after a freeze) to everyone,
+ *      before any message of his is read. Not back: the engine's grace timer makes it abandonment (2 players:
+ *      the other wins [D8]; 3–4: the game goes on).
+ *    - Moves he made on his phone while the connection was lost come after the return as `offlineMove`, the
+ *      ordinary action path: each is decided on the board as it is then, and one whose cell is no longer free
+ *      for him is refused to him only (`rejected`), with no trace and no penalty.
+ *    - Leaving on purpose (a consented leave) is a disconnect too, hard at once (no soft phase): the grace runs
+ *      and it ends in abandonment [D32: leaving after "found" is abandonment]; meanwhile the player may rejoin
+ *      by code (same identity), and gets a fresh `snapshot`. Giving up on purpose is the `surrender` message
+ *      (6.6).
  *    - The room stays while the game runs, even with nobody connected (the game is kept on the server, spec
  *      §16.2); the graces end it.
- * 3. Over. After gameOver everyone gets the `solution` (spec §21: only now), and the room closes after
- *    closeAfterGameMs, or as soon as nobody is in it.
+ * 3. Over. After gameOver everyone gets the `solution` (spec §21: only now). The room closes after
+ *    closeAfterGameMs at the latest, and as soon as nobody is in it once every player has had the end. A
+ *    player who was away when it came (a drop, the phone in the background, Moshe's black screens of 1.0.0)
+ *    keeps the room up to that ceiling: back by the reconnection token or by code, they get the finished
+ *    snapshot and the solution, and with them the result. A drop after the end holds the seat until the
+ *    ceiling too (the app does not reconnect to a game it has seen end, but an old app might).
  *
  * Rated rooms (stage 9, `rated: true`): before the game starts (phase 'starting', a database round trip)
  * deps.ranked makes its config: a ranked-pool puzzle none of the players has played, and each player's
@@ -85,9 +102,10 @@ import type { GameRecorder, RankedGames } from '../persistence';
  * ready check (D37: connected = ready): when everyone is in, phase 'countdown' (seats fixed, leaving is
  * abandonment [D32]; everyone gets a `countdown` with GO's time, 3… 2… 1…), then GO starts the game as above;
  * a no-show cancels the match and closes the room. A drop in the countdown holds the seat as in the game: the
- * game starts at GO with that player disconnected (the grace runs from then), and the reconnection token
- * brings them back. When the game is over and its result stored, the room tells matchmaking, which refuses
- * the players' searches until then (one ranked game at a time).
+ * game starts at GO with that player's connection lost (the soft phase, then the grace, run from then), and
+ * the reconnection token brings them back; one who left on purpose starts it disconnected (the grace at once).
+ * When the game is over and its result stored, the room tells matchmaking, which refuses the players'
+ * searches until then (one ranked game at a time).
  *
  * Blocks (spec §3.5): matchmaking never puts two players who blocked each other in one game, but a game that
  * started before the block (or a block made from the opponent's card during the game) brings them together.
@@ -99,7 +117,9 @@ import type { GameRecorder, RankedGames } from '../persistence';
  * Abuse: messages over a type's rate limit are dropped; too many malformed or over-the-limit messages and
  * the client is disconnected (for the game, a drop). Measures: every action's handling time goes to
  * GameMetrics (GET /dev/metrics outside production) and to the game's summary line in the log when it ends;
- * an action slower than slowActionMs is logged on its own.
+ * an action slower than slowActionMs is logged on its own. So do the connections [D42] (lost, back within
+ * the soft phase, hard, back from it: counted from the engine's events) and the moves made offline (applied,
+ * or lost by reason).
  */
 
 export interface GameRoomLog {
@@ -195,8 +215,16 @@ interface Seat {
   name: string;
   /** The connection holding the seat; null while nobody does (left, or dropped for good). */
   sessionId: string | null;
-  /** Dropped before the game (a match's countdown, a rated game being set up), the seat held to come back. */
+  /**
+   * Dropped before the game (a match's countdown, a rated game being set up) or after its end, the seat held to
+   * come back.
+   */
   away?: boolean;
+  /**
+   * The interference kinds the app declared in its create or join options [D47] (a private room's seats; a
+   * match room has its kinds from matchmaking). Undefined: none declared, the legacy kinds.
+   */
+  interferenceKinds?: readonly string[];
 }
 
 /**
@@ -255,12 +283,20 @@ export abstract class GameRoom extends Room {
   private recorder: GameRecorder | null = null;
   private gate: MessageGate | null = null;
   private closeTimer: unknown = null;
+  /** When the finished game's room closes at the latest (gameOver + closeAfterGameMs, this room's clock). */
+  private closeAt: number | null = null;
+  /** The players who have had the end: connected when it came, or back since (welcomeBack). */
+  private readonly sawEnd = new Set<PlayerId>();
   /** onCreate finished (a refused create is disposed too, and must not count as a room closed). */
   private opened = false;
   /** Connections disconnected for abuse: their last messages may still be in the pipe, and count for nothing. */
   private readonly kicked = new Set<string>();
   /** This room's action handling times, for the summary when the game ends. */
   private readonly actionTimes = new LatencyStats(2048);
+  /** This game's connections and moves made offline [D42], for the same summary. */
+  private readonly connectionStats = new ConnectionStats();
+  /** Players hard-disconnected now (playerDisconnected, not back yet): a return from there is 'backHard'. */
+  private readonly hardAway = new Set<PlayerId>();
   /** Blocks among the players, as `<blocker> <blocked>`: the blocked one's reactions are muted for the blocker. */
   private readonly mutes = new Set<string>();
   /** Stops listening for block changes (the room closes). */
@@ -320,10 +356,10 @@ export abstract class GameRoom extends Room {
     this.deps.metrics.roomOpened();
   }
 
-  override onJoin(client: Client): void {
+  override onJoin(client: Client, options?: unknown): void {
     const identity: unknown = client.auth;
     if (!isIdentity(identity)) throw refuse(ErrorCode.AUTH_FAILED, 'unauthenticated', 'no identity');
-    if (this.phase === 'lobby') return this.joinLobby(client, identity);
+    if (this.phase === 'lobby') return this.joinLobby(client, identity, options);
 
     // The game is on (or over): only its own players come back, after leaving on purpose.
     const seat = this.seatOfPlayer(identity.userId);
@@ -336,25 +372,26 @@ export abstract class GameRoom extends Room {
     this.welcomeBack(client, seat);
   }
 
-  /** Dropped without saying goodbye: hold the seat for the grace period (spec §16.2). */
+  /**
+   * Dropped without saying goodbye: a lost connection (spec §16.2) [D42]. The engine marks the player for the
+   * soft phase (the game goes on), and its timer starts the grace at the soft phase's end; the seat is held for
+   * both, until the moment he would abandon the game.
+   */
   override onDrop(client: Client): void {
     const seat = this.seatOfSession(client.sessionId);
     if (!seat) return;
     if (this.phase === 'lobby') return this.leaveLobby(seat);
-    if (this.phase === 'over') {
-      seat.sessionId = null;
-      return;
-    }
+    if (this.phase === 'over') return this.holdSeatAfterGame(client, seat);
     if (!this.game) return this.holdSeatBeforeGame(client, seat);
-    const result = this.game.disconnect(seat.playerId);
+    const result = this.game.disconnect(seat.playerId, { soft: true });
     if (result.rejected) {
       // Out of the game already (surrendered, abandoned): nothing to hold.
       seat.sessionId = null;
       return;
     }
-    const graceEndsAt =
-      this.game.state.players.find((p) => p.id === seat.playerId)?.graceEndsAt ?? this.deps.now();
-    const seconds = (Math.max(0, graceEndsAt - this.deps.now()) + RECONNECT_SLACK_MS) / 1000;
+    const now = this.deps.now();
+    const until = abandonmentAt(this.game.state, seat.playerId) ?? now;
+    const seconds = (Math.max(0, until - now) + RECONNECT_SLACK_MS) / 1000;
     this.deps.log.info(`[game ${this.code}] ${seat.playerId} dropped; ${seconds.toFixed(1)} s to come back`);
     // A client that never finished joining can't reconnect; it may still rejoin by code.
     this.allowReconnection(client, seconds).catch(() => undefined);
@@ -386,10 +423,16 @@ export abstract class GameRoom extends Room {
     // abandonment [D32], so the grace runs and the player may rejoin by code meanwhile; and a reconnection
     // that the engine took but whose socket then died must not leave a player "connected" who isn't (the game
     // would neither freeze nor end). After an ordinary drop the engine has it already (refused, no change).
-    const result = this.game.disconnect(seat.playerId);
+    // Leaving on purpose is hard at once (it hardens a soft phase too); a socket that died is a lost
+    // connection, with its soft phase [D42].
+    const consented = code === CloseCode.CONSENTED;
+    const result = this.game.disconnect(seat.playerId, { soft: !consented });
     if (!result.rejected) {
-      const how = code === CloseCode.CONSENTED ? 'left' : 'is gone';
-      this.deps.log.info(`[game ${this.code}] ${seat.playerId} ${how}; grace runs`);
+      const me = this.game.state.players.find((p) => p.id === seat.playerId);
+      const phase = me && isSoftOffline(me) ? 'the soft phase' : 'grace';
+      this.deps.log.info(
+        `[game ${this.code}] ${seat.playerId} ${consented ? 'left' : 'is gone'}; ${phase} runs`,
+      );
     }
   }
 
@@ -414,25 +457,45 @@ export abstract class GameRoom extends Room {
 
   /**
    * Dropped in a match's countdown, or while a rated game is being set up: the seat is the player's from the
-   * countdown on [D32], and the game starts at GO without them (disconnected: their grace runs from the
-   * start, like a drop in the game). Colyseus holds the connection until that grace would run out, so the
-   * app comes back with its reconnection token as it would in the game (a rejoin by code works too).
+   * countdown on [D32], and the game starts at GO without them (their connection lost: the soft phase and then
+   * the grace run from the start, like a drop in the game [D42]). Colyseus holds the connection until that
+   * grace would run out, so the app comes back with its reconnection token as it would in the game (a rejoin
+   * by code works too).
    */
   private holdSeatBeforeGame(client: Client, seat: Seat): void {
     seat.away = true;
     const now = this.deps.now();
-    const graceMs = defaultRules('ranked', this.gameType, this.ruleOverrides).graceMs;
+    const { softGraceMs, graceMs } = defaultRules('ranked', this.gameType, this.ruleOverrides);
     const toGoMs = Math.max(0, (this.goAt ?? now) - now);
-    const seconds = (toGoMs + graceMs + BEFORE_GAME_SLACK_MS + RECONNECT_SLACK_MS) / 1000;
+    const seconds = (toGoMs + softGraceMs + graceMs + BEFORE_GAME_SLACK_MS + RECONNECT_SLACK_MS) / 1000;
     this.deps.log.info(
       `[game ${this.code}] ${seat.playerId} dropped before the game; ${seconds.toFixed(1)} s to come back`,
     );
     this.allowReconnection(client, seconds).catch(() => undefined);
   }
 
+  /**
+   * Dropped after the end: the seat is held until the room closes (closeAt), so the player still gets the end
+   * back with the reconnection token (or by code: the seat is freed when the hold lapses, onLeave).
+   */
+  private holdSeatAfterGame(client: Client, seat: Seat): void {
+    seat.away = true;
+    const now = this.deps.now();
+    const seconds = Math.max(1, ((this.closeAt ?? now) - now) / 1000);
+    this.deps.log.info(
+      `[game ${this.code}] ${seat.playerId} dropped after the end; ${seconds.toFixed(1)} s to come back`,
+    );
+    this.allowReconnection(client, seconds).catch(() => undefined);
+  }
+
+  /** Everyone has had the end: nothing keeps an empty room open any more. */
+  private everyoneSawEnd(): boolean {
+    return this.seats.every((s) => this.sawEnd.has(s.playerId));
+  }
+
   // -- lobby ---------------------------------------------------------------------------------------------
 
-  private joinLobby(client: Client, identity: Identity): void {
+  private joinLobby(client: Client, identity: Identity, options: unknown): void {
     if (this.match && !this.match.has(identity.userId))
       throw refuse(ErrorCode.APPLICATION_ERROR, 'gameStarted', 'this ranked game is for its matched players');
     if (this.seatOfPlayer(identity.userId))
@@ -441,7 +504,17 @@ export abstract class GameRoom extends Room {
         'alreadyInRoom',
         `${identity.userId} is in this room already`,
       );
-    this.seats.push({ playerId: identity.userId, name: identity.name, sessionId: client.sessionId });
+    // The kinds this app can show [D47]; a malformed list counts as none (the legacy kinds), never a refusal.
+    const declared =
+      typeof options === 'object' && options !== null
+        ? (options as { interferenceKinds?: unknown }).interferenceKinds
+        : undefined;
+    this.seats.push({
+      playerId: identity.userId,
+      name: identity.name,
+      sessionId: client.sessionId,
+      interferenceKinds: parseDeclaredInterferenceKinds(declared),
+    });
     this.gate!.newSession(identity.userId);
     this.sendLobby();
     // A match room starts when matchmaking says GO (everyone in, then the countdown: onMatchGo).
@@ -529,11 +602,25 @@ export abstract class GameRoom extends Room {
 
   // -- the game ------------------------------------------------------------------------------------------
 
+  /**
+   * The game's rule overrides: the room's, with the interference kinds it allows [D47]. A match room has them
+   * from matchmaking (the kinds every matched app declared). A private room allows the kinds every seat's app
+   * declared on joining (none declared: the legacy three), unless its create options set them.
+   */
+  private gameRules(): GameRoomRuleOverrides {
+    if (this.match || this.ruleOverrides.interferenceKinds !== undefined) return this.ruleOverrides;
+    return {
+      ...this.ruleOverrides,
+      interferenceKinds: roomInterferenceKinds(this.seats.map((s) => s.interferenceKinds)),
+    };
+  }
+
   private startGame(): void {
     this.watchBlocks();
     const id = randomUUID();
     const seed = this.deps.random(2 ** 31);
     const ranked = this.deps.ranked;
+    const rules = this.gameRules();
     if (!this.rated || ranked === undefined) {
       return this.launch({
         id,
@@ -541,7 +628,7 @@ export abstract class GameRoom extends Room {
         gameType: this.gameType,
         puzzle: this.deps.puzzles.pick(this.gameType),
         players: this.seats.map((s) => ({ id: s.playerId, name: s.name })),
-        rules: defaultRules('ranked', this.gameType, this.ruleOverrides),
+        rules: defaultRules('ranked', this.gameType, rules),
         seed,
       });
     }
@@ -551,7 +638,7 @@ export abstract class GameRoom extends Room {
     this.autoDispose = false;
     const players = this.seats.map((s) => ({ id: s.playerId, name: s.name }));
     ranked
-      .createConfig({ id, gameType: this.gameType, players, rules: this.ruleOverrides, seed })
+      .createConfig({ id, gameType: this.gameType, players, rules, seed })
       .then((config) => {
         // The room may be gone meanwhile (the server shutting down): no game for nobody.
         if (this.opened) this.launch(config);
@@ -586,10 +673,13 @@ export abstract class GameRoom extends Room {
       if (seat) this.sendSnapshot(client, seat.playerId);
     }
     this.game.start();
-    // Whoever left or dropped before the game (the countdown, a rated game being set up) is in it,
-    // disconnected: their grace starts now. A dropped seat may still come back with its reconnection token.
+    // Whoever left or dropped before the game (the countdown, a rated game being set up) is in it, away from
+    // now on: one who left on purpose is disconnected (the grace starts now); a dropped seat has lost its
+    // connection (the soft phase starts now [D42], then the grace), and may still come back with its
+    // reconnection token.
     for (const seat of this.seats)
-      if (seat.sessionId === null || seat.away) this.game.disconnect(seat.playerId);
+      if (seat.sessionId === null) this.game.disconnect(seat.playerId);
+      else if (seat.away) this.game.disconnect(seat.playerId, { soft: true });
     this.deps.metrics.gameStarted();
     const who = this.seats.map((s) => s.playerId).join(', ');
     const rated = this.rated ? ' (rated)' : '';
@@ -600,6 +690,7 @@ export abstract class GameRoom extends Room {
 
   private onGameUpdate({ events, state }: ServerGameUpdate): void {
     this.sendEvents(events.map(toPublicEvent));
+    this.countConnections(events);
     if (state.status !== 'over' || this.phase === 'over') return;
     this.phase = 'over';
     // A match's players may search again once the result is stored, so the next search has the new rating.
@@ -607,21 +698,63 @@ export abstract class GameRoom extends Room {
     if (match) void (this.recorder?.done ?? Promise.resolve()).then(() => match.over());
     // Only now (spec §21): for the replay.
     this.broadcastMessage({ type: 'solution', solution: state.config.puzzle.solution });
-    // Nobody left to read the result: close now rather than after closeAfterGameMs.
-    this.autoDispose = true;
+    // Whoever is connected now has the end; a player who is away (a seat held for a drop, or given up) gets it
+    // on return, and the room waits for them until closeAt. Once everyone has it, an empty room closes now
+    // rather than after closeAfterGameMs.
+    const connected = new Set(this.clients.map((c) => c.sessionId));
+    for (const seat of this.seats)
+      if (seat.sessionId !== null && connected.has(seat.sessionId)) this.sawEnd.add(seat.playerId);
+    this.closeAt = this.deps.now() + this.deps.closeAfterGameMs;
+    this.autoDispose = this.everyoneSawEnd();
     this.deps.metrics.gameOver();
     const t = this.actionTimes.summary();
     const ranking = (state.result?.ranking ?? [])
       .map((r) => `${r.place}. ${r.playerId} ${r.score}`)
       .join(', ');
+    const connections = this.connectionStats.summary();
     this.deps.log.info(
       `[game ${this.code}] over (${state.result?.reason}): ${ranking}; ` +
-        `${t.count} actions, p50 ${t.p50Ms} ms, p95 ${t.p95Ms} ms, max ${t.maxMs} ms`,
+        `${t.count} actions, p50 ${t.p50Ms} ms, p95 ${t.p95Ms} ms, max ${t.maxMs} ms` +
+        (connections ? `; ${connections}` : ''),
     );
     this.closeTimer = this.deps.scheduler.setTimeout(() => {
       this.closeTimer = null;
       this.disconnect().catch((error: unknown) => this.deps.log.error(`[game ${this.code}] close`, error));
     }, this.deps.closeAfterGameMs);
+  }
+
+  /**
+   * The connections in this update's events [D42], for the server's measures and this game's summary: a lost
+   * connection (the soft phase), a hard disconnect, a return from either, and a move made offline applied.
+   */
+  private countConnections(events: readonly GameEvent[]): void {
+    const count = (change: ConnectionChange) => {
+      this.connectionStats.connection(change);
+      this.deps.metrics.connection(change);
+    };
+    for (const e of events) {
+      switch (e.type) {
+        case 'playerConnectionLost':
+          count('soft');
+          break;
+        case 'playerDisconnected':
+          this.hardAway.add(e.playerId);
+          count('hard');
+          break;
+        case 'playerReconnected':
+          count(this.hardAway.delete(e.playerId) ? 'backHard' : 'backInSoft');
+          break;
+        case 'placedCorrect':
+        case 'placedWrong':
+          if (e.offline) {
+            this.connectionStats.offlineMove();
+            this.deps.metrics.offlineMove();
+          }
+          break;
+        default:
+          break;
+      }
+    }
   }
 
   /**
@@ -637,6 +770,9 @@ export abstract class GameRoom extends Room {
     this.sendSnapshot(client, seat.playerId);
     if (this.phase === 'over') {
       this.sendTo(client, { type: 'solution', solution: this.game.solution });
+      // Back after the end: now they have it. The last one to get it lets the room close once it is empty.
+      this.sawEnd.add(seat.playerId);
+      if (this.everyoneSawEnd()) this.autoDispose = true;
       return;
     }
     // Refused when the player was out meanwhile (abandoned): the snapshot shows it. The engine runs what is
@@ -736,6 +872,12 @@ export abstract class GameRoom extends Room {
             ? this.game.act(seat.playerId, admission.action).rejected
             : ('notStarted' as const);
           if (reason) this.sendTo(client, { type: 'rejected', clientSeq: admission.clientSeq, reason });
+          if (admission.action.type === 'offlineMove' && reason && this.game) {
+            // [D42] A move made offline that lost its cell (refused to him only, with no penalty). One that is
+            // applied is counted from its event (countConnections), before a last cell's summary line.
+            this.connectionStats.offlineMove(reason);
+            this.deps.metrics.offlineMove(reason);
+          }
           const ms = performance.now() - started;
           this.actionTimes.add(ms);
           this.deps.metrics.action(admission.action.type, ms);

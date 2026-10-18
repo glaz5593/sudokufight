@@ -37,6 +37,8 @@ function sdkClient(room = sdkRoom()) {
 
 const dev: NetIdentity = { kind: 'dev', devUserId: 'dev-1', name: 'Moshe' };
 const sdkError = (message: string, code?: number) => Object.assign(new Error(message), { code });
+/** Every create and join says which interference kinds this app can show [D47]. */
+const ALL_KINDS = ['fireworks', 'cats', 'warp', 'scramble', 'ink', 'keypad'];
 
 describe('createOnlineClient', () => {
   it('creates a private dev room with the dev identity in the options', async () => {
@@ -47,6 +49,7 @@ describe('createOnlineClient', () => {
       private: true,
       devUserId: 'dev-1',
       name: 'Moshe',
+      interferenceKinds: ALL_KINDS,
       gameType: 'hard',
       playerCount: 3,
       rules: { graceMs: 5000 },
@@ -64,7 +67,7 @@ describe('createOnlineClient', () => {
     const client = createOnlineClient({ sdk, identity: async () => ({ kind: 'token', token: `tok${++n}` }) });
     await client.join('ABC234');
     expect(sdk.auth.token).toBe('tok1');
-    expect(sdk.joinById).toHaveBeenCalledWith('ABC234', {});
+    expect(sdk.joinById).toHaveBeenCalledWith('ABC234', { interferenceKinds: ALL_KINDS });
     await client.join('ABC234');
     expect(sdk.auth.token).toBe('tok2');
   });
@@ -73,7 +76,11 @@ describe('createOnlineClient', () => {
     const { sdk } = sdkClient();
     const client = createOnlineClient({ sdk, identity: async () => dev });
     await client.join(' abc-234 ');
-    expect(sdk.joinById).toHaveBeenCalledWith('ABC234', { devUserId: 'dev-1', name: 'Moshe' });
+    expect(sdk.joinById).toHaveBeenCalledWith('ABC234', {
+      devUserId: 'dev-1',
+      name: 'Moshe',
+      interferenceKinds: ALL_KINDS,
+    });
     await expect(client.join('AB1')).rejects.toMatchObject({ code: 'badCode' });
     await expect(client.join('ABCDE0')).rejects.toBeInstanceOf(OnlineError);
     expect(sdk.joinById).toHaveBeenCalledTimes(1);

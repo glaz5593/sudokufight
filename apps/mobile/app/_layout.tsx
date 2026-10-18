@@ -9,12 +9,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useAuthGate } from '../src/auth';
 import { ToastViewport } from '../src/components/ui';
+import { displayConfig } from '../src/config/display';
 import { openPracticeStorage } from '../src/game/storage';
 import i18n, { applyDirection } from '../src/i18n';
 import { startProgress } from '../src/progress';
 import { SplashOverlay } from '../src/screens/account/SplashScreen';
 import { ErrorScreen } from '../src/screens/ErrorScreen';
 import { track } from '../src/services/analytics';
+import { useKeepScreenOn } from '../src/services/keepAwake';
 import { restartApp } from '../src/services/restart';
 import { logFirstScreen, useAfterFirstScreen } from '../src/services/startup';
 import { startTelemetry } from '../src/services/telemetry';
@@ -44,6 +46,8 @@ export default function RootLayout() {
   useEffect(() => track('app_open'), []);
   // Spec §27.1: a screen_view for each screen entered (its route pattern; not the dev tools).
   useScreenViews();
+  // Spec §22 (Moshe's device test, 15.10.2026): the screen stays on while the app is open, on every screen.
+  useKeepScreenOn(displayConfig.keepScreenOn);
 
   // The chosen language, and its direction: a flip from LTR to RTL (or back) needs a reload.
   useEffect(() => {

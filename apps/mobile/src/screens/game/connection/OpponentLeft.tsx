@@ -42,7 +42,8 @@ export interface OpponentLeftProps {
  * נטש' עם כפתור 'לתוצאות'"; design Opponent-Left in C's look). Over the finished game: the opponent's avatar,
  * grey with the exit badge (and their flag, when the match's profiles gave a country), "הזמן נגמר · 15 שניות בלי חיבור", "NinaVolt עזב את המשחק", "ניצחת בנטישה"
  * landing in gold (motion.md `sf-slam` → C; reduced motion: a fade), my rating change (the star chip) when the
- * game was rated, the final scores, and "לתוצאות" (the one primary, with the trophy) over "לבית" (the
+ * game was rated (a 0 in muted text, with the reason under the chip when a leave guard held it, spec §11.2),
+ * the final scores, and "לתוצאות" (the one primary, with the trophy) over "לבית" (the
  * secondary outline, with the house), as on the board.
  *
  * Screen readers: a modal; it is announced once and the focus starts on "לתוצאות".
@@ -69,6 +70,7 @@ export function OpponentLeft({
   const title = t('connection.left.title', { name, ...ctx });
   const win = t('connection.left.win');
   const type = t(`type.${m.gameType}`);
+  const unchanged = m.ratingGuard ? t(`connection.left.ratingUnchanged.${m.ratingGuard}`) : null;
 
   // The game's end already sounds (the game screen's gameOver cue, then the results' fanfare): no cue here.
   useEffect(() => {
@@ -123,16 +125,35 @@ export function OpponentLeft({
         {m.ratingDelta === null ? null : (
           <View
             accessible
-            accessibilityLabel={t('connection.left.ratingLabel', { delta: signedText(m.ratingDelta), type })}
+            accessibilityLabel={sentences(
+              [t('connection.left.ratingLabel', { delta: signedText(m.ratingDelta), type }), unchanged],
+              t,
+            )}
             style={styles.rating}
             testID={`${testID}-rating`}
           >
             <Icon name="star" size={size.icon.inline - space[2]} color={color.accent} />
-            <Text style={styles.ratingDelta}>{signedText(m.ratingDelta)}</Text>
+            <Text
+              style={[styles.ratingDelta, m.ratingDelta === 0 && styles.ratingZero]}
+              testID={`${testID}-rating-delta`}
+            >
+              {signedText(m.ratingDelta)}
+            </Text>
             <Text style={styles.ratingWord}>{t('connection.left.rating')}</Text>
             <View style={styles.dot} />
             <Text style={styles.ratingWord}>{type}</Text>
           </View>
+        )}
+        {m.ratingDelta === null || unchanged === null ? null : (
+          // Why the star chip says 0 (spec §11.2, guard (b)); spoken with the chip, so hidden here.
+          <Text
+            style={styles.unchanged}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+            testID={`${testID}-rating-reason`}
+          >
+            {unchanged}
+          </Text>
         )}
         <ScoreLine
           myName={m.me.name}
@@ -240,7 +261,10 @@ const styles = StyleSheet.create({
     backgroundColor: color.accentSubtle,
   },
   ratingDelta: { ...text('scoreSm'), color: color.accent },
+  /** A 0 is no win to celebrate: muted, not gold. */
+  ratingZero: { color: color.textMuted },
   ratingWord: { ...text('micro'), color: color.textMuted },
+  unchanged: { ...text('micro'), color: color.textMuted, textAlign: 'center' },
   dot: { width: space[2], height: space[2], borderRadius: radius.pill, backgroundColor: color.textMuted },
   scores: { marginTop: space[2] },
   actions: { alignSelf: 'stretch', gap: space[4], marginTop: space[6] },

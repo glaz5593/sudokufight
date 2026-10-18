@@ -6,6 +6,7 @@ import {
   eloPairs,
   expectedScore,
   INITIAL_RATING,
+  type PairGuard,
   ratingKey,
 } from './elo';
 
@@ -170,6 +171,146 @@ describe('the change split by opponent (Results-4P: "מחושב מול כל יר
         }
       });
     }
+  });
+});
+
+describe('leave guards (§11.2) [D32, D8, Moshe 2026-10-15]', () => {
+  const sumTenths = (pairs: readonly { delta: number }[]) =>
+    Math.round(pairs.reduce((a, p) => a + p.delta * 10, 0));
+  const noLoss: PairGuard = { opponentId: 'opp', kind: 'noLoss', reason: 'leftNotBehind' };
+  const noGain: PairGuard = { opponentId: 'opp', kind: 'noGain', reason: 'opponentLeftAhead' };
+  /** The spec pair, 1287 vs 1305: a win is +17, a loss −15 for `me`. */
+  const duel = (mePlace: number, guards: PairGuard[]): EloPlayer[] => [
+    { id: 'me', rating: 1287, games: seasoned, place: mePlace, guards },
+    { id: 'opp', rating: 1305, games: seasoned, place: 3 - mePlace },
+  ];
+
+  it('noLoss holds a loss at exactly 0 and keeps a win; the other side of the pair is untouched', () => {
+    const [lost, other] = eloChanges(duel(2, [noLoss]));
+    expect(lost).toEqual({ playerId: 'me', before: 1287, after: 1287, delta: 0, provisional: false });
+    expect(Object.is(lost!.delta, -0)).toBe(false);
+    expect(other!.delta).toBe(15);
+    expect(eloChanges(duel(1, [noLoss]))[0]!.delta).toBe(17);
+  });
+
+  it('noGain holds a win at exactly 0 and keeps a loss', () => {
+    const [won, other] = eloChanges(duel(1, [noGain]));
+    expect(won).toEqual({ playerId: 'me', before: 1287, after: 1287, delta: 0, provisional: false });
+    expect(other!.delta).toBe(-17);
+    expect(eloChanges(duel(2, [noGain]))[0]!.delta).toBe(-15);
+  });
+
+  it('a pair the guard held is 0 and says why; a guarded pair it did not hold has no reason', () => {
+    expect(eloPairs(duel(2, [noLoss]))[0]).toEqual({
+      playerId: 'me',
+      pairs: [{ opponentId: 'opp', delta: 0, guard: 'leftNotBehind' }],
+      penalty: 0,
+    });
+    expect(eloPairs(duel(1, [noLoss]))[0]).toEqual({
+      playerId: 'me',
+      pairs: [{ opponentId: 'opp', delta: 17 }],
+      penalty: 0,
+    });
+    expect(eloPairs(duel(1, [noGain]))[0]!.pairs).toEqual([
+      { opponentId: 'opp', delta: 0, guard: 'opponentLeftAhead' },
+    ]);
+    // A guard against someone else holds nothing here.
+    expect(eloChanges(duel(2, [{ ...noLoss, opponentId: 'nobody' }]))[0]!.delta).toBe(-15);
+  });
+
+  it('a guard touches only its own pair: 4 equals, 3rd with a held win vs 4th → −5.5, −5.5, 0 (never −5.4, −0.1)', () => {
+    const players: EloPlayer[] = [1, 2, 3, 4].map((place) => ({
+      id: `p${place}`,
+      rating: 1200,
+      games: seasoned,
+      place,
+      ...(place === 3
+        ? { guards: [{ opponentId: 'p4', kind: 'noGain', reason: 'opponentLeftBeforeMyMove' } as const] }
+        : null),
+    }));
+    // Without the guard: 16, 5, −5, −16. p3 loses the +5.33 against p4: −10.67 → −11.
+    expect(eloChanges(players).map((c) => c.delta)).toEqual([16, 5, -11, -16]);
+    const pairs = eloPairs(players);
+    // The held pair is fixed at 0 and takes no part in the apportioning of the −11.
+    expect(pairs[2]!.pairs).toEqual([
+      { opponentId: 'p1', delta: -5.5 },
+      { opponentId: 'p2', delta: -5.5 },
+      { opponentId: 'p4', delta: 0, guard: 'opponentLeftBeforeMyMove' },
+    ]);
+    // Everyone else's pairs are as without guards.
+    const plain = eloPairs(players.map(({ guards: _g, ...p }) => p));
+    for (const k of [0, 1, 3]) expect(pairs[k]).toEqual(plain[k]);
+  });
+
+  it('[D8] a partial win (abandonWinScore 0.5) is still a gain: noGain holds it at 0; a loss under it is kept', () => {
+    const players: EloPlayer[] = [
+      { id: 'me', rating: 1287, games: seasoned, place: 1, guards: [noGain] },
+      { id: 'opp', rating: 1305, games: seasoned, place: 2, abandoned: true },
+    ];
+    expect(eloChanges(players, { abandonWinScore: 0.5 })[0]!.delta).toBe(0);
+    expect(eloPairs(players, { abandonWinScore: 0.5 })[0]!.pairs[0]).toEqual({
+      opponentId: 'opp',
+      delta: 0,
+      guard: 'opponentLeftAhead',
+    });
+    // 32 × (0.4 − 0.474) ≈ −2: not a gain, so the guard leaves it.
+    expect(eloChanges(players, { abandonWinScore: 0.4 })[0]!.delta).toBe(-2);
+  });
+
+  it('1 000 random games with random guards: Σ pairs = delta, held pairs 0, noLoss ≥ 0, noGain ≤ 0, no −0', () => {
+    const rng = createRng(20261015);
+    const reasons = [
+      'leftBeforeMoving',
+      'leftNotBehind',
+      'opponentLeftBeforeMyMove',
+      'opponentLeftAhead',
+    ] as const;
+    let held = 0;
+    for (let game = 0; game < 1000; game++) {
+      const n = 2 + Math.floor(rng.next() * 3);
+      const ids = Array.from({ length: n }, (_, k) => `p${k}`);
+      const players: EloPlayer[] = ids.map((id) => ({
+        id,
+        rating: 800 + Math.round(rng.next() * 1200),
+        games: Math.floor(rng.next() * 20),
+        place: 1 + Math.floor(rng.next() * n),
+        abandoned: rng.next() < 0.2,
+        guards: ids
+          .filter((o) => o !== id && rng.next() < 0.4)
+          .map((opponentId) => ({
+            opponentId,
+            kind: rng.next() < 0.5 ? ('noLoss' as const) : ('noGain' as const),
+            reason: reasons[Math.floor(rng.next() * reasons.length)]!,
+          })),
+      }));
+      const options = rng.next() < 0.5 ? {} : { k: 16 + Math.floor(rng.next() * 32), abandonWinScore: 0.5 };
+      const changes = eloChanges(players, options);
+      const pairs = eloPairs(players, options);
+      players.forEach((me, k) => {
+        const change = changes[k]!;
+        expect(Object.is(change.delta, -0)).toBe(false);
+        expect(sumTenths(pairs[k]!.pairs)).toBe(change.delta * 10);
+        for (const pair of pairs[k]!.pairs) {
+          expect(Object.is(pair.delta, -0)).toBe(false);
+          const guard = me.guards!.find((g) => g.opponentId === pair.opponentId);
+          const opp = players.find((o) => o.id === pair.opponentId)!;
+          const exact = eloPairPart(me, opp, n, { ...DEFAULT_ELO, ...options });
+          if (pair.guard !== undefined) {
+            held++;
+            expect(pair.delta).toBe(0);
+            expect(pair.guard).toBe(guard!.reason);
+            expect(guard!.kind === 'noLoss' ? exact < 0 : exact > 0).toBe(true);
+          } else if (guard) {
+            // Not held: the exact part was already on the guarded side, and the tenths keep it there.
+            expect(guard.kind === 'noLoss' ? exact >= 0 : exact <= 0).toBe(true);
+            if (guard.kind === 'noLoss') expect(pair.delta).toBeGreaterThanOrEqual(0);
+            else expect(pair.delta).toBeLessThanOrEqual(0);
+          }
+          if (!me.guards!.length) expect(Math.abs(pair.delta - exact)).toBeLessThanOrEqual(0.5 + 1e-9);
+        }
+      });
+    }
+    expect(held).toBeGreaterThan(500); // the run really exercises held pairs
   });
 });
 

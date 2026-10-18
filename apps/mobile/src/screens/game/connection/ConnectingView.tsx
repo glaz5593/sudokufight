@@ -1,3 +1,4 @@
+import type { GameType } from '@sudoku-fight/engine';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -118,7 +119,7 @@ export function ConnectingView({
             </View>
           ) : null}
         </View>
-        {match ? <TipCard tip={match.tip} testID={`${testID}-tip`} /> : null}
+        {match ? <TipCard tip={match.tip} gameType={match.gameType} testID={`${testID}-tip`} /> : null}
       </View>
       {onCancel ? (
         <Button
@@ -216,10 +217,11 @@ function MiniBoard({ testID }: { testID: string }) {
   );
 }
 
-function TipCard({ tip, testID }: { tip: LoadingTip; testID: string }) {
+/** The tip; its best move is the one of this game's type (the boards differ in their givens). */
+function TipCard({ tip, gameType, testID }: { tip: LoadingTip; gameType: GameType; testID: string }) {
   const { t } = useTranslation('game');
   const body = t(`connection.connecting.tips.${tip}`, {
-    max: formatScore(TOP_MOVE_POINTS),
+    max: formatScore(TOP_MOVE_POINTS[gameType]),
     points: formatScore(LAST_CELL_POINTS),
   });
   const title = t('connection.connecting.tipTitle');

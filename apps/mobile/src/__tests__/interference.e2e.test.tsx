@@ -6,14 +6,10 @@ import {
   cellName,
   type Digit,
   type GameEvent,
-  type InterferenceKind,
   ManualClock,
   ManualScheduler,
 } from '@sudoku-fight/engine';
-import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
-import { DeviceEventEmitter, Dimensions, StyleSheet, View } from 'react-native';
-import { State } from 'react-native-gesture-handler';
-import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
+import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import type { StoreApi, UseBoundStore } from 'zustand';
 
 import RootLayout from '../../app/_layout';
@@ -27,7 +23,6 @@ import LeaderboardRoute from '../../app/leaderboard';
 import ModesRoute from '../../app/modes';
 import ResultsRoute from '../../app/results/[id]';
 import { installSignedInPlayer } from '../auth/testing/testAuth';
-import { scoreText, signedText } from '../components/player';
 import { useGameStore } from '../game/gameStore';
 import { type OfflinePuzzle, puzzleById } from '../game/offlinePool';
 import type { PracticeDeps, PracticeSession } from '../game/session';
@@ -35,9 +30,6 @@ import { freeCellFor } from '../game/testing/botPractice';
 import { answerIn } from '../game/testing/practice';
 import { memoryDb, type SqlJsDb } from '../game/testing/sqlJsDb';
 import i18n from '../i18n';
-import { dropZoneOf, isolate } from '../screens/game/arsenal';
-import type { Point, Rect } from '../screens/game/geometry';
-import { isolateName } from '../screens/game/hit';
 import { reactionCue } from '../screens/game/model';
 import { track } from '../services/analytics';
 import { cue } from '../services/feedback';
@@ -45,20 +37,15 @@ import { useProfile } from '../state/profile';
 import { useSettings } from '../state/settings';
 
 /**
- * Work plan stage 6, end to end: interferences and reactions in a practice against the engine's bot, through the
- * app's real routes (the root layout included), on a real SQLite practice database (sql.js in place of
- * expo-sqlite), with the game and the bot on a manual clock. The bot is Overlord (level 5): it interferes
- * whenever it can pay and laughs at my mistakes (spec §9), so the test can wait for it.
+ * Work plan stage 6, end to end: a practice against the engine's bot, through the app's real routes (the root
+ * layout included), on a real SQLite practice database (sql.js in place of expo-sqlite), with the game and the
+ * bot on a manual clock. The bot is Overlord (level 5), the most aggressive one, and laughs at my mistakes
+ * (spec §9), so the test can wait for it.
  *
- * - ⚡ on Overlord's card opens the arsenal; a token goes only by dragging it onto that card (spec §7.3, D18):
- *   a tap or a screen reader's activate explains, a drop anywhere else cancels, a drop on the card launches.
- *   The engine takes it: Overlord's card shows the hit and its stopped lock, and my score pays the cost.
- * - Overlord hits me: the effect covers the whole screen [D35] with its banner until the view's deadline, and
- *   is gone exactly then; with reduced motion it is a static cover for the same 5 s (spec §22).
+ * - No interferences against a bot I know is a bot, either way [D44] (Moshe 2026-10-17): no "הפרעה" on
+ *   Overlord's card, and Overlord never sends one, however long it can pay for it. The whole interference flow
+ *   (two taps, the hit on me) is end to end in a ranked game instead: interferenceRanked.e2e.test.tsx.
  * - My reaction rises from my card; once I mute Overlord, its reactions are not shown (spec §8, D19).
- *
- * Jest has no layout: the one view the arsenal measures in the window (the view around Overlord's card) says
- * where the card is, as a 390-wide phone in Hebrew would. The finger's events are the gesture handler's own.
  */
 
 const mockApp: { db: SqlJsDb | null; run: number; session: Omit<PracticeDeps, 'repo'> } = {
@@ -138,32 +125,11 @@ const hidden = { includeHiddenElements: true };
 
 const cues = (): string[] => jest.mocked(cue).mock.calls.map((c) => String(c[0]));
 
-// ---- where things are in the window (Jest has no layout) ----
-
-/** Overlord's card as Dir-C-Game places it in Hebrew: at the left, under the status bar. */
-const CARD: Rect = { x: 16, y: 56, width: 159, height: 160 };
-const ZONE = dropZoneOf(CARD);
-const INSIDE: Point = { x: ZONE.x + ZONE.width / 2, y: ZONE.y + ZONE.height / 2 };
-/** Over the board, far from the card. */
-const OUTSIDE: Point = { x: 300, y: 520 };
-/** Where the finger first touches a token, low in the tray. */
-const TOKEN_AT: Point = { x: 195, y: 1150 };
-
-type MeasureInWindow = (done: (x: number, y: number, width: number, height: number) => void) => void;
-
 beforeAll(async () => {
   mockApp.db = await memoryDb();
   // Stage 8: the app opens on Home for a signed-in player with a profile only (registration is required,
   // D24 not approved): this phone's player registered earlier (development sign-in, in-memory server).
   await installSignedInPlayer();
-  // The view around the opponent's card (DuelHud) answers where it is; the rest of Jest's views stay silent.
-  const views = (View as unknown as { prototype: { measureInWindow: MeasureInWindow } }).prototype;
-  jest.spyOn(views, 'measureInWindow').mockImplementation(function (
-    this: { props?: { testID?: string } },
-    done,
-  ) {
-    if (this.props?.testID === 'duel-hud-theirs') done(CARD.x, CARD.y, CARD.width, CARD.height);
-  });
   useProfile.setState({ name: null, avatarId: 'av00', country: 'IL', lastPlay: null, botLevel: null });
 });
 
@@ -222,17 +188,6 @@ async function pause(run: Run, ms: number) {
   });
 }
 
-/** Only the phone's timers move (animations, the live region): no game time passes. */
-const step = (ms = 16) =>
-  act(async () => {
-    jest.advanceTimersByTime(ms);
-  });
-
-/** The phone's timers in frames, so what each step starts (an exit, a count) gets to run too. */
-async function frames(ms: number, frame = 100) {
-  for (let t = 0; t < ms; t += frame) await step(frame);
-}
-
 /** Waits (in game time) until `ok` holds; fails after `maxMs`. */
 async function until(run: Run, ok: () => boolean, maxMs = 60_000, every = 100) {
   const end = run.clock.now() + maxMs;
@@ -263,251 +218,44 @@ async function play(session: PracticeSession, puzzle: OfflinePuzzle, right: bool
   return cell;
 }
 
-// ---- the finger on a token (the events the gesture handler's native side sends) ----
-
-function finger(kind: InterferenceKind) {
-  const { handlerTag } = getByGestureTestId(`arsenal-drag-${kind}`);
-  let state: State = State.UNDETERMINED;
-  const at = (p: Point) => ({
-    handlerTag,
-    numberOfPointers: 1,
-    x: 54,
-    y: 68,
-    absoluteX: p.x,
-    absoluteY: p.y,
-    translationX: p.x - TOKEN_AT.x,
-    translationY: p.y - TOKEN_AT.y,
-    velocityX: 0,
-    velocityY: 0,
-  });
-  const become = (next: State, p: Point) => {
-    DeviceEventEmitter.emit('onGestureHandlerStateChange', { ...at(p), state: next, oldState: state });
-    state = next;
-  };
-  return {
-    down: async () => {
-      await act(async () => {
-        become(State.BEGAN, TOKEN_AT);
-        become(State.ACTIVE, { x: TOKEN_AT.x, y: TOKEN_AT.y - 12 });
-      });
-      await step();
-    },
-    move: async (p: Point) => {
-      await act(async () => {
-        DeviceEventEmitter.emit('onGestureHandlerEvent', { ...at(p), state: State.ACTIVE });
-      });
-      await step();
-    },
-    up: async (p: Point) => {
-      await act(async () => become(State.END, p));
-      await step();
-    },
-  };
-}
-
-/** A token dragged from its slot to `to`, and let go there. */
-async function dragTo(kind: InterferenceKind, to: Point) {
-  const f = finger(kind);
-  await f.down();
-  await f.move({ x: (TOKEN_AT.x + to.x) / 2, y: (TOKEN_AT.y + to.y) / 2 });
-  await f.move(to);
-  await f.up(to);
-}
-
-/** A plain tap on a token. */
-async function tap(kind: InterferenceKind) {
-  await act(async () => {
-    fireGestureHandler(getByGestureTestId(`arsenal-tap-${kind}`), [
-      { state: State.BEGAN },
-      { state: State.ACTIVE },
-      { state: State.END },
-    ]);
-  });
-  await step();
-}
-
-const KIND_HE: Record<InterferenceKind, string> = { fireworks: 'זיקוקים', cats: 'חתולים', warp: 'עיוות' };
-const HIT_CUE: Record<InterferenceKind, string> = {
-  fireworks: 'hitFireworks',
-  cats: 'hitCats',
-  warp: 'hitWarp',
-};
-
 // ---------------------------------------------------------------------------------------------------------
 
-describe('interferences against a bot, end to end (work plan stage 6)', () => {
-  it('⚡ opens the arsenal on Overlord’s card; only a drag onto that card launches; Overlord shows the hit, I pay', async () => {
+describe('no interferences against a bot [D44]', () => {
+  it('no "הפרעה" on Overlord’s card, however many points I have, and Overlord never sends one', async () => {
     const run = await launch(START);
-    const { session, puzzle } = await playOverlord(run);
-    const sent = () => eventsOf(session, 'interference').filter((e) => e.fromId === ME);
-    const myScore = () => playerOf(session, ME).score;
+    // The level's words on the way in no longer promise interferences (BotSelect).
+    await fireEvent.press(screen.getByRole('button', { name: 'שחק' }));
+    await press('mode-bot');
+    await press('type-fast');
+    await fireEvent.press(screen.getByRole('button', { name: 'בחירת יריב' }));
+    expect(screen.getByText('מהיר, מדויק, ובלי רחמים')).toBeOnTheScreen();
+    expect(screen.queryByText(/מפריע/)).toBeNull();
+    await fireEvent.press(screen.getByRole('radio', { name: new RegExp(BOT_NAME) }));
+    await fireEvent.press(screen.getByRole('button', { name: 'יאללה, למשחק' }));
+    await waitFor(() => expect(run.pathname()).toBe('/game'));
+    await screen.findByTestId('game');
+    const session = useGameStore.getState().session!;
+    expect(session).toMatchObject({ mode: 'bot', botLevel: 5 });
+    const puzzle = puzzleById(session.puzzleId)!;
 
-    // No points yet: ⚡ says what is missing (D10) and opens nothing.
-    expect(screen.getByRole('button', { name: `הפרעה ל־${BOT_NAME} · חסרות 2 נק׳` })).toBeOnTheScreen();
-    await press('interfere');
-    expect(screen.queryByTestId('arsenal-sheet')).toBeNull();
-    expect(screen.getByText('אין מספיק נקודות להפרעה הבאה (2 נק׳)')).toBeOnTheScreen();
-    await frames(4_500); // the error toast holds 4 s, then leaves
-    expect(screen.queryByText('אין מספיק נקודות להפרעה הבאה (2 נק׳)')).toBeNull();
+    expect(session.getView().rules.interferences).toBe(false);
+    expect(session.getView().interference).toBeNull();
+    expect(screen.queryByTestId('interfere')).toBeNull();
 
-    // I earn my points; then Overlord is on a cell (its lock timer is what a hit stops, D11).
+    // I earn points, and Overlord earns its own: it would have hit me by now in a game with interferences.
     await play(session, puzzle, true);
-    await until(run, () => myScore() >= 2);
-    await until(
-      run,
-      () => playerOf(session, BOT).lock?.expiresAt != null && playerOf(session, BOT).hitBy === null,
-    );
-    const before = myScore();
-
-    await press('interfere');
-    await step(400);
-    expect(screen.getByTestId('arsenal-sheet')).toBeOnTheScreen();
-    expect(screen.getByText(`גרור אל הכרטיס של ${isolate(BOT_NAME)} כדי לשגר`)).toBeOnTheScreen();
-    // The card it was opened from is the one drop zone (behind the modal tray).
-    expect(
-      within(screen.getByTestId('duel-hud-theirs', hidden)).getByTestId('drop-zone', hidden),
-    ).toBeTruthy();
-
-    // There is no way to launch by tapping (D18): a tap explains, and so does a screen reader's activate.
-    await tap('fireworks');
-    expect(screen.getByTestId('arsenal-bubble-fireworks')).toHaveTextContent(
-      `גרור אל ${isolate(BOT_NAME)} — הקשה לא משגרת`,
-    );
-    await fireEvent(screen.getByTestId('arsenal-token-cats'), 'accessibilityAction', {
-      nativeEvent: { actionName: 'activate' },
-    });
-    expect(screen.getByTestId('arsenal-bubble-cats')).toBeOnTheScreen();
-    expect(sent()).toEqual([]);
-
-    // Dropped anywhere else (here, over the board): nothing goes, nothing is paid, the tray stays.
-    await dragTo('warp', OUTSIDE);
-    await step(1000);
-    expect(sent()).toEqual([]);
-    expect(myScore()).toBe(before);
-    expect(screen.getByTestId('arsenal-sheet')).toBeOnTheScreen();
-
-    // Dropped on Overlord's card: the engine takes it, and I pay the cost from my score.
-    await dragTo('fireworks', INSIDE);
-    expect(sent()).toEqual([
-      expect.objectContaining({ fromId: ME, targetId: BOT, kind: 'fireworks', cost: 2 }),
-    ]);
-    expect(myScore()).toBe(before - 2);
-    expect(playerOf(session, BOT).hitBy).toMatchObject({ fromId: ME, kind: 'fireworks' });
-    await step(1000);
+    await play(session, puzzle, true);
+    await until(run, () => playerOf(session, BOT).score >= 8);
+    await pause(run, 20_000);
+    expect(playerOf(session, ME).score).toBeGreaterThan(0);
+    expect(eventsOf(session, 'interference')).toEqual([]);
+    expect(playerOf(session, ME).hitBy).toBeNull();
+    expect(screen.queryByTestId('interfere')).toBeNull();
+    expect(screen.queryByLabelText(/^הפרעה ל־/)).toBeNull();
     expect(screen.queryByTestId('arsenal-sheet')).toBeNull();
-
-    // What I see (spec §7.4): "זיקוקים ← Overlord", and the 2 points leaving my score.
-    expect(screen.getByText(`זיקוקים ← ${isolate(BOT_NAME)}`)).toBeOnTheScreen();
-    expect(screen.getByTestId('card-me-delta', hidden)).toHaveTextContent(signedText(-2));
-    expect(screen.getByTestId('card-me-score', hidden)).toHaveAnimatedProps({ text: scoreText(before - 2) });
-    expect(track).toHaveBeenCalledWith('interference_sent', { kind: 'fireworks', cost: 2 });
-    expect(cues()).toEqual(expect.arrayContaining(['arsenalOpen', 'tokenLift', 'dropZoneEnter', 'launch']));
-
-    // Overlord's card: the hit tag with its seconds, its lock stopped; ⚡ waits until it can take another.
-    const theirs = within(screen.getByTestId('card-opponent'));
-    expect(theirs.getByTestId('hit-chip', hidden)).toHaveTextContent('5');
-    expect(screen.getByTestId('card-opponent-summary')).toHaveProp(
-      'accessibilityLabel',
-      expect.stringMatching(/מושהה .*תחת הפרעה, 5 שניות/),
-    );
-    expect(playerOf(session, BOT).lock?.expiresAt).toBeNull();
-    expect(
-      screen.getByRole('button', { name: `הפרעה ל־${BOT_NAME} לא זמינה, כבר תחת הפרעה` }),
-    ).toBeDisabled();
-    // The effect itself is Overlord's, not on my screen.
-    expect(playerOf(session, ME).hitBy).toBeNull();
     expect(screen.queryByTestId('hit-layer-region', hidden)).toBeNull();
-
-    // Its 5 s pass: the tag goes, and the card no longer says it.
-    const endsAt = sent()[0]!.endsAt;
-    await pause(run, endsAt - run.clock.now());
-    expect(theirs.queryByTestId('hit-chip', hidden)).toBeNull();
-    expect(screen.getByTestId('card-opponent-summary')).not.toHaveProp(
-      'accessibilityLabel',
-      expect.stringContaining('תחת הפרעה'),
-    );
-  });
-
-  it('Overlord hits me: the effect covers the whole screen [D35] with its banner, play goes on, and it is gone exactly at its end', async () => {
-    const run = await launch(START + HOUR);
-    const { session, puzzle } = await playOverlord(run);
-    const hits = () => eventsOf(session, 'interference').filter((e) => e.targetId === ME);
-
-    // Overlord is aggressive (spec §9): as soon as its points pay for one, it sends it.
-    await until(run, () => hits().length > 0);
-    const hit = hits()[0]!;
-    const { kind, endsAt } = hit;
-    expect(playerOf(session, ME).hitBy).toMatchObject({ fromId: BOT, kind, expiresAt: endsAt });
-
-    // The whole screen, as the original spec says ("על המסך"), until the proposal [D35] is approved.
-    const { width, height } = Dimensions.get('window');
-    const region = screen.getByTestId('hit-layer-region', hidden);
-    expect(StyleSheet.flatten(region.props.style)).toMatchObject({ left: 0, top: 0, width, height });
-    expect(within(region).getByTestId(`hit-${kind}`, hidden)).toBeOnTheScreen();
-    expect(within(region).queryByTestId(`hit-${kind}-still`, hidden)).toBeNull();
-    // The banner: who sent what, what it cost them, and the seconds left; a screen reader hears it too.
-    const banner = screen.getByTestId('hit-layer-banner', hidden);
-    expect(banner).toHaveProp(
-      'accessibilityLabel',
-      `${isolateName(BOT_NAME)} שלח/ה לך ${KIND_HE[kind]}! זה עלה ${hit.cost} נק׳ · המשחק ממשיך, נותרו 5 שניות`,
-    );
-    await step(1600);
-    expect(screen.getByTestId('game-live')).toHaveTextContent(
-      `${isolateName(BOT_NAME)} שלח/ה לך ${KIND_HE[kind]}! נותרו 5 שניות, הטיימר שלך עצור`,
-      { exact: false },
-    );
-    // Its cue once (the game screen does not play it again).
-    expect(cues().filter((c) => c === HIT_CUE[kind])).toHaveLength(1);
-
-    // The game goes on under it (spec §7.2): I take a cell, and its timer stands still while the hit lasts.
-    const cell = await play(session, puzzle, true);
-    expect(screen.getByTestId(`cell-${cellName(cell)}`)).toHaveProp(
-      'accessibilityLabel',
-      `${cellName(cell)}, ${answerIn(puzzle, cell)}, נפתרה על ידיך`,
-    );
-    const next = freeCellFor(session.getView(), run.clock.now())!;
-    await press(`cell-${cellName(next)}`);
-    expect(screen.getByLabelText(`המשבצת שלך ${cellName(next)}, הטיימר עצור`)).toBeOnTheScreen();
-
-    // Still there a moment before its end; gone exactly at it, and said.
-    await pause(run, endsAt - 1 - run.clock.now());
-    expect(screen.getByTestId('hit-layer-region', hidden)).toBeOnTheScreen();
-    expect(
-      within(screen.getByTestId('hit-layer-region', hidden)).getByTestId(`hit-${kind}`, hidden),
-    ).toBeTruthy();
-    await pause(run, 1);
-    expect(playerOf(session, ME).hitBy).toBeNull();
-    expect(screen.queryByTestId('hit-layer-region', hidden)).toBeNull();
-    expect(screen.queryByTestId('hit-layer-banner', hidden)).toBeNull();
-    await step(1600);
-    expect(screen.getByTestId('game-live')).toHaveTextContent('ההפרעה נגמרה, הטיימר שלך ממשיך', {
-      exact: false,
-    });
-  });
-
-  it('with reduced motion an interference on me is a static cover of the same area for the same 5 s (spec §22)', async () => {
-    useSettings.setState({ reduceMotion: 'on' });
-    const run = await launch(START + 2 * HOUR);
-    const { session } = await playOverlord(run);
-    const hits = () => eventsOf(session, 'interference').filter((e) => e.targetId === ME);
-
-    await until(run, () => hits().length > 0);
-    const { kind, endsAt } = hits()[0]!;
-    const { width, height } = Dimensions.get('window');
-    const region = () => screen.getByTestId('hit-layer-region', hidden);
-    expect(StyleSheet.flatten(region().props.style)).toMatchObject({ left: 0, top: 0, width, height });
-    expect(within(region()).getByTestId(`hit-${kind}-still`, hidden)).toBeOnTheScreen();
-    expect(within(region()).queryByTestId(`hit-${kind}`, hidden)).toBeNull();
-
-    // The same cover all along, until a moment before its end; then nothing.
-    await pause(run, endsAt - 1 - run.clock.now());
-    expect(within(region()).getByTestId(`hit-${kind}-still`, hidden)).toBeOnTheScreen();
-    await pause(run, 1);
-    expect(screen.queryByTestId('hit-layer-region', hidden)).toBeNull();
-    // Only the start cue: no rumble with reduced motion (motion.md §7).
-    expect(cues().filter((c) => c === HIT_CUE[kind])).toHaveLength(1);
-    expect(cues()).not.toContain('hitBurst');
-    expect(cues()).not.toContain('hitPulse');
+    expect(cues()).not.toContain('arsenalOpen');
+    expect(cues().filter((c) => c.startsWith('hit'))).toEqual([]);
   });
 });
 

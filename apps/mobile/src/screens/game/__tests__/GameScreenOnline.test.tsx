@@ -3,11 +3,16 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react-n
 import { BackHandler } from 'react-native';
 
 import * as authStore from '../../../auth/authStore';
+import { ltr } from '../../../components/player';
+import { useToast } from '../../../components/ui';
 import { answerIn, emptyCellsOf, PUZZLE } from '../../../game/testing/practice';
 import { OnlineSession } from '../../../game/onlineSession';
 import i18n from '../../../i18n';
 import { FakeTable } from '../../../net/testing/fakeServer';
+import { useSettings } from '../../../state/settings';
+import { motion } from '../../../theme/motion';
 import { hidden, type Setup, setUp } from '../connection/testing/setup';
+import { ONLINE_END_HOLD_MS, RESULTS_WATCHDOG_MS } from '../model';
 import { OnlineGame } from '../online/OnlineGame';
 import {
   CODE,
@@ -37,6 +42,16 @@ jest.mock('../../../services/feedback', () => ({
   preloadCues: jest.fn(),
   cueCountUp: jest.fn(() => jest.fn()),
 }));
+jest.mock('../../../services/crashlytics', () => {
+  const reporter = { enabled: true, recordError: jest.fn(), setUser: jest.fn(), log: jest.fn() };
+  return { crashReporter: () => reporter };
+});
+const crash = jest
+  .requireMock<{ crashReporter: () => { recordError: jest.Mock; log: jest.Mock } }>(
+    '../../../services/crashlytics',
+  )
+  .crashReporter();
+const breadcrumbs = (): string[] => crash.log.mock.calls.map((c: unknown[]) => String(c[0]));
 
 const cells = emptyCellsOf(PUZZLE);
 const c0 = cells[0] as CellIndex;
@@ -48,6 +63,8 @@ let backs: jest.SpyInstance;
 beforeEach(async () => {
   setup = await setUp('he');
   backs = jest.spyOn(BackHandler, 'addEventListener');
+  crash.recordError.mockClear();
+  crash.log.mockClear();
 });
 
 afterEach(() => {
@@ -258,7 +275,8 @@ describe('in the game', () => {
   });
 
   it('my connection drops: the board locks with the attempt; back, it is synced and play goes on', async () => {
-    const g = await live();
+    // The hard phase at once (no soft phase [D42]; the soft phase is below).
+    const g = await live({ rules: { softGraceMs: 0 } });
     g.table.offline = true;
     await act(async () => {
       g.table.cutMe();
@@ -298,7 +316,10 @@ describe('in the game', () => {
     await pass(g.table, 2000);
     expect(g.onEnded).not.toHaveBeenCalled();
     await fireEvent.press(screen.getByRole('button', { name: 'לתוצאות' }));
+    // From a timer of the screen, not inside the press (the end was seen long ago: no hold).
+    await pass(g.table, 50);
     expect(g.onEnded).toHaveBeenCalledWith('online-1');
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
     // A private room has no profiles: no flag.
     expect(screen.queryByTestId('opponent-left-flag', hidden)).toBeNull();
   });
@@ -337,7 +358,11 @@ describe('in the game', () => {
     expect(g.table.room.actions.at(-1)).toMatchObject({ type: 'surrender' });
     await pass(g.table, 200);
     expect(g.session.getView().result?.ranking.find((r) => r.playerId === ME)).toMatchObject({ place: 2 });
+    // The final board holds (motion.md game.end), and the dialog has long left by then.
+    expect(g.onEnded).not.toHaveBeenCalled();
+    await pass(g.table, ONLINE_END_HOLD_MS);
     expect(g.onEnded).toHaveBeenCalledWith('online-1');
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('opponent-left')).toBeNull();
     // Practice's "סיום אימון" dialog is not there.
     expect(screen.queryByTestId('end-practice')).toBeNull();
@@ -362,7 +387,10 @@ describe('in the game', () => {
   });
 
   it('the connection can’t come back in time: the error screen, "נסה שוב", and back goes home', async () => {
-    const g = await live({ rules: { graceMs: 1000 }, options: { serverNoticeMs: 0, reconnectSlackMs: 0 } });
+    const g = await live({
+      rules: { graceMs: 1000, softGraceMs: 0 },
+      options: { serverNoticeMs: 0, reconnectSlackMs: 0 },
+    });
     g.table.offline = true;
     await act(async () => {
       g.table.cutMe();
@@ -408,5 +436,335 @@ describe('in the game', () => {
       'Reconnecting... 15',
     );
     expect(screen.getByTestId('opponent-reconnecting-frozen', hidden)).toHaveTextContent(/frozen/i);
+  });
+});
+
+/**
+ * Moshe, after testing 1.0.0 (15.10.2026) [D42]: "לסמן על המשתמש שהוא בלי תקשורת ולהמשיך את המשחק כרגיל. רק
+ * אחרי 10 שניות נניח, להציג את ההודעות של בעיית תקשורת. אם אחרי 8 שניות חוזרת התקשורת ומתברר ששניים סימנו את
+ * אותה המשבצת, זה שהיה בלי תקשורת יפסיד אותה."
+ */
+describe('a lost connection: the soft phase first (D42)', () => {
+  const feedback = jest.requireMock<{ cue: jest.Mock }>('../../../services/feedback');
+  const digit = answerIn(PUZZLE, c0);
+
+  beforeEach(() => {
+    useToast.getState().clear();
+    feedback.cue.mockClear();
+  });
+
+  async function dropMine(g: Online) {
+    g.table.offline = true;
+    await act(async () => {
+      g.table.cutMe();
+    });
+    await pass(g.table, 100);
+  }
+
+  it('my connection drops: nothing covers the game, a tap locks, a digit waits; back, it counts', async () => {
+    const g = await live();
+    await dropMine(g);
+    expect(g.session.online.status).toBe('reconnecting');
+    // No overlay, no banner, nothing blocked; screen readers hear it once.
+    expect(screen.queryByTestId('self-reconnecting-banner')).toBeNull();
+    expect(screen.getByTestId('game-content', hidden)).toHaveProp('importantForAccessibility', 'auto');
+    expect(screen.getByTestId('self-offline-announcer', hidden)).toHaveTextContent(
+      'אין חיבור. אפשר להמשיך לשחק, והמהלכים יישלחו כשהחיבור יחזור',
+    );
+    // My card is marked, and what needs the server waits for it: the surrender (back too).
+    expect(screen.getByTestId('presence-unstable', hidden)).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'כניעה' })).toBeDisabled();
+    await pressBack();
+    expect(screen.queryByTestId('ranked-surrender')).toBeNull();
+
+    await fireEvent.press(cellButton(c0));
+    await pass(g.table, 50);
+    expect(screen.getByTestId('lock-strip-seconds', hidden)).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId(`key-${digit}`));
+    await pass(g.table, 50);
+    expect(cellButton(c0)).toHaveAccessibleName(`${cellName(c0)}, ${digit}, ממתין לחיבור`);
+    expect(screen.getByTestId('cell-queued-mark')).toBeOnTheScreen();
+    expect(screen.getByTestId('game-live')).toHaveTextContent(`${ltr(cellName(c0))}: ${digit} ממתין לחיבור`, {
+      exact: false,
+    });
+    expect(g.session.getView().grid[c0]).toBe(0);
+
+    g.table.offline = false;
+    await pass(g.table, 1500);
+    expect(g.session.online.status).toBe('live');
+    expect(g.session.getView().grid[c0]).toBe(digit);
+    expect(cellButton(c0)).toHaveAccessibleName(/נפתרה על ידיך/);
+    // A return inside the soft phase: no "back" banner either.
+    expect(screen.queryByTestId('self-reconnecting-banner')).toBeNull();
+    expect(screen.queryByTestId('presence-unstable', hidden)).toBeNull();
+  });
+
+  it('the opponent took my cell meanwhile: it shakes, a short warning, and no penalty', async () => {
+    const g = await live();
+    await dropMine(g);
+    await fireEvent.press(cellButton(c0));
+    await fireEvent.press(screen.getByTestId(`key-${digit}`));
+    await act(async () => {
+      g.table.opponent({ type: 'select', cell: c0 });
+    });
+    g.table.offline = false;
+    await pass(g.table, 1500);
+    expect(useToast.getState().current).toMatchObject({
+      variant: 'warning',
+      message: `${ltr(cellName(c0))} נתפסה בזמן שלא היה לך חיבור · בלי קנס`,
+    });
+    expect(feedback.cue).toHaveBeenCalledWith('cellDenied');
+    expect(g.session.getView().players.find((p) => p.id === ME)).toMatchObject({ score: 0, mistakes: 0 });
+    expect(cellButton(c0)).toHaveAccessibleName(/נעולה על ידי Rival/);
+  });
+
+  it('not back by the end of the soft phase: Self-Reconnecting, the board locked', async () => {
+    const g = await live();
+    await dropMine(g);
+    await fireEvent.press(cellButton(c0));
+    await pass(g.table, 9500);
+    expect(screen.queryByTestId('self-reconnecting-banner')).toBeNull();
+    await pass(g.table, 600);
+    expect(screen.getByTestId('self-reconnecting-banner-title')).toHaveTextContent('החיבור שלך אבד');
+    expect(screen.getByTestId('game-content', hidden)).toHaveProp(
+      'importantForAccessibility',
+      'no-hide-descendants',
+    );
+    // The lock held here ran out with the soft phase.
+    expect(g.session.getView().players.find((p) => p.id === ME)?.lock).toBeNull();
+  }, 30_000);
+
+  it('the opponent’s connection drops: only the mark on their card, the game goes on; after it, the freeze', async () => {
+    const g = await live();
+    await act(async () => {
+      g.table.game!.apply({ type: 'disconnect', playerId: OPP, soft: true });
+    });
+    await pass(g.table, 100);
+    expect(g.session.getView().status).toBe('running');
+    expect(screen.queryByTestId('opponent-reconnecting')).toBeNull();
+    expect(screen.getByTestId('unstable-pill', hidden)).toBeOnTheScreen();
+    expect(screen.queryByTestId('interfere')).toBeNull();
+    expect(screen.getByTestId('game-content', hidden)).toHaveProp('importantForAccessibility', 'auto');
+    // I play on meanwhile.
+    await fireEvent.press(cellButton(c0));
+    await pass(g.table, 100);
+    expect(screen.getByTestId('lock-strip-seconds', hidden)).toBeOnTheScreen();
+
+    await pass(g.table, 10_000);
+    expect(g.session.getView().status).toBe('paused');
+    expect(screen.getByTestId('opponent-reconnecting-card-reconnecting', hidden)).toHaveTextContent(
+      'Reconnecting... 15',
+    );
+  }, 30_000);
+});
+
+/**
+ * Moshe's device test of 1.0.0 (15.10.2026): "הוא סיים את המשחק באמצע, קיבלתי מסך שחור. לפעמים גם קיבלתי מסך
+ * שחור כשאני פרשתי". An online end that is not a full board holds its final board (motion.md `game.end`), opens
+ * the results from a timer (never inside the server's message), only once every native window has gone, and is
+ * watched should they not come.
+ */
+describe('the end of an online game (no black screen)', () => {
+  /** Moves on until `ok`, a little at a time. */
+  async function passUntil(table: FakeTable, ok: () => boolean, max = 5000) {
+    for (let done = 0; done < max && !ok(); done += 50) await pass(table, 50);
+    expect(ok()).toBe(true);
+  }
+
+  it('the opponent gives up while I hold a lock: the board holds, its ring fades, then the results once', async () => {
+    const g = await live();
+    await fireEvent.press(cellButton(c0));
+    await pass(g.table, 100);
+    expect(g.session.getView().players.find((p) => p.id === ME)?.lock?.cell).toBe(c0);
+    expect(screen.getByTestId(`cell-${cellName(c0)}-face`)).toContainElement(screen.getByTestId('cell-ring'));
+
+    await act(async () => {
+      g.table.opponent({ type: 'surrender' });
+    });
+    await pass(g.table, 100);
+    // Over (the events and the solution are in), and the final board still on the screen.
+    expect(g.session.getView().status).toBe('over');
+    expect(g.session.host.solution).not.toBeNull();
+    expect(g.onEnded).not.toHaveBeenCalled();
+    expect(screen.getByTestId('game')).toBeOnTheScreen();
+    // My lock went with the end: its ring fades from the cell (no layout animation), then it is gone.
+    expect(screen.queryByTestId('cell-ring')).toBeNull();
+    expect(screen.getByTestId('cell-ring-leaving')).toBeOnTheScreen();
+    await pass(g.table, motion.duration.lockAutoRelease + 150);
+    expect(screen.queryByTestId('cell-ring-leaving')).toBeNull();
+    expect(g.onEnded).not.toHaveBeenCalled();
+
+    await pass(g.table, ONLINE_END_HOLD_MS - motion.duration.lockAutoRelease - 150);
+    expect(g.onEnded).toHaveBeenCalledWith('online-1');
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
+    await pass(g.table, 1000);
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
+    expect(crash.recordError).not.toHaveBeenCalled();
+    expect(breadcrumbs()).toEqual(
+      expect.arrayContaining([
+        'game: game over (lastPlayerStanding) locks=1 modal=false hit=false',
+        `game: results in ${ONLINE_END_HOLD_MS} ms`,
+        'game: opening the results',
+      ]),
+    );
+  });
+
+  it('with reduced motion the hold is the 200 ms fade', async () => {
+    useSettings.setState({ reduceMotion: 'on' });
+    const g = await live();
+    await act(async () => {
+      g.table.opponent({ type: 'surrender' });
+    });
+    await pass(g.table, 100);
+    expect(g.session.getView().status).toBe('over');
+    expect(g.onEnded).not.toHaveBeenCalled();
+    await pass(g.table, motion.duration.reducedFade);
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
+  });
+
+  it('an end that comes in a return’s snapshot (I was away when the opponent gave up) holds the same', async () => {
+    const g = await live();
+    g.table.offline = true;
+    await act(async () => {
+      g.table.cutMe();
+    });
+    await pass(g.table, 200);
+    await act(async () => {
+      g.table.opponent({ type: 'surrender' });
+    });
+    expect(g.table.game!.state.status).toBe('over');
+    expect(g.session.getView().status).not.toBe('over');
+    g.table.offline = false;
+    await passUntil(g.table, () => g.session.getView().status === 'over');
+    expect(g.onEnded).not.toHaveBeenCalled();
+    await pass(g.table, ONLINE_END_HOLD_MS + 100);
+    expect(g.onEnded).toHaveBeenCalledWith('online-1');
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('connection-error')).toBeNull();
+    expect(breadcrumbs()).toContain('game: game over on arrival (lastPlayerStanding)');
+  });
+
+  it('the report sheet is open when the opponent gives up: it closes, and the results come once it has gone', async () => {
+    const g = await live();
+    const sheetAtResults: boolean[] = [];
+    g.onEnded.mockImplementation(() => sheetAtResults.push(screen.queryByTestId('report-sheet') !== null));
+    await fireEvent(screen.getByTestId('card-menu-trigger'), 'longPress');
+    await fireEvent.press(screen.getByTestId('card-menu-report'));
+    await pass(g.table, motion.duration.sheetIn + 50);
+    expect(screen.getByTestId('report-sheet')).toBeOnTheScreen();
+
+    await act(async () => {
+      g.table.opponent({ type: 'surrender' });
+    });
+    await pass(g.table, 100);
+    expect(g.session.getView().status).toBe('over');
+    await pass(g.table, motion.duration.sheetOut + 100);
+    expect(screen.queryByTestId('report-sheet')).toBeNull();
+    await pass(g.table, ONLINE_END_HOLD_MS);
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
+    expect(sheetAtResults).toEqual([false]);
+    expect(breadcrumbs()).toContain('game: game over (lastPlayerStanding) locks=0 modal=true hit=false');
+  });
+
+  it('the block dialog is open when the opponent gives up: the same', async () => {
+    const g = await live();
+    const dialogAtResults: boolean[] = [];
+    g.onEnded.mockImplementation(() => dialogAtResults.push(screen.queryByTestId('block-confirm') !== null));
+    await fireEvent(screen.getByTestId('card-menu-trigger'), 'longPress');
+    await fireEvent.press(screen.getByTestId('card-menu-block'));
+    await pass(g.table, motion.duration.sheetIn + 50);
+    expect(screen.getByTestId('block-confirm')).toBeOnTheScreen();
+
+    await act(async () => {
+      g.table.opponent({ type: 'surrender' });
+    });
+    await pass(g.table, ONLINE_END_HOLD_MS + 200);
+    expect(screen.queryByTestId('block-confirm')).toBeNull();
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
+    expect(dialogAtResults).toEqual([false]);
+  });
+
+  it('the card menu is open when the opponent gives up: it closes, and no report or block opens during the hold', async () => {
+    const g = await live();
+    const windowAtResults: boolean[] = [];
+    g.onEnded.mockImplementation(() =>
+      windowAtResults.push(
+        screen.queryByTestId('report-sheet') !== null || screen.queryByTestId('block-confirm') !== null,
+      ),
+    );
+    await fireEvent(screen.getByTestId('card-menu-trigger'), 'longPress');
+    expect(screen.getByTestId('card-menu-report')).toBeOnTheScreen();
+
+    await act(async () => {
+      g.table.opponent({ type: 'surrender' });
+    });
+    await pass(g.table, 300);
+    expect(g.session.getView().status).toBe('over');
+    expect(g.onEnded).not.toHaveBeenCalled(); // the hold
+    // The menu went with the end; opened again, it has nothing that opens a native window.
+    expect(screen.queryByTestId('card-menu-report')).toBeNull();
+    await fireEvent(screen.getByTestId('card-menu-trigger'), 'longPress');
+    expect(screen.queryByTestId('card-menu-report')).toBeNull();
+    expect(screen.queryByTestId('card-menu-block')).toBeNull();
+    await pass(g.table, ONLINE_END_HOLD_MS);
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
+    expect(windowAtResults).toEqual([false]);
+  });
+
+  it('my connection drops in a game frozen for the opponent: the freeze stays, and my surrender is off', async () => {
+    const g = await live();
+    await act(async () => {
+      g.table.game!.apply({ type: 'disconnect', playerId: OPP });
+    });
+    await pass(g.table, 100);
+    expect(screen.getByTestId('opponent-reconnecting-card-reconnecting', hidden)).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'כניעה', ...hidden })).toBeEnabled();
+
+    g.table.offline = true;
+    await act(async () => {
+      g.table.cutMe();
+    });
+    await pass(g.table, 100);
+    expect(g.session.online.status).toBe('reconnecting');
+    // Nothing is played here in a frozen game: no soft-phase mark that would lift the freeze.
+    expect(g.session.online.offlinePlay).toMatchObject({ playable: false });
+    expect(screen.queryByTestId('self-offline-announcer', hidden)).toBeNull();
+    expect(screen.getByTestId('opponent-reconnecting-card-reconnecting', hidden)).toBeOnTheScreen();
+    // My card sits above the freeze: its surrender would be refused without a word, so it is off.
+    expect(screen.getByRole('button', { name: 'כניעה', ...hidden })).toBeDisabled();
+  });
+
+  it('the game freezes while the report sheet is open: the sheet closes (nothing covers the freeze)', async () => {
+    const g = await live();
+    await fireEvent(screen.getByTestId('card-menu-trigger'), 'longPress');
+    await fireEvent.press(screen.getByTestId('card-menu-report'));
+    await pass(g.table, motion.duration.sheetIn + 50);
+    expect(screen.getByTestId('report-sheet')).toBeOnTheScreen();
+    await act(async () => {
+      g.table.game!.apply({ type: 'disconnect', playerId: OPP });
+    });
+    await pass(g.table, 400);
+    expect(screen.queryByTestId('report-sheet')).toBeNull();
+    expect(screen.getByTestId('opponent-reconnecting-card-reconnecting', hidden)).toBeOnTheScreen();
+  });
+
+  it('results that never replace the game: "לתוצאות" and "לבית" after the watchdog, and a report', async () => {
+    const g = await live();
+    await act(async () => {
+      g.table.opponent({ type: 'surrender' });
+    });
+    await pass(g.table, ONLINE_END_HOLD_MS + 100);
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('results-fallback')).toBeNull();
+    await pass(g.table, RESULTS_WATCHDOG_MS);
+    expect(screen.getByTestId('results-fallback')).toBeOnTheScreen();
+    expect(crash.recordError).toHaveBeenCalledWith(
+      new Error('the results did not replace the game'),
+      'game: results watchdog',
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
+    expect(g.onHome).toHaveBeenCalledTimes(1);
+    await fireEvent.press(screen.getByRole('button', { name: 'לתוצאות' }));
+    expect(g.onEnded).toHaveBeenCalledTimes(2);
   });
 });

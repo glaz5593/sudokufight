@@ -27,7 +27,12 @@ export interface MsRange {
   max: number;
 }
 
-/** When a level sends interferences (spec §9 table, §7.2) [D40]. */
+/**
+ * When a level sends interferences (spec §9 table, §7.2) [D40]. The policy applies only in a game whose rules
+ * have interferences on: today that is the fake client (a test tool that plays ranked as an ordinary
+ * account), or a rules override. Practice against a bot has none, so a bot there never interferes [D44];
+ * the values stay as config in case interferences against a bot ever come back.
+ */
 export interface BotInterferencePolicy {
   /** At most this many per game; null: no limit beyond the rising cost [D10]. */
   maxPerGame: number | null;
@@ -41,8 +46,8 @@ export interface BotInterferencePolicy {
 }
 
 /**
- * What a bot reacts to (spec §8, §9): an opponent's wrong digit (😂), being hit by an interference (😱), and
- * taking the lead (Maestro's 😎).
+ * What a bot reacts to (spec §8, §9): an opponent's wrong digit (😂), being hit by an interference (😱, only
+ * in a game that has interferences [D44]), and taking the lead (Maestro's 😎).
  */
 export const BOT_REACTION_TRIGGERS = ['opponentMistake', 'hit', 'tookLead'] as const;
 export type BotReactionTrigger = (typeof BOT_REACTION_TRIGGERS)[number];
@@ -71,6 +76,7 @@ export interface BotLevel {
   thinkMs: MsRange;
   /** The chance that a digit is wrong (a plausible one, never a random one). */
   mistakeRate: number;
+  /** Only where interferences are on (the fake client in ranked, an override); never in bot practice [D44]. */
   interference: BotInterferencePolicy;
   reactions: Partial<Record<BotReactionTrigger, BotReaction>>;
   /** Slows down a little when the human trails far behind (spec §9: levels 1–3 only). */

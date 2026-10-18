@@ -51,6 +51,12 @@ function humanErrs(g: BotGame, avoid?: CellIndex): void {
   g.host.place(cell, plausibleWrongDigits(g.host.state, cell)[0]!);
 }
 
+/**
+ * Practice against a bot has no interferences [D44]. Tests of the bot under hits, and of its own hits, turn
+ * them on: the policy where interferences are on (the fake client in ranked, or a rules override).
+ */
+const INTERFERENCES_ON = { interferences: true } as const;
+
 /** Every reaction always, for this level. */
 const reactsAlways = (level: 1 | 2 | 3 | 4 | 5) =>
   withLevel(BOT_LEVELS, level, {
@@ -206,7 +212,7 @@ describe('re-planning (spec §9)', () => {
 
 describe('timers that stop [D11] (spec §6.2.7, §16.2)', () => {
   it('stands still while hit, and its lock does not run out', () => {
-    const g = botGame({ level: 1, seed: 6 });
+    const g = botGame({ level: 1, seed: 6, rules: INTERFERENCES_ON });
     humanSolves(g, plans(g)[0]!.cell); // points to pay for the interference
     advanceUntil(g, () => !!botLock(g));
     const lock = botLock(g)!;
@@ -228,7 +234,7 @@ describe('timers that stop [D11] (spec §6.2.7, §16.2)', () => {
   });
 
   it('hesitates the interference longer when hit before locking', () => {
-    const g = botGame({ level: 1, seed: 7 });
+    const g = botGame({ level: 1, seed: 7, rules: INTERFERENCES_ON });
     const target = plans(g)[0]!;
     humanSolves(g, target.cell);
     g.scheduler.advance(100);
@@ -356,9 +362,30 @@ describe('robustness: a refusal re-plans, nothing escapes a scheduler callback',
   });
 });
 
-describe('interferences at engine level (spec §7.2, §9) [D40]', () => {
+describe('practice against a bot: no interferences, either way [D44]', () => {
+  it('Overlord at its most eager sends none over a whole game, and mine are refused', () => {
+    const levels = withLevel(BOT_LEVELS, 5, {
+      interference: { maxPerGame: null, minDeficit: null, chance: 1 },
+    });
+    const g = botGame({ level: 5, seed: 11, config: { levels } });
+    expect(g.config.rules.interferences).toBe(false);
+    scriptHuman(g, { missEvery: 5 });
+    g.scheduler.advance(3000);
+    expect(g.host.getView().interference).toBeNull(); // no panel, so no button on its card
+    expect(
+      g.host.dispatch({ type: 'interfere', playerId: HUMAN, targetId: g.botId, kind: 'cats' }).rejected,
+    ).toBe('interferencesOff');
+    runUntilOver(g);
+    expect(g.host.state.result?.reason).toBe('boardComplete');
+    expect(eventsOf(g.host.events, 'interference')).toEqual([]);
+    expect(g.traces.some((t) => t.type === 'action' && t.action.type === 'interfere')).toBe(false);
+    expect(problems(g)).toEqual([]);
+  });
+});
+
+describe('interferences at engine level (spec §7.2, §9) [D40]: the policy where they are on', () => {
   it('Overlord is aggressive: it pays 2, 4, 8 … and never hits a busy target [D10, D11]', () => {
-    const g = botGame({ level: 5, seed: 11 });
+    const g = botGame({ level: 5, seed: 11, rules: INTERFERENCES_ON });
     runUntilOver(g);
     const sent = eventsOf(g.host.events, 'interference').filter((e) => e.fromId === g.botId);
     expect(sent.length).toBeGreaterThanOrEqual(3);
@@ -372,13 +399,14 @@ describe('interferences at engine level (spec §7.2, §9) [D40]', () => {
   });
 
   it('Biscuit never interferes while it is not 15 behind', () => {
-    const g = botGame({ level: 2, seed: 12 });
+    const g = botGame({ level: 2, seed: 12, rules: INTERFERENCES_ON });
     runUntilOver(g);
     expect(eventsOf(g.host.events, 'interference')).toEqual([]);
   });
 
   it('Biscuit interferes once it trails by 15 or more', () => {
-    const g = botGame({ level: 2, seed: 13 });
+    // A seed where Biscuit also errs twice and still has the points to pay (a mistake costs the cell's value, §6.5).
+    const g = botGame({ level: 2, seed: 15, rules: INTERFERENCES_ON });
     scriptHuman(g, { everyMs: 2500, placeMs: 500, startAt: 100 }); // much faster than Biscuit
     runUntilOver(g);
     const states = replay(g.host.events);
@@ -395,7 +423,7 @@ describe('interferences at engine level (spec §7.2, §9) [D40]', () => {
 
   it('Pip interferes at most once a game, however eager', () => {
     const levels = withLevel(BOT_LEVELS, 1, { interference: { maxPerGame: 1, minDeficit: null, chance: 1 } });
-    const g = botGame({ level: 1, seed: 14, config: { levels } });
+    const g = botGame({ level: 1, seed: 14, config: { levels }, rules: INTERFERENCES_ON });
     runUntilOver(g);
     expect(eventsOf(g.host.events, 'interference').filter((e) => e.fromId === g.botId)).toHaveLength(1);
   });
@@ -414,7 +442,7 @@ describe('reactions (spec §8, §9) [D19]', () => {
   });
 
   it('😱 when I hit it', () => {
-    const g = botGame({ level: 5, seed: 16, config: { levels: reactsAlways(5) } });
+    const g = botGame({ level: 5, seed: 16, config: { levels: reactsAlways(5) }, rules: INTERFERENCES_ON });
     humanSolves(g, plans(g)[0]!.cell);
     g.scheduler.advance(100);
     g.host.interfere(g.botId, 'warp');
@@ -423,7 +451,7 @@ describe('reactions (spec §8, §9) [D19]', () => {
   });
 
   it('Maestro stays cool: 😎 when hit', () => {
-    const g = botGame({ level: 4, seed: 17, config: { levels: reactsAlways(4) } });
+    const g = botGame({ level: 4, seed: 17, config: { levels: reactsAlways(4) }, rules: INTERFERENCES_ON });
     humanSolves(g, plans(g)[0]!.cell);
     g.host.interfere(g.botId, 'cats');
     g.scheduler.advance(2000);
@@ -448,7 +476,7 @@ describe('reactions (spec §8, §9) [D19]', () => {
   });
 
   it('Biscuit has no 😱 in its table', () => {
-    const g = botGame({ level: 2, seed: 19, config: { levels: reactsAlways(2) } });
+    const g = botGame({ level: 2, seed: 19, config: { levels: reactsAlways(2) }, rules: INTERFERENCES_ON });
     humanSolves(g, plans(g)[0]!.cell);
     g.host.interfere(g.botId, 'cats');
     g.scheduler.advance(3000);
@@ -522,7 +550,7 @@ describe('four at the table', () => {
       gameType: 'fast',
       puzzle: PUZZLE,
       players: [{ id: HUMAN }, ...levels.map((l) => botPlayer(l))],
-      rules: defaultRules('bot', 'fast'),
+      rules: defaultRules('bot', 'fast', INTERFERENCES_ON), // the bots hit each other too
       seed: 1,
     };
     const host = new LocalGameHost({ config, playerId: HUMAN, clock, scheduler });
@@ -568,7 +596,7 @@ describe('two bots at one table', () => {
       gameType: 'fast',
       puzzle: PUZZLE,
       players: [{ id: HUMAN }, botPlayer(5), botPlayer(3)],
-      rules: defaultRules('bot', 'fast'),
+      rules: defaultRules('bot', 'fast', INTERFERENCES_ON), // the bots hit each other too
       seed: 1,
     };
     const host = new LocalGameHost({ config, playerId: HUMAN, clock, scheduler });

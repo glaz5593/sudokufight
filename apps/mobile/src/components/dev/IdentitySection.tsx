@@ -67,6 +67,9 @@ export function AvatarSection() {
           <Specimen label={t('avatars.online')}>
             <Avatar avatarId={ME_AVATAR} size="card" colorIndex={0} presence="online" />
           </Specimen>
+          <Specimen label={t('avatars.unstable')}>
+            <Avatar avatarId={NINA_AVATAR} size="card" colorIndex={1} presence="unstable" />
+          </Specimen>
           <Specimen label={t('avatars.reconnecting')}>
             <Avatar avatarId={NINA_AVATAR} size="card" colorIndex={1} presence="reconnecting" inactive />
           </Specimen>

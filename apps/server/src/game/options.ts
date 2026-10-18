@@ -1,5 +1,10 @@
-import { GAME_TYPES, type GameType } from '@sudoku-fight/engine';
-import { type GameRoomRuleOverrides, normalizeRoomCode } from '@sudoku-fight/protocol';
+import { GAME_TYPES, type GameType, INTERFERENCE_KINDS } from '@sudoku-fight/engine';
+import {
+  type GameRoomRuleOverrides,
+  MAX_DECLARED_INTERFERENCE_KINDS,
+  MAX_INTERFERENCE_KIND_LENGTH,
+  normalizeRoomCode,
+} from '@sudoku-fight/protocol';
 import { z } from 'zod';
 
 import type { NodeEnv } from '../config';
@@ -32,15 +37,18 @@ const ms = (min: number, max: number) => z.int().min(min).max(max);
 /** Bounds keep a dev room playable and the engine's timers sane. */
 const rulesSchema = z.strictObject({
   graceMs: ms(100, 120_000).optional(),
+  // The soft phase of a lost connection [D42]; 0 turns it off (every drop is hard at once, as before).
+  softGraceMs: ms(0, 60_000).optional(),
   thinkTimeMs: ms(500, 120_000).optional(),
   turnPickMs: ms(500, 120_000).optional(),
   turnModel: z.enum(['simultaneous', 'turns']).optional(),
   interferences: z.boolean().optional(),
+  // The room's kinds outright [D47], in place of what the seats declared: kinds the engine knows only.
+  interferenceKinds: z.array(z.enum(INTERFERENCE_KINDS)).max(MAX_DECLARED_INTERFERENCE_KINDS).optional(),
   interferenceMs: ms(100, 60_000).optional(),
   interferenceImmunityMs: ms(0, 60_000).optional(),
   relockCooldownMs: ms(0, 60_000).optional(),
   reactionCooldownMs: ms(0, 60_000).optional(),
-  mistakePenaltyCap: z.int().min(1).max(1024).nullable().optional(),
 }) satisfies z.ZodType<GameRoomRuleOverrides>;
 
 // Not strict: the same object carries the creator's join options (devUserId, name).
@@ -51,6 +59,12 @@ const createSchema = z.object({
   playerCount: z.int().min(2).max(4).default(2),
   rules: rulesSchema.optional(),
   rated: z.boolean().default(false),
+  // The creator's join option [D47], read again by the room's onJoin: checked here so a create with a bad one
+  // fails loudly in development. (A join by code with a bad one counts as none, as in matchmaking.)
+  interferenceKinds: z
+    .array(z.string().max(MAX_INTERFERENCE_KIND_LENGTH))
+    .max(MAX_DECLARED_INTERFERENCE_KINDS)
+    .optional(),
 });
 
 export function parseCreateOptions(options: unknown, nodeEnv: NodeEnv): GameRoomSetup {

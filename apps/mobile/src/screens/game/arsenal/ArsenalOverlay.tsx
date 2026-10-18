@@ -23,10 +23,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { AVATAR_REACTIONS, type AvatarIdOrNone } from '../../../avatars';
-import { Icon } from '../../../components/Icon';
-import { Avatar, Flag, formatScore, paletteAt, scoreText } from '../../../components/player';
+import { Avatar, Flag, formatScore, paletteAt, scoreText, signedText } from '../../../components/player';
 import { dragClosesSheet, IconButton } from '../../../components/ui';
 import { usePresence } from '../../../components/ui/motion';
+import { cue } from '../../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { motion, useReduceMotion } from '../../../theme/motion';
 import type { Point, Rect } from '../geometry';
@@ -34,19 +34,19 @@ import { useLiveAnnouncer } from '../useLiveAnnouncer';
 import {
   type ArsenalModel,
   arsenalModel,
-  dropZoneOf,
   launchable,
+  pickerLayout,
   relativeTo,
   scrimPieces,
+  targetFrameOf,
 } from './arsenalModel';
-import { COMING_ROW_MIN_WINDOW, ComingRow } from './ComingRow';
 import { ARSENAL_CONFIG } from './config';
-import { DragGhost, LaunchRipple } from './DragGhost';
-import { useDragValues } from './drag';
+import { KindButton } from './KindButton';
+import { LaunchRipple } from './LaunchRipple';
 import { arsenalMetrics as m } from './metrics';
-import { TokenCard } from './TokenCard';
+import { RouteLine } from './RouteLine';
 import type { ArsenalController } from './useArsenal';
-import { isolate, kindWord, tapHint } from './wording';
+import { blockedSentence, isolate, kindWord } from './wording';
 
 /** Who the target is on this phone (the screen knows names and avatars; the engine's view does not). */
 export interface ArsenalTargetInfo {
@@ -61,17 +61,19 @@ export interface ArsenalTargetInfo {
 
 export interface ArsenalOverlayProps {
   arsenal: ArsenalController;
-  /** The host's latest view: costs, my score and whether the target can take one come from it. */
+  /** The host's latest view: costs, my score, the kinds and whether the target can take one come from it. */
   view: GameView;
   /** Who a player is, for the header and the labels. */
   describe: (playerId: PlayerId) => ArsenalTargetInfo;
-  /** The open tokens [D17]; default from ARSENAL_CONFIG. */
+  /** The kinds open at my level [D17]; default from ARSENAL_CONFIG. */
   unlocked?: readonly InterferenceKind[];
   /**
-   * The route tag "אני ← NinaVolt" with both avatars on the ghost (spec §7.3.5): `describe(view.me)` is its
-   * start. Default: in games of 3–4 players.
+   * The route "אני ← Biscuit" with both avatars in the header (original §17): `describe(view.me)` is its start.
+   * Default: in games of 3–4 players.
    */
   showRoute?: boolean;
+  /** Taps in this long after it opened are ignored [D45]; default ARSENAL_CONFIG.armMs. */
+  armMs?: number;
   testID?: string;
 }
 
@@ -83,20 +85,26 @@ const settleSpring = { ...motion.spring.settle, reduceMotion: ReduceMotion.Never
 const PER_MS = 1 / 1000;
 
 /**
- * The interference arsenal and its drag launch (spec §7.3; Arsenal, Interference-Drag; components.md §13;
- * motion.md §4.4). Rendered last in the game screen, over everything, and empty while closed.
+ * The interference picker (spec §7.3; components.md §13; motion.md §4.4) [D45: two taps, no drag]. Rendered
+ * last in the game screen, over everything, and empty while closed.
  *
- * Opened from ⚡ on an opponent's card, it rises as a tray (240 ms; reduced motion: a 200 ms fade) over a scrim
- * with a hole: the card it was opened from stays above the scrim, framed as the one drop zone, and the other
- * cards dim (the screen spreads `arsenal.cardProps`). The tray says the next cost and the ones after it, my
- * score after paying, and holds the tokens with their live previews; at its foot, "נפתחות בהמשך" with the
- * interferences after V1 (ComingRow). A token is launched only by dragging it
- * onto that card (D18): the ghost follows the finger on the UI thread, the zone lights up while the finger is
- * over it, and letting go there launches (`onLaunch`, once), shrinks the token into the card with a ripple and
- * closes the tray (200 ms). Let go anywhere else and it flies back; nothing is charged. A tap only explains.
+ * The first tap, "הפרעה" on an opponent's card, opens it aimed at THAT card (original §17): it rises as a sheet
+ * (240 ms; reduced motion: a 200 ms fade) over a scrim with a hole, so the target card stays bright above the
+ * scrim, framed with an "יעד" chip, and the other cards dim (the screen spreads `arsenal.cardProps`). The
+ * header names the target ("יעד: NinaVolt"), or in 3–4 players the route "אני ← Biscuit" with both avatars and
+ * shapes; there is no way to change the target in here. Under it the price row (the price "⁦−2⁩ נק׳", the next
+ * one, and my score before and after), then every kind this game allows in a 3 × 2 grid, all visible at once
+ * on a small phone (pickerLayout), each with its preview, name and price chip; a kind above my level stays in
+ * the grid, dimmed, with "רמה N" (D17).
  *
- * Screen readers: the tray is a modal group, focus starts on its title, every token says its cost and what to
- * do, and a live region tells the drag (lifted, over the card, cancelled, launched). Android back closes it.
+ * The second tap, on a kind, launches it at once (`arsenal.launch`, once per opening) and the sheet closes in
+ * 200 ms with a ripple out of the target card (full motion only). Taps in the first `armMs` after it opened are
+ * ignored, so a quick double tap can't launch by mistake. A kind that can't go (short of points, the target
+ * busy, locked) only says why, in a bubble and to screen readers, with a light haptic.
+ *
+ * Screen readers: the sheet is a modal group, focus starts on its title, every kind says its price and its
+ * target, and a live region says what happened. Android back, the scrim, the close button and the card's button
+ * again close it; so does the target leaving, or the game ending.
  */
 export function ArsenalOverlay({
   arsenal,
@@ -104,6 +112,7 @@ export function ArsenalOverlay({
   describe,
   unlocked = ARSENAL_CONFIG.unlocked,
   showRoute,
+  armMs = ARSENAL_CONFIG.armMs,
   testID = 'arsenal',
 }: ArsenalOverlayProps) {
   const { t } = useTranslation('game');
@@ -111,12 +120,10 @@ export function ArsenalOverlay({
   const reduce = useReduceMotion();
   const insets = useSafeAreaInsets();
   const windowSize = useWindowDimensions();
-  const drag = useDragValues();
-  // The controller's methods are stable, so the tokens' gestures are not rebuilt as the drag goes on.
-  const { targetId, dragKind, close, measureCard, lift, setHover, release, settle } = arsenal;
+  const { targetId, close, measureCard, launch } = arsenal;
   const visible = targetId !== null;
 
-  // What the tray shows: the target it was opened for, kept while it leaves.
+  // What the sheet shows: the target it was opened for, kept while it leaves.
   const [shownId, setShownId] = useState<PlayerId | null>(targetId);
   if (targetId !== null && targetId !== shownId) setShownId(targetId);
   const model = useMemo(
@@ -128,48 +135,46 @@ export function ArsenalOverlay({
 
   // How it leaves: 200 ms after a launch, 240 ms otherwise (motion.md `launch`, `sheet`).
   const [launched, setLaunched] = useState(false);
-  // The token in the finger, from lift until its ghost has landed or gone back.
-  const [carried, setCarried] = useState<{ kind: InterferenceKind; cost: number } | null>(null);
+  // Armed `armMs` after it opened: the taps before are ignored [D45].
+  const [armed, setArmed] = useState(armMs <= 0);
   const [wasVisible, setWasVisible] = useState(visible);
   if (visible !== wasVisible) {
     setWasVisible(visible);
-    if (visible) setLaunched(false);
-    // Closed under a held token (Android back, the scrim, the target gone, the game over): its slot leaves
-    // with the tray, so its gesture may never end here. The drag is over and nothing was launched; the ghost
-    // goes now rather than staying on the screen. (After a launch it is landing in the card: it stays.)
-    else if (!launched && carried !== null) setCarried(null);
+    if (visible) {
+      setLaunched(false);
+      setArmed(armMs <= 0);
+    }
   }
+  useEffect(() => {
+    if (!visible || armMs <= 0) return;
+    const id = setTimeout(() => setArmed(true), armMs);
+    return () => clearTimeout(id);
+  }, [visible, armMs]);
   const { mounted, progress } = usePresence(visible, {
     inMs: motion.duration.trayRise,
     outMs: launched ? m.launch.closeMs : motion.duration.sheetOut,
     reduce,
   });
 
-  // ---- where things are: the overlay in the window, the drop zone, and the overlay's own size ----
+  // ---- where things are: the overlay in the window, the target's frame, and the overlay's own size ----
   const rootRef = useRef<ComponentRef<typeof View>>(null);
   const [origin, setOrigin] = useState<Point>({ x: 0, y: 0 });
-  const [zone, setZone] = useState<Rect | null>(null);
+  const [frame, setFrame] = useState<Rect | null>(null);
   const [area, setArea] = useState<{ width: number; height: number } | null>(null);
   const measure = useCallback(() => {
     if (targetId === null) return;
     rootRef.current?.measureInWindow?.((x, y) => {
       if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-      drag.origin.set({ x, y });
       setOrigin((was) => (was.x === x && was.y === y ? was : { x, y }));
     });
     measureCard(targetId, (rect) => {
-      const next = dropZoneOf(rect);
-      drag.zone.set(next);
-      setZone((was) => (was && sameRect(was, next) ? was : next));
+      const next = targetFrameOf(rect);
+      setFrame((was) => (was && sameRect(was, next) ? was : next));
     });
-  }, [targetId, measureCard, drag]);
+  }, [targetId, measureCard]);
   useEffect(() => {
-    if (!visible) {
-      drag.zone.set(null);
-      return;
-    }
-    measure();
-  }, [visible, measure, drag, windowSize.width, windowSize.height]);
+    if (visible) measure();
+  }, [visible, measure, windowSize.width, windowSize.height]);
   const onRootLayout = useCallback(
     (e: LayoutChangeEvent) => {
       const { width, height } = e.nativeEvent.layout;
@@ -178,7 +183,7 @@ export function ArsenalOverlay({
     },
     [measure],
   );
-  const hole = zone && relativeTo(zone, origin);
+  const hole = frame && relativeTo(frame, origin);
 
   // ---- nothing to aim at any more (the target left or disconnected, the game is over, or I can't send
   // any): close ----
@@ -201,68 +206,36 @@ export function ArsenalOverlay({
     if (visible && titleRef.current) AccessibilityInfo.sendAccessibilityEvent(titleRef.current, 'focus');
   }, [visible, mounted]);
 
-  // ---- the drag, as JS hears it: lift, over / off the zone, let go, settled ----
+  // ---- the second tap: launch, or say why not ----
   const { message, announce } = useLiveAnnouncer(t('listSep'));
   const [ripple, setRipple] = useState<Rect | null>(null);
   const [bubble, setBubble] = useState<{ kind: InterferenceKind; text: string } | null>(null);
-  const latest = useRef({ model, targetName, hole, reduce, visible });
+  const latest = useRef({ model, targetName, hole, reduce, visible, armed });
   useLayoutEffect(() => {
-    latest.current = { model, targetName, hole, reduce, visible };
+    latest.current = { model, targetName, hole, reduce, visible, armed };
   });
 
-  const onLift = useCallback(
+  const onKind = useCallback(
     (kind: InterferenceKind) => {
-      const { model: now, targetName: name } = latest.current;
-      setBubble(null);
-      setCarried({ kind, cost: now?.cost ?? 0 });
-      measure(); // the card can't have moved, but a stale zone would be worse
-      lift(kind);
-      announce(t('arsenal.live.lift', { kind: kindWord(kind, t), name: isolate(name) }));
-    },
-    [lift, announce, measure, t],
-  );
-  const onHover = useCallback(
-    (inside: boolean) => {
-      setHover(inside);
-      announce(
-        inside
-          ? t('arsenal.live.over', { name: isolate(latest.current.targetName) })
-          : t('arsenal.live.left'),
-      );
-    },
-    [setHover, announce, t],
-  );
-  const onRelease = useCallback(
-    (kind: InterferenceKind, launch: boolean) => {
-      const { model: now, targetName: name, hole: at, reduce: still, visible: open } = latest.current;
-      const token = now?.tokens.find((x) => x.kind === kind);
-      // The UI thread checked the zone; the view has the last word on whether it can still go.
-      const go = launch && open && token !== undefined && launchable(token);
-      if (go) {
-        setLaunched(true);
-        if (!still && at) setRipple(at);
-        announce(t('arsenal.live.launched', { kind: kindWord(kind, t), name: isolate(name) }));
-      } else {
-        announce(t('arsenal.live.cancelled'));
-      }
-      release(kind, go);
-    },
-    [release, announce, t],
-  );
-  const onSettled = useCallback(() => {
-    setCarried(null);
-    settle();
-  }, [settle]);
-  const onTap = useCallback(
-    (kind: InterferenceKind) => {
-      const { model: now, targetName: name } = latest.current;
-      const token = now?.tokens.find((x) => x.kind === kind);
+      const now = latest.current;
+      // Too soon after it opened (a tap that went through, a double tap), or already on its way out.
+      if (!now.armed || !now.visible) return;
+      const token = now.model?.tokens.find((x) => x.kind === kind);
       if (!token) return;
-      const line = tapHint(token, name, t);
-      setBubble({ kind, text: line });
-      announce(line);
+      if (!launchable(token)) {
+        const line = blockedSentence(token.blockedReason!, token, now.targetName, t);
+        cue('nudge');
+        setBubble({ kind, text: line });
+        announce(line);
+        return;
+      }
+      setBubble(null);
+      if (!launch(kind)) return;
+      setLaunched(true);
+      if (!now.reduce && now.hole) setRipple(now.hole);
+      announce(t('arsenal.live.launched', { kind: kindWord(kind, t), name: isolate(now.targetName) }));
     },
-    [announce, t],
+    [launch, announce, t],
   );
   useEffect(() => {
     if (!bubble) return;
@@ -271,7 +244,7 @@ export function ArsenalOverlay({
   }, [bubble]);
   const onRippleDone = useCallback(() => setRipple(null), []);
 
-  // ---- the tray: slides up (or fades), and a downward drag of its head closes it ----
+  // ---- the sheet: slides up (or fades), and a downward drag of its head closes it ----
   const sheetHeight = useSharedValue(windowSize.height);
   const pull = useSharedValue(0);
   useEffect(() => {
@@ -288,7 +261,7 @@ export function ArsenalOverlay({
     () =>
       Gesture.Pan()
         .activeOffsetY(m.closeDragActivate)
-        .failOffsetX([-2 * m.dragSlop, 2 * m.dragSlop])
+        .failOffsetX([-2 * m.closeDragActivate, 2 * m.closeDragActivate])
         .withTestId('arsenal-close-drag')
         .onUpdate((e) => {
           'worklet';
@@ -306,14 +279,20 @@ export function ArsenalOverlay({
       : { transform: [{ translateY: pull.get() + (1 - progress.get()) * sheetHeight.get() }] },
   );
 
-  if (!mounted && !ripple && !carried) return null;
+  if (!mounted && !ripple) return null;
 
-  // 3–4 players: from me to the card it was opened from (spec §7.3.5), both avatars.
+  // 3–4 players: from me to the card it was opened from (original §17), both avatars and shapes.
   const route =
     (showRoute ?? view.players.length > 2) && target !== null && view.me !== null
       ? { from: describe(view.me), to: target }
       : null;
-  const showTray = (mounted || visible) && model !== null && target !== null;
+  const showSheet = (mounted || visible) && model !== null && target !== null;
+  const layout = pickerLayout({
+    width: windowSize.width,
+    height: windowSize.height,
+    bottomInset: insets.bottom,
+    count: model?.tokens.length ?? 0,
+  });
 
   return (
     <View
@@ -324,7 +303,7 @@ export function ArsenalOverlay({
       onLayout={onRootLayout}
       testID={testID}
     >
-      {showTray ? (
+      {showSheet ? (
         <>
           <Scrim
             progress={progress}
@@ -339,7 +318,7 @@ export function ArsenalOverlay({
             accessibilityLabel={t('arsenal.title')}
             onAccessibilityEscape={close}
             onLayout={(e) => sheetHeight.set(e.nativeEvent.layout.height)}
-            style={[styles.sheet, { paddingBottom: m.sheet.paddingX + insets.bottom }, sheetStyle]}
+            style={[styles.sheet, { paddingBottom: m.sheet.paddingBottom + insets.bottom }, sheetStyle]}
             testID={`${testID}-sheet`}
           >
             <GestureDetector gesture={pullGesture}>
@@ -350,10 +329,14 @@ export function ArsenalOverlay({
                     <Text ref={titleRef} accessibilityRole="header" style={styles.title} numberOfLines={1}>
                       {t('arsenal.title')}
                     </Text>
-                    <TargetLine
-                      target={target}
-                      label={t('arsenal.targetLabel', { name: isolate(targetName) })}
-                    />
+                    {route ? (
+                      <RouteLine from={route.from} to={route.to} testID={`${testID}-route`} />
+                    ) : (
+                      <TargetLine
+                        target={target}
+                        label={t('arsenal.targetLabel', { name: isolate(targetName) })}
+                      />
+                    )}
                   </View>
                   <IconButton
                     icon="close"
@@ -365,34 +348,23 @@ export function ArsenalOverlay({
                 </View>
               </View>
             </GestureDetector>
-            <CostRow model={model} />
-            <Text style={styles.info}>{t('arsenal.info', { seconds: model.seconds })}</Text>
-            <View style={styles.tokens}>
+            <PriceRow model={model} />
+            <View style={styles.grid} testID={`${testID}-grid`}>
               {model.tokens.map((token) => (
-                <TokenCard
+                <KindButton
                   key={token.kind}
                   token={token}
                   targetName={targetName}
-                  drag={drag}
+                  width={layout.columnWidth}
                   reduce={reduce}
-                  dragging={dragKind === token.kind}
-                  locked={dragKind !== null && dragKind !== token.kind}
                   bubble={bubble?.kind === token.kind ? bubble.text : null}
-                  onLift={onLift}
-                  onHover={onHover}
-                  onRelease={onRelease}
-                  onSettled={onSettled}
-                  onTap={onTap}
+                  onPress={onKind}
                 />
               ))}
             </View>
-            <View style={styles.hint} testID={`${testID}-hint`}>
-              <Icon name={dragKind ? 'cancel' : 'target'} size={m.hint.icon} color={color.textMuted} />
-              <Text style={styles.hintText} numberOfLines={1}>
-                {dragKind ? t('arsenal.cancelHint') : t('arsenal.hint', { name: isolate(targetName) })}
-              </Text>
-            </View>
-            {windowSize.height >= COMING_ROW_MIN_WINDOW ? <ComingRow testID={`${testID}-coming`} /> : null}
+            <Text style={styles.info} numberOfLines={1}>
+              {t('arsenal.info', { seconds: model.seconds })}
+            </Text>
           </Animated.View>
         </>
       ) : null}
@@ -404,13 +376,10 @@ export function ArsenalOverlay({
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
-        {ripple ? <LaunchRipple zone={ripple} onDone={onRippleDone} /> : null}
-        {carried ? (
-          <DragGhost kind={carried.kind} cost={carried.cost} route={route} drag={drag} reduce={reduce} />
-        ) : null}
+        {ripple ? <LaunchRipple zone={ripple} reduce={reduce} onDone={onRippleDone} /> : null}
       </View>
 
-      {/* The drag, said to screen readers (Android reads the region, iOS gets announcements). */}
+      {/* What happened, said to screen readers (Android reads the region, iOS gets announcements). */}
       <View style={styles.live} pointerEvents="none">
         <Text accessibilityLiveRegion="polite" style={styles.liveText} testID={`${testID}-live`}>
           {message}
@@ -469,12 +438,12 @@ function Scrim({
   );
 }
 
-/** "יעד: [avatar] NinaVolt 🇩🇪" (components.md §13 header). */
+/** "יעד: [avatar] NinaVolt 🇩🇪" (components.md §13 header, 2 players). */
 function TargetLine({ target, label }: { target: ArsenalTargetInfo; label: string }) {
   const { t } = useTranslation('game');
   const ring = paletteAt(target.colorIndex).ring;
   return (
-    <View style={styles.targetLine} accessible accessibilityLabel={label}>
+    <View style={styles.targetLine} accessible accessibilityLabel={label} testID="arsenal-target">
       <Text style={styles.subtitle}>{t('arsenal.target')}</Text>
       <Avatar
         avatarId={target.avatarId}
@@ -491,43 +460,46 @@ function TargetLine({ target, label }: { target: ArsenalTargetInfo; label: strin
 }
 
 /**
- * "ההפרעה הבאה שלך: 2 נק׳ · אחריה 4, 8…" and my score before and after (components.md §13). Short of points (my
- * score dropped while the tray was open) it says how many are missing instead of a score after a launch that
- * can't happen.
+ * The price row (components.md §13): "מחיר ⁦−2⁩ נק׳ · הבאה: 4" at the start, my score before and after at the
+ * end ("53 ← 51"). Short of points (my score dropped while the picker was open) the end says how many are
+ * missing instead of a score after a launch that can't happen. One element for screen readers.
  */
-function CostRow({ model }: { model: ArsenalModel }) {
+function PriceRow({ model }: { model: ArsenalModel }) {
   const { t } = useTranslation('game');
-  const later = model.laterCosts.join(t('listSep'));
   const short = model.missing > 0;
   const values = {
     cost: model.cost,
-    costs: later,
+    next: model.nextCost,
     score: scoreText(model.score),
     after: scoreText(model.scoreAfter),
     missing: formatScore(model.missing),
   };
   const label = t(short ? 'arsenal.costLabelShort' : 'arsenal.costLabel', values);
-  const afterLine = short
-    ? t('arsenal.missing', { count: model.missing })
-    : t('arsenal.after', { score: values.after });
   return (
-    <View style={styles.costRow} accessible accessibilityLabel={label} testID="arsenal-cost">
-      <View style={styles.costStart}>
-        <Text style={styles.subtitle}>{t('arsenal.next')}</Text>
-        <View style={styles.costLine}>
-          <Text style={[m.costRow.costStyle, styles.accent]}>{String(model.cost)}</Text>
-          <Text style={[styles.unit, styles.accent]}>{t('arsenal.unit')}</Text>
-          <Text style={styles.subtitle} numberOfLines={1}>
-            {t('arsenal.later', { costs: later })}
-          </Text>
-        </View>
-      </View>
-      <View style={styles.costEnd}>
-        <Text style={styles.subtitle}>{t('arsenal.score')}</Text>
-        <Text style={[m.costRow.scoreStyle, styles.myScore]}>{scoreText(model.score)}</Text>
-        <Text style={styles.subtitle} testID="arsenal-after">
-          {afterLine}
+    <View style={styles.priceRow} accessible accessibilityLabel={label} testID="arsenal-cost">
+      <View style={styles.priceStart}>
+        <Text style={styles.subtitle}>{t('arsenal.price')}</Text>
+        <Text style={[m.price.priceStyle, styles.accent]} testID="arsenal-price">
+          {signedText(-model.cost)}
         </Text>
+        <Text style={[styles.unit, styles.accent]}>{t('arsenal.unit')}</Text>
+        <Text style={styles.subtitle} numberOfLines={1}>
+          {t('arsenal.nextPrice', { cost: model.nextCost })}
+        </Text>
+      </View>
+      <View style={styles.priceEnd} testID="arsenal-after">
+        {short ? (
+          <Text style={styles.subtitle}>{t('arsenal.missing', { count: model.missing })}</Text>
+        ) : (
+          <>
+            <Text style={styles.subtitle} numberOfLines={1}>
+              {t('arsenal.score')}
+            </Text>
+            <Text style={[m.price.scoreStyle, styles.myScore]}>{values.score}</Text>
+            <Text style={styles.subtitle}>{t('arsenal.routeArrow')}</Text>
+            <Text style={[m.price.scoreStyle, styles.myScore]}>{values.after}</Text>
+          </>
+        )}
       </View>
     </View>
   );
@@ -536,7 +508,7 @@ function CostRow({ model }: { model: ArsenalModel }) {
 const ME = paletteAt(0);
 
 const styles = StyleSheet.create({
-  // Layers drawn in measured window coordinates are LTR, so `left` and translateX stay physical.
+  // Layers drawn in measured window coordinates are LTR, so `left` stays physical.
   layer: { ...StyleSheet.absoluteFill, direction: 'ltr' },
   piece: { position: 'absolute', backgroundColor: color.scrim },
   scrim: { backgroundColor: color.scrim },
@@ -545,7 +517,7 @@ const styles = StyleSheet.create({
     start: 0,
     end: 0,
     bottom: 0,
-    maxHeight: '85%',
+    maxHeight: `${m.sheet.maxShare * 100}%` as const,
     paddingTop: m.sheet.paddingTop,
     paddingHorizontal: m.sheet.paddingX,
     borderTopLeftRadius: radius.sheet,
@@ -557,7 +529,7 @@ const styles = StyleSheet.create({
   handle: {
     alignSelf: 'center',
     width: size.sheetHandle.width,
-    height: size.sheetHandle.height,
+    height: m.sheet.handle,
     borderRadius: radius.bar,
     backgroundColor: color.sheet.handle,
   },
@@ -565,10 +537,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space[6],
-    minHeight: m.sheet.headerHeight,
-    marginTop: m.sheet.headerTop,
+    minHeight: m.header.height,
+    marginTop: m.header.top,
   },
-  headerText: { flex: 1, minWidth: 0, alignItems: 'flex-start', gap: space[2] },
+  headerText: { flex: 1, minWidth: 0, alignItems: 'flex-start', gap: m.header.gap },
   title: { ...text('h1'), color: color.text },
   targetLine: { flexDirection: 'row', alignItems: 'center', gap: m.subtitle.gap, minWidth: 0 },
   subtitle: { ...text('label'), color: color.textMuted },
@@ -578,47 +550,37 @@ const styles = StyleSheet.create({
     borderRadius: m.subtitle.avatarRadius,
     overflow: 'hidden',
   },
-  costRow: {
+  priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: m.costRow.gap,
-    minHeight: m.costRow.height,
-    marginTop: m.costRow.top,
-    paddingHorizontal: m.costRow.paddingX,
-    paddingVertical: space[3],
-    borderRadius: m.costRow.radius,
+    gap: m.price.gap,
+    height: m.price.height,
+    marginTop: m.price.top,
+    paddingHorizontal: m.price.paddingX,
+    borderRadius: m.price.radius,
     borderWidth: tokens.border.hairline,
     borderColor: color.border,
     backgroundColor: color.surface2,
   },
-  costStart: { flexShrink: 1, alignItems: 'flex-start', gap: space[1] },
-  costLine: { flexDirection: 'row', alignItems: 'baseline', gap: space[2] },
-  costEnd: { alignItems: 'flex-end', gap: space[1] },
+  priceStart: { flexDirection: 'row', alignItems: 'baseline', gap: space[2], flexShrink: 1 },
+  priceEnd: { flexDirection: 'row', alignItems: 'baseline', gap: space[2] },
   accent: { color: color.accent },
   unit: { ...text('badge') },
   myScore: { color: ME.ring },
-  info: { ...text('label'), color: color.textMuted, marginTop: m.info.top, textAlign: 'center' },
-  tokens: {
+  grid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: space[4],
-    marginTop: m.token.top,
+    flexWrap: 'wrap',
+    gap: m.grid.gap,
+    marginTop: m.grid.top,
   },
-  hint: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'center',
-    gap: space[3],
-    height: m.hint.height,
-    marginTop: m.hint.top,
-    paddingHorizontal: m.hint.paddingX,
-    borderRadius: m.hint.radius,
-    borderWidth: tokens.border.hairline,
-    borderColor: color.border,
-    backgroundColor: color.surface2,
+  info: {
+    ...text('micro'),
+    color: color.textMuted,
+    marginTop: m.info.top,
+    lineHeight: m.info.height,
+    textAlign: 'center',
   },
-  hintText: { ...text('label'), color: color.textMuted, flexShrink: 1 },
   live: {
     position: 'absolute',
     top: 0,

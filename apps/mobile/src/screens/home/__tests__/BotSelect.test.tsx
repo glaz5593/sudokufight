@@ -70,7 +70,7 @@ describe('"בחר יריב בוט" (spec §4.1 #9, §9)', () => {
     expect(card(4)).toHaveTextContent(/מהיר, כמעט לא טועה, וקצת שחצן 😎/);
     expect(card(1)).toHaveProp(
       'accessibilityLabel',
-      'רמה 1, טירון: Pip. איטי, טועה לא מעט, וכמעט אף פעם לא מפריע. זמן חשיבה 15 עד 25 שניות למהלך, 15% טעויות',
+      'רמה 1, טירון: Pip. איטי, טועה לא מעט, ונותן לך ללמוד. זמן חשיבה 15 עד 25 שניות למהלך, 15% טעויות',
     );
     // The avatars of the level table, never typed in the screen.
     expect([1, 2, 3, 4, 5].map((l) => avatarIdsIn(card(l)))).toEqual([
@@ -174,7 +174,7 @@ describe('"בחר יריב בוט" (spec §4.1 #9, §9)', () => {
     expect(screen.getByText('Practice vs bot · Fast')).toBeTruthy();
     expect(card(5)).toHaveProp(
       'accessibilityLabel',
-      'Level 5, Grandmaster: Overlord. Fast, precise, and interferes without mercy. Thinks 3 to 5 seconds a move, 1% mistakes',
+      'Level 5, Grandmaster: Overlord. Fast, precise, and merciless. Thinks 3 to 5 seconds a move, 1% mistakes',
     );
     expect(screen.getByRole('button', { name: "Let's play" })).toBeTruthy();
   });

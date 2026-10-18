@@ -7,8 +7,10 @@ import {
   matchTick,
   MatchQueue,
   type NewTicket,
+  nextRanges,
   type OpponentRecord,
   rangeOf,
+  recentMap,
   recentOpponents,
   type Ticket,
 } from './matcher';
@@ -441,5 +443,172 @@ describe('blocks (spec §3.5): never in one game, either way, and no search star
         }
       }
     }
+  });
+});
+
+describe('next range (rule 7: who else is searching, for the app; never a rule of matching)', () => {
+  it('alone in the queue: null (nobody to meet)', () => {
+    const { add, queue } = queueOf();
+    add('ana', 1200);
+    expect(queue.nextRange('ana')).toBeNull();
+    // Not in the queue at all: null too.
+    expect(queue.nextRange('nobody')).toBeNull();
+  });
+
+  it('the narrowest D6 range that covers the nearest player, for both', () => {
+    const { add, queue } = queueOf();
+    add('ana', 1200);
+    add('ben', 1330);
+    expect([queue.nextRange('ana'), queue.nextRange('ben')]).toEqual([150, 150]);
+    add('ben', 1351); // replaces: 151 away
+    expect([queue.nextRange('ana'), queue.nextRange('ben')]).toEqual([175, 175]);
+  });
+
+  it('a player already within the range: the range they are covered at (≤ the current one)', () => {
+    const { add, queue } = queueOf();
+    add('ana', 1200, { at: T0 - 20 * S });
+    add('ben', 1220);
+    expect(queue.nextRange('ana')).toBe(50);
+    expect(queue.nextRange('ana')).toBeLessThanOrEqual(rangeOf(queue.get('ana')!, T0));
+  });
+
+  it('a block, either way, hides the two from each other (and says nothing of it)', () => {
+    for (const blocks of [{ ana: ['ben'] }, { ben: ['ana'] }] as Record<string, string[]>[]) {
+      const { add, queue } = queueOf();
+      add('ana', 1200, { blocked: blocks.ana ?? [] });
+      add('ben', 1210, { blocked: blocks.ben ?? [] });
+      expect([queue.nextRange('ana'), queue.nextRange('ben')]).toEqual([null, null]);
+      add('cy', 1300);
+      expect([queue.nextRange('ana'), queue.nextRange('ben'), queue.nextRange('cy')]).toEqual([
+        100, 100, 100,
+      ]);
+    }
+  });
+
+  it('a recent opponent does not count while a new one is around; alone with them, the 80% reset lets them in', () => {
+    const { add, queue } = queueOf();
+    add('ana', 1200, { opponents: met('rex') });
+    add('rex', 1205);
+    add('neo', 1450);
+    // As the matcher sees it: Rex is recent for Ana (1 of the 2 she could meet), Neo is new.
+    expect(recentMap(queue.list()).get('ana')).toEqual(new Set(['rex']));
+    expect(queue.nextRange('ana')).toBe(250);
+    expect(queue.nextRange('rex')).toBe(250); // Neo, 245 away
+    queue.remove('neo');
+    // Rex is all Ana could meet now: the history starts over, and he is 5 away.
+    expect(queue.nextRange('ana')).toBe(50);
+    expect(queue.nextRange('rex')).toBe(50);
+  });
+
+  it('out of reach (beyond ±300 for either): null, until both lift the cap with "keep searching"', () => {
+    const both = queueOf();
+    both.add('ana', 1200);
+    both.add('ben', 1600);
+    expect(both.queue.nextRange('ana')).toBeNull();
+
+    const extended = queueOf();
+    extended.add('ana', 1200, { extended: true });
+    extended.add('ben', 1600, { extended: true });
+    expect([extended.queue.nextRange('ana'), extended.queue.nextRange('ben')]).toEqual([400, 400]);
+
+    // Only Ana kept searching: Ben's cap still keeps them apart.
+    const one = queueOf();
+    one.add('ana', 1200, { extended: true });
+    one.add('ben', 1600);
+    expect([one.queue.nextRange('ana'), one.queue.nextRange('ben')]).toEqual([null, null]);
+  });
+
+  it('is clamped to the cap: a player 290 away needs ±300', () => {
+    const { add, queue } = queueOf();
+    add('ana', 1200);
+    add('ben', 1490);
+    expect(queue.nextRange('ana')).toBe(300);
+  });
+
+  it('a table of 3: two others needed (the farther one counts); 4: three', () => {
+    const three = queueOf(3);
+    three.add('ana', 1200);
+    three.add('ben', 1230);
+    expect(three.queue.nextRange('ana')).toBeNull();
+    three.add('cy', 1320);
+    expect(three.queue.nextRange('ana')).toBe(125);
+
+    const four = queueOf(4);
+    four.add('ana', 1200);
+    four.add('ben', 1200);
+    four.add('cy', 1200);
+    expect(four.queue.nextRange('ana')).toBeNull();
+    four.add('dee', 1260);
+    expect(four.queue.nextRange('ana')).toBe(75);
+  });
+
+  it('MatchQueue: follows every change of the queue (add, remove, a match), and not the time', () => {
+    const { add, queue, round } = queueOf();
+    add('ana', 1200);
+    expect(queue.nextRange('ana')).toBeNull();
+    add('far', 1600);
+    expect(queue.nextRange('ana')).toBeNull();
+    add('ben', 1400);
+    expect(queue.nextRange('ana')).toBe(200);
+    expect(round(T0 + 10 * S).groups).toEqual([]); // nothing changed: the same answer later
+    expect(queue.nextRange('ana')).toBe(200);
+    queue.remove('ben');
+    expect(queue.nextRange('ana')).toBeNull();
+    add('cy', 1210);
+    add('dee', 1395);
+    expect(queue.nextRange('dee')).toBe(200); // Ana, 195 away (Cy, 185 away, is nearer for her)
+    expect(round(T0 + 10 * S).groups).toEqual([['ana', 'cy']]);
+    // Ana and Cy left with their match: Dee has only Far (205 away) now.
+    expect(queue.nextRange('dee')).toBe(225);
+    expect(queue.nextRange('ana')).toBeNull();
+  });
+
+  it('nextRangeOf: a ticket that just timed out, against the tickets still waiting', () => {
+    const { add, queue } = queueOf();
+    add('ana', 1200, { at: T0 - 60 * S });
+    add('ben', 1550);
+    const r = queue.tick(T0);
+    expect(r.timedOut.map((t) => t.userId)).toEqual(['ana']);
+    const ana = r.timedOut[0]!;
+    expect(queue.nextRangeOf(ana)).toBeNull(); // Ben is 350 away
+    add('cy', 1290);
+    expect(queue.nextRangeOf(ana)).toBe(100);
+    // Ana is not back in the queue for it.
+    expect(queue.get('ana')).toBeUndefined();
+  });
+
+  it('null is exact: a ticket told "nobody" is never in a group, whatever the time (random queues)', () => {
+    const rng = createRng(20261015);
+    const pick = (n: number) => Math.floor(rng.next() * n);
+    let nulls = 0;
+    let numbers = 0;
+    for (let trial = 0; trial < 60; trial++) {
+      const size = 2 + (trial % 3);
+      const { queue, add } = queueOf(size);
+      const players = 2 + pick(12);
+      for (let i = 0; i < players; i++) {
+        const opponents = pick(3) === 0 ? met(`p${pick(players)}`) : [];
+        const blocked = pick(4) === 0 ? [`p${pick(players)}`] : [];
+        add(`p${i}`, 900 + pick(900), {
+          at: T0 - pick(60) * S,
+          opponents,
+          blocked,
+          extended: pick(6) === 0,
+        });
+      }
+      const tickets = queue.list();
+      const ranges = nextRanges(tickets, size);
+      for (const t of tickets) expect(queue.nextRange(t.userId)).toBe(ranges.get(t.userId));
+      // Far in the future every range is at its widest.
+      for (const later of [T0, T0 + 30 * S, T0 + 600 * S]) {
+        for (const g of matchTick(tickets, size, later).groups)
+          for (const t of g.tickets) expect(ranges.get(t.userId)).not.toBeNull();
+      }
+      for (const v of ranges.values())
+        if (v === null) nulls++;
+        else numbers++;
+    }
+    expect(nulls).toBeGreaterThan(0);
+    expect(numbers).toBeGreaterThan(0);
   });
 });

@@ -1,0 +1,436 @@
+{
+  "item": "Connection grace period in online games vs real players (soft \"marked, game goes on\" phase before the existing connection-problem UI; the offline player plays on locally; on return, a cell someone else took meanwhile is lost by the one who was offline)",
+  "summary": "Today a dropped socket goes straight to the hard phase. Within 3–4.5 s the server's heartbeat or the socket close triggers GameRoom.onDrop, which calls engine disconnect. That emits playerDisconnected with graceEndsAt = now + 15 s, freezes a 2-player game (gamePaused) or releases the lock in a 3–4 player game, and everyone at once sees the connection UIs (\"היריב מתנתק… Reconnecting... 15\" / \"החיבור שלך אבד\", with the board locked). RemoteGameHost.act refuses every action with 'disconnected' while not live. Moshe wants a soft phase first (default 10 s, configurable): the player is only marked as without connection, everyone, including the offline player, keeps playing, and nobody sees connection messages. Only after the soft phase does today's hard phase (15 s, freeze, banners, abandonment) start. In ranked games the phone has no solution, so moves made offline cannot be checked locally. The offline phone therefore keeps a local lock and a queue of digit moves shown as \"waiting\", and sends them as a new `offlineMove` action on return. The engine applies each one at arrival time: if the cell is no longer free for him (filled, locked by someone else, digit already tried or complete), his move is dropped with no penalty and he sees he lost it; otherwise it is scored like any move. Everything is engine rules (pure, tested), server-authoritative and additive on the wire.",
+  "rootCauses": [],
+  "design": "0. NUMBERS (all config; new decision D42, or the next free D-number)\n- rules.softGraceMs = 10_000 (new; all modes; 0 = off = exactly today's behaviour). This is the soft phase: the player is marked, the game goes on, no messages.\n- rules.graceMs = 15_000 (unchanged, D4). It now starts when the soft phase ends. Abandonment is therefore 25 s after the server noticed the drop (about 28–30 s after airplane mode; heartbeat detection is 3–4.5 s). The original \"Reconnecting... 15\" keeps its 15.\n- rules.offlineMovesMax = 8: moves a returning player may send.\n- rules.offlineMovesWindowMs = 5_000: how long after playerReconnected they are accepted (they are sent at once; this covers the round trip).\n- rules.interfereSoftOffline = false: no interference on a soft-offline player. Same as the existing rule for a disconnected player (§7.2). Protects the sender's points.\n- Gate rate limit: offlineMove {limit: 8, windowMs: 1000}.\n- RemoteHostOptions: defaultSoftGraceMs = 10_000 (used before the game's rules are known); answerTimeoutMs = 2_500 (see 4.3).\n- Design token: color.status.unstable = #ffcf3f (the existing warning colour).\n\n1. ENGINE (packages/engine; pure, clock injected)\n1.1 rules.ts\n- Add the 4 fields with doc comments and defaults in defaultRules. Header: list D42.\n\n1.2 types.ts\n- PlayerState gets:\n  - `softEndsAt: number|null`: connection lost, the game goes on as usual; the hard phase starts at this time.\n  - `offlineWindow: {until:number; left:number}|null`: offline moves are accepted until `until`, at most `left` more.\n- SystemAction disconnect becomes `{type:'disconnect'; playerId; soft?: boolean}`.\n  - soft true = the connection dropped (not a goodbye). The default stays HARD, so every existing engine test keeps its meaning.\n- New PlayerAction `{type:'offlineMove'; cell: CellIndex; digit: Digit; thinkMs: number}`. It is automatically a ClientAction.\n- New RejectReason 'offlineClosed'.\n- New event `{type:'playerConnectionLost'; playerId; softEndsAt}`.\n- placedCorrect and placedWrong get an optional `offline?: true`.\n\n1.3 engine.ts\n- disconnect(tx, p, now, soft):\n  - If `p.softEndsAt !== null`: when soft, reject 'alreadyDisconnected'; when not soft, call goHard(now). This is a consented leave hardening a soft drop.\n  - If `!p.connected`: reject 'alreadyDisconnected'.\n  - If `soft && rules.softGraceMs > 0`: emit playerConnectionLost{softEndsAt: now + softGraceMs} and nothing else. No freeze, no release; the soft player's lock and every timer keep running and may time out as usual.\n  - Otherwise goHard(now). goHard is today's body extracted: playerDisconnected{graceEndsAt: at + graceMs}, then gamePaused when ≤ freezeUpToPlayers are still in the game, else release 'disconnect' and repairTurn.\n- New due kind 'softEnd':\n  - Collected while running or paused, for active players with softEndsAt !== null. Not frozen by a pause, like the grace.\n  - DUE_ORDER: interferenceEnd 0, grace 1, softEnd 2, lockExpire 3, turnExpire 4.\n  - Handler: goHard(at = softEndsAt). So graceEndsAt = softEndsAt + graceMs.\n- reconnect: allowed when `!p.connected || p.softEndsAt !== null`, else 'alreadyConnected'. Emits playerReconnected, then resumeIfClear and repairTurn as today.\n- playerAction:\n  - After the existing `!me.connected` check, add `if (me.softEndsAt !== null) reject('disconnected')`. Defensive: the room always reconnects before any message.\n  - Exception: offlineMove is checked as below.\n- interfere: `if (target.softEndsAt !== null && !rules.interfereSoftOffline) reject('targetDisconnected')`.\n- nextTurnPlayer ('turns' model only): also requires softEndsAt === null. A turn already held runs out as usual.\n- Refactor the 'place' body into placeDigit(tx, meId, lock, digit, now, offline?: {thinkMs}). The 'place' path is unchanged.\n- case 'offlineMove'. All checks come before the first emit, to keep the \"a refused action leaves no trace\" invariant:\n  1. paused → 'paused'.\n  2. turnModel 'turns' → 'notYourTurn'.\n  3. `!me.offlineWindow || now > until || left <= 0` → 'offlineClosed'.\n  4. Bad cell → 'badCell'; bad digit → 'badDigit'.\n  5. `grid[cell] !== 0` → 'cellFilled'.\n  6. Locked by another player → 'cellTaken'.\n  7. Digit already tried there (D12 rule) → 'digitTried'.\n  8. Nine of the digit on the board → 'digitComplete'.\n  - Then, if I don't hold this cell: release my other lock with 'switch' if I have one, then emit cellLocked as select does (stopped while I'm under interference). My own re-lock cooldown is ignored here.\n  - Then placeDigit with offline {thinkMs: clamp(action.thinkMs, 0, rules.thinkTimeMs)}. This gives placedCorrect (points on the board as it is now; thinkMs = the clamped claim) or placedWrong (normal penalty, release per D3), both with `offline: true`. The last cell ends the game (boardComplete).\n- Export `abandonmentAt(state, playerId): number|null`. It returns graceEndsAt, else softEndsAt + graceMs, else null.\n\n1.4 evolve.ts\n- initialState: softEndsAt = null, offlineWindow = null.\n- playerConnectionLost: sets softEndsAt.\n- playerDisconnected: also sets softEndsAt = null.\n- playerReconnected: sets softEndsAt = null and offlineWindow = {until: e.t + offlineMovesWindowMs, left: offlineMovesMax}, or null when the max is 0.\n- placed* with offline: offlineWindow.left--.\n- playerAbandoned / playerSurrendered: clear both fields.\n- gameOver: clear softEndsAt and offlineWindow for everyone.\n\n1.5 view.ts\n- PlayerView gets `softEndsAt: number|null`.\n- interference targets:\n  - A target with softEndsAt !== null (and the rule off) gets blockedBy 'disconnected'.\n  - When I am soft (`me.softEndsAt !== null`), every target that would otherwise be available or 'points' gets 'notRunning'. You can't send while offline.\n\n1.6 NEW packages/engine/src/game/offline.ts (pure helpers for the phone's local play; exported from game/index.ts)\n- Types:\n  - `OfflineMove {cell; digit; thinkMs}`\n  - `LocalLock {cell; lockedAt; expiresAt}` (server clock)\n  - `OfflinePlay {softEndsAt; lock: LocalLock|null; queued: readonly OfflineMove[]}`\n- offlinePlayable(state, me): status running, turnModel 'simultaneous', me active, `(rules.softGraceMs ?? 0) > 0 && (rules.offlineMovesMax ?? 0) > 0`. Undefined fields mean an older server, so local play stays off.\n- withOfflinePlay(state, me, play, now): a GameState copy used only for display and the local checks; never evolved further. It changes only:\n  - me.softEndsAt = play.softEndsAt;\n  - my lock = play.lock (or none), with remainingMs = thinkTimeMs;\n  - other players' locks with expiresAt !== null && expiresAt <= now are removed (they ran out or were placed: unknown offline);\n  - stopped locks stay.\n- offlineSelectRefusal(state, me, play, cell, now) returns RejectReason|null:\n  - 'paused' / 'notActive' / 'notYourTurn' / 'badCell';\n  - 'cellFilled' (grid filled, or a queued move on that cell);\n  - 'cellTaken' (another player's still-running or stopped lock in the overlaid state);\n  - 'cooldown' (my cooldown still running at now);\n  - 'disconnected' (now ≥ softEndsAt, queue already at offlineMovesMax, or not offlinePlayable).\n- offlinePlaceRefusal(state, me, play, cell, digit): 'noLock' / 'notLockedCell' / 'badDigit' / 'digitTried' (D12 rule) / 'digitComplete' (grid count plus queued digits ≥ 9).\n- unsettledOfflineMoves(state, me, moves): drops moves the state already settles, i.e. the cell holds that digit with owner = my seat, or wrong[cell] has {digit, me}. Moves on cells others filled are kept, so the server rejects them and the player sees \"lost\".\n\n2. PROTOCOL (packages/protocol)\n- index.ts:\n  - CLIENT_MESSAGE_TYPES gets 'offlineMove'. ClientMessage picks it up automatically through ClientAction.\n  - Update the GameHost and ClientMessage docs.\n  - PROTOCOL_VERSION stays 1 because the change is additive: new optional event fields, one new event, one new client message. The app enables offline play only when the snapshot's rules.softGraceMs > 0.\n  - Behaviour across versions: an old server behaves as today. An old app ignores playerConnectionLost and softEndsAt.\n- room.ts: GameRoomRuleOverrides gets 'softGraceMs'.\n\n3. SERVER (apps/server)\n- game/gate.ts:\n  - SHAPES.offlineMove = strictObject {type?, clientSeq, cell: int, digit: int, thinkMs: int 0..600_000}, plus parseClientMessage support.\n  - DEFAULT_MESSAGE_LIMITS.offlineMove = {limit: 8, windowMs: 1000}.\n- game/options.ts: rulesSchema gets softGraceMs ms(0, 60_000).\n- game/serverGame.ts: `disconnect(playerId, {soft = false} = {})` passes soft through to the engine.\n- rooms/GameRoom.ts:\n  - onDrop: `game.disconnect(id, {soft: true})`. Hold the reconnection for (abandonmentAt(state, id) − now + RECONNECT_SLACK_MS) / 1000 seconds, which covers soft + grace.\n  - onLeave: `soft: code !== CloseCode.CONSENTED`. A deliberate leave (Home or leave) stays hard at once, as today. A socket that died while reconnecting is soft.\n  - launch(): seats with `away` disconnect soft; seats with sessionId === null (left) disconnect hard.\n  - holdSeatBeforeGame: also adds rules.softGraceMs.\n  - offlineMove needs no special code: it goes through the normal action path, and a refusal reaches the sender only as `rejected{clientSeq, reason}`.\n  - Metrics, counted in onGameUpdate from events (keep a per-room Set of hard-disconnected players): playerConnectionLost → soft; playerDisconnected → hard; playerReconnected → backInSoft or backHard. In onClientMessage, count offlineMove as applied or lost[reason].\n  - Add these counts to the \"[game X] over …\" summary line.\n  - Update the header comment.\n- game/metrics.ts: GameMetricsReport gets `connections {soft, backInSoft, hard}` and `offlineMoves {applied, lost: Partial<Record<RejectReason, number>>}`.\n- app.ts: update the HEARTBEAT comment. 5 s of airplane mode now shows only the mark; about 14 s shows the freeze; about 30 s ends in abandonment. Optionally note that the heartbeat could be relaxed later (DECISIONS 3.3).\n- testing/fakeClient:\n  - client.ts: reconnect deadline = softGraceMs + graceMs + 1000; log line for playerConnectionLost.\n  - cli.ts: `--soft-grace <s>`.\n  - mirror.ts: no logic change.\n\n4. MOBILE (apps/mobile). No game logic in the UI: the host and the engine helpers decide, the screens draw.\n4.1 net/metrics.ts\n- answers() gets case 'offlineMove': placedCorrect or placedWrong by me on that cell.\n- New NetMetrics.unanswered(): ClientAction[], the in-flight actions in send order. Must be read before dropped() clears them.\n\n4.2 NEW net/offlinePlay.ts\n- A small pure class holding the offline state: since, softEndsAt, local lock, and queue entries `{move, clientSeq: number|null}`.\n- Built on the engine helpers, with the clock injected.\n- Methods: start, select, release, place, expire(now), overlay(state), entriesToSend(state), markSent, answered(event), rejected(clientSeq), resetUnanswered.\n\n4.3 net/remoteGameHost.ts\n- ReconnectInfo gets softEndsAt (lostAt + softGraceMs, server clock) and graceEndsAt (lostAt + softGraceMs + graceMs).\n- deadline = now + softGraceMs + graceMs + serverNoticeMs + reconnectSlackMs. softGraceMs = state.config.rules.softGraceMs ?? (state ? 0 : defaultSoftGraceMs).\n- OnlineInfo gets:\n  - `offlinePlay: {since; softEndsAt; playable} | null` (server clock; set while the connection is lost);\n  - `queuedMoves: readonly {cell; digit}[]` (moves made offline until the server answers each).\n- lose(), on the first loss, when offlinePlayable(last state):\n  - start offline play;\n  - the local lock = my server lock (lockedAt / expiresAt), or else the unanswered select's cell if offlineSelectRefusal allows it;\n  - the unanswered place (from metrics.unanswered()) becomes the first queued move, with thinkMs measured from the lock.\n- act() while not live and offline play is active, the soft window still runs (serverNow() < softEndsAt) and the app is not backgrounded:\n  - select: a refusal emits 'rejected' (the existing 'taken' / 'refused' effects work). Otherwise set the local lock (expiresAt = serverNow() + thinkTimeMs) and emit {kind:'events', events:[], view}.\n  - release: drop the local lock and emit.\n  - place: a refusal emits 'rejected'. Otherwise queue {cell, digit, thinkMs = phone-time now − lock time}, drop the local lock, notifyOnline and emit.\n  - interfere, react, surrender: 'rejected' 'disconnected', as today.\n  - After softEndsAt everything is 'disconnected', as today; the hard UI blocks the board anyway.\n- Offline timers:\n  - one scheduler timer re-emits the view at the earliest of: my local lock's expiry (drop it), another lock's expiry, and softEndsAt (drop the local lock, keep the queue);\n  - all times are computed from the clock, not by counting ticks (iOS suspends JS timers).\n- getView(): `toView(play ? withOfflinePlay(state, me, play, serverNow()) : state, me, serverNow())`.\n- onSnapshot:\n  - reachedHard = play && serverNow() ≥ softEndsAt, or the snapshot shows me hard (!connected). Set resyncedAt (the \"back, all synced\" banner) only when reachedHard. A soft-only return shows no banner.\n  - End the offline play.\n  - If the snapshot is running (or paused only by me) and I'm active: prune with unsettledOfflineMoves, then send each unsent entry as `offlineMove{cell, digit, thinkMs}` with ++clientSeq in queue order.\n  - If a local lock without a digit existed and the cell is free in the snapshot and not already mine: send a plain `select` (decision 9).\n  - If the game is over or I'm out: clear the queue silently.\n- onEvents: placedCorrect or placedWrong by me with `offline` on a queued cell removes that entry.\n- 'rejected' for a queued entry's clientSeq: remove the entry and emit `{kind:'rejected', action: {type:'offlineMove', …}, reason}`.\n- A new loss during the flush returns sent but unanswered entries to unsent. They are resent after the next snapshot, pruned again. Safe: a correct digit can't be placed twice, and a wrong one can't be tried twice.\n- Fast detection: after each send, if nothing at all was heard from the server for answerTimeoutMs (2.5 s) → dropConnection(). A false positive now costs only about 1 s of offline play.\n- checkInSync: \"current\" also requires me.softEndsAt === null.\n- trackSafely('reconnect') gets `phase: 'soft'|'hard'` and `queued: n`.\n- shutdown(): clears the offline play and the queue.\n- Update the header comment.\n\n4.4 net/testing/fakeServer.ts\n- Drops become soft when rules.softGraceMs > 0, like GameRoom.\n- offlineMove is handled like any action.\n- Add helpers to pass the soft end.\n\n4.5 game/onlineSession.ts: SessionConnection gets `softGraceMs: number|null` (rules.softGraceMs ?? 0; null before the game).\n\n4.6 game/effects.ts\n- A rejected offlineMove becomes `{kind: 'offlineLost', cell, digit, reason}`.\n- correct and wrong effects carry `offline` (optional, for the live text).\n\n4.7 screens/game/connection/connectionModel.ts\n- ConnectionStatus 'reconnecting' and 'resyncing' get `softEndsAt?: number|null`.\n- ConnectionModelOptions gets `softGraceMs`.\n- New model `{kind:'selfOffline'; softEndsAt; secondsLeft}`. It is returned at step 4 when the status is reconnecting, resyncing, or connecting-during-the-game, softEndsAt != null, now < softEndsAt, I'm active and the game is not over.\n- blocksInput('selfOffline') = false.\n- Hard countdown: endsAt = status.graceEndsAt ?? me.graceEndsAt ?? lostAt + softGraceMs + graceMs.\n- opponentLeft graceSeconds = round((softGraceMs + graceMs) / 1000).\n- An opponent who is soft gives no model: the game runs and only the card shows it.\n\n4.8 online/connectionStatus.ts: map info.reconnect.softEndsAt and graceEndsAt.\n\n4.9 connection/ConnectionLayer.tsx: for 'selfOffline', render only an Announcer, once (\"connection.offline.announce\"), and no overlay. Export from index.ts.\n\n4.10 screens/game/GameScreen.tsx\n- boardModel option `queued: online?.queuedMoves`.\n- connectionModel option softGraceMs.\n- Effect 'offlineLost': deny(cell) shake, plus a toast (variant warning), plus announce. Use live.offlineLostTaken for cellTaken or cellFilled, else live.offlineLost. Wrap cell names in ltr().\n- Announce live.queued when queuedMoves grows.\n- When connection.kind becomes 'selfOffline', close the surrender dialog, the arsenal and the reactions picker.\n- Update the header comment.\n\n4.11 components/board\n- boardModel.ts: new CellKind 'queued' (digit set, player = me, not interactive). Precedence: filled > queued > lock > pending > empty.\n- labels.ts: cell.queued.\n- Cell.tsx: the queued look is the pending ring at 50% (#9), the digit in players[0].digit, and a small wifiOff glyph at top-end. Static, no pulse. Under Reduced Motion it appears with no transition.\n\n4.12 components/player\n- cardModel.ts:\n  - Presence gets 'unstable' (connected && softEndsAt !== null).\n  - The order is: left > reconnecting > unstable > online.\n  - mine.canSurrender and mine.reactionReady are false while I'm soft.\n- wording.ts: the card label says the presence (\"ללא חיבור\") for me and for others when it is 'unstable'.\n- Badges.tsx: ReconnectPill `seconds?: number|null`; without seconds it shows the icon only.\n- PlayerCard.tsx and PlayerCardCompact.tsx:\n  - an opponent who is 'unstable' gets the icon-only pill in the ⚡ slot;\n  - `inactive` only for out, reconnecting or left, so the avatar is NOT dimmed in the soft phase.\n- Avatar.tsx: presence 'unstable' draws the dot in color.status.unstable.\n\n4.13 theme\n- docs/design/tokens.json: color.status.unstable.\n- Run `npm run tokens -w @sudoku-fight/mobile` to regenerate tokens.generated.ts.\n\n4.14 screens/replay\n- replayModel.ts:\n  - StepKind 'offline': playerConnectionLost is its own step;\n  - ReplayStep.offline for placed* with offline;\n  - roleOf and KIND_OF updated.\n- ReplayScreen.tsx: narration.offline, plus narration.offlineSuffix appended to correct and wrong lines.\n\n4.15 avatars/reactions.ts: no face for playerConnectionLost; the 'disconnected' face stays for the hard phase. Add a test.\n\n4.16 i18n, he and en, all through t():\n- player.json: presence.unstable \"ללא חיבור\" / \"No connection\".\n- game.json:\n  - connection.offline.announce: \"אין חיבור. אפשר להמשיך לשחק, והמהלכים יישלחו כשהחיבור יחזור\" / \"No connection. Keep playing; your moves are sent when it's back\".\n  - live.queued: \"{{cell}}: {{digit}} ממתין לחיבור\" / \"{{cell}}: {{digit}} waiting for the connection\".\n  - live.offlineLostTaken: \"{{cell}} נתפסה בזמן שלא היה לך חיבור · בלי קנס\" / \"{{cell}} was taken while you were offline · no penalty\".\n  - live.offlineLost: \"המהלך ב־{{cell}} לא נספר · בלי קנס\" / \"Your move on {{cell}} did not count · no penalty\".\n- board.json: cell.queued: \"{{digit}}, ממתין לחיבור\" / \"{{digit}}, waiting for the connection\".\n- replay.json:\n  - narration.offline: \"{{name}} · בלי חיבור\" / \"{{name}} · connection lost\";\n  - narration.offlineSuffix: \"נשלח כשהחיבור חזר\" / \"sent when back online\".\n\n5. TIMELINE (2 players; A's network dies at T)\n- A's phone notices at T+δc:\n  - a socket error: about 0 s;\n  - an unanswered action: 2.5 s;\n  - silence: 6–8 s.\n  - From then on, A's board stays live:\n    - a tap locks the cell locally, with a countdown;\n    - a digit is queued and shown as waiting;\n    - A's card is marked;\n    - no banner.\n- The server notices at T+δs (socket close: about 0 s; heartbeat: 3–4.5 s):\n  - It emits playerConnectionLost{softEndsAt = T+δs+10 s}.\n  - B sees A's mark (amber dot, wifi icon instead of ⚡). The game goes on.\n  - B can take any cell, including one A holds locally.\n  - A's server lock keeps running and may time out.\n- A is back at T+8 s:\n  - The server sends the snapshot, then playerReconnected (opening the 5 s window).\n  - A's phone shows no banner and sends the queued moves in order.\n  - Each move is either applied, with normal points or penalty (cellLocked + placed* with offline:true), or lost with no penalty (rejected cellTaken / cellFilled / digitTried / digitComplete): \"D5 נתפסה… · בלי קנס\".\n- A not back by softEndsAt:\n  - The server's softEnd timer emits playerDisconnected{graceEndsAt = softEndsAt + 15 s} and gamePaused (in 3–4 players: the lock is released instead).\n  - B sees today's \"היריב מתנתק… Reconnecting... 15\".\n  - At its own soft end, A's phone shows Self-Reconnecting (board locked, countdown to lostAt + 25 s). The local lock is dropped; the queue is kept and visible under the overlay.\n- Back in the hard phase: snapshot, then playerReconnected and gameResumed, then the queue is flushed, then \"חזרת למשחק · הכל סונכרן\".\n- Not back by graceEndsAt: abandonment, as today. A's queue is discarded.\n\n6. EDGE CASES\n- Game over meanwhile (B completed the board or surrendered): the snapshot is 'over', so the queue is dropped silently and the results or \"opponent left\" screen shows.\n- Both players offline (a server-side blip): both are soft, the game runs with nobody acting, and on return the first queued move to arrive wins.\n- Previously, every short blip froze the game; now nothing freezes for 10 s. This also weakens the \"toggle the network to freeze forever\" abuse noted in DECISIONS 2.11.\n- A return while the other player is also away (still paused): moves are rejected 'paused' and lost. Rare; accepted.\n- The 'turns' model (D1 alternative): no offline play (offlinePlayable is false), so the board refuses with 'disconnected'. The soft player is skipped when the turn moves on.\n- Background: the server sees a non-consented drop, so the soft phase applies; the opponent sees only the mark for 10 s. Coming back to the foreground within 10 s shows no overlay. There is no local play while backgrounded.\n- Rejoin by code within the soft window (token refused): onJoin, welcomeBack, reconnect, and the window opens. The new session's clientSeq count is fine because gaps are allowed.\n- A queued move whose answer was lost: the snapshot prune catches it, so a successful move never shows as \"lost\".\n\n7. BOTS AND LOCAL GAMES\n- Unaffected. LocalGameHost never sends a soft disconnect, and offlineMove is refused 'offlineClosed' without a return.\n- Bots read view.interference, where soft targets are blocked.\n\n8. TELEMETRY\n- App: the `reconnect` event gets `phase` ('soft'|'hard') and `queued` (props are open in protocol telemetry.ts; no server change).\n- Server: GameMetrics counts (/dev/metrics) and the per-game summary log line: soft drops, returns within soft, hard drops, offline moves applied and lost by reason.\n- The event log stores playerConnectionLost and offline:true, so the replay and admin show them.\n\n9. CLOCK SKEW AND RECONNECTION\n- The engine's softEndsAt and graceEndsAt are server time and authoritative.\n- The phone anchors its soft window at its own detection moment (lostAt, server clock via ClockSync). Its hard UI may therefore appear a few seconds before or after the server's freeze; the countdown is an estimate, and the snapshot corrects everything.\n- thinkMs is a difference of phone times, so it has no skew. The server trusts nothing else from the client, and clamps thinkMs.\n- The Colyseus seat is held for soft + grace + slack. The client keeps trying until soft + grace + serverNotice + slack.",
+  "files": [
+    {
+      "path": "packages/engine/src/game/rules.ts",
+      "change": "Add Rules.softGraceMs (10_000), offlineMovesMax (8), offlineMovesWindowMs (5_000) and interfereSoftOffline (false), with docs and defaults in defaultRules. Header mentions D42."
+    },
+    {
+      "path": "packages/engine/src/game/types.ts",
+      "change": "PlayerState gets softEndsAt and offlineWindow. SystemAction disconnect gets soft?: boolean. New PlayerAction 'offlineMove' {cell, digit, thinkMs}. New RejectReason 'offlineClosed'. New event playerConnectionLost {playerId, softEndsAt}. placedCorrect and placedWrong get offline?: true."
+    },
+    {
+      "path": "packages/engine/src/game/engine.ts",
+      "change": "disconnect(soft) with the soft phase. goHard() extracted from today's body. New due 'softEnd' (DUE_ORDER renumbered). reconnect accepts soft players. playerAction refuses soft players ('disconnected'). interfere refuses soft targets unless the rule allows. nextTurnPlayer skips soft players. placeDigit refactored out of 'place'. New 'offlineMove' handler (all checks first; lock if needed; ignores own cooldown; clamped thinkMs; offline:true). Export abandonmentAt()."
+    },
+    {
+      "path": "packages/engine/src/game/evolve.ts",
+      "change": "initialState: new fields null. Handle playerConnectionLost. playerDisconnected clears softEndsAt. playerReconnected clears softEndsAt and opens offlineWindow. placed* with offline decrements the window. abandon/surrender/gameOver clear the fields."
+    },
+    {
+      "path": "packages/engine/src/game/view.ts",
+      "change": "PlayerView.softEndsAt. A soft target gets blockedBy 'disconnected' (rule off). When I am soft, every sendable target becomes 'notRunning'."
+    },
+    {
+      "path": "packages/engine/src/game/offline.ts",
+      "change": "NEW. offlinePlayable, withOfflinePlay (display/check overlay), offlineSelectRefusal, offlinePlaceRefusal, unsettledOfflineMoves, and the types OfflineMove, LocalLock, OfflinePlay."
+    },
+    {
+      "path": "packages/engine/src/game/index.ts",
+      "change": "export * from './offline'."
+    },
+    {
+      "path": "packages/engine/src/testing/game.ts",
+      "change": "Helpers: a disconnect helper with soft, and an offlineMove helper (playerAct)."
+    },
+    {
+      "path": "packages/protocol/src/index.ts",
+      "change": "CLIENT_MESSAGE_TYPES gets 'offlineMove'. Docs for GameHost and ClientMessage (RemoteGameHost may queue cell moves while offline). PROTOCOL_VERSION stays 1, with a comment on the additive change."
+    },
+    {
+      "path": "packages/protocol/src/room.ts",
+      "change": "GameRoomRuleOverrides gets 'softGraceMs'."
+    },
+    {
+      "path": "apps/server/src/game/gate.ts",
+      "change": "SHAPES.offlineMove (strict: clientSeq, cell int, digit int, thinkMs int 0..600000). parseClientMessage case. DEFAULT_MESSAGE_LIMITS.offlineMove {limit 8, windowMs 1000}."
+    },
+    {
+      "path": "apps/server/src/game/options.ts",
+      "change": "rulesSchema gets softGraceMs ms(0, 60_000)."
+    },
+    {
+      "path": "apps/server/src/game/serverGame.ts",
+      "change": "disconnect(playerId, { soft = false } = {}). Doc comment."
+    },
+    {
+      "path": "apps/server/src/rooms/GameRoom.ts",
+      "change": "onDrop: soft disconnect, reconnection hold from abandonmentAt + RECONNECT_SLACK_MS. onLeave: soft unless CONSENTED. launch(): away seats soft, left seats hard. holdSeatBeforeGame adds softGraceMs. Metrics for soft/hard/back and offline moves applied/lost. Summary log line. Header comment."
+    },
+    {
+      "path": "apps/server/src/game/metrics.ts",
+      "change": "GameMetricsReport.connections {soft, backInSoft, hard} and offlineMoves {applied, lost by reason}, with methods."
+    },
+    {
+      "path": "apps/server/src/app.ts",
+      "change": "Update the HEARTBEAT comment with the new timings: about 5 s shows the mark only, about 14 s the freeze, about 30 s abandonment."
+    },
+    {
+      "path": "apps/server/src/testing/fakeClient/client.ts",
+      "change": "Reconnect deadline adds softGraceMs. Log line for playerConnectionLost."
+    },
+    {
+      "path": "apps/server/src/testing/fakeClient/cli.ts",
+      "change": "--soft-grace <s> flag sets rules.softGraceMs."
+    },
+    {
+      "path": "apps/server/src/testing/game.ts",
+      "change": "Room helpers pass softGraceMs through, so tests can set 0 or a short value."
+    },
+    {
+      "path": "apps/mobile/src/net/metrics.ts",
+      "change": "answers() case 'offlineMove'. NetMetrics.unanswered() returns the in-flight actions (read before dropped())."
+    },
+    {
+      "path": "apps/mobile/src/net/offlinePlay.ts",
+      "change": "NEW. The local-play state for RemoteGameHost: local lock, queue entries with clientSeq, start/select/release/place/expire/overlay/entriesToSend/markSent/answered/rejected/resetUnanswered, built on the engine helpers."
+    },
+    {
+      "path": "apps/mobile/src/net/remoteGameHost.ts",
+      "change": "Offline play in the soft window: act() routes select/release/place locally, the rest is 'disconnected'. getView() overlay. Timers at lock expiries and softEndsAt. Unanswered select/place carried into offline play. Flush of offlineMove (and a plain select for a held local lock) on the snapshot. Answer and rejection handling for queued moves. resyncedAt only after a hard outage. ReconnectInfo.softEndsAt and graceEndsAt. Deadline adds soft. OnlineInfo.offlinePlay and queuedMoves. answerTimeoutMs fast detection. defaultSoftGraceMs. checkInSync needs softEndsAt null. reconnect telemetry phase and queued. Header doc."
+    },
+    {
+      "path": "apps/mobile/src/net/index.ts",
+      "change": "Export the new types if needed (OfflinePlayInfo, QueuedMove)."
+    },
+    {
+      "path": "apps/mobile/src/net/testing/fakeServer.ts",
+      "change": "Soft drops when rules.softGraceMs > 0, like GameRoom. Handle offlineMove. Helpers to pass the soft end."
+    },
+    {
+      "path": "apps/mobile/src/game/onlineSession.ts",
+      "change": "SessionConnection.softGraceMs getter and OnlineSession.softGraceMs."
+    },
+    {
+      "path": "apps/mobile/src/game/effects.ts",
+      "change": "A rejected offlineMove becomes the 'offlineLost' effect {cell, digit, reason}. correct and wrong effects carry offline."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/connectionModel.ts",
+      "change": "Status gets softEndsAt. Options get softGraceMs. New 'selfOffline' model (non-blocking) inside the soft window. Hard countdown = lostAt + soft + grace. opponentLeft graceSeconds = soft + grace. blocksInput handles selfOffline. Doc header."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/online/connectionStatus.ts",
+      "change": "Map reconnect.softEndsAt and graceEndsAt into ConnectionStatus."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/ConnectionLayer.tsx",
+      "change": "'selfOffline': only a one-time Announcer line, no overlay."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/index.ts",
+      "change": "Export the new model type. Wiring doc mentions softGraceMs."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/GameScreen.tsx",
+      "change": "Pass queuedMoves to boardModel and softGraceMs to connectionModel. Handle 'offlineLost' (deny + warning toast + announce). Announce queued moves. Close the dialog, arsenal and picker on entering selfOffline. Header comment."
+    },
+    {
+      "path": "apps/mobile/src/components/board/boardModel.ts",
+      "change": "New CellKind 'queued' (digit, player me, not interactive) and option queued. Precedence filled > queued > lock > pending > empty."
+    },
+    {
+      "path": "apps/mobile/src/components/board/labels.ts",
+      "change": "Label for 'queued' (cell.queued with the digit)."
+    },
+    {
+      "path": "apps/mobile/src/components/board/Cell.tsx",
+      "change": "Render 'queued': 50% P1 ring, digit in players[0].digit, small wifiOff glyph at top-end. Static; no transition under Reduced Motion."
+    },
+    {
+      "path": "apps/mobile/src/components/player/cardModel.ts",
+      "change": "Presence 'unstable'. mine.canSurrender and reactionReady false while I'm soft."
+    },
+    {
+      "path": "apps/mobile/src/components/player/wording.ts",
+      "change": "Presence text for 'unstable' in the card label (me and others)."
+    },
+    {
+      "path": "apps/mobile/src/components/player/Badges.tsx",
+      "change": "ReconnectPill seconds optional (icon-only variant)."
+    },
+    {
+      "path": "apps/mobile/src/components/player/PlayerCard.tsx",
+      "change": "Icon-only pill in the ⚡ slot for an 'unstable' opponent. Avatar not inactive for 'unstable'."
+    },
+    {
+      "path": "apps/mobile/src/components/player/PlayerCardCompact.tsx",
+      "change": "Same as PlayerCard for 3–4 players."
+    },
+    {
+      "path": "apps/mobile/src/components/player/Avatar.tsx",
+      "change": "Presence dot for 'unstable' in color.status.unstable."
+    },
+    {
+      "path": "docs/design/tokens.json",
+      "change": "color.status.unstable = #ffcf3f, with its source note."
+    },
+    {
+      "path": "apps/mobile/src/theme/tokens.generated.ts",
+      "change": "Regenerated by npm run tokens (not by hand)."
+    },
+    {
+      "path": "apps/mobile/src/screens/replay/replayModel.ts",
+      "change": "StepKind 'offline' for playerConnectionLost (step). ReplayStep.offline for placed* with offline. roleOf and KIND_OF."
+    },
+    {
+      "path": "apps/mobile/src/screens/replay/ReplayScreen.tsx",
+      "change": "narration.offline, plus the offlineSuffix on correct and wrong steps made offline."
+    },
+    {
+      "path": "apps/mobile/src/avatars/reactions.ts",
+      "change": "Explicitly no face for playerConnectionLost (comment). The hard phase keeps 'disconnected'."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/player.json",
+      "change": "presence.unstable \"ללא חיבור\"."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/player.json",
+      "change": "presence.unstable \"No connection\"."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/game.json",
+      "change": "connection.offline.announce, live.queued, live.offlineLostTaken, live.offlineLost."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/game.json",
+      "change": "Same keys in English."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/board.json",
+      "change": "cell.queued."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/board.json",
+      "change": "cell.queued."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/replay.json",
+      "change": "narration.offline and narration.offlineSuffix."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/replay.json",
+      "change": "narration.offline and narration.offlineSuffix."
+    },
+    {
+      "path": "apps/mobile/src/components/dev/BoardSection.tsx",
+      "change": "Optional: show the 'queued' cell state in the design-system screen."
+    },
+    {
+      "path": "apps/mobile/src/components/dev/IdentitySection.tsx",
+      "change": "Optional: show the 'unstable' presence dot."
+    }
+  ],
+  "tests": [
+    "ENGINE packages/engine/src/game/softDisconnect.test.ts (new; or a new describe in connection.test.ts):",
+    "defaultRules has softGraceMs 10000, offlineMovesMax 8, offlineMovesWindowMs 5000 and interfereSoftOffline false in every mode.",
+    "disconnect {soft:true}, 2 players: only playerConnectionLost{softEndsAt: t+10000}. Status stays running; the player stays connected with graceEndsAt null; locks are kept with running timers.",
+    "During soft: the soft player's lock times out as usual; the other player selects and places freely; the soft player's own actions are refused 'disconnected'.",
+    "nextDeadline includes softEndsAt, both running and paused.",
+    "Back before softEndsAt: playerReconnected only, never gamePaused or gameResumed; softEndsAt null; offlineWindow {until t+5000, left 8}.",
+    "Not back, 2 players: at softEndsAt, playerDisconnected{graceEndsAt: softEndsAt+15000} plus gamePaused at that time; abandonment at softEndsAt+15000 and the other player wins.",
+    "Not back, 3–4 players: at softEndsAt, playerDisconnected plus cellReleased 'disconnect'; the game goes on; abandonment 25 s after the drop.",
+    "Reconnecting exactly at softEndsAt is already hard: timers run first, then playerReconnected and gameResumed.",
+    "disconnect without soft (consented leave) is hard at once, as today. soft:true with softGraceMs 0 is hard at once.",
+    "disconnect soft on a soft player is refused 'alreadyDisconnected'; disconnect hard on a soft player hardens it now.",
+    "Interference on a soft target is refused 'targetDisconnected' and the view shows blockedBy 'disconnected'; interfereSoftOffline:true allows it.",
+    "My view while I am soft: every target is 'notRunning'.",
+    "Soft never freezes. resumeIfClear is not blocked by a soft player. freezeIfNeeded after a surrender ignores soft players.",
+    "2 players already frozen by the opponent, then I go soft: my soft timer runs in the pause, I become hard at its end, and the game resumes only when both are back.",
+    "'turns' model: a soft player is skipped when the turn moves on, but a turn already held runs out as usual.",
+    "Surrender or abandonment clears softEndsAt and offlineWindow; gameOver clears them for everyone.",
+    "replay(events) rebuilds softEndsAt and offlineWindow exactly; evolve stays pure (input untouched).",
+    "offlineMove after a return on a free cell: cellLocked then placedCorrect{offline:true, thinkMs clamped}; points scored on the board at arrival.",
+    "offlineMove with a wrong digit: placedWrong{offline:true}, the normal penalty, the cell released (D3).",
+    "offlineMove refused with no events and no penalty: 'cellTaken' (another player's lock), 'cellFilled', 'digitTried', 'digitComplete'. This is the offline player losing the cell.",
+    "offlineMove on a cell I still hold places directly (no extra cellLocked). Holding another cell: that lock is released 'switch' first. My own re-lock cooldown is ignored.",
+    "offlineMove is refused 'offlineClosed' without a return, after offlineMovesWindowMs and after offlineMovesMax moves; a new return opens a fresh window.",
+    "offlineMove thinkMs is clamped to [0, thinkTimeMs] and counted in thinkMsTotal and the fastest award.",
+    "offlineMove is refused 'notYourTurn' in 'turns', 'paused' when paused, 'gameOver' when over. The last cell via offlineMove ends the game (boardComplete). Under interference the lock starts stopped and the digit is still placed.",
+    "abandonmentAt returns graceEndsAt, else softEndsAt+graceMs, else null.",
+    "LocalGameHost: schedules the soft end; a soft dispatch then a reconnect makes no freeze.",
+    "ENGINE packages/engine/src/game/offline.test.ts (new):",
+    "withOfflinePlay marks me, replaces my lock, drops others' expired locks, keeps stopped ones, and is pure.",
+    "offlineSelectRefusal: filled, queued cell, taken, allowed after the other lock expired, cooldown, queue cap, soft over, paused, 'turns', and rules without softGraceMs (old server) giving 'disconnected'.",
+    "offlinePlaceRefusal: noLock, notLockedCell, digitTried under both D12 settings, digitComplete counting queued digits.",
+    "unsettledOfflineMoves drops a move whose digit is on the board as mine or whose wrong try by me is there, and keeps cells filled by others.",
+    "PROTOCOL packages/protocol/src/index.test.ts: CLIENT_MESSAGE_TYPES includes 'offlineMove'.",
+    "SERVER apps/server/src/game/gate.test.ts: offlineMove shape (strict; extra keys refused; negative thinkMs refused), rate limit 8/s, clientSeq dedup.",
+    "SERVER apps/server/src/game/options.test.ts: softGraceMs 0..60000 accepted, out of range refused.",
+    "SERVER apps/server/src/game/serverGame.test.ts: disconnect(id,{soft:true}) passes through; the ManualScheduler fires at softEndsAt and then at the grace end.",
+    "SERVER apps/server/src/game/wire.test.ts: the busy game includes a soft drop and an offline move; playerConnectionLost and placedCorrect{offline:true} stay at most 200 bytes.",
+    "SERVER apps/server/src/game/metrics.test.ts: the new counters in report().",
+    "SERVER apps/server/test/gameRoom.test.ts (new describe 'soft phase', with softGraceMs about 300 ms):",
+    "A drop: the other player gets playerConnectionLost and no gamePaused inside the soft phase; back within it, playerReconnected and never a freeze.",
+    "Not back: playerDisconnected plus gamePaused after soft, abandonment after soft+grace.",
+    "A consented leave is hard at once.",
+    "The reconnection token still works at soft+grace minus ε.",
+    "An offlineMove after a return is applied and broadcast. One on a cell the other took meanwhile is rejected cellTaken to the sender only. One without a return is rejected offlineClosed.",
+    "SERVER existing tests that assert an immediate freeze or abandonment timing need softGraceMs: 0 (or updated timings): gameRoom.test.ts (disconnects; abuse kick 'for the game it dropped'; three players), realtime.e2e.test.ts, remoteHost.contract.test.ts, fourPlayers.e2e.test.ts, ranked.e2e.test.ts, gameRoom.abuse.test.ts, fakeClient cli.test.ts (and --soft-grace parsing).",
+    "SERVER apps/server/test/remoteHost.contract.test.ts (new): a 3 s drop with soft 10 s. The other host never sees 'paused'. The dropped host plays a cell offline (queued) and its move is applied on return. A cell the other took meanwhile comes back as rejected offlineMove.",
+    "MOBILE apps/mobile/src/net/__tests__/offlinePlay.test.ts (new): local lock lifecycle, queue order, markSent/answered/rejected, resetUnanswered after a second drop, prune against a snapshot.",
+    "MOBILE apps/mobile/src/net/__tests__/remoteGameHost.test.ts, new describe 'playing on while offline (D42)':",
+    "A drop sets offlinePlay.softEndsAt = lostAt+soft. select gives a local lock with a countdown and the keypad enabled. place queues (queuedMoves). interfere, react and surrender are refused 'disconnected'.",
+    "Back within soft: no resyncedAt; queued moves go out as offlineMove with increasing clientSeq after the snapshot; answered moves are removed.",
+    "A rejected offlineMove comes back as a 'rejected' update.",
+    "Soft over before the return: the local lock is dropped, moves are kept and sent after the return, and resyncedAt is set.",
+    "Game over meanwhile: the queue is dropped.",
+    "A server without softGraceMs: today's behaviour.",
+    "An unanswered place at the drop becomes a queued move, and is not resent when the snapshot settles it.",
+    "An unanswered select at the drop becomes the local lock.",
+    "answerTimeoutMs: an action unanswered with nothing heard leads to a drop.",
+    "Deadline = soft+grace+notice+slack.",
+    "Background anchors the window at the background time.",
+    "'turns': no local play.",
+    "A local lock without a digit is re-selected on return when the cell is free.",
+    "MOBILE remoteGameHost.test.ts, updates: 'while offline an action is refused here with \"disconnected\"' gets softGraceMs:0; 'gives up when the grace is over' gets a deadline that includes soft.",
+    "MOBILE apps/mobile/src/net/__tests__/metrics.test.ts: answers() for offlineMove; unanswered().",
+    "MOBILE apps/mobile/src/game/__tests__/onlineSession.test.ts: connection.softGraceMs (null before the game).",
+    "MOBILE apps/mobile/src/game/__tests__/effects.test.ts: a rejected offlineMove gives 'offlineLost'.",
+    "MOBILE apps/mobile/src/screens/game/connection/__tests__/connectionModel.test.ts:",
+    "Reconnecting within soft gives 'selfOffline' and blocksInput is false; after soft, selfReconnecting 'lost' counts down to lostAt+soft+grace.",
+    "Resyncing within soft is selfOffline; the synced banner shows only after a hard outage.",
+    "An opponent who is soft in a running game gives 'none'; opponentLeft graceSeconds = soft+grace.",
+    "MOBILE apps/mobile/src/screens/game/online/__tests__/connectionStatus.test.ts: softEndsAt and graceEndsAt mapping.",
+    "MOBILE apps/mobile/src/screens/game/connection/__tests__/ConnectionLayer.test.tsx: selfOffline draws no overlay and announces once.",
+    "MOBILE apps/mobile/src/components/board/__tests__/boardModel.test.ts, labels.test.ts and Cell.test.tsx: the 'queued' kind, its precedence and label, its render, and Reduced Motion.",
+    "MOBILE apps/mobile/src/components/player/__tests__/cardModel.test.ts, PlayerCard.test.tsx and pieces.test.tsx: presence 'unstable', icon-only pill, avatar not dimmed, label 'ללא חיבור'; canSurrender and reactionReady false for me while soft.",
+    "MOBILE apps/mobile/src/screens/game/__tests__/GameScreenOnline.test.tsx (fake server, end to end):",
+    "Drop: the board stays interactive, select plus digit shows a queued digit, my card is marked, no overlay.",
+    "Return: the digit resolves to correct or wrong as usual.",
+    "A taken cell gives a shake, a toast and an announcement, with no penalty.",
+    "After soft: the Self-Reconnecting overlay appears and the board is blocked.",
+    "MOBILE apps/mobile/src/screens/game/__tests__/GameScreenOnlineGroup.test.tsx: in 3–4 players, an opponent's soft mark, then the grey card with a countdown after soft.",
+    "MOBILE apps/mobile/src/screens/replay/__tests__/replayModel.test.ts: the 'offline' step, and the offline flag on placed steps.",
+    "MOBILE apps/mobile/src/avatars/__tests__/reactions.test.ts: no face for playerConnectionLost.",
+    "MOBILE suites that must stay green: i18nParity, i18nCheck, noRawColors, contrast (the new token), reducedMotion, a11yAudit.",
+    "Run npm test (all projects) and npm run typecheck before declaring done."
+  ],
+  "docs": [
+    "docs/01-SPEC.md §16.2, rewrite the disconnection bullets:",
+    "שלב שקט (D42, ‏10 ש׳): השחקן מסומן 'ללא חיבור', המשחק ממשיך כרגיל לכולם בלי הודעות, והוא ממשיך לשחק אצלו. ספרות מוצגות כ'ממתינות' ונשלחות כשהחיבור חוזר.",
+    "בחזרה: מהלך במשבצת שבינתיים נתפסה, נפתרה, או שהספרה כבר נוסתה בה, לא נספר, בלי קנס.",
+    "רק אחרי 10 ש׳ מתחיל ה־Grace של D4 ‏(15 ש׳, הקפאה ב־2 שחקנים, 'היריב מתנתק… Reconnecting... 15', 'החיבור שלך אבד'). הנטישה אחרי 25 ש׳.",
+    "יציאה מכוונת מדלגת על השלב השקט. מעבר לרקע נחשב ניתוק עם שלב שקט.",
+    "docs/01-SPEC.md §6.2: a note on the local lock during the soft phase. §21: an offline move's think time is clamped by the server.",
+    "docs/01-SPEC.md §18: client→server table gets `offlineMove | cell, digit, thinkMs, clientSeq`. Server→client table gets `playerConnectionLost | playerId, softEndsAt`, and placedCorrect/placedWrong get the optional `offline`. Add a note on optimistic play while offline.",
+    "docs/01-SPEC.md §24: new row D42 'זמן חסד שקט לפני הודעות ניתוק', status ✓ (משה, 2026-10-15), default 10 ש׳, alternatives. Update the D4 row text: 15 s after the soft phase.",
+    "docs/00-original-spec-v1.md: DO NOT edit. In 01-SPEC note that the original's 'היריב מתנתק… Reconnecting... 15' still appears with 15, now after the soft phase, at Moshe's request.",
+    "docs/DECISIONS-PENDING.md: update 2.11 (D4) 'בנוי עכשיו' (the soft phase also blunts endless freezing by toggling the network). Add a new item for the D42 sub-decisions (see decisions). Add a note to 3.3 (heartbeat) that the soft phase absorbs false drops, so it could be relaxed.",
+    "docs/QA-CHECKLIST.md: rows 12 (Game-3P) and 25 (Self-Reconnecting) get the soft-phase checks. Add a row or item for the opponent's soft mark and the queued-digit cell.",
+    "docs/STAGE7-DEVICE-CHECKS.md:",
+    "Check 2 (5 s airplane): the other phone sees only the mark (amber dot or wifi icon) and the game goes on; the offline phone plays on with waiting digits that resolve on return.",
+    "New check: about 15 s airplane gives the mark, then at about 13–15 s 'Reconnecting... 15'.",
+    "Check 3: change 20 s to about 35 s for abandonment.",
+    "Check 4 (background): a short background gives the mark only; more than 10 s gives the freeze.",
+    "New check: both players take the same cell while one is offline; the offline one loses it with a toast and no penalty.",
+    "docs/02-WORK-PLAN.md stage 7: a note on the soft phase (abandonment after 25 s, not 15).",
+    "docs/design/components.md: §11.3 gets a new cell state #14 'Queued offline'. §2 gets the presence dot 'unstable'. §3.3 gets the icon-only reconnect pill. Add a line to the motion notes: static, Reduced Motion safe.",
+    "docs/design/tokens.json: color.status.unstable, then regenerate tokens.generated.ts."
+  ],
+  "risks": [
+    "Detection asymmetry and clock skew. The phone's soft window starts when the phone notices (0–8 s after the real loss; 2.5 s after an unanswered tap with answerTimeoutMs). The server's starts on the socket close or the heartbeat (0–4.5 s). The offline phone's hard UI can appear a few seconds before or after the opponent sees the freeze, and its countdown is an estimate. The server is authoritative and the snapshot corrects everything, but device checks should accept ±4 s.",
+    "By design, a move made offline is decided at arrival time. An earlier offline tap loses to a later online one. When both players were offline, the first to arrive wins. This must be stated in the spec so testers don't report it as a bug.",
+    "Abandonment now takes about 25 s after detection instead of 15 s. The opponent and matchmaking's 'one ranked game at a time' wait longer. A deliberate leave stays hard at once, to limit this.",
+    "Anti-cheat: an offline move's thinkMs is claimed by the client (clamped to thinkTimeMs) and still feeds fastThinking. Laundering think times needs a real drop for at most 8 moves each time, and is visible in the event log (playerConnectionLost, offline:true). No new flag in V1.",
+    "A local lock without a digit re-selected on return gets a fresh full think time. That is a small advantage (decision 9).",
+    "Test churn. The engine's disconnect stays hard by default, so engine tests are untouched. Server integration tests and mobile fake-server tests use default rules, so they need softGraceMs: 0 or new timings, otherwise they slow down by 10 s or fail.",
+    "Adding required fields to PlayerState and PlayerView breaks hand-built fixtures and strict toEqual snapshots. Known files: components/player/__fixtures__/gameView.ts, cardModel/helpers/PlayerCard tests, connectionModel and designFidelity tests, reactions.test.ts, serverGame.test.ts, flow.test.ts, connection.test.ts.",
+    "Wire size: placedCorrect with offline:true must stay at most 200 bytes in msgpack (wire.test). Estimated +9 bytes; verify.",
+    "Additive protocol without a version bump. Verify the mixed versions: an old app with a new server ignores the new event and fields, and its offline actions are still refused locally. A new app with an old server has no softGraceMs, so local play is off. Never send offlineMove to a server whose rules lack softGraceMs, because the gate counts unknown types as abuse.",
+    "RemoteGameHost is already about 970 lines. Keep the offline logic in net/offlinePlay.ts with its own tests, and drive every time decision from the clock, not from timers counting (iOS suspends JS timers in the background).",
+    "answerTimeoutMs can cause false drops on a very slow network. Each costs about 1 s of offline play and a brief mark on the opponent's card. Tune it if testers report flicker.",
+    "Shared-file conflicts with other items of this batch: spec §24 (the D-number may collide; assign the next free one in order), i18n game.json and player.json, GameScreen.tsx, cardModel.ts, rules.ts, engine.ts and evolve.ts. Merge carefully.",
+    "Needs a server deploy (engine and server) together with the new APK. Per Moshe, do not build an APK at the end of this batch."
+  ],
+  "decisions": [
+    {
+      "question": "How long is the soft phase (marked only, game goes on, no messages)?",
+      "recommendedDefault": "10 seconds (rules.softGraceMs, easy to change)."
+    },
+    {
+      "question": "Does the existing 15 s grace start after the soft phase (abandonment at 25 s), or does the 15 s include the 10 s (only 5 s of 'Reconnecting')?",
+      "recommendedDefault": "After it: 10 s soft, then the full 15 s with 'Reconnecting... 15', as in the original spec. Abandonment after about 25 s."
+    },
+    {
+      "question": "When is an offline move 'lost'? Only if, at the moment he is back, the cell is no longer free for him (filled, locked by someone else, the digit already tried), or whenever anyone else locked that cell during his absence even if they let it go?",
+      "recommendedDefault": "Only if the cell is not free for him when he is back. Lost without a penalty, and he sees a short message."
+    },
+    {
+      "question": "Moves made in the soft phase, when the player only returns after the soft phase (game already frozen): still count, or are they dropped?",
+      "recommendedDefault": "They still count, as long as he is back before abandonment, with the same conflict rule."
+    },
+    {
+      "question": "Can others send an interference at a player who is marked as offline?",
+      "recommendedDefault": "No, the same as a disconnected player today, so nobody pays points for a hit the target can't see (rules.interfereSoftOffline = false)."
+    },
+    {
+      "question": "The cell the offline player held when he lost the connection: keep it running on the server during the soft phase (it may time out), or release it at once?",
+      "recommendedDefault": "Keep it. The game goes on as usual, and it is released by its normal timer."
+    },
+    {
+      "question": "Leaving on purpose ('לבית' / leaving the game): also 10 s of soft phase, or straight to 'Reconnecting... 15' as today?",
+      "recommendedDefault": "Straight to 'Reconnecting... 15', as today. Only a lost connection or the app in the background gets the soft phase."
+    },
+    {
+      "question": "Surrender while offline: disabled until the connection is back, or remembered and sent on return?",
+      "recommendedDefault": "Disabled until back (the button is greyed and its dialog closes)."
+    },
+    {
+      "question": "A cell selected offline with no digit yet when the connection returns: keep it selected (the server gives it a fresh think time), or drop it?",
+      "recommendedDefault": "Keep it selected if it is still free, otherwise 'taken'."
+    },
+    {
+      "question": "How is the mark shown?",
+      "recommendedDefault": "An amber dot on the avatar plus a wifi icon in the ⚡ place, with no countdown and no banner. The avatar is not greyed. The offline player himself gets the same mark on his card, digits shown as 'waiting', and one screen-reader announcement only."
+    }
+  ],
+  "sharedFiles": [
+    "packages/engine/src/game/rules.ts",
+    "packages/engine/src/game/types.ts",
+    "packages/engine/src/game/engine.ts",
+    "packages/engine/src/game/evolve.ts",
+    "packages/engine/src/game/view.ts",
+    "packages/engine/src/game/index.ts",
+    "packages/engine/src/testing/game.ts",
+    "packages/protocol/src/index.ts",
+    "packages/protocol/src/room.ts",
+    "apps/server/src/rooms/GameRoom.ts",
+    "apps/server/src/game/gate.ts",
+    "apps/server/src/game/options.ts",
+    "apps/server/src/game/metrics.ts",
+    "apps/mobile/src/net/remoteGameHost.ts",
+    "apps/mobile/src/net/testing/fakeServer.ts",
+    "apps/mobile/src/game/onlineSession.ts",
+    "apps/mobile/src/game/effects.ts",
+    "apps/mobile/src/screens/game/GameScreen.tsx",
+    "apps/mobile/src/screens/game/connection/connectionModel.ts",
+    "apps/mobile/src/components/board/boardModel.ts",
+    "apps/mobile/src/components/board/Cell.tsx",
+    "apps/mobile/src/components/player/cardModel.ts",
+    "apps/mobile/src/components/player/wording.ts",
+    "apps/mobile/src/components/player/PlayerCard.tsx",
+    "apps/mobile/src/components/player/PlayerCardCompact.tsx",
+    "apps/mobile/src/screens/replay/replayModel.ts",
+    "apps/mobile/src/i18n/locales/he/game.json",
+    "apps/mobile/src/i18n/locales/en/game.json",
+    "apps/mobile/src/i18n/locales/he/player.json",
+    "apps/mobile/src/i18n/locales/en/player.json",
+    "apps/mobile/src/i18n/locales/he/board.json",
+    "apps/mobile/src/i18n/locales/en/board.json",
+    "apps/mobile/src/i18n/locales/he/replay.json",
+    "apps/mobile/src/i18n/locales/en/replay.json",
+    "docs/design/tokens.json",
+    "apps/mobile/src/theme/tokens.generated.ts",
+    "docs/01-SPEC.md",
+    "docs/DECISIONS-PENDING.md",
+    "docs/QA-CHECKLIST.md",
+    "docs/STAGE7-DEVICE-CHECKS.md",
+    "docs/design/components.md"
+  ],
+  "needsServerDeploy": true
+}

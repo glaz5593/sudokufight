@@ -155,12 +155,16 @@ export function scoreChange(before: GameView, after: GameView, playerId: PlayerI
 // ---------------------------------------------------------------------------------------------------------
 // Two players (Dir-C-Game)
 
-/** MosheG solves A1 and C1 and misses D2 once, NinaVolt solves A2 and B1, and at 6 s I take F8. */
+/**
+ * MosheG solves A1, C1 and B4 and misses D2 once, NinaVolt solves A2 and B1, and at 6 s I take F8. I lead
+ * (16 to 11.5) even after the mistake, which costs what D2's digit was worth there (spec §6.5).
+ */
 function twoPlayerBase(): FixtureGame {
   return new FixtureGame([ME, NINA])
     .solve(ME, 'A1', 1000)
     .solve(NINA, 'A2', 2000)
     .solve(ME, 'C1', 3000)
+    .solve(ME, 'B4', 3500)
     .miss(ME, 'D2', 4000)
     .solve(NINA, 'B1', 5000)
     .select(ME, 'F8', 6000);

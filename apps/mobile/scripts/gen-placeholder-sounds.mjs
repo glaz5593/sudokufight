@@ -99,7 +99,7 @@ const harm = path;
 const BELL = harm(1, 1, 2.76, 0.22, 5.4, 0.06);
 const GONG = harm(1, 1, 1.48, 0.6, 2, 0.45, 2.76, 0.3, 3.9, 0.12);
 
-/** The 30 sounds of motion.md §8, keyed by their file name. Each entry: [length in s, draw(buf, random)]. */
+/** The 32 sounds of motion.md §8, keyed by their file name. Each entry: [length in s, draw(buf, random)]. */
 const SOUNDS = {
   // Board
   cell_select: [
@@ -165,13 +165,6 @@ const SOUNDS = {
     0.24,
     (b, r) => noise(b, r, { dur: 0.22, gain: 0.5, attack: 0.05, decay: 0.1, lp: glide(800, 3000) }),
   ],
-  interfere_whoosh: [
-    0.36,
-    (b, r) => {
-      const sweep = path(0, 500, 0.5, 2500, 1, 900);
-      noise(b, r, { dur: 0.35, gain: 0.6, attack: 0.15, decay: 0.12, lp: sweep });
-    },
-  ],
   interfere_launch: [
     0.36,
     (b, r) => {
@@ -214,6 +207,45 @@ const SOUNDS = {
         vibRate: 11,
       });
       tone(b, { f: 495, dur: 0.38, gain: 0.25, attack: 0.02, decay: 0.3, vib: 60, vibRate: 13 });
+    },
+  ],
+  // [D47] The kinds of 2026-10-17. Digits scramble: a slot machine's rattle of short blips at random pitches.
+  hit_scramble: [
+    0.36,
+    (b, r) => {
+      for (let i = 0; i < 9; i++) {
+        const f = 600 + Math.round(r() * 8) * 110;
+        tone(b, { f, at: i * 0.038, dur: 0.034, gain: 0.45, attack: 0.002, decay: 0.012, wave: 'triangle' });
+      }
+      noise(b, r, { dur: 0.34, gain: 0.12, attack: 0.02, decay: 0.15, lp: 2500, hp: true });
+    },
+  ],
+  // Ink: a wet splat, a soft thud with a falling hiss.
+  hit_ink: [
+    0.34,
+    (b, r) => {
+      noise(b, r, { dur: 0.3, gain: 0.7, attack: 0.004, decay: 0.07, lp: glide(2200, 250) });
+      tone(b, { f: glide(140, 60), dur: 0.22, gain: 0.6, attack: 0.003, decay: 0.06 });
+      noise(b, r, { at: 0.12, dur: 0.12, gain: 0.25, decay: 0.03, lp: 900 });
+    },
+  ],
+  // The keys trade places: a few key clicks, and a short slide up.
+  hit_keypad: [
+    0.34,
+    (b, r) => {
+      [0, 0.05, 0.1, 0.15].forEach((at, i) => {
+        noise(b, r, { at, dur: 0.012, gain: 0.55, decay: 0.003, lp: 3500, hp: true });
+        tone(b, { f: 1400 + i * 180, at, dur: 0.03, gain: 0.3, attack: 0.001, decay: 0.008 });
+      });
+      tone(b, {
+        f: glide(380, 760),
+        at: 0.2,
+        dur: 0.13,
+        gain: 0.4,
+        attack: 0.01,
+        decay: 0.05,
+        wave: 'triangle',
+      });
     },
   ],
 

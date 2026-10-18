@@ -1,0 +1,164 @@
+{
+  "item": "A + B: the \"New game\" (Modes) screen layout and bot icon, and keeping the screen on",
+  "summary": "A. On /modes (apps/mobile/src/screens/home/ModesScreen.tsx with homeModel.ts), the order is fixed in MODE_OPTIONS: ranked 2·3·4, then solo, then bot. Moshe wants the bot practice above the solo practice. Ranked 2 is a wide card with ranked 3 and 4 side by side under it (the `wide/pair` split in `Group`, the `compact` prop in `ModeCard`). Each must become its own row, and every row gets a little smaller so a sixth type (\"אימון בשלבים\") fits later without scrolling on Moshe's S22 (360×780 dp, the PHONE constant in components/ui/testing/layout.ts). The bot card's picture is the `bot` stroke icon, 22 px in muted grey: tiny 2-unit dot eyes and no mouth, unlike the design boards (DS-Components bot chip and the Modes board, which draw it with a mouth, in P2's colour, in a P2 frame). It needs redrawing and colouring. B. Nothing keeps the screen on in a release build. Expo's own keep-awake runs only in __DEV__ (expo/src/launch/withDevTools.tsx), which is why it went unnoticed. expo-keep-awake 57.0.2 is already in the native binary, because `expo` depends on it, so this is a JS-only change plus a direct dependency entry.",
+  "rootCauses": [
+    {
+      "cause": "Bot practice comes after solo practice because of the static order in MODE_OPTIONS (and AVAILABLE_MODES). The screen renders MODE_OPTIONS.filter(group) in order.",
+      "evidence": "apps/mobile/src/screens/home/homeModel.ts:40-46 (solo at index 3, bot at index 4) and :54; ModesScreen.tsx:163",
+      "confidence": "high"
+    },
+    {
+      "cause": "Ranked 3 and 4 share a row because Group splits the ranked options into `wide` (2p, full width) and `pair` (3p and 4p in a flexDirection:'row' View, rendered with compact=true). Compact cards are columns without a chevron and with a two-line tagline.",
+      "evidence": "apps/mobile/src/screens/home/ModesScreen.tsx:164-191 (const [wide, ...pair]; styles.pair) and :253, :265, :281 (compact branches); styles.cardCompact/textsCompact at :340, :361",
+      "confidence": "high"
+    },
+    {
+      "cause": "The rows are too tall to add a sixth one. Card padding is 16 on all sides, the title is text('h1') 22/25, then tagline 16, then chips 22 with a 6 marginTop: about 107 dp per row card and about 163 dp per compact card. With group gap 12 and content gap 20, five rows already reach about 775-800 dp on an S22, and each extra row adds about 119.",
+      "evidence": "ModesScreen.tsx:330-365 (content gap space[10], group gap space[6], card padding space[8], title text('h1'), chips marginTop space[3]); tokens.generated.ts type.h1 22/25, space scale",
+      "confidence": "high"
+    },
+    {
+      "cause": "The bot icon is unclear. It is drawn at size.icon.header (22) in color.textMuted on surface2, eyes are `h.01` dots (2 units, about 1.8 px), and there is no mouth. The design boards (DS-Components bot chip, Modes.dc.html line 158) draw it with a mouth `M9.5 16h5`, in P2's colour, in a P2-coloured frame, at 26 in a 40 box.",
+      "evidence": "apps/mobile/src/components/Icon.tsx:106-114; ModesScreen.tsx:301-316 (Leading: <Icon name=\"bot\" size={size.icon.header} color={color.textMuted}/>); docs/design/screens/Modes.dc.html:158; docs/design/screens/DS-Components.dc.html:239",
+      "confidence": "high"
+    },
+    {
+      "cause": "The screen sleeps in release builds. No app code activates keep-awake. Expo activates it only when NODE_ENV !== 'production' (withDevTools, default tag), so dev builds stay on and release APKs do not.",
+      "evidence": "grep finds no keep-awake use in apps/mobile/src or app/; node_modules/expo/src/launch/registerRootComponent.tsx:43-46 and withDevTools.tsx:10-27",
+      "confidence": "high"
+    }
+  ],
+  "design": "ITEM A: Modes screen (/modes)\n\nA1. Order (data, homeModel.ts)\n- MODE_OPTIONS becomes: ranked2, ranked3, ranked4, bot, solo. The bot entry is { key:'bot', group:'practice', mode:'bot', players:2 }, placed before { key:'solo', ... }.\n- AVAILABLE_MODES becomes ['ranked2','ranked3','ranked4','bot','solo'], the same order for consistency. MODE_GROUPS is unchanged.\n- Rewrite the doc comment above MODE_OPTIONS: \"ranked 2 · 3 · 4, then practice against a bot and solo practice (Moshe's device test, 15.10.2026: the bot above solo)\".\n- Nothing else reads the order. The offline \"עבור לאימון\" still opens solo, and GameTypeScreen is unaffected.\n\nA2. One row per option (ModesScreen.tsx)\n- In `Group`, delete the `const [wide, ...pair]` split, the `pair` View and the `compact` argument. Render `options.map((o) => <ModeCard key={o.key} option={o} onPress={() => onOpen(o)} {...context} />)` for both groups.\n- In `ModeCard`, drop the `compact` prop and all its branches:\n  - the tagline is always `numberOfLines={1}`;\n  - the chevron shows whenever `available`;\n  - the card style is always the row style.\n- Delete styles `pair`, `cardCompact` and `textsCompact`, and merge `cardRow` into `card`.\n- Update the file doc comment and the comment at line 164 (\"every option is a row of its own; the rows are compact so a sixth type fits (Moshe, 15.10.2026)\").\n- Keep `testID={`mode-${key}`}`, all accessibility labels, chips, offline and suspended handling exactly as they are.\n\nA3. Compact rows. All values are tokens. Budget on S22, 360×780.\n- `content`: paddingTop space[4] (8, was 12); gap space[8] (16, was 20).\n- `group`: gap space[4] (8, was 12).\n- `card`:\n  - flexDirection 'row', alignItems 'center', gap space[6] (12, was 14, which gives the chips 4 dp more width);\n  - paddingVertical space[4] (8), paddingHorizontal space[8] (16);\n  - minHeight size.listRow (64);\n  - borderRadius radius.card, hairline border color.border (as now).\n- `texts`: flex 1, minWidth 0, alignItems 'flex-start', gap space[1] (2).\n- `title`: { ...text('playerName'), color: color.text }. That is Rubik 700 16/19, was h1 22/25. Alternative for Moshe: text('sheetTitle'), 18/23.\n- `tagline`: caption 13/16, 1 line.\n- `chips`: marginTop space[1] (2, was 6), gap space[3], flexWrap 'wrap' (kept as the large-font fallback).\n- ScrollView paddingBottom: (offline ? 0 : bottom) + space[8] (16, was space[12] 24).\n- Resulting row height: 2 border + 16 padding + 19 + 2 + 16 + 2 + 2 + 22 = 81 dp.\n  - Before: about 107 for a row card and about 163 for a compact card.\n- Height budget, 3-button navigation (status bar about 28, header 56, nav bar 48, which leaves 648 dp for content):\n  - Today's 5 rows: 8 + (20+8+3×81+2×8) + 16 + (20+8+2×81+8) + 16 + 16 footnote + 16 = 557 dp, about 90 dp spare.\n  - With a sixth row: 646 dp, which fits. With gesture navigation there is about 28 dp more.\n- The ScrollView stays, for large font scales and smaller phones.\n- The leading picture stays 44 (size.touch / size.avatar.card.frame).\n\nA4. A clearer bot picture\n(a) Redraw the `bot` glyph in components/Icon.tsx. Same name, 24×24, stroke 2, round caps, following the DS-Components / Modes board robot. It adds a mouth, solid eyes twice as large, an antenna ball and ears:\n    <Rect x=\"4.5\" y=\"7.5\" width=\"15\" height=\"13\" rx=\"3.5\" />\n    <Path d=\"M12 7.5V5\" />\n    <Circle cx=\"12\" cy=\"4\" r=\"1\" />\n    <Circle cx=\"9\" cy=\"12.5\" r=\"1\" />\n    <Circle cx=\"15\" cy=\"12.5\" r=\"1\" />\n    <Path d=\"M9.5 16.5h5\" />\n    <Path d=\"M1.5 12v4M22.5 12v4\" />\n  - With stroke 2, r=1 circles render as solid 4-unit dots, and every part keeps at least a 1-unit gap.\n  - The glyph is symmetric, so it needs no RTL mirroring. It is not in FILLED.\n  - It also improves the \"bot\" button on Match-Timeout (screens/match/TimeoutView.tsx:96, Button icon=\"bot\"). Check it in /dev/design-system (TypeSection icon grid).\n  - Update the comment to say: the bot, on the Modes card and Match-Timeout's \"play a bot\", after DS-Components' bot chip.\n(b) In ModesScreen `Leading`, the bot gets a new `BotLead`. It is the opponent counterpart of the solo row's \"my avatar in a P1 frame\", as the Modes board drew it:\n  - a View with width and height size.avatar.card.frame (44), borderRadius size.avatar.card.frameRadius (14), borderWidth size.avatar.card.border (2);\n  - borderColor paletteAt(BOT_COLOR_INDEX).ring (P2 #ff9440), backgroundColor color.surface2, centred, testID \"mode-bot-lead\";\n  - inside it, `<Icon name=\"bot\" size={BOT_GLYPH} color={paletteAt(BOT_COLOR_INDEX).ring} />`;\n  - constants next to SEAT_GLYPH:\n    - BOT_GLYPH = 28: the board's 26 in a 40 box, scaled to 44; no token exists;\n    - BOT_COLOR_INDEX = 1: the bot always sits in seat 1, so it is P2 on this phone (botSession: me seat 0, bot seat 1);\n  - import paletteAt from '../../components/player'.\n  - P2 on surface2 has a contrast of about 7:1. The ownership cue is also the shape and the text, so colour is not the only signal.\n  - Give the solo avatar testID \"mode-solo-avatar\" so the test can find it.\n  - Ranked rows keep their leadBox with seat glyphs.\n  - The card stays fully accessible through its label. The pictures stay decorative (Icon has accessibilityElementsHidden).\n(c) No new strings: the labels, titles and taglines are unchanged in he and en, so no i18n change.\n\nA5. \"אימון בשלבים\" (staged practice)\n- Do not build it and add no placeholder card. The \"בקרוב\" pattern exists (AVAILABLE_MODES plus a `soon` chip), but spec §5 says \"חמש אפשרויות בלבד\" and Moshe will define the mode later.\n- When it comes, it is one MODE_OPTIONS entry plus i18n, and the row rendering already fits it.\n\nITEM B: keep the screen on\n\nB1. Dependency\n- Add \"expo-keep-awake\": \"~57.0.2\" to apps/mobile/package.json dependencies, with `npx expo install expo-keep-awake` from apps/mobile.\n- It is already hoisted at node_modules/expo-keep-awake 57.0.2 (a dependency of `expo`), so this only updates package-lock.json's workspace entry and downloads nothing.\n- It needs no config plugin, no Android permission (it is FLAG_KEEP_SCREEN_ON) and no iOS key (it is isIdleTimerDisabled).\n- Native: KeepAwakeModule is already compiled into the current build. Evidence: node_modules/expo/android/build/generated/expo/src/main/java/expo/modules/ExpoModulesPackageList.kt lists expo.modules.keepawake.KeepAwakeModule. A new native build is therefore not strictly needed, but the JS change still has to reach the phone in the next APK or update.\n\nB2. Config: new file apps/mobile/src/config/display.ts\n  export const displayConfig = {\n    /** Moshe's device test (15.10.2026): while the app is open (in the foreground) the screen never turns off. False: the phone's own timeout. */\n    keepScreenOn: true,\n  } as const;\n\nB3. Service: new file apps/mobile/src/services/keepAwake.ts\n- export const KEEP_AWAKE_TAG = 'sudoku-fight'. It must differ from expo's 'ExpoKeepAwakeDefaultTag', which withDevTools activates and deactivates in __DEV__. Android's manager only clears the flag when the last tag goes.\n- export type KeepAwakeModule = Pick<typeof import('expo-keep-awake'), 'activateKeepAwakeAsync' | 'deactivateKeepAwake'>.\n- Load lazily, following config/appVersion.ts loadApplication, with eslint-disable for no-require-imports:\n  const loadKeepAwake = (): KeepAwakeModule => require('expo-keep-awake') as KeepAwakeModule;\n- export function useKeepScreenOn(active: boolean, load: () => KeepAwakeModule = loadKeepAwake, tag = KEEP_AWAKE_TAG): void\n  - In a useEffect on [active, tag, load]: if !active, do nothing.\n  - try { mod = load() } catch { report; return } covers a binary without the native module: never crash.\n  - Then mod.activateKeepAwakeAsync(tag).catch(report). The cleanup calls mod.deactivateKeepAwake(tag).catch(report).\n  - report() calls console.warn('[keep-awake]', e) only when __DEV__, like services/haptics.ts.\n- Not expo's useKeepAwake: it warns on deactivate, its tag defaults to useId, and it cannot be injected for tests.\n- FLAG_KEEP_SCREEN_ON is per window and only acts while the app is visible, so \"while the app is open\" holds with no AppState handling.\n\nB4. Wiring\n- In apps/mobile/app/_layout.tsx `RootLayout`, call `useKeepScreenOn(displayConfig.keepScreenOn);` next to the other top-level hooks. It must come before `if (!fontsReady) return null`, because hooks run unconditionally. This makes it app-wide from the first frame, including the Splash, login, menus, game, match and replay.\n- It is a cheap native call, so it is not deferred to useAfterFirstScreen and the < 2 s start (spec §22) is unaffected.\n- It has no UI, so no strings, and Reduced Motion does not apply.\n- A restartApp (language flip) remounts and re-activates the tag.\n\nB5. Tests and mocks\n- jest-expo already mocks the ExpoKeepAwake native module: node_modules/jest-expo/src/preset/moduleMocks/expoModules.js, where activate and deactivate are jest.fn.\n- So the existing suites that render the real RootLayout still work without any mock: src/__tests__/accounts.e2e.test.tsx and src/services/telemetry/__tests__/screenViews.test.tsx.\n- The new tests use an injected loader, or jest.mock('expo-keep-awake').",
+  "files": [
+    {
+      "path": "apps/mobile/src/screens/home/homeModel.ts",
+      "change": "MODE_OPTIONS order becomes ranked2, ranked3, ranked4, bot, solo. AVAILABLE_MODES gets the same order. Update the doc comments (the section comment and the AVAILABLE_MODES comment) to the new order and cite Moshe's device test of 15.10.2026."
+    },
+    {
+      "path": "apps/mobile/src/screens/home/ModesScreen.tsx",
+      "change": "Group: remove the wide/pair split and render every option as a row. ModeCard: drop the `compact` prop and branches (the chevron always shows when available; the tagline is 1 line). New compact styles: content paddingTop space[4] and gap space[8]; group gap space[4]; card paddingVertical space[4], paddingHorizontal space[8], row gap space[6], minHeight size.listRow; title text('playerName'); texts gap space[1]; chips marginTop space[1]; ScrollView paddingBottom (offline ? 0 : bottom) + space[8]. Delete styles pair, cardCompact and textsCompact, and merge cardRow into card. Leading: the bot becomes a new BotLead (44 frame with size.avatar.card radius and border in paletteAt(1).ring, surface2 fill, Icon bot 28 in P2), testID 'mode-bot-lead'. Add the BOT_GLYPH=28 and BOT_COLOR_INDEX=1 constants and import paletteAt. The solo Avatar gets testID 'mode-solo-avatar'. Update the file doc comment and the line 164 comment."
+    },
+    {
+      "path": "apps/mobile/src/components/Icon.tsx",
+      "change": "Redraw the `bot` glyph: head Rect 4.5,7.5 15×13 rx3.5; antenna M12 7.5V5 plus Circle(12,4,r1); eyes Circle(9,12.5,r1) and Circle(15,12.5,r1); mouth M9.5 16.5h5; ears M1.5 12v4M22.5 12v4. Update its comment (Modes card, Match-Timeout 'play a bot', after DS-Components' bot chip). The name is unchanged, so ICON_NAMES is unchanged."
+    },
+    {
+      "path": "apps/mobile/package.json",
+      "change": "Add the dependency \"expo-keep-awake\": \"~57.0.2\" via `npx expo install expo-keep-awake` from apps/mobile."
+    },
+    {
+      "path": "package-lock.json",
+      "change": "The workspace apps/mobile dependency entry for expo-keep-awake, written by npx expo install. The package is already at node_modules/expo-keep-awake 57.0.2, so nothing new is downloaded."
+    },
+    {
+      "path": "apps/mobile/src/config/display.ts",
+      "change": "New file: `displayConfig = { keepScreenOn: true } as const` with a doc comment citing Moshe's device test of 15.10.2026, plus `export type DisplayConfig`."
+    },
+    {
+      "path": "apps/mobile/src/services/keepAwake.ts",
+      "change": "New file: KEEP_AWAKE_TAG='sudoku-fight', the KeepAwakeModule type, the lazy `loadKeepAwake` (require inside try, with eslint-disable as in config/appVersion.ts), and `useKeepScreenOn(active, load?, tag?)`: activate on mount when active, deactivate on cleanup, swallow and report errors (console.warn only in __DEV__)."
+    },
+    {
+      "path": "apps/mobile/app/_layout.tsx",
+      "change": "In RootLayout, before the `if (!fontsReady) return null` early return, call `useKeepScreenOn(displayConfig.keepScreenOn)`. Import it from ../src/services/keepAwake and ../src/config/display."
+    },
+    {
+      "path": "apps/mobile/src/screens/home/__tests__/homeModel.test.ts",
+      "change": "Update 'are exactly five': MODE_OPTIONS order ranked2, ranked3, ranked4, bot, solo. Update 'all five are open': the AVAILABLE_MODES and filtered order. Retitle both to mention the bot-before-solo order from the device test."
+    },
+    {
+      "path": "apps/mobile/src/screens/home/__tests__/ModesAndGameType.test.tsx",
+      "change": "Add the on-screen order assertion and the new row-layout and bot-picture tests (see tests)."
+    },
+    {
+      "path": "apps/mobile/src/services/__tests__/keepAwake.test.tsx",
+      "change": "New file: unit tests for useKeepScreenOn with an injected fake module, and a RootLayout test with jest.mock('expo-keep-awake'). The RootLayout setup is copied from services/telemetry/__tests__/screenViews.test.tsx: the Reanimated mock, analytics, telemetry and expo-sqlite mocks, and installSignedInPlayer."
+    },
+    {
+      "path": "docs/01-SPEC.md",
+      "change": "§5.1, under the table: the screen order (ranked 2, 3, 4, each in its own row, then bot practice, then solo practice). The rows are compact to leave room for a future 'אימון בשלבים', which Moshe will define, and adding it changes the original spec's 'five options only' (§5), so it needs his approval (device test, 15.10.2026). §22: a new bullet that while the app is open (foreground) the screen does not turn off (expo-keep-awake; `displayConfig.keepScreenOn` in apps/mobile/src/config/display.ts), device test 15.10.2026."
+    },
+    {
+      "path": "docs/QA-CHECKLIST.md",
+      "change": "Row 7 (Modes) notes: 'every option in its own row, bot above solo, robot in P2 frame; on a 360×780 phone the five rows show without scrolling with room for a sixth', and reset Android/iOS to ☐. 'איך בודקים': a new item 8, 'מסך דלוק': leave the app open longer than the phone's screen timeout (Home, Modes, during a game, during a search), in a release APK only, because dev builds always stay on."
+    },
+    {
+      "path": "docs/design/components.md",
+      "change": "§2 Avatar, badges/frames: a short bullet that on the Modes card the bot is a 44 frame (radius 14, border 2) in P2's ring with the robot glyph at 28 in P2. This is an exception to 'outside a game, other players use color.border': the bot is the opponent's seat, as on the Modes board. §0.4 icons may note that the bot glyph was redrawn with a mouth and larger eyes."
+    }
+  ],
+  "tests": [
+    "homeModel.test.ts 'the modes (spec §5.1)' › update to: MODE_OPTIONS.map(o=>[key,group,mode,players]) equals [ranked2, ranked3, ranked4, ['bot','practice','bot',2], ['solo','practice','solo',1]].",
+    "homeModel.test.ts › update to: AVAILABLE_MODES equals ['ranked2','ranked3','ranked4','bot','solo'], and MODE_OPTIONS.filter(isAvailable) keeps the same order.",
+    "ModesAndGameType.test.tsx 'offers exactly five modes…' › add: screen.getAllByTestId(/^mode-/).map(c => c.props.testID) equals ['mode-ranked2','mode-ranked3','mode-ranked4','mode-bot','mode-solo']. The regex does not match 'modes-me' or 'modes-live'.",
+    "ModesAndGameType.test.tsx › new 'every option is a row of its own, ranked 3 and 4 too (Moshe's device test, 15.10.2026)': for each key, getByTestId(`mode-${k}`) toHaveStyle({ flexDirection: 'row' }) and within(card).getByTestId('icon-chevronForward', { includeHiddenElements: true }) exists. Also directionProblems(getByTestId('mode-ranked3')) and directionProblems(getByTestId('mode-bot')) equal [] (RTL safe).",
+    "ModesAndGameType.test.tsx › new 'the bot card shows a robot in the opponent's P2 frame; the solo card shows my avatar': getByTestId('mode-bot-lead', hidden) toHaveStyle({ borderColor: paletteAt(1).ring, width: size.avatar.card.frame }); within(it).getByTestId('icon-bot', hidden) toHaveProp('width', 28); within(mode-solo).getByTestId('mode-solo-avatar', hidden) exists.",
+    "ModesAndGameType.test.tsx › optional: the mode title Text toHaveStyle({ fontSize: tokens.type.playerName.size }), to document that the rows shrank.",
+    "ModesAndGameType.test.tsx › run the existing a11y-label assertions unchanged in he and en; they must still pass.",
+    "ModesRanked.test.tsx: no change expected. Run it to confirm that rating-ranked3/4, offline-ranked3/4 and the suspended chips still render in the row layout.",
+    "components/dev/__tests__/sections.test.tsx: unchanged. 'bot' is still in ICON_NAMES and the icon count is dynamic; run it.",
+    "keepAwake.test.tsx (new) › 'activates the app's own tag while mounted and releases it on unmount': a fake module with activateKeepAwakeAsync/deactivateKeepAwake as jest.fn(async()=>{}). Render a component calling useKeepScreenOn(true, () => fake); expect activate called once with 'sudoku-fight', not 'ExpoKeepAwakeDefaultTag'; unmount, then expect deactivate called with 'sudoku-fight'.",
+    "keepAwake.test.tsx › 'does nothing when turned off': useKeepScreenOn(false, loader); the loader and both functions are never called. Re-rendering from true to false deactivates.",
+    "keepAwake.test.tsx › 'a build without the native module, or a failing call, never crashes': a loader that throws renders fine; activate rejecting raises no unhandled rejection (await act); deactivate rejecting on unmount is the same.",
+    "keepAwake.test.tsx › 'the root layout keeps the screen on from the first screen': jest.mock('expo-keep-awake', () => ({ activateKeepAwakeAsync: jest.fn(() => Promise.resolve()), deactivateKeepAwake: jest.fn(() => Promise.resolve()) })); renderRouter({ _layout: RootLayout, index: stand-in }) after installSignedInPlayer(); expect activateKeepAwakeAsync toHaveBeenCalledWith('sudoku-fight'). Also assert displayConfig.keepScreenOn === true, to document the decision.",
+    "Finish with `npm test` at the root, then `npm run typecheck` in apps/mobile, then eslint (the no-require-imports disable comment in keepAwake.ts)."
+  ],
+  "docs": [
+    "docs/01-SPEC.md §5.1: display order and one row per option; compact rows leave room for a future 'אימון בשלבים' (not built; adding it changes the original §5 'five options only' and needs Moshe's approval).",
+    "docs/01-SPEC.md §22: 'מסך דלוק', the screen does not turn off while the app is open (expo-keep-awake, displayConfig.keepScreenOn).",
+    "docs/QA-CHECKLIST.md row 7 (Modes): the new layout, the P2 robot and the S22 no-scroll check; Android/iOS back to ☐.",
+    "docs/QA-CHECKLIST.md 'איך בודקים': a new step for the screen staying on (release APK only; dev builds always stay on because of Expo's dev tools).",
+    "docs/design/components.md §2: the bot on the Modes card (44 P2 frame, robot 28 in P2) as an exception to the neutral frame outside a game; §0.4: the bot glyph redrawn with a mouth and larger eyes.",
+    "Optional: docs/DECISIONS-PENDING.md §3, a new item 'מסך דלוק: בכל האפליקציה או רק במשחק' (built: everywhere, as Moshe asked), only if Moshe wants the battery trade-off tracked."
+  ],
+  "risks": [
+    "Height estimates: the 81 dp row and the 557 / 646 dp budgets come from token metrics, not a real layout. Jest cannot measure layout. Check on the S22 with 3-button and gesture navigation, and at a large font scale; the ScrollView stays as the fallback.",
+    "Chip width on 360 dp: the practice chips 'ללא דירוג' + 'עובד גם בלי אינטרנט' need about 198 dp and the text column is about 206 dp after the row gap goes from 14 to 12. With large fonts they wrap to a second line (flexWrap), which makes that row about 28 dp taller.",
+    "The title shrinks from 22 to 16 bold. That is more than 'a little'. 18 (sheetTitle) adds 4 dp per row (85): six rows then fit only with gesture navigation, or without the footnote.",
+    "The redrawn `bot` glyph also changes the 'bot' button on Match-Timeout (TimeoutView.tsx:96). Check it at 20 px in /dev/design-system.",
+    "The P2 frame for the bot outside a game departs from components.md §2 ('outside a game, other players use color.border'). Document it, or use the neutral lead box instead (a decision for Moshe).",
+    "Keeping the screen on everywhere, including menus, costs battery if the app is left open; this is what Moshe asked for. It is a single config flag (displayConfig.keepScreenOn).",
+    "Dev builds already stay on (Expo's withDevTools in __DEV__), so this fix can only be verified in a release APK.",
+    "Keep-awake activation can fail silently (no current Activity). The hook swallows the error and the screen then sleeps as before, without a crash.",
+    "Shared files with other items: Icon.tsx (other items may add icons, e.g. a 'no connection' marker), _layout.tsx, package.json/package-lock.json, 01-SPEC.md, QA-CHECKLIST.md. Merge rather than overwrite.",
+    "Original spec §5 says the screen shows five options only. Nothing changes now, but the future 'אימון בשלבים' must go through the original-spec approval rule in CLAUDE.md."
+  ],
+  "decisions": [
+    {
+      "question": "מסך דלוק: בכל האפליקציה כל עוד היא פתוחה, או רק במשחק, בחיפוש יריב וב־Replay (חוסך סוללה בתפריטים)?",
+      "recommendedDefault": "בכל האפליקציה, כפי שמשה ביקש. ההגדרה היא displayConfig.keepScreenOn, ובלי מתג בהגדרות."
+    },
+    {
+      "question": "להוסיף בהגדרות מתג 'השאר מסך דלוק'?",
+      "recommendedDefault": "לא כרגע. זו הגדרה בקוד בלבד, ואפשר להוסיף מתג אחר כך."
+    },
+    {
+      "question": "האייקון של אימון מול בוט: רובוט בצבע P2 במסגרת P2 (כמו לוח העיצוב), רובוט בצבע P2 בקופסה ניטרלית (כמו המדורגים), או 'אני מול בוט' (האווטר שלי חופף לרובוט, כמו בלוח של הסבב הראשון)?",
+      "recommendedDefault": "רובוט בצבע P2 (#ff9440) במסגרת P2 בגודל 44, מצויר מחדש עם פה ועיניים גדולות."
+    },
+    {
+      "question": "גודל כותרת השורה במסך משחק חדש: 16 (מקום בטוח לשורה שישית ב־S22 גם עם כפתורי ניווט) או 18 (קרוב יותר לגודל של היום, ושורה שישית תדרוש אולי גלילה קטנה)?",
+      "recommendedDefault": "16 מודגש (playerName)."
+    },
+    {
+      "question": "להוסיף כבר עכשיו כרטיס 'אימון בשלבים · בקרוב' (התבנית של 'בקרוב' כבר קיימת), או רק להשאיר מקום?",
+      "recommendedDefault": "רק להשאיר מקום, בלי כרטיס. כשהמצב יוגדר צריך לאשר במפורש את השינוי מ'חמש אפשרויות בלבד' שבאפיון המקורי (§5)."
+    },
+    {
+      "question": "השורה התחתונה 'מדורג דורש חיבור לאינטרנט · אימון זמין תמיד': להשאיר?",
+      "recommendedDefault": "להשאיר. אם השורה השישית לא תיכנס במכשיר, אפשר להסיר אותה כשמוסיפים את 'אימון בשלבים' (חוסך כ־32dp)."
+    }
+  ],
+  "sharedFiles": [
+    "apps/mobile/src/components/Icon.tsx",
+    "apps/mobile/app/_layout.tsx",
+    "apps/mobile/package.json",
+    "package-lock.json",
+    "docs/01-SPEC.md",
+    "docs/QA-CHECKLIST.md",
+    "docs/design/components.md",
+    "docs/DECISIONS-PENDING.md",
+    "apps/mobile/src/screens/home/homeModel.ts"
+  ],
+  "needsServerDeploy": false
+}

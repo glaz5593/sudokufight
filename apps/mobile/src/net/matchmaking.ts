@@ -1,4 +1,4 @@
-import type { Clock, PlayerId, Scheduler } from '@sudoku-fight/engine';
+import { type Clock, INTERFERENCE_KINDS, type PlayerId, type Scheduler } from '@sudoku-fight/engine';
 import {
   MATCHMAKING_ROOM_NAME,
   MATCHMAKING_SERVER_MESSAGE_TYPES,
@@ -21,7 +21,10 @@ import type { OnlineInfo } from './remoteGameHost';
  *
  * - `searching`: the rating, the range (it widens every 5 s; "keep searching" lifts its cap) and the search
  *   time. Times are turned into the phone's clock as they arrive (the offset each message's `serverTime`
- *   gives), so the screens count from `search.startedAt` without asking the server every second.
+ *   gives), so the screens count from `search.startedAt` without asking the server every second. Also who
+ *   else is there: `search.nextRange` (null: nobody this player could meet is searching now, and the screen
+ *   says so at once; undefined: an older server that does not say). The server sends `searching` again
+ *   whenever it changes (someone joined the queue or left it); the client only mirrors it.
  * - `found`: the opponents, and this player's seat reservation in the match's game room. The client enters
  *   it at once through `deps.enter` (on the phone an OnlineSession over a RemoteGameHost: being connected is
  *   being ready, D37) and keeps this connection until GO. From here there is no cancelling [D32].
@@ -131,7 +134,10 @@ export interface MatchmakingConnectorOptions {
   token: () => Promise<string | null>;
 }
 
-/** The SDK's `joinOrCreate('matchmaking', { queueKey })` with the account's token (protocol matchmaking.ts). */
+/**
+ * The SDK's `joinOrCreate('matchmaking', { queueKey, interferenceKinds })` with the account's token (protocol
+ * matchmaking.ts).
+ */
 export function createMatchmakingConnector({
   sdk,
   token,
@@ -148,7 +154,9 @@ export function createMatchmakingConnector({
       sdk.auth.token = bearer;
       let room: SdkMatchmakingRoomLike;
       try {
-        const options: MatchmakingJoinOptions = { queueKey };
+        // Every interference kind this app can show [D47]: the match allows only what every player's app
+        // declared, so an older app (which declares none) never gets a kind it can't draw.
+        const options: MatchmakingJoinOptions = { queueKey, interferenceKinds: [...INTERFERENCE_KINDS] };
         room = await sdk.joinOrCreate(MATCHMAKING_ROOM_NAME, options);
       } catch (error) {
         throw matchmakingFailureOf(error);
@@ -196,6 +204,12 @@ export interface SearchInfo {
   timeoutAt: number;
   /** Back at the head of the queue after a match fell through. */
   requeued: boolean;
+  /**
+   * The server's next range (protocol `searching.nextRange`): null when not enough players this one could
+   * be matched with are searching now ("nobody else is searching"); undefined when the server didn't say
+   * (an older server: unknown, the range is shown as before).
+   */
+  nextRange?: number | null;
 }
 
 export interface MatchInfo {
@@ -221,6 +235,8 @@ export interface TimeoutInfo {
   extended: boolean;
   /** Phone time until which "keep searching" carries on this search (later: a new one). */
   keepSearchingUntil: number;
+  /** As SearchInfo's, at the timeout (null: nobody else was searching). */
+  nextRange?: number | null;
 }
 
 /** A match that fell through before GO (a player did not come), and I am back in the queue. */
@@ -278,8 +294,17 @@ export interface MatchmakingClientDeps<E extends MatchEntry = MatchEntry> {
   scheduler: Scheduler;
   /** Analytics: matchmaking_wait. */
   track?: (name: 'matchmaking_wait', props: { sec: number; result: MatchWaitResult }) => void;
-  /** Diagnostics. Never gets a token or a reservation. */
+  /**
+   * Diagnostics (release builds: Crashlytics breadcrumbs, net/matchmakingDevice.ts). Never gets a token, a
+   * reservation or a player's name: what happened, codes, counts and ratings.
+   */
   log?: (line: string) => void;
+  /**
+   * An error the search survived but must not hide (release builds: a Crashlytics non-fatal): a listener that
+   * threw while being told ('listener failed'), or a server message that could not be handled ('message
+   * failed').
+   */
+  report?: (error: unknown, context: 'listener failed' | 'message failed') => void;
   options?: Partial<MatchmakingClientOptions>;
 }
 
@@ -496,6 +521,7 @@ export class MatchmakingClient<E extends MatchEntry = MatchEntry> {
           startedAt: now - m.elapsedMs,
           timeoutAt: now + (m.timeoutAt - m.serverTime),
           requeued: m.requeued ?? false,
+          ...(m.nextRange !== undefined ? { nextRange: m.nextRange } : {}),
         };
         return this.notify();
       }
@@ -506,8 +532,16 @@ export class MatchmakingClient<E extends MatchEntry = MatchEntry> {
           range: m.range,
           extended: m.extended,
           keepSearchingUntil: m.keepSearchingUntil - (this.offset ?? 0),
+          ...(m.nextRange !== undefined ? { nextRange: m.nextRange } : {}),
         };
-        if (this.search) this.search = { ...this.search, range: m.range, extended: m.extended };
+        // "Keep searching" shows this search until the server's next `searching`: the last word on who is there.
+        if (this.search)
+          this.search = {
+            ...this.search,
+            range: m.range,
+            extended: m.extended,
+            ...(m.nextRange !== undefined ? { nextRange: m.nextRange } : {}),
+          };
         this.endWait('timeout', m.elapsedMs);
         return this.notify();
       case 'found':
@@ -569,9 +603,10 @@ export class MatchmakingClient<E extends MatchEntry = MatchEntry> {
     this.timeout = null;
     this.fellThrough = null;
     this.phase = 'found';
+    // Ratings only: the log goes to crash reports, names never do.
     const vs = m.players
       .filter((p) => p.id !== m.playerId)
-      .map((p) => `${p.name} (${p.rating})`)
+      .map((p) => String(p.rating))
       .join(', ');
     this.log(`found: vs ${vs}${m.rematch ? ' (a rematch)' : ''}`);
     let entry: E;
@@ -717,6 +752,7 @@ export class MatchmakingClient<E extends MatchEntry = MatchEntry> {
         listener(this.snapshot);
       } catch (error) {
         this.log(`listener failed: ${messageOf(error)}`);
+        this.report(error, 'listener failed');
       }
     }
   }
@@ -726,6 +762,7 @@ export class MatchmakingClient<E extends MatchEntry = MatchEntry> {
       step();
     } catch (error) {
       this.log(`message failed: ${messageOf(error)}`);
+      this.report(error, 'message failed');
       if (room === this.room && SEARCHING_PHASES.includes(this.phase)) {
         this.fail(new MatchmakingFailure('unknown', messageOf(error)));
       }
@@ -738,6 +775,14 @@ export class MatchmakingClient<E extends MatchEntry = MatchEntry> {
 
   private log(line: string): void {
     this.deps.log?.(line);
+  }
+
+  private report(error: unknown, context: 'listener failed' | 'message failed'): void {
+    try {
+      this.deps.report?.(error, context);
+    } catch {
+      // Reporting never breaks a search.
+    }
   }
 }
 

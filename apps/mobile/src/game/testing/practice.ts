@@ -9,6 +9,7 @@ import {
   ManualScheduler,
   parseCellName,
   type PlayerInfo,
+  type Rules,
 } from '@sudoku-fight/engine';
 
 import { allOfflinePuzzles, type OfflinePuzzle, poolOf, type PuzzlePool } from '../offlinePool';
@@ -50,13 +51,24 @@ export interface TestHost {
   scheduler: ManualScheduler;
 }
 
-/** A LocalGameHost on a manual clock: solo by default, or with more players (the first is 'me'). */
+/**
+ * A LocalGameHost on a manual clock: solo by default, or with more players (the first is 'me'). `rules` overrides
+ * the engine's rules for the mode, e.g. `{ interferences: true }` for a duel with a bot that may interfere (a
+ * practice against a bot has none by default, D44).
+ */
 export function testHost({
   mode = 'solo',
   players = [{ id: 'me' }],
   puzzle = PUZZLE,
   at = 1_000_000,
-}: { mode?: GameMode; players?: PlayerInfo[]; puzzle?: OfflinePuzzle; at?: number } = {}): TestHost {
+  rules,
+}: {
+  mode?: GameMode;
+  players?: PlayerInfo[];
+  puzzle?: OfflinePuzzle;
+  at?: number;
+  rules?: Partial<Rules>;
+} = {}): TestHost {
   const clock = new ManualClock(at);
   const scheduler = new ManualScheduler(clock);
   const host = new LocalGameHost({
@@ -66,7 +78,7 @@ export function testHost({
       gameType: puzzle.gameType,
       puzzle: { id: puzzle.id, givens: puzzle.givens, solution: puzzle.solution },
       players,
-      rules: defaultRules(mode, puzzle.gameType),
+      rules: defaultRules(mode, puzzle.gameType, rules),
       seed: 1,
     },
     playerId: players[0]!.id,

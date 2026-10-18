@@ -89,11 +89,11 @@ describe('design-system sections', () => {
     expect(screen.getByTestId('bot-chip', hidden)).toBeTruthy();
   });
 
-  it('cards: the pair opens the arsenal and the picker; a short ⚡ raises the error toast', async () => {
+  it('cards: the pair opens the interference picker and the reactions; a short "הפרעה" raises the error toast', async () => {
     await show(<CardSection />);
     const pair = screen.getByTestId('card-pair');
     await fireEvent.press(within(pair).getByRole('button', { name: /^הפרעה ל־NinaVolt/ }));
-    expect(within(pair).getByRole('button', { name: 'סגירת ארסנל ההפרעות' })).toBeTruthy();
+    expect(within(pair).getByRole('button', { name: 'סגירת חלון ההפרעות' })).toBeTruthy();
     await fireEvent.press(within(pair).getByRole('button', { name: 'תגובות' }));
     expect(within(pair).getByRole('button', { name: 'תגובות', expanded: true })).toBeTruthy();
 
@@ -104,6 +104,22 @@ describe('design-system sections', () => {
     expect(screen.getByTestId('compact-3')).toBeTruthy();
     expect(screen.getAllByTestId('compact-4')).toHaveLength(2);
     expect(screen.getByTestId('opponent-bot')).toBeTruthy();
+    // [D44] No "הפרעה" against a bot.
+    expect(within(screen.getByTestId('opponent-bot')).queryByTestId('interfere')).toBeNull();
+    // [D45] The target specimen: framed, "יעד"; no drag specimens any more.
+    const targeted = screen.getByTestId('opponent-targeted');
+    expect(within(screen.getByTestId('target-frame')).getByText('יעד', hidden)).toBeTruthy();
+    expect(targeted).toBeTruthy();
+    expect(screen.queryByTestId('opponent-dropTarget')).toBeNull();
+    // The button's states: the word "הפרעה" only, blocked ones dimmed but still answering a tap.
+    for (const key of ['available', 'expanded', 'unaffordable', 'busy', 'notRunning']) {
+      expect(screen.getByTestId(`interfere-${key}`)).toHaveTextContent('הפרעה');
+      expect(screen.getByTestId(`interfere-compact-${key}`)).toHaveTextContent('הפרעה');
+    }
+    expect(screen.getByTestId('interfere-busy')).toHaveProp('accessibilityState', {
+      disabled: true,
+      expanded: false,
+    });
   });
 
   it('hud: a lead bar per state and the lock strip in each state', async () => {
@@ -155,6 +171,9 @@ describe('design-system sections', () => {
       'F8, ריקה, נעולה אצלך, הטיימר עצור',
     );
     expect(screen.getByTestId('closeup-pending').props.accessibilityLabel).toMatch(/ממתינה לאישור הנעילה$/);
+    // My digit waiting for the connection (#14, D42).
+    expect(screen.getByTestId('closeup-queued').props.accessibilityLabel).toMatch(/, 7, ממתין לחיבור$/);
+    expect(within(screen.getByTestId('closeup-queued')).getByTestId('cell-queued-mark', hidden)).toBeTruthy();
     expect(within(screen.getByTestId('closeup-oppLock')).getByTestId('cell-avatar', hidden)).toBeTruthy();
   });
 
@@ -203,5 +222,45 @@ describe('design-system sections', () => {
     await i18n.changeLanguage('en');
     await show(<BoardSection />);
     expect(screen.getByTestId('ds-clock')).toHaveTextContent('Game clock: 16 seconds');
+  });
+});
+
+describe('design-system sections: an interference on the board [D46, D47]', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('he');
+    useSettings.setState({ reduceMotion: 'off' });
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('plays a kind on the board for 5 s: the dim and its effect, live or still, then nothing', async () => {
+    const { unmount } = await show(<OverlaySection />);
+    expect(screen.queryByTestId('board-hit', hidden)).toBeNull();
+    await fireEvent.press(screen.getByTestId('ds-hit-kind-scramble'));
+    await fireEvent.press(screen.getByTestId('ds-hit-play'));
+    await act(async () => void jest.advanceTimersByTime(300));
+    expect(screen.getByTestId('hit-dim', hidden)).toBeTruthy();
+    expect(screen.getByTestId('hit-scramble', hidden)).toBeTruthy();
+    expect(screen.getByTestId('ds-hit-region', hidden)).toBeTruthy();
+    await fireEvent(screen.getByTestId('ds-hit-reduce'), 'valueChange', true);
+    expect(screen.getByTestId('hit-scramble-still', hidden)).toBeTruthy();
+    await act(async () => void jest.advanceTimersByTime(5_000));
+    expect(screen.queryByTestId('board-hit', hidden)).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('ds-hit-kind-ink'));
+    await fireEvent.press(screen.getByTestId('ds-hit-play'));
+    await act(async () => void jest.advanceTimersByTime(300));
+    expect(screen.getByTestId('hit-ink-still', hidden)).toBeTruthy();
+    expect(screen.getByTestId('hit-dim', hidden)).toBeTruthy();
+    // Over again before the section goes (its frame callbacks stop with the hit).
+    await act(async () => void jest.advanceTimersByTime(5_000));
+    expect(screen.queryByTestId('board-hit', hidden)).toBeNull();
+    // Gone while the fake timers still run the UI thread's last jobs (its frame callbacks unregister).
+    await act(async () => {
+      unmount();
+      jest.advanceTimersByTime(100);
+    });
   });
 });

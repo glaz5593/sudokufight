@@ -9,6 +9,7 @@ import {
   type GameResult,
   type GameState,
   type GameType,
+  type LeaveGuardReason,
   type PlayerId,
   type PlayerInfo,
   type PlayerStats,
@@ -113,6 +114,19 @@ export interface RatingPairRow {
   isBot: boolean;
   colorIndex: number;
   delta: number;
+  /** Why this pair is 0: a leave guard held it (spec §11.2). Null for a pair that moved by place. */
+  guard: LeaveGuardReason | null;
+}
+
+/**
+ * One of my pairs a leave guard held at 0 (spec §11.2), for the caption under the rating change: "מול נינה:
+ * הדירוג לא ירד, כי יצאת לפני המהלך הראשון שלך". `name` null: the screen's word for an unnamed player.
+ */
+export interface RatingGuardRow {
+  playerId: PlayerId;
+  name: string | null;
+  isBot: boolean;
+  reason: LeaveGuardReason;
 }
 
 /** A game award (spec §12) and who won it; `value` is the engine's (points, mistakes, ms). */
@@ -145,6 +159,11 @@ export interface ResultsModel {
    * the one pair is the change itself), and empty for a result stored before the engine had the split.
    */
   ratingPairs: RatingPairRow[];
+  /**
+   * My pairs a leave guard held at 0 (spec §11.2), for any number of players (with 2 too: the one pair), in
+   * the order of the ranking. Empty when no guard held, and for a result stored without ratingPairs.
+   */
+  ratingGuards: RatingGuardRow[];
   awards: AwardResult[];
   score: number;
   mistakes: number;
@@ -253,7 +272,15 @@ function versusOf(
   avatars: AvatarsById | null = null,
 ): Pick<
   ResultsModel,
-  'players' | 'outcome' | 'place' | 'opponents' | 'awards' | 'ranking' | 'rating' | 'ratingPairs'
+  | 'players'
+  | 'outcome'
+  | 'place'
+  | 'opponents'
+  | 'awards'
+  | 'ranking'
+  | 'rating'
+  | 'ratingPairs'
+  | 'ratingGuards'
 > {
   const players = Math.max(1, standings.length, infos?.length ?? 0);
   const mine = standings.find((s) => s.playerId === myId);
@@ -321,8 +348,8 @@ function versusOf(
           })
       : [];
   const seatOf = (id: PlayerId) => standings.find((s) => s.playerId === id)?.seat ?? null;
-  const myPairs = players >= 3 ? result?.ratingPairs?.find((p) => p.playerId === myId) : undefined;
-  const ratingPairs = (myPairs?.pairs ?? []).map((pair): RatingPairRow => {
+  const allMyPairs = result?.ratingPairs?.find((p) => p.playerId === myId)?.pairs ?? [];
+  const ratingPairs = (players >= 3 ? allMyPairs : []).map((pair): RatingPairRow => {
     const who = playerIdentity(info(pair.opponentId));
     const seat = seatOf(pair.opponentId);
     return {
@@ -332,9 +359,26 @@ function versusOf(
       isBot: who.isBot,
       colorIndex: seat === null ? 1 : colorIndexFor(seat, mine?.seat ?? null, seats),
       delta: pair.delta,
+      guard: pair.guard ?? null,
     };
   });
-  return { players, outcome, place, opponents, awards, ranking, rating: ratingOf(myId), ratingPairs };
+  // Any number of players: with 2 the pair rows are not shown, but a guarded 0 still needs its reason.
+  const ratingGuards = allMyPairs.flatMap((pair): RatingGuardRow[] => {
+    if (!pair.guard) return [];
+    const who = playerIdentity(info(pair.opponentId));
+    return [{ playerId: pair.opponentId, name: who.name, isBot: who.isBot, reason: pair.guard }];
+  });
+  return {
+    players,
+    outcome,
+    place,
+    opponents,
+    awards,
+    ranking,
+    rating: ratingOf(myId),
+    ratingPairs,
+    ratingGuards,
+  };
 }
 
 function ratingResult(change: RatingChange | undefined): RatingResult | null {

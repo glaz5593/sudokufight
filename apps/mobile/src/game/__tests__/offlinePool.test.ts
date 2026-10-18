@@ -1,7 +1,17 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { checkPuzzle, GAME_TYPES, type PuzzleRecord, puzzleId } from '@sudoku-fight/engine';
+import {
+  checkPuzzle,
+  DEFAULT_GIVENS,
+  digitCounts,
+  filledCount,
+  GAME_TYPES,
+  givensSpread,
+  parseGrid,
+  type PuzzleRecord,
+  puzzleId,
+} from '@sudoku-fight/engine';
 
 import { allOfflinePuzzles, offlinePool, poolIds, poolOf, puzzleById } from '../offlinePool';
 
@@ -39,6 +49,25 @@ describe('the offline pool (spec §16.1, §20)', () => {
   it('ids are the stable hash of the givens, and unique', () => {
     expect(all.filter((p) => p.id !== puzzleId(p.givens))).toEqual([]);
     expect(new Set(all.map((p) => p.id)).size).toBe(all.length);
+  });
+
+  it('fast boards start with 45–50 givens, normal ones with 35–40; hard ones as before (§5.2) [D43]', () => {
+    const outOfRange = all.filter((p) => {
+      const range = DEFAULT_GIVENS[p.gameType];
+      if (range === null) return false;
+      const n = filledCount(parseGrid(p.givens));
+      return n < range.min || n > range.max;
+    });
+    expect(outOfRange.map((p) => p.id)).toEqual([]);
+  });
+
+  it('fast and normal boards show every digit, and no digit stands out', () => {
+    const uneven = all.filter((p) => {
+      if (p.gameType === 'hard') return false;
+      const grid = parseGrid(p.givens);
+      return digitCounts(grid).some((n) => n === 0) || givensSpread(grid) > 3;
+    });
+    expect(uneven.map((p) => p.id)).toEqual([]);
   });
 
   it('a sample of each type are valid puzzles with one solution that matches', () => {

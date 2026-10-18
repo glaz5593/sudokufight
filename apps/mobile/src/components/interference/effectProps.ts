@@ -30,5 +30,10 @@ export interface EffectProps {
   scope: InterferenceScope;
   /** The board inside the region, when known (the warp's offset copy follows it). */
   board?: RegionRect | null;
+  /**
+   * The hit's seed (hitSeedOf: the game and the interference's event), for the effects whose picture is drawn
+   * by chance [D47]: the same hit always looks the same, live or still.
+   */
+  seed?: number;
   testID?: string;
 }

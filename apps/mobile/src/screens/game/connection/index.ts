@@ -4,7 +4,8 @@
  *
  * Wiring (the game screen and app/game.tsx):
  * 1. Map the RemoteGameHost's socket state onto ConnectionStatus (times in the server's clock).
- * 2. On every render tick: `const model = connectionModel(view, status, serverNow, { graceMs })`.
+ * 2. On every render tick: `const model = connectionModel(view, status, serverNow, { graceMs, softGraceMs })`
+ *    (the game's rules.graceMs and rules.softGraceMs [D42]).
  * 3. Render `<ConnectionLayer model={model} … />` last, over the content. While `blocksInput(model)`, give the
  *    content `importantForAccessibility="no-hide-descendants"` (the layer takes the touches itself).
  * 4. When the game is over, wait for "לתוצאות" while `holdsResults(model)` before going to the results.
@@ -37,6 +38,7 @@ export {
   type OpponentLeftModel,
   type OpponentReconnectingModel,
   type RoomRefusal,
+  type SelfOfflineModel,
   type SelfPhase,
   type SelfReconnectingModel,
   SYNCED_HOLD_MS,

@@ -15,8 +15,8 @@ import { secondsOf } from '../../../components/player/format';
  * Loading, Opponent-Reconnecting, Self-Reconnecting, Opponent-Left and Connection-Error), as a pure function
  * of the game's view, this phone's connection and the time:
  *
- *   connectionModel(view, status, now) → none | connecting | lobby | selfReconnecting | opponentReconnecting
- *                                        | opponentLeft | error
+ *   connectionModel(view, status, now) → none | connecting | lobby | selfOffline | selfReconnecting
+ *                                        | opponentReconnecting | opponentLeft | error
  *
  * - `view` is the GameView the host gives the screen (null before the first snapshot).
  * - `status` is what the RemoteGameHost knows of its socket (ConnectionStatus below); the integrator maps the
@@ -29,9 +29,14 @@ import { secondsOf } from '../../../components/player/format';
  * 1. The game is over: "the opponent left" (2 players, won by abandonment, spec §16.2) or nothing (results).
  * 2. A connection error (§16.3).
  * 3. Before the game: connecting, or a dev room's lobby.
- * 4. My own connection is lost or coming back (Self-Reconnecting); my view can't be trusted meanwhile.
+ * 4. My own connection is lost or coming back: inside its soft phase [D42] only a mark (selfOffline: the board
+ *    keeps playing, the host queues the digits) when the host plays on here; else, and after it,
+ *    Self-Reconnecting, as my view can't be trusted. A game frozen for an opponent keeps its freeze screen (5.)
+ *    during my soft phase.
  * 5. The engine froze the game for a disconnected opponent (2 players, Opponent-Reconnecting).
  * 6. Just back: a short "everything is synced" banner that no longer blocks play.
+ * An opponent in the soft phase gives no model: the game runs, and only their card shows it (cardModel's
+ * 'unstable' presence).
  */
 
 // ---------------------------------------------------------------------------------------------------------
@@ -81,11 +86,28 @@ export type ConnectionStatus =
   | { kind: 'online'; resyncedAt?: number | null }
   /**
    * The socket dropped and the host is trying to come back (`attempt` from 1). `lostAt`: when it noticed.
-   * `graceEndsAt`: when the server will call it abandonment, if the host knows better than lostAt + grace.
+   * `softEndsAt`: until then the soft phase runs [D42] (the game goes on, the player plays on, nothing about
+   * the connection is shown); null when the game has none. `playable`: whether the host plays on here meanwhile
+   * (false: the game was not running when the connection went, or its rules have no play offline: 'turns', no
+   * offline moves); absent counts as true. `graceEndsAt`: when the server will call it abandonment, if the
+   * host knows better than lostAt + the soft phase + the grace.
    */
-  | { kind: 'reconnecting'; attempt: number; lostAt: number; graceEndsAt?: number | null }
+  | {
+      kind: 'reconnecting';
+      attempt: number;
+      lostAt: number;
+      softEndsAt?: number | null;
+      playable?: boolean;
+      graceEndsAt?: number | null;
+    }
   /** The socket is back; the fresh snapshot is on its way. */
-  | { kind: 'resyncing'; lostAt?: number | null; graceEndsAt?: number | null }
+  | {
+      kind: 'resyncing';
+      lostAt?: number | null;
+      softEndsAt?: number | null;
+      playable?: boolean;
+      graceEndsAt?: number | null;
+    }
   /**
    * No connection (spec §16.3). `code` is the small support code on the error screen (e.g.
    * "ERR_SOCKET_TIMEOUT", "4002", "gameStarted"). `attempts` counts the tries so far; `retrying` while
@@ -106,6 +128,16 @@ export interface ConnectionModelOptions {
    * Default: the engine's rules for the view's mode and game type (15 s, D4).
    */
   graceMs?: number;
+  /**
+   * The game's soft phase (rules.softGraceMs) [D42]: a lost connection's grace starts after it, so the
+   * countdowns run to lostAt + soft phase + grace, and "the opponent left" says both. Default 0 (none known).
+   */
+  softGraceMs?: number;
+  /**
+   * The other players whose absence began hard, with no soft phase (a deliberate leave, a seat empty at GO):
+   * their "the opponent left" says the grace alone (RemoteGameHost's OnlineInfo.hardLeavers) [D42].
+   */
+  hardLeavers?: readonly PlayerId[];
   /** How long the "everything is synced" banner stays after a reconnection. */
   syncedHoldMs?: number;
 }
@@ -164,6 +196,19 @@ export interface SelfReconnectingModel {
   syncItems: SyncItem[];
 }
 
+/**
+ * My connection is lost, inside its soft phase [D42] (Moshe: "לסמן על המשתמש שהוא בלי תקשורת ולהמשיך את המשחק
+ * כרגיל"): no overlay and no banner, the board keeps taking taps (the host plays them here and queues the
+ * digits); only my card's mark and one announcement for screen readers. At `softEndsAt` the Self-Reconnecting
+ * screen of the hard phase takes over.
+ */
+export interface SelfOfflineModel {
+  kind: 'selfOffline';
+  softEndsAt: number;
+  /** Whole seconds until the soft phase ends. */
+  secondsLeft: number;
+}
+
 export interface OpponentReconnectingModel {
   kind: 'opponentReconnecting';
   playerId: PlayerId;
@@ -186,6 +231,11 @@ export interface OpponentLeftModel {
   opponentScore: number;
   /** My rating change, when the game was rated. */
   ratingDelta: number | null;
+  /**
+   * Why that change is 0 (guard (b) of spec §11.2): the opponent left before my first move, or was ahead of
+   * me when leaving. Null otherwise, and for a result stored without ratingPairs.
+   */
+  ratingGuard: 'opponentLeftBeforeMyMove' | 'opponentLeftAhead' | null;
   gameType: GameType;
   /** The grace that ran out, in seconds ("15 שניות בלי חיבור"). */
   graceSeconds: number;
@@ -204,6 +254,7 @@ export type ConnectionModel =
   | { kind: 'none' }
   | ConnectingModel
   | LobbyModel
+  | SelfOfflineModel
   | SelfReconnectingModel
   | OpponentReconnectingModel
   | OpponentLeftModel
@@ -223,10 +274,15 @@ export function connectionModel(
 ): ConnectionModel {
   const graceMs =
     options.graceMs ?? (view ? defaultRules(view.mode, view.gameType).graceMs : DEFAULT_GRACE_MS);
+  const softGraceMs = options.softGraceMs ?? 0;
   const syncedHoldMs = options.syncedHoldMs ?? SYNCED_HOLD_MS;
 
-  // 1. Over: the result is known whatever the socket does now.
-  if (view?.status === 'over') return opponentLeftOf(view, graceMs) ?? NONE;
+  // 1. Over: the result is known whatever the socket does now. The time the opponent had: the soft phase and
+  // the grace after a drop, the grace alone after a leave that was hard at once [D42].
+  if (view?.status === 'over') {
+    const hard = new Set(options.hardLeavers ?? []);
+    return opponentLeftOf(view, (id) => (hard.has(id) ? graceMs : softGraceMs + graceMs)) ?? NONE;
+  }
 
   // 2. No connection.
   if (status.kind === 'failed') {
@@ -282,18 +338,29 @@ export function connectionModel(
     };
   };
 
-  // 4. My connection.
-  if (status.kind === 'reconnecting') {
-    const endsAt = status.graceEndsAt ?? me?.graceEndsAt ?? status.lostAt + graceMs;
-    return self('lost', Math.max(1, status.attempt), endsAt);
+  // 4. My connection. Inside its soft phase [D42] the game goes on and nothing is shown but the mark, when the
+  // host plays on here. When it does not (a game frozen for an opponent, 'turns', no offline moves), nothing
+  // can be played meanwhile: a frozen game keeps its freeze screen (5.), any other locks as before.
+  const lostLink = status.kind === 'reconnecting' || status.kind === 'resyncing';
+  const softEndsAt = lostLink ? (status.softEndsAt ?? null) : null;
+  const inSoftPhase = softEndsAt !== null && now < softEndsAt && me?.status === 'active';
+  const playsOn = lostLink && status.playable !== false;
+  if (inSoftPhase && playsOn)
+    return { kind: 'selfOffline', softEndsAt, secondsLeft: secondsOf(softEndsAt - now) };
+  const frozenForOpponent = inSoftPhase && view.status === 'paused' && awayOpponent(view) !== null;
+  if (!frozenForOpponent) {
+    if (status.kind === 'reconnecting') {
+      const endsAt = status.graceEndsAt ?? me?.graceEndsAt ?? status.lostAt + softGraceMs + graceMs;
+      return self('lost', Math.max(1, status.attempt), endsAt);
+    }
+    if (status.kind === 'connecting') {
+      // Joining again by code (the reconnection token was refused) while the game runs.
+      return self('lost', null, me?.graceEndsAt ?? null);
+    }
+    if (status.kind === 'resyncing') return self('syncing', null, null);
+    // The snapshot of a reconnection comes before the engine's 'reconnect': for a moment I am still away in it.
+    if (me && me.status === 'active' && !me.connected) return self('syncing', null, null);
   }
-  if (status.kind === 'connecting') {
-    // Joining again by code (the reconnection token was refused) while the game runs.
-    return self('lost', null, me?.graceEndsAt ?? null);
-  }
-  if (status.kind === 'resyncing') return self('syncing', null, null);
-  // The snapshot of a reconnection comes before the engine's 'reconnect': for a moment I am still away in it.
-  if (me && me.status === 'active' && !me.connected) return self('syncing', null, null);
 
   // 5. The engine froze the game for an opponent (2 players still in, spec §16.2). Out of a game of 3–4 that
   // froze for the last two (D36), nothing waits on me and nobody wins by me: no freeze screen, the cards say it.
@@ -344,14 +411,18 @@ function colorOf(view: GameView, player: PlayerView): number {
 
 /**
  * "The opponent left" (spec §16.2): a 2-player game that ended because the other player did not come back in
- * time, so I won by abandonment. A surrender, or a game of 3–4, goes straight to the results.
+ * time, so I won by abandonment. A surrender, or a game of 3–4, goes straight to the results. `graceOf`: the
+ * time the opponent had to come back (after a drop the soft phase and the grace [D42], after a leave that was
+ * hard at once the grace alone).
  */
-function opponentLeftOf(view: GameView, graceMs: number): OpponentLeftModel | null {
+function opponentLeftOf(view: GameView, graceOf: (id: PlayerId) => number): OpponentLeftModel | null {
   if (view.players.length !== 2 || view.result?.reason !== 'lastPlayerStanding') return null;
   const me = view.players.find((p) => p.id === view.me);
   const opponent = view.players.find((p) => p.id !== view.me);
   if (!me || !opponent || me.status !== 'active' || opponent.status !== 'abandoned') return null;
   const change = view.result.ratingChanges.find((c) => c.playerId === me.id);
+  // My one pair: held at 0 by guard (b) of spec §11.2 when the opponent left before my first move or ahead.
+  const guard = view.result.ratingPairs?.find((p) => p.playerId === me.id)?.pairs[0]?.guard;
   return {
     kind: 'opponentLeft',
     playerId: opponent.id,
@@ -360,8 +431,9 @@ function opponentLeftOf(view: GameView, graceMs: number): OpponentLeftModel | nu
     me: { id: me.id, name: me.name, score: me.score },
     opponentScore: opponent.score,
     ratingDelta: change ? change.delta : null,
+    ratingGuard: guard === 'opponentLeftBeforeMyMove' || guard === 'opponentLeftAhead' ? guard : null,
     gameType: view.gameType,
-    graceSeconds: Math.round(graceMs / 1000),
+    graceSeconds: Math.round(graceOf(opponent.id) / 1000),
   };
 }
 
@@ -398,6 +470,7 @@ export function lobbyOf(lobby: LobbyInfo): LobbyModel {
 export function blocksInput(model: ConnectionModel): boolean {
   switch (model.kind) {
     case 'none':
+    case 'selfOffline': // [D42] the player plays on
       return false;
     case 'selfReconnecting':
       return model.phase !== 'synced';

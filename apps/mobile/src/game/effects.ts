@@ -1,5 +1,6 @@
 import type {
   CellIndex,
+  ClientAction,
   Digit,
   HostUpdate,
   InterferenceKind,
@@ -27,6 +28,8 @@ export type UiEffect =
       /** The player's score after it (the card counts up to it). */
       score: number;
       byMe: boolean;
+      /** Entered while the connection was lost and sent on the return [D42]. */
+      offline?: true;
     }
   | {
       kind: 'wrong';
@@ -37,11 +40,20 @@ export type UiEffect =
       playerId: PlayerId;
       score: number;
       byMe: boolean;
+      offline?: true;
     }
   /** My select on someone else's lock (spec §6.2.3): a short buzz, no penalty. */
   | { kind: 'taken'; cell: CellIndex }
-  /** Any other refusal of my action; `cell` when the action named one (e.g. a re-lock wait [D2]). */
-  | { kind: 'refused'; reason: RejectReason; cell?: CellIndex }
+  /**
+   * A digit I entered while my connection was lost did not count on the return [D42]: the cell was no longer
+   * free for me (taken, filled, the digit tried there, or all nine placed). No penalty.
+   */
+  | { kind: 'offlineLost'; cell: CellIndex; digit: Digit; reason: RejectReason }
+  /**
+   * Any other refusal of my action. `action`: which action it was (a refused interference says it wasn't sent,
+   * whatever the reason [D45]); `cell` when the action named one (e.g. a re-lock wait [D2]).
+   */
+  | { kind: 'refused'; reason: RejectReason; action: ClientAction['type']; cell?: CellIndex }
   | { kind: 'locked'; seq: number; cell: CellIndex; playerId: PlayerId; byMe: boolean }
   | {
       kind: 'released';
@@ -60,9 +72,12 @@ export type UiEffectKind = UiEffect['kind'];
 export function effectsOf(update: HostUpdate, myId: PlayerId | null): UiEffect[] {
   if (update.kind === 'rejected') {
     const { action, reason } = update;
+    if (action.type === 'offlineMove')
+      return [{ kind: 'offlineLost', cell: action.cell, digit: action.digit, reason }];
     const cell = 'cell' in action ? action.cell : undefined;
     if (reason === 'cellTaken' && action.type === 'select') return [{ kind: 'taken', cell: action.cell }];
-    return [cell === undefined ? { kind: 'refused', reason } : { kind: 'refused', reason, cell }];
+    const refused = { kind: 'refused', reason, action: action.type } as const;
+    return [cell === undefined ? refused : { ...refused, cell }];
   }
 
   const effects: UiEffect[] = [];
@@ -79,6 +94,7 @@ export function effectsOf(update: HostUpdate, myId: PlayerId | null): UiEffect[]
           playerId: e.playerId,
           score: e.score,
           byMe: e.playerId === myId,
+          ...(e.offline ? { offline: true as const } : {}),
         });
         break;
       case 'placedWrong':
@@ -91,6 +107,7 @@ export function effectsOf(update: HostUpdate, myId: PlayerId | null): UiEffect[]
           playerId: e.playerId,
           score: e.score,
           byMe: e.playerId === myId,
+          ...(e.offline ? { offline: true as const } : {}),
         });
         break;
       case 'cellLocked':

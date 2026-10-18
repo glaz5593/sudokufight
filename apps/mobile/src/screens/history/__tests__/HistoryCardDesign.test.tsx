@@ -71,4 +71,18 @@ describe.each(['he', 'en'] as const)('HistoryCard in %s', (lng) => {
     });
     expect(screen.queryByTestId('history-card-g4-my-score', hidden)).toBeNull();
   });
+
+  it('the rating change: a gain green, a loss red, a 0 (e.g. held by a leave guard, §11.2) muted', async () => {
+    const colorOf = async (ratingDelta: number) => {
+      const { unmount } = await render(
+        <HistoryCard entry={{ ...duel, ratingDelta }} myAvatar="lava-lamp" now={NOW} onOpen={jest.fn()} />,
+      );
+      const style = flat(screen.getByTestId('history-card-g1-rating', hidden).props.style);
+      await unmount();
+      return (style as { color?: string }).color;
+    };
+    expect(await colorOf(11)).toBe(color.success);
+    expect(await colorOf(-15)).toBe(color.danger);
+    expect(await colorOf(0)).toBe(color.textMuted);
+  });
 });

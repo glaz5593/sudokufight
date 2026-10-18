@@ -21,6 +21,8 @@
     "online_female": "Online",
     "reconnecting": "Reconnecting",
     "reconnecting_female": "Reconnecting",
+    "unstable": "No connection",
+    "unstable_female": "No connection",
     "left": "Left",
     "left_female": "Left"
   },
@@ -80,7 +82,8 @@
   },
   "card": {
     "hit": "Under interference, {{time}}",
-    "drop": "Drop here"
+    "target": "Target",
+    "targetHint": "Interference target"
   },
   "actions": {
     "surrender": "Surrender",
@@ -88,16 +91,14 @@
     "reactions": "Reactions"
   },
   "interfere": {
-    "cost": "{{cost}} pts",
-    "unit": "pts",
-    "missing": "{{count}} pts short",
+    "button": "Interfere",
     "label": "Interfere with {{name}} · costs {{cost}} pts",
     "labelMissing": "Interfere with {{name}} · {{count}} pts short",
     "labelBusy": "Interfering with {{name}} is unavailable, already under interference",
     "labelNotRunning": "Interfering with {{name}} is unavailable right now",
     "labelDisconnected": "No interferences while disconnected",
     "labelOut": "{{name}} is out of the game",
-    "close": "Close the interference arsenal"
+    "close": "Close the interference picker"
   },
   "lead": {
     "tie": "Tie",

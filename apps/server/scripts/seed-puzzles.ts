@@ -3,11 +3,13 @@
  *
  *   npm run db:seed-puzzles                         # at the root, or: npm run db:seed-puzzles -w @sudoku-fight/server
  *   npm run db:seed-puzzles -- --file=other.json    # another bank file (default packages/engine/data/puzzles.json)
- *   npm run db:seed-puzzles -- --if-empty           # only if a game type has no ranked puzzle (npm run dev:lan)
+ *   npm run db:seed-puzzles -- --if-empty           # only if the pool is missing or differs from the file (npm run dev:lan)
  *
  * Only the puzzles with pool 'ranked' go into the `puzzles` table: the 'offline' pool ships in the app, and a
  * ranked game is never played on a puzzle whose solution is on the phone (spec §21). An upsert by id: run it
- * again after the bank changes. Nothing is deleted.
+ * again after the bank changes. Nothing is deleted: ranked puzzles that left the file are retired
+ * (retired_at) [D43], kept for the stored games and histories that point at them, and never picked again.
+ * Deploy the server that knows retired_at before running this against its database.
  *
  * Where: the server's settings (apps/server/.env, or the environment). Without DATABASE_URL, the development
  * PGlite folder: stop the dev server first (one process per folder). With DATABASE_URL, that Postgres, for
@@ -16,9 +18,17 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
+import { GAME_TYPES } from '@sudoku-fight/engine';
+
 import { ConfigError, loadConfig } from '../src/config';
 import { createDb, DataDirLockedError } from '../src/db';
-import { isRankedPoolReady, readPuzzleBank, rankedPoolSizes, seedRankedPuzzles } from '../src/puzzles';
+import {
+  isRankedPoolReady,
+  rankedPoolMatches,
+  rankedPoolSizes,
+  readPuzzleBank,
+  seedRankedPuzzles,
+} from '../src/puzzles';
 import { puzzleBankPath } from '../src/game/puzzles';
 
 function fail(message: string): never {
@@ -43,19 +53,19 @@ async function main(): Promise<void> {
     fail('PGLITE_DIR is "memory": the puzzles would be gone when this script ends');
   const where = config.database.kind === 'pglite' ? config.database.dataDir : 'Postgres (DATABASE_URL)';
 
+  const bank = readPuzzleBank(file);
   const database = await createDb(config);
   try {
     if (ifEmpty) {
       const before = await rankedPoolSizes(database.db);
-      if (isRankedPoolReady(before)) {
+      if (isRankedPoolReady(before) && (await rankedPoolMatches(database.db, bank))) {
         const counts = Object.entries(before).map(([type, n]) => `${type} ${n}`);
         console.log(
-          `[db:seed-puzzles] the ranked pool in ${where} is ready (${counts.join(', ')}): nothing to do`,
+          `[db:seed-puzzles] the ranked pool in ${where} is ready and matches the file (${counts.join(', ')}): nothing to do`,
         );
         return;
       }
     }
-    const bank = readPuzzleBank(file);
     const started = Date.now();
     const result = await seedRankedPuzzles(database.db, bank);
     const sizes = await rankedPoolSizes(database.db);
@@ -63,7 +73,11 @@ async function main(): Promise<void> {
       `[db:seed-puzzles] ${result.ranked} ranked puzzles from ${file} written to ${where} in ` +
         `${Date.now() - started} ms (${result.skipped} of other pools left out).`,
     );
-    for (const [type, n] of Object.entries(sizes)) console.log(`         ${type.padEnd(8)} ${n} in the pool`);
+    for (const type of GAME_TYPES)
+      console.log(
+        `         ${type.padEnd(8)} ${sizes[type]} in the pool` +
+          (result.retired[type] > 0 ? `, ${result.retired[type]} retired (no longer in the file)` : ''),
+      );
     if (result.ranked === 0) console.warn('[db:seed-puzzles] the bank has no ranked puzzles');
   } finally {
     await database.close();

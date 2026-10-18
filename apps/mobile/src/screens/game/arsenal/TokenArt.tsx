@@ -1,6 +1,6 @@
 import type { InterferenceKind } from '@sudoku-fight/engine';
-import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { type ReactNode, useEffect } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -14,20 +14,22 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, Ellipse, Path } from 'react-native-svg';
 
+import { Icon } from '../../../components/Icon';
 import { paletteAt } from '../../../components/player';
-import { color } from '../../../theme';
+import { color, radius, tokens } from '../../../theme';
 
 /**
- * The small live preview of an interference (spec §7.3.1, components.md §13: a token's illustration, and the
- * drag ghost's icon). In the C palette, as the full effects are (motion.md §4.4): the sender is me, so the
+ * The small live preview of an interference (spec §7.3.1, components.md §13: the illustration on each
+ * kind button of the picker). In the C palette, as the full effects are (motion.md §4.4): the sender is me, so the
  * sender's colour is P1, with gold and white. Each preview loops on the UI thread (one clock per preview, the
- * frames in worklets, no React render per frame). `still`: one fixed frame (reduced motion, locked tokens).
+ * frames in worklets, no React render per frame). `still`: one fixed frame (reduced motion, locked kinds).
  *
- * Decorative: the token's label says what it is.
+ * Decorative: the kind button's label says what it is. A kind this app doesn't know (a newer player's) gets a
+ * still bolt.
  */
 export interface TokenArtProps {
   kind: InterferenceKind;
-  /** The box, in dp (56 on a token, 34 on the ghost). */
+  /** The box, in dp (the picker's 36-dp preview on each kind button; 56 on the collection, 32 on a player card). */
   size: number;
   /** A fixed frame instead of the loop. */
   still?: boolean;
@@ -64,15 +66,33 @@ export function TokenArt({ kind, size, still = false, testID }: TokenArtProps) {
       importantForAccessibility="no-hide-descendants"
       testID={testID ?? `token-art-${kind}`}
     >
-      {kind === 'fireworks' ? (
-        <Fireworks size={size} still={still} />
-      ) : kind === 'cats' ? (
-        <Cat size={size} still={still} />
-      ) : (
-        <Warp size={size} still={still} />
-      )}
+      <Preview kind={kind} size={size} still={still} />
     </View>
   );
+}
+
+/** The preview of each kind; a kind this app doesn't know (a newer player's) gets a still bolt. */
+function Preview({ kind, size, still }: { kind: InterferenceKind; size: number; still: boolean }) {
+  switch (kind) {
+    case 'fireworks':
+      return <Fireworks size={size} still={still} />;
+    case 'cats':
+      return <Cat size={size} still={still} />;
+    case 'warp':
+      return <Warp size={size} still={still} />;
+    case 'scramble':
+      return <Scramble size={size} still={still} />;
+    case 'ink':
+      return <Ink size={size} still={still} />;
+    case 'keypad':
+      return <Keys size={size} still={still} />;
+    default:
+      return (
+        <View style={[styles.fill, styles.center]} testID="token-art-unknown">
+          <Icon name="bolt" size={Math.round(size * 0.6)} color={color.accent} />
+        </View>
+      );
+  }
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -303,10 +323,226 @@ function Warp({ size, still }: { size: number; still: boolean }) {
   );
 }
 
+// ---------------------------------------------------------------------------------------------------------
+// [D47] Scrambled digits: a 2 × 2 corner of the board, two of its digits rolling like a slot machine in the
+// sender's colour, a step every 400 ms (the effect's own rate). Still: "?" in both, as the reduced effect does.
+
+const ROLL_MS = 1600;
+const ROLL = ['?', '3', '8', '5'] as const;
+const STILL_ROLL = ['?'] as const;
+
+function Scramble({ size, still }: { size: number; still: boolean }) {
+  const t = useLoop(still, ROLL_MS);
+  const gap = Math.max(1, Math.round(size / 28));
+  const cell = (size * 0.84 - gap) / 2;
+  const plain = (d: string, alt: boolean) => (
+    <MiniCell cell={cell} alt={alt}>
+      <Text style={[styles.miniDigit, digitStyle(cell), { color: color.board.given }]}>{d}</Text>
+    </MiniCell>
+  );
+  return (
+    <View style={[styles.fill, styles.center]}>
+      <View style={[styles.miniGrid, { gap, width: 2 * cell + gap }]}>
+        <RollingCell t={t} still={still} cell={cell} phase={0} testID="token-art-motion" />
+        {plain('4', true)}
+        {plain('7', true)}
+        <RollingCell t={t} still={still} cell={cell} phase={0.5} />
+      </View>
+    </View>
+  );
+}
+
+const digitStyle = (cell: number) => ({
+  fontSize: Math.round(cell * 0.72),
+  lineHeight: cell,
+  height: cell,
+  width: cell,
+});
+
+function MiniCell({ cell, alt, children }: { cell: number; alt: boolean; children: ReactNode }) {
+  return (
+    <View
+      style={[
+        styles.miniCell,
+        { width: cell, height: cell, backgroundColor: alt ? color.board.cellAlt : color.board.cell },
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+
+/** One cell whose digit rolls (a column of digits moving up a step at a time); still: "?". */
+function RollingCell({
+  t,
+  still,
+  cell,
+  phase,
+  testID,
+}: {
+  t: SharedValue<number>;
+  still: boolean;
+  cell: number;
+  phase: number;
+  testID?: string;
+}) {
+  const steps = still ? STILL_ROLL : ROLL;
+  const roll = useAnimatedStyle(() => {
+    const n = still ? 0 : Math.floor(((t.get() + phase) % 1) * ROLL.length) % ROLL.length;
+    return { transform: [{ translateY: -n * cell }] };
+  });
+  return (
+    <MiniCell cell={cell} alt={false}>
+      <Animated.View style={roll} testID={testID}>
+        {steps.map((d, i) => (
+          <Text key={i} style={[styles.miniDigit, digitStyle(cell), { color: SENDER }]}>
+            {d}
+          </Text>
+        ))}
+      </Animated.View>
+    </MiniCell>
+  );
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// [D47] Ink: a blot splashes onto a small board and fades away (1600 ms loop). Still: the blot, landed.
+
+const BLOT =
+  'M50 18C61 16 66 27 74 30C85 34 86 47 82 56C78 66 84 76 72 81C61 86 55 78 45 80C34 82 22 78 20 66C18 56 12 48 19 39C26 30 38 20 50 18Z';
+const SPLASH_MS = 1600;
+
+function Ink({ size, still }: { size: number; still: boolean }) {
+  const t = useLoop(still, SPLASH_MS);
+  const board = size * 0.84;
+  const style = useAnimatedStyle(() => {
+    if (still) return { opacity: 1, transform: [{ scale: 1 }] };
+    const p = t.get();
+    return {
+      opacity: interpolate(p, [0, 0.05, 0.6, 0.95, 1], [0, 1, 1, 0, 0]),
+      transform: [{ scale: interpolate(p, [0, 0.12, 0.2, 1], [0.3, 1.08, 1, 0.9]) }],
+    };
+  });
+  return (
+    <View style={[styles.fill, styles.center]}>
+      <View
+        style={[
+          styles.miniBoard,
+          { width: board, height: board, borderRadius: Math.max(2, Math.round(size / 12)) },
+        ]}
+      />
+      <Animated.View style={[styles.fill, style]} testID="token-art-motion">
+        <Svg width={size} height={size} viewBox="0 0 100 100">
+          <Path d={BLOT} fill={color.bg} stroke={SENDER} strokeWidth={4} strokeLinejoin="round" />
+          <Circle cx={86} cy={24} r={5} fill={color.bg} />
+          <Circle cx={14} cy={82} r={4} fill={color.bg} />
+        </Svg>
+      </Animated.View>
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// [D47] Scrambled keypad: three keys trade places, sliding, every 600 ms (the effect slides in 200 ms).
+// Still: one order, standing.
+
+const SHUFFLE_MS = 1800;
+const KEY_LABELS = ['1', '2', '3'] as const;
+/** The slot of key k at step s (three steps a loop), and the still order. */
+const slotAt = (k: number, s: number): number => {
+  'worklet';
+  return (k + s) % 3;
+};
+const STILL_STEP = 2;
+
+function Keys({ size, still }: { size: number; still: boolean }) {
+  const t = useLoop(still, SHUFFLE_MS);
+  const gap = Math.max(1, Math.round(size / 24));
+  const key = (size * 0.9 - 2 * gap) / 3;
+  const pitch = key + gap;
+  return (
+    <View style={[styles.fill, styles.center]}>
+      <View style={{ width: 3 * key + 2 * gap, height: key * 1.5 }}>
+        {KEY_LABELS.map((label, k) => (
+          <SlidingKey
+            key={label}
+            label={label}
+            index={k}
+            t={t}
+            still={still}
+            side={key}
+            pitch={pitch}
+            testID={k === 0 ? 'token-art-motion' : undefined}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function SlidingKey({
+  label,
+  index,
+  t,
+  still,
+  side,
+  pitch,
+  testID,
+}: {
+  label: string;
+  index: number;
+  t: SharedValue<number>;
+  still: boolean;
+  side: number;
+  pitch: number;
+  testID?: string;
+}) {
+  const style = useAnimatedStyle(() => {
+    if (still) return { transform: [{ translateX: slotAt(index, STILL_STEP) * pitch }] };
+    const phase = t.get() * 3;
+    const step = Math.floor(phase) % 3;
+    const into = phase - Math.floor(phase);
+    // Slide over the first quarter of each step, then stand.
+    const k = Math.min(1, into / 0.25);
+    const from = slotAt(index, (step + 2) % 3);
+    const to = slotAt(index, step);
+    return { transform: [{ translateX: (from + (to - from) * (1 - (1 - k) * (1 - k))) * pitch }] };
+  });
+  return (
+    <Animated.View
+      style={[styles.miniKey, { width: side, height: side * 1.5, borderRadius: radius.xs }, style]}
+      testID={testID}
+    >
+      <Text style={[styles.miniDigit, { fontSize: Math.round(side * 0.7), lineHeight: side * 0.9 }]}>
+        {label}
+      </Text>
+    </Animated.View>
+  );
+}
+
 const styles = StyleSheet.create({
   // Drawn in physical coordinates, like the board (the art is the same in both languages).
   box: { direction: 'ltr' },
   layer: { position: 'absolute' },
   fill: { ...StyleSheet.absoluteFill },
+  center: { alignItems: 'center', justifyContent: 'center' },
   copy: { opacity: COPY_ALPHA },
+  miniGrid: { direction: 'ltr', flexDirection: 'row', flexWrap: 'wrap' },
+  miniCell: { overflow: 'hidden', borderRadius: radius.bar, alignItems: 'center' },
+  miniDigit: {
+    fontFamily: tokens.type.keyDigit.fontFamily,
+    includeFontPadding: false,
+    textAlign: 'center',
+    color: color.keypad.keyText,
+  },
+  miniBoard: { position: 'absolute', backgroundColor: color.board.cell },
+  miniKey: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color.keypad.keyBg,
+    borderWidth: tokens.border.hairline,
+    borderColor: color.keypad.keyBorder,
+  },
 });

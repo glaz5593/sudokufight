@@ -62,6 +62,33 @@ describe('parseClientMessage: the shape of each message (spec §18)', () => {
     expect(parseClientMessage(type, payload)).toBeNull();
   });
 
+  it('a move made offline [D42]: strict, with a think time of 0–600 000 ms; the engine clamps it further', () => {
+    expect(parseClientMessage('offlineMove', { clientSeq: 7, cell: 30, digit: 7, thinkMs: 2500 })).toEqual({
+      kind: 'action',
+      clientSeq: 7,
+      action: { type: 'offlineMove', cell: 30, digit: 7, thinkMs: 2500 },
+    });
+    for (const bad of [
+      { clientSeq: 7, cell: 30, digit: 7 }, // no thinkMs
+      { clientSeq: 7, cell: 30, digit: 7, thinkMs: -1 },
+      { clientSeq: 7, cell: 30, digit: 7, thinkMs: 600_001 },
+      { clientSeq: 7, cell: 30, digit: 7, thinkMs: 1.5 },
+      { clientSeq: 7, cell: 30, digit: 7, thinkMs: 1, playerId: 'ben' },
+    ])
+      expect(parseClientMessage('offlineMove', bad)).toBeNull();
+    const { gate: g, clock } = gate();
+    let seq = 0;
+    const sent = Array.from({ length: 18 }, () =>
+      g.admit('ana', 'offlineMove', { clientSeq: ++seq, cell: 1, digit: 1, thinkMs: 0 }),
+    );
+    // The burst after a return, and again after a second quick return before the answers came.
+    expect(sent.filter((r) => r.kind === 'action')).toHaveLength(16);
+    clock.advance(1000);
+    expect(g.admit('ana', 'offlineMove', { clientSeq: 3, cell: 1, digit: 1, thinkMs: 0 })).toMatchObject({
+      reason: 'duplicate',
+    });
+  });
+
   it("leaves ranges to the engine, so the client hears the engine's reason", () => {
     expect(parseClientMessage('select', { clientSeq: 1, cell: 81 })).not.toBeNull(); // engine: badCell
     expect(parseClientMessage('place', { clientSeq: 1, cell: 0, digit: 0 })).not.toBeNull(); // badDigit

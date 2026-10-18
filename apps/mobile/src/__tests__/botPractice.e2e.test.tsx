@@ -313,6 +313,8 @@ describe('practice against a bot, end to end (work plan stage 5)', () => {
         continue;
       }
       await place(run, cell, answerIn(puzzle, cell));
+      // A human's pace: a fast board has only 31–36 empty cells (45–50 givens), and Pip thinks 15–25 s.
+      await pause(run);
       mine++;
       if (mine > 200) throw new Error('the game does not end');
     }

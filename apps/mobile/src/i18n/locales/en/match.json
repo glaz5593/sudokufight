@@ -33,7 +33,18 @@
     "announce_one": "Looking for an opponent rated {{low}} to {{high}}",
     "announce_two": "Looking for opponents rated {{low}} to {{high}}",
     "announce_many": "Looking for opponents rated {{low}} to {{high}}",
-    "announce_other": "Looking for opponents rated {{low}} to {{high}}"
+    "announce_other": "Looking for opponents rated {{low}} to {{high}}",
+    "alone": {
+      "title_one": "No one else is searching for this game right now",
+      "title_two": "Not enough players are searching for this game right now",
+      "title_many": "Not enough players are searching for this game right now",
+      "title_other": "Not enough players are searching for this game right now",
+      "body_one": "We'll keep searching: as soon as someone else looks for this game, you'll be matched here. You can also play a bot meanwhile.",
+      "body_two": "We'll keep searching: as soon as enough players look for this game, you'll be matched here. You can also play a bot meanwhile.",
+      "body_many": "We'll keep searching: as soon as enough players look for this game, you'll be matched here. You can also play a bot meanwhile.",
+      "body_other": "We'll keep searching: as soon as enough players look for this game, you'll be matched here. You can also play a bot meanwhile.",
+      "bot": "Play a bot meanwhile"
+    }
   },
   "found": {
     "title_one": "Opponent found!",
@@ -73,6 +84,14 @@
     "title_many": "Not enough opponents at your level yet",
     "title_other": "Not enough opponents at your level yet",
     "body": "We searched {{time}} for available players rated {{range}}, leaving out opponents you played recently. You can keep searching with no range limit, or practice against a bot meanwhile.",
+    "aloneTitle_one": "Still no one else is searching for this game",
+    "aloneTitle_two": "Still not enough players are searching for this game",
+    "aloneTitle_many": "Still not enough players are searching for this game",
+    "aloneTitle_other": "Still not enough players are searching for this game",
+    "aloneBody_one": "We searched {{time}} and no one else looked for this game. You can keep waiting, or practice against a bot meanwhile.",
+    "aloneBody_two": "We searched {{time}} and not enough players looked for this game. You can keep waiting, or practice against a bot meanwhile.",
+    "aloneBody_many": "We searched {{time}} and not enough players looked for this game. You can keep waiting, or practice against a bot meanwhile.",
+    "aloneBody_other": "We searched {{time}} and not enough players looked for this game. You can keep waiting, or practice against a bot meanwhile.",
     "minutes_one": "a whole minute",
     "minutes_two": "{{count}} minutes",
     "minutes_many": "{{count}} minutes",

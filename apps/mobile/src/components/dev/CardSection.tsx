@@ -60,9 +60,12 @@ export function CardSection() {
   const [reactionsOpen, setReactionsOpen] = useState(false);
   const showToast = useToast((s) => s.show);
 
+  // As in a game (useArsenal.blocked): short of points it is the error toast; busy and not running say why too.
   const onBlocked = (state: InterferenceModel) => {
-    if (state.kind !== 'points') return;
-    showToast({ variant: 'error', message: t('toasts.error', { cost: state.cost }) });
+    if (state.kind === 'points')
+      showToast({ variant: 'error', message: t('toasts.error', { cost: state.cost }) });
+    else if (state.kind === 'busy' || state.kind === 'notRunning')
+      showToast({ variant: 'warning', message: t(`cards.interferenceStates.${state.kind}`) });
   };
 
   const pairGap = Math.max(space[4], content - 2 * size.playerCard.width);
@@ -87,16 +90,8 @@ export function CardSection() {
     { key: 'correct', snapshot: scenes.correct, props: { delta: gain, persistentDelta: true } },
     { key: 'unaffordable', snapshot: scenes.start },
     { key: 'expanded', snapshot: scenes.locking, props: { interferenceExpanded: true } },
-    {
-      key: 'dropTarget',
-      snapshot: scenes.locking,
-      props: { dropTarget: true, dropLabel: t('cards.dropLabel', { name: ninaName }) },
-    },
-    {
-      key: 'dropHover',
-      snapshot: scenes.locking,
-      props: { dropTarget: true, dropHover: true, dropLabel: t('cards.dropLabel', { name: ninaName }) },
-    },
+    // [D45] The interference picker is open from this card: framed, with "יעד".
+    { key: 'targeted', snapshot: scenes.locking, props: { targeted: true, interferenceExpanded: true } },
     { key: 'dimmed', snapshot: scenes.locking, props: { dimmed: true } },
   ];
 
@@ -249,6 +244,8 @@ function InterferenceStates({ scenes, name }: { scenes: ReturnType<typeof twoPla
                 state={r.state}
                 expanded={r.expanded}
                 onPress={() => undefined}
+                onBlockedPress={() => undefined}
+                testID={`interfere-${r.key}`}
               />
             </Specimen>
           ) : null,
@@ -265,6 +262,8 @@ function InterferenceStates({ scenes, name }: { scenes: ReturnType<typeof twoPla
                   expanded={r.expanded}
                   compact
                   onPress={() => undefined}
+                  onBlockedPress={() => undefined}
+                  testID={`interfere-compact-${r.key}`}
                 />
               </View>
             </Specimen>

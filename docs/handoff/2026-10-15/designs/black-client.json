@@ -1,0 +1,192 @@
+{
+  "item": "מסך שחור בסוף משחק אונליין (היריב נכנע/יצא באמצע, ולפעמים כשאני נכנע)",
+  "summary": "ב־Jest כל ארבעת המסלולים עוברים דרך הנתיבים האמיתיים (‎/match → ‏/game → ‏/results) ומגיעים לתוצאות בלי שום שגיאה: היריב נכנע, אני נכנע, היריב יצא ונלחץ \"לתוצאות\", והיריב יצא ונלחץ \"לבית\". את זה בדקתי בניסוי בתיקיית ה־scratch. לכן המסך השחור כנראה נייטיב בלבד, בלי קריסת JS, וזה מתאים לכך שאין דיווח ב־Crashlytics. ההסבר שהכי מתאים לכל העדויות: בכל סוף משחק שאינו לוח מלא, המעבר לתוצאות קורה מיד (‎0 ms). באותו רגע ה־gameOver מוחק את כל הנעילות, וטבעת הנעילה והגלולה במשבצת מתחילות אנימציית יציאה של Reanimated (‏`exiting={FadeOut}`, ‏240 ms). המסך מוחלף ב־fade של react-native-screens בזמן שהאנימציה עוד רצה. בסיום בלוח מלא יש השהיה של 1100 ms, וזה עובד. גם באג 9 (סיום אימון מול בוט) הוא אותו דפוס, ו\"לפעמים\" מתאים למצב שבו לא הייתה נעילה פתוחה ברגע הסוף. בנוסף מצאתי כמה חורים אמיתיים. גיליון הדיווח או דיאלוג החסימה (Modal נייטיב) לא נסגרים לפני המעבר. שגיאות בתוך מאזינים של ה־host וה־matchmaking נבלעות בלי שום דיווח ב־release. וכמה נתיבים מציירים null או מסך ריק בלי דרך החוצה. התכנון עושה שלושה דברים: מוסיף השהיה קבועה לכל סוף משחק, מחליף את אנימציות היציאה של המשבצת ב־fade שלא תלוי בניווט, וסוגר כל Modal וממתין לו לפני המעבר. בנוסף הוא מוסיף מסך גיבוי במקום כל null, טיימר שמזהה תוצאות שלא נפתחו, ודיווח ל־Crashlytics.",
+  "rootCauses": [
+    {
+      "cause": "Navigating away from the game screen (router.replace to /results with the native-stack 'fade') while Reanimated `exiting` layout animations are still running in it. gameOver clears every lock and playerSurrendered clears the surrenderer's lock, so each lock's ring and seconds pill unmount with FadeOut(240 ms). For every end that is not a full board, the results open at once (endDelayMs returns 0), in the same task as the host's update. The current code makes the screen hold only after a full board, and it does wait for the end dialog's exit; the original bot-practice bug 9 ('כן, לסיים' → black screen) was the same immediate-navigation pattern, before that wait was added. 'Sometimes' fits whether any lock was held at the moment of the end.",
+      "evidence": "apps/mobile/src/components/board/Cell.tsx:292-296 (LockRing wrapper exiting=FadeOut.duration(lockAutoRelease)) and :445-448 (SecondsPill slot exiting=FadeOut); packages/engine/src/game/evolve.ts:229 (playerSurrendered removes the lock), :261 (gameOver sets locks = []); apps/mobile/src/screens/game/model.ts:101-104 (endDelayMs returns 0 unless the reason is boardComplete; boardComplete holds 1100 ms); GameScreen.tsx:739-749 ('ended' → showResults(e.gameId, endDelayMs(...)) inside the RemoteGameHost emit loop) and :537-565 (open() runs synchronously when there is no delay and no dialog); app/game.tsx:7 (router.replace to /results); app/_layout.tsx:72 (results/[id] with moves.flow = fade); tokens: lockAutoRelease 240 and sheetOut 240, so my surrender races the dialog exit against the lock fades. My Jest experiment (scratchpad e2e/rankedEnd.e2e.test.tsx) runs all four end paths through the real routes with no error and no empty route, so the failure is native-only, which matches 'no new crashes in Firebase'.",
+      "confidence": "medium (best fit to all observations; not yet confirmed on a device. A device test can confirm it: surrender, or let the opponent surrender, while a lock is held, then again with no lock held)"
+    },
+    {
+      "cause": "A native Modal can still be on screen when the screen is replaced: the moderation flow's ReportSheet (Sheet → RN Modal) or its block ConfirmModal, opened from an opponent's card menu (new in 1.0.0). showResults waits only for the end/surrender dialog (dialogUp). The adjust-in-render that runs when input is blocked closes the confirm, arsenal, picker and menu, but not the moderation sheet or dialog. This is the bug-9 'dialog window torn down with the screen' scenario, and the same open sheet would also cover 'the opponent left' and the connection screens.",
+      "evidence": "apps/mobile/src/components/ui/Sheet.tsx:122 (<Modal>), with no onExited prop; apps/mobile/src/screens/moderation/useModerationFlow.tsx (exposes only openReport/openBlock/openUnblock/view: no open state, close or onExited); GameScreen.tsx:515-565 (only dialogUp is awaited), :1038-1049 (blocked → closes confirm/arsenal/picker/menu, not modFlow), :1162-1188 (modFlow.view rendered over the board).",
+      "confidence": "low-medium (needs the report sheet or block dialog open at the moment of the end)"
+    },
+    {
+      "cause": "In release, failures inside online listeners are swallowed with no trace. RemoteGameHost.emit, notifyOnline and safely, and MatchmakingClient.notify and safely, catch listener and message errors and pass them only to deps.log, which is a no-op in release. Anything that throws in the end flow inside a host listener (GameScreen's subscriptions, the store's set, the 'ended' handler before showResults) is never reported. This explains 'no new crashes'. On its own it would leave the finished game on screen rather than a black one.",
+      "evidence": "apps/mobile/src/net/remoteGameHost.ts:875-884 (notifyOnline), :887-905 (emit: catch → this.log('listener failed')), :908-915 (safely → log, then dropConnection); apps/mobile/src/net/matchmaking.ts:704-713 (notify), :715-724 (safely); apps/mobile/src/net/device.ts:31-33 and apps/mobile/src/net/matchmakingDevice.ts:85-87 (log: if (__DEV__) console.log, nothing in release).",
+      "confidence": "high that errors are hidden; low as the direct cause of the black screen"
+    },
+    {
+      "cause": "Empty renders with no way out (a dark #0f1218 screen). app/game.tsx returns null when there is neither a session nor an online game, and its redirect home is skipped while leaving.current is true. app/match/index.tsx returns null without a search. MatchScreen's 'cancelled' state is a blank View that relies on leave(onLeave), which is a no-op once left.current is true. GameScreen returns null when myCard or me is missing. None of these was reached in the simulated flows, but each is a terminal path that would look exactly like 'a black screen'.",
+      "evidence": "apps/mobile/app/game.tsx:23-25 and :64 (if (!session) return null); apps/mobile/app/match/index.tsx:25-29; apps/mobile/src/screens/match/MatchScreen.tsx:184-185 and :79-88; apps/mobile/src/screens/game/GameScreen.tsx:1051 (if (!myCard || !me) return null).",
+      "confidence": "low"
+    },
+    {
+      "cause": "The app goes to the background during the end (the screen turns off: there is no keep-awake, which is a separate item; or the player switches apps). RemoteGameHost disconnects on purpose and reconnects when the app comes back. If the room has meanwhile closed (60 s after gameOver, or when everyone has left), both the token and the code are refused (notFound), and the host closes with 'lostConnection'. Locally the game never ended, so ConnectionError ('connection lost') is shown instead of the results. It is not black, because its content fades in with useEnter. Still, it is a wrong terminal state for a finished game.",
+      "evidence": "apps/mobile/src/net/remoteGameHost.ts:810-831 (onAppState background → lose('background')), :652-716 (comeBack/tryOnce; FATAL_ON_RETURN → shutdown('lostConnection')); apps/server/src/rooms/GameRoom.ts:598-624 (autoDispose after gameOver, closeAfterGameMs 60_000); apps/mobile/src/screens/game/connection/connectionModel.ts:228-241 (an error is shown when view.status is not 'over'); ConnectionError.tsx:74 (all content inside an Animated.View driven by useEnter).",
+      "confidence": "low as the cause of the black screen; a real UX gap that the keep-awake item reduces"
+    }
+  ],
+  "design": "GOAL: no end of a game (any reason, either side, online or practice) can leave a black or empty screen. Every terminal path renders something with a way home. Client-only. No engine, protocol or server change.\n\nA. A FIXED HOLD BEFORE THE RESULTS FOR EVERY END (apps/mobile/src/screens/game/model.ts)\n- New constants beside LAST_CELL_HOLD_MS:\n  export const END_HOLD_MS = 600; // a surrender (mine or theirs), an ended practice, an end seen on return: the final board holds this long (motion.md game.end)\n  export const END_NAV_SAFE_MS = Math.max(motion.duration.lockAutoRelease, motion.duration.sheetOut) + 60; // = 300. The floor for any end, Reduced Motion included: longer than every fade an end starts (lock.release 240, sheet.out 240) plus a few frames\n  export const RESULTS_WATCHDOG_MS = 4_000; // see E\n- endDelayMs(reason, reduce):\n    base = reason === 'boardComplete' ? (reduce ? reducedFade : correctFlash + LAST_CELL_HOLD_MS) : (reduce ? reducedFade : END_HOLD_MS);\n    return Math.max(END_NAV_SAFE_MS, base);\n  Resulting values: boardComplete 1100 (full) / 300 (reduced); lastPlayerStanding, practiceEnded and undefined 600 (full) / 300 (reduced).\n- GameScreen.tsx:\n  1. 'ended' handler (around :739): keep showResults(e.gameId, endDelayMs(reason, reduce)); it is now never 0. Store endSeenAt = Date.now() (a ref) when the end is first seen.\n  2. The 'already over' effect (around :945): showResults(view.gameId, endDelayMs(view.result?.reason, reduce)), because a game over that arrives in a reconnection snapshot also unmounts locks.\n  3. toResults ('לתוצאות' on Opponent-Left): showResults(view.gameId, Math.max(0, END_NAV_SAFE_MS - (Date.now() - endSeenAt))), which in practice is 0.\n  4. showResults is unchanged in shape: it waits for the hold AND for every modal to be gone (B). open() therefore always runs from a `later` timer, never inside the RemoteGameHost emit loop or a press.\n  5. Holds are unchanged when 'the opponent left' holds the results (holdsResults): no timer starts until 'לתוצאות'.\n\nB. NO LAYOUT ANIMATIONS ON THE GAME SCREEN (apps/mobile/src/components/board/Cell.tsx)\nThe hold covers the end. Leaving a RUNNING game (3–4 players: OutStrip 'לבית'; ConnectionError 'לבית' or 'עבור לאימון') can still meet an opponent's lock fading out, so the class of bug is removed here:\n- Remove `exiting={FadeOut.duration(motion.duration.lockAutoRelease)}` from the LockRing wrapper (around :292-296) and from the SecondsPill slot (around :445-448). Drop the FadeOut import.\n- Replace both with a presence fade driven by a shared value. In CellView, use derived state, not an effect:\n  const [leavingRing, setLeavingRing] = useState<LockRingProps | null>(null). When the ring's props go from non-null to null, keep the last props in leavingRing and render <LockRing {...leavingRing} leaving onGone={() => setLeavingRing(null)} />. Do the same for the pill: leavingPill holds the last lock and palette.\n  With `leaving`, LockRing and SecondsPill run opacity → 0 using withTiming(0, timing(motion.duration.lockAutoRelease, 'exit', reduce)). On finish they call scheduleOnRN(onGone). A JS safety timer setTimeout(onGone, lockAutoRelease + 100) is cleared on unmount.\n  Reduced Motion: timing() already picks the 200 ms reduced fade with ReduceMotion.Never (motion.md lock.release 'Fade only'), so the app's own setting is now honoured, which today's FadeOut does not do. A new lock on the same cell cancels the leaving copy (set it back to null).\n- Cost: unlocked cells pay one useState. Only a cell that just lost its lock mounts a fading copy for 240 ms. Cell stays memoized.\n- Generalize the existing connection/useHeld.ts pattern only if convenient. Do not put usePresence (a shared value) in all 81 cells.\n\nC. CLOSE AND AWAIT EVERY NATIVE MODAL BEFORE THE RESULTS\n- apps/mobile/src/components/ui/Sheet.tsx: new prop onExited?: () => void, passed as usePresence's 3rd argument (the same contract as ConfirmModal).\n- apps/mobile/src/screens/moderation/ReportSheet.tsx: forward onExited to Sheet.\n- apps/mobile/src/screens/moderation/useModerationFlow.tsx:\n  - New option onExited?: () => void, called once the sheet and the dialog have both left the screen after one of them was shown (wire ReportSheet.onExited and ConfirmModal.onExited).\n  - Return two new members:\n    - mounted: boolean, true from any open until that exit.\n    - closeAll(): void, which sets report.open = false and confirm.open = false even while busy. A block already sent still finishes and shows its toast; run()'s finally already closes.\n- apps/mobile/src/screens/game/GameScreen.tsx:\n  - Replace the single dialogUp boolean with 'any modal up': dialogUp.current || modFlow.mounted (read through a ref updated in useLayoutEffect).\n  - whenDialogGone becomes whenModalsGone, called from onDialogExited and from modFlow's onExited, and runs only when neither is up.\n  - In showResults: if a modal is up, call setConfirmOpen(false) and modFlow.closeAll(), then wait (the existing DIALOG_GONE_CEILING_MS ceiling stays).\n  - In the `blocked` adjust-in-render block (around :1040), also call modFlow.closeAll(), so the report sheet never covers the freeze, Opponent-Left or the error screen.\n\nD. NEVER AN EMPTY SCREEN: FlowFallback\n- New apps/mobile/src/screens/FlowFallback.tsx (beside ErrorScreen.tsx):\n  - Props: { reason: string; onHome: () => void; onResults?: () => void; actionsAfterMs?: number (default FALLBACK_ACTIONS_MS = 1_500, exported); report?: boolean (default true); testID?: string (default 'flow-fallback') }.\n  - Renders: root flex 1 with color.bg; at first a Spinner and t('common:fallback.loading').\n  - After actionsAfterMs: an alert Icon, a header t('common:fallback.title') (accessibilityRole header, accessibilityLiveRegion polite), a body t('common:fallback.body') (or 'fallback.bodyHome' without onResults), a primary Button t('common:fallback.results') only with onResults, and a Button t('common:fallback.home').\n  - Hardware back calls onHome.\n  - When the actions appear and report is true: crashReporter().recordError(new Error(`flow fallback: ${reason}`), 'flow fallback'), once.\n  - No animation. Theme tokens only; no raw colors (noRawColors test).\n- apps/mobile/app/game.tsx:\n  - `if (!session) return null` → `<FlowFallback reason=\"game: no game in the store\" report={!leaving.current} onHome={() => router.replace('/')} />`. The existing redirect effect stays.\n  - Also pass onHome={() => leaveTo('/')} to the practice <GameScreen>, so every GameScreen has a way home.\n- apps/mobile/app/match/index.tsx: `if (!match) return null` → `<FlowFallback reason=\"match: no search\" report={!leaving.current} onHome={() => router.replace('/modes')} />`.\n- apps/mobile/src/screens/match/MatchScreen.tsx case 'cancelled': `<FlowFallback reason=\"match: cancelled screen stayed\" onHome={onHome} />` instead of the blank View. The normal path leaves within a frame, so the actions only show if it is stuck.\n- apps/mobile/src/screens/game/GameScreen.tsx: `if (!myCard || !me) return null` → `<FlowFallback reason=\"game: no seat for me\" onHome={onHome ?? noop} onResults={view.status === 'over' ? () => onEnded(view.gameId) : undefined} />`.\n\nE. RESULTS WATCHDOG (GameScreen)\n- New prop resultsWatchdogMs?: number (default RESULTS_WATCHDOG_MS).\n- In showResults' open(), after safely('opening the results', () => onEnded(gameId)), arm a watchdog with later(resultsWatchdogMs, ...). Its callback:\n  breadcrumb('results did not open'); crashReporter().recordError(new Error('the results did not replace the game'), 'game: results watchdog'); setStuck(gameId).\n  `later` timers are cleared on unmount, so the watchdog fires only if the navigation did not happen (for example expo-router's routingQueue silently dropping an action).\n- While stuck: render, last and over everything, <FlowFallback reason=\"game: results did not open\" actionsAfterMs={0} report={false} onResults={() => { setStuck(null); open again (re-arm) }} onHome={onHome ?? noop} />.\n\nF. DIAGNOSTICS IN RELEASE\n- apps/mobile/src/net/remoteGameHost.ts: RemoteHostDeps gets report?: (error: unknown, context: 'listener failed' | 'online listener failed' | 'message failed') => void. Call it next to the existing this.log in emit(), notifyOnline() and safely(). Never pass the token.\n- apps/mobile/src/net/matchmaking.ts: the same report dep in MatchmakingClientDeps, called in notify() ('listener failed') and safely() ('message failed').\n- apps/mobile/src/net/device.ts deviceHostDeps:\n  log: (line) => { if (__DEV__) console.log(`[online] ${line}`); crashReporter().log(`[online] ${line}`); }\n  report: (e, ctx) => crashReporter().recordError(e, `online: ${ctx}`)\n- apps/mobile/src/net/matchmakingDevice.ts: the same with the [matchmaking] prefix.\n- GameScreen breadcrumbs:\n  - At the end: `game over (${reason}) locks=${view.locks.length before} modal=${up} hit=${!!hit}`. Read the lock count from latest.current.view before the update.\n  - When the hold starts: `results in ${delay} ms`. The existing breadcrumb is 'opening the results'.\n  - Optional: in app/results/[id].tsx, on mount crashReporter().log(`results: mounted`), and through useNavigation().addListener('transitionEnd') log 'results: shown'.\n- Effect: the next non-fatal (the watchdog or a fallback) carries the trail, and a future black screen can be read from Crashlytics logs.\n\nG. BACKGROUND AT THE END: no code change in this item. Keep-awake (a separate item) removes the main trigger. ConnectionError remains the terminal state when the room is gone (it has 'לבית' and 'נסה שוב'). Decision 2 below proposes results from the server history later.\n\nEDGE CASES\n- Opponent-Left (abandonment win): unchanged; the results wait for 'לתוצאות'.\n- One open only: ended.current and the opened flag guard against the 'ended' effect and the over-effect both firing.\n- 3–4 players: my surrender does not end the game (no hold). OutStrip 'לבית' is safe thanks to B.\n- Practice 'סיום אימון': the results open after max(dialog exit, 600 ms). With Reduced Motion: max(200 ms fade, 300 ms).\n- Android back during the hold does nothing (playing is false).\n- The screen unmounting during the hold: the timers are cleared, so nothing navigates twice.\n- Cross-item note: the 'rating not refreshed until restart' item may partly come from this. refreshMe() runs only when the player leaves the results through its buttons (app/results/[id].tsx leave()). After a black screen the player kills the app, and the next start shows the new rating.\n\ni18n (he + en), namespace common, new block \"fallback\":\n  loading: \"רגע…\" / \"One moment…\"\n  title: \"המסך לא נטען\" / \"This screen didn't load\"\n  body: \"אפשר להמשיך לתוצאות או לחזור לבית.\" / \"You can go on to the results or go home.\"\n  bodyHome: \"אפשר לחזור לבית ולהמשיך משם.\" / \"You can go home and carry on from there.\"\n  results: \"לתוצאות\" / \"To the results\"\n  home: \"לבית\" / \"Home\"\n\nA starting point for the new e2e cases (outside the repo, already passing): C:\\Users\\mosheg\\AppData\\Local\\Temp\\claude\\c--Users-mosheg-Documents-ReactNative-sudoku-fight\\148f3fd9-fa09-429d-b159-895b166a0728\\scratchpad\\e2e\\rankedEnd.e2e.test.tsx, run with jest.scratch.config.js from the same folder.",
+  "files": [
+    {
+      "path": "apps/mobile/src/screens/game/model.ts",
+      "change": "Add END_HOLD_MS=600, END_NAV_SAFE_MS (=max(lockAutoRelease, sheetOut)+60 → 300) and RESULTS_WATCHDOG_MS=4000. endDelayMs returns max(END_NAV_SAFE_MS, base) for every reason: boardComplete 1100/300, the others 600/300. Update the doc comments (motion.md game.end)."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/GameScreen.tsx",
+      "change": "Ended handler, over-effect and toResults all use the hold (endSeenAt ref). dialogUp/whenDialogGone generalised to 'any modal up' (end dialog plus modFlow.mounted) with closeAll before the results. The blocked adjust-in-render also calls modFlow.closeAll(). The results watchdog (resultsWatchdogMs prop, a `stuck` state rendered as FlowFallback over everything). `if (!myCard || !me) return null` → FlowFallback. Breadcrumbs: locks, modal and hit at the end, and the hold length."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/index.ts",
+      "change": "Export the new constants (END_HOLD_MS, END_NAV_SAFE_MS, RESULTS_WATCHDOG_MS) next to endDelayMs."
+    },
+    {
+      "path": "apps/mobile/src/components/board/Cell.tsx",
+      "change": "Remove both exiting={FadeOut...} layout animations (LockRing wrapper about :294, SecondsPill slot about :447). Add a presence fade: CellView keeps the last ring and pill props as derived state (leavingRing, leavingPill). LockRing and SecondsPill get `leaving` and `onGone` and fade their opacity with withTiming(0, timing(lockAutoRelease,'exit',reduce)) → scheduleOnRN(onGone), plus a JS safety timer. Drop the FadeOut import."
+    },
+    {
+      "path": "apps/mobile/src/components/ui/Sheet.tsx",
+      "change": "New prop onExited?: () => void, passed to usePresence (the same contract as ConfirmModal)."
+    },
+    {
+      "path": "apps/mobile/src/screens/moderation/ReportSheet.tsx",
+      "change": "Forward onExited to Sheet."
+    },
+    {
+      "path": "apps/mobile/src/screens/moderation/useModerationFlow.tsx",
+      "change": "Option onExited, called when the sheet and the dialog have both left the screen. Return mounted: boolean and closeAll(): void (closes even while busy)."
+    },
+    {
+      "path": "apps/mobile/src/screens/FlowFallback.tsx",
+      "change": "NEW. The never-empty fallback: a spinner, then after FALLBACK_ACTIONS_MS (1500) a title, a body, 'לתוצאות' (optional) and 'לבית'. Hardware back goes home. It reports a non-fatal once. Uses t() common:fallback.*, theme tokens and no animation."
+    },
+    {
+      "path": "apps/mobile/app/game.tsx",
+      "change": "null → FlowFallback (reason 'game: no game in the store', report only when not leaving). Pass onHome={() => leaveTo('/')} to the practice GameScreen."
+    },
+    {
+      "path": "apps/mobile/app/match/index.tsx",
+      "change": "`if (!match) return null` → FlowFallback (onHome → router.replace('/modes'), report only when not leaving)."
+    },
+    {
+      "path": "apps/mobile/src/screens/match/MatchScreen.tsx",
+      "change": "The 'cancelled' blank View becomes FlowFallback with onHome (its actions show only if the screen stays stuck)."
+    },
+    {
+      "path": "apps/mobile/app/results/[id].tsx",
+      "change": "Optional: a breadcrumb on mount ('results: mounted') and on navigation transitionEnd ('results: shown'). The refreshMe and leave logic is untouched (shared with the rating-refresh item)."
+    },
+    {
+      "path": "apps/mobile/src/net/remoteGameHost.ts",
+      "change": "RemoteHostDeps.report?(error, context) is called in emit (listener failed), notifyOnline (online listener failed) and safely (message failed), next to log. Never pass the token."
+    },
+    {
+      "path": "apps/mobile/src/net/matchmaking.ts",
+      "change": "MatchmakingClientDeps.report?(error, context) is called in notify (listener failed) and safely (message failed)."
+    },
+    {
+      "path": "apps/mobile/src/net/device.ts",
+      "change": "deviceHostDeps: log also calls crashReporter().log('[online] …') in release (console only in __DEV__). Add report → crashReporter().recordError(e, 'online: '+ctx)."
+    },
+    {
+      "path": "apps/mobile/src/net/matchmakingDevice.ts",
+      "change": "The same log and report wiring, with the [matchmaking] prefix."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/common.json",
+      "change": "Add fallback.{loading,title,body,bodyHome,results,home} in Hebrew."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/common.json",
+      "change": "Add fallback.{loading,title,body,bodyHome,results,home} in English."
+    },
+    {
+      "path": "docs/design/motion.md",
+      "change": "§4.7: a new row game.end (an end that is not a full board: the final board holds 600 ms, 300 ms with Reduced Motion, then flow.fade to Results), and the rule that the game screen is never replaced while a fade that the end started is still running. The timeline at about line 263 gains 'Surrender 0 end · +600 cross-fade'. §lock.release (about line 109): an implementation note that it is a presence fade, not a layout `exiting`."
+    }
+  ],
+  "tests": [
+    "model.test.ts: endDelayMs: boardComplete 1100 / reduced 300; lastPlayerStanding, practiceEnded and undefined 600 / reduced 300. Invariant: for every reason and both reduce values, endDelayMs ≥ motion.duration.lockAutoRelease + 50 and ≥ motion.duration.sheetOut + 50. END_NAV_SAFE_MS ≥ both fades. RESULTS_WATCHDOG_MS > DIALOG_GONE_CEILING_MS + END_HOLD_MS.",
+    "GameScreenOnline.test.tsx (new): the opponent surrenders while I hold a lock: onEnded is not called before END_HOLD_MS, is called once after it, and nothing is reported to Crashlytics.",
+    "GameScreenOnline.test.tsx (update the existing 'surrender … loses at once'): onEnded comes after max(dialog exit, END_HOLD_MS), once.",
+    "GameScreenOnline.test.tsx (new): a game over that arrives in a reconnection snapshot (cutMe, the opponent surrenders meanwhile, reconnect) also waits the hold before the results.",
+    "GameScreenOnline.test.tsx (new): the report sheet is open (card menu → 'דווח') when the opponent surrenders: the sheet closes, and the results open only after its onExited and the hold. Same for the block dialog.",
+    "GameScreenOnline.test.tsx (new): the connection freezes while the report sheet is open: the sheet closes (blocked → closeAll).",
+    "GameScreenOnline.test.tsx (new): an onEnded that does not navigate (screen stays mounted): after resultsWatchdogMs the FlowFallback shows with 'לתוצאות' and 'לבית', and recordError is called with 'game: results watchdog'. 'לתוצאות' calls onEnded again.",
+    "GameScreenEnd.test.tsx: update the timings. Practice 'כן, לסיים' → onEnded after max(sheetOut, END_HOLD_MS); with Reduced Motion after max(reducedFade, END_NAV_SAFE_MS). The 'slow game-over render' and 'listener fails' cases keep their guarantees with the new hold.",
+    "GameScreen.test.tsx (new): a view without my seat renders FlowFallback ('לבית' calls onHome), never null.",
+    "Cell.test.tsx (new): a released lock's ring and pill stay mounted with their last colour while fading (lockAutoRelease) and are gone after it; with Reduced Motion a 200 ms fade; a new lock on the cell during the fade replaces it. No Reanimated `exiting` prop is set (the props of the cell-ring and cell-pill-slot wrappers).",
+    "src/__tests__/noLayoutAnimationsInGame.test.ts (new static guard, like noRawColors): no `exiting=`, `entering=` or `layout=` props in src/components/board, src/components/player, src/components/interference and src/screens/game (excluding tests).",
+    "reducedMotion.test.ts: still passes (Cell now decides through timing(reduce)).",
+    "Sheet.test.tsx: onExited is called once after the exit, also with Reduced Motion.",
+    "useModerationFlow / ModerationButtons tests: mounted is true from open until exit; closeAll closes the sheet and the dialog, even while busy; onExited is called once both are gone.",
+    "FlowFallback.test.tsx (new): spinner and loading text first; after actionsAfterMs the header, body and buttons in Hebrew and English; 'לתוצאות' only with onResults; hardware back → onHome; recordError once when report is true, never when report is false.",
+    "gameRoute.test.tsx: 'without a practice in the store' still calls router.replace('/') and renders flow-fallback (not null); the practice GameScreen gets onHome (leaveTo '/'); the online end opens the results after the hold (advance the timers).",
+    "match route / MatchScreen.test.tsx: 'cancelled' renders flow-fallback, and its 'חזרה' or 'לבית' shows only after FALLBACK_ACTIONS_MS.",
+    "remoteGameHost.test.ts (new): a listener that throws in emit and in notifyOnline is reported through deps.report('listener failed' / 'online listener failed'), and the other listeners still get the update; a message that throws is reported as 'message failed', then the host resyncs.",
+    "matchmaking.test.ts (new): a listener that throws is reported through deps.report and the others still get the info.",
+    "device.test.ts (new): deviceHostDeps().log forwards to crashReporter().log with the [online] prefix; report forwards to recordError with the 'online: ' context (mock services/crashlytics). The same for deviceMatchmakingDeps.",
+    "i18nParity / i18nCheck: the new common.fallback keys exist in he and en.",
+    "ranked.e2e.test.tsx (new cases, starting from the scratch file): (A) the opponent surrenders mid-game while I hold a lock: the path stays /game during the hold, then /results/<id> with 'ניצחון!' and 'היריב נכנע לפני שהלוח התמלא'; 'לבית' → '/'. (B) I surrender with a lock held → 'הפסד'. (C) the opponent abandons → Opponent-Left → 'לתוצאות' → results. (D) 'לבית' on Opponent-Left → Home with the store cleared. In all of them: no flow-fallback and no recordError.",
+    "botPracticeEnd.e2e.test.tsx: update the timing for the hold; keep 'nothing reported to Crashlytics'.",
+    "Manual device check (docs): surrender, and let the opponent surrender, with and without a lock held, both before and after the fix. Before the fix a black screen is expected only with a lock held; after the fix the results appear every time."
+  ],
+  "docs": [
+    "docs/design/motion.md §4.7: a new row `game.end` (an end that is not a full board: the final board holds 600 ms, 300 ms with Reduced Motion, then flow.fade to Results; the screen is never replaced while a fade the end started is running). The victory timeline line (about 263) gains a surrender line. §lock.release (about line 109): the fade is a presence fade, not a layout `exiting`.",
+    "docs/STAGE9-10-DEVICE-CHECKS.md: a new check 'בדיקה 2ב: סוף משחק בכניעה, בלי מסך שחור'. (1) Phone A holds a lock and phone B surrenders. (2) Phone A surrenders while holding a lock. (3) The same with no lock held. (4) The opponent closes the app (abandonment, 'לתוצאות' and 'לבית'). (5) The report sheet is open on A when B surrenders. Expected each time: the final board for about half a second, then the results, and 'לבית' works. If anything is black: note the time and send the Crashlytics non-fatals and logs ('game over … locks=…').",
+    "docs/QA-CHECKLIST.md: in rows 11 (Game-2P), 18 (Surrender) and 25 (Opponent-Left), note that after any surrender the final board stays about 0.6 s and then the results appear, never a black screen. A new row in 'מצבים ריקים ומצבי שגיאה' for the FlowFallback screen ('המסך לא נטען', with 'לתוצאות' or 'לבית').",
+    "docs/01-SPEC.md §12 (results): one line saying the results open after a short hold on the final board (also after a surrender), with the details in motion.md game.end. No rule change, so no row in the section 24 table unless Moshe picks a non-default in the decisions below.",
+    "apps/mobile/src/screens/game/model.ts and GameScreen.tsx header comments: update the bug-9 and end-flow description (the hold for every end, the modals awaited, no layout animations on the game screen)."
+  ],
+  "risks": [
+    "שורש הבעיה לא אומת במכשיר. ב־Jest אין אנימציות יציאה נייטיב ואין מעברי מסך של react-native-screens, ולכן התיקון בנוי משכבות: השהיה, הסרת אנימציות ה־exiting, סגירת Modals, מסך גיבוי, טיימר וטלמטריה. יש בדיקת מכשיר שמבחינה בין ההסברים: כניעה עם נעילה פתוחה מול כניעה בלי נעילה.",
+    "ההשהיה משנה תזמונים בהרבה בדיקות קיימות. בין השאר: GameScreenEnd, ‏GameScreenOnline, ‏gameRoute, ‏botPracticeEnd.e2e, ו־resultsOnline דרך הנתיב. צריך לעדכן אותן בזהירות, בלי להחליש את הבטחות באג 9.",
+    "Cell היא רכיב רגיש לביצועים (81 משבצות, memo). אסור להכניס shared value לכל משבצת. רק משבצת שנעילתה שוחררה מחזיקה העתק דוהה למשך 240 ms. כדאי למדוד ב־/dev/metrics, יעד של 55fps (אפיון §22).",
+    "טיימר התוצאות עלול לפעול בבדיקות יחידה שבהן onEnded לא מנווט. לכן הוא מוזרק כ־prop, ובבדיקות ארוכות צריך לקחת אותו בחשבון.",
+    "קבצים משותפים עם פריטים אחרים באותו סבב: GameScreen.tsx, ‏remoteGameHost.ts ו־connectionModel.ts (זמן חסד בניתוק), ‏app/results/[id].tsx (רענון הדירוג), קובצי i18n, ‏01-SPEC ו־QA-CHECKLIST. צריך לסדר את המיזוג.",
+    "שליחת שורות log של ה־host ל־Crashlytics עלולה להכניס מידע רגיש. ה־host כבר מבטיח שה־token לא נכתב ללוג, אבל צריך לוודא שאף שורה חדשה לא מכילה token או reservation.",
+    "מצב הרקע (המסך כבה, והחדר נסגר עד החזרה) עדיין מסתיים במסך 'החיבור אבד' ולא בתוצאות. שמירת מסך דלוק (פריט אחר) מצמצמת את זה. פתרון מלא דורש טעינת התוצאות מההיסטוריה בשרת (החלטה 2)."
+  ],
+  "decisions": [
+    {
+      "question": "כמה זמן הלוח הסופי נשאר על המסך לפני התוצאות, אחרי כניעה (שלי או של היריב) או סיום אימון? היום זה מיידי. לוח מלא מחזיק 1.1 שניות.",
+      "recommendedDefault": "0.6 שניות. עם הפחתת תנועה 0.3 שניות. לוח מלא נשאר 1.1 שניות."
+    },
+    {
+      "question": "משחק מדורג שנגמר בזמן שהטלפון היה כבוי או ברקע, והחדר כבר נסגר: להציג את התוצאות מההיסטוריה בשרת במקום 'החיבור אבד'?",
+      "recommendedDefault": "לא בתיקון הזה. נשאר מסך שגיאת החיבור עם 'לבית'. שמירת המסך דלוק (פריט נפרד) מונעת את רוב המקרים. אפשר להוסיף את זה בהמשך."
+    },
+    {
+      "question": "להוסיף בזמן ההשהיה באנר קצר כמו 'NinaVolt נכנע/ה' לפני התוצאות?",
+      "recommendedDefault": "לא. הכרטיס של היריב כבר מראה 'נכנע', ובתוצאות כתוב 'היריב נכנע לפני שהלוח התמלא'."
+    },
+    {
+      "question": "דהיית הנעילה (240 ms) נשארת כשמחליפים את המימוש שלה, או שהנעילה פשוט נעלמת?",
+      "recommendedDefault": "נשארת, כמו ב־motion.md (lock.release), אבל במימוש שלא תלוי בניווט. עם הפחתת תנועה: דהייה של 200 ms."
+    }
+  ],
+  "sharedFiles": [
+    "apps/mobile/src/screens/game/GameScreen.tsx",
+    "apps/mobile/src/screens/game/model.ts",
+    "apps/mobile/src/net/remoteGameHost.ts",
+    "apps/mobile/src/net/matchmaking.ts",
+    "apps/mobile/src/net/device.ts",
+    "apps/mobile/src/net/matchmakingDevice.ts",
+    "apps/mobile/app/game.tsx",
+    "apps/mobile/app/results/[id].tsx",
+    "apps/mobile/app/match/index.tsx",
+    "apps/mobile/src/screens/match/MatchScreen.tsx",
+    "apps/mobile/src/components/board/Cell.tsx",
+    "apps/mobile/src/i18n/locales/he/common.json",
+    "apps/mobile/src/i18n/locales/en/common.json",
+    "apps/mobile/src/__tests__/ranked.e2e.test.tsx",
+    "apps/mobile/src/screens/game/__tests__/GameScreenOnline.test.tsx",
+    "docs/01-SPEC.md",
+    "docs/QA-CHECKLIST.md",
+    "docs/STAGE9-10-DEVICE-CHECKS.md",
+    "docs/design/motion.md"
+  ],
+  "needsServerDeploy": false
+}

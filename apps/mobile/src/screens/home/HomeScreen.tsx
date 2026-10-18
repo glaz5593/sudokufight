@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isSuspended } from '../../api/me';
-import { refreshMe, useAuth } from '../../auth/authStore';
+import { refreshMeIfStale, useAuth } from '../../auth/authStore';
 import { ltr } from '../../components/player';
 import { BottomNav, Button, IconButton, RowButton, useToast } from '../../components/ui';
 import { useGameStore } from '../../game/gameStore';
@@ -47,7 +47,10 @@ export interface HomeScreenProps {
  * saved before the app was closed) is there.
  *
  * Stage 8: the card is the account's (name, avatar, country and ratings from GET /v1/me, kept on the phone so
- * Home opens offline); pressing it opens the profile. Until the email is verified, a banner under the card
+ * Home opens offline); pressing it opens the profile. Home reads the account again each time it comes into view,
+ * at most every refresh.minIntervalMs (config/account.ts), and at once when it came from the phone; after a
+ * ranked game the new rating shows at once and is confirmed with the server in the background
+ * (progress/rankedRefresh.ts), so no restart is needed. Until the email is verified, a banner under the card
  * leads to /verify-email [D22]. Without an account profile (tests of the home screens alone) the card falls
  * back to the local profile.
  *
@@ -90,8 +93,9 @@ export function HomeScreen({ devLinks = __DEV__ }: HomeScreenProps) {
   useFocusEffect(
     useCallback(() => {
       void refreshHome();
-      // A profile read from the phone (no server last time): try the server again.
-      if (useAuth.getState().meOffline) void refreshMe();
+      // The account again (a ranked game just played moved its ratings): at most every
+      // accountConfig.refresh.minIntervalMs, and at once when it came from the phone (no server last time).
+      void refreshMeIfStale();
       // My level, XP and league, and my card's numbers (a game just played moved them).
       void refreshMyProgress();
     }, []),

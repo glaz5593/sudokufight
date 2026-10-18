@@ -420,7 +420,7 @@ const CASES: Case[] = [
     shows: 'reaction-picker',
   },
   {
-    name: 'game: the arsenal',
+    name: 'game: the interference picker (two taps, D45)',
     url: '/game',
     setup: TWO_PLAYERS,
     drive: async () => {
@@ -454,13 +454,28 @@ const CASES: Case[] = [
     shows: 'opponent-reconnecting',
   },
   {
-    name: 'game: my connection lost',
+    // The soft phase [D42]: nothing over the game, only the mark and one announcement.
+    name: 'game: my connection lost, the soft phase',
     url: '/game',
     setup: TWO_PLAYERS,
     drive: async () => {
       table!.offline = true;
       table!.cutMe();
       await pass(table!, 1500);
+    },
+    ready: 'game',
+    live: 'self-offline-announcer',
+    shows: 'board-room',
+  },
+  {
+    name: 'game: my connection lost',
+    url: '/game',
+    setup: TWO_PLAYERS,
+    drive: async () => {
+      table!.offline = true;
+      table!.cutMe();
+      // Past the soft phase [D42] (10 s): the hard phase's screen.
+      await pass(table!, 11_000, 250);
     },
     ready: 'game',
     live: 'self-reconnecting-live',
@@ -535,6 +550,22 @@ const CASES: Case[] = [
     ready: 'match-search',
     live: 'match-timeout-live',
     shows: 'match-timeout',
+  },
+  {
+    name: 'match: nobody else is searching',
+    url: '/match',
+    setup: () => {
+      rankedNet = rankedWiring();
+      useGameStore.getState().startRanked({ gameType: 'fast', players: 2 }, mockApp.ranked);
+    },
+    drive: () =>
+      act(async () => {
+        rankedNet!.mm!.searching({ nextRange: null });
+        await elapse(rankedNet!.table!, 100);
+      }),
+    ready: 'match-search',
+    live: 'match-search-live',
+    shows: 'match-search-alone',
   },
   {
     name: 'match: no connection',

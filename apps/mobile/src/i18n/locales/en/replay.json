@@ -40,11 +40,13 @@
     "interference": "{{name}} · interferes with {{target}} · {{delta}}",
     "disconnect": "{{name}} · disconnected",
     "reconnect": "{{name}} · back in the game",
+    "offline": "{{name}} · connection lost",
     "surrender": "{{name}} · surrendered",
     "endPractice": "{{name}} · ended the practice",
     "abandon": "{{name}} · left the game",
     "over": "The game is over",
-    "paused": "The game is frozen"
+    "paused": "The game is frozen",
+    "offlineSuffix": "sent when back online"
   },
   "explain": {
     "title": "An explanation for every player",
@@ -62,6 +64,7 @@
     "why": "Why {{digit}} doesn't fit: {{text}}",
     "noLogic": "The answer: {{cell}} → {{digit}}",
     "scoreLine": "The score",
+    "penaltyLine": "The penalty: what the right digit was worth",
     "released": {
       "cancel": "Choice cancelled",
       "timeout": "Time ran out",

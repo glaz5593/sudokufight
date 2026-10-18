@@ -48,14 +48,15 @@ docs/               אפיון, תוכנית, עיצוב
 | `npm run dev:lan` | השרת בפיתוח לטלפונים ב־Wi-Fi: מוצא את כתובת המחשב, טוען את המאגר המדורג אם חסר, ומדפיס מה לשים ב־`.env.local`. פירוט ב"טלפונים ב־Wi-Fi" |
 | `npm run fake-client -- --create` | לקוח מזויף שמשחק דרך השרת כמו בוט. פירוט ב"לשחק מול לקוח מזויף" |
 | `npm run seed` | נתוני דוגמה לאתר הניהול במסד של הפיתוח (PGlite): ‏300 התקנות, 80 משתמשים ו־150 משחקים מדורגים. טוען גם את המאגר המדורג. `-- --reset` מוחק קודם. לעצור את השרת לפני |
-| `npm run db:seed-puzzles` | טוען לטבלת `puzzles` את המאגר המדורג מ־`packages/engine/data/puzzles.json`: רק לוחות עם `pool='ranked'` (אפיון, סעיף 20). בלי זה משחק מדורג לא מתחיל. אפשר להריץ שוב: הוא רק מעדכן. ב־PGlite לעצור את השרת לפני. מול Postgres של הייצור: עם `DATABASE_URL` (למשל דרך `fly proxy`) |
+| `npm run db:seed-puzzles` | טוען לטבלת `puzzles` את המאגר המדורג מ־`packages/engine/data/puzzles.json`: רק לוחות עם `pool='ranked'` (אפיון, סעיף 20). בלי זה משחק מדורג לא מתחיל. אפשר להריץ שוב: הוא רק מעדכן. לוח מדורג שיצא מהקובץ לא נמחק: הוא מסומן `retired_at` ולא נבחר יותר, ומודפס כמה כאלה היו [D43]. מריצים אחרי ה־deploy של שרת שמכיר את `retired_at`. ב־PGlite לעצור את השרת לפני. מול Postgres של הייצור: עם `DATABASE_URL` (למשל דרך `fly proxy`) |
 | `npm run admin:dev` | אתר הניהול בפיתוח (Vite) ב־`http://localhost:5174/admin/`. מפנה את `/admin/api` לשרת בפורט 2567, אז מריצים גם `npm run server` |
 | `npm run admin:build` | בונה את אתר הניהול ל־`apps/admin/dist`. השרת מגיש אותו ב־`/admin` |
 | `npm run mobile` | Metro לאפליקציה (Development Build) |
 | `npm run apk` | בונה במחשב APK של release לטלפוני הבדיקה, מול שרת ה־staging, אל `apps/mobile/apk/`. `-- --install` גם מתקין על הטלפונים שבכבל. פירוט ב־[docs/BUILD-APK.md](docs/BUILD-APK.md) |
 | `npm run android:reverse` | מפנה את פורטים 2567 ו־8081 מהטלפון או מהאמולטור למחשב |
-| `npm run puzzles:import` | מייבא את `assets/puzzles/sudoku-bank-690.csv` אל `packages/engine/data/puzzles.json`, ומדפיס דוח |
-| `npm run puzzles:generate -- --type hard --count 300` | מחולל לוחות. אפשר גם `--pool ranked` ו־`--seed 42` |
+| `npm run puzzles:import` | מייבא את `assets/puzzles/sudoku-bank-690.csv` אל `packages/engine/data/puzzles.json`, ומדפיס דוח. הלוחות נכנסים כבר בטווח הגלויים של הסוג שלהם |
+| `npm run puzzles:generate -- --type hard --count 300` | מחולל לוחות. אפשר גם `--pool ranked` ו־`--seed 42`. מהיר ורגיל יוצאים בטווח הגלויים של הסוג (45–50, 35–40) |
+| `npm run puzzles:givens` | מביא כל לוח מהיר ורגיל במאגר לטווח הגלויים של הסוג שלו (אפיון, סעיף 5.2) [D43], וקשה לא נוגע. דטרמיניסטי; `-- --dry-run` רק מדפיס דוח. אחריו: `npm run pool -w @sudoku-fight/mobile` |
 | `npm run licenses` | רישיונות של חבילות ה־Production באפליקציה ובשרת: כותב את `docs/store/LICENSES-REPORT.md` ואת הרשימה שמסך "רישיונות" מציג. מריצים אחרי כל שינוי בתלויות (`-- --check` רק בודק) |
 
 ## להריץ את האפליקציה בטלפון Android (Development Build)
@@ -141,6 +142,9 @@ curl -H 'authorization: Bearer dev:moshe' http://localhost:2567/v1/me
   כל התורים פתוחים: 2, 3 ו־4 שחקנים, מ־`fast-2p` עד `hard-4p` (שלב 10). באפליקציה, השולחנות שמוצגים במסך "משחק חדש" הם `RANKED_TABLES_OPEN` ב־`apps/mobile/src/screens/home/homeModel.ts`.
 - ההודעות, הזמנים (טווח D6, ‏60 ש׳ עד Match-Timeout, ‏10 ש׳ לבדיקת מוכנות, ספירה של 3 ש׳) והזרימה המלאה: `packages/protocol/src/matchmaking.ts`.
 - החוקים (טווח הדדי, הימנעות מיריבים חוזרים, איפוס ב־80%, הוגנות): `apps/server/src/matchmaking/matcher.ts`.
+- **מי עוד מחפש:** כל `searching` (וגם `timeout`) כולל `nextRange`: הטווח הצר ביותר, על הסולם של D6, שבו יש מספיק שחקנים שאפשר להתאים איתם (כלל 7 ב־`matcher.ts`).
+  ‏`null` אומר שאין אף אחד, והאפליקציה אומרת את זה מיד, עם "שחק מול בוט בינתיים". השרת שולח `searching` מחדש כשהערך משתנה (מישהו הצטרף או יצא), תוך סבב אחד.
+  השדה אופציונלי: מעלים קודם את השרת, ואפליקציה מול שרת ישן מציגה את הטווח כמו קודם.
 - כשנמצאה התאמה, השרת פותח חדר `game` מדורג ושומר מושב לכל שחקן. מי שלא מתחבר תוך 10 שניות לא מדורג (עדיין אין משחק),
   והאחרים חוזרים לראש התור. אחרי שכולם מחוברים, יציאה היא נטישה (D32).
 - **ניתוק בספירה לאחור:** המושב נשמר כמו במשחק (D32). המשחק מתחיל ב־GO בלי השחקן, ה־grace שלו רץ מאז, והוא חוזר עם ה־reconnection token.

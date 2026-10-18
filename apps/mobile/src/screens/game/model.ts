@@ -8,6 +8,7 @@ import {
 } from '@sudoku-fight/engine';
 
 import { compactCardGap, compactCardWidth, type LeadModel } from '../../components/player';
+import { gameEndConfig } from '../../config/gameEnd';
 import type { FeedbackCue } from '../../services/feedback';
 import { motion } from '../../theme/motion';
 
@@ -91,17 +92,35 @@ export const MOVE_TIMELINE: Readonly<Record<'gain' | 'penalty', MoveTimeline>> =
 export const FLASH_CLEAR_MS = motion.duration.correctFlash + motion.duration.reducedFade;
 
 /**
- * How long the board stays after the game ends, before the results (motion.md `last.cell`): a full board
- * plays the last cell's flash and holds it (700 + 400 ms; 200 ms with reduced motion). "End practice" goes
- * at once: the player asked for it. Either way the results never replace the screen while its end dialog
- * is still on it (GameScreen: they also wait for the dialog's onExited, at most DIALOG_GONE_CEILING_MS more).
+ * How long the board stays after the game ends, before the results:
+ * - a full board plays the last cell's flash and holds it (motion.md `last.cell`: 700 + 400 ms; 200 ms with
+ *   reduced motion);
+ * - an online game that ends otherwise (a surrender, mine or the opponent's; an abandonment) holds its final
+ *   board ONLINE_END_HOLD_MS (motion.md `game.end`; 200 ms with reduced motion). Moshe's black screens of
+ *   1.0.0 (15.10.2026) came on exactly these ends, which opened the results at once, inside the server's
+ *   message, while the fades the end had started were still running; the full board, which waited, never did;
+ * - "End practice" goes at once: the player asked for it, and its dialog's exit is the wait.
+ * Whatever the hold, the results never open inside the host's update (GameScreen: always from a timer of the
+ * screen), never while a dialog or sheet is still on the screen (they also wait for its onExited, at most
+ * DIALOG_GONE_CEILING_MS more), and a watchdog notices when they did not open (RESULTS_WATCHDOG_MS).
  */
 export const LAST_CELL_HOLD_MS = 400;
 
-export function endDelayMs(reason: EndReason | undefined, reduce: boolean): number {
-  if (reason !== 'boardComplete') return 0;
-  return reduce ? motion.duration.reducedFade : motion.duration.correctFlash + LAST_CELL_HOLD_MS;
+/** The final board of an online game that did not fill up stays this long (config/gameEnd.ts). */
+export const ONLINE_END_HOLD_MS = gameEndConfig.onlineHoldMs;
+
+export function endDelayMs(reason: EndReason | undefined, reduce: boolean, online = false): number {
+  if (reason === 'boardComplete')
+    return reduce ? motion.duration.reducedFade : motion.duration.correctFlash + LAST_CELL_HOLD_MS;
+  if (!online) return 0;
+  return reduce ? motion.duration.reducedFade : ONLINE_END_HOLD_MS;
 }
+
+/**
+ * The results were asked for this long ago and the game screen is still here (a navigation that was lost):
+ * it shows a way on ("לתוצאות", "לבית") and reports it (config/gameEnd.ts).
+ */
+export const RESULTS_WATCHDOG_MS = gameEndConfig.resultsWatchdogMs;
 
 /**
  * The longest the results wait for the end dialog to report it has left the screen (bug 9): its exit is
@@ -210,13 +229,21 @@ const REACTION_CUES: Readonly<Record<string, FeedbackCue>> = {
 export const reactionCue = (emoji: string): FeedbackCue => REACTION_CUES[emoji] ?? 'reactPop';
 
 /** The cue of an interference that hits me, at its start (motion.md §7). */
-const HIT_CUES: Readonly<Record<InterferenceKind, FeedbackCue>> = {
+export const HIT_CUES: Readonly<Record<InterferenceKind, FeedbackCue>> = {
   fireworks: 'hitFireworks',
   cats: 'hitCats',
   warp: 'hitWarp',
+  scramble: 'hitScramble',
+  ink: 'hitInk',
+  keypad: 'hitKeypad',
 };
 
-export const hitCue = (kind: InterferenceKind): FeedbackCue => HIT_CUES[kind];
+/**
+ * The start cue of a kind. A kind this app doesn't know (a newer player's [D47]) gets the warp's: a sound and
+ * the Warning haptic, so the hit is still felt, and nothing throws.
+ */
+export const hitCue = (kind: InterferenceKind): FeedbackCue =>
+  Object.prototype.hasOwnProperty.call(HIT_CUES, kind) ? HIT_CUES[kind] : 'hitWarp';
 
 /**
  * When the view goes stale by the clock alone, with no event to say so: the earliest end of an opponent's

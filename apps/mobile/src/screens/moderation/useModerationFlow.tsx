@@ -19,6 +19,11 @@ export interface ModerationFlowOptions {
   placement?: ConfirmPlacement;
   /** A block went through (the game screen also mutes their reactions at once). */
   onBlocked?: (playerId: string) => void;
+  /**
+   * The sheet and the dialog have both left the screen (their exits over, their native windows gone), after
+   * one of them was shown. The game screen's results wait for it (bug 9: never under a closing window).
+   */
+  onExited?: () => void;
   /** The clock of the report's quota message (tests pass theirs). */
   now?: () => number;
 }
@@ -30,6 +35,13 @@ export interface ModerationFlow {
   openBlock(target: ModerationTarget): void;
   /** "בטל חסימה": the confirmation, then the block lifted. */
   openUnblock(target: ModerationTarget): void;
+  /**
+   * Closes the sheet and the dialog, even while a block is being sent (it still finishes, with its toast): the
+   * screen under them is going (the game's end, a lost connection).
+   */
+  closeAll(): void;
+  /** The sheet or the dialog is on the screen: from its opening until it has left it (onExited). */
+  mounted: boolean;
   /** The sheet and the dialog: render it once, over the screen. */
   view: ReactNode;
 }
@@ -57,6 +69,7 @@ interface ConfirmState {
 export function useModerationFlow({
   placement = 'center',
   onBlocked,
+  onExited,
   now,
 }: ModerationFlowOptions = {}): ModerationFlow {
   const { t } = useTranslation('moderation');
@@ -65,22 +78,54 @@ export function useModerationFlow({
   const [busy, setBusy] = useState(false);
   const opened = useRef(0);
   const blocked = useRef(onBlocked);
+  const exited = useRef(onExited);
   useEffect(() => {
     blocked.current = onBlocked;
+    exited.current = onExited;
   });
 
-  const openReport = useCallback((target: ModerationTarget, gameId: string | null = null) => {
-    opened.current += 1;
-    setReport({ target, gameId, key: opened.current, open: true });
+  // On the screen: the sheet, the dialog (from the opening until its onExited). Refs for the moment itself,
+  // `mounted` for the render.
+  const up = useRef({ report: false, confirm: false });
+  const [mounted, setMounted] = useState(false);
+  const shown = useCallback((which: 'report' | 'confirm') => {
+    up.current[which] = true;
+    setMounted(true);
   }, []);
+  const gone = useCallback((which: 'report' | 'confirm') => {
+    if (!up.current[which]) return;
+    up.current[which] = false;
+    if (up.current.report || up.current.confirm) return;
+    setMounted(false);
+    exited.current?.();
+  }, []);
+
+  const openReport = useCallback(
+    (target: ModerationTarget, gameId: string | null = null) => {
+      opened.current += 1;
+      shown('report');
+      setReport({ target, gameId, key: opened.current, open: true });
+    },
+    [shown],
+  );
   const openBlock = useCallback(
-    (target: ModerationTarget) => setConfirm({ target, action: 'block', open: true }),
-    [],
+    (target: ModerationTarget) => {
+      shown('confirm');
+      setConfirm({ target, action: 'block', open: true });
+    },
+    [shown],
   );
   const openUnblock = useCallback(
-    (target: ModerationTarget) => setConfirm({ target, action: 'unblock', open: true }),
-    [],
+    (target: ModerationTarget) => {
+      shown('confirm');
+      setConfirm({ target, action: 'unblock', open: true });
+    },
+    [shown],
   );
+  const closeAll = useCallback(() => {
+    setReport((r) => (r?.open ? { ...r, open: false } : r));
+    setConfirm((c) => (c?.open ? { ...c, open: false } : c));
+  }, []);
 
   const closeConfirm = () => {
     if (!busy) setConfirm((c) => c && { ...c, open: false });
@@ -125,6 +170,7 @@ export function useModerationFlow({
           name={report.target.name}
           onSend={(reason) => reportPlayer({ playerId: report.target.id, reason, gameId: report.gameId })}
           onClose={() => setReport((r) => r && { ...r, open: false })}
+          onExited={() => gone('report')}
           now={now}
         />
       ) : null}
@@ -138,10 +184,11 @@ export function useModerationFlow({
         confirmLoading={busy}
         onConfirm={() => void run()}
         onCancel={closeConfirm}
+        onExited={() => gone('confirm')}
         testID={unblock ? 'unblock-confirm' : 'block-confirm'}
       />
     </>
   );
 
-  return { openReport, openBlock, openUnblock, view };
+  return { openReport, openBlock, openUnblock, closeAll, mounted, view };
 }

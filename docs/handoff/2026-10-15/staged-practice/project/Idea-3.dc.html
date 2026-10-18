@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<title>Chain</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@keyframes lv-drop{0%{transform:translateY(-12px);opacity:0}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div dir="rtl" style="width:390px;height:844px;position:relative;overflow:hidden;box-sizing:border-box;font-family:Rubik,'Segoe UI',system-ui,sans-serif;color:#eef1f6;background:#0f1218;">
+
+  <!-- header: level + chapter + type (start), exit (end) -->
+  <header style="position:absolute;top:48px;left:16px;right:16px;height:56px;display:flex;align-items:center;gap:12px;">
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <h1 style="margin:0;font:700 22px/25px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">שלב 135</h1>
+        <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">פרק 14</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;color:#9aa3b5;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg>
+        <span style="font:500 14px/18px Rubik,sans-serif;white-space:nowrap;">שרשרת</span>
+      </div>
+    </div>
+    <button type="button" aria-label="יציאה מהשלב" style="flex:none;width:44px;height:44px;margin:0;padding:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+  </header>
+
+  <!-- goal -->
+  <div style="position:absolute;top:114px;left:16px;right:16px;display:flex;flex-direction:column;gap:4px;">
+    <p style="margin:0;font:500 15px/20px Rubik,sans-serif;color:#eef1f6;">בכל רגע רק משבצת אחת בלוח פתירה. מצא אותה ומלא, והיא תפתח את הבאה.</p>
+    <p style="margin:0;font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;">ספרה במשבצת שעוד אי אפשר לדעת מה נכנס בה: <bdi dir="ltr">+5</bdi> ש׳.</p>
+  </div>
+
+  <!-- progress: the chain (start) · time (end) -->
+  <div style="position:absolute;top:184px;left:16px;right:16px;height:28px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <div role="img" aria-label="צעד 3 מתוך 4 · שני צעדים כבר מולאו" style="display:flex;align-items:center;gap:10px;">
+      <span aria-hidden="true" style="display:flex;align-items:center;">
+        <sc-for list="{{links}}" as="lk" hint-placeholder-count="4">
+          <span style="display:flex;align-items:center;">
+            <sc-if value="{{lk.hasBar}}" hint-placeholder-val="{{ true }}">
+              <span style="display:block;width:8px;height:2px;background:{{lk.bar}};"></span>
+            </sc-if>
+            <span style="width:20px;height:20px;box-sizing:border-box;border-radius:50%;background:{{lk.bg}};border:{{lk.bd}};display:flex;align-items:center;justify-content:center;">
+              <sc-if value="{{lk.done}}" hint-placeholder-val="{{ false }}">
+                <svg width="8" height="8" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#0f1218"></path></svg>
+              </sc-if>
+            </span>
+          </span>
+        </sc-for>
+      </span>
+      <span style="font:500 15px/1 Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">צעד 3 מתוך 4</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <sc-if value="{{guess}}" hint-placeholder-val="{{ false }}">
+        <span role="status" style="display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 7px;box-sizing:border-box;border-radius:6px;background:rgba(255,77,94,.08);border:1px solid rgba(255,77,94,.55);font:500 12px/1 Rubik,sans-serif;color:#ff4d5e;white-space:nowrap;"><bdi dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:17px;line-height:.8;padding-top:2px;">+5</bdi> ש׳</span>
+      </sc-if>
+      <span style="display:flex;align-items:baseline;gap:5px;white-space:nowrap;">
+        <span style="font:500 15px/1 Rubik,sans-serif;color:#9aa3b5;">זמן</span>
+        <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:24px;line-height:.8;font-variant-numeric:tabular-nums;color:#eef1f6;">{{timeTxt}}</span>
+        <span style="font:500 15px/1 Rubik,sans-serif;color:#9aa3b5;">ש׳</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- star meter: the level's time on 0–30 s (4 steps): 3 stars to 13 s, 2 to 20, 1 = done by 30 -->
+  <div dir="ltr" role="progressbar" aria-label="{{meterAria}}" aria-valuemin="0" aria-valuemax="30" aria-valuenow="{{timeTxt}}" style="position:absolute;top:224px;left:16px;width:358px;height:46px;">
+    <sc-for list="{{bands}}" as="b" hint-placeholder-count="3">
+      <span style="position:absolute;top:0;left:{{b.x}};transform:translateX(-50%);display:flex;align-items:center;gap:2px;height:12px;">
+        <sc-for list="{{b.stars}}" as="s" hint-placeholder-count="3">
+          <svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="{{s.fill}}" stroke="{{s.stroke}}" stroke-width="2" stroke-linejoin="round"></path></svg>
+        </sc-for>
+      </span>
+    </sc-for>
+    <div style="position:absolute;top:18px;left:0;width:358px;height:6px;border-radius:3px;background:#1f2430;overflow:hidden;">
+      <span style="position:absolute;top:0;bottom:0;left:0;width:{{fillW}};border-radius:3px;background:#36c9f0;"></span>
+      <sc-for list="{{ticks}}" as="t" hint-placeholder-count="2">
+        <span style="position:absolute;top:0;bottom:0;left:{{t.x}};width:2px;margin-left:-1px;background:#0f1218;"></span>
+      </sc-for>
+    </div>
+    <sc-for list="{{axis}}" as="a" hint-placeholder-count="4">
+      <span style="position:absolute;top:32px;left:{{a.x}};transform:{{a.tx}};font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:2px;font-variant-numeric:tabular-nums;color:#9aa3b5;">{{a.t}}</span>
+    </sc-for>
+  </div>
+
+  <!-- board (LTR): every empty cell can be chosen; the next link is NOT marked -->
+  <div dir="ltr" role="group" aria-label="{{boardAria}}" style="position:absolute;top:282px;left:16px;width:358px;height:358px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:3px;background:#0f1218;border-radius:12px;overflow:hidden;">
+    <sc-for list="{{boxes}}" as="box" hint-placeholder-count="9">
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:1px;background:#c8cdd6;">
+        <sc-for list="{{box.cells}}" as="cell" hint-placeholder-count="9">
+          <button type="button" aria-label="{{cell.aria}}" style="position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:{{cell.bg}};box-shadow:{{cell.ring}};color:{{cell.fg}};font-family:Rubik,sans-serif;font-weight:{{cell.fw}};font-size:22px;line-height:1;">
+            {{cell.v}}
+            <sc-if value="{{cell.owned}}" hint-placeholder-val="{{ false }}">
+              <svg aria-hidden="true" width="6" height="6" viewBox="0 0 24 24" style="position:absolute;top:3px;left:3px;"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#0b6a85"></path></svg>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- keypad (LTR): idle while no cell is chosen -->
+  <div dir="ltr" style="position:absolute;top:656px;left:16px;width:358px;height:60px;display:flex;gap:4px;opacity:{{padOp}};">
+    <sc-for list="{{keys}}" as="k" hint-placeholder-count="9">
+      <button type="button" aria-label="{{k.aria}}" style="flex:1 1 0;min-width:0;height:60px;margin:0;padding:0;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#1f2430;border:1px solid {{k.bd}};border-radius:10px;opacity:{{k.op}};">
+        <span style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:32px;line-height:.8;padding-top:4px;color:#eef1f6;">{{k.d}}</span>
+        <span style="font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;">{{k.left}}</span>
+      </button>
+    </sc-for>
+  </div>
+  <div style="position:absolute;top:730px;left:16px;right:16px;height:44px;display:flex;justify-content:center;">
+    <button type="button" style="height:44px;margin:0;padding:0 16px;box-sizing:border-box;display:flex;align-items:center;gap:8px;background:transparent;border:0;border-radius:12px;font:500 15px/1 Rubik,sans-serif;color:#9aa3b5;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M9 9l6 6M15 9l-6 6"></path></svg>
+      <span style="white-space:nowrap;">ביטול בחירה</span>
+    </button>
+  </div>
+
+  <!-- variant "guess": a digit in a cell that cannot be known yet; error toast over the header, never over the board -->
+  <sc-if value="{{guess}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:absolute;top:56px;left:16px;right:16px;height:40px;box-sizing:border-box;padding:0 12px;display:flex;align-items:center;gap:10px;background:#1f2430;border:1px solid #ff4d5e;border-radius:12px;animation:lv-drop 240ms cubic-bezier(.2,.8,.2,1) both;">
+      <span aria-hidden="true" style="flex:none;width:24px;height:24px;border-radius:50%;background:rgba(255,77,94,.16);display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff4d5e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></span>
+      <span style="flex:1;min-width:0;font:500 14px/1.2 Rubik,sans-serif;color:#eef1f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">עוד אי אפשר לדעת מה נכנס ב־<bdi dir="ltr">A9</bdi> · <bdi dir="ltr">+5</bdi> ש׳</span>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"guess":false}'>
+class Component extends DCLogic {
+  // Level 135 (chapter 14, "שרשרת ארוכה"): a chain of 4 steps on a "normal" board, 36 givens, unique solution, not a
+  // ranked-bank solution. Checked with a naked + hidden singles solver: at every step EXACTLY ONE empty cell can be known.
+  //   step 1: B1 = 4 (the only place for 4 in column 1)        - mine
+  //   step 2: A1 = 1 (the only place for 1 in box 1)           - mine
+  //   step 3: A8 = 6 (the only place for 6 in row A)           - now; not marked on the board
+  //   step 4: A4 = 7 (the only place for 7 in row A, after A8)
+  // 8.6 s so far. Stars for 4 steps: 3 up to 13 s, 2 up to 20 s, 1 = done by 30 s (the level ends).
+  // guess = the variant: I typed 2 in A9, which can still be 2 or 5 (its answer is 5): +5 s, so 13.6 s and 2 stars now.
+  fixture() {
+    return {
+      PUZ: '080004300070060008003018004007080420320000007800070039231807906058106003046030000',
+      SOL: '182794365475263198693518274567389421329451687814672539231847956958126743746935812',
+      MINE: [9, 0],
+      GUESS: { cell: 8, typed: '2' }
+    };
+  }
+
+  boxes(guess) {
+    const F = this.fixture();
+    const out = [];
+    for (let bx = 0; bx < 9; bx++) {
+      const cells = [];
+      for (let k = 0; k < 9; k++) {
+        const i = (Math.floor(bx / 3) * 3 + Math.floor(k / 3)) * 9 + (bx % 3) * 3 + (k % 3);
+        const name = 'ABCDEFGHI'[Math.floor(i / 9)] + String(i % 9 + 1);
+        const mine = F.MINE.indexOf(i) >= 0;
+        const given = F.PUZ[i] !== '0';
+        const wrong = guess && i === F.GUESS.cell;
+        let v = given ? F.PUZ[i] : (mine ? F.SOL[i] : '');
+        let bg = bx % 2 ? '#eceff4' : '#f7f8fa';
+        let fg = '#0f1218', fw = '600', ring = 'none';
+        if (mine) { bg = '#d6f4fc'; fg = '#0b6a85'; fw = '500'; }
+        let aria = name + ' · ' + (v ? v : 'ריקה');
+        if (given) aria += ' · של הלוח';
+        if (mine) aria += ' · שלך';
+        if (wrong) {
+          bg = '#fb9aa4'; fg = '#b8102f'; fw = '700'; v = F.GUESS.typed; // 700: bold 22px = large text, 3:1 is enough on the wash
+          ring = 'inset 0 0 0 3px #36c9f0';
+          aria = name + ' · 2 · עוד אי אפשר לדעת מה נכנס כאן · ⁦+5⁩ שניות';
+        }
+        cells.push({ v: v, bg: bg, fg: fg, fw: fw, ring: ring, aria: aria, owned: mine });
+      }
+      out.push({ cells: cells });
+    }
+    return out;
+  }
+
+  keys(guess) {
+    // left = 9 − the digit's count on the board now (36 givens + my 4 in B1 and my 1 in A1)
+    const F = this.fixture();
+    const out = [];
+    for (let d = 1; d <= 9; d++) {
+      const s = String(d);
+      let left = 9;
+      for (let i = 0; i < 81; i++) {
+        const v = F.PUZ[i] !== '0' ? F.PUZ[i] : (F.MINE.indexOf(i) >= 0 ? F.SOL[i] : '');
+        if (v === s) left--;
+      }
+      out.push({ d: s, left: String(left), op: left > 0 ? '1' : '.3',
+        bd: guess ? 'rgba(54,201,240,.5)' : '#2a3140', aria: 'ספרה ' + d + ' · נותרו ' + left });
+    }
+    return out;
+  }
+
+  renderVals() {
+    const p = this.props || {};
+    const guess = !!p.guess;
+    const W = 358, MAX = 30;
+    const t = guess ? 13.6 : 8.6;
+    const x = (s) => (s / MAX * W).toFixed(1) + 'px';
+    const GOLD = { fill: '#ffcf3f', stroke: '#ffcf3f' };
+    const LOST = { fill: 'none', stroke: '#677086' };
+    const star = (n, limit) => { const a = []; for (let k = 0; k < n; k++) a.push(t <= limit ? GOLD : LOST); return a; };
+    const P1 = '#36c9f0';
+    const link = (state, k) => ({
+      hasBar: k > 0,
+      bar: state === 'done' || (state === 'now' && k > 0) ? P1 : '#2a3140',
+      bg: state === 'done' ? P1 : (state === 'now' ? 'transparent' : '#1f2430'),
+      bd: state === 'done' ? '0' : (state === 'now' ? '2px solid ' + P1 : '1px solid #2a3140'),
+      done: state === 'done'
+    });
+    return {
+      guess: guess,
+      timeTxt: t.toFixed(1),
+      fillW: (t / MAX * 100).toFixed(2) + '%',
+      meterAria: guess
+        ? 'זמן: 13.6 שניות מתוך 30 · עכשיו 2 כוכבים · שלושה כוכבים עד 13 שניות, שניים עד 20, אחד אם מסיימים עד 30'
+        : 'זמן: 8.6 שניות מתוך 30 · עכשיו 3 כוכבים · שלושה כוכבים עד 13 שניות, שניים עד 20, אחד אם מסיימים עד 30',
+      boardAria: guess
+        ? 'לוח המשחק · מילאת את B1 ואת A1 · נבחרה A9, וה־2 שהוקלד בה הוא ניחוש'
+        : 'לוח המשחק · מילאת את B1 ואת A1 · הקש על המשבצת שאפשר לדעת עכשיו',
+      links: [link('done', 0), link('done', 1), link('now', 2), link('next', 3)],
+      bands: [
+        { x: x(6.5), stars: star(3, 13) },
+        { x: x(16.5), stars: star(2, 20) },
+        { x: x(25), stars: star(1, 30) }
+      ],
+      ticks: [{ x: x(13) }, { x: x(20) }],
+      axis: [
+        { t: '0', x: '0px', tx: 'none' },
+        { t: '13', x: x(13), tx: 'translateX(-50%)' },
+        { t: '20', x: x(20), tx: 'translateX(-50%)' },
+        { t: '30', x: W + 'px', tx: 'translateX(-100%)' }
+      ],
+      padOp: guess ? '1' : '.55',
+      keys: this.keys(guess),
+      boxes: this.boxes(guess)
+    };
+  }
+}
+</script>
+</body>
+</html>

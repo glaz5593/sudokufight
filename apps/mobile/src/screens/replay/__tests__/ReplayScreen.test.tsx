@@ -7,7 +7,7 @@ import { useSettings } from '../../../state/settings';
 import { buildReplay, stepView } from '../replayModel';
 import { ReplayScreen } from '../ReplayScreen';
 import { loadReplay, type ReplayLoad, type ReplaySourceDeps } from '../replaySource';
-import { soloGame } from '../testing/games';
+import { softDropDuel, soloGame } from '../testing/games';
 import { fakeHistoryApi, memoryRepo, rankedDuel, savePractice } from '../testing/sources';
 
 /**
@@ -141,11 +141,19 @@ describe('a practice from the phone', () => {
       `שלב ${wrong.index + 1} מתוך ${replay.steps.length}`,
     );
     expect(screen.getByTestId('replay-explain-me-status', hidden)).toHaveTextContent(
-      `טעות ${signedText(-1)}`,
+      `טעות ${signedText(-wrong.penalty!)}`,
     );
     expect(screen.getByTestId('replay-explain-me')).toHaveProp(
       'accessibilityLabel',
       expect.stringContaining(`${wrong.digit} במקום ${wrong.answer}`),
+    );
+    // The penalty's calculation (§6.5, §13.2): what the right digit would have scored there.
+    const { penaltyLine } = stepView(replay, wrong.index, 'he').explanations[0]!;
+    expect(penaltyLine).toMatch(new RegExp(`= ${wrong.penalty}$`));
+    expect(screen.getByTestId('replay-explain-me-penalty', hidden)).toHaveTextContent(ltr(penaltyLine!));
+    expect(screen.getByTestId('replay-explain-me')).toHaveProp(
+      'accessibilityLabel',
+      expect.stringContaining(`הקנס: כמה הייתה שווה הספרה הנכונה: ${ltr(penaltyLine!)}`),
     );
   });
 
@@ -228,6 +236,26 @@ describe('a ranked game from the server', () => {
     );
     expect(screen.getByRole('header', { name: 'צריך להתחבר כדי לצפות במשחק מדורג' })).toBeOnTheScreen();
   });
+
+  it('a lost connection in its soft phase [D42]: said as such, and the digits it sent on the return marked', async () => {
+    const table = softDropDuel();
+    const api = fakeHistoryApi([table]);
+    await show(
+      (g) => loadReplay(g, 'ranked', { practice: async () => null, ranked: api, myAvatar: 'microphone' }),
+      table.config.id,
+    );
+    const replay = buildReplay(table.log, { me: 'me' });
+    const lost = replay.steps.findIndex((s) => s.kind === 'offline');
+    const [right, wrong] = replay.steps.filter((s) => s.offline);
+    for (let k = 0; k < lost; k++) await next();
+    expect(screen.getByTestId('replay-narration')).toHaveTextContent('NinaVolt · בלי חיבור');
+    for (let k = lost; k < right!.index; k++) await next();
+    expect(screen.getByTestId('replay-narration')).toHaveTextContent(
+      `NinaVolt · נכון ב־${ltr(cellName(right!.cell!))} · ${signedText(right!.points!)} · נשלח כשהחיבור חזר`,
+    );
+    for (let k = right!.index; k < wrong!.index; k++) await next();
+    expect(screen.getByTestId('replay-narration')).toHaveTextContent(/ · טעות ב־.* · נשלח כשהחיבור חזר$/);
+  }, 30_000);
 
   it('speaks English', async () => {
     await i18n.changeLanguage('en');

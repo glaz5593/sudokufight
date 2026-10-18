@@ -1,6 +1,12 @@
-import type { GameView, PlayerView } from '@sudoku-fight/engine';
+import {
+  type GameView,
+  INTERFERENCE_KINDS,
+  type InterferenceKind,
+  type PlayerView,
+} from '@sudoku-fight/engine';
 
-import { hitKeyOf, hitOf, hitSeconds, isHitOn, isolateName, rumbleOf } from '../hitModel';
+import { hitCue } from '../../model';
+import { hitKeyOf, hitOf, hitSeconds, hitSeedOf, isHitOn, isolateName, rumbleOf } from '../hitModel';
 
 /** The parts of a view hitOf reads: three players, me in seat 1, hit by seat 2. */
 function view(hitBy: PlayerView['hitBy']): Pick<GameView, 'players' | 'me' | 'rules'> {
@@ -40,6 +46,14 @@ describe('hitOf', () => {
     expect(isHitOn(hit, 1e12)).toBe(true);
     expect(hitSeconds(hit, 0)).toBe(3);
   });
+
+  it('carries the game’s id when the view has one (the seed of the effects drawn by chance, D47)', () => {
+    const hit = hitOf(
+      { ...view({ fromId: 'a', kind: 'ink', expiresAt: 9_000, remainingMs: 5_000 }), gameId: 'g-7' },
+      names,
+    );
+    expect(hit).toMatchObject({ kind: 'ink', gameId: 'g-7' });
+  });
 });
 
 describe('a hit’s time', () => {
@@ -71,6 +85,53 @@ describe('the rumble (motion.md §7)', () => {
     expect(rumbleOf('fireworks', 5000).cue).toBe('hitBurst');
     expect(rumbleOf('cats', 5000).cue).toBe('hitPulse');
     expect(rumbleOf('warp', 5000)).toEqual({ times: [1100, 2200, 3300, 4400], cue: 'hitPulse' });
+  });
+
+  it('[D47] scramble: every 800 ms; ink: as each blot lands; keypad: each time the keys trade places', () => {
+    expect(rumbleOf('scramble', 5000)).toEqual({
+      times: [400, 1200, 2000, 2800, 3600, 4400],
+      cue: 'hitPulse',
+    });
+    expect(rumbleOf('ink', 5000)).toEqual({ times: [80, 220, 360, 500, 640], cue: 'hitPulse' });
+    expect(rumbleOf('keypad', 5000)).toEqual({ times: [1500, 3000, 4500], cue: 'hitPulse' });
+  });
+
+  it('every kind of the engine has a rumble inside the hit and a start cue of its own', () => {
+    const starts = new Set<string>();
+    for (const kind of INTERFERENCE_KINDS) {
+      const { times } = rumbleOf(kind, 5000);
+      expect({ kind, inside: times.every((t) => t > 0 && t < 5000), some: times.length > 0 }).toEqual({
+        kind,
+        inside: true,
+        some: true,
+      });
+      starts.add(hitCue(kind));
+    }
+    expect(starts.size).toBe(INTERFERENCE_KINDS.length);
+  });
+
+  it('a kind this app doesn’t know: no rumble, the warp’s start cue, nothing thrown', () => {
+    const dragons = 'dragons' as InterferenceKind;
+    expect(rumbleOf(dragons, 5000)).toEqual({ times: [], cue: 'hitPulse' });
+    expect(hitCue(dragons)).toBe('hitWarp');
+    expect(hitCue('toString' as InterferenceKind)).toBe('hitWarp');
+  });
+});
+
+describe('hitSeedOf (the scramble, the ink and the keypad, D47)', () => {
+  const hit = { kind: 'scramble' as const, fromId: 'nina', fromName: 'NINA', gameId: 'g-1', id: 12 };
+
+  it('is the same for one hit, and differs between games, events and kinds', () => {
+    expect(hitSeedOf(hit)).toBe(hitSeedOf({ ...hit }));
+    expect(hitSeedOf({ ...hit, gameId: 'g-2' })).not.toBe(hitSeedOf(hit));
+    expect(hitSeedOf({ ...hit, id: 13 })).not.toBe(hitSeedOf(hit));
+    expect(hitSeedOf({ ...hit, kind: 'ink' })).not.toBe(hitSeedOf(hit));
+  });
+
+  it('does not move with the hit’s time (a freeze moves its deadline)', () => {
+    const at = (endsAt: number | null) => hitSeedOf({ ...hit, endsAt } as typeof hit);
+    expect(at(10_000)).toBe(at(null));
+    expect(Number.isInteger(hitSeedOf(hit)) && hitSeedOf(hit) >= 0).toBe(true);
   });
 });
 

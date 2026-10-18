@@ -1,4 +1,4 @@
-import { DEFAULT_PROGRESS_RULES } from '@sudoku-fight/engine';
+import { DEFAULT_PROGRESS_RULES, INTERFERENCE_KINDS } from '@sudoku-fight/engine';
 
 import { myProgress } from '../../../api/testing/fakeProgress';
 import { leagueFloor, leagueProgress, nextLeague } from '../../../components/player';
@@ -78,17 +78,40 @@ describe('xpRules (spec §15)', () => {
 });
 
 describe('the interferences collection (spec §7.1) [D17]', () => {
-  it('V1: the three open from the start; ink, earthquake, fog and bubbles locked "soon"', () => {
+  it('the three first open from the start; the scramble, ink and the keypad at their levels; four "soon"', () => {
     const c = interferenceCollection(null);
     expect(c.open.map((e) => e.kind)).toEqual(['fireworks', 'cats', 'warp']);
-    expect(c.locked.map((e) => e.kind)).toEqual([...FUTURE_INTERFERENCES]);
-    expect(c.locked.every((e) => e.future && e.unlockLevel === null)).toBe(true);
-    expect(c.total).toBe(7);
+    expect(c.locked.map((e) => e.kind)).toEqual(['scramble', 'ink', 'keypad', ...FUTURE_INTERFERENCES]);
+    expect(c.locked.slice(0, 3)).toEqual([
+      { kind: 'scramble', future: false, unlockLevel: 2, open: false },
+      { kind: 'ink', future: false, unlockLevel: 3, open: false },
+      { kind: 'keypad', future: false, unlockLevel: 4, open: false },
+    ]);
+    expect(c.locked.slice(3).every((e) => e.future && e.unlockLevel === null)).toBe(true);
+    expect(c.total).toBe(10);
   });
 
-  it('a V1 interference above my level is locked, at its level', () => {
-    const c = interferenceCollection(3, { fireworks: 0, cats: 0, warp: 12 });
-    expect(c.open.map((e) => e.kind)).toEqual(['fireworks', 'cats']);
+  it('opens each kind at its level (D17: 2, 3, 4)', () => {
+    expect(interferenceCollection(2).open.map((e) => e.kind)).toEqual([
+      'fireworks',
+      'cats',
+      'warp',
+      'scramble',
+    ]);
+    expect(interferenceCollection(3).open.map((e) => e.kind)).toContain('ink');
+    expect(interferenceCollection(4).open.map((e) => e.kind)).toEqual([...INTERFERENCE_KINDS]);
+    expect(interferenceCollection(4).locked.every((e) => e.future)).toBe(true);
+  });
+
+  it('the future ones are the kinds not built yet: earthquake, fog, bubbles and the torch (ink is a kind now) [D47]', () => {
+    expect([...FUTURE_INTERFERENCES]).toEqual(['earthquake', 'fog', 'bubbles', 'torch']);
+    for (const kind of FUTURE_INTERFERENCES) expect(INTERFERENCE_KINDS).not.toContain(kind);
+  });
+
+  it('a kind above my level is locked, at its level', () => {
+    const levels = { fireworks: 0, cats: 0, warp: 12, scramble: 0, ink: 0, keypad: 0 };
+    const c = interferenceCollection(3, levels);
+    expect(c.open.map((e) => e.kind)).toEqual(['fireworks', 'cats', 'scramble', 'ink', 'keypad']);
     expect(c.locked[0]).toEqual({ kind: 'warp', future: false, unlockLevel: 12, open: false });
   });
 

@@ -67,6 +67,7 @@ const SCREENS: [string, ReactElement][] = [
         me: { id: 'me', name: 'MosheG', score: 55 },
         opponentScore: 39.5,
         ratingDelta: 9,
+        ratingGuard: null,
         gameType: 'normal',
         graceSeconds: 15,
       }}

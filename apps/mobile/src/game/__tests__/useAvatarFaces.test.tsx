@@ -24,7 +24,8 @@ function useFollow(session: FaceSource & { getView: Duel['session']['getView'] }
 
 let game: Duel | null = null;
 async function follow() {
-  game = duel();
+  // Interferences on, for the dizzy face (a practice against a bot has none, D44).
+  game = duel({ rules: { interferences: true } });
   const g = game;
   const hook = await renderHook(({ session }: { session: Duel['session'] }) => useFollow(session), {
     initialProps: { session: g.session },

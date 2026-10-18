@@ -55,6 +55,7 @@ export function answers(action: ClientAction, e: GameEvent, me: PlayerId): boole
     case 'release':
       return e.type === 'cellReleased' && e.playerId === me && e.reason === 'cancel';
     case 'place':
+    case 'offlineMove': // made offline [D42]: answered the same way (after its cellLocked, if any)
       return (
         (e.type === 'placedCorrect' || e.type === 'placedWrong') &&
         e.playerId === me &&
@@ -69,7 +70,8 @@ export function answers(action: ClientAction, e: GameEvent, me: PlayerId): boole
   }
 }
 
-interface InFlight {
+/** An action on its way: sent, not answered yet. */
+export interface InFlight {
   clientSeq: number;
   action: ClientAction;
   /** Phone time when it went out. */
@@ -125,6 +127,15 @@ export class NetMetrics {
   /** Actions waiting for their answer. */
   get waiting(): number {
     return this.inFlight.length;
+  }
+
+  /**
+   * The actions waiting for their answer, in the order they went out (copies). Read it before dropped(), which
+   * forgets them: the connection's loss turns an unanswered select or digit into the start of the play offline
+   * [D42] (RemoteGameHost).
+   */
+  unanswered(): InFlight[] {
+    return this.inFlight.map((p) => ({ ...p }));
   }
 
   /**

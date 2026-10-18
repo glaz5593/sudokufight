@@ -43,6 +43,7 @@ const ALL_EVENT_TYPES: Record<GameEventType, true> = {
   interference: true,
   interferenceEnded: true,
   reaction: true,
+  playerConnectionLost: true,
   playerDisconnected: true,
   playerReconnected: true,
   playerAbandoned: true,
@@ -123,6 +124,9 @@ function playLongGame(): Played {
   step(() => g.playerAct('p1', { type: 'interfere', targetId: 'p2', kind: 'cats' }, 10000)); // E3 stops, 7000 left
   step(() => g.tickTo(15000)); // interferenceEnded: E3 runs again until 22000
   step(() => g.playerAct('p3', { type: 'react', emoji: '😂' }, 15500));
+  step(() => g.disconnect('p3', { soft: true, at: 15600 })); // the soft phase [D42]: nothing stops
+  step(() => g.reconnect('p3', 15700)); // back within it: the offline window opens
+  step(() => g.offlineMove('p3', 'H1', { thinkMs: 3000, at: 15800 })); // locked and placed, offline
   step(() => g.act({ type: 'disconnect', playerId: 'p4' }, 16000)); // frozen
   step(() => g.act({ type: 'reconnect', playerId: 'p4' }, 18000)); // resumed (reconnect): E3 until 24000
   step(() => g.place('p2', 'E3', answer('E3'), 19000));
@@ -258,7 +262,7 @@ describe('the turns model (§6.1) [D1]', () => {
     const g = turns({ players: 3 });
     const events = g.miss('p1', 'A1', 2000);
     expect(g.types(events)).toEqual(['cellLocked', 'placedWrong', 'cellReleased', 'turnStarted']);
-    expect(events[1]).toMatchObject({ penalty: 1, mistakes: 1, score: -1 });
+    expect(events[1]).toMatchObject({ penalty: 8, mistakes: 1, score: -8 });
     expect(events[2]).toMatchObject({ reason: 'mistake' });
     expect(events[3]).toMatchObject({ playerId: 'p2', endsAt: 10000, t: 2000 });
   });
@@ -1076,7 +1080,7 @@ describe('views (§17.2, §21)', () => {
   it('a spectator view (viewer null) has no "me", no interference block and no keypad', () => {
     const g = GameDriver.of({ players: 3 });
     g.solve('p1', 'A1', 0); // 8 points
-    g.miss('p3', 'A5', 50); // p3 may lock A5 again from 1050 [D2]
+    g.miss('p3', 'A5', 50); // −7 (A5 after A1); p3 may lock A5 again from 1050 [D2]
     g.select('p2', 'A2', 1100);
     g.select('p3', 'A5', 1100);
     g.playerAct('p1', { type: 'react', emoji: '🔥' }, 1200);
@@ -1091,7 +1095,7 @@ describe('views (§17.2, §21)', () => {
     expect(v.players.map((p) => [p.id, p.score, p.lock?.cell ?? null])).toEqual([
       ['p1', 8, null],
       ['p2', 0, A2],
-      ['p3', -1, A5],
+      ['p3', -7, A5],
     ]);
     // The same moment from a player's seat.
     const p3 = g.view('p3');
@@ -1129,7 +1133,7 @@ describe('views (§17.2, §21)', () => {
       ['p3', 1, true],
     ]);
     g.solve('p2', 'A1', 100); // 8
-    g.miss('p3', 'A2', 200); // -1
+    g.miss('p3', 'A2', 200); // −6.5
     expect(cards(g.view(null))).toEqual([
       ['p1', 2, false],
       ['p2', 1, true],
@@ -1234,6 +1238,7 @@ describe('views (§17.2, §21)', () => {
     v.owner[A1] = 3;
     v.wrong[A1]!.push({ digit: 9, playerId: 'p2' });
     v.players[0]!.score = 99;
+    v.players[0]!.mistakePenalties.push(99);
     v.turn!.playerId = 'p1';
     expect(JSON.stringify(g.state)).toBe(before);
   });

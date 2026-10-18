@@ -285,7 +285,8 @@ describe('a game against the Novice still ends in a reasonable time', () => {
 
   it(`alone: ${min(a.mean)} on average, ${min(a.max)} at most; ${sec(perMove)} per solved cell (mistakes and adapting included)`, () => {
     for (const x of alone) expect(x.over).toBe('boardComplete');
-    // About 50 gaps at 15–25 s, a last gap quicker, a mistake now and then: well under half an hour.
+    // About 33 gaps (a fast board starts with 45–50 givens) at 15–25 s, a last gap quicker, a mistake now and
+    // then: well under half an hour.
     expect(a.max).toBeLessThan(30 * 60_000);
     expect(perMove).toBeGreaterThan(novice.thinkMs.min);
     expect(perMove).toBeLessThan(novice.thinkMs.max * BOT_CONFIG.adaptation.slowdown * 1.25);

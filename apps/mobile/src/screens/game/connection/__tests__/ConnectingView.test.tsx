@@ -106,19 +106,25 @@ describe('ConnectingView, a ranked match’s room (Loading.dc.html)', () => {
     expect(screen.getByTestId('connecting-percent')).toHaveTextContent(ltr('67%'));
   });
 
-  it('a tip from the list, with the bank’s numbers: up to 10.5 a cell, not 13.5', async () => {
+  it('a tip from the list, with the bank’s numbers for the game’s type: up to 9.5 a cell in normal, not 13.5', async () => {
     const seed = Array.from({ length: 40 }, (_, k) => `online-${k}`).find((s) => tipOf(s) === 'score')!;
-    await render(
+    const view = await render(
       <ConnectingView model={{ kind: 'connecting', step: 'server' }} match={loading('server', seed)} />,
     );
     const tip = screen.getByTestId('connecting-tip');
     expect(screen.getByTestId('connecting-tip-text')).toHaveTextContent(
-      'ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד 10.5 נק׳ למשבצת.',
+      'ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד 9.5 נק׳ למשבצת.',
     );
     expect(tip).toHaveAccessibleName(
-      'טיפ: ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד 10.5 נק׳ למשבצת.',
+      'טיפ: ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד 9.5 נק׳ למשבצת.',
     );
     expect(tip).not.toHaveTextContent('13.5', { exact: false });
+    // A fast game's boards have more givens: a move there is worth 6.5 at most.
+    const fast = matchLoadingOf({ profiles: PROFILES, myId: 'me', gameType: 'fast', step: 'server', seed })!;
+    await view.rerender(<ConnectingView model={{ kind: 'connecting', step: 'server' }} match={fast} />);
+    expect(screen.getByTestId('connecting-tip-text')).toHaveTextContent(
+      'ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד 6.5 נק׳ למשבצת.',
+    );
   });
 
   it('a room by code: the steps alone', async () => {

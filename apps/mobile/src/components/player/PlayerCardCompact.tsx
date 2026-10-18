@@ -8,18 +8,18 @@ import { color, radius, text, tokens } from '../../theme';
 import { ActivityLine } from './ActivityLine';
 import { Avatar } from './Avatar';
 import { HitChip, RankBadge, ReconnectPill } from './Badges';
-import { type CardModel, type MistakePips, sameCard } from './cardModel';
+import { type CardModel, type MistakePips, pipsForWidth, sameCard } from './cardModel';
 import { CardIconButton } from './CardIconButton';
-import { cardOpacity, DropZone, useCardOpacity } from './DropZone';
 import { Flag } from './Flag';
 import { ltr, signedText } from './format';
 import { InterferenceButton } from './InterferenceButton';
 import { metrics, paletteAt } from './metrics';
-import type { PlayerCardActions } from './PlayerCard';
+import { inactiveCard, type PlayerCardActions } from './PlayerCard';
 import { Rating } from './Rating';
 import { sameProps, sameStyle } from './sameProps';
 import { DeltaLabel, type ScoreDelta, ScoreNumber } from './Score';
 import { SeatGlyph } from './SeatGlyph';
+import { cardOpacity, TargetFrame, useCardOpacity } from './TargetFrame';
 import { cardLabel, displayName, type Gender } from './wording';
 
 export interface PlayerCardCompactProps extends PlayerCardActions {
@@ -34,9 +34,8 @@ export interface PlayerCardCompactProps extends PlayerCardActions {
   delta?: ScoreDelta | null;
   persistentDelta?: boolean;
   dimmed?: boolean;
-  dropTarget?: boolean;
-  dropHover?: boolean;
-  dropLabel?: string;
+  /** This card is the interference picker's target [D45]. */
+  targeted?: boolean;
   interferenceExpanded?: boolean;
   reactionsExpanded?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -47,7 +46,7 @@ const c = metrics.compact;
 
 /**
  * The compact card of a 3–4 player game (components.md §7): place badge, avatar with presence and flag, name,
- * rating, score with penalty pips, activity with the lock ring, and an action strip (⚡ for opponents,
+ * rating, score with penalty pips, activity with the lock ring, and an action strip ("הפרעה" for opponents,
  * surrender and reactions for me). Cards keep their seat order; only the place badge changes.
  */
 export const PlayerCardCompact = memo(function PlayerCardCompact({
@@ -60,9 +59,7 @@ export const PlayerCardCompact = memo(function PlayerCardCompact({
   delta = null,
   persistentDelta = false,
   dimmed = false,
-  dropTarget = false,
-  dropHover = false,
-  dropLabel,
+  targeted = false,
   interferenceExpanded = false,
   reactionsExpanded = false,
   onSurrender,
@@ -78,14 +75,14 @@ export const PlayerCardCompact = memo(function PlayerCardCompact({
   const fade = useCardOpacity(cardOpacity(dimmed, model.out !== null));
 
   return (
-    <DropZone active={dropTarget} hover={dropHover} style={style}>
+    <TargetFrame targeted={targeted} style={style}>
       <Animated.View style={[styles.card, width === undefined ? null : { width }, fade]} testID={testID}>
         <View
           style={styles.summary}
           accessible
           accessibilityRole="text"
           accessibilityLabel={cardLabel(model, t, { gender, compact: true })}
-          accessibilityHint={dropTarget ? dropLabel : undefined}
+          accessibilityHint={targeted ? t('card.targetHint') : undefined}
           testID={testID ? `${testID}-summary` : undefined}
         >
           <View>
@@ -96,7 +93,7 @@ export const PlayerCardCompact = memo(function PlayerCardCompact({
               presence={model.presence}
               backdrop={color.surface}
               bot={model.isBot}
-              inactive={model.out !== null || model.presence !== 'online'}
+              inactive={inactiveCard(model)}
               expression={face?.expression}
               reaction={face?.reaction}
               testID={testID ? `${testID}-avatar` : undefined}
@@ -124,7 +121,7 @@ export const PlayerCardCompact = memo(function PlayerCardCompact({
               delta={delta}
               testID={testID ? `${testID}-score` : undefined}
             />
-            <Pips pips={model.pips} />
+            <Pips pips={pipsForWidth(model.pips, width)} />
             <View style={styles.float} pointerEvents="none">
               <DeltaLabel
                 delta={delta}
@@ -167,6 +164,9 @@ export const PlayerCardCompact = memo(function PlayerCardCompact({
             </>
           ) : model.activity.kind === 'reconnecting' ? (
             <ReconnectPill seconds={model.activity.secondsLeft} compact />
+          ) : model.presence === 'unstable' ? (
+            // [D42] The connection is lost, the game goes on: the mark alone, no countdown.
+            <ReconnectPill compact />
           ) : model.interference ? (
             <InterferenceButton
               compact
@@ -180,7 +180,7 @@ export const PlayerCardCompact = memo(function PlayerCardCompact({
           ) : null}
         </View>
       </Animated.View>
-    </DropZone>
+    </TargetFrame>
   );
 }, sameCompactCard);
 
@@ -189,7 +189,11 @@ function sameCompactCard(a: PlayerCardCompactProps, b: PlayerCardCompactProps): 
   return sameProps(a, b, { model: sameCard, face: sameFace, style: sameStyle });
 }
 
-/** The last penalties in small red pips, "×n" first from five mistakes (components.md §7.2). */
+/**
+ * The last penalties in small red pips, "×n" first from five mistakes (components.md §7.2), as many as the card
+ * has room for (pipsForWidth). Should they still not fit (a big system font), they give way and the oldest is
+ * cut, never the score.
+ */
 function Pips({ pips }: { pips: MistakePips }) {
   const { t } = useTranslation('player');
   if (!pips.penalties.length) return null;
@@ -237,6 +241,7 @@ const styles = StyleSheet.create({
   scoreRow: {
     marginTop: c.scoreTop,
     height: c.scoreRowHeight,
+    maxWidth: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     gap: c.scoreGap,
@@ -248,7 +253,15 @@ const styles = StyleSheet.create({
     end: 0,
     alignItems: 'center',
   },
-  pips: { flexDirection: 'row', gap: c.pip.gap, direction: 'ltr' },
+  // Left to right, newest last; too wide, they shrink and the oldest is cut (the row ends at the newest).
+  pips: {
+    flexDirection: 'row',
+    gap: c.pip.gap,
+    direction: 'ltr',
+    flexShrink: 1,
+    overflow: 'hidden',
+    justifyContent: 'flex-end',
+  },
   pip: {
     height: c.pip.height,
     paddingHorizontal: c.pip.paddingX,

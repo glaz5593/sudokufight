@@ -18,7 +18,8 @@ import type { AwardKind, GameEvent, GameResult, PlayerInfo } from './types';
  *
  * Exact scores come from a nearly solved board: PUZZLE's solution with only the nine cells of T left empty. T has one
  * cell in each row, column and box and one of each digit, so every correct move there sees row = col = box = num = 8:
- * X = Y = 8 and points = 9 − 8 + (9 − 8)/2 = 1.5 (spec §6.4). Mistakes cost 1, 2, 4, 8 … (spec §6.5).
+ * X = Y = 8 and points = 9 − 8 + (9 − 8)/2 = 1.5 (spec §6.4). A mistake costs what the right digit would have
+ * scored there (spec §6.5), so on that board every mistake costs 1.5 too (in T10's A2, 3 until its row fills).
  *
  * After any release, a mistake included, the same player may lock the same cell again only a second later (spec
  * §6.2.6) [D2]: the helpers below wait that second out when they go back to a cell.
@@ -205,7 +206,7 @@ describe('surrender (§6.6)', () => {
     g.solve('p2', 'D2', 3000); // 1.5, on the cell p1 let go
     g.playerAct('p2', { type: 'surrender' }, 4000);
     err(g, 'p3', 'E5', 5000);
-    err(g, 'p3', 'E5'); // −1 −2: the second try a second later (§6.2.6), at 6000
+    err(g, 'p3', 'E5'); // −1.5 −1.5: the second try a second later (§6.2.6), at 6000
     solveEach(g, 'p3', ['E5', 'F8']); // +3 → 0, at 7000
     g.solve('p4', 'G3', 8000);
     g.solve('p4', 'H9');
@@ -315,7 +316,7 @@ describe('surrender (§6.6)', () => {
 describe('surrender ranking, the [D36] alternative: whoever surrenders stays in the table by score', () => {
   /**
    * 4 players: p1 (4.5) surrenders first; p2 (1.5) disconnects and abandons at the end of its grace period; p3 ends
-   * on 0.5 (one mistake) and p4 on 6, still in the game when the board is full.
+   * on 0 (one mistake) and p4 on 6, still in the game when the board is full.
    */
   function play(surrenderRanking: 'exitOrder' | 'byScore') {
     const g = near({
@@ -326,8 +327,8 @@ describe('surrender ranking, the [D36] alternative: whoever surrenders stays in 
     g.playerAct('p1', { type: 'surrender' }, 1000);
     g.solve('p2', 'D2', 2000); // 1.5
     g.act({ type: 'disconnect', playerId: 'p2' }, 2000); // 3 still in the game: no freeze; grace until 17000
-    err(g, 'p3', 'E5', 3000); // −1
-    solveEach(g, 'p3', ['E5']); // +1.5 → 0.5, at 4000 (after the re-lock wait)
+    err(g, 'p3', 'E5', 3000); // −1.5
+    solveEach(g, 'p3', ['E5']); // +1.5 → 0, at 4000 (after the re-lock wait)
     g.solve('p4', 'F8', 5000);
     g.solve('p4', 'G3');
     g.solve('p4', 'H9');
@@ -342,7 +343,7 @@ describe('surrender ranking, the [D36] alternative: whoever surrenders stays in 
     expect(makeConfig().rules.surrenderRanking).toBe('exitOrder');
     expect(table(play('exitOrder'))).toEqual([
       ['p4', 1, 6, 'active'],
-      ['p3', 2, 0.5, 'active'],
+      ['p3', 2, 0, 'active'],
       ['p2', 3, 1.5, 'abandoned'],
       ['p1', 4, 4.5, 'surrendered'],
     ]);
@@ -353,16 +354,31 @@ describe('surrender ranking, the [D36] alternative: whoever surrenders stays in 
     expect(table(g)).toEqual([
       ['p4', 1, 6, 'active'],
       ['p1', 2, 4.5, 'surrendered'],
-      ['p3', 3, 0.5, 'active'],
+      ['p3', 3, 0, 'active'],
       ['p2', 4, 1.5, 'abandoned'],
     ]);
-    // The rating follows these places [D32]: K_pair = 32 / 3 between equal ratings.
+    // The rating follows these places [D32], K_pair = 32 / 3 between equal ratings, and the leave guards
+    // (§11.2): p1 left first, ahead of everyone, and p2 left before p3 and p4 had moved. The guards clamp:
+    // p1 keeps the wins his place gives him over p3 and p2 (and p3 keeps that loss), but loses nothing to p4,
+    // who gains nothing from him; p2 loses nothing to p3 and p4, who gain nothing from him.
+    // Without the guards: 16, 5, −5, −16.
     expect(Object.fromEntries(result(g).ratingChanges.map((c) => [c.playerId, c.delta]))).toEqual({
-      p4: 16,
-      p1: 5,
-      p3: -5,
-      p2: -16,
+      p4: 5,
+      p1: 11,
+      p3: -11,
+      p2: -5,
     });
+    const pairsOf = (id: string) => result(g).ratingPairs!.find((p) => p.playerId === id)!.pairs;
+    expect(pairsOf('p1')).toEqual([
+      { opponentId: 'p4', delta: 0, guard: 'leftNotBehind' },
+      { opponentId: 'p3', delta: 5.5 },
+      { opponentId: 'p2', delta: 5.5 },
+    ]);
+    expect(pairsOf('p3')).toEqual([
+      { opponentId: 'p4', delta: -5.5 },
+      { opponentId: 'p1', delta: -5.5 },
+      { opponentId: 'p2', delta: 0, guard: 'opponentLeftBeforeMyMove' },
+    ]);
     // The cards showed the same places, and only a player still in the game can be the leader.
     expect(g.view('p3').players.map((p) => [p.id, p.place, p.isLeader])).toEqual([
       ['p1', 2, false],
@@ -377,7 +393,7 @@ describe('surrender ranking, the [D36] alternative: whoever surrenders stays in 
     solveEach(g, 'p1', ['A1', 'B7', 'C4']); // 4.5, no mistakes
     g.playerAct('p1', { type: 'surrender' }, 1000);
     err(g, 'p2', 'D2', 2000);
-    err(g, 'p2', 'D2'); // −3
+    err(g, 'p2', 'D2'); // −1.5 −1.5
     solveEach(g, 'p2', ['D2', 'E5', 'F8', 'G3', 'H9']); // +7.5 → 4.5, two mistakes
     solveEach(g, 'p3', ['I6']); // 1.5
     expect(result(g).ranking.map((r) => [r.playerId, r.place, r.score, r.mistakes, r.status])).toEqual([
@@ -393,13 +409,29 @@ describe('surrender ranking, the [D36] alternative: whoever surrenders stays in 
       players: rated([1287, 10], [1305, 10]),
       rules: { surrenderRanking: 'byScore' },
     });
-    g.solve('p1', 'A1', 1000); // p1 leads 8 – 0
+    g.solve('p1', 'A1', 500);
+    g.solve('p2', 'A2', 1000); // p1 leads 8 – 6.5
     g.playerAct('p1', { type: 'surrender' }, 2000);
     expect(result(g).reason).toBe('lastPlayerStanding');
     expect(places(g)).toEqual({ p2: 1, p1: 2 });
-    // 1305 beats 1287: E = 0.526, so +15 (the spec's +17 is the lower-rated player's win).
-    expect(change(g, 'p2')).toMatchObject({ delta: 15 });
-    expect(change(g, 'p1')).toMatchObject({ delta: -15 });
+    // A loss by place, but p1 left ahead: the leave guards hold the pair for both (§11.2).
+    expect(change(g, 'p2')).toMatchObject({ delta: 0 });
+    expect(change(g, 'p1')).toMatchObject({ delta: 0 });
+    expect(result(g).ratingPairs!.map((p) => [p.playerId, p.pairs[0]!.guard])).toEqual([
+      ['p2', 'opponentLeftAhead'],
+      ['p1', 'leftNotBehind'],
+    ]);
+
+    // Behind, the loss is a normal one: 1305 beats 1287, E = 0.526, so ±15.
+    const behind = GameDriver.of({
+      players: rated([1287, 10], [1305, 10]),
+      rules: { surrenderRanking: 'byScore' },
+    });
+    behind.solve('p2', 'A1', 500);
+    behind.solve('p1', 'A2', 1000); // p1 trails 6.5 – 8
+    behind.playerAct('p1', { type: 'surrender' }, 2000);
+    expect(change(behind, 'p2')).toMatchObject({ delta: 15 });
+    expect(change(behind, 'p1')).toMatchObject({ delta: -15 });
   });
 });
 
@@ -582,12 +614,12 @@ describe('ranking (§6.7) [D16]', () => {
   it('scores may be negative and still rank by score [D15]', () => {
     const g = near({ players: 3 });
     err(g, 'p1', 'A1');
-    err(g, 'p1', 'A1'); // −3
-    err(g, 'p2', 'B7'); // −1
+    err(g, 'p1', 'A1'); // −1.5 −1.5
+    err(g, 'p2', 'B7'); // −1.5
     solveEach(g, 'p3', T); // 13.5
     expect(result(g).ranking.map((r) => [r.playerId, r.place, r.score, r.mistakes])).toEqual([
       ['p3', 1, 13.5, 0],
-      ['p2', 2, -1, 1],
+      ['p2', 2, -1.5, 1],
       ['p1', 3, -3, 2],
     ]);
   });
@@ -595,7 +627,7 @@ describe('ranking (§6.7) [D16]', () => {
   it('equal score: fewer mistakes ranks higher [D16]', () => {
     const g = near({ players: 3 });
     err(g, 'p1', 'A1');
-    err(g, 'p1', 'A1'); // −1 −2
+    err(g, 'p1', 'A1'); // −1.5 −1.5
     solveEach(g, 'p1', ['A1', 'B7', 'C4', 'D2']); // +6 → 3
     solveEach(g, 'p2', ['E5', 'F8']); // 3, no mistakes
     solveEach(g, 'p3', ['G3', 'H9', 'I6']); // 4.5
@@ -608,21 +640,21 @@ describe('ranking (§6.7) [D16]', () => {
 
   it('equal score and mistakes: a shared place, and the next place is skipped (1, 1, 3) [D16]', () => {
     const g = near({ players: 3 });
-    err(g, 'p3', 'A1'); // −1
+    err(g, 'p3', 'A1'); // −1.5
     solveEach(g, 'p1', ['A1', 'B7', 'C4']); // 4.5
     solveEach(g, 'p2', ['D2', 'E5', 'F8']); // 4.5
-    solveEach(g, 'p3', ['G3', 'H9', 'I6']); // 4.5 − 1 = 3.5
+    solveEach(g, 'p3', ['G3', 'H9', 'I6']); // 4.5 − 1.5 = 3
     expect(places(g)).toEqual({ p1: 1, p2: 1, p3: 3 });
-    expect(result(g).ranking.map((r) => r.score)).toEqual([4.5, 4.5, 3.5]);
+    expect(result(g).ranking.map((r) => r.score)).toEqual([4.5, 4.5, 3]);
   });
 
   it('a shared place lower down: 1, 2, 2, 4 in a 4-player game [D16]', () => {
     const g = near({ players: 4 });
-    err(g, 'p4', 'A1'); // −1
+    err(g, 'p4', 'A1'); // −1.5
     solveEach(g, 'p1', ['A1', 'B7', 'C4']); // 4.5
     solveEach(g, 'p2', ['D2', 'E5']); // 3
     solveEach(g, 'p3', ['F8', 'G3']); // 3
-    solveEach(g, 'p4', ['H9', 'I6']); // 3 − 1 = 2
+    solveEach(g, 'p4', ['H9', 'I6']); // 3 − 1.5 = 1.5
     expect(places(g)).toEqual({ p1: 1, p2: 2, p3: 2, p4: 4 });
   });
 
@@ -664,7 +696,7 @@ describe('ranking (§6.7) [D16]', () => {
       const run = (tieBreak: 'fewerMistakes' | 'earlierLastMove') => {
         const g = near({ players: 3, rules: { tieBreak } });
         err(g, 'p1', 'A1', 1000);
-        err(g, 'p1', 'A1', 2000); // −3
+        err(g, 'p1', 'A1', 2000); // −1.5 −1.5
         g.solve('p1', 'A1', 3000); // after the re-lock wait (§6.2.6)
         g.solve('p1', 'B7');
         g.solve('p1', 'C4');
@@ -695,7 +727,7 @@ describe('ranking (§6.7) [D16]', () => {
     it('with no correct move at all, a player ranks after one who has a last move, on equal score', () => {
       const g = near({ players: 3, rules: { tieBreak: 'earlierLastMove' } });
       err(g, 'p2', 'A1', 1000);
-      err(g, 'p2', 'A1', 2000); // −3
+      err(g, 'p2', 'A1', 2000); // −1.5 −1.5
       g.solve('p2', 'A1', 3000); // after the re-lock wait (§6.2.6)
       g.solve('p2', 'B7'); // 0, with a last move
       solveEach(g, 'p3', ['C4', 'D2', 'E5', 'F8', 'G3', 'H9', 'I6']); // 10.5
@@ -738,29 +770,29 @@ describe('awards (§12)', () => {
 
   it('fewest mistakes: the fewest; equal → the higher score', () => {
     const g = near({ players: 3 });
-    err(g, 'p3', 'A1'); // −1
+    err(g, 'p3', 'A1'); // −1.5
     solveEach(g, 'p1', ['A1', 'B7']); // 3, no mistakes
     solveEach(g, 'p2', ['C4', 'D2', 'E5', 'F8']); // 6, no mistakes
-    solveEach(g, 'p3', ['G3', 'H9', 'I6']); // 3.5
+    solveEach(g, 'p3', ['G3', 'H9', 'I6']); // 3
     expect(award(g, 'fewestMistakes')).toEqual({ kind: 'fewestMistakes', playerIds: ['p2'], value: 0 });
   });
 
   it('fewest mistakes: equal mistakes and score → shared', () => {
     const g = near({ players: 3 });
-    err(g, 'p3', 'A1'); // −1
+    err(g, 'p3', 'A1'); // −1.5
     solveEach(g, 'p1', ['A1', 'B7', 'C4', 'D2']); // 6
     solveEach(g, 'p2', ['E5', 'F8', 'G3', 'H9']); // 6
-    g.solve('p3', 'I6'); // 0.5
+    g.solve('p3', 'I6'); // 0
     expect(award(g, 'fewestMistakes')).toEqual({ kind: 'fewestMistakes', playerIds: ['p1', 'p2'], value: 0 });
   });
 
   it('fewest mistakes when nobody is perfect: the value is the number of mistakes', () => {
     const g = near();
-    err(g, 'p1', 'A1'); // −1
+    err(g, 'p1', 'A1'); // −1.5
     err(g, 'p2', 'B7');
-    err(g, 'p2', 'B7'); // −3
+    err(g, 'p2', 'B7'); // −1.5 −1.5
     solveEach(g, 'p2', T.slice(0, 5)); // 7.5 − 3 = 4.5
-    solveEach(g, 'p1', T.slice(5)); // 6 − 1 = 5
+    solveEach(g, 'p1', T.slice(5)); // 6 − 1.5 = 4.5: the same score, one mistake fewer
     expect(award(g, 'fewestMistakes')).toEqual({ kind: 'fewestMistakes', playerIds: ['p1'], value: 1 });
   });
 
@@ -801,10 +833,10 @@ describe('awards (§12)', () => {
     const g = near({ players: 3 });
     g.solve('p1', 'A1', 0); // 1.5, no mistakes
     g.playerAct('p1', { type: 'surrender' }, 500);
-    err(g, 'p2', 'B7', 1000); // −1
+    err(g, 'p2', 'B7', 1000); // −1.5
     err(g, 'p3', 'C4', 1000);
-    err(g, 'p3', 'C4'); // −3
-    solveEach(g, 'p2', ['B7', 'C4', 'D2', 'E5']); // +6 → 5
+    err(g, 'p3', 'C4'); // −1.5 −1.5
+    solveEach(g, 'p2', ['B7', 'C4', 'D2', 'E5']); // +6 → 4.5
     solveEach(g, 'p3', ['F8', 'G3', 'H9', 'I6']); // +6 → 3
     expect(result(g).reason).toBe('boardComplete');
     expect(result(g).stats.find((s) => s.playerId === 'p1')!.mistakes).toBe(0);
@@ -813,7 +845,7 @@ describe('awards (§12)', () => {
 
   it('fewest mistakes: an abandonment does not win it either', () => {
     const g = GameDriver.of();
-    g.miss('p1', 'A1', 0); // −1
+    g.miss('p1', 'A1', 0); // −8
     g.act({ type: 'disconnect', playerId: 'p2' }, 1000); // no mistakes, and gone at 16000
     g.tickTo(16000);
     expect(result(g).reason).toBe('lastPlayerStanding');
@@ -846,10 +878,7 @@ describe('awards (§12)', () => {
   it('comeback: the winner had trailed by 15 or more (exactly 15 counts)', () => {
     const g = GameDriver.of();
     g.solve('p1', 'A1'); // 8
-    // Each try a second after the last: the re-lock wait after a mistake (§6.2.6).
-    g.miss('p2', 'A2', 1000);
-    g.miss('p2', 'A2', 2000);
-    g.miss('p2', 'A2', 3000); // −1 −2 −4 = −7: 15 behind
+    g.miss('p2', 'A5', 1000); // −7 (A5 is worth 7 after A1): 15 behind
     expect(g.player('p2').maxDeficit).toBe(15);
     g.advance(1000);
     solveAll(g, 'p2');
@@ -869,7 +898,8 @@ describe('awards (§12)', () => {
 
   it('comeback: only for the winner; trailing by 15 and losing gets nothing', () => {
     const g = GameDriver.of();
-    for (let k = 0; k < 4; k++) g.miss('p1', 'A1', 1000 * k); // −1 −2 −4 −8 = −15, a second apart
+    g.miss('p1', 'A1', 0); // −8
+    g.miss('p1', 'B1', 1000); // −7 → −15
     expect(g.player('p1').maxDeficit).toBe(15);
     solveAll(g, 'p2');
     expect(order(g)).toEqual(['p2', 'p1']);
@@ -882,9 +912,7 @@ describe('awards (§12)', () => {
       const g = GameDriver.of({ players: 3 });
       g.solve('p1', 'A1', 0); // 8
       if (p1Leaves) g.playerAct('p1', { type: 'surrender' }, 500);
-      g.miss('p2', 'A2', 1000);
-      g.miss('p2', 'A2', 2000);
-      g.miss('p2', 'A2', 3000); // −7
+      g.miss('p2', 'A5', 1000); // −7 (A5 is worth 7 after A1)
       g.advance(1000);
       solveAll(g, 'p2');
       return g;
@@ -910,13 +938,13 @@ describe('awards (§12)', () => {
     const g = near();
     err(g, 'p1', 'A1');
     err(g, 'p1', 'A1');
-    err(g, 'p1', 'A1'); // −7
-    solveEach(g, 'p1', T.slice(0, 6)); // +9 → 2
-    g.playerAct('p1', { type: 'interfere', targetId: 'p2', kind: 'fireworks' }); // −2 → 0
+    err(g, 'p1', 'A1'); // −1.5 × 3 = −4.5
+    solveEach(g, 'p1', T.slice(0, 6)); // +9 → 4.5
+    g.playerAct('p1', { type: 'interfere', targetId: 'p2', kind: 'fireworks' }); // −2 → 2.5
     solveEach(g, 'p2', T.slice(6)); // 4.5
     expect(result(g).ranking.map((r) => [r.playerId, r.place, r.score])).toEqual([
       ['p2', 1, 4.5],
-      ['p1', 2, 0],
+      ['p1', 2, 2.5],
     ]);
     expect(award(g, 'mostPoints')).toEqual({ kind: 'mostPoints', playerIds: ['p1'], value: 9 });
     expect(award(g, 'fewestMistakes')).toEqual({ kind: 'fewestMistakes', playerIds: ['p2'], value: 0 });
@@ -1030,9 +1058,11 @@ describe('rating changes (§11.2) [D7, D8]', () => {
     expect(result(even).ratingChanges.map((c) => c.delta)).toEqual([0, 0]);
   });
 
+  // Both moved and the leaver was behind, so no leave guard holds (§11.2; the guards have their own describe).
   it('2 players: a win by surrender is a full win [D8]', () => {
     const g = GameDriver.of({ players: rated([1287, 10], [1305, 10]) });
-    g.solve('p2', 'A1');
+    g.solve('p1', 'A1', 500);
+    g.solve('p2', 'A2', 1000); // p2 trails 6.5 – 8
     g.playerAct('p2', { type: 'surrender' });
     expect(change(g, 'p1')).toMatchObject({ delta: 17 });
     expect(change(g, 'p2')).toMatchObject({ delta: -17 });
@@ -1040,6 +1070,8 @@ describe('rating changes (§11.2) [D7, D8]', () => {
 
   it('2 players: a win by abandonment is a full win [D8]', () => {
     const g = GameDriver.of({ players: rated([1287, 10], [1305, 10]) });
+    g.solve('p1', 'A1', 500);
+    g.solve('p2', 'A2', 800); // p2 trails 6.5 – 8
     g.act({ type: 'disconnect', playerId: 'p2' }, 1000);
     g.tickTo(16000);
     expect(result(g).ranking.find((r) => r.playerId === 'p2')!.status).toBe('abandoned');
@@ -1122,10 +1154,13 @@ describe('rating changes (§11.2) [D7, D8]', () => {
   });
 
   it('3 players: places from surrenders count like any other place [D32]', () => {
-    const g = GameDriver.of({ players: rated([1200, 10], [1200, 10], [1200, 10]) });
-    g.solve('p1', 'A1', 1000); // the first to leave is last, whatever the score
-    g.playerAct('p1', { type: 'surrender' }, 2000);
-    g.playerAct('p2', { type: 'surrender' }, 3000);
+    const g = near({ players: rated([1200, 10], [1200, 10], [1200, 10]) });
+    // Everyone has moved, and each leaver trails everyone still in: no leave guard holds (§11.2).
+    err(g, 'p1', 'A1'); // −1.5
+    solveEach(g, 'p2', ['B7']); // 1.5
+    solveEach(g, 'p3', ['C4', 'D2']); // 3
+    g.playerAct('p1', { type: 'surrender' }); // out first: last
+    g.playerAct('p2', { type: 'surrender' }); // out second: 2nd
     expect(Object.fromEntries(result(g).ratingChanges.map((c) => [c.playerId, c.delta]))).toEqual({
       p3: 16,
       p2: 0,
@@ -1157,7 +1192,7 @@ describe('rating changes (§11.2) [D7, D8]', () => {
   });
 
   describe('the settings live in rules.rating [D7, D8, D23, D31, D32]', () => {
-    it('defaults: option B, K = 32, 10 provisional games with K doubled, a full win by abandonment, 1200, no penalty', () => {
+    it('defaults: option B, K = 32, 10 provisional games with K doubled, a full win by abandonment, 1200, no penalty, both leave guards judged at the disconnect', () => {
       expect(makeConfig().rules.rating).toEqual({
         option: 'B',
         k: 32,
@@ -1166,6 +1201,9 @@ describe('rating changes (§11.2) [D7, D8]', () => {
         abandonWinScore: 1,
         initialRating: 1200,
         abandonPenalty: 0,
+        leaverGuard: true,
+        stayerGuard: true,
+        abandonJudgedAt: 'disconnect',
       });
       expect(DEFAULT_RATING_RULES).toEqual(makeConfig().rules.rating);
       expect(makeConfig({ players: 1 }).rules.rating).toEqual(DEFAULT_RATING_RULES);
@@ -1213,16 +1251,24 @@ describe('rating changes (§11.2) [D7, D8]', () => {
       expect(change(g, 'p2')).toMatchObject({ delta: -17, provisional: false });
     });
 
+    /** 1287 vs 1305, both moved and p2 trails 6.5 – 8: no leave guard holds (§11.2). */
+    const duel = (rules: ConfigOptions['rules']) => {
+      const g = GameDriver.of({ players: rated([1287, 10], [1305, 10]), rules });
+      g.solve('p1', 'A1', 200);
+      g.solve('p2', 'A2', 500);
+      return g;
+    };
+
     it('abandonWinScore [D8 alternative]: 0.5 makes a win by abandonment a partial win; a surrender stays a full win', () => {
       const rules = withRating({ abandonWinScore: 0.5 });
-      const abandoned = GameDriver.of({ players: rated([1287, 10], [1305, 10]), rules });
+      const abandoned = duel(rules);
       abandoned.act({ type: 'disconnect', playerId: 'p2' }, 1000);
       abandoned.tickTo(16000);
       expect(places(abandoned)).toEqual({ p1: 1, p2: 2 });
       expect(change(abandoned, 'p1')).toMatchObject({ delta: 1, after: 1288 }); // 32 × (0.5 − 0.474)
       expect(change(abandoned, 'p2')).toMatchObject({ delta: -17 }); // the loser's side is unchanged
 
-      const surrendered = GameDriver.of({ players: rated([1287, 10], [1305, 10]), rules });
+      const surrendered = duel(rules);
       surrendered.playerAct('p2', { type: 'surrender' }, 1000);
       expect(change(surrendered, 'p1')).toMatchObject({ delta: 17 });
       expect(change(surrendered, 'p2')).toMatchObject({ delta: -17 });
@@ -1230,7 +1276,7 @@ describe('rating changes (§11.2) [D7, D8]', () => {
 
     it('abandonPenalty [D32 alternative]: whoever abandons loses that much more; a surrender costs nothing extra', () => {
       const rules = withRating({ abandonPenalty: 10 });
-      const abandoned = GameDriver.of({ players: rated([1287, 10], [1305, 10]), rules });
+      const abandoned = duel(rules);
       abandoned.act({ type: 'disconnect', playerId: 'p2' }, 1000);
       abandoned.tickTo(16000);
       expect(change(abandoned, 'p1')).toEqual({
@@ -1248,20 +1294,50 @@ describe('rating changes (§11.2) [D7, D8]', () => {
         provisional: false,
       });
 
-      const surrendered = GameDriver.of({ players: rated([1287, 10], [1305, 10]), rules });
+      const surrendered = duel(rules);
       surrendered.playerAct('p2', { type: 'surrender' }, 1000);
       expect(change(surrendered, 'p2')).toMatchObject({ delta: -17, after: 1288 });
+      expect(surrendered.state.result!.ratingPairs!.map((p) => p.penalty)).toEqual([0, 0]);
+    });
+
+    it('abandonPenalty is waived when guard (a) held the leaver harmless against everyone still in (§11.2)', () => {
+      const rules = withRating({ abandonPenalty: 10 });
+      // p2 leaves before any move of his: he loses nothing, the penalty included.
+      const early = GameDriver.of({ players: rated([1287, 10], [1305, 10]), rules });
+      early.solve('p1', 'A1', 200);
+      early.act({ type: 'disconnect', playerId: 'p2' }, 1000);
+      early.tickTo(16000);
+      expect(change(early, 'p2')).toMatchObject({ delta: 0, after: 1305 });
+      expect(change(early, 'p1')).toMatchObject({ delta: 17 });
+      expect(early.state.result!.ratingPairs!.find((p) => p.playerId === 'p2')).toEqual({
+        playerId: 'p2',
+        pairs: [{ opponentId: 'p1', delta: 0, guard: 'leftBeforeMoving' }],
+        penalty: 0,
+      });
+      // Ahead of p1 when the connection fell: the same.
+      const ahead = GameDriver.of({ players: rated([1287, 10], [1305, 10]), rules });
+      ahead.solve('p2', 'A1', 200);
+      ahead.solve('p1', 'A2', 500);
+      ahead.act({ type: 'disconnect', playerId: 'p2' }, 1000);
+      ahead.tickTo(16000);
+      expect(change(ahead, 'p2')).toMatchObject({ delta: 0 });
+      expect(ahead.state.result!.ratingPairs!.find((p) => p.playerId === 'p2')!.penalty).toBe(0);
     });
 
     it('abandonPenalty in a 4-player game: only the player who abandoned pays it, on top of the place', () => {
-      const g = GameDriver.of({
+      const g = near({
         players: rated([1200, 10], [1200, 10], [1200, 10], [1200, 10]),
         rules: withRating({ abandonPenalty: 10 }),
       });
-      g.act({ type: 'disconnect', playerId: 'p1' }, 0); // grace until 15000
+      // Everyone moves, and each leaver trails everyone still in when he goes: no leave guard holds (§11.2).
+      err(g, 'p2', 'A1', 0); // −1.5
+      g.solve('p1', 'B7', 100); // 1.5
+      solveEach(g, 'p3', ['C4', 'D2']); // 3
+      solveEach(g, 'p4', ['E5', 'F8', 'G3']); // 4.5
       g.playerAct('p2', { type: 'surrender' }, 1000); // out first
-      g.tickTo(15000); // p1 out second
-      g.playerAct('p3', { type: 'surrender' }, 16000); // out third: p4 is the last one standing
+      g.act({ type: 'disconnect', playerId: 'p1' }, 2000); // grace until 17000
+      g.tickTo(17000); // p1 out second
+      g.playerAct('p3', { type: 'surrender' }, 18000); // out third: p4 is the last one standing
       expect(result(g).ranking.map((r) => [r.playerId, r.place, r.status])).toEqual([
         ['p4', 1, 'active'],
         ['p3', 2, 'surrendered'],
@@ -1275,6 +1351,11 @@ describe('rating changes (§11.2) [D7, D8]', () => {
         p2: -16,
       });
       expect(change(g, 'p1')!.after).toBe(1185);
+      expect(
+        result(g)
+          .ratingPairs!.flatMap((p) => p.pairs)
+          .filter((p) => p.guard),
+      ).toEqual([]);
       // Split by opponent, the penalty apart: Σ pairs − penalty = the change.
       expect(result(g).ratingPairs!.map((p) => [p.playerId, p.penalty])).toEqual([
         ['p4', 0],
@@ -1289,6 +1370,327 @@ describe('rating changes (§11.2) [D7, D8]', () => {
         ['p3', -5.2],
         ['p2', 5.4],
       ]);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------
+
+describe('leave guards (§11.2) [D32, D8, Moshe 2026-10-15]', () => {
+  /*
+   * A pair with a leaver is judged at the moment the first of the two left, by [score, moves] then (moves =
+   * digit entries, right or wrong). (a) The leaver loses nothing if he had not moved, or the other was not
+   * ahead of him. (b) The other gains nothing if he had not moved himself, or the leaver was ahead of him.
+   * 1287 vs 1305 with K = 32: a normal result is p1 +17 / p2 −17 (§11.2's example).
+   */
+  const deltas = (g: GameDriver) =>
+    Object.fromEntries(result(g).ratingChanges.map((c) => [c.playerId, c.delta]));
+  /** Each player's guard reason by opponent, for the pairs a guard held. */
+  const held = (g: GameDriver) =>
+    Object.fromEntries(
+      result(g)
+        .ratingPairs!.map(
+          (p) =>
+            [
+              p.playerId,
+              Object.fromEntries(p.pairs.filter((x) => x.guard).map((x) => [x.opponentId, x.guard])),
+            ] as const,
+        )
+        .filter(([, guards]) => Object.keys(guards).length > 0),
+    );
+
+  /** On near(T): p1 solves `p1Cells` cells, p2 solves `p2Cells` and then makes `p2Errs` wrong entries. */
+  function duel(p1Cells: number, p2Cells: number, p2Errs = 0, rules?: ConfigOptions['rules']) {
+    const g = near({ players: rated([1287, 10], [1305, 10]), rules });
+    solveEach(g, 'p1', T.slice(0, p1Cells));
+    solveEach(g, 'p2', T.slice(p1Cells, p1Cells + p2Cells));
+    for (let k = 0; k < p2Errs; k++) err(g, 'p2', 'I6');
+    return g;
+  }
+  const leave = (g: GameDriver, how: 'surrender' | 'abandon') => {
+    if (how === 'surrender') g.playerAct('p2', { type: 'surrender' }, g.now + 100);
+    else {
+      g.act({ type: 'disconnect', playerId: 'p2' }, g.now + 100);
+      g.tickTo(g.now + 15000);
+    }
+    expect(result(g).reason).toBe('lastPlayerStanding');
+    expect(places(g)).toEqual({ p1: 1, p2: 2 });
+  };
+
+  describe.each(['surrender', 'abandon'] as const)('2 players, p2 leaves by %s', (how) => {
+    it.each([
+      ['behind, both moved: a normal loss and a full win', 2, 1, 0, { p1: 17, p2: -17 }, {}],
+      [
+        'ahead: nobody gains or loses',
+        1,
+        2,
+        0,
+        { p1: 0, p2: 0 },
+        { p1: { p2: 'opponentLeftAhead' }, p2: { p1: 'leftNotBehind' } },
+      ],
+      [
+        'equal scores: p2 loses nothing, p1 (not behind) gets the full win',
+        1,
+        1,
+        0,
+        { p1: 17, p2: 0 },
+        { p2: { p1: 'leftNotBehind' } },
+      ],
+      [
+        'before any move of his: p2 loses nothing',
+        1,
+        0,
+        0,
+        { p1: 17, p2: 0 },
+        { p2: { p1: 'leftBeforeMoving' } },
+      ],
+      [
+        'behind after one wrong digit, before any move of p1: p2 loses, p1 gains nothing',
+        0,
+        0,
+        1,
+        { p1: 0, p2: -17 },
+        { p1: { p2: 'opponentLeftBeforeMyMove' } },
+      ],
+      [
+        'nobody moved: nobody gains or loses',
+        0,
+        0,
+        0,
+        { p1: 0, p2: 0 },
+        { p1: { p2: 'opponentLeftBeforeMyMove' }, p2: { p1: 'leftBeforeMoving' } },
+      ],
+    ] as const)('%s', (_name, p1Cells, p2Cells, p2Errs, expected, guards) => {
+      const g = duel(p1Cells, p2Cells, p2Errs);
+      leave(g, how);
+      expect(deltas(g)).toEqual(expected);
+      expect(held(g)).toEqual(guards);
+      // A 0 is a real 0: the rating stays where it was, and never shows as −0.
+      for (const c of result(g).ratingChanges) {
+        expect(c.after).toBe(c.before + c.delta);
+        expect(Object.is(c.delta, -0)).toBe(false);
+      }
+      expect(g.replayMatches()).toBe(true);
+    });
+  });
+
+  it('provisional K (doubled): a guarded pair is still exactly 0, not ±34', () => {
+    const g = near({ players: rated([1287, 3], [1305, 3]) });
+    solveEach(g, 'p1', ['A1']);
+    solveEach(g, 'p2', ['B7', 'C4']);
+    g.playerAct('p2', { type: 'surrender' });
+    expect(result(g).ratingChanges).toEqual([
+      { playerId: 'p1', before: 1287, after: 1287, delta: 0, provisional: true },
+      { playerId: 'p2', before: 1305, after: 1305, delta: 0, provisional: true },
+    ]);
+  });
+
+  it('the switches in rules.rating: leaverGuard and stayerGuard each turn one side off; both off is the old [D32] rule', () => {
+    const ahead = (rating: Partial<RatingRules>) => {
+      const g = duel(1, 2, 0, withRating(rating)); // p2 leaves ahead, 3 – 1.5
+      leave(g, 'surrender');
+      return deltas(g);
+    };
+    expect(ahead({})).toEqual({ p1: 0, p2: 0 });
+    expect(ahead({ leaverGuard: false })).toEqual({ p1: 0, p2: -17 });
+    expect(ahead({ stayerGuard: false })).toEqual({ p1: 17, p2: 0 });
+    expect(ahead({ leaverGuard: false, stayerGuard: false })).toEqual({ p1: 17, p2: -17 });
+  });
+
+  it('what counts as a move: a digit, right or wrong; not a lock (timed out), a reaction or an interference', () => {
+    const g = near({ players: rated([1287, 10], [1305, 10]), rules: { interferenceNeedsScore: false } });
+    solveEach(g, 'p1', ['A1']);
+    g.select('p2', 'B7', 1000);
+    expect(g.types(g.tickTo(9000))).toEqual(['cellReleased']); // the lock ran out
+    g.playerAct('p2', { type: 'react', emoji: '😂' }, 9500);
+    g.playerAct('p2', { type: 'interfere', targetId: 'p1', kind: 'cats' }, 9600); // −2: behind, but no move
+    expect(g.score('p2')).toBe(-2);
+    expect(g.view('p2').leaveGuards).toEqual([{ opponentId: 'p1', reason: 'leftBeforeMoving' }]);
+    g.playerAct('p2', { type: 'surrender' }, 10000);
+    expect(deltas(g)).toEqual({ p1: 17, p2: 0 });
+    expect(held(g)).toEqual({ p2: { p1: 'leftBeforeMoving' } });
+
+    const wrong = duel(1, 0, 1); // one wrong digit is a move: p2 leaves behind, −1.5 to 1.5
+    expect(wrong.view('p2').leaveGuards).toEqual([]);
+    leave(wrong, 'surrender');
+    expect(deltas(wrong)).toEqual({ p1: 17, p2: -17 });
+  });
+
+  it("the snapshot: everyone's [score, moves] at the surrender, by seat; none before; later moves leave it", () => {
+    const g = near({ players: 3 });
+    solveEach(g, 'p1', ['A1']);
+    err(g, 'p3', 'B7');
+    expect(g.state.players.map((p) => 'leaveStandings' in p)).toEqual([false, false, false]);
+    g.playerAct('p2', { type: 'surrender' });
+    const atSurrender = [
+      [1.5, 1],
+      [0, 0],
+      [-1.5, 1],
+    ];
+    expect(g.player('p2').leaveStandings).toEqual(atSurrender);
+    solveEach(g, 'p1', ['C4']);
+    expect(g.player('p2').leaveStandings).toEqual(atSurrender);
+    // A disconnect takes one, a reconnect drops it.
+    g.act({ type: 'disconnect', playerId: 'p3' });
+    expect(g.player('p3').leaveStandings).toEqual([
+      [3, 2],
+      [0, 0],
+      [-1.5, 1],
+    ]);
+    g.act({ type: 'reconnect', playerId: 'p3' }, g.now + 1000);
+    expect('leaveStandings' in g.player('p3')).toBe(false);
+    expect(g.replayMatches()).toBe(true);
+  });
+
+  /**
+   * 3 players at 1200 (K_pair = 16): p3 solves 2 and loses the connection; p1 solves 3 while p3 is away
+   * (3 players: the game goes on); p3 abandons, then p1 fills the board. p2 never moves.
+   */
+  function awayThenAbandon(rules?: ConfigOptions['rules']) {
+    const g = near({ players: rated([1200, 10], [1200, 10], [1200, 10]), rules });
+    solveEach(g, 'p3', ['A1', 'B7']); // 3
+    g.act({ type: 'disconnect', playerId: 'p3' }, 1000); // grace until 16000
+    solveEach(g, 'p1', ['C4', 'D2', 'E5']); // 4.5, while p3 is away
+    expect(g.types(g.tickTo(16000))).toEqual(['playerAbandoned']);
+    solveEach(g, 'p1', ['F8', 'G3', 'H9', 'I6']); // the board is full
+    expect(order(g)).toEqual(['p1', 'p2', 'p3']);
+    return g;
+  }
+
+  it("abandonJudgedAt 'disconnect' (default): p3 led when the connection fell, so he loses nothing to p1", () => {
+    const g = awayThenAbandon();
+    expect(g.player('p3').leaveStandings).toEqual([
+      [0, 0],
+      [0, 0],
+      [3, 2],
+    ]);
+    expect(deltas(g)).toEqual({ p1: 8, p2: -8, p3: 0 });
+    expect(held(g)).toEqual({
+      p1: { p3: 'opponentLeftBeforeMyMove' },
+      p2: { p3: 'opponentLeftBeforeMyMove' },
+      p3: { p1: 'leftNotBehind', p2: 'leftNotBehind' },
+    });
+    expect(g.replayMatches()).toBe(true);
+  });
+
+  it("abandonJudgedAt 'graceEnd': judged when the grace ran out, when p1 was ahead and had moved", () => {
+    const g = awayThenAbandon(withRating({ abandonJudgedAt: 'graceEnd' }));
+    expect(g.player('p3').leaveStandings).toEqual([
+      [4.5, 3],
+      [0, 0],
+      [3, 2],
+    ]);
+    expect(deltas(g)).toEqual({ p1: 16, p2: -8, p3: -8 });
+    expect(held(g)).toEqual({ p2: { p3: 'opponentLeftBeforeMyMove' }, p3: { p2: 'leftNotBehind' } });
+  });
+
+  it('a reconnect drops the snapshot: the last connection loss before the abandonment is the one judged', () => {
+    const g = near({ players: rated([1200, 10], [1200, 10], [1200, 10]) });
+    solveEach(g, 'p3', ['A1', 'B7']); // 3
+    g.act({ type: 'disconnect', playerId: 'p3' }, 1000);
+    g.act({ type: 'reconnect', playerId: 'p3' }, 2000);
+    solveEach(g, 'p1', ['C4', 'D2', 'E5']); // 4.5
+    g.act({ type: 'disconnect', playerId: 'p3' }, 3000); // p3 now trails p1
+    g.tickTo(18000);
+    solveEach(g, 'p1', ['F8', 'G3', 'H9', 'I6']);
+    expect(deltas(g)).toEqual({ p1: 16, p2: -8, p3: -8 });
+    expect(g.replayMatches()).toBe(true);
+  });
+
+  it('4 players, two leavers: each pair is judged when the first of the two left', () => {
+    const play = (rules?: ConfigOptions['rules']) => {
+      const g = near({ players: rated([1200, 10], [1200, 10], [1200, 10], [1200, 10]), rules });
+      solveEach(g, 'p1', ['A1', 'B7']); // 3
+      solveEach(g, 'p2', ['C4']); // 1.5
+      err(g, 'p4', 'D2'); // −1.5
+      g.playerAct('p2', { type: 'surrender' }); // out first; p3 has not moved yet
+      solveEach(g, 'p3', ['D2']); // 1.5
+      g.playerAct('p4', { type: 'surrender' }); // out second, behind everyone
+      solveEach(g, 'p1', ['E5', 'F8', 'G3']); // 7.5
+      solveEach(g, 'p3', ['H9', 'I6']); // 4.5, and the board is full
+      expect(order(g)).toEqual(['p1', 'p3', 'p4', 'p2']);
+      return g;
+    };
+    // K_pair = 32 / 3: without the guards +16, +5, −5, −16.
+    expect(deltas(play(withRating({ leaverGuard: false, stayerGuard: false })))).toEqual({
+      p1: 16,
+      p3: 5,
+      p4: -5,
+      p2: -16,
+    });
+    const g = play();
+    expect(deltas(g)).toEqual({ p1: 16, p3: 0, p4: -11, p2: -5 });
+    // p2–p4 is judged at p2's surrender (p2 led p4 then), though p4 left too.
+    expect(held(g)).toEqual({
+      p3: { p2: 'opponentLeftBeforeMyMove' },
+      p4: { p2: 'opponentLeftAhead' },
+      p2: { p3: 'leftNotBehind', p4: 'leftNotBehind' },
+    });
+    expect(result(g).ratingPairs!.find((p) => p.playerId === 'p4')!.pairs).toEqual([
+      { opponentId: 'p1', delta: -5.5 },
+      { opponentId: 'p3', delta: -5.5 },
+      { opponentId: 'p2', delta: 0, guard: 'opponentLeftAhead' },
+    ]);
+    for (const split of result(g).ratingPairs!) {
+      const sum = Math.round(split.pairs.reduce((a, p) => a + p.delta * 10, 0)) / 10;
+      expect(sum - split.penalty).toBe(change(g, split.playerId)!.delta);
+    }
+  });
+
+  it('practice has no rating, whatever the guards', () => {
+    const bot = GameDriver.of({
+      mode: 'bot',
+      players: [
+        { id: 'me', rating: 1300, ratedGames: 40 },
+        { id: 'bot', isBot: true, rating: 1300, ratedGames: 40 },
+      ],
+    });
+    bot.solve('me', 'A1', 1000);
+    bot.playerAct('bot', { type: 'surrender' }, 2000);
+    expect(result(bot)).toMatchObject({ ratingChanges: [] });
+    expect('ratingPairs' in result(bot)).toBe(false);
+    expect(bot.state.config.rules.rating.leaverGuard).toBe(true);
+  });
+
+  describe('GameView.leaveGuards: what a surrender now would cost me', () => {
+    it('2 players: no move yet or not behind → nothing lost; behind → a normal loss', () => {
+      const g = near({ players: 2 });
+      expect(g.view('p1').leaveGuards).toEqual([{ opponentId: 'p2', reason: 'leftBeforeMoving' }]);
+      solveEach(g, 'p1', ['A1']); // 1.5 – 0
+      expect(g.view('p1').leaveGuards).toEqual([{ opponentId: 'p2', reason: 'leftNotBehind' }]);
+      expect(g.view('p2').leaveGuards).toEqual([{ opponentId: 'p1', reason: 'leftBeforeMoving' }]);
+      solveEach(g, 'p2', ['B7', 'C4']); // 1.5 – 3
+      expect(g.view('p1').leaveGuards).toEqual([]);
+      expect(g.view('p2').leaveGuards).toEqual([{ opponentId: 'p1', reason: 'leftNotBehind' }]);
+      solveEach(g, 'p1', ['D2']); // 3 – 3
+      expect(g.view('p1').leaveGuards).toEqual([{ opponentId: 'p2', reason: 'leftNotBehind' }]);
+    });
+
+    it('3–4 players: one entry per opponent still in the game whom I am not behind', () => {
+      const g = near({ players: 4 });
+      solveEach(g, 'p1', ['A1', 'B7']); // 3
+      solveEach(g, 'p2', ['C4']); // 1.5
+      solveEach(g, 'p3', ['D2', 'E5', 'F8']); // 4.5
+      expect(g.view('p2').leaveGuards).toEqual([{ opponentId: 'p4', reason: 'leftNotBehind' }]);
+      g.playerAct('p4', { type: 'surrender' });
+      expect(g.view('p2').leaveGuards).toEqual([]);
+      expect(g.view('p3').leaveGuards).toEqual([
+        { opponentId: 'p1', reason: 'leftNotBehind' },
+        { opponentId: 'p2', reason: 'leftNotBehind' },
+      ]);
+    });
+
+    it('null for a spectator, a player already out, practice, or with leaverGuard off', () => {
+      const g = near({ players: 3 });
+      expect(g.view(null).leaveGuards).toBeNull();
+      g.playerAct('p3', { type: 'surrender' });
+      expect(g.view('p3').leaveGuards).toBeNull();
+      expect(g.view('p1').leaveGuards).toEqual([{ opponentId: 'p2', reason: 'leftBeforeMoving' }]);
+      expect(near({ players: 1 }).view('p1').leaveGuards).toBeNull();
+      expect(near({ mode: 'bot', players: 2 }).view('p1').leaveGuards).toBeNull();
+      expect(
+        near({ players: 2, rules: withRating({ leaverGuard: false }) }).view('p1').leaveGuards,
+      ).toBeNull();
     });
   });
 });

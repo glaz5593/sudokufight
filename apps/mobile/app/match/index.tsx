@@ -5,6 +5,7 @@ import { normalizeAvatarId } from '../../src/avatars';
 import { refreshMe, useAuth } from '../../src/auth/authStore';
 import { ROUTES } from '../../src/auth/redirect';
 import { useGameStore } from '../../src/game/gameStore';
+import { FlowFallback } from '../../src/screens/FlowFallback';
 import { goBack, startAndOpen } from '../../src/screens/home';
 import { headerOf, MatchScreen } from '../../src/screens/match';
 import { useProfile } from '../../src/state/profile';
@@ -12,7 +13,8 @@ import { useProfile } from '../../src/state/profile';
 /**
  * /match: the ranked search the game store holds (work plan stage 9, spec §10), from searching to GO; then
  * the game replaces it (motion.md `flow.fade`). Started from the game type's "מצא יריב", Home's "עוד סיבוב"
- * or the results' "משחק חדש" (screens/home/startGame.ts). No search, nothing to show: back to the modes.
+ * or the results' "משחק חדש" (screens/home/startGame.ts). No search, nothing to show: back to the modes (a
+ * spinner meanwhile, and a way out should they not come: never an empty screen).
  * The back swipe is off; Android's back cancels a search, and nothing from "found" on [D32].
  */
 export default function MatchRoute() {
@@ -26,7 +28,16 @@ export default function MatchRoute() {
     if (!match && !leaving.current) router.replace('/modes');
   }, [match]);
 
-  if (!match) return null;
+  if (!match) {
+    // The modes are on their way (the effect above), or this screen is going: only reported should it stay.
+    return (
+      <FlowFallback
+        reason="match: no search"
+        report={() => !leaving.current}
+        onHome={() => router.replace('/modes')}
+      />
+    );
+  }
   const gameType = headerOf(match.queueKey).gameType;
 
   /** Out of the flow: the search (or its failure) goes, then the screen. */

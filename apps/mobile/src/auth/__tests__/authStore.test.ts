@@ -1,16 +1,23 @@
+import type { Me } from '@sudoku-fight/protocol';
+
 import { AccountApiError } from '../../api/accountApi';
 import { ME_CACHE_KEY } from '../../api/me';
+import { accountConfig } from '../../config/account';
+import type { RankedEnd } from '../../game/rankedEnd';
 import { useProfile } from '../../state/profile';
 import {
   checkEmailVerified,
   deleteAccount,
+  fetchMe,
   initAuth,
   refreshMe,
+  refreshMeIfStale,
   registerProfile,
   retryLoad,
   sendPasswordReset,
   sendVerificationEmail,
   setAuthDeps,
+  showRankedResult,
   signedInIdToken,
   signIn,
   signOut,
@@ -451,5 +458,182 @@ describe('signedInIdToken (the token usage reports carry)', () => {
     await initAuth();
     jest.spyOn(auth.provider, 'getIdToken').mockRejectedValue(new AuthError('network'));
     await expect(signedInIdToken()).resolves.toBeNull();
+  });
+});
+
+describe('after a ranked game (Moshe’s device test of 1.0.0: the rating followed only after a restart)', () => {
+  const { minIntervalMs } = accountConfig.refresh;
+  const { optimisticTtlMs } = accountConfig.refresh.afterRanked;
+
+  /** A signed-in player, ready, with the auth store on a clock the test moves. */
+  async function ready() {
+    const auth = await installSignedInPlayer();
+    const clock = { now: 5_000_000 };
+    setAuthDeps({ ...auth.deps, now: () => clock.now });
+    await initAuth();
+    const uid = auth.provider.currentUser()!.uid;
+    /** The server stores a game in 'fast': its rating and games count there. */
+    const store = (rating: number, games: number) => {
+      const row = auth.server.users.get(uid)!;
+      row.me = {
+        ...row.me,
+        ratings: row.me.ratings.map((r) => (r.key === 'fast' ? { ...r, rating, games, peak: rating } : r)),
+      };
+    };
+    const gets = () => auth.server.calls.filter((c) => c === 'GET /v1/me').length;
+    return { auth, clock, store, gets };
+  }
+
+  const fast = () => state().me!.ratings.find((r) => r.key === 'fast')!;
+  const fastOf = (me: Me | null | undefined) => me?.ratings.find((r) => r.key === 'fast');
+  const cachedFast = (auth: TestAuth) =>
+    fastOf((JSON.parse(auth.storage.data.get(ME_CACHE_KEY)!) as { me: Me }).me);
+
+  /** My end of a ranked game in 'fast': 1200 → 1232, my first game in the key. */
+  const endFor = (meId: string, patch: Partial<RankedEnd> = {}): RankedEnd => ({
+    gameId: 'game-1',
+    playerId: meId,
+    key: 'fast',
+    gamesBefore: 0,
+    provisionalGames: 10,
+    change: { playerId: meId, before: 1200, after: 1232, delta: 32, provisional: true },
+    expectsStored: true,
+    left: false,
+    waitMs: 0,
+    ...patch,
+  });
+
+  it('shows the game’s rating at once, in memory only (the phone keeps the server’s profile)', async () => {
+    const { auth } = await ready();
+    showRankedResult(endFor(state().me!.id));
+    expect(fast()).toEqual({ key: 'fast', rating: 1232, games: 1, provisional: true, peak: 1232 });
+    expect(
+      state()
+        .me!.ratings.filter((r) => r.key !== 'fast')
+        .map((r) => r.rating),
+    ).toEqual([1200, 1200]);
+    expect(cachedFast(auth)).toMatchObject({ rating: 1200, games: 0 });
+  });
+
+  it('nothing to show: another player’s end, no change for me, a key the profile lacks, a game already counted, signed out', async () => {
+    const { store } = await ready();
+    const id = state().me!.id;
+    showRankedResult(endFor('someone-else'));
+    showRankedResult(endFor(id, { change: null }));
+    showRankedResult(endFor(id, { key: 'fast-2p' }));
+    expect(fast()).toMatchObject({ rating: 1200, games: 0 });
+    store(1231, 1);
+    await refreshMe();
+    showRankedResult(endFor(id));
+    expect(fast()).toMatchObject({ rating: 1231, games: 1 });
+    await signOut();
+    showRankedResult(endFor(id));
+    expect(state().me).toBeNull();
+  });
+
+  it('an older answer of the server keeps it; once the server counts the game, the server’s own entry', async () => {
+    const { auth, store } = await ready();
+    showRankedResult(endFor(state().me!.id));
+    // Read before the server stored the game: no flicker back to 1200.
+    await refreshMe();
+    expect(fast()).toMatchObject({ rating: 1232, games: 1 });
+    expect(cachedFast(auth)).toMatchObject({ rating: 1200, games: 0 });
+    // Stored: the server's number wins, whatever it is.
+    store(1231, 1);
+    const answer = await fetchMe();
+    expect(fastOf(answer)).toMatchObject({ rating: 1231, games: 1 });
+    expect(fast()).toMatchObject({ rating: 1231, games: 1 });
+    // Nothing is pending any more: a later answer is shown as it is.
+    store(1200, 0);
+    await refreshMe();
+    expect(fast()).toMatchObject({ rating: 1200, games: 0 });
+  });
+
+  it('a game the server never stores: after refresh.afterRanked.optimisticTtlMs the server’s answer wins', async () => {
+    const { clock } = await ready();
+    showRankedResult(endFor(state().me!.id));
+    clock.now += optimisticTtlMs - 1;
+    await refreshMe();
+    expect(fast().rating).toBe(1232);
+    clock.now += 1;
+    await refreshMe();
+    expect(fast()).toMatchObject({ rating: 1200, games: 0 });
+  });
+
+  it('signing out forgets it: signing in again shows only the server’s', async () => {
+    await ready();
+    showRankedResult(endFor(state().me!.id));
+    await signOut();
+    await signIn(TEST_PLAYER.email, TEST_PLAYER.password);
+    expect(fast()).toMatchObject({ rating: 1200, games: 0 });
+  });
+
+  it('refreshMeIfStale: not within refresh.minIntervalMs of the last answer, then once; at once from the phone’s profile', async () => {
+    const { auth, clock, gets } = await ready();
+    expect(gets()).toBe(1); // initAuth's
+    await refreshMeIfStale();
+    clock.now += minIntervalMs - 1;
+    await refreshMeIfStale();
+    expect(gets()).toBe(1);
+    clock.now += 1;
+    await refreshMeIfStale();
+    expect(gets()).toBe(2);
+    await refreshMeIfStale();
+    expect(gets()).toBe(2);
+    // A profile from the phone (no server last time): at once.
+    useAuth.setState({ meOffline: true });
+    await refreshMeIfStale();
+    expect(gets()).toBe(3);
+    expect(state().meOffline).toBe(false);
+    // No connection: no answer (null), and the next call tries again.
+    auth.server.setOffline(true);
+    clock.now += minIntervalMs;
+    expect(await fetchMe()).toBeNull();
+    await refreshMeIfStale();
+    expect(gets()).toBe(5);
+    expect(state().status).toBe('ready');
+    // Signed out: nothing.
+    auth.server.setOffline(false);
+    await signOut();
+    await refreshMeIfStale();
+    expect(await fetchMe()).toBeNull();
+    expect(gets()).toBe(5);
+  });
+
+  it('not while a read is out; an older answer that comes last is returned but not shown', async () => {
+    const { auth, clock } = await ready();
+    const base = state().me!;
+    const withFast = (rating: number, games: number): Me => ({
+      ...base,
+      ratings: base.ratings.map((r) => (r.key === 'fast' ? { ...r, rating, games, peak: rating } : r)),
+    });
+    const answers: ((me: Me) => void)[] = [];
+    auth.server.api.getMe = () => new Promise<Me>((resolve) => answers.push(resolve));
+
+    const older = fetchMe();
+    clock.now += minIntervalMs;
+    await refreshMeIfStale(); // a read is out: none more
+    expect(answers).toHaveLength(1);
+    const newer = fetchMe();
+    expect(answers).toHaveLength(2);
+    answers[1]!(withFast(1250, 2));
+    expect(fastOf(await newer)?.rating).toBe(1250);
+    expect(fast().rating).toBe(1250);
+    answers[0]!(withFast(1210, 1));
+    expect(fastOf(await older)?.rating).toBe(1210);
+    expect(fast().rating).toBe(1250);
+    expect(cachedFast(auth)?.rating).toBe(1250);
+  });
+
+  it('a read whose answer comes after a sign-out is dropped', async () => {
+    const { auth } = await ready();
+    const answers: ((me: Me) => void)[] = [];
+    const base = state().me!;
+    auth.server.api.getMe = () => new Promise<Me>((resolve) => answers.push(resolve));
+    const read = fetchMe();
+    await signOut();
+    answers[0]!(base);
+    expect(await read).toBeNull();
+    expect(state()).toMatchObject({ status: 'signedOut', me: null });
   });
 });

@@ -50,6 +50,7 @@ export const tokens = {
     pressedOverlay: 'rgba(255,255,255,0.05)',
     status: {
       online: '#40e29f',
+      unstable: '#ffcf3f',
       offline: '#677086',
     },
     toast: {
@@ -799,6 +800,7 @@ export const tokens = {
     dimmedCard: 0.4,
     inactivePlayer: 0.5,
     scrim: 0.72,
+    hitDim: 0.6,
   },
   effects: {
     skewXDeg: -8,
@@ -924,8 +926,6 @@ export const tokens = {
       lockPulse: 1600,
       lockUrgentBlink: 1000,
       statusBlink: 1200,
-      dropZoneMarch: 800,
-      dropZoneBreathe: 1100,
       searchSweep: 2400,
       spinner: 800,
       skeleton: 1200,
@@ -981,12 +981,12 @@ export const tokens = {
     },
     interferenceSent: {
       haptic: 'impactMedium',
-      sound: 'whoosh on drag, burst on drop',
+      sound: 'burst on launch (interfere_launch)',
     },
     interferenceHit: {
       haptic: 'rumble',
       durationMs: 5000,
-      sound: 'per kind: fireworks, meow, warp',
+      sound: 'per kind: fireworks, meow, warp, scramble, ink, keypad',
     },
     reactionReceived: {
       haptic: 'impactLight',

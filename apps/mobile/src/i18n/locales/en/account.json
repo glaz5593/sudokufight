@@ -77,9 +77,8 @@
     "tips": {
       "lock": "A cell you pick is locked to you alone: {{seconds}} seconds in a {{type}} game.",
       "hard": "A harder move is worth more points.",
-      "mistake": "Mistakes cost more and more: each one costs double the last.",
-      "mistakeCapped": "Mistakes cost more and more: each one costs double the last, up to {{cap}} points.",
-      "drag": "Send an interference by dragging it onto your opponent's card."
+      "mistake": "A mistake costs exactly the points the right digit would have earned. Better to think a moment longer.",
+      "interfere": "Send an interference in two taps: “Interfere” on your opponent's card, then the one you pick."
     },
     "errorTitle": "We couldn't load your fighter",
     "retry": "Try again",

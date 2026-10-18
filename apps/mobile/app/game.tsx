@@ -2,6 +2,7 @@ import { type Href, router, Stack } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
 import { useGameStore } from '../src/game/gameStore';
+import { FlowFallback } from '../src/screens/FlowFallback';
 import { GameScreen, OnlineGame } from '../src/screens/game';
 
 /** The game is over: its results replace the game (motion.md `flow.fade`: states of one flow). */
@@ -17,6 +18,9 @@ const retry = () => useGameStore.getState().retryOnline();
  *
  * Leaving an online game on purpose (home, practice, the lobby's "יציאה מהחדר") navigates first and closes the
  * session as this screen goes, so the game stays drawn under the transition.
+ *
+ * Never an empty screen (Moshe's black screens of 1.0.0): with no game to draw, a spinner while Home comes, and a
+ * way out should it not (FlowFallback); the game screen offers "לבית" too should its results not open.
  */
 export default function GameRoute() {
   const session = useGameStore((s) => s.session);
@@ -62,11 +66,20 @@ export default function GameRoute() {
       </>
     );
   }
-  if (!session) return null;
+  if (!session) {
+    // Home is on its way (the effect above), or this screen is going: only reported should it stay.
+    return (
+      <FlowFallback
+        reason="game: no game in the store"
+        report={() => !leaving.current}
+        onHome={() => router.replace('/')}
+      />
+    );
+  }
   return (
     <>
       <Stack.Screen options={{ gestureEnabled: false }} />
-      <GameScreen key={session.id} session={session} onEnded={openResults} />
+      <GameScreen key={session.id} session={session} onEnded={openResults} onHome={() => leaveTo('/')} />
     </>
   );
 }

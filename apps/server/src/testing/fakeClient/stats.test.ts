@@ -82,6 +82,11 @@ describe('answers', () => {
       ev({ type: 'playerSurrendered', playerId: me }),
       ev({ type: 'playerAbandoned', playerId: me }),
     ],
+    [
+      { type: 'offlineMove', cell: 4, digit: 3, thinkMs: 900 }, // [D42]
+      ev({ type: 'placedWrong', playerId: me, cell: 4, offline: true }),
+      ev({ type: 'cellLocked', playerId: me, cell: 4 }),
+    ],
   ];
   it.each(cases)('%o is answered by its own event only', (action, yes, no) => {
     expect(answers(action, yes, me)).toBe(true);

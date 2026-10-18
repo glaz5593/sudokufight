@@ -43,10 +43,11 @@ export const LOADING_TIPS = ['score', 'lastCell', 'mistakes', 'interference'] as
 export type LoadingTip = (typeof LOADING_TIPS)[number];
 
 /**
- * Spec §6.4: a move is worth 1.5 to 13.5 in theory, but in the current bank of 690 boards at most 10.5 (the
- * design's tip said 13.5). Change it with the bank.
+ * Spec §6.4: a move is worth 1.5 to 13.5 in theory; in the bank (packages/engine/data/puzzles.json, both pools,
+ * measured after the givens of [D43]) at most this, per game type: the best move of a board is one of its
+ * opening moves (the board only fills). The design's tip said 13.5. Change it with the bank (a test measures it).
  */
-export const TOP_MOVE_POINTS = 10.5;
+export const TOP_MOVE_POINTS: Readonly<Record<GameType, number>> = { fast: 6.5, normal: 9.5, hard: 12 };
 /** Spec §6.4: the last cell of a board always sees 8 · 8 · 8 · 8: 9 − 8 + (9 − 8) / 2. */
 export const LAST_CELL_POINTS = 1.5;
 

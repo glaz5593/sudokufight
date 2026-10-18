@@ -1,0 +1,361 @@
+[
+  {
+    "item": "penalty clean-up: remove the old 2^(k-1) mistake ladder completely (Moshe: \"אין צורך להוסיף בהגדרות, זה היה חישוב לא הגיוני\")",
+    "done": true,
+    "summary": "The old mistake ladder is now gone from the code, the tests and the docs. Every wrong digit always costs the missed points (§6.5).\n\nEngine:\n- `doublingPenalty` is deleted from scoring.ts.\n- The `MistakePenaltyRule` type and the `rules.mistakePenalty` field and its default are deleted from rules.ts.\n- The rules.ts header now says D14 is not a field because Moshe closed it. The scoreY doc notes that Y also prices a mistake.\n- In engine.ts, `wrongDigitPenalty(s, cell)` has no 'doubling' branch and no mistake-number argument. It always returns `missedPoints(s.grid, cell, solution[cell], rules.scoreY).points`.\n- `mistakePenalties` in state and view stays, because the pips use it.\n\nProtocol and server: they already had no `mistakePenaltyCap` and no `mistakePenalty`. The strict rulesSchema still refuses both keys, and the tests prove it.\n\nReplay:\n- Old games used to be told apart by `rules.mistakePenalty === 'missedPoints'`. That field no longer exists, so new logs and old logs look the same in their rules.\n- `buildReplay` now works it out from the log's own data, in a new field `Replay.penaltiesAreMissedPoints`. It is true only when every placedWrong penalty equals `missedPoints` on the board before that move.\n- An old game always fails this: under the ladder each player's first mistake cost 1, and missed points are never below 1.5 (a new test checks this). So none of an old game's wrong moves gets a penalty line, even when a later ladder value happens to equal missed points.\n- `penaltyLine` comes from a new helper, `missedPointsOf(states, step, scoreY)`. `gridBefore` was split into `gridBeforeIn(states, s)` plus a wrapper.\n\nDocs:\n- 01-SPEC §6.5: the config/alternative bullet is replaced. The rule applies in every mode; there is no setting and no alternative, by Moshe's explicit request of 15.10.2026; the ladder and the D14 cap are deleted; old games keep their recorded penalties.\n- 01-SPEC §13.2 now says how an old game is recognised. The §24 D14 alternative column now reads \"אין: משה ביקש לא להשאיר את השיטה הישנה כאפשרות, והיא נמחקה\".\n- DECISIONS-PENDING 2.2: the old method is deleted completely at Moshe's request, the \"איפה\" line is updated, and there is a note on how old games are recognised.\n- 02-WORK-PLAN: the stage-1 scoring bullet and the \"סיום\" bullet are updated.\n- components.md (pips row): a note that the design boards still show −1/−2 sample values from the removed ladder.\n- QA-CHECKLIST, motion.md and RELEASE-CHECKLIST already described only the new rule, so they needed no change.\n- 00-original-spec-v1.md was not touched.",
+    "filesChanged": [
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/sudoku/scoring.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/sudoku/scoring.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/rules.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/engine.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/digits.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/options.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/replay/replayModel.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/replay/__tests__/replayModel.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/DECISIONS-PENDING.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/02-WORK-PLAN.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/components.md"
+    ],
+    "testsAdded": [
+      "scoring.test.ts 'the retired §13 ladder': the scoring module has no doublingPenalty or mistakePenalty export; missedPoints is never below 1.5 across every cell on boards from almost full to empty (so a cost of 1 can only come from an old log)",
+      "digits.test.ts 'has no switch (Moshe, 2026-10-15)': no mode's defaultRules has mistakePenalty or mistakePenaltyCap; a stale config with { mistakePenalty: 'doubling', mistakePenaltyCap: 1 } still charges missed points [8, 7.5, 8, 6.5, 6.5, 7], score −43.5 (replaces the old 'doubling alternative still works' test)",
+      "options.test.ts: refuses rules { mistakePenaltyCap: 8 }, { mistakePenalty: 'doubling' } and { mistakePenalty: 'missedPoints' } (badOptions on 'rules')",
+      "replayModel.test.ts 'a game played before the rule (the 1, 2, 4, 8 ladder) shows no penalty line on any wrong move': a two-mistake game has lines on both and penaltiesAreMissedPoints true; the same log as 1.0.0 stored it (cap in its rules, first mistake penalty 1, second kept at a missed-points value) gives penaltiesAreMissedPoints false and no line on either wrong move, with the recorded penalties kept. The existing penalty-line test also asserts penaltiesAreMissedPoints true"
+    ],
+    "checks": [
+      {
+        "cmd": "npx jest packages/engine/src/sudoku/scoring.test.ts packages/engine/src/game/digits.test.ts apps/server/src/game/options.test.ts apps/mobile/src/screens/replay",
+        "result": "8 suites, 147 tests passed"
+      },
+      {
+        "cmd": "npx jest --selectProjects engine protocol",
+        "result": "32 suites, 916 tests passed"
+      },
+      {
+        "cmd": "npx jest apps/server/src/game apps/server/test/gameRoom.test.ts apps/server/src/testing/fakeClient apps/mobile/src/screens/replay apps/mobile/src/screens/history apps/mobile/src/components/player + soloPractice/historyReplay e2e",
+        "result": "31 of 33 suites passed. soloPractice.e2e and historyReplay.e2e fail with results not opening (pathname stays /game). The cause is a TypeError at GameScreen.tsx:802 (`latest.current.view.locks.length`), new code from the black-screen item that is being edited now. My change is not involved."
+      },
+      {
+        "cmd": "npx tsc -b",
+        "result": "One error only: apps/mobile/src/screens/moderation/useModerationFlow.tsx(158) is missing closeAll/mounted (the black-screen item in progress). None in my files."
+      },
+      {
+        "cmd": "npx eslint --max-warnings 0 <8 changed code files>",
+        "result": "clean"
+      },
+      {
+        "cmd": "npx prettier --check <8 changed code files>",
+        "result": "all formatted"
+      },
+      {
+        "cmd": "npm run i18n:check",
+        "result": "0 errors, 0 warnings (no strings changed)"
+      },
+      {
+        "cmd": "grep doublingPenalty|MistakePenaltyRule|mistakePenalty\\b|'doubling' (repo, excluding node_modules/archive/assets-src/docs/handoff)",
+        "result": "only the tests that prove they are gone or refused"
+      },
+      {
+        "cmd": "powershell (Get-PSDrive C).Free/1GB",
+        "result": "9.7 GB"
+      }
+    ],
+    "deviations": [
+      "Replay old-game detection: the task said 'keep no penalty line for old logs without mistakePenalties data'. With the rule field gone, the rules of new and old logs look the same, and evolve rebuilds mistakePenalties for old logs too. So I detect the rule from the log itself: `Replay.penaltiesAreMissedPoints` is true only when every recorded wrong penalty equals missedPoints on the board before it. This catches every old game that has a mistake, because its first mistake cost 1 and missed points are at least 1.5. It never references a removed field name.",
+      "digits.test.ts keeps one test that feeds a stale config ({ mistakePenalty: 'doubling', mistakePenaltyCap: 1 }, cast as Partial<Rules>). It proves an older build's config can't bring the ladder back. The names appear in tests only.",
+      "components.md got a one-line note that the design boards (docs/design/screens/*.dc.html, e.g. Game-2P-Wrong's '2nd mistake → −2 on the ladder') still show −1/−2 sample values. I did not edit the static design boards themselves."
+    ],
+    "openIssues": [
+      "About 20 design boards in docs/design/screens/*.dc.html still show the old −1/−2 values (pips, the Game-2P-Wrong scenario comment). They are illustrative only, and the components.md note says to ignore the numbers. Refresh them if the design boards are regenerated.",
+      "soloPractice.e2e and historyReplay.e2e currently fail because of the black-screen item's in-progress GameScreen.tsx (TypeError at line 802 inside onEffect on the game-over update). tsc also fails in useModerationFlow.tsx from the same item. Rerun both after that item lands.",
+      "docs/handoff/2026-10-15/README.md still lists 'Penalty clean-up' under Remaining. I left it for the main session to update."
+    ],
+    "notesForOtherItems": [
+      "Rules no longer has `mistakePenalty` (and never again `mistakePenaltyCap`); the type `MistakePenaltyRule` and `doublingPenalty` are deleted. A wrong digit always costs `missedPoints(grid, cell, solutionDigit, rules.scoreY).points`. The engine helper is `wrongDigitPenalty(s, cell)` (two arguments now).",
+      "Replay: new field `Replay.penaltiesAreMissedPoints: boolean` (set in buildReplay). PlayerExplanation.penaltyLine is shown only when it is true. A hand-built Replay object (none exist today) would need the field. New private helpers in replayModel.ts: `gridBeforeIn(states, step)` and `missedPointsOf(states, step, scoreY)`; `gridBefore(replay, step)` still exists.",
+      "Grace/retire tests that assert scores after a miss: values are unchanged from the penalty item (A1 8, A2 7.5, A5 8, A6 6.5, A8 6.5, B1 7 on the opening board of the engine PUZZLE).",
+      "The black-screen item's GameScreen.tsx line 802 (`latest.current.view.locks.length` in the game-over branch of onEffect) throws in soloPractice.e2e and historyReplay.e2e, so results never open there."
+    ]
+  },
+  {
+    "item": "black-screen: no black or empty screen at the end of an online game (the opponent gives up or leaves mid-game, or I give up), client and server",
+    "done": true,
+    "summary": "Built both designs (black-client and black-server), following DECISIONS.md. No engine or protocol change, and no ENGINE_VERSION or PROTOCOL_VERSION bump.\n\nCLIENT\n- Hold before the results: `endDelayMs(reason, reduce, online)`.\n  - Online ends other than a full board (a surrender by either player, an abandonment, an end that arrives in a reconnection snapshot) hold the final board for `ONLINE_END_HOLD_MS` = 600 ms, or 200 ms with Reduced Motion.\n  - A full board still holds 1100/200. A practice end is still 0 ms plus the dialog's exit.\n  - Values are in the new `apps/mobile/src/config/gameEnd.ts` (`onlineHoldMs` 600, `resultsWatchdogMs` 4000, `fallbackActionsMs` 1500).\n- The results always open from a timer of the screen: `showResults` → `later()`, also for 0 ms. They never open inside the host or WebSocket callback, a press or a render. The same applies to the \"already over\" effect (which now also holds) and to \"לתוצאות\".\n- Lock ring and seconds pill: the Reanimated `exiting={FadeOut}` layout animations are removed from `Cell.tsx`.\n  - They are replaced by a fade that does not depend on navigation: `useLeaving` keeps the part mounted, and `useLastLook` keeps the last look of the ring or pill while its opacity fades.\n  - Timing: 240 ms, or 200 ms with Reduced Motion (the app setting is now honoured). A JS safety timer covers the end of the fade, and a new lock on the cell takes over the fading copy.\n  - The derived state lives in LockRing and SecondsPill, not CellView, so the per-tick render counts in GameScreenRenders are unchanged.\n  - New static guard `noLayoutAnimationsInGame.test.ts`.\n- Native modals:\n  - `Sheet` has an `onExited` prop, and ReportSheet forwards it.\n  - `useModerationFlow` now returns `mounted` and `closeAll()`, and takes an `onExited` option.\n  - `GameScreen` waits for the end dialog and the moderation sheet or dialog (`whenModalsGone`) and closes them before the results. The `blocked` adjust-in-render also closes them.\n- Never an empty screen: new `screens/FlowFallback.tsx` with i18n `common:fallback.*` in he and en.\n  - It shows a spinner and \"רגע…\", then after 1.5 s \"המסך לא נטען\" with \"לתוצאות\" (optional) and \"לבית\". Android back goes home, and it sends one non-fatal report.\n  - It is used in `app/game.tsx` (no session; the practice GameScreen now also gets `onHome`), `app/match/index.tsx` (no search), MatchScreen's `cancelled` state, and GameScreen when my seat is missing.\n- Results watchdog: GameScreen takes a `resultsWatchdogMs` prop (default 4000).\n  - If the screen is still mounted that long after `onEnded`, it records the non-fatal 'game: results watchdog' and shows FlowFallback (`results-fallback`) over everything. \"לתוצאות\" re-arms it.\n- The reconnect loop stops after the end: `RemoteGameHost.dropConnection()` on a game that is over now calls `shutdown('gameOver')`. This covers silence, gaps and send failures, so there is no reconnect or join against a finished room.\n- Release diagnostics:\n  - `RemoteHostDeps.report` and `MatchmakingClientDeps.report` are called next to the existing log on 'listener failed', 'online listener failed' and 'message failed'.\n  - `net/device.ts` (`onlineLog`) and `net/matchmakingDevice.ts` (`matchmakingLog`) send log lines to `crashReporter().log` with `[online]` / `[matchmaking]` prefixes. Reports go to `recordError` with the context 'online: …' or 'matchmaking: …'.\n  - The matchmaking 'found' log line now carries ratings only, no names (PII).\n  - GameScreen breadcrumbs: `game over (<reason>) locks=N modal=B hit=B`, `results in N ms[, after the dialogs]`, `game over on arrival (<reason>)`. The results route logs on mount.\n\nSERVER (`GameRoom.ts`)\n- A finished room now tracks `sawEnd`: players who were connected at gameOver or came back since, via `welcomeBack`.\n- `autoDispose` is set to `everyoneSawEnd()` instead of `true`, and `closeAt` = gameOver + `closeAfterGameMs` (60 s) is the ceiling.\n- A drop in phase 'over' now holds the seat until `closeAt` (`holdSeatAfterGame`) instead of nulling it.\n- A player who was away at the end, coming back by token or by code within 60 s, gets the finished snapshot and the solution. When everyone has had the end, an empty room still closes about 1 s later, as before.\n- Header comment updated.\n\nDOCS\n- 01-SPEC: §12 has a new block on the move to the results (hold, modals, fallback). §16.2 has an \"after the end\" block on the room lifetime and no reconnect. §18 adds a `solution` row. No §24 row: no D-number, as DECISIONS says.\n- DECISIONS-PENDING: new item 3.25, and the section-3 count goes from 24 to 25.\n- QA-CHECKLIST: rows 11, 18, 25 and ניצחון בנטישה updated, plus a new \"המסך לא נטען\" row.\n- STAGE9-10-DEVICE-CHECKS: new check 2ב, plus a Crashlytics note.\n- motion.md: new `game.end` row, an implementation note on `lock.release`, and a surrender timeline line.",
+    "filesChanged": [
+      "apps/mobile/src/config/gameEnd.ts (new)",
+      "apps/mobile/src/screens/FlowFallback.tsx (new)",
+      "apps/mobile/src/screens/game/model.ts",
+      "apps/mobile/src/screens/game/index.ts",
+      "apps/mobile/src/screens/game/GameScreen.tsx",
+      "apps/mobile/src/components/board/Cell.tsx",
+      "apps/mobile/src/components/ui/Sheet.tsx",
+      "apps/mobile/src/screens/moderation/ReportSheet.tsx",
+      "apps/mobile/src/screens/moderation/useModerationFlow.tsx",
+      "apps/mobile/app/game.tsx",
+      "apps/mobile/app/match/index.tsx",
+      "apps/mobile/app/results/[id].tsx",
+      "apps/mobile/src/screens/match/MatchScreen.tsx",
+      "apps/mobile/src/net/remoteGameHost.ts",
+      "apps/mobile/src/net/matchmaking.ts",
+      "apps/mobile/src/net/device.ts",
+      "apps/mobile/src/net/matchmakingDevice.ts",
+      "apps/mobile/src/net/testing/fakeServer.ts",
+      "apps/mobile/src/i18n/locales/he/common.json",
+      "apps/mobile/src/i18n/locales/en/common.json",
+      "apps/server/src/rooms/GameRoom.ts",
+      "apps/mobile/src/screens/game/__tests__/model.test.ts",
+      "apps/mobile/src/screens/game/__tests__/GameScreenEnd.test.tsx",
+      "apps/mobile/src/screens/game/__tests__/GameScreenOnline.test.tsx",
+      "apps/mobile/src/screens/game/__tests__/GameScreen.test.tsx",
+      "apps/mobile/src/screens/game/__tests__/gameRoute.test.tsx",
+      "apps/mobile/src/components/board/__tests__/Cell.test.tsx",
+      "apps/mobile/src/components/ui/__tests__/Sheet.test.tsx",
+      "apps/mobile/src/screens/match/__tests__/MatchScreen.test.tsx",
+      "apps/mobile/src/net/__tests__/remoteGameHost.test.ts",
+      "apps/mobile/src/net/__tests__/matchmaking.test.ts",
+      "apps/mobile/src/net/__tests__/device.test.ts",
+      "apps/mobile/src/__tests__/ranked.e2e.test.tsx",
+      "apps/mobile/src/__tests__/FlowFallback.test.tsx (new)",
+      "apps/mobile/src/__tests__/noLayoutAnimationsInGame.test.ts (new)",
+      "apps/mobile/src/screens/moderation/__tests__/useModerationFlow.test.tsx (new)",
+      "apps/server/test/gameRoom.end.test.ts (new)",
+      "apps/server/test/remoteHost.contract.test.ts",
+      "docs/01-SPEC.md",
+      "docs/DECISIONS-PENDING.md",
+      "docs/QA-CHECKLIST.md",
+      "docs/STAGE9-10-DEVICE-CHECKS.md",
+      "docs/design/motion.md"
+    ],
+    "testsAdded": [
+      "model.test.ts: endDelayMs online/practice/reduce; the online hold is at least every fade the end starts; RESULTS_WATCHDOG_MS > the dialog ceiling + the hold",
+      "GameScreenEnd.test.tsx: the watchdog shows 'לתוצאות'/'לבית' plus a recordError, and 'לתוצאות' calls onEnded again; the results open from a timer, never inside the host update; breadcrumbs updated",
+      "GameScreenOnline.test.tsx (new describe, 7 tests): the opponent surrenders while I hold a lock (the board holds, the ring fades as cell-ring-leaving, onEnded once after the hold, no report, breadcrumbs); Reduced Motion 200 ms; an end in a reconnection snapshot holds; the report sheet open at the end (closes, results after it has gone, modal=true); the block dialog open at the end; a freeze closes the report sheet; the watchdog online. The existing surrender and 'לתוצאות' tests now advance the hold",
+      "GameScreen.test.tsx: a game already over opens its results from a timer; a view without my seat renders FlowFallback with 'לבית' (never null)",
+      "gameRoute.test.tsx: no game shows the FlowFallback spinner; 'לבית' after a moment; the practice GameScreen has onHome (stuck → 'לבית' → dismissTo('/') and the store cleared); the online end opens the results after the hold, once",
+      "Cell.test.tsx (new describe, 5 tests): the ring and pill fade with their last colour and seconds and are gone after 240 ms; the opponent's ring; Reduced Motion 200 ms; a new lock replaces the fading ring (the pill keeps fading); no exiting/entering/layout props",
+      "noLayoutAnimationsInGame.test.ts (new static guard over board, player, interference and screens/game)",
+      "FlowFallback.test.tsx (new): spinner first, then actions, one report, without results, Android back, report false or as a function, English",
+      "Sheet.test.tsx: onExited once after the exit, full and reduced motion",
+      "useModerationFlow.test.tsx (new): mounted until onExited; closeAll; closeAll while a block is being sent (the block still finishes with its toast); both open → onExited once; closeAll with nothing open",
+      "MatchScreen.test.tsx: 'cancelled' renders FlowFallback, with 'לבית' only after FALLBACK_ACTIONS_MS",
+      "remoteGameHost.test.ts: after the end, silence and an event gap close the host as gameOver with no reconnect or join; a listener or online listener that throws is reported and the others still get the update; a broken message is reported, then a fresh snapshot; a throwing report never breaks the game; no token in the logs",
+      "matchmaking.test.ts: a listener that throws is reported; a broken message is reported and never thrown; the log has no names or reservation",
+      "device.test.ts: deviceHostDeps log → crashReporter().log('[online] …'), report → recordError('online: …'); no token in the lines; matchmakingLog/onlineLog prefixes",
+      "ranked.e2e.test.tsx (new describe, 4 tests through the real routes): the opponent surrenders while I hold a lock → stays on /game, then 'ניצחון!' plus the reason line, and 'לבית' → '/' with the store cleared; I surrender with a lock → 'הפסד'; the opponent abandons → Opponent-Left → 'לתוצאות' → 'ניצחון!'; 'לבית' on Opponent-Left → Home. None of them shows a fallback or reports anything",
+      "apps/server/test/gameRoom.end.test.ts (new, real server, closeAfterGameMs 4 s): away at the end and back by code after the token window → finished snapshot and solution, then the room closes at once; a drop after the end keeps the seat and the token brings the end back; everyone had the end and left → closes in under 2 s and a late join fails; closeAfterGameMs is the ceiling for a player who never returns; no errors logged",
+      "apps/server/test/remoteHost.contract.test.ts: the opponent surrenders → both app hosts hold the server's result and solution, then close as gameOver with no reconnecting and no token used"
+    ],
+    "checks": [
+      {
+        "cmd": "npx tsc -b",
+        "result": "clean (after the retire agent's in-progress engine errors were fixed by that agent)"
+      },
+      {
+        "cmd": "npx eslint --max-warnings 0 <all changed .ts/.tsx files>",
+        "result": "clean"
+      },
+      {
+        "cmd": "npx prettier --check <all changed code files>",
+        "result": "all formatted"
+      },
+      {
+        "cmd": "npm run i18n:check",
+        "result": "0 errors, 0 warnings (14 namespaces, 1912 keys)"
+      },
+      {
+        "cmd": "npx jest --selectProjects mobile --testPathPattern <every suite this item touched: game model/End/Online/GameScreen/gameRoute/Renders, Cell, FlowFallback, noLayoutAnimationsInGame, reducedMotion, noRawColors, Sheet, moderation, MatchScreen, net, ranked.e2e, botPracticeEnd, i18n>",
+        "result": "34 suites, 414 tests passed"
+      },
+      {
+        "cmd": "npx jest --selectProjects mobile (full, mid-run)",
+        "result": "232/236 suites passed. The 4 failures were the retire item in progress (rating guards in rankedEnd.test and the ranked.e2e rating tests; new surrender-dialog wording in GameScreenOnline 'surrender' and GameScreenGroup). On the targeted rerun these suites pass"
+      },
+      {
+        "cmd": "npx jest --selectProjects server (full)",
+        "result": "77 suites, 1111 tests passed (includes the new gameRoom.end.test.ts and contract test)"
+      },
+      {
+        "cmd": "powershell (Get-PSDrive C).Free/1GB",
+        "result": "about 9.7 GB free; no cleanup needed"
+      }
+    ],
+    "deviations": [
+      "Hold timing follows DECISIONS.md (black-server's ONLINE_END_HOLD_MS), not black-client's END_NAV_SAFE_MS floor for every end. Online ends other than a full board: 600 ms, or 200 with Reduced Motion. A practice end: 0 ms, but always from a timer. The 'already over' effect (reconnection snapshot) uses the same hold. 'לתוצאות' has no hold (timer 0) and no endSeenAt.",
+      "The watchdog lives in GameScreen (client design: stuck state plus FlowFallback 'results-fallback'), not in app/game.tsx (server design). RESULTS_WATCHDOG_MS = 4000, in config/gameEnd.ts.",
+      "The fading copy is implemented with useLeaving (in CellView, which changes state only when a part comes or goes) and useLastLook (in LockRing and SecondsPill), not with a single useGoing in CellView. A per-tick setState in CellView doubled the cell render counts that GameScreenRenders checks.",
+      "Fading copies use distinct testIDs ('cell-ring-leaving', 'cell-pill-leaving', inner 'cell-pill-fading'), so existing tests that expect 'cell-ring' or 'cell-pill' to disappear at once still hold. 'cell-ring-line' was added to the ring's border view.",
+      "The pill fades only. motion.md's 'scales to 0.8' was not added: behaviour is kept as it was before, when it used FadeOut.",
+      "FlowFallback `report` also accepts a function. The react-hooks lint forbids reading `leaving.current` during render, so the routes pass `() => !leaving.current`.",
+      "Matchmaking's 'found: vs …' log line now carries ratings only, because names are PII and the line now goes to Crashlytics.",
+      "crashReporter().log is called in dev builds as well. It is a no-op without Firebase, and collection is off in dev.",
+      "Not built, per DECISIONS: the server 'stored' message, and fetching results from history after the room has closed. Both are recorded as options in DECISIONS-PENDING 3.25.",
+      "No §24 row in 01-SPEC (no D-number for this item, per DECISIONS)."
+    ],
+    "openIssues": [
+      "The root cause is still not verified on a device: there was no reproduction and no crash in Firebase. The fix is layered. Moshe should run STAGE9-10 check 2ב on a release APK. If a black screen comes back, the Crashlytics non-fatals ('flow fallback', 'game: results watchdog') and the breadcrumbs (game over … locks=…, [online] …) will show the step.",
+      "Needs a server deploy for the finished-room lifetime (sawEnd, holdSeatAfterGame). The client parts work against the old server too.",
+      "A player who comes back more than 60 s after the end, when the room is gone, still gets 'החיבור אבד' (DECISIONS-PENDING 3.25 option ג: results from server history later). Keep-awake reduces how often this happens.",
+      "3–4 players: someone who left on purpose during the game is not in sawEnd, so the finished room stays up to 60 s after the end. This is bounded, as the design accepted.",
+      "Jest cannot exercise the native screen transition or a native Modal teardown. Those are only checked on the device."
+    ],
+    "notesForOtherItems": [
+      "GRACE (mobile): RemoteGameHost.dropConnection() now starts with `if (this.state?.status === 'over') return this.shutdown('gameOver', null)`, before goOffline/lose. Keep it when adding the soft phase: nothing reconnects after the end.",
+      "GRACE (mobile): RemoteHostDeps has `report(error, HostFailure)` (HostFailure = 'listener failed' | 'online listener failed' | 'message failed'), called next to the existing logs. FakeTable has `reports[]`. Log lines go to Crashlytics in release, so never put a token or a player name in a new log line.",
+      "GRACE (server): GameRoom.onDrop now sends phase 'over' to the new holdSeatAfterGame (allowReconnection until closeAt) before the lobby/game branches. onGameUpdate at over fills `sawEnd` from the seats whose sessionId is in this.clients and sets `autoDispose = everyoneSawEnd()` (no longer `true`). welcomeBack in phase over adds the player to sawEnd and sets autoDispose when everyone has had the end. If you restructure onDrop/onLeave/welcomeBack, keep these.",
+      "GRACE (mobile GameScreen): the `blocked` adjust-in-render now also calls `closeModeration()` (useModerationFlow.closeAll). If a soft-offline state should not block input, the report sheet will no longer be closed for it either. Decide on purpose.",
+      "Every item: GameScreen opens the results only from a timer. endDelayMs(reason, reduce, online) gives online ends other than a full board 600 ms (200 with Reduced Motion). A test that expects onEnded right after an online end must advance ONLINE_END_HOLD_MS (exported from screens/game/model and index). A test whose onEnded does not unmount the screen will, after resultsWatchdogMs (default 4000, a prop), see FlowFallback 'results-fallback' and a recordError('game: results watchdog').",
+      "Breadcrumb strings changed: 'game: game over (<reason>) locks=N modal=B hit=B', 'game: results in N ms[, after the dialogs]', 'game: opening the results', 'game: game over on arrival (<reason>)', 'game: results did not open'. GameScreenEnd asserts the exact list for the practice end.",
+      "useModerationFlow now returns `closeAll()` and `mounted`, and takes the option `onExited`. Sheet and ReportSheet take `onExited`.",
+      "New config file apps/mobile/src/config/gameEnd.ts (onlineHoldMs, resultsWatchdogMs, fallbackActionsMs). New screen apps/mobile/src/screens/FlowFallback.tsx (FALLBACK_ACTIONS_MS; i18n common:fallback.*). Use it for any new terminal empty render.",
+      "ranked.e2e.test.tsx now mocks services/crashlytics (`crash.recordError`). The two 'rating after the game' tests there depend on the retire item's rating rules.",
+      "DECISIONS-PENDING: added 3.25 and changed the section-3 count from 24 to 25. If you add 3.26, bump the count again.",
+      "Matchmaking log line 'found: vs …' now lists ratings only (no names)."
+    ]
+  },
+  {
+    "item": "retire-rating: leave guards for surrender and abandonment (D32/D8 amended by Moshe, 2026-10-15)",
+    "done": true,
+    "summary": "Moshe's rule is built in the engine, checked on the server, shown on mobile and written into the docs. It uses the defaults from DECISIONS.md.\n\n**Engine**\n- **Rules:** RatingRules has three new fields: leaverGuard (true), stayerGuard (true) and abandonJudgedAt ('disconnect').\n- **When a leaving is judged:** PlayerState.leaveStandings holds a snapshot by seat: [score, correct+mistakes] for every player.\n  - evolve takes it at playerSurrendered.\n  - It takes it at playerDisconnected with `??`, so the first loss event wins.\n  - playerReconnected deletes it.\n  - playerAbandoned keeps the disconnect snapshot under 'disconnect' and takes a new one under 'graceEnd'.\n  - The helper standingsOf is exported.\n- **results.ts:**\n  - New exports leaverGuardReason, stayerGuardReason and leaveGuardsFor(state).\n  - A pair is judged by its first leaver (the lower outOrder).\n  - (a) gives the leaver 'noLoss' ('leftBeforeMoving' / 'leftNotBehind').\n  - (b) gives the stayer 'noGain' ('opponentLeftBeforeMyMove' / 'opponentLeftAhead').\n  - eloInput passes the guards.\n  - One helper, penaltyFor, waives abandonPenalty when (a) holds against everyone still in the game. ratingChangesFor and ratingPairsFor both use it.\n- **elo.ts:** new types LeaveGuardReason and PairGuard, plus EloPlayer.guards? and RatingPair.guard?.\n  - pairPart clamps a pair to a literal 0 and reports which guard held it.\n  - eloChanges uses Math.round(sum) || 0, so there is never a −0.\n  - eloPairs fixes held pairs at 0 and leaves them out of apportionTenths. The apportioning respects each pair's sign bound, and only held pairs carry `guard`.\n- **view.ts:** GameView.leaveGuards is new. It lists the opponents a surrender now would cost me nothing against. It is null outside ranked games, for a spectator, once I am out, or with leaverGuard off.\n\n**Server**\n- No logic change: it stores the engine's result, and games still gets +1 even when the change is 0.\n- Comments are updated in store.ts, records.ts, service.ts and xp.ts.\n- Three tests were reworked: wire.test (4 players, now with a surrender and a disconnect still in its grace), persistence.test and fourPlayers.e2e.\n\n**Mobile**\n- surrenderRatingEstimate replaces surrenderRatingDelta and returns {delta, guard}. surrenderCostsNothing is new, for 3–4 players.\n- RankedSurrender takes the props `rating` and `noLossMany`. A guarded body is muted text with no red Teko number.\n- connectionModel has a new OpponentLeftModel.ratingGuard. OpponentLeft shows a 0 muted, with a reason line that is also in the chip's accessibility label.\n- resultsModel has new fields RatingPairRow.guard and ResultsModel.ratingGuards, for any number of players.\n- ResultsVersus RatingSection gets one caption per guard (testID results-rating-guard-<id>), also in its accessibility label.\n- A 0 is muted in the rating card, the pair rows, the ranking rows and the HistoryCard.\n- New strings in he and en (game.json, history.json). The fixture got leaveGuards: null.\n\n**Docs**\n- 01-SPEC:\n  - §11.2: the full rule, with Moshe's quote.\n  - §6.6: a pointer to §11.2.\n  - §12: the explanation line.\n  - §18: the gameOver row.\n  - §24: D32 '✓ … (החלטת משה 2026-10-15); אי־הגעה וקנס: ☐', and the D8 note.\n- DECISIONS-PENDING: 2.12 wording, the D8 row in 3.1, and a new item 2.16 with seven open sub-decisions (☐). The section 2 count is now 16.\n- QA-CHECKLIST: rows 18, 19 ×3 and \"ניצחון בנטישה\".\n- STAGE9-10-DEVICE-CHECKS: check 2 step 4, a new step-5 guard check, the check-6 example caveat, and the abandonment note.\n- components.md §14.1: the \"No rating lost\" variant.",
+    "filesChanged": [
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/rules.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/types.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/evolve.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/results.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/view.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/rating/elo.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/rating/elo.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/endgame.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/connection.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/packages/engine/src/game/regressions.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/game/wire.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/persistence/persistence.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/test/fourPlayers.e2e.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/ratings/store.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/persistence/records.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/matchmaking/service.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/server/src/progress/xp.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/surrenderEstimate.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/RankedSurrender.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/OpponentLeft.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/connectionModel.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/testing/games.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/GameScreen.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/results/resultsModel.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/results/ResultsVersus.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/results/ResultsScreen.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/history/HistoryCard.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/components/player/__fixtures__/gameView.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/game.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/game.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/he/history.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/i18n/locales/en/history.json",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/__tests__/OpponentLeft.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/__tests__/RankedSurrender.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/__tests__/connectionModel.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/__tests__/designFidelity.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/connection/__tests__/direction.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/results/__tests__/resultsRanked.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/results/__tests__/resultsDuelModel.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/history/__tests__/HistoryCardDesign.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/game/__tests__/rankedEnd.test.ts",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/screens/game/__tests__/GameScreenGroup.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/apps/mobile/src/__tests__/ranked.e2e.test.tsx",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/01-SPEC.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/DECISIONS-PENDING.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/QA-CHECKLIST.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/STAGE9-10-DEVICE-CHECKS.md",
+      "C:/Users/mosheg/Documents/ReactNative/sudoku-fight/docs/design/components.md"
+    ],
+    "testsAdded": [
+      "elo.test.ts 'leave guards' describe (6 tests): noLoss holds a loss at exactly 0 (not −0) and keeps a win; noGain holds a win at 0 and keeps a loss; `guard` appears only on pairs it actually held; a guard against someone else does nothing; 4 equals, 3rd with a held win vs 4th gives pairs −5.5, −5.5, 0 and the other players' pairs are unchanged; abandonWinScore 0.5 plus noGain gives 0, and a 0.4 loss is kept; a 1000-game property test with random guards (Σ pairs = delta, held pairs are 0 with the right reason, noLoss ≥ 0, noGain ≤ 0, no −0, more than 500 held pairs exercised)",
+      "endgame.test.ts new describe 'leave guards (§11.2)', 2 players at 1287/1305, each case for surrender AND abandonment (12 cases): behind ±17; ahead 0/0 with guards; equal scores p2 0, p1 +17; no move p2 0, p1 +17; a wrong digit only, p2 −17, p1 0; nobody moved 0/0; after = before; replayMatches",
+      "endgame.test.ts: provisional K and a guarded pair stays exactly 0; the leaverGuard / stayerGuard / both-off switches; what counts as a move (a timed-out lock, a reaction or an interference with interferenceNeedsScore off is not a move; a wrong digit is); the snapshot by seat at the surrender (absent before, unchanged by later moves, taken at disconnect, dropped on reconnect); abandonJudgedAt 'disconnect' (+8/−8/0) vs 'graceEnd' (+16/−8/−8) with the snapshots; a reconnect drops the snapshot and the last disconnect counts; 4 players with two leavers (+16, 0, −11, −5 vs +16, +5, −5, −16 without guards, held pairs, p4 pairs −5.5/−5.5/0, Σ pairs − penalty = delta); practice gives no rating; GameView.leaveGuards (2p progression, 3–4p per opponent still in, null for a spectator, a player already out, solo, bot and leaverGuard off)",
+      "endgame.test.ts reworked to keep their intent: the D8 surrender and abandonment tests (both moved, the leaver behind), 3-player surrender places (±16 kept), D36 byScore (now 5/11/−11/−5 with the clamp pairs asserted), 2-player byScore (ahead gives 0/0 with guards; behind gives ±15), abandonWinScore, abandonPenalty (−27 kept, surrender pays nothing, plus a new waiver test: penalty 0 for no move and for ahead), 4-player abandonPenalty rebuilt so nothing is guarded (+16/+5/−15/−16 and pairs −5.2/−5.2/5.4 kept), defaults",
+      "connection.test.ts: a new test (snapshot at disconnect, dropped on reconnect, then retaken; leaver ahead gives 0/0); 'not back in 15 s' now 0/0 with guard reasons; provisional +34 and the D8 alternative have the stayer (and the leaver) move first; the 3-player abandonment shows held pairs; both-away and surrender-while-disconnected updated or rebuilt",
+      "regressions.test.ts §12: deltas/abandoned helpers have both move; defaults include the new fields; a new test 'the leave guards reach Elo, and switch off'; §19's twoPlayers moves first",
+      "wire.test.ts: the 4-player snapshot includes a surrender and a disconnect still in its grace; asserts both leave snapshots exist and the total is ≤ 4096 bytes (measured 3989)",
+      "persistence.test.ts: surrender a normal loss (both moved, ben behind); abandonment before any move of the leaver gives ana 1304, ben 1305, games 13 for both; a new test 'a leaver who was ahead: no rating moves, games still +1'; engineChanges passes leaveGuardsFor",
+      "fourPlayers.e2e.test.ts: formulaFor/eloPairs with leaveGuardsFor(final); by place alone still −32/−11/43; guards only take (Cyd's delta ≥ by place and ≤ 0; Ana and Ben ≤ by place; guard kinds checked)",
+      "designFidelity.test.tsx: surrenderRatingEstimate {−15, null} / {−30, null} / guarded {0, reason} even without an entry / a guard against someone else / an older view without leaveGuards / null for unrated or bot or 3 players; surrenderCostsNothing (all guarded, partial, empty, null, bot, unrated)",
+      "RankedSurrender.test.tsx: guarded body in he (both reasons) muted with no isolated number; 3–4 player no-loss body in he and en; English guarded bodies; prop shape updated",
+      "connectionModel.test.ts: opponent left after my move (+, ratingGuard null); before my move (0, 'opponentLeftBeforeMyMove'); ahead of me (0, 'opponentLeftAhead'); an old result without ratingPairs gives null",
+      "OpponentLeft.test.tsx: a gain is gold with no reason line; a guarded 0 is muted, shows the reason, is hidden for screen readers and said with the chip (he, both reasons); a 0 without a guard is muted; English reason and label",
+      "resultsRanked.test.tsx: a full duel has no ratingGuards; a guarded duel model for both players; an old result gives []; the caption, the muted 0 and the accessibility label (he); the leaver's caption in en; 4 players with an early leaver (3 captions, muted pair rows and ranking delta, the others with no caption)",
+      "resultsDuelModel.test.ts: practice has ratingGuards []",
+      "HistoryCardDesign.test.tsx: a rating gain green, a loss red, 0 muted (he and en)",
+      "rankedEnd.test.ts: a guarded 0 is still a change the server counts (expectsStored true)"
+    ],
+    "checks": [
+      {
+        "cmd": "npx jest --selectProjects engine server protocol",
+        "result": "109 suites, 2060 tests passed"
+      },
+      {
+        "cmd": "npx jest --selectProjects mobile",
+        "result": "236 suites, 2901 tests passed. An earlier full run had GameScreenOnline fail once; alone and in the rerun it passes, and the black-screen item was editing in parallel"
+      },
+      {
+        "cmd": "npx tsc -b",
+        "result": "clean"
+      },
+      {
+        "cmd": "npx tsc --noEmit -p apps/mobile/tsconfig.json",
+        "result": "clean"
+      },
+      {
+        "cmd": "npx eslint --max-warnings 0 <all changed ts/tsx files>",
+        "result": "clean"
+      },
+      {
+        "cmd": "npx prettier --check <all changed code and json files>",
+        "result": "All matched files use Prettier code style"
+      },
+      {
+        "cmd": "npm run i18n:check",
+        "result": "0 errors, 0 warnings (1912 keys)"
+      },
+      {
+        "cmd": "wire.test 4-player snapshot size (temporary log, removed afterwards)",
+        "result": "2 players 2872 B; 4 players with two leave snapshots 3989 B, under the 4096 budget"
+      },
+      {
+        "cmd": "git ls-files --eol on the edited docs",
+        "result": "all LF again: a Python write had turned them to CRLF, and I converted them back"
+      },
+      {
+        "cmd": "powershell (Get-PSDrive C).Free/1GB",
+        "result": "about 9.6 GB throughout"
+      }
+    ],
+    "deviations": [
+      "PlayerState.leaveStandings is optional and absent when there is no snapshot (`leaveStandings?: LeaveStanding[]`), not `| null` as the design says. A reconnect `delete`s the key on the event's own draft copy. The reason is the snapshot budget: 4 players with two leavers measured 4021 B with null keys and 3989 B without them, against 4096. This leaves room for the grace item's new fields. An older snapshot without the key reads the same way.",
+      "The new pending-decisions item is DECISIONS-PENDING 2.16 (section 2, 'hard to change once there are players and ratings'), not a section-3 item. The black-screen item had just taken 3.25. The section-2 count is now 16, and spec §11.2 points to 2.16.",
+      "surrenderRatingEstimate returns null when the view has no ratings at all (a development room), even when a guard holds, so an unrated game never says 'הדירוג שלך לא ירד'. As designed, a guarded estimate still needs no rating entry in my account. surrenderCostsNothing is false for unrated games too.",
+      "Both optional parts of the design are built: the 3–4 player body `connection.surrender.bodyManyNoLoss` (via surrenderCostsNothing and RankedSurrender's `noLossMany`), and a muted 0 in HistoryCard.",
+      "The OpponentLeft reason line is hidden from screen readers and appended to the chip's accessibility label with the screen's sentence separator ('. '), so it is spoken once.",
+      "RankingSection delta texts got testIDs `results-ranking-<id>-delta` for the muted-0 test.",
+      "Tests that belong to other items were adjusted because their scenarios had leavers with no move: rankedEnd.test.ts (the `over()` helper got an `iMoved` option, used for the 'my change is a gain' test), ranked.e2e.test.tsx (playAndWin has me place one right digit before Nina surrenders), GameScreenGroup.test.tsx (my surrender before any move in a rated 4-player game now shows the no-loss body)."
+    ],
+    "openIssues": [
+      "Needs a server deploy before an APK relies on it, because the rating is computed on the server. An old server with a new app makes the surrender dialog promise 'הדירוג שלך לא ירד' while the server still applies the loss. A new server with an old app shows the 0 without the explanation. ENGINE_VERSION and PROTOCOL_VERSION were not bumped (left for integration). The new fields are additive.",
+      "Open sub-decisions are listed for Moshe in DECISIONS-PENDING 2.16, all built per the recommendation: the judging moment for an abandonment, equal scores, whether a held game counts in `games`, XP and wins by place, the abuse threshold, the abandonPenalty waiver, and clamp vs void under D36 byScore.",
+      "Abuse risk as in the design: one quick right digit, then an immediate surrender, means a weak player loses nothing to a strong opponent ahead. No threshold was added, following Moshe's wording.",
+      "Snapshot budget: 3989 of 4096 B for 4 players with two leavers. The grace item's new per-player fields must fit in about 100 B, or the snapshot encoding needs a rethink.",
+      "Device check: STAGE9-10 check 2 step 5 has the new guarded cases for Moshe's phones."
+    ],
+    "notesForOtherItems": [
+      "GRACE item, the snapshot: evolve's playerDisconnected does `p.leaveStandings = p.leaveStandings ?? standingsOf(s)` (standingsOf is exported from packages/engine/src/game/evolve.ts). A new soft-loss event (playerConnectionLost) should take it the same way, so the FIRST loss event wins and the hard phase keeps it. playerReconnected does `delete p.leaveStandings`, and any new 'back' event must do the same. playerAbandoned keeps the snapshot under abandonJudgedAt 'disconnect' and retakes it under 'graceEnd' or when none exists.",
+      "GRACE item, the type: PlayerState.leaveStandings is OPTIONAL and absent when there is no snapshot. It is not null, to save snapshot bytes. A 4-player snapshot with two leavers is 3989 of 4096 B (wire.test asserts it), so new per-player fields have about 100 B left. Prefer optional keys over `: null` defaults.",
+      "GRACE item, scores: soft-phase moves that count only on return don't touch the leave snapshot, which is taken at the loss.",
+      "Engine API: RatingRules has leaverGuard, stayerGuard and abandonJudgedAt; DEFAULT_RATING_RULES and any test 'defaults' object must include them. Old stored configs lack them, which reads as guards off. New engine exports: LeaveStanding (game/types), leaverGuardReason, stayerGuardReason and leaveGuardsFor (game/results), standingsOf (game/evolve), LeaveGuardReason and PairGuard (rating/elo). EloPlayer.guards? and RatingPair.guard? are new; eloChanges and eloPairs deltas are never −0 now.",
+      "GameView.leaveGuards is a new REQUIRED field (null outside ranked games). Any hand-built GameView needs it; the mobile fixture twoPlayerView and fourPlayerView has `leaveGuards: null`.",
+      "Tests that need a normal ± rating after a surrender or abandonment must have both players place a digit first, with the leaver behind. Otherwise the guards give 0. A leaver with no move, or one who is ahead, gets 0.",
+      "Mobile: OpponentLeftModel has a new required `ratingGuard`. RankedSurrender's `ratingDelta` prop is replaced by `rating: SurrenderEstimate | null` plus `noLossMany?`. surrenderRatingDelta was removed; use surrenderRatingEstimate and surrenderCostsNothing. ResultsModel has a new `ratingGuards`, RatingPairRow has `guard`, and RatingSection takes a `guards` prop.",
+      "Mobile connection test helper (apps/mobile/src/screens/game/connection/testing/games.ts): RankedGame now has solve(playerId) and miss(playerId) on the first empty cell.",
+      "Black-screen item: GameScreen.tsx changed only on the import line (surrenderCostsNothing, surrenderRatingEstimate) and in the RankedSurrender props (`rating` and `noLossMany`).",
+      "Rating-refresh item: a guarded 0 still produces a RatingChange (delta 0), and the server still adds 1 to games, so storedIn and expectsStored work as they are. A test in rankedEnd.test.ts covers it. The `over()` helper there has a new option, `iMoved`.",
+      "Docs: DECISIONS-PENDING has a new 2.16 (section-2 count 16). 01-SPEC §11.2 has the 'הגנות היציאה' block, and §24 marks D32 ✓ with D8 annotated. Python's text-mode write on Windows turns LF docs into CRLF: write in binary mode, or convert back (git ls-files --eol)."
+    ]
+  }
+]

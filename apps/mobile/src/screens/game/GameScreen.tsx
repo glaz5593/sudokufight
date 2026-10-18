@@ -39,7 +39,7 @@ import {
   type ScoreDelta,
   signedText,
 } from '../../components/player';
-import { ConfirmModal } from '../../components/ui';
+import { ConfirmModal, useToast } from '../../components/ui';
 import type { MatchEffect, UiEffect } from '../../game/effects';
 import type { SessionConnection } from '../../game/onlineSession';
 import type { PracticeSession } from '../../game/session';
@@ -54,10 +54,13 @@ import { cue, cueCountUp, preloadCues } from '../../services/feedback';
 import { useProfile } from '../../state/profile';
 import { color, space, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
+import { FlowFallback } from '../FlowFallback';
 import { useModerationFlow } from '../moderation/useModerationFlow';
 import {
   ArsenalOverlay,
   type ArsenalTargetInfo,
+  isInterferenceRefusal,
+  kindWord,
   unlockedKinds,
   useArsenal,
   useSenderFeedback,
@@ -71,7 +74,7 @@ import {
   holdsResults,
   RankedSurrender,
 } from './connection';
-import { surrenderRatingDelta } from './connection/surrenderEstimate';
+import { surrenderCostsNothing, surrenderRatingEstimate } from './connection/surrenderEstimate';
 import { DuelHud } from './DuelHud';
 import { type Flight, FlightLayer } from './FlightLayer';
 import {
@@ -87,7 +90,7 @@ import {
   within,
 } from './geometry';
 import { GroupHud } from './GroupHud';
-import { HitLayer, hitOf } from './hit';
+import { BoardHitLayer, HitLayer, hitOf, useKeypadShuffle } from './hit';
 import { identityOf } from './identity';
 import {
   DIALOG_GONE_CEILING_MS,
@@ -98,6 +101,7 @@ import {
   MOVE_TIMELINE,
   opponentOf,
   outOfGame,
+  RESULTS_WATCHDOG_MS,
   seatOrder,
   soloStats,
   staleAt,
@@ -126,9 +130,11 @@ import { useLiveAnnouncer } from './useLiveAnnouncer';
  * the opponent's moves and the changes of lead. With reduced motion nothing flies or shakes: the delta appears
  * beside the score and numbers jump.
  *
- * Between the players (work plan stage 6, spec §7, §8): ⚡ on the opponent's card opens the arsenal aimed at
- * that card, and a token goes only by dragging it onto that card (D18); the host's confirmation shows the
- * sender "זיקוקים ← NinaVolt" and the cost leaving my score. An interference on me plays over the whole screen
+ * Between the players (work plan stage 6, spec §7, §8): an interference takes two taps [D45], "הפרעה" on the
+ * opponent's card (the picker opens aimed at that card) and then a kind in the picker; a blocked "הפרעה" says why
+ * in a short toast. The host's confirmation shows the sender "זיקוקים ← NinaVolt" and the cost leaving my score,
+ * and a refusal after the picker closed says that nothing was sent or charged. In a practice against a bot there
+ * are no interferences either way [D44]: the view has none, so no card shows "הפרעה". An interference on me plays over the whole screen
  * [D35] (HitLayer, and WarpFrame for a warp's tilt) until the view's deadline, with its banner, while my lock
  * timer stands still; with reduced motion it is a static cover for the same time. My card's reactions button
  * opens my picker (host.react), and a long press on the opponent's card mutes their reactions. What each
@@ -141,14 +147,23 @@ import { useLiveAnnouncer } from './useLiveAnnouncer';
  * it blocks, the content is hidden from screen readers, back opens nothing, and open dialogs and trays close.
  * The end is "כניעה" with the ranked confirmation (spec §6.6) instead of "סיום אימון".
  *
+ * A lost connection starts with its soft phase [D42] (Moshe: "לסמן על המשתמש שהוא בלי תקשורת ולהמשיך את המשחק
+ * כרגיל"): nothing covers the game and nothing blocks it. The host lets me play on: a tap locks the cell on this
+ * phone, and a digit waits on the board as "queued" (boardModel's `queued`, said once) until the return sends
+ * it; one that did not count then (the cell was taken meanwhile) shakes its cell with a short warning, no
+ * penalty. My card and an opponent's show the mark (an amber dot, the wifi pill); the surrender, the arsenal
+ * and the reactions wait for the return (their dialog and trays close). Only after the soft phase does the
+ * connection layer above take over, as before.
+ *
  * Three or four players (work plan stage 10; spec §6.6–§6.8, §7.3; Game-3P, Game-4P, Interference-Target): one
  * row of compact cards (GroupHud) in a fixed order, me first and then the others by seat, each with its current
  * place (#1–#4); the lead bar by place with the leader's shape. Every opponent's lock shows on the board with
- * that player's avatar in their colour, and every opponent's card has its own ⚡: the arsenal opens aimed at
- * that card, which is the one drop zone (the others dim), and the ghost carries the route "אני ← NinaVolt" with
- * both avatars, so the wrong opponent can't be hit. A hit between two others shows on the target's card (and
+ * that player's avatar in their colour, and every opponent's card has its own "הפרעה": the picker opens aimed at
+ * that card, which is framed as the target (the others dim), and its header shows the route "אני ← NinaVolt"
+ * with both avatars and shapes, so the wrong opponent can't be hit (original §17). A hit between two others shows on the target's card (and
  * is said). A player who surrenders or does not come back [D36] is out: dimmed, with a fixed place (out players
- * rank after everyone still in, the first out last, spec §6.7), no ⚡, and their solved cells keep their colour.
+ * rank after everyone still in, the first out last, spec §6.7), no "הפרעה", and their solved cells keep their
+ * colour.
  * My own surrender takes me out the same way, and the game goes on: I stay and watch it to the end (the board
  * and the keypad take nothing, the out strip says my place), and the results open when it ends, with the full
  * ranking; online, "לבית" on that strip leaves now instead (the server keeps my place).
@@ -164,6 +179,20 @@ import { useLiveAnnouncer } from './useLiveAnnouncer';
  * such an error to Crashlytics (with breadcrumbs of the end) instead, and the game and its end go on. "כן, לסיים"
  * ends the game at once, and the results replace the screen only once the dialog has left it (its onExited:
  * the exit animation over and its window gone), never while it is still closing.
+ *
+ * And no end may leave a black screen (Moshe's device test of 1.0.0: the opponent gave up, or I did, and the
+ * screen went black, with nothing in Crashlytics). The way to the results (showResults):
+ * - always from a timer of this screen, never inside the host's update (an online end arrives inside the
+ *   server's message) or a press;
+ * - after a hold on the final board: a full board 1100 ms, an online game's other ends ONLINE_END_HOLD_MS
+ *   (model.ts endDelayMs; 200 ms with reduced motion), so the end's own frames have landed and the fades it
+ *   started (a lock's ring and pill, motion.md `lock.release`, which the board draws without a layout
+ *   animation) have run;
+ * - once every native window is gone: the end dialog, and the report sheet or the block dialog (an open one
+ *   closes; a lost connection closes them too);
+ * - watched: should the results not have replaced the game RESULTS_WATCHDOG_MS later, a fallback offers
+ *   "לתוצאות" and "לבית" (FlowFallback), and Crashlytics gets a non-fatal with the end's breadcrumbs.
+ * A game without my seat draws the same fallback, never an empty screen.
  */
 
 /** What a game's config does not say about a player: their avatar and country (an online match's profiles). */
@@ -204,6 +233,11 @@ export interface GameScreenProps {
   onPractice?: () => void;
   /** Development builds: a toggle for the network measures over an online game (spec §18). */
   devMetrics?: NetMetricsSource | null;
+  /**
+   * The results were asked for (onEnded) this long ago and this screen is still here: a navigation that was
+   * lost. A fallback offers "לתוצאות" and "לבית", and Crashlytics is told. Default RESULTS_WATCHDOG_MS.
+   */
+  resultsWatchdogMs?: number;
   testID?: string;
 }
 
@@ -257,6 +291,9 @@ function safely(context: string, run: () => void): void {
 /** A step of the game's end, kept with a crash report (Crashlytics' log). */
 const breadcrumb = (message: string) => crashReporter().log(`game: ${message}`);
 
+/** [D47] A key pressed while the scrambled keys were still moving: not entered, a light nudge. */
+const nudgeKey = () => cue('nudge');
+
 export function GameScreen({
   session,
   onEnded,
@@ -264,6 +301,7 @@ export function GameScreen({
   onRetry,
   onPractice,
   devMetrics = null,
+  resultsWatchdogMs = RESULTS_WATCHDOG_MS,
   testID = 'game',
 }: GameScreenProps) {
   const { t } = useTranslation('game');
@@ -290,7 +328,7 @@ export function GameScreen({
     [session, host],
   );
   // An opponent's second of immunity after a hit ends by the clock alone, with no update [D11]: read the view
-  // again then, so ⚡ and the arsenal's tokens are ready on time. The game clock decides (it may run apart
+  // again then, so "הפרעה" and the picker's kinds are ready on time. The game clock decides (it may run apart
   // from the phone's timers, e.g. synced to a server): the timer only looks again, a tick at most apart.
   const staleBy = staleAt(view);
   useEffect(() => {
@@ -343,9 +381,11 @@ export function GameScreen({
     if (view.me !== null && map[view.me] === undefined) map[view.me] = myCountry;
     return map;
   }, [profiles, view.me, myCountry]);
+  // My digits entered while my connection is lost, waiting for it [D42] (the host's queue).
+  const queuedMoves = online?.queuedMoves ?? null;
   const board = useMemo(
-    () => boardModel(view, mySeat, now, { pendingCell: shownPending, avatars }),
-    [view, mySeat, now, shownPending, avatars],
+    () => boardModel(view, mySeat, now, { pendingCell: shownPending, avatars, queued: queuedMoves }),
+    [view, mySeat, now, shownPending, avatars, queuedMoves],
   );
   const lock = useMemo(() => lockModel(view, now), [view, now]);
   const stats = soloStats(view, now);
@@ -354,10 +394,23 @@ export function GameScreen({
 
   // ---- an online game's connection (spec §16.2, §16.3): what shows over the game, in the server's time ----
   const graceMs = session.connection?.graceMs ?? undefined;
+  const softGraceMs = session.connection?.softGraceMs ?? undefined;
   const connection = useMemo(
-    () => (online ? connectionModel(view, connectionStatusOf(online), now, { graceMs }) : NO_CONNECTION),
-    [online, view, now, graceMs],
+    () =>
+      online
+        ? connectionModel(view, connectionStatusOf(online), now, {
+            graceMs,
+            softGraceMs,
+            hardLeavers: online.hardLeavers,
+          })
+        : NO_CONNECTION,
+    [online, view, now, graceMs, softGraceMs],
   );
+  // My connection is lost (whatever the screen shows over the game): the surrender and the reactions can't go
+  // out, so my card offers neither [D42] (a tap would be refused without a word).
+  const linkDown = online?.status === 'reconnecting';
+  // My connection's soft phase [D42]: the game goes on and so do I; only what needs the server waits.
+  const selfOffline = connection.kind === 'selfOffline';
   // A rejoin refused for a suspension (spec §3.5): the profile is read again.
   useSuspendedRefusal(connection);
   // The board and the keypad take nothing meanwhile (the layer takes the touches; screen readers skip them).
@@ -383,8 +436,11 @@ export function GameScreen({
     [view, myName, t],
   );
   const myCard = useMemo<CardModel | null>(
-    () => (me ? { ...cardModel(view, me.id, mySeat, now), name: myName, score: shown(me) } : null),
-    [view, me, mySeat, now, myName, shown],
+    () =>
+      me
+        ? { ...withoutServer(cardModel(view, me.id, mySeat, now), linkDown), name: myName, score: shown(me) }
+        : null,
+    [view, me, mySeat, now, myName, shown, linkDown],
   );
   const theirCard = useMemo<CardModel | null>(
     () =>
@@ -397,7 +453,7 @@ export function GameScreen({
   const groupCards = useMemo<CardModel[] | null>(() => {
     if (!group) return null;
     return seatOrder(view).map((p) => {
-      const model = cardModel(view, p.id, mySeat, now);
+      const model = withoutServer(cardModel(view, p.id, mySeat, now), linkDown);
       return {
         ...model,
         name: p.id === view.me ? myName : nameOf(p.id),
@@ -406,7 +462,7 @@ export function GameScreen({
         mine: model.mine && p.status !== 'active' ? { ...model.mine, reactionReady: false } : model.mine,
       };
     });
-  }, [group, view, mySeat, now, myName, nameOf, shown]);
+  }, [group, view, mySeat, now, myName, nameOf, shown, linkDown]);
   const lead = useMemo(() => {
     const model = leadModel(view, mySeat);
     if (!model.leader) return model;
@@ -518,50 +574,100 @@ export function GameScreen({
   const [confirmOpen, setConfirmOpen] = useState(false);
   /** True from the moment the end dialog opens (openConfirm) until it has left the screen (its onExited). */
   const dialogUp = useRef(false);
-  /** The results, waiting for the end dialog to leave the screen. */
-  const whenDialogGone = useRef<(() => void) | null>(null);
-  const onDialogExited = useCallback(() => {
-    dialogUp.current = false;
-    const next = whenDialogGone.current;
-    whenDialogGone.current = null;
+  /** The report sheet or the block dialog (spec §3.5) is on the screen: useModerationFlow's `mounted`. */
+  const modUp = useRef(false);
+  /** Closes the report sheet and the block dialog (useModerationFlow's closeAll, once it exists below). */
+  const closeMods = useRef<() => void>(() => undefined);
+  /** The results, waiting for every native window (the end dialog, the sheet, the block dialog) to be gone. */
+  const whenModalsGone = useRef<(() => void) | null>(null);
+  const modalsGone = useCallback(() => {
+    if (dialogUp.current || modUp.current) return;
+    const next = whenModalsGone.current;
+    whenModalsGone.current = null;
     next?.();
   }, []);
+  const onDialogExited = useCallback(() => {
+    dialogUp.current = false;
+    modalsGone();
+  }, [modalsGone]);
+  const onModerationExited = useCallback(() => {
+    modUp.current = false;
+    modalsGone();
+  }, [modalsGone]);
+
+  // The results asked for and this screen still here after the watchdog's time: a way on, over everything.
+  const [stuck, setStuck] = useState<string | null>(null);
+
+  /** onEnded, watched: the results should replace this screen (and its timers) before the watchdog fires. */
+  const openResults = useCallback(
+    (gameId: string) => {
+      breadcrumb('opening the results');
+      safely('opening the results', () => onEnded(gameId));
+      later(resultsWatchdogMs, () => {
+        breadcrumb('results did not open');
+        crashReporter().recordError(
+          new Error('the results did not replace the game'),
+          'game: results watchdog',
+        );
+        setStuck(gameId);
+      });
+    },
+    [later, onEnded, resultsWatchdogMs],
+  );
 
   /**
-   * The results replace the game, once: after `delay` ms (a timer of this screen), or at once. Never while the
-   * end dialog is still on the screen (bug 9: the dialog's native window torn down with the screen): an open
-   * dialog closes (the game is over), and the results also wait for it to have left, up to a ceiling should
-   * that never be reported. Never from a throw: a failed navigation is reported, and the game stays, over.
+   * The results replace the game, once: from a timer of this screen after `delay` ms (0: the next turn of the
+   * loop), never inside the host's update or a press (an online end arrives inside the server's message).
+   * Never while a native window is still on the screen (bug 9: a window torn down with the screen): an open
+   * dialog or sheet closes (the game is over), and the results also wait for it to have left, up to a ceiling
+   * should that never be reported. Never from a throw: a failed navigation is reported, and the game stays, over.
    */
   const showResults = useCallback(
     (gameId: string, delay = 0) => {
       ended.current = true;
       let opened = false;
-      const open = () => {
+      /** Now, whatever is on the screen (the ceiling's way out). */
+      const go = () => {
         if (opened) return;
         opened = true;
-        whenDialogGone.current = null;
-        breadcrumb('opening the results');
-        safely('opening the results', () => onEnded(gameId));
+        whenModalsGone.current = null;
+        openResults(gameId);
       };
-      let waits = 0;
+      const closeWindows = () => {
+        setConfirmOpen(false);
+        closeMods.current();
+      };
+      // A window that opened during the hold (none should: the card menu loses its report and block at the
+      // end) is waited for all the same: closed, and the results once it has left, or after the ceiling.
+      let lateWait = false;
+      const open = () => {
+        if (opened) return;
+        if (!lateWait && (dialogUp.current || modUp.current)) {
+          lateWait = true;
+          breadcrumb('results wait for a window opened meanwhile');
+          whenModalsGone.current = go;
+          closeWindows();
+          later(DIALOG_GONE_CEILING_MS, go);
+          return;
+        }
+        go();
+      };
+      let waits = 1;
       const done = () => {
         waits -= 1;
         if (waits === 0) open();
       };
-      if (dialogUp.current) {
+      const modal = dialogUp.current || modUp.current;
+      if (modal) {
         waits += 1;
-        whenDialogGone.current = done;
-        setConfirmOpen(false);
-        later(delay + DIALOG_GONE_CEILING_MS, open);
+        whenModalsGone.current = done;
+        closeWindows();
+        later(delay + DIALOG_GONE_CEILING_MS, go);
       }
-      if (delay > 0) {
-        waits += 1;
-        later(delay, done);
-      }
-      if (waits === 0) open();
+      breadcrumb(`results in ${delay} ms${modal ? ', after the dialogs' : ''}`);
+      later(delay, done);
     },
-    [later, onEnded],
+    [later, openResults],
   );
 
   const flash = (f: BoardFlash) => {
@@ -569,11 +675,12 @@ export function GameScreen({
     later(FLASH_CLEAR_MS, () => setFlashes((list) => list.filter((x) => x !== f)));
   };
 
-  const deny = (cell: CellIndex, line: string) => {
+  /** A refusal on a cell: its shake and buzz, and `line` said (null: something else says it). */
+  const deny = (cell: CellIndex, line: string | null) => {
     deniedIds.current -= 1; // negative ids never meet an event's seq
     flash({ cell, kind: 'denied', id: deniedIds.current });
     cue('cellDenied');
-    announce(line);
+    if (line) announce(line);
   };
 
   /** A player's card rect in the screen's coordinates, once laid out. */
@@ -722,10 +829,24 @@ export function GameScreen({
         setPendingCell(null);
         deny(e.cell, t('live.taken', { cell: ltr(cellName(e.cell)) }));
         return;
+      case 'offlineLost': {
+        // A digit I entered offline did not count on the return [D42]: the cell was no longer free for me.
+        // No penalty: the shake, and a short warning (the toast is said to screen readers too).
+        const cell = ltr(cellName(e.cell));
+        const taken = e.reason === 'cellTaken' || e.reason === 'cellFilled';
+        const line = taken ? t('live.offlineLostTaken', { cell }) : t('live.offlineLost', { cell });
+        deny(e.cell, null);
+        useToast.getState().show({ variant: 'warning', message: line, icon: 'wifiOff' });
+        return;
+      }
       case 'refused':
         setPendingCell(null);
         if (e.reason === 'cooldown' && e.cell !== undefined)
           deny(e.cell, t('live.cooldown', { cell: ltr(cellName(e.cell)) }));
+        // An interference the host refused after the picker closed, for any reason (the target turned busy, my
+        // score dropped, the game froze before my tap arrived): nothing was sent and nothing charged [D45].
+        if (isInterferenceRefusal(e.action))
+          useToast.getState().show({ variant: 'warning', message: t('arsenal.refused') });
         return;
       case 'locked':
         if (e.byMe) setPendingCell(null);
@@ -744,8 +865,14 @@ export function GameScreen({
           return;
         const reason = update.view.result?.reason;
         if (reason === 'boardComplete') announce(t('live.complete'));
-        breadcrumb(`game over (${reason ?? 'no result'})`);
-        showResults(e.gameId, endDelayMs(reason, reduce));
+        // What was on the screen at the end (a black screen's suspects): the locks it drew a moment ago (their
+        // rings fade now), an open dialog or sheet, an interference on me.
+        const before = latest.current.view;
+        const locks = before.players.filter((p) => p.lock !== null).length;
+        const modal = dialogUp.current || modUp.current;
+        const hitOn = !!before.players.find((p) => p.id === before.me)?.hitBy;
+        breadcrumb(`game over (${reason ?? 'no result'}) locks=${locks} modal=${modal} hit=${hitOn}`);
+        showResults(e.gameId, endDelayMs(reason, reduce, isOnline));
         return;
       }
     }
@@ -784,7 +911,14 @@ export function GameScreen({
   const modFlow = useModerationFlow({
     placement: 'bottom',
     onBlocked: (id) => setMuted(gameId, id, true),
+    onExited: onModerationExited,
   });
+  // The results wait for its sheet and dialog too (showResults), and close them.
+  const { mounted: modMounted, closeAll: closeModeration } = modFlow;
+  useLayoutEffect(() => {
+    modUp.current = modMounted;
+    closeMods.current = closeModeration;
+  }, [modMounted, closeModeration]);
   const menuBlocked = useIsBlocked(ranked ? reactions.menuFor : null);
   const myBlocks = useBlocks((s) => s.blocks);
   const opponentIds = view.players
@@ -818,6 +952,9 @@ export function GameScreen({
     });
     return info && { ...info, cost: hitEvent?.cost ?? null, id: hitEvent?.seq ?? null };
   }, [view, nameOf, avatars, hitEvent]);
+  // [D47] "מקלדת מתערבלת" on me: the keys' order while it lasts, and the keypad's finger guards (a press that
+  // started while the keys moved is dropped with a nudge).
+  const keypadShuffle = useKeypadShuffle({ hit, now, clock: session.clock, reduce, onRefused: nudgeKey });
 
   /** A reaction rises from its sender's card (spec §8), the newest three at most. */
   const float = (seq: number, playerId: PlayerId, emoji: string) => {
@@ -854,7 +991,8 @@ export function GameScreen({
         if (e.onMe) setHitEvent({ seq: e.seq, cost: e.cost });
         // Between two others (3–4 players, spec §7.4): the chip on the target's card, and a line said.
         if (!e.onMe && !e.byMe) {
-          const kind = t(`interference.${e.interference}`);
+          // A kind this app doesn't know (a newer peer's, D47) is said as the generic word, never a raw key.
+          const kind = kindWord(e.interference, t);
           announce(t('live.hitOther', { from: nameOf(e.fromId), kind, name: nameOf(e.targetId) }));
         }
         return;
@@ -868,7 +1006,7 @@ export function GameScreen({
     checkLead(update.view);
   });
 
-  // ⚡ on the opponent's card: the arsenal aimed at it (or closed again); one popover at a time.
+  // "הפרעה" on the opponent's card: the picker aimed at it (or closed again); one popover at a time.
   const { closePicker, closeMenu, togglePicker, openMenu } = reactions;
   const { toggle: toggleArsenal, close: closeArsenal, blocked: explainBlocked } = arsenal;
   const arsenalOpen = arsenal.targetId !== null;
@@ -876,7 +1014,7 @@ export function GameScreen({
   // accessibilityViewIsModal; Android needs the screen's content hidden).
   const overlayOpen = arsenalOpen || reactions.pickerOpen || reactions.menuFor !== null;
   const opponentId = opponent?.id ?? null;
-  // ⚡ on a card: the arsenal aimed at THAT card (3–4 players: each opponent's card has its own, spec §7.3.5).
+  // "הפרעה" on a card: the picker aimed at THAT card (3–4 players: each opponent's card has its own, original §17).
   const onInterfereAt = useCallback(
     (targetId: PlayerId) => {
       closePicker();
@@ -888,14 +1026,18 @@ export function GameScreen({
   const onInterfere = useCallback(() => {
     if (opponentId !== null) onInterfereAt(opponentId);
   }, [opponentId, onInterfereAt]);
-  // While it is open, ⚡ reads "סגירת ארסנל ההפרעות" whatever its state: it closes it.
-  const onInterfereBlocked = useCallback(
-    (state: InterferenceModel) => (arsenalOpen ? closeArsenal() : explainBlocked(state)),
-    [arsenalOpen, closeArsenal, explainBlocked],
-  );
+  // "הפרעה" while it can't be sent: a short toast with the reason and a light haptic (components.md §8.1). While
+  // the picker is open, the button reads "סגירת חלון ההפרעות" whatever its state: it closes it.
   const onInterfereBlockedAt = useCallback(
-    (_targetId: PlayerId, state: InterferenceModel) => onInterfereBlocked(state),
-    [onInterfereBlocked],
+    (targetId: PlayerId, state: InterferenceModel) =>
+      arsenalOpen ? closeArsenal() : explainBlocked(state, nameOf(targetId)),
+    [arsenalOpen, closeArsenal, explainBlocked, nameOf],
+  );
+  const onInterfereBlocked = useCallback(
+    (state: InterferenceModel) => {
+      if (opponentId !== null) onInterfereBlockedAt(opponentId, state);
+    },
+    [opponentId, onInterfereBlockedAt],
   );
   const onReactions = useCallback(() => {
     closeArsenal();
@@ -906,7 +1048,7 @@ export function GameScreen({
   const opponentMenu = useMemo(
     () => ({
       muted: opponentMuted,
-      // Not while the arsenal is open: the card is its drop zone then.
+      // Not while the interference picker is open: the card is its target then.
       onOpen: () => {
         if (opponentId !== null && !arsenalOpen) openMenu(opponentId);
       },
@@ -924,7 +1066,7 @@ export function GameScreen({
     [isMuted, openMenu, arsenalOpen],
   );
   const menuFor = reactions.menuFor;
-  /** Who a player is in the arsenal's header and on the ghost's route (the view has no avatars or countries). */
+  /** Who a player is in the picker's header and its 3–4 player route (the view has no avatars or countries). */
   const describe = useCallback(
     (id: PlayerId): ArsenalTargetInfo => {
       const p = view.players.find((x) => x.id === id);
@@ -939,19 +1081,32 @@ export function GameScreen({
     [view, nameOf, mySeat, avatars, countries],
   );
 
-  // A game that was already over when the screen opened goes straight to its results (unless the opponent's
-  // departure is still on the screen).
+  // A game that was already over when the screen opened (or when a return's snapshot brought it) goes to its
+  // results after the same hold as an end seen live (unless the opponent's departure is still on the screen).
+  const overReason = view.result?.reason;
   useEffect(() => {
     if (view.status !== 'over' || ended.current || awaitResults) return;
-    showResults(view.gameId);
-  }, [view.status, view.gameId, showResults, awaitResults]);
-  // "לתוצאות" on "the opponent left".
+    breadcrumb(`game over on arrival (${overReason ?? 'no result'})`);
+    showResults(view.gameId, endDelayMs(overReason, reduce, isOnline));
+  }, [view.status, view.gameId, showResults, awaitResults, overReason, reduce, isOnline]);
+  // "לתוצאות" on "the opponent left" (the end was seen long ago: no hold).
   const toResults = useCallback(() => showResults(view.gameId), [showResults, view.gameId]);
 
   // The sounds of the game are loaded once the screen is up (motion.md §8).
   useEffect(() => {
     preloadCues();
   }, []);
+
+  // A digit entered while my connection is lost [D42] joins the queue: said once ("D5: 7 ממתין לחיבור").
+  const queuedCount = queuedMoves?.length ?? 0;
+  const lastQueued = useRef(queuedCount);
+  useEffect(() => {
+    const was = lastQueued.current;
+    lastQueued.current = queuedCount;
+    const newest = queuedMoves?.[queuedCount - 1];
+    if (queuedCount > was && newest)
+      announce(t('live.queued', { cell: ltr(cellName(newest.cell)), digit: newest.digit }));
+  }, [queuedCount, queuedMoves, announce, t]);
 
   // My lock's last 3 seconds: one tick per second; not while frozen (the model is never urgent then).
   const tick = lock.kind === 'locked' && lock.urgent ? `${lock.cellIndex}:${lock.secondsLeft}` : null;
@@ -1024,7 +1179,7 @@ export function GameScreen({
       // Out of a game that goes on (3–4 players): nothing to give up any more; online, back leaves it.
       else if (out) {
         if (isOnline) onHome?.();
-      } else if (playing && !blocked) openConfirm();
+      } else if (playing && !blocked && !selfOffline) openConfirm();
     };
   });
   useEffect(() => {
@@ -1035,20 +1190,58 @@ export function GameScreen({
     return () => sub.remove();
   }, []);
 
-  // The connection went (or the game froze): the dialog and the trays close, as nothing can be done with them
-  // (adjusted while rendering, the moment it happens).
+  // The connection went (or the game froze): the dialogs, the report sheet and the trays close, as nothing can
+  // be done with them, and none may cover the connection's screens (adjusted while rendering, the moment it
+  // happens).
   const [wasBlocked, setWasBlocked] = useState(blocked);
   if (blocked !== wasBlocked) {
     setWasBlocked(blocked);
     if (blocked) {
       setConfirmOpen(false);
+      closeModeration();
       closeArsenal();
       closePicker();
       closeMenu();
     }
   }
+  // The game is over: the trays and the card menu close, so nothing new opens over the final board while the
+  // results wait for their hold (a report sheet or a block dialog opened then would be on screen at the
+  // navigation, bug 9). An open sheet or dialog is closed and waited for by showResults.
+  const over = view.status === 'over';
+  const [wasOver, setWasOver] = useState(over);
+  if (over !== wasOver) {
+    setWasOver(over);
+    if (over) {
+      closeArsenal();
+      closePicker();
+      closeMenu();
+    }
+  }
+  // My connection's soft phase [D42] blocks nothing, but the surrender, the arsenal and the reactions need the
+  // server: their dialog and trays close (the buttons stay off until I am back). The card menu (mute) and the
+  // report sheet (its own request) stay.
+  const [wasOffline, setWasOffline] = useState(selfOffline);
+  if (selfOffline !== wasOffline) {
+    setWasOffline(selfOffline);
+    if (selfOffline) {
+      setConfirmOpen(false);
+      closeArsenal();
+      closePicker();
+    }
+  }
 
-  if (!myCard || !me) return null;
+  // Never an empty screen: a game without my seat (it should not happen) offers a way out.
+  if (!myCard || !me) {
+    return (
+      <FlowFallback
+        reason="game: no seat for me"
+        onHome={onHome ?? noop}
+        onResults={
+          view.status === 'over' ? () => safely('opening the results', () => onEnded(view.gameId)) : undefined
+        }
+      />
+    );
+  }
 
   const duel = layout === 'duel' && theirCard && opponent ? { theirCard, opponent } : null;
   // The ranked surrender's score line (components.md §14.1): me, VS, the opponent, as the cards show them.
@@ -1099,8 +1292,8 @@ export function GameScreen({
                 reactionsExpanded={reactions.pickerOpen}
                 onInterfere={onInterfere}
                 onInterfereBlocked={onInterfereBlocked}
-                myDrop={arsenal.cardProps(me.id, myName)}
-                opponentDrop={arsenal.cardProps(duel.opponent.id, theirName)}
+                myTarget={arsenal.cardProps(me.id)}
+                opponentTarget={arsenal.cardProps(duel.opponent.id)}
                 opponentRef={arsenal.cardRef(duel.opponent.id)}
                 opponentMenu={opponentMenu}
                 onCardLayout={onCardLayout}
@@ -1122,7 +1315,7 @@ export function GameScreen({
                 reactionsExpanded={reactions.pickerOpen}
                 onInterfere={onInterfereAt}
                 onInterfereBlocked={onInterfereBlockedAt}
-                dropOf={arsenal.cardProps}
+                targetOf={arsenal.cardProps}
                 cardRef={arsenal.cardRef}
                 menuOf={menuOf}
                 onCardLayout={onCardLayout}
@@ -1178,6 +1371,8 @@ export function GameScreen({
                   onCellPress={out ? undefined : onCellPress}
                   flashes={flashes}
                 />
+                {/* A hit on me darkens the board [D46] (and scrambles its digits [D47]); taps go through. */}
+                <BoardHitLayer hit={hit} now={now} clock={session.clock} cells={board.cells} width={side} />
               </WarpFrame>
             </View>
           </View>
@@ -1187,6 +1382,8 @@ export function GameScreen({
               onDigit={onDigit}
               onIdlePress={out ? undefined : onIdlePress}
               width={side}
+              order={keypadShuffle.order}
+              guard={keypadShuffle.guard}
             />
           </View>
           <View style={styles.cancel}>
@@ -1218,11 +1415,16 @@ export function GameScreen({
               if (menuFor !== null) reactions.toggleMute(menuFor);
             }}
             moderation={
-              ranked && menuFor !== null && menuFor !== me.id
+              // Not once the game is over: the results are on their way (their sheet and dialog are native
+              // windows, which must not be up at the navigation).
+              ranked && !over && menuFor !== null && menuFor !== me.id
                 ? {
                     blocked: menuBlocked,
-                    onReport: () => modFlow.openReport({ id: menuFor, name: nameOf(menuFor) }, gameId),
+                    onReport: () => {
+                      if (!ended.current) modFlow.openReport({ id: menuFor, name: nameOf(menuFor) }, gameId);
+                    },
                     onToggleBlock: () => {
+                      if (ended.current) return;
                       const target = { id: menuFor, name: nameOf(menuFor) };
                       if (menuBlocked) modFlow.openUnblock(target);
                       else modFlow.openBlock(target);
@@ -1248,7 +1450,8 @@ export function GameScreen({
         <RankedSurrender
           visible={confirmOpen}
           players={view.players.length}
-          ratingDelta={surrenderRatingDelta(view, myRatings)}
+          rating={surrenderRatingEstimate(view, myRatings)}
+          noLossMany={surrenderCostsNothing(view)}
           summary={surrenderSummary}
           onConfirm={confirmEnd}
           onCancel={closeConfirm}
@@ -1271,7 +1474,7 @@ export function GameScreen({
           testID="end-practice"
         />
       )}
-      {/* Over the board: the tray, and the token flying from it to the card (spec §7.3). */}
+      {/* Over the board: the interference picker and its launch ripple (spec §7.3) [D45]. */}
       {duel || groupCards ? (
         <ArsenalOverlay arsenal={arsenal} view={view} describe={describe} unlocked={unlocked} />
       ) : null}
@@ -1291,11 +1494,31 @@ export function GameScreen({
         />
       ) : null}
       {devMetrics ? <DevMetricsToggle source={devMetrics} /> : null}
+      {/* Over everything: the results were asked for and did not come (the watchdog). */}
+      {stuck !== null ? (
+        <FlowFallback
+          reason="game: results did not open"
+          actionsAfterMs={0}
+          report={false}
+          onResults={() => {
+            setStuck(null);
+            openResults(stuck);
+          }}
+          onHome={onHome ?? noop}
+          testID="results-fallback"
+        />
+      ) : null}
     </View>
   );
 }
 
 const noop = () => undefined;
+
+/** My card while my connection is lost: no surrender and no reactions, which need the server [D42]. */
+function withoutServer(model: CardModel, linkDown: boolean): CardModel {
+  if (!linkDown || !model.mine) return model;
+  return { ...model, mine: { ...model.mine, canSurrender: false, reactionReady: false } };
+}
 
 const gutter = tokens.layout.gutterGame;
 const game = tokens.layout.game;

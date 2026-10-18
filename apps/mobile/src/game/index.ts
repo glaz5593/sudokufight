@@ -35,6 +35,7 @@ export {
   type PracticeRepo,
   type PracticeStatus,
 } from './practiceRepo';
+export { type RankedEnd, rankedEndOf, rankedLeftOf, storedIn } from './rankedEnd';
 export {
   BOT_SEED_SALT,
   type BotPracticeOptions,

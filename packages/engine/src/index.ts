@@ -2,7 +2,7 @@
  * @sudoku-fight/engine — the game's rules as pure TypeScript (spec §17).
  * No UI, no network, no system clock: the same code runs on the server and on the phone.
  */
-export const ENGINE_VERSION = '0.1.0';
+export const ENGINE_VERSION = '0.2.0';
 
 export * from './gameType';
 export * from './util/clock';

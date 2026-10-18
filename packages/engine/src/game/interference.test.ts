@@ -1,11 +1,20 @@
 import { parseCellName } from '../sudoku/board';
 import { answer, type ConfigOptions, GameDriver, solveAll, wrongDigit } from '../testing/game';
-import { INTERFERENCE_KINDS, type InterferenceKind, REACTIONS } from './rules';
+import {
+  defaultRules,
+  GAME_MODES,
+  INTERFERENCE_KINDS,
+  INTERFERENCES_BY_MODE,
+  type InterferenceKind,
+  isInterferenceKind,
+  LEGACY_INTERFERENCE_KINDS,
+  REACTIONS,
+} from './rules';
 import { toView } from './view';
 
 /*
  * Interferences (spec §7.2, §7.4) and reactions (spec §8): [D10] cost, [D11] no double interference,
- * [D17] which kinds are open, [D19] reaction rate. The lock (and in 'turns' the turn) timer of the target
+ * [D17, D47] which kinds are open, [D44] none against a bot, [D19] reaction rate. The lock (and in 'turns' the turn) timer of the target
  * stops while it is under interference (§6.2.7) [D11]; the events carry those timers (§18 locks[]).
  *
  * Points used below (PUZZLE, starting board): A1 is worth 8; with A1 solved, A2 is worth 6.5 and B7 is worth 6.
@@ -92,10 +101,10 @@ describe('interference cost (§7.2) [D10]', () => {
   it('refuses a player with no points, or below zero, and the refusal costs nothing', () => {
     const g = GameDriver.of();
     expect(refuse(g, 'p1', 'p2', 1000)).toBe('notEnoughPoints');
-    g.miss('p1', 'A1', 2000); // −1
-    expect(g.score('p1')).toBe(-1);
+    g.miss('p1', 'A1', 2000); // −8
+    expect(g.score('p1')).toBe(-8);
     expect(refuse(g, 'p1', 'p2', 3000)).toBe('notEnoughPoints');
-    expect(g.score('p1')).toBe(-1);
+    expect(g.score('p1')).toBe(-8);
     expect(g.player('p1').interferencesSent).toBe(0);
     expect(g.player('p2').hitBy).toBeNull();
   });
@@ -352,7 +361,16 @@ describe('who can be targeted (§7.2)', () => {
 
 // ---------------------------------------------------------------------------------------------------------
 
-describe('where interferences exist (§7.2): ranked and bot games, not solo practice', () => {
+describe('where interferences exist (§7.2) [D44]: ranked games only, not solo practice, not against a bot', () => {
+  it('INTERFERENCES_BY_MODE: on in ranked only, and defaultRules follows it for every mode', () => {
+    expect(INTERFERENCES_BY_MODE).toEqual({ solo: false, bot: false, ranked: true });
+    for (const mode of GAME_MODES) {
+      expect(defaultRules(mode, 'fast').interferences).toBe(INTERFERENCES_BY_MODE[mode]);
+      // Narrowing the kinds is a room's business: every mode starts with all of them.
+      expect(defaultRules(mode, 'fast').interferenceKinds).toEqual(INTERFERENCE_KINDS);
+    }
+  });
+
   it('off in solo practice (interferencesOff), with no interference panel in the view', () => {
     const g = GameDriver.of({ players: 1 });
     expect(g.state.config.mode).toBe('solo');
@@ -365,17 +383,35 @@ describe('where interferences exist (§7.2): ranked and bot games, not solo prac
     expect(view.rules.interferences).toBe(false);
   });
 
-  it('on in a game against a bot, both ways', () => {
+  const botGame = (o: ConfigOptions = {}) => {
     const g = GameDriver.of({
       mode: 'bot',
       players: [
         { id: 'me', name: 'Me' },
         { id: 'bot', name: 'Pip', isBot: true },
       ],
+      ...o,
     });
     g.solve('bot', 'A1', 0);
     g.solve('me', 'B7', 0);
-    expect(g.view('me').rules.interferences).toBe(true);
+    return g;
+  };
+
+  it('off in a game against a bot, both ways (interferencesOff), with no panel in the view', () => {
+    const g = botGame();
+    expect(g.state.config.rules.interferences).toBe(false);
+    expect(refuse(g, 'bot', 'me', 1000, 'fireworks')).toBe('interferencesOff');
+    expect(refuse(g, 'me', 'bot', 1000, 'cats')).toBe('interferencesOff');
+    expect(g.score('me')).toBe(6); // nothing was charged
+    expect(g.score('bot')).toBe(8);
+    const view = g.view('me');
+    expect(view.interference).toBeNull(); // so the app shows no interference button on the bot's card
+    expect(view.rules.interferences).toBe(false);
+  });
+
+  it('a rules override turns them on in a game against a bot (config, not code)', () => {
+    const g = botGame({ rules: { interferences: true } });
+    expect(g.view('me').interference).not.toBeNull();
     expect(hit(g, 'bot', 'me', 1000, 'fireworks')).toMatchObject({ fromId: 'bot', targetId: 'me', cost: 2 });
     expect(hit(g, 'me', 'bot', 1000, 'cats')).toMatchObject({ fromId: 'me', targetId: 'bot', cost: 2 });
   });
@@ -397,28 +433,68 @@ describe('where interferences exist (§7.2): ranked and bot games, not solo prac
 
 // ---------------------------------------------------------------------------------------------------------
 
-describe('interference kinds (§7.1) [D17]', () => {
-  it('the V1 kinds are fireworks, cats and warp, all open from the start', () => {
-    expect(INTERFERENCE_KINDS).toEqual(['fireworks', 'cats', 'warp']);
-    expect(GameDriver.of().view('p1').rules.interferenceKinds).toEqual(['fireworks', 'cats', 'warp']);
+describe('interference kinds (§7.1) [D17, D47]', () => {
+  it('six kinds, in the order of the picker and of unlocking; a game allows all of them by default', () => {
+    expect(INTERFERENCE_KINDS).toEqual(['fireworks', 'cats', 'warp', 'scramble', 'ink', 'keypad']);
+    expect(GameDriver.of().view('p1').rules.interferenceKinds).toEqual(INTERFERENCE_KINDS);
   });
 
-  it.each(['fireworks', 'cats', 'warp'] as const)(
-    '%s can be sent, and its kind travels to the end',
-    (kind) => {
+  it('the legacy kinds (what an app that declares none can show) are the first three', () => {
+    expect(LEGACY_INTERFERENCE_KINDS).toEqual(['fireworks', 'cats', 'warp']);
+    expect(LEGACY_INTERFERENCE_KINDS).toEqual(INTERFERENCE_KINDS.slice(0, 3));
+  });
+
+  it('isInterferenceKind knows every kind and nothing else', () => {
+    for (const kind of INTERFERENCE_KINDS) expect(isInterferenceKind(kind)).toBe(true);
+    for (const v of ['dragons', 'earthquake', 'Cats', '', 42, undefined, null, {}, ['cats']])
+      expect(isInterferenceKind(v)).toBe(false);
+  });
+
+  it.each(INTERFERENCE_KINDS.map((kind, k) => [kind, k] as const))(
+    '%s: sent, priced by order not by kind, stops the target’s lock, ends after interferenceMs',
+    (kind, k) => {
       const g = withPoints();
-      expect(hit(g, 'p2', 'p1', 1000, kind)).toMatchObject({ kind });
+      // Another kind first, so this one is the second of the sender: it costs 4, whatever the kind.
+      const other = INTERFERENCE_KINDS[(k + 1) % INTERFERENCE_KINDS.length]!;
+      expect(hit(g, 'p2', 'p1', 1000, other)).toMatchObject({ kind: other, cost: 2 });
+      g.select('p1', 'A2', 6500); // would run out at 14500
+      expect(hit(g, 'p2', 'p1', 7000, kind)).toMatchObject({ kind, cost: 4, score: 2, endsAt: 12000 });
       expect(g.player('p1').hitBy!.kind).toBe(kind);
-      expect(g.tickTo(6000)[0]).toMatchObject({ type: 'interferenceEnded', kind });
+      expect(g.lock('p1')).toMatchObject({ expiresAt: null, remainingMs: 7500 });
+      expect(g.tickTo(11999)).toEqual([]);
+      expect(g.tickTo(12000)[0]).toMatchObject({ type: 'interferenceEnded', kind, t: 12000 });
+      expect(g.player('p1').hitBy).toBeNull();
+      expect(g.lock('p1')!.expiresAt).toBe(19500);
+      expect(g.replayMatches()).toBe(true);
     },
   );
 
-  it('a kind that is not open is refused (badKind), and costs nothing', () => {
+  it('a kind the engine does not know is refused (badKind), and costs nothing', () => {
     const g = withPoints();
-    for (const kind of ['ink', 'earthquake', 'fog', 'bubbles', ''])
+    for (const kind of ['earthquake', 'fog', 'bubbles', 'torch', 'dragons', ''])
       expect(refuse(g, 'p2', 'p1', 1000, kind as InterferenceKind)).toBe('badKind');
     expect(g.score('p2')).toBe(8);
     expect(g.player('p2').interferencesSent).toBe(0);
+  });
+
+  it('a room of legacy kinds refuses the new ones (badKind) and charges nothing [D47]', () => {
+    const g = withPoints({ rules: { interferenceKinds: LEGACY_INTERFERENCE_KINDS } });
+    expect(g.view('p2').rules.interferenceKinds).toEqual(['fireworks', 'cats', 'warp']);
+    for (const kind of ['scramble', 'ink', 'keypad'] as const)
+      expect(refuse(g, 'p2', 'p1', 1000, kind)).toBe('badKind');
+    expect(g.score('p2')).toBe(8);
+    expect(g.player('p2').interferencesSent).toBe(0);
+    expect(g.player('p1').hitBy).toBeNull();
+    // The old kinds go through as usual, at the first price.
+    expect(hit(g, 'p2', 'p1', 1000, 'warp')).toMatchObject({ kind: 'warp', cost: 2 });
+  });
+
+  it('a game that allows no kind has no interference panel, and refuses every kind [D47]', () => {
+    const g = withPoints({ rules: { interferenceKinds: [] } });
+    expect(g.view('p2').interference).toBeNull();
+    expect(g.view('p1').interference).toBeNull();
+    expect(refuse(g, 'p2', 'p1', 1000, 'cats')).toBe('badKind');
+    expect(g.score('p2')).toBe(8);
   });
 
   it('rules.interferenceKinds restricts what can be sent', () => {
@@ -460,7 +536,8 @@ describe('the game goes on during an interference (§7.2)', () => {
     send(g, 'p2', 'p1', 2000);
     const events = g.place('p1', 'A2', wrongDigit('A2'), 3000);
     expect(g.types(events)).toEqual(['placedWrong', 'cellReleased']);
-    expect(events[0]).toMatchObject({ penalty: 1, mistakes: 1, score: -1 });
+    // A2 after p2's A1: worth 6.5 there, so that is what it costs.
+    expect(events[0]).toMatchObject({ penalty: 6.5, mistakes: 1, score: -6.5 });
     expect(events[1]).toMatchObject({ reason: 'mistake' });
   });
 
@@ -691,12 +768,12 @@ describe('interference and a frozen game (§6.2.7, §16.2) [D11]', () => {
 // ---------------------------------------------------------------------------------------------------------
 
 describe('the interference panel in the view (§6.8, §7.2) [D10, D11]', () => {
-  it('shows "3 points missing" at a score of −1 (the next one costs 2)', () => {
+  it('shows "10 points missing" at a score of −8 (the next one costs 2)', () => {
     const g = GameDriver.of();
-    g.miss('p1', 'A1', 0);
+    g.miss('p1', 'A1', 0); // −8
     expect(g.view('p1').interference).toEqual({
       nextCost: 2,
-      missingPoints: 3,
+      missingPoints: 10,
       targets: [{ playerId: 'p2', blockedBy: 'points' }],
     });
   });

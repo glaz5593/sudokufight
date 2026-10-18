@@ -5,6 +5,7 @@ import { signedText } from '../../../components/player/format';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { color, space, text } from '../../../theme';
 import { ScoreLine, type ScoreLineData } from './ScoreLine';
+import type { SurrenderEstimate } from './surrenderEstimate';
 import { MARK, splitMarked } from './wording';
 
 /**
@@ -17,8 +18,13 @@ export interface RankedSurrenderProps {
   visible: boolean;
   /** Players in the game: 2 → surrender is an immediate loss; 3–4 → I leave the game [D36]. */
   players: number;
-  /** The estimated rating change of a loss, when the game is rated ("שינוי דירוג משוער −15"). */
-  ratingDelta?: number | null;
+  /**
+   * 2 players: the estimated rating change of a loss, when the game is rated ("שינוי דירוג משוער −15"), or
+   * why it is 0 (a leave guard, spec §11.2: "הדירוג שלך לא ירד").
+   */
+  rating?: SurrenderEstimate | null;
+  /** 3–4 players: a surrender now costs me no rating against anyone still in the game (spec §11.2). */
+  noLossMany?: boolean;
   summary?: SurrenderSummary | null;
   /** "כן, להיכנע": send the surrender (spec §18 `surrender`). */
   onConfirm: () => void;
@@ -35,14 +41,16 @@ export interface RankedSurrenderProps {
  * Surrender in a ranked game (spec §6.6; design Surrender; components.md §14.1): "אתה בטוח שאתה רוצה
  * להיכנע?" with "כן, להיכנע" and "ביטול". "ביטול" is the prominent, safe choice: the wide gold primary, first,
  * and where the screen reader's focus starts (ConfirmModal's danger tone). With 2 players the body says it
- * is a loss, with the estimated rating change when there is one; with 3–4 it says I leave the game and my
- * solved cells keep my colour [D36]. The game goes on meanwhile ("המשחק ממשיך ברקע"): the lock timer is not
- * paused (§6.2.7).
+ * is a loss, with the estimated rating change when there is one, or, when a leave guard holds (spec §11.2),
+ * that my rating won't drop and why, in plain muted text with no red number; with 3–4 it says I leave the
+ * game and my solved cells keep my colour [D36], and that my rating won't drop when nobody still in is ahead
+ * of me. The game goes on meanwhile ("המשחק ממשיך ברקע"): the lock timer is not paused (§6.2.7).
  */
 export function RankedSurrender({
   visible,
   players,
-  ratingDelta = null,
+  rating = null,
+  noLossMany = false,
   summary = null,
   onConfirm,
   onCancel,
@@ -53,11 +61,17 @@ export function RankedSurrender({
   const { t } = useTranslation('game');
   const duel = players <= 2;
   const body = duel ? (
-    ratingDelta === null ? (
+    rating === null ? (
       t('connection.surrender.body')
+    ) : rating.guard !== null ? (
+      <Text style={styles.body} testID={`${testID}-body`}>
+        {t(`connection.surrender.bodyNoLoss.${rating.guard}`)}
+      </Text>
     ) : (
-      <RatingBody delta={ratingDelta} testID={`${testID}-body`} />
+      <RatingBody delta={rating.delta} testID={`${testID}-body`} />
     )
+  ) : noLossMany ? (
+    t('connection.surrender.bodyManyNoLoss')
   ) : (
     t('connection.surrender.bodyMany')
   );

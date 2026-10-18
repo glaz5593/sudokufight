@@ -14,7 +14,7 @@ import { OpponentLeft } from '../OpponentLeft';
 import { RankedSurrender } from '../RankedSurrender';
 import { ScoreLine, type ScoreLineData } from '../ScoreLine';
 import { SelfReconnecting } from '../SelfReconnecting';
-import { surrenderRatingDelta } from '../surrenderEstimate';
+import { surrenderCostsNothing, surrenderRatingEstimate } from '../surrenderEstimate';
 import { hidden, iso, type Setup, setUp, styleOf, wait } from '../testing/setup';
 
 jest.mock(
@@ -44,6 +44,7 @@ const leftModel: OpponentLeftModel = {
   me: { id: 'me', name: 'MosheG', score: 55 },
   opponentScore: 39.5,
   ratingDelta: 9,
+  ratingGuard: null,
   gameType: 'normal',
   graceSeconds: 15,
 };
@@ -184,6 +185,7 @@ const player = (over: Partial<PlayerView>): PlayerView =>
     graceEndsAt: null,
     score: 0,
     mistakes: 0,
+    mistakePenalties: [],
     correct: 0,
     place: 1,
     isLeader: false,
@@ -200,6 +202,8 @@ const rankedView = (over: Partial<GameView> = {}): GameView =>
     gameType: 'normal',
     me: 'me',
     players: [player({}), player({ id: 'nina', seat: 1, rating: 1305 })],
+    // The engine's leave guards (spec §11.2): none, so a surrender now is a normal loss.
+    leaveGuards: [],
     ...over,
   }) as GameView;
 
@@ -212,39 +216,103 @@ const entry = (over: Partial<RatingEntry> = {}): RatingEntry => ({
   ...over,
 });
 
-describe('surrenderRatingDelta (the Surrender board\'s "שינוי דירוג משוער −15")', () => {
+describe('surrenderRatingEstimate (the Surrender board: "שינוי דירוג משוער −15")', () => {
   it("is the engine's loss for my rating against theirs: 1287 vs 1305 → −15 (spec §11.2's example)", () => {
-    expect(surrenderRatingDelta(rankedView(), [entry()])).toBe(-15);
+    expect(surrenderRatingEstimate(rankedView(), [entry()])).toEqual({ delta: -15, guard: null });
   });
 
   it('doubles in my first 10 games of the key', () => {
-    expect(surrenderRatingDelta(rankedView(), [entry({ games: 3, provisional: true })])).toBe(-30);
+    expect(surrenderRatingEstimate(rankedView(), [entry({ games: 3, provisional: true })])).toEqual({
+      delta: -30,
+      guard: null,
+    });
   });
 
   it('reads the per-table key first (RATING_OPTION A)', () => {
     expect(
-      surrenderRatingDelta(rankedView(), [entry({ key: 'normal-2p', games: 3 }), entry({ key: 'normal' })]),
-    ).toBe(-30);
+      surrenderRatingEstimate(rankedView(), [
+        entry({ key: 'normal-2p', games: 3 }),
+        entry({ key: 'normal' }),
+      ]),
+    ).toEqual({ delta: -30, guard: null });
+  });
+
+  it('is 0, with the reason, when the engine says a surrender now costs nothing (spec §11.2)', () => {
+    for (const reason of ['leftBeforeMoving', 'leftNotBehind'] as const) {
+      const view = rankedView({ leaveGuards: [{ opponentId: 'nina', reason }] });
+      expect(surrenderRatingEstimate(view, [entry()])).toEqual({ delta: 0, guard: reason });
+      // Nothing is lost either way, so no rating entry is needed to say so.
+      expect(surrenderRatingEstimate(view, null)).toEqual({ delta: 0, guard: reason });
+    }
+    // An unrated game (a development room): no rating to speak of, guard or not.
+    expect(
+      surrenderRatingEstimate(
+        rankedView({
+          players: [player({ rating: null }), player({ id: 'nina', seat: 1, rating: null })],
+          leaveGuards: [{ opponentId: 'nina', reason: 'leftBeforeMoving' }],
+        }),
+        null,
+      ),
+    ).toBeNull();
+    // A guard against someone else is not mine here.
+    expect(
+      surrenderRatingEstimate(rankedView({ leaveGuards: [{ opponentId: 'x', reason: 'leftNotBehind' }] }), [
+        entry(),
+      ]),
+    ).toEqual({ delta: -15, guard: null });
+  });
+
+  it('a view from an older engine (no leaveGuards) is the plain estimate', () => {
+    const older = rankedView();
+    delete (older as Partial<GameView>).leaveGuards;
+    expect(surrenderRatingEstimate(older, [entry()])).toEqual({ delta: -15, guard: null });
   });
 
   it('is null when it cannot be told honestly', () => {
-    expect(surrenderRatingDelta(rankedView({ mode: 'bot' }), [entry()])).toBeNull();
-    expect(surrenderRatingDelta(rankedView(), null)).toBeNull();
-    expect(surrenderRatingDelta(rankedView(), [entry({ key: 'hard' })])).toBeNull();
+    expect(surrenderRatingEstimate(rankedView({ mode: 'bot' }), [entry()])).toBeNull();
+    expect(surrenderRatingEstimate(rankedView(), null)).toBeNull();
+    expect(surrenderRatingEstimate(rankedView(), [entry({ key: 'hard' })])).toBeNull();
     expect(
-      surrenderRatingDelta(
+      surrenderRatingEstimate(
         rankedView({ players: [player({}), player({ id: 'nina', seat: 1, rating: null })] }),
         [entry()],
       ),
     ).toBeNull();
     expect(
-      surrenderRatingDelta(
+      surrenderRatingEstimate(
         rankedView({
           players: [player({}), player({ id: 'b', seat: 1 }), player({ id: 'c', seat: 2 })],
         }),
         [entry()],
       ),
     ).toBeNull();
+  });
+});
+
+describe('surrenderCostsNothing (3–4 players)', () => {
+  const four = (leaveGuards: GameView['leaveGuards']) =>
+    rankedView({
+      players: [
+        player({}),
+        player({ id: 'b', seat: 1 }),
+        player({ id: 'c', seat: 2 }),
+        player({ id: 'd', seat: 3, status: 'surrendered' }),
+      ],
+      leaveGuards,
+    });
+
+  it('is true only when every opponent still in the game is guarded', () => {
+    const guard = (opponentId: string) => ({ opponentId, reason: 'leftNotBehind' as const });
+    expect(surrenderCostsNothing(four([guard('b'), guard('c')]))).toBe(true);
+    expect(surrenderCostsNothing(four([guard('b')]))).toBe(false);
+    expect(surrenderCostsNothing(four([]))).toBe(false);
+    expect(surrenderCostsNothing(four(null))).toBe(false);
+    expect(surrenderCostsNothing({ ...four([guard('b'), guard('c')]), mode: 'bot' })).toBe(false);
+    // A development room has no ratings: nothing to say about them.
+    const unrated = four([guard('b'), guard('c')]);
+    expect(
+      surrenderCostsNothing({ ...unrated, players: unrated.players.map((p) => ({ ...p, rating: null })) }),
+    ).toBe(false);
   });
 });
 

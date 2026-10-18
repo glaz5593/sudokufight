@@ -31,3 +31,26 @@ export function pick<T>(rng: Rng, items: readonly T[]): T {
   if (!items.length) throw new RangeError('pick from an empty list');
   return items[randomInt(rng, items.length)]!;
 }
+
+/** A shuffled copy (Fisher–Yates, with randomInt). */
+export function shuffled<T>(rng: Rng, items: readonly T[]): T[] {
+  const a = items.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = randomInt(rng, i + 1);
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+}
+
+/**
+ * A stable 32-bit seed from a text (32-bit FNV-1a; `salt` changes the basis): the same puzzle id gives the
+ * same seed on any machine, whatever else is in the bank.
+ */
+export function seedFromString(text: string, salt = 0): number {
+  let h = (0x811c9dc5 ^ salt) >>> 0;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+}

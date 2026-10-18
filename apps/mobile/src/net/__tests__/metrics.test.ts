@@ -35,6 +35,13 @@ describe('answers(): which event answers which action', () => {
     [{ type: 'react', emoji: '🔥' }, ev({ type: 'reaction', playerId: ME, emoji: '🔥' }), true],
     [{ type: 'surrender' }, ev({ type: 'playerSurrendered', playerId: ME }), true],
     [{ type: 'surrender' }, ev({ type: 'playerSurrendered', playerId: 'opp' }), false],
+    // A move made offline [D42]: its digit answers it, not the cellLocked before it.
+    [
+      { type: 'offlineMove', cell: 4, digit: 3, thinkMs: 900 },
+      ev({ type: 'placedCorrect', playerId: ME, cell: 4, offline: true } as never),
+      true,
+    ],
+    [{ type: 'offlineMove', cell: 4, digit: 3, thinkMs: 900 }, locked(4, 0), false],
   ])('%j answered by %j: %s', (action, event, expected) => {
     expect(answers(action, event, ME)).toBe(expected);
   });
@@ -83,6 +90,24 @@ describe('NetMetrics (spec §18: the five measures)', () => {
     m.sent(4, { type: 'react', emoji: '🔥' }, 1500); // the first is 1300 ms old: lost
     expect(m.lost).toBe(2);
     expect(m.waiting).toBe(1);
+  });
+
+  it('unanswered(): what is on its way, in send order, until the drop forgets it [D42]', () => {
+    const m = new NetMetrics();
+    m.sent(1, { type: 'select', cell: 4 }, 100);
+    m.sent(2, { type: 'place', cell: 4, digit: 7 }, 300);
+    m.sent(3, { type: 'react', emoji: '🔥' }, 400);
+    m.events([locked(4, 150)], ME, 160, 0);
+    const waiting = m.unanswered();
+    expect(waiting).toEqual([
+      { clientSeq: 2, action: { type: 'place', cell: 4, digit: 7 }, at: 300 },
+      { clientSeq: 3, action: { type: 'react', emoji: '🔥' }, at: 400 },
+    ]);
+    // A copy: changing it changes nothing here.
+    waiting.pop();
+    expect(m.waiting).toBe(2);
+    m.dropped();
+    expect(m.unanswered()).toEqual([]);
   });
 
   it('reconnect and sync times', () => {

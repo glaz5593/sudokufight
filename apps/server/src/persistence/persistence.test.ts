@@ -5,7 +5,9 @@ import {
   eloChanges,
   type GameConfig,
   type GameEvent,
+  type GameState,
   type GameType,
+  leaveGuardsFor,
   type RankEntry,
 } from '@sudoku-fight/engine';
 import { and, asc, eq } from 'drizzle-orm';
@@ -113,8 +115,12 @@ const rating = async (userId: string, key: string) =>
 const seatsRows = (gameId: string) =>
   t.db.select().from(gamePlayers).where(eq(gamePlayers.gameId, gameId)).orderBy(asc(gamePlayers.seat));
 
-/** What the engine says the changes are, for this ranking and these ratings before the game. */
-function engineChanges(config: GameConfig, ranking: RankEntry[]) {
+/**
+ * What the engine says the changes are, for this ranking and these ratings before the game, with the leave
+ * guards (spec §11.2) the engine found in the final state.
+ */
+function engineChanges(config: GameConfig, ranking: RankEntry[], state: GameState) {
+  const guards = leaveGuardsFor(state);
   return eloChanges(
     ranking.map((r) => ({
       id: r.playerId,
@@ -122,6 +128,7 @@ function engineChanges(config: GameConfig, ranking: RankEntry[]) {
       games: config.players[r.seat]!.ratedGames!,
       place: r.place,
       abandoned: r.status === 'abandoned',
+      guards: guards.get(r.playerId) ?? [],
     })),
   );
 }
@@ -287,7 +294,10 @@ describe('a ranked game, stored (spec §19)', () => {
   it('surrender in a two-player game is a normal loss [D32, D8]', async () => {
     const { ranked } = await setup();
     const { config, recorder, table } = await newGame(ranked, ['ana', 'ben']);
-    table.move('ben', NEARLY_CELLS[0]!);
+    table.move('ana', NEARLY_CELLS[0]!);
+    // Both moved and ben trails (a wrong digit): no leave guard holds (§11.2).
+    const wrong = ((table.answer(NEARLY_CELLS[1]!) % 9) + 1) as Digit;
+    table.move('ben', NEARLY_CELLS[1]!, 2000, wrong);
     table.game.act('ben', { type: 'surrender' });
     expect(await recorder.done).toMatchObject({ ok: true });
     const result = table.game.state.result!;
@@ -296,12 +306,14 @@ describe('a ranked game, stored (spec §19)', () => {
       ['ana', 1, 'active', 1304],
       ['ben', 2, 'surrendered', 1288],
     ]);
-    expect(engineChanges(config, result.ranking).map((ch) => ch.after)).toEqual([1304, 1288]);
+    expect(engineChanges(config, result.ranking, table.game.state).map((ch) => ch.after)).toEqual([
+      1304, 1288,
+    ]);
     const [game] = await t.db.select().from(games);
     expect(game!.endReason).toBe('lastPlayerStanding');
   });
 
-  it('abandonment (the grace runs out) in a two-player game is a normal loss too [D32]', async () => {
+  it('abandonment (the grace runs out) before any move of the leaver: a full win, and no loss for him; both games count [D32, D8, §11.2]', async () => {
     const { ranked } = await setup();
     const { recorder, table } = await newGame(ranked, ['ana', 'ben']);
     table.move('ana', NEARLY_CELLS[0]!);
@@ -311,9 +323,35 @@ describe('a ranked game, stored (spec §19)', () => {
     expect(await recorder.done).toMatchObject({ ok: true });
     expect((await seatsRows('g1')).map((p) => [p.userId, p.place, p.status, p.ratingAfter])).toEqual([
       ['ana', 1, 'active', 1304],
-      ['ben', 2, 'abandoned', 1288],
+      ['ben', 2, 'abandoned', 1305],
     ]);
-    expect(await rating('ben', 'fast')).toMatchObject({ rating: 1288, games: 13 });
+    expect(await rating('ana', 'fast')).toMatchObject({ rating: 1304, games: 13 });
+    expect(await rating('ben', 'fast')).toMatchObject({ rating: 1305, games: 13 });
+  });
+
+  it('a leaver who was ahead: no rating moves either way, and the game still counts for both (§11.2)', async () => {
+    const { ranked } = await setup();
+    const { recorder, table } = await newGame(ranked, ['ana', 'ben']);
+    table.move('ben', NEARLY_CELLS[0]!);
+    const wrong = ((table.answer(NEARLY_CELLS[1]!) % 9) + 1) as Digit;
+    table.move('ana', NEARLY_CELLS[1]!, 2000, wrong); // ana moved, and trails
+    table.game.act('ben', { type: 'surrender' });
+    expect(await recorder.done).toMatchObject({ ok: true });
+    const result = table.game.state.result!;
+    expect(result.ratingChanges.map((c) => [c.playerId, c.delta])).toEqual([
+      ['ana', 0],
+      ['ben', 0],
+    ]);
+    expect(result.ratingPairs!.map((p) => [p.playerId, p.pairs[0]!.guard])).toEqual([
+      ['ana', 'opponentLeftAhead'],
+      ['ben', 'leftNotBehind'],
+    ]);
+    expect((await seatsRows('g1')).map((p) => [p.userId, p.place, p.ratingBefore, p.ratingAfter])).toEqual([
+      ['ana', 1, 1287, 1287],
+      ['ben', 2, 1305, 1305],
+    ]);
+    expect(await rating('ana', 'fast')).toMatchObject({ rating: 1287, games: 13 });
+    expect(await rating('ben', 'fast')).toMatchObject({ rating: 1305, games: 13 });
   });
 
   it.each([3, 4])(
@@ -333,7 +371,8 @@ describe('a ranked game, stored (spec §19)', () => {
       expect(await recorder.done).toMatchObject({ ok: true });
 
       const ranking = table.game.state.result!.ranking;
-      const expected = engineChanges(config, ranking);
+      // With four, dan left before anyone moved: the leave guards (§11.2) hold all his pairs at 0.
+      const expected = engineChanges(config, ranking, table.game.state);
       expect(table.game.state.result!.ratingChanges).toEqual(expected);
       // K_pair = 32 / (N − 1): with nobody provisional the deltas sum to (about) zero, and each is at most 32.
       expect(Math.abs(expected.reduce((s, ch) => s + ch.delta, 0))).toBeLessThanOrEqual(n);

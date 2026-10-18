@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { type CellIndex, type Digit, moveScore } from '@sudoku-fight/engine';
+import { type CellIndex, type Digit, type GameType, moveScore } from '@sudoku-fight/engine';
 
 import {
   connectingPercent,
@@ -118,7 +118,7 @@ describe('the percent and the tip', () => {
     expect([...seen].sort()).toEqual([...LOADING_TIPS].sort());
   });
 
-  it('the tips’ numbers are the rules’: the last cell 1.5, the bank’s best move 10.5 (not 13.5)', () => {
+  it('the tips’ numbers are the rules’: the last cell 1.5, the bank’s best move per game type (not 13.5)', () => {
     // The last empty cell: every count is 8 (the formula of spec §6.4).
     const solution = '864371259325849761971265843436192587198657432257483916689734125713528694542916378';
     const last = [...solution].map(Number);
@@ -126,30 +126,20 @@ describe('the percent and the tip', () => {
     expect(moveScore(last, 0 as CellIndex, 8 as Digit).points).toBe(LAST_CELL_POINTS);
 
     // A move is worth the most on the board as given (every count only grows as cells fill): the best of
-    // every empty cell of every board in the bank.
-    const csv = join(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      '..',
-      '..',
-      '..',
-      '..',
-      'assets',
-      'puzzles',
-      'sudoku-bank-690.csv',
-    );
-    let best = 0;
-    for (const line of readFileSync(csv, 'utf8').split(/\r?\n/)) {
-      const [givens, answer] = line.split(',');
-      if (!givens || !answer || !/^\d{81}$/.test(givens)) continue;
-      const grid = [...givens].map(Number);
+    // every empty cell of every board in the bank the app and the server play (both pools), per game type.
+    const bank = join(__dirname, '..', '..', '..', '..', '..', '..', '..', 'packages', 'engine', 'data');
+    const { puzzles } = JSON.parse(readFileSync(join(bank, 'puzzles.json'), 'utf8')) as {
+      puzzles: { givens: string; solution: string; gameType: GameType }[];
+    };
+    const best: Record<GameType, number> = { fast: 0, normal: 0, hard: 0 };
+    for (const p of puzzles) {
+      const grid = [...p.givens].map(Number);
       grid.forEach((v, cell) => {
-        if (v === 0)
-          best = Math.max(best, moveScore(grid, cell as CellIndex, Number(answer[cell]) as Digit).points);
+        if (v !== 0) return;
+        const points = moveScore(grid, cell as CellIndex, Number(p.solution[cell]) as Digit).points;
+        best[p.gameType] = Math.max(best[p.gameType], points);
       });
     }
-    expect(best).toBe(TOP_MOVE_POINTS);
+    expect(best).toEqual(TOP_MOVE_POINTS);
   });
 });

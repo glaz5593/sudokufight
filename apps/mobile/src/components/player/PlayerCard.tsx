@@ -10,7 +10,6 @@ import { Avatar } from './Avatar';
 import { HitChip, ReconnectPill } from './Badges';
 import { type CardModel, type InterferenceModel, sameCard } from './cardModel';
 import { CardIconButton } from './CardIconButton';
-import { cardOpacity, DropZone, useCardOpacity } from './DropZone';
 import { Flag } from './Flag';
 import { InterferenceButton } from './InterferenceButton';
 import { metrics, paletteAt } from './metrics';
@@ -18,14 +17,15 @@ import { Rating } from './Rating';
 import { sameProps, sameStyle } from './sameProps';
 import { DeltaLabel, type ScoreDelta, ScoreNumber } from './Score';
 import { SeatGlyph } from './SeatGlyph';
+import { cardOpacity, TargetFrame, useCardOpacity } from './TargetFrame';
 import { cardLabel, displayName, type Gender } from './wording';
 
 export interface PlayerCardActions {
   onSurrender?: () => void;
   onReactions?: () => void;
-  /** Tap on ⚡ when it can be sent: open the arsenal. */
+  /** Tap on "הפרעה" when it can be sent: open the interference picker aimed at this card [D45]. */
   onInterfere?: () => void;
-  /** Tap on ⚡ while short of points: toast and haptic (§8.1). */
+  /** Tap on "הפרעה" while it can't be sent: the reason in a toast, and a light haptic (§8.1). */
   onInterfereBlocked?: (state: InterferenceModel) => void;
 }
 
@@ -52,14 +52,11 @@ export interface PlayerCardProps extends PlayerCardActions {
   botLevel?: { text: string; label: string } | null;
   /** Keep the delta on screen instead of fading it (design-system page). */
   persistentDelta?: boolean;
-  /** Another card is the drop target (§3.4). */
+  /** Another card is the interference picker's target (§3.4). */
   dimmed?: boolean;
-  /** This card is the drop target, and whether the finger is over it. */
-  dropTarget?: boolean;
-  dropHover?: boolean;
-  /** "שחרר כאן: שיגור זיקוקים אל NinaVolt", while this card is the drop target. */
-  dropLabel?: string;
-  /** The arsenal is open from this card's ⚡. */
+  /** This card is the interference picker's target: framed, with an "יעד" chip [D45]. */
+  targeted?: boolean;
+  /** The interference picker is open from this card's "הפרעה" button. */
   interferenceExpanded?: boolean;
   /** My reactions picker is open. */
   reactionsExpanded?: boolean;
@@ -83,9 +80,7 @@ export const PlayerCard = memo(function PlayerCard({
   botLevel = null,
   persistentDelta = false,
   dimmed = false,
-  dropTarget = false,
-  dropHover = false,
-  dropLabel,
+  targeted = false,
   interferenceExpanded = false,
   reactionsExpanded = false,
   onSurrender,
@@ -103,13 +98,13 @@ export const PlayerCard = memo(function PlayerCard({
   const fade = useCardOpacity(cardOpacity(dimmed, model.out !== null));
 
   return (
-    <DropZone active={dropTarget} hover={dropHover} style={style}>
+    <TargetFrame targeted={targeted} style={style}>
       <Animated.View style={[styles.card, fade]} testID={testID}>
         <View
           accessible
           accessibilityRole="text"
           accessibilityLabel={cardLabel(model, t, { gender, botLevel: botLevel?.label })}
-          accessibilityHint={dropTarget ? dropLabel : undefined}
+          accessibilityHint={targeted ? t('card.targetHint') : undefined}
           testID={testID ? `${testID}-summary` : undefined}
         >
           <View style={[row, styles.identity]}>
@@ -120,7 +115,7 @@ export const PlayerCard = memo(function PlayerCard({
                 colorIndex={model.colorIndex}
                 presence={model.presence}
                 bot={model.isBot}
-                inactive={model.out !== null || model.presence !== 'online'}
+                inactive={inactiveCard(model)}
                 expression={face?.expression}
                 reaction={face?.reaction}
                 testID={testID ? `${testID}-avatar` : undefined}
@@ -193,6 +188,9 @@ export const PlayerCard = memo(function PlayerCard({
             </View>
           ) : model.activity.kind === 'reconnecting' ? (
             <ReconnectPill seconds={model.activity.secondsLeft} />
+          ) : model.presence === 'unstable' ? (
+            // [D42] The connection is lost, the game goes on: the mark alone, no countdown.
+            <ReconnectPill />
           ) : model.interference ? (
             <InterferenceButton
               name={name}
@@ -205,9 +203,16 @@ export const PlayerCard = memo(function PlayerCard({
           ) : null}
         </View>
       </Animated.View>
-    </DropZone>
+    </TargetFrame>
   );
 }, samePlayerCard);
+
+/**
+ * The avatar is greyed for a player who is out, reconnecting (the grace) or gone; never in the soft phase of a
+ * lost connection, where the game goes on as usual [D42].
+ */
+export const inactiveCard = (m: Pick<CardModel, 'out' | 'presence'>): boolean =>
+  m.out !== null || m.presence === 'reconnecting' || m.presence === 'left';
 
 /**
  * The screen re-reads the time 4 times a second and builds the card's model (and the faces) again each time:

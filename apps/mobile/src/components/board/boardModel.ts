@@ -31,6 +31,8 @@ export type CellKind =
   | 'solved'
   /** #9: my tap, the server has not confirmed the lock yet */
   | 'pending'
+  /** #14: my digit entered while my connection is lost, waiting to be sent and judged [D42] */
+  | 'queued'
   /** #5, and #10 while its timer is stopped */
   | 'myLock'
   /** #6 */
@@ -67,9 +69,9 @@ export interface CellModel {
   /** Boxes 1, 3, 5, 7 (0-based) use color.board.cellAlt: the checkerboard. */
   alt: boolean;
   kind: CellKind;
-  /** Given or solved digit. */
+  /** Given or solved digit; my waiting digit ('queued'). */
   digit: Digit | null;
-  /** Solver ('solved'), lock holder ('myLock', 'oppLock'), or me ('pending'). */
+  /** Solver ('solved'), lock holder ('myLock', 'oppLock'), or me ('pending', 'queued'). */
   player: CellPlayer | null;
   /** 'myLock' and 'oppLock' only. */
   lock: CellLock | null;
@@ -128,6 +130,11 @@ export interface BoardModelOptions {
   pendingCell?: CellIndex | null;
   /** Each player's avatar; a player without one gets the empty avatar. */
   avatars?: Readonly<Partial<Record<PlayerId, AvatarIdOrNone>>>;
+  /**
+   * My digits entered while my connection is lost, waiting for the server's word (RemoteGameHost's
+   * `online.queuedMoves`) [D42]. A cell filled meanwhile shows what is on the board.
+   */
+  queued?: readonly { cell: CellIndex; digit: Digit }[] | null;
 }
 
 /** Last-seconds threshold of my lock (motion.md `lock.urgent`, tokens motion.limits). */
@@ -182,6 +189,7 @@ export function boardModel(
   const canPlay = view.status === 'running' && me !== null && me.status === 'active';
   const cooling = new Set(view.cooldowns.map((c) => c.cell));
   const pending = options.pendingCell ?? null;
+  const queued = new Map((options.queued ?? []).map((q) => [q.cell, q.digit]));
 
   const cells = view.grid.map((value, index): CellModel => {
     const box = boxOf(index);
@@ -204,6 +212,18 @@ export function boardModel(
         kind: given ? 'given' : 'solved',
         digit: value as Digit,
         player: solver ? playerOf(solver) : null,
+        lock: null,
+        interactive: false,
+      };
+    }
+    // Precedence: filled > queued > lock > pending > empty.
+    const waiting = me ? queued.get(index) : undefined;
+    if (waiting !== undefined && me) {
+      return {
+        ...base,
+        kind: 'queued',
+        digit: waiting,
+        player: playerOf(me),
         lock: null,
         interactive: false,
       };

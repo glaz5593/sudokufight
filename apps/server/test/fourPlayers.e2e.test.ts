@@ -20,7 +20,7 @@
  */
 import type { AddressInfo } from 'node:net';
 
-import { eloChanges, eloPairs, type GameType } from '@sudoku-fight/engine';
+import { eloChanges, eloPairs, type GameType, leaveGuardsFor, type PairGuard } from '@sudoku-fight/engine';
 import { MATCH_RANGE, type QueueKey } from '@sudoku-fight/protocol';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
@@ -175,8 +175,11 @@ async function until<T>(find: () => Promise<T | undefined | null | false>, what:
   throw new Error(`no ${what} within ${ms} ms`);
 }
 
-/** The rating changes the engine's formula gives for the stored seats (spec §11.2), every player new. */
-async function formulaFor(gameId: string) {
+/**
+ * The rating changes the engine's formula gives for the stored seats (spec §11.2), every player new, with the
+ * leave guards the engine found in the final state (none: by place alone).
+ */
+async function formulaFor(gameId: string, guards: ReadonlyMap<string, readonly PairGuard[]> = new Map()) {
   const seats = await seatsOf(gameId);
   return eloChanges(
     seats.map((s) => ({
@@ -185,6 +188,7 @@ async function formulaFor(gameId: string) {
       games: 0,
       place: s.place!,
       abandoned: s.status === 'abandoned',
+      guards: guards.get(s.userId!) ?? [],
     })),
   );
 }
@@ -252,7 +256,12 @@ describe('a rated game of 4 (work plan stage 10, "סיום")', () => {
     expect(seats.map((s) => [s.userId, s.place, s.status]).sort()).toEqual(
       ranking.map((r) => [r.playerId, r.place, r.status]).sort(),
     );
-    const formula = await formulaFor(game!.id);
+    // The leave guards (§11.2) as the engine finds them in the final state the phones hold: Dan is judged
+    // at his drop, Cyd at his surrender.
+    const guards = leaveGuardsFor(final);
+    expect(final.players.find((p) => p.id === d.playerId)!.leaveStandings).toHaveLength(4);
+    expect(final.players.find((p) => p.id === c.playerId)!.leaveStandings).toHaveLength(4);
+    const formula = await formulaFor(game!.id, guards);
     for (const change of formula) {
       const seat = seats.find((s) => s.userId === change.playerId)!;
       expect(seat.ratingAfter).toBe(change.after);
@@ -262,12 +271,23 @@ describe('a rated game of 4 (work plan stage 10, "סיום")', () => {
         provisional: true,
       });
     }
-    // Everyone new at 1200, so every E is 0.5: the last −32, the one above him −11 (spec §11.2, N = 4).
-    const deltaOf = (s: FakeClientSummary) => formula.find((x) => x.playerId === s.playerId)!.delta;
-    expect(deltaOf(c)).toBe(-32);
-    expect(deltaOf(d)).toBe(-11);
-    expect(deltaOf(a) + deltaOf(b)).toBe(43);
     expect(formula.every((x) => x.provisional)).toBe(true);
+    // By place alone, everyone new at 1200 so every E is 0.5: the last −32, the one above him −11 (spec
+    // §11.2, N = 4).
+    const byPlace = await formulaFor(game!.id);
+    const placeDelta = (s: FakeClientSummary) => byPlace.find((x) => x.playerId === s.playerId)!.delta;
+    expect(placeDelta(c)).toBe(-32);
+    expect(placeDelta(d)).toBe(-11);
+    expect(placeDelta(a) + placeDelta(b)).toBe(43);
+    // The guards only take: a loss from Cyd (a leaver in every pair), a gain from Ana and Ben (stayers in
+    // every pair with a leaver). Dan is the leaver against Ana and Ben, the stayer against Cyd.
+    const deltaOf = (s: FakeClientSummary) => formula.find((x) => x.playerId === s.playerId)!.delta;
+    expect(deltaOf(c)).toBeGreaterThanOrEqual(placeDelta(c));
+    expect(deltaOf(c)).toBeLessThanOrEqual(0);
+    for (const s of [a, b]) expect(deltaOf(s)).toBeLessThanOrEqual(placeDelta(s));
+    const kinds = (s: FakeClientSummary) => (guards.get(s.playerId) ?? []).map((g) => g.kind);
+    expect(kinds(c).every((k) => k === 'noLoss')).toBe(true);
+    expect([...kinds(a), ...kinds(b)].every((k) => k === 'noGain')).toBe(true);
 
     // Results-4P: the change against each opponent came to the phones with the result, as the engine split
     // it (eloPairs over the same seats), each player's pairs adding up to their change.
@@ -283,6 +303,7 @@ describe('a rated game of 4 (work plan stage 10, "סיום")', () => {
           games: 0,
           place: x.place!,
           abandoned: x.status === 'abandoned',
+          guards: guards.get(x.userId!) ?? [],
         };
       }),
     );

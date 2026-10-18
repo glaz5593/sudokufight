@@ -308,9 +308,12 @@ function narration(sv: StepView, replay: Replay, who: ReturnType<typeof useWho>,
       break;
     case 'correct':
       line = t('narration.correct', { name, cell, delta: signedText(s.points ?? 0) });
+      // Entered offline and sent on the return [D42].
+      if (s.offline) line = `${line} · ${t('narration.offlineSuffix')}`;
       break;
     case 'wrong':
       line = t('narration.wrong', { name, cell, delta: signedText(-(s.penalty ?? 0)) });
+      if (s.offline) line = `${line} · ${t('narration.offlineSuffix')}`;
       break;
     case 'release':
       line =

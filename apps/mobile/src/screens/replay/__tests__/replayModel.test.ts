@@ -4,12 +4,14 @@ import {
   formatScoreLine,
   type GameEvent,
   type GameState,
+  missedPoints,
+  type Rules,
   stripIsolates,
   TECHNIQUES,
 } from '@sudoku-fight/engine';
 
 import { buildReplay, nextMoment, type Replay, stepAtFraction, stepView } from '../replayModel';
-import { botGame, fourPlayerGame, soloGame } from '../testing/games';
+import { botGame, configOf, fourPlayerGame, softDropDuel, soloGame, Table } from '../testing/games';
 
 /**
  * The replay model (spec §13; work plan stage 11) on real engine games: a solo practice, a practice played by
@@ -111,10 +113,57 @@ describe('a solo practice', () => {
     expect(mine.played).toBe(wrong.digit);
     expect(mine.answer).toBe(replay.solution![wrong.cell!]);
     expect(mine.answer).not.toBe(mine.played);
-    expect(mine.penalty).toBe(1);
     expect(mine.wrongText).toMatch(new RegExp(`^${wrong.digit} `));
     expect(stripIsolates(mine.text!)).toContain(cellName(wrong.cell!));
     expect(mine.scoreLine).toBeNull();
+  });
+
+  it('explains the penalty: what the right digit would have scored there, with the same formula (§6.5, §13.2)', () => {
+    const wrong = replay.steps.find((s) => s.kind === 'wrong')!;
+    const event = table.log.find((e) => e.type === 'placedWrong')!;
+    const mine = stepView(replay, wrong.index, 'he').explanations[0]!;
+    expect(mine.penalty).toBe(event.type === 'placedWrong' && event.penalty);
+    const before = replay.states[wrong.main! - 1]!.grid;
+    const missed = missedPoints(before, wrong.cell!, mine.answer!);
+    expect(mine.penalty).toBe(missed.points);
+    expect(mine.penaltyLine).toBe(formatScoreLine(missed));
+    expect(mine.penaltyLine).toMatch(/^points = 9 − \d \+ \(9 − \d\) \/ 2 = [\d.]+$/);
+    expect(replay.penaltiesAreMissedPoints).toBe(true);
+    // Only a wrong move has one.
+    const correct = replay.steps.find((s) => s.kind === 'correct')!;
+    expect(stepView(replay, correct.index, 'he').explanations[0]!.penaltyLine).toBeNull();
+  });
+
+  it('a game played before the rule (the 1, 2, 4, 8 ladder) shows no penalty line on any wrong move', () => {
+    // Two mistakes under today's rule: both explained.
+    const now = new Table(configOf('solo', [{ id: 'me', name: 'Moshe' }], { id: 'two-misses' }));
+    now.miss('me', now.cells[0]!);
+    now.miss('me', now.cells[1]!);
+    const fresh = buildReplay(now.log, { me: 'me' });
+    const lines = (r: Replay) =>
+      r.steps
+        .filter((s) => s.kind === 'wrong')
+        .map((s) => stepView(r, s.index, 'he').explanations[0]!)
+        .map((x) => ({ status: x.status, penalty: x.penalty, line: x.penaltyLine }));
+    expect(fresh.penaltiesAreMissedPoints).toBe(true);
+    expect(lines(fresh).every((x) => x.line !== null)).toBe(true);
+
+    // The same game as app 1.0.0 stored it: the [D14] cap in its rules and the first mistake charged 1. The
+    // second one keeps a value missed points could have (as a 2, 4 or 8 of the ladder can), and still gets
+    // no line: the whole game was played under the old rule.
+    let k = 0;
+    const stored = now.log.map((e): GameEvent => {
+      if (e.type === 'gameCreated') {
+        const rules = { ...e.config.rules, mistakePenaltyCap: null } as Rules;
+        return { ...e, config: { ...e.config, rules } };
+      }
+      return e.type === 'placedWrong' && k++ === 0 ? { ...e, penalty: 1 } : e;
+    });
+    const old = buildReplay(stored, { me: 'me' });
+    expect(old.penaltiesAreMissedPoints).toBe(false);
+    const recorded = stored.flatMap((e) => (e.type === 'placedWrong' ? [e.penalty] : []));
+    expect(recorded[0]).toBe(1);
+    expect(lines(old)).toEqual(recorded.map((penalty) => ({ status: 'wrong', penalty, line: null })));
   });
 
   it('teaching mode: a choice shows its answer at once; a choice let go of says why', () => {
@@ -275,6 +324,36 @@ describe('a four-player ranked game', () => {
       ['p4', 3],
     ]);
     expect(replay.timeline.filter((d) => d.playerId === 'p2').every((d) => d.colorIndex === 0)).toBe(true);
+  });
+});
+
+describe('a lost connection in its soft phase (D42)', () => {
+  const table = softDropDuel();
+  const replay = buildReplay(table.log, { me: 'me' });
+
+  it('the loss is a step of its own; the digits sent on the return are steps like any, marked offline', () => {
+    const offline = replay.steps.filter((s) => s.kind === 'offline');
+    expect(offline).toHaveLength(1);
+    expect(offline[0]).toMatchObject({ playerId: 'nina', cell: null, offline: false });
+    const marked = replay.steps.filter((s) => s.offline);
+    expect(marked.map((s) => [s.kind, s.playerId])).toEqual([
+      ['correct', 'nina'],
+      ['wrong', 'nina'],
+    ]);
+    expect(replay.steps.filter((s) => s.kind === 'correct' && !s.offline).length).toBeGreaterThan(0);
+    // Nothing froze: no disconnect step, and the game ran all along.
+    expect(replay.steps.some((s) => s.kind === 'disconnect')).toBe(false);
+    expect(stepView(replay, offline[0]!.index, 'he').state.status).toBe('running');
+  });
+
+  it('reproduces every state', () => {
+    expectFaithful(replay, table.log, table.state);
+  });
+
+  it('explains the digit sent on the return like any other', () => {
+    const correct = replay.steps.find((s) => s.offline && s.kind === 'correct')!;
+    const x = stepView(replay, correct.index, 'he').explanations.find((e) => e.playerId === 'nina')!;
+    expect(x).toMatchObject({ status: 'correct', live: true, cell: correct.cell });
   });
 });
 

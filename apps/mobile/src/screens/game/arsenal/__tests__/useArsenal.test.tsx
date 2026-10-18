@@ -30,35 +30,35 @@ async function controller() {
   return { ...hook, onLaunch, run };
 }
 
-describe('useArsenal: the arsenal’s state for the screen (spec §7.3)', () => {
-  it('closed: no card is a drop zone, none dims, ⚡ is not expanded', async () => {
+describe('useArsenal: the interference picker’s state for the screen (spec §7.3) [D45]', () => {
+  it('closed: no card is the target, none dims, "הפרעה" is not expanded', async () => {
     const { result } = await controller();
     expect(result.current.targetId).toBeNull();
-    expect(result.current.cardProps(NINA, 'NinaVolt')).toEqual({
-      dropTarget: false,
-      dropHover: false,
+    expect(result.current.cardProps(NINA)).toEqual({
+      targeted: false,
       dimmed: false,
-      dropLabel: undefined,
       interferenceExpanded: false,
     });
   });
 
-  it('opened from a card: that card is the one drop zone, every other card dims (3–4 players too)', async () => {
+  it('opened from a card: that card is the one target, every other card dims (3–4 players too)', async () => {
     const { result, run } = await controller();
     await run(() => result.current.open(NINA));
     expect(cues()).toEqual(['arsenalOpen']);
-    expect(result.current.cardProps(NINA, 'NinaVolt')).toEqual({
-      dropTarget: true,
-      dropHover: false,
+    expect(result.current.cardProps(NINA)).toEqual({
+      targeted: true,
       dimmed: false,
-      dropLabel: `גרור לכאן הפרעה מהארסנל כדי לשגר אל ${isolate('NinaVolt')}`,
       interferenceExpanded: true,
     });
-    expect(result.current.cardProps(AIKO, 'Aiko_M')).toMatchObject({ dropTarget: false, dimmed: true });
-    expect(result.current.cardProps('me', 'אני')).toMatchObject({ dropTarget: false, dimmed: true });
+    expect(result.current.cardProps(AIKO)).toEqual({
+      targeted: false,
+      dimmed: true,
+      interferenceExpanded: false,
+    });
+    expect(result.current.cardProps('me')).toMatchObject({ targeted: false, dimmed: true });
   });
 
-  it('toggle: ⚡ on the same card closes it, on another card moves the zone there', async () => {
+  it('toggle: "הפרעה" on the same card closes it, on another card moves the target there', async () => {
     const { result, run } = await controller();
     await run(() => result.current.toggle(NINA));
     expect(result.current.targetId).toBe(NINA);
@@ -68,62 +68,32 @@ describe('useArsenal: the arsenal’s state for the screen (spec §7.3)', () => 
     expect(result.current.targetId).toBeNull();
   });
 
-  it('a drag: lift, over the zone (one buzz per entry), and the drop label names the token', async () => {
-    const { result, run } = await controller();
-    await run(() => result.current.open(NINA));
-    await run(() => result.current.lift('warp'));
-    expect(result.current.dragKind).toBe('warp');
-    await run(() => result.current.setHover(true));
-    await run(() => result.current.setHover(true));
-    expect(result.current.cardProps(NINA, 'NinaVolt')).toMatchObject({
-      dropHover: true,
-      dropLabel: `שחרר כאן: שיגור עיוות אל ${isolate('NinaVolt')}`,
-    });
-    await run(() => result.current.setHover(false));
-    expect(result.current.hover).toBe(false);
-    await run(() => result.current.setHover(true));
-    expect(cues()).toEqual(['arsenalOpen', 'tokenLift', 'dropZoneEnter', 'dropZoneEnter']);
-  });
-
-  it('a drop on the zone launches once at the card it was opened from, and closes', async () => {
+  it('launch: once, at the card it was opened from, and it closes (a quick double tap sends one)', async () => {
     const { result, run, onLaunch } = await controller();
     await run(() => result.current.open(NINA));
-    await run(() => result.current.lift('fireworks'));
+    let first = false;
+    let second = true;
     await run(() => {
-      result.current.release('fireworks', true);
-      // A second drop before the screen updates must not launch again.
-      result.current.release('fireworks', true);
+      first = result.current.launch('scramble');
+      // A second tap before the screen updates must not launch again.
+      second = result.current.launch('fireworks');
     });
+    expect([first, second]).toEqual([true, false]);
     expect(onLaunch).toHaveBeenCalledTimes(1);
-    expect(onLaunch).toHaveBeenCalledWith(NINA, 'fireworks');
-    expect(cues()).toContain('launch');
+    expect(onLaunch).toHaveBeenCalledWith(NINA, 'scramble');
+    expect(cues()).toEqual(['arsenalOpen', 'launch']);
     expect(result.current.targetId).toBeNull();
-    // The ghost is still landing; then the drag is over.
-    expect(result.current.dragKind).toBe('fireworks');
-    await run(() => result.current.settle());
-    expect(result.current.dragKind).toBeNull();
+    expect(result.current.cardProps(NINA)).toMatchObject({ targeted: false, dimmed: false });
   });
 
-  it('a drop elsewhere, or after it closed, launches nothing', async () => {
+  it('launch while closed does nothing', async () => {
     const { result, run, onLaunch } = await controller();
+    await run(() => void result.current.launch('cats'));
     await run(() => result.current.open(NINA));
-    await run(() => result.current.release('cats', false));
-    expect(result.current.targetId).toBe(NINA);
     await run(() => result.current.close());
-    await run(() => result.current.release('cats', true));
+    await run(() => void result.current.launch('cats'));
     expect(onLaunch).not.toHaveBeenCalled();
     expect(cues()).not.toContain('launch');
-  });
-
-  it('closing mid-drag ends the drag: the token left with the tray, nothing is over the zone', async () => {
-    const { result, run, onLaunch } = await controller();
-    await run(() => result.current.open(NINA));
-    await run(() => result.current.lift('warp'));
-    await run(() => result.current.setHover(true));
-    await run(() => result.current.close());
-    expect(result.current).toMatchObject({ targetId: null, dragKind: null, hover: false });
-    expect(result.current.cardProps(NINA, 'NinaVolt')).toMatchObject({ dropTarget: false, dropHover: false });
-    expect(onLaunch).not.toHaveBeenCalled();
   });
 
   it('measures a card through its ref; an unmounted or empty one says nothing', async () => {
@@ -141,17 +111,46 @@ describe('useArsenal: the arsenal’s state for the screen (spec §7.3)', () => 
     expect(done).toHaveBeenCalledTimes(1);
   });
 
-  it('⚡ short of points: an error toast with the cost and a light haptic; other blocked states are silent', async () => {
+  it('"הפרעה" while blocked: a short toast with the reason and a light haptic, never the picker', async () => {
     const { result, run } = await controller();
-    await run(() => result.current.blocked({ kind: 'busy', cost: 4, secondsLeft: 3 }));
-    expect(useToast.getState().current).toBeNull();
-    await run(() => result.current.blocked({ kind: 'points', cost: 8, missing: 3 }));
+    await run(() => result.current.blocked({ kind: 'points', cost: 8, missing: 3 }, 'NinaVolt'));
     expect(useToast.getState().current).toMatchObject({
       variant: 'error',
       message: 'אין מספיק נקודות להפרעה הבאה (8 נק׳)',
     });
-    expect(cues()).toEqual(['nudge']);
+    useToast.getState().clear();
+    await run(() => result.current.blocked({ kind: 'busy', cost: 4, secondsLeft: 2 }, 'NinaVolt'));
+    expect(useToast.getState().current).toMatchObject({
+      variant: 'warning',
+      message: `${isolate('NinaVolt')} כבר תחת הפרעה. אפשר שוב בעוד 2 שניות`,
+    });
+    useToast.getState().clear();
+    await run(() => result.current.blocked({ kind: 'busy', cost: 4, secondsLeft: 1 }, 'NinaVolt'));
+    expect(useToast.getState().current?.message).toBe(
+      `${isolate('NinaVolt')} כבר תחת הפרעה. אפשר שוב בעוד שנייה`,
+    );
+    useToast.getState().clear();
+    await run(() => result.current.blocked({ kind: 'notRunning', cost: 2 }, 'NinaVolt'));
+    expect(useToast.getState().current).toMatchObject({ variant: 'info', message: 'אי אפשר להפריע כרגע' });
+    expect(cues()).toEqual(['nudge', 'nudge', 'nudge', 'nudge']);
     expect(result.current.targetId).toBeNull();
+  });
+
+  it('in English', async () => {
+    await i18n.changeLanguage('en');
+    const { result, run } = await controller();
+    await run(() => result.current.blocked({ kind: 'busy', cost: 4, secondsLeft: 3 }, 'Aiko_M'));
+    expect(useToast.getState().current?.message).toBe(
+      `${isolate('Aiko_M')} is already under interference. Try again in 3 seconds`,
+    );
+  });
+
+  it('a hidden button (disconnected, out) says nothing', async () => {
+    const { result, run } = await controller();
+    await run(() => result.current.blocked({ kind: 'out', cost: 2 }, 'NinaVolt'));
+    await run(() => result.current.blocked({ kind: 'disconnected', cost: 2 }, 'NinaVolt'));
+    expect(useToast.getState().current).toBeNull();
+    expect(cues()).toEqual([]);
   });
 });
 

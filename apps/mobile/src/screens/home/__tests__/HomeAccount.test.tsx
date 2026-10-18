@@ -1,13 +1,15 @@
 // First: expo-router's testing library swaps Reanimated for its old mock (no useReducedMotion), unless the real
 // module is already in place as the mock (see the jest.mock below).
 import 'react-native-reanimated';
-import { fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
+import { router } from 'expo-router';
+import { act, fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
 import { StyleSheet, Text } from 'react-native';
 
 import { card as playerCard, myProgress } from '../../../api/testing/fakeProgress';
 import { initAuth, setAuthDeps, useAuth } from '../../../auth/authStore';
 import { installSignedInPlayer, type TestAuth } from '../../../auth/testing/testAuth';
 import { metrics } from '../../../components/player/metrics';
+import { accountConfig } from '../../../config/account';
 import { directionProblems, PHONE, setWindow, textWidth } from '../../../components/ui/testing/layout';
 import { openPracticeRepo } from '../../../game/practiceRepo';
 import { practiceStorageOrNull } from '../../../game/storage';
@@ -193,6 +195,49 @@ describe('Home with an account (stage 8)', () => {
     await renderApp('/', EXTRA);
     await waitFor(() => expect(useAuth.getState().meOffline).toBe(false));
     expect(auth.server.calls.slice(before)).toEqual(['GET /v1/me']);
+  });
+
+  it('comes into view again: reads the account when the last answer is older than refresh.minIntervalMs (a ranked game since)', async () => {
+    auth = await installSignedInPlayer();
+    const clock = { now: 5_000_000 };
+    setAuthDeps({ ...auth.deps, now: () => clock.now });
+    await initAuth();
+    const gets = () => auth.server.calls.filter((c) => c === 'GET /v1/me').length;
+    expect(gets()).toBe(1);
+    const app = await renderApp('/', EXTRA);
+    const card = await screen.findByTestId('profile-card');
+    expect(within(card).getByTestId('rating-fast')).toHaveTextContent(/1200זמני$/);
+    // Just read: Home does not ask again.
+    expect(gets()).toBe(1);
+
+    // The server stored a ranked game meanwhile.
+    const row = auth.server.users.get(auth.provider.currentUser()!.uid)!;
+    row.me = {
+      ...row.me,
+      ratings: row.me.ratings.map((r) =>
+        r.key === 'fast' ? { ...r, rating: 1232, games: 1, peak: 1232 } : r,
+      ),
+    };
+    const away = async () => {
+      await fireEvent.press(screen.getByTestId('profile-card'));
+      await waitFor(() => expect(app.pathname()).toBe(`/player/${useAuth.getState().me!.id}`));
+      await act(async () => router.back());
+      await waitFor(() => expect(app.pathname()).toBe('/'));
+    };
+    clock.now += accountConfig.refresh.minIntervalMs - 1;
+    await away();
+    expect(gets()).toBe(1);
+    clock.now += 1;
+    await away();
+    await waitFor(() =>
+      expect(within(screen.getByTestId('profile-card')).getByTestId('rating-fast')).toHaveTextContent(
+        /1232זמני$/,
+      ),
+    );
+    expect(gets()).toBe(2);
+    // And not again within the interval.
+    await away();
+    expect(gets()).toBe(2);
   });
 
   it('speaks English too', async () => {

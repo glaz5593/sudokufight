@@ -120,9 +120,55 @@ describe('"כן, לסיים" against a bot (spec §6.6)', () => {
     expect(crash.recordError).not.toHaveBeenCalled();
     expect(breadcrumbs()).toEqual([
       'game: end of practice confirmed',
-      'game: game over (practiceEnded)',
+      expect.stringMatching(/^game: game over \(practiceEnded\) locks=\d modal=true hit=false$/),
+      'game: results in 0 ms, after the dialogs',
       'game: opening the results',
     ]);
+  });
+
+  it('the results that do not replace the game: after the watchdog, "לתוצאות" and "לבית", and a report', async () => {
+    const onHome = jest.fn();
+    game = duel();
+    const onEnded = jest.fn();
+    await render(
+      <GameScreen session={game.session} onEnded={onEnded} onHome={onHome} resultsWatchdogMs={3_000} />,
+    );
+    await endIt();
+    await frames(motion.duration.sheetOut + 100);
+    expect(onEnded).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('results-fallback')).toBeNull();
+    // The screen is still here (the navigation was lost).
+    await frames(3_000);
+    expect(screen.getByTestId('results-fallback')).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'המסך לא נטען' })).toBeOnTheScreen();
+    expect(screen.getByText('אפשר להמשיך לתוצאות או לחזור לבית.')).toBeOnTheScreen();
+    expect(crash.recordError).toHaveBeenCalledTimes(1);
+    expect(crash.recordError).toHaveBeenCalledWith(
+      new Error('the results did not replace the game'),
+      'game: results watchdog',
+    );
+    expect(breadcrumbs()).toContain('game: results did not open');
+
+    await fireEvent.press(screen.getByRole('button', { name: 'לתוצאות' }));
+    expect(onEnded).toHaveBeenCalledTimes(2);
+    expect(screen.queryByTestId('results-fallback')).toBeNull();
+    // Still nothing: it comes back, and "לבית" leaves.
+    await frames(3_000);
+    await fireEvent.press(screen.getByRole('button', { name: 'לבית' }));
+    expect(onHome).toHaveBeenCalledTimes(1);
+  });
+
+  it('the results open from a timer of the screen, never inside the host’s update', async () => {
+    const g = await show();
+    // A listener after the screen's: had the results opened inside the update, it would see them.
+    const seenInside: number[] = [];
+    g.host.subscribe(() => seenInside.push(g.onEnded.mock.calls.length));
+    await endIt();
+    expect(seenInside.length).toBeGreaterThan(0);
+    expect(seenInside.every((n) => n === 0)).toBe(true);
+    expect(g.onEnded).not.toHaveBeenCalled();
+    await frames(motion.duration.sheetOut + 100);
+    expect(g.onEnded).toHaveBeenCalledTimes(1);
   });
 
   it('with reduced motion: after the dialog’s 200 ms fade', async () => {

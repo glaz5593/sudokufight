@@ -30,6 +30,10 @@ export const DEFAULT_MESSAGE_LIMITS: MessageLimits = {
   interfere: { limit: 3, windowMs: 1000 },
   react: { limit: 2, windowMs: 2000 },
   surrender: { limit: 2, windowMs: 1000 },
+  // The moves made offline go out in one burst on the return, at most rules.offlineMovesMax (8) [D42], and once
+  // more if the connection went again before their answers: two bursts. A move dropped here is not answered;
+  // the phone sends it again after a while (RemoteHostOptions.offlineAnswerTimeoutMs).
+  offlineMove: { limit: 16, windowMs: 1000 },
   // 2 a second, with a burst of 5 for a quick clock sync.
   ping: { limit: 5, windowMs: 2500 },
 };
@@ -75,6 +79,14 @@ const SHAPES = {
   }),
   react: z.strictObject({ type: typeField('react'), clientSeq, emoji: z.string().max(16) }),
   surrender: z.strictObject({ type: typeField('surrender'), clientSeq }),
+  // [D42] thinkMs is the phone's own measure; the engine clamps it to the think time.
+  offlineMove: z.strictObject({
+    type: typeField('offlineMove'),
+    clientSeq,
+    cell: z.int(),
+    digit: z.int(),
+    thinkMs: z.int().min(0).max(600_000),
+  }),
   ping: z.strictObject({ type: typeField('ping'), t: z.number() }),
 } satisfies Record<ClientMessageType, z.ZodType>;
 
@@ -119,6 +131,18 @@ export function parseClientMessage(type: ClientMessageType, payload: unknown): P
     case 'surrender': {
       const r = SHAPES.surrender.safeParse(payload);
       return r.success ? act(r.data.clientSeq, { type }) : null;
+    }
+    case 'offlineMove': {
+      const r = SHAPES.offlineMove.safeParse(payload);
+      // As for place: the engine checks the cell and the digit.
+      return r.success
+        ? act(r.data.clientSeq, {
+            type,
+            cell: r.data.cell,
+            digit: r.data.digit,
+            thinkMs: r.data.thinkMs,
+          } as ClientAction)
+        : null;
     }
   }
 }

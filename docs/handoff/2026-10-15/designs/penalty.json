@@ -1,0 +1,288 @@
+{
+  "item": "קנס על ספרה שגויה = הנקודות שהספרה הנכונה הייתה מקבלת באותו רגע (מחליף את הסולם 1, 2, 4, 8 של §13 במקור)",
+  "summary": "היום כל טעות עולה 2^(k−1) נקודות, כש־k הוא מספר הטעות של השחקן במשחק (`mistakePenalty(k, cap)` ב־packages/engine/src/sudoku/scoring.ts, נקרא ב־engine.ts בענף הטעות של `place`). משה החליט במפורש שהקנס יהיה הנקודות שהשחקן היה מקבל אילו הזין את הספרה הנכונה באותה משבצת באותו רגע. כלומר אותה נוסחה של §6.4, ‏`9 − X + (9 − Y) / 2`, על הלוח שלפני ההזנה ועם הספרה מהפתרון. הקנס יהיה בין 1.5 ל־13.5, ולא יהיה תלוי במספר הטעות. לכן ההצעה D14 (תקרה) כבר לא רלוונטית. מונה הטעויות נשאר כמו שהוא, כי משתמשים בו שובר השוויון D16, הפרס \"הכי מעט טעויות\", הסטטיסטיקות, ההיסטוריה וממשק הניהול. מבנה האירוע `placedWrong` לא משתנה, ולכן אין צורך להעלות את גרסת הפרוטוקול. בממשק רק נקודות הקנס (pips) בכרטיס הקומפקטי מחשבות את הקנס בעצמן לפי מספר הטעות, ולכן הן צריכות לקבל את הערכים מהמנוע. בנוסף צריך לעדכן את הטיפים (Splash וטעינה), את התיעוד, את קובץ ה־fixtures ובדיקות רבות שקבועים בהן ‎−1, ‏‎−2, ‏‎−4 ו־‎−8. עלות ההפרעה (D10, ‏2^n) לא משתנה.",
+  "rootCauses": [],
+  "design": "1. RULE (engine, server-authoritative)\n- A wrong digit d in cell c by player P costs: penalty = moveScore(grid, c, solution[c], rules.scoreY).points, where `grid` is state.grid at the moment of the place action (wrong marks are never on the grid, so it is exactly \"the board before the entry\"). Range 1.5–13.5 in steps of 0.5. Independent of P's mistake count, of who erred before in that cell, and of the wrong digit itself.\n- It follows the board: the same cell costs less as its row/column/box/digit fill (e.g. PUZZLE bank #1: A2 costs 7.5 on the opening board, 6.5 once A1 is solved).\n- It respects [D13] (rules.scoreY): A2 on the opening board costs 7.5 with 'sorted', 8 with 'distinct'.\n- Unchanged: `mistakes` still +1 per wrong digit (tie-break D16, fewestMistakes award, stats, history, admin, XP and achievement proposals). [D15] negativeScore:false still clamps the score at 0, and the event still carries the full penalty. [D3] keepLock: every further wrong digit in the kept lock costs the cell's value on the board at that moment. [D12] digitTried/digitComplete refusals cost nothing. 'turns' model and play under interference: the same. Interference cost 2^n [D10]: NOT touched. Timeout penalty [D2] (cellReleased.penalty, rules.timeoutPenalty): NOT touched.\n- Gameplay consequence (worth telling Moshe): a 50/50 guess now has expected value about 0 (+P or −P) and with 3 or more candidates it is negative. Under the old rule an early guess cost only 1, so spraying guesses early paid off. Early honest mistakes are now expensive (about 6–9 on an opening board instead of 1); late ones are cheap (about 1.5–3).\n\n2. ENGINE CHANGES\npackages/engine/src/sudoku/scoring.ts\n- Add:\n  /** §6.5 (Moshe, 2026-10-15; replaces the 1, 2, 4, 8… of the original §13): what the right digit would have scored in `cell` now. */\n  export function missedPoints(grid: Grid, cell: CellIndex, right: Digit, y: ScoreY = 'sorted'): MoveScore { return moveScore(grid, cell, right, y); }\n- Rename `mistakePenalty(k, cap)` to `doublingPenalty(k: number): number` (2^(k−1); RangeError for k < 1 or non-integer), with no `cap` parameter. It is kept only for the 'doubling' alternative.\n- Update the header comment (§6.5 now: missed points). Remove the D14 wording. `interferenceCost` is unchanged.\npackages/engine/src/game/rules.ts\n- `export type MistakePenaltyRule = 'missedPoints' | 'doubling';`\n- In `Rules`, replace `mistakePenaltyCap: number | null` with `mistakePenalty: MistakePenaltyRule;` and the doc comment \"§6.5: what the right digit would have scored there (default, Moshe 2026-10-15), or the original §13 ladder 1, 2, 4, 8… The [D14] cap went with the ladder.\"\n- In `defaultRules`, use `mistakePenalty: 'missedPoints'` (all modes: solo, bot and ranked).\npackages/engine/src/game/engine.ts\n- Change the import to `doublingPenalty, missedPoints, moveScore`.\n- Add a helper:\n  function wrongDigitPenalty(s: GameState, cell: CellIndex, mistakes: number): number {\n    const rules = s.config.rules;\n    if (rules.mistakePenalty === 'doubling') return doublingPenalty(mistakes);\n    const right = Number(s.config.puzzle.solution[cell]);\n    if (!isDigit(right)) throw new Error(`No solution digit for cell ${cell}`);\n    return missedPoints(s.grid, cell, right, rules.scoreY).points;\n  }\n  Any value other than 'doubling' (including undefined in a config stored before the field existed) means missed points.\n- In the `place` wrong branch, use `const penalty = wrongDigitPenalty(s, lock.cell, mistakes);`. The rest is unchanged: score clamp, the emitted event, release and passTurn.\npackages/engine/src/game/types.ts\n- In PlayerState, add `/** The penalty of each of this player's mistakes, oldest first (§6.5); length = mistakes. */ mistakePenalties: number[];`\n- The `placedWrong` event body is UNCHANGED: { playerId, cell, digit, penalty, mistakes, score }. Deliberately no breakdown and no right digit. A breakdown would leak `num` (how many copies of the right digit are on the board) to every client during a ranked game.\npackages/engine/src/game/evolve.ts\n- In initialState players, add `mistakePenalties: []`.\n- In case 'placedWrong', add `p.mistakePenalties = [...(p.mistakePenalties ?? []), e.penalty];`. The `?? []` covers a snapshot from a server older than this field. Replays of old logs rebuild it from the events' own penalty values (the old 1, 2, 4…), so old games stay exact.\npackages/engine/src/game/view.ts\n- In PlayerView, add `/** Each mistake's penalty, oldest first (§6.5), as the engine charged it. */ mistakePenalties: number[];`\n- In toView, add `mistakePenalties: (p.mistakePenalties ?? []).slice()` as a copy.\n- GameView.rules does not need the new rule.\n- Optional: bump ENGINE_VERSION (src/index.ts) once for the whole batch (see decisions).\n\n3. PROTOCOL AND SERVER\n- packages/protocol/src/room.ts: remove 'mistakePenaltyCap' from GameRoomRuleOverrides. Do not add 'mistakePenalty' unless asked. No PROTOCOL_VERSION bump: the change only adds a GameState field, and the events are unchanged.\n- apps/server/src/game/options.ts: remove `mistakePenaltyCap` from rulesSchema. The schema is strictObject, so an old `{mistakePenaltyCap: …}` is now refused with badOptions.\n- No other server code computes or validates penalties (cheat/fastThinking, metrics, persistence/records, history, admin, xp only pass along the event values or the final score; final_score is `real`, which already holds halves). Production plays defaultRules (matchmaking gameRules {}), so the new rule is live after deploy.\n- Admin site: shows rules as JSON and scores with 1 decimal. No change.\n\n4. MOBILE (no game logic in the UI; values come from the engine)\n- apps/mobile/src/components/player/cardModel.ts: drop the `mistakePenalty` import. Change to `mistakePips(mistakes: number, penalties: readonly number[]): MistakePips => ({ overflow: mistakes >= 5 ? mistakes : null, penalties: penalties.slice(-2) })`. The call in cardModel becomes `pips: mistakePips(p.mistakes, p.mistakePenalties)`. Update the MistakePips doc comment (\"e.g. −8, −6.5\"). PlayerCardCompact.Pips already renders `signedText(-p)`, and formatScore shows halves (\"−6.5\") inside an LTR isolate, so no change is needed there. If the penalties are fewer than the mistakes (a snapshot from an old server), it shows what it has.\n- apps/mobile/src/screens/account/SplashScreen.tsx: in splashTip, delete the cap branch and the `defaultRules` import (THINK_TIME_MS stays). 'mistake' goes through the generic `t(\\`splash.tips.${tip}\\`)`. Update the doc comment.\n- GameScreen.tsx, effects.ts, feedback.ts, Score.tsx, FlightLayer, reactions.ts and ReplayScreen narration already use the event's `penalty` (signedText(-e.penalty)). No code change there.\n- Replay, which explains the new rule (spec §13.2 extension; see decisions):\n  - replayModel.ts: add to PlayerExplanation `/** A wrong move under 'missedPoints': its penalty's calculation, \"points = 9 − 4 + (9 − 3) / 2 = 8\". */ penaltyLine: string | null` (null in `none`).\n  - In explanationOf: `const rules = replay.states[0]?.config.rules;` If `s.kind === 'wrong' && rules?.mistakePenalty === 'missedPoints' && s.answer !== null && grid[cell] === 0`, then `const b = missedPoints(grid, cell, s.answer, rules.scoreY); penaltyLine = b.points === s.penalty ? formatScoreLine(b) : null;`. Old games (no field, or 'doubling') get no line. Import missedPoints from the engine. `scoreLine` stays null for wrong moves.\n  - ReplayParts.tsx (explanation card): under `why`, when x.penaltyLine is set, render the same formula block as scoreLine, with the label t('explain.penaltyLine') and testID `${testID}-penalty`, the formula wrapped in ltr(). Add `${t('explain.penaltyLine')}: ${ltr(x.penaltyLine)}` to the accessibility label.\n- i18n (he and en, same keys; i18n:check must pass with no unused-key warning):\n  - account.json splash.tips.mistake:\n    he: \"טעות עולה בדיוק את הנקודות שהספרה הנכונה הייתה מקבלת. עדיף לחשוב עוד רגע.\"\n    en: \"A mistake costs exactly the points the right digit would have earned. Better to think a moment longer.\"\n  - account.json: DELETE splash.tips.mistakeCapped (he and en).\n  - game.json connection.connecting.tips.mistakes:\n    he: \"טעות מורידה בדיוק את מה שהספרה הנכונה הייתה שווה באותה משבצת. משבצת ששווה הרבה עולה הרבה כשטועים בה.\"\n    en: \"A mistake takes away exactly what the right digit was worth in that cell. A cell worth a lot costs a lot to get wrong.\"\n  - replay.json explain.penaltyLine:\n    he: \"הקנס: כמה הייתה שווה הספרה הנכונה\"\n    en: \"The penalty: what the right digit was worth\"\n  - live.wrong and live.oppWrong are unchanged: {{penalty}} is already signedText.\n- Hand-built PlayerView literals must get `mistakePenalties` (typecheck will flag them): components/player/__fixtures__/gameView.ts (player() default `mistakePenalties: []`; give players that have mistakes realistic lists, e.g. moshe in twoPlayerView [6.5]; in fourPlayerView moshe [5], nina [5.5, 4.5]), avatars/__tests__/reactions.test.ts (player helper ~l.89), screens/game/connection/__tests__/designFidelity.test.tsx (~l.192).\n\n5. FIXTURE DATA\n- assets/puzzles/design-fixtures.json: regenerate the penalties with a one-off script in the scratchpad (not committed). For every 'wrong' entry, set penalty = missedPoints(board before it, cell, solution digit). Then rewrite EVERY later log entry's running `score` for that seat (correct entries too), and the players[].score finals. Computed values:\n  - solo: D2 −6 (score 42); final 68.5.\n  - bot2p: E3 −4.5 (29); finals 40 and 42.\n  - ranked2p: H1 s1 −6 (12.5); E9 s0 −4 (38.5); A5 s1 −5 (26.5); finals 52 and 31.5.\n  - ranked3p: D5 s2 −6.5 (6.5); C6 s2 −6 (16); finals 52.5, 17.5 and 23.5.\n  - ranked4p: D3 s1 −5.5 (−5.5); E5 s1 −4.5 (−10); B3 s0 −5 (12.5); finals 26.5, −4.5, 36.5 and 39.\n  - replay: H1 s1 −6 (12.5); finals 38.5 and 22.5.\n  - finished2p: H4 s0 −6 (1.5); G6 s0 −5.5 (8); B9 s0 −5 (3); H1 s1 −4.5 (42); A1 s1 −5 (48.5); A9 s0 −3.5 (17); finals 36.5 and 90.\n  Optionally extend `note` to say penalties follow spec §6.5. explain.test.ts uses the fixture only for techniques and is unaffected.\n\n6. REFERENCE VALUES for tests (engine PUZZLE bank #1, computed with the real moveScore)\n- Opening board (cell: right digit → value): A1 8, A2 7.5, A5 8, A6 6.5, A8 6.5, B1 7, B2 8, B4 9, B7 6, C1 6.5, C4 8, C7 6, D1 7.5.\n- After A1 is solved: A2 6.5, A5 7, A6 6, A8 6, B1 6.5. After A1 and B4: A5 6.5, B1 6.5. After A1 and A2: B1 6.\n- ONE_EIGHT_LEFT puzzle: A2 6.5. SIX_HOLES after A1, A2, B4, C7 are solved: B1 1.5.\n- Nearly solved boards in endgame.test (T, T8): every cell 1.5. In T10: A2 is 3 and the rest 1.5. So one err() there is −1.5, two are −3 (same as the old −1 −2) and three are −4.5.\n- Six opening misses A1, A2, A5, A6, A8, B1 → [8, 7.5, 8, 6.5, 6.5, 7], scores −8, −15.5, −23.5, −30, −36.5, −43.5.\n- 3 players: p1 A1, p1 A2, p2 A5, p1 A6, p2 A8, p3 B1 → p1 {mistakes 3, score −22}, p2 {2, −14.5}, p3 {1, −7}.\n- \"Follows the board\" sequence: miss A2 (7.5), solve A1, solve B4, miss A5 (6.5), solve B7, miss A6 (6), miss A8 (5): gained 22, score −3.\n\n7. EDGE CASES\n- An engine with no solution digit for the cell throws: impossible after createGame's checks, and clients never run applyAction for remote games.\n- A mixed-version client and server do not crash: the `?? []` guards and the unchanged event shape cover it.\n- Old stored games (server game_events, practice_events) replay with their recorded penalties, and their replay shows no penalty line.\n- 'doubling' alternative: identical to today without the cap.",
+  "files": [
+    {
+      "path": "packages/engine/src/sudoku/scoring.ts",
+      "change": "Add missedPoints(grid, cell, right, y) → MoveScore (= moveScore with the solution digit). Rename mistakePenalty(k, cap) to doublingPenalty(k) with no cap. Update the header and doc comments (§6.5 new rule, D14 removed)."
+    },
+    {
+      "path": "packages/engine/src/game/rules.ts",
+      "change": "Add type MistakePenaltyRule = 'missedPoints' | 'doubling'. In Rules, replace mistakePenaltyCap with mistakePenalty: MistakePenaltyRule. defaultRules: mistakePenalty 'missedPoints'. Update the doc comment."
+    },
+    {
+      "path": "packages/engine/src/game/engine.ts",
+      "change": "Import doublingPenalty and missedPoints. New helper wrongDigitPenalty(s, cell, mistakes) (any value other than 'doubling' means missedPoints on s.grid with solution[cell] and rules.scoreY). Use it in the place wrong branch instead of mistakePenalty(mistakes, rules.mistakePenaltyCap)."
+    },
+    {
+      "path": "packages/engine/src/game/types.ts",
+      "change": "PlayerState: add mistakePenalties: number[] (each mistake's penalty, oldest first). placedWrong event shape unchanged."
+    },
+    {
+      "path": "packages/engine/src/game/evolve.ts",
+      "change": "initialState: mistakePenalties: []. placedWrong: p.mistakePenalties = [...(p.mistakePenalties ?? []), e.penalty]."
+    },
+    {
+      "path": "packages/engine/src/game/view.ts",
+      "change": "PlayerView: add mistakePenalties: number[]. toView copies (p.mistakePenalties ?? []).slice()."
+    },
+    {
+      "path": "packages/engine/src/index.ts",
+      "change": "Optional: bump ENGINE_VERSION once for the batch (see decisions)."
+    },
+    {
+      "path": "packages/protocol/src/room.ts",
+      "change": "GameRoomRuleOverrides: remove 'mistakePenaltyCap'."
+    },
+    {
+      "path": "apps/server/src/game/options.ts",
+      "change": "rulesSchema: remove mistakePenaltyCap. strictObject now refuses it."
+    },
+    {
+      "path": "apps/mobile/src/components/player/cardModel.ts",
+      "change": "Remove the mistakePenalty import. mistakePips(mistakes, penalties) uses penalties.slice(-2) and keeps overflow from mistakes. cardModel passes p.mistakePenalties. Update the doc comment."
+    },
+    {
+      "path": "apps/mobile/src/screens/account/SplashScreen.tsx",
+      "change": "splashTip: remove the cap branch and the defaultRules import; 'mistake' uses the generic key. Update the comment."
+    },
+    {
+      "path": "apps/mobile/src/screens/replay/replayModel.ts",
+      "change": "PlayerExplanation.penaltyLine: string | null. explanationOf computes formatScoreLine(missedPoints(gridBefore, cell, answer, rules.scoreY)) for wrong steps when config.rules.mistakePenalty === 'missedPoints' and the points equal the event's penalty; otherwise null. Import missedPoints."
+    },
+    {
+      "path": "apps/mobile/src/screens/replay/ReplayParts.tsx",
+      "change": "Explanation card: render the penalty formula block (label t('explain.penaltyLine'), testID `${testID}-penalty`, ltr()) and add it to the accessibilityLabel."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/account.json",
+      "change": "splash.tips.mistake: new text. Delete splash.tips.mistakeCapped."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/account.json",
+      "change": "splash.tips.mistake: new text. Delete splash.tips.mistakeCapped."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/game.json",
+      "change": "connection.connecting.tips.mistakes: new text (no 1, 2, 4, 8)."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/game.json",
+      "change": "connection.connecting.tips.mistakes: new text."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/replay.json",
+      "change": "Add explain.penaltyLine."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/replay.json",
+      "change": "Add explain.penaltyLine."
+    },
+    {
+      "path": "apps/mobile/src/components/player/__fixtures__/gameView.ts",
+      "change": "player() default mistakePenalties: []. Give players with mistakes realistic lists (moshe 2P [6.5]; 4P moshe [5], nina [5.5, 4.5])."
+    },
+    {
+      "path": "assets/puzzles/design-fixtures.json",
+      "change": "Regenerate the wrong entries' penalty, every following running score of that seat, and players[].score finals (values in the design §5)."
+    },
+    {
+      "path": "packages/engine/src/sudoku/scoring.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "packages/engine/src/game/digits.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "packages/engine/src/game/flow.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "packages/engine/src/game/interference.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "packages/engine/src/game/regressions.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "packages/engine/src/game/endgame.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/server/src/game/options.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/server/src/game/serverGame.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/server/test/gameRoom.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/server/src/testing/fakeClient/brain.test.ts",
+      "change": "Drop the mistakePenaltyCap overrides (lines ~307 and ~408)."
+    },
+    {
+      "path": "apps/mobile/src/components/player/__tests__/cardModel.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/mobile/src/components/player/__tests__/PlayerCard.test.tsx",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/mobile/src/game/__tests__/effects.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/__tests__/GameScreen.test.tsx",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/__tests__/GameScreenDuel.test.tsx",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/mobile/src/screens/replay/__tests__/replayModel.test.ts",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/mobile/src/screens/replay/__tests__/ReplayScreen.test.tsx",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/mobile/src/__tests__/soloPractice.e2e.test.tsx",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/mobile/src/screens/account/__tests__/AccountDesign.test.tsx",
+      "change": "See tests."
+    },
+    {
+      "path": "apps/mobile/src/avatars/__tests__/reactions.test.ts",
+      "change": "player() PlayerView literal: add mistakePenalties: [] (typecheck). The synthetic placedWrong events can stay."
+    },
+    {
+      "path": "apps/mobile/src/screens/game/connection/__tests__/designFidelity.test.tsx",
+      "change": "PlayerView literal (~l.192): add mistakePenalties: []."
+    }
+  ],
+  "tests": [
+    "packages/engine/src/sudoku/scoring.test.ts: replace the 'mistakePenalty (§6.5)' describe with 'missedPoints (§6.5)'. (a) It equals moveScore with the right digit: the spec example D5 → 3.5, 13.5 on an empty board, 1.5 for the last cell. (b) It follows [D13] 'distinct'. Add 'doublingPenalty (the original §13 ladder)': 1, 2, 4, 8, 16, 32 and RangeError for 0 and 1.5. Delete the cap test. In 'matches every move of the design fixtures', wrong entries are checked with missedPoints(grid, cell, Number(scenario.solution[cell])).points === e.penalty, and the running scores subtract that value.",
+    "packages/engine/src/game/digits.test.ts 'a wrong digit (§6.5)': rewrite the ladder tests. (1) It costs what the right digit would score there now: miss A1 → {penalty 8, mistakes 1, score −8}, and the penalty equals moveScore(state.grid before, A1, 8).points. (2) Independent of the mistake number: misses A1, A2, A5, A6, A8, B1 → [8, 7.5, 8, 6.5, 6.5, 7], scores [−8, −15.5, −23.5, −30, −36.5, −43.5], mistakes 6. (3) Follows the board: A2 costs 7.5 on the opening board and 6.5 after A1 is solved; full sequence miss A2, solve A1, solve B4, miss A5, solve B7, miss A6, miss A8 → penalties [7.5, 6.5, 6, 5], score = gained (22) − 25 = −3, correct 3, mistakes 4. (4) The same for every player, mistakes counted per player: 3P sequence → p1 {3, −22}, p2 {2, −14.5}, p3 {1, −7}. (5) The event has exactly {type, playerId, cell, digit, penalty: 8, mistakes: 1, score: −8, seq, t}, with no breakdown and no answer. (6) [D13] with rules.scoreY 'distinct', a wrong digit in A2 costs 8. (7) PlayerState and view mistakePenalties list each penalty in order; the view's array is a copy; replayMatches() is true. (8) rules.mistakePenalty 'doubling' gives 1, 2, 4, 8, 16, 32 (the original ladder), so the alternative still works. Delete the '[D14] penalty cap' describe. Update the header comment (drop D14).",
+    "packages/engine/src/game/digits.test.ts, other numbers: l.159 penalty 8; D12 'everyone' p1 {mistakes 1, score −8}; 'every tried digit is refused…' third wrong digit {penalty 8, mistakes 2}, p1 score −16, p2 −8, retitled 'a new wrong digit costs the cell's value again'; D12 'mistaker' p2 {penalty 8, mistakes 1, score −8} and p1 −8; ONE_EIGHT_LEFT A2 penalty 6.5; [D3 keepLock] wrong 5 then 6 → {penalty 8, mistakes 2, score −16}, then the correct 8 → score −8; keepLock timeout → score −8; [D15] default A1 −8 and A2 −15.5 (view −15.5); [D15] negativeScore false: miss A2 {penalty 7.5, mistakes 1, score 0}, solve A1 → 8, miss A5 {penalty 7, score 1}, miss A6 {penalty 6, score 0}, miss A8 {penalty 6, score 0}, solve B4 counts up from 0 (retitle: 'the penalty is charged in full in the event'); l.977 SIX_HOLES B1 penalty 1.5.",
+    "packages/engine/src/game/flow.test.ts: l.261 turns, p1 misses A1 → {penalty 8, mistakes 1, score −8}. The 'are copies' test (~l.1229) also mutates v.players[0].mistakePenalties and expects the state unchanged. Update the '−1' comments (~l.1132).",
+    "packages/engine/src/game/interference.test.ts: l.95–98 miss A1 → score −8; l.457–463 (withPoints: p2 solved A1) wrong in A2 under interference → {penalty 6.5, mistakes 1, score −6.5}; l.693 'shows \"10 points missing\" at a score of −8' → {nextCost 2, missingPoints 10}.",
+    "packages/engine/src/game/regressions.test.ts: §9 Comeback, after p1 solves A1 and A2 (14.5) and surrenders, p2 misses B1 once (−6) → score −6, maxDeficit stays 14.5 ('never 20.5'). §11 surrenderRanking: p1 misses A2 after A1 → −6.5 in both tables; the 4-player byScore p1 misses B1 → −6. §10 and §14 only need their '−1' comments updated.",
+    "packages/engine/src/game/endgame.test.ts: near-board err() is −1.5 each. Update the comments and values. D36 4P (two err) unchanged at −3; byScore table p3 0 instead of 0.5 (places and ratingChanges unchanged); 'scores may be negative' p2 −1.5 and p1 −3; '1, 1, 3' scores [4.5, 4.5, 3]; 'most points' three err = −4.5 → p1 final 2.5. Comeback re-tune: p1 solves A1 (8), p2 misses A5 once (−7) → maxDeficit 15 and comeback 15; 'trailing by 15 and losing': p1 misses A1 (8) and B1 (7) → 15; 'gap counts only against players still in the game': a single A5 miss (stayed 15, left 8).",
+    "packages/engine/src/bot/robustness.test.ts, runner.test.ts and simulation.test.ts: no edits expected (property checks), but rerun them. Scores now drop faster on mistakes, which changes interference and adaptation decisions; re-tune a seed or threshold only if one fails.",
+    "packages/protocol/src/index.test.ts: rerun 'a public snapshot plus the public events … same view'. If its scenario has no mistake, add one, so mistakePenalties is proven to flow through snapshot + evolve.",
+    "apps/server/src/game/options.test.ts: replace mistakePenaltyCap: null in the 'dev rule overrides' case with another override (e.g. relockCooldownMs: 0). Add a case that rules: { mistakePenaltyCap: 8 } is refused (badOptions).",
+    "apps/server/src/game/serverGame.test.ts l.99 and apps/server/test/gameRoom.test.ts l.331–336: the expected penalty is computed with the engine (missedPoints(grid after ana's C1, C2, digitAt(PUZZLE, C2), 'sorted').points, read from game.state before ben's place), and score = −penalty.",
+    "apps/server/src/testing/fakeClient/brain.test.ts: drop { mistakePenaltyCap: 8 } and { mistakePenaltyCap: 4 }. The Overlord test must still see interferences > 0. Rerun.",
+    "apps/mobile/src/components/player/__tests__/cardModel.test.ts: rewrite 'mistakePips (§7.2)': (0, []) → no pips; (1, [8]) → [8]; (2, [8, 6.5]) → [8, 6.5]; (4, [8, 6.5, 6, 5]) → [6, 5]; (5, five values) → overflow 5 plus the last two; halves kept; fewer penalties than mistakes shows what it has. cardModel(view).pips comes from view.players[].mistakePenalties.",
+    "apps/mobile/src/components/player/__tests__/PlayerCard.test.tsx: l.224 pips text ltr('−5.5') + ltr('−4.5') (from the fixture). l.250–253 withPlayer(…, 'nina', { mistakes: 6, mistakePenalties: [8, 7.5, 6, 6.5, 5, 3.5] }) → ltr('×6') + ltr('−5') + ltr('−3.5').",
+    "apps/mobile/src/game/__tests__/effects.test.ts l.49–66: penalty and score come from the engine: missedPoints(parseGrid(PUZZLE.givens), A, answer).points.",
+    "apps/mobile/src/screens/game/__tests__/GameScreen.test.tsx l.177–203: read `penalty` from the placedWrong event (and assert it equals missedPoints on the board before). Expect myScore −penalty, flight/delta signedText(−penalty), scoreText(−penalty), and live text with signedText(−penalty).",
+    "apps/mobile/src/screens/game/__tests__/GameScreenDuel.test.tsx l.194–222: the same with the bot's placedWrong.penalty. The card label and the lead announcement must use the right plural form for the new gap (build the expected strings with i18n.t rather than literals: 'נקודות', 'מוביל ב־X נקודות').",
+    "apps/mobile/src/screens/replay/__tests__/replayModel.test.ts l.107–118: mine.penalty === the event's penalty. mine.penaltyLine === formatScoreLine(missedPoints(gridBefore, cell, answer)); scoreLine is still null. New: a log whose gameCreated rules lack mistakePenalty, or have 'doubling', gives penaltyLine null.",
+    "apps/mobile/src/screens/replay/__tests__/ReplayScreen.test.tsx l.143–145: status chip `טעות ${signedText(−wrong.penalty)}`. The 'replay-explain-me-penalty' text equals ltr(penaltyLine), and the accessibility label contains 'הקנס: כמה הייתה שווה הספרה הנכונה'.",
+    "apps/mobile/src/__tests__/soloPractice.e2e.test.tsx: l.287 score === −penalty (from session.events placedWrong); l.302 sum(points) − penalty. Update the comment 'costs 1'.",
+    "apps/mobile/src/screens/account/__tests__/AccountDesign.test.tsx l.198–206: the expected he (and en) splash mistake tip is the new text. Retitle the test (no 'doubling penalty').",
+    "apps/mobile/src/components/dev/__tests__/fixtures.test.ts: rerun. fourPlayerScene's NinaVolt (5 misses on E5) is now far below zero; the places must still be 1–4 and overflow 5.",
+    "Run: npm test, npm run typecheck, npm run i18n:check, npm run lint (the whole of npm run verify)."
+  ],
+  "docs": [
+    "docs/01-SPEC.md §6.5: replace the 2^(k−1) bullet and the D14 proposal. New text: the penalty (Moshe's decision of 15.10.2026, which explicitly replaces the 1, 2, 4, 8 ladder of the original §13) = the points the player would have received had they entered the right digit in that cell at that moment. It is the §6.4 formula on the board before the entry, with the solution's digit; 1.5–13.5 in halves; independent of the mistake number. Example: D5 of the §6.4 example → ‎−3.5. The mistake count is still kept (D16, 'fewest mistakes', stats). Config: `mistakePenalty` in rules ('missedPoints'; the alternative 'doubling' is the original ladder). Wrap signed numbers in LRM/LRI.",
+    "docs/01-SPEC.md §13.2: after the score-line bullet add: for a wrong move, the penalty line is shown with the same formula (what the right digit was worth).",
+    "docs/01-SPEC.md §24 table, D14 row: change to 'the penalty for a mistake (§13) | Moshe's decision: penalty = the points the right digit would have received (6.5), replaces the original's ladder, so there is no cap | the original's ladder (`mistakePenalty: 'doubling'`) | **penalty = missed points** ✓ (2026-10-15)'.",
+    "docs/DECISIONS-PENDING.md §2.2 D14: mark '✓ closed (15.10.2026)' with the decision, and record that the cap is no longer relevant. Update the summary table row 2 (closed: 2.2) and the count.",
+    "docs/RELEASE-CHECKLIST.md l.43: remove D14 from the list of 'pending approval' decisions.",
+    "docs/QA-CHECKLIST.md: l.38 (Splash) tip text 'a mistake costs what the right digit was worth' instead of 'each mistake is double the previous one'. l.65 (11. mistake): the penalty that flies is the cell's value (e.g. ‎−6.5), not ‎−1. Add a row: 4-player compact cards, the pips with halves (‎−6.5 ‎−10.5 and ×n) fit in a 78dp card next to the score.",
+    "docs/02-WORK-PLAN.md: l.134 'penalty (6.5): `mistakePenalty(k)`' → `missedPoints` / `rules.mistakePenalty`. l.188 'the fourth mistake costs 8 points' → note that it was replaced by Moshe's decision (15.10.2026): a mistake costs the value of the right digit. l.28 approval D13–D14: D14 closed.",
+    "docs/design/components.md l.375: the pips show the real penalty of each mistake from `PlayerView.mistakePenalties` (e.g. \"−8\", \"−6.5\"), the last 2, ×n from 5.",
+    "docs/design/motion.md l.137 (penalty.flight): the example chip \"−2\" → \"−6.5\" (example only).",
+    "docs/store/LISTING-APPLE.md l.41 en: '• A wrong digit costs exactly what the right one would have earned. Speed alone won't win.' l.78 he: '• ספרה שגויה עולה בדיוק את מה שהספרה הנכונה הייתה מכניסה. מהירות לבד לא מספיקה.'",
+    "docs/00-original-spec-v1.md: DO NOT EDIT (CLAUDE.md). The override is recorded in 01-SPEC §6.5 and §24 as Moshe's explicit decision."
+  ],
+  "risks": [
+    "טעות בתחילת המשחק יקרה עכשיו בערך פי 6–9 (כ־‎−6 עד ‎−9 במקום ‎−1). ניקוד שלילי בתחילת משחק יהיה נפוץ יותר, ולכן יהיו פחות הפרעות בהתחלה (D10 דורש ניקוד ≥ עלות). גם הספים שכוילו לפי החוק הישן יופעלו מוקדם יותר: ההאטה של הבוט כשהאדם מפגר ב־25 (`BOT_CONFIG.adaptation.humanTrailingBy`), הפרעה של בוט ברמה 2 כשהוא מפגר ב־15 (D40), ופרס Comeback מ־15. בשלב הזה הקוד לא משתנה. כדאי להריץ את בדיקות הסימולציה של הבוט ולבדוק במשחק אמיתי.",
+    "דליפת מידע קטנה: הקנס נשלח לכל השחקנים. כשמספר המופעים של הספרה הנכונה (num) גבוה מהערך השני בגובהו בשורה, בעמודה ובריבוע, הקנס חושף את num. זה מצמצם את המועמדים למשבצת, גם ליריב. הסיכון נמוך: מחשב פותר את הלוח בכל מקרה, ולשחקן אנושי זה זניח. לכן מכוונים לא לשלוח breakdown באירוע.",
+    "רוחב נקודות הקנס בכרטיס הקומפקטי (78dp ב־3–4 שחקנים): ערכים כמו ‎−6.5 ו־‎−10.5 רחבים יותר מ־‎−1 ו־‎−2, אבל צרים מ־‎−16 ו־‎−32 של הסולם הישן. צריך בדיקה ויזואלית במכשיר במשחק של 4 שחקנים.",
+    "גרסאות מעורבות: APK ישן מול שרת חדש מציג נקודות קנס לפי הסולם הישן (קוסמטי) וטיפים ישנים. הניקוד עצמו נכון, כי הוא מגיע מהאירוע. APK חדש מול שרת ישן לא קורס (בזכות `?? []`), ונקודות הקנס מופיעות רק לטעויות שאחרי ה־snapshot. לא מעלים את PROTOCOL_VERSION, כדי לא לנעול את ה־APK של הבודקים.",
+    "משחקים ישנים בהיסטוריה וב־Replay נשארים עם הקנסות שנרשמו (1, 2, 4…), ו'שורת הקנס' לא מוצגת בהם. בהיסטוריה יופיעו משחקים משני החוקים.",
+    "הרבה בדיקות קבועות על ‎−1, ‏‎−2, ‏‎−4 ו־‎−8 במנוע, בשרת ובמובייל. בחלקן המטרה תלויה במספרים, ולכן צריך לבנות מחדש את התרחיש ולא רק להחליף מספר: Comeback בדיוק 15, פער של 14.5, והבדיקות של D14 שנמחקות.",
+    "CLAUDE.md קובע שבסתירה בין האפיון למקור, המקור גובר. אם ההחלטה של משה לא תירשם במפורש ב־01-SPEC (§6.5 ו־§24), סוכן עתידי עלול להחזיר את הסולם 1, 2, 4, 8.",
+    "צריך עדכון שרת (deploy). עד שהשרת יתעדכן, משחק מדורג ממשיך בחוק הישן גם באפליקציה חדשה.",
+    "פריטים אחרים באותו סבב (רמת הקושי של הלוחות, דירוג בפרישה ובנטישה, זמן חסד בניתוק) נוגעים באותם קבצים: rules.ts, engine.ts, results.ts, design-fixtures.json ו־i18n. יש סיכון להתנגשויות merge."
+  ],
+  "decisions": [
+    {
+      "question": "להשאיר את הסולם הישן (1, 2, 4, 8) כאפשרות בהגדרות, `rules.mistakePenalty = 'doubling'`, או למחוק אותו לגמרי?",
+      "recommendedDefault": "להשאיר כאפשרות שלא פעילה כברירת מחדל: `'missedPoints'` היא ברירת המחדל. זה תואם את הכלל של CLAUDE.md, שהחלטות נשמרות כהגדרה, ועולה פונקציה אחת ובדיקה אחת. התקרה (D14) נמחקת."
+    },
+    {
+      "question": "להציג ב־Replay, במהלך שגוי, את חישוב הקנס (\"הקנס: כמה הייתה שווה הספרה הנכונה\" עם הנוסחה ‎9 − X + (9 − Y) / 2)?",
+      "recommendedDefault": "כן. זה מסביר את החוק החדש באותה שפה של שורת הניקוד במהלך נכון (§13.2), ומוצג רק במשחקים ששוחקו לפי החוק החדש."
+    },
+    {
+      "question": "נקודות הקנס בכרטיס הקומפקטי (3–4 שחקנים): להמשיך להציג את שתי הטעויות האחרונות, או רק את האחרונה כדי לחסוך רוחב?",
+      "recommendedDefault": "להמשיך עם שתיים, כמו בעיצוב, ולבדוק במכשיר. אם לא נכנס, לעבור לאחת."
+    },
+    {
+      "question": "איך לתעד שהחוק של המקור (§13) הוחלף במפורש?",
+      "recommendedDefault": "לא לגעת ב־00-original-spec-v1.md. לרשום את ההחלטה ב־01-SPEC (§6.5, ובשורת D14 בטבלה של §24: ✓ 2026-10-15), לסגור את 2.2 ב־DECISIONS-PENDING ולהסיר את D14 מ־RELEASE-CHECKLIST. אם משה רוצה, הוא יכול להוסיף בעצמו שורה ל־CLAUDE.md."
+    },
+    {
+      "question": "החוק החדש חל גם על אימון לבד ועל משחק מול בוט, או רק על משחק מדורג?",
+      "recommendedDefault": "על כל המצבים. אותו מנוע ואותה ברירת מחדל ב־`defaultRules`."
+    },
+    {
+      "question": "לכייל מחדש עכשיו את הספים שנבנו לפי טעויות זולות: האטת הבוט כשהאדם מפגר ב־25, הפרעה של בוט ברמה 2 מ־15 (D40), ו־Comeback מ־15?",
+      "recommendedDefault": "לא עכשיו. לחזור לזה אחרי כמה משחקי בדיקה, עם הנתונים מאתר הניהול."
+    },
+    {
+      "question": "להעלות את ENGINE_VERSION (0.1.0 → 0.2.0) בגלל שינוי חוק?",
+      "recommendedDefault": "כן, פעם אחת לכל הסבב, במיזוג הסופי ולא בכל פריט בנפרד. את ה־PROTOCOL_VERSION לא מעלים."
+    }
+  ],
+  "sharedFiles": [
+    "packages/engine/src/game/rules.ts",
+    "packages/engine/src/game/engine.ts",
+    "packages/engine/src/game/types.ts",
+    "packages/engine/src/game/evolve.ts",
+    "packages/engine/src/game/view.ts",
+    "packages/engine/src/game/results.ts",
+    "packages/engine/src/sudoku/scoring.ts",
+    "packages/engine/src/index.ts",
+    "packages/engine/src/testing/game.ts",
+    "packages/engine/src/game/endgame.test.ts",
+    "packages/engine/src/game/regressions.test.ts",
+    "packages/protocol/src/room.ts",
+    "apps/server/src/game/options.ts",
+    "apps/mobile/src/components/player/cardModel.ts",
+    "apps/mobile/src/components/player/__fixtures__/gameView.ts",
+    "apps/mobile/src/screens/game/GameScreen.tsx",
+    "apps/mobile/src/screens/game/__tests__/GameScreenDuel.test.tsx",
+    "apps/mobile/src/screens/game/connection/loadingModel.ts",
+    "apps/mobile/src/i18n/locales/he/game.json",
+    "apps/mobile/src/i18n/locales/en/game.json",
+    "apps/mobile/src/i18n/locales/he/account.json",
+    "apps/mobile/src/i18n/locales/en/account.json",
+    "apps/mobile/src/i18n/locales/he/replay.json",
+    "apps/mobile/src/i18n/locales/en/replay.json",
+    "assets/puzzles/design-fixtures.json",
+    "docs/01-SPEC.md",
+    "docs/DECISIONS-PENDING.md",
+    "docs/QA-CHECKLIST.md",
+    "docs/02-WORK-PLAN.md",
+    "docs/RELEASE-CHECKLIST.md"
+  ],
+  "needsServerDeploy": true
+}

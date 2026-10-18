@@ -5,6 +5,7 @@ import { serverEndpoint } from '../config/server';
 import { systemClock, timeoutScheduler } from '../game/clock';
 import type { RankedDeps } from '../game/gameStore';
 import { track } from '../services/analytics';
+import { crashReporter } from '../services/crashlytics';
 import { deviceHost } from './device';
 import { createMatchmakingConnector } from './matchmaking';
 
@@ -30,9 +31,17 @@ export function deviceMatchmakingDeps(): RankedDeps {
     clock: systemClock,
     scheduler: timeoutScheduler,
     track,
-    // console.log, not warn: a search that fails is normal, not something for LogBox.
-    log: (line) => {
-      if (__DEV__) console.log(`[matchmaking] ${line}`);
-    },
+    log: matchmakingLog,
+    report: (error, context) => crashReporter().recordError(error, `matchmaking: ${context}`),
   };
+}
+
+/**
+ * The search's log: the console in development (log, not warn: a search that fails is normal, not something
+ * for LogBox), and Crashlytics' log everywhere, as breadcrumbs for the next report. The client never puts a
+ * token, a reservation or a name in a line (MatchmakingClient).
+ */
+export function matchmakingLog(line: string): void {
+  if (__DEV__) console.log(`[matchmaking] ${line}`);
+  crashReporter().log(`[matchmaking] ${line}`);
 }

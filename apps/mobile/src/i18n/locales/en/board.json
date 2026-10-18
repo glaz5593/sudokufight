@@ -16,6 +16,7 @@
     "lockedByMe": "locked by you",
     "lockedBy": "locked by {{name}}",
     "pending": "waiting for the lock",
+    "queued": "{{digit}}, waiting for the connection",
     "timerStopped": "timer stopped",
     "seconds_one": "1 second",
     "seconds_two": "{{count}} seconds",

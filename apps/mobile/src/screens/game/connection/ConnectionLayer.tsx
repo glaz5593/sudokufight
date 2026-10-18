@@ -1,9 +1,11 @@
 import type { PlayerId } from '@sudoku-fight/engine';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AvatarIdOrNone } from '../../../avatars';
 import type { Gender } from '../../../components/player/wording';
+import { Announcer } from './Announcer';
 import { ConnectingView } from './ConnectingView';
 import { ConnectionError } from './ConnectionError';
 import type { ConnectionModel } from './connectionModel';
@@ -47,7 +49,8 @@ export interface ConnectionLayerProps {
  * game has a view): the integrator renders it last, over the screen's content, and hides that content from
  * screen readers and touches while blocksInput(model) is true. The two transient overlays (self and opponent
  * reconnecting) stay mounted so they can fade out; the full screens (connecting, lobby, error, opponent-left)
- * come and go with the model.
+ * come and go with the model. My connection's soft phase [D42] draws nothing at all (the game goes on, my card
+ * shows the mark): screen readers hear it once.
  */
 export function ConnectionLayer({
   model,
@@ -65,8 +68,12 @@ export function ConnectionLayer({
   loading = null,
 }: ConnectionLayerProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation('game');
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none" testID="connection-layer">
+      {model.kind === 'selfOffline' ? (
+        <Announcer line={t('connection.offline.announce')} testID="self-offline-announcer" />
+      ) : null}
       <OpponentReconnecting
         model={model.kind === 'opponentReconnecting' ? model : null}
         gender={gender}

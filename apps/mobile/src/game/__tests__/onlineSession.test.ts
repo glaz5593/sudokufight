@@ -12,7 +12,7 @@ import {
   rankedConfig,
   sdkError,
 } from '../../net/testing/fakeServer';
-import { isOnlineSession, OnlineSession } from '../onlineSession';
+import { isOnlineSession, type OnlineEnd, OnlineSession } from '../onlineSession';
 import { answerIn, emptyCellsOf, PUZZLE } from '../testing/practice';
 
 /** OnlineSession (stage 7): the practice session's surface around a RemoteGameHost, and its analytics. */
@@ -42,7 +42,7 @@ async function started(table = new FakeTable()) {
 
 describe('OnlineSession', () => {
   it('creates the room, and has the practice session’s surface once the game is here', async () => {
-    const table = new FakeTable({ rules: { graceMs: 5000 } });
+    const table = new FakeTable({ rules: { graceMs: 5000, softGraceMs: 4000 } });
     const { session } = sessionOn(table, { kind: 'create', options: { gameType: 'fast', playerCount: 2 } });
     expect(isOnlineSession(session)).toBe(true);
     expect(session.mode).toBe('ranked');
@@ -50,6 +50,9 @@ describe('OnlineSession', () => {
     expect(session.id).toBe(session.key);
     expect(session.graceMs).toBeNull();
     expect(session.connection.graceMs).toBeNull();
+    // [D42] The soft phase before the grace: none known before the game.
+    expect(session.softGraceMs).toBeNull();
+    expect(session.connection.softGraceMs).toBeNull();
     expect(session.gameType).toBe('fast');
     expect(session.online.status).toBe('connecting');
     await session.ready;
@@ -64,6 +67,8 @@ describe('OnlineSession', () => {
     expect(session.playerId).toBe(ME);
     expect(session.graceMs).toBe(5000);
     expect(session.connection.graceMs).toBe(5000);
+    expect(session.softGraceMs).toBe(4000);
+    expect(session.connection.softGraceMs).toBe(4000);
     expect(session.getView().status).toBe('running');
     // The clock is the server's (the host's synced clock), not the phone's.
     expect(session.clock).toBe(table.host.clock);
@@ -174,6 +179,115 @@ describe('OnlineSession', () => {
     table.startGame();
     await elapse(table, 300);
     expect(session.getView().status).toBe('running');
+  });
+
+  it('onEnd: once when the game ends, with left false (the account’s rating follows it, Moshe’s device test)', async () => {
+    const table = new FakeTable();
+    const ends: OnlineEnd[] = [];
+    const session = new OnlineSession({
+      host: table.host,
+      request: { kind: 'create', options: {} },
+      onEnd: (end) => ends.push(end),
+    });
+    await session.ready;
+    table.lobby();
+    table.startGame();
+    await elapse(table, 300);
+    expect(ends).toEqual([]);
+    table.opponent({ type: 'surrender' });
+    await elapse(table, 200); // the end, then the solution: one more update
+    expect(ends).toHaveLength(1);
+    expect(ends[0]).toMatchObject({ playerId: ME, left: false, state: { status: 'over' } });
+    expect(ends[0]!.state.result?.ranking[0]?.playerId).toBe(ME);
+    // Closed after the end: nothing more.
+    session.close();
+    expect(ends).toHaveLength(1);
+  });
+
+  it('onEnd: a fresh snapshot of a game that is already over (a rejoin after the end) counts once', async () => {
+    const table = new FakeTable();
+    const ends: OnlineEnd[] = [];
+    const session = new OnlineSession({
+      host: table.host,
+      request: { kind: 'join', code: CODE },
+      onEnd: (end) => ends.push(end),
+    });
+    await session.ready;
+    const game = new FakeGame(rankedConfig(), () => table.serverNow(), table.scheduler);
+    game.apply({ type: 'start' });
+    game.act(OPP, { type: 'surrender' });
+    const snapshot = () =>
+      table.room.deliver({
+        type: 'snapshot',
+        protocol: PROTOCOL_VERSION,
+        state: game.publicState(),
+        playerId: ME,
+        lastClientSeq: 0,
+      });
+    snapshot();
+    snapshot();
+    expect(ends.map((e) => [e.left, e.state.status])).toEqual([[false, 'over']]);
+  });
+
+  it('onEnd: closing during the game is leaving it (left true, the grace runs on the server)', async () => {
+    const table = new FakeTable();
+    const ends: OnlineEnd[] = [];
+    const session = new OnlineSession({
+      host: table.host,
+      request: { kind: 'create', options: {} },
+      onEnd: (end) => ends.push(end),
+    });
+    await session.ready;
+    // Before any game: nothing to leave.
+    const early = new OnlineSession({
+      host: new FakeTable().host,
+      request: { kind: 'create', options: {} },
+      onEnd: (end) => ends.push(end),
+    });
+    early.close();
+    expect(ends).toEqual([]);
+
+    table.lobby();
+    table.startGame();
+    await elapse(table, 300);
+    session.close();
+    session.close();
+    expect(ends).toHaveLength(1);
+    expect(ends[0]).toMatchObject({ playerId: ME, left: true, state: { status: 'running' } });
+    expect(table.room.left).toBe(true);
+  });
+
+  it('an onEnd that throws breaks nothing: the session still ends, and still leaves the room', async () => {
+    const table = new FakeTable();
+    const session = new OnlineSession({
+      host: table.host,
+      request: { kind: 'create', options: {} },
+      onEnd: () => {
+        throw new Error('refresh down');
+      },
+    });
+    await session.ready;
+    table.lobby();
+    table.startGame();
+    await elapse(table, 300);
+    expect(() => session.close()).not.toThrow();
+    expect(table.room.left).toBe(true);
+
+    const other = new FakeTable();
+    const ended = new OnlineSession({
+      host: other.host,
+      request: { kind: 'create', options: {} },
+      onEnd: () => {
+        throw new Error('refresh down');
+      },
+    });
+    await ended.ready;
+    other.lobby();
+    other.startGame();
+    await elapse(other, 300);
+    other.opponent({ type: 'surrender' });
+    await elapse(other, 100);
+    expect(ended.getView().status).toBe('over');
   });
 
   it('a refused create keeps the SDK error’s code', async () => {

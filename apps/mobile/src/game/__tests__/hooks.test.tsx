@@ -137,7 +137,12 @@ describe('useMatchEffects', () => {
   }
 
   it('hands over the reactions and interferences, and nothing else', async () => {
-    const t = testHost({ mode: 'bot', players: [{ id: 'me' }, { id: 'bot', isBot: true }] });
+    // Interferences on (a practice against a bot has none, D44).
+    const t = testHost({
+      mode: 'bot',
+      players: [{ id: 'me' }, { id: 'bot', isBot: true }],
+      rules: { interferences: true },
+    });
     const session: EffectSource = { playerId: 'me', subscribe: (fn) => t.host.subscribe(fn) };
     const calls: MatchEffect['kind'][][] = [];
     await render(<Match session={session} onEffects={(fx) => calls.push(fx.map((f) => f.kind))} />);

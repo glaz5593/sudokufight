@@ -80,8 +80,8 @@ the library defaults, because 4.x changed them to mass 4, stiffness 900, damping
 | Spring | Params | Damping ratio · overshoot · settles in | Use |
 |---|---|---|---|
 | `pop` | mass 1, stiffness 260, damping 18 | ζ ≈ 0.56 · ≈ 12 % · ≈ 450 ms | Digit pop, score bump, chips, badges, emoji in the strip. Matches `sf-pop` (.42 s, emphasized). |
-| `settle` | mass 1, stiffness 300, damping 30 | ζ ≈ 0.87 · < 1 % · ≈ 300 ms | Things that move into place: a cancelled drag token returning, panels, notches |
-| `press` | mass 1, stiffness 500, damping 32 | ζ ≈ 0.72 · ≈ 4 % · ≈ 250 ms | Key and button release, token lift |
+| `settle` | mass 1, stiffness 300, damping 30 | ζ ≈ 0.87 · < 1 % · ≈ 300 ms | Things that move into place: panels, notches, the hit banner |
+| `press` | mass 1, stiffness 500, damping 32 | ζ ≈ 0.72 · ≈ 4 % · ≈ 250 ms | Key and button release, an interference kind button |
 | `slam` | mass 1, stiffness 220, damping 15 | ζ ≈ 0.51 · ≈ 16 % · ≈ 530 ms | VS, 3·2·1, GO!, "ניצחון!". From scale 1.4, it dips to about 0.94, like round-1 `sf-slam`. |
 
 ## 4. Animation catalog
@@ -106,7 +106,7 @@ static cover of the same area for the same 5 s).
 | `cell.locked.opp` | `cellLocked` for an opponent | 240 (avatar: `pop` spring) | `standard` | Static 3 px ring in their seat color. Their 22 px avatar pops 0.6 → 1 in the cell. No tint and no pulse. | No scale |
 | `lock.timer` | While my lock is active | = remaining time (8000 / 12000 / 18000 total, D2) | `linear` | Header bar (96 × 4 px, P1 on `#1f2430`) shrinks with scaleX 1 → 0, anchored at the inline-start edge (right in Hebrew). The pill and "N שניות" show `ceil(remaining)`. Driven by the server's `expiresAt`, not by a local duration. **Frozen** while I'm under an interference or the game is paused (§6.2.7). | **Unchanged.** It is information (DS "נשארת · זה מידע"). |
 | `lock.urgent` | Remaining ≤ 3 s on my lock | 1000 loop | `loop` | Pill background → gold `#ffcf3f` (text `color.onAccent` `#241a00`, 11.7:1). Bar fill → gold. Header "N שניות" text → gold. Both blink opacity 1 ↔ 0.35. **The ring stays P1**, so ownership never changes color. | Gold without the blink |
-| `lock.release` | "ביטול בחירה", time expired, a different cell chosen, or after a mistake (D3) | 240 | `exit` | Ring and tint fade out. The pill scales to 0.8 and fades. The keypad goes idle. The status cross-fades to "בחר משבצת". | Fade only |
+| `lock.release` | "ביטול בחירה", time expired, a different cell chosen, or after a mistake (D3) | 240 | `exit` | Ring and tint fade out. The pill scales to 0.8 and fades. The keypad goes idle. The status cross-fades to "בחר משבצת". Implementation: a presence fade the cell runs itself (it keeps drawing the ring and the pill as they were, fades their opacity, then drops them), never a Reanimated layout animation (`exiting`): the game's end clears every lock at once, and the results must never replace a screen whose layout animations still run (`game.end`). | Fade only (200 ms) |
 | `cell.denied` | Tap on a cell locked by an opponent, or on my just-released cell within the 1 s cooldown (D2) | 300 | `loop` keyframes | **That cell only** shakes on translateX 0, −5, +5, −3, +3, 0 px (Game-2P `deny`). No red: there is no penalty. | The cell's ring thickens from 3 to 5 px for 300 ms, without moving |
 | `opp.timer.compact` | 3–4 players: each opponent's lock | = remaining | `linear` | A ring on the compact card shrinks from `expiresAt` (round-1 `sf-ring`) | Unchanged |
 
@@ -134,34 +134,41 @@ Opponents' correct moves run the same sequence in their color and fly to their o
 | `cell.flash.wrong` | R + 0 | 550 | `standard` | Red overlay `#ff4d5e` fades from 55 % (`opacity.wrongFlash`) to 0 over the cell | A 2 px red frame for 300 ms, then off (DS "מסגרת אדומה 300ms") |
 | `cell.shake` | R + 0 | **300** | `loop` keyframes | **That cell only** moves on translateX 0, −5, +5, −3, +3, 0 px at 0/20/40/60/80/100 %. The board never moves, and play is never blocked. | None (the red frame replaces it) |
 | `wrong.digit` | R + 0 (full size), R + 300 (shrinks) | 240 | `standard` | The typed digit shows full size in `color.board.wrongDigit` `#b8102f` during the flash (`#ff4d5e` is only 3.05:1 on the light cell). Then it shrinks and moves to the small 11 px bottom-right mark, where it stays for everyone. The cell releases (`lock.release`). | Appears directly as the small mark |
-| `penalty.flight` | R + 300 → R + 660 | 360 | `standard` | Chip "−2" (`#0f1218` with `#ff4d5e` text) pops at the cell and flies to the mover's delta slot. No hold: the red flash already announced it. (DS-Motion shows the card update at t + 600. One shared flight duration gives R + 660.) | "−2" fades in beside the score (200 ms) |
+| `penalty.flight` | R + 300 → R + 660 | 360 | `standard` | Chip "−6.5" (the penalty, spec §6.5; `#0f1218` with `#ff4d5e` text) pops at the cell and flies to the mover's delta slot. No hold: the red flash already announced it. (DS-Motion shows the card update at t + 600. One shared flight duration gives R + 660.) | "−6.5" fades in beside the score (200 ms) |
 | `score.countDown` | R + 660 → R + 1310 | 650 | `countUp` | The score counts down. Its color starts at `#ff4d5e` and returns to the seat color over the 650 ms. Scores can go below 0 (D15): use "−" (U+2212). | Final number immediately, red tint for 300 ms |
 | `mistakes.tag` | R + 660 | about 420 | `pop` spring | The "N טעויות" label on the card updates with a pop (scale 0.8 → 1). The delta slot shows "−2" in red (holds 2400, fades 240). | No scale |
 
 ### 4.4 Interferences (§7) and the 5 s effects
 
+Since Moshe's decisions of 2026-10-17: launching is **two taps** with no drag (D45, spec §7.3), every hit **dims the victim's
+board** (D46), there are **three new kinds** (D47), and there are **no interferences against a known bot** (D44). The drag rows
+(`token.lift`, `dropzone.active`, `dropzone.hover`, `launch.cancel`) are gone.
+
 | ID | Trigger | ms | Easing | What moves (C look) | Reduced Motion |
 |---|---|---|---|---|---|
-| `arsenal.open` | Tap on ⚡ on an opponent card | 240 | `standard` | The arsenal sheet slides up (translateY 100 % → 0). Scrim `color.scrim` (`rgba(7,9,12,.72)`) fades in. | Fades over 200 ms, no slide |
-| `token.lift` | Drag starts on a token | 140 | `press` spring | Token scales 1 → 1.08 and follows the finger 1:1 (no lag). The ghost shows the name, a small preview and the cost ("זיקוקים · 8 נק׳"). | No scale |
-| `dropzone.active` | While dragging | 800 loop (march), 1100 loop (breathe) | `linear` / `loop` | **Only** the opponent card the arsenal was opened from gets a 2 px dashed gold `color.accent` outline (round 1 Interference-Drag; gold, not P1, so a P1 ring never appears on an opponent's card) with marching dashes, plus scale 1 ↔ 1.02. Every other card dims to 40 % (`opacity.dimmedCard`, 240 ms). | Static solid outline. Others still dim. |
-| `dropzone.hover` | Finger enters the drop zone | 140 | `standard` | The zone fills with `color.accentSubtle` (`rgba(255,207,63,.1)`) | Same |
-| `launch` | Release inside the zone | 240 + 480 | `exit` / `standard` | The token shrinks into the card (1 → 0, 240 ms). A stroke ring ripples out from the target card (scale 1 → 1.15, opacity 0.6 → 0, 480 ms). My score counts down by the cost (`score.countDown` timing). The sheet closes (200 ms, `exit`). | No ripple. The sheet fades. |
-| `launch.cancel` | Release outside the zone | about 300 | `settle` spring | The token returns to its slot. Nothing is charged. | Snaps back |
+| `picker.open` | Tap on "הפרעה" on an opponent card (`components.md` §8.1) | 240 | `standard` | The interference picker slides up (translateY 100 % → 0). Scrim `color.scrim` (`rgba(7,9,12,.72)`) fades in, with a hole over the target card, which gets a static 2 px solid gold `color.accent` frame and a "יעד" chip (gold, not P1, so a P1 ring never appears on an opponent's card). Every other card dims to 40 % (`opacity.dimmedCard`, 240 ms). The kind buttons ignore taps for the first 250 ms (D45). | Fades over 200 ms, no slide. Same frame and dim. |
+| `kind.press` | Finger down / up on a kind button | 80 down, `press` spring up | `standard` / `press` | Scale 1 → .96, border to `color.accent`, background `color.accentSubtle` | No scale |
+| `launch` | Tap on a launchable kind | 200 + 480 | `exit` / `standard` | The sheet closes (200 ms, `exit`). A stroke ring ripples out from the target card (scale 1 → 1.15, opacity 0.6 → 0, 480 ms). My score counts down by the cost (`score.countDown` timing). | No ripple. The sheet fades. |
 | `sender.toast` | After launch | 240 in, hold 2000, 240 out | `standard` / `exit` | Chip "זיקוקים ← NinaVolt" under my card | Fade |
 | `hit.banner` | An `interference` targets me | about 300 in, 240 out | `settle` spring / `exit` | Banner "NinaVolt שלחה לך זיקוקים!" slides down 16 px and fades in. A 5 s countdown ring in `color.accent` (as round 1's Hit-* banner and `components.md` §15.2; the sender is shown by the avatar framed in their seat color) shrinks linearly. | Fades in over 200 ms. The ring stays. |
-| `hit.effect` | Same, for **exactly 5000 ms** from the server's `endsAt` | 5000 | per effect | Full screen (D35 default until approved), above everything. `pointerEvents="none"`: the game continues and I can still play (§7.2). My lock timer is frozen. See the effect list below. | **Static cover of the same area and density for the same 5000 ms** (§22). See below. |
-| `hit.end` | `interferenceEnded` | 240 | `exit` | The effect and banner fade out. The lock timer resumes from the new `expiresAt`. | Same |
+| `hit.dim` | Same, on the victim's device only | 240 in, hold, out by `endsAt` | `standard` / `exit` | `color.scrim` at **60 %** over the **board only** (`HIT_DIM`, the same for every kind, D46), under the effect and the banner. Gone exactly at `endsAt`; frozen while the game is frozen. Never pulses. | The same dim, static: a 200 ms opacity fade only. |
+| `hit.effect` | Same, for **exactly 5000 ms** from the server's `endsAt` | 5000 | per effect | Full screen (D35 default until approved), above everything, except the board-only kinds below. `pointerEvents="none"`: the game continues and I can still play (§7.2). My lock timer is frozen. See the effect list below. | **Static cover of the same area and density for the same 5000 ms** (§22). See below. |
+| `hit.end` | `interferenceEnded` | 240 | `exit` | The effect, the dim and the banner fade out. The lock timer resumes from the new `expiresAt`. | Same |
 | `victim.tag` | 3–4 players: a third player is hit | 240 pop + 5000 ring | `pop` spring / `linear` | A small ⚡ tag with a 5 s ring on the victim's card | No pop |
 
 Effect details (`react-native-skia` for particles, §17.1). Interferences are the one place where loud motion is the goal, but
-they still use the C palette:
+they still use the C palette. Every random choice is seeded from the game and the interference event's `seq`, never
+`Math.random()`, so a hit looks the same on every run and in tests.
 
-| Effect | Motion (from round-1 `Hit-*`) | C colors | Reduced Motion static cover |
+| Effect | Motion (from round-1 `Hit-*`; the new kinds: D47, no board) | C colors | Reduced Motion static cover |
 |---|---|---|---|
 | Fireworks (זיקוקים) | 6 bursts, each blooming in 1600–2300 ms (`standard`), staggered. Embers fall in 1000–1600 ms (`exit`). Sparkles 900–1300 ms. | Sender's seat color, gold `#ffcf3f`, white | One frozen frame with the same bursts in the same positions |
 | Cats (חתולים) | 5 drawn cats cross the screen diagonally in 2000–3100 ms each (`linear`), bobbing every 220–340 ms, with "מיאו!" captions | Cat artwork as drawn. Captions in `#eef1f6` on `#0f1218`. | The same 5 cats sitting still in the same spots |
 | Warp (עיוות) | The whole screen skews and scales (1300 ms alternate, `loop`), a wave runs (1100 ms `linear`), and an offset copy jumps in steps (1600–2100 ms, stepped) | Offset copy in the sender's seat color at 50 % | A fixed 6° skew, scale 1.04 and a static offset copy at 50 % |
+| Scramble (מספרים מתערבלים) | On the board only: every filled cell's digit rolls to a fake digit at each step (about 400 ms, so at most 2.5 changes a second), with a short roll (about 160 ms, `standard`). About 30 % of the cells show their real digit at each step. Taps go through. | Fake digits in the **sender's** seat color, so they read as fake | A static "?" in every filled cell for the 5 s |
+| Ink (דיו) | On the board: about 5 blots splat in 300 ms (scale up with a small overshoot), hold, and fade out over the last 1500 ms | Dark blots with a thin rim in the sender's seat color | The same blots, still; off at the end |
+| Keypad (מקלדת מתערבלת) | The nine digit keys take a new order every 1500 ms, sliding to their new places in 200 ms (`standard`). A shuffle waits while a finger is down; a press during a slide (and about 150 ms after) is ignored with the nudge. At the end the keys slide back to 1–9 in 200 ms. | Keys unchanged (each keeps its digit, count and state) | One shuffle for the whole 5 s, applied with a 200 ms fade; back to 1–9 with a fade |
+| A kind this app does not know (from a newer app) | No effect: the dim and a generic banner only | — | Same |
 
 Photosensitivity: no effect may flash more than 3 times per second, and there are no full-screen white flashes.
 
@@ -178,6 +185,7 @@ Photosensitivity: no effect may flash more than 3 times per second, and there ar
 | ID | Trigger | ms | Easing | What moves (C look) | Reduced Motion |
 |---|---|---|---|---|---|
 | `search.sweep` | Searching | 2400 loop | `linear` | A thin P1 arc rotates around my avatar. Empty slots show "מחפש…" blinking (1600 loop). The elapsed time updates every second. | Static arc and text. The time still updates. |
+| `search.alone` | The server says nobody else is searching (`nextRange` null) | 240 (`stateChange`) | `standard` | The notice card ("כרגע אין שחקנים אחרים…", "שחק מול בוט בינתיים") fades in where the range was. It goes at once when someone is there, and the range is back. | Fades over 200 ms, no movement. |
 | `slot.found` | A player joins (3–4 players) | about 420 | `pop` spring | The slot rises 36 px and fades in | Fades over 200 ms |
 | `vs.slam` | Match found | about 530 | `slam` spring | "VS" badge (`#1f2430`, skewX −8°, Teko) scales 1.4 → 1 and fades in. The "מוכן" badges pop 800 ms later. | Fades over 200 ms |
 | `countdown.digit` | 3 · 2 · 1, 1000 ms each, aligned to server time | about 530 + hold | `slam` spring | The digit (Teko) scales 1.4 → 1. A thin P1 stroke ring expands 0.6 → 1.6 and fades (1000 ms, `standard`). | Digits cross-fade (200 ms). No ring. |
@@ -188,6 +196,7 @@ Photosensitivity: no effect may flash more than 3 times per second, and there ar
 | ID | Trigger | ms | Easing | What moves (C look) | Reduced Motion |
 |---|---|---|---|---|---|
 | `last.cell` | `gameOver` | 700 + 400 hold | `standard` | `cell.flash.correct` on the final cell, then a 300 ms cross-fade to Results | Tint only. 200 ms fade. |
+| `game.end` | `gameOver` online that is not a full board: a surrender (mine or the opponent's), an abandonment seen on return | 600 hold (`gameEndConfig.onlineHoldMs`) | — | The final board holds while the end's fades run (`lock.release`, a closing dialog), then `flow.fade` to Results. The results open from a timer of the game screen, never inside the server's message, and only once every native window (the end dialog, the report sheet, the block dialog) has left. "לתוצאות" on Opponent-Left goes without a hold. A practice's "סיום אימון" waits for its dialog's exit alone. Moshe's black screens of 1.0.0 (15.10.2026). | 200 hold |
 | `results.title.win` | Results + 200 | about 530 | `slam` spring | "ניצחון!" in gold `#ffcf3f`, scale 1.4 → 1, no blur | Fades over 200 ms |
 | `results.title.loss` | Results + 200 | 420 | `standard` | "הפסד" drops 12 px and fades in. No overshoot, crack or shake. | Fades over 200 ms |
 | `results.rank` | + 700 | about 420 | `pop` spring | The "מקום 1" badge pops with a static gold accent (round 1's "gold burst and crown") | No scale |
@@ -252,9 +261,10 @@ Wrong move (mine)        R              red flash 550 · cell shake 300 · red d
                          R+660          count down 650 (red → seat color) · "N טעויות" pops
                          R+1310         done
 
-Interference on me       0              banner in · effect starts · lock timer frozen   haptic Warning · sound hit_<kind>
-                         0…5000         effect loops (or static cover)                  kind rumble (≤ 2/s)
-                         5000 (endsAt)  effect + banner out 240 · lock timer resumes
+Interference on me       0              banner in · board dim in 240 · effect starts    haptic Warning · sound hit_<kind>
+                                        lock timer frozen
+                         0…5000         effect loops (or static cover), board dim 60 %  kind rumble (≤ 2/s)
+                         5000 (endsAt)  effect + dim + banner out · lock timer resumes
 
 Countdown                0 / 1000 / 2000   3 · 2 · 1 (slam + ring)                      haptic Medium · sound countdown_beat
                          3000           GO! slam                                        haptic Heavy · sound go
@@ -264,6 +274,8 @@ Victory                  0 last-cell flash · +1100 cross-fade (300) to Results
                          (times below are from Results mount)
                          +200 title · +700 rank + confetti + sections · +900 bars · +1200 rating count
                          +1500 awards · +1900 actions                                   haptic Success at +200 · sound win
+
+Surrender (online)       0 end (the locks fade 240) · +600 cross-fade to Results       reduced: +200 (game.end)
 ```
 
 ## 6. Implementation notes (Reanimated 4, Expo 57)
@@ -275,7 +287,7 @@ Victory                  0 last-cell flash · +1100 cross-fade (300) to Results
 - **Count-up text:** animate a shared value and render it through an animated `TextInput` (`useAnimatedProps` → `text`), rounded to 0.5. Set `fontVariant: ['tabular-nums']` so the width doesn't jitter.
 - **Flights:** draw them in one overlay layer above the board (`pointerEvents="none"`). Measure the cell and the target delta slot with `measure()` (or cached `onLayout`). Drive one progress value (0 → 1) and compute the quadratic Bezier position in a worklet.
 - **Optimistic display (§18):** cell selection shows `cell.pending` right away. A digit result never animates before the server answers. If the server rejects a pending lock, revert it (140 ms fade) and play `cell.denied`.
-- **Order of overlays:** board → flights → reactions → interference effect → hit banner → toasts → sheets.
+- **Order of overlays:** board → the board-only hit layer (scramble tiles, then the dim, D46) → flights → reactions → interference effect → hit banner → toasts → sheets.
 - **The board stays LTR** (CLAUDE.md). Shakes and flights use layout coordinates, so they work the same in both UI directions.
 - **Settings:** `sfx` and `haptics` services read the "צליל" and "רטט" toggles from the persisted Zustand store (work plan, stage 4).
 
@@ -296,12 +308,10 @@ Victory                  0 last-cell flash · +1100 cross-fade (300) to Results
 | My wrong digit | `notify(Error)` | At R (`placedWrong`) | DS "ERROR" (heavy then light) |
 | My lock: 3, 2, 1 seconds left | `impact(Light)` | At each whole second | DS "1 / SEC". My lock only. Not fired while frozen. |
 | My lock expired (auto release) | none | | No penalty (D2). The 3 ticks were the warning. |
-| Open the arsenal (⚡) | `Haptics.selectionAsync()` | On tap | |
-| Lift a token (drag start) | `impact(Light)` | On drag start | |
-| The drag enters the drop zone | `Haptics.selectionAsync()` | Once per entry | |
-| Launch (drop inside the zone) | `impact(Medium)`, then `impact(Medium)` again after 90 ms | On drop | DS "IMPACT M". The second knock suggests the long landing. |
-| Drop outside (cancel) | none | | |
-| An interference hits me | `notify(Warning)`, then a rumble for the kind | Start, then until `endsAt` | DS "RUMBLE 5S". Fireworks: `impact(Medium)` per burst (≥ 700 ms apart). Cats: `impact(Light)` as each cat enters. Warp: `impact(Light)` every 1100 ms. With Reduced Motion: only the start `Warning`. |
+| Open the interference picker ("הפרעה") | `Haptics.selectionAsync()` | On tap | |
+| Tap "הפרעה" while it is blocked (no points, target busy, not running) | `impact(Light)` | On tap, with the toast | D45. The picker does not open. |
+| Launch (tap on a kind) | `impact(Medium)`, then `impact(Medium)` again after 90 ms | On tap | DS "IMPACT M". The second knock suggests the long landing. A locked or blocked kind gets the light nudge instead. |
+| An interference hits me | `notify(Warning)`, then a rumble for the kind | Start, then until `endsAt` | DS "RUMBLE 5S". Fireworks: `impact(Medium)` per burst (≥ 700 ms apart). Cats: `impact(Light)` as each cat enters. Warp: `impact(Light)` every 1100 ms. Scramble: `impact(Light)` every 600 ms. Ink: `impact(Light)` per blot. Keypad: `impact(Light)` at each shuffle. A kind this app does not know: no rumble. With Reduced Motion: only the start `Warning`. |
 | Reaction received from an opponent | `impact(Light)` | When the float starts | DS "SOFT". Never for muted players. |
 | Send a reaction (tap an emoji) | `Haptics.selectionAsync()` | On tap | |
 | I take the lead | `impact(Light)` | When the count lands | §1: a leader change should be felt. Losing the lead gets no haptic (visual and sound only). |
@@ -333,12 +343,14 @@ Rules:
 | Score count-up / rating count | Tiny tick, played up to 5 times (DS "טיקים מתגלגלים") | `count_tick` | ≤ 30 ms | V1 |
 | Wrong digit | Low buzz, about 120 ms, without drama (DS) | `wrong` | 120–200 ms | V1 |
 | My lock: last 3 seconds | Quiet clock tick, my lock only (DS) | `lock_tick` | ≤ 60 ms | V1 |
-| Open the arsenal | Soft drawer slide | `arsenal_open` | ≤ 250 ms | Optional |
-| Drag a token | Whoosh (DS "ווש בגרירה") | `interfere_whoosh` | 300–500 ms | V1 |
+| Open the interference picker | Soft drawer slide | `arsenal_open` | ≤ 250 ms | Optional |
 | Launch lands | Pop or burst (DS "פיצוץ בנחיתה") | `interfere_launch` | 300–600 ms | V1 |
 | Hit by fireworks | Crackle and pops bed, fading out at the end | `hit_fireworks` | **≤ 5.0 s** | V1 |
 | Hit by cats | Meows and scampering | `hit_cats` | **≤ 5.0 s** | V1 |
 | Hit by warp | Warbling synth wobble | `hit_warp` | **≤ 5.0 s** | V1 |
+| Hit by scramble (D47) | Slot-machine reels rolling | `hit_scramble` | **≤ 5.0 s** | V1 (placeholder until a CC0 file) |
+| Hit by ink (D47) | Wet splats | `hit_ink` | **≤ 5.0 s** | V1 (placeholder until a CC0 file) |
+| Hit by keypad (D47) | Shuffling clicks | `hit_keypad` | **≤ 5.0 s** | V1 (placeholder until a CC0 file) |
 | Reaction 😂 | Short chuckle | `react_laugh` | ≤ 800 ms | V1 |
 | Reaction 😱 | Gasp | `react_scream` | ≤ 800 ms | V1 |
 | Reaction 😎 | Finger snap or "yeah" sting | `react_cool` | ≤ 800 ms | V1 |
@@ -357,17 +369,17 @@ Rules:
 | Reconnected | Two tones going up | `reconnect` | ≤ 600 ms | V1 |
 | Primary CTA press ("שחק") | Soft UI click | `ui_tap` | ≤ 80 ms | Optional |
 
-**What Moshe needs to supply** (work plan: "צלילים … עד שלב 4"): the 26 V1 files above, plus the 4 optional ones if possible.
+**What Moshe needs to supply** (work plan: "צלילים … עד שלב 4"): the 28 V1 files above, plus the 4 optional ones if possible. (Since 2026-10-17: `interfere_whoosh` went with the drag, D45, and the three `hit_*` files of the new kinds were added, D47.)
 - **License: CC0 only.** For each file, keep the source URL and author in a credits list, for the store review (§23). CC0 sources: Kenney.nl audio packs (Interface Sounds, UI Audio, Impact Sounds, Casino Audio for coins), Freesound.org filtered to "Creative Commons 0", and OpenGameArt filtered to CC0.
 - **Format:** `.m4a` (AAC) or `.mp3`, 44.1 kHz, mono. `.wav` is also fine. Use the exact file names above. No leading silence. Peak ≤ −1 dBFS, and similar loudness across files.
-- **The three `hit_*` files must not be longer than 5.0 s** and should fade out over the last 300 ms, so they end with the effect.
+- **The `hit_*` files must not be longer than 5.0 s** and should fade out over the last 300 ms, so they end with the effect.
 
 Playback rules:
 - `setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers' })`. The iOS silent switch mutes the game, and the player's own music keeps playing.
 - Preload every game sound when the game screen mounts (`createAudioPlayer`). Keep 2 players each for `count_tick` and `lock_tick` so fast repeats don't cut each other off. At most 4 sounds at once. The newest UI tick is dropped first.
 - Starting volumes: ticks 0.3, `cell_select` 0.5, `correct` and `wrong` 0.8, reactions 0.6, `hit_*` 0.6, `win` / `go` 0.9. Final tuning happens in stage 14 ("צלילים סופיים וכיול עוצמות").
 - Off when "צליל" is off. Sounds from muted players' reactions never play. Until the files exist, the `sfx` service maps every event to a placeholder (stage 4).
-- CC0 candidates for all 30 files (Kenney packs, and OpenGameArt where Kenney has nothing) are in `assets/sounds/candidates`, with their sources, processing and loudness in `SOURCES.md`. They are auditioned on the development screen `/dev/sounds` and promoted one by one (`assets/sounds/README.md`). The app does not play them until then.
+- CC0 candidates for the 30 files of the list before 2026-10-17 (Kenney packs, and OpenGameArt where Kenney has nothing) are in `assets/sounds/candidates`, with their sources, processing and loudness in `SOURCES.md`. They are auditioned on the development screen `/dev/sounds` and promoted one by one (`assets/sounds/README.md`). The app does not play them until then.
 
 ## 9. Points for Moshe to confirm
 
@@ -422,8 +434,6 @@ and `sequence.matchFound` from the moment the match is found (countdown at + 120
       "lockPulse": 1600,
       "lockUrgentBlink": 1000,
       "statusBlink": 1200,
-      "dropZoneMarch": 800,
-      "dropZoneBreathe": 1100,
       "searchSweep": 2400,
       "spinner": 800,
       "skeleton": 1200
@@ -457,3 +467,6 @@ and `sequence.matchFound` from the moment the match is found (countdown at + 120
   }
 }
 ```
+
+`loops.dropZoneMarch` and `loops.dropZoneBreathe` belonged to the drag, which D45 removed (no drop zone any more); they were
+taken out of `tokens.json` on 2026-10-18.

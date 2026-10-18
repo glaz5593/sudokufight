@@ -4,9 +4,15 @@ import { create } from 'zustand';
 
 import { MatchmakingClient, type MatchmakingClientDeps } from '../net/matchmaking';
 import type { RemoteGameHost } from '../net/remoteGameHost';
-import { practiceFinished } from '../progress/appProgress';
+import { onlineGameEnded, practiceFinished } from '../progress/appProgress';
 import { track } from '../services/analytics';
-import { type OnlineProfiles, type OnlineRequest, OnlineSession, type OnlineTrack } from './onlineSession';
+import {
+  type OnlineEnd,
+  type OnlineProfiles,
+  type OnlineRequest,
+  OnlineSession,
+  type OnlineTrack,
+} from './onlineSession';
 import type { PracticeRepo } from './practiceRepo';
 import { type PracticeDeps, type PracticeSession, startBotPractice, startPractice } from './session';
 import { practiceStorageOrNull } from './storage';
@@ -93,15 +99,22 @@ export interface GameStoreDeps {
   onlineTrack?: OnlineTrack;
   /** A ranked search's deps, when startRanked is not given them (tests). */
   ranked?: () => RankedDeps;
+  /**
+   * An online game's end, from every session (a room by code, a match's room, a retry's): the account's rating
+   * and progress are read again (progress/appProgress.ts onlineGameEnded), however the screens are left.
+   */
+  onlineEnd?: (end: OnlineEnd) => void;
 }
 
 /**
  * The phone's: the practice database, and each finished practice's XP queued for the server [D41]
- * (progress/appProgress.ts; nothing is queued while nobody is signed in).
+ * (progress/appProgress.ts; nothing is queued while nobody is signed in); after a ranked game, the account's
+ * rating and progress read again until the server has stored it.
  */
 export const defaultGameStoreDeps: GameStoreDeps = {
   repo: practiceStorageOrNull,
   session: { onFinish: practiceFinished },
+  onlineEnd: onlineGameEnded,
 };
 
 export function createGameStore(deps: GameStoreDeps = defaultGameStoreDeps) {
@@ -161,6 +174,7 @@ export function createGameStore(deps: GameStoreDeps = defaultGameStoreDeps) {
         request,
         track: deps.onlineTrack ?? track,
         profiles,
+        onEnd: deps.onlineEnd,
         onError: (error) => {
           // A session let go of meanwhile (a retry, a practice) has nothing to report.
           if (__DEV__ && get().online === online)
@@ -213,6 +227,7 @@ export function createGameStore(deps: GameStoreDeps = defaultGameStoreDeps) {
             },
             track: onlineTrack,
             profiles: profilesOf(found.players),
+            onEnd: deps.onlineEnd,
           }),
       });
       unsubscribeMatch = match.subscribe(() => followMatch(match));

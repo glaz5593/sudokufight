@@ -56,6 +56,16 @@ const ICONS = {
     </>
   ),
   bolt: <Path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />,
+  /**
+   * "הפרעה" on an opponent's card [D45]: an outline bolt with impact sparks. The filled 'bolt' stays for the
+   * cost pills and the hit chip.
+   */
+  interfere: (
+    <>
+      <Path d="M13.5 2.5L6 13h5.5l-1.5 8.5L17.5 11H12l1.5-8.5z" />
+      <Path d="M19.5 5l2-1.5M20.5 9H23M4.5 15l-2 1M3.5 19.5l-2 .5" />
+    </>
+  ),
   cancel: (
     <>
       <Rect x="4" y="4" width="16" height="16" rx="3" />
@@ -103,13 +113,20 @@ const ICONS = {
       <Path d="M12 17.5h.01" />
     </>
   ),
-  /** The avatar's bot chip (components.md §2). */
+  /**
+   * The bot: the Modes card's practice against a bot, Match-Timeout's "play a bot", the results' opponents of a
+   * bot game. After DS-Components' bot chip, with a mouth and eyes twice as large (Moshe's device test,
+   * 15.10.2026: the old one was not clear enough). The r=1 circles under a 2 stroke are solid 4-unit dots.
+   */
   bot: (
     <>
-      <Rect x="5" y="8" width="14" height="12" rx="3" />
-      <Path d="M12 8V4.5" />
-      <Path d="M9.5 13.5h.01M14.5 13.5h.01" />
-      <Path d="M2.5 13v3M21.5 13v3" />
+      <Rect x="4.5" y="7.5" width="15" height="13" rx="3.5" />
+      <Path d="M12 7.5V5" />
+      <Circle cx="12" cy="4" r="1" />
+      <Circle cx="9" cy="12.5" r="1" />
+      <Circle cx="15" cy="12.5" r="1" />
+      <Path d="M9.5 16.5h5" />
+      <Path d="M1.5 12v4M22.5 12v4" />
     </>
   ),
   /** The lock strip's "בחר משבצת" (components.md §10). */

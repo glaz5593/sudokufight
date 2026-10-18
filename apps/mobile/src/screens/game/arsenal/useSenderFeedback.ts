@@ -20,8 +20,9 @@ export interface InterferenceSent {
  * the muted colour, said to screen readers, never over the board. Also reports `interference_sent` (spec
  * §22).
  *
- * Call it from the host's confirmation, not from the drop: the screen's `interference` match effect with
- * `byMe` (matchEffectsOf), so a launch the host refused says nothing.
+ * Call it from the host's confirmation, not from the second tap: the screen's `interference` match effect with
+ * `byMe` (matchEffectsOf), so a launch the host refused never says it was sent (the screen's "not sent" warning
+ * says so instead, D45).
  */
 export function useSenderFeedback(): (sent: InterferenceSent) => void {
   const { t } = useTranslation('game');

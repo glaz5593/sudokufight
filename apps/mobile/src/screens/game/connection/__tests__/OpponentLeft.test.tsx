@@ -19,6 +19,7 @@ const model = (over: Partial<OpponentLeftModel> = {}): OpponentLeftModel => ({
   me: { id: 'me', name: 'MosheG', score: 55 },
   opponentScore: 39.5,
   ratingDelta: 9,
+  ratingGuard: null,
   gameType: 'normal',
   graceSeconds: 15,
   ...over,
@@ -26,6 +27,9 @@ const model = (over: Partial<OpponentLeftModel> = {}): OpponentLeftModel => ({
 
 let env: Setup;
 afterEach(() => env.restore());
+
+/** A 0 rating change as the chip writes it: an LTR isolate (CLAUDE.md). */
+const ZERO = '⁦0⁩';
 
 const screenFor = (
   over: Partial<OpponentLeftModel> = {},
@@ -58,6 +62,37 @@ describe('OpponentLeft (Hebrew)', () => {
     await render(screenFor().ui);
     expect(screen.getByTestId('opponent-left-rating')).toHaveAccessibleName('שינוי בדירוג: ⁦+9⁩, רגיל');
     expect(screen.getByText('⁦+9⁩')).toBeOnTheScreen();
+  });
+
+  it('a gain is gold, with no reason line', async () => {
+    await render(screenFor().ui);
+    expect(screen.getByTestId('opponent-left-rating-delta')).toHaveStyle({ color: color.accent });
+    expect(screen.queryByTestId('opponent-left-rating-reason', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it.each([
+    ['opponentLeftBeforeMyMove', 'הדירוג לא השתנה: היציאה הייתה לפני המהלך הראשון שלך'],
+    ['opponentLeftAhead', 'הדירוג לא השתנה: היית בפיגור ברגע היציאה'],
+  ] as const)(
+    'a 0 a leave guard held (§11.2, %s): muted, the reason under the chip, said with the chip',
+    async (guard, line) => {
+      await render(screenFor({ ratingDelta: 0, ratingGuard: guard }).ui);
+      const delta = screen.getByTestId('opponent-left-rating-delta');
+      expect(delta).toHaveTextContent(ZERO);
+      expect(delta).toHaveStyle({ color: color.textMuted });
+      const reason = screen.getByTestId('opponent-left-rating-reason', { includeHiddenElements: true });
+      expect(reason).toHaveTextContent(line);
+      expect(reason).toHaveProp('accessibilityElementsHidden', true);
+      expect(screen.getByTestId('opponent-left-rating')).toHaveAccessibleName(
+        `שינוי בדירוג: ${ZERO}, רגיל. ${line}`,
+      );
+    },
+  );
+
+  it('a 0 without a guard (a result from before the guards) is muted, with no reason line', async () => {
+    await render(screenFor({ ratingDelta: 0 }).ui);
+    expect(screen.getByTestId('opponent-left-rating-delta')).toHaveStyle({ color: color.textMuted });
+    expect(screen.queryByTestId('opponent-left-rating-reason', { includeHiddenElements: true })).toBeNull();
   });
 
   it('puts the leaver’s flag on the avatar’s other corner, dimmed and silent; none without a country', async () => {
@@ -153,5 +188,16 @@ describe('OpponentLeft (English)', () => {
     expect(screen.getByTestId('opponent-left-rating')).toHaveAccessibleName('Rating change: ⁦−3⁩, Normal');
     expect(screen.getByRole('button', { name: 'See results' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Home' })).toBeOnTheScreen();
+  });
+
+  it('explains a 0 a leave guard held, in English', async () => {
+    await render(screenFor({ ratingDelta: 0, ratingGuard: 'opponentLeftBeforeMyMove' }).ui);
+    const line = 'Rating unchanged: they left before your first move';
+    expect(
+      screen.getByTestId('opponent-left-rating-reason', { includeHiddenElements: true }),
+    ).toHaveTextContent(line);
+    expect(screen.getByTestId('opponent-left-rating')).toHaveAccessibleName(
+      `Rating change: ${ZERO}, Normal. ${line}`,
+    );
   });
 });

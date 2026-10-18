@@ -13,12 +13,14 @@ import {
   type MatchSeatReservation,
   type NO_AVATAR_ID,
   OPEN_QUEUE_PLAYER_COUNTS,
+  parseDeclaredInterferenceKinds,
   parseQueueKey,
   type QueueKey,
   queueKey,
   type QueuePlayerCount,
   type QueueSpec,
   READY_TIMEOUT_MS,
+  roomInterferenceKinds,
 } from '@sudoku-fight/protocol';
 
 import type { Identity } from '../auth';
@@ -44,9 +46,13 @@ import type { RankedMatchLink, RankedMatchSetup, RankedRoomHooks, RankedRooms } 
  *   history of the game type and their blocks, both ways, are loaded once). One search per account at a
  *   time.
  * - Every `tickMs` the matcher runs on each queue (matcher.ts has the rules). A `searching` goes out when a
- *   player's range widens.
+ *   player's range widens or their next range changes (matcher.ts rule 7: someone they could meet joined
+ *   the queue or left it; null tells the app nobody else is searching), so whoever waits learns it within
+ *   a round.
  * - A group found: matchmaking opens the ranked game room (its onCreate claims the match: RankedRooms) and
- *   reserves a seat for each player, then sends each one `found` with their seat reservation.
+ *   reserves a seat for each player, then sends each one `found` with their seat reservation. The game
+ *   allows only the interference kinds every player's app declared on joining [D47] (none declared: the
+ *   legacy three), so an older app never gets a kind it can't show.
  * - The ready check (D37: ready = connected to the game room): when everyone is in, the countdown runs and
  *   the game starts at its end (`countdown`, `started`; the game room records the opponents met). If
  *   someone is still missing READY_TIMEOUT_MS after "found", the match is cancelled: the room closes, the
@@ -55,7 +61,9 @@ import type { RankedMatchLink, RankedMatchSetup, RankedRoomHooks, RankedRooms } 
  *
  * A no-show before the game starts is not rated: there is no game yet (D37: the game starts only when
  * everyone is connected), and the others are requeued, not given a win (spec §10). Once the countdown runs
- * the seats are fixed, and leaving is abandonment, a normal loss [D32], through the game room's grace period.
+ * the seats are fixed, and leaving is abandonment through the game room's grace period: a loss by place
+ * [D32], rated with the leave guards of spec §11.2 (no rating lost by a leaver who had not moved or was not
+ * behind).
  *
  * One ranked game at a time: from GO until its room reports the game over (and its result stored) or closes,
  * a player's search is refused (`alreadyQueued`). A player who left their game is in it until the grace runs
@@ -182,8 +190,15 @@ interface Entry {
   ticket: Ticket | null;
   /** The range in the last `searching` sent. */
   lastRange: number | null;
+  /** The next range in the last `searching` sent (undefined before the first). */
+  lastNextRange: number | null | undefined;
   /** The keep-searching window after a timeout. */
   timer: unknown;
+  /**
+   * The interference kinds the player's app declared on joining [D47]; undefined: none (app 1.0.0, or a
+   * malformed list), which counts as LEGACY_INTERFERENCE_KINDS.
+   */
+  interferenceKinds: readonly string[] | undefined;
 }
 
 type MatchState = 'opening' | 'waiting' | 'countdown' | 'started' | 'cancelled';
@@ -226,9 +241,16 @@ export class MatchmakingService implements RankedRooms {
 
   /**
    * Puts the player in a queue, or refuses (MatchmakingRefusal). Resolves once the first `searching` is
-   * sent (or the connection left meanwhile).
+   * sent (or the connection left meanwhile). `rawInterferenceKinds`: the join option of the same name, the
+   * kinds the app can show [D47]; anything but a list of at most 16 strings of at most 32 characters counts
+   * as no declaration (the legacy kinds), never as a refusal.
    */
-  async enqueue(session: MatchSession, identity: Identity, rawQueueKey: unknown): Promise<void> {
+  async enqueue(
+    session: MatchSession,
+    identity: Identity,
+    rawQueueKey: unknown,
+    rawInterferenceKinds?: unknown,
+  ): Promise<void> {
     const spec = parseQueueKey(rawQueueKey);
     if (spec === null)
       throw new MatchmakingRefusal('badQueue', 'queueKey: one of fast-2p … hard-4p (spec §10)');
@@ -252,7 +274,9 @@ export class MatchmakingService implements RankedRooms {
       phase: 'joining',
       ticket: null,
       lastRange: null,
+      lastNextRange: undefined,
       timer: null,
+      interferenceKinds: parseDeclaredInterferenceKinds(rawInterferenceKinds),
     };
     this.entries.set(entry.userId, entry);
     this.bySession.set(session.id, entry);
@@ -362,10 +386,15 @@ export class MatchmakingService implements RankedRooms {
       if (queue.size === 0) continue;
       const { groups, timedOut } = queue.tick(now);
       for (const group of groups) this.found(queue, group.tickets, group.rematch, now);
-      for (const ticket of timedOut) this.timedOut(ticket, now);
+      for (const ticket of timedOut) this.timedOut(queue, ticket, now);
+      // The matched and the timed out are out of the queue by now: no `searching` after their `found`.
       for (const ticket of queue.list()) {
         const entry = this.entries.get(ticket.userId);
-        if (entry && rangeOf(ticket, now, queue.config) !== entry.lastRange)
+        if (
+          entry &&
+          (rangeOf(ticket, now, queue.config) !== entry.lastRange ||
+            queue.nextRange(ticket.userId) !== entry.lastNextRange)
+        )
           this.sendSearching(entry, false, now);
       }
     }
@@ -397,10 +426,15 @@ export class MatchmakingService implements RankedRooms {
 
   private search(entry: Entry, ticket: NewTicket, requeued = false, now = this.now()): void {
     // One instant for the ticket and its message: a new search's time starts at 0, its timeout is whole.
-    entry.ticket = this.queueFor(entry).add(ticket, now);
-    entry.phase = 'searching';
+    this.requeue(entry, ticket, now);
     this.sendSearching(entry, requeued, now);
     this.ensureTicking();
+  }
+
+  /** Into the queue without a word yet (search() sends the `searching`). */
+  private requeue(entry: Entry, ticket: NewTicket, now: number): void {
+    entry.ticket = this.queueFor(entry).add(ticket, now);
+    entry.phase = 'searching';
   }
 
   /** `now`: the instant the message describes (its serverTime), the same one its range and times are at. */
@@ -408,7 +442,9 @@ export class MatchmakingService implements RankedRooms {
     const t = entry.ticket;
     if (t === null || entry.session === null) return;
     const range = rangeOf(t, now, this.deps.config.matcher);
+    const nextRange = this.queueFor(entry).nextRange(t.userId);
     entry.lastRange = range;
+    entry.lastNextRange = nextRange;
     entry.session.send({
       type: 'searching',
       queueKey: entry.queueKey,
@@ -419,10 +455,11 @@ export class MatchmakingService implements RankedRooms {
       timeoutAt: t.deadline,
       serverTime: now,
       ...(requeued ? { requeued: true } : {}),
+      nextRange,
     });
   }
 
-  private timedOut(ticket: Ticket, now: number): void {
+  private timedOut(queue: MatchQueue, ticket: Ticket, now: number): void {
     const entry = this.entries.get(ticket.userId);
     if (!entry) return;
     entry.phase = 'timedOut';
@@ -435,6 +472,7 @@ export class MatchmakingService implements RankedRooms {
       range: rangeOf(ticket, now, this.deps.config.matcher),
       extended: ticket.extended,
       keepSearchingUntil: now + window,
+      nextRange: queue.nextRangeOf(ticket),
     });
     this.deps.log.info(`[matchmaking] ${entry.userId} timed out in ${entry.queueKey}`);
     entry.timer = this.deps.scheduler.setTimeout(() => {
@@ -580,10 +618,13 @@ export class MatchmakingService implements RankedRooms {
     this.clearMatchTimer(match);
     match.state = 'cancelled';
     this.matches.delete(match.id);
-    const pausedMs = this.now() - match.matchedAt;
+    const now = this.now();
+    const pausedMs = now - match.matchedAt;
     this.deps.log.info(
       `[matchmaking] match ${match.id} cancelled (${reason}${missing.length ? `: ${missing.join(', ')}` : ''})`,
     );
+    // Everyone requeued is back in the queue before anyone is told: their next ranges count each other.
+    const requeued: Entry[] = [];
     match.members.forEach((m, i) => {
       const t = match.tickets[i]!;
       const session = m.session;
@@ -594,7 +635,7 @@ export class MatchmakingService implements RankedRooms {
         session?.close();
         return;
       }
-      this.search(
+      this.requeue(
         m,
         {
           userId: t.userId,
@@ -607,9 +648,12 @@ export class MatchmakingService implements RankedRooms {
           extended: t.extended,
           priority: true,
         },
-        true,
+        now,
       );
+      requeued.push(m);
     });
+    for (const m of requeued) this.sendSearching(m, true, now);
+    if (requeued.length > 0) this.ensureTicking();
     this.callHook(match, (h) => h.onCancel());
   }
 
@@ -633,7 +677,7 @@ export class MatchmakingService implements RankedRooms {
       })),
       readyTimeoutMs: this.deps.config.readyTimeoutMs,
       countdownMs: this.deps.config.countdownMs,
-      rules: this.deps.config.gameRules,
+      rules: this.matchRules(match),
     };
     const isMember = (userId: string) => match.members.some((m) => m.userId === userId);
     return {
@@ -659,6 +703,21 @@ export class MatchmakingService implements RankedRooms {
         const missing = match.members.filter((m) => !match.ready.has(m.userId)).map((m) => m.userId);
         this.fail(match, missing.length > 0 ? 'noShow' : 'error', missing);
       },
+    };
+  }
+
+  /**
+   * The rules of a match's game: the configured overrides, and only the interference kinds every player's
+   * app declared [D47] (within the configured kinds, if any), so no app gets a kind it can't show.
+   */
+  private matchRules(match: Match): GameRoomRuleOverrides {
+    const { gameRules } = this.deps.config;
+    return {
+      ...gameRules,
+      interferenceKinds: roomInterferenceKinds(
+        match.members.map((m) => m.interferenceKinds),
+        gameRules.interferenceKinds,
+      ),
     };
   }
 
