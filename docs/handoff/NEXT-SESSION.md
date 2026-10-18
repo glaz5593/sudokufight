@@ -79,6 +79,14 @@ Remaining device-only checks are listed in docs/STAGE7-DEVICE-CHECKS.md (new 2ג
 4. **Only with Moshe's OK:** `npm run version:bump` → commit → push → deploy staging (server FIRST: migration
    0007 runs; then `npm run db:seed-puzzles` against staging) → `npm run apk` (see docs/BUILD-APK.md; check free
    space on C: first).
+   **2026-10-18 (Moshe asked before sleeping):** version 1.0.1, commit b0efb9f pushed, APK built:
+   `apps/mobile/apk/sudoku-fight-1.0.1-b0efb9f-staging.apk` (68 MB, clean tree). The staging DEPLOY and the
+   staging puzzle seed were NOT done: Claude Code's permission classifier blocked `fly deploy`. Moshe runs them
+   (or allows them): from the repo root `fly deploy --ha=false --env GIT_SHA=b0efb9f`, then in PowerShell
+   `$env:DATABASE_URL = (fly ssh console -a sudoku-fight-staging -C "printenv DATABASE_URL").Trim()`;
+   `npm run db:seed-puzzles`; `Remove-Item Env:DATABASE_URL`. No restart needed (the server queries puzzles per
+   game). Until then the new APK still matchmakes (the old server ignores the new join field; only the old three
+   interference kinds appear), but penalty/grace/black-screen/givens/retire server changes are not live.
 
 ## 4. Open points to tell Moshe when relevant
 - Wire/snapshot sizes slightly over spec §18 targets (an interference event with a half-point score 206 B; a
