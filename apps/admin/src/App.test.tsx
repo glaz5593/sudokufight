@@ -1,6 +1,6 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 
-import { overviewFixture } from './testing/fixtures';
+import { levelsFixture, overviewFixture } from './testing/fixtures';
 import { fakeServer, PASSWORD_ONLY, renderSite, SIGNED_IN, SIGNED_OUT } from './testing/server';
 
 const password = () => screen.getByLabelText('Admin password');
@@ -167,6 +167,7 @@ describe('language', () => {
       ['Users', '#/users'],
       ['Games', '#/games'],
       ['Screens', '#/screens'],
+      ['Stages', '#/levels'],
       ['Reports', '#/reports'],
       ['Audit log', '#/audit'],
     ]);
@@ -180,6 +181,16 @@ describe('language', () => {
     const current = await screen.findByRole('link', { current: 'page' });
     expect(current.textContent).toBe('סקירה');
     expect(document.title).toBe('סקירה · ניהול סודוקו פייט');
+  });
+
+  it('the levels page (staged practice) is in the nav, marked current on it', async () => {
+    const server = fakeServer({ 'GET /session': SIGNED_IN, 'GET /levels': { body: levelsFixture(10) } });
+    renderSite(server, { hash: '#/levels?days=90' });
+    const current = await screen.findByRole('link', { current: 'page' });
+    expect([current.textContent, current.getAttribute('href')]).toEqual(['Stages', '#/levels']);
+    expect(await screen.findByRole('heading', { name: 'Stages', level: 1 })).toBeTruthy();
+    expect(document.title).toBe('Stages · Sudoku Fight admin');
+    expect(server.gets('/levels')).toEqual(['/admin/api/levels?days=90']);
   });
 
   it('an unknown address shows "not found" with a way back', async () => {

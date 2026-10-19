@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<title>Race the bot</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@keyframes lv-dot{0%,100%{opacity:1}50%{opacity:.3}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div dir="rtl" lang="he" style="width:390px;height:844px;position:relative;overflow:hidden;box-sizing:border-box;font-family:Rubik,'Segoe UI',system-ui,sans-serif;color:#eef1f6;background:#0f1218;">
+
+  <!-- Header -->
+  <header style="position:absolute;top:48px;left:16px;right:16px;height:56px;display:flex;align-items:center;gap:12px;">
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+      <h1 style="margin:0;font:700 22px/25px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">שלב 14</h1>
+      <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">מרוץ מול הבוט · 5 מקומות · פרק 2</span>
+    </div>
+    <button type="button" aria-label="יציאה מהשלב" style="flex:none;width:44px;height:44px;margin:0;padding:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;cursor:pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+  </header>
+
+  <!-- HUD: me (P1, start) -->
+  <section aria-label="MosheG · מצאת 2 מקומות" style="position:absolute;top:112px;right:16px;width:159px;height:100px;box-sizing:border-box;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#171b24;border:1px solid #2a3140;border-radius:14px;">
+    <div style="display:flex;align-items:center;gap:10px;height:44px;">
+      <div style="flex:none;width:44px;height:44px;box-sizing:border-box;padding:2px;border:2px solid #36c9f0;border-radius:14px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:#1f2430;display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg></div>
+      </div>
+      <span style="display:flex;align-items:center;gap:4px;min-width:0;">
+        <svg width="7" height="7" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg>
+        <span style="font:700 16px/19px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">MosheG</span>
+      </span>
+    </div>
+    <div style="display:flex;align-items:baseline;gap:6px;height:30px;">
+      <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:40px;line-height:.8;padding-top:5px;font-variant-numeric:tabular-nums;color:#36c9f0;">2</span>
+      <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">מקומות</span>
+    </div>
+  </section>
+
+  <div aria-hidden="true" style="position:absolute;top:150px;left:177px;width:36px;height:24px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:6px;transform:skewX(-8deg);">
+    <span style="display:block;transform:skewX(8deg);font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:18px;line-height:.8;padding-top:3px;color:#9aa3b5;">VS</span>
+  </div>
+
+  <!-- HUD: the bot (P2, end) -->
+  <section aria-label="Pip · בוט רמה 1, טירון · מצא מקום אחד · מחפש" style="position:absolute;top:112px;left:16px;width:159px;height:100px;box-sizing:border-box;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#171b24;border:1px solid #2a3140;border-radius:14px;">
+    <div style="display:flex;flex-direction:row-reverse;align-items:center;gap:10px;height:44px;">
+      <div style="flex:none;width:44px;height:44px;box-sizing:border-box;padding:2px;border:2px solid #ff9440;border-radius:14px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:#1f2430;display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff9440" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="7.5" width="15" height="13" rx="3.5"></rect><path d="M12 7.5V5"></path><circle cx="12" cy="4" r="1"></circle><circle cx="9" cy="12.5" r="1"></circle><circle cx="15" cy="12.5" r="1"></circle><path d="M9.5 16.5h5"></path><path d="M1.5 12v4M22.5 12v4"></path></svg></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0;">
+        <span dir="ltr" style="display:flex;align-items:center;gap:4px;min-width:0;">
+          <span style="font:700 16px/19px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">Pip</span>
+          <svg width="7" height="7" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;"><path d="M12 4l8 15H4z" fill="#ff9440"></path></svg>
+        </span>
+        <span style="display:inline-flex;align-items:center;height:18px;padding:0 5px;box-sizing:border-box;border-radius:6px;border:1px solid #2a3140;background:#1f2430;font:500 12px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">1 · טירון</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px;height:30px;">
+      <span style="display:inline-flex;align-items:baseline;gap:2px;font:500 13px/16px Rubik,sans-serif;color:#ff9440;white-space:nowrap;">מחפש<span aria-hidden="true" style="display:inline-flex;gap:2px;"><span style="display:block;width:3px;height:3px;border-radius:50%;background:#ff9440;animation:lv-dot 1.6s ease-in-out infinite;"></span><span style="display:block;width:3px;height:3px;border-radius:50%;background:#ff9440;animation:lv-dot 1.6s ease-in-out .2s infinite;"></span><span style="display:block;width:3px;height:3px;border-radius:50%;background:#ff9440;animation:lv-dot 1.6s ease-in-out .4s infinite;"></span></span></span>
+      <span style="display:flex;align-items:baseline;gap:6px;">
+        <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:40px;line-height:.8;padding-top:5px;font-variant-numeric:tabular-nums;color:#ff9440;">1</span>
+        <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">מקום</span>
+      </span>
+    </div>
+  </section>
+
+  <!-- Star scale by MY count out of 5: mine fill from the start, the bot's from the end, the gap = spots still open.
+       Bands: 0-1 = no star, 2 = 1 star, 3 = 2 stars, 4-5 = 3 stars (plan 2.2) -->
+  <div role="img" aria-label="סרגל הכוכבים: מצאת 2 מתוך 5, כוכב אחד בינתיים. 2 מקומות זה כוכב, 3 זה שני כוכבים, 4 ומעלה שלושה כוכבים. Pip לקח מקום אחד, ונשארו 2" style="position:absolute;top:224px;left:16px;right:16px;height:70px;">
+    <!-- stars per band -->
+    <div aria-hidden="true" style="position:absolute;top:0;left:0;right:0;height:12px;display:flex;gap:6px;">
+      <span style="flex:none;width:66.8px;display:flex;justify-content:center;">
+        <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="none" stroke="#677086" stroke-width="2" stroke-linejoin="round"></path></svg>
+      </span>
+      <span style="flex:none;width:66.8px;display:flex;justify-content:center;">
+        <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+      </span>
+      <span style="flex:none;width:66.8px;display:flex;justify-content:center;gap:2px;">
+        <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+      </span>
+      <span style="flex:none;width:139.6px;display:flex;justify-content:center;gap:2px;">
+        <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+      </span>
+    </div>
+    <!-- band brackets -->
+    <div aria-hidden="true" style="position:absolute;top:16px;left:0;right:0;height:2px;display:flex;gap:6px;">
+      <span style="flex:none;width:66.8px;border-radius:1px;background:#2a3140;"></span>
+      <span style="flex:none;width:66.8px;border-radius:1px;background:#2a3140;"></span>
+      <span style="flex:none;width:66.8px;border-radius:1px;background:#2a3140;"></span>
+      <span style="flex:none;width:139.6px;border-radius:1px;background:#2a3140;"></span>
+    </div>
+    <!-- the 5 spots -->
+    <div aria-hidden="true" style="position:absolute;top:24px;left:0;right:0;height:28px;display:flex;gap:6px;">
+      <span style="flex:none;width:66.8px;height:28px;border-radius:8px;background:#36c9f0;display:flex;align-items:center;justify-content:center;"><svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#0f1218"></path></svg></span>
+      <span style="flex:none;width:66.8px;height:28px;border-radius:8px;background:#36c9f0;display:flex;align-items:center;justify-content:center;"><svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#0f1218"></path></svg></span>
+      <span style="flex:none;width:66.8px;height:28px;box-sizing:border-box;border-radius:8px;background:#1f2430;border:1px solid #2a3140;"></span>
+      <span style="flex:none;width:66.8px;height:28px;box-sizing:border-box;border-radius:8px;background:#1f2430;border:1px solid #2a3140;"></span>
+      <span style="flex:none;width:66.8px;height:28px;border-radius:8px;background:#ff9440;display:flex;align-items:center;justify-content:center;"><svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 4l8 15H4z" fill="#0f1218"></path></svg></span>
+    </div>
+    <!-- fractions under the spots -->
+    <div aria-hidden="true" style="position:absolute;top:58px;left:0;right:0;height:12px;display:flex;gap:6px;">
+      <span dir="ltr" style="flex:none;width:66.8px;text-align:center;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:3px;color:#9aa3b5;">1/5</span>
+      <span dir="ltr" style="flex:none;width:66.8px;text-align:center;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:3px;color:#9aa3b5;">2/5</span>
+      <span dir="ltr" style="flex:none;width:66.8px;text-align:center;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:3px;color:#9aa3b5;">3/5</span>
+      <span dir="ltr" style="flex:none;width:66.8px;text-align:center;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:3px;color:#9aa3b5;">4/5</span>
+      <span dir="ltr" style="flex:none;width:66.8px;text-align:center;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:15px;line-height:.8;padding-top:3px;color:#9aa3b5;">5/5</span>
+    </div>
+  </div>
+
+  <!-- Under the scale: where I stand, and what is left -->
+  <div style="position:absolute;top:302px;left:16px;right:16px;height:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">4 ומעלה = 3 כוכבים · יש לך כוכב אחד</span>
+    <span style="font:500 13px/16px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">נשארו 2 מקומות</span>
+  </div>
+
+  <!-- Task line: spot, digit chip, area, the level's clock (30 s for all 5 spots) -->
+  <div style="position:absolute;top:330px;left:16px;right:16px;height:28px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <div style="display:flex;align-items:center;gap:6px;white-space:nowrap;font:500 15px/1 Rubik,sans-serif;">
+      <span style="color:#9aa3b5;">מקום 4 מתוך 5</span>
+      <span aria-hidden="true" style="color:#677086;">·</span>
+      <span style="color:#eef1f6;">מצא את</span>
+      <span style="flex:none;width:28px;height:28px;border-radius:6px;background:#1f2430;border:1px solid #2a3140;box-sizing:border-box;display:flex;align-items:center;justify-content:center;"><span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:3px;color:#eef1f6;">4</span></span>
+      <span style="color:#eef1f6;">בריבוע 9</span>
+    </div>
+    <div role="timer" aria-label="נשארו 13 שניות מתוך 30 לשלב" style="display:flex;align-items:center;gap:6px;white-space:nowrap;">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="9" fill="none" stroke="#1f2430" stroke-width="2.5"></circle><circle cx="11" cy="11" r="9" fill="none" stroke="#eef1f6" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="56.55" stroke-dashoffset="32.05" transform="rotate(-90 11 11)"></circle></svg>
+      <span style="display:flex;align-items:baseline;gap:3px;">
+        <span style="font:400 13px/1 Rubik,sans-serif;color:#9aa3b5;">עוד</span>
+        <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:20px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#eef1f6;">13</span>
+        <span style="font:400 13px/1 Rubik,sans-serif;color:#9aa3b5;">ש׳</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Board (always LTR). Box 9 is this round's area; my finds are P1 with a dot, the bot's are P2 with a triangle -->
+  <div dir="ltr" role="group" aria-label="הלוח. ריבוע 9 מודגש. ה־4 כבר בלוח ב־C9, D2, G1 ו־I5. מצאת את A3 ואת E6, ו־Pip מצא את B4" style="position:absolute;top:368px;left:16px;width:358px;height:358px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:3px;background:#0f1218;border-radius:12px;overflow:hidden;">
+    <sc-for list="{{boxes}}" as="box" hint-placeholder-count="9">
+      <div style="position:relative;z-index:{{box.z}};display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:1px;background:#c8cdd6;box-shadow:{{box.ring}};">
+        <sc-for list="{{box.cells}}" as="cell" hint-placeholder-count="9">
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:{{cell.bg}};color:{{cell.fg}};font-family:Rubik,sans-serif;font-weight:{{cell.fw}};font-size:22px;line-height:1;">
+            {{cell.txt}}
+            <sc-if value="{{cell.chip}}" hint-placeholder-val="{{ false }}">
+              <span style="width:30px;height:30px;border-radius:6px;background:#0f1218;display:flex;align-items:center;justify-content:center;font:600 20px/1 Rubik,sans-serif;color:#f7f8fa;">{{cell.chipTxt}}</span>
+            </sc-if>
+            <sc-if value="{{cell.owned}}" hint-placeholder-val="{{ false }}">
+              <svg aria-hidden="true" width="7" height="7" viewBox="0 0 24 24" style="position:absolute;top:3px;left:3px;"><path d="{{cell.shape}}" fill="{{cell.fg}}"></path></svg>
+            </sc-if>
+            <sc-if value="{{cell.tap}}" hint-placeholder-val="{{ false }}">
+              <button type="button" aria-label="{{cell.aria}}" style="position:absolute;inset:0;margin:0;padding:0;border:0;background:transparent;cursor:pointer;"></button>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- How a round is won -->
+  <div style="position:absolute;top:742px;left:16px;right:16px;display:flex;align-items:flex-start;gap:10px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg>
+    <p style="margin:0;font:400 13px/18px Rubik,sans-serif;color:#9aa3b5;">מי שמקיש ראשון על המקום הנכון לוקח אותו. השלב נגמר כשכל 5 נלקחו, או ב־30 ש׳. הקשה שגויה: 3 ש׳ בלי הקשות.</p>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Level 14 (the current level on the Main map), chapter 2 (Pip, 8-12 s a spot): 49 givens, five spots, all of the
+  // digit 4, each in a different box; every spot is a hidden single in its box once the earlier finds are on the board.
+  // One clock for the level: 30 s. 17 s gone, 13 left. Spot 1 A3 (me), spot 2 B4 (Pip), spot 3 E6 (me).
+  // Spot 4 now, box 9: rows G (G1) and I (I5) and column 9 (C9) block G7, G8, I8, I9 and H9, so the 4 can only go
+  // in H7. Spot 5 will be F8. No interferences in levels.
+  fixture() {
+    return {
+      GIVEN: '320150080105097302609038154043085210250610900001029008496573001830061070010042600',
+      SOL: '324156789185497362679238154943785216258614937761329548496573821832961475517842693',
+      OWN: { 2: 0, 12: 1, 41: 0 },
+      DIGIT: '4',
+      REGION: 8
+    };
+  }
+
+  boxes() {
+    const F = this.fixture();
+    const ROWS = 'ABCDEFGHI';
+    const P = [
+      { tint: '#d6f4fc', digit: '#0b6a85', shape: 'M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z' },
+      { tint: '#ffe8d4', digit: '#9a4a0c', shape: 'M12 4l8 15H4z' }
+    ];
+    const out = [];
+    for (let bx = 0; bx < 9; bx++) {
+      const area = bx === F.REGION;
+      const cells = [];
+      for (let k = 0; k < 9; k++) {
+        const i = (Math.floor(bx / 3) * 3 + Math.floor(k / 3)) * 9 + (bx % 3) * 3 + (k % 3);
+        const own = F.OWN[i];
+        const owned = own !== undefined;
+        const v = owned ? F.SOL[i] : (F.GIVEN[i] === '0' ? '' : F.GIVEN[i]);
+        const target = !owned && v === F.DIGIT;
+        let bg = area ? '#ffffff' : (bx % 2 ? '#d3d8e0' : '#dce0e7');
+        let fg = area ? '#0f1218' : '#4b5363';
+        let fw = '600';
+        if (owned) { bg = P[own].tint; fg = P[own].digit; fw = '500'; }
+        cells.push({
+          bg: bg, fg: fg, fw: fw,
+          txt: target ? '' : v,
+          chip: target, chipTxt: target ? v : '',
+          owned: owned, shape: owned ? P[own].shape : '',
+          tap: area && v === '',
+          aria: 'משבצת ' + ROWS[Math.floor(i / 9)] + ((i % 9) + 1) + ', ריקה'
+        });
+      }
+      out.push({ cells: cells, ring: area ? '0 0 0 2px #eef1f6' : 'none', z: area ? '1' : '0' });
+    }
+    return out;
+  }
+
+  renderVals() {
+    return { boxes: this.boxes() };
+  }
+}
+</script>
+</body>
+</html>

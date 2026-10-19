@@ -15,6 +15,7 @@ import {
   type AdminGoogleLoginRequest,
   type AdminInstallDetail,
   type AdminInstallRow,
+  type AdminLevels,
   type AdminLoginRequest,
   type AdminModerationResult,
   type AdminOverview,
@@ -132,6 +133,8 @@ export interface AdminApi {
   games(query: GameListQuery): Promise<AdminPage<AdminGameRow>>;
   game(id: string): Promise<AdminGameDetail>;
   screens(days: number): Promise<AdminScreens>;
+  /** Staged practice (1.0.2): every level over the period, and every gate. */
+  levels(days: number): Promise<AdminLevels>;
   /** Reported players, the most reported first (spec §3.5). */
   reports(query: ReportListQuery): Promise<AdminPage<AdminReportedPlayer>>;
   resolveReport(reportId: string): Promise<AdminReport>;
@@ -269,6 +272,7 @@ export function createApi(options: ApiOptions = {}): AdminApi {
       ),
     game: (gameId) => request<AdminGameDetail>('GET', `/games/${id(gameId)}`),
     screens: (days) => request<AdminScreens>('GET', `/screens${queryString({ days })}`),
+    levels: (days) => request<AdminLevels>('GET', `/levels${queryString({ days })}`),
     reports: (q) =>
       request<AdminPage<AdminReportedPlayer>>(
         'GET',

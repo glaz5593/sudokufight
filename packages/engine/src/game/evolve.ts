@@ -144,6 +144,8 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
     case 'gameStarted':
       s.status = 'running';
       s.startedAt = e.t;
+      // A level's clock (rules.timeLimitMs); other games get no key.
+      if (rules.timeLimitMs !== undefined) s.timeUpAt = e.t + rules.timeLimitMs;
       break;
 
     case 'turnStarted':
@@ -244,6 +246,11 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
       player(s, e.playerId).lastReactionAt = e.t;
       break;
 
+    case 'timePenalty':
+      player(s, e.playerId).timePenaltyMs = e.totalMs;
+      if (s.timeUpAt !== undefined) s.timeUpAt -= e.ms;
+      break;
+
     case 'playerConnectionLost': {
       // The soft phase [D42]: a mark only. Still connected; nothing else changes for anyone.
       const p = player(s, e.playerId);
@@ -307,6 +314,9 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
     case 'gamePaused':
       s.status = 'paused';
       s.pausedAt = e.t;
+      // `delete`: a disconnect's freeze leaves the state's shape as it was.
+      if (e.reason === 'background') s.pausedBy = 'background';
+      else delete s.pausedBy;
       break;
 
     case 'gameResumed': {
@@ -330,11 +340,21 @@ export function evolve(state: GameState | null, e: GameEvent): GameState {
       }
       s.cooldowns = s.cooldowns.map((c) => ({ ...c, until: c.until + d }));
       if (s.turn?.endsAt != null) s.turn = { ...s.turn, endsAt: s.turn.endsAt + d };
+      // A level's clock stood still too; a lock with no timer keeps its think time without the freeze.
+      if (s.timeUpAt !== undefined) s.timeUpAt += d;
+      if (rules.lockTimeout === false) for (const l of s.locks) l.lockedAt += d;
+      // [D65] The phone's own freeze is no time played: the game's clock leaves it out (played.ts).
+      if (e.reason === 'foreground') s.frozenMs = (s.frozenMs ?? 0) + d;
+      delete s.pausedBy;
       break;
     }
 
     case 'gameOver': {
       const { type: _type, seq: _seq, t: _t, ...result } = e;
+      // Ended while frozen (a quit before the resume): the level clock stopped at the freeze.
+      if (s.status === 'paused' && s.pausedAt !== null && s.timeUpAt !== undefined)
+        s.timeUpAt += e.t - s.pausedAt;
+      delete s.pausedBy;
       s.status = 'over';
       s.endedAt = e.t;
       s.pausedAt = null;

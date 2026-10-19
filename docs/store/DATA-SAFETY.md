@@ -39,10 +39,10 @@
 | Health and fitness | הכל | No | | | | |
 | Messages | Emails, SMS or MMS, Other in-app messages | No | | | | אין צ׳אט. התגובות הן 6 אימוג׳י קבועים: פעולה במשחק, לא הודעה |
 | Photos and videos, Audio, Files and docs, Calendar, Contacts | הכל | No | | | | גם בכניסה עם Google: לא תמונות (רק הקישור, תחת Other info) ולא אנשי קשר |
-| App activity | **App interactions** | **Yes** | No | No | Required | Analytics, App functionality. האירועים ו־`screen_view` |
+| App activity | **App interactions** | **Yes** | No | No | Required | Analytics, App functionality. האירועים ו־`screen_view`, כולל ששת האירועים של אימון בשלבים (1.0.2: מספר השלב, הסוג, הכוכבים, הזמן, הסיבה לסיום; בלי מזהים) |
 | App activity | In-app search history, Installed apps | No | | | | |
 | App activity | Other user-generated content | No | | | | השם לתצוגה מוצהר תחת Name |
-| App activity | **Other actions** | **Yes** | No | No | Required | App functionality, Analytics, Fraud prevention, security, and compliance. מהלכים, משחקים, דירוג, XP, ‏cheat_flags. **דיווחים על שחקנים** (מי, על מי, אחת משלוש סיבות קבועות, המשחק, מתי) ו**חסימות** (את מי ומתי), אפיון 3.5 |
+| App activity | **Other actions** | **Yes** | No | No | Required | App functionality, Analytics, Fraud prevention, security, and compliance. מהלכים, משחקים, דירוג, XP, ‏cheat_flags. **דיווחים על שחקנים** (מי, על מי, אחת משלוש סיבות קבועות, המשחק, מתי) ו**חסימות** (את מי ומתי), אפיון 3.5. **ההתקדמות באימון בשלבים** (1.0.2): הכוכבים הטובים ביותר וכמה משחקים בכל שלב, שמסונכרנים לחשבון, וה־XP מהשלבים בכל יום |
 | Web browsing | Web browsing history | No | | | | |
 | App info and performance | **Crash logs** | **Yes** | No | No | Required | App functionality, Analytics. ‏Crashlytics |
 | App info and performance | **Diagnostics** | **Yes** | No | No | Required | App functionality, Analytics. ‏`latency_sample`, ‏`reconnect`, דגם, מערכת וגרסה |
@@ -62,6 +62,8 @@
   - **שמירה:** חסימה עד שמבטלים אותה או מוחקים את החשבון. דיווחים ויומן פעולות המנהלים כל עוד הם נחוצים לטיפול, עם בדיקה ומחיקה של ישנים (כמו במדיניות). במחיקת חשבון: החסימות שלו נמחקות, דיווחים פתוחים עליו נסגרים, והשמות שלו יוצאים מהיומן.
   - **חשבון מושעה שנמחק:** נשארות רק טביעות חד־כיווניות (Hash) של מזהה הכניסה ושל המייל המאומת, כדי שחשבון חדש עם אותה כניסה יתחיל מושעה (Fraud prevention). זה לא המייל עצמו, ולכן "Data deletion" נשאר נכון; המדיניות מפרטת את זה. שם שמנהל איפס נשמר ברשימת שמות אסורים, בלי קישור לשחקן.
   - האירוע `report_sent` נושא את הסיבה בלבד (נכלל ב־"App interactions").
+- ~~אימון בשלבים~~ **נעשה (1.0.2, אפיון 5.3):** ההתקדמות (הכוכבים הטובים ביותר וכמה משחקים בכל שלב, וה־XP מהשלבים בכל יום: `user_levels`, ‏`level_xp_days`) נכנסה ל־"Other actions", וששת האירועים החדשים ל־"App interactions" (מספר השלב, לא מזהה). אין בהם סוג מידע חדש.
+  - **שמירה ומחיקה:** העותק בשרת נמחק עם החשבון (`accounts/store.ts` ‏`deleteUser`). העותק בטלפון (`levels.db`) נשאר עד שמסירים את האפליקציה, כמו משחקי האימון, ולכן הוא לא "Collected". ה־XP שהשלבים נתנו נשאר, אנונימי, כמו כל XP.
 - כיבוי Analytics, או הוספת מתג "שתף נתוני שימוש": משנה את "Required" ל־"Optional".
 
 </div>

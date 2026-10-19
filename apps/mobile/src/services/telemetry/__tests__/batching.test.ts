@@ -2,6 +2,7 @@ import {
   MAX_BATCH_BYTES,
   MAX_EVENTS_PER_BATCH,
   MAX_PROPS_BYTES,
+  TELEMETRY_EVENT_GENERATION,
   type TelemetryEvent,
   type TelemetryEventName,
 } from '@sudoku-fight/protocol';
@@ -222,5 +223,32 @@ describe('batches', () => {
 
   it('nothing to send: no batches', () => {
     expect(buildBatches([], META)).toEqual({ batches: [], rejected: [] });
+  });
+
+  it('never mixes generations: a level event (1.0.2) never shares a batch with an older one', () => {
+    const level = (i: number) => event({ name: 'level_end', props: { level: i } });
+    const old = (i: number) => event({ name: 'screen_view', props: { screen: `/${i}` } });
+    const events = [old(1), old(2), level(1), level(2), level(3), old(3), level(4)];
+    const { batches, rejected } = buildBatches(events, META);
+    expect(rejected).toEqual([]);
+    // In queue order, each run of one generation a batch of its own.
+    expect(batches.map((b) => b.events.map((e) => e.id))).toEqual([
+      events.slice(0, 2).map((e) => e.id),
+      events.slice(2, 5).map((e) => e.id),
+      [events[5]!.id],
+      [events[6]!.id],
+    ]);
+    for (const b of batches)
+      expect(new Set(b.events.map((e) => TELEMETRY_EVENT_GENERATION[e.name])).size).toBe(1);
+    // The six of staged practice are generation 2; every other name, 1.
+    const second = Object.entries(TELEMETRY_EVENT_GENERATION).filter(([, g]) => g === 2);
+    expect(second.map(([name]) => name).sort()).toEqual([
+      'chapter_gate',
+      'level_end',
+      'level_map_open',
+      'level_quit',
+      'level_start',
+      'level_tutorial',
+    ]);
   });
 });

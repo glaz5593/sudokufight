@@ -4,6 +4,7 @@ import {
   type GameView,
   type InterferenceKind,
   type PlayerId,
+  playedMs,
   type PlayerView,
 } from '@sudoku-fight/engine';
 
@@ -34,7 +35,10 @@ export const formatSeconds = (ms: number): string => (Math.max(0, ms) / 1000).to
 
 /** What the solo HUD shows besides the score (Game-Solo: time, best move, board progress). */
 export interface SoloStats {
-  /** Time since the start: the result's duration once the game is over. */
+  /**
+   * The time played (the engine's playedMs: a background freeze [D65] left out); the result's duration once the
+   * game is over.
+   */
   elapsedMs: number;
   /** Filled cells (givens and solved), out of `total`. */
   filled: number;
@@ -45,12 +49,7 @@ export interface SoloStats {
 
 export function soloStats(view: GameView, now: number): SoloStats {
   const me = view.players.find((p) => p.id === view.me) ?? null;
-  const elapsedMs =
-    view.status === 'over' && view.result
-      ? view.result.durationMs
-      : view.startedAt === null
-        ? 0
-        : Math.max(0, now - view.startedAt);
+  const elapsedMs = view.status === 'over' && view.result ? view.result.durationMs : playedMs(view, now);
   const best = me?.bestMove ?? null;
   return {
     elapsedMs,

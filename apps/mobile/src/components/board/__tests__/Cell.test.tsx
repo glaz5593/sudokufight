@@ -460,3 +460,95 @@ describe('flashPart and sameCell (pure)', () => {
     expect(sameCell(a, { ...a, kind: 'oppLock' })).toBe(false);
   });
 });
+
+describe('Cell in a stage (components.md §19.7)', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('he');
+    useSettings.setState({ reduceMotion: 'off' });
+    jest.useFakeTimers();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  const flash = (kind: CellFlash['kind'], id = 1): CellFlash => ({ kind, id });
+
+  it('outside the area: the dimmed colours, the given in its dim colour; the label says so', async () => {
+    await render(<Cell cell={cell('D5', { kind: 'given', digit: 4, area: 'out' })} />);
+    expect(styleOf(face()).backgroundColor).toBe(color.board.cellDim);
+    expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(color.board.givenDim);
+    expect(screen.getByRole('button')).toHaveProp('accessibilityLabel', 'D5, 4, רמז, מחוץ לאזור');
+    await screen.unmount();
+    await render(<Cell cell={cell('A4', { alt: true, area: 'out' })} />);
+    expect(styleOf(face('A4')).backgroundColor).toBe(color.board.cellDimAlt);
+    await screen.unmount();
+    await render(<Cell cell={cell('D5', { kind: 'given', digit: 4, area: 'in' })} />);
+    expect(styleOf(face()).backgroundColor).toBe(color.board.cell);
+    expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(color.board.given);
+  });
+
+  it('the target’s digit already on the board: a dark chip with the light digit', async () => {
+    await render(<Cell cell={cell('D5', { kind: 'given', digit: 6, mark: 'target' })} />);
+    expect(styleOf(screen.getByTestId('cell-target')).backgroundColor).toBe(color.board.given);
+    expect(screen.getByTestId('cell-digit')).toHaveTextContent('6');
+    expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(color.board.cell);
+  });
+
+  it('a wrong tap: the red X and the red wash, and a shake', async () => {
+    await render(<Cell cell={cell('D5', { interactive: true })} flash={flash('miss')} />);
+    expect(screen.getByTestId('cell-flash-miss-cross')).toBeOnTheScreen();
+    expect(styleOf(screen.getByTestId('cell-flash-miss-fill')).backgroundColor).toBe(color.board.wrongFlash);
+    await act(async () => void jest.advanceTimersByTime(tokens.motion.duration.wrongShake / 5));
+    expect(face()).not.toHaveAnimatedStyle({ transform: [{ translateX: 0 }] });
+    await act(async () => void jest.advanceTimersByTime(1000));
+    expect(screen.getByTestId('cell-flash-miss-cross')).toHaveAnimatedStyle({ opacity: 0 });
+  });
+
+  it('a wrong tap, reduced motion: the static 2 dp red frame for 300 ms, no X, no shake', async () => {
+    useSettings.setState({ reduceMotion: 'on' });
+    await render(<Cell cell={cell('D5', { interactive: true })} flash={flash('miss')} />);
+    const frame = screen.getByTestId('cell-flash-miss-frame');
+    expect(styleOf(frame)).toMatchObject({ borderColor: color.danger, borderWidth: tokens.border.focus });
+    expect(screen.queryByTestId('cell-flash-miss-cross')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('cell-flash-miss-fill')).not.toBeOnTheScreen();
+    expect(flashPart('over', flash('miss'), true)).toMatchObject({ kind: 'frame', holdMs: 300 });
+    await act(async () => void jest.advanceTimersByTime(tokens.motion.duration.wrongShake / 5));
+    expect(face()).toHaveAnimatedStyle({ transform: [{ translateX: 0 }] });
+  });
+
+  it('my lock with no timer (a stage alone): the ring stays, no seconds pill, no pulse', async () => {
+    await render(<Cell cell={cell('D5', { kind: 'myLock', player: me, lock: null })} />);
+    expect(screen.getByTestId('cell-ring')).toBeOnTheScreen();
+    expect(screen.queryByTestId('cell-pill')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('cell-pill-slot')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('cell-pulse')).not.toBeOnTheScreen();
+    expect(styleOf(face()).backgroundColor).toBe(P[0].tint);
+  });
+
+  it('a found error: the wrong digit struck in red, the right one small in a success disc, a success ring', async () => {
+    await render(
+      <Cell
+        cell={cell('E7', { kind: 'solved', digit: 9, player: me, mine: true, correction: { wrong: 4 } })}
+      />,
+    );
+    expect(screen.getByTestId('cell-correction-wrong')).toHaveTextContent('4');
+    expect(styleOf(screen.getByTestId('cell-correction-wrong')).color).toBe(color.board.wrongDigit);
+    expect(styleOf(screen.getByTestId('cell-correction-strike')).backgroundColor).toBe(
+      color.board.wrongDigit,
+    );
+    expect(screen.getByTestId('cell-correction-right')).toHaveTextContent('9');
+    expect(styleOf(screen.getByTestId('cell-correction-right')).backgroundColor).toBe(color.success);
+    expect(styleOf(screen.getByTestId('cell-correction-ring')).borderColor).toBe(color.success);
+    expect(screen.getByRole('button')).toHaveProp('accessibilityLabel', 'E7, טעות שנמצאה: 4, הספרה הנכונה 9');
+  });
+
+  it('one of "my" digits (spot the error): P1, with the ● in the corner', async () => {
+    await render(<Cell cell={cell('B3', { kind: 'solved', digit: 6, player: me, mine: true })} />);
+    expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(P[0].digit);
+    expect(screen.getByTestId('cell-glyph-circle')).toBeOnTheScreen();
+    expect(screen.getByRole('button')).toHaveProp('accessibilityLabel', 'B3, 6, שלך');
+  });
+
+  it('a tap stage’s cell says the tap is the move', async () => {
+    await render(<Cell cell={cell('D5', { interactive: true })} onCellPress={jest.fn()} tap />);
+    expect(screen.getByRole('button')).toHaveProp('accessibilityHint', 'הקשה על המשבצת היא המהלך');
+  });
+});

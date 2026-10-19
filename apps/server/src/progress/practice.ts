@@ -3,7 +3,7 @@ import type { PracticeResult } from '@sudoku-fight/protocol';
 import { and, eq, gte, inArray, lt, sql } from 'drizzle-orm';
 
 import type { Db } from '../db';
-import { practiceResults, xp } from '../db/schema';
+import { levelXpDays, practiceResults, xp } from '../db/schema';
 import type { ProgressSettings } from './settings';
 import { addXp } from './xp';
 
@@ -21,7 +21,8 @@ import { addXp } from './xp';
  * - The daily cap (PRACTICE_XP_DAILY_CAP): practice earns at most that much per UTC day of the games' ends. A
  *   result past it is still stored (so it stays a duplicate when sent again) with the XP that fit, maybe 0.
  *   Results of a batch are counted in the order they ended (then by id), so the same batch always earns the
- *   same.
+ *   same. The levels of staged practice share the cap (1.0.2, ./levels): the level XP paid on a day counts in
+ *   it too (practiceXpUsedOn), though a level that does not fit is paid later and a result is not.
  *
  * One transaction per batch, which first locks the player's xp row: two batches of one player at once run
  * one after the other, so neither the duplicate check nor the cap can be passed twice.
@@ -44,6 +45,31 @@ export function practiceXp(result: PracticeResult, settings: Pick<ProgressSettin
       ? { mode: 'solo' }
       : { mode: 'bot', won: result.outcome === 'win', correct: result.correct };
   return xpForGame(game, settings.rules);
+}
+
+/**
+ * How much of the daily cap a player used on UTC `day` (days since 1970-01-01): the XP of the practice results
+ * that ended that day, and the level XP paid that day (level_xp_days, ./levels). Call it inside the transaction
+ * that holds the player's xp row, as both writers do, so the answer can't change under the caller.
+ */
+export async function practiceXpUsedOn(db: Db, userId: string, day: number): Promise<number> {
+  const sumOf = (column: typeof practiceResults.xp | typeof levelXpDays.xp) =>
+    sql<number>`coalesce(sum(${column}), 0)::int`.mapWith(Number);
+  const [practice] = await db
+    .select({ xp: sumOf(practiceResults.xp) })
+    .from(practiceResults)
+    .where(
+      and(
+        eq(practiceResults.userId, userId),
+        gte(practiceResults.endedAt, new Date(day * DAY_MS)),
+        lt(practiceResults.endedAt, new Date((day + 1) * DAY_MS)),
+      ),
+    );
+  const [levels] = await db
+    .select({ xp: sumOf(levelXpDays.xp) })
+    .from(levelXpDays)
+    .where(and(eq(levelXpDays.userId, userId), eq(levelXpDays.day, day)));
+  return (practice?.xp ?? 0) + (levels?.xp ?? 0);
 }
 
 export async function recordPracticeResults(
@@ -72,17 +98,7 @@ export async function recordPracticeResults(
     const usedOn = async (day: number): Promise<number> => {
       const known = usedByDay.get(day);
       if (known !== undefined) return known;
-      const [row] = await tx
-        .select({ xp: sql<number>`coalesce(sum(${practiceResults.xp}), 0)::int`.mapWith(Number) })
-        .from(practiceResults)
-        .where(
-          and(
-            eq(practiceResults.userId, userId),
-            gte(practiceResults.endedAt, new Date(day * DAY_MS)),
-            lt(practiceResults.endedAt, new Date((day + 1) * DAY_MS)),
-          ),
-        );
-      const used = row?.xp ?? 0;
+      const used = await practiceXpUsedOn(tx, userId, day);
       usedByDay.set(day, used);
       return used;
     };

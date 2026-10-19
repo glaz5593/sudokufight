@@ -1,10 +1,11 @@
 // First: keeps the real Reanimated in place of the router testing library's old mock (see homeTesting.tsx).
 import 'react-native-reanimated';
-import { THINK_TIME_MS } from '@sudoku-fight/engine';
+import { type FindLevelOver, levelIdOf, THINK_TIME_MS } from '@sudoku-fight/engine';
 import { router } from 'expo-router';
 import { act, fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
-import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, type TextStyle, type ViewStyle } from 'react-native';
 
+import { useAuth } from '../../../auth/authStore';
 import { paletteAt } from '../../../components/player';
 import { directionProblems, PHONE, textWidth } from '../../../components/ui/testing/layout';
 import { useToast } from '../../../components/ui';
@@ -13,6 +14,9 @@ import { openPracticeRepo, type PracticeRepo } from '../../../game/practiceRepo'
 import { practiceStorageOrNull } from '../../../game/storage';
 import { memoryDb } from '../../../game/testing/sqlJsDb';
 import i18n from '../../../i18n';
+import { measuredWidth } from '../../../testing/fontMetrics';
+import { type LevelsRepo, openLevelsRepo } from '../../../levels/levelsRepo';
+import { forgetLevels } from '../../../levels/levelsStore';
 import { useProfile } from '../../../state/profile';
 import { color, contrast, size, tokens } from '../../../theme';
 import { hidden, styleOf } from '../../game/connection/testing/setup';
@@ -26,6 +30,12 @@ jest.mock('../../../game/storage', () => jest.requireActual<Mocks>('../testing/n
 jest.mock('../../../services/analytics', () => ({ track: jest.fn() }));
 jest.mock('expo-audio', () => jest.requireActual<Mocks>('../testing/nativeMocks').expoAudio);
 jest.mock('expo-haptics', () => jest.requireActual<Mocks>('../testing/nativeMocks').expoHaptics);
+// levels.db: sql.js, the test's own (the "אימון בשלבים" row reads its summary from it).
+let mockLevelsRepo: Promise<LevelsRepo> | null = null;
+jest.mock('../../../levels/levelsStorage', () => ({
+  openLevelsStorage: () => mockLevelsRepo ?? Promise.reject(new Error('no levels.db')),
+  levelsStorageOrNull: async () => (mockLevelsRepo ? await mockLevelsRepo : null),
+}));
 
 const storage = jest.mocked(practiceStorageOrNull);
 let repo: PracticeRepo;
@@ -41,24 +51,37 @@ beforeEach(async () => {
 
 afterEach(() => {
   useGameStore.getState().clear();
+  useAuth.setState({ status: 'loading', user: null });
+  forgetLevels();
+  mockLevelsRepo = null;
   jest.useRealTimers();
 });
 
-/** The five options, top to bottom (Moshe's device test, 15.10.2026: the bot above solo). */
-const KEYS: readonly ModeKey[] = ['ranked2', 'ranked3', 'ranked4', 'bot', 'solo'];
+/** The six options, top to bottom (Moshe's device test, 15.10.2026: the bot above solo; D48: the stages last). */
+const KEYS: readonly ModeKey[] = ['ranked2', 'ranked3', 'ranked4', 'bot', 'solo', 'levels'];
+
+/** The map's route, a stand-in here (screens/levels has its own tests). */
+const LEVELS_STUB = { 'levels/index': () => <Text testID="stub-levels">levels</Text> };
+
+/** What a row's tagline says: a new player sees staged practice's "300 שלבים קצרים · 0–3 כוכבים". */
+const taglineOf = (key: ModeKey, fresh = true): string =>
+  key === 'levels' && fresh
+    ? i18n.t('home:modes.levels.taglineNew', { total: 300 })
+    : i18n.t(`home:modes.${key}.tagline`);
 
 describe('"משחק חדש" (spec §5.1)', () => {
-  it('offers exactly five modes, all open: ranked 2 · 3 · 4, then the bot above solo practice (stages 9–10)', async () => {
+  it('offers six modes, all open: ranked 2 · 3 · 4, the bot above solo practice, then staged practice (D48)', async () => {
     await renderApp('/modes');
     expect(screen.getByRole('header', { name: 'משחק חדש' })).toBeTruthy();
     // On screen, top to bottom: the bot practice above the solo one (Moshe's device test, 15.10.2026).
-    expect(screen.getAllByTestId(/^mode-(ranked\d|bot|solo)$/).map((c) => c.props.testID)).toEqual(
+    expect(screen.getAllByTestId(/^mode-(ranked\d|bot|solo|levels)$/).map((c) => c.props.testID)).toEqual(
       KEYS.map((k) => `mode-${k}`),
     );
     const keys = KEYS;
     const cards = keys.map((k) => screen.getByTestId(`mode-${k}`));
-    expect(cards).toHaveLength(5);
+    expect(cards).toHaveLength(6);
     expect(cards.map((c) => c.props.accessibilityState.disabled)).toEqual([
+      false,
       false,
       false,
       false,
@@ -74,15 +97,86 @@ describe('"משחק חדש" (spec §5.1)', () => {
       'accessibilityLabel',
       'מדורג · 4 שחקנים, כולם נגד כולם, דירוג',
     );
+    // Only the solo row's title changed (D48): "אימון לבד · לוח מלא". Its history and results still say "אימון לבד".
     expect(screen.getByTestId('mode-solo')).toHaveProp(
       'accessibilityLabel',
-      'אימון לבד, בקצב שלך, ללא דירוג, עובד גם בלי אינטרנט',
+      'אימון לבד · לוח מלא, בקצב שלך, ללא דירוג, עובד גם בלי אינטרנט',
     );
+    expect(i18n.t('home:modes.solo.name')).toBe('אימון לבד');
     expect(screen.getByTestId('mode-bot')).toHaveProp(
       'accessibilityLabel',
       'אימון מול בוט, 5 רמות, ללא דירוג, עובד גם בלי אינטרנט',
     );
+    // A new player: the stages there are, no progress chip, no "ללא דירוג" (and no "דורש חיבור", it works offline).
+    expect(screen.getByTestId('mode-levels')).toHaveProp(
+      'accessibilityLabel',
+      'אימון בשלבים, 300 שלבים קצרים · ⁦0–3⁩ כוכבים, עובד גם בלי אינטרנט',
+    );
+    expect(screen.queryByTestId('levels-progress-chip')).toBeNull();
+    expect(within(screen.getByTestId('mode-levels')).queryByText('ללא דירוג')).toBeNull();
     expect(directionProblems(screen.getByTestId('mode-solo'))).toEqual([]);
+    expect(directionProblems(screen.getByTestId('mode-levels'))).toEqual([]);
+  });
+
+  it('"אימון בשלבים" opens the level map, not the game type', async () => {
+    const app = await renderApp('/modes', LEVELS_STUB);
+    await fireEvent.press(screen.getByRole('button', { name: /^אימון בשלבים/ }));
+    expect(app.pathname()).toBe('/levels');
+    expect(screen.getByTestId('stub-levels')).toBeOnTheScreen();
+    expect(useGameStore.getState().session).toBeNull();
+  });
+
+  it('after 13 stages: the row shows my stage and stars, "שלב 14 · ★ n", and my stage on its tile', async () => {
+    const levels = await openLevelsRepo(await memoryDb());
+    mockLevelsRepo = Promise.resolve(levels);
+    const found: FindLevelOver = {
+      reason: 'targetReached',
+      elapsedMs: 4000,
+      penaltyMs: 0,
+      spots: 1,
+      found: 0,
+      stars: 3,
+    };
+    for (let n = 1; n <= 13; n++)
+      await levels.recordAttempt({
+        owner: 'uid-1',
+        level: {
+          id: levelIdOf(n),
+          rev: 1,
+          kind: 'find',
+          chapter: Math.ceil(n / 10),
+          stars: { by: 'timeMs', three: n % 2 ? 5000 : 3000, two: 10000, one: 20000 },
+        },
+        end: found,
+        startedAt: 1,
+        endedAt: 2,
+      });
+    await act(async () =>
+      useAuth.setState({
+        status: 'ready',
+        user: { uid: 'uid-1', email: null, emailVerified: true, methods: [] },
+      }),
+    );
+    await renderApp('/modes');
+    const chip = await screen.findByTestId('levels-progress-chip');
+    // 7 stages at ★★★ (5 s) and 6 at ★★ (3 s is ★★★'s limit there): 33 stars; the 14th is next.
+    expect(chip).toHaveTextContent('שלב 14 ·33');
+    expect(within(chip).getByTestId('icon-star', { includeHiddenElements: true })).toHaveProp(
+      'fill',
+      expect.stringMatching(/#ffcf3f/i),
+    );
+    expect(
+      within(screen.getByTestId('mode-levels')).getByText('שלבים של חצי דקה · עד 3 כוכבים'),
+    ).toBeTruthy();
+    expect(screen.getByTestId('mode-levels')).toHaveProp(
+      'accessibilityLabel',
+      'אימון בשלבים, שלבים של חצי דקה · עד 3 כוכבים, שלב 14 · 33 כוכבים, עובד גם בלי אינטרנט',
+    );
+    expect(
+      within(screen.getByTestId('mode-levels')).getByTestId('mode-levels-lead-number', {
+        includeHiddenElements: true,
+      }),
+    ).toHaveTextContent('14');
   });
 
   it('the header ends with me, as on the Modes board: my name (isolated) and my avatar', async () => {
@@ -153,8 +247,13 @@ describe('"משחק חדש" (spec §5.1)', () => {
     expect(screen.getByRole('header', { name: 'New game' })).toBeTruthy();
     expect(screen.getByTestId('mode-solo')).toHaveProp(
       'accessibilityLabel',
-      'Solo practice, At your own pace, Unrated, Works offline',
+      'Solo · full board, At your own pace, Unrated, Works offline',
     );
+    expect(screen.getByTestId('mode-levels')).toHaveProp(
+      'accessibilityLabel',
+      'Staged practice, 300 short stages · 0–3 stars, Works offline',
+    );
+    expect(i18n.t('home:modes.levels.tagline')).toBe('30-second stages · up to 3 stars');
     expect(screen.queryByText('Soon')).toBeNull();
   });
 });
@@ -166,7 +265,7 @@ describe('"משחק חדש" (spec §5.1)', () => {
  */
 const STATUS_BAR = 32;
 const NAV_BAR_BUTTONS = 48;
-/** The five options and a sixth to come ("אימון בשלבים", Moshe's device test, 15.10.2026). */
+/** The six options: the sixth is "אימון בשלבים" (Moshe's device test, 15.10.2026; D48). */
 const ROWS_TO_FIT = 6;
 
 const num = (v: unknown): number => (typeof v === 'number' ? v : 0);
@@ -212,14 +311,14 @@ describe('the rows (Moshe’s device test, 15.10.2026)', () => {
         fontSize: tokens.type.sheetTitle.size,
         lineHeight: tokens.type.sheetTitle.lineHeight,
       });
-      expect(within(card).getByText(i18n.t(`home:modes.${key}.tagline`))).toHaveProp('numberOfLines', 1);
+      expect(within(card).getByText(taglineOf(key))).toHaveProp('numberOfLines', 1);
     }
     expect(directionProblems(screen.getByTestId('mode-ranked3'))).toEqual([]);
     expect(directionProblems(screen.getByTestId('mode-bot'))).toEqual([]);
   });
 
   it.each(['he', 'en'] as const)(
-    'on Moshe’s phone, six rows and the footnote fit without scrolling: room for a sixth type (%s)',
+    'on Moshe’s phone, the six rows and the footnote fit without scrolling (%s)',
     async (lang) => {
       await i18n.changeLanguage(lang);
       await renderApp('/modes');
@@ -261,8 +360,15 @@ describe('the rows (Moshe’s device test, 15.10.2026)', () => {
       for (const key of KEYS) {
         const title = i18n.t(`home:modes.${key}.title`);
         expect(textWidth(title, tokens.type.sheetTitle.size, { bold: true })).toBeLessThanOrEqual(column);
-        const tagline = i18n.t(`home:modes.${key}.tagline`);
-        expect(textWidth(tagline, tokens.type.caption.size)).toBeLessThanOrEqual(column);
+        for (const tagline of new Set([taglineOf(key, true), taglineOf(key, false)])) {
+          // Staged practice's English copy is the plan's ("30-second stages · up to 3 stars"): over the wide
+          // estimate, so it is held to its real width in the app's font (197 of 214).
+          const width =
+            key === 'levels'
+              ? measuredWidth(tagline, tokens.type.caption.fontFamily, tokens.type.caption.size)
+              : textWidth(tagline, tokens.type.caption.size);
+          expect(width).toBeLessThanOrEqual(column);
+        }
       }
     },
   );

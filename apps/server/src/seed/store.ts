@@ -16,6 +16,7 @@ import {
   puzzleHistory,
   puzzles,
   ratings,
+  userLevels,
   users,
 } from '../db/schema';
 import { SAMPLE_UID_PREFIX, type SampleData, type SamplePuzzle } from './sampleData';
@@ -44,6 +45,7 @@ export async function writeSampleData(db: Db, data: SampleData): Promise<void> {
     await insert(ratings, data.ratings);
     await insert(puzzleHistory, data.puzzleHistory);
     await insert(opponentHistory, data.opponentHistory);
+    await insert(userLevels, data.userLevels);
   });
 }
 
@@ -67,7 +69,8 @@ export async function countRows(db: Db): Promise<Record<string, number>> {
       (select count(*)::int from users) as users,
       (select count(*)::int from games) as games,
       (select count(*)::int from game_events) as "gameEvents",
-      (select count(*)::int from ratings) as ratings`,
+      (select count(*)::int from ratings) as ratings,
+      (select count(*)::int from user_levels) as "userLevels"`,
   );
   return row ?? {};
 }

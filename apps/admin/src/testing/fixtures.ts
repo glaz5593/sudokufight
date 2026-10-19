@@ -4,6 +4,8 @@ import type {
   AdminGameRow,
   AdminInstallDetail,
   AdminInstallRow,
+  AdminLevels,
+  AdminLevelStat,
   AdminOverview,
   AdminModerationResult,
   AdminPage,
@@ -136,6 +138,7 @@ export function userDetail(now = Date.now()): AdminUserDetail {
     ],
     installs: [installRow({}, now)],
     cheatFlags: [{ gameId: GAME_A, reason: 'fastThinking', value: 845.5, createdAt: now - DAY + 312_000 }],
+    levels: { played: 42, stars: 97 },
   };
 }
 
@@ -204,6 +207,119 @@ export function screensFixture(): AdminScreens {
       { screen: 'register', views: 150, installs: 110, exits: 90, exitRate: 0.75, lastScreenOfGone: 30 },
       { screen: 'lobby', views: 400, installs: 100, exits: 10, exitRate: 0.05, lastScreenOfGone: 1 },
     ],
+  };
+}
+
+// ---- Staged practice (1.0.2) ----
+
+/** A level nobody played, as the server sends it. */
+export function emptyLevel(n: number): AdminLevelStat {
+  return {
+    levelId: `L${String(n).padStart(3, '0')}`,
+    chapter: Math.ceil(n / 10),
+    boss: n % 10 === 0,
+    kind: null,
+    starts: 0,
+    plays: 0,
+    players: 0,
+    stars: [0, 0, 0, 0],
+    medianMs: null,
+    replayRate: null,
+    midQuitRate: null,
+    quitRate: null,
+    firstTries: 0,
+    firstTryZeroRate: null,
+  };
+}
+
+/**
+ * GET /levels: 300 levels in 30 chapters, a few of them played. L001 and L014 are too hard (above 60%), L002
+ * sits right at 60% (not above); the gate to chapter 3 needs softening (40%), the one to chapter 4 sits at 30%.
+ * `count`: only the first levels (a lighter page, for the tests that need no more; the gates stay).
+ */
+export function levelsFixture(count = 300): AdminLevels {
+  const played: Record<number, Partial<AdminLevelStat>> = {
+    1: {
+      kind: 'find',
+      starts: 22,
+      plays: 20,
+      players: 12,
+      stars: [8, 4, 6, 2],
+      medianMs: 10_000,
+      replayRate: 0.25,
+      midQuitRate: 0.1,
+      quitRate: 0.05,
+      firstTries: 12,
+      firstTryZeroRate: 0.75,
+    },
+    2: {
+      kind: 'fillBox',
+      starts: 12,
+      plays: 10,
+      players: 10,
+      stars: [6, 0, 2, 2],
+      medianMs: 12_500,
+      replayRate: 0,
+      midQuitRate: 0,
+      quitRate: 0,
+      firstTries: 10,
+      firstTryZeroRate: 0.6,
+    },
+    10: {
+      kind: 'fillBox',
+      starts: 8,
+      plays: 8,
+      players: 7,
+      stars: [1, 2, 3, 2],
+      medianMs: 18_000,
+      replayRate: 0.125,
+      midQuitRate: 0,
+      quitRate: 0,
+      firstTries: 7,
+      firstTryZeroRate: 1 / 7,
+    },
+    14: {
+      kind: 'findDuel',
+      starts: 6,
+      plays: 5,
+      players: 5,
+      stars: [4, 1, 0, 0],
+      medianMs: 21_000,
+      replayRate: 0,
+      midQuitRate: 1 / 6,
+      quitRate: 0.2,
+      firstTries: 5,
+      firstTryZeroRate: 0.8,
+    },
+  };
+  const levels = Array.from({ length: count }, (_, k) => ({ ...emptyLevel(k + 1), ...played[k + 1] }));
+  const gates = Array.from({ length: 29 }, (_, k) => ({
+    chapter: k + 2,
+    reached: 0,
+    opened: 0,
+    stuck: 0,
+    stuckAfter3: 0,
+    stuckAfter3Rate: null as number | null,
+  }));
+  gates[0] = { chapter: 2, reached: 10, opened: 9, stuck: 1, stuckAfter3: 1, stuckAfter3Rate: 0.1 };
+  gates[1] = { chapter: 3, reached: 5, opened: 2, stuck: 3, stuckAfter3: 2, stuckAfter3Rate: 0.4 };
+  gates[2] = { chapter: 4, reached: 10, opened: 6, stuck: 4, stuckAfter3: 3, stuckAfter3Rate: 0.3 };
+  return { days: 30, tooHardShare: 0.6, stuckShare: 0.3, stuckAttempts: 3, levels, gates };
+}
+
+/** GET /levels before anyone played: every level and gate, empty. */
+export function emptyLevelsFixture(): AdminLevels {
+  return {
+    ...levelsFixture(),
+    levels: Array.from({ length: 300 }, (_, k) => emptyLevel(k + 1)),
+    gates: levelsFixture().gates.map((g) => ({
+      ...g,
+      reached: 0,
+      opened: 0,
+      stuck: 0,
+      stuckAfter3: 0,
+      stuckAfter3Rate: null,
+    })),
   };
 }
 

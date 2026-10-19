@@ -1252,3 +1252,36 @@ describe('RemoteGameHost: close()', () => {
     expect(table.room.left).toBe(true);
   });
 });
+
+describe('RemoteGameHost: what only local play has (staged practice, 1.0.2)', () => {
+  it('a tap (a tap level’s move) is refused here at once, and never sent: no wire message has it', async () => {
+    const table = await liveTable();
+    const { updates } = record(table);
+    const sent = table.room.sent.length;
+    table.host.tap(c0);
+    expect(updates).toEqual([
+      {
+        kind: 'rejected',
+        action: { type: 'tap', cell: c0 },
+        reason: 'badAction',
+        view: table.host.getView(),
+      },
+    ]);
+    expect(table.room.sent).toHaveLength(sent);
+  });
+
+  it('pause and resume [D65] do nothing and send nothing: an online game never freezes that way', async () => {
+    const table = await liveTable();
+    const { updates } = record(table);
+    const actions = table.room.actions.length;
+    table.host.pause();
+    table.host.resume();
+    table.host.pause();
+    expect(updates).toEqual([]);
+    expect(table.room.actions).toHaveLength(actions);
+    expect(table.host.getView().status).toBe('running');
+    expect(table.host.online.status).toBe('live');
+    await elapse(table, 100);
+    expectInSync(table);
+  });
+});

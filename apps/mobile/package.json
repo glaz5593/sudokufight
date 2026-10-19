@@ -14,6 +14,7 @@
     "doctor": "npx expo-doctor@latest",
     "tokens": "node scripts/gen-tokens.mjs",
     "pool": "node scripts/gen-offline-pool.mjs",
+    "levels": "node scripts/gen-levels.mjs",
     "icons": "node scripts/gen-icons.mjs",
     "avatars:strings": "tsx scripts/gen-avatar-strings.ts",
     "countries:names": "tsx scripts/gen-country-names.ts",

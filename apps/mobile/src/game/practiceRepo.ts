@@ -7,6 +7,7 @@ import {
   type GameResult,
   type GameState,
   type GameType,
+  loggedMs,
   type PlayerInfo,
   type PlayRecord,
 } from '@sudoku-fight/engine';
@@ -86,14 +87,21 @@ export const MIGRATIONS: readonly Migration[] = [
   },
 ];
 
-/** Brings the database up to the newest migration; returns its version. Each step is one transaction. */
-export async function migrate(db: SqlDb, migrations: readonly Migration[] = MIGRATIONS): Promise<number> {
+/**
+ * Brings the database up to the newest migration; returns its version. Each step is one transaction.
+ * `label` names the database in the error (the levels' own file says so, not "practice").
+ */
+export async function migrate(
+  db: SqlDb,
+  migrations: readonly Migration[] = MIGRATIONS,
+  label = 'practice database',
+): Promise<number> {
   const steps = [...migrations].sort((a, b) => a.version - b.version);
   const latest = steps[steps.length - 1]?.version ?? 0;
   let version =
     (await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version', []))?.user_version ?? 0;
   if (version > latest)
-    throw new Error(`The practice database is v${version}, newer than this app knows (v${latest})`);
+    throw new Error(`The ${label} is v${version}, newer than this app knows (v${latest})`);
   for (const step of steps) {
     if (step.version <= version) continue;
     await db.withTransactionAsync(async () => {
@@ -380,7 +388,8 @@ class SqlPracticeRepo implements PracticeRepo {
             me?.score ?? null,
             me?.mistakes ?? null,
             me?.correct ?? null,
-            last ? Math.max(0, last.lastEventAt - (last.startedAt ?? last.createdAt)) : null,
+            // The time played to its last event: a background freeze [D65] left out.
+            last ? loggedMs(last) : null,
             row.id,
           ],
         );

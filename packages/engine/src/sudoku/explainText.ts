@@ -210,3 +210,39 @@ export function formatWrong(reason: WrongReason, lang: Lang): string {
     ? `${reason.digit} עוד אפשרי כאן, אבל הפתרון מחייב ${reason.answer}.`
     : `${reason.digit} still fits here, but the solution needs ${reason.answer}.`;
 }
+
+// -- staged practice (dev-plan §2ב) -------------------------------------------------------------------------
+
+/** "2 או 5", "2, 5 או 8" / "2 or 5", "2, 5 or 8" */
+function orList(items: readonly (string | number)[], lang: Lang): string {
+  const s = items.map(String);
+  if (s.length <= 1) return s.join('');
+  const last = s[s.length - 1]!;
+  const head = s.slice(0, -1).join(', ');
+  return lang === 'he' ? `${head} או ${last}` : `${head} or ${last}`;
+}
+
+/**
+ * Why `digit` can't go in `cell`, as one sentence with no full stop (a level's "why?", a wrong tap):
+ * "E6 לא יכול להכיל 7: בשורה E יש 7" / "E6 can't hold 7: row E has a 7".
+ */
+export function formatBlock(c: number, block: Block, digit: Digit, lang: Lang): string {
+  if (lang === 'he')
+    return block.kind === 'step'
+      ? `${cell(c, lang)} לא יכול להכיל ${digit}: הספרה ${digit} נמחקה ממנו בצעד ${block.step + 1}`
+      : `${cell(c, lang)} לא יכול להכיל ${digit}: ${inUnit(block.unit, lang)} יש ${digit}`;
+  return block.kind === 'step'
+    ? `${cellName(c)} can't hold ${digit}: it was ruled out in step ${block.step + 1}`
+    : `${cellName(c)} can't hold ${digit}: ${unitName(block.unit, lang)} has a ${digit}`;
+}
+
+/**
+ * A digit in a chain cell that can't be known yet [D64], with no full stop: "עוד אי אפשר לדעת מה נכנס ב־A9
+ * (2 או 5)" / "You can't tell yet what goes in A9 (2 or 5)". Without candidates the brackets are left out.
+ */
+export function formatNotYet(c: number, candidates: readonly Digit[], lang: Lang): string {
+  const options = candidates.length ? ` (${orList(candidates, lang)})` : '';
+  return lang === 'he'
+    ? `עוד אי אפשר לדעת מה נכנס ב־${cell(c, lang)}${options}`
+    : `You can't tell yet what goes in ${cellName(c)}${options}`;
+}

@@ -4,6 +4,7 @@ import {
   MAX_PROPS_BYTES,
   PLATFORMS,
   type Platform,
+  TELEMETRY_EVENT_GENERATION,
   TELEMETRY_EVENT_NAMES,
   type TelemetryBatch,
   type TelemetryEvent,
@@ -197,6 +198,10 @@ export interface BuiltBatches {
  * Splits `events` (oldest first) into batches the server takes: by count (MAX_EVENTS_PER_BATCH) and by the
  * size of the request body (MAX_BATCH_BYTES), every event checked again (it may have waited on the phone
  * since an older version of the app). Throws when `meta` itself is wrong (no batch could pass).
+ *
+ * A batch never mixes generations (TELEMETRY_EVENT_GENERATION): a server older than an event's generation
+ * refuses its whole batch (400), so staged practice's events (1.0.2) go in batches of their own, and a refusal
+ * of theirs never takes the older events with it.
  */
 export function buildBatches(
   events: readonly TelemetryEvent[],
@@ -219,6 +224,7 @@ export function buildBatches(
   const rejected: string[] = [];
   const seen = new Set<string>();
   let current: TelemetryEvent[] = [];
+  let generation: number | null = null;
   let bytes = envelope;
   for (const input of events) {
     const event = sanitizeEvent(input);
@@ -233,14 +239,22 @@ export function buildBatches(
       rejected.push(event.id);
       continue;
     }
-    // A full batch goes; the event starts the next one (where it fits: checked above).
-    if (current.length > 0 && (current.length >= limits.maxEvents || bytes + 1 + size > limits.maxBytes)) {
+    // A full batch goes, and so does one of another generation; the event starts the next one (where it fits:
+    // checked above).
+    const eventGeneration = TELEMETRY_EVENT_GENERATION[event.name];
+    if (
+      current.length > 0 &&
+      (current.length >= limits.maxEvents ||
+        bytes + 1 + size > limits.maxBytes ||
+        eventGeneration !== generation)
+    ) {
       batches.push({ ...head, events: current });
       current = [];
       bytes = envelope;
     }
     bytes += (current.length > 0 ? 1 : 0) + size;
     current.push(event);
+    generation = eventGeneration;
   }
   if (current.length > 0) batches.push({ ...head, events: current });
   return { batches, rejected };

@@ -1,8 +1,9 @@
 // First: expo-router's testing library swaps Reanimated for its old mock (no useReducedMotion), unless the real
 // module is already in place as the mock (see the jest.mock below).
 import 'react-native-reanimated';
-import type { PlayerInfo } from '@sudoku-fight/engine';
+import { type FindLevelOver, levelOutcome, type PlayerInfo } from '@sudoku-fight/engine';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
+import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import AccountSuspendedRoute from '../../app/account-suspended';
@@ -20,6 +21,8 @@ import HistoryRoute from '../../app/history';
 import Index from '../../app/index';
 import InterferencesRoute from '../../app/interferences';
 import LeaderboardRoute from '../../app/leaderboard';
+import LevelsRoute from '../../app/levels/index';
+import LevelPlayRoute, { LevelPlayFlow, type LevelPlayingProps } from '../../app/levels/play';
 import LoginRoute from '../../app/login';
 import MatchRoute from '../../app/match/index';
 import ModesRoute from '../../app/modes';
@@ -50,6 +53,7 @@ import { pass } from '../screens/game/testing/online';
 import { seedBotPractices, seedPractices } from '../screens/home/testing/seed';
 import { fakeHistoryApi, rankedDuel } from '../screens/replay/testing/sources';
 import type { HistoryApi } from '../screens/history/historyApi';
+import { useTutorials } from '../screens/levels/HowToPlay';
 import { useProfile } from '../state/profile';
 import { useSettings } from '../state/settings';
 import { auditA11y, hebrewTexts, isThemeColour, MIN_TARGET, THEME_COLOURS } from '../testing/a11yAudit';
@@ -107,6 +111,32 @@ jest.mock('../screens/history/appWiring', () => {
 
 jest.setTimeout(120_000);
 
+/**
+ * Staged practice's result (1.0.2): a stage that ends as soon as it starts, with ★★★, so the result is audited.
+ * The stage screens themselves (2ח) add their own rows for /levels/play.
+ */
+function AuditStage({ level, onFinished }: LevelPlayingProps) {
+  useEffect(() => {
+    const end: FindLevelOver = {
+      reason: 'targetReached',
+      elapsedMs: 4000,
+      penaltyMs: 0,
+      spots: 1,
+      found: 0,
+      stars: 3,
+    };
+    onFinished({
+      outcome: levelOutcome(level, end),
+      finished: null,
+      mistakes: 1,
+      opponent: null,
+      bestMove: null,
+      why: null,
+    });
+  }, [level, onFinished]);
+  return null;
+}
+
 const ROUTES = {
   index: Index,
   modes: ModesRoute,
@@ -122,6 +152,10 @@ const ROUTES = {
   achievements: AchievementsRoute,
   interferences: InterferencesRoute,
   'player/[id]': PlayerRoute,
+  'levels/index': LevelsRoute,
+  'levels/play': () => <LevelPlayFlow Playing={AuditStage} />,
+  // The real stage route (its stage screens, 2ח) under a key of its own: the result case above keeps its stand-in.
+  'levels/stage': LevelPlayRoute,
   login: LoginRoute,
   'forgot-password': ForgotPasswordRoute,
   'register/fighter': RegisterFighterRoute,
@@ -577,6 +611,94 @@ const CASES: Case[] = [
     drive: () => settle(1000),
     ready: 'match-error',
     live: 'match-error-live',
+  },
+  // ---- staged practice (1.0.2): the map, a locked gate's sheet, a stage's result
+  { name: 'levels: the map', url: '/levels', ready: 'level-map' },
+  {
+    name: 'levels: a locked gate’s sheet',
+    url: '/levels',
+    ready: 'level-map',
+    drive: () => tap('gate-2'),
+    shows: 'gate-sheet-primary',
+  },
+  {
+    name: 'levels: the chapter list',
+    url: '/levels',
+    ready: 'level-map',
+    drive: () => tap('level-map-total'),
+    shows: 'chapter-jump-30',
+  },
+  {
+    name: 'levels: a stage’s result',
+    url: '/levels/play?id=L001',
+    setup: () => void useTutorials.setState({ seen: { find: true, fillBox: true, boss: true } }),
+    drive: () => settle(2500),
+    ready: 'level-ready',
+    shows: 'level-result',
+  },
+  // ---- staged practice: the stage screens themselves (2ח), one per kind, after "מוכן?"
+  ...(
+    [
+      ['find (kind 1)', 'L001', 'tap-level', 'level-live'],
+      ['the race (kind 2)', 'L012', 'race-hud', 'level-live'],
+      ['fill the box (kind 3)', 'L002', 'box-hud', 'game-live'],
+      ['the duel (kind 4)', 'L021', 'duel-hud', 'game-live'],
+      ['a boss (fill the box)', 'L010', 'stage-boss', 'game-live'],
+      // The three ideas (2ט): spot the error with its tip card, the point hunter, the chain.
+      ['spot the error', 'L034', 'spot-tip', 'level-live'],
+      ['the point hunter', 'L066', 'hunt-hud', 'game-live'],
+      ['the chain', 'L085', 'chain-hud', 'game-live'],
+    ] as const
+  ).map(([kind, id, shows, live]): Case => ({
+    name: `levels: a stage, ${kind}`,
+    url: `/levels/stage?id=${id}`,
+    setup: () =>
+      void useTutorials.setState({
+        seen: {
+          find: true,
+          findDuel: true,
+          fillBox: true,
+          duel: true,
+          boss: true,
+          spotError: true,
+          pointHunter: true,
+          chain: true,
+        },
+      }),
+    drive: async () => {
+      await settle(2500);
+      await settle(100);
+    },
+    ready: 'level-ready',
+    shows,
+    live,
+  })),
+  {
+    name: 'levels: a stage’s exit dialog',
+    url: '/levels/stage?id=L001',
+    setup: () => void useTutorials.setState({ seen: { find: true } }),
+    drive: async () => {
+      await settle(2500);
+      await settle(100);
+      await tap('stage-exit');
+      await settle(400);
+    },
+    ready: 'level-ready',
+    shows: 'level-exit-confirm',
+  },
+  {
+    name: 'levels: "איך משחקים" with its pictures',
+    url: '/levels/stage?id=L012',
+    setup: () => void useTutorials.setState({ seen: {} }),
+    ready: 'how-to-play',
+    shows: 'how-to-play-board-findDuel-1',
+  },
+  {
+    name: 'levels: "איך משחקים" of an idea (spot the error)',
+    url: '/levels/stage?id=L034',
+    setup: () => void useTutorials.setState({ seen: {} }),
+    ready: 'how-to-play',
+    shows: 'how-to-play-board-spotError-1',
   },
   { name: 'dev: hello', url: '/dev/hello', ready: 'versions' },
   { name: 'dev: design system', url: '/dev/design-system', ready: 'design-system' },

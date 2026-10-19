@@ -7,9 +7,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ConfirmModal } from '../../components/ui';
 import { VersionInfo } from '../../components/VersionInfo';
 import { type AppVersionInfo, appVersionInfo } from '../../config/appVersion';
+import { type TestingBuildSources, testingSwitchesAllowed, thisBuild } from '../../config/testing';
 import type { Language } from '../../i18n';
 import { cue } from '../../services/feedback';
 import { type ReduceMotionSetting, useSettings } from '../../state/settings';
+import { useTestingSwitches } from '../../state/testingSwitches';
 import { AccountSettings } from '../account/AccountSettings';
 import { LegalSettings } from '../legal/LegalSettings';
 import { color, radius, space, text, tokens } from '../../theme';
@@ -27,6 +29,10 @@ const LANGUAGES: readonly Language[] = ['he', 'en'];
  * account: edit profile, sign out, and delete the account (spec §3.3, §23: deletion inside the app). Stage 14
  * adds "מידע ומשפטי": the privacy policy, the terms of use and the licenses (screens/legal). At the bottom, the
  * version (Moshe, 14.10.2026): the installed app's, its build and its server (components/VersionInfo).
+ *
+ * 1.0.2: a staging build (and a development build not on production) adds "בדיקה" before the version, so
+ * Moshe can try staged practice before he decides (config/testing.ts): "שרשרת: ניחוש עולה 5 ש׳" [D64] and
+ * "פתח את כל השלבים (בדיקה)". A production build never shows it.
  */
 export interface SettingsScreenProps {
   /**
@@ -34,15 +40,20 @@ export interface SettingsScreenProps {
    * installed app's own (config/appVersion.ts). Null hides them.
    */
   version?: AppVersionInfo | null;
+  /** Which build this is, for the "בדיקה" section (staging only, config/testing.ts); this build's by default. */
+  build?: TestingBuildSources;
 }
 
-export function SettingsScreen({ version = appVersionInfo() }: SettingsScreenProps) {
+export function SettingsScreen({ version = appVersionInfo(), build = thisBuild() }: SettingsScreenProps) {
   const { t } = useTranslation('home');
   const { top, bottom } = useSafeAreaInsets();
   const sound = useSettings((s) => s.sound);
   const haptics = useSettings((s) => s.haptics);
   const reduceMotion = useSettings((s) => s.reduceMotion);
   const language = useSettings((s) => s.language);
+  const testing = testingSwitchesAllowed(build);
+  const chainPenalty = useTestingSwitches((s) => s.chainPenalty);
+  const unlockAllLevels = useTestingSwitches((s) => s.unlockAllLevels);
   // The language the player tapped, until they confirm the restart (kept while the dialog closes).
   const [switchTo, setSwitchTo] = useState<{ language: Language; asking: boolean } | null>(null);
 
@@ -101,6 +112,28 @@ export function SettingsScreen({ version = appVersionInfo() }: SettingsScreenPro
         <AccountSettings />
 
         <LegalSettings />
+
+        {testing ? (
+          <Section title={t('settings.testing')} hint={t('settings.testingHint')}>
+            <View style={styles.card} testID="settings-testing">
+              <SwitchRow
+                title={t('settings.chainPenalty')}
+                hint={t('settings.chainPenaltyHint')}
+                value={chainPenalty}
+                onChange={changed(useTestingSwitches.getState().setChainPenalty)}
+                testID="setting-chain-penalty"
+              />
+              <View style={styles.rule} />
+              <SwitchRow
+                title={t('settings.unlockAll')}
+                hint={t('settings.unlockAllHint')}
+                value={unlockAllLevels}
+                onChange={changed(useTestingSwitches.getState().setUnlockAllLevels)}
+                testID="setting-unlock-all"
+              />
+            </View>
+          </Section>
+        ) : null}
 
         <VersionInfo info={version} engine={ENGINE_VERSION} />
       </ScrollView>

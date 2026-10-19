@@ -12,7 +12,16 @@ export const SESSION_GAP_MINUTES = 30;
 /** An install that sent nothing for this many days counts as gone ("where people stop"). */
 export const GONE_AFTER_DAYS = 7;
 
-/** The `days` of /overview and /screens: default, and the most one request may ask for. */
+/**
+ * The levels page's tuning rules (plan §5.5), sent with its numbers (AdminLevels): a level is too hard when more
+ * than LEVEL_TOO_HARD_SHARE of first attempts end with 0 stars; a chapter needs softening when more than
+ * GATE_STUCK_SHARE of the players who reached its gate are stuck there after GATE_STUCK_ATTEMPTS closed attempts.
+ */
+export const LEVEL_TOO_HARD_SHARE = 0.6;
+export const GATE_STUCK_SHARE = 0.3;
+export const GATE_STUCK_ATTEMPTS = 3;
+
+/** The `days` of /overview, /screens and /levels: default, and the most one request may ask for. */
 export const DEFAULT_STATS_DAYS = 30;
 export const MAX_STATS_DAYS = 366;
 

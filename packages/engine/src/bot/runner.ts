@@ -45,7 +45,9 @@ import {
  * It looks again at every update and plans anew only when its plan no longer holds: its target was solved
  * or taken, it lost its lock, the game froze or resumed. While it is hit by an interference it stops, as its
  * lock timer does [D11], and goes on from where it was (where the rules let a lock's timer run on under
- * interference, it still enters that lock's digit in time, then stops). It stops for good at gameOver or
+ * interference, it still enters that lock's digit in time, then stops). While the game is frozen it does
+ * nothing, and each of its timers goes on afterwards with the time it had left; the phone's own freeze (the
+ * app out of the foreground [D65]) holds the reaction on its way too. It stops for good at gameOver or
  * detach(), and never dispatches after either. A refused action only makes it plan again; nothing it does
  * throws out of a scheduler callback.
  */
@@ -114,6 +116,10 @@ class BotRunner {
   /** While the game is frozen or the bot is hit: what was left of the move timer (null: there was none). */
   private frozen: { remaining: number | null } | null = null;
   private reactionTimer: unknown = null;
+  /** The reaction on its way: its emoji and when it comes. */
+  private reaction: { emoji: string; dueAt: number } | null = null;
+  /** The phone's own freeze [D65] holds the reaction on its way too: what it had left. */
+  private heldReaction: { emoji: string; remaining: number } | null = null;
   private interferenceTimer: unknown = null;
   /** Inside host.dispatch: updates are only observed; the plan is reviewed once it returns. */
   private acting = false;
@@ -143,6 +149,7 @@ class BotRunner {
     if (this.reactionTimer !== null) this.scheduler.clearTimeout(this.reactionTimer);
     if (this.interferenceTimer !== null) this.scheduler.clearTimeout(this.interferenceTimer);
     this.reactionTimer = this.interferenceTimer = null;
+    this.reaction = this.heldReaction = null;
     this.plan = null;
     this.frozen = null;
     this.unsubscribe();
@@ -322,31 +329,46 @@ class BotRunner {
     if (this.frozen) return;
     this.frozen = { remaining: this.timer ? Math.max(0, this.timer.dueAt - now) : null };
     this.cancelMoveTimer();
+    // The app left the foreground [D65]: nothing of the bot runs, its reaction on the way included; it comes
+    // after the resume with the time it had left. (A disconnect's freeze lets it run, as it always did.)
+    if (this.host.state.pausedBy === 'background' && this.reaction && this.reactionTimer !== null) {
+      this.scheduler.clearTimeout(this.reactionTimer);
+      this.reactionTimer = null;
+      this.heldReaction = { emoji: this.reaction.emoji, remaining: Math.max(0, this.reaction.dueAt - now) };
+      this.reaction = null;
+    }
   }
 
   private thaw(now: number): void {
     const remaining = this.frozen?.remaining ?? null;
     this.frozen = null;
     if (remaining !== null && this.plan) this.arm(remaining, now);
+    const held = this.heldReaction;
+    this.heldReaction = null;
+    if (held) this.scheduleReaction(held.emoji, held.remaining, now);
   }
 
   // -- reactions and interferences ------------------------------------------------------------------------
 
   private considerReaction(trigger: BotReactionTrigger): void {
-    if (this.reactionTimer !== null) return; // one at a time: the rate limit would drop the next anyway [D19]
+    // One at a time: the rate limit would drop the next anyway [D19].
+    if (this.reactionTimer !== null || this.heldReaction !== null) return;
     const emoji = decideReaction(trigger, this.host.state, this.level, this.rng);
     if (!emoji) return;
-    this.reactionTimer = this.scheduler.setTimeout(
-      () => {
-        this.reactionTimer = null;
-        if (this.done) return;
-        this.guard(() => {
-          if (canReact(this.host.state, this.botId, this.clock.now())) this.act({ type: 'react', emoji });
-          this.review();
-        });
-      },
-      drawMs(this.rng, this.config.reactionDelayMs),
-    );
+    this.scheduleReaction(emoji, drawMs(this.rng, this.config.reactionDelayMs), this.clock.now());
+  }
+
+  private scheduleReaction(emoji: string, delay: number, now: number): void {
+    this.reaction = { emoji, dueAt: now + delay };
+    this.reactionTimer = this.scheduler.setTimeout(() => {
+      this.reactionTimer = null;
+      this.reaction = null;
+      if (this.done) return;
+      this.guard(() => {
+        if (canReact(this.host.state, this.botId, this.clock.now())) this.act({ type: 'react', emoji });
+        this.review();
+      });
+    }, delay);
   }
 
   private considerInterference(): void {

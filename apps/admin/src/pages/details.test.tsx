@@ -49,6 +49,9 @@ describe('users', () => {
     // Level and XP (spec §15, stage 12).
     expect(screen.getByText('Level').nextElementSibling?.textContent).toBe('5');
     expect(screen.getByText('XP').nextElementSibling?.textContent).toBe('2,350');
+    // Staged practice (1.0.2): what the account synced.
+    expect(screen.getByText('Stages played').nextElementSibling?.textContent).toBe('42');
+    expect(screen.getByText('Stage stars').nextElementSibling?.textContent).toBe('97');
 
     const ratings = screen.getByRole('table', { name: 'Ratings' });
     expect(within(ratings).getByText('1,530')).toBeTruthy();
@@ -66,6 +69,16 @@ describe('users', () => {
     expect(within(flags).getByText('Thinking too fast')).toBeTruthy();
     expect(within(flags).getByText('0.85 s on average')).toBeTruthy();
     expect(within(flags).getByRole('link').getAttribute('href')).toBe(`#/games/${GAME_A}`);
+  });
+
+  it('a user who never synced a stage: no stage facts', async () => {
+    const server = setup(`#/users/${USER_A}`);
+    const detail = userDetail();
+    delete detail.levels;
+    server.on(`GET /users/${USER_A}`, { body: detail });
+    expect(await screen.findByRole('heading', { name: 'Moshe', level: 1 })).toBeTruthy();
+    expect(screen.getByText('XP')).toBeTruthy();
+    expect(screen.queryByText('Stages played')).toBeNull();
   });
 });
 

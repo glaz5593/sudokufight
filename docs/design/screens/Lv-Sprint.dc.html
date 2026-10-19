@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Level · Sprint to 30 — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@keyframes sf-lock{0%,100%{box-shadow:inset 0 0 0 3px #36c9f0}50%{box-shadow:inset 0 0 0 3px #36c9f0,inset 0 0 0 7px rgba(54,201,240,.28)}}
+@keyframes lv-think{0%,100%{opacity:1}50%{opacity:.35}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #eef1f6; background: #0f1218;">
+
+  <!-- ===== Me (start = right) ===== -->
+  <section aria-label="MosheG · 15 מתוך 30 נקודות · טעות אחת" style="position: absolute; top: 48px; right: 16px; width: 159px; height: 166px; display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; gap: 10px; height: 44px; flex: none;">
+      <div style="flex: none; width: 44px; height: 44px; box-sizing: border-box; padding: 2px; border: 2px solid #36c9f0; border-radius: 14px;">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: #1f2430; display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg></div>
+      </div>
+      <span style="display: flex; align-items: center; gap: 4px; min-width: 0;">
+        <svg width="7" height="7" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg>
+        <span style="font: 700 16px/1.2 Rubik, sans-serif; color: #eef1f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">MosheG</span>
+      </span>
+    </div>
+    <div style="display: flex; align-items: baseline; gap: 4px; height: 56px; margin-top: 6px; flex: none;">
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 64px; line-height: .8; padding-top: 6px; font-variant-numeric: tabular-nums; color: #36c9f0;">15</span>
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 500; font-size: 22px; line-height: .8; font-variant-numeric: tabular-nums; color: #828ba1;">/30</span>
+    </div>
+    <!-- my track to 30: fills from my outer edge toward the finish in the middle -->
+    <div aria-hidden="true" style="display: flex; height: 4px; margin-top: 6px; flex: none; border-radius: 2px; background: #1f2430; overflow: hidden;">
+      <span style="display: block; width: 50%; height: 4px; border-radius: 2px; background: #36c9f0;"></span>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; margin-top: 6px; flex: none;">
+      <span style="font: 400 14px/1 Rubik, sans-serif; color: #9aa3b5; white-space: nowrap;">1 טעות</span>
+      <button type="button" aria-label="יציאה מהשלב" style="flex: none; width: 44px; height: 44px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid #2a3140; border-radius: 12px; color: #9aa3b5; cursor: pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- VS -->
+  <div aria-hidden="true" style="position: absolute; top: 58px; left: 177px; width: 36px; height: 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #1f2430; border: 1px solid #2a3140; border-radius: 6px; transform: skewX(-8deg);">
+    <span style="display: block; transform: skewX(8deg); font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 18px; line-height: .8; padding-top: 3px; color: #9aa3b5;">VS</span>
+  </div>
+
+  <!-- finish post: both tracks run to it; under it the level's clock (the level ends at 30 points or at 30 s) -->
+  <div role="img" aria-label="השלב נגמר כשמישהו מגיע ל־30 נקודות, או ב־30 שניות" style="position: absolute; top: 134px; left: 175px; width: 40px; height: 36px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"></path><path d="M5 4h13v8H5"></path><path d="M9.5 4v8M14 4v8M5 8h13"></path></svg>
+    <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums; color: #eef1f6;">30</span>
+  </div>
+  <div role="timer" aria-label="נשארו 11 שניות מתוך 30" style="position: absolute; top: 180px; left: 175px; width: 40px; height: 34px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 2.5"></path><path d="M9.5 2.5h5"></path></svg>
+    <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums; color: #eef1f6;">0:11</span>
+  </div>
+
+  <!-- ===== Bot (end = left) ===== -->
+  <section aria-label="Biscuit · בוט, רמה 2 · 4.5 מתוך 30 נקודות · חושב על A5" style="position: absolute; top: 48px; left: 16px; width: 159px; height: 166px; display: flex; flex-direction: column;">
+    <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 10px; height: 44px; flex: none;">
+      <div style="flex: none; width: 44px; height: 44px; box-sizing: border-box; padding: 2px; border: 2px solid #ff9440; border-radius: 14px;">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: #1f2430; display: flex; align-items: center; justify-content: center;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff9440" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="7.5" width="15" height="13" rx="3.5"></rect><path d="M12 7.5V5"></path><circle cx="12" cy="4" r="1"></circle><circle cx="9" cy="12.5" r="1"></circle><circle cx="15" cy="12.5" r="1"></circle><path d="M9.5 16.5h5"></path><path d="M1.5 12v4M22.5 12v4"></path></svg>
+        </div>
+      </div>
+      <div style="min-width: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+        <span dir="ltr" style="display: flex; align-items: center; gap: 4px; min-width: 0;">
+          <svg width="7" height="7" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><path d="M12 4l8 15H4z" fill="#ff9440"></path></svg>
+          <span style="font: 700 16px/1.2 Rubik, sans-serif; color: #eef1f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Biscuit</span>
+        </span>
+        <span style="display: inline-flex; align-items: center; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #2a3140; background: #1f2430; font: 500 12px/1 Rubik, sans-serif; color: #9aa3b5; white-space: nowrap;">בוט · חובב</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: row-reverse; align-items: baseline; gap: 4px; height: 56px; margin-top: 6px; flex: none;">
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 64px; line-height: .8; padding-top: 6px; font-variant-numeric: tabular-nums; color: #ff9440;">4.5</span>
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 500; font-size: 22px; line-height: .8; font-variant-numeric: tabular-nums; color: #828ba1;">/30</span>
+    </div>
+    <!-- bot track to 30: fills from its outer edge toward the finish in the middle -->
+    <div dir="ltr" aria-hidden="true" style="display: flex; height: 4px; margin-top: 6px; flex: none; border-radius: 2px; background: #1f2430; overflow: hidden;">
+      <span style="display: block; width: 15%; height: 4px; border-radius: 2px; background: #ff9440;"></span>
+    </div>
+    <div style="display: flex; flex-direction: row-reverse; align-items: center; justify-content: space-between; height: 44px; margin-top: 6px; flex: none;">
+      <span style="display: inline-flex; align-items: center; gap: 4px; font: 400 14px/1 Rubik, sans-serif; color: #9aa3b5; white-space: nowrap;">חושב<span aria-hidden="true" style="display: inline-flex; gap: 2px; margin-left: 2px;"><span style="display: block; width: 3px; height: 3px; border-radius: 50%; background: #9aa3b5; animation: lv-think 1.2s ease-in-out infinite;"></span><span style="display: block; width: 3px; height: 3px; border-radius: 50%; background: #9aa3b5; animation: lv-think 1.2s ease-in-out .2s infinite;"></span><span style="display: block; width: 3px; height: 3px; border-radius: 50%; background: #9aa3b5; animation: lv-think 1.2s ease-in-out .4s infinite;"></span></span> · <span dir="ltr" style="color: #eef1f6;">A5</span></span>
+    </div>
+  </section>
+
+  <!-- ===== Gap meter: stars by the lead when the level ends (someone reaches 30, or 30 s) ===== -->
+  <div role="img" aria-label="אתה מוביל ב־10.5. כוכב אחד אם תוביל בסוף, 2 כוכבים בפער 8, 3 כוכבים בפער 15. עכשיו 2 כוכבים, עוד 4.5 נקודות ל־3" style="position: absolute; top: 226px; left: 16px; right: 16px; height: 42px; display: flex; align-items: center; gap: 12px;">
+    <div aria-hidden="true" style="flex: none; width: 58px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px;">
+      <span style="font: 500 13px/1 Rubik, sans-serif; color: #9aa3b5;">פער</span>
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 28px; line-height: .8; padding-top: 4px; font-variant-numeric: tabular-nums; color: #36c9f0;">+10.5</span>
+    </div>
+    <div aria-hidden="true" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+      <div style="display: flex; gap: 2px; height: 10px;">
+        <span style="flex: 40 1 0; display: flex; justify-content: center; gap: 2px;">
+          <svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+        </span>
+        <span style="flex: 35 1 0; display: flex; justify-content: center; gap: 2px;">
+          <svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+        </span>
+        <span style="flex: 25 1 0; display: flex; justify-content: center; gap: 2px;">
+          <svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="none" stroke="#677086" stroke-width="2" stroke-linejoin="round"></path></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="none" stroke="#677086" stroke-width="2" stroke-linejoin="round"></path></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="none" stroke="#677086" stroke-width="2" stroke-linejoin="round"></path></svg>
+        </span>
+      </div>
+      <div style="display: flex; gap: 2px; height: 6px; margin-top: 5px;">
+        <span style="position: relative; flex: 40 1 0; border-radius: 0 3px 3px 0; background: #1f2430; overflow: hidden;"><span style="position: absolute; top: 0; bottom: 0; right: 0; width: 100%; background: #36c9f0;"></span></span>
+        <span style="position: relative; flex: 35 1 0; background: #1f2430; overflow: hidden;"><span style="position: absolute; top: 0; bottom: 0; right: 0; width: 35.7%; background: #36c9f0;"></span></span>
+        <span style="flex: 25 1 0; border-radius: 3px 0 0 3px; background: #1f2430;"></span>
+      </div>
+      <div dir="ltr" style="position: relative; height: 12px; margin-top: 5px;">
+        <span style="position: absolute; top: 0; left: 72px; padding-top: 2px; transform: translateX(-50%); font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 15px; line-height: .8; color: #9aa3b5;">15</span>
+        <span style="position: absolute; top: 0; left: 173px; padding-top: 2px; transform: translateX(-50%); font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 15px; line-height: .8; color: #9aa3b5;">8</span>
+        <span style="position: absolute; top: 0; right: 0; font: 400 12px/12px Rubik, sans-serif; color: #9aa3b5;">מוביל</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Lock strip (start) · level chip (end) ===== -->
+  <div style="position: absolute; top: 276px; left: 16px; right: 16px; height: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+      <div style="display: flex; align-items: baseline; gap: 6px; white-space: nowrap; font: 500 15px/1 Rubik, sans-serif;">
+        <span style="color: #9aa3b5;">המשבצת שלך</span>
+        <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 24px; line-height: .8; color: #36c9f0;">C9</span>
+        <span aria-hidden="true" style="color: #677086;">·</span>
+        <span style="color: #eef1f6;">7 שניות</span>
+      </div>
+      <div role="progressbar" aria-label="זמן שנותר למשבצת C9" aria-valuemin="0" aria-valuemax="12" aria-valuenow="7" style="flex: none; width: 56px; height: 4px; display: flex; border-radius: 2px; background: #1f2430; overflow: hidden;">
+        <span style="display: block; width: 58.3%; height: 4px; border-radius: 2px; background: #36c9f0;"></span>
+      </div>
+    </div>
+    <span aria-label="שלב 74 · דו־קרב ל־30 · פרק 8" style="flex: none; display: inline-flex; align-items: center; height: 22px; padding: 0 8px; box-sizing: border-box; border-radius: 6px; border: 1px solid #2a3140; background: #1f2430; font: 500 12px/1 Rubik, sans-serif; color: #9aa3b5; white-space: nowrap;">שלב 74</span>
+  </div>
+
+  <!-- ===== Board (LTR): a normal game board; mine = P1 tint + ●, the bot's = P2 tint + ▲ ===== -->
+  <div dir="ltr" role="img" aria-label="לוח המשחק · המשבצת שלך C9 · Biscuit חושב על A5" style="position: absolute; top: 308px; left: 16px; width: 358px; height: 358px; box-sizing: border-box; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3px; background: #0f1218; border-radius: 12px; overflow: hidden;">
+    <sc-for list="{{boxes}}" as="box" hint-placeholder-count="9">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; background: #c8cdd6;">
+        <sc-for list="{{box.cells}}" as="cell" hint-placeholder-count="9">
+          <div style="position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 0; background: {{cell.bg}}; box-shadow: {{cell.ring}}; color: {{cell.fg}}; font-family: Rubik, sans-serif; font-weight: {{cell.fw}}; font-size: 22px; line-height: 1; animation: {{cell.anim}};">
+            {{cell.v}}
+            <sc-if value="{{cell.owned}}" hint-placeholder-val="{{ false }}">
+              <svg aria-hidden="true" width="6" height="6" viewBox="0 0 24 24" style="position: absolute; top: 3px; left: 3px;"><path d="{{cell.shape}}" fill="{{cell.fg}}"></path></svg>
+            </sc-if>
+            <sc-if value="{{cell.hasWrong}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; right: 4px; bottom: 3px; font: 700 11px/1 Rubik, sans-serif; color: #b8102f;">{{cell.wrong}}</span>
+            </sc-if>
+            <sc-if value="{{cell.myLock}}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; top: 3px; right: 3px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 8px; background: #36c9f0; color: #0f1218; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 15px; line-height: 18px; text-align: center;">{{cell.secs}}</span>
+            </sc-if>
+            <sc-if value="{{cell.botLock}}" hint-placeholder-val="{{ false }}">
+              <span aria-hidden="true" style="width: 22px; height: 22px; box-sizing: border-box; border-radius: 7px; background: #1f2430; border: 1.5px solid #ff9440; display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff9440" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="7.5" width="15" height="13" rx="3.5"></rect><path d="M12 7.5V5"></path><circle cx="9" cy="12.5" r="1"></circle><circle cx="15" cy="12.5" r="1"></circle></svg></span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- ===== Keypad (LTR), armed: I hold C9 ===== -->
+  <div dir="ltr" style="position: absolute; top: 678px; left: 16px; width: 358px; height: 60px; display: flex; gap: 4px;">
+    <sc-for list="{{keys}}" as="k" hint-placeholder-count="9">
+      <button type="button" aria-label="{{k.aria}}" style="flex: 1 1 0; min-width: 0; height: 60px; margin: 0; padding: 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: #1f2430; border: 1px solid rgba(54,201,240,.5); border-radius: 10px; opacity: {{k.op}}; color: #eef1f6; cursor: pointer;">
+        <span style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 32px; line-height: .8; padding-top: 4px; color: #eef1f6;">{{k.d}}</span>
+        <span style="display: block; font: 500 12px/1 Rubik, sans-serif; color: #9aa3b5;">{{k.left}}</span>
+      </button>
+    </sc-for>
+  </div>
+
+  <div style="position: absolute; top: 746px; left: 16px; right: 16px; height: 44px; display: flex; justify-content: center;">
+    <button type="button" style="height: 44px; margin: 0; padding: 0 16px; box-sizing: border-box; display: flex; align-items: center; gap: 8px; background: transparent; border: 0; border-radius: 12px; color: #9aa3b5; font: 500 15px/1 Rubik, sans-serif; cursor: pointer;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M9 9l6 6M15 9l-6 6"></path></svg>
+      <span style="white-space: nowrap;">ביטול בחירה</span>
+    </button>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Level 74 (chapter 8, "שתי טעויות"): type 4, duel to 30 vs Biscuit (bot level 2, pace x0.9), normal board,
+  // 12 s locks, NO interferences (none in levels). The level ends at 30 points or at 30 s: 19 s gone, 11 left.
+  // Board: 37 givens, unique solution, not a ranked-bank solution.
+  // Moves so far, scored with the engine formula (§6.4) on the board before each move; every one was a single then:
+  //   me F4=7 +7.5 · bot A7=9 +4.5 · me G6=6 +4.5 · me G4: typed 1, right is 9 -> -3 (what the 9 was worth, §6.5)
+  //   · me D5=8 +6  => me 15, Biscuit 4.5 (one move: 11-18 s a move at x0.9), lead 10.5 = 2 stars now, 3 from 15.
+  //   I hold C9 (5, worth 6.5, a hidden single in row C): 7 of 12 s left. Biscuit thinks about A5 (1, a hidden single).
+  fixture() {
+    return {
+      PUZ: '003605004046079021910800300002001697005094000089003000304000000760058009098037050',
+      SOL: '823615974546379821917842365432581697675294183189763542354926718761458239298137456',
+      ME: ['F4', 'G6', 'D5'],
+      BOT: ['A7'],
+      WRONG: { G4: '1' },
+      MYLOCK: { cell: 'C9', secs: 7 },
+      BOTLOCK: 'A5'
+    };
+  }
+
+  ix(n) { return 'ABCDEFGHI'.indexOf(n.charAt(0)) * 9 + Number(n.charAt(1)) - 1; }
+
+  grid() {
+    const F = this.fixture();
+    const own = {};
+    F.ME.forEach(n => { own[this.ix(n)] = 0; });
+    F.BOT.forEach(n => { own[this.ix(n)] = 1; });
+    const g = [];
+    for (let i = 0; i < 81; i++) {
+      const given = F.PUZ.charAt(i) !== '0';
+      g.push({ v: given ? F.PUZ.charAt(i) : (own[i] !== undefined ? F.SOL.charAt(i) : ''), own: own[i] });
+    }
+    return g;
+  }
+
+  boxes() {
+    const F = this.fixture();
+    const g = this.grid();
+    const P = [
+      { tint: '#d6f4fc', digit: '#0b6a85', shape: 'M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z' },
+      { tint: '#ffe8d4', digit: '#9a4a0c', shape: 'M12 4l8 15H4z' }
+    ];
+    const myLock = this.ix(F.MYLOCK.cell), botLock = this.ix(F.BOTLOCK);
+    const wrong = {};
+    Object.keys(F.WRONG).forEach(n => { wrong[this.ix(n)] = F.WRONG[n]; });
+    const out = [];
+    for (let bx = 0; bx < 9; bx++) {
+      const cells = [];
+      for (let k = 0; k < 9; k++) {
+        const i = (Math.floor(bx / 3) * 3 + Math.floor(k / 3)) * 9 + (bx % 3) * 3 + (k % 3);
+        const c = g[i];
+        const owned = c.own !== undefined;
+        let bg = bx % 2 ? '#eceff4' : '#f7f8fa', ring = 'none', anim = 'none';
+        if (owned) bg = P[c.own].tint;
+        if (i === myLock) { bg = P[0].tint; ring = 'inset 0 0 0 3px #36c9f0'; anim = 'sf-lock 1.6s ease-in-out infinite'; }
+        if (i === botLock) ring = 'inset 0 0 0 3px #ff9440';
+        cells.push({
+          v: c.v, bg: bg, ring: ring, anim: anim,
+          fg: owned ? P[c.own].digit : '#0f1218', fw: owned ? '500' : '600',
+          owned: owned, shape: owned ? P[c.own].shape : '',
+          hasWrong: !!wrong[i], wrong: wrong[i] || '',
+          myLock: i === myLock, secs: String(F.MYLOCK.secs),
+          botLock: i === botLock
+        });
+      }
+      out.push({ cells: cells });
+    }
+    return out;
+  }
+
+  keys() {
+    const g = this.grid();
+    const out = [];
+    for (let d = 1; d <= 9; d++) {
+      const s = String(d);
+      let left = 9;
+      for (let i = 0; i < 81; i++) { if (g[i].v === s) left--; }
+      out.push({ d: s, left: String(left), op: left > 0 ? '1' : '.3', aria: 'ספרה ' + d + ' · נותרו ' + left });
+    }
+    return out;
+  }
+
+  renderVals() {
+    return { boxes: this.boxes(), keys: this.keys() };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,7 +1,16 @@
-import { type GameEvent, replay } from '@sudoku-fight/engine';
-import type { AdminOverview, AdminPage, AdminUserDetail, AdminUserRow } from '@sudoku-fight/protocol';
+import { type GameEvent, LEVEL_RULES, levelIdOf, replay } from '@sudoku-fight/engine';
+import type {
+  AdminLevels,
+  AdminOverview,
+  AdminPage,
+  AdminUserDetail,
+  AdminUserRow,
+  TelemetryProps,
+} from '@sudoku-fight/protocol';
 
+import { telemetryEventSchema } from '../telemetry/schema';
 import { createTestDb, fakeClock, signedInAdmin, startHttp, type TestDb, testConfig } from '../testing';
+import { SAMPLE_HARD_LEVELS } from './levels';
 import { generateSampleData, SAMPLE_DEFAULTS, SAMPLE_SCREENS, type SampleData } from './sampleData';
 import { countRows, hasSampleData, loadPuzzleBank, writeSampleData } from './store';
 
@@ -112,6 +121,75 @@ describe('generateSampleData', () => {
       expect(rating.provisional).toBe(mine.length < 10);
     }
   });
+
+  it('every event is one the server takes: the level events pass its checks of their props', () => {
+    const names = new Set(full.appEvents.map((e) => e.name));
+    for (const name of [
+      'level_map_open',
+      'level_start',
+      'level_end',
+      'level_quit',
+      'chapter_gate',
+      'level_tutorial',
+    ])
+      expect([name, names.has(name as never)]).toEqual([name, true]);
+    for (const e of full.appEvents) {
+      const parsed = telemetryEventSchema.safeParse({
+        id: e.id,
+        name: e.name,
+        props: e.props,
+        t: ms(e.tClient),
+      });
+      expect({ id: e.id, name: e.name, ok: parsed.success }).toEqual({ id: e.id, name: e.name, ok: true });
+    }
+  });
+
+  it('staged practice tells its story: levels in order, too-hard levels, a gate where players get stuck', () => {
+    const props = (name: string) =>
+      full.appEvents.filter((e) => e.name === name).map((e) => ({ p: e.props as TelemetryProps, e }));
+    const ends = props('level_end');
+    expect(ends.length).toBeGreaterThan(500);
+    // More play the first levels than the later ones.
+    const playsOf = (n: number) => ends.filter(({ p }) => p.level === n).length;
+    expect(playsOf(1)).toBeGreaterThan(playsOf(40));
+
+    // The levels made hard on purpose: more than 60% get 0 stars on the first try.
+    for (const n of Object.keys(SAMPLE_HARD_LEVELS).map(Number)) {
+      const first = ends.filter(({ p }) => p.level === n && p.attempt === 1);
+      const share = first.filter(({ p }) => p.stars === 0).length / first.length;
+      expect({ n, hard: first.length >= 5 && share > 0.6 }).toEqual({ n, hard: true });
+    }
+
+    // A gate where more than 30% of the players who reached it are stuck after 3 closed attempts.
+    const attempts = new Map<string, { open: boolean; closed: number }>();
+    for (const { p, e } of props('chapter_gate')) {
+      const key = `${String(p.chapter)} ${e.installId}`;
+      const a = attempts.get(key) ?? { open: false, closed: 0 };
+      if (p.open === true) a.open = true;
+      else a.closed++;
+      attempts.set(key, a);
+    }
+    const stuckShare = (chapter: number) => {
+      const reached = [...attempts].filter(([k]) => k.startsWith(`${chapter} `));
+      return reached.filter(([, a]) => !a.open && a.closed >= 3).length / reached.length;
+    };
+    expect(stuckShare(4)).toBeGreaterThan(0.3);
+    expect(stuckShare(2)).toBeLessThan(0.3);
+
+    // Each user's synced best stars are what their plays reported.
+    expect(full.userLevels.length).toBeGreaterThan(100);
+    for (const row of full.userLevels) {
+      const mine = ends.filter(
+        ({ p, e }) => e.userId === row.userId && p.level === Number(row.levelId.slice(1)),
+      );
+      expect({ row, plays: mine.length, best: Math.max(...mine.map(({ p }) => Number(p.stars))) }).toEqual({
+        row,
+        plays: row.plays,
+        best: row.bestStars,
+      });
+    }
+    expect(new Set(full.userLevels.map((r) => r.levelId))).toContain(levelIdOf(LEVEL_RULES.chapterSize));
+  });
 });
 
 describe('writeSampleData', () => {
@@ -140,6 +218,7 @@ describe('writeSampleData', () => {
       games: data.games.length,
       gameEvents: data.gameEvents.length,
       ratings: data.ratings.length,
+      userLevels: data.userLevels.length,
     });
 
     const http = await startHttp({
@@ -163,6 +242,27 @@ describe('writeSampleData', () => {
       const detail = await admin.get<AdminUserDetail>(`/users/${player.id}`);
       expect(detail.body.stats.games).toBe(data.gamePlayers.filter((p) => p.userId === player.id).length);
       expect(detail.body.ratings).toHaveLength(1);
+
+      // Staged practice: the levels page shows every level_end (the story is all in a 30-day window), and the
+      // gates players reached; a user who played levels has them in the detail.
+      const levels = await admin.get<AdminLevels>('/levels', { days: 30 });
+      expect(levels.status).toBe(200);
+      const ends = data.appEvents.filter((e) => e.name === 'level_end');
+      expect(ends.length).toBeGreaterThan(50);
+      expect(levels.body.levels.reduce((sum, l) => sum + l.plays, 0)).toBe(ends.length);
+      expect(levels.body.levels.reduce((sum, l) => sum + l.starts, 0)).toBe(
+        data.appEvents.filter((e) => e.name === 'level_start').length,
+      );
+      expect(levels.body.levels[0]).toMatchObject({ levelId: 'L001', kind: 'find' });
+      expect(levels.body.gates.some((g) => g.reached > 0)).toBe(true);
+      const synced = data.userLevels[0]!;
+      const player2 = await admin.get<AdminUserDetail>(`/users/${synced.userId}`);
+      expect(player2.body.levels).toEqual({
+        played: data.userLevels.filter((r) => r.userId === synced.userId).length,
+        stars: data.userLevels
+          .filter((r) => r.userId === synced.userId)
+          .reduce((sum, r) => sum + r.bestStars, 0),
+      });
     } finally {
       await http.close();
     }

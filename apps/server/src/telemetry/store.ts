@@ -12,6 +12,8 @@ import { appEvents, installs } from '../db/schema';
  * - the events: an id already stored (a retry) is skipped and counted as a duplicate.
  * - `userId`: the account of a verified token sent with the batch (never from the body), or null. It goes on
  *   the batch's new events and on the install; an anonymous batch leaves the install's account as it was.
+ * A batch with no events left (all of them of names this server does not know: ./schema) stores nothing, not
+ * even the install: there is no time it was seen that the server can trust.
  */
 export async function storeBatch(
   db: Db,
@@ -19,6 +21,7 @@ export async function storeBatch(
   now: number,
   userId: string | null = null,
 ): Promise<TelemetryResponse> {
+  if (batch.events.length === 0) return { accepted: 0, duplicates: 0 };
   const times = batch.events.map((e) => Math.min(e.t, now));
   const firstSeen = new Date(Math.min(...times));
   const lastSeen = new Date(Math.max(...times));

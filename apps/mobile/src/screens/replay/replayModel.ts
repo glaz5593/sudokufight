@@ -21,6 +21,7 @@ import {
   type MoveScore,
   parseGrid,
   type PlayerId,
+  playedMs,
   rankPlayers,
   type ReleaseReason,
   replay as replayStates,
@@ -107,7 +108,10 @@ export interface ReplayStep {
   from: number;
   to: number;
   main: number | null;
-  /** When it happened (the engine's clock), and the game clock then (ms since the start). */
+  /**
+   * When it happened (the engine's clock), and the game clock then (ms played since the start: the phone's own
+   * freezes [D65] left out, the engine's playedMs).
+   */
   t: number;
   clockMs: number;
 }
@@ -329,7 +333,8 @@ function stepOf(
   index: number,
   g: Group,
   events: readonly GameEvent[],
-  startedAt: number | null,
+  /** The state the step's move left (its clock: a background freeze before it [D65] is no time played). */
+  state: GameState,
   solution: Grid | null,
 ): ReplayStep {
   const e = g.main === null ? null : events[g.main]!;
@@ -360,7 +365,7 @@ function stepOf(
     to: g.to,
     main: g.main,
     t,
-    clockMs: startedAt === null ? 0 : Math.max(0, t - startedAt),
+    clockMs: playedMs(state, t),
   };
   if (!e) return step;
   switch (e.type) {
@@ -473,7 +478,7 @@ export function buildReplay(events: readonly GameEvent[], options: ReplayOptions
     };
   });
 
-  const steps = groupsOf(log).map((g, k) => stepOf(k, g, log, startedAt, solution));
+  const steps = groupsOf(log).map((g, k) => stepOf(k, g, log, states[g.main ?? g.to]!, solution));
   const penaltiesAreMissedPoints = steps.every(
     (s) => s.kind !== 'wrong' || missedPointsOf(states, s, config.rules.scoreY)?.points === s.penalty,
   );
@@ -504,7 +509,7 @@ export function buildReplay(events: readonly GameEvent[], options: ReplayOptions
     mode: config.mode,
     gameType: config.gameType,
     startedAt: startedAt ?? final.createdAt,
-    durationMs: result?.durationMs ?? (startedAt === null ? 0 : Math.max(0, lastT - startedAt)),
+    durationMs: result?.durationMs ?? playedMs(final, lastT),
     players,
     me,
     events: log,

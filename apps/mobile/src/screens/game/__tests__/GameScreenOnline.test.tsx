@@ -768,3 +768,26 @@ describe('the end of an online game (no black screen)', () => {
     expect(g.onEnded).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('[D65] the background freeze is for local games only', () => {
+  it('an online game never freezes for the app’s background, and never shows the 3, 2, 1', async () => {
+    const listeners = new Set<(state: string) => void>();
+    const appState = {
+      addEventListener: (_type: 'change', listener: (state: string) => void) => {
+        listeners.add(listener);
+        return { remove: () => listeners.delete(listener) };
+      },
+    };
+    const g = await live({ appState });
+    await act(async () => listeners.forEach((l) => l('background')));
+    await pass(g.table, 500);
+    expect(screen.queryByTestId('resume-countdown', hidden)).toBeNull();
+    expect(g.session.getView()).not.toHaveProperty('pausedBy');
+    await act(async () => listeners.forEach((l) => l('active')));
+    for (let k = 0; k < 4; k++) {
+      await pass(g.table, 1000);
+      expect(screen.queryByTestId('resume-countdown', hidden)).toBeNull();
+    }
+    expect(g.session.getView()).not.toHaveProperty('pausedBy');
+  });
+});

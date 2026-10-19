@@ -1,7 +1,8 @@
-import type { GameType } from '@sudoku-fight/engine';
+import { type GameType, maxLevel } from '@sudoku-fight/engine';
 import type { RatingEntry } from '@sudoku-fight/protocol';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import type { TFunction } from 'i18next';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,8 +10,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isSuspended } from '../../api/me';
 import type { AvatarIdOrNone } from '../../avatars';
 import { useAuth } from '../../auth/authStore';
-import { Icon } from '../../components/Icon';
+import { Icon, type IconName } from '../../components/Icon';
+import { LevelTile } from '../../components/levels/LevelTile';
 import { Avatar, paletteAt, SeatGlyph } from '../../components/player';
+import type { LevelsSummary } from '../../levels/levelsRepo';
+import { refreshLevels, useLevelsSummary } from '../../levels/levelsStore';
 import { useConnectivityWatch } from '../../net/connectivity';
 import { cue } from '../../services/feedback';
 import { useProfile } from '../../state/profile';
@@ -32,10 +36,12 @@ import { OfflineActions, OfflineBanner } from './OfflineBanner';
 import { Chip, GUTTER, ScreenHeader, SectionLabel } from './parts';
 
 /**
- * "משחק חדש" (spec §5.1, the Modes board in direction C): exactly five options, ranked 2 · 3 · 4, then practice
- * against a bot and solo practice. Each is a row of its own, compact enough that a sixth type fits on a 360 × 780
- * phone without scrolling (Moshe's device test, 15.10.2026; the budget is in ModesAndGameType.test). The
- * practices open the game type (a bot practice goes on to the bot selection); a ranked table
+ * "משחק חדש" (spec §5.1, the Modes board in direction C): six options, ranked 2 · 3 · 4, then practice against a
+ * bot, solo practice ("אימון לבד · לוח מלא") and staged practice ("אימון בשלבים", D48; Modes-Levels). Each is a
+ * row of its own, compact enough that the six fit on a 360 × 780 phone without scrolling (Moshe's device test,
+ * 15.10.2026; the budget is in ModesAndGameType.test). Staged practice opens its map (/levels); its row shows a
+ * stage tile, "שלב 14 · ★ 29" from levels.db (never the stages' data file), or "300 שלבים קצרים" for a new
+ * player. The other practices open the game type (a bot practice goes on to the bot selection); a ranked table
  * (2 players since stage 9, 3 and 4 since stage 10) opens the game type of a ranked game, then the search,
  * and shows my rating in that type, in its queue's rating key (spec §11.1: `normal`, or `normal-3p` under
  * RATING_OPTION A). An option this build has not opened (homeModel AVAILABLE_MODES) says "בקרוב".
@@ -63,10 +69,21 @@ export function ModesScreen() {
   const suspended = useAuth((s) => isSuspended(s.me));
   const announcement = useConnectionLine(offline);
   const rankedType: GameType = lastPlay?.mode === 'ranked' ? lastPlay.gameType : DEFAULT_GAME_TYPE;
+  // Staged practice's row: my progress from levels.db, read again each time the screen is shown.
+  const levels = useLevelsSummary();
+  useFocusEffect(
+    useCallback(() => {
+      void refreshLevels();
+    }, []),
+  );
 
   const open = (option: ModeOption) => {
     if (!isAvailable(option.key) || ((offline || suspended) && option.group === 'ranked')) return;
     cue('toggle');
+    if (option.mode === null) {
+      router.push('/levels');
+      return;
+    }
     const gameType = lastPlay?.mode === option.mode ? lastPlay.gameType : undefined;
     const params: Record<string, string> = { mode: option.mode };
     if (gameType) params.gameType = gameType;
@@ -101,6 +118,7 @@ export function ModesScreen() {
             suspended={suspended}
             ratings={group === 'ranked' ? ratings : null}
             rankedType={rankedType}
+            levels={levels}
             onOpen={open}
           />
         ))}
@@ -154,6 +172,18 @@ interface CardContext {
   /** My ratings (the account's), for the open ranked cards: each shows its own queue's. */
   ratings: readonly RatingEntry[] | null;
   rankedType: GameType;
+  /** Staged practice: my stages played, stars and current stage (levels.db), or none yet. */
+  levels: LevelsSummary | null;
+}
+
+/** A chip of a row: its words, and for staged practice a gold star and a number after them. */
+interface ChipSpec {
+  label: string;
+  /** What it says in the card's label, when it is not its words ("שלב 14 · 29 כוכבים"). */
+  spoken?: string;
+  icon?: IconName;
+  value?: string;
+  testID?: string;
 }
 
 function Group({
@@ -195,6 +225,7 @@ function ModeCard({
   suspended,
   ratings,
   rankedType,
+  levels,
   onPress,
 }: CardContext & { option: ModeOption; onPress: () => void }) {
   const { t } = useTranslation('home');
@@ -207,23 +238,23 @@ function ModeCard({
   const needsConnection = ranked && offline && built && !barred;
   const available = built && !needsConnection && !barred;
   const title = t(`modes.${option.key}.title`);
-  const tagline = t(`modes.${option.key}.tagline`);
+  // A new player (nothing played yet, or no account): the stages there are, and no progress chip.
+  const fresh = option.key === 'levels' && (levels === null || levels.played === 0);
+  const tagline = fresh
+    ? t('modes.levels.taglineNew', { total: maxLevel() })
+    : t(`modes.${option.key}.tagline`);
   const typeName = t(`gameTypes.${rankedType}.name`);
   const shownRating =
     ranked && available && isOpenPlayerCount(option.players)
       ? rankedRatingIn(ratings, rankedType, option.players)
       : null;
-  const chips = ranked
-    ? [
-        shownRating
-          ? `${tm('modes.rating', { rating: shownRating.rating })}${t('player:sep')}${typeName}`
-          : t('modes.chips.rated'),
-      ]
-    : [t('modes.chips.unrated'), offline ? tm('offline.availableOffline') : t('modes.chips.offline')];
+  const chips = chipsOf(option, { offline, fresh, levels, shownRating, typeName, t, tm });
   const label = [
     t(`modes.${option.key}.label`),
     tagline,
-    ...(shownRating ? [tm('modes.ratingLabel', { rating: shownRating.rating, type: typeName })] : chips),
+    ...(shownRating
+      ? [tm('modes.ratingLabel', { rating: shownRating.rating, type: typeName })]
+      : chips.map((c) => c.spoken ?? c.label)),
     barred
       ? t('moderation:suspended.chipLabel')
       : needsConnection
@@ -250,7 +281,7 @@ function ModeCard({
       ]}
       testID={`mode-${option.key}`}
     >
-      <Leading option={option} avatarId={avatarId} />
+      <Leading option={option} avatarId={avatarId} stage={levels?.current ?? 1} />
       <View style={styles.texts}>
         <Text style={[styles.title, !available && styles.titleSoon]} numberOfLines={1}>
           {title}
@@ -267,13 +298,74 @@ function ModeCard({
             <Chip label={t('modes.soon')} testID={`soon-${option.key}`} />
           )}
           {chips.map((c) => (
-            <Chip key={c} label={c} testID={shownRating ? `rating-${option.key}` : undefined} />
+            <Chip
+              key={c.label}
+              label={c.label}
+              icon={c.icon}
+              iconColor={color.star.filled}
+              iconFilled
+              value={c.value}
+              testID={c.testID}
+            />
           ))}
         </View>
       </View>
       {available ? <Icon name="chevronForward" size={size.icon.chevron} color={color.iconFaint} /> : null}
     </Pressable>
   );
+}
+
+/**
+ * A row's chips: a ranked table's rating (or "דירוג"); a practice's "ללא דירוג" and "עובד גם בלי אינטרנט";
+ * staged practice's "עובד גם בלי אינטרנט" (no "ללא דירוג": stages never had one), and after its first stage its
+ * progress, "שלב 14 · ★ 29", beside the short "גם אופליין".
+ */
+function chipsOf(
+  option: ModeOption,
+  {
+    offline,
+    fresh,
+    levels,
+    shownRating,
+    typeName,
+    t,
+    tm,
+  }: {
+    offline: boolean;
+    fresh: boolean;
+    levels: LevelsSummary | null;
+    shownRating: RatingEntry | null;
+    typeName: string;
+    t: TFunction<'home'>;
+    tm: TFunction<'match'>;
+  },
+): ChipSpec[] {
+  const worksWords = offline ? tm('offline.availableOffline') : t('modes.chips.offline');
+  const works = { label: worksWords };
+  if (option.group === 'ranked') {
+    return [
+      shownRating
+        ? {
+            label: `${tm('modes.rating', { rating: shownRating.rating })}${t('player:sep')}${typeName}`,
+            testID: `rating-${option.key}`,
+          }
+        : { label: t('modes.chips.rated') },
+    ];
+  }
+  if (option.key !== 'levels') return [{ label: t('modes.chips.unrated') }, works];
+  if (fresh || !levels) return [works];
+  // Beside "שלב 300 · ★ 900" the long words do not fit the row's one chip line on a 360 dp phone
+  // (modesChipWidth.test): the chip says it short, the card's label in full.
+  return [
+    {
+      label: t('modes.levels.chip', { stage: levels.current }),
+      spoken: t('modes.levels.chipLabel', { stage: levels.current, count: levels.stars }),
+      icon: 'star',
+      value: String(levels.stars),
+      testID: 'levels-progress-chip',
+    },
+    { label: t('modes.levels.offline'), spoken: worksWords },
+  ];
 }
 
 /** "דורש חיבור" with the lock (the Offline board); "החשבון מושעה" the same way. */
@@ -288,8 +380,22 @@ function OfflineChip({ label, testID }: { label: string; testID?: string }) {
   );
 }
 
-/** The picture at the start of a card: the seats of a ranked table, my avatar, or the bot. */
-function Leading({ option, avatarId }: { option: ModeOption; avatarId: AvatarIdOrNone }) {
+/**
+ * The picture at the start of a card: the seats of a ranked table, my avatar, the bot, or (staged practice) a
+ * stage tile with my current stage's number (Modes-Levels; decorative, the card's label says it).
+ */
+function Leading({
+  option,
+  avatarId,
+  stage,
+}: {
+  option: ModeOption;
+  avatarId: AvatarIdOrNone;
+  stage: number;
+}) {
+  if (option.key === 'levels') {
+    return <LevelTile n={stage} size={size.touch} state="played" testID="mode-levels-lead" />;
+  }
   if (option.mode === 'solo') {
     return <Avatar avatarId={avatarId} size="card" colorIndex={0} testID="mode-solo-avatar" />;
   }

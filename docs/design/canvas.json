@@ -34,14 +34,25 @@
     "Interference-Target.dc.html": { "h": 844, "title": "Interference · Targeting in 4 players (old: drag, replaced by two taps, D45)", "w": 390, "x": 940, "y": 6468 },
     "Interferences.dc.html": { "h": 1100, "is_interactive": true, "title": "Interferences collection (old: the drag tile and footer hint, replaced by two taps, D45)", "w": 390, "x": 2820, "y": 6468 },
     "Leaderboard.dc.html": { "h": 1100, "is_interactive": true, "title": "Leaderboard", "w": 390, "x": 2820, "y": 7988 },
+    "Level-Result.dc.html": { "h": 844, "title": "Staged practice · Stage result", "w": 390, "x": 1410, "y": 11028 },
+    "Levels-Gate.dc.html": { "h": 844, "title": "Staged practice · Chapter gate (20 stars)", "w": 390, "x": 940, "y": 11028 },
+    "Levels-Map.dc.html": { "h": 844, "is_interactive": true, "title": "Staged practice · Stage map", "w": 390, "x": 470, "y": 11028 },
     "Loading.dc.html": { "h": 844, "title": "Loading states", "w": 390, "x": 2350, "y": 9508 },
     "Login.dc.html": { "h": 844, "is_interactive": true, "title": "Login", "w": 390, "x": 470, "y": 2420 },
+    "Lv-Box.dc.html": { "h": 844, "title": "Stage · Fill the box (kind 3)", "w": 390, "x": 2820, "y": 11028 },
+    "Lv-Chain.dc.html": { "h": 844, "title": "Stage · Chain", "w": 390, "x": 940, "y": 11992 },
+    "Lv-Find.dc.html": { "h": 844, "title": "Stage · Find the digit (kind 1)", "w": 390, "x": 1880, "y": 11028 },
+    "Lv-PointHunter.dc.html": { "h": 844, "title": "Stage · Point hunter", "w": 390, "x": 470, "y": 11992 },
+    "Lv-Race.dc.html": { "h": 844, "title": "Stage · Race the bot (kind 2)", "w": 390, "x": 2350, "y": 11028 },
+    "Lv-SpotError.dc.html": { "h": 844, "title": "Stage · Spot the mistake", "w": 390, "x": 0, "y": 11992 },
+    "Lv-Sprint.dc.html": { "h": 844, "title": "Stage · Duel to 30 (kind 4)", "w": 390, "x": 3290, "y": 11028 },
     "Main.dc.html": { "h": 900, "title": "Sudoku Fight — Arena Ink", "w": 1440, "x": 0, "y": 0 },
     "Match-Countdown.dc.html": { "h": 844, "is_interactive": true, "title": "Matchmaking · 3-2-1-GO", "w": 390, "x": 2350, "y": 3940 },
     "Match-Found.dc.html": { "h": 844, "is_interactive": true, "title": "Matchmaking · Found & Ready", "w": 390, "x": 1880, "y": 3940 },
     "Match-Search.dc.html": { "h": 844, "is_interactive": true, "title": "Matchmaking · Searching", "w": 390, "x": 1410, "y": 3940 },
     "Match-Timeout.dc.html": { "h": 844, "is_interactive": true, "title": "Matchmaking · No match yet", "w": 390, "x": 2820, "y": 3940 },
-    "Modes.dc.html": { "h": 844, "is_interactive": true, "title": "Game modes", "w": 390, "x": 0, "y": 3940 },
+    "Modes-Levels.dc.html": { "h": 844, "is_interactive": true, "title": "Game modes · 6 options, with staged practice (D48)", "w": 390, "x": 0, "y": 11028 },
+    "Modes.dc.html": { "h": 844, "is_interactive": true, "title": "Game modes (5 options, before D48: see Modes-Levels)", "w": 390, "x": 0, "y": 3940 },
     "Offline.dc.html": { "h": 844, "is_interactive": true, "title": "Offline · before a game", "w": 390, "x": 0, "y": 9508 },
     "Opponent-Left.dc.html": { "h": 844, "is_interactive": true, "title": "Opponent abandoned", "w": 390, "x": 1410, "y": 9508 },
     "Opponent-Reconnecting.dc.html": { "h": 844, "is_interactive": true, "title": "Opponent reconnecting · 15", "w": 390, "x": 470, "y": 9508 },
@@ -76,7 +87,10 @@
     "row3": { "kind": "title1", "maxW": 4150, "text": "מסך המשחק", "w": 240, "x": 0, "y": 4944 },
     "row4": { "kind": "title1", "maxW": 4150, "text": "הפרעות, תגובות וכניעה", "w": 240, "x": 0, "y": 6208 },
     "row5": { "kind": "title1", "maxW": 3680, "text": "סיום, צפייה חוזרת, היסטוריה ודירוגים", "w": 240, "x": 0, "y": 7728 },
-    "row6": { "kind": "title1", "maxW": 2740, "text": "מצבי חיבור וטעינה", "w": 240, "x": 0, "y": 9248 }
+    "row6": { "kind": "title1", "maxW": 2740, "text": "מצבי חיבור וטעינה", "w": 240, "x": 0, "y": 9248 },
+    "row7": { "kind": "title1", "maxW": 4150, "text": "אימון בשלבים (גרסה 1.0.2)", "w": 240, "x": 0, "y": 10768 },
+    "d-levels": { "fill": "blue", "text": "הוחלט · אימון בשלבים (משה, 15–18.10.2026)\nשורה שישית במסך \"משחק חדש\" (D48): Modes-Levels מחליף את Modes. ‏300 שלבים של עד 30 שניות, בלי הפרעות בכלל (D49).\nאין כפתור תגובות לשחקן בשלבים, והבוט עדיין מגיב (D62). בשרשרת, ספרה במשבצת שעוד אי אפשר לדעת עולה ‎+5 ש׳ ולא נכנסת (D64).\nיציאה לרקע באמצע שלב: השלב קופא, ובחזרה 3, 2, 1 מעל לוח מכוסה, וממשיכים מאותה נקודה (D65).\nהכללים: אפיון סעיף 5.3. הרכיבים: components.md סעיף 19. התנועה: motion.md סעיף 4.11.", "w": 380, "x": 3760, "y": 11028 },
+    "d-levels-missing": { "fill": "blue", "text": "הוחלט · מסכים של השלבים בלי לוח (משה, 18.10.2026)\nבונים אותם מה־tokens של כיוון C ומהבריף, ומשה בודק במכשיר:\nפתיחת שלב (התוכן בפאנל של המפה), \"מוכן?\", רשימת הפרקים, הבוס בתוך שלב, \"פרק חדש נפתח\", \"איך משחקים\" (3 תמונות לכל סוג), דיאלוג היציאה, תוצאה עם 0 כוכבים, הספירה 3, 2, 1 בחזרה מהרקע (D65), השורה בכרטיס השחקן, וכל הגרסאות באנגלית.", "w": 380, "x": 1410, "y": 11992 }
   },
   "order": [
     "Dir-A-Home.dc.html", "Dir-A-Game.dc.html", "Dir-B-Home.dc.html", "Dir-B-Game.dc.html", "Dir-C-Home.dc.html", "Dir-C-Game.dc.html",
@@ -86,7 +100,8 @@
     "Game-2P.dc.html", "Game-2P-EN.dc.html", "Game-2P-Correct.dc.html", "Game-2P-Wrong.dc.html", "Game-2P-Turns.dc.html", "Game-Solo.dc.html", "Game-Bot.dc.html", "Game-3P.dc.html", "Game-4P.dc.html",
     "Arsenal.dc.html", "Interference-Target.dc.html", "Hit-Fireworks.dc.html", "Hit-Cats.dc.html", "Hit-Warp.dc.html", "Interferences.dc.html", "Reactions.dc.html", "Surrender.dc.html",
     "Results-Victory.dc.html", "Results-Defeat.dc.html", "Results-4P.dc.html", "Replay.dc.html", "History.dc.html", "History-Empty.dc.html", "Leaderboard.dc.html", "Progress.dc.html",
-    "Offline.dc.html", "Opponent-Reconnecting.dc.html", "Self-Reconnecting.dc.html", "Opponent-Left.dc.html", "Connection-Error.dc.html", "Loading.dc.html"
+    "Offline.dc.html", "Opponent-Reconnecting.dc.html", "Self-Reconnecting.dc.html", "Opponent-Left.dc.html", "Connection-Error.dc.html", "Loading.dc.html",
+    "Modes-Levels.dc.html", "Levels-Map.dc.html", "Levels-Gate.dc.html", "Level-Result.dc.html", "Lv-Find.dc.html", "Lv-Race.dc.html", "Lv-Box.dc.html", "Lv-Sprint.dc.html", "Lv-SpotError.dc.html", "Lv-PointHunter.dc.html", "Lv-Chain.dc.html"
   ],
   "pages": [],
   "title": "Sudoku Fight"

@@ -61,7 +61,7 @@ npm run apk -- --install
 npm run version:bump
 ```
 
-הפקודה מעלה את המספר האחרון (`1.0.0` ל־`1.0.1`), ומדפיסה מה היה ומה נהיה. רק השדה `expo.version` ב־`apps\mobilepp.json` משתנה.
+הפקודה מעלה את המספר האחרון (`1.0.0` ל־`1.0.1`), ומדפיסה מה היה ומה נהיה. רק השדה `expo.version` ב־`apps\mobile\app.json` משתנה.
 
 | פקודה | מה משתנה |
 |---|---|
@@ -75,6 +75,18 @@ npm run version:bump
 - **בענן (EAS), לגרסה לחנות:** ‏EAS סופר את מספר הבנייה בעצמו (`appVersionSource: remote` ו־`autoIncrement` ב־`eas.json`), ומתעלם מהמספר של `app.config.ts`. את הגרסה שרואים (`1.0.1`) הוא לוקח מ־`app.json`, כמו כאן.
 - שם הקובץ של ה־APK כבר כולל את הגרסה, למשל `sudoku-fight-1.0.1-a1b2c3d-staging.apk`.
 - שינוי גרסה משנה את `app.json`, ולכן הבנייה הבאה מכינה את תיקיית `android` מחדש (בערך 5 דקות במקום 2 עד 3).
+
+## לפני APK של גרסה חדשה: קודם השרת (מ־1.0.2)
+
+**‏APK ‏1.0.2 (אימון בשלבים) נבנה רק אחרי שהשרת שלו כבר רץ:**
+
+1. **השרת ל־Staging:** `fly deploy --ha=false` (‏README, "פריסה ל־Fly.io (Staging)"). ה־migration ‏0008 רץ לבד, ואין צורך ב־`db:seed-puzzles`. בודקים ש־`https://sudoku-fight-staging.fly.dev/health` מחזיר `"engine":"0.3.0"`.
+2. **רק אחריו:** `npm run apk` (מול Staging), עם הגרסה 1.0.2 (`npm run version:bump`, בנייה 10002).
+3. **‏APK מול Production** (`npm run apk -- --server production`) רק אחרי שגם שרת ה־Production עודכן (`docs/DEPLOY-PRODUCTION.md` סעיף 5).
+
+- **למה:** APK ‏1.0.2 מול שרת ישן שומר את הכוכבים בטלפון, אבל הסנכרון וה־XP מחכים לשרת החדש, ואירועי השלבים נדחים ואובדים. הסדר המלא: [`RELEASE-CHECKLIST.md`](RELEASE-CHECKLIST.md), "גרסה 1.0.2".
+- **וכך גם בעתיד:** בכל פעם שמספר השלבים גדל, נוסף סוג שלב, או נוסף שדה לאירועי השלבים, קודם השרת ורק אחר כך ה־APK.
+- הבנייה, הפריסה וההעברה לטלפונים: כל אחת רק באישור של משה.
 
 ## לאיזה שרת האפליקציה מתחברת
 

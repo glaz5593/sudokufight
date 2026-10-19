@@ -6,6 +6,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react-n
 import { ProgressApiError } from '../../../api/progressApi';
 import { card, myProgress, rating } from '../../../api/testing/fakeProgress';
 import { ltr } from '../../../components/player';
+import { LEVEL_UI } from '../../../config/levels';
 import i18n from '../../../i18n';
 import { useSettings } from '../../../state/settings';
 import { PlayerCardScreen, type PlayerCardScreenProps } from '../PlayerCardScreen';
@@ -116,6 +117,37 @@ describe('PlayerCardScreen', () => {
     expect(onEditProfile).toHaveBeenCalled();
     await fireEvent.press(screen.getByTestId('player-card-recent-g2'));
     expect(onOpenReplay).toHaveBeenCalledWith('g2');
+  });
+
+  it('mine: "שלבים: 87 · ★ 214" under the XP bar, the stars an LTR isolate (staged practice, D58)', async () => {
+    await show(async () => card({ id: 'me' }), {
+      playerId: 'me',
+      myProgress: myProgress(),
+      levels: { played: 87, stars: 214, current: 88 },
+    });
+    const line = screen.getByTestId('player-card-levels');
+    expect(line).toHaveTextContent(`שלבים: 87 · ${ltr('★ 214')}`);
+    expect(line).toHaveProp('accessibilityLabel', 'שלבים: 87, 214 כוכבים');
+    // Under the XP bar, in the identity panel.
+    expect(within(screen.getByTestId('player-card-identity')).getByTestId('player-card-levels')).toBe(line);
+  });
+
+  it('the stages’ line: never before the first stage, never on another player’s card (unless the setting says)', async () => {
+    await show(async () => card({ id: 'me' }), {
+      playerId: 'me',
+      levels: { played: 0, stars: 0, current: 1 },
+    });
+    expect(screen.queryByTestId('player-card-levels')).toBeNull();
+    await screen.unmount();
+
+    await show(async () => NINA, { levels: { played: 40, stars: 99, current: 41 } });
+    expect(screen.queryByTestId('player-card-levels')).toBeNull();
+    await screen.unmount();
+
+    jest.replaceProperty(LEVEL_UI, 'cardShowsToOthers', true);
+    await show(async () => NINA, { levels: { played: 40, stars: 99, current: 41 } });
+    expect(screen.getByTestId('player-card-levels')).toHaveTextContent(`שלבים: 40 · ${ltr('★ 99')}`);
+    jest.restoreAllMocks();
   });
 
   it('mine offline: the card saved on the phone, with a note and "נסה שוב"', async () => {

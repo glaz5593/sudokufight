@@ -6,7 +6,8 @@
   "board": {
     "label": "לוח המשחק",
     "myLock": "המשבצת שלך {{cell}}",
-    "otherLock": "{{cell}} נעולה על ידי {{name}}"
+    "otherLock": "{{cell}} נעולה על ידי {{name}}",
+    "tapLabel": "לוח השלב"
   },
   "cell": {
     "empty": "ריקה",
@@ -24,7 +25,11 @@
     "seconds_other": "{{count}} שניות",
     "wrong": "ספרות שגויות: {{digits}}",
     "hintMyLock": "בחר ספרה במקלדת",
-    "player": "שחקן {{n}}"
+    "player": "שחקן {{n}}",
+    "corrected": "טעות שנמצאה: {{wrong}}, הספרה הנכונה {{right}}",
+    "mine": "שלך",
+    "outside": "מחוץ לאזור",
+    "hintTap": "הקשה על המשבצת היא המהלך"
   },
   "keypad": {
     "armed": "ספרה {{digit}} · נותרו {{left}}",
@@ -35,5 +40,13 @@
   "cancel": {
     "label": "ביטול בחירה",
     "withCell": "ביטול בחירה, {{cell}}"
+  },
+  "resume": {
+    "title": "ממשיכים בעוד",
+    "paused": "המשחק עצור",
+    "label_one": "ממשיכים בעוד שנייה",
+    "label_two": "ממשיכים בעוד {{count}} שניות",
+    "label_many": "ממשיכים בעוד {{count}} שניות",
+    "label_other": "ממשיכים בעוד {{count}} שניות"
   }
 }

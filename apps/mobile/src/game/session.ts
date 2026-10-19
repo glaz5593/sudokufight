@@ -20,10 +20,13 @@ import {
   selectPuzzle,
 } from '@sudoku-fight/engine';
 import type { GameHost } from '@sudoku-fight/protocol';
+import { AppState } from 'react-native';
 
+import { PRACTICE_UI, type PracticeUiSettings } from '../config/practice';
 import { type AnalyticsEventName, type AnalyticsProps, track as defaultTrack } from '../services/analytics';
 import { crashReporter } from '../services/crashlytics';
 import { gameEndProps, gameStartProps } from './analyticsProps';
+import { type AppStateSource, BackgroundPause, NOT_PAUSED, type PauseState } from './backgroundPause';
 import { guardedScheduler, systemClock, timeoutScheduler } from './clock';
 import { offlinePool, type PuzzlePool } from './offlinePool';
 import type { PracticeRepo } from './practiceRepo';
@@ -37,6 +40,13 @@ import type { PracticeRepo } from './practiceRepo';
  *
  * Saving never holds the game up: writes queue behind each other (one batch per update, merged while a write
  * is running), and a failed write is retried with the next update (the repository skips what it has).
+ *
+ * [D65, extended by Moshe 2026-10-18] The app leaving the foreground mid-game (a call, another app, the screen
+ * off) freezes the practice as it freezes a stage (game/backgroundPause.ts): host.pause() stops the game clock,
+ * the lock timer and the bot, which keeps the think time it had left. Back: "3", "2", "1" over the covered board
+ * (the game screen draws `pause`), then host.resume(), from the very same point. The freeze is in the saved log
+ * as the engine emits it (gamePaused 'background', gameResumed 'foreground'), and the game's clock leaves it out
+ * (the engine's playedMs: the duration, the HUD, the replay's times). PRACTICE_UI.backgroundPause off: no freeze.
  */
 
 /** The player on this phone, until accounts arrive (stage 8). */
@@ -82,6 +92,10 @@ export interface PracticeDeps {
    * here is reported, never thrown at the game.
    */
   onFinish?: (game: PracticeFinish) => void;
+  /** [D65] The app's foreground state; React Native's AppState by default, null for none. */
+  appState?: AppStateSource | null;
+  /** [D65] The background freeze; PRACTICE_UI by default. */
+  settings?: Pick<PracticeUiSettings, 'backgroundPause' | 'resumeCountdownMs'>;
 }
 
 /** A practice that just ended, for its XP (spec §15). */
@@ -120,6 +134,14 @@ export interface PracticeSession {
   close(): void;
   /** Resolves once everything so far is written (or has failed and been reported). */
   flush(): Promise<void>;
+  /** [D65] The freeze as the game screen draws it (ResumeCountdown over the covered board). */
+  readonly pause: PauseState;
+  /** Called on every change of `pause`; returns the unsubscribe function. */
+  onPause(listener: (state: PauseState) => void): () => void;
+  /** [D65] The app went to the background: the game freezes (no-op once over, or with backgroundPause off). */
+  background(): void;
+  /** [D65] The app is active again: the countdown, then the game goes on. */
+  foreground(): void;
 }
 
 const randomSeed = (): number => Math.floor(Math.random() * 2 ** 31);
@@ -202,6 +224,13 @@ async function openPractice(
       ? null
       : (h: LocalGameHost) =>
           attachBot(h, { botId: opponent.id, level: bot, clock, scheduler, rng: createRng(botSeedOf(seed)) });
+  const freeze = new BackgroundPause({
+    host,
+    scheduler,
+    settings: deps.settings ?? PRACTICE_UI,
+    appState: deps.appState === undefined ? AppState : deps.appState,
+    onError,
+  });
   return new Session(
     host,
     config,
@@ -212,6 +241,7 @@ async function openPractice(
     bot,
     attach,
     deps.onFinish ?? null,
+    freeze,
   );
 }
 
@@ -245,6 +275,7 @@ class Session implements PracticeSession {
     readonly botLevel: BotLevelId | null = null,
     attach: ((host: LocalGameHost) => BotHandle) | null = null,
     private readonly onFinish: ((game: PracticeFinish) => void) | null = null,
+    private readonly freeze: BackgroundPause | null = null,
   ) {
     this.id = config.id;
     this.mode = config.mode;
@@ -302,9 +333,28 @@ class Session implements PracticeSession {
     this.local.surrender();
   }
 
+  get pause(): PauseState {
+    return this.freeze?.state ?? NOT_PAUSED;
+  }
+
+  onPause(listener: (state: PauseState) => void): () => void {
+    return this.freeze ? this.freeze.onChange(listener) : () => undefined;
+  }
+
+  background(): void {
+    if (this.closed || this.finished) return;
+    this.freeze?.background();
+  }
+
+  foreground(): void {
+    if (this.closed) return;
+    this.freeze?.foreground();
+  }
+
   close(): void {
     if (this.closed) return;
     this.closed = true;
+    this.freeze?.close();
     this.detachBot();
     this.unsubscribe();
     this.local.close();
@@ -343,6 +393,7 @@ class Session implements PracticeSession {
     if (!result) return;
     this.finished = true;
     this.detachBot();
+    this.freeze?.end();
     const endedAt = state.endedAt ?? this.clock.now();
     this.write('could not save the end of the game', async () => {
       await this.repo!.finishGame(this.id, { result, endedAt });

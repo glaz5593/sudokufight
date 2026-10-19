@@ -1,7 +1,8 @@
 // First: keeps the real Reanimated in place of the router testing library's old mock (see homeTesting.tsx).
 import 'react-native-reanimated';
 import { ENGINE_VERSION } from '@sudoku-fight/engine';
-import { fireEvent, screen } from 'expo-router/testing-library';
+import Storage from 'expo-sqlite/kv-store';
+import { act, fireEvent, screen } from 'expo-router/testing-library';
 
 import { ltr } from '../../../components/player';
 import { directionProblems } from '../../../components/ui/testing/layout';
@@ -9,6 +10,7 @@ import { practiceStorageOrNull } from '../../../game/storage';
 import i18n from '../../../i18n';
 import { haptics as hapticsService } from '../../../services/haptics';
 import { useSettings } from '../../../state/settings';
+import { useTestingSwitches } from '../../../state/testingSwitches';
 import { PlaceholderScreen } from '../PlaceholderScreen';
 import { SettingsScreen } from '../SettingsScreen';
 import { renderApp } from '../testing/homeTesting';
@@ -110,6 +112,47 @@ describe('settings (spec §4.1)', () => {
     expect(screen.queryByTestId('app-version')).toBeNull();
   });
 
+  it('a staging build: "בדיקה" with the chain switch and "פתח את כל השלבים", kept on the phone', async () => {
+    useTestingSwitches.setState({ chainPenalty: false, unlockAllLevels: false });
+    try {
+      const staging = { server: 'staging', dev: false };
+      await renderApp('/settings', { settings: () => <SettingsScreen build={staging} /> });
+      expect(screen.getByTestId('settings-testing')).toBeTruthy();
+      expect(screen.getByText('רק בגרסת הבדיקה (staging). בגרסה לחנות אין את זה.')).toBeTruthy();
+      const chain = screen.getByRole('switch', { name: 'שרשרת: ניחוש עולה 5 ש׳' });
+      expect(chain).toHaveProp('accessibilityState', { checked: false });
+      await fireEvent.press(chain);
+      expect(useTestingSwitches.getState().chainPenalty).toBe(true);
+      expect(screen.getByRole('switch', { name: 'שרשרת: ניחוש עולה 5 ש׳' })).toHaveProp(
+        'accessibilityState',
+        {
+          checked: true,
+        },
+      );
+      await fireEvent.press(screen.getByRole('switch', { name: 'פתח את כל השלבים (בדיקה)' }));
+      expect(useTestingSwitches.getState().unlockAllLevels).toBe(true);
+      // Kept on the phone, apart from the player's settings.
+      expect(JSON.parse(Storage.getItemSync('testing-switches')!)).toMatchObject({
+        state: { chainPenalty: true, unlockAllLevels: true },
+      });
+      expect(Storage.getItemSync('settings') ?? '').not.toContain('chainPenalty');
+    } finally {
+      await act(async () => useTestingSwitches.setState({ chainPenalty: false, unlockAllLevels: false }));
+    }
+  });
+
+  it('a production build never shows "בדיקה" (a development build pointed at production neither)', async () => {
+    for (const build of [
+      { server: 'production', dev: false },
+      { server: 'production', dev: true },
+    ]) {
+      await renderApp('/settings', { settings: () => <SettingsScreen build={build} /> });
+      expect(screen.queryByTestId('settings-testing')).toBeNull();
+      expect(screen.queryByRole('switch', { name: 'שרשרת: ניחוש עולה 5 ש׳' })).toBeNull();
+      await screen.unmount();
+    }
+  });
+
   it('goes back to where it was opened from', async () => {
     const app = await renderApp('/');
     await fireEvent.press(screen.getByRole('button', { name: 'הגדרות' }));
@@ -127,6 +170,9 @@ describe('settings (spec §4.1)', () => {
     expect(screen.getByRole('radio', { name: 'Like the device' })).toBeTruthy();
     // Each language is named in itself.
     expect(screen.getByRole('radio', { name: 'עברית' })).toBeTruthy();
+    // A development build (not on production) has the testing switches too.
+    expect(screen.getByRole('switch', { name: 'Chain: a guess costs 5 s' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Unlock all stages (testing)' })).toBeTruthy();
   });
 });
 

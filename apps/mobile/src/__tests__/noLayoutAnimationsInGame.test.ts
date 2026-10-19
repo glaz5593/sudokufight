@@ -10,9 +10,15 @@ import { join, relative } from 'node:path';
  */
 
 const SRC = join(__dirname, '..');
-const ROOTS = ['components/board', 'components/player', 'components/interference', 'screens/game'].map(
-  (dir) => join(SRC, dir),
-);
+// Staged practice (1.0.2): its map, a stage and its result are one flow too (components.md §19.10).
+const ROOTS = [
+  'components/board',
+  'components/player',
+  'components/interference',
+  'components/levels',
+  'screens/game',
+  'screens/levels',
+].map((dir) => join(SRC, dir));
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -49,6 +55,9 @@ describe('no layout animations on the game screen (Moshe’s black screens of 1.
         'components/interference/Scramble.tsx',
         'components/interference/Ink.tsx',
         'components/board/Keypad.tsx',
+        'components/levels/StarRow.tsx',
+        'screens/levels/LevelResultView.tsx',
+        'screens/levels/LevelNode.tsx',
       ]),
     );
   });

@@ -8,8 +8,8 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
  * matchmaking (/matchmake/…) and /health keep that. Under these prefixes no web page of another origin has
  * business calling:
  * - /admin: the admin site and its API, same-origin only (the session cookie is SameSite=Strict as well).
- * - /v1: the app's HTTP API (POST /v1/events, the account routes). The app is not a browser, so it never
- *   sends a preflight.
+ * - /v1: the app's HTTP API (POST /v1/events, the account routes, PUT /v1/me/levels). The app is not a
+ *   browser, so it never sends a preflight.
  *
  * There, a preflight (OPTIONS) gets 204 without any Access-Control-* header (guard.ts calls answerPreflight
  * before Colyseus can), so a browser does not send the request that would follow; and configureHttp strips
@@ -19,7 +19,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 export const SAME_ORIGIN_PREFIXES = ['/admin', '/v1'] as const;
 
 /** The methods named in the answer to an OPTIONS request under SAME_ORIGIN_PREFIXES. */
-export const SAME_ORIGIN_ALLOW = 'GET, HEAD, POST, PATCH, DELETE, OPTIONS';
+export const SAME_ORIGIN_ALLOW = 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS';
 
 /** The path of a request target: origin-form (/a/b?x) or absolute-form (http://host/a/b), lower case. */
 function pathnameOf(url: string): string {

@@ -4,9 +4,12 @@ import {
   AVATAR_IDS,
   type AvatarId,
   LEGACY_AVATAR_MAP,
+  type LevelsSyncResponse,
   type Me,
+  type MyLevels,
   type NameAvailability,
   NO_AVATAR_ID,
+  PROGRESS_PATHS,
   RECENT_SIGN_IN_MS,
   RENAME_COOLDOWN_MS,
 } from '@sudoku-fight/protocol';
@@ -15,7 +18,7 @@ import { asc, eq } from 'drizzle-orm';
 import { createTokenVerifier } from '../auth/firebaseToken';
 import { KeysUnavailableError } from '../auth/googleKeys';
 import type { ServerConfig } from '../config';
-import { installs, ratings, users } from '../db/schema';
+import { installs, levelXpDays, ratings, userLevels, users, xp } from '../db/schema';
 import { call, type CallOptions, fighter } from '../testing/accounts';
 import { fakeClock, type FakeClock } from '../testing/clock';
 import { testConfig } from '../testing/config';
@@ -648,6 +651,29 @@ describe('DELETE /v1/me', () => {
     // Ratings stay with the anonymous row (its games keep their players); the install is unlinked.
     expect(await t.db.$count(ratings, eq(ratings.userId, created.id))).toBe(3);
     expect((await t.db.select().from(installs))[0]?.userId).toBeNull();
+  });
+
+  it("deletes the server's copy of staged practice (user_levels, level_xp_days), keeps the XP; a new account starts empty", async () => {
+    const { body: created } = await register('uid-1', { displayName: 'Dana' });
+    const { body: other } = await register('uid-2', { displayName: 'Noa' });
+    const levels = { levels: [{ id: 'L001', stars: 3, plays: 2 }] };
+    const sync = async (uid: string) =>
+      api<LevelsSyncResponse>('PUT', PROGRESS_PATHS.myLevels, { token: await idToken(uid), body: levels });
+    expect((await sync('uid-1')).body).toMatchObject({ xp: 30 });
+    expect((await sync('uid-2')).status).toBe(200);
+
+    expect((await remove('uid-1')).status).toBe(204);
+    expect(await t.db.$count(userLevels, eq(userLevels.userId, created.id))).toBe(0);
+    expect(await t.db.$count(levelXpDays, eq(levelXpDays.userId, created.id))).toBe(0);
+    // The XP stays with the anonymous row, as all XP does; another player's levels are untouched.
+    expect((await t.db.select().from(xp).where(eq(xp.userId, created.id)))[0]?.xp).toBe(30);
+    expect(await t.db.$count(userLevels, eq(userLevels.userId, other.id))).toBe(1);
+
+    // The same sign-in registers again: a new id, so no levels.
+    const again = await register('uid-1', { displayName: 'Dana' });
+    expect(again.status).toBe(201);
+    const mine = await api<MyLevels>('GET', PROGRESS_PATHS.myLevels, { token: await idToken('uid-1') });
+    expect(mine.body).toEqual<MyLevels>({ levels: [], maxLevel: 300, owedXp: 0 });
   });
 
   it('the account is gone: 404 for me, a second delete and a change', async () => {

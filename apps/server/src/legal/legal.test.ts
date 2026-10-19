@@ -57,6 +57,47 @@ describe('the legal texts', () => {
     }
   });
 
+  it('count the events in the App Store answers as the app has them (docs/store/APP-PRIVACY.md: 20)', () => {
+    const doc = readFileSync(
+      path.join(__dirname, '..', '..', '..', '..', 'docs', 'store', 'APP-PRIVACY.md'),
+      'utf8',
+    );
+    const counts = [...doc.matchAll(/(\d+) אירועים/g)].map((m) => Number(m[1]));
+    expect(counts).toEqual([TELEMETRY_EVENT_NAMES.length]);
+    expect(TELEMETRY_EVENT_NAMES.length).toBe(20);
+  });
+
+  it('say where staged practice’s progress is kept: the server’s copy goes with the account, the phone’s stays until uninstall', () => {
+    const en = textOf(renderLegalPage('privacy', 'en', SET));
+    expect(en).toMatch(/Staged practice:\s+when the app syncs your progress to your account/);
+    expect(en).toMatch(/your best stars on each stage, how many times you played it/);
+    expect(en).toMatch(
+      /the copy on the server \(your stars on each stage, and the XP the stages gave each day\) is deleted with the account\. The copy on your phone stays until you uninstall the app\./,
+    );
+    expect(en).toMatch(/does not delete the practice games and the staged-practice progress on your phone/);
+    const he = textOf(renderLegalPage('privacy', 'he', SET));
+    expect(he).toMatch(/הכוכבים הטובים ביותר בכל שלב/);
+    expect(he).toMatch(
+      /העותק שבשרת \(הכוכבים בכל שלב, וה־XP שהשלבים נתנו בכל יום\) נמחק עם החשבון\. העותק שבטלפון נשאר עד שמסירים את האפליקציה\./,
+    );
+    expect(he).toMatch(/לא מוחקת את משחקי האימון ואת ההתקדמות באימון בשלבים שבטלפון/);
+    // Its six events are in the table, in both languages, with what they carry.
+    for (const lang of LEGAL_LANGS) {
+      const html = renderLegalPage('privacy', lang, SET);
+      for (const name of [
+        'level_map_open',
+        'level_start',
+        'level_end',
+        'level_quit',
+        'chapter_gate',
+        'level_tutorial',
+      ] as const) {
+        expect(html).toContain(`<code dir="ltr">${name}</code>`);
+        for (const words of EVENT_DETAILS[name][lang]) expect(textOf(html)).toContain(words);
+      }
+    }
+  });
+
   it('name the processors and what the code keeps (accounts, IP in memory only, deletion)', () => {
     for (const lang of LEGAL_LANGS) {
       const text = textOf(renderLegalPage('privacy', lang, SET));

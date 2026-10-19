@@ -55,7 +55,7 @@ describe('XP (spec §15)', () => {
   it('reads its numbers from the rules', () => {
     const rules: ProgressRules = {
       ...DEFAULT_PROGRESS_RULES,
-      xp: { win: 5, played: 2, solo: 1, perCorrect: 0 },
+      xp: { win: 5, played: 2, solo: 1, perCorrect: 0, levelStar: 1, levelGate: 2 },
     };
     expect(xpForGame({ mode: 'bot', won: true, correct: 40 }, rules)).toBe(5);
   });

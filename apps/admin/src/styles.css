@@ -882,6 +882,127 @@ select.input {
   color: var(--text);
 }
 
+/* ---- Levels (staged practice) ---- */
+
+/*
+ * The stars' ordinal ramp: one hue (the accent's yellow), a darker step for fewer stars. Checked as an ordinal
+ * ramp on --surface (monotone lightness, a visible step between neighbours, the darkest at 2:1); every bar has
+ * its shares written beside it, so the colours are never the only way to read it.
+ */
+:root {
+  --stars-0: #5c4a1a;
+  --stars-1: #937019;
+  --stars-2: #c99a1f;
+  --stars-3: #ffcf3f;
+}
+
+.section-toolbar {
+  justify-content: space-between;
+  margin-block-end: 12px;
+}
+
+.stars-cell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stars-meter {
+  display: flex;
+  gap: 2px;
+  inline-size: 168px;
+  block-size: 8px;
+}
+
+.stars-seg {
+  display: block;
+  flex-basis: 0;
+  flex-shrink: 1;
+  min-inline-size: 2px;
+}
+
+.stars-seg:first-child {
+  border-start-start-radius: 4px;
+  border-end-start-radius: 4px;
+}
+
+.stars-seg:last-child {
+  border-start-end-radius: 4px;
+  border-end-end-radius: 4px;
+}
+
+.stars-0 {
+  background: var(--stars-0);
+}
+
+.stars-1 {
+  background: var(--stars-1);
+}
+
+.stars-2 {
+  background: var(--stars-2);
+}
+
+.stars-3 {
+  background: var(--stars-3);
+}
+
+.stars-text,
+.stars-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The four shares two by two, in the bar's order. */
+.stars-text {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  justify-content: start;
+}
+
+.stars-legend {
+  gap: 6px 14px;
+  font-size: 13px;
+}
+
+.stars-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.stars-key {
+  display: inline-block;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 2px;
+}
+
+.rate-of,
+.levels-table .kind {
+  white-space: nowrap;
+}
+
+/* Twelve columns: tighter cells, and the long headers may wrap. */
+.levels-table .table th,
+.levels-table .table td {
+  padding-inline: 8px;
+}
+
+.levels-table .table th {
+  white-space: normal;
+}
+
+.levels-table .stars-meter {
+  inline-size: 128px;
+}
+
 /* ---- Login ---- */
 
 .login {
@@ -1280,6 +1401,8 @@ select.input {
 @media (forced-colors: active) {
   .chart-bars path,
   .meter-fill,
+  .stars-seg,
+  .stars-key,
   .chart-dot {
     fill: CanvasText;
     background: CanvasText;

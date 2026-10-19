@@ -76,12 +76,25 @@ Remaining device-only checks are listed in docs/STAGE7-DEVICE-CHECKS.md (new 2ג
    first), then build. Rulings so far: no interferences; every level ≤30 s; difficulty from speed/logic, not
    quantity; 300 levels / 30 chapters; unlock after playing the previous level; ≥20★ of 30 in the previous chapter
    to open the next; the sixth row on the new-game screen is Moshe's decision (original §5 said five options).
+   **2026-10-18: Moshe said "start, version 1.0.2" (all 20 §9 defaults taken).** Workflow wf_5d968442-e66 wrote
+   `staged-practice/dev-plan.md` (Hebrew dev plan + test list, D48–D64, 12 sub-stages 2א–2יב) and
+   `staged-practice/dev-lanes.json` (13 build lanes, no shared file owners); 2 critics, 44 findings, revised.
+   WAIT for Moshe's OK on dev-plan §5.3 (9 questions with defaults); then build lane by lane per dev-lanes.json.
+   **BUILT 2026-10-19 (uncommitted):** build workflow wf_bfeaaf0e-b13 (13 lanes) + finish workflow wf_80944165-46a
+   (practice freeze D65 in solo/bot, chain D64 back to pending with 'accept' default + staging-only "בדיקה" switches
+   for chain penalty and "unlock all stages", levels.json ~171 KB accepted, 3 focused reviewers: 3 real findings fixed).
+   Final `npm run verify` green: 444 suites / 10015 tests; format:check clean. app.json 1.0.2, ENGINE_VERSION 0.3.0.
+   Device checks: docs/LEVELS-DEVICE-CHECKS.md. Next, only with Moshe's OK: commit → push → staging server deploy
+   (migration 0008; no puzzle seed needed) → APK 1.0.2 (one ABI; C: has ~11 GB free).
 4. **Only with Moshe's OK:** `npm run version:bump` → commit → push → deploy staging (server FIRST: migration
    0007 runs; then `npm run db:seed-puzzles` against staging) → `npm run apk` (see docs/BUILD-APK.md; check free
    space on C: first).
    **2026-10-18 (Moshe asked before sleeping):** version 1.0.1, commit b0efb9f pushed, APK built:
-   `apps/mobile/apk/sudoku-fight-1.0.1-b0efb9f-staging.apk` (68 MB, clean tree). The staging DEPLOY and the
-   staging puzzle seed were NOT done: Claude Code's permission classifier blocked `fly deploy`. Moshe runs them
+   `apps/mobile/apk/sudoku-fight-1.0.1-b0efb9f-staging.apk` (68 MB, clean tree).
+   **Later on 2026-10-18 Moshe ran both himself: staging deployed (engine 0.2.0, health passing) and the seed
+   printed fast/normal/hard 2000 each, 2000 retired in fast and normal. Batch 2 + interferences are LIVE on
+   staging.** Next: Moshe tests APK 1.0.1 on devices. (History:) The staging DEPLOY and the
+   staging puzzle seed were first blocked: Claude Code's permission classifier blocked `fly deploy`. Moshe runs them
    (or allows them): from the repo root `fly deploy --ha=false --env GIT_SHA=b0efb9f`, then in PowerShell
    `$env:DATABASE_URL = (fly ssh console -a sudoku-fight-staging -C "printenv DATABASE_URL").Trim()`;
    `npm run db:seed-puzzles`; `Remove-Item Env:DATABASE_URL`. No restart needed (the server queries puzzles per

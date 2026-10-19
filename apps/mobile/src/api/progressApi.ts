@@ -1,7 +1,11 @@
 import {
   type Leaderboard,
   type LeaderboardTab,
+  type LevelBest,
+  type LevelsSyncResponse,
+  MAX_LEVELS_PER_REQUEST,
   MAX_PRACTICE_RESULTS,
+  type MyLevels,
   type MyProgress,
   type PlayerCard,
   playerPath,
@@ -11,11 +15,14 @@ import {
   type PracticeResultsRequest,
   type PracticeResultsResponse,
   type ProgressErrorCode,
+  type PutMyLevelsRequest,
 } from '@sudoku-fight/protocol';
 
 import type { AccountFetch, FetchInit } from './accountApi';
 import {
   readLeaderboard,
+  readLevelsSyncResponse,
+  readMyLevels,
   readMyProgress,
   readPlayerCard,
   readPracticeResultsResponse,
@@ -23,8 +30,8 @@ import {
 
 /**
  * The progress routes of the game server (spec §11.3, §14.2, §14.3, §15; work plan stage 12; the contract is
- * @sudoku-fight/protocol's progress.ts): the leaderboards, a player's card, my XP, level and league, and the
- * practice results the phone queued [D41]. Every call carries the sign-in's ID token; a 401 refreshes it and
+ * @sudoku-fight/protocol's progress.ts): the leaderboards, a player's card, my XP, level and league, the
+ * practice results the phone queued [D41], and the levels' bests (staged practice, 1.0.2) [D57]. Every call carries the sign-in's ID token; a 401 refreshes it and
  * tries once more. Failures come out as ProgressApiError: the server's code, or the app's own (no connection,
  * a timeout, signed out, an answer it could not read).
  *
@@ -101,6 +108,16 @@ export interface ProgressApi {
   myProgress(): Promise<MyProgress>;
   /** POST /v1/me/practice-results: practice XP queued on the phone [D41], at most MAX_PRACTICE_RESULTS. */
   sendPracticeResults(results: readonly PracticeResult[]): Promise<PracticeResultsResponse>;
+  /**
+   * GET /v1/me/levels: every level's best the server keeps, and the level XP it still owes. A server without
+   * the route (before 1.0.2) answers 404 'notFound'; an unknown account 404 'notRegistered'.
+   */
+  myLevels(): Promise<MyLevels>;
+  /**
+   * PUT /v1/me/levels: levels' bests, at most MAX_LEVELS_PER_REQUEST (none: only collect the XP owed). The
+   * answer: everything stored, the XP this request paid, my progress, and the ids the server does not know.
+   */
+  putMyLevels(levels: readonly LevelBest[]): Promise<LevelsSyncResponse>;
 }
 
 const KNOWN = new Set<string>(PROGRESS_ERROR_CODES);
@@ -146,7 +163,7 @@ export function createProgressApi(deps: ProgressApiDeps): ProgressApi {
   const set = deps.setTimeout ?? ((cb, ms) => setTimeout(cb, ms));
   const clear = deps.clearTimeout ?? ((h) => clearTimeout(h as ReturnType<typeof setTimeout>));
 
-  async function send(method: 'GET' | 'POST', path: string, body?: unknown): Promise<unknown> {
+  async function send(method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown): Promise<unknown> {
     const attempt = async (forceRefresh: boolean) => {
       const token = await deps.getToken(forceRefresh).catch(() => null);
       if (!token) throw new ProgressApiError('signedOut');
@@ -213,6 +230,16 @@ export function createProgressApi(deps: ProgressApiDeps): ProgressApi {
         throw new ProgressApiError('badRequest');
       const request: PracticeResultsRequest = { results: [...results] };
       return read(await send('POST', PROGRESS_PATHS.practiceResults, request), readPracticeResultsResponse);
+    },
+    async myLevels() {
+      return read(await send('GET', PROGRESS_PATHS.myLevels), readMyLevels);
+    },
+    async putMyLevels(levels) {
+      if (levels.length > MAX_LEVELS_PER_REQUEST) throw new ProgressApiError('badRequest');
+      const request: PutMyLevelsRequest = {
+        levels: levels.map(({ id, stars, plays }) => ({ id, stars, plays })),
+      };
+      return read(await send('PUT', PROGRESS_PATHS.myLevels, request), readLevelsSyncResponse);
     },
   };
 }

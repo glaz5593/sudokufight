@@ -43,6 +43,7 @@ const ALL_EVENT_TYPES: Record<GameEventType, true> = {
   interference: true,
   interferenceEnded: true,
   reaction: true,
+  timePenalty: true,
   playerConnectionLost: true,
   playerDisconnected: true,
   playerReconnected: true,
@@ -52,6 +53,8 @@ const ALL_EVENT_TYPES: Record<GameEventType, true> = {
   gameResumed: true,
   gameOver: true,
 };
+/** Only a level of staged practice has these (levelRules.test.ts): a ranked or practice game never does. */
+const LEVEL_ONLY_EVENT_TYPES: readonly GameEventType[] = ['timePenalty'];
 const ALL_RELEASE_REASONS: Record<ReleaseReason, true> = {
   cancel: true,
   timeout: true,
@@ -932,9 +935,12 @@ describe('replay (§13.1)', () => {
     expect(g.replayMatches()).toBe(true);
   });
 
-  it('the two games between them produce every event type and every release reason', () => {
+  it('the two games between them produce every event type (but a level’s own) and every release reason', () => {
     const log = [...playLongGame().g.log, ...playTurnsGame().g.log];
-    expect([...new Set(log.map((e) => e.type))].sort()).toEqual(Object.keys(ALL_EVENT_TYPES).sort());
+    const types = Object.keys(ALL_EVENT_TYPES).filter(
+      (t) => !LEVEL_ONLY_EVENT_TYPES.includes(t as GameEventType),
+    );
+    expect([...new Set(log.map((e) => e.type))].sort()).toEqual(types.sort());
     const reasons = new Set(log.flatMap((e) => (e.type === 'cellReleased' ? [e.reason] : [])));
     expect([...reasons].sort()).toEqual(Object.keys(ALL_RELEASE_REASONS).sort());
   });
@@ -1607,6 +1613,16 @@ describe('LocalGameHost (§17.2)', () => {
     expect(host.getView().players[0]).toMatchObject({ status: 'surrendered', score: 6 });
     host.select(A5);
     expect(said()).toEqual(['rejected: notActive']);
+  });
+
+  it('refuses a tap, a move of the tap levels’ own host: one rejected update, the log untouched', () => {
+    const { host, updates } = setup();
+    const log = host.events.slice();
+    host.tap(A1);
+    expect(updates).toEqual([
+      { kind: 'rejected', action: { type: 'tap', cell: A1 }, reason: 'badAction', view: host.getView() },
+    ]);
+    expect(host.events).toEqual(log);
   });
 
   it('updates come in seq order, one at a time, even when a listener acts while being told (a queue)', () => {

@@ -3,14 +3,16 @@ import { LocalGameHost } from '../game/host';
 import { defaultRules, INTERFERENCE_KINDS } from '../game/rules';
 import type { Action, GameConfig, GameEvent, GameState } from '../game/types';
 import { replay } from '../game/view';
-import type { CellIndex, Digit } from '../sudoku/board';
+import { levelGameConfig } from '../levels/spec';
+import { type CellIndex, type Digit, parseCellName } from '../sudoku/board';
 import { type BotGame, botGame, eventsOf, HUMAN, runUntilOver, scriptHuman, withLevel } from '../testing/bot';
 import { PUZZLE } from '../testing/game';
+import { DUEL_LEVEL, ME, PIP } from '../testing/levels';
 import { ManualClock } from '../util/clock';
-import { createRng } from '../util/random';
+import { createRng, type Rng } from '../util/random';
 import { ManualScheduler } from '../util/scheduler';
 import { eligibleCells, plausibleWrongDigits } from './brain';
-import { BOT_CONFIG, BOT_LEVELS, botPlayer } from './levels';
+import { BOT_CONFIG, BOT_LEVELS, type BotConfig, type BotLevelId, botPlayer, levelBotConfig } from './levels';
 import { attachBot, type BotTrace } from './runner';
 
 /* The bot at the table (spec §9): the rhythm of a move, re-planning, timers [D11], interferences and reactions. */
@@ -618,5 +620,156 @@ describe('two bots at one table', () => {
     expect(traces.filter((t) => t.type === 'error' || (t.type === 'action' && t.rejected))).toEqual([]);
     for (const id of ['bot-5', 'bot-3'])
       expect(eventsOf(host.events, 'placedCorrect', id).length).toBeGreaterThan(5);
+  });
+});
+
+describe('staged practice: the bot of a level against it (dev-plan §2ג) [D61, D49, D65]', () => {
+  /** A level duel (DUEL_LEVEL: first to 30 in 30 s) on LocalGameHost, the bot attached; its draws recorded. */
+  function levelDuel(
+    o: { config?: Partial<BotConfig>; level?: BotLevelId; rng?: Rng; human?: boolean } = {},
+  ): BotGame & { draws: number[] } {
+    const clock = new ManualClock();
+    const scheduler = new ManualScheduler(clock);
+    const config = levelGameConfig(DUEL_LEVEL, { id: 'duel', player: ME, attempt: 1 });
+    const host = new LocalGameHost({ config, playerId: ME.id, clock, scheduler });
+    const draws: number[] = [];
+    const base = o.rng ?? createRng(config.seed!);
+    const rng: Rng = {
+      next: () => {
+        const v = base.next();
+        draws.push(v);
+        return v;
+      },
+    };
+    const traces: BotTrace[] = [];
+    const bot = attachBot(host, {
+      botId: PIP.id,
+      level: o.level ?? 1,
+      clock,
+      scheduler,
+      rng,
+      config: o.config,
+      onTrace: (t) => traces.push(t),
+    });
+    const g = { clock, scheduler, host, bot, botId: PIP.id, traces, config, draws };
+    if (o.human ?? true) scriptHuman(g, { everyMs: 4000, placeMs: 1500, missEvery: 3, id: ME.id });
+    return g;
+  }
+
+  it("a level duel in mode 'bot' has no interference, and the bot draws the same random stream as today", () => {
+    const eager = withLevel(BOT_LEVELS, 1, {
+      interference: { maxPerGame: null, minDeficit: null, chance: 1 },
+    });
+    const today = levelDuel({ config: { levels: eager } });
+    runUntilOver(today, 60_000, 500);
+    const level = levelDuel({ config: { ...levelBotConfig(1), levels: eager } });
+    runUntilOver(level, 60_000, 500);
+    expect(level.config).toMatchObject({ mode: 'bot', rules: { interferences: false } });
+    for (const g of [today, level]) {
+      expect(g.host.state.status).toBe('over');
+      expect(eventsOf(g.host.events, 'interference')).toEqual([]);
+      expect(g.traces.some((t) => t.type === 'action' && t.action.type === 'interfere')).toBe(false);
+      expect(problems(g)).toEqual([]);
+    }
+    // No lock was left to run out in the game of today: the level's bot plays it draw for draw.
+    expect(plans(today).length).toBeGreaterThan(0);
+    expect(plans(today).every((p) => !p.linger)).toBe(true);
+    expect(level.draws).toEqual(today.draws);
+    expect(JSON.stringify(level.host.events)).toBe(JSON.stringify(today.host.events));
+  });
+
+  it('with levelBotConfig(0.9) every move takes 0.9 of its unpaced think time', () => {
+    const g = levelDuel({ config: levelBotConfig(0.9), level: 5, rng: { next: () => 0.5 }, human: false });
+    runUntilOver(g, 60_000, 500);
+    const { min, max } = BOT_LEVELS[4]!.thinkMs;
+    const base = min + 0.5 * (max - min); // what the RNG draws
+    expect(plans(g).length).toBeGreaterThan(3);
+    for (const p of plans(g)) {
+      expect(p.adapt).toBe(1);
+      expect(p.linger).toBe(false);
+      expect(p.totalMs).toBe(Math.round(base * 0.9 * p.difficulty.factor * p.adapt));
+    }
+  });
+
+  it('the app out of the foreground [D65]: nothing while frozen, then on with the time it had left', () => {
+    const g = levelDuel({ config: levelBotConfig(1), human: false });
+    const [first] = plans(g);
+    expect(first!.hesitateMs).toBeLessThan(26_000); // it locks within the level's 30 s
+    g.scheduler.advance(3000);
+    g.host.pause();
+    expect(g.host.state).toMatchObject({ status: 'paused', pausedBy: 'background' });
+    let seq = g.host.state.seq;
+    g.scheduler.advance(120_000);
+    expect(since(g, seq)).toEqual([]);
+    g.host.resume();
+    advanceUntil(g, () => !!botLock(g));
+    expect(botLock(g)).toMatchObject({ cell: first!.cell, lockedAt: first!.hesitateMs + 120_000 });
+    // Frozen again while it holds its cell: the digit comes the whole freeze later.
+    const lock = botLock(g)!;
+    g.scheduler.advance(100);
+    g.host.pause();
+    seq = g.host.state.seq;
+    g.scheduler.advance(45_000);
+    expect(since(g, seq)).toEqual([]);
+    g.host.resume();
+    advanceUntil(g, () => !botLock(g));
+    const placed = byBot(g, since(g, seq)).find(
+      (e) => e.type === 'placedCorrect' || e.type === 'placedWrong',
+    )!;
+    expect(placed.t).toBe(lock.lockedAt + first!.solveMs + 45_000);
+    expect(problems(g)).toEqual([]);
+  });
+
+  it('[D65] in a practice against a bot too: frozen mid-think, it places nothing and keeps the think time left', () => {
+    const g = botGame({ level: 3, seed: 5 });
+    advanceUntil(g, () => !!botLock(g));
+    const lock = botLock(g)!;
+    const plan = plans(g).find((p) => p.cell === lock.cell)!;
+    g.scheduler.advance(200);
+    g.host.pause();
+    const seq = g.host.state.seq;
+    g.scheduler.advance(300_000);
+    expect(since(g, seq)).toEqual([]);
+    expect(botLock(g)).toMatchObject({ cell: lock.cell });
+    g.host.resume();
+    advanceUntil(g, () => !botLock(g) || botLock(g)!.cell !== lock.cell);
+    const placed = byBot(g, since(g, seq)).find(
+      (e) => e.type === 'placedCorrect' || e.type === 'placedWrong',
+    )!;
+    // Its digit comes the whole freeze later: the think time it had left, no more and no less.
+    expect(placed).toMatchObject({ cell: lock.cell, t: lock.lockedAt + plan.solveMs + 300_000 });
+    expect(problems(g)).toEqual([]);
+  });
+
+  it('[D65] holds its reaction on the way too: it comes after the resume, with the time it had left', () => {
+    const reacts = { ...levelBotConfig(1), levels: reactsAlways(1) };
+    const run = (pauseMs: number) => {
+      const g = levelDuel({ config: reacts, human: false });
+      g.scheduler.advance(500);
+      humanErrs(g, plans(g)[0]!.cell);
+      g.scheduler.advance(100);
+      if (pauseMs) {
+        g.host.pause();
+        g.scheduler.advance(pauseMs);
+        expect(eventsOf(g.host.events, 'reaction', g.botId)).toEqual([]);
+        g.host.resume();
+      }
+      g.scheduler.advance(2000);
+      return eventsOf(g.host.events, 'reaction', g.botId);
+    };
+    const [plain] = run(0);
+    expect(plain).toMatchObject({ emoji: '😂' });
+    expect(run(60_000)).toEqual([expect.objectContaining({ emoji: '😂', t: plain!.t + 60_000 })]);
+  });
+
+  it("keeps to a level's box (rules.editableCells): every cell it locks is in it", () => {
+    const box = ['D4', 'D5', 'E4', 'E5', 'F4'].map(parseCellName);
+    const g = botGame({ level: 5, seed: 31, rules: { editableCells: box } });
+    runUntilOver(g, 600_000);
+    expect(g.host.state.result?.reason).toBe('targetReached');
+    const locked = eventsOf(g.host.events, 'cellLocked', g.botId).map((e) => e.cell);
+    expect(locked.length).toBeGreaterThan(0);
+    for (const c of locked) expect(box).toContain(c);
+    expect(problems(g)).toEqual([]);
   });
 });

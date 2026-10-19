@@ -1,7 +1,11 @@
-import { GAME_TYPES } from '@sudoku-fight/engine';
+import { GAME_TYPES, isLevelId } from '@sudoku-fight/engine';
 import {
   LEADERBOARD_TABS,
   type LeaderboardTab,
+  LEVEL_ID_PATTERN,
+  type LevelsSyncResponse,
+  MAX_LEVEL_PLAYS,
+  MAX_LEVELS_PER_REQUEST,
   MAX_PRACTICE_RESULTS,
   PRACTICE_ID_PATTERN,
   PRACTICE_OUTCOMES,
@@ -21,6 +25,7 @@ import { RateLimiter, type RateLimitRule } from '../http/rateLimiter';
 import { readPlayerCard } from './card';
 import { decodeLeaderboardCursor } from './cursor';
 import { type LeaderboardPlayers, readLeaderboard } from './leaderboard';
+import { mergeMyLevels, readMyLevels } from './levels';
 import { recordPracticeResults } from './practice';
 import type { ProgressSettings } from './settings';
 import { readMyProgress } from './xp';
@@ -28,11 +33,15 @@ import { readMyProgress } from './xp';
 /**
  * The progress routes (spec §11.3, §14.2, §14.3, §15; the contract: packages/protocol/src/progress.ts):
  *   GET /v1/leaderboard · GET /v1/players/:id · GET /v1/me/progress · POST /v1/me/practice-results
+ *   GET /v1/me/levels · PUT /v1/me/levels (staged practice, 1.0.2: ./levels)
  *
  * Each request passes, in order: a per-IP limit; the accounts switch (production without FIREBASE_PROJECT_ID:
- * 503 `disabled`); the token (`Authorization: Bearer`, required); a per-account limit (reads, or practice
- * writes); the account itself (none, or deleted: 404 `notRegistered`); for the practice results, the body
- * (JSON, PRACTICE_BODY_BYTES at most, MAX_PRACTICE_RESULTS results at most). Answers are never cached.
+ * 503 `disabled`); the token (`Authorization: Bearer`, required); a per-account limit (reads, or writes: the
+ * practice results and the levels' PUT share it); for a write, the body (JSON: PRACTICE_BODY_BYTES at most and
+ * MAX_PRACTICE_RESULTS results, or LEVELS_BODY_BYTES and MAX_LEVELS_PER_REQUEST levels; anything else in it is
+ * a 400, and nothing of it is stored); the account itself (none, or deleted: 404 `notRegistered`). A level id
+ * above the server's maxLevel is no 400: it is skipped and answered in `unknown`, so a newer app's batch
+ * still stores the rest. Answers are never cached.
  */
 
 export interface ProgressLimits {
@@ -40,7 +49,7 @@ export interface ProgressLimits {
   perIp: RateLimitRule;
   /** Leaderboards, cards and progress, per account. */
   reads: RateLimitRule;
-  /** Practice result batches, per account. */
+  /** Practice result batches and levels' PUTs, per account. */
   writes: RateLimitRule;
 }
 
@@ -52,6 +61,9 @@ export const DEFAULT_PROGRESS_LIMITS: ProgressLimits = {
 
 /** MAX_PRACTICE_RESULTS results of about 150 bytes each, with room to spare. */
 export const PRACTICE_BODY_BYTES = 32 * 1024;
+
+/** MAX_LEVELS_PER_REQUEST levels of at most about 45 bytes each (13.5 KB for 300), with room to spare. */
+export const LEVELS_BODY_BYTES = 24 * 1024;
 
 /** A player id the card route takes: users' UUIDs (and short ids in tests). */
 const PLAYER_ID = /^[A-Za-z0-9_-]{1,64}$/;
@@ -134,6 +146,23 @@ const practiceSchema = z.strictObject({
       }),
     )
     .max(MAX_PRACTICE_RESULTS, `at most ${MAX_PRACTICE_RESULTS} results a request`),
+});
+
+const levelsSchema = z.strictObject({
+  levels: z
+    .array(
+      z
+        .strictObject({
+          id: z
+            .string()
+            .regex(LEVEL_ID_PATTERN, 'id: L and 3 or 4 digits (L001)')
+            .refine(isLevelId, 'id: not a level id (L001, L002, …, written one way only)'),
+          stars: z.literal([0, 1, 2, 3], { error: 'stars: 0, 1, 2 or 3' }),
+          plays: z.number().int().min(0).max(MAX_LEVEL_PLAYS),
+        })
+        .refine((l) => l.stars === 0 || l.plays >= 1, { error: 'stars need a play', path: ['plays'] }),
+    )
+    .max(MAX_LEVELS_PER_REQUEST, `at most ${MAX_LEVELS_PER_REQUEST} levels a request`),
 });
 
 function issueText(error: z.ZodError): string {
@@ -232,6 +261,35 @@ export function createProgressRouter({
         duplicates: tally.duplicates,
         rejected: tally.rejected,
         progress: await readMyProgress(db, userId, settings),
+      };
+      res.json(answer);
+    },
+  );
+
+  router.get(PROGRESS_PATHS.myLevels, ...before, limit(reads, accountKey), async (_req, res) => {
+    const userId = await accountOf(res);
+    if (userId === undefined) return;
+    res.json(await readMyLevels(db, userId, settings));
+  });
+
+  router.put(
+    PROGRESS_PATHS.myLevels,
+    ...before,
+    limit(writes, accountKey),
+    json({ limit: LEVELS_BODY_BYTES }),
+    async (req, res) => {
+      const parsed = levelsSchema.safeParse(req.body);
+      if (!parsed.success) return badRequest(res, issueText(parsed.error));
+      const userId = await accountOf(res);
+      if (userId === undefined) return;
+      const merged = await mergeMyLevels(db, userId, parsed.data.levels, now(), settings);
+      const answer: LevelsSyncResponse = {
+        levels: merged.levels,
+        maxLevel: merged.maxLevel,
+        owedXp: merged.owedXp,
+        xp: merged.xp,
+        progress: await readMyProgress(db, userId, settings),
+        unknown: merged.unknown,
       };
       res.json(answer);
     },

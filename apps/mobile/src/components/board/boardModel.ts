@@ -73,7 +73,10 @@ export interface CellModel {
   digit: Digit | null;
   /** Solver ('solved'), lock holder ('myLock', 'oppLock'), or me ('pending', 'queued'). */
   player: CellPlayer | null;
-  /** 'myLock' and 'oppLock' only. */
+  /**
+   * 'myLock' and 'oppLock' only; null on a lock with no timer (a stage alone, BoardModelOptions.lockTimer
+   * false): the ring stays, no seconds.
+   */
   lock: CellLock | null;
   /** Wrong digits tried here, oldest first, each digit once. Every player sees them (spec §6.5). */
   wrong: Digit[];
@@ -81,6 +84,17 @@ export interface CellModel {
   interactive: boolean;
   /** I let go of this cell a moment ago and can't take it again yet [D2]: a tap is refused. */
   cooldown: boolean;
+  /** A stage's area (components.md §19.7): in it, or outside and dimmed; null on a board without one. */
+  area: 'in' | 'out' | null;
+  /** 'target': the digit a find stage asks for, already on the board (Lv-Find's dark chip). */
+  mark: 'target' | null;
+  /**
+   * Spot the error: a planted error I found. The cell's digit is the right one (the engine's grid); `wrong`
+   * is what stood there: drawn struck in red, the right digit small beside it, a success ring.
+   */
+  correction: { wrong: Digit } | null;
+  /** Spot the error: one of "my" digits (P1, with a ● in the corner), not the board's. */
+  mine: boolean;
 }
 
 /** A key's look (components.md §12.1). */
@@ -135,7 +149,29 @@ export interface BoardModelOptions {
    * `online.queuedMoves`) [D42]. A cell filled meanwhile shows what is on the board.
    */
   queued?: readonly { cell: CellIndex; digit: Digit }[] | null;
+  // -- staged practice (1.0.2; components.md §19.7): what the stage's screen asks of the board --
+  /** The cells a stage is about (a find's box, a fill-box's box): the rest is dimmed. */
+  area?: readonly CellIndex[] | null;
+  /** Only these cells take a tap (fillBox's missing cells, a find's area); the rest take none. */
+  editable?: readonly CellIndex[] | null;
+  /**
+   * A tap level: a tap is the move. True: the empty cells and the filled ones that are not the board's (spot
+   * the error's "mine" digits) take one; 'all': the givens too (LEVEL_RULES.tapOnFilled 'penalty': the engine
+   * judges such a tap).
+   */
+  tappable?: boolean | 'all';
+  /** Every filled cell with this digit shows it as a target chip (a find: "where must the 6 go"). */
+  highlightDigit?: Digit | null;
+  /** Spot the error: the planted errors found, each with the digit that stood there. */
+  corrected?: readonly { cell: CellIndex; wrong: Digit }[] | null;
+  /** False: locks have no timer (rules.lockTimeout false): a lock keeps its ring and shows no seconds. */
+  lockTimer?: boolean;
+  /** Spot the error: my filled cells read as "mine" (P1 with ●, the board's are dark). */
+  mine?: boolean;
 }
+
+/** A lock with no timer (BoardModelOptions.lockTimer false), as the strip and the labels read it: no seconds. */
+const NO_TIMER: CellLock = { seconds: 0, remainingMs: 0, paused: true, urgent: false };
 
 /** Last-seconds threshold of my lock (motion.md `lock.urgent`, tokens motion.limits). */
 const URGENT_MS = tokens.motion.limits.lockUrgentSeconds * 1000;
@@ -180,16 +216,25 @@ export function boardModel(
     isMe: p === me,
   });
 
-  // Who holds which cell.
-  const lockAt = new Map<CellIndex, { holder: PlayerView; lock: CellLock }>();
+  // Who holds which cell. Without lock timers (a stage alone) a lock has no seconds to show.
+  const timed = options.lockTimer !== false;
+  const lockAt = new Map<CellIndex, { holder: PlayerView; lock: CellLock | null }>();
   for (const p of view.players) {
-    if (p.lock) lockAt.set(p.lock.cell, { holder: p, lock: lockOf(p.lock, now, p === me) });
+    if (p.lock) lockAt.set(p.lock.cell, { holder: p, lock: timed ? lockOf(p.lock, now, p === me) : null });
   }
 
   const canPlay = view.status === 'running' && me !== null && me.status === 'active';
   const cooling = new Set(view.cooldowns.map((c) => c.cell));
   const pending = options.pendingCell ?? null;
   const queued = new Map((options.queued ?? []).map((q) => [q.cell, q.digit]));
+  // A stage's frame of the board (none of these in a game: every cell is as before).
+  const area = options.area ? new Set(options.area) : null;
+  const editable = options.editable ? new Set(options.editable) : null;
+  const tappable = options.tappable ?? false;
+  const target = options.highlightDigit ?? null;
+  const corrected = new Map((options.corrected ?? []).map((c) => [c.cell, c.wrong]));
+  /** A tap may reach the host here: within the editable cells, if any. */
+  const open = (index: CellIndex) => canPlay && (editable === null || editable.has(index));
 
   const cells = view.grid.map((value, index): CellModel => {
     const box = boxOf(index);
@@ -202,18 +247,27 @@ export function boardModel(
       alt: box % 2 === 1,
       wrong: uniqueDigits(view.wrong[index]?.map((w) => w.digit) ?? []),
       cooldown: cooling.has(index),
+      area: area === null ? null : area.has(index) ? ('in' as const) : ('out' as const),
+      mark: null,
+      correction: null,
+      mine: false,
     };
     if (value !== 0) {
       const given = view.givens[index] === true;
       const ownerSeat = view.owner[index];
       const solver = given || ownerSeat == null ? undefined : bySeat.get(ownerSeat);
+      const wrongBefore = corrected.get(index);
       return {
         ...base,
         kind: given ? 'given' : 'solved',
         digit: value as Digit,
         player: solver ? playerOf(solver) : null,
         lock: null,
-        interactive: false,
+        // A tap level taps filled cells too: "mine" digits always, the givens with tapOnFilled 'penalty'.
+        interactive: open(index) && (tappable === 'all' || (tappable === true && !given)),
+        mark: target !== null && value === target ? 'target' : null,
+        correction: wrongBefore === undefined ? null : { wrong: wrongBefore },
+        mine: options.mine === true && !given && solver !== undefined && solver === me,
       };
     }
     // Precedence: filled > queued > lock > pending > empty.
@@ -238,13 +292,13 @@ export function boardModel(
         player: playerOf(held.holder),
         lock: held.lock,
         // My own lock: a tap does nothing. Someone else's: a tap gets "taken" feedback (spec §6.2.3).
-        interactive: canPlay && !mine,
+        interactive: open(index) && !mine,
       };
     }
     if (index === pending && me) {
       return { ...base, kind: 'pending', digit: null, player: playerOf(me), lock: null, interactive: false };
     }
-    return { ...base, kind: 'empty', digit: null, player: null, lock: null, interactive: canPlay };
+    return { ...base, kind: 'empty', digit: null, player: null, lock: null, interactive: open(index) };
   });
 
   const keypad: KeypadModel = {
@@ -263,7 +317,11 @@ export function boardModel(
     }),
   };
 
-  const lockInfo = (cell: CellModel): LockInfo => ({ cell: cell.index, name: cell.name, ...cell.lock! });
+  const lockInfo = (cell: CellModel): LockInfo => ({
+    cell: cell.index,
+    name: cell.name,
+    ...(cell.lock ?? NO_TIMER),
+  });
   const myLockCell = cells.find((c) => c.kind === 'myLock');
   const otherLocks = cells
     .filter((c) => c.kind === 'oppLock')
@@ -301,5 +359,9 @@ export function emptyCell(index: CellIndex): CellModel {
     wrong: [],
     interactive: false,
     cooldown: false,
+    area: null,
+    mark: null,
+    correction: null,
+    mine: false,
   };
 }

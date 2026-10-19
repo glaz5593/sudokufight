@@ -28,6 +28,10 @@ export interface ProgressRules {
     solo: number;
     /** Per correct move, in ranked games and against a bot only. */
     perCorrect: number;
+    /** Staged practice: each new best star of a level (plan §5.1) [D55]. */
+    levelStar: number;
+    /** Staged practice: each gate between chapters that opens [D55]. */
+    levelGate: number;
   };
   /** From level n to n + 1 takes `levelStep × n` XP (level 1 → 2: 200; 2 → 3: 400). */
   levelStep: number;
@@ -36,7 +40,7 @@ export interface ProgressRules {
 export const DEFAULT_PROGRESS_RULES: ProgressRules = {
   leagues: { silver: 1100, gold: 1250, diamond: 1400, legend: 1600 },
   provisionalGames: 10,
-  xp: { win: 50, played: 20, solo: 10, perCorrect: 1 },
+  xp: { win: 50, played: 20, solo: 10, perCorrect: 1, levelStar: 10, levelGate: 50 },
   levelStep: 200,
 };
 

@@ -19,6 +19,7 @@ import type { Db } from '../db';
 import { displayNameKey, installs, ratings, type User, users } from '../db/schema';
 import { forgetModeration, keepSuspension, takeSuspension } from '../moderation/store';
 import { anonymizeLoggedNames } from '../persistence/records';
+import { forgetLevels } from '../progress/levels';
 
 /**
  * The accounts in the database (spec §19): users and their ratings.
@@ -253,6 +254,9 @@ export const deletedName = () => `deleted:${randomUUID()}`;
  *
  * The rest of what the server stores has no name in it: game_players, the histories, practice results,
  * cheat flags and XP hold the users.id; app_events props never carry names (the app's analytics events).
+ * Staged practice's progress is deleted (1.0.2: user_levels and level_xp_days, progress/levels.ts
+ * forgetLevels; the privacy policy says the server's copy goes with the account), while the XP it paid stays,
+ * as all XP does. A new account of the same person has a new id, so it starts with no levels.
  *
  * Moderation (spec §3.5, moderation/store.ts forgetModeration): the account's blocks go, both ways; open
  * reports about it are dismissed by `system` (nothing left to act on), while the reports it sent stay, from
@@ -287,6 +291,7 @@ export async function deleteUser(db: Db, token: VerifiedToken, now: number): Pro
     await tx.update(installs).set({ userId: null }).where(eq(installs.userId, row.id));
     await anonymizeLoggedNames(tx, { userId: row.id });
     await forgetModeration(tx, row.id, now);
+    await forgetLevels(tx, row.id);
     return true;
   });
 }

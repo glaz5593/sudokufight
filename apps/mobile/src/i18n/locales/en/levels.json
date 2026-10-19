@@ -1,0 +1,543 @@
+{
+  "title": "Staged practice",
+  "stage": "Stage {{n}}",
+  "chapter": "Chapter {{n}}",
+  "units": {
+    "seconds": "s"
+  },
+  "stars": {
+    "of3": {
+      "0": "no stars",
+      "1": "one star of three",
+      "2": "two stars of three",
+      "3": "three stars of three"
+    },
+    "count_one": "1 star",
+    "count_two": "{{count}} stars",
+    "count_many": "{{count}} stars",
+    "count_other": "{{count}} stars"
+  },
+  "kinds": {
+    "find": {
+      "name": "Where's the {{digit}}?",
+      "label": "Where's the {{digit}}"
+    },
+    "findDuel": {
+      "name": "Race the bot",
+      "label": "Race the bot"
+    },
+    "fillBox": {
+      "name": "Fill the box",
+      "label": "Fill the box"
+    },
+    "duel": {
+      "name": "Duel to {{target}}",
+      "label": "Duel to {{target}}"
+    },
+    "spotError": {
+      "name": "Spot the error",
+      "label": "Spot the error"
+    },
+    "pointHunter": {
+      "name": "Point hunter",
+      "label": "Point hunter"
+    },
+    "chain": {
+      "name": "Chain",
+      "label": "Chain"
+    }
+  },
+  "boss": {
+    "chip": "Boss",
+    "name": "Boss stage",
+    "label": "boss, {{kind}}",
+    "versus": "The boss: {{bot}}"
+  },
+  "goals": {
+    "find": "One find. The stage ends at {{s}} s.",
+    "findDuel": "{{spots}} spots against {{bot}}, up to {{s}} s. First to find one takes it.",
+    "fillBox": "Fill the {{cells}} missing cells of box {{box}}, up to {{s}} s.",
+    "duel": "Against {{bot}}, to {{target}} points or {{s}} s. Stars by your lead.",
+    "spotError_one": "One wrong digit hides among yours. Up to {{s}} s.",
+    "spotError_two": "{{count}} wrong digits hide among yours. Up to {{s}} s.",
+    "spotError_many": "{{count}} wrong digits hide among yours. Up to {{s}} s.",
+    "spotError_other": "{{count}} wrong digits hide among yours. Up to {{s}} s.",
+    "pointHunter": "{{moves}} moves, up to {{s}} s. Score as many points as you can.",
+    "chain": "A chain of {{steps}} steps, up to {{s}} s. Only one cell can be solved at a time."
+  },
+  "scale": {
+    "label": "Stars you can earn",
+    "row": "{{stars}}: {{text}}",
+    "time": "up to {{s}} s",
+    "spots_one": "1 spot",
+    "spots_two": "{{count}} spots",
+    "spots_many": "{{count}} spots",
+    "spots_other": "{{count}} spots",
+    "spotsRange": "{{range}} spots",
+    "gap": "lead of {{gap}}+",
+    "lead": "ahead at the end",
+    "points": "{{points}}+ points",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "The stage map",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel": "{{stars}} stars of {{max}}, jump to a chapter",
+    "lockedToast": "Play stage {{n}} first",
+    "gateToast": "Chapter {{chapter}} opens at {{need}} stars in chapter {{prev}}",
+    "loading": "Loading the map…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label": "{{stars}} stars of {{max}}"
+  },
+  "node": {
+    "played": "Stage {{n}}, {{kind}}, {{stars}}",
+    "current": "Stage {{n}}, {{kind}}, up next",
+    "open": "Stage {{n}}, {{kind}}, not played yet",
+    "locked": "Stage {{n}}, locked"
+  },
+  "gate": {
+    "need": "Opens at {{need}} stars",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Play the boss stage to open it",
+    "open": "Chapter {{n}} open",
+    "lockedLabel": "Chapter {{n}} locked, {{stars}} of {{need}} stars in chapter {{prev}}",
+    "bossLabel": "Chapter {{n}} locked, {{stars}} of {{need}} stars in chapter {{prev}}. Play the boss stage to open it",
+    "openLabel": "Chapter {{n}} open, opened at {{need}} stars from chapter {{prev}}"
+  },
+  "jump": {
+    "title": "Jump to a chapter",
+    "row": "Chapter {{n}} · {{name}}",
+    "rowLabel": "Chapter {{n}}, {{name}}, {{stars}} stars of {{max}}, {{state}}",
+    "open": "open",
+    "locked": "locked"
+  },
+  "gateSheet": {
+    "title": "Chapter {{n}} locked",
+    "missing": "You need {{need}} stars in chapter {{prev}}. You have {{stars}}, {{missing}} to go.",
+    "bossOnly": "You have enough stars. Play stage {{boss}} (the boss) to open it",
+    "progress": "Stars in chapter {{prev}} for the gate: {{stars}} of {{need}}",
+    "rowsTitle": "Stages to improve",
+    "rowsNote_one": "Up to 1 more star in them",
+    "rowsNote_two": "Up to {{count}} more stars in them",
+    "rowsNote_many": "Up to {{count}} more stars in them",
+    "rowsNote_other": "Up to {{count}} more stars in them",
+    "row": "Stage {{n}} · {{kind}}",
+    "rowLabel": "Play stage {{n}} again, {{kind}}, {{stars}}",
+    "rowNewLabel": "Play stage {{n}}, {{kind}}, not played yet",
+    "rowPlay": "Play",
+    "primary": "Play stage {{n}}",
+    "footnote": "Every stage takes at most 30 seconds. Your best stars are kept."
+  },
+  "panel": {
+    "label": "The chosen stage",
+    "title": "Stage {{n}} · {{kind}}",
+    "sub": "Chapter {{chapter}} · {{name}}",
+    "subBot": "Chapter {{chapter}} · against {{bot}}",
+    "subBoss": "Chapter {{chapter}} · the boss: {{bot}}",
+    "next": "Up next",
+    "best": "Best {{metric}}",
+    "bestLabel": "Your best: {{stars}}, {{metric}}",
+    "bestStars": "Your best: {{stars}}",
+    "bot": "{{name}} · Level {{level}} · {{title}}",
+    "continue": "Continue · stage {{n}}",
+    "play": "Play",
+    "lockedTitle": "Stage {{n}} · locked",
+    "lockedSub": "Chapter {{chapter}} · {{kind}}",
+    "lockedPrev": "Play stage {{n}} first.",
+    "lockedGate": "Chapter {{chapter}} is locked: it needs {{need}} stars in chapter {{prev}}. You have {{stars}}.",
+    "gateTitleOpen": "Chapter {{n}} open",
+    "gateTitleClosed": "Chapter {{n}} locked",
+    "gateSub": "{{name}} · stages {{range}}",
+    "gateOpenBody": "Open: you earned {{stars}} stars in chapter {{prev}}, and the gate needs {{need}}.",
+    "gateBar": "Stars for the gate: {{stars}} of {{need}}"
+  },
+  "ready": {
+    "title": "Ready?",
+    "label": "Ready? Stage {{n}}, {{kind}}. {{goal}}"
+  },
+  "tutorial": {
+    "title": "How to play",
+    "got": "Got it",
+    "skip": "Skip",
+    "panel": "Picture {{n}} of {{total}}: {{text}}",
+    "find": {
+      "1": "A big digit and an area marked on the board: a box, a row, a column or the whole board.",
+      "2": "Find the one cell where the digit must go, and tap it.",
+      "3": "A wrong tap adds 5 seconds. Two end the stage."
+    },
+    "findDuel": {
+      "1": "Five spots, one after another. The bot searches with you.",
+      "2": "Whoever taps the right cell first takes the spot.",
+      "3": "A wrong tap: 3 seconds without taps, while the bot keeps searching."
+    },
+    "fillBox": {
+      "1": "One box with missing cells, in a gold frame.",
+      "2": "Choose a cell in the box and type a digit. Cells outside it can't be chosen.",
+      "3": "A wrong digit adds 5 seconds. The faster you finish, the more stars."
+    },
+    "duel": {
+      "1": "You and the bot on the same board, as in a game.",
+      "2": "First to 30 points wins, or whoever leads after 30 seconds.",
+      "3": "Stars by your lead at the end: 8 points for two stars, 15 for three."
+    },
+    "spotError": {
+      "1": "The dark digits are the board's, and they are always right.",
+      "2": "Wrong digits hide among yours. Tap them.",
+      "3": "Tapping a right digit adds 5 seconds."
+    },
+    "pointHunter": {
+      "1": "You have three moves only.",
+      "2": "A cell in an empty area is worth more points.",
+      "3": "Stars by how close you get to the board's best."
+    },
+    "chain": {
+      "1": "At any moment only one cell on the board can be solved.",
+      "2": "Fill it, and it opens the next one.",
+      "3": "A digit in a cell that can't be known yet costs 5 seconds, and isn't placed."
+    },
+    "boss": {
+      "1": "The tenth stage of every chapter is a boss stage.",
+      "2": "The same challenge as the other stages, with a faster bot and a harder board.",
+      "3": "After the boss, the gate to the next chapter opens at 20 stars."
+    }
+  },
+  "result": {
+    "completed": "Stage {{n}} complete",
+    "ended": "Stage {{n}}",
+    "reasons": {
+      "timeUp": "Time's up",
+      "failed": "Two wrong taps",
+      "quit": "You left the stage",
+      "botWon": "{{bot}} got there first"
+    },
+    "metric": {
+      "spotsOf": "of {{total}} spots",
+      "gap": "Lead",
+      "points": "points",
+      "found": "Found",
+      "foundOf": "of {{total}}"
+    },
+    "newBest": "New best!",
+    "yourBest": "Your best:",
+    "yourBestLabel": "Your best: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, an estimate: the server confirms it",
+    "chapterLabel": "This chapter",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "the gate needs {{need}}",
+    "chapterOpen": "the gate is open",
+    "chapterGate": "· {{gate}}",
+    "chapterLine": "This chapter: {{stars}} stars of {{max}}. {{gate}}",
+    "mistakes_one": "1 mistake",
+    "mistakes_two": "{{count}} mistakes",
+    "mistakes_many": "{{count}} mistakes",
+    "mistakes_other": "{{count}} mistakes",
+    "noMistakes": "No mistakes",
+    "time": "Time: {{s}} s",
+    "youWon": "You won",
+    "botWon": "{{bot}} won",
+    "tie": "A tie",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots": "{{count}} spots",
+    "opponentScore": "{{score}} points",
+    "bestMove": "The best move: {{digit}} in {{cell}} · {{points}} points",
+    "why": "Why?",
+    "next": "Next stage",
+    "again": "Again",
+    "toMap": "To the map",
+    "last": "That was the last stage. Well done!",
+    "nextLocked": "The next stage is still locked"
+  },
+  "unlocked": {
+    "heading": "A new chapter is open!",
+    "title": "Chapter {{n}} · {{name}}",
+    "news": "What's new: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Continue",
+    "label": "A new chapter is open: chapter {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: \"I'm just starting, but I'm faster than I look.\"",
+      "2": "Biscuit: \"Relaxed, but I won't let you get away.\"",
+      "3": "Mr. Hoot: \"I see every cell. Careful.\"",
+      "4": "Maestro: \"Fast, precise, and in style.\"",
+      "5": "Overlord: \"You came far. This is where it ends.\""
+    }
+  },
+  "exit": {
+    "button": "Leave the stage",
+    "title": "Leave the stage?",
+    "body": "You'll get 0 stars, and the next stage will open.",
+    "confirm": "Leave",
+    "cancel": "Keep playing"
+  },
+  "card": {
+    "line": "Stages: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_one": "Stages: {{played}}, 1 star",
+    "label_two": "Stages: {{played}}, {{count}} stars",
+    "label_many": "Stages: {{played}}, {{count}} stars",
+    "label_other": "Stages: {{played}}, {{count}} stars"
+  },
+  "chapters": {
+    "1": {
+      "name": "First steps",
+      "news": "Where's the digit, and fill the box"
+    },
+    "2": {
+      "name": "Pip's challenge",
+      "news": "Race the bot"
+    },
+    "3": {
+      "name": "First duel",
+      "news": "Duel to 30, and a box with 5 missing"
+    },
+    "4": {
+      "name": "Detective",
+      "news": "Spot the error"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "A new bot: Biscuit"
+    },
+    "6": {
+      "name": "Rows and columns",
+      "news": "A normal board, and targets in a row or a column"
+    },
+    "7": {
+      "name": "Point hunter",
+      "news": "Point hunter: 3 moves in 30 seconds"
+    },
+    "8": {
+      "name": "Two errors",
+      "news": "Two errors on the board, and a duel on a normal board"
+    },
+    "9": {
+      "name": "Chain",
+      "news": "A chain of 3 steps"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "A new bot: Mr. Hoot"
+    },
+    "11": {
+      "name": "The whole board",
+      "news": "Targets anywhere on the board, and 7 missing in a box"
+    },
+    "12": {
+      "name": "Faster",
+      "news": "Point hunter in 25 seconds, on a normal board"
+    },
+    "13": {
+      "name": "Silent errors",
+      "news": "Errors with no visible clash"
+    },
+    "14": {
+      "name": "Long chain",
+      "news": "A chain of 4 steps"
+    },
+    "15": {
+      "name": "Halfway",
+      "news": "Every kind again"
+    },
+    "16": {
+      "name": "Hard boards",
+      "news": "A hard board, and a box left empty"
+    },
+    "17": {
+      "name": "Eliminations",
+      "news": "Targets that show only after an elimination"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "A new bot: Maestro"
+    },
+    "19": {
+      "name": "Traps",
+      "news": "Three errors on the board"
+    },
+    "20": {
+      "name": "The hard gate",
+      "news": "An empty box that needs an elimination"
+    },
+    "21": {
+      "name": "Pairs",
+      "news": "Pairs, and point hunter in 20 seconds"
+    },
+    "22": {
+      "name": "Chain of 5",
+      "news": "A chain of 5 steps"
+    },
+    "23": {
+      "name": "No hints",
+      "news": "Boards with very few digits"
+    },
+    "24": {
+      "name": "Race",
+      "news": "Duels on hard boards"
+    },
+    "25": {
+      "name": "Experts",
+      "news": "Everything again, at a fast pace"
+    },
+    "26": {
+      "name": "Championship",
+      "news": "Three stars only for the fastest players"
+    },
+    "27": {
+      "name": "Championship II",
+      "news": "Point hunter: three stars only near the best"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "The boss: Overlord, in a race"
+    },
+    "29": {
+      "name": "The final",
+      "news": "A fast chain, and Overlord as the boss in a duel"
+    },
+    "30": {
+      "name": "Champion",
+      "news": "Everything together, at its hardest"
+    }
+  },
+  "hud": {
+    "sub": "{{kind}} · Chapter {{chapter}}",
+    "subRace": "{{kind}} · {{spots}} spots · Chapter {{chapter}}",
+    "clockLabel": "{{s}} seconds left of {{limit}}",
+    "penalty": "{{s}} s",
+    "me": "Me",
+    "find": {
+      "tap": "Tap where the {{digit}} must go",
+      "where": "{{scope}} · no keypad, just a tap",
+      "elapsed": "s so far",
+      "targetLabel": "The target: the {{digit}} {{scope}}. {{left}}",
+      "ringLabel": "{{s}} seconds left in the stage",
+      "one": "One find in the stage",
+      "wrongRule": "Wrong tap: {{penalty}} s",
+      "twoWrongRule": "Two wrong taps: the stage ends",
+      "found": "Found: the {{digit}} in {{cell}}",
+      "missed": "Not in {{cell}}. {{penalty}} s",
+      "answer": "The answer: {{cell}}"
+    },
+    "scope": {
+      "box": "in box {{n}}",
+      "row": "in row {{row}}",
+      "col": "in column {{n}}",
+      "board": "anywhere on the board"
+    },
+    "race": {
+      "task": "Spot {{n}} of {{total}} · find the {{digit}} {{scope}}",
+      "left": "{{s}} s left",
+      "searching": "Searching…",
+      "spots_one": "1 spot",
+      "spots_two": "{{count}} spots",
+      "spots_many": "{{count}} spots",
+      "spots_other": "{{count}} spots",
+      "frozen_one": "Frozen, 1 second",
+      "frozen_two": "Frozen, {{count}} seconds",
+      "frozen_many": "Frozen, {{count}} seconds",
+      "frozen_other": "Frozen, {{count}} seconds",
+      "out": "Out until the next spot",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, bot {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} is searching",
+      "mine": "You took spot {{n}}",
+      "theirs": "{{name}} took spot {{n}}",
+      "void": "Nobody took spot {{n}}",
+      "next": "Spot {{n}}: the {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "Fill box {{n}}",
+      "cells": "{{done}}/{{total}} cells",
+      "cellsLabel": "You filled {{done}} of the {{total}} missing cells",
+      "mistakes_one": "Mistake {{penalty}} s",
+      "mistakes_two": "{{count}} mistakes {{penalty}} s",
+      "mistakes_many": "{{count}} mistakes {{penalty}} s",
+      "mistakes_other": "{{count}} mistakes {{penalty}} s",
+      "mistakesLabel_one": "One mistake, {{s}} seconds added",
+      "mistakesLabel_two": "{{count}} mistakes, {{s}} seconds added",
+      "mistakesLabel_many": "{{count}} mistakes, {{s}} seconds added",
+      "mistakesLabel_other": "{{count}} mistakes, {{s}} seconds added",
+      "rule": "A mistake adds 5 seconds, and the digit is blocked in that cell",
+      "timeLabel": "Time: {{s}} seconds of {{limit}}",
+      "boardLabel": "The board · fill only the {{count}} missing cells of box {{n}}"
+    },
+    "duel": {
+      "gap": "Lead",
+      "gapLabel": "The lead: {{gap}}. One star if you lead at the end, 2 stars at {{two}}, 3 stars at {{three}}",
+      "lead": "Ahead",
+      "of": "/{{target}}",
+      "meLabel": "{{name}}, {{score}} of {{target}} points",
+      "botLabel": "{{name}}, bot {{n}}, {{score}} of {{target}} points",
+      "finishLabel": "The stage ends when someone reaches {{target}} points, or at {{s}} seconds",
+      "raceLabel": "Race to {{target}}: {{me}}, {{bot}}"
+    },
+    "reactions": "Reactions",
+    "boardLabel": "The stage’s board · {{scope}}",
+    "spotError": {
+      "goal_one": "One wrong digit hides on the board. Tap it.",
+      "goal_two": "{{count}} wrong digits hide on the board. Tap them.",
+      "goal_many": "{{count}} wrong digits hide on the board. Tap them.",
+      "goal_other": "{{count}} wrong digits hide on the board. Tap them.",
+      "note": "The dark digits are the board’s, and they are always right.",
+      "found": "Found",
+      "foundLabel": "Found {{found}} of {{total}}",
+      "time": "Time",
+      "timeLabel": "Time: {{s}} seconds of {{limit}}",
+      "tipTitle": "Tip",
+      "tip": "Look for a digit that appears twice in the same row, column or box.",
+      "tipClose": "Close the tip",
+      "foundCell": "You found an error in {{cell}}: not {{wrong}} but {{right}}",
+      "rightTap": "The digit in {{cell}} is right. {{penalty}} s",
+      "missed": "Errors not found: {{cells}}",
+      "boardLabel": "The stage’s board · tap a wrong digit"
+    },
+    "hunt": {
+      "goal": "Score {{points}} points in {{moves}} moves.",
+      "note": "A cell in an empty area is worth more.",
+      "points": "points",
+      "scoreLabel": "{{score}} points",
+      "scoreWorthLabel": "{{score}} points. The cell you chose is worth {{worth}}",
+      "lost": "The wrong digit cost {{points}}",
+      "move": "Move {{n}} of {{max}}",
+      "burnt": "Move {{n}} burned",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_one": "One move burned",
+      "burntCount_two": "{{count}} moves burned",
+      "burntCount_many": "{{count}} moves burned",
+      "burntCount_other": "{{count}} moves burned",
+      "left": "left · of {{limit}}",
+      "timeLabel": "{{s}} seconds left of {{limit}}",
+      "max": "The board’s best: {{max}}",
+      "worth": "Worth {{points}}"
+    },
+    "chain": {
+      "goal": "Only one cell on the board can be solved at a time. Find it and fill it, and it opens the next.",
+      "notePenalty": "A digit in a cell that can’t be known yet: {{penalty}} s.",
+      "noteAccept": "A wrong digit: {{penalty}} s.",
+      "step": "Step {{n}} of {{total}}",
+      "stepLabel": "Chain: step {{n}} of {{total}}",
+      "time": "Time",
+      "timeLabel": "Time: {{s}} seconds of {{limit}}",
+      "notYet": "{{text}} · {{penalty}} s",
+      "tipTitle": "Tip",
+      "tip": "At every step exactly one cell can be proven. If you are sure of a digit, that is the cell.",
+      "tipClose": "Close the tip"
+    }
+  },
+  "explain": {
+    "spot": "Spot {{n}}: {{text}}",
+    "mistake": "Your mistake: {{digit}} in {{cell}}. {{reason}}",
+    "best": "Your best move, {{digit}} in {{cell}}: {{text}}",
+    "errorFound": "{{cell}}, found: {{reason}}",
+    "errorMissed": "{{cell}}, not found: {{reason}}",
+    "rightTap": "The {{digit}} in {{cell}} is right: tapping it cost {{penalty}} s.",
+    "points": "You scored {{points}} of {{max}} points, {{percent}} of the board’s best.",
+    "line": "The best line: {{moves}}.",
+    "move": "{{digit}} in {{cell}} {{points}}",
+    "step": "Step {{n}}: {{text}}"
+  }
+}

@@ -1,12 +1,17 @@
 /* Test-only: the progress routes' answers, a fake fetch, and an in-memory ProgressApi for the screens. */
+import { isLevelId, LEVEL_RULES, levelNumber, maxLevel, type Stars } from '@sudoku-fight/engine';
 import type {
   Leaderboard,
   LeaderboardEntry,
   LeaderboardTab,
+  LevelBest,
+  LevelsSyncResponse,
+  MyLevels,
   MyProgress,
   PlayerCard,
   PracticeResult,
   PracticeResultsResponse,
+  PutMyLevelsRequest,
   RatingSummary,
   RecentResult,
 } from '@sudoku-fight/protocol';
@@ -201,6 +206,87 @@ export function practiceServer(progress: () => MyProgress = () => myProgress()) 
 }
 
 // ---------------------------------------------------------------------------------------------------------
+// GET and PUT /v1/me/levels (staged practice, 1.0.2)
+
+const byLevel = (a: LevelBest, b: LevelBest) => (levelNumber(a.id) ?? 0) - (levelNumber(b.id) ?? 0);
+
+/**
+ * A server for /v1/me/levels, as apps/server/src/progress/levels.ts behaves: it keeps the max of each level
+ * (stars and plays apart), pays 10 XP for each best star it stores, once, and lists ids above its maxLevel as
+ * `unknown`. `mode`: 'modern' (1.0.2), 'old' (no route: 404 notFound) or 'offline' (no answer at all). While
+ * `capFull`, what is earned is owed (owedXp) and paid by a later PUT. `status` answers every request with it
+ * (429 with `retryAfter`, 500, 404 notRegistered…); a PUT with an id in `refuse` is a 400, as a whole.
+ */
+export function levelsServer(initial: readonly LevelBest[] = []) {
+  const stored = new Map<string, LevelBest>(initial.map((l) => [l.id, { ...l }]));
+  const state = {
+    mode: 'modern' as 'modern' | 'old' | 'offline',
+    status: 200,
+    error: null as string | null,
+    retryAfter: null as string | null,
+    refuse: new Set<string>(),
+    /** Levels a PUT takes (200) but does not keep: a broken server. */
+    drop: new Set<string>(),
+    maxLevel: maxLevel(LEVEL_RULES),
+    capFull: false,
+    /** All the level XP paid so far. */
+    paid: 0,
+  };
+  const earned = () => 10 * [...stored.values()].reduce((sum, l) => sum + l.stars, 0);
+  const owed = () => Math.max(0, earned() - state.paid);
+  const mine = (): MyLevels => ({
+    levels: [...stored.values()].sort(byLevel),
+    maxLevel: state.maxLevel,
+    owedXp: owed(),
+  });
+  const puts: LevelBest[][] = [];
+  const fetch = fakeFetch((call): FakeReply => {
+    if (state.mode === 'offline') return { fail: true };
+    const path = new URL(call.url).pathname;
+    if (state.mode === 'old' || path !== '/v1/me/levels') return { status: 404, body: { error: 'notFound' } };
+    if (state.status !== 200)
+      return {
+        status: state.status,
+        body: {
+          error:
+            state.error ??
+            (state.status === 429 ? 'tooManyRequests' : state.status === 404 ? 'notRegistered' : 'internal'),
+        },
+        headers: state.retryAfter ? { 'Retry-After': state.retryAfter } : undefined,
+      };
+    if (call.init.method === 'GET') return { body: mine() };
+    const { levels } = bodyOf(call) as PutMyLevelsRequest;
+    if (levels.some((l) => state.refuse.has(l.id) || !isLevelId(l.id)))
+      return { status: 400, body: { error: 'badRequest' } };
+    puts.push(levels);
+    const unknown = new Set<string>();
+    for (const l of levels) {
+      if ((levelNumber(l.id) ?? 0) > state.maxLevel) {
+        unknown.add(l.id);
+        continue;
+      }
+      const seen = stored.get(l.id);
+      if ((l.stars === 0 && l.plays === 0) || state.drop.has(l.id)) continue;
+      stored.set(l.id, {
+        id: l.id,
+        stars: Math.max(seen?.stars ?? 0, l.stars) as Stars,
+        plays: Math.max(seen?.plays ?? 0, l.plays),
+      });
+    }
+    const xp = state.capFull ? 0 : owed();
+    state.paid += xp;
+    const answer: LevelsSyncResponse = {
+      ...mine(),
+      xp,
+      progress: myProgress({ xp: state.paid }),
+      unknown: [...unknown].sort(),
+    };
+    return { body: answer };
+  });
+  return { fetch, stored, state, puts };
+}
+
+// ---------------------------------------------------------------------------------------------------------
 // An in-memory ProgressApi for the screens
 
 export interface FakeBoards {
@@ -213,6 +299,8 @@ export interface FakeBoards {
   pageSize?: number;
   cards?: Record<string, PlayerCard>;
   progress?: MyProgress;
+  /** What the server keeps of my levels. */
+  levels?: LevelBest[];
 }
 
 export interface FakeProgressApi extends ProgressApi {
@@ -223,6 +311,7 @@ export interface FakeProgressApi extends ProgressApi {
 
 export function fakeProgressApi(data: FakeBoards = {}): FakeProgressApi {
   const pageSize = data.pageSize ?? 50;
+  const levels = new Map<string, LevelBest>((data.levels ?? []).map((l) => [l.id, l]));
   const api: FakeProgressApi = {
     queries: [],
     failWith: null,
@@ -264,6 +353,29 @@ export function fakeProgressApi(data: FakeBoards = {}): FakeProgressApi {
     async sendPracticeResults(results) {
       if (api.failWith) throw new ProgressApiError(api.failWith);
       return { accepted: results.length, duplicates: 0, progress: data.progress ?? myProgress() };
+    },
+    async myLevels() {
+      if (api.failWith) throw new ProgressApiError(api.failWith);
+      return { levels: [...levels.values()].sort(byLevel), maxLevel: maxLevel(LEVEL_RULES), owedXp: 0 };
+    },
+    async putMyLevels(sent) {
+      if (api.failWith) throw new ProgressApiError(api.failWith);
+      for (const l of sent) {
+        const seen = levels.get(l.id);
+        levels.set(l.id, {
+          id: l.id,
+          stars: Math.max(seen?.stars ?? 0, l.stars) as Stars,
+          plays: Math.max(seen?.plays ?? 0, l.plays),
+        });
+      }
+      return {
+        levels: [...levels.values()].sort(byLevel),
+        maxLevel: maxLevel(LEVEL_RULES),
+        owedXp: 0,
+        xp: 0,
+        progress: data.progress ?? myProgress(),
+        unknown: [],
+      };
     },
   };
   return api;

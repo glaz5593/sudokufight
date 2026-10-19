@@ -1,7 +1,7 @@
 import type {
   CellIndex,
-  ClientAction,
   Digit,
+  HostAction,
   HostUpdate,
   InterferenceKind,
   MoveScore,
@@ -51,9 +51,10 @@ export type UiEffect =
   | { kind: 'offlineLost'; cell: CellIndex; digit: Digit; reason: RejectReason }
   /**
    * Any other refusal of my action. `action`: which action it was (a refused interference says it wasn't sent,
-   * whatever the reason [D45]); `cell` when the action named one (e.g. a re-lock wait [D2]).
+   * whatever the reason [D45]); `cell` when the action named one (e.g. a re-lock wait [D2]). A tap level's
+   * `tap` is refused by every host but its own.
    */
-  | { kind: 'refused'; reason: RejectReason; action: ClientAction['type']; cell?: CellIndex }
+  | { kind: 'refused'; reason: RejectReason; action: HostAction['type']; cell?: CellIndex }
   | { kind: 'locked'; seq: number; cell: CellIndex; playerId: PlayerId; byMe: boolean }
   | {
       kind: 'released';

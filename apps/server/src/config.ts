@@ -100,14 +100,20 @@ export const DEFAULT_CHEAT_THRESHOLDS: CheatThresholds = { thinkMs: 1200, moves:
  *   of their end. Practice is played on the phone and only reported [D41], so the server can't check a result;
  *   the cap bounds what a forged one is worth. 1500 is about 25 bot games a day (20–50 XP each, plus a point per
  *   correct move), well above a keen player's day; 0 turns practice XP off.
+ *   The levels of staged practice (1.0.2, src/progress/levels.ts) share it: their XP of a day counts in it.
  * - `inviteUrl` (INVITE_URL): the link the friends tab's "invite friends" button shares [D27]; null hides it.
+ * - `levelXpCarryOver` (LEVEL_XP_CARRY_OVER, default true) [D55]: level XP that does not fit in a day's cap is
+ *   paid on a later day (the next PUT /v1/me/levels), so all of it (10,450 at most) arrives in the end; false:
+ *   what does not fit is lost, as practice XP is. Absent when the variable is not set (the default applies).
  */
 export interface ProgressConfig {
   practiceXpDailyCap: number;
   inviteUrl: string | null;
+  levelXpCarryOver?: boolean;
 }
 
 export const DEFAULT_PRACTICE_XP_DAILY_CAP = 1500;
+export const DEFAULT_LEVEL_XP_CARRY_OVER = true;
 
 /** Express's 'trust proxy' setting: false, true, a hop count, or addresses/subnets ("loopback, 10.0.0.0/8"). */
 export type TrustProxy = boolean | number | string;
@@ -163,7 +169,7 @@ export interface ServerConfig {
    * server's own check. Development tokens count as verified: they are taken only outside production.
    */
   rankedRequiresVerifiedEmail: boolean;
-  /** PRACTICE_XP_DAILY_CAP and INVITE_URL (stage 12). */
+  /** PRACTICE_XP_DAILY_CAP and INVITE_URL (stage 12); LEVEL_XP_CARRY_OVER (1.0.2). */
   progress: ProgressConfig;
   /** SENTRY_DSN and the rest (stage 14), or null: no error reports leave the server. */
   sentry: SentryConfig | null;
@@ -283,6 +289,13 @@ const envSchema = z.object({
   PRACTICE_XP_DAILY_CAP: z.preprocess(
     unsetIfBlank,
     z.coerce.number().int().min(0).max(1_000_000).default(DEFAULT_PRACTICE_XP_DAILY_CAP),
+  ),
+  LEVEL_XP_CARRY_OVER: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim().toLowerCase()) : v),
+    z
+      .enum(['true', 'false', '1', '0'], { error: 'expected true or false' })
+      .optional()
+      .transform((v) => (v === undefined ? undefined : v === 'true' || v === '1')),
   ),
   INVITE_URL: z.preprocess(
     (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim()) : v),
@@ -568,7 +581,11 @@ export function loadConfig(
     cheat: { thinkMs: e.CHEAT_FAST_THINK_MS, moves: e.CHEAT_FAST_THINK_MOVES },
     accountDeleteMaxAuthAgeMs: e.ACCOUNT_DELETE_MAX_AUTH_AGE_MS,
     rankedRequiresVerifiedEmail: e.RANKED_REQUIRES_VERIFIED_EMAIL,
-    progress: { practiceXpDailyCap: e.PRACTICE_XP_DAILY_CAP, inviteUrl: e.INVITE_URL ?? null },
+    progress: {
+      practiceXpDailyCap: e.PRACTICE_XP_DAILY_CAP,
+      inviteUrl: e.INVITE_URL ?? null,
+      ...(e.LEVEL_XP_CARRY_OVER === undefined ? {} : { levelXpCarryOver: e.LEVEL_XP_CARRY_OVER }),
+    },
     sentry:
       e.SENTRY_DSN === undefined
         ? null

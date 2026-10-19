@@ -76,6 +76,8 @@ export default function RootLayout() {
         >
           <Stack.Screen name="game" options={moves.flow} />
           <Stack.Screen name="results/[id]" options={moves.flow} />
+          {/* Staged practice (1.0.2): a stage, its "מוכן?" and its result are one flow; no back swipe mid-stage. */}
+          <Stack.Screen name="levels/play" options={{ ...moves.flow, gestureEnabled: false }} />
           <Stack.Screen name="leaderboard" options={moves.tab} />
           <Stack.Screen name="history" options={moves.tab} />
           <Stack.Screen name="achievements" options={moves.tab} />

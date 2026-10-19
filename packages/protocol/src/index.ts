@@ -44,6 +44,11 @@ export const PROTOCOL_VERSION = 1;
  * Online, the host may let the player go on while his connection is lost (the soft phase [D42], spec §16.2):
  * a select takes the cell on the phone, a digit is queued and drawn as waiting, and the moves go to the server
  * as `offlineMove` on the return; one that lost its cell comes back as a refusal of an `offlineMove`.
+ *
+ * Staged practice (1.0.2) adds three methods, all local: `tap` (the tap levels' one move, played by the
+ * engine's LocalFindHost; every other host refuses it at once, 'badAction', and nothing is ever sent), and
+ * `pause` / `resume` [D65] (the app left the foreground mid-level: the local game freezes and goes on from the
+ * same point; online games never pause this way, so RemoteGameHost does nothing). The wire is unchanged.
  */
 export interface GameHost {
   /** The player on this device. */
@@ -58,6 +63,12 @@ export interface GameHost {
   interfere(targetId: PlayerId, kind: InterferenceKind): void;
   react(emoji: string): void;
   surrender(): void;
+  /** A tap level's move (LocalFindHost); refused locally ('badAction') by every other host. */
+  tap(cell: CellIndex): void;
+  /** [D65] The app left the foreground: freeze a local game (nothing runs out, moves refused 'paused'). */
+  pause(): void;
+  /** [D65] Go on from where it froze, with the same time left. No-op when not frozen by pause(). */
+  resume(): void;
   /** Stops timers and updates. */
   close(): void;
 }
@@ -155,10 +166,12 @@ export type {
   GameEventType,
   GameState,
   GameView,
+  HostAction,
   HostUpdate,
   LockTimer,
   PlayerView,
   RejectReason,
+  TapAction,
 } from '@sudoku-fight/engine';
 
 export type ClientMessageType = ClientMessage['type'];

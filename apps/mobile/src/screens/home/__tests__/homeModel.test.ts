@@ -30,24 +30,27 @@ import {
 import { SEED_START, seedBotPractices, seedPractices } from '../testing/seed';
 
 describe('the modes (spec §5.1)', () => {
-  it('are exactly five: ranked 2 · 3 · 4, then practice against a bot above solo practice (device test, 15.10.2026)', () => {
+  it('are six: ranked 2 · 3 · 4, the bot above solo (device test, 15.10.2026), then staged practice (D48)', () => {
     expect(MODE_OPTIONS.map((o) => [o.key, o.group, o.mode, o.players])).toEqual([
       ['ranked2', 'ranked', 'ranked', 2],
       ['ranked3', 'ranked', 'ranked', 3],
       ['ranked4', 'ranked', 'ranked', 4],
       ['bot', 'practice', 'bot', 2],
       ['solo', 'practice', 'solo', 1],
+      // No engine mode of its own: it opens the level map (a stage runs as the engine's solo or bot game).
+      ['levels', 'practice', null, 1],
     ]);
   });
 
-  it('all five are open, in the same order: ranked 2 players (stage 9), 3 and 4 (stage 10), the bot, solo', () => {
-    expect(AVAILABLE_MODES).toEqual(['ranked2', 'ranked3', 'ranked4', 'bot', 'solo']);
+  it('all six are open, in the same order: ranked 2 (stage 9), 3 and 4 (stage 10), the bot, solo, the stages', () => {
+    expect(AVAILABLE_MODES).toEqual(['ranked2', 'ranked3', 'ranked4', 'bot', 'solo', 'levels']);
     expect(MODE_OPTIONS.filter((o) => isAvailable(o.key)).map((o) => o.key)).toEqual([
       'ranked2',
       'ranked3',
       'ranked4',
       'bot',
       'solo',
+      'levels',
     ]);
     expect([
       isStartableMode('solo'),

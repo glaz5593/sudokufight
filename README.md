@@ -13,11 +13,13 @@
 | האפיון המקורי | [docs/00-original-spec-v1.md](docs/00-original-spec-v1.md) |
 | שחרור: הצ'קליסט עד TestFlight ו־Play Closed testing | [docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md) |
 | שרת ה־Production | [docs/DEPLOY-PRODUCTION.md](docs/DEPLOY-PRODUCTION.md) |
+| צ'קליסט QA למסכים | [docs/QA-CHECKLIST.md](docs/QA-CHECKLIST.md) |
+| אימון בשלבים (1.0.2): התוכנית ותוכנית הפיתוח, והבדיקות במכשיר | [docs/handoff/2026-10-15/staged-practice/](docs/handoff/2026-10-15/staged-practice/) · [docs/LEVELS-DEVICE-CHECKS.md](docs/LEVELS-DEVICE-CHECKS.md) |
 
 ## מבנה
 
 ```
-packages/engine     חוקי המשחק, ניקוד, הסברים, מאגר הלוחות (TypeScript טהור, שעון ו־RNG מוזרקים)
+packages/engine     חוקי המשחק, ניקוד, הסברים, מאגר הלוחות ו־300 השלבים (TypeScript טהור, שעון ו־RNG מוזרקים)
 packages/protocol   הממשק GameHost וטיפוסי ההודעות בין האפליקציה לשרת
 packages/avatars    101 האווטרים המונפשים שלנו: נתונים ופונקציות שמחזירות SVG (docs/avatars/STYLE.md)
 apps/mobile         האפליקציה (Expo SDK 57, expo-router, Reanimated 4, Skia, Zustand)
@@ -40,14 +42,14 @@ docs/               אפיון, תוכנית, עיצוב
 
 | פקודה | מה היא עושה |
 |---|---|
-| `npm test` | כל הבדיקות: engine, ‏protocol, ‏avatars, ‏server, ‏admin ו־mobile |
+| `npm test` | כל הבדיקות: engine, ‏protocol, ‏avatars, ‏server, ‏admin ו־mobile, כולל `levels:validate` |
 | `npm run typecheck` | `tsc -b` על כל ה־workspaces |
 | `npm run lint` | ESLint, כולל הכלל שאוסר `Date.now()`, ‏`Math.random()` וטיימרים בתוך המנוע |
 | `npm run verify` | lint, ‏typecheck ובדיקות |
 | `npm run server` | השרת בפיתוח (tsx watch), פורט 2567 |
 | `npm run dev:lan` | השרת בפיתוח לטלפונים ב־Wi-Fi: מוצא את כתובת המחשב, טוען את המאגר המדורג אם חסר, ומדפיס מה לשים ב־`.env.local`. פירוט ב"טלפונים ב־Wi-Fi" |
 | `npm run fake-client -- --create` | לקוח מזויף שמשחק דרך השרת כמו בוט. פירוט ב"לשחק מול לקוח מזויף" |
-| `npm run seed` | נתוני דוגמה לאתר הניהול במסד של הפיתוח (PGlite): ‏300 התקנות, 80 משתמשים ו־150 משחקים מדורגים. טוען גם את המאגר המדורג. `-- --reset` מוחק קודם. לעצור את השרת לפני |
+| `npm run seed` | נתוני דוגמה לאתר הניהול במסד של הפיתוח (PGlite): ‏300 התקנות, 80 משתמשים ו־150 משחקים מדורגים, ומשחקים באימון בשלבים לכ־75% מהמשתמשים (לפי החוקים של המנוע). טוען גם את המאגר המדורג. `-- --reset` מוחק קודם. לעצור את השרת לפני |
 | `npm run db:seed-puzzles` | טוען לטבלת `puzzles` את המאגר המדורג מ־`packages/engine/data/puzzles.json`: רק לוחות עם `pool='ranked'` (אפיון, סעיף 20). בלי זה משחק מדורג לא מתחיל. אפשר להריץ שוב: הוא רק מעדכן. לוח מדורג שיצא מהקובץ לא נמחק: הוא מסומן `retired_at` ולא נבחר יותר, ומודפס כמה כאלה היו [D43]. מריצים אחרי ה־deploy של שרת שמכיר את `retired_at`. ב־PGlite לעצור את השרת לפני. מול Postgres של הייצור: עם `DATABASE_URL` (למשל דרך `fly proxy`) |
 | `npm run admin:dev` | אתר הניהול בפיתוח (Vite) ב־`http://localhost:5174/admin/`. מפנה את `/admin/api` לשרת בפורט 2567, אז מריצים גם `npm run server` |
 | `npm run admin:build` | בונה את אתר הניהול ל־`apps/admin/dist`. השרת מגיש אותו ב־`/admin` |
@@ -57,6 +59,9 @@ docs/               אפיון, תוכנית, עיצוב
 | `npm run puzzles:import` | מייבא את `assets/puzzles/sudoku-bank-690.csv` אל `packages/engine/data/puzzles.json`, ומדפיס דוח. הלוחות נכנסים כבר בטווח הגלויים של הסוג שלהם |
 | `npm run puzzles:generate -- --type hard --count 300` | מחולל לוחות. אפשר גם `--pool ranked` ו־`--seed 42`. מהיר ורגיל יוצאים בטווח הגלויים של הסוג (45–50, 35–40) |
 | `npm run puzzles:givens` | מביא כל לוח מהיר ורגיל במאגר לטווח הגלויים של הסוג שלו (אפיון, סעיף 5.2) [D43], וקשה לא נוגע. דטרמיניסטי; `-- --dry-run` רק מדפיס דוח. אחריו: `npm run pool -w @sudoku-fight/mobile` |
+| `npm run levels:build` | בונה את 300 השלבים של אימון בשלבים מ־`packages/engine/src/levels/levels.config.ts` אל `packages/engine/data/levels.json`: קובץ קפוא שנכנס ל־git, ולא נבנה אף פעם בזמן ריצה. דטרמיניסטי (כל שלב מה־seed שלו), ובלי לוח מהמאגר המדורג. מדפיס דוח בנייה, ואחריו סימולציה של שלושה פרופילים מול היעדים (מזהירה, לא נכשלת). כ־2.5 דקות. ‏`-- --check --no-sim` בונה ומשווה לקובץ השמור (בנייה שנייה חייבת לתת אותו קובץ בדיוק); ‏`-- --sim-only --report <קובץ.md>` רק הסימולציה, עם דוח בעברית. שינוי בשלב קיים: `rev` חדש. אחריו: `npm run levels -w @sudoku-fight/mobile` |
+| `npm run levels:validate` | בדיקת Jest של 300 השלבים (`levels.data.test.ts`): ‏L001–L300 ברצף, כל שלב שומר את החוקים של הסוג שלו, גם הלוחות השקולים של "שוב" (D63), אין שדה של הפרעה, ואין לוח מהמאגר המדורג. רצה גם בתוך `npm test` |
+| `npm run levels -w @sudoku-fight/mobile` | מעתיק לאפליקציה את החלק שלה מ־`levels.json` (רק השדות של `AppLevel`) אל `apps/mobile/src/levels/data/levels.json`. האפליקציה טוענת אותו רק כשנכנסים לאימון בשלבים. קובץ שנוצר: לא עורכים אותו ביד |
 | `npm run licenses` | רישיונות של חבילות ה־Production באפליקציה ובשרת: כותב את `docs/store/LICENSES-REPORT.md` ואת הרשימה שמסך "רישיונות" מציג. מריצים אחרי כל שינוי בתלויות (`-- --check` רק בודק) |
 
 ## להריץ את האפליקציה בטלפון Android (Development Build)
@@ -178,6 +183,25 @@ curl -H 'authorization: Bearer dev:moshe' http://localhost:2567/v1/games/<id>/re
 curl -H 'authorization: Bearer dev:moshe' 'http://localhost:2567/v1/leaderboard?tab=normal'
 ```
 
+### אימון בשלבים (גרסה 1.0.2)
+
+השלבים רצים בטלפון (`LocalGameHost` ו־`LocalFindHost`), גם בלי אינטרנט, ונשמרים ב־`levels.db`. השרת שומר רק את הכוכבים הטובים ביותר, ומחשב את ה־XP (אפיון 5.3.7 ו־15).
+
+- `GET /v1/me/levels`: לכל שלב ששוחק, הכוכבים הטובים ביותר (`stars`) וכמה משחקים נספרו (`plays`). ועוד `maxLevel` (כמה שלבים השרת מכיר, 300 היום), ו־`owedXp`.
+- `PUT /v1/me/levels` עם `{ "levels": [{ "id": "L001", "stars": 3, "plays": 2 }] }`: עד 300 שלבים בבקשה. השרת שומר את המקסימום של כל שלב, הכוכבים והמשחקים בנפרד, כך ששני טלפונים מתאחדים לטוב ביותר משניהם.
+  - **ה־XP מחושב בשרת**, מהערכים השמורים: 10 לכל כוכב (הטוב ביותר של כל שלב) ו־50 לכל שער פתוח, פחות מה שכבר שולם. לכן שליחה חוזרת, או אותו כוכב משני טלפונים, משולמים פעם אחת. ה־XP שהטלפון מציג הוא רק הערכה.
+  - התקרה היומית משותפת לאימונים (`PRACTICE_XP_DAILY_CAP`, לפי היום ב־UTC). מה שלא נכנס היום משולם ב־PUT של יום אחר, גם ריק (`LEVEL_XP_CARRY_OVER`, ברירת מחדל `true`) [D55], ו־`owedXp` אומר כמה עוד יגיע.
+  - מזהה שלב שהשרת לא מכיר (גבוה מ־`maxLevel`, מאפליקציה חדשה יותר) מדולג ומוחזר ב־`unknown`, ולא 400. מזהה שאינו מזהה שלב (`l001`, ‏`L1`, ‏`L000`) הוא 400.
+- **שרת בלי הנתיבים** (לפני 1.0.2) עונה 404 `notFound`: האפליקציה שומרת את הכוכבים בטלפון, ומנסה שוב בהפעלה הבאה. לכן **מעלים קודם את השרת** (`docs/RELEASE-CHECKLIST.md`, "גרסה 1.0.2").
+- הטבלאות `user_levels` ו־`level_xp_days` (migration ‏0008, רק מוסיף). הן נמחקות עם החשבון.
+- **ששת האירועים** (`level_map_open`, ‏`level_start`, ‏`level_end`, ‏`level_quit`, ‏`chapter_gate`, ‏`level_tutorial`) נושאים את מספר השלב בשדה `level`, אף פעם לא `levelId`: מסנן הפרטיות שלנו ל־GA4 זורק כל שדה שנגמר ב־id. האפליקציה שולחת אותם בחבילה נפרדת (`TELEMETRY_EVENT_GENERATION`), כדי ששרת ישן שדוחה אותם לא ידחה איתם את שאר האירועים. השרת בודק כל שדה שלהם, ושם אירוע שהוא לא מכיר הוא מדלג עליו, במקום לדחות את כל החבילה.
+- החוזה: `packages/protocol/src/progress.ts`. הקוד: `apps/server/src/progress/levels.ts`. החוזה עם הקוד של האפליקציה עצמה נבדק ב־`apps/server/test/appLevels.contract.test.ts`.
+
+```
+curl -H 'authorization: Bearer dev:moshe' http://localhost:2567/v1/me/levels
+curl -X PUT -H 'authorization: Bearer dev:moshe' -H 'content-type: application/json' -d '{"levels":[{"id":"L001","stars":3,"plays":1}]}' http://localhost:2567/v1/me/levels
+```
+
 ### לשחק מול לקוח מזויף (fake-client)
 
 `apps/server/scripts/fake-client.ts` הוא שחקן שרץ ב־Node ומשחק דרך השרת כמו בוט: זמני חשיבה לפי הרמה וסוג המשחק, טעויות סבירות, תגובות והפרעות.
@@ -248,7 +272,9 @@ Match-Timeout אחרי 60 שניות; ‏no-show; אותו זוג מקבל לו�
 
 ## אתר הניהול
 
-אתר לצפייה בלבד: התקנות, משתמשים, משחקים ומסכים (אפיון, סעיף 27). השרת מגיש אותו ב־`/admin`, וה־API שלו נמצא ב־`/admin/api`.
+אתר לצפייה בלבד: התקנות, משתמשים, משחקים, מסכים ושלבים (אפיון, סעיף 27). השרת מגיש אותו ב־`/admin`, וה־API שלו נמצא ב־`/admin/api`.
+
+- **הדף "שלבים"** (1.0.2, ‏`#/levels`, ‏`GET /admin/api/levels?days=30`): טבלה של 300 השלבים (התחלות, משחקים, שחקנים, התפלגות הכוכבים, חציון ואחוזי יציאה), עם סינון לפי פרק, וטבלת השערים (הגיעו, עברו, נתקעו, ונתקעו אחרי 3 ניסיונות). שתי התראות: "קשה מדי" (יותר מ־60% מהניסיונות הראשונים עם 0 כוכבים), ו"לרכך את הפרק" (יותר מ־30% נתקעו בשער אחרי 3 ניסיונות). השערים נספרים מאז ומעולם, ו־`days` חל רק על טבלת השלבים.
 
 ### להריץ מקומית עם נתוני דוגמה
 
@@ -276,6 +302,7 @@ curl http://localhost:2567/admin/api/auth/methods
 curl -c jar.txt -H 'content-type: application/json' -d '{"password":"sudoku-admin-dev"}' http://localhost:2567/admin/api/login
 curl -b jar.txt 'http://localhost:2567/admin/api/overview?days=7'
 curl -b jar.txt 'http://localhost:2567/admin/api/screens?days=30'
+curl -b jar.txt 'http://localhost:2567/admin/api/levels?days=30'
 ```
 
 הכניסה מחזירה 204. בלי ה־cookie, כל נתיב ב־`/admin/api` מחזיר 401. ב־PowerShell ‏`curl` הוא כינוי ל־`Invoke-WebRequest`, ולכן עדיף Git Bash.

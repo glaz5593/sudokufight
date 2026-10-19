@@ -42,6 +42,29 @@ describe('techniques, one at a time', () => {
     expect(board.findHiddenSingle()).not.toBeNull();
   });
 
+  it('placesOf and hiddenSingleInUnit look at one unit only (a find target is scoped)', () => {
+    const d5 = parseCellName('D5');
+    const box5 = { kind: 'box', index: 4 } as const;
+    const hidden = new LogicBoard(gridFrom({ D6: 1, E4: 2, E5: 3, F4: 4, F5: 5, F6: 6, A4: 7, E1: 7 }));
+    expect(names(hidden.placesOf(box5, 7))).toEqual(['D5']);
+    expect(hidden.hiddenSingleInUnit(box5, d5, 7)).toEqual(hidden.hiddenSingleAt(d5, 7));
+    // Row D leaves the 7 only D5, while box 5 still has D5 and E6 for it.
+    const rowOnly = new LogicBoard(
+      gridFrom({ D1: 1, D2: 2, D3: 3, D6: 4, D7: 5, D8: 6, D9: 8, A4: 7, E5: 1, F5: 2, F6: 3 }),
+    );
+    expect(names(rowOnly.placesOf(box5, 7))).toEqual(['D5', 'E6']);
+    expect(rowOnly.hiddenSingleAt(d5, 7)).toMatchObject({ unit: { kind: 'row', index: 3 } });
+    expect(rowOnly.hiddenSingleInUnit(box5, d5, 7)).toBeNull();
+    expect(rowOnly.hiddenSingleInUnit({ kind: 'row', index: 3 }, d5, 7)).toMatchObject({
+      technique: 'hiddenSingle',
+      cell: d5,
+      digit: 7,
+    });
+    expect(rowOnly.hiddenSingleInUnit({ kind: 'row', index: 0 }, d5, 7)).toBeNull(); // D5 is not in row A
+    expect(rowOnly.placesOf({ kind: 'row', index: 3 }, 1)).toEqual([]); // already in the row
+    expect(() => rowOnly.placesOf({ kind: 'col', index: 9 }, 1)).toThrow(RangeError);
+  });
+
   it('pointing: a digit confined to one row of a box leaves the rest of that row', () => {
     const board = new LogicBoard(gridFrom({ B1: 2, B2: 3, B3: 4, C1: 5, C2: 6, C3: 7 }));
     const s = board.findPointing()!;

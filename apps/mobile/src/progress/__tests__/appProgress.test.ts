@@ -16,6 +16,7 @@ import {
   rankedRefresh,
   refreshMyProgress,
   setProgressFetch,
+  signedInProgressApi,
   startProgress,
 } from '../appProgress';
 import { adoptProgress, progressOf, useProgress } from '../progressStore';
@@ -210,6 +211,26 @@ describe('startProgress', () => {
     adoptProgress('someone-else', myProgress({ level: 30 }), 1);
     expect(progressOf(useProgress.getState(), 'me-uid')).toBeNull();
     expect(progressOf(useProgress.getState(), 'someone-else')?.level).toBe(30);
+  });
+});
+
+describe('the API of one player (a sync that started before another player signed in on this phone)', () => {
+  it('bound to its player: no request at all once Firebase has someone else signed in', async () => {
+    const auth = await installSignedInPlayer();
+    await initAuth();
+    const owner = currentOwner()!;
+    const bound = signedInProgressApi(owner)!;
+    const now = signedInProgressApi()!;
+    await auth.provider.signOut();
+    await auth.provider.signUp('other@example.com', 'Arena1234');
+    expect(auth.provider.currentUser()!.uid).not.toBe(owner);
+    server.calls.length = 0;
+    await expect(bound.myProgress()).rejects.toMatchObject({ code: 'signedOut' });
+    expect(server.calls).toHaveLength(0);
+    // Unbound: whoever is signed in now, and so is one bound to them.
+    await now.myProgress();
+    await signedInProgressApi(auth.provider.currentUser()!.uid)!.myProgress();
+    expect(server.calls).toHaveLength(2);
   });
 });
 

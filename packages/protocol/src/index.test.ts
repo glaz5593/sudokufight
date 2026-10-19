@@ -36,7 +36,7 @@ describe('protocol', () => {
     expect(PROTOCOL_VERSION).toBe(1);
   });
 
-  it('lists the client messages of spec §18', () => {
+  it('lists the client messages of spec §18: eight, and a tap is not one of them', () => {
     expect(CLIENT_MESSAGE_TYPES).toEqual([
       'select',
       'release',
@@ -47,6 +47,8 @@ describe('protocol', () => {
       'offlineMove',
       'ping',
     ]);
+    expect(CLIENT_MESSAGE_TYPES).toHaveLength(8);
+    expect(CLIENT_MESSAGE_TYPES).not.toContain('tap');
   });
 
   it('carries a move made offline as an action with its own think time [D42]', () => {
@@ -99,6 +101,14 @@ describe('GameHost', () => {
     expect(host.getView().grid[a1]).toBe(8);
     host.select(parseCellName('A3')); // a given: refused
     expect(kinds).toEqual(['events', 'events', 'rejected']);
+    // A tap is a tap level's move (LocalFindHost): refused here, at once, and no wire message has it.
+    host.tap(a1);
+    expect(kinds.at(-1)).toBe('rejected');
+    // [D65] The app in the background: the local game freezes, and goes on.
+    host.pause();
+    expect(host.getView().status).toBe('paused');
+    host.resume();
+    expect(host.getView().status).toBe('running');
     host.surrender();
     expect(host.getView().status).toBe('over');
     host.close();

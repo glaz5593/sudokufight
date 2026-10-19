@@ -1,3 +1,4 @@
+import type { LevelEvent } from '../levels/spec';
 import type { CellIndex, Digit } from '../sudoku/board';
 import type { Clock } from '../util/clock';
 import type { Rng } from '../util/random';
@@ -21,11 +22,23 @@ type WithoutPlayer<A> = A extends unknown ? Omit<A, 'playerId'> : never;
 /** An action of the local player; the host adds who it is. */
 export type ClientAction = WithoutPlayer<PlayerAction>;
 
+/**
+ * A tap on a cell: the only move of the tap levels (find, findDuel, spotError), which LocalFindHost plays. Not
+ * an action of the game engine and not a wire action: it is never sent, and every other host refuses it at
+ * once ('badAction'), as the screens of other games never send it.
+ */
+export type TapAction = { type: 'tap'; cell: CellIndex };
+/** Whatever a screen can ask a host for. */
+export type HostAction = ClientAction | TapAction;
+
 export type HostUpdate =
-  /** Something happened; `view` is the picture after it. Events never carry the solution. */
-  | { kind: 'events'; events: GameEvent[]; view: GameView }
+  /**
+   * Something happened; `view` is the picture after it. Events never carry the solution. A tap level's host
+   * (LocalFindHost) has events of its own instead (`levelEvents`, `events` empty).
+   */
+  | { kind: 'events'; events: GameEvent[]; view: GameView; levelEvents?: LevelEvent[] }
   /** The local player's action was refused (e.g. "taken": a short buzz, no penalty). */
-  | { kind: 'rejected'; action: ClientAction; reason: RejectReason; view: GameView };
+  | { kind: 'rejected'; action: HostAction; reason: RejectReason; view: GameView };
 
 export interface LocalGameHostOptions {
   config: GameConfig;
@@ -109,6 +122,36 @@ export class LocalGameHost {
 
   surrender(): void {
     this.send({ type: 'surrender' });
+  }
+
+  /** Not a move of this game (the tap levels have their own host): refused here, the log untouched. */
+  tap(cell: CellIndex): void {
+    if (this.closed) throw new Error('The game host is closed');
+    this.enqueue({
+      kind: 'rejected',
+      action: { type: 'tap', cell },
+      reason: 'badAction',
+      view: this.getView(),
+    });
+    this.rethrow();
+  }
+
+  /**
+   * [D65] The app left the foreground mid-level: the game freezes (gamePaused 'background'). Nothing runs out
+   * meanwhile, and every move is refused 'paused'. Only a running game; again while frozen: nothing.
+   */
+  pause(): void {
+    if (this.closed || this.current.status !== 'running') return;
+    this.dispatch({ type: 'pause' });
+  }
+
+  /**
+   * [D65] Back, after the 3, 2, 1 over the covered board: the game goes on from where it froze, every deadline
+   * (the time limit, locks, waits) moved on by the freeze. Only a freeze of this host's own; else nothing.
+   */
+  resume(): void {
+    if (this.closed || this.current.pausedBy !== 'background') return;
+    this.dispatch({ type: 'resume' });
   }
 
   close(): void {

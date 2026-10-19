@@ -24,9 +24,9 @@ import type { RateLimitRule } from './rateLimiter';
 /**
  * Everything the server answers over plain HTTP besides Colyseus's own routes (/health, /matchmake):
  * POST /v1/events, the account routes (/v1/names/available, /v1/users, /v1/me), history (stage 11), progress
- * (stage 12: leaderboards, player cards, XP), reports and blocks (spec §3.5: /v1/reports, /v1/me/blocks), the
- * admin API (/admin/api), the admin site's files (/admin) and the legal pages (stage 14: /legal/privacy,
- * /legal/terms, /legal/delete-account).
+ * (stage 12: leaderboards, player cards, XP; 1.0.2: staged practice's /v1/me/levels), reports and blocks
+ * (spec §3.5: /v1/reports, /v1/me/blocks), the admin API (/admin/api), the admin site's files (/admin) and the
+ * legal pages (stage 14: /legal/privacy, /legal/terms, /legal/delete-account).
  *
  * Colyseus 0.18 builds an Express 5 app on its HTTP server when `defineServer({ express })` is given, and
  * passes it here once the database is open (createAppServer). A request that no Colyseus route matches
@@ -100,7 +100,8 @@ export function configureHttp(app: Application, deps: HttpDeps): void {
   app.use(createTelemetryRouter({ ...deps, tokens }));
   app.use(createAccountsRouter({ ...deps, tokens }));
   app.use(createHistoryRouter({ ...deps, tokens })); // GET /v1/me/games, /v1/games/:id/replay (stage 11)
-  // GET /v1/leaderboard, /v1/players/:id, /v1/me/progress; POST /v1/me/practice-results (stage 12)
+  // GET /v1/leaderboard, /v1/players/:id, /v1/me/progress; POST /v1/me/practice-results (stage 12);
+  // GET and PUT /v1/me/levels (staged practice, 1.0.2)
   app.use(createProgressRouter({ ...deps, tokens, settings }));
   // POST /v1/reports; GET, POST and DELETE /v1/me/blocks (spec §3.5)
   app.use(createModerationRouter({ ...deps, tokens, settings, watch: deps.blockWatch ?? new BlockWatch() }));

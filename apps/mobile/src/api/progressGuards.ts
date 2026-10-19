@@ -2,8 +2,12 @@ import {
   INTERFERENCE_KINDS,
   type InterferenceKind,
   isGameType,
+  isLevelId,
   type League,
   LEAGUES,
+  LEVEL_RULES,
+  maxLevel,
+  type Stars,
 } from '@sudoku-fight/engine';
 import {
   isCountryCode,
@@ -12,6 +16,9 @@ import {
   type LeaderboardEntry,
   LEADERBOARD_TABS,
   type LeaderboardTab,
+  type LevelBest,
+  type LevelsSyncResponse,
+  type MyLevels,
   type MyProgress,
   normalizeAvatarId,
   type PlayerCard,
@@ -200,4 +207,39 @@ export function readPracticeResultsResponse(v: unknown): PracticeResultsResponse
   // The results the server refused as implausible (optional: an older server doesn't say).
   if (isNum(v.rejected)) answer.rejected = v.rejected;
   return answer;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Staged practice (1.0.2): GET and PUT /v1/me/levels
+
+/** A level's best on the server: a level id in its one spelling, whole plays, and stars capped at 3. */
+export function readLevelBest(v: unknown): LevelBest | null {
+  if (!isObj(v) || !isLevelId(v.id) || !isNum(v.stars) || !isNum(v.plays)) return null;
+  if (v.stars < 0 || v.plays < 0) return null;
+  return { id: v.id, stars: Math.min(3, Math.floor(v.stars)) as Stars, plays: Math.floor(v.plays) };
+}
+
+export function readMyLevels(v: unknown): MyLevels | null {
+  if (!isObj(v)) return null;
+  const levels = listOf(v.levels, readLevelBest);
+  if (!levels) return null;
+  return {
+    levels,
+    // Lenient where the screens can do without: the app's own count, nothing owed.
+    maxLevel: isNum(v.maxLevel) && v.maxLevel >= 1 ? Math.floor(v.maxLevel) : maxLevel(LEVEL_RULES),
+    owedXp: isNum(v.owedXp) ? Math.max(0, v.owedXp) : 0,
+  };
+}
+
+export function readLevelsSyncResponse(v: unknown): LevelsSyncResponse | null {
+  const mine = readMyLevels(v);
+  if (!mine || !isObj(v)) return null;
+  const progress = readMyProgress(v.progress);
+  if (!progress) return null;
+  return {
+    ...mine,
+    xp: isNum(v.xp) ? Math.max(0, v.xp) : 0,
+    progress,
+    unknown: Array.isArray(v.unknown) ? v.unknown.filter(isStr) : [],
+  };
 }

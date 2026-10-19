@@ -34,7 +34,9 @@
     "verify": "npm run lint && npm run typecheck && npm run i18n:check && npm test",
     "puzzles:import": "npm run puzzles:import -w @sudoku-fight/engine --",
     "puzzles:generate": "npm run puzzles:generate -w @sudoku-fight/engine --",
-    "puzzles:givens": "npm run puzzles:givens -w @sudoku-fight/engine --"
+    "puzzles:givens": "npm run puzzles:givens -w @sudoku-fight/engine --",
+    "levels:build": "npm run levels:build -w @sudoku-fight/engine --",
+    "levels:validate": "npm run levels:validate -w @sudoku-fight/engine --"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

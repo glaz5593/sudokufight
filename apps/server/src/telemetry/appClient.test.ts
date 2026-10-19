@@ -69,12 +69,17 @@ describe("the app's batches and the server's schema", () => {
     }
   });
 
-  it('what the server would refuse (an unknown name, a time before 2024), the app leaves out', () => {
+  it('what the server would refuse (a time before 2024) or skip (an unknown name), the app leaves out', () => {
     const good = tracked('app_open', {});
     const unknown = { ...tracked('app_open', {}), name: 'app_closed' as TelemetryEvent['name'] };
     const early = { ...tracked('app_open', {}), t: MIN_EVENT_TIME - 1 };
-    for (const bad of [unknown, early])
-      expect(parseBatch(wire({ ...META, events: [bad] }), NOW).ok).toBe(false);
+    expect(parseBatch(wire({ ...META, events: [early] }), NOW).ok).toBe(false);
+    // Since 1.0.2 a name the server does not know is skipped, not refused (an older server refuses the batch).
+    expect(parseBatch(wire({ ...META, events: [unknown, good] }), NOW)).toEqual({
+      ok: true,
+      batch: { ...META, events: [good] },
+      ignored: 1,
+    });
 
     const { batches, rejected } = buildBatches([unknown, good, early], META);
     expect(rejected).toEqual([unknown.id, early.id]);

@@ -1,0 +1,907 @@
+{
+  "version": "1.0.2",
+  "feature": "Staged practice (אימון בשלבים)",
+  "plan": "docs/handoff/2026-10-15/staged-practice/dev-plan.md",
+  "productPlan": "docs/handoff/2026-10-15/staged-practice/plan.md",
+  "status": "Waiting for Moshe's approval of dev-plan.md. Do not start any lane before he approves.",
+  "rules": [
+    "Engine is pure TypeScript: clock and RNG injected; no Math.random(), Date.now(), host timers or node:* imports under packages/engine/src (file I/O only in packages/engine/scripts).",
+    "No game logic in UI: screens talk only to GameHost (LocalGameHost for digit kinds, LocalFindHost for tap kinds); stars, end reasons, rules per kind and progress come from the engine.",
+    "New Rules keys are optional and ABSENT from the defaultRules literal (only overrides bring them in); never add them to GameRoomRuleOverrides or the server rulesSchema. Ranked/solo/bot behaviour, snapshots and stored rules stay byte-identical.",
+    "Levels run in engine modes 'solo' (no bot) and 'bot' with config.level set; no new GameMode.",
+    "tap is NOT a wire action: HostAction = ClientAction | TapAction; CLIENT_MESSAGE_TYPES, the server gate and PROTOCOL_VERSION (1) stay unchanged.",
+    "levels.json is a frozen data file built by script and committed; never regenerated at runtime; never statically imported from packages/engine/src/index.ts; loaded lazily on the phone. Bot search times of the tap kinds are frozen in it too (spec.bot.findMs), and a replay ('שוב', attempt >= 2) plays transformLevel(spec, attempt), an equivalent board, while LEVEL_RULES.replayTransform is on (D63).",
+    "Level games never write practice.db, never call PracticeSession/practiceFinished, never emit game_start/game_end, never queue a PracticeResult.",
+    "Level XP is derived by the server inside PUT /v1/me/levels from stored bests; the phone only shows an estimate.",
+    "Telemetry props use the key `level` (number), never `levelId`: our own GA4 privacy filter (PERSONAL_KEY in apps/mobile/src/services/ga4.ts) drops every key ending in 'id' (and keys containing name, user, device or install).",
+    "Compatibility: new app + old server (404 notFound on /v1/me/levels = 'unsupported', keep data; level telemetry batched separately) and old app + new server (additive only) must both work.",
+    "Every UI string through t() in he and en (namespace 'levels'; English says 'Stage', not 'Level'); every animation respects Reduced Motion; board and keypad always LTR; cell names like D5 wrapped with ltr(); signed numbers via signedText(); me = P1 colour + ●, bot = P2 + ▲.",
+    "Every engine rule gets a Jest test. A lane may edit only its ownedFiles, plus a sharedFiles entry it is listed for, and only after the owner lane is merged.",
+    "A rule that departs from the original spec (docs/00-original-spec-v1.md) is built per the original behind a switch until Moshe approves it (D62 reactions, D64 chain). A ☐ default is built as a setting that the code really reads, with a test that flips it.",
+    "Never name a source folder build/: the root .gitignore (line 29) and .prettierignore (line 4) ignore every folder named build at any depth. The level builder lives in packages/engine/src/levels/builder/.",
+    "No compile/APK, commit or deploy without Moshe's explicit OK."
+  ],
+  "lanes": [
+    {
+      "id": "engine-rules",
+      "title": "2א Engine: level rules, end reasons and outcome, time penalties, level view, stars, progress/gates/XP rules, replay transform, shared level types, GameHost.tap",
+      "dependsOn": [],
+      "ownedFiles": [
+        "packages/engine/src/game/**",
+        "packages/engine/src/progress/**",
+        "packages/engine/src/levels/spec.ts",
+        "packages/engine/src/levels/stars.ts",
+        "packages/engine/src/levels/stars.test.ts",
+        "packages/engine/src/levels/progress.ts",
+        "packages/engine/src/levels/progress.test.ts",
+        "packages/engine/src/levels/index.ts",
+        "packages/engine/src/testing/levels.ts",
+        "packages/engine/src/testing/game.ts",
+        "packages/engine/src/index.ts",
+        "packages/protocol/src/index.ts",
+        "packages/protocol/src/index.test.ts",
+        "apps/mobile/src/net/remoteGameHost.ts",
+        "apps/mobile/src/net/__tests__/remoteGameHost.test.ts",
+        "apps/mobile/src/game/effects.ts",
+        "packages/engine/src/levels/spec.test.ts",
+        "packages/engine/src/levels/transform.ts",
+        "packages/engine/src/levels/transform.test.ts",
+        "apps/mobile/src/screens/game/arsenal/arsenalModel.ts",
+        "apps/mobile/src/screens/game/arsenal/__tests__/arsenalModel.test.ts",
+        "apps/mobile/src/levels/data/levels.json"
+      ],
+      "tasks": [
+        "rules.ts: add OPTIONAL Rules keys timeLimitMs, endAtScore, editableCells, maxMoves, chainCells (= plan's chainOnly, ordered chain), chainNotYet ('accept' | 'penalty', D64), lockTimeout?: false, mistakeTimeMs, maxMistakes (reserved, not implemented). Do not mention them in the defaultRules literal.",
+        "types.ts: EndReason += 'targetReached' | 'timeUp'; Due += {kind:'timeUp'} with DUE_ORDER -1; new event timePenalty {playerId, cell, reason:'mistake'|'notYet', ms, totalMs}; optional PlayerState.timePenaltyMs (absent until first penalty); RejectReason += 'notEditable' | 'frozen' ('frozen' is used by the tap engine of engine-find); optional GameConfig.level: LevelRun {id, rev, kind, boss?, attempt, stars: StarRule, worthHint?}; optional GameView.level (with optional find: LevelFindView and selectedWorth); optional gameResult.level {stars, metric, elapsedMs, penaltyMs}; HostUpdate.events.levelEvents?: LevelEvent[] (types from levels/spec.ts).",
+        "engine.ts: timeUp due at startedAt + timeLimitMs - timePenaltyMs, run before lock expiry; action at exactly the deadline is refused 'gameOver'; select rejects outside editableCells; lockTimeout false emits cellLocked with expiresAt null (thinkMs = now - lockedAt); after placedCorrect/placedWrong check levelGoalMet (endAtScore reached by any active player, all editableCells filled, all chainCells filled, maxMoves used by every non-bot player) -> endGame 'targetReached' (boardComplete checked first); chainCells: a wrong digit in any cell -> placedWrong + timePenalty mistake; a right digit in a non-next cell -> with chainNotYet 'accept' (a switch; the default is 'penalty', D64 approved by Moshe 2026-10-18) an ordinary placedCorrect with its points, counting as chain progress only in a chain cell, the level ending when every chain cell is filled; with chainNotYet 'penalty' only timePenalty notYet (no wrong[] entry, digit not disabled, lock kept); mistakeTimeMs -> timePenalty after placedWrong; penalty crossing deadline -> timeUp in the same transition.",
+        "createGame validation (RangeError): positive timeLimitMs/endAtScore, integer maxMoves, editableCells/chainCells non-empty, valid, unique, not givens; lockTimeout false requires interferences false; mistakeTimeMs and chainCells require exactly 1 player.",
+        "evolve.ts / view.ts / results.ts: apply timePenalty; GameView.level only when config.level exists (elapsedMs, endsAt, penaltyMs, provisional/final stars, marks, editableCells, progress {cells|score|moves|chain}, and selectedWorth = moveScore of the solution digit in my locked cell only when config.level.worthHint); never reveal the next chain cell; gameResult.level only for level games.",
+        "levels/spec.ts: LevelSpec (id L001..L300, rev, chapter, slot, kind, boss, seed, gameType, board {grid, solution, mine?}, timeLimitMs, targets per kind, stars, bot? {level, pace (final: a boss's x0.9 already applied), findMs? ([min, max] per findDuel spot, frozen at build), missShare?}), LEVEL_KINDS = find, findDuel, fillBox, duel, spotError, pointHunter, chain. Declare here, up front, every type other lanes share: FindScope ({kind:'box'|'row'|'col', index} | {kind:'board'}), TargetTier ('single'|'pointing'|'claiming'|'nakedPair'|'hiddenPair'|'chain2'), FindTarget, LevelFindView {digit, scope, spotIndex, spots, frozenUntil, wrongTaps, found, answer?}, the LevelEvent union of the tap engine (levelCreated, levelStarted, targetShown, tapped, spotWon, spotVoid, reacted, levelOver with FindEndReason 'targetReached'|'timeUp'|'tooManyMisses'|'quit') and AppLevel (the subset shipped in the app). engine-solver, engine-find, levels-builder and mobile-data import them (import type) and never redeclare them.",
+        "levels/spec.ts: levelRulesFor(spec, rules = LEVEL_RULES) -> Partial<Rules> per kind, the only place these choices live (fillBox: editableCells, timeLimitMs, mistakeTimeMs 5000, lockTimeout false, afterMistake keepLock, relockCooldownMs 0; duel: endAtScore 30, timeLimitMs 30000 and nothing else; pointHunter: maxMoves 3, timeLimitMs, lockTimeout false, afterMistake keepLock, relockCooldownMs 0; chain: chainCells, chainNotYet = rules.chainNotYet, mistakeTimeMs 5000, timeLimitMs, lockTimeout false, afterMistake keepLock, relockCooldownMs 0); levelModeFor(spec) -> 'solo' | 'bot' (findDuel and duel, and bosses of those kinds, are 'bot').",
+        "levels/stars.ts: starsFor(rule, metric) for metrics timeMs (inclusive thresholds), gap (>=15/>=8/>0; tie, bot ahead or bot reached target -> 0), spots (4-5/3/2/0-1), points (pointThresholds(max, pct) rounded UP to 0.5), errors found.",
+        "levels/progress.ts: LEVEL_RULES {chapterSize:10, chapterCount:30, gateStars:20, levelMaxMs:30000, quitCountsAsPlayed:true, replayTransform:true, chainNotYet:'penalty', tapOnFilled:'ignore'}; maxLevel(rules) = chapterCount x chapterSize; levelNumber/chapterOf/levelIdOf; countsAsPlayed(reason, rules); isLevelOpen(state, openedGates, rules) (a gate that opened once stays open, even when gateStars rises or the chapter gets a new level in a later rev); chapterStars; gateState(chapter) {open, stars, need, bossPlayed}; gateOpen (L(10k) played AND chapter k stars >= gateStars); nextLevelId; replayCandidates (max 3: an unplayed level of the chapter first, so the boss L(10k) when only it is missing, then fewest stars, tie: most recently played); mergeBest (never lower); isBetterMetric(kind, a, b) (time lower; spots, gap, points and errors found higher); levelXpFor(prevBest, best, gateOpened, rules), levelsXpEarned(state, rules). Names must not clash with existing exports (LevelProgress, levelFor, isUnlocked, BotLevel*).",
+        "levels/progress.ts: LEVEL_END_REASONS = completed | timeUp | botWon | failed | quit (protocol telemetry re-exports it; the phone CHECK and the server enum use it) and levelOutcome(spec, end: GameResult | FindLevelOver) -> {reason, stars, metric}, one mapping for both hosts: targetReached and boardComplete -> completed; timeUp -> timeUp (in a duel too, whoever leads); duel bot reaches 30 first -> botWon; find tooManyMisses -> failed (0 stars); findDuel all 5 spots taken -> completed; surrender/quit -> quit.",
+        "levels/transform.ts: transformLevel(spec, attempt) -> LevelSpec. Attempt 1 returns the spec unchanged; attempt >= 2 applies a sudoku isomorphism drawn from seedFromString(`${id}:r${rev}:a${attempt}`): digit relabelling, row swaps inside bands, column swaps inside stacks, band and stack swaps, optional transpose, mapped onto grid, solution, mine digits, targets (digit, scope, accept cells), editableCells, chainCells, planted errors and the stored best line. Star rules, limits and bot level/pace/findMs stay; technique tiers, knowability and §6.4 scores are invariant (row, column, box and digit counts are preserved). levelSession uses it only while LEVEL_RULES.replayTransform is on (D63).",
+        "progress/progress.ts: DEFAULT_PROGRESS_RULES.xp.levelStar = 10, levelGate = 50 (ProgressRules type updated).",
+        "levels/index.ts + engine index.ts: export * from './levels' (spec, stars, progress and transform only; builder/ is never exported).",
+        "host.ts: TapAction {type:'tap', cell}, HostAction = ClientAction | TapAction, HostUpdate.rejected.action: HostAction, optional HostUpdate.events.levelEvents; LocalGameHost.tap(cell) enqueues a local rejected 'badAction' without touching the engine log.",
+        "protocol index.ts: GameHost.tap(cell); re-export HostAction/TapAction. RemoteGameHost.tap emits a local rejection and never sends. mobile effects.ts: refused action type becomes HostAction['type'], and arsenalModel.isInterferenceRefusal takes HostAction['type'] (GameScreen.tsx:848 passes e.action to it; without this the mobile typecheck fails).",
+        "testing/levels.ts: one LevelSpec fixture per digit kind (fillBox, duel, pointHunter, chain) on bank puzzle #1 for later lanes; write the first two (fillBox, duel) as AppLevel JSON to apps/mobile/src/levels/data/levels.json, so mobile-data can build and test levelsData.ts in wave 3 before levels-builder overwrites the file with the real 300 levels (sharedFiles).",
+        "D65 background freeze: protocol GameHost gains pause(): void and resume(): void (local play only). LocalGameHost.pause() freezes the game (engine status 'paused' with a new local-only reason 'background', or an equivalent local pause that never reaches the wire): no timer fires while paused (timeUp, lock expiry, relock cooldowns, any due), every action is rejected 'paused', the level clock (elapsedMs, time left) stops; resume() shifts every deadline by the paused duration, so time left and lock remaining are exactly what they were. pause/resume are idempotent. RemoteGameHost.pause/resume are no-ops. Ranked/online behaviour, wire messages and PROTOCOL_VERSION unchanged."
+      ],
+      "tests": [
+        "packages/engine/src/game/levelRules.test.ts: Object.keys(defaultRules(m,t)) for every mode x gameType equals the pre-1.0.2 key list; JSON.stringify(defaultRules('ranked','fast')) equals a pinned string",
+        "levelRules.test.ts: scripted ranked 2-player game never emits timePenalty, nextDeadline never from timeUp, gameOver result has no 'level' key, replayMatches() true",
+        "levelRules.test.ts timeLimitMs 30000: tickTo(29999) running; tickTo(30000) gameOver 'timeUp' durationMs 30000; place at 30000 rejected 'gameOver'; nextDeadline 30000; timeUp + lock expiry at same instant -> only gameOver",
+        "levelRules.test.ts endAtScore 30: 29.5 does not end; >=30 ends 'targetReached' with mover ranked first; same when the bot reaches it",
+        "levelRules.test.ts editableCells: select outside rejected 'notEditable' with no events; last editable cell ends 'targetReached'; RangeError for a given, out-of-range, duplicate or empty list",
+        "levelRules.test.ts mistakeTimeMs 5000: [placedWrong, timePenalty{mistake,5000,total 5000}]; deadline 30000 -> 25000; penalty crossing deadline -> gameOver 'timeUp' in same transition; replayMatches()",
+        "levelRules.test.ts chainCells: a wrong digit in a chain cell and in an off-chain cell -> placedWrong + timePenalty; after a wrong digit the same cell can be re-entered at once (keepLock, no relock cooldown); 'accept': a right digit in an off-chain cell -> placedCorrect with its points and no chain progress, a right digit in a later chain cell counts; 'penalty': a right digit in a non-next cell -> only timePenalty notYet, grid and wrong[] unchanged, keypad.disabled lacks the digit, lock kept; next cell -> placedCorrect; last chain cell -> targetReached",
+        "levelRules.test.ts maxMoves 3: two correct + one wrong -> targetReached after the third; score = points - missedPoints penalty; timeUp after 1 move -> gameOver 'timeUp' with the points so far",
+        "levelRules.test.ts lockTimeout false: cellLocked expiresAt null; nextDeadline null without timeLimit; lock still held after advance(60000); thinkMs = now - lockedAt",
+        "levelRules.test.ts validation: lockTimeout false + interferences true, mistakeTimeMs with 2 players, chainCells with 2 players, timeLimitMs <= 0 -> RangeError",
+        "levelRules.test.ts view: level game view.level correct at several times; selectedWorth present only with config.level.worthHint and equal to moveScore of the solution digit; ranked view has no 'level' key",
+        "packages/engine/src/levels/stars.test.ts: find 5000 -> 3, 5010 -> 2, 10000 -> 2, 10010 -> 1; chapter 11: 4000/4010; chapter 26: 3000/3010; timeUp -> 0",
+        "stars.test.ts fillBox chapter 1 (10/15/20 s): 10000 -> 3, 10001 -> 2, 15001 -> 1, timeUp -> 0",
+        "stars.test.ts duel gap: 15 -> 3, 14.5 -> 2, 8 -> 2, 7.5 -> 1, 0.5 -> 1, tie -> 0, bot ahead -> 0, bot reached 30 first -> 0",
+        "stars.test.ts findDuel spots: 5,4 -> 3; 3 -> 2; 2 -> 1; 1,0 -> 0",
+        "stars.test.ts pointThresholds(18) = [13, 15.5, 17.5]; with 98% three-star = 18; spotError 6/12/20, 12/20/30, 15/22/30 and chain 10/16/24, 13/20/30, 16/23/30, chapter 29 three-star 12 at their exact edges; ordering three > two > one for every rule",
+        "packages/engine/src/levels/spec.test.ts: levelRulesFor output pinned per kind (fillBox editableCells, timeLimitMs, mistakeTimeMs 5000, lockTimeout false, keepLock, relockCooldownMs 0; duel endAtScore 30 and timeLimitMs 30000 only; pointHunter maxMoves 3, lockTimeout false, keepLock, relockCooldownMs 0; chain chainCells, chainNotYet from LEVEL_RULES, mistakeTimeMs 5000, keepLock, relockCooldownMs 0); no interference key for any kind; levelModeFor: find, fillBox, spotError, pointHunter, chain -> solo; findDuel, duel -> bot; bosses follow their kind",
+        "packages/engine/src/levels/progress.test.ts: L001 always open; L002 opens after L001 played; quit counts as played; gate chapter 1 with 19 stars -> L011 closed, 20 -> open, 20 with L010 unplayed -> closed",
+        "progress.test.ts mergeBest: 3 then 1 -> 3; new rev with 1 star -> stays 3",
+        "progress.test.ts XP: levelXpFor(1,1)=0, (1,3)=20, quit=0, gate opened +50; levelsXpEarned(all 900 stars, 29 gates) = 10450",
+        "progress.test.ts replayCandidates: at most 3, fewest stars first, tie broken by most recently played",
+        "progress.test.ts ids and order: levelNumber/chapterOf/levelIdOf round-trip (L001 <-> 1 in chapter 1; L010 is a boss; L300 <-> chapter 30); nextLevelId mid-chapter L037 -> L038, at a closed gate (L040 played, 19 stars) -> null, after L300 -> null",
+        "progress.test.ts settings: quitCountsAsPlayed false -> a quit does not open the next level; a gate opened at gateStars 20 stays open when gateStars rises to 22 or the chapter gets an unplayed level (openedGates)",
+        "progress.test.ts gateState and replayCandidates: 22 stars with L040 unplayed -> closed, bossPlayed false, and replayCandidates puts L040 first",
+        "progress.test.ts isBetterMetric: time lower is better; spots, gap, points and errors found higher are better; equal is not better",
+        "progress.test.ts levelOutcome table: every end of all 7 kinds through both hosts (find targetReached/timeUp/tooManyMisses/quit; findDuel all spots/timeUp; spotError all found/timeUp; fillBox, chain, pointHunter targetReached/timeUp; duel me to 30 -> completed, bot to 30 -> botWon, clock out with either ahead -> timeUp; surrender -> quit) maps to the expected reason and stars, and every reason is in LEVEL_END_REASONS",
+        "packages/engine/src/levels/transform.test.ts: attempt 1 is the identity; attempts 2 and 3 differ from 1 and from each other and are deterministic; the result is a valid sudoku whose givens agree with its solution, with the same given count; every mapped target, editable, chain, error and best-line cell holds the mapped digit; moveScore of every mapped cell and digit equals the original; star rules, limits and bot unchanged",
+        "apps/mobile/src/screens/game/arsenal/__tests__/arsenalModel.test.ts (existing): isInterferenceRefusal is true only for 'interfere', false for 'tap'",
+        "packages/engine/src/game/flow.test.ts: LocalGameHost.tap(A1) -> exactly one rejected {action:{type:'tap'}, reason:'badAction'}; host.events unchanged",
+        "packages/protocol/src/index.test.ts: CLIENT_MESSAGE_TYPES unchanged (8 entries, no 'tap'); asGameHost compiles with tap",
+        "apps/mobile/src/net/__tests__/remoteGameHost.test.ts: tap emits a local 'badAction' rejection; room.send never called",
+        "apps/server/src/game/wire.test.ts (existing, unchanged): ranked byte budget unchanged",
+        "levelRules.test.ts D65: pause at 12.3 s of a 30 s fillBox level, advance the clock 60 s, resume -> no timeUp during the pause, view time-left still 17.7 s, lock remaining unchanged, timeUp fires 17.7 s after resume; actions while paused rejected 'paused'; pause twice / resume twice are no-ops; remoteGameHost.pause/resume do nothing and send nothing."
+      ],
+      "doneWhen": "Engine and protocol tests pass including the ranked-unchanged regression and the unchanged wire.test; npm run typecheck and npm run lint pass for engine, protocol and mobile."
+    },
+    {
+      "id": "engine-solver",
+      "title": "2ב Engine: missing solver pieces (scoped targets, knowable cells, placementsBefore, exact 3-move max, scoped explanations, addGivens exclude)",
+      "dependsOn": [
+        "engine-rules"
+      ],
+      "ownedFiles": [
+        "packages/engine/src/sudoku/**"
+      ],
+      "tasks": [
+        "logic.ts: make the hidden-single-in-unit check public as hiddenSingleInUnit(unit, cell, digit); add placesOf(unit, digit). Do not change step order or any existing behaviour.",
+        "sudoku/targets.ts (FindScope, TargetTier and FindTarget are imported as types from ../levels/spec, declared by engine-rules): findTargets(grid, {techniques, scopes}) -> FindTarget {digit, scope, cell|null, tier}[]; targetTier(grid, target, ladder); placementsBefore(grid, solution, target, techniques, maxDepth=2) (0 direct, 1 = two-step deduction); requiresTechniques(grid, target, techniques, mustNeed) (knowable with techniques and, when mustNeed is non-empty, not with techniques minus mustNeed); boardScopeTarget(grid, solution, digit, techniques) (scope 'board': the digit has at least one knowable cell; accept = every empty cell whose solution is the digit, plan §2.1). Scope-specific: never use hiddenSingleAt to confirm a scoped target.",
+        "sudoku/reading.ts: knowableCells(grid, techniques, excluded?) and closedBoard(grid, techniques); knowableCells(grid, TECHNIQUES) is the full-solver set the chain rule checks. Do NOT rewire bot/brain computeReading (bot RNG/behaviour must stay identical).",
+        "sudoku/bestMoves.ts: bestMoves(grid, solution, {moves:3, techniques|null, scoreY}) -> {max, line, nodes}; DFS over ordered moves recomputing knowable cells per state.",
+        "explain.ts: optional opts {unit, digit, techniques} (backward compatible); explainSpotError(givens, mineCorrect, cell, wrong, solution, techniques) computed on givens + correct 'mine' digits with that cell emptied. explainText.ts: export formatBlock(cell, block, digit, lang) and formatNotYet(cell, candidates, lang), cell names wrapped in LRI/PDI.",
+        "givens.ts: AddGivensOptions.exclude?: ReadonlySet<CellIndex> (cells kept empty).",
+        "sudoku/index.ts: export the new modules with names that do not clash through engine export *."
+      ],
+      "tests": [
+        "packages/engine/src/sudoku/targets.test.ts: HIDDEN fixture lists {7, box 5, D5, 'single'}; a 7 forced only in row D with 2 places in box 5 is NOT a box-5 target although hiddenSingleAt(D5,7) is non-null; pointing-only target has tier 'pointing' and requiresTechniques true; placementsBefore 0 for a direct single and 1 for a two-step fixture; over bankRows every target digit equals the solution",
+        "targets.test.ts: requiresTechniques with an empty mustNeed only checks knowability; boardScopeTarget accepts every empty cell whose solution is the digit and is null when no cell of the digit is knowable",
+        "packages/engine/src/sudoku/reading.test.ts: knowableCells agrees with the bot's cell classification on 30 bank boards per type; adding a correct digit never removes another knowable cell",
+        "packages/engine/src/sudoku/bestMoves.test.ts: tiny fixture equals the hand-computed order-dependent optimum; techniques:null max >= knowable max; mean over first 20 offline fast boards within 17.2-18.0; every move of the line is knowable on its state",
+        "packages/engine/src/sudoku/explain.test.ts: explain(..., {unit: box 5}) frames a hidden single in box 5 even when a naked single exists; techniques option limits steps; formatBlock/formatNotYet Hebrew equal the spec sentence after stripIsolates with LRI/PDI around cell names (snapshot); explainSpotError visible -> conflict with a given, silent -> notSolution + resolved right digit, never throws with other planted errors",
+        "packages/engine/src/sudoku/givens.test.ts: exclude keeps those cells empty and still reaches the target; null when too few cells remain",
+        "Existing logic, explain, generate, grade and bot simulation tests pass unchanged"
+      ],
+      "doneWhen": "New solver tests pass; all existing sudoku and bot tests pass with identical results; engine typecheck and lint pass."
+    },
+    {
+      "id": "engine-find",
+      "title": "2ג Engine: tap-only level engine (find, findDuel, spotError), LocalFindHost, bot search timing and level bot config",
+      "dependsOn": [
+        "engine-rules"
+      ],
+      "ownedFiles": [
+        "packages/engine/src/levels/find.ts",
+        "packages/engine/src/levels/find.test.ts",
+        "packages/engine/src/levels/findHost.ts",
+        "packages/engine/src/levels/findHost.test.ts",
+        "packages/engine/src/bot/**",
+        "packages/engine/src/testing/findLevels.ts",
+        "packages/engine/src/testing/bot.ts"
+      ],
+      "tasks": [
+        "levels/find.ts: createFind(config, {clock, rng, attempt}), applyFind(state, {type:'start'|'tap'|'quit'|'pause'|'resume', playerId, cell?}, now), tickFind, nextFindDeadline, evolveFind, findView, replayFind. Events (types from levels/spec.ts, declared by engine-rules; never redeclared here): levelCreated (carries the full config including the bot plan), levelStarted, targetShown {index, botTapAt|null}, tapped {playerId, cell, right, penaltyMs?, frozenUntil?}, spotWon, spotVoid, reacted, levelOver {reason:'targetReached'|'timeUp'|'tooManyMisses'|'quit', elapsedMs, penaltyMs, spots, stars}.",
+        "find: one target; wrong tap +5000 ms (moves the deadline closer); second wrong tap -> tooManyMisses, 0 stars, answer in view; 20 s limit -> timeUp, 0 stars, answer in view (plan §2.1); scope 'board' accepts every cell in accept[]; a tap on a filled cell per LEVEL_RULES.tapOnFilled: 'ignore' (default, no event) or 'penalty' (a wrong tap).",
+        "findDuel: 5 sequential targets; wrong tap freezes 3000 ms; second wrong on the same spot keeps the player out until next targetShown; 30 s; open spot at time-up -> spotVoid; tie rule: before a human tap run timeUp dues with at <= now but bot dues only with at < now (same ms -> mine; time-up beats a tap at the same ms); the bot's own miss freezes the bot 3000 ms and leaves the spot open; on my wrong tap the bot reacts 😂 when its plan says so (pre-drawn per spot; SPEC §9 reactions, original §20 'להגיב'); a tap on a filled cell per LEVEL_RULES.tapOnFilled.",
+        "spotError: tap on a planted error -> found (right digit revealed); tap on a correct 'mine' digit +5000 ms; tap on a given per LEVEL_RULES.tapOnFilled ('ignore' default, 'penalty' = +5000 ms); all found -> targetReached; unfound errors revealed at the end.",
+        "Bot plan drawn in createFind from rng(seed, attempt) within the frozen spec.bot.findMs ranges and spec.bot.missShare (a miss costs the bot 3 s), and stored in levelCreated, so replayFind needs no RNG and a later BOT_CONFIG.find change never alters a built level. No interference of any kind.",
+        "levels/findHost.ts: LocalFindHost implements protocol GameHost with one scheduler timer and an outbox like LocalGameHost; getView adapts FindState to GameView (grid = board + taken spots, owner = seats, keypad disabled, interference null, level.find: LevelFindView); tap -> applyFind; surrender -> quit; no player react action (D62: no reactions button in levels; the bot's own reacted events stay); select/place/release/interfere -> rejected 'badAction'; a tap while frozen -> rejected 'frozen'; updates carry levelEvents.",
+        "bot/finder.ts: findMsRange(level, tier, pace, cfg) -> [min, max] = BOT_CONFIG.find.ms[level] x tierFactor x pace (pace is final, so there is no boss factor here; levels-builder uses it to freeze findMs in levels.json) and chooseWrongTap(grid, target, rng) (an empty cell in the scope that is not the answer).",
+        "bot/levels.ts: BOT_CONFIG.find {ms per bot level: 1 8000-12000, 2 6500-10000, 3 5000-8000, 4 4000-6000, 5 3000-4500; tierFactor single 1 and every other tier 1.3 (plan §2.2); missShare per level; reactShare; wrongFreezeMs 3000}; levelBotConfig(pace) -> {pace for fast/normal/hard, lingerShare 0, adaptation off} (a plan deviation listed in dev-plan §1.4 and in SPEC §9). attachBot unchanged.",
+        "bot/brain.ts: eligibleCells respects rules.editableCells (needed by the fillBox profile simulation).",
+        "Append exports of find.ts and findHost.ts to packages/engine/src/levels/index.ts (sharedFiles).",
+        "testing/findLevels.ts: fixtures for find, findDuel and spotError.",
+        "D65 background freeze in the tap kinds: LocalFindHost.pause()/resume() (the GameHost methods declared by engine-rules): while paused no due fires (time limit, 3 s freezes, the bot's planned taps), taps are rejected 'paused'; resume shifts every deadline, including the bot plan, by the paused duration. bot/runner.ts (attachBot): the bot never acts while the game is paused and its pending think/act timers resume with the same remaining time."
+      ],
+      "tests": [
+        "packages/engine/src/levels/find.test.ts find: correct tap at 5000 -> 3 stars, at 5010 -> 2; wrong then correct 1 s later -> elapsed 6000 -> 2; second wrong tap -> levelOver tooManyMisses, 0 stars, answer in view; correct at 19999 -> 1 star; tap at 20000 refused, levelOver timeUp, 0 stars, answer in view; scope board accepts any accept[] cell; tapOnFilled 'ignore' -> no event, no penalty; 'penalty' -> counts as a wrong tap (+5000)",
+        "find.test.ts findDuel: bot wins a spot at its drawn time; human tap at the same ms as the bot due wins; timeUp at the same ms as a human tap wins; wrong tap -> frozenUntil +3000 and a tap while frozen rejected 'frozen'; second wrong on same spot -> out until next targetShown; bot miss -> bot frozen 3000 ms, the spot stays open and I can take it; the bot reacts 😂 after my wrong tap when its plan says so; 5 spots -> targetReached; 30 s with an open spot -> spotVoid then timeUp; no interference events",
+        "find.test.ts spotError: planted error tap -> found with right digit in view; correct mine digit -> +5000; given -> nothing with tapOnFilled 'ignore', +5000 with 'penalty'; all found -> targetReached; time-up with an unfound error -> 0 stars and errors revealed",
+        "find.test.ts determinism: same seed and attempt -> same bot plan; attempt 2 -> a different plan; the plan depends only on spec.bot.findMs and missShare (changing BOT_CONFIG.find inside the test leaves it unchanged); replayFind(log) deep-equals the final state",
+        "packages/engine/src/levels/findHost.test.ts (ManualClock/ManualScheduler): satisfies GameHost; getView().level.find set; select/place/interfere -> 'badAction'; surrender -> levelOver quit; scheduler fires timeUp at the deadline; updates carry levelEvents",
+        "packages/engine/src/bot/finder.test.ts: findMsRange x1.3 for every non-single tier and x pace, with no boss factor; chooseWrongTap returns an empty in-scope cell that is not the answer",
+        "packages/engine/src/bot/levels.test.ts: BOT_CONFIG.find.ms exists for every level and is ordered Pip slowest to Overlord fastest per the plan table; levelBotConfig(0.8) gives pace 0.8 for all three game types, lingerShare 0, adaptation off",
+        "packages/engine/src/bot/runner.test.ts: a level duel in mode 'bot' emits no interference event and draws the same RNG sequence as today; with levelBotConfig(0.9) every plan trace totalMs = round(0.9 x unpaced)",
+        "packages/engine/src/bot/brain.test.ts: with editableCells set the bot never selects a cell outside it",
+        "Existing bot simulation/runner/robustness tests pass unchanged",
+        "findHost.test.ts D65: findDuel paused at 9 s with the bot due at 11 s, clock +120 s, resume -> the bot taps 2 s after resume, not at once; my 3 s freeze keeps its remaining time; find (kind 1) time-up 20 s counts only unpaused time; taps while paused rejected 'paused'. runner.test.ts: an attached bot in a bot-mode level places nothing while LocalGameHost is paused and continues with the same remaining think time after resume."
+      ],
+      "doneWhen": "Find engine, host and bot tests pass including full replay from the log; existing bot tests unchanged; engine typecheck and lint pass."
+    },
+    {
+      "id": "levels-builder",
+      "title": "2ד Build and validate: levels.config, per-kind builders, profile simulation, the 300 levels, levels.json and its app copy",
+      "dependsOn": [
+        "engine-rules",
+        "engine-solver",
+        "engine-find"
+      ],
+      "ownedFiles": [
+        "packages/engine/src/levels/levels.config.ts",
+        "packages/engine/src/levels/levels.config.test.ts",
+        "packages/engine/src/levels/builder/**",
+        "packages/engine/src/levels/levels.data.test.ts",
+        "packages/engine/scripts/levels-build.ts",
+        "packages/engine/tsconfig.scripts.json",
+        "packages/engine/data/levels.json",
+        "packages/engine/data/ranked-retired-solutions.json",
+        "packages/engine/package.json",
+        "package.json",
+        "apps/mobile/package.json",
+        "apps/mobile/scripts/gen-levels.mjs",
+        "apps/mobile/src/levels/__tests__/levelsData.test.ts",
+        ".prettierignore"
+      ],
+      "tasks": [
+        "levels.config.ts: the chapter table of plan §4.1-4.3 as data. Kinds per slot: chapters 1-4 exactly per the plan table (chapter 4 has one Idea-1); from chapter 5 the 5-9 and 10+ distributions; Idea-2 enters in chapter 7 with 2 slots, taking one findDuel slot, and Idea-3 in chapter 9 with 2 slots, taking one duel slot. Saw-tooth tiers (slots 1-3 easier, 4-6 base, 7-9 harder). Per chapter, kind and tier explicit `techniques` and `mustNeed` sets (mustNeed is empty where the act adds no technique: act 3, fillBox 11-15). Board givens per act clamped to the D43 range of the board type (act 3 normal 38->35, act 4 hard 29->27) for duel, find, findDuel, pointHunter and chain. Target-box empties for find/findDuel (3 in chapter 1 up to 7-8 in chapter 30). fillBox missing cells and surrounding givens per plan §2.3. Per-kind star thresholds per chapter. Bot level and pace per chapter (plan §4.2). Bosses: chapter 1 fillBox with 5 missing at 10/15/20 s; even chapters findDuel, odd from 3 duel; the chapter's hard-tier board, like slots 7-9; pace = chapter pace x 0.9, stored as the final bot.pace; Overlord exactly in L280, L290, L300. Idea tracks: spotError 1 visible 20 s (ch4-7), 2 visible 30 s (8-12), 2 silent (13-18), 3 from 19; pointHunter 30/25/20 s (7-11/12-20/21+), 98% from 27; chain 3/4/5 steps (9-13/14-21/22+), three-star 12 s from 29. Plan inconsistencies are resolved as in dev-plan §1.4 (98% from 27, 12 s from 29, no extra chapter-24 rule, the file sits in levels/).",
+        "builder/boards.ts: fitBoard(givens, solution, {total, keepEmpty}, rng) via addGivens exclude.",
+        "builder/{find,findDuel,fillBox,duel,spotError,pointHunter,chain}.ts: pure builders using targets/reading/bestMoves. find/findDuel keep the target box's empties in the chapter range and use boardScopeTarget for scope 'board'. fillBox rotates the box over all 9 (box from the slot seed) and removes surrounding digits while the box stays solvable with the chapter techniques and, when mustNeed is non-empty, not without it. spotError plants visible (clash with a given) or silent (no clash) errors with givens-alone uniqueness; a silent error's right digit needs mustNeed when it is non-empty. pointHunter stores max and best line (max over cells knowable with chapter techniques). chain by simulated annealing: at every step exactly one empty cell is knowable with the FULL solver set (TECHNIQUES), it is the next chain cell and it is knowable with the chapter set; when mustNeed is non-empty at least one step needs it; no uniqueness goal (the chain digits are forced in every solution); the report flags only real failures. Find kinds freeze bot.findMs per spot (findMsRange) and bot.missShare into the level.",
+        "Seeds: seedFromString(`${id}:r${rev}`, LEVELS_SALT) with a fresh createRng per level; never the bank's raw seeds.",
+        "builder/validate.ts + levels.data.test.ts (= levels:validate, 60 s timeout): every rule of plan §5.6 as adjusted in dev-plan §1.4, plus id/count/seed rules, D43 ranges, the bot-config fingerprint and the replay-transform check (see tests).",
+        "builder/profiles.ts + builder/simulate.ts: a per-kind profile model in config for casual, good and excellent (ms per fillBox cell, per find search, per chain step, per pointHunter move, per duel move, and a mistake share). The plan's full-board think times (9-14 / 6-9 / 3.5-5.5 s) are only the starting point: calibrate once against real play (Moshe's own times on a few sample levels, or the practice think-time data) before the report is read, and the report marks every number that is still an assumption. TARGET_STARS per act; duel/fillBox through LocalGameHost + attachBot (human seat as a profile bot), tap kinds through find.ts, pointHunter/chain Monte Carlo; chapterReport(levels, runs=100) -> warnings (never fails).",
+        "scripts/levels-build.ts (Node I/O only): writes packages/engine/data/levels.json (compact, trailing newline, with botConfigFingerprint = a hash of the BOT_CONFIG fields duel bots use) and prints the build + simulation report; npm scripts levels:build and levels:validate in packages/engine/package.json, root aliases in package.json.",
+        "data/ranked-retired-solutions.json: the 6 ranked solutions present in commit cc5e49c but missing from today's puzzles.json (with a note to append when ranked puzzles retire).",
+        "apps/mobile/scripts/gen-levels.mjs (shape of gen-offline-pool.mjs): appLevels(file) keeps only the AppLevel fields (type from levels/spec.ts); npm script 'levels' in apps/mobile/package.json; overwrites the engine-rules fixture apps/mobile/src/levels/data/levels.json (sharedFiles). Target about 100 KB (plan §5.3); if the copy passes 110 KB, encode boards compactly (solution string + givens bitmask).",
+        ".prettierignore: add apps/mobile/src/levels/data/ (generated and compared byte for byte, like apps/mobile/src/game/data/). Keep every builder file out of any folder named build/; `git check-ignore packages/engine/src/levels/builder/find.ts` must print nothing.",
+        "Run levels:build once, commit nothing (Moshe commits); send the simulation report to the main session for Moshe."
+      ],
+      "tests": [
+        "packages/engine/src/levels/levels.data.test.ts: ids L001-L300 contiguous and unique; chapter = ceil(n/10); slot 10 is boss",
+        "packages/engine/src/levels/levels.config.test.ts: table-driven expectations copied from plan §2.1-§2.4, §3.1, §3.3 and §4.1-§4.3, so a changed number is a deliberate, reviewed edit: find three-star 5/4/3 s (ch1-10/11-25/26-30), two-star 10, one-star 20; fillBox thresholds 10/15/20 (ch1-2), 12/18/25 (3-5), 14/21/30 (6-10), 16/23/30 (11-15), 18/25/30 (16-25), 15/22/30 (26-30), missing 4/5/6/7/9 (ch1-2/3-5/6-10/11-15/16+), surrounding givens 72, 66, 60-50, 42-36, 34-30, 30-27, 27-25, 25-22; spotError counts, visibility and limits per band; pointHunter limits 30/25/20 s and 98% from 27; chain steps 3/4/5 and 12 s from 29; bot level and pace per chapter as in plan §4.2; the chapters 1-4 kind table; boss kind per chapter, boss pace = chapter pace x 0.9, Overlord exactly in L280, L290 and L300",
+        "levels.data.test.ts: non-boss levels by kind 43 find / 58 findDuel / 63 fillBox / 56 duel / 50 ideas, plus 30 bosses (1 fillBox, 15 findDuel, 14 duel); per-chapter distribution equals levels.config",
+        "levels.data.test.ts: board valid and givens agree with the solution",
+        "levels.data.test.ts: find/findDuel targets have exactly one place in scope with chapter techniques (scope 'board': at least one knowable cell, accept = every empty cell whose solution is the digit); when mustNeed is non-empty, not without it; every findDuel spot stays a target whoever took the earlier spots; target-box empties within the chapter range",
+        "levels.data.test.ts: fillBox box fully determined with chapter techniques and, when mustNeed is non-empty, not without it; editableCells equal the box empties; every box index 0-8 is used by some fillBox level",
+        "levels.data.test.ts: spotError givens alone unique; every error differs from the solution; visible errors clash with a given; silent errors clash with nothing; the right digit is knowable with chapter techniques on the cleaned board, and a silent error's right digit needs mustNeed when it is non-empty",
+        "levels.data.test.ts: pointHunter stored max equals a fresh full search and thresholds derive from it; best line knowable step by step",
+        "levels.data.test.ts: chain: at every step exactly one empty cell is knowable with the full solver set (TECHNIQUES), it equals chain[i] and it is knowable with the chapter set; when mustNeed is non-empty at least one step needs it",
+        "levels.data.test.ts: every timeLimitMs <= LEVEL_RULES.levelMaxMs, every threshold inside its time limit, thresholds ordered",
+        "levels.data.test.ts: no interference field anywhere; bot pace in [0.7, 1.2]; boss pace = chapter pace x 0.9; bosses use the hard tier; Overlord exactly in L280, L290 and L300; every findDuel level carries frozen findMs per spot and missShare; botConfigFingerprint equals the current BOT_CONFIG (fails on purpose: a bot tuning change is a deliberate rebuild with a new rev)",
+        "levels.data.test.ts: no level solution or givens equals a ranked puzzle in puzzles.json or ranked-retired-solutions.json (the test re-runs whenever either file changes, guarding both directions)",
+        "levels.data.test.ts: no two levels share givens or solution; seeds derive from id:rev",
+        "levels.data.test.ts: the givens of every duel, find, findDuel, pointHunter and chain board lie in the D43 range of its gameType (fast 45-50, normal 35-40, hard 22-29)",
+        "levels.data.test.ts: validate(transformLevel(spec, a)) passes for a = 2 and 3 on every level (or on a fixed sample of 60 if the full run is too slow)",
+        "packages/engine/src/levels/builder/*.test.ts: each builder deterministic per seed and satisfies its kind's invariants",
+        "packages/engine/src/levels/builder/profiles.test.ts: deterministic per seed; per chapter excellent >= good >= casual; off-target only warns; the report lists the assumed numbers",
+        "Drift check (warning only): rebuilding 3 sample levels from config equals the stored file",
+        "apps/mobile/src/levels/__tests__/levelsData.test.ts: the app copy equals appLevels(engine levels.json) field for field ('run npm run levels after levels:build'), keeps only AppLevel fields, and is at most 110 KB"
+      ],
+      "doneWhen": "levels:validate and levels.config.test green on all 300 levels; a second levels:build produces an identical file; `git check-ignore` on a builder file prints nothing; app copy <= 110 KB (plan: about 100 KB); the profile simulation report, with its assumed numbers marked, is delivered for Moshe."
+    },
+    {
+      "id": "server",
+      "title": "2ה Server: user_levels migration, PUT/GET /v1/me/levels, server-derived level XP with shared daily cap, level telemetry names and validators, privacy and account deletion",
+      "dependsOn": [
+        "engine-rules"
+      ],
+      "ownedFiles": [
+        "packages/protocol/src/progress.ts",
+        "packages/protocol/src/telemetry.ts",
+        "apps/server/src/db/schema.ts",
+        "apps/server/src/db/db.test.ts",
+        "apps/server/drizzle/0008_user_levels.sql",
+        "apps/server/drizzle/meta/0008_snapshot.json",
+        "apps/server/drizzle/meta/_journal.json",
+        "apps/server/src/progress/**",
+        "apps/server/src/config.ts",
+        "apps/server/src/http/index.ts",
+        "apps/server/src/http/cors.ts",
+        "apps/server/src/http/cors.test.ts",
+        "apps/server/src/telemetry/**",
+        "apps/server/src/legal/**",
+        "apps/server/src/accounts/store.ts",
+        "apps/server/src/accounts/accounts.test.ts",
+        "docs/store/APP-PRIVACY.md",
+        "docs/store/DATA-SAFETY.md"
+      ],
+      "tasks": [
+        "schema.ts: user_levels (user_id fk cascade, level_id CHECK ^L[0-9]{3,4}$, best_stars smallint CHECK 0..3, plays int >= 0, updated_at; PK user_id+level_id) and level_xp_days (user_id fk, day int = UTC epoch day, xp int; PK user_id+day). Generate with `npm run db:generate -w @sudoku-fight/server -- --name=user_levels` -> 0008_user_levels.sql with a leading comment; add both tables to db.test.ts list.",
+        "protocol progress.ts: PROGRESS_PATHS.myLevels = '/v1/me/levels'; LEVEL_ID_PATTERN (^L[0-9]{3,4}$); MAX_LEVELS_PER_REQUEST = maxLevel(LEVEL_RULES) from the engine (300 today, never a literal); LevelBest {id, stars: 0|1|2|3, plays}; PutMyLevelsRequest {levels}; MyLevels {levels, maxLevel, owedXp}; LevelsSyncResponse extends MyLevels {xp, progress: MyProgress, unknown: string[]}. PracticeResult is NOT changed.",
+        "progress/levels.ts: readMyLevels and mergeMyLevels in one transaction (insert-or-keep xp row + SELECT FOR UPDATE; per-id max of stars and plays; upsert with greatest(); skip 0/0 entries); then owed = levelsXpEarned(merged) - sum(level_xp_days.xp); give = min(owed, cap - practiceXpUsedOn(day)) when levelXpCarryOver (default true) else only today's new stars; upsert level_xp_days; addXp; GET and PUT both return owedXp (still unpaid after the request).",
+        "progress/practice.ts: extract practiceXpUsedOn(tx, userId, day) = practice_results.xp + level_xp_days.xp of that UTC day; practice keeps its lose-on-cap rule; practice-results schema unchanged.",
+        "router.ts: GET (reads limiter) and PUT (writes limiter, json limit 24 KB, strict zod schema: id matching LEVEL_ID_PATTERN, stars int 0..3, plays int 0..1e6, stars>0 requires plays>=1, at most MAX_LEVELS_PER_REQUEST entries; duplicate ids merge by max; well-formed ids above maxLevel(LEVEL_RULES) are skipped and listed in `unknown`, never a 400, so a newer app with more chapters keeps syncing; malformed ids -> 400) for /v1/me/levels; 404 notRegistered for unknown accounts; config.ts levelXpCarryOver; cors.ts SAME_ORIGIN_ALLOW adds PUT; doc comments in router.ts and http/index.ts.",
+        "protocol telemetry.ts: append level_map_open, level_start, level_end, level_quit, chapter_gate, level_tutorial with doc comments and prop interfaces; LEVEL_END_REASONS re-exported from the engine (completed, timeUp, botWon, failed, quit); TELEMETRY_EVENT_GENERATION (old names 1, level_* 2); TelemetryResponse.ignored?: number. Props use `level` (number 1..maxLevel), never levelId; level_start and level_end include attempt; chapter_gate.chapter is the chapter behind the gate (2..30).",
+        "telemetry/schema.ts: EVENT_PROPS per-event zod validators (level events z.object tolerant to extra keys, typed and ranged; report_sent stays strict); unknown event names are skipped one by one and counted in `ignored` (202) instead of failing the batch.",
+        "legal/privacy.ts + types.ts: six EVENT_DETAILS entries (he/en); level progress in the data list: the server copy (user_levels, level_xp_days) is deleted with the account, and the phone copy (levels.db) stays until the app is uninstalled, worded like the practice games today; bump LEGAL_UPDATED. docs/store/APP-PRIVACY.md 14 -> 20 events; DATA-SAFETY.md updated.",
+        "accounts/store.ts deleteUser: delete user_levels and level_xp_days rows in the same transaction (XP stays as today).",
+        "Do NOT deploy. Do NOT run db:seed-puzzles."
+      ],
+      "tests": [
+        "apps/server/src/progress/levels.test.ts: PUT stores per-level max of stars and plays; lower resend keeps best (2 then 1 -> 2); GET sorted by id with maxLevel 300 and Cache-Control no-store",
+        "levels.test.ts XP: 10 per new star; identical resend -> 0; 1 -> 3 stars -> 20; two devices with different subsets -> union, each star paid once; response xp and progress agree with GET /v1/me/progress",
+        "levels.test.ts gate: 50 exactly once when L010 played and chapter 1 >= 20 stars; 19 stars -> none; 20 stars with L010 unplayed -> none; later PUTs do not re-pay",
+        "levels.test.ts cap (practiceXpDailyCap 100): practice worth 80 then 5 new stars -> 20 granted and owedXp 30; next day an empty PUT grants the remaining 30 and owedXp 0; GET returns the same owedXp; a practice batch the same day sees the level XP in its cap",
+        "levels.test.ts validation -> 400 badRequest, nothing stored: 301 entries, L000, l001, L1, stars 4/-1/1.5, negative or non-integer plays, stars>0 with plays 0, extra field, missing field, missing levels, not an object; over-size body -> 413; 300 entries accepted; L301 on a 300-level server -> 200, skipped, listed in unknown, the other entries stored",
+        "levels.test.ts: 401 without token; 404 notRegistered for unknown/deleted account; 429 with Retry-After; two parallel PUTs with the same new stars pay once",
+        "apps/server/src/db/db.test.ts: table list includes level_xp_days and user_levels; raw inserts with best_stars 4 or level_id 'X1' refused by CHECK; 'adds user_levels and level_xp_days, empty, on a database that has 0007 already' (same shape as the 0006 case)",
+        "apps/server/src/telemetry/events.test.ts: each level event with valid props -> 202 stored unchanged; reason 'failed' accepted; each bad field (bad level, stars 4, reason 'won', unknown kind, negative durationMs, chapter_gate chapter 1, quick as string) -> 400 /^events\\.0\\.props/; extra key on a level event accepted; report_sent strict; unknown event name skipped with ignored=1 while the other events of the batch are stored",
+        "apps/server/src/legal/legal.test.ts: every event listed and rendered; both languages say the server copy of level progress is deleted with the account and the phone copy stays until uninstall; APP-PRIVACY 'N אירועים' equals TELEMETRY_EVENT_NAMES.length (20)",
+        "apps/server/src/accounts/accounts.test.ts: deleting an account removes its user_levels and level_xp_days rows and keeps xp; re-register -> GET /v1/me/levels empty",
+        "apps/server/src/http/cors.test.ts: /v1 preflight Allow includes PUT",
+        "apps/server/src/progress/practice.test.ts (existing): practice results behaviour unchanged"
+      ],
+      "doneWhen": "Server and protocol tests pass; server typecheck passes; migration 0008 applies on a fresh PGlite and on a v0007 database; nothing deployed."
+    },
+    {
+      "id": "mobile-data",
+      "title": "2ו App: levels.db storage, levels repo, account sync, level finish pipeline, telemetry props and batching, lazy levels data loader, levels store",
+      "dependsOn": [
+        "engine-rules",
+        "server"
+      ],
+      "ownedFiles": [
+        "apps/mobile/src/levels/levelsSchema.ts",
+        "apps/mobile/src/levels/levelsStorage.ts",
+        "apps/mobile/src/levels/levelsRepo.ts",
+        "apps/mobile/src/levels/levelsSync.ts",
+        "apps/mobile/src/levels/levelXp.ts",
+        "apps/mobile/src/levels/analyticsProps.ts",
+        "apps/mobile/src/levels/appLevels.ts",
+        "apps/mobile/src/levels/levelsData.ts",
+        "apps/mobile/src/levels/levelsStore.ts",
+        "apps/mobile/src/levels/levelsConfig.ts",
+        "apps/mobile/src/levels/__tests__/levelsRepo.test.ts",
+        "apps/mobile/src/levels/__tests__/levelsSync.test.ts",
+        "apps/mobile/src/levels/__tests__/levelXp.test.ts",
+        "apps/mobile/src/levels/__tests__/analyticsProps.test.ts",
+        "apps/mobile/src/levels/__tests__/appLevels.test.ts",
+        "apps/mobile/src/levels/__tests__/levelsStore.test.ts",
+        "apps/mobile/src/levels/__tests__/levelsDataLazy.test.ts",
+        "apps/mobile/src/api/accountApi.ts",
+        "apps/mobile/src/api/progressApi.ts",
+        "apps/mobile/src/api/progressGuards.ts",
+        "apps/mobile/src/api/testing/fakeProgress.ts",
+        "apps/mobile/src/api/__tests__/progressApi.test.ts",
+        "apps/mobile/src/progress/appProgress.ts",
+        "apps/mobile/src/services/telemetry/batching.ts",
+        "apps/mobile/src/services/telemetry/__tests__/batching.test.ts",
+        "apps/mobile/src/services/telemetry/__tests__/sender.test.ts",
+        "apps/mobile/src/services/__tests__/ga4.test.ts",
+        "apps/mobile/src/game/practiceRepo.ts",
+        "apps/mobile/src/__tests__/startupGraph.test.ts",
+        "apps/server/test/appLevels.contract.test.ts",
+        "apps/server/test/appTelemetry.contract.test.ts"
+      ],
+      "tasks": [
+        "levelsSchema.ts: LEVELS_MIGRATIONS v1 for a SEPARATE file levels.db: level_progress (owner, level_id, best_stars 0..3, plays, best_metric, best_rev, first/last_played_at, synced_stars default -1, synced_plays; PK owner+level_id), level_attempts (id, owner, level_id, rev, attempt, chapter, kind, stars, prev_best, metric, mistakes, reason CHECK completed|timeUp|botWon|failed|quit (engine LEVEL_END_REASONS), quick, bot_level, started_at, ended_at, duration_ms, engine_version), level_gates (owner, chapter, opened_at, celebrated; PK owner+chapter). Reuse migrate() from practiceRepo.ts (already exported); the only change there is an optional label parameter, so a levels.db error does not say 'practice database'.",
+        "levelsStorage.ts: openLevelsStorage() (LEVELS_DB_NAME 'levels.db', WAL, cached promise, retry after failure) and levelsStorageOrNull(); own serial queue.",
+        "levelsRepo.ts: recordAttempt (one transaction; reason, stars and metric from engine levelOutcome; best via engine mergeBest and isBetterMetric; plays+1 only when engine countsAsPlayed(reason, LEVEL_RULES), so a 'failed' find counts and a quit counts only while quitCountsAsPlayed) -> {prevBest, best, newStars, gateOpened, attempt}; attemptOf(owner, id) = max(plays, recorded attempts) + 1; openedGates(owner) from level_gates, passed to engine isLevelOpen; progress(owner); summary(owner) {played, stars, current}; dirty; markSynced (only rows unchanged since send); mergeFromServer (MAX, insert missing); openGate (true once).",
+        "api: 'PUT' in FetchInit.method; progressApi.myLevels() and putMyLevels(levels); progressGuards.readMyLevels (skip bad entries, cap stars at 3); fakeProgress levelsServer (modern/old/offline).",
+        "levelsSync.ts (PracticeSync style): a no-op while LEVELS_DATA.sync is false; first flush per owner per run GET + merge (restores a new device); then PUT dirty rows, markSynced, merge answer; stores owedXp from every answer and, on the first flush of a new UTC day while owedXp > 0, sends PUT {levels: []} even with no dirty row (so carried-over XP is paid); ids the server lists in `unknown` stay dirty with status 'unsupported'; 404 notFound -> status 'unsupported', rows kept dirty, retry next start or after LEVELS_DATA.unsupportedRetryMs = 6 h, no backoff loop; notRegistered/signedOut keep rows; 429 waits Retry-After; network/5xx backoff; badRequest splits the batch, and a row rejected alone is marked rejected, reported and never resent; owner switch resets backoff.",
+        "appLevels.ts: levelFinished(finish) -> recordAttempt -> levelsSync().flush() -> track('level_end'); after every finish in chapter k once L(10k) has been played (that finish included) while the gate to k+1 was still closed: track('chapter_gate', {chapter: k+1, stars, open}) with open false or true, and open true also calls openGate; never touches practice.db, PracticeSession, practiceFinished, game_start/game_end or the practice queue. appProgress.startProgress also flushes levelsSync on auth 'ready' and on foreground.",
+        "levelsConfig.ts: LEVELS_DATA {sync: true (D57), unsupportedRetryMs: 6 h}, the data-layer settings; UI settings stay in config/levels.ts (mobile-screens).",
+        "analyticsProps.ts: pure builders for the six events (key `level`, attempt on level_start and level_end, flat, <= MAX_PROPS_BYTES). batching.ts: never mix TELEMETRY_EVENT_GENERATION values in one batch.",
+        "levelXp.ts: phone-side estimate via engine levelXpFor (display only).",
+        "levelsData.ts: lazy require('./data/levels.json') inside a function, typed as AppLevel[] (the engine-rules fixture until levels-builder writes the real file); byId/byChapter indexes; shape check once; levelById, levelsOfChapter, allLevels, levelCount.",
+        "levelsStore.ts (Zustand, not persisted): summary and progress map per owner from SQLite only (never loads levels.json), refresh(), useLevelsSummary(); forget on owner change.",
+        "startupGraph.test.ts: LATE_FILES += apps/mobile/src/levels/data/levels.json; doMock lazy-load test.",
+        "Contract tests in apps/server/test using the app's pure TS modules against createAppServer with in-memory PGlite."
+      ],
+      "tests": [
+        "apps/mobile/src/levels/__tests__/levelsRepo.test.ts (sql.js memoryDb): v1 creates exactly level_attempts, level_gates, level_progress and sets user_version 1; refuses a newer db with a levels.db message; recordAttempt atomic (failOnce rollback leaves no attempt); 3 stars then 1 -> 3 with plays 2; best_metric per kind direction; quit counts as played with 0 stars, and with quitCountsAsPlayed false it is recorded but not played; a find 'failed' (second miss) is a played attempt with 0 stars; attemptOf counts quit and failed attempts; with openedGates a chapter stays open after gateStars rises; owner isolation; summary; dirty/markSynced; mergeFromServer takes MAX; openGate true once then false",
+        "apps/mobile/src/levels/__tests__/levelsSync.test.ts: LEVELS_DATA.sync false -> no request at all; first flush GETs and merges a higher server count; dirty rows PUT and become synced; offline backoff 5 s then 10 s; old server 404 notFound -> 'unsupported', rows dirty, no timer under 6 h; owedXp > 0 on a new UTC day -> exactly one empty PUT; ids in unknown -> 'unsupported' and kept dirty; a row rejected alone with 400 is not resent; 429 waits Retry-After; signed out sends nothing; owner switch resets backoff; a row changed during an in-flight PUT stays dirty",
+        "apps/mobile/src/api/__tests__/progressApi.test.ts: GET/PUT /v1/me/levels with Bearer and JSON body; 404 notFound vs notRegistered codes; 401 refreshes once; readMyLevels skips bad entries and caps stars",
+        "apps/mobile/src/services/telemetry/__tests__/batching.test.ts: a generation-2 event never shares a batch with a generation-1 event; sender.test.ts: 400 on a level batch drops only that batch",
+        "apps/mobile/src/services/__tests__/ga4.test.ts: ga4Event('level_end', {level:37,...}) keeps every param; a levelId key would be dropped; every prop key of the six events, as built by analyticsProps, passes PERSONAL_KEY; all new names pass the GA4 name loop",
+        "apps/mobile/src/levels/__tests__/analyticsProps.test.ts: flat, no id/uid, reason in LEVEL_END_REASONS (failed included), attempt on level_start and level_end, fits MAX_PROPS_BYTES",
+        "apps/mobile/src/levels/__tests__/appLevels.test.ts: a finished duel level writes no practice_games or puzzle_plays row, queues no PracticeResult, tracks no game_end; records one attempt and tracks level_end; a find second-miss records a played attempt with reason failed; chapter_gate: nothing before the boss is played, {open:false} after a finish that leaves the gate closed, {open:true} once when it opens",
+        "apps/mobile/src/levels/__tests__/levelXp.test.ts: estimate equals engine levelXpFor (1 -> 3 = 20; gate +50)",
+        "apps/mobile/src/levels/__tests__/levelsDataLazy.test.ts + startupGraph.test.ts: importing levelsData reads nothing; first levelById reads the file once; levels.json not reachable from app/_layout.tsx or app/index.tsx",
+        "apps/server/test/appLevels.contract.test.ts: app client + sync against the real server: PUT, restore on a second device, union merge, XP in response, 404 handling when the route is missing",
+        "apps/server/test/appTelemetry.contract.test.ts: level events built by analyticsProps -> every batch 202"
+      ],
+      "doneWhen": "Mobile data tests and the server contract tests pass; startupGraph proves levels.json is off the first screen; mobile typecheck passes."
+    },
+    {
+      "id": "mobile-screens",
+      "title": "2ז App: New Game sixth row and rename, level map, nodes, gates, docked panel, Ready, How to play, result, gate sheet, chapter unlocked, player card line, primitives, i18n namespace",
+      "dependsOn": [
+        "mobile-data",
+        "levels-builder"
+      ],
+      "ownedFiles": [
+        "apps/mobile/app/levels/index.tsx",
+        "apps/mobile/app/levels/play.tsx",
+        "apps/mobile/app/_layout.tsx",
+        "apps/mobile/app/player/[id].tsx",
+        "apps/mobile/src/screens/home/homeModel.ts",
+        "apps/mobile/src/screens/home/ModesScreen.tsx",
+        "apps/mobile/src/screens/home/parts.tsx",
+        "apps/mobile/src/screens/home/__tests__/ModesAndGameType.test.tsx",
+        "apps/mobile/src/screens/home/__tests__/homeModel.test.ts",
+        "apps/mobile/src/screens/home/__tests__/modesChipWidth.test.ts",
+        "apps/mobile/src/screens/levels/LevelMapScreen.tsx",
+        "apps/mobile/src/screens/levels/mapModel.ts",
+        "apps/mobile/src/screens/levels/LevelPath.tsx",
+        "apps/mobile/src/screens/levels/LevelNode.tsx",
+        "apps/mobile/src/screens/levels/GatePlate.tsx",
+        "apps/mobile/src/screens/levels/ChapterJumpSheet.tsx",
+        "apps/mobile/src/screens/levels/LevelPanel.tsx",
+        "apps/mobile/src/screens/levels/levelWording.ts",
+        "apps/mobile/src/screens/levels/ReadyView.tsx",
+        "apps/mobile/src/screens/levels/HowToPlay.tsx",
+        "apps/mobile/src/screens/levels/LevelResultView.tsx",
+        "apps/mobile/src/screens/levels/GateSheet.tsx",
+        "apps/mobile/src/screens/levels/ChapterUnlockedView.tsx",
+        "apps/mobile/src/screens/levels/__tests__/mapModel.test.ts",
+        "apps/mobile/src/screens/levels/__tests__/LevelMapScreen.test.tsx",
+        "apps/mobile/src/screens/levels/__tests__/LevelResultView.test.tsx",
+        "apps/mobile/src/screens/levels/__tests__/ReadyView.test.tsx",
+        "apps/mobile/src/screens/levels/__tests__/HowToPlay.test.tsx",
+        "apps/mobile/src/screens/levels/__tests__/GateSheet.test.tsx",
+        "apps/mobile/src/screens/levels/__tests__/ChapterUnlockedView.test.tsx",
+        "apps/mobile/src/components/levels/StarRow.tsx",
+        "apps/mobile/src/components/levels/StarsBar.tsx",
+        "apps/mobile/src/components/levels/MiniBar.tsx",
+        "apps/mobile/src/components/levels/LevelTile.tsx",
+        "apps/mobile/src/components/levels/BossBadge.tsx",
+        "apps/mobile/src/components/levels/__tests__/StarRow.test.tsx",
+        "apps/mobile/src/components/levels/__tests__/StarsBar.test.tsx",
+        "apps/mobile/src/components/levels/__tests__/LevelTile.test.tsx",
+        "apps/mobile/src/components/ui/Confetti.tsx",
+        "apps/mobile/src/components/Icon.tsx",
+        "apps/mobile/src/config/levels.ts",
+        "apps/mobile/src/i18n/index.ts",
+        "apps/mobile/src/i18n/locales/he/levels.json",
+        "apps/mobile/src/i18n/locales/en/levels.json",
+        "apps/mobile/src/i18n/locales/he/home.json",
+        "apps/mobile/src/i18n/locales/en/home.json",
+        "apps/mobile/src/i18n/__tests__/levelsWording.test.ts",
+        "apps/mobile/src/screens/player/PlayerCardScreen.tsx",
+        "apps/mobile/src/screens/player/__tests__/PlayerCardScreen.test.tsx",
+        "docs/design/tokens.json",
+        "apps/mobile/src/theme/tokens.generated.ts",
+        "apps/mobile/src/__tests__/a11yAudit.test.tsx",
+        "apps/mobile/src/__tests__/noLayoutAnimationsInGame.test.ts"
+      ],
+      "tasks": [
+        "homeModel.ts: ModeKey += 'levels'; ModeOption.mode: GameMode | null; MODE_OPTIONS adds {key:'levels', group:'practice', mode:null, players:1} after 'solo'; AVAILABLE_MODES includes it. ModesScreen.open(): mode null -> router.push('/levels'). Lead = LevelTile with the current level (hidden from a11y). Chips: 'שלב N · ★ S' (icon + value Chip, height 22) + offline chip, no 'ללא דירוג'; new player: taglineNew '300 שלבים קצרים · 0–3 כוכבים' and only the offline chip. Summary from useLevelsSummary() (SQLite only).",
+        "home.json he/en: modes.solo.title/label -> 'אימון לבד · לוח מלא' / 'Solo · full board' (modes.solo.name unchanged); modes.levels.{name,title,tagline,taglineNew,chip,chipLabel,label} ('Staged practice', 'שלבים של חצי דקה · עד 3 כוכבים' / '30-second stages · up to 3 stars').",
+        "Map /levels: LevelMapScreen with a FlatList per chapter (30 items), getItemLayout from pure mapLayout(width, LEVEL_UI.mapDirection) (Main.dc.html constants: header 44, gate 52/44, node pitch 56/boss 64, node 56/boss 68, zig-zag x [64,146,228,310,228,146] from the right), initialScrollIndex = current chapter then one scrollToOffset to put the current node at 40%; react-native-svg connectors (solid up to current, faint after); chapter header 'פרק 4 · בלש' with '★ 18/30'; LevelNode states played/current/locked/boss with a11y labels ('שלב 7, איפה ה־7, שני כוכבים מתוך שלושה', 'שלב 12, נעול'); the current node has a small P1 pin (SeatGlyph ●) in its corner and a ring pulse withRepeat (static when reduced); boss node 68 with crown and, from chapter 2, the chapter bot's avatar; locked tap -> shake() (none when reduced) + toast 'קודם משחקים את שלב N'; GatePlate (lock, 'נפתח ב־20 כוכבים', MiniBar, 17/20; when the stars are enough but the boss is unplayed: '22/20' and 'שחק את שלב הבוס כדי לפתוח'; after it opens: open lock and 'פרק 5 פתוח'; unlock animation, state change only when reduced); header chip '★ 84/900' -> ChapterJumpSheet; docked bottom LevelPanel (kind, goal via levelWording, star scale, bot avatar/name/level, my best, CTA 'המשך · שלב N' / 'שחק'); track level_map_open.",
+        "app/levels/play.tsx: phases ready -> playing -> result for one spec (?id=L037&quick=1); FlowFallback when spec/session missing; watchdog; ReadyView 2000 ms (LEVEL_UI.readyMs) fade only; HowToPlay before the first level of each kind: the shell here (3 panel slots, 'הבנתי'/'דלג', seen flag, track level_tutorial), the panels drawn with the real Board come from mobile-play's HowToPlayPanels (a placeholder until then); 'playing' phase is a slot filled by mobile-play (render a placeholder that throws in dev only).",
+        "LevelResultView: in-route state (no navigation, no Modal): StarRow reveal (instant when reduced), metric, 'שיא חדש!' / 'השיא שלך: ★★', CountUpText signedText(xp)+' XP' (estimate) only when there are new stars, chapter line 'בפרק הזה: ★ 18/30 · לשער צריך 20'; per the original §23 also the mistakes count, the time (when the metric is not time), the opponent row in bot levels (avatar with ▲, name, its score or spots, 'ניצחת' / 'Pip ניצח') and the best move in duel and pointHunter; 'למה?' text from the session, including the wrong tap; buttons לשלב הבא (quick entry) / שוב / למפה (router.dismissTo('/levels') only after dialogs onExited); Confetti once on 3 stars only when not reduced.",
+        "GateSheet (Sheet): title, missing-stars line, or 'יש לך מספיק כוכבים. שחק את שלב 40 (בוס) כדי לפתוח' when only the boss is missing (then the primary CTA is the boss); up to 3 replay rows from engine replayCandidates, primary 'שחק את שלב N', footnote. ChapterUnlockedView: chapter name, new bot avatar + one line, what is new, signedText(50)+' XP' shown once (level_gates.celebrated); with reduced motion no animation, the content appears at once.",
+        "PlayerCardScreen + app/player/[id].tsx: myLevels prop from useLevelsSummary(); 'שלבים: 87 · ★ 214' under the XP bar only when the card is mine (or LEVEL_UI.cardShowsToOthers) and played > 0 (testID player-card-levels).",
+        "Primitives: StarRow (0..3, sizes 11/16/28/40, filled gold star), StarsBar (axis with ★ marks, explicit LTR fill for time axes, reduced -> jump), MiniBar, LevelTile (3x3 tile, Teko number, played/current with P1 pin/locked/boss, 44/56/68), BossBadge (crown + 'בוס' chip), Confetti (Reanimated or Skia, 40 pieces, 1600 ms, not mounted when reduced). Icon.tsx: filled prop + crown, links, gridBox, swords, unlock.",
+        "tokens.json: color.star.filled (= accent), color.star.empty (= iconFaint), size.levelNode 56 / levelNodeBoss 68, contrast pairs; run npm run tokens -w @sudoku-fight/mobile.",
+        "i18n: new namespace 'levels' (he/en, plurals he one/two/other, en one/other; English uses 'Stage'); register in NAMESPACES and resources; chapter names; kind names/goals; map/node/gate/intro/ready/result/tutorial/exit/card keys.",
+        "config/levels.ts: LEVEL_UI {readyMs:2000, quickEntry:true, nodeKindIcon:false, cardShowsToOthers:false, mapDirection:'down', reactions:false, backgroundPause:true, resumeCountdownMs:3000, tipLevels:3, worthHintLevels:2}; each flag is read by its screen and flipped in a test. The data flag sync lives in mobile-data's levelsConfig.ts.",
+        "Routes: <Stack.Screen name='levels/play' options={moves.flow}/> with gestureEnabled false; regenerate typed routes (npm run routes:types).",
+        "Guards: a11yAudit rows for /levels, gate sheet, result; noLayoutAnimationsInGame ROOTS += screens/levels, components/levels; startupGraph LATE_FILES += apps/mobile/src/screens/levels/ (sharedFiles)."
+      ],
+      "tests": [
+        "apps/mobile/src/screens/home/__tests__/ModesAndGameType.test.tsx: KEYS gain 'levels' after 'solo'; six enabled cards; solo label 'אימון לבד · לוח מלא, …' (en 'Solo · full board, …'); levels label; press -> '/levels' not /game-type; six real rows + footnote fit PHONE 360x780 in he and en (row 77 budget unchanged); titles/taglines fit; directionProblems(mode-levels) empty; new player tagline and no progress chip; after 13 levels chip 'שלב 14 · ★ n'",
+        "apps/mobile/src/screens/home/__tests__/homeModel.test.ts: MODE_OPTIONS order ranked2, ranked3, ranked4, bot, solo, levels; levels has mode null",
+        "apps/mobile/src/screens/home/__tests__/modesChipWidth.test.ts: with fontMetrics real widths 'שלב 300 · 900' + 'עובד גם בלי אינטרנט' (and en) fit one chip line in the 214dp column",
+        "apps/mobile/src/screens/levels/__tests__/mapModel.test.ts: node centres follow the zig-zag; pitch 56/64, boss 68; header 44; gate 52/44; offsets sum for getItemLayout; scroll offset puts the current node at 40%; mapDirection 'up' reverses the order",
+        "apps/mobile/src/screens/levels/__tests__/LevelMapScreen.test.tsx: opens at the current chapter; chapter header '★ 18/30'; locked node shakes and toasts (no shake when reduced); node labels 'שלב 7, איפה ה־7, שני כוכבים מתוך שלושה' and 'שלב 12, נעול'; current node shows the P1 pin; boss node shows the chapter bot from chapter 2; header chip opens ChapterJumpSheet and a row scrolls to its chapter; closed gate opens GateSheet with <= 3 rows; an opened gate shows 'פרק 5 פתוח'; 'המשך · שלב N' opens play",
+        "apps/mobile/src/components/levels/__tests__/StarRow.test.tsx and StarsBar.test.tsx: reveal staggers with full motion and is instant when reduced; time axis fills LTR in Hebrew; marks at their axis share; a11y label lists thresholds",
+        "apps/mobile/src/screens/levels/__tests__/LevelResultView.test.tsx: Confetti only on 3 stars and only when not reduced; '+20 XP' isolated LTR and hidden when there are no new stars; mistakes and time shown; bot levels show the opponent row; 'למה?' includes the wrong tap; chapter line; 'לשלב הבא' starts the next level through ReadyView; pathname unchanged at the end of a level",
+        "ReadyView.test.tsx: 2000 ms then start; HowToPlay.test.tsx: the shell shows 3 slots, once per kind, skip tracked; GateSheet.test.tsx: 'צריך 20 כוכבים בפרק 4. יש לך 17, חסרים 3.', and with 22 stars and the boss unplayed the boss copy and CTA; ChapterUnlockedView.test.tsx: +50 XP shown once, no animation mounted when reduced",
+        "apps/mobile/src/screens/player/__tests__/PlayerCardScreen.test.tsx: line on my card with LRI-isolated '★ 214'; never on another player's card, unless LEVEL_UI.cardShowsToOthers is flipped on; hidden when played is 0",
+        "apps/mobile/src/i18n/__tests__/levelsWording.test.ts: no /\\blevels?\\b/i in the values of en/levels.json or of en/home.json modes.levels.*, except an allow-list of keys for a bot level or an XP level; the English tagline is '30-second stages · up to 3 stars'",
+        "i18nParity, i18n:check, a11yAudit, reducedMotion, noLayoutAnimationsInGame, noRawColors, contrast, startupGraph pass with the new namespace, routes and tokens"
+      ],
+      "doneWhen": "With a fake level session: New Game -> map -> panel -> Ready -> result -> map works in tests in he and en, with Reduced Motion, and every node has an a11y label; all guard tests pass; mobile typecheck passes."
+    },
+    {
+      "id": "mobile-play",
+      "title": "2ח App: levelSession, board model extensions and overlays, tap level screen (kinds 1-2), GameScreen level chrome (kinds 3-4), boss, end-to-end",
+      "dependsOn": [
+        "engine-find",
+        "levels-builder",
+        "mobile-data",
+        "mobile-screens"
+      ],
+      "ownedFiles": [
+        "apps/mobile/src/levels/levelSession.ts",
+        "apps/mobile/src/levels/levelEffects.ts",
+        "apps/mobile/src/levels/useLevelEffects.ts",
+        "apps/mobile/src/levels/__tests__/levelSession.test.ts",
+        "apps/mobile/src/levels/__tests__/levelEffects.test.ts",
+        "apps/mobile/src/components/board/**",
+        "apps/mobile/src/i18n/locales/he/board.json",
+        "apps/mobile/src/i18n/locales/en/board.json",
+        "apps/mobile/src/components/levels/RegionFrame.tsx",
+        "apps/mobile/src/components/levels/CellChipsLayer.tsx",
+        "apps/mobile/src/components/levels/BoardFreezeLayer.tsx",
+        "apps/mobile/src/components/levels/__tests__/overlays.test.tsx",
+        "apps/mobile/src/screens/levels/TapLevelScreen.tsx",
+        "apps/mobile/src/screens/levels/levelChrome.tsx",
+        "apps/mobile/src/screens/levels/HowToPlayPanels.tsx",
+        "apps/mobile/src/screens/levels/howToPlayFixtures.ts",
+        "apps/mobile/src/screens/levels/__tests__/HowToPlayPanels.test.tsx",
+        "apps/mobile/src/screens/levels/hud/FindHud.tsx",
+        "apps/mobile/src/screens/levels/hud/RaceHud.tsx",
+        "apps/mobile/src/screens/levels/hud/BoxHud.tsx",
+        "apps/mobile/src/screens/levels/hud/DuelLevelHud.tsx",
+        "apps/mobile/src/screens/levels/hud/RaceTo30.tsx",
+        "apps/mobile/src/screens/levels/__tests__/TapLevelScreen.test.tsx",
+        "apps/mobile/src/screens/levels/__tests__/levelHuds.test.tsx",
+        "apps/mobile/src/screens/levels/__tests__/levelGameScreen.test.tsx",
+        "apps/mobile/src/screens/game/GameScreen.tsx",
+        "apps/mobile/src/__tests__/levels.e2e.test.tsx"
+      ],
+      "tasks": [
+        "levelSession.ts: startLevel(spec, deps) -> LevelSession (GameSession surface + spec, levelView(), tap(cell), quit(), close()); attempt = levelsRepo.attemptOf(owner, id); plays transformLevel(spec, attempt) while LEVEL_RULES.replayTransform is on; builds GameConfig {id level-<id>-<now36>, mode levelModeFor(spec), gameType, puzzle {id: id@rev, givens, solution}, players, rules: defaultRules(mode, type, levelRulesFor(spec)), level: LevelRun (attempt, worthHint for the first LEVEL_UI.worthHintLevels pointHunter levels), seed} and new LocalGameHost, or createFind/LocalFindHost (with attempt) for tap kinds; bot via attachBot(host, {botId, level, clock, scheduler: guardedScheduler, rng: createRng(botSeedOf(seed, attempt)), config: levelBotConfig(spec.bot.pace)}) (pace is already final for a boss); when the 'playing' phase starts (after ReadyView/HowToPlay) track level_start {level, chapter, kind, attempt, bestStars, quick} via analyticsProps; onFinish once -> appLevels.levelFinished; quit() counts as played per LEVEL_RULES (0 stars); close() before the end = not played -> track level_quit; AppState background -> close() when LEVEL_UI.backgroundCancels; detach bot on over; errors reported, never thrown. Never touches PracticeRepo or gameStore.",
+        "boardModel options {area, editable, tappable, highlightDigit, corrected, lockTimer, mine}; CellModel area/mark/correction/mine; Cell: dimmed 'out' cells (new tokens board.cellDim/cellDimAlt via sharedFiles tokens.json), target chip, correction (strike in danger, small right digit, success ring), 'mine' digits in P1 with a small ● in the corner (spot the error), 'miss' flash X (reduced: static 2dp red frame 300 ms), ring kept for a timer-less myLock; Board label override and overlay children; labels.ts tap-mode hints; board.json keys.",
+        "Overlays: RegionFrame (2dp ring from cellRect, focus or gold), CellChipsLayer (pointerEvents none, hidden from a11y, fade via ui timing with reduce), BoardFreezeLayer (board-sized dim + TimerRing, takes touches, a11y alert 'מוקפא, 3 שניות').",
+        "TapLevelScreen (kinds 1-2): no keypad; FindHud (target chip: big digit + scope + TimerRing over 20 s, StarsBar 0-20; under the board, in place of the keypad, the big digit and 'הקש איפה ה־6 חייב להיות'; on a find the digit falls into the cell in my colour, and appears in place when reduced), RaceHud (two small cards with SeatGlyph ● me / ▲ bot, 'מחפש…' and the bot's 😂 reaction on the bot card, task line 'מקום 4 מתוך 5 · מצא את ה־4 בריבוע 9', 5-slot StarsBar coloured and shaped by owner, 'עוד 13 ש׳', a reaction button only when LEVEL_UI.reactions is turned on; it is off by default, D62); levelEffects/useLevelEffects from levelEvents (spotWon -> correct flash + cue; wrong -> miss flash + cue + '+5 ש׳' chip via signedText; freeze; bot avatar hop with full motion only); X and Android back -> ConfirmModal(bottom, danger, 'לצאת מהשלב?') -> session.quit(); end -> wait endDelayMs, then onOver from a timer.",
+        "GameScreen.tsx: optional prop level?: LevelChrome {hud, boardOptions, overlay, endDialog, hideLockStrip, onOver}; when absent every existing path stays byte-identical; keeps showResults hold, dialog wait and watchdog.",
+        "levelChrome.tsx: kind -> LevelChrome (fillBox: BoxHud + RegionFrame gold + editable + lockTimer false; duel: DuelLevelHud with RaceTo30 (two bars marked ● me in P1 and ▲ bot in P2; fills animate, instant when reduced) and gap meter 'פער ' + signedText(gap) with marks at 8 and 15, no interference button, reactions per LEVEL_UI). Boss: BossBadge in the HUD, LevelTile boss state.",
+        "HowToPlayPanels.tsx + howToPlayFixtures.ts: the 3 panels per kind drawn with the real Board and its new options (find, findDuel, fillBox, duel, boss); the HowToPlay shell of mobile-screens renders them; mobile-ideas adds the three idea kinds (sharedFiles).",
+        "app/levels/play.tsx (sharedFiles): render TapLevelScreen or GameScreen+levelChrome in the 'playing' phase; close the session on unmount.",
+        "Add a11yAudit rows for /levels/play per kind (sharedFiles) and 'levels' i18n keys for HUDs (sharedFiles).",
+        "D65 background freeze: levelSession/play listen to AppState; on any state other than 'active' while a level is playing -> host.pause(); back to 'active' -> ResumeCountdown overlay ('3', '2', '1', via t(), a11y live announcement) that COVERS the board (it is not visible during the countdown), then host.resume() and the overlay goes away; Reduced Motion: the number just changes, no scale/fade. Also during the 'ready' phase: the 2 s ready timer pauses too. If the app is killed, the attempt does not count (existing rule). LEVEL_UI.backgroundPause false -> no pause (switch flipped in a test)."
+      ],
+      "tests": [
+        "apps/mobile/src/levels/__tests__/levelSession.test.ts (ManualClock/ManualScheduler): view.grid equals spec.board.grid on attempt 1; attempt 2 plays a transformed board (different grid, same star rule); bot attached with botSeedOf(seed, attempt) and never interferes; a boss duel bot runs at spec.bot.pace (chapter pace x 0.9); exactly one level_start per start with attempt = plays+1, bestStars, and quick=1 on quick entry; levelOver calls onFinish once with stars/reason/metric; close() before the end tracks level_quit and records no attempt; quit() records 0 stars as played; background pauses (D65): AppState 'background' or 'inactive' -> host.pause(), 'active' -> a 3-2-1 countdown (LEVEL_UI.resumeCountdownMs) then host.resume(); the attempt is not cancelled and no level_quit is sent; practice_games and puzzle_plays stay empty",
+        "apps/mobile/src/components/board/__tests__/boardModel.test.ts: area in/out; editable leaves only its cells interactive; tappable makes filled non-given cells interactive; highlightDigit marks target; lockTimer false keeps myLock with no lock; sameCell sees new fields",
+        "apps/mobile/src/components/board/__tests__/Cell.test.tsx: out cell uses board.cellDim; miss flash draws the X (cell-flash-miss) and the static red frame when reduced; timer-less myLock keeps cell-ring without cell-pill; correction shows struck digit, small right digit and success ring; a 'mine' digit is P1 with the ● corner mark",
+        "apps/mobile/src/screens/levels/__tests__/TapLevelScreen.test.tsx: no keypad; kind 1 shows the big digit and 'הקש איפה ה־6 חייב להיות' under the board; kind 2 task line 'מקום 4 מתוך 5 · מצא את ה־4 בריבוע 9'; wrong tap -> miss flash and '⁦+5⁩ ש׳' chip; right tap -> the digit falls into the cell (in place when reduced), result after endDelayMs in-route; X -> 'לצאת מהשלב?' -> quit; Android back same; race freeze blocks taps for 3 s; bot card shows 'מחפש…' and 😂 after my wrong tap when the plan says so",
+        "apps/mobile/src/screens/levels/__tests__/levelGameScreen.test.tsx: with level chrome no LockStrip timer, end dialog 'לצאת מהשלב?', onOver instead of /results; without the prop the existing soloPractice, botPractice, botPracticeEnd and ranked e2e suites pass unchanged",
+        "apps/mobile/src/screens/levels/__tests__/levelHuds.test.tsx: DuelLevelHud gap 'פער ‎+10.5' isolated with marks 8 and 15; RaceTo30 bars carry ● and ▲ and fill instantly when reduced; BoxHud '1/4 משבצות'; boss shows crown and 'בוס' chip",
+        "apps/mobile/src/screens/levels/__tests__/HowToPlayPanels.test.tsx: 3 panels for each of find, findDuel, fillBox, duel and boss; boards LTR; every panel has an a11y label",
+        "apps/mobile/src/__tests__/levels.e2e.test.tsx: Modes -> אימון בשלבים -> map -> L001 -> play to the end on a ManualClock -> result -> למפה; level_start and level_end tracked once each; level_progress has L001; L002 open; practice history untouched; chapters 1-3 playable end to end",
+        "levelSession.test.ts / TapLevelScreen.test.tsx D65: AppState change -> pause called once; return -> countdown 3,2,1 shown, board covered, resume called after resumeCountdownMs, the HUD time-left equals the value before the pause; Reduced Motion -> no animated styles on the countdown; backgroundPause false -> no pause."
+      ],
+      "doneWhen": "Chapters 1-3 (find, race, fillBox, duel, bosses) play end to end in tests; existing solo, bot and ranked e2e suites pass unchanged; guard tests pass; mobile typecheck passes."
+    },
+    {
+      "id": "mobile-ideas",
+      "title": "2ט App: spot the error, point hunter and chain screens",
+      "dependsOn": [
+        "engine-solver",
+        "mobile-play"
+      ],
+      "ownedFiles": [
+        "apps/mobile/src/screens/levels/hud/SpotErrorHud.tsx",
+        "apps/mobile/src/screens/levels/hud/PointHunterHud.tsx",
+        "apps/mobile/src/screens/levels/hud/ChainHud.tsx",
+        "apps/mobile/src/screens/levels/levelExplain.ts",
+        "apps/mobile/src/screens/levels/__tests__/ideas.test.tsx",
+        "apps/mobile/src/screens/levels/__tests__/levelExplain.test.ts"
+      ],
+      "tasks": [
+        "SpotErrorHud: goal line 'בלוח מסתתרות 2 ספרות שגויות. הקש עליהן.' and under it, in grey, 'הספרות הכהות הן של הלוח, והן תמיד נכונות.'; magnifier slots ('search' icon), 'נמצאו 1/2', StarsBar per error count, dismissible tip card on the first LEVEL_UI.tipLevels levels of the kind; 'mine' digits in P1 with the ● corner mark (board option 'mine' from mobile-play); TapLevelScreen spotError branch (sharedFiles): corrected cells, end reveals unfound errors.",
+        "PointHunterHud: score counter, 3 move dots, timer, StarsBar of points with marks at 70/85/95% (98% from chapter 27) from view.level; CellChipsLayer '+6.5' chips per move; 'שווה 6' label on the selected cell from view.level.selectedWorth (the engine sets it only on the first LEVEL_UI.worthHintLevels levels of the kind; the HUD only renders it); wrong digit -> '−6' and a burned dot. Wire through levelChrome.tsx (sharedFiles).",
+        "ChainHud: link chain (the fill of the current link animates, instant when reduced), 'צעד 3 מתוך 4', StarsBar; with chainNotYet 'penalty': notYet -> wrong flash, '+5 ש׳' chip and toast 'עוד אי אפשר לדעת מה נכנס ב־A9' via engine formatNotYet with ltr(cell); 'penalty' is the default (D64 approved 2026-10-18); with the 'accept' switch a right digit off the chain is placed as in the game, with no toast; never show the next step.",
+        "levelExplain.ts: 'למה?' text for every kind from engine explain/explainSpotError/formatBlock (scoped by the level's unit and techniques), he/en.",
+        "HowToPlayPanels.tsx and howToPlayFixtures.ts (sharedFiles, owner mobile-play): add the 3 panels of spotError, pointHunter and chain.",
+        "i18n 'levels' keys (sharedFiles); a11yAudit rows for the three kinds (sharedFiles)."
+      ],
+      "tests": [
+        "apps/mobile/src/screens/levels/__tests__/ideas.test.tsx spotError: goal line and the grey note; 'mine' digits carry the ● corner mark; found error shows strike + small right digit + green ring; tip card only on the first 3 levels of the kind and dismissible; tap on a given does nothing (tapOnFilled 'ignore')",
+        "ideas.test.tsx pointHunter: '‎+6.5' chip on the played cell; 'שווה 6' shown from view.level.selectedWorth and absent when the view has none; wrong digit shows '‎−6' and burns a move dot; result shows points and percent",
+        "ideas.test.tsx chain: 'accept': a right digit off the chain is placed with no toast; 'penalty': guess -> flash, '‎+5 ש׳' chip and toast with A9 in an LTR isolate; the link fill is instant when reduced; the view never exposes the next chain cell",
+        "apps/mobile/src/screens/levels/__tests__/levelExplain.test.ts: 'למה?' sentences per kind in he and en (snapshot) with isolated cell names",
+        "Chapters 4, 7 and 9 (first spotError, pointHunter, chain) play end to end in tests"
+      ],
+      "doneWhen": "The three idea kinds play end to end in tests in he and en with Reduced Motion; guard tests pass."
+    },
+    {
+      "id": "admin",
+      "title": "2י Admin: GET /admin/api/levels aggregates and the 'שלבים' page",
+      "dependsOn": [
+        "server"
+      ],
+      "ownedFiles": [
+        "packages/protocol/src/admin.ts",
+        "apps/server/src/admin/levels.ts",
+        "apps/server/src/admin/levels.test.ts",
+        "apps/server/src/admin/router.ts",
+        "apps/server/src/admin/constants.ts",
+        "apps/server/src/admin/users.ts",
+        "apps/server/src/seed/**",
+        "apps/admin/src/**"
+      ],
+      "tasks": [
+        "protocol admin.ts: AdminLevelStat {levelId, chapter, kind, starts, plays, players, stars [n0..n3], medianMs, replayRate, midQuitRate, quitRate, firstTryZeroRate}, AdminGateStat {chapter, reached, opened, stuck, stuckAfter3, stuckAfter3Rate}, AdminLevels {days, tooHardShare 0.6, stuckShare 0.3, stuckAttempts 3, levels, gates}; route list comment.",
+        "admin/levels.ts getLevels(db, window): one raw SQL over app_events (name filter first, bounds, jsonb_typeof guards, percentile_cont median excluding quits); starts from level_start; gates over all time from chapter_gate attempts: reached = players with at least one attempt, opened = with open true, stuck = reached without open, stuckAfter3 = players with at least stuckAttempts closed attempts and no open, stuckAfter3Rate = stuckAfter3 / reached (plan §5.5: 'more than 30% stuck after 3 attempts'); thresholds in constants.ts; router api.get('/levels', handle(daysQuerySchema, ...)). Optional: AdminUserDetail.levels {played, stars} from user_levels.",
+        "seed/sampleData.ts: deterministic level_start/level_end/level_quit/chapter_gate events that pass the new validators.",
+        "apps/admin: Section/Route 'levels', NAV item after 'screens', api.levels(days), pages/LevelsPage.tsx (DaysSelect, callouts 'קשה מדי' and 'לרכך את הפרק', 300-row DataTable with chapter filter and stacked star-distribution meter with visible % text, gates table), strings he/en, fixtures. Load the dataviz skill before building the stacked meter."
+      ],
+      "tests": [
+        "apps/server/src/admin/levels.test.ts: hand-computed starts (from level_start), plays, players, star distribution, median (odd and even counts, quits excluded), replayRate, midQuitRate, quitRate, firstTryZeroRate; events outside the window and junk props ignored; gates reached/opened/stuck/stuckAfter3/stuckAfter3Rate (a player with 3 closed attempts who then opens it is not stuck); 400 for days=0; 401 without a session",
+        "apps/server/src/seed/sampleData.test.ts: GET /levels returns data after seeding",
+        "apps/admin/src/pages/LevelsPage.test.tsx: requests /admin/api/levels?days=30; rows sorted by level; percentages as text; 'too hard' badge when firstTryZeroRate > 0.6; gate 'stuck' badge when stuckAfter3Rate > 0.3; chapter filter; empty state",
+        "apps/admin/src/router.test.ts + App.test.tsx: '#/levels?days=90' round-trips; nav lists Levels and marks it current; strings.test.ts he/en parity"
+      ],
+      "doneWhen": "Admin server and site tests pass; the page renders the seeded sample data in he and en."
+    },
+    {
+      "id": "docs-spec",
+      "title": "2יא part A Docs: SPEC, decisions, work plan and design docs (right after Moshe approves)",
+      "dependsOn": [],
+      "ownedFiles": [
+        "docs/01-SPEC.md",
+        "docs/02-WORK-PLAN.md",
+        "docs/DECISIONS-PENDING.md",
+        "docs/03-DESIGN.md",
+        "docs/design/components.md",
+        "docs/design/motion.md",
+        "docs/design/canvas.json",
+        "docs/design/screens/Levels-Map.dc.html",
+        "docs/design/screens/Levels-Gate.dc.html",
+        "docs/design/screens/Level-Result.dc.html",
+        "docs/design/screens/Lv-Find.dc.html",
+        "docs/design/screens/Lv-Race.dc.html",
+        "docs/design/screens/Lv-Box.dc.html",
+        "docs/design/screens/Lv-Sprint.dc.html",
+        "docs/design/screens/Lv-SpotError.dc.html",
+        "docs/design/screens/Lv-PointHunter.dc.html",
+        "docs/design/screens/Lv-Chain.dc.html",
+        "docs/design/screens/Modes-Levels.dc.html",
+        "apps/mobile/src/__tests__/levelsSpecDocs.test.ts"
+      ],
+      "tasks": [
+        "Never edit docs/00-original-spec-v1.md.",
+        "01-SPEC header: D48 in 'requirements Moshe replaced'; document version 1.3. §2 glossary: 6 modes; terms שלב (distinct from a Replay step), פרק, שער, כוכבים, בוס.",
+        "01-SPEC §4.1 row 7 -> 6 options, rows for the level screens with board names, missing boards list; §4.2 mermaid Modes -> LevelMap -> Level -> LevelResult -> LevelMap.",
+        "01-SPEC §5.1 heading and table (rename + sixth row) and the D48 record: original requirement (§5) / decision / why.",
+        "01-SPEC new §5.3 'אימון בשלבים' with subsections: principles, kinds and thresholds, boss, chapters (summary; numbers live in levels.config.ts), unlocks and gates (LEVEL_RULES), rewards, offline/storage/sync, build and validate, boundary rules. Convert every plan '§N' meaning a SPEC section to 'סעיף N'.",
+        "01-SPEC short amendments: §5.2 (level boards keep the D43 ranges), §6.5, §6.6, §7.2 (D49), §8 (D62: no reactions button in levels, Moshe's decision 2026-10-18, recorded as original §18 / decision / why), §9 (pace, findMs frozen in levels.json, the bot reacts 😂 in the race too, no lingering and no adaptation in levels), §12 (the level result: the §23 items it shows, and why no Replay), §13, §14 (chain, D64: Moshe approved the proposal 2026-10-18, recorded as original §14 / decision / why), and the background freeze D65 in §5.3 and §6.6, §14.1, §14.3, §15 (server-derived level XP, carry-over), §16.1, §17.2 (tap, two hosts), §19 (user_levels, level_xp_days), §20 (D63: replay transform, and the two-way ranked check), §21, §22 (six events with props, key `level`, reason failed), §25, §27.3 (stuck after 3 attempts).",
+        "01-SPEC §24: rows D48-D65 with statuses as in dev-plan §1.5 (D62, D64 and D65 '✓ החלטת משה 2026-10-18', D63 ☐ with LEVEL_RULES.replayTransform); D62 and D64 also go into the list of 'requirements Moshe replaced' at the top of the SPEC; amend D44 with 'also in staged practice (D49)'.",
+        "02-WORK-PLAN: overview row '14א · אימון בשלבים (גרסה 1.0.2)' and a stage section in house format (מקור, six bold parts, סיום bullets, פרומפט block ending 'התחל בתוכנית וברשימת בדיקות, וחכה לאישור'); parallel-track row: server deployed before APK 1.0.2.",
+        "DECISIONS-PENDING: close 3.23 (✓ נסגר, status line), new item with the 2.9-style defaults table (# | מה | בנוי עכשיו | חלופה | איפה משנים | סטטוס), update summary counts and header date, D41 row mentions levels.",
+        "03-DESIGN: 'בחירת משחק: 6 מצבים'; section with the staged-practice canvas and the boards that are missing.",
+        "docs/design: copy the staged boards from docs/handoff/2026-10-15/staged-practice/project into screens/ under the new names (Main -> Levels-Map, Map-Gate -> Levels-Gate, Idea-1/2/3 -> Lv-SpotError/Lv-PointHunter/Lv-Chain, Modes -> Modes-Levels) and update canvas.json; components.md new section for level components [new] + §18 checklist lines; motion.md: every level animation with its Reduced Motion form (node pulse, locked shake, gate unlock, stars reveal, confetti, digit falling into the cell, RaceTo30 bar fills, chain link fill, chapter-unlocked celebration, bot avatar hop, miss flash). tokens.json belongs to mobile-screens.",
+        "apps/mobile/src/__tests__/levelsSpecDocs.test.ts (modelled on interferenceDocs.test.ts) checks this lane's documents, so the lane has its own done test."
+      ],
+      "tests": [
+        "apps/mobile/src/__tests__/levelsSpecDocs.test.ts: SPEC §5.1 no longer says 'חמש אפשרויות בלבד' except inside the quoted original requirement; §24 has contiguous rows D48..D65, D48 status contains '✓ החלטת משה', D62, D64 and D65 contain '✓ החלטת משה', D63 is ☐ and §20 mentions the replay transform; §7.2 says no interferences in staged practice; §5.3 contains LEVEL_RULES values (10, 20, 30); DECISIONS-PENDING 3.23 has '✓ נסגר'; 02-WORK-PLAN has a 'שלב 14א' section with '**סיום:**' and '**פרומפט:**'; motion.md has a Reduced Motion form for every level animation listed in this lane"
+      ],
+      "doneWhen": "All dev-plan §4 SPEC, WORK-PLAN, DECISIONS-PENDING and design-doc changes are written; levelsSpecDocs.test.ts passes; the original spec is untouched."
+    },
+    {
+      "id": "docs-release",
+      "title": "2יא part B Docs: QA checklist, device checks, release order, README, store docs check, docs consistency test",
+      "dependsOn": [
+        "docs-spec",
+        "mobile-ideas",
+        "admin",
+        "levels-builder"
+      ],
+      "ownedFiles": [
+        "docs/QA-CHECKLIST.md",
+        "docs/LEVELS-DEVICE-CHECKS.md",
+        "docs/RELEASE-CHECKLIST.md",
+        "docs/DEPLOY-PRODUCTION.md",
+        "docs/BUILD-APK.md",
+        "README.md",
+        "apps/mobile/src/__tests__/levelsDocs.test.ts"
+      ],
+      "tasks": [
+        "QA-CHECKLIST: row 7 (six rows he/en at 360x780) and a new section with one row per plan §6 screen (board name or 'אין לוח', Android/iOS ☐).",
+        "LEVELS-DEVICE-CHECKS.md in STAGE7 format with the dev-plan §3.2 list.",
+        "RELEASE-CHECKLIST, DEPLOY-PRODUCTION, BUILD-APK: for 1.0.2 deploy the server first (staging then production; migration 0008 on start; no db:seed-puzzles), then the APK; the same whenever level count, kinds or event props grow.",
+        "README: PUT/GET /v1/me/levels and the levels:build, levels:validate and levels scripts.",
+        "levelsDocs.test.ts modelled on interferenceDocs.test.ts, for this lane's documents (the SPEC checks live in docs-spec's levelsSpecDocs.test.ts; the English 'Stage' guard lives in mobile-screens' levelsWording.test.ts)."
+      ],
+      "tests": [
+        "apps/mobile/src/__tests__/levelsDocs.test.ts: QA-CHECKLIST row 7 says six rows and has a row per plan §6 screen; LEVELS-DEVICE-CHECKS lists every dev-plan §3.2 item; RELEASE-CHECKLIST, DEPLOY-PRODUCTION and BUILD-APK put the server before the 1.0.2 APK; README lists PUT/GET /v1/me/levels and the levels:build, levels:validate and levels scripts"
+      ],
+      "doneWhen": "levelsDocs.test.ts passes and every document in dev-plan §4 is updated."
+    },
+    {
+      "id": "practice-pause",
+      "title": "2יג App: background freeze with 3-2-1 countdown in solo practice and bot practice (D65)",
+      "dependsOn": [
+        "engine-rules",
+        "engine-find",
+        "mobile-data",
+        "mobile-screens",
+        "mobile-play",
+        "mobile-ideas"
+      ],
+      "ownedFiles": [
+        "apps/mobile/src/game/session.ts",
+        "apps/mobile/src/game/__tests__/*",
+        "apps/mobile/src/screens/game/GameScreen.tsx",
+        "apps/mobile/src/screens/game/__tests__/*",
+        "apps/mobile/src/config/practice.ts",
+        "apps/mobile/src/i18n/locales/he/game.json",
+        "apps/mobile/src/i18n/locales/en/game.json"
+      ],
+      "tasks": [
+        "Solo and bot practice: on any AppState other than 'active' during a running practice game -> host.pause() (LocalGameHost.pause from engine-rules); back to 'active' -> the same ResumeCountdown overlay as in levels (3, 2, 1 via t(), covering the board, a11y announcement, Reduced Motion: the number just changes), then host.resume(). Lock timer, bot think time and game clock keep exactly their remaining values.",
+        "The saved practice game (event log, D25) and its duration/Replay do not count the paused time (record the pause the way the engine emits it, or subtract it), and loading an old saved game still works.",
+        "Ranked/online unchanged: RemoteGameHost.pause/resume are no-ops and GameScreen never shows the countdown for an online game.",
+        "Setting PRACTICE_UI.backgroundPause = true (or the existing practice config object), read in code and flipped in a test."
+      ],
+      "tests": [
+        "session/GameScreen tests: solo practice paused at a lock with 5 s left, clock +60 s, active -> countdown 3,2,1 shown with the board covered, resume after 3 s, the lock still has 5 s; bot practice: the bot places nothing while paused and keeps its remaining think time; an online game never pauses or shows the countdown; backgroundPause false -> no pause; Reduced Motion -> no animated styles.",
+        "Existing ranked, online and Replay tests pass unchanged."
+      ],
+      "doneWhen": "Pause tests pass for solo and bot practice; ranked/online tests unchanged; npm run verify green."
+    },
+    {
+      "id": "chain-trial",
+      "title": "D64 back to pending: chain default 'accept' (original §14), a staging-only settings switch for 'penalty', and a chain tip",
+      "dependsOn": [
+        "engine-rules",
+        "mobile-play",
+        "mobile-ideas",
+        "docs-spec",
+        "practice-pause"
+      ],
+      "ownedFiles": [
+        "packages/engine/src/levels/progress.ts",
+        "packages/engine/src/levels/progress.test.ts",
+        "packages/engine/src/levels/spec.test.ts",
+        "apps/mobile/src/levels/levelSession.ts",
+        "apps/mobile/src/levels/__tests__/levelSession.test.ts",
+        "apps/mobile/src/screens/levels/hud/ChainHud.tsx",
+        "apps/mobile/src/screens/levels/__tests__/ideas.test.tsx",
+        "the settings screen and its store/tests (find them)",
+        "apps/mobile/src/i18n/locales/{he,en}/levels.json and settings.json",
+        "apps/mobile/src/__tests__/levelsSpecDocs.test.ts",
+        "docs/01-SPEC.md (D64 row and §14 note only)"
+      ],
+      "tasks": [
+        "LEVEL_RULES.chainNotYet default -> 'accept'; tests pin the default and still cover 'penalty'.",
+        "Staging-only settings switch 'שרשרת: ניחוש עולה 5 ש׳' / 'Chain: a guess costs 5 s' (hidden in production builds; find how the app tells staging from production, e.g. the app env / API base config) that persists and is passed to levelRulesFor through levelSession; flipping it changes the next chain level only.",
+        "Chain tip for the first 3 chain levels (like the other kinds' tips): 'בכל צעד יש בדיוק משבצת אחת שאפשר להוכיח. אם אתה בטוח בספרה, זו המשבצת.' / English equivalent, via t().",
+        "01-SPEC: D64 row back to 'ממתינה לאישור: בונים לפי המקור (משה מנסה קודם, 2026-10-18)', with original §14 / proposal / why; remove D64 from the 'requirements Moshe replaced' list if docs-spec added it; levelsSpecDocs test updated accordingly."
+      ],
+      "tests": [
+        "progress/spec tests: default 'accept'; 'penalty' via override.",
+        "levelSession test: the staging switch on -> chain rules get 'penalty'; off or production -> 'accept'.",
+        "settings test: the switch is rendered only in staging and persists.",
+        "ideas.test: tip shown on the first 3 chain levels only; 'accept' places a right off-chain digit with no toast; 'penalty' shows the toast."
+      ],
+      "doneWhen": "Chain default is 'accept', the staging switch works and is tested, SPEC D64 is pending, npm run verify green."
+    },
+    {
+      "id": "release",
+      "title": "2יב Integration and release prep for 1.0.2",
+      "dependsOn": [
+        "engine-rules",
+        "engine-solver",
+        "engine-find",
+        "levels-builder",
+        "server",
+        "mobile-data",
+        "mobile-screens",
+        "mobile-play",
+        "mobile-ideas",
+        "admin",
+        "docs-spec",
+        "docs-release",
+        "practice-pause",
+        "chain-trial"
+      ],
+      "ownedFiles": [
+        "apps/mobile/app.json"
+      ],
+      "tasks": [
+        "Bump ENGINE_VERSION '0.2.0' -> '0.3.0' once in packages/engine/src/index.ts (sharedFiles); PROTOCOL_VERSION stays 1.",
+        "Run npm run version:bump (patch) -> apps/mobile/app.json expo.version 1.0.2 (build 10002).",
+        "Run npm run verify and all e2e suites; report results to the main session.",
+        "Stop. Commit, server deploy (staging first, then production, always BEFORE any 1.0.2 APK), APK build (one ABI or EAS on this machine) only after Moshe's explicit OK."
+      ],
+      "tests": [
+        "npm run verify (lint + typecheck + i18n:check + jest) green, including levels:validate and the ranked-unchanged regression",
+        "Existing e2e suites (soloPractice, botPractice, botPracticeEnd, ranked) and the new levels e2e pass"
+      ],
+      "doneWhen": "npm run verify passes on the integrated tree with version 1.0.2 and ENGINE_VERSION 0.3.0; nothing committed, built or deployed without Moshe's OK."
+    }
+  ],
+  "sharedFiles": [
+    {
+      "path": "packages/engine/src/levels/index.ts",
+      "owner": "engine-rules",
+      "note": "engine-find appends `export * from './find'` and `export * from './findHost'` after engine-rules is merged. levels-builder must NOT export builder/ from it (Node-only code, keeps it out of the app and server bundles)."
+    },
+    {
+      "path": "packages/engine/src/levels/spec.ts",
+      "owner": "engine-rules",
+      "note": "Declares every cross-lane level type (FindScope, TargetTier, FindTarget, LevelFindView, LevelEvent, AppLevel) before the other engine lanes start. engine-find and levels-builder may add a field they find missing, after engine-rules is merged, in the same change as its first user."
+    },
+    {
+      "path": "apps/mobile/src/levels/data/levels.json",
+      "owner": "engine-rules",
+      "note": "engine-rules writes a 2-level AppLevel fixture, so mobile-data can build levelsData.ts in wave 3; levels-builder then overwrites it with `npm run levels -w @sudoku-fight/mobile`. Generated: never edited by hand, listed in .prettierignore."
+    },
+    {
+      "path": "packages/engine/src/index.ts",
+      "owner": "engine-rules",
+      "note": "engine-rules adds `export * from './levels'`. release bumps ENGINE_VERSION to '0.3.0' at the very end. No other lane edits it; levels.json is never imported here."
+    },
+    {
+      "path": "packages/engine/src/bot/brain.ts",
+      "owner": "engine-find",
+      "note": "Only change: eligibleCells respects rules.editableCells. engine-solver must not rewire computeReading to sudoku/reading.ts in 1.0.2."
+    },
+    {
+      "path": "apps/mobile/src/__tests__/startupGraph.test.ts",
+      "owner": "mobile-data",
+      "note": "mobile-data adds LATE_FILES apps/mobile/src/levels/data/levels.json; mobile-screens then adds apps/mobile/src/screens/levels/."
+    },
+    {
+      "path": "apps/mobile/app/levels/play.tsx",
+      "owner": "mobile-screens",
+      "note": "mobile-screens builds the ready/result phases and the route safety (FlowFallback, watchdog); mobile-play then fills the 'playing' phase with TapLevelScreen / GameScreen + levelChrome."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/he/levels.json",
+      "owner": "mobile-screens",
+      "note": "mobile-play then mobile-ideas add keys sequentially (hud.*, exit.*, explain.*). Keep he/en parity in the same change."
+    },
+    {
+      "path": "apps/mobile/src/i18n/locales/en/levels.json",
+      "owner": "mobile-screens",
+      "note": "Same as the Hebrew file; English uses 'Stage'/'Staged practice', never 'Level' for a stage."
+    },
+    {
+      "path": "apps/mobile/src/__tests__/a11yAudit.test.tsx",
+      "owner": "mobile-screens",
+      "note": "mobile-play adds rows for /levels/play per kind; mobile-ideas adds rows for the three idea kinds."
+    },
+    {
+      "path": "docs/design/tokens.json",
+      "owner": "mobile-screens",
+      "note": "mobile-screens adds star colours, node sizes and contrast pairs; mobile-play adds board.cellDim/cellDimAlt and the dim given colour. Re-run `npm run tokens -w @sudoku-fight/mobile` after each edit."
+    },
+    {
+      "path": "apps/mobile/src/theme/tokens.generated.ts",
+      "owner": "mobile-screens",
+      "note": "Generated only by `npm run tokens`; mobile-play regenerates it after its tokens.json edit."
+    },
+    {
+      "path": "apps/mobile/src/screens/levels/TapLevelScreen.tsx",
+      "owner": "mobile-play",
+      "note": "mobile-ideas adds the spotError branch (SpotErrorHud, corrected cells, end reveal)."
+    },
+    {
+      "path": "apps/mobile/src/screens/levels/levelChrome.tsx",
+      "owner": "mobile-play",
+      "note": "mobile-ideas adds pointHunter and chain chrome (PointHunterHud + CellChipsLayer, ChainHud). GameScreen.tsx itself is not edited by mobile-ideas."
+    },
+    {
+      "path": "apps/mobile/src/screens/levels/HowToPlayPanels.tsx",
+      "owner": "mobile-play",
+      "note": "mobile-play draws the panels of find, findDuel, fillBox, duel and boss with the real Board; mobile-ideas adds spotError, pointHunter and chain. The shell (HowToPlay.tsx) stays with mobile-screens."
+    },
+    {
+      "path": "apps/mobile/src/screens/levels/howToPlayFixtures.ts",
+      "owner": "mobile-play",
+      "note": "mobile-ideas adds the fixtures of the three idea kinds."
+    },
+    {
+      "path": "apps/server/src/legal/privacy.ts",
+      "owner": "server",
+      "note": "EVENT_DETAILS is Record<TelemetryEventName, …>: the six new names must get he/en entries in the same change that adds them to TELEMETRY_EVENT_NAMES."
+    },
+    {
+      "path": "packages/protocol/src/telemetry.ts",
+      "owner": "server",
+      "note": "mobile-data consumes TELEMETRY_EVENT_GENERATION and the prop interfaces; it does not edit the file."
+    },
+    {
+      "path": "apps/mobile/package.json",
+      "owner": "levels-builder",
+      "note": "Only the 'levels' script (gen-levels.mjs). No new dependency in 1.0.2."
+    },
+    {
+      "path": ".prettierignore",
+      "owner": "levels-builder",
+      "note": "Only adds apps/mobile/src/levels/data/. The build/ rule stays; that is why the builder folder is named builder/."
+    }
+  ],
+  "parallelWaves": [
+    [
+      "engine-rules",
+      "docs-spec"
+    ],
+    [
+      "engine-solver",
+      "engine-find",
+      "server"
+    ],
+    [
+      "levels-builder",
+      "mobile-data",
+      "admin"
+    ],
+    [
+      "mobile-screens"
+    ],
+    [
+      "mobile-play"
+    ],
+    [
+      "mobile-ideas"
+    ],
+    [
+      "docs-release"
+    ],
+    [
+      "release"
+    ]
+  ],
+  "openQuestionsForMoshe": [
+    "Answered 2026-10-18, see mosheDecisions20261018."
+  ],
+  "verify": "npm run verify",
+  "mosheDecisions20261018": [
+    "These OVERRIDE anything else in this file and in dev-plan.md.",
+    "D62 approved as proposed: NO reactions button for the player in levels (LEVEL_UI.reactions = false, a switch that brings it back). The bot still reacts (e.g. 😂 on my wrong tap in the race).",
+    "D64 REOPENED by Moshe 2026-10-18 (later message): he finds the 'cannot be known yet' penalty hard to understand and wants to TRY IT FIRST. So D64 is 'ממתינה לאישור' and is built per the original §14: default LEVEL_RULES.chainNotYet = 'accept' (a right digit is placed anywhere with its points, only chain cells advance, a wrong digit costs +5 s). 'penalty' stays as a switch, and staging builds get a settings switch so Moshe can play both. The first 3 chain levels show a tip: at every step exactly one cell can be proven; if you are sure of a digit, that is the cell. This is done by the separate lane 'chain-trial' AFTER all other lanes; until then other lanes keep both modes working and tested.",
+    "Screens without a design board: build from the direction-C tokens and the brief; Moshe checks them on the device.",
+    "D65 (new, Moshe): when the app leaves the foreground mid-level (phone call, app switch, screen off), the level FREEZES: level clock, time limit, lock timers, the 3 s race freeze and the bot all stop. When the app is active again: a 3, 2, 1 countdown over the COVERED board (the pause must not give free thinking time), then the level continues from exactly the same point with the same time left. Reduced Motion: the number just changes. If the app is killed while in the background, the attempt does not count (as before). Settings: LEVEL_UI.backgroundPause = true, LEVEL_UI.resumeCountdownMs = 3000. Implemented through GameHost.pause()/resume() on the local hosts (RemoteGameHost: no-op, online games never pause this way).",
+    "Question 8 (level XP reaching XP level 4 unlocks all interference kinds in ranked) was not answered: keep the default, level XP counts toward XP levels like any XP.",
+    "D65 extended by Moshe 2026-10-18: the same background freeze with the 3-2-1 countdown over a covered board ALSO applies to solo practice ('אימון לבד') and bot practice ('אימון מול בוט'). NOT in ranked/online (D42 disconnect rules stay). This is built by the separate lane 'practice-pause' AFTER all other lanes; other lanes must NOT implement it, they only make LocalGameHost.pause()/resume() general enough (engine-rules) and keep the countdown overlay reusable (mobile-play)."
+  ]
+}

@@ -1,6 +1,15 @@
 import type { GameType } from '../gameType';
 import { randomInt, type Rng, shuffled } from '../util/random';
-import { agreesWith, boxOf, CELL_COUNT, DIGITS, filledCount, type Grid, isSolvedGrid } from './board';
+import {
+  agreesWith,
+  boxOf,
+  CELL_COUNT,
+  type CellIndex,
+  DIGITS,
+  filledCount,
+  type Grid,
+  isSolvedGrid,
+} from './board';
 import { DEFAULT_GRADING, gradePuzzle, type GradingRules } from './grade';
 
 /**
@@ -58,6 +67,11 @@ export interface AddGivensOptions {
   /** See DEFAULT_FIT.slack. */
   slack?: number;
   grading?: GradingRules;
+  /**
+   * Cells that never get a given (staged practice: the cells a level keeps empty, such as its target box).
+   * A cell of it that already holds a given keeps it.
+   */
+  exclude?: ReadonlySet<CellIndex>;
 }
 
 /**
@@ -65,13 +79,14 @@ export interface AddGivensOptions {
  * leaves no cell to add. Water filling: each new given goes to a digit with the fewest givens (up to `slack`
  * more, when those digits have no usable cell), on a random cell of that digit in the box with the fewest
  * givens. Deterministic for a given Rng. A target at or below the givens already there returns a copy.
+ * Null too when `exclude` leaves too few cells to reach the target.
  */
 export function addGivens(
   givens: Grid,
   solution: Grid,
   target: number,
   rng: Rng,
-  { keepGrade = null, slack = DEFAULT_FIT.slack, grading = DEFAULT_GRADING }: AddGivensOptions = {},
+  { keepGrade = null, slack = DEFAULT_FIT.slack, grading = DEFAULT_GRADING, exclude }: AddGivensOptions = {},
 ): number[] | null {
   if (!Number.isInteger(target) || target < 0 || target > CELL_COUNT)
     throw new RangeError(`A givens target must be an integer from 0 to ${CELL_COUNT}, got ${target}`);
@@ -100,7 +115,7 @@ export function addGivens(
       )) {
         const cells: number[] = [];
         for (let i = 0; i < CELL_COUNT; i++)
-          if (out[i] === 0 && solution[i] === d && !blocked.has(i)) cells.push(i);
+          if (out[i] === 0 && solution[i] === d && !blocked.has(i) && !exclude?.has(i)) cells.push(i);
         // Random order first, then the emptiest box first (a stable sort keeps the random order within a box).
         const order = shuffled(rng, cells).sort((a, b) => boxCounts[boxOf(a)]! - boxCounts[boxOf(b)]!);
         for (const c of order) {

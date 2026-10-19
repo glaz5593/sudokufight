@@ -43,6 +43,7 @@ describe('database', () => {
       'game_players',
       'games',
       'installs',
+      'level_xp_days',
       'opponent_history',
       'player_reports',
       'practice_results',
@@ -53,6 +54,7 @@ describe('database', () => {
       'suspended_sign_ins',
       'user_achievements',
       'user_blocks',
+      'user_levels',
       'users',
       'xp',
     ]);
@@ -91,6 +93,32 @@ describe('database', () => {
     await expect(t.db.execute(bad)).rejects.toThrow();
     const [row] = await t.db.select().from(puzzles);
     expect(row).toMatchObject({ id: 'p1', pool: 'ranked', techniques: [] });
+  });
+
+  it("a level's best is a level id and 0–3 stars (staged practice, 1.0.2)", async () => {
+    await t.db.insert(users).values({ id: 'ana', firebaseUid: 'f-ana', displayName: 'ana' });
+    const level = (id: string, stars: number, plays = 1) =>
+      t.db.execute(sql`insert into user_levels (user_id, level_id, best_stars, plays)
+                       values ('ana', ${id}, ${stars}, ${plays})`);
+    await level('L001', 3);
+    await level('L1000', 0);
+    for (const [id, stars, plays] of [
+      ['X1', 1, 1],
+      ['L01', 1, 1],
+      ['l002', 1, 1],
+      ['L002', 4, 1],
+      ['L003', -1, 1],
+      ['L004', 1, -1],
+    ] as const)
+      await expect(level(id, stars, plays)).rejects.toThrow();
+    await expect(level('L001', 2)).rejects.toThrow(); // one row a level
+    await t.db.execute(sql`insert into level_xp_days (user_id, day, xp) values ('ana', 20370, 50)`);
+    await expect(
+      t.db.execute(sql`insert into level_xp_days (user_id, day, xp) values ('ana', 20370, 10)`),
+    ).rejects.toThrow();
+    await expect(
+      t.db.execute(sql`insert into level_xp_days (user_id, day, xp) values ('nobody', 20370, 10)`),
+    ).rejects.toThrow();
   });
 
   it('round-trips times as Dates, and reset() empties every table', async () => {
@@ -354,6 +382,55 @@ describe('migration 0007: retired puzzles (spec §20) [D43]', () => {
           { id: 'p1', retiredAt: null },
           { id: 'p2', retiredAt: null },
         ]);
+      } finally {
+        await after.close();
+      }
+    } finally {
+      rmSync(migrations, { recursive: true, force: true });
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
+
+describe('migration 0008: staged practice (spec §5.3.7, §15; 1.0.2)', () => {
+  it('adds user_levels and level_xp_days, empty, on a database that has 0007 already', async () => {
+    const migrations = foldersBefore(8);
+    const dataDir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-pglite-'));
+    try {
+      const before = await createDb(
+        { database: { kind: 'pglite', dataDir } },
+        { migrationsFolder: migrations },
+      );
+      await insertOldUsers(before.db, [{ id: 'ana', avatarId: null }]);
+      await before.db.execute(sql`insert into xp (user_id, level, xp) values ('ana', 2, 250)`);
+      await before.close();
+
+      const after = await createDb({ database: { kind: 'pglite', dataDir } });
+      try {
+        const count = async (table: string) =>
+          (
+            await queryRows<{ n: number }>(
+              after.db,
+              sql`select count(*)::int as n from ${sql.identifier(table)}`,
+            )
+          )[0]?.n;
+        expect([await count('user_levels'), await count('level_xp_days')]).toEqual([0, 0]);
+        // The rest is as it was.
+        expect(await queryRows(after.db, sql`select user_id, level, xp from xp`)).toEqual([
+          { user_id: 'ana', level: 2, xp: 250 },
+        ]);
+        await after.db.execute(sql`insert into user_levels (user_id, level_id, best_stars, plays)
+                                   values ('ana', 'L010', 2, 3)`);
+        await after.db.execute(sql`insert into level_xp_days (user_id, day, xp) values ('ana', 20370, 20)`);
+        await expect(
+          after.db.execute(sql`insert into user_levels (user_id, level_id, best_stars, plays)
+                               values ('ana', 'L011', 4, 1)`),
+        ).rejects.toThrow();
+        const [row] = await queryRows<{ updated: boolean }>(
+          after.db,
+          sql`select updated_at is not null as updated from user_levels`,
+        );
+        expect(row).toEqual({ updated: true });
       } finally {
         await after.close();
       }

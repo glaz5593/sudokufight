@@ -10,6 +10,7 @@ import {
   timerRemainingMs,
   WRONG_DIGITS_SHOWN,
 } from '../boardModel';
+import { sameCell } from '../Cell';
 import { DEMO_PUZZLE, demoAnswer, demoBoard, DemoGame, demoWrong } from '../demo';
 
 const at = (m: BoardModel, name: string): CellModel => m.cells[parseCellName(name)]!;
@@ -368,6 +369,83 @@ describe('timerRemainingMs and emptyCell', () => {
       wrong: [],
       interactive: false,
       cooldown: false,
+      area: null,
+      mark: null,
+      correction: null,
+      mine: false,
     });
+  });
+});
+
+describe('boardModel: a stage’s options (components.md §19.7)', () => {
+  const box5 = Array.from({ length: 81 }, (_, i) => i).filter(
+    (i) => Math.floor(i / 27) === 1 && Math.floor((i % 9) / 3) === 1,
+  );
+  const g = new DemoGame({ players: 1, mode: 'solo', gameType: 'fast' });
+  const view = g.view('moshe');
+
+  it('area: its cells are in, every other cell out; without one, none says either', () => {
+    const m = boardModel(view, 0, g.now, { area: box5 });
+    expect(m.cells.filter((c) => c.area === 'in').map((c) => c.index)).toEqual(box5);
+    expect(m.cells.filter((c) => c.area === 'out')).toHaveLength(81 - 9);
+    expect(boardModel(view, 0, g.now).cells.every((c) => c.area === null)).toBe(true);
+  });
+
+  it('editable: only its cells take a tap (fill the box)', () => {
+    const editable = box5.filter((i) => DEMO_PUZZLE.givens[i] === '0');
+    const m = boardModel(view, 0, g.now, { editable });
+    expect(m.cells.filter((c) => c.interactive).map((c) => c.index)).toEqual(editable);
+  });
+
+  it('tappable: filled cells that are not the board’s take a tap; "all": the givens too', () => {
+    const played = new DemoGame({ players: 1, mode: 'solo', gameType: 'fast' }).solve('moshe', 'A1');
+    const v = played.view('moshe');
+    const given = parseCellName('A3');
+    expect(boardModel(v, 0, played.now).cells[0]).toMatchObject({ kind: 'solved', interactive: false });
+    const tap = boardModel(v, 0, played.now, { tappable: true });
+    expect(tap.cells[0]).toMatchObject({ kind: 'solved', interactive: true });
+    expect(tap.cells[given]).toMatchObject({ kind: 'given', interactive: false });
+    expect(boardModel(v, 0, played.now, { tappable: 'all' }).cells[given]!.interactive).toBe(true);
+    // Never outside the editable cells.
+    expect(boardModel(v, 0, played.now, { tappable: true, editable: [given] }).cells[0]!.interactive).toBe(
+      false,
+    );
+  });
+
+  it('highlightDigit: every filled cell with the digit is a target chip', () => {
+    const m = boardModel(view, 0, g.now, { highlightDigit: 3 });
+    const threes = [...DEMO_PUZZLE.givens].flatMap((d, i) => (d === '3' ? [i] : []));
+    expect(m.cells.filter((c) => c.mark === 'target').map((c) => c.index)).toEqual(threes);
+    expect(boardModel(view, 0, g.now).cells.some((c) => c.mark !== null)).toBe(false);
+  });
+
+  it('lockTimer false: my lock stays my lock, with no timer to show', () => {
+    const solo = new DemoGame({
+      players: 1,
+      mode: 'solo',
+      gameType: 'fast',
+      rules: { lockTimeout: false, afterMistake: 'keepLock', relockCooldownMs: 0 },
+    }).select('moshe', 'D5');
+    const m = boardModel(solo.view('moshe'), 0, solo.now + 60_000, { lockTimer: false });
+    expect(at(m, 'D5')).toMatchObject({ kind: 'myLock', lock: null });
+    expect(m.myLock).toMatchObject({ cell: parseCellName('D5'), name: 'D5', seconds: 0 });
+    expect(m.keypad.enabled).toBe(true);
+  });
+
+  it('corrected and mine: a found error keeps what stood there; my digits read as mine', () => {
+    const played = new DemoGame({ players: 1, mode: 'solo', gameType: 'fast' }).solve('moshe', 'A1');
+    const v = played.view('moshe');
+    const m = boardModel(v, 0, played.now, { corrected: [{ cell: 0, wrong: 2 }], mine: true });
+    expect(m.cells[0]).toMatchObject({ kind: 'solved', correction: { wrong: 2 }, mine: true });
+    expect(m.cells[parseCellName('A3')]).toMatchObject({ kind: 'given', mine: false, correction: null });
+  });
+
+  it('sameCell sees every new field', () => {
+    const base = emptyCell(31);
+    expect(sameCell(base, { ...base })).toBe(true);
+    expect(sameCell(base, { ...base, area: 'out' })).toBe(false);
+    expect(sameCell(base, { ...base, mark: 'target' })).toBe(false);
+    expect(sameCell(base, { ...base, mine: true })).toBe(false);
+    expect(sameCell(base, { ...base, correction: { wrong: 4 } })).toBe(false);
   });
 });

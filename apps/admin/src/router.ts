@@ -2,7 +2,8 @@ import { ADMIN_REPORT_FILTERS, type AdminReportFilter } from '@sudoku-fight/prot
 import { useMemo, useSyncExternalStore } from 'react';
 
 /**
- * A small hash router: `#/installs?search=x&page=2`, `#/users/<id>`, `#/reports?status=all`. The hash keeps
+ * A small hash router: `#/installs?search=x&page=2`, `#/users/<id>`, `#/reports?status=all`,
+ * `#/levels?days=90&chapter=3`. The hash keeps
  * the server's job simple (one index.html under /admin), and Back / Forward / reload keep the page, its
  * search, its filter and its paging.
  */
@@ -14,7 +15,11 @@ export const MAX_DAYS = 365;
 /** The reports page's default filter (the server's too): what still needs an answer. */
 export const DEFAULT_REPORT_FILTER: AdminReportFilter = 'open';
 
-export type Section = 'overview' | 'installs' | 'users' | 'games' | 'reports' | 'audit' | 'screens';
+export type Section =
+  'overview' | 'installs' | 'users' | 'games' | 'reports' | 'audit' | 'screens' | 'levels';
+
+/** The levels page's chapter filter takes a chapter up to this (the server says which there are). */
+export const MAX_CHAPTER = 1000;
 
 export type Route =
   | { name: 'overview'; days?: number }
@@ -27,6 +32,8 @@ export type Route =
   | { name: 'reports'; status?: AdminReportFilter; page?: number }
   | { name: 'audit'; page?: number }
   | { name: 'screens'; days?: number }
+  /** Staged practice (1.0.2). `chapter`: only that chapter's levels; none or 0, every chapter. */
+  | { name: 'levels'; days?: number; chapter?: number }
   | { name: 'notFound' };
 
 /** The nav item a route belongs to. */
@@ -39,6 +46,7 @@ export function sectionOf(route: Route): Section | null {
     case 'reports':
     case 'audit':
     case 'screens':
+    case 'levels':
       return route.name;
     case 'install':
       return 'installs';
@@ -95,6 +103,8 @@ export function parseRoute(hash: string): Route {
       return { name: 'overview', days };
     case 'screens':
       return { name: 'screens', days };
+    case 'levels':
+      return { name: 'levels', days, chapter: positiveInt(query.get('chapter'), 0, MAX_CHAPTER) };
     case 'installs':
       return { name: 'installs', search: query.get('search') ?? '', page };
     case 'users':
@@ -120,7 +130,7 @@ function withQuery(path: string, params: Record<string, string | number | undefi
   return text ? `${path}?${text}` : path;
 }
 
-/** The href of a route; defaults (page 1, 30 days, no search, open reports) are left out. */
+/** The href of a route; defaults (page 1, 30 days, no search, open reports, every chapter) are left out. */
 export function routeHref(route: Route): string {
   const page = (p: number | undefined) => (p && p > 1 ? p : undefined);
   const days = (d: number | undefined) => (d && d !== DEFAULT_DAYS ? d : undefined);
@@ -129,6 +139,8 @@ export function routeHref(route: Route): string {
       return withQuery('#/overview', { days: days(route.days) });
     case 'screens':
       return withQuery('#/screens', { days: days(route.days) });
+    case 'levels':
+      return withQuery('#/levels', { days: days(route.days), chapter: route.chapter || undefined });
     case 'installs':
       return withQuery('#/installs', { search: route.search, page: page(route.page) });
     case 'users':

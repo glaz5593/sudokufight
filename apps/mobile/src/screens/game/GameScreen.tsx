@@ -2,13 +2,24 @@ import {
   type CellIndex,
   cellName,
   type Digit,
+  type EndReason,
   type GameView,
   type HostUpdate,
   type InterferenceKind,
   type PlayerId,
   type PlayerView,
 } from '@sudoku-fight/engine';
-import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   BackHandler,
@@ -22,7 +33,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { type AvatarIdOrNone, NO_AVATAR_ID, normalizeAvatarId } from '../../avatars';
 import { useAuth } from '../../auth/authStore';
-import { Board, type BoardFlash, boardModel, CancelSelection, Keypad } from '../../components/board';
+import {
+  Board,
+  type BoardFlash,
+  boardModel,
+  type BoardModelOptions,
+  CancelSelection,
+  Keypad,
+} from '../../components/board';
+import { ResumeCountdown } from '../../components/board/ResumeCountdown';
 import { WarpFrame } from '../../components/interference';
 import {
   cardModel,
@@ -40,6 +59,7 @@ import {
   signedText,
 } from '../../components/player';
 import { ConfirmModal, useToast } from '../../components/ui';
+import { NOT_PAUSED, type PauseState } from '../../game/backgroundPause';
 import type { MatchEffect, UiEffect } from '../../game/effects';
 import type { SessionConnection } from '../../game/onlineSession';
 import type { PracticeSession } from '../../game/session';
@@ -219,6 +239,12 @@ export type GameSession = Pick<
    * is the empty avatar.
    */
   readonly profiles?: Readonly<Partial<Record<PlayerId, SessionProfile | null>>> | null;
+  /**
+   * [D65] A local game's background freeze (a practice's, a stage's): the screen covers the board with "3, 2, 1"
+   * (ResumeCountdown) for a practice; a stage draws its own (LevelChrome.cover). An online game has none.
+   */
+  readonly pause?: PauseState;
+  onPause?(listener: (state: PauseState) => void): () => void;
 };
 
 export interface GameScreenProps {
@@ -238,7 +264,61 @@ export interface GameScreenProps {
    * lost. A fallback offers "לתוצאות" and "לבית", and Crashlytics is told. Default RESULTS_WATCHDOG_MS.
    */
   resultsWatchdogMs?: number;
+  /**
+   * A stage of staged practice (1.0.2; screens/levels/levelChrome.tsx): its HUD, its board's frame, its exit
+   * dialog and its end. Absent, the screen is exactly the game's.
+   */
+  level?: LevelChrome;
   testID?: string;
+}
+
+/** What a stage's HUD and overlays are drawn from (LevelChrome's render functions). */
+export interface LevelChromeContext {
+  view: GameView;
+  /** The game's time now (the countdowns). */
+  now: number;
+  myAvatar: AvatarIdOrNone;
+  /** The X: the exit dialog ("לצאת מהשלב?"). */
+  onExit: () => void;
+  /** My reactions picker; the chrome shows the button only with LEVEL_UI.reactions [D62]. */
+  onReactions: () => void;
+  /** The board's side, for what is drawn over it. */
+  boardWidth: number;
+}
+
+/**
+ * A stage around the game screen (dev-plan §2ח): kinds 3–4 (fill the box, the duel) and the ideas' digit kinds
+ * play on this very screen with their own HUD, a frame of the board, "לצאת מהשלב?" for the end dialog and the
+ * stage's end in place of the results route. The show-results hold, the dialog wait and the watchdog stay.
+ */
+export interface LevelChrome {
+  /** In place of the game's cards (or solo HUD) and its progress or lead bar. */
+  hud: (ctx: LevelChromeContext) => ReactNode;
+  /** More of the board's picture: the area, the editable cells, locks with no timer. */
+  boardOptions?: BoardModelOptions;
+  /** Over the board, in its LTR coordinates (Board's children): a region frame, chips. */
+  overlay?: (ctx: Pick<LevelChromeContext, 'boardWidth'>) => ReactNode;
+  /** The board's label in place of the game's. */
+  boardLabel?: string;
+  /** The end dialog's words ("לצאת מהשלב?"). */
+  endDialog: {
+    title: string;
+    body: string;
+    confirm: string;
+    cancel: string;
+    /** Its label for screen readers. */
+    label: string;
+  };
+  /** No lock strip (locks with no timer: nothing to count down). */
+  hideLockStrip?: boolean;
+  /** The stage is over and its hold has passed: the stage's result (no navigation). In place of onEnded. */
+  onOver: () => void;
+  /** The hold on the final board before onOver; the game's endDelayMs by default. */
+  endDelayMs?: (reason: EndReason | undefined, reduce: boolean) => number;
+  /** Over everything (the D65 resume countdown over the covered board). */
+  cover?: ReactNode;
+  /** The cover is up: the screen under it is hidden from screen readers too. */
+  covered?: boolean;
 }
 
 /** How often the countdowns re-render (useNow's default). */
@@ -291,6 +371,22 @@ function safely(context: string, run: () => void): void {
 /** A step of the game's end, kept with a crash report (Crashlytics' log). */
 const breadcrumb = (message: string) => crashReporter().log(`game: ${message}`);
 
+/**
+ * [D65] A practice's freeze while the app is away (solo practice, a practice against a bot): the cover over the
+ * board, or null. Never for an online game (no pause there) or a stage (its chrome draws its own).
+ */
+function usePracticeCover(
+  session: GameSession,
+  enabled: boolean,
+): Exclude<PauseState, { kind: 'none' }> | null {
+  const subscribe = useCallback(
+    (changed: () => void) => (enabled && session.onPause ? session.onPause(changed) : () => undefined),
+    [session, enabled],
+  );
+  const pause = useSyncExternalStore(subscribe, () => (enabled ? (session.pause ?? NOT_PAUSED) : NOT_PAUSED));
+  return pause.kind === 'none' ? null : pause;
+}
+
 /** [D47] A key pressed while the scrambled keys were still moving: not entered, a light nudge. */
 const nudgeKey = () => cue('nudge');
 
@@ -302,6 +398,7 @@ export function GameScreen({
   onPractice,
   devMetrics = null,
   resultsWatchdogMs = RESULTS_WATCHDOG_MS,
+  level,
   testID = 'game',
 }: GameScreenProps) {
   const { t } = useTranslation('game');
@@ -317,6 +414,9 @@ export function GameScreen({
   // An online game's connection (work plan stage 7); null for a practice.
   const online = useOnlineInfo(session.connection);
   const isOnline = online !== null;
+  // [D65] A practice frozen while the app was away: "3, 2, 1" over the covered board.
+  const practiceCover = usePracticeCover(session, !isOnline && !level);
+  const covered = level ? level.covered === true : practiceCover !== null;
 
   // ---- the host's picture, re-read on every update, with the game time it was read at ----
   const [{ view, readAt }, setShown] = useState<{ view: GameView; readAt: number }>(() => ({
@@ -383,9 +483,16 @@ export function GameScreen({
   }, [profiles, view.me, myCountry]);
   // My digits entered while my connection is lost, waiting for it [D42] (the host's queue).
   const queuedMoves = online?.queuedMoves ?? null;
+  const levelBoard = level?.boardOptions;
   const board = useMemo(
-    () => boardModel(view, mySeat, now, { pendingCell: shownPending, avatars, queued: queuedMoves }),
-    [view, mySeat, now, shownPending, avatars, queuedMoves],
+    () =>
+      boardModel(view, mySeat, now, {
+        pendingCell: shownPending,
+        avatars,
+        queued: queuedMoves,
+        ...levelBoard,
+      }),
+    [view, mySeat, now, shownPending, avatars, queuedMoves, levelBoard],
   );
   const lock = useMemo(() => lockModel(view, now), [view, now]);
   const stats = soloStats(view, now);
@@ -500,6 +607,9 @@ export function GameScreen({
   const layouts = useRef<Layouts>({ cards: {} });
   const [roomHeight, setRoomHeight] = useState<number | null>(null);
   const side = boardSide(windowWidth, roomHeight);
+  // A stage's frame over the board, made once per board size (a new element would redraw the board).
+  const overlayOf = level?.overlay;
+  const levelOverlay = useMemo(() => overlayOf?.({ boardWidth: side }) ?? null, [overlayOf, side]);
   // The 2-player cards in the screen's coordinates, for the popovers drawn under them (picker, card menu).
   const [cardRects, setCardRects] = useState<Readonly<Partial<Record<PlayerId, Rect>>>>({});
   const syncCardRects = useCallback(() => {
@@ -602,7 +712,8 @@ export function GameScreen({
   const openResults = useCallback(
     (gameId: string) => {
       breadcrumb('opening the results');
-      safely('opening the results', () => onEnded(gameId));
+      // A stage's result is a state of its own route (no navigation): its onOver.
+      safely('opening the results', () => (level ? level.onOver() : onEnded(gameId)));
       later(resultsWatchdogMs, () => {
         breadcrumb('results did not open');
         crashReporter().recordError(
@@ -612,7 +723,7 @@ export function GameScreen({
         setStuck(gameId);
       });
     },
-    [later, onEnded, resultsWatchdogMs],
+    [later, onEnded, resultsWatchdogMs, level],
   );
 
   /**
@@ -668,6 +779,14 @@ export function GameScreen({
       later(delay, done);
     },
     [later, openResults],
+  );
+
+  /** The hold on the final board before the results: a stage's own, else the game's (model.ts endDelayMs). */
+  const levelHold = level?.endDelayMs;
+  const holdOf = useCallback(
+    (reason: EndReason | undefined) =>
+      levelHold ? levelHold(reason, reduce) : endDelayMs(reason, reduce, isOnline),
+    [levelHold, reduce, isOnline],
   );
 
   const flash = (f: BoardFlash) => {
@@ -872,7 +991,7 @@ export function GameScreen({
         const modal = dialogUp.current || modUp.current;
         const hitOn = !!before.players.find((p) => p.id === before.me)?.hitBy;
         breadcrumb(`game over (${reason ?? 'no result'}) locks=${locks} modal=${modal} hit=${hitOn}`);
-        showResults(e.gameId, endDelayMs(reason, reduce, isOnline));
+        showResults(e.gameId, holdOf(reason));
         return;
       }
     }
@@ -1087,8 +1206,8 @@ export function GameScreen({
   useEffect(() => {
     if (view.status !== 'over' || ended.current || awaitResults) return;
     breadcrumb(`game over on arrival (${overReason ?? 'no result'})`);
-    showResults(view.gameId, endDelayMs(overReason, reduce, isOnline));
-  }, [view.status, view.gameId, showResults, awaitResults, overReason, reduce, isOnline]);
+    showResults(view.gameId, holdOf(overReason));
+  }, [view.status, view.gameId, showResults, awaitResults, overReason, holdOf]);
   // "לתוצאות" on "the opponent left" (the end was seen long ago: no hold).
   const toResults = useCallback(() => showResults(view.gameId), [showResults, view.gameId]);
 
@@ -1270,10 +1389,20 @@ export function GameScreen({
             styles.content,
             { paddingTop: insets.top + space[2], paddingBottom: insets.bottom + space[6] },
           ]}
-          importantForAccessibility={overlayOpen || blocked ? 'no-hide-descendants' : 'auto'}
+          importantForAccessibility={overlayOpen || blocked || covered ? 'no-hide-descendants' : 'auto'}
           testID={`${testID}-content`}
         >
-          {duel ? (
+          {level ? (
+            <LevelHud
+              chrome={level}
+              view={view}
+              now={now}
+              myAvatar={myAvatar}
+              onExit={openConfirm}
+              onReactions={onReactions}
+              boardWidth={side}
+            />
+          ) : duel ? (
             <>
               <DuelHud
                 me={myCard}
@@ -1352,7 +1481,7 @@ export function GameScreen({
               onLeave={isOnline ? onHome : undefined}
               style={[styles.gutter, styles.strip]}
             />
-          ) : (
+          ) : level?.hideLockStrip ? null : (
             <LockStrip
               model={lock}
               nudgeKey={nudge}
@@ -1370,7 +1499,10 @@ export function GameScreen({
                   width={side}
                   onCellPress={out ? undefined : onCellPress}
                   flashes={flashes}
-                />
+                  label={level?.boardLabel}
+                >
+                  {levelOverlay}
+                </Board>
                 {/* A hit on me darkens the board [D46] (and scrambles its digits [D47]); taps go through. */}
                 <BoardHitLayer hit={hit} now={now} clock={session.clock} cells={board.cells} width={side} />
               </WarpFrame>
@@ -1457,6 +1589,23 @@ export function GameScreen({
           onCancel={closeConfirm}
           onExited={onDialogExited}
         />
+      ) : level ? (
+        // A stage's X (components.md §19.9): "לצאת מהשלב?", 0 stars, and the next stage opens.
+        <ConfirmModal
+          visible={confirmOpen}
+          tone="danger"
+          placement="bottom"
+          icon="close"
+          title={level.endDialog.title}
+          body={level.endDialog.body}
+          confirmLabel={level.endDialog.confirm}
+          cancelLabel={level.endDialog.cancel}
+          accessibilityLabel={level.endDialog.label}
+          onConfirm={confirmEnd}
+          onCancel={closeConfirm}
+          onExited={onDialogExited}
+          testID="level-exit"
+        />
       ) : (
         <ConfirmModal
           visible={confirmOpen}
@@ -1494,6 +1643,8 @@ export function GameScreen({
         />
       ) : null}
       {devMetrics ? <DevMetricsToggle source={devMetrics} /> : null}
+      {/* A game frozen while the app was away [D65]: its countdown over the covered board. */}
+      {level ? (level.cover ?? null) : practiceCover ? <ResumeCountdown state={practiceCover} /> : null}
       {/* Over everything: the results were asked for and did not come (the watchdog). */}
       {stuck !== null ? (
         <FlowFallback
@@ -1513,6 +1664,11 @@ export function GameScreen({
 }
 
 const noop = () => undefined;
+
+/** A stage's HUD (LevelChrome.hud), drawn from the screen's picture. */
+function LevelHud({ chrome, ...ctx }: LevelChromeContext & { chrome: LevelChrome }) {
+  return chrome.hud(ctx);
+}
 
 /** My card while my connection is lost: no surrender and no reactions, which need the server [D42]. */
 function withoutServer(model: CardModel, linkDown: boolean): CardModel {

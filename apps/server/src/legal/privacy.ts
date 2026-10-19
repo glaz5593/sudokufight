@@ -11,14 +11,16 @@ import type { LegalTexts } from './types';
  *   deletion: accounts/store.ts deleteUser (anonymized row, and the same anonymous name in its games' logs;
  *   ratings, games, events stay unlinked)
  * - games and progress: persistence/, progress/ (ratings, xp, achievements, puzzle and opponent history,
- *   practice_results), cheat_flags
+ *   practice_results; staged practice, 1.0.2: user_levels and level_xp_days, progress/levels.ts), cheat_flags;
+ *   deletion of the levels' rows: accounts/store.ts deleteUser → progress/levels.ts forgetLevels
  * - reports and blocks (spec §3.5): moderation/ (player_reports, user_blocks, admin_audit, retired_names,
  *   suspended_sign_ins; users.suspended_at and name_reset_required); deletion: moderation/store.ts
  *   forgetModeration and keepSuspension
  * - usage: apps/mobile/src/services/telemetry and analytics.ts → POST /v1/events (installs, app_events),
  *   and Firebase Analytics; crashes: services/crashlytics.ts (user id = our account id)
  * - IP addresses: only in memory, for rate limits (http/clientKey.ts, http/rateLimiter.ts)
- * - on the phone: practice.db, telemetry.db, the key-value store (installId, settings, cached profile, queues)
+ * - on the phone: practice.db, levels.db (staged practice), telemetry.db, the key-value store (installId,
+ *   settings, cached profile, queues)
  * - processors: Firebase (Google), Fly.io (the server), Neon (the database: spec §17.1, docs/DEPLOY-PRODUCTION.md
  *   §2; with Fly's own Postgres instead, the "sharing" section changes), Sentry
  */
@@ -62,6 +64,45 @@ export const EVENT_DETAILS: Record<TelemetryEventName, { he: [string, string]; e
   report_sent: {
     he: ['שליחת דיווח על שחקן', 'סיבת הדיווח בלבד (בלי מי דווח ובלי המשחק)'],
     en: ['You report a player', 'The reason only (not who was reported, nor the game)'],
+  },
+  level_map_open: {
+    he: ['פתיחת המפה של אימון בשלבים', 'השלב הנוכחי וסך הכוכבים'],
+    en: ['The staged-practice map opens', 'The current stage and your total stars'],
+  },
+  level_start: {
+    he: ['שלב מתחיל', 'מספר השלב, הפרק והסוג, מספר הניסיון, הכוכבים הטובים ביותר עד אז, והאם זו כניסה מהירה'],
+    en: [
+      'A stage starts',
+      'The stage’s number, chapter and kind, the attempt’s number, your best stars so far, and whether it was a quick start',
+    ],
+  },
+  level_end: {
+    he: [
+      'שלב מסתיים',
+      'מספר השלב והסוג, הכוכבים, הכוכבים הטובים ביותר לפניו, משך השלב, איך הסתיים, מספר הטעויות, התוצאה (זמן, מקומות, פער או נקודות), רמת הבוט ומספר הניסיון',
+    ],
+    en: [
+      'A stage ends',
+      'The stage’s number and kind, the stars, your best stars before it, its duration, how it ended, the number of mistakes, the result (time, spots, lead or points), the bot’s level and the attempt’s number',
+    ],
+  },
+  level_quit: {
+    he: ['יציאה משלב באמצע (למשל כשהאפליקציה נסגרה)', 'מספר השלב, וכמה זמן עבר בו'],
+    en: [
+      'A stage is left midway (for example, the app was closed)',
+      'The stage’s number, and how long it had run',
+    ],
+  },
+  chapter_gate: {
+    he: ['ניסיון לעבור את השער לפרק הבא', 'הפרק שמאחורי השער, הכוכבים בפרק, והאם השער נפתח'],
+    en: [
+      'An attempt at the gate to the next chapter',
+      'The chapter behind the gate, the stars in the chapter, and whether the gate opened',
+    ],
+  },
+  level_tutorial: {
+    he: ['הצגת "איך משחקים" לסוג של שלב', 'הסוג, והאם דילגתם'],
+    en: ['A stage kind’s “how to play” is shown', 'The kind, and whether you skipped it'],
   },
 };
 
@@ -125,6 +166,7 @@ export const PRIVACY: LegalTexts = {
               '**דירוגים, XP, רמה והישגים.**',
               '**אילו לוחות שיחקתם ומול מי:** כדי לא לתת לכם את אותו לוח או את אותו יריב שוב ושוב.',
               '**תוצאות של משחקי אימון** (לבד או מול בוט), כשהאפליקציה מדווחת אותן בשביל ה־XP: מצב המשחק, הסוג, התוצאה, מספר המהלכים הנכונים, מתי הסתיים, וכמה XP הוא נתן.',
+              '**אימון בשלבים:** כשהאפליקציה מסנכרנת את ההתקדמות לחשבון (כדי שתחזור גם בטלפון חדש): הכוכבים הטובים ביותר בכל שלב, כמה פעמים שיחקתם בו ומתי זה השתנה, וכמה XP נתנו השלבים בכל יום.',
               '**משחק הוגן:** כשקצב המהלכים במשחק מדורג מהיר באופן חריג, נשמרת רשומה לבדיקה של אדם. אין על סמך זה פעולה אוטומטית.',
               '**דיווחים וחסימות:** ראו את הסעיף "דיווחים וחסימות" למטה.',
             ],
@@ -170,13 +212,14 @@ export const PRIVACY: LegalTexts = {
           {
             list: [
               'משחקי האימון שלכם וההיסטוריה שלהם.',
+              'ההתקדמות שלכם באימון בשלבים: הכוכבים, הניסיונות והשערים שנפתחו (עותק שלה נשמר גם בשרת, ראו "משחקים והתקדמות").',
               'ההגדרות: צליל, רטט, הפחתת תנועה ושפה.',
               'עותק של הפרופיל, כדי שהאפליקציה תיפתח גם בלי חיבור.',
               'תורים של אירועים ושל תוצאות אימון שעוד לא נשלחו, ומזהה ההתקנה.',
               'החיבור לחשבון (נשמר על ידי Firebase), ובכניסה עם Google גם החשבון שנבחר (נשמר על ידי Google Play Services עד ההתנתקות).',
             ],
           },
-          'כל אלה נמחקים כשמסירים את האפליקציה. התנתקות מוחקת את עותק הפרופיל. מחיקת החשבון לא מוחקת את משחקי האימון שבטלפון: כדי למחוק גם אותם, מסירים את האפליקציה.',
+          'כל אלה נמחקים כשמסירים את האפליקציה. התנתקות מוחקת את עותק הפרופיל. מחיקת החשבון לא מוחקת את משחקי האימון ואת ההתקדמות באימון בשלבים שבטלפון: כדי למחוק גם אותם, מסירים את האפליקציה.',
         ],
       },
       {
@@ -259,6 +302,7 @@ export const PRIVACY: LegalTexts = {
             list: [
               '**פרטי החשבון:** כל עוד החשבון קיים.',
               '**כשמוחקים את החשבון:** המייל, המדינה, האווטאר והקישור לכניסה נמחקים מיד, והשם לתצוגה מוחלף במזהה אנונימי (השם הישן מתפנה מיד). גם הכניסה ב־Firebase נמחקת, ואיתה מה שנשמר בה מ־Google. מי שנכנס עם Google: האפליקציה גם מבטלת את הגישה שקיבלה לחשבון Google.',
+              '**ההתקדמות באימון בשלבים:** העותק שבשרת (הכוכבים בכל שלב, וה־XP שהשלבים נתנו בכל יום) נמחק עם החשבון. העותק שבטלפון נשאר עד שמסירים את האפליקציה.',
               '**מה נשאר אחרי מחיקה, באופן אנונימי:** משחקים מדורגים, דירוגים, XP, תוצאות אימון, רשומות משחק הוגן, דיווחים ששלחתם ונתוני שימוש. הם כבר לא מקושרים אליכם, אבל המשחקים, הצפייה החוזרת והטבלאות של השחקנים האחרים נשארים שלמים.',
               '**דיווחים, חסימות ויומן הפעולות:** חסימה נשמרת עד שמבטלים אותה או מוחקים את החשבון (אז נמחקות כל החסימות שלו, לשני הכיוונים). דיווחים ויומן פעולות המנהלים נשמרים כל עוד הם נחוצים לטיפול ולשמירה על משחק בטוח והוגן, ואנחנו בודקים אותם מדי פעם ומוחקים ישנים. כשחשבון נמחק, דיווחים פתוחים עליו נסגרים, והשמות שלו נמחקים מיומן הפעולות. אם החשבון היה מושעה, נשארת רק הטביעה החד־כיוונית שתוארה למעלה, עד שנפתח חשבון חדש עם אותה כניסה או עד שאנחנו מוחקים אותה בבדיקה התקופתית.',
               '**נתוני שימוש:** נשמרים כל עוד הם עוזרים לנו להבין את השימוש במשחק. אנחנו בודקים אותם מדי פעם ומוחקים את הישנים.',
@@ -355,6 +399,7 @@ export const PRIVACY: LegalTexts = {
               '**Ratings, XP, level and achievements.**',
               '**Which puzzles you played, and against whom:** so you don’t get the same puzzle or opponent again and again.',
               '**Practice results** (solo or against a bot), when the app reports them for XP: mode, game type, outcome, number of correct moves, when it ended, and the XP it earned.',
+              '**Staged practice:** when the app syncs your progress to your account (so it comes back on a new phone too): your best stars on each stage, how many times you played it and when that changed, and the XP the stages gave each day.',
               '**Fair play:** when the pace of moves in a ranked game is unusually fast, a record is kept for a person to review. Nothing happens automatically because of it.',
               '**Reports and blocks:** see "Reports and blocks" below.',
             ],
@@ -400,13 +445,14 @@ export const PRIVACY: LegalTexts = {
           {
             list: [
               'Your practice games and their history.',
+              'Your staged-practice progress: stars, attempts and the gates you opened (a copy is kept on the server too: see "Games and progress").',
               'Your settings: sound, haptics, reduced motion and language.',
               'A copy of your profile, so the app opens without a connection.',
               'Queues of events and practice results not sent yet, and the install id.',
               'Your sign-in (kept by Firebase), and with Google sign-in the account you chose (kept by Google Play services until you sign out).',
             ],
           },
-          'All of these are deleted when you uninstall the app. Signing out deletes the profile copy. Deleting your account does not delete the practice games on your phone: to delete those too, uninstall the app.',
+          'All of these are deleted when you uninstall the app. Signing out deletes the profile copy. Deleting your account does not delete the practice games and the staged-practice progress on your phone: to delete those too, uninstall the app.',
         ],
       },
       {
@@ -489,6 +535,7 @@ export const PRIVACY: LegalTexts = {
             list: [
               '**Account details:** as long as the account exists.',
               '**When you delete your account:** your email, country, avatar and sign-in link are deleted at once, and your display name is replaced by an anonymous id (the old name is free again at once). Your Firebase sign-in is deleted too, with what it kept from Google. If you signed in with Google, the app also revokes the access it was given to your Google account.',
+              '**Staged-practice progress:** the copy on the server (your stars on each stage, and the XP the stages gave each day) is deleted with the account. The copy on your phone stays until you uninstall the app.',
               '**What stays after deletion, anonymously:** ranked games, ratings, XP, practice results, fair-play records, reports you sent and usage data. They are no longer linked to you, but other players’ games, replays and leaderboards stay whole.',
               '**Reports, blocks and the admin log:** a block is kept until you lift it or delete your account (then all its blocks go, both ways). Reports and the log of admin actions are kept while they are needed to handle reports and keep the game safe and fair; we review them from time to time and delete old ones. When an account is deleted, open reports about it are closed, and its names are removed from the admin log. If it was suspended, only the one-way fingerprint described above stays, until a new account with the same sign-in is made or we delete it in a periodic review.',
               '**Usage data:** kept while it helps us understand how the game is used. We review it from time to time and delete old data.',

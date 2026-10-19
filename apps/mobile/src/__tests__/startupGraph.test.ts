@@ -24,7 +24,10 @@ const LATE_PACKAGES: Record<string, string> = {
 /** App files the first screen doesn't need (prefixes, repo-relative). */
 const LATE_FILES: Record<string, string> = {
   'apps/mobile/src/game/data/offline-puzzles.json': "300 KB of puzzles: a practice's start (offlinePool)",
+  'apps/mobile/src/levels/data/levels.json':
+    "staged practice's levels: the map and a level's start (levelsData, required on first use)",
   'apps/mobile/src/components/interference/': 'Skia effects: the game screen',
+  'apps/mobile/src/screens/levels/': "staged practice's map, a stage and its result (their routes)",
   'apps/mobile/src/screens/replay/': 'the replay screen',
   'apps/mobile/src/screens/game/GameScreen.tsx': 'the game screen',
   'apps/mobile/src/components/dev/': 'the design system (development builds only)',
@@ -111,5 +114,50 @@ describe('the offline puzzles (spec §16.1) load on first use', () => {
       expect(pool.allOfflinePuzzles()).toHaveLength(1);
       expect(read).toHaveBeenCalledTimes(1);
     });
+  });
+});
+
+describe("staged practice's levels (plan §5.3) load on first use", () => {
+  it('importing levelsData reads nothing; the first lookup reads the file once', () => {
+    jest.isolateModules(() => {
+      const read = jest.fn();
+      jest.doMock('../levels/data/levels.json', () => {
+        read();
+        return [
+          {
+            id: 'L001',
+            rev: 1,
+            chapter: 1,
+            slot: 1,
+            kind: 'find',
+            boss: false,
+            seed: 1,
+            gameType: 'fast',
+            board: { grid: '0'.repeat(81), solution: '1'.repeat(81) },
+            timeLimitMs: 30000,
+            targets: {},
+            stars: { by: 'timeMs', three: 5000, two: 10000, one: 20000 },
+          },
+        ];
+      });
+      const levels = jest.requireActual<typeof import('../levels/levelsData')>('../levels/levelsData');
+      expect(read).not.toHaveBeenCalled();
+      expect(levels.levelById('L001')?.kind).toBe('find');
+      expect(levels.levelsOfChapter(1)).toHaveLength(1);
+      expect(levels.levelCount()).toBe(1);
+      expect(read).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("the levels' progress code (levels.db, the sync, the store) does not reach the file", () => {
+    const progress = importGraph([
+      'src/levels/levelsStore.ts',
+      'src/levels/levelsSync.ts',
+      'src/levels/appLevels.ts',
+      'src/progress/appProgress.ts',
+    ]);
+    expect(progress.files.has('apps/mobile/src/levels/levelsRepo.ts')).toBe(true);
+    const reached = [...progress.files.keys()].filter((f) => f.startsWith('apps/mobile/src/levels/data/'));
+    expect(reached.map((f) => importChain(progress, f))).toEqual([]);
   });
 });

@@ -206,10 +206,12 @@ export function playableDigits(state: GameState, cell: CellIndex): Digit[] {
 
 /**
  * A cell `botId` may lock now (spec §6.2): empty, not locked by anyone, not in its own re-lock wait [D2], and
- * with a digit left to enter.
+ * with a digit left to enter. A level's box (rules.editableCells) leaves only its own cells.
  */
 export function isEligibleCell(state: GameState, botId: PlayerId, cell: CellIndex, now: number): boolean {
   if (state.grid[cell] !== 0) return false;
+  const editable = state.config.rules.editableCells;
+  if (editable && !editable.includes(cell)) return false;
   if (state.locks.some((l) => l.cell === cell)) return false;
   if (state.cooldowns.some((c) => c.playerId === botId && c.cell === cell && c.until > now)) return false;
   return playableDigits(state, cell).length > 0;

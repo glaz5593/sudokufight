@@ -1,4 +1,10 @@
-import { MAX_PRACTICE_RESULTS, type PracticeResult } from '@sudoku-fight/protocol';
+import {
+  type LevelBest,
+  type LevelsSyncResponse,
+  MAX_LEVELS_PER_REQUEST,
+  MAX_PRACTICE_RESULTS,
+  type PracticeResult,
+} from '@sudoku-fight/protocol';
 
 import {
   createProgressApi,
@@ -9,6 +15,8 @@ import {
 } from '../progressApi';
 import {
   readLeaderboard,
+  readLevelsSyncResponse,
+  readMyLevels,
   readMyProgress,
   readPlayerCard,
   readPracticeResultsResponse,
@@ -257,5 +265,114 @@ describe('the answers, checked', () => {
     ])
       expect(readPlayerCard({ ...c, favoriteInterference })?.favoriteInterference).toBeNull();
     expect(readPlayerCard({ ...c, joinedAt: 'April' })?.joinedAt).toBeNull();
+  });
+});
+
+describe('the levels’ bests: GET and PUT /v1/me/levels (staged practice, 1.0.2) [D57]', () => {
+  const levels: LevelBest[] = [
+    { id: 'L001', stars: 3, plays: 2 },
+    { id: 'L002', stars: 1, plays: 1 },
+  ];
+  const answer: LevelsSyncResponse = {
+    levels,
+    maxLevel: 300,
+    owedXp: 0,
+    xp: 40,
+    progress: myProgress({ xp: 40 }),
+    unknown: [],
+  };
+
+  it('GET with the bearer token; the answer checked', async () => {
+    const { client, fetch } = api(() => ({ body: { levels, maxLevel: 300, owedXp: 25 } }));
+    await expect(client.myLevels()).resolves.toEqual({ levels, maxLevel: 300, owedXp: 25 });
+    expect(fetch.calls[0]!.url).toBe(`${BASE}/v1/me/levels`);
+    expect(fetch.calls[0]!.init).toMatchObject({ method: 'GET', headers: { Authorization: 'Bearer tok' } });
+  });
+
+  it('PUT with the levels as JSON; an empty one (only the owed XP) goes too', async () => {
+    const { client, fetch } = api(() => ({ body: answer }));
+    await expect(client.putMyLevels(levels)).resolves.toEqual(answer);
+    expect(fetch.calls[0]!.init).toMatchObject({
+      method: 'PUT',
+      headers: { Authorization: 'Bearer tok', 'Content-Type': 'application/json' },
+    });
+    expect(bodyOf(fetch.calls[0]!)).toEqual({ levels });
+    // Only the protocol's keys go (the server refuses any other).
+    await client.putMyLevels([{ ...levels[0]!, metric: 4000 } as LevelBest]);
+    expect(bodyOf(fetch.calls[1]!)).toEqual({ levels: [levels[0]] });
+    await client.putMyLevels([]);
+    expect(bodyOf(fetch.calls[2]!)).toEqual({ levels: [] });
+  });
+
+  it('refuses more than MAX_LEVELS_PER_REQUEST without a request', async () => {
+    const { client, fetch } = api(() => ({ body: answer }));
+    const many = Array.from({ length: MAX_LEVELS_PER_REQUEST + 1 }, (_, i) => ({
+      id: `L${String(i + 1).padStart(3, '0')}`,
+      stars: 1 as const,
+      plays: 1,
+    }));
+    expect((await fail(client.putMyLevels(many))).code).toBe('badRequest');
+    expect(fetch.calls).toHaveLength(0);
+  });
+
+  it('an old server (no route: 404 notFound) is told apart from an unknown account (404 notRegistered)', async () => {
+    const old = api(() => ({ status: 404, body: { error: 'notFound' } }));
+    expect((await fail(old.client.myLevels())).code).toBe('notFound');
+    // A server whose 404 says nothing at all reads the same.
+    const bare = api(() => ({ status: 404 }));
+    expect((await fail(bare.client.putMyLevels(levels))).code).toBe('notFound');
+    const stranger = api(() => ({ status: 404, body: { error: 'notRegistered' } }));
+    expect((await fail(stranger.client.putMyLevels(levels))).code).toBe('notRegistered');
+    const malformed = api(() => ({ status: 400, body: { error: 'badRequest' } }));
+    expect((await fail(malformed.client.putMyLevels(levels))).code).toBe('badRequest');
+  });
+
+  it('a 401 refreshes the token and tries once more', async () => {
+    let n = 0;
+    const { client, fetch, tokens } = api(() => (n++ === 0 ? { status: 401 } : { body: answer }));
+    await expect(client.putMyLevels(levels)).resolves.toEqual(answer);
+    expect(tokens).toEqual([false, true]);
+    expect(fetch.calls[1]!.init.headers.Authorization).toBe('Bearer tok-fresh');
+    expect(bodyOf(fetch.calls[1]!)).toEqual({ levels });
+  });
+
+  it('readMyLevels keeps the good entries, drops the bad ones, caps stars at 3', () => {
+    const raw = {
+      levels: [
+        { id: 'L001', stars: 3, plays: 2 },
+        { id: 'L002', stars: 5, plays: 1.7 },
+        { id: 'l003', stars: 1, plays: 1 },
+        { id: 'L004', stars: 'two', plays: 1 },
+        { id: 'L005', stars: -1, plays: 1 },
+        { id: 'L006', stars: 1 },
+        'L007',
+        { id: 'L0008', stars: 1, plays: 1 },
+      ],
+      maxLevel: 300,
+      owedXp: 10,
+    };
+    expect(readMyLevels(raw)).toEqual({
+      levels: [
+        { id: 'L001', stars: 3, plays: 2 },
+        { id: 'L002', stars: 3, plays: 1 },
+      ],
+      maxLevel: 300,
+      owedXp: 10,
+    });
+    // Lenient where the app can do without: the app's own count, nothing owed.
+    expect(readMyLevels({ levels: [] })).toEqual({ levels: [], maxLevel: 300, owedXp: 0 });
+    expect(readMyLevels({ levels: 'none' })).toBeNull();
+    expect(readMyLevels('<html>')).toBeNull();
+  });
+
+  it('a PUT’s answer needs my progress; unknown ids are kept, anything else in them dropped', () => {
+    expect(readLevelsSyncResponse({ ...answer, unknown: ['L301', 7] })).toEqual({
+      ...answer,
+      unknown: ['L301'],
+    });
+    const { progress: _progress, ...noProgress } = answer;
+    expect(readLevelsSyncResponse(noProgress)).toBeNull();
+    const { xp: _xp, unknown: _unknown, ...older } = answer;
+    expect(readLevelsSyncResponse(older)).toEqual({ ...answer, xp: 0, unknown: [] });
   });
 });

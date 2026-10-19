@@ -10,6 +10,7 @@ import {
   type GameState,
   type GameType,
   type LeaveGuardReason,
+  loggedMs,
   type PlayerId,
   type PlayerInfo,
   type PlayerStats,
@@ -427,7 +428,8 @@ export function resultsModel(game: PracticeGame, events: readonly GameEvent[] = 
   const state = replay(events);
   const player = state?.players.find((p) => p.id === game.playerId);
   const stats = state ? statsFor(state).find((s) => s.playerId === game.playerId) : undefined;
-  const replayedMs = state ? Math.max(0, state.lastEventAt - (state.startedAt ?? state.createdAt)) : null;
+  // The time played to the last event: a background freeze [D65] left out.
+  const replayedMs = state ? loggedMs(state) : null;
   return {
     ...base,
     ...versusOf(game.playerId, state ? standingsOfState(state) : [], infos, null),

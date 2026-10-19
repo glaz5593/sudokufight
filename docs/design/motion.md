@@ -1,6 +1,6 @@
 # Motion, haptics and sound: direction C ("לילה רגוע")
 
-Status: draft for implementation (stages 3, 4 and 6 of `docs/02-WORK-PLAN.md`). Direction C was chosen on 2026-10-09 (D30).
+Status: draft for implementation (stages 3, 4 and 6 of `docs/02-WORK-PLAN.md`, and stage 14א, staged practice, version 1.0.2: §4.11). Direction C was chosen on 2026-10-09 (D30).
 
 **Sources and how much each one decides**
 
@@ -10,6 +10,7 @@ Status: draft for implementation (stages 3, 4 and 6 of `docs/02-WORK-PLAN.md`). 
 | `screens/Dir-C-Game.dc.html`, `screens/Dir-C-Home.dc.html` | Colors, fonts, overall look. The only C keyframe is `sf-lock`. |
 | `screens/DS-Motion.dc.html` (round 1, "Arena Ink") | Durations, timelines, haptic and sound events, Reduced Motion mapping. |
 | Other round-1 screens (`Game-2P`, `Hit-*`, `Match-*`, `Results-*`, `Reactions`, ...) | Per-screen keyframes and the playable prototype's timing logic. |
+| The staged-practice boards in C (`Modes-Levels`, `Levels-*`, `Level-Result`, `Lv-*`; spec §5.3) and their brief | The level animations of §4.11 (`lv-current`, `lv-pop`, the confetti burst). |
 
 Direction C is round 1's style with the noise removed: cyan against orange, and no textures. This file takes round 1's
 structure and timing and converts every color and effect to C's palette.
@@ -247,6 +248,40 @@ data (`MOTIONS`), with their own keyframes and curves (the names in §3). What p
 | `avatar.idle` | A stage view (`AVATAR_STAGES`: by default the avatar picker's stage, once a choice stays 600 ms, and the results winner after its reaction), while its screen is the one shown | Idle gimmicks loop (per character, 48 px and up); a blink every 2400–5200 ms | Per character / `loop` | The character's idle part (a ghost floats, a slime jiggles) and its blink. The only decorative loop C keeps (§1.4) | **Face only**: no loop, no blink |
 | `avatar.blink` | Part of `avatar.idle`, while no reaction plays | 200 | `loop` | Each eye closes and opens around its own centre (scaleY) | None |
 
+### 4.11 Staged practice (spec §5.3, version 1.0.2)
+
+The map, a stage and its result (`components.md` §19). The rules of §1 hold: motion never hides the board, and the only
+infinite loop off the board is the current node's pulse (a live state: "this is where you are"). A stage lasts at most
+30 s, so nothing here delays play: every animation runs beside the clock, never before it, except "מוכן?" and the resume
+countdown, which run while the clock is stopped. No interference effect, banner or dim ever plays in a stage (D49), and
+there is no reactions strip for me (D62). Every row has its Reduced Motion form; with Reduced Motion on there is no
+pulse, shake, hop or confetti, and the stars appear at once (spec §22).
+
+| ID | Trigger | ms | Easing | What moves (C look) | Reduced Motion |
+|---|---|---|---|---|---|
+| `level.node.current` | The current node on the map, while the map is shown | 1600 loop (800 each way) | `loop` | The node's gold ring (`0 0 0 2px bg, 0 0 0 4px accent`) gets an outer band `rgba(255,207,63,.28)` that fades 0 ↔ 1 (`lv-current`). My P1 pin with ● stays still. The map's only loop. | Static gold ring, band hidden |
+| `level.node.locked` | Tap on a locked node | 300 | `loop` keyframes | **That node only** shakes on translateX 0, −5, +5, −3, +3, 0 (as `cell.denied`), with the toast "קודם משחקים את שלב 37" (`toast`) | No movement: the toast alone, and the lock badge's border turns `color.text` for 300 ms |
+| `level.map.jump` | A chapter picked in the chapter list (from the "★ 84/900" chip) | 320 | `standard` | The map scrolls to the chapter header. On open, the map starts at the current node (about 40 % of the height) with no scroll animation. | Jumps there, no scroll |
+| `level.gate.unlock` | A gate opens (20 stars and the boss played), the first time the map shows it open | 600 (shackle 360, then plate 240) | `pop` spring / `standard` | The lock's shackle lifts and turns open; then the plate's border goes from dashed to solid, its bar fills to the end, and "פרק 5 פתוח" cross-fades in. "‎+50 XP" pops beside it once. | Only the state changes: open lock, solid border and the text, with a 200 ms fade. "‎+50 XP" appears without scale. |
+| `level.ready` | "מוכן?" before a quick entry ("לשלב הבא") | 2000 total: 240 in, hold, 240 out | `standard` / `exit` | The kind, the goal and the star scale fade in over the empty stage area (no board yet), then fade out as the board fades in. The stage clock starts when the board is in. | 200 ms fades; the same 2000 ms (`LEVEL_UI.readyMs`) |
+| `level.timeBar` | While the stage runs | = the stage's time (up to 30000) | `linear` | The star meter's time bar fills (or drains) along its axis, **left to right in both languages**; the stars above a band turn from gold to `iconFaint` when that band is lost. Penalties move it at once. Frozen while the stage is frozen (D65). | **Unchanged.** It is information, like `lock.timer`. |
+| `level.miss.flash` | A wrong tap or digit in a stage (`timePenalty`) | 550 flash; chip 240 in, hold 1200, 240 out | `standard` / `pop` spring | Tap kinds: a red overlay `#ff4d5e` fades from 55 % to 0 over the tapped cell, and a red X (2 px, `color.danger`) draws in the cell. Digit kinds: `cell.flash.wrong` and `cell.shake`. Beside the clock, the chip "‎+5 ש׳" pops 0.8 → 1, holds and fades. In a chain's "not yet" (D64) the same flash and chip, and the line "עוד אי אפשר לדעת מה נכנס ב־A9", without the X. | A 2 px red frame for 300 ms; the X and the chip appear without scale |
+| `level.race.freeze` | Race (kind 2): my wrong tap starts the 3 s freeze | 3000 | `linear` | A gray layer over the board fades in (200), with "3 · 2 · 1" counting down in its centre and a ring draining (as the lock timer). Taps are refused (`frozen`). The bot keeps searching. | Static layer; the number just changes; the ring stays (information) |
+| `level.find.drop` | Find kinds: the right cell is tapped (kind 1, a spot of kind 2 that is mine) | about 420 | `pop` spring | The target digit "falls" into the cell: from about 24 px above it, scale 1.2 → 1, fading in, and the cell takes my tint with ●. Kind 1 then ends. | The digit and the tint appear in place (200 ms fade) |
+| `level.bot.hop` | Race: the bot takes a spot | 360 + `pop` | `standard` / `pop` spring | The bot's 22 px avatar hops on an arc from its card to the cell, and the cell takes the bot's tint with ▲ as it lands. Its card's "מחפש…" stops for the hop. | No hop: the cell takes the bot's tint and ▲ with a 200 ms fade; the avatar stays on the card |
+| `level.spot.found` | Spot the mistake: a mistake is found | 240 strike, then 240 | `standard` | A red line draws across the wrong digit, then the correct digit fades in small beside it, with a green ring. The magnifier icon of that mistake fills. | All of it appears at once |
+| `level.chain.link` | Chain: a step is filled | 240 | `standard` | The current link fills from its start in P1, and the next link gets the P1 outline. | The link fills at once |
+| `level.race30.fill` | Duel to 30 (kind 4): a score changes | 650, in step with `score.count` | `countUp` | My bar (P1 with ●) or the bot's (P2 with ▲) fills toward the "30" flag with scaleX; the gap meter's marker moves with it. | Jump to the final fill and gap |
+| `level.result.enter` | The stage ends | 240, after a short hold of the final board (as `game.end`) | `standard` | The result state cross-fades in, in the same screen (no route change, so no black screen), from a timer, and only once every window (the exit dialog) has left. | 200 ms fade |
+| `level.stars.reveal` | Result + 200 | 420 each, stagger 150 | `pop` spring | The earned stars (44 dp) fill one by one, from the start side (right in Hebrew): scale 0.6 → 1.12 → 1 (`lv-pop`). Empty stars are already there. | All stars appear at once, without scale |
+| `level.confetti` | Result with 3 stars, + 700 | 1600, one time | gravity, `linear` | One burst of at most 40 Skia pieces in P1, gold and white, clear of the stars and the buttons (as `confetti`) | None |
+| `level.chapter.unlocked` | "פרק חדש נפתח", once per chapter | 530 + 420 | `slam` / `pop` spring | The title "פרק 5 · Biscuit" slams in (1.4 → 1); the new bot's avatar plays its `avatar.reaction` (smile, bounce) and its one line fades in; "‎+50 XP" pops last. | No motion: everything appears at once; the avatar shows the smile only |
+| `level.resume.countdown` | Back in front mid-stage after a pause (D65: call, app switch, screen off) | 3000 (`LEVEL_UI.resumeCountdownMs`): 1000 a digit | `slam` spring | The board stays **covered** (the dark cover of the pause), and "3 · 2 · 1" slams in over it as `countdown.digit`, without the ring. At 0 the cover fades out (200) and every clock resumes from the same point. | **The number just changes** (no scale, no fade); the cover goes at 0 |
+
+- **Clocks:** `level.timeBar`, `level.race.freeze` and every lock ring are timers: they never shorten or skip under Reduced Motion, and they freeze while the stage is paused (D65), as `lock.timer` does under an interference.
+- **Haptics and sounds:** no new files in 1.0.2 (spec §25). A stage uses the existing cues of §7 and §8: `correct` and `notify(Success)` for a right tap or digit, `wrong` and `notify(Error)` for a miss, `win` on a result with stars, and the practice-end sound otherwise. The node's locked shake gets the "taken" knock (`impact(Medium)`), the bot's hop none (opponents' moves are silent). A star or gate sound would need a new file, only if Moshe wants one.
+- **Not here:** there is no interference row (D49), no reactions strip (D62), and no avatar idle on the map (§1.4).
+
 ## 5. Timelines
 
 ```
@@ -276,6 +311,14 @@ Victory                  0 last-cell flash · +1100 cross-fade (300) to Results
                          +1500 awards · +1900 actions                                   haptic Success at +200 · sound win
 
 Surrender (online)       0 end (the locks fade 240) · +600 cross-fade to Results       reduced: +200 (game.end)
+
+Stage result (3 stars)   0 end · the final board holds (as game.end) · result state fades in 240   (same screen, from a timer)
+                         (times below are from the result state)
+                         +200 star 1 · +350 star 2 · +500 star 3 (lv-pop 420 each) · +700 confetti   reduced: all at once, no confetti
+
+Resume (D65)             app back in front: the board stays covered, every clock still stopped
+                         0 / 1000 / 2000   3 · 2 · 1 (slam, no ring)                    reduced: the number just changes
+                         3000           cover off (200) · stage clock, locks, race freeze and bot resume
 ```
 
 ## 6. Implementation notes (Reanimated 4, Expo 57)

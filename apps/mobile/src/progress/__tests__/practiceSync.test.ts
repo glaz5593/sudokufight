@@ -34,10 +34,15 @@ function rig({
     fetch: server.fetch,
     timeoutMs: 1000,
   });
+  /** Whose API each flush asked for. */
+  const apiOf: string[] = [];
   const sync = new PracticeSync({
     queue,
     owner: () => who.owner,
-    api: () => (who.owner ? api : null),
+    api: (o) => {
+      apiOf.push(o);
+      return who.owner ? api : null;
+    },
     onProgress: (o, p) => progress.push([o, p]),
     onPending: (o, n) => pending.push([o, n]),
     timers: {
@@ -61,7 +66,7 @@ function rig({
     timer.fire();
     await settle();
   };
-  return { server, queue, timers, progress, pending, who, sync, fireRetry };
+  return { server, queue, timers, progress, pending, who, sync, apiOf, fireRetry };
 }
 
 const settle = async () => {
@@ -81,6 +86,8 @@ describe('PracticeSync', () => {
     expect(r.progress).toEqual([['uid-1', myProgress({ xp: 101 })]]);
     await expect(r.queue.size('uid-1')).resolves.toBe(0);
     expect(r.pending.at(-1)).toEqual(['uid-1', 0]);
+    // The API of the flush's player (bound to their token: never another account's mid-flush).
+    expect(r.apiOf).toEqual(['uid-1']);
   });
 
   it('dedupes: the same game queued twice goes once, and a resend counts once on the server', async () => {

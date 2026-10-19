@@ -119,6 +119,37 @@ describe('addGivens: givens from the solution, the scarcest digit first', () => 
     expect(gradePuzzle(h24).difficulty).toBe('hard');
   });
 
+  it('exclude: those cells stay empty, and the target is still reached', () => {
+    // A level keeps its target box open (staged practice): box 5's empty cells never get a given.
+    const box5 = GIVENS0.flatMap((v, i) => (v === 0 && boxOf(i) === 4 ? [i] : []));
+    expect(box5.length).toBeGreaterThanOrEqual(3);
+    const exclude = new Set(box5);
+    for (let seed = 1; seed <= 5; seed++) {
+      const out = addGivens(GIVENS0, SOLUTION0, 60, createRng(seed), { exclude })!;
+      expect(filledCount(out)).toBe(60);
+      for (const c of box5) expect(out[c]).toBe(0);
+      expect(agreesWith(out, SOLUTION0)).toBe(true);
+    }
+    // A given already in an excluded cell stays; nothing is excluded: the very same board as without.
+    const given = GIVENS0.findIndex((v) => v !== 0);
+    expect(addGivens(GIVENS0, SOLUTION0, 50, createRng(7), { exclude: new Set([given]) })![given]).toBe(
+      GIVENS0[given],
+    );
+    expect(addGivens(GIVENS0, SOLUTION0, 50, createRng(7), { exclude: new Set() })).toEqual(
+      addGivens(GIVENS0, SOLUTION0, 50, createRng(7)),
+    );
+  });
+
+  it('exclude: null when too few cells are left', () => {
+    const open = GIVENS0.flatMap((v, i) => (v === 0 ? [i] : []));
+    const exclude = new Set(open.slice(3)); // three cells left to fill
+    const filled = filledCount(GIVENS0);
+    // Any digit may take a given (slack 9), so only the cells count.
+    const opts = { exclude, slack: 9 };
+    expect(filledCount(addGivens(GIVENS0, SOLUTION0, filled + 3, createRng(1), opts)!)).toBe(filled + 3);
+    expect(addGivens(GIVENS0, SOLUTION0, filled + 4, createRng(1), opts)).toBeNull();
+  });
+
   it('keepGrade: null when no cell is left that keeps the grade', () => {
     const hard = generatePuzzle(createRng(11), 'hard', { attempts: 40 })!;
     expect(addGivens(hard.givens, hard.solution, 70, createRng(1), { keepGrade: 'hard' })).toBeNull();

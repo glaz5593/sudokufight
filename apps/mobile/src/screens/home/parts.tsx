@@ -91,20 +91,65 @@ export function SectionLabel({ title, note, icon }: { title: string; note?: stri
   );
 }
 
-/** A small flat tag ("ללא דירוג", "בקרוב", "הופסק"). */
-export function Chip({ label, testID }: { label: string; testID?: string }) {
+export interface ChipProps {
+  label: string;
+  /** An icon after the label, and a value after it in the text colour ("שלב 14 · ★ 29", Modes-Levels). */
+  icon?: IconName;
+  iconColor?: string;
+  /** The icon drawn filled (a star earned). */
+  iconFilled?: boolean;
+  /** Latin and LTR (a number). */
+  value?: string;
+  testID?: string;
+}
+
+/** A small flat tag ("ללא דירוג", "בקרוב", "הופסק"), or one with an icon and a value ("שלב 14 · ★ 29"). */
+export function Chip({
+  label,
+  icon,
+  iconColor = color.textMuted,
+  iconFilled = false,
+  value,
+  testID,
+}: ChipProps) {
+  const words = (
+    <Text style={styles.chipText} numberOfLines={1}>
+      {label}
+    </Text>
+  );
+  // A plain tag is its words alone (as before the icon chips: the bot selection reads it so).
+  if (icon === undefined && value === undefined) {
+    return (
+      <View style={styles.chip} testID={testID}>
+        {words}
+      </View>
+    );
+  }
   return (
-    <View style={styles.chip} testID={testID}>
-      <Text style={styles.chipText} numberOfLines={1}>
-        {label}
-      </Text>
+    <View style={[styles.chip, styles.chipRow]} testID={testID}>
+      {words}
+      {icon ? <Icon name={icon} size={CHIP.icon} color={iconColor} filled={iconFilled} /> : null}
+      {value !== undefined ? (
+        <Text style={[styles.chipText, styles.chipValue]} numberOfLines={1}>
+          {value}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
-/** Sizes from the boards that have no token: the Modes header row (56) and its chips (22). */
+/** Sizes from the boards that have no token: the Modes header row (56). */
 const HEADER_HEIGHT = 56;
-const CHIP_HEIGHT = 22;
+
+/** The Modes board's chips: 22 high, 8 in from each side, an 11 icon 4 from the words (modesChipWidth.test). */
+export const CHIP = {
+  height: 22,
+  paddingX: space[4],
+  gap: space[2],
+  icon: 11,
+  border: tokens.border.hairline,
+  font: tokens.type.micro,
+} as const;
 
 const styles = StyleSheet.create({
   flip: { transform: [{ scaleX: -1 }] },
@@ -127,13 +172,15 @@ const styles = StyleSheet.create({
   rule: { flex: 1, height: tokens.border.hairline, backgroundColor: color.border },
   sectionNote: { ...text('caption'), color: color.textMuted, flexShrink: 1 },
   chip: {
-    height: CHIP_HEIGHT,
-    paddingHorizontal: space[4],
+    height: CHIP.height,
+    paddingHorizontal: CHIP.paddingX,
     justifyContent: 'center',
     borderRadius: radius.xs,
     borderWidth: tokens.border.hairline,
     borderColor: color.border,
     backgroundColor: color.surface2,
   },
+  chipRow: { flexDirection: 'row', alignItems: 'center', gap: CHIP.gap },
   chipText: { ...text('micro'), color: color.textMuted },
+  chipValue: { color: color.text, writingDirection: 'ltr' },
 });

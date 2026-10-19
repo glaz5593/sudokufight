@@ -9,3 +9,7 @@ export * from './givens';
 export * from './bank';
 export * from './selection';
 export * from './generate';
+// Staged practice (dev-plan §2ב): what is knowable now, find targets, the point hunter's best line.
+export * from './reading';
+export * from './targets';
+export * from './bestMoves';

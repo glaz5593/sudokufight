@@ -1,5 +1,6 @@
 import type { PlayerInfo } from '../game/types';
 import type { GameType } from '../gameType';
+import type { TargetTier } from '../levels/spec';
 import { TECHNIQUES } from '../sudoku/logic';
 
 /**
@@ -97,6 +98,27 @@ export interface BotLevel {
 export const CELL_TECHNIQUES = ['lastGap', ...TECHNIQUES, 'harder'] as const;
 export type CellTechnique = (typeof CELL_TECHNIQUES)[number];
 
+/**
+ * The bot of a findDuel level ("מרוץ מול הבוט", plan §2.2; spec §9) [D61]: it searches, it does not solve. The
+ * builder freezes each spot's range (findMsRange) and the shares into levels.json (LevelBot.findMs, missShare,
+ * reactShare), so a change here alters only levels built again, with a new rev; the tap engine (levels/find.ts)
+ * falls back to these values only for a level that lacks them.
+ */
+export interface BotFindConfig {
+  /** The search time of one spot that is a single, at pace 1 (plan §2.2, "first guess"). */
+  ms: Readonly<Record<BotLevelId, MsRange>>;
+  /** × the search time by the target's tier: 1 for a single, 1.3 for every other tier (plan §2.2). */
+  tierFactor: Readonly<Record<TargetTier, number>>;
+  /** The share of spots on which the bot first taps a wrong cell: its level's mistake rate (plan §2.2). */
+  missShare: Readonly<Record<BotLevelId, number>>;
+  /** The share of spots on which it reacts to my wrong tap: its level's chance in the table (spec §9). */
+  reactShare: Readonly<Record<BotLevelId, number>>;
+  /** A wrong tap in the race keeps the tapper out this long, the bot too (plan §2.2: 3 s). */
+  wrongFreezeMs: number;
+  /** How long after my wrong tap the bot's reaction comes. */
+  reactAfterMs: number;
+}
+
 export interface BotConfig {
   /** The level table (spec §9). */
   levels: readonly BotLevel[];
@@ -136,6 +158,8 @@ export interface BotConfig {
   interferenceDelayMs: MsRange;
   /** The wait before trying again after a refused action. */
   retryMs: number;
+  /** The race of staged practice: search times and shares per level (plan §2.2) [D61]. */
+  find: BotFindConfig;
 }
 
 /**
@@ -238,6 +262,29 @@ export const BOT_CONFIG: BotConfig = {
   reactionDelayMs: { min: 600, max: 1600 },
   interferenceDelayMs: { min: 400, max: 1200 },
   retryMs: 300,
+  find: {
+    // The plan's table (§2.2), a first guess: Pip 8–12 s a spot down to Overlord 3–4.5 s.
+    ms: {
+      1: { min: 8000, max: 12_000 },
+      2: { min: 6500, max: 10_000 },
+      3: { min: 5000, max: 8000 },
+      4: { min: 4000, max: 6000 },
+      5: { min: 3000, max: 4500 },
+    },
+    tierFactor: {
+      single: 1,
+      pointing: 1.3,
+      claiming: 1.3,
+      nakedPair: 1.3,
+      hiddenPair: 1.3,
+      chain2: 1.3,
+    },
+    // As the level table's mistake rates and 😂 chances (spec §9), each its own knob.
+    missShare: { 1: 0.15, 2: 0.09, 3: 0.05, 4: 0.02, 5: 0.01 },
+    reactShare: { 1: 0.1, 2: 0.4, 3: 0.6, 4: 0.5, 5: 0.85 },
+    wrongFreezeMs: 3000,
+    reactAfterMs: 1000,
+  },
 };
 
 /** The level table (spec §9). */
@@ -247,6 +294,22 @@ export const BOT_PACE: Record<GameType, number> = BOT_CONFIG.pace;
 
 /** The defaults with a bot's own overrides. */
 export const botConfig = (overrides: Partial<BotConfig> = {}): BotConfig => ({ ...BOT_CONFIG, ...overrides });
+
+/**
+ * The game bot of a digit level against it (duel and its bosses; attachBot's `config`) [D61]: `pace` is the
+ * level's final pace (a boss's ×0.9 already in it) for every game type; no deliberate hesitation (a lock left
+ * to run out costs 8–18 s of a 30 s level) and no adaptation (a level's difficulty stays what the builder
+ * simulated). A deviation from the plan, listed in dev-plan §1.4 and in spec §9. The random stream is drawn as
+ * in any other game: the hesitation is still drawn, with no chance to win.
+ */
+export function levelBotConfig(pace: number): Partial<BotConfig> {
+  if (!(Number.isFinite(pace) && pace > 0)) throw new RangeError(`A pace is positive, got ${pace}`);
+  return {
+    pace: { fast: pace, normal: pace, hard: pace },
+    lingerShare: 0,
+    adaptation: { ...BOT_CONFIG.adaptation, slowdown: 1 },
+  };
+}
 
 export function botLevel(level: BotLevelId, config: BotConfig = BOT_CONFIG): BotLevel {
   const row = config.levels.find((l) => l.level === level);

@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<title>Chapter gate</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div dir="rtl" style="width:390px;height:844px;position:relative;overflow:hidden;box-sizing:border-box;font-family:Rubik,'Segoe UI',system-ui,sans-serif;color:#eef1f6;background:#0f1218;">
+
+  <div aria-hidden="true">
+    <div style="position:absolute;top:48px;left:16px;right:16px;height:56px;display:flex;align-items:center;gap:12px;">
+      <span style="flex:none;width:44px;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>
+      </span>
+      <span style="flex:1;min-width:0;font:700 28px/34px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">אימון בשלבים</span>
+      <span style="flex:none;display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;box-sizing:border-box;border-radius:999px;background:#1f2430;border:1px solid #2a3140;">
+        <svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+        <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:20px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#eef1f6;white-space:nowrap;">{{total}}</span>
+      </span>
+    </div>
+
+    <div style="position:absolute;top:104px;left:0;right:0;bottom:0;overflow:hidden;">
+      <div style="position:absolute;left:0;top:{{mapTop}};width:390px;height:{{mapH}};">
+        <sc-for list="{{conns}}" as="c" hint-placeholder-count="25">
+          <span style="position:absolute;left:{{c.left}};top:{{c.top}};width:{{c.len}};height:2px;border-radius:1px;background:{{c.color}};transform-origin:0 50%;transform:{{c.rot}};"></span>
+        </sc-for>
+
+        <sc-for list="{{heads}}" as="h" hint-placeholder-count="3">
+          <div style="position:absolute;left:16px;right:16px;top:{{h.top}};height:32px;display:flex;align-items:center;gap:8px;background:#0f1218;">
+            <span style="font:700 16px/1 Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">{{h.title}}</span>
+            <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">{{h.name}}</span>
+            <span style="flex:1;height:1px;background:#2a3140;"></span>
+            <span style="display:flex;align-items:center;gap:4px;">
+              <svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="{{h.starFill}}" stroke="{{h.starStroke}}" stroke-width="2" stroke-linejoin="round"></path></svg>
+              <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:20px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#eef1f6;">{{h.count}}</span>
+            </span>
+          </div>
+        </sc-for>
+
+        <sc-for list="{{gates}}" as="g" hint-placeholder-count="2">
+          <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+            <span style="position:absolute;left:{{g.left}};top:{{g.top}};width:{{g.w}};height:44px;display:flex;align-items:center;justify-content:center;">
+              <span style="display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;box-sizing:border-box;border-radius:999px;background:#171b24;border:1px solid #2a3140;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 7.5-1.9"></path></svg>
+                <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:20px;line-height:.8;padding-top:3px;color:#eef1f6;">20</span>
+                <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+              </span>
+            </span>
+          </sc-if>
+          <sc-if value="{{ g.closed }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute;left:{{g.left}};top:{{g.top}};width:{{g.w}};height:52px;padding:0 14px;box-sizing:border-box;display:flex;align-items:center;gap:10px;background:#171b24;border:1px dashed #9aa3b5;border-radius:12px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;">
+                <span style="font:500 14px/1 Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">נפתח ב־20 כוכבים</span>
+                <span style="display:flex;height:4px;border-radius:2px;background:#2a3140;overflow:hidden;"><span style="width:{{g.fill}};border-radius:2px;background:#ffcf3f;"></span></span>
+              </span>
+              <span style="flex:none;display:flex;align-items:center;gap:4px;">
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+                <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#eef1f6;">{{g.count}}</span>
+              </span>
+            </span>
+          </sc-if>
+        </sc-for>
+
+        <sc-for list="{{nodes}}" as="n" hint-placeholder-count="25">
+          <span style="position:absolute;left:{{n.left}};top:{{n.top}};width:{{n.w}};height:{{n.h}};display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <span style="position:relative;display:block;flex:none;width:{{n.w}};height:{{n.w}};border-radius:10px;overflow:hidden;background:{{n.bg}};">
+              <span style="position:absolute;top:0;bottom:0;left:{{n.l1}};width:1px;background:{{n.line}};"></span>
+              <span style="position:absolute;top:0;bottom:0;left:{{n.l2}};width:1px;background:{{n.line}};"></span>
+              <span style="position:absolute;left:0;right:0;top:{{n.l1}};height:1px;background:{{n.line}};"></span>
+              <span style="position:absolute;left:0;right:0;top:{{n.l2}};height:1px;background:{{n.line}};"></span>
+              <span dir="ltr" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-top:4px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:{{n.fs}};line-height:.8;color:{{n.fg}};">{{n.num}}</span>
+            </span>
+            <span style="display:flex;gap:2px;height:12px;visibility:{{n.starsVis}};">
+              <sc-for list="{{n.stars}}" as="s" hint-placeholder-count="3">
+                <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="{{s.fill}}" stroke="{{s.stroke}}" stroke-width="2" stroke-linejoin="round"></path></svg>
+              </sc-for>
+            </span>
+            <sc-if value="{{ n.boss }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute;top:-12px;left:20px;width:28px;height:20px;box-sizing:border-box;border-radius:6px;background:#0f1218;border:1px solid #2a3140;display:flex;align-items:center;justify-content:center;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{n.crown}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"></path></svg>
+              </span>
+            </sc-if>
+            <sc-if value="{{ n.hasBot }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute;top:50px;right:-8px;width:22px;height:22px;box-sizing:border-box;border-radius:7px;background:#1f2430;border:2px solid #ff9440;display:flex;align-items:center;justify-content:center;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff9440" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="7.5" width="15" height="13" rx="3.5"></rect><path d="M12 7.5V5"></path><path d="M9.5 16.5h5"></path></svg>
+              </span>
+            </sc-if>
+            <sc-if value="{{ n.locked }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute;top:-6px;left:-6px;width:20px;height:20px;box-sizing:border-box;border-radius:50%;background:#0f1218;border:1px solid #2a3140;display:flex;align-items:center;justify-content:center;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+              </span>
+            </sc-if>
+          </span>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div aria-hidden="true" style="position:absolute;inset:0;background:rgba(7,9,12,.72);"></div>
+
+  <section role="dialog" aria-modal="true" aria-labelledby="gate-title" aria-describedby="gate-body" style="position:absolute;left:0;right:0;bottom:0;box-sizing:border-box;padding:10px 16px 28px;display:flex;flex-direction:column;background:#171b24;border-top:1px solid #2a3140;border-radius:24px 24px 0 0;">
+    <span aria-hidden="true" style="display:block;width:40px;height:4px;margin:0 auto;border-radius:2px;background:#2a3140;"></span>
+
+    <div style="display:flex;align-items:center;gap:12px;height:44px;margin-top:10px;">
+      <span aria-hidden="true" style="flex:none;width:40px;height:40px;border-radius:50%;background:rgba(255,207,63,.16);display:flex;align-items:center;justify-content:center;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffcf3f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+      </span>
+      <h1 id="gate-title" style="flex:1;min-width:0;margin:0;font:700 22px/25px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">פרק 3 נעול</h1>
+      <a href="Levels-Map.dc.html" aria-label="סגירה" style="flex:none;width:44px;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;text-decoration:none;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </a>
+    </div>
+
+    <p id="gate-body" style="margin:6px 0 0;font:400 14px/20px Rubik,sans-serif;color:#9aa3b5;">צריך 20 כוכבים בפרק 2. יש לך <bdi dir="ltr">17</bdi>, <strong style="font-weight:500;color:#eef1f6;">חסרים 3</strong>.</p>
+
+    <div style="display:flex;align-items:center;gap:10px;height:22px;margin-top:12px;">
+      <div role="progressbar" aria-label="כוכבים בפרק 2 לשער: 17 מתוך 20" aria-valuemin="0" aria-valuemax="20" aria-valuenow="17" style="flex:1;height:6px;display:flex;border-radius:3px;background:#2a3140;overflow:hidden;"><span style="width:85%;border-radius:3px;background:#ffcf3f;"></span></div>
+      <span aria-hidden="true" style="flex:none;display:flex;align-items:center;gap:4px;">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+        <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:3px;font-variant-numeric:tabular-nums;color:#eef1f6;">17/20</span>
+      </span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;min-height:20px;margin-top:20px;">
+      <h2 style="margin:0;font:500 13px/1 Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">שלבים לשיפור</h2>
+      <span aria-hidden="true" style="flex:1;height:1px;background:#2a3140;"></span>
+      <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">{{weakNote}}</span>
+    </div>
+
+    <div role="list" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+      <sc-for list="{{weak}}" as="w" hint-placeholder-count="3">
+        <div role="listitem" style="min-width:0;">
+          <a href="{{w.href}}" aria-label="{{w.aria}}" style="height:48px;padding:0 6px 0 10px;box-sizing:border-box;display:flex;align-items:center;gap:10px;background:#1f2430;border:1px solid #2a3140;border-radius:12px;color:#eef1f6;text-decoration:none;">
+            <span aria-hidden="true" style="position:relative;flex:none;display:block;width:32px;height:32px;border-radius:8px;overflow:hidden;background:#f7f8fa;">
+              <span style="position:absolute;top:0;bottom:0;left:10px;width:1px;background:#c8cdd6;"></span>
+              <span style="position:absolute;top:0;bottom:0;left:21px;width:1px;background:#c8cdd6;"></span>
+              <span style="position:absolute;left:0;right:0;top:10px;height:1px;background:#c8cdd6;"></span>
+              <span style="position:absolute;left:0;right:0;top:21px;height:1px;background:#c8cdd6;"></span>
+              <span dir="ltr" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-top:3px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:20px;line-height:.8;color:#0f1218;">{{w.num}}</span>
+            </span>
+            <span aria-hidden="true" style="flex:1;min-width:0;font:500 14px/18px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{w.title}}</span>
+            <span aria-hidden="true" style="flex:none;display:flex;gap:2px;height:12px;">
+              <sc-for list="{{w.stars}}" as="s" hint-placeholder-count="3">
+                <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="{{s.fill}}" stroke="{{s.stroke}}" stroke-width="2" stroke-linejoin="round"></path></svg>
+              </sc-for>
+            </span>
+            <span aria-hidden="true" style="flex:none;height:34px;padding:0 12px;box-sizing:border-box;display:flex;align-items:center;border:1px solid #2a3140;border-radius:10px;background:#171b24;font:500 14px/1 Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">שחק</span>
+          </a>
+        </div>
+      </sc-for>
+    </div>
+
+    <a href="{{firstHref}}" style="display:flex;align-items:center;justify-content:center;width:100%;height:52px;margin:20px 0 0;padding:0 26px;box-sizing:border-box;background:#ffcf3f;border:0;border-radius:12px;transform:skewX(-8deg);box-shadow:0 4px 0 #b88f00;text-decoration:none;">
+      <span style="display:block;transform:skewX(8deg);font:700 20px/1 Rubik,sans-serif;color:#241a00;white-space:nowrap;">{{firstCta}}</span>
+    </a>
+    <p style="margin:12px 0 0;font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;text-align:center;">{{firstNote}}</p>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Later than the Main board: chapter 2 is finished (level 20 played) with 17 stars, so chapter 3 stays locked.
+  // Same map geometry as Main; the map is scrolled to the end of chapter 2, under the gate sheet.
+  data() {
+    return {
+      PLAYED: 20,
+      CH: [
+        { n: 1, name: 'צעדים ראשונים', from: 1, to: 10, gate: null },
+        { n: 2, name: 'Pip מאתגר', from: 11, to: 20, gate: { open: true, have: 23 } },
+        { n: 3, name: 'דו־קרב ראשון', from: 21, to: 25, gate: { open: false, have: 17 } }
+      ],
+      LV: {
+        1: ['find', 3], 2: ['box', 2], 3: ['find', 3], 4: ['find', 2], 5: ['box', 1],
+        6: ['find', 3], 7: ['box', 2], 8: ['find', 3], 9: ['box', 1], 10: ['boss', 3],
+        11: ['race', 2], 12: ['find', 3], 13: ['box', 1], 14: ['race', 3], 15: ['find', 3],
+        16: ['box', 0], 17: ['race', 3], 18: ['find', 1], 19: ['box', 0], 20: ['boss', 1],
+        21: ['duel'], 22: ['find'], 23: ['race'], 24: ['duel'], 25: ['box']
+      }
+    };
+  }
+
+  kindName(k) {
+    return { find: 'איפה הספרה?', race: 'מרוץ מול הבוט', box: 'מלא את הריבוע', duel: 'דו־קרב ל־30', boss: 'בוס' }[k];
+  }
+
+  kindHref(k) {
+    return { find: 'Lv-Find.dc.html', race: 'Lv-Race.dc.html', box: 'Lv-Box.dc.html', duel: 'Lv-Sprint.dc.html', boss: 'Lv-Race.dc.html' }[k];
+  }
+
+  starRow(k) {
+    const out = [];
+    for (let i = 0; i < 3; i++) out.push(i < k ? { fill: '#ffcf3f', stroke: '#ffcf3f' } : { fill: 'none', stroke: '#677086' });
+    return out;
+  }
+
+  seg(a, b, color) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    return {
+      left: a.x + 'px', top: (a.y - 1) + 'px', len: Math.sqrt(dx * dx + dy * dy).toFixed(1) + 'px',
+      rot: 'rotate(' + (Math.atan2(dy, dx) * 180 / Math.PI).toFixed(2) + 'deg)', color: color
+    };
+  }
+
+  layout() {
+    const D = this.data(), self = this;
+    const PAT = [64, 146, 228, 310, 228, 146], W = 390;
+    const heads = [], gates = [], nodes = [], pts = [], conns = [];
+    let y = 16, total = 0, gateBottom = 0, lastN = 1;
+
+    D.CH.forEach(function (ch) {
+      let chStars = 0;
+      for (let n = ch.from; n <= ch.to; n++) chStars += D.LV[n][1] || 0;
+      total += chStars;
+      heads.push({
+        top: y + 'px', title: 'פרק ' + ch.n, name: ch.name, count: chStars + '/30',
+        starFill: chStars ? '#ffcf3f' : 'none', starStroke: chStars ? '#ffcf3f' : '#677086'
+      });
+      y += 44;
+      if (ch.gate) {
+        const g = ch.gate, h = g.open ? 44 : 52, w = g.open ? 120 : 220;
+        gates.push({
+          open: g.open, closed: !g.open, top: y + 'px', left: ((W - w) / 2) + 'px', w: w + 'px',
+          fill: Math.min(100, Math.round(g.have / 20 * 100)) + '%', count: g.have + '/20'
+        });
+        pts.push({ x: W / 2, y: y + h / 2, reached: g.open });
+        if (!g.open) gateBottom = y + h;
+        y += h + 16;
+      } else {
+        y += 4;
+      }
+      let prev = null, last = null;
+      for (let n = ch.from; n <= ch.to; n++) {
+        const lv = D.LV[n], boss = lv[0] === 'boss', half = boss ? 34 : 28, size = half * 2;
+        const cxR = PAT[(n - 1) % 6];
+        const cy = prev === null ? y + half : prev + (boss ? 64 : 56);
+        prev = cy;
+        const locked = n > D.PLAYED;
+        nodes.push({
+          num: String(n), left: (W - cxR - half) + 'px', top: (cy - half) + 'px',
+          w: size + 'px', h: (size + 16) + 'px', l1: (boss ? 22 : 18) + 'px', l2: (boss ? 45 : 37) + 'px',
+          fs: (boss ? 34 : 30) + 'px',
+          bg: locked ? '#1f2430' : '#f7f8fa', line: locked ? '#2a3140' : '#c8cdd6', fg: locked ? '#828ba1' : '#0f1218',
+          starsVis: locked ? 'hidden' : 'visible', stars: self.starRow(locked ? 0 : lv[1]),
+          locked: locked, boss: boss, hasBot: boss && n > 10, crown: locked ? '#677086' : '#ffcf3f'
+        });
+        pts.push({ x: W - cxR, y: cy, reached: !locked });
+        last = { cy: cy, half: half };
+        lastN = n;
+      }
+      y = last.cy + last.half + 16 + 28;
+    });
+
+    for (let i = 1; i < pts.length; i++) {
+      conns.push(this.seg(pts[i - 1], pts[i], pts[i].reached ? '#677086' : '#2a3140'));
+    }
+    const lp = pts[pts.length - 1], nx = W - PAT[lastN % 6];
+    conns.push(this.seg(lp, { x: (lp.x + nx) / 2, y: lp.y + 28 }, '#2a3140'));
+
+    // Scroll: the locked gate sits just above the sheet (sheet top ~377, map starts at 104).
+    const offset = gateBottom + 104 - 366;
+    return { heads: heads, gates: gates, nodes: nodes, conns: conns, total: total, mapTop: (-offset) + 'px', mapH: (y + 64) + 'px' };
+  }
+
+  // Plan 4.5: up to 3 levels of chapter 2 worth replaying: fewest stars first, ties = the most recently played.
+  weak() {
+    const D = this.data(), self = this, out = [];
+    for (let n = 11; n <= 20; n++) {
+      const k = D.LV[n][1];
+      if (k < 3) out.push({ n: n, k: k, kind: D.LV[n][0] });
+    }
+    out.sort(function (a, b) { return a.k - b.k || b.n - a.n; });
+    return out.slice(0, 3).map(function (w) {
+      const name = self.kindName(w.kind);
+      const stars = w.k === 1 ? 'כוכב אחד מתוך 3' : w.k + ' כוכבים מתוך 3';
+      return {
+        num: String(w.n), title: 'שלב ' + w.n + ' · ' + name, stars: self.starRow(w.k), href: self.kindHref(w.kind),
+        n: w.n, missing: 3 - w.k,
+        aria: 'שחק שוב את שלב ' + w.n + ' · ' + name + ' · ' + stars
+      };
+    });
+  }
+
+  renderVals() {
+    const L = this.layout(), W = this.weak();
+    let missing = 0;
+    W.forEach(function (w) { missing += w.missing; });
+    return {
+      total: L.total + '/900',
+      mapTop: L.mapTop,
+      mapH: L.mapH,
+      conns: L.conns,
+      heads: L.heads,
+      gates: L.gates,
+      nodes: L.nodes,
+      weak: W,
+      weakNote: 'אפשר להרוויח בהם עד ' + missing + ' כוכבים',
+      firstHref: W[0].href,
+      firstCta: 'שחק את שלב ' + W[0].num,
+      firstNote: 'כל שלב עד 30 שניות. הכוכבים הטובים ביותר נשמרים.'
+    };
+  }
+}
+</script>
+</body>
+</html>

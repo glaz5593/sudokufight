@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Level result — Sudoku Fight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@keyframes lv-pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; font-family: Rubik, 'Segoe UI', system-ui, sans-serif; color: #eef1f6; background: #0f1218;">
+
+  <main style="position: absolute; top: 48px; left: 16px; right: 16px; bottom: 32px; display: flex; flex-direction: column;">
+
+    <!-- ===== Title ===== -->
+    <p style="margin: 8px 0 0; font: 400 13px/16px Rubik, sans-serif; color: #9aa3b5; text-align: center;">פרק 4 · בלש</p>
+    <h1 style="margin: 4px 0 0; font: 700 28px/34px Rubik, sans-serif; color: #eef1f6; text-align: center;">שלב 37 הושלם</h1>
+    <p style="margin: 4px 0 0; display: flex; align-items: center; justify-content: center; gap: 6px; font: 400 13px/16px Rubik, sans-serif; color: #9aa3b5;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4.5"></circle><path d="M12 12h.01"></path></svg>
+      <span>איפה ה־3? · מציאה אחת</span>
+    </p>
+
+    <!-- ===== Stars: 2 of 3 (fill from the start side; pop one by one, static under reduced motion) ===== -->
+    <div role="img" aria-label="2 כוכבים מתוך 3" style="margin-top: 16px; height: 44px; display: flex; justify-content: center; gap: 12px;">
+      <svg width="44" height="44" viewBox="0 0 24 24" aria-hidden="true" style="display: block; animation: lv-pop 420ms cubic-bezier(.34,1.56,.64,1) 200ms both;"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+      <svg width="44" height="44" viewBox="0 0 24 24" aria-hidden="true" style="display: block; animation: lv-pop 420ms cubic-bezier(.34,1.56,.64,1) 350ms both;"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+      <svg width="44" height="44" viewBox="0 0 24 24" aria-hidden="true" style="display: block;"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="none" stroke="#677086" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+    </div>
+    <div style="margin-top: 12px; display: flex; justify-content: center;">
+      <span style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; box-sizing: border-box; border-radius: 999px; background: #1f2430; border: 1px solid #2a3140; font: 500 13px/1 Rubik, sans-serif; color: #eef1f6; white-space: nowrap;">
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="none" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+        <span>עוד <bdi dir="ltr">2.6</bdi> שניות ל־3 כוכבים</span>
+      </span>
+    </div>
+
+    <!-- ===== The result ===== -->
+    <div role="img" aria-label="זמן 7.6 שניות, כולל 5 שניות על הקשה שגויה" style="margin-top: 16px; height: 57px; display: flex; align-items: baseline; justify-content: center; gap: 6px;">
+      <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 64px; line-height: .8; padding-top: 6px; font-variant-numeric: tabular-nums; color: #36c9f0;">7.6</span>
+      <span style="font: 500 18px/1 Rubik, sans-serif; color: #9aa3b5;">ש׳</span>
+    </div>
+    <p style="margin: 4px 0 0; font: 400 13px/16px Rubik, sans-serif; color: #9aa3b5; text-align: center;">כולל <bdi dir="ltr">5</bdi> ש׳ על הקשה שגויה · 3 כוכבים עד <bdi dir="ltr">5</bdi> ש׳</p>
+
+    <!-- ===== Why: the one target of the level (explain()), open, with the wrong tap ===== -->
+    <section aria-label="למה? הסבר ליעד" style="margin-top: 16px; padding: 2px 12px 4px; box-sizing: border-box; background: #171b24; border: 1px solid #2a3140; border-radius: 14px;">
+      <div style="height: 32px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        <h2 style="margin: 0; font: 500 13px/1 Rubik, sans-serif; color: #9aa3b5;">למה דווקא שם?</h2>
+        <span style="font: 400 12px/1 Rubik, sans-serif; color: #828ba1;">בלי ההקשה השגויה: <bdi dir="ltr">2.6</bdi> ש׳</span>
+      </div>
+
+      <button type="button" aria-expanded="true" aria-label="ה־3 בריבוע 2, ב־C6, 7.6 שניות, כולל 5 שניות על הקשה שגויה" style="width: 100%; height: 44px; margin: 0; padding: 0; box-sizing: border-box; display: flex; align-items: center; gap: 10px; background: transparent; border: 0; border-top: 1px solid #2a3140; color: #eef1f6; text-align: right; cursor: pointer;">
+        <span dir="ltr" style="flex: none; width: 24px; height: 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #0f1218; border: 1px solid #2a3140; border-radius: 6px; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px; color: #eef1f6;">3</span>
+        <span style="flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 6px; white-space: nowrap;">
+          <span style="font: 400 14px/18px Rubik, sans-serif; color: #eef1f6;">ריבוע 2</span>
+          <span aria-hidden="true" style="color: #677086;">·</span>
+          <span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; color: #36c9f0;">C6</span>
+        </span>
+        <span dir="ltr" style="flex: none; display: inline-flex; align-items: center; height: 20px; padding: 2px 6px 0; box-sizing: border-box; border-radius: 6px; background: rgba(255,77,94,.08); border: 1px solid rgba(255,77,94,.55); font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 16px; line-height: .8; color: #ff4d5e;">+5</span>
+        <span style="flex: none; display: flex; align-items: baseline; gap: 3px;"><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 20px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums; color: #eef1f6;">7.6</span><span style="font: 400 12px/1 Rubik, sans-serif; color: #9aa3b5;">ש׳</span></span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#677086" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="M6 15l6-6 6 6"></path></svg>
+      </button>
+      <p style="margin: 0; padding: 0 0 10px; font: 400 13px/18px Rubik, sans-serif; color: #9aa3b5;">הקשת על <bdi dir="ltr">A6</bdi>, אבל בשורה A כבר יש 3, ולכן גם <bdi dir="ltr">A5</bdi> לא מתאים. את <bdi dir="ltr">B5</bdi> פוסלת העמודה 5. נשאר רק <bdi dir="ltr">C6</bdi>.</p>
+    </section>
+
+    <!-- ===== Best · XP · chapter ===== -->
+    <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+      <div role="group" aria-label="שיא אישי חדש: 7.6 שניות, 2 כוכבים" style="height: 76px; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; background: #171b24; border: 1px solid #2a3140; border-radius: 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+          <span style="font: 500 12px/1 Rubik, sans-serif; color: #9aa3b5; white-space: nowrap;">שיא אישי</span>
+          <span style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; border: 1px solid #ffcf3f; background: rgba(255,207,63,.1); font: 700 11px/1 Rubik, sans-serif; color: #ffcf3f; white-space: nowrap;">חדש</span>
+        </div>
+        <span style="display: flex; align-items: baseline; gap: 3px;"><span dir="ltr" style="font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 24px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums; color: #eef1f6;">7.6</span><span style="font: 400 12px/1 Rubik, sans-serif; color: #9aa3b5;">ש׳</span></span>
+        <span aria-hidden="true" style="display: flex; gap: 2px; height: 12px;">
+          <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="none" stroke="#677086" stroke-width="2" stroke-linejoin="round"></path></svg>
+        </span>
+      </div>
+      <div role="group" aria-label="20 XP: 10 לכל כוכב חדש" style="height: 76px; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; background: #171b24; border: 1px solid #2a3140; border-radius: 14px;">
+        <span style="font: 500 12px/1 Rubik, sans-serif; color: #9aa3b5; white-space: nowrap;">XP</span>
+        <span dir="ltr" style="display: block; text-align: right; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 24px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums; color: #eef1f6;">+20</span>
+        <span style="font: 400 12px/1 Rubik, sans-serif; color: #9aa3b5; white-space: nowrap;">2 כוכבים חדשים</span>
+      </div>
+      <div role="group" aria-label="בפרק 4: 16 כוכבים מתוך 30. לשער של פרק 5 צריך 20" style="height: 76px; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; background: #171b24; border: 1px solid #2a3140; border-radius: 14px;">
+        <span style="font: 500 12px/1 Rubik, sans-serif; color: #9aa3b5; white-space: nowrap;">בפרק 4</span>
+        <span style="display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z" fill="#ffcf3f" stroke="#ffcf3f" stroke-width="2" stroke-linejoin="round"></path></svg>
+          <span dir="ltr" style="display: block; font-family: Teko, Rubik, sans-serif; font-weight: 600; font-size: 24px; line-height: .8; padding-top: 3px; font-variant-numeric: tabular-nums; color: #eef1f6;">16/30</span>
+        </span>
+        <span style="font: 400 12px/1 Rubik, sans-serif; color: #9aa3b5; white-space: nowrap;">לשער צריך 20</span>
+      </div>
+    </div>
+
+    <div style="flex: 1; min-height: 16px;"></div>
+
+    <!-- ===== Actions ===== -->
+    <button type="button" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 60px; flex: none; margin: 0; padding: 0 26px; box-sizing: border-box; background: #ffcf3f; border: 0; border-radius: 12px; transform: skewX(-8deg); box-shadow: 0 4px 0 #b88f00; cursor: pointer;">
+      <span style="display: block; transform: skewX(8deg); font: 700 28px/1 Rubik, sans-serif; color: #241a00; white-space: nowrap;">לשלב הבא</span>
+    </button>
+    <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px; flex: none;">
+      <button type="button" style="flex: 1; height: 52px; margin: 0; padding: 0 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px solid #2a3140; border-radius: 12px; font: 500 16px/1 Rubik, sans-serif; color: #eef1f6; cursor: pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"></path><path d="M20 4v4h-4"></path></svg>
+        <span style="white-space: nowrap;">שחק שוב</span>
+      </button>
+      <button type="button" style="flex: 1; height: 44px; margin: 0; padding: 0 16px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 0; border-radius: 12px; font: 500 15px/1 Rubik, sans-serif; color: #9aa3b5; cursor: pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"></path><path d="M9 4v14M15 6v14"></path></svg>
+        <span style="white-space: nowrap;">למפה</span>
+      </button>
+    </div>
+
+  </main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Level 37 (chapter 4, "בלש"), type 1 "find the digit", ONE find on a fast board (46 givens, unique, not a
+  // ranked-bank solution): 280600473040208000600940080702036045036190708804020390300407952075300604421560000.
+  // The target is a hidden single in a box, checked on that board:
+  //   3 in box 2 -> C6 (A5, A6: row A has 3; B5: column 5 has 3)       2.6 s + 5 s for a wrong tap on A6 = 7.6 s
+  // Stars (chapters 1-10): 3 up to 5 s, 2 up to 10 s, 1 up to 20 s (the level ends) -> 2 stars, 2.6 s short of 3.
+  // First play: 2 new stars = 20 XP. Chapter 4 had 14 stars before this level, 16 now; the gate to chapter 5 needs 20.
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

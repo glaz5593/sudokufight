@@ -1,12 +1,17 @@
 import { randomUUID } from 'node:crypto';
 
 import {
+  LEVEL_END_REASONS,
+  type LevelEventProps,
   MAX_BATCH_BYTES,
   MAX_EVENTS_PER_BATCH,
   MAX_PROPS_BYTES,
+  TELEMETRY_EVENT_GENERATION,
+  TELEMETRY_EVENT_NAMES,
   TELEMETRY_PATH,
   type TelemetryBatch,
   type TelemetryEvent,
+  type TelemetryProps,
 } from '@sudoku-fight/protocol';
 import { asc } from 'drizzle-orm';
 
@@ -212,9 +217,19 @@ describe('POST /v1/events', () => {
         /^events: /,
       ],
       [
-        'an unknown event name',
-        { ...batch(), events: [{ ...event(), name: 'screen_veiw' }] },
-        /events\.0\.name: unknown event name/,
+        'an event name that is not a name',
+        { ...batch(), events: [{ ...event(), name: 42 }] },
+        /^events\.0\.name: unknown event name/,
+      ],
+      [
+        'an event name over 64 characters',
+        { ...batch(), events: [{ ...event(), name: 'x'.repeat(65) }] },
+        /^events\.0\.name: unknown event name/,
+      ],
+      [
+        'an event without a name',
+        { ...batch(), events: [{ ...event(), name: undefined }] },
+        /^events\.0\.name/,
       ],
       [
         'an event id that is not a UUID',
@@ -326,6 +341,154 @@ describe('POST /v1/events', () => {
       await post(batch());
       expect((await post(batch())).status).toBe(429);
       expect(await t.db.$count(appEvents)).toBe(2);
+    });
+  });
+
+  describe('an event name this server does not know (a newer app’s): skipped alone, counted in ignored', () => {
+    beforeEach(() => start());
+
+    it('stores the other events of the batch, and says how many it skipped', async () => {
+      const kept = [event(), event({ name: 'app_open', props: {} })];
+      const newer = { id: randomUUID(), name: 'stage_shared', props: { level: 3 }, t: NOW - HOUR };
+      const res = await post({
+        ...batch(),
+        events: [kept[0], newer, kept[1], { ...newer, id: 'not even a uuid' }],
+      });
+      expect(await answer(res)).toEqual({ status: 202, body: { accepted: 2, duplicates: 0, ignored: 2 } });
+      const rows = await t.db.select({ id: appEvents.id }).from(appEvents);
+      expect(rows.map((r) => r.id).sort()).toEqual(kept.map((e) => e.id).sort());
+      // `ignored` only when there were some: an older app sees the answer it always had.
+      expect(await answer(await post(batch()))).toEqual({
+        status: 202,
+        body: { accepted: 2, duplicates: 0 },
+      });
+    });
+
+    it('a batch of unknown names only: 202, nothing stored, not even the install', async () => {
+      const res = await post({ ...batch(), events: [{ ...event(), name: 'screen_veiw' }] });
+      expect(await answer(res)).toEqual({ status: 202, body: { accepted: 0, duplicates: 0, ignored: 1 } });
+      expect(await t.db.$count(appEvents)).toBe(0);
+      expect(await t.db.$count(installs)).toBe(0);
+    });
+
+    it('a bad event of a known name still refuses the batch, at its own index', async () => {
+      const res = await post({
+        ...batch(),
+        events: [{ ...event(), name: 'stage_shared' }, event(), event({ id: '42' })],
+      });
+      expect(await answer(res)).toEqual({
+        status: 400,
+        body: { error: 'badRequest', message: expect.stringMatching(/^events\.2\.id: not a UUID/) },
+      });
+      expect(await t.db.$count(appEvents)).toBe(0);
+    });
+  });
+
+  describe('staged practice’s six events (1.0.2): their props checked, an extra key let through', () => {
+    beforeEach(() => start());
+
+    const VALID: LevelEventProps = {
+      level_map_open: { level: 37, stars: 84 },
+      level_start: { level: 37, chapter: 4, kind: 'fillBox', attempt: 2, bestStars: 1, quick: true },
+      level_end: {
+        level: 37,
+        kind: 'fillBox',
+        stars: 3,
+        prevBest: 1,
+        durationMs: 4200,
+        reason: 'completed',
+        mistakes: 0,
+        metric: 4200,
+        botLevel: null,
+        attempt: 2,
+      },
+      level_quit: { level: 38, atMs: 12_500 },
+      chapter_gate: { chapter: 5, stars: 17, open: false },
+      level_tutorial: { kind: 'duel', skipped: true },
+    };
+    const levelEvent = (name: keyof LevelEventProps, props: TelemetryProps = {}) =>
+      event({ name, props: { ...(VALID[name] as unknown as TelemetryProps), ...props } });
+
+    it('are events of the second generation; the older ones are of the first', () => {
+      const names: string[] = Object.keys(VALID);
+      expect(names).toHaveLength(6);
+      for (const name of TELEMETRY_EVENT_NAMES)
+        expect([name, TELEMETRY_EVENT_GENERATION[name]]).toEqual([name, names.includes(name) ? 2 : 1]);
+      expect(LEVEL_END_REASONS).toEqual(['completed', 'timeUp', 'botWon', 'failed', 'quit']);
+    });
+
+    it('each with valid props: 202, stored as sent', async () => {
+      const events = (Object.keys(VALID) as (keyof LevelEventProps)[]).map((name) => levelEvent(name));
+      expect(await answer(await post(batch({ events })))).toEqual({
+        status: 202,
+        body: { accepted: 6, duplicates: 0 },
+      });
+      const rows = await t.db.select({ name: appEvents.name, props: appEvents.props }).from(appEvents);
+      for (const e of events) expect(rows).toContainEqual({ name: e.name, props: e.props });
+    });
+
+    it('every reason (failed too), a duel lost (a lead below 0), a bot level, no measure, the boss’s card: accepted', async () => {
+      const events = [
+        ...LEVEL_END_REASONS.map((reason) => levelEvent('level_end', { reason, metric: null })),
+        levelEvent('level_end', { kind: 'duel', reason: 'botWon', metric: -6, botLevel: 3, stars: 0 }),
+        levelEvent('level_tutorial', { kind: 'boss' }),
+        levelEvent('chapter_gate', { chapter: 30, stars: 30, open: true }),
+        levelEvent('level_start', { level: 300, chapter: 30, kind: 'chain', attempt: 1, bestStars: 0 }),
+      ];
+      expect(await answer(await post(batch({ events })))).toEqual({
+        status: 202,
+        body: { accepted: events.length, duplicates: 0 },
+      });
+    });
+
+    it('an extra key on a level event is accepted, and kept', async () => {
+      const e = levelEvent('level_end', { hintsUsed: 0, newProp: 'x' });
+      expect((await post(batch({ events: [e] }))).status).toBe(202);
+      const [row] = await t.db.select({ props: appEvents.props }).from(appEvents);
+      expect(row?.props).toEqual(e.props);
+    });
+
+    const bad: [string, TelemetryEvent][] = [
+      ['level 0', levelEvent('level_start', { level: 0 })],
+      ['a level above the last', levelEvent('level_end', { level: 301 })],
+      ['a level as an id', levelEvent('level_quit', { level: 'L038' })],
+      ['a fractional level', levelEvent('level_map_open', { level: 1.5 })],
+      ['no level', event({ name: 'level_quit', props: { atMs: 5 } })],
+      ['4 stars', levelEvent('level_end', { stars: 4 })],
+      ['best stars -1', levelEvent('level_start', { bestStars: -1 })],
+      ['a reason that is none', levelEvent('level_end', { reason: 'won' })],
+      ['an unknown kind', levelEvent('level_start', { kind: 'race' })],
+      ['an unknown kind of card', levelEvent('level_tutorial', { kind: 'sprint' })],
+      ['a negative duration', levelEvent('level_end', { durationMs: -1 })],
+      ['a negative time when left', levelEvent('level_quit', { atMs: -5 })],
+      ['a measure as text', levelEvent('level_end', { metric: '4200' })],
+      ['a bot level 6', levelEvent('level_end', { botLevel: 6 })],
+      ['attempt 0', levelEvent('level_end', { attempt: 0 })],
+      ['chapter_gate of chapter 1', levelEvent('chapter_gate', { chapter: 1 })],
+      ['chapter_gate past the last chapter', levelEvent('chapter_gate', { chapter: 31 })],
+      ['chapter_gate with 31 stars', levelEvent('chapter_gate', { stars: 31 })],
+      ['open as text', levelEvent('chapter_gate', { open: 'true' })],
+      ['quick as text', levelEvent('level_start', { quick: 'yes' })],
+      ['skipped as a number', levelEvent('level_tutorial', { skipped: 1 })],
+    ];
+
+    it.each(bad)('%s: 400, and nothing of the batch is stored', async (_name, e) => {
+      const res = await post(batch({ events: [e, event()] }));
+      expect(await answer(res)).toEqual({
+        status: 400,
+        body: { error: 'badRequest', message: expect.stringMatching(/^events\.0\.props/) },
+      });
+      expect(await t.db.$count(appEvents)).toBe(0);
+    });
+
+    it('report_sent stays strict: { reason } only', async () => {
+      const report = (props: TelemetryProps) => event({ name: 'report_sent', props });
+      expect((await post(batch({ events: [report({ reason: 'cheating' })] }))).status).toBe(202);
+      const res = await post(batch({ events: [report({ reason: 'cheating', extra: 1 })] }));
+      expect(await answer(res)).toEqual({
+        status: 400,
+        body: { error: 'badRequest', message: expect.stringMatching(/^events\.0\.props: not the props/) },
+      });
     });
   });
 

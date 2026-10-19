@@ -1,4 +1,12 @@
-import { CELL_COUNT, type CellIndex, type Digit, digitCount, isCellIndex, isDigit } from '../sudoku/board';
+import {
+  CELL_COUNT,
+  type CellIndex,
+  type Digit,
+  digitCount,
+  isCellIndex,
+  isDigit,
+  parseGrid,
+} from '../sudoku/board';
 import { missedPoints, moveScore } from '../sudoku/scoring';
 import type { Clock } from '../util/clock';
 import type { Rng } from '../util/random';
@@ -41,6 +49,13 @@ import type {
  * back: at softEndsAt the hard phase starts, exactly as a disconnect did before (playerDisconnected with the
  * grace of [D4], a freeze or a release). Moves he made on his phone meanwhile arrive after the return as
  * `offlineMove`, each decided on the board as it is when it arrives.
+ *
+ * A level of staged practice (1.0.2) is an ordinary 'solo' or 'bot' game with `config.level` and the optional
+ * rules of levels/spec.ts levelRulesFor: a time limit (the 'timeUp' timer, first of all timers at an instant),
+ * a target (endAtScore, editableCells, maxMoves, chainCells: 'targetReached' after the move that meets it,
+ * boardComplete checked first), time penalties (timePenalty), and locks with no timer. None of it is in
+ * defaultRules: every other game plays exactly as before. The phone's own freeze [D65] (`pause` / `resume`)
+ * is a gamePaused / gameResumed of reason 'background' / 'foreground' that no server ever sends.
  */
 
 export interface Transition {
@@ -93,6 +108,7 @@ export function createGame(config: GameConfig, deps: GameDeps | number): Transit
   const { thinkTimeMs, turnPickMs, interferenceMs } = config.rules;
   if (!(thinkTimeMs > 0 && turnPickMs > 0 && interferenceMs > 0))
     throw new RangeError('Think time, turn time and interference time must be positive');
+  checkLevelRules(config);
   const now = typeof deps === 'number' ? deps : deps.clock.now();
   const rng = typeof deps === 'number' ? undefined : deps.rng;
   const withSeed: GameConfig =
@@ -100,6 +116,44 @@ export function createGame(config: GameConfig, deps: GameDeps | number): Transit
   const event: GameEvent = { type: 'gameCreated', config: withSeed, seq: 1, t: now };
   return { state: evolve(null, event), events: [event] };
 }
+
+/** The optional rules of a level (rules.ts, staged practice), each only when it is there. */
+function checkLevelRules(config: GameConfig): void {
+  const r = config.rules;
+  const positive = (name: string, v: number | undefined) => {
+    if (v !== undefined && !(Number.isFinite(v) && v > 0)) throw new RangeError(`${name} must be positive`);
+  };
+  positive('timeLimitMs', r.timeLimitMs);
+  positive('endAtScore', r.endAtScore);
+  positive('mistakeTimeMs', r.mistakeTimeMs);
+  if (r.maxMoves !== undefined && !(Number.isInteger(r.maxMoves) && r.maxMoves > 0))
+    throw new RangeError('maxMoves must be a positive whole number');
+  const givens = parseGrid(config.puzzle.givens);
+  for (const [name, cells] of [
+    ['editableCells', r.editableCells],
+    ['chainCells', r.chainCells],
+  ] as const) {
+    if (cells === undefined) continue;
+    if (!cells.length) throw new RangeError(`${name} must not be empty`);
+    if (new Set(cells).size !== cells.length) throw new RangeError(`${name} must not repeat a cell`);
+    for (const c of cells)
+      if (!isCellIndex(c) || givens[c] !== 0) throw new RangeError(`${name}: ${c} is not an empty cell`);
+  }
+  if (r.lockTimeout !== undefined && r.lockTimeout !== false)
+    throw new RangeError('lockTimeout is false or absent');
+  if (r.lockTimeout === false && r.interferences)
+    throw new RangeError('A lock with no timer needs interferences off (an interference stops a lock timer)');
+  if ((r.mistakeTimeMs !== undefined || r.chainCells !== undefined) && config.players.length !== 1)
+    throw new RangeError('Time penalties and a chain are for a game of one player');
+  if (r.chainNotYet !== undefined && r.chainNotYet !== 'accept' && r.chainNotYet !== 'penalty')
+    throw new RangeError('chainNotYet is accept or penalty');
+  if (r.chainCells !== undefined && chainNotYetOf(r) === 'penalty' && r.mistakeTimeMs === undefined)
+    throw new RangeError('A chain that charges for a digit it cannot know yet needs mistakeTimeMs');
+  if (r.maxMistakes !== undefined) throw new RangeError('maxMistakes is reserved (idea 4) and not built');
+}
+
+/** [D64]: 'accept' (the original §14) unless a level says 'penalty'. */
+const chainNotYetOf = (rules: GameConfig['rules']): 'accept' | 'penalty' => rules.chainNotYet ?? 'accept';
 
 export function applyAction(state: GameState, action: Action, now: number): ActionResult {
   const t = Math.max(now, state.lastEventAt);
@@ -240,10 +294,13 @@ function digitTried(s: GameState, cell: CellIndex, digit: Digit, me: PlayerId): 
   );
 }
 
-/** A new lock for `me` on `cell`, with the full think time; it starts stopped under interference [D11]. */
+/**
+ * A new lock for `me` on `cell`, with the full think time; it starts stopped under interference [D11]. With
+ * rules.lockTimeout false it has no timer at all (expiresAt null for good).
+ */
 function lockCell(tx: Tx, me: PlayerState, cell: CellIndex, now: number): void {
   const rules = tx.state.config.rules;
-  const stopped = rules.pauseLockWhileInterfered && me.hitBy !== null;
+  const stopped = (rules.pauseLockWhileInterfered && me.hitBy !== null) || rules.lockTimeout === false;
   tx.emit(
     {
       type: 'cellLocked',
@@ -256,11 +313,57 @@ function lockCell(tx: Tx, me: PlayerState, cell: CellIndex, now: number): void {
   );
 }
 
+/** A chain's next cell: the first of rules.chainCells still empty. */
+function nextChainCell(s: GameState): CellIndex | undefined {
+  return s.config.rules.chainCells?.find((c) => s.grid[c] === 0);
+}
+
+/**
+ * A level's target is met (after a digit, right or wrong): someone in the game reached endAtScore, every
+ * editable cell or chain cell is filled, or every player who is not a bot used his maxMoves.
+ */
+function levelGoalMet(s: GameState): boolean {
+  const r = s.config.rules;
+  const filled = (cells: readonly CellIndex[] | undefined) =>
+    cells !== undefined && cells.every((c) => s.grid[c] !== 0);
+  if (r.endAtScore !== undefined && inGame(s).some((p) => p.score >= r.endAtScore!)) return true;
+  if (filled(r.editableCells) || filled(r.chainCells)) return true;
+  if (r.maxMoves !== undefined) {
+    const people = inGame(s).filter((p) => !isBot(s, p));
+    if (people.length && people.every((p) => p.correct + p.mistakes >= r.maxMoves!)) return true;
+  }
+  return false;
+}
+
+/**
+ * A level's time penalty: the time limit comes `ms` closer. A penalty that reaches it ends the game 'timeUp'
+ * at once, in the same transition (true then).
+ */
+function timePenalty(
+  tx: Tx,
+  playerId: PlayerId,
+  cell: CellIndex,
+  reason: 'mistake' | 'notYet',
+  ms: number,
+  now: number,
+): boolean {
+  const total = (playerOf(tx.state, playerId)!.timePenaltyMs ?? 0) + ms;
+  tx.emit({ type: 'timePenalty', playerId, cell, reason, ms, totalMs: total }, now);
+  const at = tx.state.timeUpAt;
+  if (at === undefined || at > now) return false;
+  endGame(tx, 'timeUp', now);
+  return true;
+}
+
 /**
  * `digit` in the cell of `lock`, which `meId` holds, every check done: placedCorrect (the board completes →
  * gameOver) or placedWrong (the penalty of §6.5, and the release of [D3]). The think time is the lock's,
  * or for a move made offline [D42] the one the phone measured (clamped by the caller); the event says
  * `offline: true` then.
+ *
+ * A level: a wrong digit may cost time too (mistakeTimeMs); a chain's right digit in any cell but the next
+ * only costs time under chainNotYet 'penalty' [D64] (no mistake, nothing placed, the lock kept); and a target
+ * met ends the game 'targetReached'.
  */
 function placeDigit(
   tx: Tx,
@@ -274,10 +377,19 @@ function placeDigit(
   const rules = s.config.rules;
   const me = playerOf(s, meId)!;
   const flag = offline ? { offline: true as const } : {};
+  const right = Number(s.config.puzzle.solution[lock.cell]) === digit;
 
-  if (Number(s.config.puzzle.solution[lock.cell]) === digit) {
+  if (right && rules.chainCells && chainNotYetOf(rules) === 'penalty' && lock.cell !== nextChainCell(s)) {
+    timePenalty(tx, me.id, lock.cell, 'notYet', rules.mistakeTimeMs!, now);
+    return;
+  }
+
+  if (right) {
     const breakdown = moveScore(s.grid, lock.cell, digit, rules.scoreY);
     const left = lock.expiresAt === null ? lock.remainingMs : lock.expiresAt - now;
+    // A lock with no timer: the time since it was taken (its freezes left out, evolve).
+    const lockThinkMs =
+      rules.lockTimeout === false ? Math.max(0, now - lock.lockedAt) : Math.max(0, rules.thinkTimeMs - left);
     tx.emit(
       {
         type: 'placedCorrect',
@@ -287,12 +399,13 @@ function placeDigit(
         points: breakdown.points,
         breakdown,
         score: me.score + breakdown.points,
-        thinkMs: offline ? offline.thinkMs : Math.max(0, rules.thinkTimeMs - left),
+        thinkMs: offline ? offline.thinkMs : lockThinkMs,
         ...flag,
       },
       now,
     );
     if (tx.state.grid.every((v) => v !== 0)) return endGame(tx, 'boardComplete', now);
+    if (levelGoalMet(tx.state)) return endGame(tx, 'targetReached', now);
     if (s.turn?.playerId === me.id) passTurn(tx, me.id, now);
     return;
   }
@@ -304,6 +417,12 @@ function placeDigit(
     { type: 'placedWrong', playerId: me.id, cell: lock.cell, digit, penalty, mistakes, score, ...flag },
     now,
   );
+  if (
+    rules.mistakeTimeMs !== undefined &&
+    timePenalty(tx, me.id, lock.cell, 'mistake', rules.mistakeTimeMs, now)
+  )
+    return;
+  if (levelGoalMet(tx.state)) return endGame(tx, 'targetReached', now);
   if (rules.afterMistake === 'release') {
     release(tx, me.id, 'mistake', now);
     if (s.turn?.playerId === me.id) passTurn(tx, me.id, now);
@@ -332,19 +451,29 @@ function endIfLastStanding(tx: Tx, leaver: PlayerState, at: number): boolean {
   return false;
 }
 
-/** Resumes a frozen game once nobody still in it is disconnected (the soft phase does not hold it [D42]). */
+/**
+ * Resumes a frozen game once nobody still in it is disconnected (the soft phase does not hold it [D42]). Not a
+ * freeze of the phone's own [D65]: only its `resume` ends that.
+ */
 function resumeIfClear(tx: Tx, reason: 'reconnect' | 'abandon', at: number): void {
   const s = tx.state;
-  if (s.status !== 'paused' || s.pausedAt === null) return;
+  if (s.status !== 'paused' || s.pausedAt === null || s.pausedBy === 'background') return;
   if (inGame(s).some((p) => !p.connected)) return;
-  const pausedMs = at - s.pausedAt;
+  resumeGame(tx, reason, at);
+}
+
+/** gameResumed: every timer that stood still moves on by the freeze (evolve). */
+function resumeGame(tx: Tx, reason: 'reconnect' | 'abandon' | 'foreground', at: number): void {
+  const s = tx.state;
+  const pausedAt = s.pausedAt ?? at;
+  const pausedMs = at - pausedAt;
   const locks: LockTimer[] = s.locks
     .filter((l) => l.expiresAt !== null)
     .map((l) => ({
       playerId: l.playerId,
       cell: l.cell,
       expiresAt: l.expiresAt! + pausedMs,
-      remainingMs: Math.max(0, l.expiresAt! - s.pausedAt!),
+      remainingMs: Math.max(0, l.expiresAt! - pausedAt),
     }));
   tx.emit({ type: 'gameResumed', reason, pausedMs, locks }, at);
 }
@@ -353,13 +482,16 @@ function resumeIfClear(tx: Tx, reason: 'reconnect' | 'abandon', at: number): voi
 // Timers
 
 type Due =
+  | { kind: 'timeUp'; at: number }
   | { kind: 'interferenceEnd'; at: number; playerId: PlayerId }
   | { kind: 'grace'; at: number; playerId: PlayerId }
   | { kind: 'softEnd'; at: number; playerId: PlayerId }
   | { kind: 'lockExpire'; at: number; playerId: PlayerId }
   | { kind: 'turnExpire'; at: number; playerId: PlayerId };
 
+/** At one instant: a level's time limit first (an action or a lock at its deadline is too late), then the rest. */
 const DUE_ORDER: Record<Due['kind'], number> = {
+  timeUp: -1,
   interferenceEnd: 0,
   grace: 1,
   softEnd: 2,
@@ -378,6 +510,7 @@ function nextDue(s: GameState): Due | null {
     else if (isSoftOffline(p)) due.push({ kind: 'softEnd', at: p.softEndsAt!, playerId: p.id });
   }
   if (s.status === 'running') {
+    if (s.timeUpAt !== undefined) due.push({ kind: 'timeUp', at: s.timeUpAt });
     for (const p of s.players)
       if (p.hitBy) due.push({ kind: 'interferenceEnd', at: p.hitBy.endsAt, playerId: p.id });
     for (const l of s.locks)
@@ -414,6 +547,9 @@ function handleDue(tx: Tx, due: Due): void {
   const rules = s.config.rules;
   const at = due.at;
   switch (due.kind) {
+    case 'timeUp':
+      endGame(tx, 'timeUp', at);
+      return;
     case 'interferenceEnd': {
       const p = playerOf(s, due.playerId)!;
       const lock = lockOf(s, p.id);
@@ -495,6 +631,11 @@ function decide(tx: Tx, action: Action, now: number): void {
     passTurn(tx, null, now);
     return;
   }
+  if (action.type === 'pause' || action.type === 'resume') {
+    if (s.status === 'over') reject('gameOver');
+    if (s.status === 'waiting') reject('notStarted');
+    return action.type === 'pause' ? pauseLocally(tx, now) : resumeLocally(tx, now);
+  }
   if (action.type !== 'disconnect' && action.type !== 'reconnect' && !PLAYER_ACTIONS.has(action.type))
     reject('badAction');
   if (s.status === 'over') reject('gameOver');
@@ -508,6 +649,22 @@ function decide(tx: Tx, action: Action, now: number): void {
       : reconnect(tx, p, now);
   }
   playerAction(tx, action, now);
+}
+
+/** [D65] The app left the foreground: a running game freezes ('paused' already: nothing to do). */
+function pauseLocally(tx: Tx, now: number): void {
+  if (tx.state.status !== 'running') reject('paused');
+  tx.emit({ type: 'gamePaused', reason: 'background' }, now);
+}
+
+/**
+ * [D65] The app is back (after its 3, 2, 1): only a freeze of its own ends, every deadline moved on by it. A
+ * game that must stay frozen for a disconnect (none is local) freezes again at once.
+ */
+function resumeLocally(tx: Tx, now: number): void {
+  if (tx.state.pausedBy !== 'background') reject('badAction');
+  resumeGame(tx, 'foreground', now);
+  freezeIfNeeded(tx, now);
 }
 
 /**
@@ -569,6 +726,8 @@ function playerAction(tx: Tx, action: PlayerAction, now: number): void {
       if (rules.turnModel === 'turns' && s.turn?.playerId !== me.id) reject('notYourTurn');
       const cell = action.cell;
       if (!isCellIndex(cell)) reject('badCell');
+      // A level's box: no other cell can be chosen, whatever it holds.
+      if (rules.editableCells && !rules.editableCells.includes(cell)) reject('notEditable');
       if (s.grid[cell] !== 0) reject('cellFilled');
       const holder = s.locks.find((l) => l.cell === cell);
       if (holder) reject(holder.playerId === me.id ? 'alreadyHeld' : 'cellTaken');
@@ -610,6 +769,7 @@ function playerAction(tx: Tx, action: PlayerAction, now: number): void {
       if (!open || now > open.until || open.left <= 0) reject('offlineClosed');
       const cell = action.cell;
       if (!isCellIndex(cell)) reject('badCell');
+      if (rules.editableCells && !rules.editableCells.includes(cell)) reject('notEditable');
       const digit = action.digit;
       if (!isDigit(digit)) reject('badDigit');
       if (s.grid[cell] !== 0) reject('cellFilled');
@@ -674,6 +834,8 @@ function playerAction(tx: Tx, action: PlayerAction, now: number): void {
     }
 
     case 'react': {
+      // The phone's own freeze stops everything [D65]; a disconnect's freeze still lets people react.
+      if (s.pausedBy === 'background') reject('paused');
       if (!rules.reactions.includes(action.emoji)) reject('badEmoji');
       if (me.lastReactionAt !== null && now - me.lastReactionAt < rules.reactionCooldownMs) reject('tooSoon');
       tx.emit({ type: 'reaction', playerId: me.id, emoji: action.emoji }, now);
@@ -681,6 +843,7 @@ function playerAction(tx: Tx, action: PlayerAction, now: number): void {
     }
 
     case 'surrender': {
+      // Allowed in any freeze, the phone's own too [D65]: leaving is always possible.
       release(tx, me.id, 'surrender', now);
       tx.emit({ type: 'playerSurrendered', playerId: me.id }, now);
       if (endIfLastStanding(tx, me, now)) return;

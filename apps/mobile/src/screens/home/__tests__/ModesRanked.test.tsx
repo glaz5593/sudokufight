@@ -272,7 +272,7 @@ describe('no connection before a game (spec §16.1)', () => {
     expect(screen.getByTestId('mode-solo')).toHaveProp('accessibilityState', { disabled: false });
     expect(screen.getByTestId('mode-solo')).toHaveProp(
       'accessibilityLabel',
-      'אימון לבד, בקצב שלך, ללא דירוג, זמין אופליין',
+      'אימון לבד · לוח מלא, בקצב שלך, ללא דירוג, זמין אופליין',
     );
     expect(screen.getByTestId('modes-live')).toHaveTextContent('אין חיבור לאינטרנט');
 

@@ -10,6 +10,7 @@ import { GameDetailPage } from './pages/GameDetailPage';
 import { GamesPage } from './pages/GamesPage';
 import { InstallDetailPage } from './pages/InstallDetailPage';
 import { InstallsPage } from './pages/InstallsPage';
+import { LevelsPage } from './pages/LevelsPage';
 import { LoginPage, type LoginNotice } from './pages/LoginPage';
 import { OverviewPage } from './pages/OverviewPage';
 import { ReportsPage } from './pages/ReportsPage';
@@ -107,6 +108,7 @@ const NAV: { section: Section; label: StringKey; route: Route }[] = [
   { section: 'users', label: 'nav.users', route: { name: 'users' } },
   { section: 'games', label: 'nav.games', route: { name: 'games' } },
   { section: 'screens', label: 'nav.screens', route: { name: 'screens' } },
+  { section: 'levels', label: 'nav.levels', route: { name: 'levels' } },
   { section: 'reports', label: 'nav.reports', route: { name: 'reports' } },
   { section: 'audit', label: 'nav.audit', route: { name: 'audit' } },
 ];
@@ -196,6 +198,8 @@ function Page({ route }: { route: Route }) {
       return <GameDetailPage id={route.id} />;
     case 'screens':
       return <ScreensPage days={route.days ?? DEFAULT_DAYS} />;
+    case 'levels':
+      return <LevelsPage days={route.days ?? DEFAULT_DAYS} chapter={route.chapter ?? 0} />;
     case 'reports':
       return <ReportsPage status={route.status ?? DEFAULT_REPORT_FILTER} page={route.page ?? 1} />;
     case 'audit':

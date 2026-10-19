@@ -124,6 +124,13 @@ function popcount(m: number): number {
 const ref = (u: Unit): UnitRef => ({ kind: u.kind, index: u.index });
 const sameUnit = (a: UnitRef, b: UnitRef): boolean => a.kind === b.kind && a.index === b.index;
 
+/** The row, column or box a reference names. */
+function unitAt(u: UnitRef): Unit {
+  const unit = (u.kind === 'row' ? ROWS : u.kind === 'col' ? COLS : BOXES)[u.index];
+  if (!unit) throw new RangeError(`Not a unit: ${u.kind} ${String(u.index)}`);
+  return unit;
+}
+
 /** Order in which hidden-single units are preferred when several apply (shorter explanations first). */
 const HIDDEN_UNIT_ORDER: Record<UnitKind, number> = { box: 0, row: 1, col: 2 };
 
@@ -270,6 +277,21 @@ export class LogicBoard {
       }
     }
     return best?.draft ?? null;
+  }
+
+  /** The empty cells of `unit` that still list `digit` as a candidate, in the unit's order. */
+  placesOf(unit: UnitRef, digit: Digit): CellIndex[] {
+    return unitAt(unit).cells.filter((c) => !this.grid[c] && has(this.cand[c]!, digit));
+  }
+
+  /**
+   * The hidden single for `digit` in this very `unit` at `cell`, or null if `digit` has another place in
+   * `unit` (or `cell` is not in it). Unlike hiddenSingleAt, no other unit of the cell counts: a find
+   * target is scoped (sudoku/targets).
+   */
+  hiddenSingleInUnit(unit: UnitRef, cell: CellIndex, digit: Digit): Draft<HiddenSingleStep> | null {
+    const u = unitAt(unit);
+    return u.cells.includes(cell) ? this.hiddenSingleIn(u, cell, digit) : null;
   }
 
   /** A hidden single for `digit` in `unit` at `cell`, or null if `digit` has another place in `unit`. */

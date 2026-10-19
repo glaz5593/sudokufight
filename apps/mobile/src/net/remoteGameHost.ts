@@ -465,6 +465,21 @@ export class RemoteGameHost implements GameHost {
     this.act({ type: 'surrender' });
   }
 
+  /** A tap level's move: no online game has one. Refused here ('badAction'), and never sent (not a wire action). */
+  tap(cell: CellIndex): void {
+    if (this.closed || !this.state) return;
+    this.emit({ kind: 'rejected', action: { type: 'tap', cell }, reason: 'badAction', view: this.getView() });
+  }
+
+  /** [D65] is for local play only: an online game never freezes for the app's background (onAppState). */
+  pause(): void {
+    // Nothing: the server's game runs on, and the background is a disconnect here.
+  }
+
+  resume(): void {
+    // Nothing, as pause().
+  }
+
   /** Leaves the room on purpose, and stops every timer and update. */
   close(): void {
     this.shutdown('left', null);

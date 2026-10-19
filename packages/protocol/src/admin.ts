@@ -1,3 +1,5 @@
+import { LEVEL_KINDS, type LevelKind } from '@sudoku-fight/engine';
+
 import type { AvatarId, NO_AVATAR_ID } from './account';
 import type { ReportReason, ReportStatus } from './moderation';
 import type { TelemetryEventName, TelemetryProps } from './telemetry';
@@ -28,6 +30,7 @@ import type { TelemetryEventName, TelemetryProps } from './telemetry';
  *   GET  /admin/api/games?mode=&search=&page=1&pageSize=50 → AdminPage<AdminGameRow>
  *   GET  /admin/api/games/:id                             → AdminGameDetail · 404
  *   GET  /admin/api/screens?days=30                       → AdminScreens
+ *   GET  /admin/api/levels?days=30                        → AdminLevels (staged practice, 1.0.2)
  *
  * Moderation (spec §3.5; AdminActionError for the codes):
  *   GET  /admin/api/reports?status=open&page=1&pageSize=50 → AdminPage<AdminReportedPlayer>
@@ -313,6 +316,18 @@ export interface AdminUserDetail extends AdminUserRow {
   installs: AdminInstallRow[];
   /** Newest first, at most 100. */
   cheatFlags: AdminCheatFlag[];
+  /**
+   * Staged practice (1.0.2), from the progress the account synced (user_levels): the levels played and their
+   * best stars, summed. Only when it synced any; an account without is answered as before.
+   */
+  levels?: AdminUserLevels;
+}
+
+export interface AdminUserLevels {
+  /** Levels played at least once. */
+  played: number;
+  /** The best stars of every level, summed (0 … 3 × the levels). */
+  stars: number;
 }
 
 export interface AdminGamePlayer {
@@ -373,6 +388,80 @@ export interface AdminScreens {
   goneAfterDays: number;
   sessions: number;
   screens: AdminScreenStat[];
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Staged practice (1.0.2, plan §5.5): how each level plays, and where players stop at a gate
+
+/** The kinds a level's `kind` takes (the engine's LEVEL_KINDS), for the site's words for them. */
+export const ADMIN_LEVEL_KINDS: readonly LevelKind[] = LEVEL_KINDS;
+
+/**
+ * One level, over the window's level events (level_start, level_end, level_quit). A player is an install.
+ * A rate is null when there is nothing to divide by.
+ */
+export interface AdminLevelStat {
+  /** "L001" … */
+  levelId: string;
+  chapter: number;
+  /** The last level of every chapter. */
+  boss: boolean;
+  /** As the phones report it (the most frequent); null before any event names one. */
+  kind: LevelKind | null;
+  /** level_start events: one per start, when the level clock starts. */
+  starts: number;
+  /** level_end events: every end, a quit with the X too. */
+  plays: number;
+  /** Distinct installs with a play. */
+  players: number;
+  /** The plays by stars: [0★, 1★, 2★, 3★]; they add up to `plays`. */
+  stars: [number, number, number, number];
+  /** The median level clock at the end, over the plays but the quits (ms). */
+  medianMs: number | null;
+  /** Plays that were a second attempt or later ("שוב"), out of the plays. */
+  replayRate: number | null;
+  /** Starts left without an end (level_quit: the app went away), out of the starts; at most 1. */
+  midQuitRate: number | null;
+  /** Plays ended with the X, out of the plays. */
+  quitRate: number | null;
+  /** Plays that were a first attempt. */
+  firstTries: number;
+  /** First attempts with 0 stars, out of `firstTries`: above AdminLevels.tooHardShare, the level is too hard. */
+  firstTryZeroRate: number | null;
+}
+
+/**
+ * One gate, over every chapter_gate event ever sent (not only the window's: getting stuck builds up over
+ * time). An attempt is an end of a level of the chapter before it once its boss was played, while the gate
+ * was closed.
+ */
+export interface AdminGateStat {
+  /** The chapter behind the gate (2 … the chapters): the gate at the end of chapter − 1. */
+  chapter: number;
+  /** Players with at least one attempt. */
+  reached: number;
+  /** Players for whom it opened. */
+  opened: number;
+  /** Players who reached it and never opened it. */
+  stuck: number;
+  /** Players with at least AdminLevels.stuckAttempts closed attempts who never opened it. */
+  stuckAfter3: number;
+  /** stuckAfter3 / reached: above AdminLevels.stuckShare, chapter − 1 should be softened. */
+  stuckAfter3Rate: number | null;
+}
+
+export interface AdminLevels {
+  days: number;
+  /** A level is "too hard" when more than this share of first attempts end with 0 stars (0.6). */
+  tooHardShare: number;
+  /** A chapter needs softening when more than this share of a gate's players are stuck after… (0.3) */
+  stuckShare: number;
+  /** …this many closed attempts (3). */
+  stuckAttempts: number;
+  /** Every level, in order: the ones nobody played with zeros and nulls. */
+  levels: AdminLevelStat[];
+  /** Every gate, in order (chapter 2 first). */
+  gates: AdminGateStat[];
 }
 
 // ---------------------------------------------------------------------------------------------------------

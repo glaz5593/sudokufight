@@ -32,8 +32,11 @@ export interface PracticeSyncDeps {
   queue: PracticeQueue;
   /** Who is signed in now (the Firebase uid); null when nobody is. */
   owner: () => string | null;
-  /** The progress API of the signed-in player; null when nobody is signed in. */
-  api: () => ProgressApi | null;
+  /**
+   * The progress API of `owner` (the flush's player): its requests carry only that player's token (none, so
+   * 'signedOut', once another player is signed in). Null when nobody is signed in.
+   */
+  api: (owner: string) => ProgressApi | null;
   /** The server took results: the progress its answer carries. */
   onProgress?: (owner: string, progress: MyProgress) => void;
   /** After every flush: how many results still wait for `owner`. */
@@ -141,7 +144,7 @@ export class PracticeSync {
   // -----------------------------------------------------------------------------------------------------
 
   private async run(owner: string | null): Promise<SyncOutcome> {
-    const api = owner ? this.deps.api() : null;
+    const api = owner ? this.deps.api(owner) : null;
     if (!owner || !api) return this.counted(owner, 'signedOut', 0, 0);
     const { queue } = this.deps;
     const limit = this.deps.maxBatchesPerFlush ?? DEFAULT_SYNC_BATCHES;

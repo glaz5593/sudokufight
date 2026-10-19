@@ -16,29 +16,30 @@ import type { LastPlay } from '../../state/profile';
 import { botLevelOf } from '../game/identity';
 
 /**
- * Pure data for the home-level screens (spec §4.3, §5, §9): the five options of "משחק חדש", what each game type
+ * Pure data for the home-level screens (spec §4.3, §5, §9): the six options of "משחק חדש", what each game type
  * means, the five bots to choose from, and how a saved practice reads in the recent list. No React, no rules
  * of play: the think time comes from the engine's rules config, the bots from the engine's level table, the
  * numbers of a game from the practice database.
  */
 
 // ---------------------------------------------------------------------------------------------------------
-// Game modes (spec §5.1): exactly five options.
+// Game modes (spec §5.1): six options (D48, Moshe 15.10.2026: the sixth is staged practice).
 
-export type ModeKey = 'ranked2' | 'ranked3' | 'ranked4' | 'bot' | 'solo';
+export type ModeKey = 'ranked2' | 'ranked3' | 'ranked4' | 'bot' | 'solo' | 'levels';
 export type ModeGroup = 'ranked' | 'practice';
 
 export interface ModeOption {
   key: ModeKey;
   group: ModeGroup;
-  mode: GameMode;
+  /** The engine's game mode it starts; null for staged practice, which opens its map (/levels) instead. */
+  mode: GameMode | null;
   /** Players at the table, the bot included. */
   players: number;
 }
 
 /**
- * In the order of the screen: ranked 2 · 3 · 4, then practice against a bot and solo practice (Moshe's device
- * test, 15.10.2026: the bot above solo).
+ * In the order of the screen: ranked 2 · 3 · 4, then practice against a bot, solo practice (Moshe's device
+ * test, 15.10.2026: the bot above solo), and staged practice after it (D48: the row 3.23 kept for it).
  */
 export const MODE_OPTIONS: readonly ModeOption[] = [
   { key: 'ranked2', group: 'ranked', mode: 'ranked', players: 2 },
@@ -46,16 +47,17 @@ export const MODE_OPTIONS: readonly ModeOption[] = [
   { key: 'ranked4', group: 'ranked', mode: 'ranked', players: 4 },
   { key: 'bot', group: 'practice', mode: 'bot', players: 2 },
   { key: 'solo', group: 'practice', mode: 'solo', players: 1 },
+  { key: 'levels', group: 'practice', mode: null, players: 1 },
 ];
 
 export const MODE_GROUPS: readonly ModeGroup[] = ['ranked', 'practice'];
 
 /**
- * The options that can be played in this build: all five (ranked 2 players since stage 9, 3 and 4 since stage
- * 10), in the screen's order. A setting: an option left out shows "בקרוב" (with its player count out of
- * RANKED_TABLES_OPEN below).
+ * The options that can be played in this build: all six (ranked 2 players since stage 9, 3 and 4 since stage
+ * 10, staged practice since 1.0.2), in the screen's order. A setting: an option left out shows "בקרוב" (with
+ * its player count out of RANKED_TABLES_OPEN below).
  */
-export const AVAILABLE_MODES: readonly ModeKey[] = ['ranked2', 'ranked3', 'ranked4', 'bot', 'solo'];
+export const AVAILABLE_MODES: readonly ModeKey[] = ['ranked2', 'ranked3', 'ranked4', 'bot', 'solo', 'levels'];
 
 export const isAvailable = (key: ModeKey): boolean => AVAILABLE_MODES.includes(key);
 

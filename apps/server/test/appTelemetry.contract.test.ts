@@ -26,6 +26,7 @@ import {
   type GameResult,
   type GameType,
   INTERFERENCE_KINDS,
+  LEVEL_END_REASONS,
   LocalGameHost,
   ManualClock,
   ManualScheduler,
@@ -40,6 +41,7 @@ import {
   MAX_BATCH_BYTES,
   MAX_EVENTS_PER_BATCH,
   MAX_PROPS_BYTES,
+  TELEMETRY_EVENT_GENERATION,
   TELEMETRY_PATH,
   type TelemetryBatch,
   type TelemetryEventName,
@@ -50,6 +52,14 @@ import { asc, eq } from 'drizzle-orm';
 
 // The app's code (pure TypeScript, no React Native): what the phone runs.
 import { gameEndProps, gameStartProps } from '../../mobile/src/game/analyticsProps';
+import {
+  chapterGateProps,
+  levelEndProps,
+  levelMapOpenProps,
+  levelQuitProps,
+  levelStartProps,
+  levelTutorialProps,
+} from '../../mobile/src/levels/analyticsProps';
 import { type BatchMeta, cleanAppVersion, sanitizeProps } from '../../mobile/src/services/telemetry/batching';
 import { createTelemetryClient, type TelemetryClient } from '../../mobile/src/services/telemetry/client';
 import type { TelemetryStore } from '../../mobile/src/services/telemetry/queue';
@@ -297,6 +307,7 @@ describe("the app's routes", () => {
       'src/services/telemetry/uuid.ts',
       'src/game/analyticsProps.ts',
       'src/game/outcome.ts',
+      'src/levels/analyticsProps.ts',
     ];
     // Each import is one of these files, or the protocol and the engine (pure themselves).
     const allowed = (from: string, spec: string) =>
@@ -498,5 +509,83 @@ describe('the admin site shows what the app reported', () => {
     expect(body.sessions).toBe(2);
     expect(body.screens.find((s) => s.screen === '/')?.exits).toBe(1); // A ended at home
     expect(body.screens.find((s) => s.screen === '/results/[id]')?.exits).toBe(1); // B on its last results
+  });
+});
+
+describe("staged practice's events (1.0.2): built by the app, every batch taken", () => {
+  /** Install C (Android): the levels' map, a tutorial, levels that end every way, a gate. */
+  let levels: Phone;
+  beforeAll(() => {
+    levels = phone('android');
+  });
+
+  const FIND = { id: 'L001', kind: 'find' } as const;
+  const DUEL = { id: 'L021', kind: 'duel', bot: { level: 1, pace: 1 } } as const;
+
+  it('in batches of their own (never with an older event), each one taken (202), stored as the app built them', async () => {
+    const { client, net } = levels;
+    client.start();
+    await client.flush();
+
+    let t = T - 30 * MINUTE;
+    const next = () => (t += SECOND);
+    levels.track(next(), 'app_open');
+    levels.track(next(), 'screen_view', { screen: '/levels' });
+    levels.track(next(), 'level_map_open', levelMapOpenProps(1, 0));
+    levels.track(next(), 'level_tutorial', levelTutorialProps('find', false));
+    levels.track(next(), 'level_start', levelStartProps(FIND, { attempt: 1, bestStars: 0, quick: false }));
+    for (const reason of LEVEL_END_REASONS)
+      levels.track(
+        next(),
+        'level_end',
+        levelEndProps(
+          reason === 'botWon' ? DUEL : FIND,
+          {
+            reason,
+            stars: reason === 'completed' ? 2 : 0,
+            metric: reason === 'completed' ? 7400 : reason === 'botWon' ? -6.5 : null,
+            elapsedMs: 7400,
+          },
+          { prevBest: 0, mistakes: reason === 'failed' ? 2 : 0, attempt: 1 },
+        ),
+      );
+    levels.track(next(), 'level_quit', levelQuitProps(FIND, 12_345.6));
+    levels.track(next(), 'chapter_gate', chapterGateProps(2, 19, false));
+    levels.track(next(), 'level_tutorial', levelTutorialProps('boss', true));
+    levels.track(next(), 'screen_view', { screen: '/' });
+    levels.track(next(), 'chapter_gate', chapterGateProps(2, 20, true));
+    const count = levels.tracked.length;
+
+    expect(await client.flush()).toEqual({ sent: count, dropped: 0, waitingUntil: null });
+    // Four runs in queue order: the older two, the level events, the home screen, the last gate.
+    expect(net.exchanges.map((x) => x.events)).toEqual([2, count - 4, 1, 1]);
+    for (const x of net.exchanges) {
+      expect([x.status, x.answer]).toEqual([202, { accepted: x.events, duplicates: 0 }]);
+      const generations = (JSON.parse(x.body) as TelemetryBatch).events.map(
+        (e) => TELEMETRY_EVENT_GENERATION[e.name],
+      );
+      expect(new Set(generations).size).toBe(1);
+    }
+
+    const rows = await db.db
+      .select()
+      .from(appEvents)
+      .where(eq(appEvents.installId, levels.meta.installId))
+      .orderBy(asc(appEvents.tClient));
+    expect(rows.map((r) => ({ name: r.name, props: r.props, t: r.tClient.getTime() }))).toEqual(
+      levels.tracked,
+    );
+    expect(rows.find((r) => r.name === 'level_end' && r.props.reason === 'failed')?.props).toEqual({
+      level: 1,
+      kind: 'find',
+      stars: 0,
+      prevBest: 0,
+      durationMs: 7400,
+      reason: 'failed',
+      mistakes: 2,
+      metric: null,
+      botLevel: null,
+      attempt: 1,
+    });
   });
 });

@@ -14,6 +14,7 @@ import { type Db, queryRows } from '../db';
 import { cheatFlags, gamePlayers, games, ratings, users, xp } from '../db/schema';
 import { RECENT_GAMES_LIMIT } from './constants';
 import { installsOfUser } from './installs';
+import { levelsOfUser } from './levels';
 import { likePattern, type PageQuery } from './params';
 import { epochMs, msOrNull, numOrNull } from './sql';
 
@@ -21,7 +22,8 @@ import { epochMs, msOrNull, numOrNull } from './sql';
  * GET /admin/api/users and /users/:id (spec §27.3): accounts with their ratings, games and installs, and in
  * the detail their XP and level (spec §15) and the anomaly flags of their ranked games (spec §21).
  * Deleted accounts stay listed (deletedAt set): their games still point at them. Every row carries its
- * moderation state (spec §3.5): suspended since, a name reset waiting for a new name, open reports.
+ * moderation state (spec §3.5): suspended since, a name reset waiting for a new name, open reports. The detail
+ * also sums the staged-practice progress the account synced (./levels), when it has any.
  */
 
 const lastSeenSql = sql<
@@ -116,13 +118,14 @@ export async function listUsers(db: Db, q: PageQuery): Promise<AdminPage<AdminUs
 export async function getUser(db: Db, id: string): Promise<AdminUserDetail | null> {
   const [row] = await selectUsers(db).where(eq(users.id, id));
   if (row === undefined) return null;
-  const [xpRows, ratingRows, stats, recentGames, installRows, flags] = await Promise.all([
+  const [xpRows, ratingRows, stats, recentGames, installRows, flags, levels] = await Promise.all([
     db.select({ xp: xp.xp }).from(xp).where(eq(xp.userId, id)),
     db.select().from(ratings).where(eq(ratings.userId, id)).orderBy(asc(ratings.ratingKey)),
     statsOf(db, id),
     gamesOf(db, id),
     installsOfUser(db, id),
     flagsOf(db, id),
+    levelsOfUser(db, id),
   ]);
   const userRatings: AdminRating[] = ratingRows.map((r) => ({
     key: r.ratingKey,
@@ -141,6 +144,8 @@ export async function getUser(db: Db, id: string): Promise<AdminUserDetail | nul
     recentGames,
     installs: installRows,
     cheatFlags: flags,
+    // Staged practice (1.0.2): only for an account that synced any.
+    ...(levels === null ? null : { levels }),
   };
 }
 

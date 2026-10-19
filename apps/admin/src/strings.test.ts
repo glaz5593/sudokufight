@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import {
   ADMIN_AUDIT_ACTIONS,
+  ADMIN_LEVEL_KINDS,
   ADMIN_REPORT_FILTERS,
   REPORT_REASONS,
   REPORT_STATUSES,
@@ -81,6 +82,21 @@ describe('strings: Hebrew and English', () => {
         return isStringKey(key) ? translate('he', key) : key;
       }),
     ).toEqual(['שם פוגעני', 'רמאות', 'אחר']);
+  });
+
+  it('every kind of stage has its words (staged practice, 1.0.2)', () => {
+    for (const kind of ADMIN_LEVEL_KINDS)
+      expect([kind, isStringKey(`levelKind.${kind}`)]).toEqual([kind, true]);
+    expect(ADMIN_LEVEL_KINDS).toHaveLength(7);
+    // English says "Stage", never "Level", for a stage: "Level" is the XP level.
+    const stageKeys = Object.keys(en).filter(
+      (k) => k.startsWith('levels.') || k === 'nav.levels' || k === 'col.level',
+    );
+    expect(stageKeys.length).toBeGreaterThan(20);
+    for (const key of stageKeys) {
+      const words = en[key as keyof typeof en].replace(/\{\w+\}/g, '');
+      expect({ key, level: /\blevels?\b/i.test(words) }).toEqual({ key, level: false });
+    }
   });
 
   it('isolate wraps left-to-right text in LRI…PDI', () => {

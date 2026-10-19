@@ -218,7 +218,7 @@ describe('arsenalModel (spec §7.2, §7.3; D10, D11, D17, D44, D47)', () => {
 
   it('the refusals of an interference, told apart from the other refusals by the action, not the reason', () => {
     expect(isInterferenceRefusal('interfere')).toBe(true);
-    for (const action of ['select', 'release', 'place', 'react', 'surrender', 'offlineMove'] as const)
+    for (const action of ['select', 'release', 'place', 'react', 'surrender', 'offlineMove', 'tap'] as const)
       expect(isInterferenceRefusal(action)).toBe(false);
   });
 });

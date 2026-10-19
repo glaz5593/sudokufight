@@ -23,6 +23,20 @@ describe('router', () => {
       page: 2,
     });
     expect(parseRoute('#/audit?page=4')).toEqual({ name: 'audit', page: 4 });
+    expect(parseRoute('#/levels')).toEqual({ name: 'levels', days: 30, chapter: 0 });
+    expect(parseRoute('#/levels?days=90')).toEqual({ name: 'levels', days: 90, chapter: 0 });
+    expect(parseRoute('#/levels?chapter=4&days=7')).toEqual({ name: 'levels', days: 7, chapter: 4 });
+  });
+
+  it('the levels page (staged practice): a bad chapter is every chapter; its href round-trips', () => {
+    expect(parseRoute('#/levels?chapter=x')).toMatchObject({ chapter: 0 });
+    expect(parseRoute('#/levels?chapter=-1')).toMatchObject({ chapter: 0 });
+    expect(parseRoute('#/levels?chapter=0')).toMatchObject({ chapter: 0 });
+    expect(parseRoute('#/levels/L001')).toEqual({ name: 'notFound' });
+    expect(routeHref(parseRoute('#/levels?days=90'))).toBe('#/levels?days=90');
+    expect(routeHref({ name: 'levels', days: 30, chapter: 0 })).toBe('#/levels');
+    expect(routeHref({ name: 'levels', days: 7, chapter: 12 })).toBe('#/levels?days=7&chapter=12');
+    expect(sectionOf({ name: 'levels' })).toBe('levels');
   });
 
   it('an unknown report status is the open reports', () => {
@@ -51,6 +65,8 @@ describe('router', () => {
       { name: 'reports', status: 'all', page: 3 },
       { name: 'reports', status: 'open', page: 1 },
       { name: 'audit', page: 2 },
+      { name: 'levels', days: 90, chapter: 0 },
+      { name: 'levels', days: 30, chapter: 5 },
     ];
     for (const route of routes) {
       expect(parseRoute(routeHref(route))).toMatchObject(route);

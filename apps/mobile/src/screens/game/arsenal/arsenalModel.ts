@@ -1,7 +1,7 @@
 import {
-  type ClientAction,
   defaultRules,
   type GameView,
+  type HostAction,
   INTERFERENCE_KINDS,
   type InterferenceKind,
   type InterferenceTarget,
@@ -141,7 +141,7 @@ export const launchable = (token: ArsenalToken): boolean => token.blockedReason 
  * froze, ended or lost me before my tap arrived ('paused', 'gameOver', 'notActive', 'disconnected'). Told by the
  * refused action, never by the reason, which a select or a digit can share ('paused', 'disconnected').
  */
-export const isInterferenceRefusal = (action: ClientAction['type']): boolean => action === 'interfere';
+export const isInterferenceRefusal = (action: HostAction['type']): boolean => action === 'interfere';
 
 // ---------------------------------------------------------------------------------------------------------
 // Where the target is. Rects are in window coordinates (measureInWindow).

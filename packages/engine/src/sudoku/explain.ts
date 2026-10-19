@@ -1,5 +1,15 @@
-import { type CellIndex, type Digit, type Grid, PEERS, unitsOf } from './board';
-import { type Block, LogicBoard, type Step, type Technique, TECHNIQUES, type UnitRef } from './logic';
+import { CELL_COUNT, type CellIndex, type Digit, type Grid, PEERS, unitsOf } from './board';
+import {
+  type Block,
+  type Draft,
+  isPlacement,
+  LogicBoard,
+  type PlacementStep,
+  type Step,
+  type Technique,
+  TECHNIQUES,
+  type UnitRef,
+} from './logic';
 import { solve } from './solver';
 
 /**
@@ -10,7 +20,25 @@ import { solve } from './solver';
  * explanation ends as soon as the cell is decided. It then keeps only the steps the final one depends on.
  * One step is a naked or hidden single; more steps are a chain (technique 'chain'). When our techniques
  * cannot reach the cell at all, the technique is 'beyond' and only the answer is known.
+ *
+ * Staged practice (dev-plan §2ב) adds options: a level explains in its own frame ("7 must appear in box 5",
+ * even when the cell is also a naked single) and with its chapter's techniques only.
  */
+
+export interface ExplainOptions {
+  /**
+   * Frame the answer as the hidden single of the digit in this unit (a find target's scope). When the cell
+   * is decided another way before the unit frame applies, that step ends the explanation.
+   */
+  unit?: UnitRef;
+  /**
+   * The digit the cell must hold, when no solution is given (a chain board need not have just one: its
+   * digits are forced in every solution). With a solution it must agree with it.
+   */
+  digit?: Digit;
+  /** Only these techniques (the level's chapter); all by default. The unit frame is always allowed. */
+  techniques?: readonly Technique[];
+}
 
 export interface Explanation {
   cell: CellIndex;
@@ -27,24 +55,45 @@ export interface Explanation {
   technique: Technique | 'chain' | 'beyond';
 }
 
-export function explain(grid: Grid, cell: CellIndex, solution?: Grid): Explanation {
+export function explain(
+  grid: Grid,
+  cell: CellIndex,
+  solution?: Grid,
+  { unit, digit: asked, techniques = TECHNIQUES }: ExplainOptions = {},
+): Explanation {
   if (grid[cell] !== 0) throw new RangeError('Only an empty cell can be explained');
-  const solved = solution ?? solve(grid);
-  if (!solved) throw new RangeError('The board has no solution');
-  const digit = solved[cell] as Digit;
+  let digit: Digit;
+  if (asked !== undefined && solution === undefined) digit = asked;
+  else {
+    const solved = solution ?? solve(grid);
+    if (!solved) throw new RangeError('The board has no solution');
+    digit = solved[cell] as Digit;
+    if (asked !== undefined && asked !== digit)
+      throw new RangeError(`The solution has ${digit} in this cell, not ${asked}`);
+  }
 
   const board = new LogicBoard(grid);
-  const all = new Set(TECHNIQUES);
+  const allowed = new Set(techniques);
+  const direct = (): Draft<PlacementStep> | null => {
+    if (unit) return board.hiddenSingleInUnit(unit, cell, digit);
+    return (
+      (allowed.has('nakedSingle') ? board.nakedSingleAt(cell) : null) ??
+      (allowed.has('hiddenSingle') ? board.hiddenSingleAt(cell) : null)
+    );
+  };
   let final: Step | null = null;
   while (!board.solved && board.steps.length < 2000) {
-    const direct = board.nakedSingleAt(cell) ?? board.hiddenSingleAt(cell);
-    if (direct) {
-      final = board.apply(direct);
+    const found = direct();
+    if (found) {
+      final = board.apply(found);
       break;
     }
-    const step = board.findStep(all);
+    const step = board.findStep(allowed);
     if (!step) break;
-    board.apply(step);
+    final = board.apply(step);
+    // Decided outside the asked frame (only possible with options: otherwise the direct check came first).
+    if (isPlacement(final) && final.cell === cell) break;
+    final = null;
   }
   if (!final) return { cell, digit, resolved: false, steps: [], technique: 'beyond' };
   if (final.technique !== 'nakedSingle' && final.technique !== 'hiddenSingle')
@@ -100,4 +149,48 @@ export function whyWrong(grid: Grid, cell: CellIndex, played: Digit, solution?: 
   const solved = solution ?? solve(grid);
   if (!solved) throw new RangeError('The board has no solution');
   return { kind: 'notSolution', digit: played, answer: solved[cell] as Digit };
+}
+
+// ---------------------------------------------------------------------------------------------------------
+
+/** "Spot the error" (staged practice, plan Idea-1): why a planted digit is wrong, why the right one holds. */
+export interface SpotErrorExplanation {
+  /** A visible error clashes with a given ('conflict', its holder a given); a silent one is 'notSolution'. */
+  reason: WrongReason;
+  /** Why the cell holds the solution's digit, on the board without the planted errors. */
+  explanation: Explanation;
+}
+
+/**
+ * Explains a planted error at `cell` (showing `wrong`) on the board the player saw, cleaned: the givens and
+ * the "mine" digits that agree with the solution (the other planted errors are dropped, so they never get
+ * in the way), with `cell` emptied. A clash with a given comes first; then one with a correct "mine" digit;
+ * otherwise the digit only contradicts the logic. `techniques` limits the explanation (the level's chapter).
+ */
+export function explainSpotError(
+  givens: Grid,
+  mine: Grid,
+  cell: CellIndex,
+  wrong: Digit,
+  solution: Grid,
+  techniques: readonly Technique[] = TECHNIQUES,
+): SpotErrorExplanation {
+  if (givens.length !== CELL_COUNT || mine.length !== CELL_COUNT || solution.length !== CELL_COUNT)
+    throw new RangeError('explainSpotError needs 81-cell grids');
+  if (givens[cell] !== 0) throw new RangeError('A planted error is never on a given');
+  if (solution[cell] === wrong) throw new RangeError('This digit is the solution, not an error');
+  const board = givens.map((g, i) => (g !== 0 ? g : mine[i] === solution[i] ? mine[i]! : 0));
+  board[cell] = 0;
+  let reason: WrongReason | null = null;
+  for (const source of [givens, board]) {
+    for (const u of unitsOf(cell)) {
+      const holder = u.cells.find((c) => c !== cell && source[c] === wrong);
+      if (holder === undefined) continue;
+      reason = { kind: 'conflict', digit: wrong, unit: { kind: u.kind, index: u.index }, cell: holder };
+      break;
+    }
+    if (reason) break;
+  }
+  reason ??= { kind: 'notSolution', digit: wrong, answer: solution[cell] as Digit };
+  return { reason, explanation: explain(board, cell, solution, { techniques }) };
 }

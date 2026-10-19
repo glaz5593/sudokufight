@@ -1,15 +1,35 @@
 import {
+  chapterOf,
+  chapterOpen,
+  chapterStars,
   createRng,
   defaultRules,
   type GameConfig,
   type GameEvent,
   type GameResult,
+  gateOpen,
   INITIAL_RATING,
+  isBossLevel,
+  isLevelOpen,
+  LEVEL_RULES,
+  levelIdOf,
+  levelNumber,
+  type LevelRecord,
+  maxLevel,
   ratingKey,
+  replayCandidates,
   type Rng,
+  type Stars,
 } from '@sudoku-fight/engine';
 import {
   AVATAR_IDS,
+  type ChapterGateProps,
+  type LevelEndProps,
+  type LevelMapOpenProps,
+  type LevelQuitProps,
+  type LevelStartProps,
+  type LevelTutorialKind,
+  type LevelTutorialProps,
   type Platform,
   type TelemetryEventName,
   type TelemetryProps,
@@ -25,8 +45,10 @@ import type {
   puzzleHistory,
   puzzles,
   ratings,
+  userLevels,
   users,
 } from '../db/schema';
+import { type LevelSkill, sampleAttempt, sampleBotLevel, sampleLevelKind } from './levels';
 import { between, chance, intBetween, pick, shuffle, uuid, weighted } from './random';
 import { playRankedGame } from './rankedGame';
 
@@ -43,6 +65,11 @@ import { playRankedGame } from './rankedGame';
  *   Results, the leaderboard, history, settings… with game_start / game_end of practice games.
  * - Ranked games between users who were active then, played move by move by the engine
  *   (./rankedGame), with ratings that evolve game by game, and a session on each player's phone around it.
+ * - Staged practice (1.0.2): most users play levels some days, from the map, in order, by the engine's rules
+ *   of what is open (gates included), with stars by their skill (./levels). At a closed gate they play the
+ *   weakest levels again, and casual players give up after a few sessions there: the admin's "שלבים" page
+ *   has levels that are too hard and gates where players get stuck. Their best stars are synced
+ *   (user_levels). The levels have a randomness of their own, so the rest of the story is as it was before.
  */
 
 const MINUTE = 60_000;
@@ -52,6 +79,14 @@ const DAY = 24 * HOUR;
 const LOCAL_UTC_OFFSET_H = 3;
 
 export const SAMPLE_DEFAULTS = { seed: 20261009, installs: 300, users: 80, games: 150, days: 45 };
+/** Users who try staged practice; the levels a session plays at most, by skill. */
+const LEVEL_PLAYERS_SHARE = 0.75;
+const SESSION_LEVELS: Record<LevelSkill, number> = { casual: 8, good: 12, excellent: 14 };
+/** Starts left without an end, when the app went away (level_quit). */
+const LEVEL_GONE_SHARE = 0.03;
+/** The levels' stream of randomness: the seed, mixed with this. */
+const LEVEL_STREAM = 0x5eed1e7e;
+
 /** Firebase uids of sample users start with this, so a database with sample data is recognised. */
 export const SAMPLE_UID_PREFIX = 'sample-';
 /** App versions and how many days before `now` each came out. */
@@ -124,6 +159,8 @@ export interface SampleData {
   ratings: (typeof ratings.$inferInsert)[];
   puzzleHistory: (typeof puzzleHistory.$inferInsert)[];
   opponentHistory: (typeof opponentHistory.$inferInsert)[];
+  /** Staged practice: the users' synced best stars (1.0.2). */
+  userLevels: (typeof userLevels.$inferInsert)[];
 }
 
 type RankedRows = Pick<
@@ -148,7 +185,7 @@ interface RankedPlan {
 }
 
 type SessionPlan =
-  | { kind: 'guest' | 'register' | 'signin' | 'normal' | 'delete'; start: number }
+  | { kind: 'guest' | 'register' | 'signin' | 'normal' | 'delete' | 'levels'; start: number }
   | { kind: 'ranked'; start: number; game: RankedPlan };
 
 interface InstallPlan {
@@ -178,6 +215,21 @@ interface UserPlan {
   deleted: boolean;
   /** Set while rendering the registration. */
   registeredAt: number | null;
+  /** Staged practice, for a user who plays it: their progress so far (moves on while rendering). */
+  levels: LevelProgress | null;
+}
+
+interface LevelProgress {
+  skill: LevelSkill;
+  /** By level id, as the engine reads them. */
+  records: Record<string, LevelRecord>;
+  /** Chapters a gate opened. */
+  opened: number[];
+  /** "איך משחקים" cards seen. */
+  tutorials: Set<LevelTutorialKind>;
+  /** Sessions that began at a closed gate in a row; after `patience` of them the user stops playing levels. */
+  stuckSessions: number;
+  patience: number;
 }
 
 const HOUR_WEIGHTS: readonly (readonly [number, number])[] = [
@@ -242,6 +294,8 @@ const COUNTRIES: readonly (readonly [string, number])[] = [
 
 class SampleBuilder {
   private readonly rng: Rng;
+  /** Staged practice's own randomness: the levels leave every other draw as it was. */
+  private readonly levelRng: Rng;
   private readonly now: number;
   private readonly days: number;
   /** Midnight UTC of the story's first day. */
@@ -253,6 +307,7 @@ class SampleBuilder {
 
   constructor(private readonly o: Required<Omit<SampleOptions, 'puzzles'>> & Pick<SampleOptions, 'puzzles'>) {
     this.rng = createRng(o.seed);
+    this.levelRng = createRng((o.seed ^ LEVEL_STREAM) >>> 0);
     this.now = o.now;
     this.days = o.days;
     this.firstDay = Math.floor(o.now / DAY) * DAY - (o.days - 1) * DAY;
@@ -262,22 +317,19 @@ class SampleBuilder {
     this.planInstalls();
     this.planSessions();
     this.planRankedGames();
+    this.planLevelSessions();
     const played = this.playRankedGames();
     const telemetry = this.renderSessions();
-    return { ...played, ...telemetry, users: this.userRows() };
+    return { ...played, ...telemetry, users: this.userRows(), userLevels: this.userLevelRows() };
   }
 
   // ---- planning ------------------------------------------------------------------------------------------
 
   /** A moment on day `d` (0 = the first day) at a likely local hour. */
-  private momentOn(d: number): number {
-    const hour = weighted(this.rng, HOUR_WEIGHTS) - LOCAL_UTC_OFFSET_H;
+  private momentOn(d: number, rng: Rng = this.rng): number {
+    const hour = weighted(rng, HOUR_WEIGHTS) - LOCAL_UTC_OFFSET_H;
     return (
-      this.firstDay +
-      d * DAY +
-      hour * HOUR +
-      intBetween(this.rng, 0, 59) * MINUTE +
-      intBetween(this.rng, 0, 59) * 1000
+      this.firstDay + d * DAY + hour * HOUR + intBetween(rng, 0, 59) * MINUTE + intBetween(rng, 0, 59) * 1000
     );
   }
 
@@ -370,6 +422,7 @@ class SampleBuilder {
       activeUntil: this.now,
       deleted: false,
       registeredAt: null,
+      levels: null,
     };
   }
 
@@ -462,6 +515,38 @@ class SampleBuilder {
       this.ranked.push(game);
       for (const p of players)
         p.main.sessions.push({ kind: 'ranked', start: t - intBetween(rng, 30, 120) * 1000, game });
+    }
+  }
+
+  /**
+   * Staged practice: for the users who play it, sessions of levels on some days of their story, wherever their
+   * phone is free (after the ranked games found their times), drawn from the levels' own randomness.
+   */
+  private planLevelSessions(): void {
+    const rng = this.levelRng;
+    for (const user of this.users) {
+      if (!chance(rng, LEVEL_PLAYERS_SHARE)) continue;
+      user.levels = {
+        skill: weighted<LevelSkill>(rng, [
+          ['casual', 45],
+          ['good', 40],
+          ['excellent', 15],
+        ]),
+        records: {},
+        opened: [],
+        tutorials: new Set(),
+        stuckSessions: 0,
+        patience: intBetween(rng, 1, 5),
+      };
+      const install = user.main;
+      const perDay = { short: 0.6, casual: 0.3, loyal: 0.4 }[user.archetype];
+      for (let d = this.dayOf(install.firstAt); d < this.days; d++) {
+        if (!chance(rng, perDay)) continue;
+        const start = this.momentOn(d, rng);
+        if (start <= install.firstAt || start >= user.activeUntil - 2 * HOUR || this.busy(install, start))
+          continue;
+        install.sessions.push({ kind: 'levels', start });
+      }
     }
   }
 
@@ -643,7 +728,7 @@ class SampleBuilder {
   }
 
   private renderSession(install: InstallPlan, session: SessionPlan): Draft[] {
-    const { rng } = this;
+    const rng = session.kind === 'levels' ? this.levelRng : this.rng;
     const s = new SessionWriter(rng, session.start);
     const user = install.user;
     s.emit('app_open', {}); // as the app sends it: the version and platform travel in the batch
@@ -707,8 +792,136 @@ class SampleBuilder {
       case 'ranked':
         this.rankedSession(s, install, session.game);
         break;
+      case 'levels':
+        this.levelSession(s, user);
+        break;
     }
     return s.drafts;
+  }
+
+  // ---- staged practice -----------------------------------------------------------------------------------
+
+  /**
+   * The map, then a few levels: the next one each time ("לשלב הבא" straight from the result, or from the map),
+   * now and then a weak one again, and at a closed gate the chapter's weakest (engine replayCandidates). The
+   * map and the level screens have no route in the app yet, so no screen_view names them.
+   */
+  private levelSession(s: SessionWriter, user: UserPlan | null): void {
+    const p = user?.levels;
+    if (!p) return;
+    const rng = this.levelRng;
+    if (chance(rng, 0.7)) s.wait(2, 4); // the splash
+    s.screen(S.home, 3, 15);
+    const frontier = this.frontierOf(p);
+    s.emit('level_map_open', {
+      level: frontier ?? maxLevel(),
+      stars: Object.values(p.records).reduce((sum, r) => sum + r.stars, 0),
+    } satisfies LevelMapOpenProps);
+    s.wait(3, 12);
+    if (frontier !== null && !isLevelOpen(frontier, p.records, p.opened)) {
+      // At a closed gate: a casual player gives up after a few sessions of it.
+      if (p.stuckSessions >= p.patience) return;
+      p.stuckSessions++;
+    }
+    let quick = false;
+    let previous = 0;
+    for (let k = intBetween(rng, 3, SESSION_LEVELS[p.skill]); k > 0; k--) {
+      const n = this.pickLevel(p);
+      if (n === null) break;
+      if (!this.playLevel(s, p, n, quick && n === previous + 1)) return;
+      previous = n;
+      quick = chance(rng, 0.6);
+      if (!quick) s.wait(2, 8); // back on the map
+    }
+    if (chance(rng, 0.5)) s.screen(S.home, 2, 8);
+  }
+
+  /** The first level never played (they are played in order); null after the last. */
+  private frontierOf(p: LevelProgress): number | null {
+    for (let n = 1; n <= maxLevel(); n++) if ((p.records[levelIdOf(n)]?.plays ?? 0) === 0) return n;
+    return null;
+  }
+
+  private pickLevel(p: LevelProgress): number | null {
+    const rng = this.levelRng;
+    const frontier = this.frontierOf(p);
+    if (frontier === null) return null;
+    const replay = (chapter: number) => {
+      const ids = replayCandidates(chapter, p.records).filter((id) => (p.records[id]?.plays ?? 0) > 0);
+      if (ids.length === 0) return null;
+      const k = weighted(
+        rng,
+        ([0, 1, 2] as const).slice(0, ids.length).map((i) => [i, 3 - i] as const),
+      );
+      return levelNumber(ids[k]!);
+    };
+    if (isLevelOpen(frontier, p.records, p.opened)) {
+      // Now and then a weak level of the chapter again, to better it.
+      const again = frontier > 1 && chance(rng, 0.08) ? replay(chapterOf(frontier - 1)) : null;
+      return again ?? frontier;
+    }
+    // A closed gate in front of the frontier: the chapter before it, again.
+    return replay(chapterOf(frontier) - 1);
+  }
+
+  /** One attempt at level `n`; false when the session ends with it (the app went away, or the story did). */
+  private playLevel(s: SessionWriter, p: LevelProgress, n: number, quick: boolean): boolean {
+    const rng = this.levelRng;
+    const id = levelIdOf(n);
+    const before = p.records[id];
+    const attempt = (before?.plays ?? 0) + 1;
+    const bestStars: Stars = before?.stars ?? 0;
+    const kind = sampleLevelKind(n);
+    const chapter = chapterOf(n);
+    const tutorial: LevelTutorialKind = isBossLevel(n) ? 'boss' : kind;
+    if (!p.tutorials.has(tutorial)) {
+      p.tutorials.add(tutorial);
+      const skipped = chance(rng, 0.25);
+      s.emit('level_tutorial', { kind: tutorial, skipped } satisfies LevelTutorialProps);
+      s.wait(skipped ? 1 : 6, skipped ? 3 : 20);
+    }
+    s.wait(2, quick ? 2 : 6); // "מוכן?", or the level's sheet on the map
+    s.emit('level_start', { level: n, chapter, kind, attempt, bestStars, quick } satisfies LevelStartProps);
+    if (chance(rng, LEVEL_GONE_SHARE)) {
+      const atMs = intBetween(rng, 1_000, LEVEL_RULES.levelMaxMs - 1_000);
+      s.t += atMs;
+      s.emit('level_quit', { level: n, atMs } satisfies LevelQuitProps);
+      return false;
+    }
+    const a = sampleAttempt(rng, p.skill, n, attempt);
+    s.t += a.durationMs;
+    if (s.t > this.now) return false;
+    const gateWasClosed =
+      chapter < LEVEL_RULES.chapterCount && !chapterOpen(chapter + 1, p.records, p.opened);
+    p.records[id] = { stars: Math.max(bestStars, a.stars) as Stars, plays: attempt, lastPlayedAt: s.t };
+    s.emit('level_end', {
+      level: n,
+      kind,
+      stars: a.stars,
+      prevBest: bestStars,
+      durationMs: a.durationMs,
+      reason: a.reason,
+      mistakes: a.mistakes,
+      metric: a.metric,
+      botLevel: sampleBotLevel(n, kind),
+      attempt,
+    } satisfies LevelEndProps);
+    // Once the chapter's boss was played, every end in it while its gate is closed is an attempt at the gate.
+    const bossPlayed = (p.records[levelIdOf(chapter * LEVEL_RULES.chapterSize)]?.plays ?? 0) > 0;
+    if (gateWasClosed && bossPlayed) {
+      const open = gateOpen(chapter, p.records);
+      s.emit('chapter_gate', {
+        chapter: chapter + 1,
+        stars: chapterStars(chapter, p.records),
+        open,
+      } satisfies ChapterGateProps);
+      if (open) {
+        p.opened.push(chapter + 1);
+        p.stuckSessions = 0;
+      }
+    }
+    s.wait(3, 10); // the result
+    return true;
   }
 
   /** Around a ranked game: find a match, play it (the server's own times), see the results. */
@@ -819,6 +1032,21 @@ class SampleBuilder {
       s.screen(S.replay, 20, 120);
     }
     return true;
+  }
+
+  /** The best stars of every level a user played, as the phone synced them; a deleted account has none. */
+  private userLevelRows(): SampleData['userLevels'] {
+    return this.users
+      .filter((u) => !u.deleted && u.registeredAt !== null && u.registeredAt <= this.now)
+      .flatMap((u) =>
+        Object.entries(u.levels?.records ?? {}).map(([levelId, r]) => ({
+          userId: u.id,
+          levelId,
+          bestStars: r.stars,
+          plays: r.plays,
+          updatedAt: new Date(r.lastPlayedAt ?? this.now),
+        })),
+      );
   }
 
   private userRows(): SampleData['users'] {

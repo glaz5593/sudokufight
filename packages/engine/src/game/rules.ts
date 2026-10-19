@@ -1,5 +1,6 @@
 import type { GameType } from '../gameType';
 import { DEFAULT_ELO, type EloOptions, INITIAL_RATING, type RatingOption } from '../rating';
+import type { CellIndex } from '../sudoku/board';
 import type { ScoreY } from '../sudoku/scoring';
 
 /**
@@ -194,6 +195,42 @@ export interface Rules {
   interfereSoftOffline: boolean;
 
   rating: RatingRules;
+
+  // -------------------------------------------------------------------------------------------------------
+  // Staged practice (app 1.0.2; dev-plan §2א). Every key is optional and absent from defaultRules: only a
+  // level's rules (levels/spec.ts levelRulesFor) bring them in, so ranked, solo and bot games, their snapshots
+  // and their stored rules stay exactly as they were. createGame checks them (RangeError).
+
+  /**
+   * The game ends 'timeUp' this long after its start (a level: at most 30 s), earlier by every time penalty
+   * (timePenalty) and later by every freeze. The timer comes before every other one at the same instant, so an
+   * action at the deadline itself is too late ('gameOver').
+   */
+  timeLimitMs?: number;
+  /** The first player to this score ends the game 'targetReached' (duel, 30 points). */
+  endAtScore?: number;
+  /** Only these empty cells can be chosen ('notEditable' for the others); all filled ends 'targetReached' (fillBox). */
+  editableCells?: readonly CellIndex[];
+  /** Each player who is not a bot has this many digit entries, right or wrong; all used ends 'targetReached' (pointHunter). */
+  maxMoves?: number;
+  /**
+   * A chain: these cells, in the order they become knowable; all filled ends 'targetReached'. One player only.
+   * A wrong digit anywhere is a mistake; a right one in any cell but the next is decided by `chainNotYet`.
+   */
+  chainCells?: readonly CellIndex[];
+  /**
+   * [D64] (waiting for Moshe, who tries both first, 2026-10-18; built per the original §14): 'accept' (the
+   * default) takes it as any right digit, with its points; only chain cells advance the chain. 'penalty' (the
+   * proposal) costs mistakeTimeMs and places nothing: no mistake is recorded, the digit stays on the keypad, the
+   * lock stays.
+   */
+  chainNotYet?: 'accept' | 'penalty';
+  /** False: a lock has no timer (expiresAt null) and never runs out; needs interferences off (no opponent). */
+  lockTimeout?: false;
+  /** A wrong digit also costs this much time (timePenalty): fillBox and chain, 5 s. One player only. */
+  mistakeTimeMs?: number;
+  /** Reserved for idea 4 ("no mistakes", plan §3.1), not built: createGame refuses it. */
+  maxMistakes?: number;
 }
 
 export function defaultRules(mode: GameMode, gameType: GameType, overrides: Partial<Rules> = {}): Rules {

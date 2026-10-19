@@ -1,6 +1,8 @@
 import type { GameType } from '../gameType';
+import type { LevelView } from '../levels/spec';
 import { type CellIndex, type Digit, DIGITS, digitCount } from '../sudoku/board';
 import { evolve, isSoftOffline } from './evolve';
+import { levelViewOf } from './level';
 import { leaverGuardReason, rankPlayers } from './results';
 import type { GameMode, InterferenceKind, TurnModel } from './rules';
 import type {
@@ -83,6 +85,10 @@ export interface GameView {
   seq: number;
   startedAt: number | null;
   pausedAt: number | null;
+  /** [D65] The freeze is the phone's own (the app left the foreground). Absent otherwise. */
+  pausedBy?: 'background';
+  /** [D65] The phone's own freezes that ended, in all: the game's clock (playedMs) leaves them out. */
+  frozenMs?: number;
   rules: {
     turnModel: TurnModel;
     thinkTimeMs: number;
@@ -135,6 +141,11 @@ export interface GameView {
   result: GameResult | null;
   /** Only once the game is over (for the replay). */
   solution: string | null;
+  /**
+   * A level of staged practice (config.level): its clock, stars and progress (levels/spec.ts LevelView).
+   * Absent from every other game's view.
+   */
+  level?: LevelView;
 }
 
 /** `now` decides the time-bound parts: re-lock waits and the second of immunity after an interference. */
@@ -218,6 +229,9 @@ export function toView(state: GameState, viewer: PlayerId | null, now: number): 
     seq: state.seq,
     startedAt: state.startedAt,
     pausedAt: state.pausedAt,
+    // Only after the phone's own freeze, so every other game's view keeps its shape.
+    ...(state.pausedBy ? { pausedBy: state.pausedBy } : null),
+    ...(state.frozenMs ? { frozenMs: state.frozenMs } : null),
     rules: {
       turnModel: rules.turnModel,
       thinkTimeMs: rules.thinkTimeMs,
@@ -283,6 +297,7 @@ export function toView(state: GameState, viewer: PlayerId | null, now: number): 
     // A copy: a screen that sorts or edits it must not reach into the game's own state.
     result: state.result && (JSON.parse(JSON.stringify(state.result)) as GameResult),
     solution: state.status === 'over' ? state.config.puzzle.solution : null,
+    ...(state.config.level ? { level: levelViewOf(state, me?.id ?? null, t) } : null),
   };
 }
 

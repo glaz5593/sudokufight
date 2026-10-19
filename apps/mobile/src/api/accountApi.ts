@@ -65,7 +65,8 @@ export interface FetchResponse {
 }
 
 export interface FetchInit {
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  /** PUT: the levels' bests (progressApi.putMyLevels, staged practice). */
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   headers: Record<string, string>;
   body?: string;
   signal?: AbortSignal;

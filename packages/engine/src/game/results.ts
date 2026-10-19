@@ -6,6 +6,8 @@ import {
   type RatingChange,
   type RatingPairs,
 } from '../rating';
+import { levelResultOf } from './level';
+import { playedMs } from './played';
 import type {
   Award,
   EndReason,
@@ -275,12 +277,15 @@ export function gameResult(state: GameState, reason: EndReason, at: number): Gam
   const ratingChanges = ratingChangesFor(state, ranking);
   return {
     reason,
-    durationMs: Math.max(0, at - (state.startedAt ?? at)),
+    // The time played: the phone's own freezes left out [D65] (played.ts); a disconnect's counts.
+    durationMs: playedMs(state, at),
     ranking,
     ratingChanges,
     // Only when a rating moved, so a practice's result keeps its shape.
     ...(ratingChanges.length > 0 ? { ratingPairs: ratingPairsFor(state, ranking) } : null),
     awards: awardsFor(state, ranking),
     stats: statsFor(state),
+    // Only in a level's game, so every other result keeps its shape.
+    ...(state.config.level ? { level: levelResultOf(state, reason, at) } : null),
   };
 }

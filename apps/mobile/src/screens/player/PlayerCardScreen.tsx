@@ -13,6 +13,7 @@ import {
   Flag,
   LeagueBadge,
   paletteAt,
+  ltr,
   SeatGlyph,
   signedText,
 } from '../../components/player';
@@ -25,6 +26,8 @@ import {
   StateView,
   supportCodeOf,
 } from '../../components/ui';
+import { LEVEL_UI } from '../../config/levels';
+import type { LevelsSummary } from '../../levels/levelsRepo';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { TokenArt } from '../game/arsenal/TokenArt';
 import { ScreenHeader, SectionLabel } from '../home/parts';
@@ -66,6 +69,12 @@ export interface PlayerCardScreenProps {
   cached?: PlayerCard | null;
   /** My progress (the level's XP), when this is me. */
   myProgress?: MyProgress | null;
+  /**
+   * The card's player's staged practice (stages played, stars): "שלבים: 87 · ★ 214" under the XP bar, on my card
+   * only (D58), or on anyone's with LEVEL_UI.cardShowsToOthers; never before the first stage. The route gives
+   * mine (levels.db); the server's card has no one else's yet.
+   */
+  levels?: LevelsSummary | null;
   onBack: () => void;
   onEditProfile?: () => void;
   /** A result of mine opens its replay (another player's games are not mine to replay). */
@@ -80,6 +89,20 @@ export interface PlayerCardScreenProps {
    */
   othersFooter?: (card: PlayerCard) => ReactNode;
   testID?: string;
+}
+
+/** "שלבים: 87 · ★ 214": staged practice on the card (1.0.2, components.md §19.12; no board). */
+function LevelsLine({ played, stars }: { played: number; stars: number }) {
+  const { t } = useTranslation('levels');
+  return (
+    <Text
+      style={[text('label'), styles.muted]}
+      accessibilityLabel={t('card.label', { played, count: stars })}
+      testID="player-card-levels"
+    >
+      {t('card.line', { played, stars: ltr(t('card.stars', { n: stars })) })}
+    </Text>
+  );
 }
 
 const ME = paletteAt(0);
@@ -98,6 +121,7 @@ export function PlayerCardScreen({
   myId,
   cached = null,
   myProgress = null,
+  levels = null,
   onBack,
   onEditProfile,
   onOpenReplay,
@@ -280,6 +304,9 @@ export function PlayerCardScreen({
                 {xpText(level.xpIntoLevel, level.xpForNext, tp)}
               </Text>
             </View>
+          ) : null}
+          {levels && levels.played > 0 && (mine || LEVEL_UI.cardShowsToOthers) ? (
+            <LevelsLine played={levels.played} stars={levels.stars} />
           ) : null}
         </Panel>
 

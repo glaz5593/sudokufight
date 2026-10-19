@@ -101,9 +101,22 @@
     },
     "solo": {
       "name": "Solo practice",
-      "title": "Solo practice",
+      "title": "Solo · full board",
       "tagline": "At your own pace",
-      "label": "Solo practice"
+      "label": "Solo · full board"
+    },
+    "levels": {
+      "name": "Staged practice",
+      "title": "Staged practice",
+      "tagline": "30-second stages · up to 3 stars",
+      "taglineNew": "{{total}} short stages · 0–3 stars",
+      "chip": "Stage {{stage}} ·",
+      "offline": "Offline too",
+      "chipLabel_one": "Stage {{stage}} · 1 star",
+      "chipLabel_two": "Stage {{stage}} · {{count}} stars",
+      "chipLabel_many": "Stage {{stage}} · {{count}} stars",
+      "chipLabel_other": "Stage {{stage}} · {{count}} stars",
+      "label": "Staged practice"
     },
     "bot": {
       "name": "Practice vs bot",
@@ -176,6 +189,12 @@
     },
     "language": "Language",
     "languageHint": "Changing the language restarts the app.",
+    "testing": "Testing",
+    "testingHint": "Test (staging) builds only. The store version does not have it.",
+    "chainPenalty": "Chain: a guess costs 5 s",
+    "chainPenaltyHint": "From the next chain stage: a digit in a cell that can’t be known yet costs 5 seconds and is not placed.",
+    "unlockAll": "Unlock all stages (testing)",
+    "unlockAllHint": "Every stage is open on the map. Stars and XP count as usual.",
     "languageConfirm": {
       "title": "Switch the language to {{language}}?",
       "body": "The app restarts, so every screen shows in the new language's direction.",

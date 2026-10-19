@@ -5,4 +5,5 @@ export * from './evolve';
 export * from './results';
 export * from './view';
 export * from './offline';
+export * from './played';
 export * from './host';

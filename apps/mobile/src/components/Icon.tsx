@@ -248,6 +248,45 @@ const ICONS = {
       <Path d="M14.8 9.4a4 4 0 1 0 0 5.2" />
     </>
   ),
+  /** Staged practice (components.md §19): a boss stage, on its node and in its panel. */
+  crown: <Path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z" />,
+  /** A chain (Idea-3): two links. */
+  links: (
+    <>
+      <Path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+      <Path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+    </>
+  ),
+  /** "מלא את הריבוע": a box of the board, 3 × 3. */
+  gridBox: (
+    <>
+      <Rect x="4" y="4" width="16" height="16" rx="2" />
+      <Path d="M9.3 4v16M14.7 4v16M4 9.3h16M4 14.7h16" />
+    </>
+  ),
+  /** "דו־קרב ל־30": two crossed swords. */
+  swords: (
+    <>
+      <Path d="M14.5 17.5L3 6V3h3l11.5 11.5" />
+      <Path d="M13 19l6-6M16 16l4 4M19 21l2-2" />
+      <Path d="M14.5 6.5L18 3h3v3l-3.5 3.5" />
+      <Path d="M5 14l4 4M7 17l-3 3M3 19l2 2" />
+    </>
+  ),
+  /** An open gate ("פרק 5 פתוח"): the lock with its shackle up. */
+  unlock: (
+    <>
+      <Rect x="5" y="11" width="14" height="10" rx="2" />
+      <Path d="M8 11V8a4 4 0 0 1 7.5-1.9" />
+    </>
+  ),
+  /** "למפה" (a stage's result): a folded map. */
+  map: (
+    <>
+      <Path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+      <Path d="M9 4v14M15 6v14" />
+    </>
+  ),
 } as const;
 
 export type IconName = keyof typeof ICONS;
@@ -263,6 +302,8 @@ export interface IconProps {
   size?: number;
   color?: string;
   strokeWidth?: number;
+  /** Fills the shape in its colour as well (a star earned, components.md §19.5); 'bolt' always is. */
+  filled?: boolean;
 }
 
 export function Icon({
@@ -270,8 +311,9 @@ export function Icon({
   size: px = size.icon.card,
   color: tint = color.textMuted,
   strokeWidth,
+  filled: fill = false,
 }: IconProps) {
-  const filled = FILLED.includes(name);
+  const filled = fill || FILLED.includes(name);
   const mirror = MIRRORED_IN_LTR.includes(name) && !I18nManager.isRTL;
   return (
     <Svg

@@ -312,6 +312,19 @@ describe('chooseCell (spec §9: prefers easy cells, with noise) and eligibility 
     expect(run(5)).toEqual(run(5));
     expect(run(5)).not.toEqual(run(6));
   });
+
+  it("keeps to a level's box (rules.editableCells): it never selects a cell outside it", () => {
+    const box = ['D4', 'D5', 'E4', 'E5', 'F4'].map(cell);
+    const g = game(3, { rules: { editableCells: box } });
+    expect(eligibleCells(g.state, bot(), 0)).toEqual(box.slice().sort((a, b) => a - b));
+    expect(isEligibleCell(g.state, bot(), cell('A1'), 0)).toBe(false);
+    const rng = createRng(4);
+    for (let k = 0; k < 300; k++) expect(box).toContain(chooseCell(g.state, bot(), 0, rng));
+    // The box's last cell taken: nothing left to choose, even with the rest of the board open.
+    for (const c of box.slice(0, 4)) g.solve(ME, cellName(c));
+    g.select(ME, 'F4');
+    expect(chooseCell(g.state, bot(), 0, rng)).toBeNull();
+  });
 });
 
 describe('thinkTime (spec §9: base × difficulty (× pace), with spread)', () => {

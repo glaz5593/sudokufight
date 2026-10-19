@@ -1,4 +1,4 @@
-import { MAX_BATCH_BYTES, TELEMETRY_PATH } from '@sudoku-fight/protocol';
+import { MAX_BATCH_BYTES, TELEMETRY_PATH, type TelemetryResponse } from '@sudoku-fight/protocol';
 import { json, Router } from 'express';
 
 import { liveUserId } from '../accounts/store';
@@ -11,7 +11,9 @@ import { parseBatch } from './schema';
 import { storeBatch } from './store';
 
 /**
- * `POST /v1/events` (spec §27.2): a batch of usage events from the app → 202 TelemetryResponse.
+ * `POST /v1/events` (spec §27.2): a batch of usage events from the app → 202 TelemetryResponse. Events of a
+ * name this server does not know (a newer app's) are skipped and counted in `ignored`, which the answer has
+ * only when there were some (1.0.2; an older app never sees it).
  *
  * Order matters: the per-IP limit runs before the body is even read, so a flood costs little; the
  * per-install limit runs on a valid batch (its installId is known only then).
@@ -73,7 +75,9 @@ export function createTelemetryRouter({
       const r = byInstall.take(parsed.batch.installId);
       if (!r.ok) return sendTooManyRequests(res, r.retryAfterMs);
       const userId = await senderOf(req.get('authorization'));
-      res.status(202).json(await storeBatch(db, parsed.batch, now(), userId));
+      const stored = await storeBatch(db, parsed.batch, now(), userId);
+      const answer: TelemetryResponse = parsed.ignored > 0 ? { ...stored, ignored: parsed.ignored } : stored;
+      res.status(202).json(answer);
     },
   );
   return router;

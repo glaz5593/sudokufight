@@ -1,7 +1,9 @@
-import { candidates, cellName, parseCellName, parseGrid } from './board';
-import { explain, whyWrong } from './explain';
+import { candidates, cellName, type Digit, DIGITS, parseCellName, parseGrid, PEERS } from './board';
+import { explain, explainSpotError, whyWrong } from './explain';
 import {
+  formatBlock,
   formatExplanation,
+  formatNotYet,
   formatStep,
   formatWrong,
   LRI,
@@ -9,7 +11,8 @@ import {
   stripIsolates,
   techniqueName,
 } from './explainText';
-import { isPlacement } from './logic';
+import { isPlacement, type Technique } from './logic';
+import { bankPuzzles } from '../testing/bot';
 import { bankRows, designScenarios, gridFrom } from '../testing/fixtures';
 
 const NAKED = gridFrom({ D1: 1, D2: 2, D3: 4, D4: 5, D6: 6, D7: 8, A5: 3, H5: 9 });
@@ -273,5 +276,165 @@ describe('why a digit is wrong', () => {
     expect(formatWrong(r, 'en')).toBe(`${played} still fits here, but the solution needs ${sol[cell]}.`);
     expect(whyWrong(grid, cell, played)).toEqual(r); // solves the board itself when not given the solution
     expect(cellName(cell)).toMatch(/^[A-I][1-9]$/);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------
+// Staged practice (dev-plan §2ב)
+
+const SINGLES: Technique[] = ['nakedSingle', 'hiddenSingle'];
+const BOX5 = { kind: 'box', index: 4 } as const;
+/** D5: a naked single (row D and column 5 hold the rest) and box 5's only place for 7 (rows E, F). */
+const BOTH = gridFrom({ D1: 1, D2: 2, D3: 4, D4: 5, D6: 6, D7: 8, A5: 3, H5: 9, E1: 7, F9: 7 });
+
+describe('explain: the frame and the techniques of a level', () => {
+  it('frames a hidden single in box 5 even when the cell is a naked single', () => {
+    expect(explain(BOTH, D5).technique).toBe('nakedSingle');
+    const e = explain(BOTH, D5, undefined, { unit: BOX5 });
+    expect(e).toMatchObject({ cell: D5, digit: 7, resolved: true, technique: 'hiddenSingle' });
+    expect(e.steps[0]).toMatchObject({ unit: BOX5 });
+    const he = stripIsolates(formatExplanation(e, 'he'));
+    expect(
+      he.startsWith('הספרה 7 חייבת להופיע בריבוע 5. כל שאר המשבצות הריקות בו חסומות: ב־E4 יש 7 בשורה E'),
+    ).toBe(true);
+    expect(he.endsWith('וב־F6 יש 7 בשורה F. לכן D5 = 7.')).toBe(true);
+  });
+
+  it('keeps the classic explanation without options, and falls back when the frame never applies', () => {
+    expect(explain(HIDDEN, D5, undefined, {})).toEqual(explain(HIDDEN, D5));
+    // Row A does not hold D5: the cell is decided another way, and that step ends the explanation.
+    const e = explain(BOTH, D5, undefined, { unit: { kind: 'row', index: 0 } });
+    expect(e.resolved).toBe(true);
+    const last = e.steps[e.steps.length - 1]!;
+    expect(isPlacement(last) && last.cell === D5 && last.digit === 7).toBe(true);
+  });
+
+  it('takes the digit without a solution (a chain board may have several), and checks it against one', () => {
+    expect(explain(BOTH, D5, undefined, { digit: 7, unit: BOX5 }).technique).toBe('hiddenSingle');
+    const { puzzle, solution } = bankRows()[0]!;
+    const grid = parseGrid(puzzle);
+    const sol = parseGrid(solution);
+    const cell = grid.indexOf(0);
+    const wrong = DIGITS.find((d) => d !== sol[cell])!;
+    expect(() => explain(grid, cell, sol, { digit: wrong })).toThrow(RangeError);
+    expect(explain(grid, cell, sol, { digit: sol[cell] as Digit })).toEqual(explain(grid, cell, sol));
+  });
+
+  it('limits the steps to the techniques asked for', () => {
+    let narrowed = 0;
+    for (const p of bankPuzzles('hard', 3)) {
+      const grid = parseGrid(p.givens);
+      const sol = parseGrid(p.solution);
+      for (let cell = 0; cell < 81; cell++) {
+        if (grid[cell]) continue;
+        const full = explain(grid, cell, sol);
+        const singles = explain(grid, cell, sol, { techniques: SINGLES });
+        for (const s of singles.steps) expect(SINGLES).toContain(s.technique);
+        if (singles.resolved) expect(singles.digit).toBe(sol[cell]);
+        if (full.steps.some((s) => !isPlacement(s)) && !singles.resolved) narrowed++;
+      }
+    }
+    expect(narrowed).toBeGreaterThan(0);
+  });
+});
+
+describe('level sentences', () => {
+  it('formatBlock: "E6 לא יכול להכיל 7: בשורה E יש 7", with the cell name isolated', () => {
+    const e6 = parseCellName('E6');
+    const block = {
+      kind: 'unit' as const,
+      unit: { kind: 'row' as const, index: 4 },
+      cell: parseCellName('E1'),
+    };
+    const he = formatBlock(e6, block, 7, 'he');
+    expect(stripIsolates(he)).toBe('E6 לא יכול להכיל 7: בשורה E יש 7');
+    expect(he.startsWith(`${LRI}E6${PDI} `)).toBe(true);
+    expect(he).toMatchSnapshot();
+    expect(formatBlock(e6, block, 7, 'en')).toBe("E6 can't hold 7: row E has a 7");
+    const step = { kind: 'step' as const, step: 1 };
+    expect(stripIsolates(formatBlock(e6, step, 7, 'he'))).toBe(
+      'E6 לא יכול להכיל 7: הספרה 7 נמחקה ממנו בצעד 2',
+    );
+    expect(formatBlock(e6, step, 7, 'en')).toBe("E6 can't hold 7: it was ruled out in step 2");
+  });
+
+  it('formatNotYet: "עוד אי אפשר לדעת מה נכנס ב־A9 (2 או 5)", with the cell name isolated', () => {
+    const a9 = parseCellName('A9');
+    const he = formatNotYet(a9, [2, 5], 'he');
+    expect(stripIsolates(he)).toBe('עוד אי אפשר לדעת מה נכנס ב־A9 (2 או 5)');
+    expect(he).toContain(`ב־${LRI}A9${PDI}`);
+    expect(he).toMatchSnapshot();
+    expect(formatNotYet(a9, [2, 5], 'en')).toBe("You can't tell yet what goes in A9 (2 or 5)");
+    expect(stripIsolates(formatNotYet(a9, [2, 5, 8], 'he'))).toBe(
+      'עוד אי אפשר לדעת מה נכנס ב־A9 (2, 5 או 8)',
+    );
+    expect(formatNotYet(a9, [2, 5, 8], 'en')).toBe("You can't tell yet what goes in A9 (2, 5 or 8)");
+    // The chain's toast (D64) names the cell only.
+    expect(stripIsolates(formatNotYet(a9, [], 'he'))).toBe('עוד אי אפשר לדעת מה נכנס ב־A9');
+  });
+});
+
+describe('explainSpotError (plan Idea-1)', () => {
+  const { puzzle, solution } = bankRows()[0]!;
+  const givens = parseGrid(puzzle);
+  const sol = parseGrid(solution);
+  const empty = givens.flatMap((v, i) => (v === 0 ? [i] : []));
+  /** "My" digits: the solution on the first 20 empty cells, with the planted errors in their cells. */
+  const mineWith = (errors: { cell: number; digit: Digit }[]): number[] => {
+    const mine = new Array<number>(81).fill(0);
+    for (const c of empty.slice(0, 20)) mine[c] = sol[c]!;
+    for (const e of errors) mine[e.cell] = e.digit;
+    return mine;
+  };
+  /** The board the player sees, with `cell` emptied. */
+  const shownWithout = (mine: readonly number[], cell: number): number[] =>
+    mine.map((v, i) => (i === cell ? 0 : givens[i] || v));
+  // A visible error clashes with a given; a silent one with nothing the player sees.
+  const visibleCell = empty[2]!;
+  const visibleDigit = DIGITS.find(
+    (d) => d !== sol[visibleCell] && PEERS[visibleCell]!.some((p) => givens[p] === d),
+  )!;
+  const withVisible = mineWith([{ cell: visibleCell, digit: visibleDigit }]);
+  const silentCell = empty.find(
+    (c) => c !== visibleCell && candidates(shownWithout(withVisible, c), c).some((d) => d !== sol[c]),
+  )!;
+  const silentDigit = candidates(shownWithout(withVisible, silentCell), silentCell).find(
+    (d) => d !== sol[silentCell],
+  )!;
+  const errors = [
+    { cell: visibleCell, digit: visibleDigit },
+    { cell: silentCell, digit: silentDigit },
+  ];
+  const mine = mineWith(errors);
+
+  it('a visible error: the clash with a given', () => {
+    const r = explainSpotError(givens, mine, visibleCell, visibleDigit, sol);
+    expect(r.reason).toMatchObject({ kind: 'conflict', digit: visibleDigit });
+    if (r.reason.kind !== 'conflict') throw new Error('unreachable');
+    expect(givens[r.reason.cell]).toBe(visibleDigit);
+    expect(PEERS[visibleCell]).toContain(r.reason.cell);
+    expect(r.explanation).toMatchObject({ cell: visibleCell, digit: sol[visibleCell], resolved: true });
+  });
+
+  it('a silent error: not the solution, and why the right digit holds', () => {
+    const r = explainSpotError(givens, mine, silentCell, silentDigit, sol);
+    expect(r.reason).toEqual({ kind: 'notSolution', digit: silentDigit, answer: sol[silentCell] });
+    expect(r.explanation).toMatchObject({ cell: silentCell, digit: sol[silentCell], resolved: true });
+  });
+
+  it('never throws with other planted errors on the board, and keeps to the techniques', () => {
+    const more = [...errors];
+    for (const c of empty.slice(20, 26)) more.push({ cell: c, digit: DIGITS.find((d) => d !== sol[c])! });
+    const board = mineWith(more);
+    for (const e of more) {
+      const r = explainSpotError(givens, board, e.cell, e.digit, sol, SINGLES);
+      expect(r.explanation.digit).toBe(sol[e.cell]);
+      for (const s of r.explanation.steps) expect(SINGLES).toContain(s.technique);
+    }
+    expect(() => explainSpotError(givens, board, visibleCell, sol[visibleCell] as Digit, sol)).toThrow(
+      RangeError,
+    );
+    const given = givens.findIndex((v) => v !== 0);
+    expect(() => explainSpotError(givens, board, given, 1, sol)).toThrow(RangeError);
   });
 });

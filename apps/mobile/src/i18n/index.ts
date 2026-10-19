@@ -11,6 +11,7 @@ import enDev from './locales/en/dev.json';
 import enGame from './locales/en/game.json';
 import enHistory from './locales/en/history.json';
 import enHome from './locales/en/home.json';
+import enLevels from './locales/en/levels.json';
 import enMatch from './locales/en/match.json';
 import enModeration from './locales/en/moderation.json';
 import enPlayer from './locales/en/player.json';
@@ -25,6 +26,7 @@ import heDev from './locales/he/dev.json';
 import heGame from './locales/he/game.json';
 import heHistory from './locales/he/history.json';
 import heHome from './locales/he/home.json';
+import heLevels from './locales/he/levels.json';
 import heMatch from './locales/he/match.json';
 import heModeration from './locales/he/moderation.json';
 import hePlayer from './locales/he/player.json';
@@ -37,8 +39,9 @@ import heUi from './locales/he/ui.json';
  * through t(). One file per area (namespace): common, ui, player, board, home, game, account, dev, replay,
  * history (stage 11), match (stage 9: matchmaking), progress (stage 12: the leaderboard, the player card,
  * progress and the interferences collection), avatars (the characters' names, kinds, expressions and
- * motions, generated from packages/avatars by scripts/gen-avatar-strings.ts) and moderation (spec §3.5:
- * reporting and blocking players, the blocked list, a name an admin reset, a suspended account).
+ * motions, generated from packages/avatars by scripts/gen-avatar-strings.ts), moderation (spec §3.5:
+ * reporting and blocking players, the blocked list, a name an admin reset, a suspended account) and levels
+ * (1.0.2, staged practice: the map, a stage and its result; English says "Stage", never "Level", for a stage).
  */
 export const LANGUAGES = ['he', 'en'] as const;
 export type Language = (typeof LANGUAGES)[number];
@@ -57,6 +60,7 @@ export const NAMESPACES = [
   'progress',
   'avatars',
   'moderation',
+  'levels',
 ] as const;
 
 export const resources = {
@@ -75,6 +79,7 @@ export const resources = {
     progress: heProgress,
     avatars: heAvatars,
     moderation: heModeration,
+    levels: heLevels,
   },
   en: {
     common: enCommon,
@@ -91,6 +96,7 @@ export const resources = {
     progress: enProgress,
     avatars: enAvatars,
     moderation: enModeration,
+    levels: enLevels,
   },
 } as const;
 

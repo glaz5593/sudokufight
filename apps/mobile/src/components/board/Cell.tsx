@@ -16,7 +16,7 @@ import Svg, { Path, Rect } from 'react-native-svg';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { AvatarArt } from '../../avatars';
-import { color, type PlayerPalette, size, text, tokens } from '../../theme';
+import { color, type PlayerPalette, radius, size, text, tokens } from '../../theme';
 import { Icon } from '../Icon';
 import { motion, useReduceMotion } from '../../theme/motion';
 import {
@@ -50,7 +50,9 @@ export type CellFlashKind =
   /** #13: a wrong digit: red flash and shake. */
   | 'wrong'
   /** #11: a tap on someone else's lock, or on my cell during its re-lock wait: shake, no red. */
-  | 'denied';
+  | 'denied'
+  /** A wrong tap in a tap stage (components.md §19.7): a red X over the cell, a red wash and a shake. */
+  | 'miss';
 
 export interface CellFlash {
   kind: CellFlashKind;
@@ -71,6 +73,8 @@ export interface CellProps {
   corner?: BoardCorner | null;
   /** The board sets this per cell (geometry.cellHitSlop); a lone cell reaches 44 dp on every side. */
   hitSlop?: Insets;
+  /** A tap stage's board: a tap is the move (the hint says so; there is no keypad). */
+  tap?: boolean;
   testID?: string;
 }
 
@@ -83,6 +87,13 @@ const AVATAR_LIFT = size.lockBadge.inset;
 
 /** The pause mark in my pill (components.md §11.3 #10): two 2 × 7 bars, drawn like an icon. */
 const PAUSE_GLYPH = { width: 6, height: 7, bar: 2 } as const;
+
+/** A find's digit already on the board (Lv-Find): a 30 dp dark chip with a 20 dp digit, at the design's cell. */
+const TARGET_CHIP = { size: 30, font: 20 } as const;
+/** A wrong tap's X (components.md §19.7): two 24 × 2 bars. */
+const CROSS = { length: 24, bar: 2 } as const;
+/** A found error (Idea-1): a 24 dp strike, and the right digit in a 16 dp disc 2 dp from the corner. */
+const CORRECTION = { strike: 24, disc: 16, inset: 2 } as const;
 
 /** How a lock's ring looks: what its fading copy keeps drawing once the lock has gone. */
 interface RingLook {
@@ -179,12 +190,21 @@ function CellView({
   onCellPress,
   corner,
   hitSlop,
+  tap = false,
   testID,
 }: CellProps) {
   const { t } = useTranslation('board');
   const reduce = useReduceMotion();
   const palette: PlayerPalette | null = cell.player ? (players[cell.player.colorIndex] ?? null) : null;
-  const base = cell.alt ? color.board.cellAlt : color.board.cell;
+  // Outside a stage's area the cell is dimmed (components.md §19.7); the area keeps the board's own colours.
+  const out = cell.area === 'out';
+  const base = out
+    ? cell.alt
+      ? color.board.cellDimAlt
+      : color.board.cellDim
+    : cell.alt
+      ? color.board.cellAlt
+      : color.board.cell;
   // My tap waiting for the server (#9), and my digit waiting for the connection (#14, [D42]): the half ring.
   const waiting = cell.kind === 'pending' || cell.kind === 'queued';
   const tint = (cell.kind === 'solved' || cell.kind === 'myLock') && palette ? palette.tint : null;
@@ -204,7 +224,9 @@ function CellView({
   }, [flashId, flashKind, reduce, shakeX]);
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shakeX.get() }] }));
 
-  const lockRingColor = waiting ? players[0].ring : cell.lock && palette ? palette.ring : null;
+  // A lock's ring, with its timer or without one (a stage alone: BoardModelOptions.lockTimer false).
+  const held = cell.kind === 'myLock' || cell.kind === 'oppLock';
+  const lockRingColor = waiting ? players[0].ring : held && palette ? palette.ring : null;
   // The lock's ring and my pill; once the lock goes, their last look fades out (motion.md `lock.release`).
   const ringLook: RingLook | null = lockRingColor
     ? {
@@ -233,7 +255,7 @@ function CellView({
       hitSlop={hitSlop ?? outer}
       accessibilityRole="button"
       accessibilityLabel={cellLabel(cell, t)}
-      accessibilityHint={cellHint(cell, t)}
+      accessibilityHint={cellHint(cell, t, tap)}
       accessibilityState={{ disabled: a11yDisabled, selected: cell.kind === 'myLock' }}
       style={{ width: g.cell, height: g.cell }}
       testID={id}
@@ -263,14 +285,20 @@ function CellView({
           <LockRing look={ringLook} g={g} reduce={reduce} corner={corner} onGone={ringGone} />
         ) : null}
 
-        {cell.digit !== null ? (
+        {cell.correction && cell.digit !== null ? (
+          <Correction wrong={cell.correction.wrong} right={cell.digit} g={g} corner={corner} />
+        ) : cell.mark === 'target' && cell.digit !== null ? (
+          <TargetChip digit={cell.digit} g={g} />
+        ) : cell.digit !== null ? (
           <CellDigit
             digit={cell.digit}
             given={cell.kind === 'given'}
             digitColor={
               (cell.kind === 'solved' || cell.kind === 'queued') && palette
                 ? palette.digit
-                : color.board.given
+                : out
+                  ? color.board.givenDim
+                  : color.board.given
             }
             g={g}
             popId={flash?.kind === 'correct' ? flash.id : undefined}
@@ -284,7 +312,7 @@ function CellView({
           <MiniAvatar player={cell.player} g={g} lifted={lifted} reduce={reduce} />
         ) : null}
 
-        {cell.kind === 'solved' && palette ? <SeatGlyph palette={palette} g={g} /> : null}
+        {cell.kind === 'solved' && palette && !cell.correction ? <SeatGlyph palette={palette} g={g} /> : null}
 
         {pillLook || pillLeaving ? (
           <SecondsPill look={pillLook} g={g} reduce={reduce} onGone={pillGone} />
@@ -510,6 +538,114 @@ function SeatGlyph({ palette, g }: { palette: PlayerPalette; g: BoardGeometry })
   );
 }
 
+/** A find stage's digit already on the board (Lv-Find): a dark rounded chip, so the eye finds every 6 at once. */
+function TargetChip({ digit, g }: { digit: Digit; g: BoardGeometry }) {
+  const side = px(g, TARGET_CHIP.size);
+  return (
+    <View
+      style={[
+        styles.chip,
+        { width: side, height: side, borderRadius: px(g, radius.xs), backgroundColor: color.board.given },
+      ]}
+      testID="cell-target"
+    >
+      <Text
+        style={[
+          text('digitCell'),
+          {
+            color: color.board.cell,
+            fontSize: fontPx(g, TARGET_CHIP.font),
+            lineHeight: fontPx(g, TARGET_CHIP.font),
+          },
+        ]}
+        testID="cell-digit"
+      >
+        {digit}
+      </Text>
+    </View>
+  );
+}
+
+/**
+ * A planted error I found (spot the error, Idea-1): the wrong digit that stood here, struck in red, the right
+ * one small in a success disc at the top-right, and a 2 dp success ring around the cell. Static: what it
+ * shows is the information, so it is the same with reduced motion.
+ */
+function Correction({
+  wrong,
+  right,
+  g,
+  corner,
+}: {
+  wrong: Digit;
+  right: Digit;
+  g: BoardGeometry;
+  corner: BoardCorner | null | undefined;
+}) {
+  const type = tokens.type.digitCell;
+  const disc = px(g, CORRECTION.disc);
+  const inset = px(g, CORRECTION.inset);
+  return (
+    <>
+      <View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          { borderWidth: px(g, focus), borderColor: color.success },
+          cornerRadius(corner, px(g, tokens.radius.board)),
+        ]}
+        testID="cell-correction-ring"
+      />
+      <Text
+        style={[
+          text('digitCell'),
+          {
+            color: color.board.wrongDigit,
+            fontSize: fontPx(g, type.size),
+            lineHeight: fontPx(g, type.lineHeight),
+          },
+        ]}
+        testID="cell-correction-wrong"
+      >
+        {wrong}
+      </Text>
+      <View
+        pointerEvents="none"
+        style={[
+          styles.strike,
+          {
+            width: px(g, CORRECTION.strike),
+            height: px(g, CROSS.bar),
+            backgroundColor: color.board.wrongDigit,
+          },
+        ]}
+        testID="cell-correction-strike"
+      />
+      <View
+        style={[
+          styles.fix,
+          { top: inset, right: inset, width: disc, height: disc, borderRadius: disc / 2 },
+          { backgroundColor: color.success },
+        ]}
+        testID="cell-correction-right"
+      >
+        <Text
+          style={[
+            text('wrongDigit'),
+            {
+              color: color.board.given,
+              fontSize: fontPx(g, tokens.type.wrongDigit.size),
+              lineHeight: fontPx(g, tokens.type.wrongDigit.lineHeight),
+            },
+          ]}
+        >
+          {right}
+        </Text>
+      </View>
+    </>
+  );
+}
+
 /**
  * My digit waiting for the connection (components.md §11.3 #14, [D42]): a small wifi-off mark at the top-right,
  * in my glyph colour, where my lock's seconds were. Static (no pulse, no blink), so reduced motion changes
@@ -635,7 +771,7 @@ function SecondsPill({
 
 /** One drawn part of a flash: what it looks like and how it fades. */
 export interface FlashPart {
-  kind: 'fill' | 'frame' | 'digit';
+  kind: 'fill' | 'frame' | 'digit' | 'cross';
   /** 'solver': the solver's ring colour; 'base': the cell's own colour (reduced cross-fade). */
   tone: 'solver' | 'base' | 'wrongFlash' | 'danger' | 'wrongDigit' | 'ring';
   /** Opacity it starts at, before fading to 0. */
@@ -655,9 +791,18 @@ export interface FlashPart {
  * - wrong: red at 55% fading over 550 ms, and the tried digit full size in red, which shrinks and fades after
  *   300 ms. Reduced: a 2 dp red frame for 300 ms, then a short fade.
  * - denied: the shake alone. Reduced: the ring thickens from 3 to 5 dp for 300 ms.
+ * - miss (a wrong tap in a tap stage): the red wash of a wrong digit and a red X that holds 300 ms and fades.
+ *   Reduced: the static 2 dp red frame for 300 ms, as a wrong digit's.
  */
 export function flashPart(layer: 'under' | 'over', flash: CellFlash, reduce: boolean): FlashPart | null {
   const d = motion.duration;
+  if (flash.kind === 'miss') {
+    if (layer === 'under')
+      return reduce ? null : { kind: 'fill', tone: 'wrongFlash', from: 1, holdMs: 0, fadeMs: d.wrongFlash };
+    return reduce
+      ? { kind: 'frame', tone: 'danger', from: 1, holdMs: d.wrongShake, fadeMs: d.reducedFade, width: focus }
+      : { kind: 'cross', tone: 'danger', from: 1, holdMs: d.wrongShake, fadeMs: d.stateChange };
+  }
   if (layer === 'under') {
     if (flash.kind === 'correct')
       return reduce
@@ -745,6 +890,15 @@ function FlashLayer({
   }[part.tone];
   if (!tone) return null;
 
+  if (part.kind === 'cross') {
+    const bar = { width: px(g, CROSS.length), height: px(g, CROSS.bar), backgroundColor: tone };
+    return (
+      <Animated.View pointerEvents="none" style={[styles.center, style]} testID="cell-flash-miss-cross">
+        <View style={[styles.crossBar, bar, styles.crossA]} />
+        <View style={[styles.crossBar, bar, styles.crossB]} />
+      </Animated.View>
+    );
+  }
   if (part.kind === 'digit') {
     const type = tokens.type.digitCell;
     return (
@@ -807,6 +961,10 @@ export function sameCell(a: CellModel, b: CellModel): boolean {
       a.alt === b.alt &&
       a.interactive === b.interactive &&
       a.cooldown === b.cooldown &&
+      a.area === b.area &&
+      a.mark === b.mark &&
+      a.mine === b.mine &&
+      a.correction?.wrong === b.correction?.wrong &&
       sameDigits(a.wrong, b.wrong) &&
       samePlayer(a.player, b.player) &&
       sameLock(a.lock, b.lock))
@@ -823,6 +981,7 @@ export const Cell = memo(
     a.onCellPress === b.onCellPress &&
     a.corner === b.corner &&
     a.hitSlop === b.hitSlop &&
+    a.tap === b.tap &&
     a.testID === b.testID,
 );
 
@@ -849,4 +1008,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
   },
+  crossBar: { position: 'absolute', borderRadius: radius.bar },
+  crossA: { transform: [{ rotate: '45deg' }] },
+  crossB: { transform: [{ rotate: '-45deg' }] },
+  chip: { alignItems: 'center', justifyContent: 'center' },
+  strike: { position: 'absolute', borderRadius: radius.bar, transform: [{ rotate: '-38deg' }] },
+  fix: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
 });

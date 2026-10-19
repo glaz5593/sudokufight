@@ -8,6 +8,10 @@ import { accountConfig } from '../config/account';
 import { httpBaseUrl } from '../config/server';
 import type { OnlineEnd } from '../game/onlineSession';
 import { rankedEndOf, rankedLeftOf } from '../game/rankedEnd';
+import { openLevelsStorage } from '../levels/levelsStorage';
+import { forgetLevels, refreshLevels, useLevels } from '../levels/levelsStore';
+import { LevelsSync } from '../levels/levelsSync';
+import { crashReporter } from '../services/crashlytics';
 import { createPracticeQueue } from './practiceQueue';
 import { type FinishedPractice, practiceResultOf } from './practiceResult';
 import { PracticeSync } from './practiceSync';
@@ -30,6 +34,9 @@ import {
  * onlineGameEnded() (the game store, when a ranked game ends or is left) shows its rating and reads the account
  * and my progress until the server has stored it (rankedRefresh.ts). Signed out, nothing is sent and nothing is
  * queued (D24: registration first).
+ *
+ * Staged practice (1.0.2) [D57]: levelsSync() sends the levels' bests from levels.db and brings the account's
+ * back (levels/levelsSync.ts), on the same triggers; a level's end flushes it too (levels/appLevels.ts).
  */
 
 /** The signed-in player with an account (status 'ready'): their Firebase uid, or null. */
@@ -54,14 +61,21 @@ export function setProgressFetch(next: AccountFetch | null): void {
 
 const noConnection: AccountFetch = () => Promise.reject(new TypeError('Network request failed'));
 
-/** The progress API for whoever is signed in now; null when nobody is. */
-export function signedInProgressApi(): ProgressApi | null {
+/**
+ * The progress API for whoever is signed in now; null when nobody is. With `owner` (a sync's player, a Firebase
+ * uid): bound to them, each request carries their token or none ('signedOut') once Firebase has another player
+ * signed in, so a sync that started for one account never sends to, or reads from, the next one's (a shared
+ * phone, a sign-in during a slow request).
+ */
+export function signedInProgressApi(owner?: string): ProgressApi | null {
   if (useAuth.getState().user === null) return null;
   return createProgressApi({
     baseUrl: httpBaseUrl(),
     getToken: async (forceRefresh) => {
       const { provider } = authDeps();
-      return provider.currentUser() ? provider.getIdToken(forceRefresh) : null;
+      const user = provider.currentUser();
+      if (!user || (owner !== undefined && user.uid !== owner)) return null;
+      return provider.getIdToken(forceRefresh);
     },
     fetch: (url, init) => (progressFetch ?? noConnection)(url, init),
     timeoutMs: accountConfig.requestTimeoutMs,
@@ -99,6 +113,33 @@ export function practiceFinished(game: FinishedPractice): void {
   practiceSync()
     .enqueue(result)
     .catch((error: unknown) => log('could not queue the practice result', error));
+}
+
+let levels: LevelsSync | null = null;
+
+/** The app's levels sync (one per run): levels.db's bests to the account, and the account's back [D57]. */
+export function levelsSync(): LevelsSync {
+  levels ??= new LevelsSync({
+    repo: openLevelsStorage,
+    owner: currentOwner,
+    api: signedInProgressApi,
+    now: () => Date.now(),
+    onProgress: (owner, progress) => adoptProgress(owner, progress, Date.now()),
+    // The server's levels changed some rows (a restore, the other phone): the screens' numbers again.
+    onMerged: (owner) => void refreshLevels({ owner }),
+    onRejected: (owner, refused) =>
+      crashReporter().recordError(
+        new Error(`levels refused by the server: ${refused.map((l) => l.id).join(', ')}`),
+        'levels: sync',
+      ),
+    timers: {
+      setTimeout: (callback, ms) => setTimeout(callback, ms),
+      clearTimeout: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
+    },
+    random: () => Math.random(),
+    log,
+  });
+  return levels;
 }
 
 let ranked: RankedRefresh | null = null;
@@ -196,11 +237,17 @@ export function startProgress(): () => void {
     // Signed out, or another account: the last one's numbers go (their queue stays for them). While the
     // sign-in loads, the saved ones stay: they are what Home shows offline.
     if (saved !== null && saved !== owner && (owner !== null || status === 'signedOut')) forgetProgress();
+    // The levels' numbers too (theirs stay in levels.db, under their owner).
+    const levelsOwner = useLevels.getState().owner;
+    if (levelsOwner !== null && levelsOwner !== owner && (owner !== null || status === 'signedOut'))
+      forgetLevels();
     if (!owner) {
       practiceSync().stop();
+      levels?.stop();
       return;
     }
     void practiceSync().flush();
+    void levelsSync().flush();
     void refreshMyProgress();
   };
   const unsubscribe = useAuth.subscribe(onAuth);
@@ -208,6 +255,7 @@ export function startProgress(): () => void {
   const foreground = AppState.addEventListener('change', (state) => {
     if (state !== 'active' || !currentOwner()) return;
     void practiceSync().flush();
+    void levelsSync().flush();
     void refreshMyProgress();
     // The account too (a ranked game may have been stored meanwhile), at most every refresh.minIntervalMs.
     void refreshMeIfStale();
@@ -216,5 +264,6 @@ export function startProgress(): () => void {
     unsubscribe();
     foreground.remove();
     ranked?.stop();
+    levels?.stop();
   };
 }

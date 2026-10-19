@@ -230,6 +230,13 @@ function UserBody({
       label: t('stats.avgScore'),
       value: data.stats.avgScore === null ? t('common.none') : formatNumber(lang, data.stats.avgScore, 1),
     },
+    // Staged practice (1.0.2): only when the account synced any.
+    ...(data.levels
+      ? [
+          { label: t('stats.levelsPlayed'), value: formatNumber(lang, data.levels.played) },
+          { label: t('stats.levelStars'), value: formatNumber(lang, data.levels.stars) },
+        ]
+      : []),
   ];
 
   return (

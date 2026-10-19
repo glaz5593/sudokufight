@@ -1,4 +1,5 @@
 import type { GameType } from '../gameType';
+import type { LevelResult, LevelRun } from '../levels/spec';
 import type { RatingChange, RatingPairs } from '../rating';
 import type { CellIndex, Digit } from '../sudoku/board';
 import type { MoveScore } from '../sudoku/scoring';
@@ -31,6 +32,11 @@ export interface GameConfig {
    * createGame draws one from the injected RNG when it is missing.
    */
   seed?: number;
+  /**
+   * A level of staged practice (1.0.2): which one, which attempt, its star rule. Absent from every other game,
+   * so their configs keep their shape. The rules come with it (levelRulesFor).
+   */
+  level?: LevelRun;
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -103,6 +109,11 @@ export interface PlayerState {
   /** No new interference before this time [D11]. */
   immuneUntil: number;
   lastReactionAt: number | null;
+  /**
+   * The time penalties so far (timePenalty: rules.mistakeTimeMs, a chain's "not yet" [D64]). Absent until the
+   * first one: the key is left out, as above.
+   */
+  timePenaltyMs?: number;
 }
 
 export interface Lock {
@@ -161,6 +172,20 @@ export interface GameState {
 
   players: PlayerState[];
   result: GameResult | null;
+  /**
+   * When rules.timeLimitMs runs out: startedAt + timeLimitMs, sooner by every time penalty, later by every
+   * freeze (gameResumed), and kept at the end for the level clock. Absent without a limit: the key is left out,
+   * so other games' snapshots keep their shape.
+   */
+  timeUpAt?: number;
+  /** The freeze is the app's own: it left the foreground mid-level [D65]. Absent otherwise. */
+  pausedBy?: 'background';
+  /**
+   * [D65] The phone's own freezes that ended (gameResumed 'foreground'), in all: the game's clock leaves them
+   * out (played.ts: the duration, a stage's clock, the replay's times). Absent until one ended, so every other
+   * game's snapshot keeps its shape.
+   */
+  frozenMs?: number;
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -190,11 +215,18 @@ export type PlayerAction = { playerId: PlayerId } & (
  * What the host does: start the game, report connections. A `disconnect` with `soft` is a connection that
  * dropped: it starts the soft phase when rules.softGraceMs > 0 [D42]. Without it (a deliberate leave, and the
  * default) the player is disconnected at once, the grace of [D4] runs, and a soft phase already running hardens.
+ *
+ * `pause` / `resume` [D65] (Moshe, 2026-10-18): the phone's own game froze because the app left the foreground
+ * mid-level (a call, another app, the screen off), and goes on. Local play only (LocalGameHost.pause/resume):
+ * a server never sends them. While frozen no timer runs (the time limit, locks, waits) and every move is
+ * refused 'paused'; on resume every deadline moves on by the pause, so the time left is what it was.
  */
 export type SystemAction =
   | { type: 'start' }
   | { type: 'disconnect'; playerId: PlayerId; soft?: boolean }
-  | { type: 'reconnect'; playerId: PlayerId };
+  | { type: 'reconnect'; playerId: PlayerId }
+  | { type: 'pause' }
+  | { type: 'resume' };
 
 export type Action = PlayerAction | SystemAction;
 
@@ -235,12 +267,17 @@ export type RejectReason =
   | 'alreadyConnected'
   | 'alreadyDisconnected'
   /** An `offlineMove` without an open window: no return just before it, too late, or too many [D42]. */
-  | 'offlineClosed';
+  | 'offlineClosed'
+  /** A cell outside rules.editableCells (a level's box). */
+  | 'notEditable'
+  /** A tap level: my taps wait out the freeze after a wrong one (findDuel, the tap engine). */
+  | 'frozen';
 
 // ---------------------------------------------------------------------------------------------------------
 // Events (spec §18, server → client). Every event has an increasing seq and the time it happened.
 
-export type EndReason = 'boardComplete' | 'lastPlayerStanding' | 'practiceEnded';
+/** `targetReached` and `timeUp` end only a level's game (rules.endAtScore … rules.timeLimitMs). */
+export type EndReason = 'boardComplete' | 'lastPlayerStanding' | 'practiceEnded' | 'targetReached' | 'timeUp';
 
 export interface RankEntry {
   playerId: PlayerId;
@@ -288,6 +325,8 @@ export interface GameResult {
   ratingPairs?: RatingPairs[];
   awards: Award[];
   stats: PlayerStats[];
+  /** A level's game only (config.level): its stars and measure. Absent from every other result. */
+  level?: LevelResult;
 }
 
 type EventBody =
@@ -352,6 +391,18 @@ type EventBody =
     }
   | { type: 'reaction'; playerId: PlayerId; emoji: string }
   /**
+   * A level's time penalty: a wrong digit (rules.mistakeTimeMs), or a chain's right digit in a cell that cannot
+   * be known yet [D64]. The time limit comes `ms` closer; `totalMs` is the player's total after it.
+   */
+  | {
+      type: 'timePenalty';
+      playerId: PlayerId;
+      cell: CellIndex;
+      reason: 'mistake' | 'notYet';
+      ms: number;
+      totalMs: number;
+    }
+  /**
    * The connection dropped: the soft phase [D42]. Only a mark; the game goes on as usual. At `softEndsAt`, if he
    * is not back, playerDisconnected follows (the hard phase of spec §16.2).
    */
@@ -360,12 +411,18 @@ type EventBody =
   | { type: 'playerReconnected'; playerId: PlayerId }
   | { type: 'playerAbandoned'; playerId: PlayerId }
   | { type: 'playerSurrendered'; playerId: PlayerId }
-  | { type: 'gamePaused'; reason: 'disconnect' }
+  /** 'background': the phone's own game, the app out of the foreground mid-level [D65]; never from a server. */
+  | { type: 'gamePaused'; reason: 'disconnect' | 'background' }
   /**
    * Every timer that stood still moves on by `pausedMs` (locks, interferences, the turn, re-lock waits);
    * `locks` lists the running locks with their new expiry (spec §18). Grace periods are never frozen.
    */
-  | { type: 'gameResumed'; reason: 'reconnect' | 'abandon'; pausedMs: number; locks: LockTimer[] }
+  | {
+      type: 'gameResumed';
+      reason: 'reconnect' | 'abandon' | 'foreground';
+      pausedMs: number;
+      locks: LockTimer[];
+    }
   | ({ type: 'gameOver' } & GameResult);
 
 export type GameEvent = EventBody & { seq: number; t: number };

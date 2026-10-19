@@ -4,6 +4,7 @@ import {
   type AdminAuditAction,
   HEBREW_FINAL_LETTERS,
   HEBREW_REGULAR_LETTERS,
+  LEVEL_ID_PATTERN,
   type Platform,
   REPORT_REASONS,
   REPORT_STATUSES,
@@ -286,7 +287,8 @@ export const userAchievements = pgTable(
 /**
  * A player's XP (spec §15) [D38]: the total, and the level it reaches (the engine's levelFor(), kept here for
  * SQL readers such as the admin site; the routes compute it again from `xp`). Written by the end of a ranked
- * game (persistence/records.ts) and by practice results (src/progress/practice.ts).
+ * game (persistence/records.ts), by practice results (src/progress/practice.ts) and by the levels' progress
+ * (src/progress/levels.ts).
  */
 export const xp = pgTable('xp', {
   userId: text('user_id')
@@ -325,6 +327,49 @@ export const practiceResults = pgTable(
     index('practice_results_user_ended_idx').on(t.userId, t.endedAt),
     check('practice_results_mode_check', sql`${t.mode} in ('solo', 'bot')`),
   ],
+);
+
+/**
+ * Staged practice's progress (spec §5.3.7, §15; 1.0.2) [D55, D57]: each level's best as the phone reports it
+ * (PUT /v1/me/levels), kept at the max ever sent: the best stars and the plays that counted. Levels are played
+ * and kept on the phone (levels.db); this copy brings them back on a new phone, and level XP is paid from it
+ * (src/progress/levels.ts). A row only for a level played or with stars (never 0 and 0).
+ */
+export const userLevels = pgTable(
+  'user_levels',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** "L001" … (the protocol's LEVEL_ID_PATTERN). */
+    levelId: text('level_id').notNull(),
+    bestStars: smallint('best_stars').notNull(),
+    plays: integer('plays').notNull(),
+    updatedAt: timestamptz('updated_at').notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.levelId] }),
+    check('user_levels_level_id_check', sql`${t.levelId} ~ ${sql.raw(`'${LEVEL_ID_PATTERN.source}'`)}`),
+    check('user_levels_best_stars_check', sql`${t.bestStars} between 0 and 3`),
+    check('user_levels_plays_check', sql`${t.plays} >= 0`),
+  ],
+);
+
+/**
+ * The level XP paid to a player on each UTC day (src/progress/levels.ts): what all of them add up to is what
+ * was paid of the levels' worth, and a day's row counts in that day's cap, which practice shares.
+ */
+export const levelXpDays = pgTable(
+  'level_xp_days',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** The UTC day it was paid on, as days since 1970-01-01 (the server's clock). */
+    day: integer('day').notNull(),
+    xp: integer('xp').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.day] })],
 );
 
 /** Anomalies to look at (spec §21); no automatic action in V1. */
@@ -521,6 +566,7 @@ export type GamePlayer = typeof gamePlayers.$inferSelect;
 export type Puzzle = typeof puzzles.$inferSelect;
 export type CheatFlag = typeof cheatFlags.$inferSelect;
 export type PracticeResultRow = typeof practiceResults.$inferSelect;
+export type UserLevelRow = typeof userLevels.$inferSelect;
 export type PlayerReport = typeof playerReports.$inferSelect;
 export type UserBlock = typeof userBlocks.$inferSelect;
 export type AdminAuditRow = typeof adminAudit.$inferSelect;

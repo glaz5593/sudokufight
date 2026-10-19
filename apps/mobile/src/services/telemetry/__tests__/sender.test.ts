@@ -192,6 +192,35 @@ describe('TelemetrySender', () => {
     expect(await flushing).toMatchObject({ sent: 3 });
   });
 
+  it('an old server refuses a batch of level events (400): only that batch goes, the older events are sent', async () => {
+    const q = new TelemetryQueue();
+    const before = [event(), event()];
+    const levels = [0, 1].map((i): TelemetryEvent => ({
+      id: uuidV4(),
+      name: 'level_end',
+      props: { level: i + 1 },
+      t: NOW - 500,
+    }));
+    const after = [event()];
+    for (const e of [...before, ...levels, ...after]) q.append(e);
+    // A server before 1.0.2: it knows no level event, and refuses a batch that has one.
+    const fetch = jest.fn<ReturnType<FetchLike>, Parameters<FetchLike>>(async (_url, init) => {
+      const batch = JSON.parse(init.body) as TelemetryBatch;
+      const status = batch.events.some((e) => e.name.startsWith('level_')) ? 400 : 202;
+      return { status, headers: { get: () => null } };
+    });
+    const flushing = sender(fetch, q, { log: jest.fn() }).flush();
+    await jest.advanceTimersByTimeAsync(0);
+    expect(await flushing).toEqual({ sent: 3, dropped: 2, waitingUntil: null });
+    const batches = fetch.mock.calls.map(([, init]) => (JSON.parse(init.body) as TelemetryBatch).events);
+    expect(batches.map((b) => b.map((e) => e.id))).toEqual([
+      before.map((e) => e.id),
+      levels.map((e) => e.id),
+      after.map((e) => e.id),
+    ]);
+    expect(q.size).toBe(0);
+  });
+
   it.each([400, 413])(
     '%i: the batch is dropped (sending it again would not help), and the next goes',
     async (status) => {

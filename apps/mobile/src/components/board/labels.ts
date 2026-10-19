@@ -23,6 +23,11 @@ export function cellLabel(cell: CellModel, t: BoardT): string {
     if (cell.wrong.length) parts.push(t('cell.wrong', { digits: cell.wrong.join(t('separator.list')) }));
     return parts.join(t('separator.list'));
   }
+  // Spot the error: an error I found, "D5, טעות שנמצאה: 4, הספרה הנכונה 9".
+  if (cell.correction && cell.digit !== null)
+    return [cell.name, t('cell.corrected', { wrong: cell.correction.wrong, right: cell.digit })].join(
+      t('separator.list'),
+    );
   const parts: string[] = [cell.name, cell.digit === null ? t('cell.empty') : String(cell.digit)];
   const p = cell.player;
   switch (cell.kind) {
@@ -30,7 +35,8 @@ export function cellLabel(cell: CellModel, t: BoardT): string {
       parts.push(t('cell.given'));
       break;
     case 'solved':
-      if (p) parts.push(p.isMe ? t('cell.solvedByMe') : t('cell.solvedBy', { name: playerName(p, t) }));
+      if (cell.mine) parts.push(t('cell.mine'));
+      else if (p) parts.push(p.isMe ? t('cell.solvedByMe') : t('cell.solvedBy', { name: playerName(p, t) }));
       break;
     case 'myLock':
       parts.push(t('cell.lockedByMe'));
@@ -46,12 +52,17 @@ export function cellLabel(cell: CellModel, t: BoardT): string {
     case 'empty':
       break;
   }
+  if (cell.area === 'out') parts.push(t('cell.outside'));
   if (cell.wrong.length) parts.push(t('cell.wrong', { digits: cell.wrong.join(t('separator.list')) }));
   return parts.join(t('separator.list'));
 }
 
-/** Read after the label on my own lock: what to do next. */
-export function cellHint(cell: CellModel, t: BoardT): string | undefined {
+/**
+ * Read after the label: on my own lock, what to do next; on a tap stage's cell that takes a tap, that the tap is
+ * the move (no keypad).
+ */
+export function cellHint(cell: CellModel, t: BoardT, tap = false): string | undefined {
+  if (tap) return cell.interactive ? t('cell.hintTap') : undefined;
   return cell.kind === 'myLock' ? t('cell.hintMyLock') : undefined;
 }
 

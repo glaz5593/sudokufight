@@ -1,5 +1,5 @@
 import type { CellIndex } from '@sudoku-fight/engine';
-import { memo, useMemo } from 'react';
+import { memo, type ReactNode, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
@@ -29,6 +29,18 @@ export interface BoardProps {
   flashes?: readonly BoardFlash[];
   /** Coordinate rails (A–I down the left, 1–9 across the top). Not drawn in C, so off by default (§11.1). */
   showCoordinates?: boolean;
+  /**
+   * The board's label in place of the game's ("לוח המשחק · המשבצת שלך F8"): a stage says its area and target
+   * (components.md §19.7). Pass a stable string.
+   */
+  label?: string;
+  /** A tap stage's board: every cell's hint says the tap is the move. */
+  tap?: boolean;
+  /**
+   * Drawn over the board, in its own LTR coordinates (geometry.cellRect): a stage's frame, chips, a freeze.
+   * Pass a memoised element: a new one redraws the board.
+   */
+  children?: ReactNode;
   testID?: string;
 }
 
@@ -43,6 +55,9 @@ function BoardView({
   onCellPress,
   flashes,
   showCoordinates = false,
+  label,
+  tap = false,
+  children,
   testID = 'board',
 }: BoardProps) {
   const { t } = useTranslation('board');
@@ -67,7 +82,7 @@ function BoardView({
     <View
       style={[styles.board, { gap: boxGap, borderRadius: radius }]}
       role="grid"
-      accessibilityLabel={boardLabel(model, t)}
+      accessibilityLabel={label ?? boardLabel(model, t)}
       testID={testID}
     >
       {THREE.map((br) => (
@@ -93,6 +108,7 @@ function BoardView({
                           onCellPress={onCellPress}
                           corner={cornerOf(row, col)}
                           hitSlop={hitSlops[index]}
+                          tap={tap}
                         />
                       );
                     })}
@@ -103,6 +119,7 @@ function BoardView({
           })}
         </View>
       ))}
+      {children}
     </View>
   );
 
@@ -175,6 +192,9 @@ export function sameBoardProps(a: BoardProps, b: BoardProps): boolean {
     a.onCellPress !== b.onCellPress ||
     a.flashes !== b.flashes ||
     a.showCoordinates !== b.showCoordinates ||
+    a.label !== b.label ||
+    a.tap !== b.tap ||
+    a.children !== b.children ||
     a.testID !== b.testID
   )
     return false;

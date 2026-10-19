@@ -6,7 +6,8 @@
   "board": {
     "label": "Game board",
     "myLock": "your cell {{cell}}",
-    "otherLock": "{{cell}} locked by {{name}}"
+    "otherLock": "{{cell}} locked by {{name}}",
+    "tapLabel": "The stage’s board"
   },
   "cell": {
     "empty": "empty",
@@ -24,7 +25,11 @@
     "seconds_other": "{{count}} seconds",
     "wrong": "wrong digits: {{digits}}",
     "hintMyLock": "Pick a digit on the keypad",
-    "player": "Player {{n}}"
+    "player": "Player {{n}}",
+    "corrected": "error found: {{wrong}}, the right digit is {{right}}",
+    "mine": "yours",
+    "outside": "outside the area",
+    "hintTap": "Tapping the cell is the move"
   },
   "keypad": {
     "armed": "Digit {{digit}} · {{left}} left",
@@ -35,5 +40,13 @@
   "cancel": {
     "label": "Cancel selection",
     "withCell": "Cancel selection, {{cell}}"
+  },
+  "resume": {
+    "title": "Back in",
+    "paused": "The game is paused",
+    "label_one": "Back in 1 second",
+    "label_two": "Back in {{count}} seconds",
+    "label_many": "Back in {{count}} seconds",
+    "label_other": "Back in {{count}} seconds"
   }
 }

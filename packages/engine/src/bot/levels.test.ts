@@ -1,5 +1,8 @@
 import { GAME_TYPES } from '../gameType';
+import { TARGET_TIERS } from '../levels/spec';
 import { TECHNIQUES } from '../sudoku/logic';
+import { GameDriver } from '../testing/game';
+import { adaptationFactor } from './brain';
 import {
   BOT_CONFIG,
   BOT_LEVEL_IDS,
@@ -11,6 +14,7 @@ import {
   botPlayer,
   CELL_TECHNIQUES,
   isBotLevelId,
+  levelBotConfig,
 } from './levels';
 
 /* The level table and the bot settings (spec §9) [D40]. */
@@ -158,5 +162,71 @@ describe('botLevel / botPlayer', () => {
   it('makes the bot a player: bot-<level>, its name, isBot', () => {
     expect(botPlayer(3)).toEqual({ id: 'bot-3', name: 'Mr. Hoot', isBot: true });
     expect(botPlayer(5, 'rival')).toEqual({ id: 'rival', name: 'Overlord', isBot: true });
+  });
+});
+
+describe('the race of staged practice: BOT_CONFIG.find (plan §2.2; spec §9) [D61]', () => {
+  const { find } = BOT_CONFIG;
+
+  it("searches a spot per the plan's table: Pip 8–12 s down to Overlord 3–4.5 s", () => {
+    expect(BOT_LEVEL_IDS.map((l) => [l, find.ms[l].min, find.ms[l].max])).toEqual([
+      [1, 8000, 12_000],
+      [2, 6500, 10_000],
+      [3, 5000, 8000],
+      [4, 4000, 6000],
+      [5, 3000, 4500],
+    ]);
+  });
+
+  it('Pip is the slowest, Overlord the fastest, every level faster than the one before', () => {
+    for (let k = 1; k < BOT_LEVEL_IDS.length; k++) {
+      const [slower, faster] = [find.ms[BOT_LEVEL_IDS[k - 1]!], find.ms[BOT_LEVEL_IDS[k]!]];
+      expect(faster.min).toBeLessThan(slower.min);
+      expect(faster.max).toBeLessThan(slower.max);
+    }
+    for (const l of BOT_LEVEL_IDS) expect(find.ms[l].min).toBeLessThan(find.ms[l].max);
+  });
+
+  it('× 1.3 for every target that is not a single', () => {
+    expect(Object.keys(find.tierFactor).sort()).toEqual([...TARGET_TIERS].sort());
+    for (const tier of TARGET_TIERS) expect(find.tierFactor[tier]).toBe(tier === 'single' ? 1 : 1.3);
+  });
+
+  it('misses as often as its level errs, reacts as its 😂 in the table, and a wrong tap freezes 3 s', () => {
+    for (const l of BOT_LEVELS) {
+      expect(find.missShare[l.level]).toBe(l.mistakeRate);
+      expect(find.reactShare[l.level]).toBe(l.reactions.opponentMistake!.chance);
+    }
+    expect(find.wrongFreezeMs).toBe(3000);
+    expect(find.reactAfterMs).toBeGreaterThanOrEqual(BOT_CONFIG.reactionDelayMs.min);
+    expect(find.reactAfterMs).toBeLessThanOrEqual(BOT_CONFIG.reactionDelayMs.max);
+  });
+});
+
+describe('levelBotConfig (dev-plan §1.4; spec §9) [D61]: the game bot of a level', () => {
+  it('levelBotConfig(0.8): pace 0.8 for all three game types, no deliberate hesitation, no adaptation', () => {
+    const c = botConfig(levelBotConfig(0.8));
+    expect(c.pace).toEqual({ fast: 0.8, normal: 0.8, hard: 0.8 });
+    expect(Object.keys(c.pace).sort()).toEqual([...GAME_TYPES].sort());
+    expect(c.lingerShare).toBe(0);
+    expect(c.adaptation.slowdown).toBe(1);
+    // Everything else is the game's bot as it is.
+    expect(c.levels).toBe(BOT_LEVELS);
+    expect(c.difficulty).toBe(BOT_CONFIG.difficulty);
+    expect(Object.keys(levelBotConfig(0.8)).sort()).toEqual(['adaptation', 'lingerShare', 'pace']);
+  });
+
+  it('adaptation off: Pip does not slow down however far the human trails', () => {
+    const g = GameDriver.of({ mode: 'bot', players: [{ id: 'me' }, botPlayer(1)] });
+    for (const cell of ['A1', 'A2', 'B2', 'C1', 'C3', 'D1']) g.solve('bot-1', cell);
+    expect(g.score('bot-1') - g.score('me')).toBeGreaterThan(BOT_CONFIG.adaptation.humanTrailingBy);
+    expect(adaptationFactor(g.state, 'bot-1', botLevel(1))).toBe(BOT_CONFIG.adaptation.slowdown);
+    expect(adaptationFactor(g.state, 'bot-1', botLevel(1), botConfig(levelBotConfig(1)))).toBe(1);
+  });
+
+  it('refuses a pace that is not positive', () => {
+    expect(() => levelBotConfig(0)).toThrow(RangeError);
+    expect(() => levelBotConfig(-1)).toThrow(RangeError);
+    expect(() => levelBotConfig(Number.POSITIVE_INFINITY)).toThrow(RangeError);
   });
 });

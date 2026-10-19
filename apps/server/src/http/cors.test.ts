@@ -38,6 +38,20 @@ describe('isSameOriginOnly', () => {
   });
 });
 
+describe('SAME_ORIGIN_ALLOW', () => {
+  it('names every method the /v1 routes take, PUT too (PUT /v1/me/levels, 1.0.2)', () => {
+    expect(SAME_ORIGIN_ALLOW.split(', ')).toEqual([
+      'GET',
+      'HEAD',
+      'POST',
+      'PUT',
+      'PATCH',
+      'DELETE',
+      'OPTIONS',
+    ]);
+  });
+});
+
 describe('preflights through the guard', () => {
   /** A server with a listener that grants CORS to every OPTIONS, as Colyseus's does. */
   async function start() {
@@ -73,7 +87,7 @@ describe('preflights through the guard', () => {
   it('answers OPTIONS under /admin and /v1 itself, without any Access-Control-* header', async () => {
     const { seen, send, close } = await start();
     try {
-      for (const path of ['/admin/api/login', '/admin/', '/v1/events']) {
+      for (const path of ['/admin/api/login', '/admin/', '/v1/events', '/v1/me/levels']) {
         const res = await send('OPTIONS', path);
         expect({ path, status: res.status, allow: res.headers.allow }).toEqual({
           path,
