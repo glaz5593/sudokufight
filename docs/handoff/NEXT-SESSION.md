@@ -114,6 +114,10 @@ Remaining device-only checks are listed in docs/STAGE7-DEVICE-CHECKS.md (new 2ג
    -PreactNativeArchitectures=arm64-v8a`, copied to apps/mobile/apk/debug/. It loads JS from Metro (`npm run mobile`
    on the PC; .env.local points at staging). Next: Moshe's two-phone test (docs/FRIENDS-DEVICE-CHECKS.md,
    docs/LEVELS-DEVICE-CHECKS.md 12–19); the stealth bot is switched on only when he says (build-report-features.md §6).
+   **2026-10-20 Moshe: "להדליק".** f7b9090: STEALTH_BOT_ENABLED="true" in fly.toml (staging only; deploy.test enforces
+   production without it); STEALTH_BOT_SECRET set as a fly secret (never printed). Deployed: log "stealth bot available:
+   the admin switch decides". The admin switch (admin site → "בוט סמוי" → "המתג") is Moshe's click (audited; admin login
+   is his Google account). Production: still without the bot.
 4. **Only with Moshe's OK:** `npm run version:bump` → commit → push → deploy staging (server FIRST: migration
    0007 runs; then `npm run db:seed-puzzles` against staging) → `npm run apk` (see docs/BUILD-APK.md; check free
    space on C: first).
