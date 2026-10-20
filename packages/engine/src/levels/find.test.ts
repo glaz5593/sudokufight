@@ -245,6 +245,24 @@ describe('findDuel (plan §2.2): five spots, against the bot', () => {
     expect(levelOver(four)).toMatchObject({ reason: 'targetReached', spots: 4, stars: 3 });
   });
 
+  it('the end carries the bot’s spots too (opponentSpots, 1.0.3), for levelOutcome().bossBeaten', () => {
+    const all = new FindDriver(pinned(11000));
+    ['F1', 'F8', 'G5', 'H9', 'I6'].forEach((cell, k) => all.tap(cell, 1000 * (k + 1)));
+    expect(levelOver(all)).toMatchObject({ spots: 5, opponentSpots: 0 });
+    const four = new FindDriver(pinned(11000));
+    ['F1', 'F8', 'G5', 'H9'].forEach((cell, k) => four.tap(cell, 1000 * (k + 1)));
+    four.tickTo(4000 + 11000);
+    expect(levelOver(four)).toMatchObject({ spots: 4, opponentSpots: 1 });
+    // The time up with one spot the bot's and one void: mine 0, its 1.
+    const late = new FindDriver(pinnedRace([5000, 40000, 40000, 40000, 40000]));
+    late.tickTo(30000);
+    expect(levelOver(late)).toMatchObject({ reason: 'timeUp', spots: 0, opponentSpots: 1 });
+    // A find has no opponent: no such field.
+    const find = new FindDriver(FIND_LEVEL);
+    find.tap('D5', 5000);
+    expect(levelOver(find)).not.toHaveProperty('opponentSpots');
+  });
+
   it('30 s with a spot open: it goes to nobody (spotVoid), then the time is up', () => {
     const d = new FindDriver(pinnedRace([5000, 40000, 40000, 40000, 40000]));
     d.tickTo(5000);

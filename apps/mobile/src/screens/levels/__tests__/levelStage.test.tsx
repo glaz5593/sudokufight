@@ -8,7 +8,7 @@ import { LevelStage } from '../../../../app/levels/play';
 import { gameEndConfig } from '../../../config/gameEnd';
 import i18n from '../../../i18n';
 import type { AppStateSource, LevelSessionDeps } from '../../../levels/levelSession';
-import { levelById } from '../../../levels/levelsData';
+import { firstLevelOf } from '../../../levels/__tests__/helpers/levelsOf';
 import { useSettings } from '../../../state/settings';
 import { levelEndDelayMs } from '../levelChrome';
 
@@ -29,7 +29,7 @@ jest.mock('../../../services/feedback', () => ({
   cueCountUp: jest.fn(() => jest.fn()),
 }));
 
-const L002 = levelById('L002')!; // fill box 8 (4 missing cells)
+const BOX = firstLevelOf('fillBox', 1); // chapter 1's first fill-box (picked by kind: helpers/levelsOf)
 const never = <T,>() => new Promise<T>(() => undefined);
 const idleApp: AppStateSource = { addEventListener: () => ({ remove: () => undefined }) };
 
@@ -89,11 +89,11 @@ async function pressBack() {
 
 describe('LevelStage: a way out when levels.db does not answer', () => {
   it('a digit stage’s result does not come: the watchdog’s "לבית" and Android back leave the stage', async () => {
-    if (L002.kind !== 'fillBox') throw new Error('L002 is a fill-box');
-    const s = await show(L002);
-    for (const cell of L002.targets.cells) {
+    if (BOX.kind !== 'fillBox') throw new Error('BOX is a fill-box');
+    const s = await show(BOX);
+    for (const cell of BOX.targets.cells) {
       await fireEvent.press(screen.getByTestId(`cell-${cellName(cell)}`));
-      await fireEvent.press(screen.getByTestId(`key-${Number(L002.board.solution[cell]) as Digit}`));
+      await fireEvent.press(screen.getByTestId(`key-${Number(BOX.board.solution[cell]) as Digit}`));
       await s.wait(200);
     }
     await s.wait(levelEndDelayMs('boardComplete', false) + gameEndConfig.resultsWatchdogMs + 200);
@@ -106,7 +106,7 @@ describe('LevelStage: a way out when levels.db does not answer', () => {
   });
 
   it('a start that does not come: the blank, then after the watchdog a way out to the map', async () => {
-    const s = await show(L002, { attemptOf: never });
+    const s = await show(BOX, { attemptOf: never });
     expect(screen.getByTestId('level-stage-starting')).toBeOnTheScreen();
     await s.wait(gameEndConfig.resultsWatchdogMs - 100);
     expect(screen.getByTestId('level-stage-starting')).toBeOnTheScreen();

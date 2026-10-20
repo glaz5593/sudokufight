@@ -271,7 +271,9 @@ export type RejectReason =
   /** A cell outside rules.editableCells (a level's box). */
   | 'notEditable'
   /** A tap level: my taps wait out the freeze after a wrong one (findDuel, the tap engine). */
-  | 'frozen';
+  | 'frozen'
+  /** A puzzle: that box is fixed, or locked at home (lockOnCorrect), and never moves (the puzzle engine). */
+  | 'boxFixed';
 
 // ---------------------------------------------------------------------------------------------------------
 // Events (spec §18, server → client). Every event has an increasing seq and the time it happened.

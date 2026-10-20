@@ -19,6 +19,7 @@ import { join } from 'node:path';
 
 import { LEVEL_KINDS, type LevelKind, type LevelSpec } from '../src';
 import { PROFILE_IDS, type ProfileId, TARGET_TOLERANCE } from '../src/levels/builder/profiles';
+import { BLIND_SWAPPER } from '../src/levels/builder/puzzle';
 import { buildLevels, type LevelBuild } from '../src/levels/builder/build';
 import { type ChapterReport, chapterReport, DEFAULT_RUNS } from '../src/levels/builder/simulate';
 import type { LevelsFile } from '../src/levels/builder/validate';
@@ -76,13 +77,16 @@ function printBuild(builds: readonly LevelBuild[], seconds: number): void {
 
 const PROFILE_HE: Record<ProfileId, string> = { casual: 'מזדמן', good: 'טוב', excellent: 'מעולה' };
 const KIND_HE: Record<LevelKind, string> = {
-  find: 'מציאה',
+  find: 'מיקום מדויק',
   findDuel: 'מרוץ',
   fillBox: 'ריבוע',
   duel: 'דו־קרב',
   spotError: 'מצא את הטעות',
   pointHunter: 'צייד הנקודות',
   chain: 'שרשרת',
+  fillRow: 'שורה',
+  fillCol: 'עמודה',
+  puzzle: 'פאזל',
 };
 const LRI = '⁦';
 const PDI = '⁩';
@@ -91,8 +95,8 @@ const signed = (x: number): string => `${LRI}${x > 0 ? '+' : x < 0 ? '−' : ''}
 
 /** The later chapters to time for the calibration: act 4's first that needs an elimination, and act 6's first. */
 const CALIBRATION_CHAPTERS = [17, 26] as const;
-/** The kinds the gap comes from in those chapters (the report's kind×act table). */
-const CALIBRATION_KINDS: readonly LevelKind[] = ['fillBox', 'findDuel', 'duel'];
+/** The kinds the gap comes from in those chapters (the report's kind×act table), and the timed new kinds. */
+const CALIBRATION_KINDS: readonly LevelKind[] = ['fillBox', 'puzzle', 'findDuel', 'duel'];
 
 /**
  * The levels to play once and time for the calibration (dev-plan §2ד): the first of each kind, then the gap's
@@ -128,6 +132,8 @@ function reportMarkdown(r: ChapterReport, levels: readonly LevelSpec[]): string 
     '> **חשוב:** כל המספרים של הפרופילים הם **הנחה**, ועוד לא כוילו מול משחק אמיתי (הטבלה בסוף). לפני שמקבעים ספים, צריך לכייל אותם: למשל הזמנים שלך בכמה שלבים לדוגמה, או נתוני זמן החשיבה באימונים.',
     '>',
     `> **⚠** מסמן פרק שרחוק מהיעד ביותר מ־${TARGET_TOLERANCE} כוכבים. הדוח מזהיר, ולא עוצר את הבנייה.`,
+    '>',
+    '> **מלא את הריבוע, השורה והעמודה, ופאזל (1.0.3):** הספים שלהם באים ממודל של זמן למשבצת ולריבוע (levels-content.md, סעיפים 4.4 ו־5.3), והסימולציה משחקת את אותו מודל. כל המספרים של המודל הם הנחה (D74): לא נקראו נתונים מ־staging בבנייה הזו.',
     '',
     '## לפי פרק',
     '',
@@ -172,6 +178,22 @@ function reportMarkdown(r: ChapterReport, levels: readonly LevelSpec[]): string 
       return `${LRI}${PROFILE_IDS.map(mean).join(' / ')}${PDI}`;
     });
     lines.push(`| ${KIND_HE[kind]} | ${cells.join(' | ')} |`);
+  }
+  if (r.blind.length) {
+    lines.push(
+      '',
+      '## פאזל: "גורר בלי לחשוב" (סעיף 5.3)',
+      '',
+      `- שחקן שמחליף זוגות באקראי, החלפה כל 1.5 ש׳, ומשלם 5 ש׳ על כל החלפה שגויה. מ־${BLIND_SWAPPER.fromMoving} זזים הבודק נכשל אם הוא מקבל ★★★ ב־${Math.round(BLIND_SWAPPER.maxThreeShare * 100)}% מהריצות או יותר. "אף פעם" אי אפשר להבטיח עם 4 זזים: ניחוש עיוור של מעגל של 4 מגיע ל־★★★ בערך ברבע מהפעמים.`,
+      '- **בפרקים 1–3 (3 זזים) אי אפשר למנוע ניחוש**, ואומרים את זה ביושר: אלה שלבי ההיכרות.',
+      '',
+      '| שלב | פרק | זזים | ★★★ אצלו | החציון שלו | נבדק? |',
+      '|---|---|---|---|---|---|',
+    );
+    for (const b of r.blind)
+      lines.push(
+        `| ${b.id} | ${b.chapter} | ${b.moving} | ${Math.round(b.threeShare * 100)}% | ${(b.medianMs / 1000).toFixed(1)} ש׳ | ${b.checked ? 'כן' : 'לא (היכרות)'} |`,
+      );
   }
   const hard = r.warnings.filter((w) => w.type === 'tooHard');
   const order = r.warnings.filter((w) => w.type === 'order');
@@ -292,6 +314,14 @@ function simulateAndReport(file: LevelsFile, runs: number, reportPath: string | 
       `  chapter ${String(c.chapter).padStart(2)}  ` +
         PROFILE_IDS.map((id) => `${id} ${c.stars[id].toFixed(1).padStart(4)} / ${c.target[id]}`).join('   '),
     );
+  if (report.blind.length) {
+    console.log('\n  The blind swapper on the puzzles (★★★ share, median):');
+    for (const b of report.blind)
+      console.log(
+        `    ${b.id} (chapter ${b.chapter}, ${b.moving} moving${b.checked ? '' : ', introduction'}): ` +
+          `${Math.round(b.threeShare * 100)}%, ${(b.medianMs / 1000).toFixed(1)} s`,
+      );
+  }
   console.log(`\n  ${report.warnings.length} warnings:`);
   for (const w of report.warnings) console.log(`    ${w.text}`);
   console.log(`(${((Date.now() - simStarted) / 1000).toFixed(0)} s)`);

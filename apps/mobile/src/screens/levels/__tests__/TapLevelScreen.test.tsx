@@ -12,7 +12,10 @@ import {
   ManualScheduler,
 } from '@sudoku-fight/engine';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { BackHandler } from 'react-native';
+import { BackHandler, Dimensions, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+
+import { boardGeometry, cellRect } from '../../../components/board/geometry';
+import { regionCellsOf } from '../../../components/levels/MiniRegion';
 
 import { gameEndConfig } from '../../../config/gameEnd';
 import { LEVEL_UI } from '../../../config/levels';
@@ -23,9 +26,11 @@ import {
   type LevelSessionDeps,
   startLevel,
 } from '../../../levels/levelSession';
-import { levelById } from '../../../levels/levelsData';
 import { useSettings } from '../../../state/settings';
+import { firstBossOf, firstLevelOf, levelsOf } from '../../../levels/__tests__/helpers/levelsOf';
+import { color, text, tokens } from '../../../theme';
 import { motion } from '../../../theme/motion';
+import { boardSide } from '../../game/geometry';
 import { levelEndDelayMs } from '../levelChrome';
 import { ANSWER_HOLD_MS, TapLevelScreen } from '../TapLevelScreen';
 
@@ -49,8 +54,12 @@ jest.mock('../../../services/feedback', () => ({
 }));
 
 const hidden = { includeHiddenElements: true };
-const L001 = levelById('L001') as LevelSpecOf<'find'>; // the 7 in box 8
-const L012 = levelById('L012') as LevelSpecOf<'findDuel'>; // the race against Pip
+/** A RegionFrame's parts, inside out (they carry no ids): the region's gold band, an answer's white line. */
+const frameParts = (el: unknown) =>
+  (el as { children: unknown[] }).children as { props: { style?: unknown }; children: unknown[] }[];
+// Picked by kind, never by id (a rebuild may give an id another kind): helpers/levelsOf.
+const FIND = firstLevelOf('find', 1) as LevelSpecOf<'find'>; // chapter 1's first stage: a digit in a box
+const RACE = firstLevelOf('findDuel') as LevelSpecOf<'findDuel'>; // the first race (not a boss): against Pip
 
 function fakeAppState() {
   let listener: ((state: string) => void) | null = null;
@@ -143,19 +152,34 @@ afterEach(() => {
 });
 
 describe('find (kind 1)', () => {
-  const target = L001.targets.target;
+  const target = FIND.targets.target;
   const answer = target.accept[0]!;
-  const wrong = wrongIn(L001, 7, target.accept);
+  const wrong = wrongIn(FIND, boxOf(target.cell!), target.accept);
+  const digit = String(target.digit);
 
-  it('no keypad; under the board the big digit and "הקש איפה ה־7 חייב להיות"', async () => {
-    await show(L001);
+  it('no keypad; under the board the big digit and "הקש איפה ה־7 חייב להיות" (its digit)', async () => {
+    await show(FIND);
     expect(screen.queryByTestId('key-1')).toBeNull();
     expect(screen.queryByTestId('keypad')).toBeNull();
-    expect(screen.getByTestId('find-digit', hidden)).toHaveTextContent('7');
-    expect(screen.getByTestId('find-tap', hidden)).toHaveTextContent('הקש איפה ה־7 חייב להיות');
+    expect(screen.getByTestId('find-digit', hidden)).toHaveTextContent(digit);
+    expect(screen.getByTestId('find-tap', hidden)).toHaveTextContent(`הקש איפה ה־${digit} חייב להיות`);
+    // [D75] The region's words stand out in the card (the row title's type, in the text colour); the rest of the
+    // line stays the muted label.
+    const scope = screen.getByTestId('find-scope', hidden);
+    expect(scope).toHaveTextContent(/^בריבוע \d$/);
+    expect(StyleSheet.flatten(scope.props.style as TextStyle)).toMatchObject({
+      ...text('rowTitle'),
+      color: color.text,
+    });
+    const where = screen.getByTestId('find-where', hidden);
+    expect(where).toHaveTextContent(/^בריבוע \d · בלי מקלדת, רק הקשה$/);
+    expect(StyleSheet.flatten(where.props.style as TextStyle).color).toBe(color.textMuted);
     expect(screen.getByTestId('stage-title')).toHaveTextContent('שלב 1');
-    // The area is framed, the rest of the board dimmed, every 7 a chip; the board reads LTR.
-    expect(screen.getByTestId('region-frame-focus', hidden)).toBeTruthy();
+    // The region in its one look [D75a] (the gold frame with its dark lines), every 7 a chip; the board reads LTR.
+    const frame = screen.getByTestId('region-frame', hidden);
+    expect(StyleSheet.flatten(frameParts(frame)[0]!.props.style as ViewStyle).borderColor).toBe(
+      color.focusRing,
+    );
     expect(screen.getByTestId(`cell-${cellName(answer)}`)).toHaveProp(
       'accessibilityHint',
       'הקשה על המשבצת היא המהלך',
@@ -164,7 +188,7 @@ describe('find (kind 1)', () => {
   });
 
   it('a wrong tap: the red X and "⁦+5⁩ ש׳"', async () => {
-    const s = await show(L001);
+    const s = await show(FIND);
     await tap(wrong);
     expect(screen.getByTestId('cell-flash-miss-cross', hidden)).toBeTruthy();
     expect(screen.getByTestId('penalty-chip', hidden)).toHaveTextContent('⁦+5⁩ ש׳');
@@ -172,7 +196,7 @@ describe('find (kind 1)', () => {
   });
 
   it('a right tap: the digit falls into the cell, and the result comes after the hold, in the route', async () => {
-    const s = await show(L001);
+    const s = await show(FIND);
     await wait(s, 2000);
     await tap(answer);
     expect(screen.getByTestId('digit-drop', hidden)).toBeTruthy();
@@ -185,21 +209,23 @@ describe('find (kind 1)', () => {
 
   it('a right tap under Reduced Motion: the digit appears in place, nothing falls', async () => {
     useSettings.setState({ reduceMotion: 'on' });
-    const s = await show(L001);
+    const s = await show(FIND);
     await tap(answer);
     expect(screen.queryByTestId('digit-drop', hidden)).toBeNull();
-    expect(screen.getByTestId(`cell-${cellName(answer)}`)).toHaveTextContent('7');
+    expect(screen.getByTestId(`cell-${cellName(answer)}`)).toHaveTextContent(digit);
     await wait(s, levelEndDelayMs('boardComplete', true) + 50);
     expect(s.onOver).toHaveBeenCalledTimes(1);
   });
 
   it('time runs out: the answer shows, held a moment before the result', async () => {
-    const s = await show(L001);
-    await wait(s, L001.timeLimitMs - 500, 500);
+    const s = await show(FIND);
+    await wait(s, FIND.timeLimitMs - 500, 500);
     expect(s.session.over).toBeNull();
     await wait(s, 500);
     expect(s.session.over).toMatchObject({ reason: 'timeUp' });
-    expect(screen.getByTestId('answer-frame-gold', hidden)).toBeTruthy();
+    // The answer in its own look: the dark ring and the digit in its dark chip, never the region's gold.
+    expect(screen.getByTestId('answer-frame', hidden)).toBeTruthy();
+    expect(screen.getByTestId('answer-frame', hidden)).toHaveTextContent(digit);
     await wait(s, ANSWER_HOLD_MS - 200);
     expect(s.onOver).not.toHaveBeenCalled();
     await wait(s, 300);
@@ -207,7 +233,7 @@ describe('find (kind 1)', () => {
   });
 
   it('the X: "לצאת מהשלב?", and "יציאה" quits, the result once the dialog is gone', async () => {
-    const s = await show(L001);
+    const s = await show(FIND);
     await fireEvent.press(screen.getByTestId('stage-exit'));
     await wait(s, motion.duration.sheetIn + 50);
     expect(screen.getByText('לצאת מהשלב?')).toBeOnTheScreen();
@@ -220,7 +246,7 @@ describe('find (kind 1)', () => {
   });
 
   it('the result does not come (levels.db stuck): a way on after the watchdog; "לבית" and back leave the stage', async () => {
-    const s = await show(L001);
+    const s = await show(FIND);
     await tap(answer);
     await wait(s, levelEndDelayMs('boardComplete', false) + 100);
     expect(s.onOver).toHaveBeenCalledTimes(1);
@@ -240,7 +266,7 @@ describe('find (kind 1)', () => {
   });
 
   it('Android back asks the same, and "המשך לשחק" keeps the stage going', async () => {
-    const s = await show(L001);
+    const s = await show(FIND);
     await pressBack();
     await wait(s, motion.duration.sheetIn + 50);
     expect(screen.getByText('לצאת מהשלב?')).toBeOnTheScreen();
@@ -254,25 +280,136 @@ describe('find (kind 1)', () => {
   });
 });
 
+describe('[D75] the region (levels-ui.md §2): one look for every kind and shape', () => {
+  const ROW_FIND = levelsOf('find').find((l) => l.targets.target.scope.kind === 'row')!;
+  const face = (cell: number) => screen.getByTestId(`cell-${cellName(cell)}-face`);
+  const bg = (cell: number) => StyleSheet.flatten(face(cell).props.style as ViewStyle).backgroundColor;
+  const frameStyle = () =>
+    StyleSheet.flatten(screen.getByTestId('region-frame', hidden).props.style as ViewStyle);
+  /** The region frame's whole thickness: a dark line, the gold band, a dark line. */
+  const THICK = 2 * tokens.border.regionKeyline + tokens.border.regionFrame;
+
+  it('a find in a row: the gold frame with its dark lines (not 1.0.2’s light ring) across the row', async () => {
+    expect(ROW_FIND).toBeDefined();
+    await show(ROW_FIND);
+    const scope = ROW_FIND.targets.target.scope;
+    if (scope.kind !== 'row') throw new Error('a row find');
+    const gold = StyleSheet.flatten(
+      frameParts(screen.getByTestId('region-frame', hidden))[0]!.props.style as ViewStyle,
+    );
+    expect(gold.borderColor).toBe(color.focusRing);
+    expect(gold.borderColor).not.toBe(color.text);
+    const g = boardGeometry(boardSide(Dimensions.get('window').width, null));
+    // Nine cells across, one high (the frame's whole thickness on each side).
+    expect(frameStyle().height).toBeCloseTo(g.cell + 2 * THICK);
+    // Cream inside the row, blue-grey outside it.
+    const inRow = scope.index * 9;
+    const outRow = ((scope.index + 3) % 9) * 9;
+    expect([color.board.focusCell, color.board.focusCellAlt]).toContain(bg(inRow));
+    expect([color.board.outCell, color.board.outCellAlt]).toContain(bg(outRow));
+  });
+
+  it('a tap outside the region never reaches the host', async () => {
+    const s = await show(FIND);
+    const scope = FIND.targets.target.scope;
+    if (scope.kind !== 'box') throw new Error('a box find');
+    const outside = Array.from({ length: 81 }, (_, i) => i).find(
+      (i) => boxOf(i) !== scope.index && FIND.board.grid[i] === '0',
+    )!;
+    const taps = jest.spyOn(s.session, 'tap');
+    await tap(outside);
+    expect(taps).not.toHaveBeenCalled();
+    expect(s.session.levelView()!.penaltyMs).toBe(0);
+    expect(s.session.getView().level!.find!.wrongTaps).toBe(0);
+  });
+
+  it('the race: on a new spot the frame moves to the new region (and its band flashes again)', async () => {
+    const s = await show(RACE);
+    const before = frameStyle();
+    expect(screen.getByTestId('region-frame-band', hidden)).toBeTruthy();
+    await wait(s, 100);
+    await tap(RACE.targets.spots[0]!.accept[0]!);
+    const next = RACE.targets.spots[1]!.scope;
+    expect(s.session.getView().level!.find!.spotIndex).toBe(1);
+    const after = frameStyle();
+    expect([after.left, after.top, after.width, after.height]).not.toEqual([
+      before.left,
+      before.top,
+      before.width,
+      before.height,
+    ]);
+    if (next.kind !== 'board') {
+      const first = regionCellsOf({ unit: next.kind, index: next.index })[0]!;
+      const g = boardGeometry(boardSide(Dimensions.get('window').width, null));
+      expect(after.left).toBeCloseTo(cellRect(g, first).x - THICK);
+    }
+    expect(screen.getByTestId('region-frame-band', hidden)).toBeTruthy();
+  });
+
+  it('a missed find: the answer ring differs from the region frame (dark, a white line, the digit’s chip)', async () => {
+    const s = await show(FIND);
+    await wait(s, FIND.timeLimitMs + 100, 500);
+    const ring = StyleSheet.flatten(screen.getByTestId('answer-frame', hidden).props.style as ViewStyle);
+    expect(ring.borderColor).toBe(color.board.given);
+    expect(ring.borderColor).not.toBe(color.focusRing);
+    const [keyline] = frameParts(screen.getByTestId('answer-frame', hidden));
+    expect(StyleSheet.flatten(keyline!.props.style as ViewStyle).borderColor).toBe(color.board.answerKeyline);
+    // The region keeps its gold frame beside it.
+    const regionGold = frameParts(screen.getByTestId('region-frame', hidden))[0]!;
+    expect(StyleSheet.flatten(regionGold.props.style as ViewStyle).borderColor).toBe(color.focusRing);
+  });
+
+  it('a find that hit its target: no answer ring over my digit', async () => {
+    const s = await show(FIND);
+    await tap(FIND.targets.target.accept[0]!);
+    expect(s.session.over).toMatchObject({ reason: 'targetReached' });
+    expect(screen.queryByTestId('answer-frame', hidden)).toBeNull();
+  });
+
+  it('[D75c] the coordinate rails: off by default; on, a row or a column gets them (a box does not)', async () => {
+    const scope = ROW_FIND.targets.target.scope;
+    if (scope.kind !== 'row') throw new Error('a row find');
+    await show(ROW_FIND);
+    expect(screen.queryByTestId('board-with-coordinates')).toBeNull();
+    shown?.session.close();
+    await screen.unmount();
+    LEVEL_UI.regionRails = true;
+    try {
+      await show(ROW_FIND);
+      expect(screen.getByTestId('board-with-coordinates')).toBeTruthy();
+      expect(screen.getByTestId(`rail-row-${'ABCDEFGHI'[scope.index]}`, hidden)).toBeTruthy();
+      shown?.session.close();
+      await screen.unmount();
+      await show(FIND);
+      expect(screen.queryByTestId('board-with-coordinates')).toBeNull();
+    } finally {
+      LEVEL_UI.regionRails = false;
+    }
+  });
+});
+
 describe('the race (kind 2)', () => {
-  const spots = L012.targets.spots;
-  const wrong = wrongIn(L012, 0, spots[0]!.accept);
+  const spots = RACE.targets.spots;
+  const boxOfSpot = (k: number) => (spots[k]!.scope.kind === 'box' ? spots[k]!.scope.index : -1);
+  const wrong = wrongIn(RACE, boxOfSpot(0), spots[0]!.accept);
+  /** "מצא את ה־6 בריבוע 1": the spot's digit and box (a chapter-2 race keeps to boxes). */
+  const task = (k: number) => `מקום ${k + 1} מתוך 5 · מצא את ה־${spots[k]!.digit} בריבוע ${boxOfSpot(k) + 1}`;
 
   it('the task line names the spot, its digit and its box: "מקום 4 מתוך 5 · מצא את ה־5 בריבוע 9"', async () => {
-    const s = await show(L012);
-    expect(screen.getByTestId('race-task')).toHaveTextContent('מקום 1 מתוך 5 · מצא את ה־6 בריבוע 1');
+    const s = await show(RACE);
+    expect(screen.getByTestId('race-task')).toHaveTextContent(task(0));
     for (const spot of spots.slice(0, 3)) {
       await wait(s, 100);
       await tap(spot.accept[0]!);
     }
-    expect(screen.getByTestId('race-task')).toHaveTextContent('מקום 4 מתוך 5 · מצא את ה־5 בריבוע 9');
+    expect(screen.getByTestId('race-task')).toHaveTextContent(task(3));
     expect(screen.getByTestId('race-me-spots')).toHaveTextContent('3');
     expect(screen.getByTestId('race-left')).toHaveTextContent('עוד 30 ש׳');
     expect(screen.queryByTestId('key-1')).toBeNull();
   });
 
   it('a wrong tap freezes my taps for 3 s: the right cell is refused meanwhile', async () => {
-    const s = await show(L012);
+    const s = await show(RACE);
     await tap(wrong);
     expect(screen.getByTestId('board-freeze')).toBeTruthy();
     expect(screen.getByRole('alert')).toHaveProp('accessibilityLabel', 'מוקפא, 3 שניות');
@@ -288,11 +425,11 @@ describe('the race (kind 2)', () => {
   it('the bot’s card says "מחפש…", and 😂 after my wrong tap when its plan says so', async () => {
     // An attempt whose bot reacts on the first spot (its plan is drawn from the stage and the attempt).
     const attempt = Array.from({ length: 200 }, (_, k) => k + 1).find((a) => {
-      const played = attemptLevel(L012, a);
+      const played = attemptLevel(RACE, a);
       return drawBotPlan(played, findBotRng(played, a))[0]!.react;
     })!;
     expect(attempt).toBeDefined();
-    const s = await show(L012, { attemptOf: async () => attempt });
+    const s = await show(RACE, { attemptOf: async () => attempt });
     expect(screen.getByTestId('race-bot-searching')).toHaveTextContent('מחפש…');
     const first = (s.session.played as LevelSpecOf<'findDuel'>).targets.spots[0]!;
     const box = first.scope.kind === 'box' ? first.scope.index : 0;
@@ -302,8 +439,24 @@ describe('the race (kind 2)', () => {
     expect(screen.getByTestId('race-bot-reaction')).toHaveTextContent('😂');
   });
 
+  it('[D77] a boss race: the arena’s four gold corners around its board; a regular race has none', async () => {
+    const s = await show(firstBossOf('findDuel'));
+    const arena = screen.getByTestId('boss-frame', hidden);
+    for (const corner of ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'])
+      expect(screen.getByTestId(`boss-frame-${corner}`, hidden)).toBeTruthy();
+    // Decorative: the band says "boss" (and the bot's crown).
+    expect(arena).toHaveProp('importantForAccessibility', 'no-hide-descendants');
+    expect(screen.getByTestId('stage-boss', hidden)).toBeTruthy();
+    // Not a whole frame: the region keeps its own (RegionFrame), apart from the corners.
+    expect(screen.getByTestId('region-frame', hidden)).toBeTruthy();
+    s.session.close();
+    shown = null;
+    await show(RACE);
+    expect(screen.queryByTestId('boss-frame', hidden)).toBeNull();
+  });
+
   it('my card in P1 with ●, the bot’s in P2 with ▲', async () => {
-    await show(L012);
+    await show(RACE);
     expect(screen.getAllByTestId('glyph-circle', hidden).length).toBeGreaterThan(0);
     expect(screen.getAllByTestId('glyph-triangle', hidden).length).toBeGreaterThan(0);
     expect(screen.getByTestId('race-bot-who')).toHaveProp(
@@ -313,7 +466,7 @@ describe('the race (kind 2)', () => {
   });
 
   it('no reactions button (D62); LEVEL_UI.reactions brings it back', async () => {
-    await show(L012);
+    await show(RACE);
     expect(LEVEL_UI.reactions).toBe(false);
     expect(screen.queryByTestId('race-reactions')).toBeNull();
     expect(screen.queryByTestId('reaction-picker')).toBeNull();
@@ -322,7 +475,7 @@ describe('the race (kind 2)', () => {
 
     LEVEL_UI.reactions = true;
     try {
-      const s = await show(L012);
+      const s = await show(RACE);
       await fireEvent.press(screen.getByTestId('race-reactions'));
       await wait(s, 400);
       await press('reaction-picker-0');
@@ -336,7 +489,7 @@ describe('the race (kind 2)', () => {
 
 describe('[D65] the app away mid-stage', () => {
   it('freezes once; back, "3, 2, 1" over the covered board, then the stage goes on with the same time left', async () => {
-    const s = await show(L001);
+    const s = await show(FIND);
     const pause = jest.spyOn(s.session.host, 'pause');
     const resume = jest.spyOn(s.session.host, 'resume');
     await wait(s, 3000);
@@ -368,7 +521,7 @@ describe('[D65] the app away mid-stage', () => {
 
   it('Reduced Motion: the number just changes (nothing animated)', async () => {
     useSettings.setState({ reduceMotion: 'on' });
-    const s = await show(L001);
+    const s = await show(FIND);
     await s.app.set('background');
     await s.app.set('active');
     expect(screen.getByTestId('resume-countdown-number')).toHaveTextContent('3');
@@ -378,7 +531,7 @@ describe('[D65] the app away mid-stage', () => {
   });
 
   it('LEVEL_UI.backgroundPause off: no freeze, no cover', async () => {
-    const s = await show(L001, { settings: { ...LEVEL_UI, backgroundPause: false } });
+    const s = await show(FIND, { settings: { ...LEVEL_UI, backgroundPause: false } });
     const pause = jest.spyOn(s.session.host, 'pause');
     await s.app.set('background');
     expect(pause).not.toHaveBeenCalled();

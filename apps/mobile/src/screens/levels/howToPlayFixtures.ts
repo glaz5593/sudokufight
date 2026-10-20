@@ -1,4 +1,13 @@
-import { boxOf, type CellIndex, type Digit, parseCellName } from '@sudoku-fight/engine';
+import {
+  boxOf,
+  type BossTrait,
+  type CellIndex,
+  colOf,
+  type Digit,
+  type GateState,
+  parseCellName,
+  rowOf,
+} from '@sudoku-fight/engine';
 import type { LevelTutorialKind } from '@sudoku-fight/protocol';
 
 import { NO_AVATAR_ID } from '../../avatars';
@@ -7,12 +16,18 @@ import type { CellChip } from '../../components/levels/CellChipsLayer';
 import { signedText } from '../../components/player/format';
 
 /**
- * The pictures of "איך משחקים" (components.md §19.8; dev-plan §2ח), as boards the real Board draws: three per
- * kind, each the moment its line describes. Pure data: a board of the Lv-Find board's puzzle (bank #1 relabelled,
- * so not a ranked solution), with the stages' options (an area, the target's chips, a framed box, my P1 cells
- * and the bot's P2 ones, a wrong digit's "‎+5 ש׳", "mine" digits with ●, a found error corrected, a move's
- * points). Every kind of 1.0.2: find, findDuel, fillBox, duel, the boss, and the three ideas (spot the error,
- * the point hunter, the chain).
+ * The pictures of "איך משחקים" (components.md §19.8; dev-plan §2ח; 1.0.3: levels-ui.md §3.2, §6), as boards the
+ * real Board draws: three per kind, each the moment its line describes. Pure data: a board of the Lv-Find
+ * board's puzzle (bank #1 relabelled, so not a ranked solution), with the stages' options (an area, the target's
+ * chips, a framed box, row or column, my P1 cells and the bot's P2 ones, a wrong digit's "‎+5 ש׳", "mine" digits
+ * with ●, a found error corrected, a move's points, the puzzle's boxes out of order). Every kind of 1.0.3: find
+ * (Pinpoint), findDuel, fillBox, fillRow, fillCol, the puzzle, duel, and the three ideas (spot the error, the
+ * point hunter, the chain). The boss's three pictures are not boards (bossTutorialPicture): its node on the map,
+ * the "what's harder" chips, and the gate plate at "22/20".
+ *
+ * [D79] Pinpoint's pictures look for the 6 (TUTORIAL_FIND_DIGIT), and its first line says "איפה ה־6?" from the
+ * same constant (TUTORIAL_LINE_PARAMS): the card's title is the kind's name, with no digit, so nothing on the
+ * card says another digit than its pictures.
  */
 
 /** Lv-Find's board: 48 givens; in box 5 the 6 can only go in E4. */
@@ -21,20 +36,54 @@ export const TUTORIAL_GIVENS =
 export const TUTORIAL_SOLUTION =
   '869153274127894563453267891916342785348675912275981436684519327531728649792436158';
 
-/** One picture: the board's cells, the framed area, and chips over cells. */
-export interface TutorialPicture {
-  cells: CellModel[];
-  region: { cells: CellIndex[]; tone: 'focus' | 'gold' } | null;
-  chips: CellChip[];
+/** The digit Pinpoint's pictures look for (its target chips; E4 in box 5). */
+export const TUTORIAL_FIND_DIGIT: Digit = 6;
+
+/** The values a kind's lines take (`tutorial.<kind>.<n>`), so the words and the pictures say the same thing. */
+export const TUTORIAL_LINE_PARAMS: Partial<Record<LevelTutorialKind, Record<string, string | number>>> = {
+  find: { digit: TUTORIAL_FIND_DIGIT },
+};
+
+/** A frame over an area of the picture's board. */
+export interface TutorialFrame {
+  cells: CellIndex[];
+  tone: 'focus' | 'gold';
+  /**
+   * How it is drawn: the region's gold frame (the default, RegionFrame), or `me`, P1's frame of a held or
+   * chosen box (the puzzle's MeFrame), so a held box never looks like the gold target it is dropped on.
+   */
+  look?: 'region' | 'me';
 }
 
-/** The kinds of the first stage screens (dev-plan §2ח): find, the race, fill the box, the duel and the boss. */
-export const DRAWN_TUTORIALS = ['find', 'findDuel', 'fillBox', 'duel', 'boss'] as const;
+/** One picture: the board's cells, the framed area (and any more frames), and chips over cells. */
+export interface TutorialPicture {
+  cells: CellModel[];
+  region: TutorialFrame | null;
+  /** More frames over the board (the puzzle's held box and its target). */
+  frames?: readonly TutorialFrame[];
+  chips: CellChip[];
+  /** The puzzle's fixed boxes (places 0–8): each with the real lock in its top corner (PuzzleLockMark). */
+  locks?: readonly number[];
+}
+
+/**
+ * The kinds drawn here on a board: the first stage screens' (dev-plan §2ח: find, findDuel, fillBox, duel) and
+ * 1.0.3's (fillRow, fillCol, the puzzle).
+ */
+export const DRAWN_TUTORIALS = [
+  'find',
+  'findDuel',
+  'fillBox',
+  'duel',
+  'fillRow',
+  'fillCol',
+  'puzzle',
+] as const;
 /** The three ideas (dev-plan §2ט): spot the error, the point hunter, the chain. */
 export const IDEA_TUTORIALS = ['spotError', 'pointHunter', 'chain'] as const;
 export type DrawnTutorial = (typeof DRAWN_TUTORIALS)[number] | (typeof IDEA_TUTORIALS)[number];
 
-/** A kind drawn here (any other: the shell's mark). */
+/** A kind drawn here on a board (the boss: bossTutorialPicture; any other: the shell's mark). */
 export const isDrawnTutorial = (kind: LevelTutorialKind): kind is DrawnTutorial =>
   (DRAWN_TUTORIALS as readonly string[]).includes(kind) ||
   (IDEA_TUTORIALS as readonly string[]).includes(kind);
@@ -49,9 +98,11 @@ const BOT: CellPlayer = {
   isMe: false,
 };
 
+const ALL: CellIndex[] = Array.from({ length: 81 }, (_, i) => i);
 const at = (name: string): CellIndex => parseCellName(name)!;
-const cellsOfBox = (b: number): CellIndex[] =>
-  Array.from({ length: 81 }, (_, i) => i).filter((i) => boxOf(i) === b);
+const cellsOfBox = (b: number): CellIndex[] => ALL.filter((i) => boxOf(i) === b);
+const cellsOfRow = (r: number): CellIndex[] => ALL.filter((i) => rowOf(i) === r);
+const cellsOfCol = (c: number): CellIndex[] => ALL.filter((i) => colOf(i) === c);
 
 interface Draw {
   /** The area: the rest is dimmed. */
@@ -109,6 +160,10 @@ function board({
 
 const BOX5 = cellsOfBox(4);
 const BOX6 = cellsOfBox(5);
+/** Row D: its empties D2, D4 and D7 are the row's missing cells. */
+const ROW_D = cellsOfRow(3);
+/** Column 5: its empties A5, B5, E5 and G5 are the column's missing cells. */
+const COL_5 = cellsOfCol(4);
 
 /** Spot the error's "mine" digits on this board, all right; and the error planted among them (row E has a 9). */
 const MINE: readonly [string, Digit][] = [
@@ -122,7 +177,41 @@ const MINE: readonly [string, Digit][] = [
 ];
 const PLANTED: [string, Digit] = ['E5', 9];
 
-/** The picture of `kind`'s panel `index` (0–2); null for a kind another lane draws. */
+// ---------------------------------------------------------------------------------------------------------
+// The puzzle: the solution's nine boxes, three of them out of order (a chapter 1–3 puzzle: 3 move, 6 fixed)
+
+/** The place (0–8, row-major) a cell is in. */
+const placeOf = (i: CellIndex): number => boxOf(i);
+
+/**
+ * The board with the boxes arranged: `start[place]` is the home of the box standing at `place` (the engine's
+ * PuzzleTargets.start); the digits are the solution's, every one a given.
+ */
+function puzzleCells(start: readonly number[], moving: ReadonlySet<number> | null): CellModel[] {
+  return ALL.map((i): CellModel => {
+    const place = placeOf(i);
+    const home = start[place]!;
+    const r = (Math.floor(home / 3) - Math.floor(place / 3)) * 3 + rowOf(i);
+    const c = ((home % 3) - (place % 3)) * 3 + colOf(i);
+    const digit = Number(TUTORIAL_SOLUTION[r * 9 + c]) as Digit;
+    return {
+      ...emptyCell(i),
+      kind: 'given',
+      digit,
+      // The fixed boxes take the "outside" look (grey); the moving ones the region's.
+      area: moving === null ? null : moving.has(place) ? 'in' : 'out',
+    };
+  });
+}
+
+/** The moving boxes, one cycle: place 1 holds box 5's digits, place 5 box 9's, place 9 box 1's. */
+const PUZZLE_START = [4, 1, 2, 3, 8, 5, 6, 7, 0] as const;
+const PUZZLE_MOVING: ReadonlySet<number> = new Set([0, 4, 8]);
+/** The six fixed boxes: each with its lock, as on the puzzle's board ("ריבוע עם מנעול קבוע"). */
+const PUZZLE_FIXED = [1, 2, 3, 5, 6, 7] as const;
+const PUZZLE_SOLVED = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
+
+/** The picture of `kind`'s panel `index` (0–2); null for a kind not drawn here on a board (and the boss). */
 export function tutorialPicture(kind: LevelTutorialKind, index: number): TutorialPicture | null {
   if (!isDrawnTutorial(kind)) return null;
   const pictures = PICTURES[kind];
@@ -130,16 +219,20 @@ export function tutorialPicture(kind: LevelTutorialKind, index: number): Tutoria
 }
 
 const PICTURES: Record<DrawnTutorial, readonly TutorialPicture[]> = {
-  // "ספרה גדולה ואזור מסומן" · "המשבצת היחידה" · "הקשה שגויה מוסיפה 5 שניות"
+  // "שאלה אחת, כמו 'איפה ה־6?', ואזור מסומן" · "המשבצת היחידה" · "הקשה שגויה מוסיפה 5 שניות"
   find: [
-    { cells: board({ area: BOX5, target: 6 }), region: { cells: BOX5, tone: 'focus' }, chips: [] },
     {
-      cells: board({ area: BOX5, target: 6, solved: [['E4', ME]] }),
+      cells: board({ area: BOX5, target: TUTORIAL_FIND_DIGIT }),
       region: { cells: BOX5, tone: 'focus' },
       chips: [],
     },
     {
-      cells: board({ area: BOX5, target: 6 }),
+      cells: board({ area: BOX5, target: TUTORIAL_FIND_DIGIT, solved: [['E4', ME]] }),
+      region: { cells: BOX5, tone: 'focus' },
+      chips: [],
+    },
+    {
+      cells: board({ area: BOX5, target: TUTORIAL_FIND_DIGIT }),
       region: { cells: BOX5, tone: 'focus' },
       chips: [{ id: 'find-miss', cell: at('D4'), text: signedText(5), tone: 'penalty' }],
     },
@@ -172,6 +265,40 @@ const PICTURES: Record<DrawnTutorial, readonly TutorialPicture[]> = {
       region: { cells: BOX6, tone: 'gold' },
       chips: [{ id: 'box-miss', cell: at('F8'), text: signedText(5), tone: 'penalty' }],
     },
+  ],
+  // "שורה במסגרת זהב" · "בחר משבצת בשורה" · "ספרה שגויה מוסיפה 5 שניות"
+  fillRow: [
+    { cells: board({ area: ROW_D }), region: { cells: ROW_D, tone: 'gold' }, chips: [] },
+    { cells: board({ area: ROW_D, myLock: 'D4' }), region: { cells: ROW_D, tone: 'gold' }, chips: [] },
+    {
+      cells: board({ area: ROW_D, myLock: 'D4', wrong: [['D4', 8]] }),
+      region: { cells: ROW_D, tone: 'gold' },
+      chips: [{ id: 'row-miss', cell: at('D4'), text: signedText(5), tone: 'penalty' }],
+    },
+  ],
+  // "עמודה במסגרת זהב" · "בחר משבצת בעמודה" · "ספרה שגויה מוסיפה 5 שניות"
+  fillCol: [
+    { cells: board({ area: COL_5 }), region: { cells: COL_5, tone: 'gold' }, chips: [] },
+    { cells: board({ area: COL_5, myLock: 'E5' }), region: { cells: COL_5, tone: 'gold' }, chips: [] },
+    {
+      cells: board({ area: COL_5, myLock: 'E5', wrong: [['E5', 4]] }),
+      region: { cells: COL_5, tone: 'gold' },
+      chips: [{ id: 'col-miss', cell: at('E5'), text: signedText(5), tone: 'penalty' }],
+    },
+  ],
+  // "תשעה ריבועים, לא בסדר" · "גרור ריבוע אל ריבוע אחר; ריבוע עם מנעול קבוע" · "כל שורה וכל עמודה תקינות"
+  puzzle: [
+    { cells: puzzleCells(PUZZLE_START, PUZZLE_MOVING), region: null, chips: [], locks: PUZZLE_FIXED },
+    {
+      cells: puzzleCells(PUZZLE_START, PUZZLE_MOVING),
+      // The held box (P1's "me" frame) over the box it is dropped on (the gold target frame); the fixed boxes
+      // with their locks.
+      region: { cells: cellsOfBox(4), tone: 'gold' },
+      frames: [{ cells: cellsOfBox(0), tone: 'focus', look: 'me' }],
+      chips: [],
+      locks: PUZZLE_FIXED,
+    },
+    { cells: puzzleCells(PUZZLE_SOLVED, null), region: null, chips: [] },
   ],
   // "אתה והבוט על אותו לוח" · "הראשון ל־30" · "הכוכבים לפי הפער"
   duel: [
@@ -208,26 +335,6 @@ const PICTURES: Record<DrawnTutorial, readonly TutorialPicture[]> = {
       }),
       region: null,
       chips: [{ id: 'duel-lead', cell: at('H1'), text: signedText(8), tone: 'gain' }],
-    },
-  ],
-  // "השלב העשירי הוא בוס" · "הבוט מהיר יותר, הלוח קשה יותר" · "אחרי הבוס, השער"
-  boss: [
-    { cells: board({ solved: [['A2', BOT]] }), region: null, chips: [] },
-    {
-      cells: board({ area: BOX6, solved: [['D7', BOT]] }),
-      region: { cells: BOX6, tone: 'gold' },
-      chips: [],
-    },
-    {
-      cells: board({
-        solved: [
-          ['E4', ME],
-          ['C1', ME],
-          ['H1', ME],
-        ],
-      }),
-      region: null,
-      chips: [],
     },
   ],
   // "הספרות הכהות הן של הלוח" · "בין הספרות שלך מסתתרות ספרות שגויות" · "הקשה על ספרה נכונה מוסיפה 5 שניות"
@@ -281,3 +388,26 @@ const PICTURES: Record<DrawnTutorial, readonly TutorialPicture[]> = {
     },
   ],
 };
+
+// ---------------------------------------------------------------------------------------------------------
+// The boss (levels-ui.md §3.2): not boards
+
+/** The boss's pictures: its node on the map, the "what's harder" chips, the gate plate at "22/20". */
+export type BossTutorialPicture =
+  /** A boss node (stage 10), open: the crown and the arena corners (LevelTile). */
+  | { kind: 'node'; n: number }
+  /** "What's harder" as "מוכן?" of a boss shows it: an example of the engine's bossTraits. */
+  | { kind: 'traits'; traits: readonly BossTrait[] }
+  /** The gate after a chapter with 22 stars and its boss not yet played: "22/20" (GatePlate). */
+  | { kind: 'gate'; chapter: number; gate: GateState };
+
+/** Lv-Boss's example: chapter 2's boss, Pip 10% faster than the chapter's own Pip (BOSS.pace 0.9). */
+const BOSS_PICTURES: readonly BossTutorialPicture[] = [
+  { kind: 'node', n: 10 },
+  { kind: 'traits', traits: [{ key: 'faster', bot: 'Pip', pct: 10 }] },
+  { kind: 'gate', chapter: 2, gate: { chapter: 1, open: false, stars: 22, need: 20, bossPlayed: false } },
+];
+
+/** The boss card's picture `index` (0–2), or null. */
+export const bossTutorialPicture = (index: number): BossTutorialPicture | null =>
+  BOSS_PICTURES[index] ?? null;

@@ -183,6 +183,14 @@ function cornerRadius(corner: BoardCorner | null | undefined, r: number): ViewSt
   }[corner];
 }
 
+/** A cell's ground: in a stage's region, outside it, or on a board without one (CellModel.area null). */
+export function regionBase(area: CellModel['area'], alt: boolean): string {
+  const board = color.board;
+  if (area === 'in') return alt ? board.focusCellAlt : board.focusCell;
+  if (area === 'out') return alt ? board.outCellAlt : board.outCell;
+  return alt ? board.cellAlt : board.cell;
+}
+
 function CellView({
   cell,
   geometry: g = DEFAULT_GEOMETRY,
@@ -196,15 +204,10 @@ function CellView({
   const { t } = useTranslation('board');
   const reduce = useReduceMotion();
   const palette: PlayerPalette | null = cell.player ? (players[cell.player.colorIndex] ?? null) : null;
-  // Outside a stage's area the cell is dimmed (components.md §19.7); the area keeps the board's own colours.
+  // A stage's region (levels-ui.md §2.2, D75a): cream inside, blue-grey outside with its givens in givenOut,
+  // the same for every kind and shape; a board without one keeps its own colours. A solved cell's tint wins.
   const out = cell.area === 'out';
-  const base = out
-    ? cell.alt
-      ? color.board.cellDimAlt
-      : color.board.cellDim
-    : cell.alt
-      ? color.board.cellAlt
-      : color.board.cell;
+  const base = regionBase(cell.area, cell.alt);
   // My tap waiting for the server (#9), and my digit waiting for the connection (#14, [D42]): the half ring.
   const waiting = cell.kind === 'pending' || cell.kind === 'queued';
   const tint = (cell.kind === 'solved' || cell.kind === 'myLock') && palette ? palette.tint : null;
@@ -297,7 +300,7 @@ function CellView({
               (cell.kind === 'solved' || cell.kind === 'queued') && palette
                 ? palette.digit
                 : out
-                  ? color.board.givenDim
+                  ? color.board.givenOut
                   : color.board.given
             }
             g={g}

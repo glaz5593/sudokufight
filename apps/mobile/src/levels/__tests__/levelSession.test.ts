@@ -24,7 +24,8 @@ import {
   type LevelSessionDeps,
   startLevel,
 } from '../levelSession';
-import { allLevels, levelById } from '../levelsData';
+import { allLevels } from '../levelsData';
+import { firstBossOf, firstLevelOf, levelsOf } from './helpers/levelsOf';
 import { forgetLevels } from '../levelsStore';
 import { useTestingSwitches } from '../../state/testingSwitches';
 
@@ -57,11 +58,17 @@ jest.mock('@sudoku-fight/engine', () => {
   };
 });
 
-const L001 = levelById('L001')!; // find: the 7 in box 8, chapter 1
-const L002 = levelById('L002')!; // fill the box
-const L012 = levelById('L012')!; // the race against Pip
-const L021 = levelById('L021')!; // the duel against Pip
-const L030 = levelById('L030')!; // chapter 3's boss: a duel at ×0.9
+// Picked by kind, never by id (a rebuild may give an id another kind): helpers/levelsOf.
+const FIND = firstLevelOf('find', 1); // find, chapter 1's first stage
+const BOX = firstLevelOf('fillBox', 1); // fill the box, chapter 1
+const RACE = firstLevelOf('findDuel'); // the first race (not a boss): against Pip
+const DUEL = firstLevelOf('duel'); // the first duel: against Pip
+/**
+ * A duel against Pip whose bot moves inside the stage's 30 s (Pip thinks 15–25 s a move, so on some stages'
+ * dice its first move comes after the end): the second Pip duel.
+ */
+const PIP_DUEL = levelsOf('duel').filter((l) => l.bot?.level === 1)[1]!;
+const DUEL_BOSS = firstBossOf('duel'); // the first duel boss (chapter 3): its bot at ×0.9
 
 /** A fake AppState: the test says when the app goes and comes back. */
 function fakeAppState() {
@@ -148,7 +155,7 @@ afterEach(() => {
 describe('the attempt’s board', () => {
   it('attempt 1 plays the stored board', async () => {
     const h = harness();
-    for (const level of [L001, L002]) {
+    for (const level of [FIND, BOX]) {
       const s = await start(level, h);
       expect(s.attempt).toBe(1);
       expect(s.getView().grid.join('')).toBe(level.board.grid);
@@ -158,7 +165,7 @@ describe('the attempt’s board', () => {
 
   it('attempt 2 plays an equivalent board: another grid, the same star rule and limit', async () => {
     const h = harness({ attemptOf: async () => 2 });
-    for (const level of [L001, L002]) {
+    for (const level of [FIND, BOX]) {
       const s = await start(level, h);
       expect(s.attempt).toBe(2);
       expect(s.getView().grid.join('')).not.toBe(level.board.grid);
@@ -169,11 +176,11 @@ describe('the attempt’s board', () => {
 
   it('a stage runs as the engine says: find in the tap engine, the box and the duel in the game engine', async () => {
     const h = harness();
-    expect((await start(L001, h)).mode).toBe('solo');
-    expect((await start(L012, h)).mode).toBe('bot');
-    const box = await start(L002, h);
+    expect((await start(FIND, h)).mode).toBe('solo');
+    expect((await start(RACE, h)).mode).toBe('bot');
+    const box = await start(BOX, h);
     expect(box.getView().rules.interferences).toBe(false);
-    expect(box.levelView()!.editableCells).toEqual(L002.kind === 'fillBox' ? L002.targets.cells : null);
+    expect(box.levelView()!.editableCells).toEqual(BOX.kind === 'fillBox' ? BOX.targets.cells : null);
   });
 });
 
@@ -202,17 +209,17 @@ describe('the point hunter’s "שווה 6" (LEVEL_UI.worthHintLevels)', () => {
     expect((await start(hunters[4]!, five)).played.worthHint).toBe(true);
     expect((await start(hunters[5]!, five)).played.worthHint).toBeUndefined();
     // Any other kind is played as stored.
-    expect((await start(L001, five)).played).toBe(L001);
+    expect((await start(FIND, five)).played).toBe(FIND);
   });
 });
 
 describe('the bot', () => {
   it('a duel attaches the engine’s bot at the stage’s pace, and it never interferes', async () => {
     const h = harness();
-    const s = await start(L021, h);
+    const s = await start(PIP_DUEL, h);
     expect(attachBot).toHaveBeenCalledTimes(1);
     const opts = jest.mocked(attachBot).mock.calls[0]![1];
-    expect(opts).toMatchObject({ botId: 'bot-1', level: 1, config: levelBotConfig(L021.bot!.pace) });
+    expect(opts).toMatchObject({ botId: 'bot-1', level: 1, config: levelBotConfig(PIP_DUEL.bot!.pace) });
     const events: GameEvent[] = [];
     s.subscribe((u: HostUpdate) => u.kind === 'events' && events.push(...u.events));
     for (let k = 0; k < 30; k++) h.scheduler.advance(1000);
@@ -221,16 +228,16 @@ describe('the bot', () => {
   });
 
   it('a boss duel’s bot runs at the boss’s final pace (the chapter’s × 0.9)', async () => {
-    expect(L030.boss).toBe(true);
-    expect(L030.bot!.pace).toBeCloseTo(0.9);
-    await start(L030, harness());
+    expect(DUEL_BOSS.boss).toBe(true);
+    expect(DUEL_BOSS.bot!.pace).toBeCloseTo(0.9);
+    await start(DUEL_BOSS, harness());
     expect(jest.mocked(attachBot).mock.calls[0]![1].config).toEqual(levelBotConfig(0.9));
   });
 
   it('its dice come from the stage’s seed and the attempt: the first attempt meets the same bot', async () => {
     const play = async (attempt: number) => {
       const h = harness({ attemptOf: async () => attempt });
-      const s = await start(L021, h);
+      const s = await start(PIP_DUEL, h);
       const moves: string[] = [];
       s.subscribe(
         (u) =>
@@ -248,7 +255,7 @@ describe('the bot', () => {
   });
 
   it('a race needs no attached bot: it lives in the tap engine', async () => {
-    const s = await start(L012, harness());
+    const s = await start(RACE, harness());
     expect(attachBot).not.toHaveBeenCalled();
     expect(s.getView().players.map((p) => p.id)).toEqual(['me', 'bot-1']);
   });
@@ -257,12 +264,15 @@ describe('the bot', () => {
 describe('level_start', () => {
   it('goes once per start, with the attempt, the best stars and quick', async () => {
     const h = harness({ attemptOf: async () => 3, bestStarsOf: () => 2 });
-    await start(L001, h, true);
+    await start(FIND, h, true);
     const starts = h.track.mock.calls.filter(([name]) => name === 'level_start');
     expect(starts).toEqual([
-      ['level_start', { level: 1, chapter: 1, kind: 'find', attempt: 3, bestStars: 2, quick: true }],
+      [
+        'level_start',
+        { level: 1, rev: FIND.rev, chapter: 1, kind: 'find', attempt: 3, bestStars: 2, quick: true },
+      ],
     ]);
-    await start(L002, h);
+    await start(BOX, h);
     expect(h.track.mock.calls.filter(([name]) => name === 'level_start')).toHaveLength(2);
     expect(h.track).toHaveBeenLastCalledWith(
       'level_start',
@@ -274,15 +284,21 @@ describe('level_start', () => {
 describe('the end', () => {
   it('a found target is stored once, with its stars, reason and measure', async () => {
     const h = harness();
-    const s = await start(L001, h);
+    const s = await start(FIND, h);
     h.scheduler.advance(4000);
     s.tap(answerOf(s));
     const result = await s.result;
     expect(h.finish).toHaveBeenCalledTimes(1);
     const finish = h.finish.mock.calls[0]![0];
-    expect(finish).toMatchObject({ level: L001, attempt: 1, playerId: 'me', mistakes: 0, quick: false });
+    expect(finish).toMatchObject({ level: FIND, attempt: 1, playerId: 'me', mistakes: 0, quick: false });
     expect((finish.end as FindLevelOver).reason).toBe('targetReached');
-    expect(result.outcome).toEqual({ reason: 'completed', stars: 3, metric: 4000, elapsedMs: 4000 });
+    expect(result.outcome).toEqual({
+      reason: 'completed',
+      stars: 3,
+      metric: 4000,
+      elapsedMs: 4000,
+      bossBeaten: null,
+    });
     // Nothing more after the end.
     s.tap(answerOf(s));
     h.scheduler.advance(30_000);
@@ -291,8 +307,8 @@ describe('the end', () => {
 
   it('a wrong tap costs 5 s, and "למה?" explains the target and the wrong tap', async () => {
     const h = harness();
-    const s = await start(L001, h);
-    const wrong = wrongCellOf(L001);
+    const s = await start(FIND, h);
+    const wrong = wrongCellOf(FIND);
     s.tap(wrong);
     s.tap(answerOf(s));
     const result = await s.result;
@@ -300,22 +316,22 @@ describe('the end', () => {
     expect(result.wrongTaps).toEqual([wrong]);
     expect(result.outcome.elapsedMs).toBe(5000);
     const why = findWhy(s.played, result.wrongTaps, 'he');
-    expect(why).toContain('7');
-    expect(findWhy(L002, [], 'he')).toBeNull();
+    expect(why).toContain(String(FIND.kind === 'find' ? FIND.targets.target.digit : ''));
+    expect(findWhy(BOX, [], 'he')).toBeNull();
   });
 
   it('close() before the end tracks level_quit and stores nothing', async () => {
     const h = harness();
-    const s = await start(L001, h);
+    const s = await start(FIND, h);
     h.scheduler.advance(3000);
     s.close();
     expect(h.finish).not.toHaveBeenCalled();
-    expect(h.track).toHaveBeenCalledWith('level_quit', { level: 1, atMs: 3000 });
+    expect(h.track).toHaveBeenCalledWith('level_quit', { level: 1, rev: FIND.rev, atMs: 3000 });
     expect(s.over).toBeNull();
   });
 
   it('quit() (the X, confirmed) ends the stage with 0 stars, and it counts as played', async () => {
-    for (const level of [L001, L002, L021]) {
+    for (const level of [FIND, BOX, DUEL]) {
       const h = harness();
       const s = await start(level, h);
       h.scheduler.advance(2000);
@@ -335,7 +351,7 @@ describe('[D65] the background freeze', () => {
     "AppState '%s' freezes the stage; 'active' counts 3, 2, 1 over the cover, then it goes on",
     async (away) => {
       const h = harness();
-      const s = await start(L001, h);
+      const s = await start(FIND, h);
       const states: string[] = [];
       s.onPause((p) => states.push(p.kind === 'countdown' ? String(p.count) : p.kind));
       h.scheduler.advance(4000);
@@ -368,7 +384,7 @@ describe('[D65] the background freeze', () => {
 
   it('a digit stage freezes too: its clock and its time limit', async () => {
     const h = harness();
-    const s = await start(L002, h);
+    const s = await start(BOX, h);
     h.scheduler.advance(5000);
     const left = s.levelView()!.remainingMs;
     h.app.set('background');
@@ -382,7 +398,7 @@ describe('[D65] the background freeze', () => {
 
   it('away again during the countdown: frozen again, and the countdown starts over at the return', async () => {
     const h = harness();
-    const s = await start(L001, h);
+    const s = await start(FIND, h);
     h.app.set('background');
     h.app.set('active');
     h.scheduler.advance(1500);
@@ -396,7 +412,7 @@ describe('[D65] the background freeze', () => {
 
   it('LEVEL_UI.backgroundPause off: no freeze', async () => {
     const h = harness({ settings: { ...LEVEL_UI, backgroundPause: false } });
-    const s = await start(L001, h);
+    const s = await start(FIND, h);
     expect(h.app.listening()).toBe(false);
     s.background();
     expect(s.getView().status).toBe('running');
@@ -405,7 +421,7 @@ describe('[D65] the background freeze', () => {
 
   it('LEVEL_UI.resumeCountdownMs is the countdown’s length', async () => {
     const h = harness({ settings: { ...LEVEL_UI, resumeCountdownMs: 1000 } });
-    const s = await start(L001, h);
+    const s = await start(FIND, h);
     h.app.set('background');
     h.app.set('active');
     expect(s.pause).toEqual({ kind: 'countdown', count: 1 });
@@ -415,7 +431,7 @@ describe('[D65] the background freeze', () => {
 
   it('close() stops listening to the app', async () => {
     const h = harness();
-    const s = await start(L001, h);
+    const s = await start(FIND, h);
     expect(h.app.listening()).toBe(true);
     s.close();
     expect(h.app.listening()).toBe(false);
@@ -435,7 +451,7 @@ describe('a stage is never a practice', () => {
     });
     const practice = await openPracticeStorage();
     const h = harness({ finish: levelFinished });
-    const s = await start(L001, h);
+    const s = await start(FIND, h);
     s.tap(answerOf(s));
     const result = await s.result;
     expect(result.finished?.outcome.stars).toBe(3);
@@ -450,21 +466,21 @@ describe('a stage is never a practice', () => {
 });
 
 describe('[D64] the chain under the staging switch (Moshe tries both first, 2026-10-18)', () => {
-  const L085 = levelById('L085')!; // the first chain stage
+  const CHAIN = firstLevelOf('chain'); // the first chain stage
 
   afterEach(() => {
     useTestingSwitches.setState({ chainPenalty: false });
   });
 
   it("off (the default): the chain plays per the original §14, 'accept'", async () => {
-    const s = await start(L085, harness());
+    const s = await start(CHAIN, harness());
     expect(s.rules.chainNotYet).toBe('accept');
     expect(levelRulesNow().chainNotYet).toBe('accept');
   });
 
   it("on: the next chain stage plays 'penalty'; flipping it back changes the next one only", async () => {
     useTestingSwitches.setState({ chainPenalty: true });
-    const penalty = await start(L085, harness());
+    const penalty = await start(CHAIN, harness());
     expect(penalty.rules.chainNotYet).toBe('penalty');
     // The engine plays it: a right digit of the second step, before the first, costs 5 s and is not placed.
     const [, second] = (penalty.played as Extract<AppLevel, { kind: 'chain' }>).targets.cells;
@@ -477,7 +493,7 @@ describe('[D64] the chain under the staging switch (Moshe tries both first, 2026
     useTestingSwitches.setState({ chainPenalty: false });
     // The stage already running keeps its rules; the next one is 'accept' again.
     expect(penalty.rules.chainNotYet).toBe('penalty');
-    const accept = await start(L085, harness());
+    const accept = await start(CHAIN, harness());
     expect(accept.rules.chainNotYet).toBe('accept');
     accept.host.select(second!);
     accept.host.place(second!, answer(second!));

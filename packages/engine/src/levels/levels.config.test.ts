@@ -5,134 +5,160 @@ import {
   boardTypeOf,
   bossKindOf,
   chainPlan,
+  CHAPTER_PATTERNS,
   chapterBot,
   chapterKinds,
-  fillBoxPlan,
+  FILL_ROWS,
+  fillPlan,
   findScopes,
   findStars,
+  FIRST_BOSS,
   kindOfLevel,
   LEVEL_GIVENS,
+  LEVEL_REVS,
   levelBotOf,
   levelPlan,
+  levelRev,
   LEVELS_SALT,
   levelSeed,
+  levelsOfKind,
+  lineKindOf,
   pointHunterPlan,
+  PUZZLE_ROWS,
+  puzzlePlan,
   RACE,
   RACE_MIN_GIVENS,
+  regionIndexOf,
   spotErrorPlan,
   targetBoxEmpties,
   targetLogic,
   tierOfSlot,
 } from './levels.config';
-import { LEVEL_RULES, levelIdOf, maxLevel } from './progress';
-import { type LevelKind, LEVEL_KINDS } from './spec';
+import { LEVEL_REV_BASE, LEVEL_RULES, levelIdOf, maxLevel, maxMsOf } from './progress';
+import { FILL_LEVEL_KINDS, type LevelKind, LEVEL_KINDS } from './spec';
 import { POINT_SHARES } from './stars';
 
 /*
- * The plan's numbers, copied from plan §2.1–§2.4, §3.1, §3.3 and §4.1–§4.4 (with dev-plan §1.4's fixes), against
- * levels.config: a changed number fails here first, so it is a deliberate, reviewed edit and a rebuild.
+ * The plan's numbers, copied from plan §2.1–§2.4, §3.1, §3.3 and §4.1–§4.4 (with dev-plan §1.4's fixes) and from
+ * 1.0.3's levels-content.md §3–§7, against levels.config: a changed number fails here first, so it is a
+ * deliberate, reviewed edit and a rebuild.
  */
 
 const CHAPTERS = Array.from({ length: LEVEL_RULES.chapterCount }, (_, k) => k + 1);
 const count = (kinds: readonly LevelKind[], kind: LevelKind) => kinds.filter((k) => k === kind).length;
 const chapters = (from: number, to: number) => CHAPTERS.filter((c) => c >= from && c <= to);
+const ALL_KINDS = CHAPTERS.flatMap((c) => chapterKinds(c));
 
-describe('the kinds of each chapter (plan §4.1)', () => {
+/** The tables of levels-content.md §3.2 and §3.3, in its own words' order. */
+const F = 'find';
+const R = 'findDuel';
+const B = 'fillBox';
+const D = 'duel';
+const E = 'spotError';
+const P = 'pointHunter';
+const C = 'chain';
+const W = 'fillRow';
+const K = 'fillCol';
+const Z = 'puzzle';
+
+describe('the kinds of each chapter (levels-content.md §3) [D66]', () => {
   it.each([
-    // chapter, find, findDuel, fillBox, duel, ideas
-    [1, 5, 0, 4, 0, 0],
-    [2, 3, 3, 3, 0, 0],
-    [3, 2, 2, 2, 3, 0],
-    [4, 2, 2, 2, 2, 1],
-  ])('chapter %i: %i find, %i race, %i box, %i duel, %i idea (the table)', (c, f, r, b, d, ideas) => {
-    const kinds = chapterKinds(c).slice(0, 9);
-    expect([
-      count(kinds, 'find'),
-      count(kinds, 'findDuel'),
-      count(kinds, 'fillBox'),
-      count(kinds, 'duel'),
-    ]).toEqual([f, r, b, d]);
-    expect(kinds.length - f - r - b - d).toBe(ideas);
+    [1, [F, B, Z, W, F, B, Z, W, F, R]],
+    [2, [F, K, R, B, Z, W, R, K, F, R]],
+    [3, [D, B, E, Z, R, F, D, E, K, D]],
+    [4, [C, B, R, Z, D, C, W, E, F, R]],
+    [5, [P, K, R, B, E, P, D, Z, C, D]],
+  ] as const)('chapter %i, slot by slot (§3.2)', (c, kinds) => {
+    expect(chapterKinds(c)).toEqual(kinds);
   });
 
-  it('chapter 4 brings Idea-1 (spot the error)', () => {
-    expect(count(chapterKinds(4), 'spotError')).toBe(1);
+  it('chapters 6–30: three patterns in turn (§3.3), the line a row in odd chapters and a column in even ones', () => {
+    expect(CHAPTER_PATTERNS).toEqual([
+      [F, E, B, Z, R, C, 'line', D, P],
+      [Z, D, P, 'line', E, F, B, R, C],
+      ['line', R, C, B, P, D, F, Z, E],
+    ]);
+    expect(chapterKinds(6)).toEqual([F, E, B, Z, R, C, K, D, P, R]);
+    expect(chapterKinds(7)).toEqual([Z, D, P, W, E, F, B, R, C, D]);
+    expect(chapterKinds(8)).toEqual([K, R, C, B, P, D, F, Z, E, R]);
+    expect(chapterKinds(29)).toEqual([W, R, C, B, P, D, F, Z, E, D]);
+    expect(chapterKinds(30)).toEqual([F, E, B, Z, R, C, K, D, P, R]);
+    expect([lineKindOf(9), lineKindOf(10)]).toEqual(['fillRow', 'fillCol']);
   });
 
-  it('chapters 5–9: two of each kind and one idea; Idea-2 enters in 7 with 2 (one race less), Idea-3 in 9 (one duel less)', () => {
-    for (const c of chapters(5, 9)) {
-      const kinds = chapterKinds(c).slice(0, 9);
-      const ideas = kinds.filter((k) => k === 'spotError' || k === 'pointHunter' || k === 'chain');
-      expect([c, count(kinds, 'find'), count(kinds, 'fillBox')]).toEqual([c, 2, 2]);
-      if (c === 7)
-        expect([count(kinds, 'pointHunter'), count(kinds, 'findDuel'), count(kinds, 'duel')]).toEqual([
-          2, 1, 2,
-        ]);
-      else if (c === 9)
-        expect([count(kinds, 'chain'), count(kinds, 'findDuel'), count(kinds, 'duel')]).toEqual([2, 2, 1]);
-      else expect([ideas.length, count(kinds, 'findDuel'), count(kinds, 'duel')]).toEqual([1, 2, 2]);
-    }
-    expect(count(chapterKinds(7), 'pointHunter')).toBe(2);
-    expect(count(chapterKinds(9), 'chain')).toBe(2);
-    expect(
-      chapterKinds(6)
+  it('from chapter 6 every family once a chapter (the row and the column one family)', () => {
+    for (const c of chapters(6, 30)) {
+      const family = chapterKinds(c)
         .slice(0, 9)
-        .filter((k) => k === 'pointHunter' || k === 'chain'),
-    ).toEqual([]);
-    expect(
-      chapterKinds(8)
-        .slice(0, 9)
-        .filter((k) => k === 'chain'),
-    ).toEqual([]);
-  });
-
-  it('from chapter 10: one find, two each of race, box and duel, and two ideas in turn', () => {
-    for (const c of chapters(10, 30)) {
-      const kinds = chapterKinds(c).slice(0, 9);
-      expect([
-        c,
-        count(kinds, 'find'),
-        count(kinds, 'findDuel'),
-        count(kinds, 'fillBox'),
-        count(kinds, 'duel'),
-      ]).toEqual([c, 1, 2, 2, 2]);
-      const ideas = kinds.filter((k) => k === 'spotError' || k === 'pointHunter' || k === 'chain');
-      expect(new Set(ideas).size).toBe(2);
+        .map((k) => (k === 'fillRow' || k === 'fillCol' ? 'line' : k));
+      expect([c, new Set(family).size]).toEqual([c, 9]);
     }
   });
 
-  it('each idea is in the chapter that brings something new for it', () => {
-    const has = (c: number, kind: LevelKind) => chapterKinds(c).includes(kind);
-    expect([has(12, 'pointHunter'), has(21, 'pointHunter'), has(27, 'pointHunter')]).toEqual([
-      true,
-      true,
-      true,
-    ]);
-    expect([has(13, 'spotError'), has(19, 'spotError')]).toEqual([true, true]);
-    expect([has(14, 'chain'), has(22, 'chain'), has(29, 'chain')]).toEqual([true, true, true]);
+  it('never two levels of one kind in a row, across chapters too (a race or a duel never next to its boss)', () => {
+    const repeats = ALL_KINDS.flatMap((k, i) => (i > 0 && ALL_KINDS[i - 1] === k ? [levelIdOf(i + 1)] : []));
+    expect(repeats).toEqual([]);
   });
 
-  it('the levels the design drew are those kinds: L066 a point hunter, L077 spot the error, L135 a chain', () => {
-    expect([kindOfLevel(66), kindOfLevel(77), kindOfLevel(135)]).toEqual([
-      'pointHunter',
-      'spotError',
-      'chain',
-    ]);
+  it('chapter 1 has four kinds and a bot boss; all ten kinds by chapter 5', () => {
+    expect(new Set(chapterKinds(1).slice(0, 9)).size).toBe(4);
+    expect(new Set(chapters(1, 5).flatMap((c) => chapterKinds(c))).size).toBe(LEVEL_KINDS.length);
+    expect(LEVEL_KINDS).toHaveLength(10);
   });
 
-  it('300 levels: 43 find, 58 race, 63 box, 56 duel, 50 ideas, and 30 bosses (1 box, 15 races, 14 duels)', () => {
-    const all = CHAPTERS.flatMap((c) => chapterKinds(c));
+  it('the first chapter of each kind (§3.1): spot the error from 3, the chain from 4, the point hunter from 5', () => {
+    const first = (kind: LevelKind) => CHAPTERS.find((c) => chapterKinds(c).includes(kind));
+    expect(LEVEL_KINDS.map((k) => [k, first(k)])).toEqual([
+      ['find', 1],
+      ['findDuel', 1],
+      ['fillBox', 1],
+      ['duel', 3],
+      ['spotError', 3],
+      ['pointHunter', 5],
+      ['chain', 4],
+      ['fillRow', 1],
+      ['fillCol', 2],
+      ['puzzle', 1],
+    ]);
+    // The race is only the boss in chapter 1; regular races from chapter 2.
+    expect(chapterKinds(1).slice(0, 9)).not.toContain('findDuel');
+  });
+
+  it('a new kind gets two levels in its first chapter (find, the opener, three in chapter 1)', () => {
+    for (const kind of LEVEL_KINDS) {
+      const c = CHAPTERS.find((ch) => chapterKinds(ch).slice(0, 9).includes(kind))!;
+      expect([kind, count(chapterKinds(c).slice(0, 9), kind)]).toEqual([kind, kind === 'find' ? 3 : 2]);
+    }
+  });
+
+  it('300 levels (§3.4): the regular levels and the 30 bosses of each kind', () => {
     const regular = CHAPTERS.flatMap((c) => chapterKinds(c).slice(0, 9));
     const bosses = CHAPTERS.map((c) => chapterKinds(c)[9]!);
-    expect(all).toHaveLength(maxLevel());
-    expect(LEVEL_KINDS.map((k) => count(regular, k))).toEqual([43, 58, 63, 56, 18, 16, 16]);
-    expect([count(bosses, 'fillBox'), count(bosses, 'findDuel'), count(bosses, 'duel')]).toEqual([1, 15, 14]);
+    expect(ALL_KINDS).toHaveLength(maxLevel());
+    // find, findDuel, fillBox, duel, spotError, pointHunter, chain, fillRow, fillCol, puzzle
+    expect(LEVEL_KINDS.map((k) => count(regular, k))).toEqual([32, 30, 31, 29, 29, 27, 28, 16, 17, 31]);
+    expect(regular).toHaveLength(270);
+    expect([count(bosses, 'findDuel'), count(bosses, 'duel'), count(bosses, 'fillBox')]).toEqual([16, 14, 0]);
   });
 
-  it('the boss (plan §3.3): chapter 1 a box, then the race in even chapters and the duel in odd ones', () => {
-    expect(CHAPTERS.map(bossKindOf)).toEqual(
-      CHAPTERS.map((c) => (c === 1 ? 'fillBox' : c % 2 === 0 ? 'findDuel' : 'duel')),
+  it('the boss [D72]: chapter 1 the race (against Pip), then the race in even chapters and the duel in odd ones', () => {
+    expect(CHAPTERS.map((c) => bossKindOf(c))).toEqual(
+      CHAPTERS.map((c) => (c === 1 || c % 2 === 0 ? 'findDuel' : 'duel')),
     );
+    expect(bossKindOf(1, 'fillBox')).toBe('fillBox');
+  });
+
+  it('kindOfLevel reads the table: L003 a puzzle, L004 a row, L010 the race, L012 a column', () => {
+    expect([3, 4, 10, 12].map((n) => kindOfLevel(n))).toEqual(['puzzle', 'fillRow', 'findDuel', 'fillCol']);
+    expect(ALL_KINDS).toEqual(Array.from({ length: maxLevel() }, (_, k) => kindOfLevel(k + 1)));
+  });
+
+  it('levelsOfKind picks the levels of a kind, of a chapter, bosses or not', () => {
+    expect(levelsOfKind('fillBox', { chapter: 1 })).toEqual([2, 6]);
+    expect(levelsOfKind('findDuel', { chapter: 1 })).toEqual([10]);
+    expect(levelsOfKind('findDuel', { chapter: 1, boss: false })).toEqual([]);
+    expect(levelsOfKind('puzzle')).toHaveLength(31);
+    expect(levelsOfKind('duel', { boss: true })).toHaveLength(14);
   });
 });
 
@@ -248,65 +274,173 @@ describe('find (plan §2.1)', () => {
 describe('the race (plan §2.2)', () => {
   it('5 spots in 30 s; ★★★ 4–5, ★★ 3, ★ 2', () => {
     expect(RACE).toEqual({ spots: 5, limitMs: 30000, stars: { by: 'spots', three: 4, two: 3, one: 2 } });
-    expect(levelPlan(12)).toMatchObject({ kind: 'findDuel', timeLimitMs: 30000, spots: 5 });
+    expect(levelPlan(levelsOfKind('findDuel', { boss: false })[0]!)).toMatchObject({
+      kind: 'findDuel',
+      timeLimitMs: 30000,
+      spots: 5,
+    });
+  });
+
+  it('chapter 1’s boss [D72]: a race against Pip at ×1.1, on a fast board, its targets in boxes', () => {
+    expect(FIRST_BOSS).toEqual({ kind: 'findDuel', bot: { level: 1, pace: 1.1 } });
+    expect(levelPlan(10)).toMatchObject({
+      kind: 'findDuel',
+      boss: true,
+      gameType: 'fast',
+      scopes: ['box'],
+      bot: { level: 1, pace: 1.1 },
+    });
   });
 });
 
-describe('fillBox (plan §2.3)', () => {
+describe('the fill ladder (levels-content.md §4.3) [D67, D68, D69]', () => {
   it.each([
-    // chapter, missing, around (the chapter's own), ★★★, ★★, ★
-    [1, 4, 72, 10000, 15000, 20000],
-    [2, 4, 66, 10000, 15000, 20000],
-    [3, 5, 60, 12000, 18000, 25000],
-    [5, 5, 50, 12000, 18000, 25000],
-    [6, 6, 42, 14000, 21000, 30000],
-    [10, 6, 36, 14000, 21000, 30000],
-    [11, 7, 34, 16000, 23000, 30000],
-    [15, 7, 30, 16000, 23000, 30000],
-    [16, 9, 30, 18000, 25000, 30000],
-    [20, 9, 27, 18000, 25000, 30000],
-    [21, 9, 27, 18000, 25000, 30000],
-    [25, 9, 25, 18000, 25000, 30000],
-    [26, 9, 25, 15000, 22000, 30000],
-    [30, 9, 22, 15000, 22000, 30000],
-  ])('chapter %i: %i missing, %i around, %i / %i / %i ms', (c, missing, around, three, two, one) => {
-    expect(fillBoxPlan(c, 'base', false)).toMatchObject({
-      missing,
-      around,
+    // chapter, missing, around, every digit missing, ★★★, ★★, ★
+    [1, 2, 72, 0, 10000, 15000, 20000],
+    [2, 3, 72, 0, 14000, 20000, 30000],
+    [3, 3, 68, 0, 16000, 24000, 30000],
+    [4, 4, 66, 0, 22000, 30000, 40000],
+    [5, 4, 63, 1, 22000, 30000, 40000],
+    [6, 5, 58, 1, 28000, 38000, 50000],
+    [7, 5, 54, 1, 28000, 38000, 50000],
+    [8, 6, 50, 1, 32000, 44000, 60000],
+    [9, 6, 46, 1, 32000, 44000, 60000],
+    [10, 7, 43, 1, 36000, 48000, 60000],
+    [11, 7, 40, 1, 36000, 48000, 60000],
+    [12, 8, 38, 1, 38000, 50000, 60000],
+    [13, 8, 36, 1, 38000, 50000, 60000],
+    [14, 9, 35, 1, 42000, 54000, 60000],
+    [15, 9, 34, 1, 42000, 54000, 60000],
+    [16, 9, 33, 1, 45000, 55000, 60000],
+    [20, 9, 30, 1, 45000, 55000, 60000],
+    [21, 9, 30, 1, 45000, 55000, 60000],
+    [25, 9, 27, 1, 45000, 55000, 60000],
+    [26, 9, 27, 1, 44000, 54000, 60000],
+    [30, 9, 24, 1, 44000, 54000, 60000],
+  ])(
+    'chapter %i: %i missing, %i around, gaps %i; %i / %i / %i ms',
+    (c, missing, around, gaps, three, two, one) => {
+      expect(fillPlan(c, 'base')).toMatchObject({
+        missing,
+        around,
+        minDigitGaps: gaps,
+        stars: { by: 'timeMs', three, two, one },
+        limitMs: one,
+      });
+    },
+  );
+
+  it('the techniques: naked singles (1–5), a hidden single a must (6–10), singles (11–15), pointing or claiming, a pair, any elimination', () => {
+    expect(fillPlan(1, 'base').logic).toEqual({ techniques: ['nakedSingle'], mustNeed: [] });
+    expect(fillPlan(5, 'base').logic).toEqual({ techniques: ['nakedSingle'], mustNeed: [] });
+    expect([6, 9, 10].map((c) => fillPlan(c, 'base').logic.mustNeed)).toEqual([
+      ['hiddenSingle'],
+      ['hiddenSingle'],
+      ['hiddenSingle'],
+    ]);
+    expect(fillPlan(11, 'base').logic).toEqual({ techniques: ['nakedSingle', 'hiddenSingle'], mustNeed: [] });
+    expect(fillPlan(16, 'base').logic.mustNeed).toEqual(['pointing', 'claiming']);
+    expect(fillPlan(21, 'base').logic.mustNeed).toEqual(['nakedPair', 'hiddenPair']);
+    expect(fillPlan(26, 'base').logic.mustNeed).toEqual(['pointing', 'claiming', 'nakedPair', 'hiddenPair']);
+  });
+
+  it('graded: the missing never drop, the givens around never rise, every digit missing from chapter 5, thresholds ordered and never dropping up to chapter 20, ★ within 60 s', () => {
+    const plans = CHAPTERS.map((c) => fillPlan(c, 'base'));
+    plans.forEach((p, k) => {
+      const c = k + 1;
+      const prev = plans[k - 1];
+      expect([c, p.stars.three < p.stars.two && p.stars.two < p.stars.one]).toEqual([c, true]);
+      for (const kind of FILL_LEVEL_KINDS) expect([c, p.limitMs <= maxMsOf(kind)]).toEqual([c, true]);
+      expect([c, p.minDigitGaps]).toEqual([c, c >= 5 ? 1 : 0]);
+      if (!prev) return;
+      expect([c, p.missing >= prev.missing, p.around <= prev.around]).toEqual([c, true, true]);
+      if (c <= 20)
+        expect([c, p.stars.three >= prev.stars.three, p.stars.one >= prev.stars.one]).toEqual([
+          c,
+          true,
+          true,
+        ]);
+    });
+    expect(FILL_ROWS[0]!.from).toBe(1);
+    expect(FILL_ROWS.at(-1)!.to).toBe(LEVEL_RULES.chapterCount);
+  });
+
+  it('the saw-tooth: slots 1–3 the row of the chapter before, 4–6 its own, 7–9 and the boss the next', () => {
+    expect(fillPlan(6, 'easy')).toEqual(fillPlan(5, 'base'));
+    expect(fillPlan(6, 'hard')).toEqual(fillPlan(7, 'base'));
+    expect(fillPlan(1, 'easy')).toEqual(fillPlan(1, 'base'));
+    expect(fillPlan(30, 'hard')).toEqual(fillPlan(30, 'base'));
+  });
+
+  it('chapter 1: 2 missing on a full board in both its boxes; chapter 14’s box: 9 missing', () => {
+    for (const n of levelsOfKind('fillBox', { chapter: 1 }))
+      expect(levelPlan(n)).toMatchObject({ kind: 'fillBox', missing: 2, around: 72, timeLimitMs: 20000 });
+    expect(levelPlan(levelsOfKind('fillBox', { chapter: 14 })[0]!)).toMatchObject({
+      missing: 9,
+      timeLimitMs: 60000,
+    });
+  });
+
+  it('the row and the column play the box’s ladder; each kind goes round all nine regions', () => {
+    for (const kind of FILL_LEVEL_KINDS) {
+      const plans = levelsOfKind(kind).map((n) => levelPlan(n));
+      for (const p of plans) {
+        const { missing, around, stars } = fillPlan(p.chapter, p.tier);
+        expect(p).toMatchObject({ kind, missing, around, stars });
+      }
+      const indexes = plans.map((p) => ('index' in p ? p.index : -1));
+      expect(new Set(indexes.slice(0, 9)).size).toBe(9);
+      expect(indexes).toEqual(indexes.map((_, k) => regionIndexOf(kind, k)));
+    }
+  });
+});
+
+describe('the puzzle (levels-content.md §5.3) [D70, D71]', () => {
+  it.each([
+    // chapter, moving, ★★★, ★★, ★
+    [1, 3, 26000, 36000, 45000],
+    [3, 3, 26000, 36000, 45000],
+    [4, 4, 36000, 48000, 60000],
+    [6, 4, 36000, 48000, 60000],
+    [7, 5, 44000, 54000, 60000],
+    [10, 5, 44000, 54000, 60000],
+    [11, 5, 40000, 52000, 60000],
+    [15, 5, 40000, 52000, 60000],
+    [16, 6, 45000, 55000, 60000],
+    [20, 6, 45000, 55000, 60000],
+    [21, 6, 42000, 52000, 60000],
+    [30, 6, 42000, 52000, 60000],
+  ])('chapter %i: %i moving; %i / %i / %i ms', (c, moving, three, two, one) => {
+    expect(puzzlePlan(c, 'base')).toEqual({
+      moving,
+      lockOnCorrect: false,
       stars: { by: 'timeMs', three, two, one },
       limitMs: one,
     });
   });
 
-  it('what the box needs: a naked single (1–5), a hidden single (6–10), nothing new (11–15), pointing or claiming, a pair, any elimination', () => {
-    expect(fillBoxPlan(1, 'base', false).logic).toEqual({ techniques: ['nakedSingle'], mustNeed: [] });
-    expect(fillBoxPlan(6, 'easy', false).logic.mustNeed).toEqual(['hiddenSingle']);
-    expect(fillBoxPlan(11, 'base', false).logic.mustNeed).toEqual([]);
-    expect(fillBoxPlan(16, 'base', false).logic.mustNeed).toEqual(['pointing', 'claiming']);
-    expect(fillBoxPlan(21, 'base', false).logic.mustNeed).toEqual(['nakedPair', 'hiddenPair']);
-    expect(fillBoxPlan(26, 'base', false).logic.mustNeed).toEqual([
-      'pointing',
-      'claiming',
-      'nakedPair',
-      'hiddenPair',
-    ]);
+  it('the moving boxes never drop, 3 to 6, at least 2 fixed, never a lock (D71), ★ within 60 s', () => {
+    PUZZLE_ROWS.forEach((row, k) => {
+      expect(row.moving >= 3 && row.moving <= 6 && 9 - row.moving >= 2).toBe(true);
+      expect(row.lockOnCorrect).toBe(false);
+      expect(row.stars[2] <= maxMsOf('puzzle')).toBe(true);
+      if (k > 0) expect(row.moving).toBeGreaterThanOrEqual(PUZZLE_ROWS[k - 1]!.moving);
+    });
   });
 
-  it("chapter 1's boss: 5 missing, 10 / 15 / 20 s, the hard tier's board", () => {
-    expect(levelPlan(10)).toMatchObject({
-      kind: 'fillBox',
-      boss: true,
-      tier: 'hard',
-      missing: 5,
-      around: 66,
-      stars: { three: 10000, two: 15000, one: 20000 },
-    });
+  it('the saw-tooth: chapter 3’s hard slots already have 4 moving; the first three puzzles 3', () => {
+    expect(puzzlePlan(3, 'hard').moving).toBe(4);
+    expect(
+      levelsOfKind('puzzle')
+        .slice(0, 3)
+        .map((n) => (levelPlan(n) as { moving: number }).moving),
+    ).toEqual([3, 3, 3]);
   });
 });
 
 describe('the duel (plan §2.4)', () => {
   it('first to 30 in 30 s; a lead of 15 / 8 / any', () => {
-    expect(levelPlan(21)).toMatchObject({
+    expect(levelPlan(levelsOfKind('duel')[0]!)).toMatchObject({
       kind: 'duel',
       endAtScore: 30,
       timeLimitMs: 30000,
@@ -318,6 +452,7 @@ describe('the duel (plan §2.4)', () => {
 describe('Idea-1, spot the error (plan §3.1, §4.3)', () => {
   it.each([
     // chapter, visible, silent, limit, ★★★, ★★, ★
+    [3, 1, 0, 20000, 6000, 12000, 20000],
     [4, 1, 0, 20000, 6000, 12000, 20000],
     [7, 1, 0, 20000, 6000, 12000, 20000],
     [8, 2, 0, 30000, 12000, 20000, 30000],
@@ -341,6 +476,7 @@ describe('Idea-1, spot the error (plan §3.1, §4.3)', () => {
 
 describe('Idea-2, the point hunter (plan §3.1, §4.3)', () => {
   it.each([
+    [5, 'fast', 30000],
     [7, 'fast', 30000],
     [11, 'fast', 30000],
     [12, 'normal', 25000],
@@ -373,6 +509,7 @@ describe('Idea-2, the point hunter (plan §3.1, §4.3)', () => {
 
 describe('Idea-3, the chain (plan §3.1, §4.3; dev-plan §1.4)', () => {
   it.each([
+    [4, 3, 24000, 10000, 16000, 24000],
     [9, 3, 24000, 10000, 16000, 24000],
     [13, 3, 24000, 10000, 16000, 24000],
     [14, 4, 30000, 13000, 20000, 30000],
@@ -421,8 +558,15 @@ describe('bots (plan §4.2, §3.3) [D61]', () => {
     expect(chapterBot(c)).toEqual({ level, pace });
   });
 
-  it('chapter 1 has no bot', () => {
+  it('chapter 1 has no bot of its own; its boss meets Pip at ×1.1 [D72]', () => {
     expect(chapterBot(1)).toBeNull();
+    expect(levelBotOf(1, false)).toBeNull();
+    expect(levelBotOf(1, true)).toEqual({ level: 1, pace: 1.1 });
+  });
+
+  it('every boss has a bot (D72 א)', () => {
+    const bosses = Array.from({ length: LEVEL_RULES.chapterCount }, (_, k) => levelPlan((k + 1) * 10));
+    expect(bosses.filter((p) => !('bot' in p)).map((p) => p.id)).toEqual([]);
   });
 
   it('a boss is its chapter bot at ×0.9, and Overlord exactly in L280, L290 and L300', () => {
@@ -438,6 +582,7 @@ describe('bots (plan §4.2, §3.3) [D61]', () => {
   });
 
   it('every bot pace is within ×0.7–×1.2', () => {
+    expect(levelBotOf(1, true)!.pace).toBeLessThanOrEqual(1.2);
     for (const c of chapters(2, 30))
       for (const boss of [false, true]) {
         const pace = levelBotOf(c, boss)!.pace;
@@ -453,15 +598,21 @@ describe('bots (plan §4.2, §3.3) [D61]', () => {
 
 describe('ids and seeds', () => {
   it("a level's seed comes from its id and rev, salted (never the bank's)", () => {
-    expect(levelSeed('L037', 1)).toBe(seedFromString('L037:r1', LEVELS_SALT));
+    expect(levelSeed('L037', 2)).toBe(seedFromString('L037:r2', LEVELS_SALT));
     expect(levelPlan(37)).toMatchObject({
       id: 'L037',
-      rev: 1,
-      seed: levelSeed('L037', 1),
+      rev: 2,
+      seed: levelSeed('L037', 2),
       chapter: 4,
       slot: 7,
     });
     expect(levelSeed('L037', 2)).not.toBe(levelSeed('L037', 1));
+  });
+
+  it('[D73] all 300 at rev 2 (LEVEL_REV_BASE), none moved further yet', () => {
+    expect(LEVEL_REV_BASE).toBe(2);
+    expect(LEVEL_REVS).toEqual({});
+    for (let n = 1; n <= maxLevel(); n++) expect([n, levelRev(levelIdOf(n))]).toEqual([n, 2]);
   });
 
   it('every plan has its id, chapter and slot', () => {

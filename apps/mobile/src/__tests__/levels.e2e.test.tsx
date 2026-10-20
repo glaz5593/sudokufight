@@ -92,6 +92,11 @@ async function until(ok: () => boolean, ms = 5000) {
 
 const press = (testID: string) => fireEvent.press(screen.getByTestId(testID, hidden));
 const pressCell = (cell: number) => press(`cell-${cellName(cell)}`);
+/** A puzzle's place chosen as a screen reader does (its activate: the same choice and swap as a tap). */
+const activatePlace = (place: number) =>
+  fireEvent(screen.getByTestId(`puzzle-slot-${place}`, hidden), 'accessibilityAction', {
+    nativeEvent: { actionName: 'activate' },
+  });
 const answer = (level: AppLevel, cell: number) => Number(level.board.solution[cell]) as Digit;
 
 /** Plays the stage on the screen as a player would (the stored board: every attempt here is the first). */
@@ -108,12 +113,33 @@ async function play(level: AppLevel) {
       }
       return;
     case 'fillBox':
+    case 'fillRow':
+    case 'fillCol':
       for (const cell of level.targets.cells) {
         await pressCell(cell);
         await press(`key-${answer(level, cell)}`);
         await wait(200);
       }
       return;
+    case 'spotError':
+      for (const e of level.targets.errors) {
+        await wait(300);
+        await pressCell(e.cell);
+      }
+      return;
+    case 'puzzle': {
+      // On its own screen (PuzzleLevelScreen): a place, then another; each swap puts one box home (no penalty).
+      const now = level.targets.start.slice();
+      for (let p = 0; p < 9; p++)
+        while (now[p] !== p) {
+          const q = now.indexOf(p);
+          await activatePlace(p);
+          await activatePlace(q);
+          [now[p], now[q]] = [now[q]!, now[p]!];
+          await wait(200);
+        }
+      return;
+    }
     case 'duel': {
       // Lock an empty cell, its right digit; the next one. The bot plays meanwhile (a cell it holds or took is
       // skipped), and the first to 30 (or the 30 s) ends it.
@@ -145,7 +171,10 @@ async function stageToResult(id: string) {
   await until(() => screen.queryByTestId('level-ready') !== null);
   await wait(LEVEL_UI.readyMs + 50);
   await until(
-    () => screen.queryByTestId('tap-level') !== null || screen.queryByTestId('level-game') !== null,
+    () =>
+      screen.queryByTestId('tap-level') !== null ||
+      screen.queryByTestId('level-game') !== null ||
+      screen.queryByTestId('puzzle-level') !== null,
   );
   await play(level);
   await until(() => screen.queryByTestId('level-result') !== null, 40_000);
@@ -226,13 +255,25 @@ it('משחק חדש → אימון בשלבים → the map → stage 1 played t
   await until(() => screen.queryByTestId('node-2-tile-pin', hidden) !== null);
   expect(screen.getByTestId('node-1')).toHaveProp(
     'accessibilityLabel',
-    'שלב 1, איפה ה־7, שלושה כוכבים מתוך שלושה',
+    'שלב 1, מיקום מדויק, שלושה כוכבים מתוך שלושה',
   );
 });
 
-it('chapters 1–3 end to end: find, the race, fill the box, the duel and their bosses, "לשלב הבא" each time', async () => {
+it('chapters 1–3 end to end: every kind they have and their bosses, "לשלב הבא" each time', async () => {
   // "איך משחקים" has its own tests (HowToPlayPanels, HowToPlay).
-  useTutorials.setState({ seen: { find: true, findDuel: true, fillBox: true, duel: true, boss: true } });
+  useTutorials.setState({
+    seen: {
+      find: true,
+      findDuel: true,
+      fillBox: true,
+      duel: true,
+      boss: true,
+      spotError: true,
+      fillRow: true,
+      fillCol: true,
+      puzzle: true,
+    },
+  });
   const app = await renderApp('/levels/play?id=L001', ROUTES);
   const kinds = new Set<string>();
   for (let n = 1; n <= 30; n++) {
@@ -246,8 +287,20 @@ it('chapters 1–3 end to end: find, the race, fill the box, the duel and their 
     await press('level-result-next');
     await until(() => app.searchParams().id === levelIdOf(n + 1));
   }
+  // The kinds of chapters 1–3 as the 1.0.3 table has them (levels-content.md §3.2) [D66].
   expect([...kinds].sort()).toEqual(
-    ['boss:duel', 'boss:fillBox', 'boss:findDuel', 'duel', 'fillBox', 'find', 'findDuel'].sort(),
+    [
+      'boss:duel',
+      'boss:findDuel',
+      'duel',
+      'fillBox',
+      'fillCol',
+      'fillRow',
+      'find',
+      'findDuel',
+      'puzzle',
+      'spotError',
+    ].sort(),
   );
   const repo = await openLevelsStorage();
   const progress = await repo.progress(OWNER);

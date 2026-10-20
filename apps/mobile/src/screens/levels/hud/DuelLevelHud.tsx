@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import type { AvatarIdOrNone } from '../../../avatars';
+import { BossCrown } from '../../../components/levels/BossBadge';
 import { StarsBar } from '../../../components/levels/StarsBar';
 import { Avatar, formatScore, SeatGlyph, signedText } from '../../../components/player';
 import { secondsOf } from '../../../components/player/format';
@@ -19,6 +20,9 @@ import { RaceTo30 } from './RaceTo30';
  * stage's clock (it ends at the target or at 30 s), and the lead meter "פער ‎+10.5" with its marks at ★★ (8)
  * and ★★★ (15), the number an LTR isolate (signedText). No interference button: a stage has none [D49]; my
  * reactions only with LEVEL_UI.reactions (D62: off). The game screen's lock strip, board and keypad stay.
+ *
+ * A boss (levels-ui.md §3.2, D77): the header's boss band (StageHeader) and a 16 dp crown on the bot's avatar
+ * (BossCrown, static), its label "Pip, הבוס".
  */
 
 export interface DuelLevelHudProps {
@@ -45,6 +49,7 @@ export function DuelLevelHud({ level, view, now, myAvatar, onExit, onReactions, 
   const gap = mine - theirs;
   const who = bot ? identityOf(view, bot.id) : null;
   const botName = who?.name ?? bot?.name ?? '';
+  const botLabelName = level.boss ? t('boss.botLabel', { name: botName }) : botName;
   const myName = t('hud.me');
   const left = lv ? levelClock(lv, now).remainingMs : 0;
   const marks = lv?.marks ?? level.stars;
@@ -93,8 +98,9 @@ export function DuelLevelHud({ level, view, now, myAvatar, onExit, onReactions, 
           score={theirs}
           target={target}
           bot
+          crown={level.boss}
           label={t('hud.duel.botLabel', {
-            name: botName,
+            name: botLabelName,
             n: who?.botLevel ?? '',
             score: formatScore(theirs),
             target,
@@ -134,6 +140,7 @@ function ScoreCard({
   score,
   target,
   bot = false,
+  crown = false,
   label,
   testID,
 }: {
@@ -143,6 +150,8 @@ function ScoreCard({
   score: number;
   target: number;
   bot?: boolean;
+  /** A boss's bot: the crown on its avatar. */
+  crown?: boolean;
   label: string;
   testID: string;
 }) {
@@ -155,7 +164,10 @@ function ScoreCard({
       accessibilityLabel={label}
       testID={testID}
     >
-      <Avatar avatarId={avatar} size="compact" colorIndex={colorIndex} bot={bot} />
+      <View>
+        <Avatar avatarId={avatar} size="compact" colorIndex={colorIndex} bot={bot} />
+        {crown ? <BossCrown testID={`${testID}-crown`} /> : null}
+      </View>
       <View style={styles.cardText}>
         <View style={styles.nameRow}>
           <SeatGlyph colorIndex={colorIndex} size={GLYPH} />

@@ -1,21 +1,26 @@
-import type { AppLevel, GameView } from '@sudoku-fight/engine';
+import { type AppLevel, fillRegionOf, type GameView } from '@sudoku-fight/engine';
 import { useTranslation } from 'react-i18next';
 import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
+import { MiniRegion } from '../../../components/levels/MiniRegion';
 import { StarsBar } from '../../../components/levels/StarsBar';
 import { secondsOf, signedText } from '../../../components/player/format';
-import { color, radius, space, text, tokens } from '../../../theme';
+import { color, radius, space, text } from '../../../theme';
+import { fillTaskText } from '../levelWording';
 import { levelClock, StageHeader } from './FindHud';
 
 /**
- * Fill the box's HUD (components.md §19.7, the Lv-Box board): the header with the stage's clock ("0:09", the
- * time played plus the penalties) and the X; the star scale of its time; the task line: a mini map of the
- * nine boxes with this one lit, "מלא את ריבוע 6", "1/4 משבצות", and my mistakes with what they cost ("טעות
- * ‎+5 ש׳"). The keypad and "ביטול בחירה" stay below the board (the game screen's own). All from GameView.level.
+ * A fill stage's HUD, for the box, the row and the column alike (components.md §19.7, the Lv-Box board;
+ * levels-ui.md §2.5, §5): the header with the stage's clock ("0:09", the time played plus the penalties) and the
+ * X; the star scale of its time; the task line: the small map of the board with the region lit (MiniRegion,
+ * 27 dp), "מלא את ריבוע 6" / "מלא את שורה D" / "מלא את עמודה 5", "1/4 משבצות", and my mistakes with what they
+ * cost ("טעות ‎+5 ש׳"). The keypad and "ביטול בחירה" stay below the board (the game screen's own). The region is
+ * the played board's (fillRegionOf of the attempt's level: "שוב" moves rows and boxes); the rest from
+ * GameView.level.
  */
 
 export interface BoxHudProps {
-  /** The stage as played (a fillBox, or its boss). */
+  /** The stage as played (the attempt's level): a fillBox, fillRow or fillCol, or a boss of one. */
   level: AppLevel;
   view: GameView;
   /** The game's time now. */
@@ -33,7 +38,7 @@ export function clockText(ms: number): string {
 export function BoxHud({ level, view, now, onExit, style }: BoxHudProps) {
   const { t } = useTranslation('levels');
   const lv = view.level;
-  const box = level.kind === 'fillBox' ? level.targets.box : 0;
+  const region = fillRegionOf(level) ?? { unit: 'box' as const, index: 0, cells: [] };
   const progress = lv?.progress?.kind === 'cells' ? lv.progress : null;
   const me = view.players.find((p) => p.id === view.me);
   const mistakes = me?.mistakes ?? 0;
@@ -57,9 +62,9 @@ export function BoxHud({ level, view, now, onExit, style }: BoxHudProps) {
       <StageHeader level={level} onExit={onExit} end={clock} />
       {lv ? <StarsBar rule={lv.marks} value={elapsed} max={lv.limitMs ?? undefined} /> : null}
       <View style={styles.task}>
-        <MiniBoxes lit={box} />
+        <MiniRegion region={region} testID="box-mini" />
         <Text style={styles.taskText} numberOfLines={1} testID="box-task">
-          {t('hud.box.task', { n: box + 1 })}
+          {fillTaskText(region, t)}
         </Text>
         {progress ? (
           <Text
@@ -84,40 +89,10 @@ export function BoxHud({ level, view, now, onExit, style }: BoxHudProps) {
   );
 }
 
-/** The nine boxes, this one lit (always LTR: box 1 at the top-left). Decorative. */
-function MiniBoxes({ lit }: { lit: number }) {
-  return (
-    <View
-      style={styles.mini}
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      testID="box-mini"
-    >
-      {Array.from({ length: 9 }, (_, b) => (
-        <View
-          key={b}
-          style={[styles.miniBox, { backgroundColor: b === lit ? color.focusRing : color.border }]}
-          testID={b === lit ? 'box-mini-lit' : undefined}
-        />
-      ))}
-    </View>
-  );
-}
-
-const MINI = 6;
-
 const styles = StyleSheet.create({
   hud: { gap: space[6] },
   clock: { ...text('scoreCompact'), color: color.text, writingDirection: 'ltr' },
   task: { flexDirection: 'row', alignItems: 'center', gap: space[4], flexWrap: 'wrap' },
-  mini: {
-    direction: 'ltr',
-    width: 3 * MINI + 2 * tokens.border.hairline,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: tokens.border.hairline,
-  },
-  miniBox: { width: MINI, height: MINI, borderRadius: radius.bar / 2 },
   taskText: { ...text('rowTitle'), color: color.text },
   cells: { ...text('label'), color: color.textMuted },
   mistakes: {

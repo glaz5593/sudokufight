@@ -14,6 +14,13 @@ import type { AppLevel, FindScope, FindTarget } from './spec';
  *
  * Deterministic: drawn from seedFromString(`${id}:r${rev}:a${attempt}`), so the same attempt is always the same
  * board, and the next attempt another one.
+ *
+ * Two kinds draw less (1.0.3; levels-content.md §4.6, §5.6) [D63, D69]:
+ * - fillRow and fillCol never transpose: a row stays a row and a column a column (the screens name it "row D"
+ *   or "column 5", from the attempt's level).
+ * - The puzzle moves whole bands and stacks only, never a row inside its band or a column inside its stack, and
+ *   may transpose: every box moves as one piece, the same pairs of boxes fit side by side, so its one valid
+ *   arrangement, its step-by-step solution and its fixed boxes all carry over. The start moves with it.
  */
 
 interface Isomorphism {
@@ -25,22 +32,27 @@ interface Isomorphism {
   transpose: boolean;
 }
 
-/** A permutation of 0–8 that keeps the three groups of three (bands or stacks) and moves them as wholes. */
-function groupedPermutation(rng: Rng): number[] {
+/**
+ * A permutation of 0–8 that keeps the three groups of three (bands or stacks) and moves them as wholes; with
+ * `within` false, the order inside each group stays.
+ */
+function groupedPermutation(rng: Rng, within = true): number[] {
   const groups = shuffled(rng, [0, 1, 2]);
-  const within = [0, 1, 2].map(() => shuffled(rng, [0, 1, 2]));
+  const inside = [0, 1, 2].map(() => (within ? shuffled(rng, [0, 1, 2]) : [0, 1, 2]));
   const map = new Array<number>(9);
-  for (let g = 0; g < 3; g++) for (let i = 0; i < 3; i++) map[3 * g + i] = 3 * groups[g]! + within[g]![i]!;
+  for (let g = 0; g < 3; g++) for (let i = 0; i < 3; i++) map[3 * g + i] = 3 * groups[g]! + inside[g]![i]!;
   return map;
 }
 
-function drawIsomorphism(rng: Rng): Isomorphism {
-  return {
+function drawIsomorphism(rng: Rng, kind: AppLevel['kind']): Isomorphism {
+  const whole = kind === 'puzzle';
+  const iso = {
     digits: shuffled(rng, DIGITS),
-    rows: groupedPermutation(rng),
-    cols: groupedPermutation(rng),
+    rows: groupedPermutation(rng, !whole),
+    cols: groupedPermutation(rng, !whole),
     transpose: rng.next() < 0.5,
   };
+  return kind === 'fillRow' || kind === 'fillCol' ? { ...iso, transpose: false } : iso;
 }
 
 const mapCell = (iso: Isomorphism, cell: CellIndex): CellIndex => {
@@ -84,6 +96,19 @@ function mapScope(iso: Isomorphism, scope: FindScope): FindScope {
 
 const mapCells = (iso: Isomorphism, cells: readonly CellIndex[]): CellIndex[] =>
   cells.map((c) => mapCell(iso, c));
+
+/** Where box (place) p goes: its band and stack moved, swapped by the transpose. */
+function mapBox(iso: Isomorphism, p: number): number {
+  const box = mapScope(iso, { kind: 'box', index: p });
+  return box.kind === 'box' ? box.index : p;
+}
+
+/** A row or a column moved; never transposed (fillRow, fillCol draw no transpose). */
+function mapLine(iso: Isomorphism, kind: 'row' | 'col', index: number): number {
+  const line = mapScope(iso, { kind, index });
+  if (line.kind !== kind || !('index' in line)) throw new Error(`A ${kind} turned into a ${line.kind}`);
+  return line.index;
+}
 
 function mapTarget(iso: Isomorphism, t: FindTarget): FindTarget {
   return {
@@ -144,6 +169,26 @@ function apply<S extends AppLevel>(spec: S, iso: Isomorphism): S {
     case 'chain':
       targets = { cells: mapCells(iso, level.targets.cells) };
       break;
+    case 'fillRow':
+      targets = { row: mapLine(iso, 'row', level.targets.row), cells: mapCells(iso, level.targets.cells) };
+      break;
+    case 'fillCol':
+      targets = { col: mapLine(iso, 'col', level.targets.col), cells: mapCells(iso, level.targets.cells) };
+      break;
+    case 'puzzle': {
+      // The box at place p (home h) stands at place P(p) with home P(h): the boxes moved as wholes.
+      const { start, fixed } = level.targets;
+      const moved = new Array<number>(start.length);
+      start.forEach((home, place) => {
+        moved[mapBox(iso, place)] = mapBox(iso, home);
+      });
+      targets = {
+        ...level.targets,
+        start: moved,
+        fixed: fixed.map((p) => mapBox(iso, p)).sort((a, b) => a - b),
+      };
+      break;
+    }
   }
   return { ...spec, board, targets };
 }
@@ -159,7 +204,7 @@ export function transformLevel<S extends AppLevel>(spec: S, attempt: number): S 
   const rng = createRng(seedFromString(`${spec.id}:r${spec.rev}:a${attempt}`));
   // An isomorphism can map a grid onto itself (an automorphism): draw again, so a replay is always new.
   for (let k = 0; k < 8; k++) {
-    const out = apply(spec, drawIsomorphism(rng));
+    const out = apply(spec, drawIsomorphism(rng, spec.kind));
     if (out.board.solution !== spec.board.solution) return out;
   }
   throw new Error(`No new board for ${spec.id} attempt ${attempt}`);

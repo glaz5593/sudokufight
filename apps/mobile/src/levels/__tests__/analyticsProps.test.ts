@@ -1,7 +1,14 @@
-import { type AppLevel, LEVEL_END_REASONS, type LevelOutcome } from '@sudoku-fight/engine';
+import {
+  type AppLevel,
+  LEVEL_END_REASONS,
+  type LevelOutcome,
+  levelOutcome,
+  type PuzzleLevelOver,
+} from '@sudoku-fight/engine';
 import { MAX_PROPS_BYTES, type TelemetryProps } from '@sudoku-fight/protocol';
 
 import { sanitizeProps } from '../../services/telemetry/batching';
+import { mistakesOf } from '../levelsRepo';
 import {
   chapterGateProps,
   type EventLevel,
@@ -20,6 +27,8 @@ import {
 
 const FIND: EventLevel = { id: 'L037', kind: 'find' };
 const DUEL: EventLevel = { id: 'L021', kind: 'duel', bot: { level: 1, pace: 1 } };
+/** 1.0.3: a level as levels.json has it, with its rev [D73]. */
+const PUZZLE: EventLevel = { id: 'L003', rev: 2, kind: 'puzzle' };
 
 const outcome = (over: Partial<LevelOutcome> = {}): LevelOutcome => ({
   reason: 'completed',
@@ -41,9 +50,20 @@ const ALL: [string, TelemetryProps][] = [
       attempt: 3,
     }),
   ]),
+  ['level_start', levelStartProps(PUZZLE, { attempt: 1, bestStars: 2, quick: false })],
+  [
+    'level_end',
+    levelEndProps(PUZZLE, outcome({ metric: 30_000, elapsedMs: 30_000 }), {
+      prevBest: 2,
+      mistakes: 2,
+      attempt: 1,
+    }),
+  ],
   ['level_quit', levelQuitProps(FIND, 12_345.6)],
+  ['level_quit', levelQuitProps(PUZZLE, 12_345.6)],
   ['chapter_gate', chapterGateProps(5, 17, false)],
   ['level_tutorial', levelTutorialProps('boss', true)],
+  ['level_tutorial', levelTutorialProps('puzzle', false)],
 ];
 
 describe('the level events’ props', () => {
@@ -70,8 +90,75 @@ describe('the level events’ props', () => {
     });
   });
 
+  it('[D73] level_start, level_end and level_quit carry the level’s rev; none (never null) without one', () => {
+    expect(levelStartProps(PUZZLE, { attempt: 1, bestStars: 2, quick: false })).toEqual({
+      level: 3,
+      rev: 2,
+      chapter: 1,
+      kind: 'puzzle',
+      attempt: 1,
+      bestStars: 2,
+      quick: false,
+    });
+    expect(levelEndProps(PUZZLE, outcome(), { prevBest: 2, mistakes: 0, attempt: 1 })).toMatchObject({
+      level: 3,
+      rev: 2,
+      kind: 'puzzle',
+    });
+    expect(levelQuitProps(PUZZLE, 4000)).toEqual({ level: 3, rev: 2, atMs: 4000 });
+    // An app's level always has its rev; without one (a 1.0.2 shape) the key is left out, as before.
+    expect(levelQuitProps(FIND, 4000)).toEqual({ level: 37, atMs: 4000 });
+    expect('rev' in levelStartProps(FIND, { attempt: 1, bestStars: 0, quick: false })).toBe(false);
+    expect('rev' in levelEndProps(FIND, outcome(), { prevBest: 0, mistakes: 0, attempt: 1 })).toBe(false);
+    // A rev the server would refuse (0, a fraction, not a number) is left out or made whole, never sent bad.
+    expect('rev' in levelStartProps({ ...FIND, rev: 0 }, { attempt: 1, bestStars: 0, quick: false })).toBe(
+      false,
+    );
+    expect(
+      'rev' in levelStartProps({ ...FIND, rev: Number.NaN }, { attempt: 1, bestStars: 0, quick: false }),
+    ).toBe(false);
+    expect(levelStartProps({ ...FIND, rev: 2.4 }, { attempt: 1, bestStars: 0, quick: false }).rev).toBe(2);
+  });
+
+  it('[D70c] a puzzle’s level_end: its mistakes are the wrong swaps (levelsRepo.mistakesOf), its measure the time', () => {
+    const level = {
+      ...PUZZLE,
+      chapter: 1,
+      stars: { by: 'timeMs', three: 26_000, two: 36_000, one: 45_000 },
+    } as const;
+    const end = {
+      reason: 'targetReached',
+      elapsedMs: 30_000,
+      penaltyMs: 10_000,
+      swaps: 6,
+      mistakes: 2,
+      stars: 0,
+    } satisfies PuzzleLevelOver;
+    expect(
+      levelEndProps(level, levelOutcome(level, end), {
+        prevBest: 0,
+        mistakes: mistakesOf({ end }),
+        attempt: 1,
+      }),
+    ).toEqual({
+      level: 3,
+      rev: 2,
+      kind: 'puzzle',
+      stars: 2,
+      prevBest: 0,
+      durationMs: 30_000,
+      reason: 'completed',
+      mistakes: 2,
+      metric: 30_000,
+      botLevel: null,
+      attempt: 1,
+    });
+  });
+
   it('level_end: every reason of the engine (failed too), the bot’s level, a duel’s lead below 0', () => {
-    const reasons = ALL.filter(([name]) => name === 'level_end').map(([, p]) => p.reason);
+    const reasons = ALL.filter(([name]) => name === 'level_end')
+      .slice(0, LEVEL_END_REASONS.length)
+      .map(([, p]) => p.reason);
     expect(reasons).toEqual([...LEVEL_END_REASONS]);
     expect(reasons).toContain('failed');
     expect(

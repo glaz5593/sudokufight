@@ -69,28 +69,33 @@ export const EVENT_DETAILS: Record<TelemetryEventName, { he: [string, string]; e
     he: ['פתיחת המפה של אימון בשלבים', 'השלב הנוכחי וסך הכוכבים'],
     en: ['The staged-practice map opens', 'The current stage and your total stars'],
   },
+  // 1.0.3 [D73]: level_start, level_end and level_quit carry the stage's version (`rev`), so a rebuilt stage's
+  // plays are told apart from the old version's.
   level_start: {
-    he: ['שלב מתחיל', 'מספר השלב, הפרק והסוג, מספר הניסיון, הכוכבים הטובים ביותר עד אז, והאם זו כניסה מהירה'],
+    he: [
+      'שלב מתחיל',
+      'מספר השלב והגרסה שלו, הפרק והסוג, מספר הניסיון, הכוכבים הטובים ביותר עד אז, והאם זו כניסה מהירה',
+    ],
     en: [
       'A stage starts',
-      'The stage’s number, chapter and kind, the attempt’s number, your best stars so far, and whether it was a quick start',
+      'The stage’s number and version, its chapter and kind, the attempt’s number, your best stars so far, and whether it was a quick start',
     ],
   },
   level_end: {
     he: [
       'שלב מסתיים',
-      'מספר השלב והסוג, הכוכבים, הכוכבים הטובים ביותר לפניו, משך השלב, איך הסתיים, מספר הטעויות, התוצאה (זמן, מקומות, פער או נקודות), רמת הבוט ומספר הניסיון',
+      'מספר השלב, הגרסה שלו והסוג, הכוכבים, הכוכבים הטובים ביותר לפניו, משך השלב, איך הסתיים, מספר הטעויות, התוצאה (זמן, מקומות, פער או נקודות), רמת הבוט ומספר הניסיון',
     ],
     en: [
       'A stage ends',
-      'The stage’s number and kind, the stars, your best stars before it, its duration, how it ended, the number of mistakes, the result (time, spots, lead or points), the bot’s level and the attempt’s number',
+      'The stage’s number, version and kind, the stars, your best stars before it, its duration, how it ended, the number of mistakes, the result (time, spots, lead or points), the bot’s level and the attempt’s number',
     ],
   },
   level_quit: {
-    he: ['יציאה משלב באמצע (למשל כשהאפליקציה נסגרה)', 'מספר השלב, וכמה זמן עבר בו'],
+    he: ['יציאה משלב באמצע (למשל כשהאפליקציה נסגרה)', 'מספר השלב והגרסה שלו, וכמה זמן עבר בו'],
     en: [
       'A stage is left midway (for example, the app was closed)',
-      'The stage’s number, and how long it had run',
+      'The stage’s number and version, and how long it had run',
     ],
   },
   chapter_gate: {

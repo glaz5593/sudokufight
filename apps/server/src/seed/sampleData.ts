@@ -15,6 +15,7 @@ import {
   levelIdOf,
   levelNumber,
   type LevelRecord,
+  levelRev,
   maxLevel,
   ratingKey,
   replayCandidates,
@@ -881,11 +882,21 @@ class SampleBuilder {
       s.wait(skipped ? 1 : 6, skipped ? 3 : 20);
     }
     s.wait(2, quick ? 2 : 6); // "מוכן?", or the level's sheet on the map
-    s.emit('level_start', { level: n, chapter, kind, attempt, bestStars, quick } satisfies LevelStartProps);
+    // [D73] The level's current rev (1.0.3: 2 for all 300), as the app sends it: the admin site shows that rev.
+    const rev = levelRev(id);
+    s.emit('level_start', {
+      level: n,
+      rev,
+      chapter,
+      kind,
+      attempt,
+      bestStars,
+      quick,
+    } satisfies LevelStartProps);
     if (chance(rng, LEVEL_GONE_SHARE)) {
       const atMs = intBetween(rng, 1_000, LEVEL_RULES.levelMaxMs - 1_000);
       s.t += atMs;
-      s.emit('level_quit', { level: n, atMs } satisfies LevelQuitProps);
+      s.emit('level_quit', { level: n, rev, atMs } satisfies LevelQuitProps);
       return false;
     }
     const a = sampleAttempt(rng, p.skill, n, attempt);
@@ -896,6 +907,7 @@ class SampleBuilder {
     p.records[id] = { stars: Math.max(bestStars, a.stars) as Stars, plays: attempt, lastPlayedAt: s.t };
     s.emit('level_end', {
       level: n,
+      rev,
       kind,
       stars: a.stars,
       prevBest: bestStars,

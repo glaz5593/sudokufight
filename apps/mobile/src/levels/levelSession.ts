@@ -1,5 +1,6 @@
 import {
   type AppLevel,
+  type AppLevelOf,
   attachBot,
   attemptLevel,
   type BotHandle,
@@ -9,15 +10,15 @@ import {
   type Clock,
   createRng,
   explain,
-  type FindLevelOver,
   formatBlock,
   formatExplanation,
   type GameMode,
-  type GameResult,
   type GameView,
   type HostUpdate,
   isTapKind,
   levelBotConfig,
+  type LevelEndOf,
+  levelEngineOf,
   levelGameConfig,
   levelModeFor,
   levelOutcome,
@@ -27,7 +28,9 @@ import {
   levelNumber,
   LocalFindHost,
   LocalGameHost,
+  LocalPuzzleHost,
   parseGrid,
+  puzzleConflictsOn,
   REACTIONS,
   type Scheduler,
 } from '@sudoku-fight/engine';
@@ -50,7 +53,7 @@ import { useLevels } from './levelsStore';
  * One attempt at a stage on the phone (1.0.2; dev-plan §2ח): the stage's host, its bot, its start and its end.
  * The screens talk to `host` (the GameHost interface) and never to the engine, as in a practice:
  *
- * - The attempt's number comes from levels.db (levelAttemptOf: the plays, or the attempts, plus one), and from
+ * - The attempt's number comes from levels.db (levelAttemptOf: the attempts at the level's rev, plus one), and from
  *   the second attempt on the stage is played on an equivalent board (attemptLevel: transformLevel while
  *   LEVEL_RULES.replayTransform is on) [D63]. Its stars rule, limits and bot are the stored stage's.
  * - A digit kind (fillBox, duel, and the ideas' pointHunter, chain) runs in a LocalGameHost with the stage's
@@ -76,8 +79,8 @@ import { useLevels } from './levelsStore';
  * of the way (storage, telemetry) are reported, never thrown at the screens.
  */
 
-/** How a stage ended, as its host gives it: the game engine's result, or the tap engine's levelOver. */
-export type LevelEnd = GameResult | FindLevelOver;
+/** How a stage ended, as its host gives it: the game engine's result, the tap engine's or the puzzle's levelOver. */
+export type LevelEnd = LevelEndOf;
 
 /** [D65] The stage's freeze as the screens draw it, and the AppState it listens to (game/backgroundPause.ts). */
 export type { AppStateSource, PauseState };
@@ -107,8 +110,8 @@ export interface LevelSessionDeps {
   scheduler?: Scheduler;
   /** The player on this phone; ME by default. */
   playerId?: string;
-  /** The attempt's number (levels.db); levelAttemptOf by default. */
-  attemptOf?: (levelId: string) => Promise<number>;
+  /** The attempt's number at the level's rev (levels.db); levelAttemptOf by default. */
+  attemptOf?: (levelId: string, rev: number) => Promise<number>;
   /** My best stars at the stage so far (level_start); the levels store's by default. */
   bestStarsOf?: (levelId: string) => number;
   /** Stores the end; the app's levelFinished by default. */
@@ -151,6 +154,12 @@ export interface LevelSession {
   levelView(): LevelView | null;
   /** A tap stage's move. */
   tap(cell: CellIndex): void;
+  /**
+   * A puzzle stage's move (1.0.3, levels-ui.md §4.3): swap the boxes at two places (0–8, row-major, LTR) through
+   * the host (GameHost.swapBoxes). The engine decides everything: a fixed box is refused ('boxFixed'), a wrong
+   * swap costs its penalty, the right arrangement ends the stage. Any other stage's host refuses it.
+   */
+  swap(from: number, to: number): void;
   /** The X, confirmed: the stage ends 'quit' (0 stars; it counts as played, LEVEL_RULES.quitCountsAsPlayed). */
   quit(): void;
   /** The game screen's end (its confirmed dialog): the X's quit. */
@@ -209,7 +218,7 @@ export async function startLevel(
   const onError = deps.onError ?? ((what, error) => console.warn(`[levels] ${what}`, error));
   let attempt = 1;
   try {
-    attempt = await (deps.attemptOf ?? levelAttemptOf)(level.id);
+    attempt = await (deps.attemptOf ?? levelAttemptOf)(level.id, level.rev);
   } catch (error) {
     onError('could not read the attempt', error);
   }
@@ -228,7 +237,7 @@ class Session implements LevelSession {
   readonly result: Promise<LevelFinishResult>;
 
   private readonly scheduler: Scheduler;
-  private readonly local: LocalGameHost | LocalFindHost;
+  private readonly local: LocalGameHost | LocalFindHost | LocalPuzzleHost;
   private readonly track: (name: AnalyticsEventName, props: AnalyticsProps) => void;
   private readonly settings: NonNullable<LevelSessionDeps['settings']>;
   private readonly finishWith: LevelFinisher;
@@ -285,6 +294,20 @@ class Session implements LevelSession {
         rules,
         // D62: no reactions button in a stage, unless LEVEL_UI.reactions brings it back.
         reactions: this.settings.reactions ? REACTIONS : [],
+        autoStart: false,
+      });
+    } else if (levelEngineOf(this.played.kind) === 'puzzle') {
+      // 1.0.3 (levels-ui.md §4): the puzzle's own host, so a puzzle stage starts, freezes and ends (by its
+      // limit or the X) like any other; its screen (PuzzleLevelScreen) moves the boxes with session.swap.
+      this.local = new LocalPuzzleHost({
+        id: this.id,
+        spec: this.played as AppLevelOf<'puzzle'>,
+        player,
+        attempt,
+        clock: this.clock,
+        scheduler: this.scheduler,
+        rules,
+        conflicts: puzzleConflictsOn((deps.kindOrdinalOf ?? kindOrdinalInData)(level) + 1, rules),
         autoStart: false,
       });
     } else {
@@ -347,6 +370,11 @@ class Session implements LevelSession {
   tap(cell: CellIndex): void {
     if (this.closed) return;
     this.local.tap(cell);
+  }
+
+  swap(from: number, to: number): void {
+    if (this.closed) return;
+    this.local.swapBoxes(from, to);
   }
 
   quit(): void {
@@ -418,6 +446,8 @@ class Session implements LevelSession {
   private endOf(update: Extract<HostUpdate, { kind: 'events' }>): LevelEnd | null {
     if (this.local instanceof LocalFindHost)
       return update.levelEvents?.some((e) => e.type === 'levelOver') ? this.local.over : null;
+    if (this.local instanceof LocalPuzzleHost)
+      return update.puzzleEvents?.some((e) => e.type === 'levelOver') ? this.local.over : null;
     return update.events.some((e) => e.type === 'gameOver') ? this.local.state.result : null;
   }
 

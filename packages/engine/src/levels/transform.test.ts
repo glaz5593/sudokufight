@@ -78,7 +78,174 @@ const SPOT_ERROR: LevelSpecOf<'spotError'> = {
 /** Every empty cell as a chain, in order: the mapped list gives where each cell went. */
 const ALL_CELLS: LevelSpecOf<'chain'> = { ...CHAIN_LEVEL, targets: { cells: EMPTY } };
 
-const LEVELS: AppLevel[] = [...DIGIT_LEVELS, FIND_DUEL, BOARD_FIND, SPOT_ERROR, ALL_CELLS];
+/** fillRow and fillCol (1.0.3): row A's and column 1's empty cells. */
+const emptiesOf = (grid: string, inLine: (cell: number) => boolean) =>
+  [...grid].flatMap((g, i) => (g === '0' && inLine(i) ? [i] : []));
+const FILL_ROW: LevelSpecOf<'fillRow'> = {
+  ...FILL_BOX_LEVEL,
+  id: 'L004',
+  kind: 'fillRow',
+  targets: { row: 0, cells: emptiesOf(PUZZLE.givens, (c) => rowOf(c) === 0) },
+};
+const FILL_COL: LevelSpecOf<'fillCol'> = {
+  ...FILL_BOX_LEVEL,
+  id: 'L016',
+  kind: 'fillCol',
+  targets: { col: 0, cells: emptiesOf(PUZZLE.givens, (c) => colOf(c) === 0) },
+};
+/**
+ * A puzzle (1.0.3): the three boxes of the diagonal fixed (different bands and stacks), the other six one cycle:
+ * place 1 holds the box of 2, 2 of 3, 3 of 5, 5 of 6, 6 of 7, 7 of 1.
+ */
+const PUZZLE_LEVEL: LevelSpecOf<'puzzle'> = {
+  ...FILL_BOX_LEVEL,
+  id: 'L003',
+  kind: 'puzzle',
+  board: { grid: PUZZLE.solution, solution: PUZZLE.solution },
+  timeLimitMs: 60000,
+  stars: { by: 'timeMs', three: 45000, two: 55000, one: 60000 },
+  targets: { start: [0, 2, 3, 5, 4, 6, 7, 1, 8], fixed: [0, 4, 8], lockOnCorrect: false },
+};
+
+const LEVELS: AppLevel[] = [
+  ...DIGIT_LEVELS,
+  FIND_DUEL,
+  BOARD_FIND,
+  SPOT_ERROR,
+  ALL_CELLS,
+  FILL_ROW,
+  FILL_COL,
+  PUZZLE_LEVEL,
+];
+
+// ---------------------------------------------------------------------------------------------------------
+// The puzzle, worked out here by brute force (the builder's own counting is levels/builder/puzzle.ts)
+
+const band = (p: number) => Math.floor(p / 3);
+const stack = (p: number) => p % 3;
+
+/** The digits of box `home` of a solution, row by row: [i][j]. */
+const boxRows = (sol: string, home: number): string[][] =>
+  [0, 1, 2].map((i) => [0, 1, 2].map((j) => sol[(3 * band(home) + i) * 9 + 3 * stack(home) + j]!));
+
+/** The board shown when place p holds the box of at[p]. */
+function assemble(sol: string, at: readonly number[]): string {
+  const out = new Array<string>(81);
+  at.forEach((home, p) => {
+    const rows = boxRows(sol, home);
+    for (let i = 0; i < 3; i++)
+      for (let j = 0; j < 3; j++) out[(3 * band(p) + i) * 9 + 3 * stack(p) + j] = rows[i]![j]!;
+  });
+  return out.join('');
+}
+
+const isValidBoard = (grid: string): boolean => isSolvedGrid(parseGrid(grid));
+
+function permutations<T>(items: readonly T[]): T[][] {
+  if (items.length <= 1) return [items.slice()];
+  return items.flatMap((x, k) =>
+    permutations([...items.slice(0, k), ...items.slice(k + 1)]).map((rest) => [x, ...rest]),
+  );
+}
+
+/** How many arrangements with the fixed boxes at home make a valid sudoku. */
+function validArrangements(level: LevelSpecOf<'puzzle'>): number {
+  const { fixed } = level.targets;
+  const moving = [0, 1, 2, 3, 4, 5, 6, 7, 8].filter((p) => !fixed.includes(p));
+  let count = 0;
+  for (const homes of permutations(moving)) {
+    const at = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    moving.forEach((p, k) => {
+      at[p] = homes[k]!;
+    });
+    if (isValidBoard(assemble(level.board.solution, at))) count++;
+  }
+  return count;
+}
+
+/** Box `home` fits place p beside the placed boxes: no digit twice in a row or a column. */
+function fits(sol: string, home: number, p: number, placed: ReadonlyMap<number, number>): boolean {
+  const mine = boxRows(sol, home);
+  for (const [q, other] of placed) {
+    const theirs = boxRows(sol, other);
+    for (let k = 0; k < 3; k++) {
+      if (band(q) === band(p) && mine[k]!.some((d) => theirs[k]!.includes(d))) return false;
+      if (stack(q) === stack(p) && mine.some((r) => theirs.some((s) => s[k] === r[k]))) return false;
+    }
+  }
+  return true;
+}
+
+/** Solved one place at a time: a place only one box fits, or a box that fits only one place. */
+function solvesStepByStep(level: LevelSpecOf<'puzzle'>): boolean {
+  const sol = level.board.solution;
+  const placed = new Map<number, number>(level.targets.fixed.map((p) => [p, p]));
+  let places = [0, 1, 2, 3, 4, 5, 6, 7, 8].filter((p) => !placed.has(p));
+  let boxes = places.map((p) => level.targets.start[p]!);
+  while (places.length) {
+    let step: [number, number] | null = null;
+    for (const p of places) {
+      const ok = boxes.filter((h) => fits(sol, h, p, placed));
+      if (ok.length === 1) step = [p, ok[0]!];
+    }
+    for (const h of boxes) {
+      const ok = places.filter((p) => fits(sol, h, p, placed));
+      if (!step && ok.length === 1) step = [ok[0]!, h];
+    }
+    if (!step) return false;
+    const [p, h] = step;
+    placed.set(p, h);
+    places = places.filter((x) => x !== p);
+    boxes = boxes.filter((x) => x !== h);
+  }
+  return isValidBoard(
+    assemble(
+      sol,
+      [...placed.entries()].sort((a, b) => a[0] - b[0]).map(([, h]) => h),
+    ),
+  );
+}
+
+/** The 72 moves of whole bands and stacks, with or without the transpose. */
+function wholeBoxMoves(): { rows: number[]; cols: number[]; transpose: boolean }[] {
+  const groups = permutations([0, 1, 2]);
+  const spread = (g: number[]) => [0, 1, 2, 3, 4, 5, 6, 7, 8].map((r) => 3 * g[Math.floor(r / 3)]! + (r % 3));
+  return groups.flatMap((rg) =>
+    groups.flatMap((cg) =>
+      [false, true].map((transpose) => ({ rows: spread(rg), cols: spread(cg), transpose })),
+    ),
+  );
+}
+
+/** One move of whole boxes and one relabel of the digits take every pair (a → b) at once. */
+function sameWholeBoxMove(pairs: readonly (readonly [string, string])[]): boolean {
+  return wholeBoxMoves().some(({ rows, cols, transpose }) => {
+    const relabel = new Map<string, string>();
+    return pairs.every(([a, b]) =>
+      [...a].every((d, i) => {
+        const r = rows[Math.floor(i / 9)]!;
+        const c = cols[i % 9]!;
+        const to = b[transpose ? c * 9 + r : r * 9 + c]!;
+        const was = relabel.get(d);
+        if (was === undefined) relabel.set(d, to);
+        return (was ?? to) === to;
+      }),
+    );
+  });
+}
+
+/** The moving boxes start as one cycle: following "place → the home of its box" visits them all. */
+function isOneCycle(start: readonly number[], fixed: readonly number[]): boolean {
+  const moving = [0, 1, 2, 3, 4, 5, 6, 7, 8].filter((p) => !fixed.includes(p));
+  if (!moving.length) return true;
+  const seen = new Set<number>();
+  let p = moving[0]!;
+  while (!seen.has(p)) {
+    seen.add(p);
+    p = start[p]!;
+  }
+  return p === moving[0] && seen.size === moving.length;
+}
 
 describe('transformLevel', () => {
   it('attempt 1 is the stored level itself', () => {
@@ -197,6 +364,92 @@ describe('transformLevel', () => {
   it('an attempt is 1 or more', () => {
     expect(() => transformLevel(FILL_BOX_LEVEL, 0)).toThrow(RangeError);
     expect(() => transformLevel(FILL_BOX_LEVEL, 1.5)).toThrow(RangeError);
+  });
+});
+
+describe('transformLevel: fillRow and fillCol never transpose [D69]', () => {
+  it.each(ATTEMPTS)(
+    'attempt %i: a row stays a row, a column a column, its empty cells with it',
+    (attempt) => {
+      const row = transformLevel(FILL_ROW, attempt);
+      expect(row.kind).toBe('fillRow');
+      expect(row.targets.cells.every((c) => rowOf(c) === row.targets.row)).toBe(true);
+      expect([...row.targets.cells].sort((a, b) => a - b)).toEqual(
+        emptiesOf(row.board.grid, (c) => rowOf(c) === row.targets.row),
+      );
+      const col = transformLevel(FILL_COL, attempt);
+      expect(col.kind).toBe('fillCol');
+      expect(col.targets.cells.every((c) => colOf(c) === col.targets.col)).toBe(true);
+      expect([...col.targets.cells].sort((a, b) => a - b)).toEqual(
+        emptiesOf(col.board.grid, (c) => colOf(c) === col.targets.col),
+      );
+      // Still a fair sudoku, as every other kind's.
+      expect(hasUniqueSolution(parseGrid(row.board.grid))).toBe(true);
+    },
+  );
+
+  it('the row and the column do move: not the same index every attempt', () => {
+    expect(new Set(ATTEMPTS.map((a) => transformLevel(FILL_ROW, a).targets.row)).size).toBeGreaterThan(1);
+    expect(new Set(ATTEMPTS.map((a) => transformLevel(FILL_COL, a).targets.col)).size).toBeGreaterThan(1);
+  });
+});
+
+describe('transformLevel: the puzzle moves whole boxes only [D63]', () => {
+  it('the fixture: one valid arrangement, solved step by step, one cycle of six', () => {
+    expect(validArrangements(PUZZLE_LEVEL)).toBe(1);
+    expect(solvesStepByStep(PUZZLE_LEVEL)).toBe(true);
+    expect(isOneCycle(PUZZLE_LEVEL.targets.start, PUZZLE_LEVEL.targets.fixed)).toBe(true);
+  });
+
+  it.each(ATTEMPTS)(
+    'attempt %i: the board is its solution, the fixed boxes at home, the moving ones away and one cycle',
+    (attempt) => {
+      const out = transformLevel(PUZZLE_LEVEL, attempt);
+      const { start, fixed, lockOnCorrect } = out.targets;
+      expect(out.board.grid).toBe(out.board.solution);
+      expect(isSolvedGrid(parseGrid(out.board.solution))).toBe(true);
+      expect([...start].sort()).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+      expect(fixed).toHaveLength(3);
+      expect([...fixed].sort((a, b) => a - b)).toEqual(fixed);
+      for (let p = 0; p < 9; p++) expect(start[p] === p).toBe(fixed.includes(p));
+      expect(new Set(fixed.map(band)).size).toBe(3);
+      expect(new Set(fixed.map(stack)).size).toBe(3);
+      expect(isOneCycle(start, fixed)).toBe(true);
+      expect(lockOnCorrect).toBe(false);
+    },
+  );
+
+  it.each(ATTEMPTS)(
+    'attempt %i: still exactly one valid arrangement, still solved step by step, no box broken',
+    (attempt) => {
+      const out = transformLevel(PUZZLE_LEVEL, attempt);
+      expect(validArrangements(out)).toBe(1);
+      expect(solvesStepByStep(out)).toBe(true);
+      // One move of whole bands and stacks (and maybe the transpose), and one relabel, takes both the solution
+      // and the board as it starts: every box moved as one piece, and the start moved with it.
+      expect(
+        sameWholeBoxMove([
+          [PUZZLE_LEVEL.board.solution, out.board.solution],
+          [
+            assemble(PUZZLE_LEVEL.board.solution, PUZZLE_LEVEL.targets.start),
+            assemble(out.board.solution, out.targets.start),
+          ],
+        ]),
+      ).toBe(true);
+    },
+  );
+
+  it('a row inside its band never moves alone: a whole-box move always explains an attempt', () => {
+    // The default draw would shuffle rows inside their bands: then no whole-box move takes the solution over.
+    const moved = ATTEMPTS.map((a) => transformLevel(PUZZLE_LEVEL, a).board.solution);
+    for (const sol of moved) expect(sameWholeBoxMove([[PUZZLE_LEVEL.board.solution, sol]])).toBe(true);
+    const chain = transformLevel(ALL_CELLS, 2).board.solution;
+    expect(sameWholeBoxMove([[PUZZLE.solution, chain]])).toBe(false);
+  });
+
+  it('the transpose still happens in some attempts (the start moves with it)', () => {
+    const fixedSets = new Set(ATTEMPTS.map((a) => transformLevel(PUZZLE_LEVEL, a).targets.fixed.join()));
+    expect(fixedSets.size).toBeGreaterThan(1);
   });
 });
 

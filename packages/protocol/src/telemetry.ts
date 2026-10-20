@@ -106,6 +106,8 @@ export const TELEMETRY_EVENT_GENERATION: Readonly<Record<TelemetryEventName, 1 |
  *   keys with name, user, device or install in them.
  * - Flat values only (TelemetryProps); booleans stay booleans; numbers are whole (ms too), but `metric`.
  * - A bad prop refuses the whole batch (400): build them with the types below.
+ * - `kind` is checked against the server's LEVEL_KINDS, so a kind it does not know refuses the whole batch: a
+ *   server that knows a new kind goes live before the app that sends it (1.0.3: puzzle, fillRow, fillCol).
  */
 
 export { LEVEL_END_REASONS, type LevelEndReason } from '@sudoku-fight/engine';
@@ -121,9 +123,19 @@ export interface LevelMapOpenProps {
   stars: number;
 }
 
-/** level_start: one per start, when the level's clock starts. */
+/**
+ * level_start: one per start, when the level's clock starts.
+ *
+ * `rev` (1.0.3) [D73], on level_start, level_end and level_quit: the level's rev in the app's levels.json (a
+ * whole number ≥ 1), so the admin site can keep a rebuilt level's plays apart from the old rev's. Optional,
+ * and never null: an app before 1.0.3 sends none, and every server takes the key (a server before 1.0.3 lets
+ * an extra key through; since 1.0.3 it checks it). An event without `rev` is a 1.0.2 app's, whose levels were
+ * all at rev 1.
+ */
 export interface LevelStartProps {
   level: number;
+  /** The level's rev (1.0.3) [D73]; absent from an app before it. */
+  rev?: number;
   /** 1 … LEVEL_RULES.chapterCount. */
   chapter: number;
   kind: LevelKind;
@@ -138,6 +150,8 @@ export interface LevelStartProps {
 /** level_end: the end of an attempt, as the engine's levelOutcome reads it. */
 export interface LevelEndProps {
   level: number;
+  /** The level's rev (1.0.3) [D73], as in level_start; absent from an app before it. */
+  rev?: number;
   kind: LevelKind;
   stars: Stars;
   /** The best stars before this attempt. */
@@ -145,6 +159,7 @@ export interface LevelEndProps {
   /** The level clock at the end (levelOutcome's elapsedMs: penalties in, a background freeze out). */
   durationMs: number;
   reason: LevelEndReason;
+  /** My mistakes: wrong digits, wrong taps' penalties, or a puzzle's wrong swaps [D70c]. */
   mistakes: number;
   /** The kind's measure (the engine's LEVEL_METRIC; a duel's lead may be below 0), or null when it has none. */
   metric: number | null;
@@ -156,6 +171,8 @@ export interface LevelEndProps {
 /** level_quit: an attempt left without an end (it does not count as played). */
 export interface LevelQuitProps {
   level: number;
+  /** The level's rev (1.0.3) [D73], as in level_start; absent from an app before it. */
+  rev?: number;
   /** The level clock when it was left. */
   atMs: number;
 }

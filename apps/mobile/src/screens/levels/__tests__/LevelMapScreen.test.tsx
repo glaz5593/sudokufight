@@ -1,6 +1,13 @@
 // First: keeps the real Reanimated in place of the router testing library's old mock (see homeTesting.tsx).
 import 'react-native-reanimated';
-import { type AppLevel, type FindLevelOver, levelIdOf, levelOutcome, type Stars } from '@sudoku-fight/engine';
+import {
+  type AppLevel,
+  type FindLevelOver,
+  levelIdOf,
+  levelNumber,
+  levelOutcome,
+  type Stars,
+} from '@sudoku-fight/engine';
 import { render } from '@testing-library/react-native';
 import { act, fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
 import { FlatList, Pressable, Text, View } from 'react-native';
@@ -16,7 +23,8 @@ import { practiceStorageOrNull } from '../../../game/storage';
 import { memoryDb, type SqlJsDb } from '../../../game/testing/sqlJsDb';
 import i18n from '../../../i18n';
 import { levelFinished } from '../../../levels/appLevels';
-import { allLevels } from '../../../levels/levelsData';
+import { firstLevelOf, levelsOf } from '../../../levels/__tests__/helpers/levelsOf';
+import { allLevels, levelById } from '../../../levels/levelsData';
 import { forgetLevels } from '../../../levels/levelsStore';
 import { track } from '../../../services/analytics';
 import { useSettings } from '../../../state/settings';
@@ -29,7 +37,7 @@ import { mapLayout, openOffset } from '../mapModel';
 /**
  * The level map (components.md §19.2–§19.4; dev-plan §3.1 2ז): it opens at the current chapter with the current
  * node at 40 %, every node has its label, a locked node shakes and says why (not under Reduced Motion), the
- * boss shows its bot from chapter 2, the header chip jumps to a chapter, a closed gate opens its sheet, an open
+ * boss shows its bot from chapter 1, the header chip jumps to a chapter, a closed gate opens its sheet, an open
  * one reads "פרק 5 פתוח", and the panel's button plays. Then the whole way, with a stand-in for the stage
  * screens: משחק חדש → the map → the panel → "מוכן?" → the result → the map, in Hebrew and English.
  */
@@ -64,6 +72,14 @@ const METRICS = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 const LEVELS = allLevels();
+/**
+ * Picked by kind, never by id (a rebuild may give an id another kind): helpers/levelsOf. FIND_N is chapter 1's
+ * second find (played, in the tests below), NEXT_N the stage after it (a fill-box, the current one then), RACE_N
+ * the first race (against Pip).
+ */
+const FIND_N = levelNumber(levelsOf('find', { chapter: 1 })[1]!.id)!;
+const NEXT_N = FIND_N + 1;
+const RACE_N = levelNumber(firstLevelOf('findDuel').id)!;
 
 /** Stages 1…n played, each with these stars (an engine LevelRecords). */
 function played(n: number, stars: Stars = 2, from = 1): LevelMapScreenProps['records'] {
@@ -136,11 +152,17 @@ describe('the level map', () => {
     );
   });
 
-  it('every node has its label: "שלב 7, איפה ה־7, שני כוכבים מתוך שלושה", "שלב 12, נעול"', async () => {
-    await show({ records: played(7) });
-    expect(screen.getByRole('button', { name: 'שלב 7, איפה ה־7, שני כוכבים מתוך שלושה' })).toBeOnTheScreen();
+  it('every node has its label: "שלב 5, מיקום מדויק, שני כוכבים מתוך שלושה", "שלב 12, נעול"', async () => {
+    expect(LEVELS[NEXT_N - 1]!.kind).toBe('fillBox');
+    await show({ records: played(FIND_N) });
+    expect(
+      screen.getByRole('button', { name: `שלב ${FIND_N}, מיקום מדויק, שני כוכבים מתוך שלושה` }),
+    ).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'שלב 12, נעול' })).toBeOnTheScreen();
-    expect(screen.getByTestId('node-8')).toHaveProp('accessibilityLabel', 'שלב 8, מלא את הריבוע, השלב הבא');
+    expect(screen.getByTestId(`node-${NEXT_N}`)).toHaveProp(
+      'accessibilityLabel',
+      `שלב ${NEXT_N}, מלא את הריבוע, השלב הבא`,
+    );
     expect(screen.getByTestId('node-10')).toHaveProp('accessibilityLabel', 'שלב 10, נעול');
     // Every node a button with a label.
     for (const node of screen.getAllByTestId(/^node-\d+$/))
@@ -192,23 +214,25 @@ describe('the level map', () => {
     expect(useToast.getState().current?.message).toBe('פרק 3 נפתח ב־20 כוכבים בפרק 2');
   });
 
-  it('the boss shows the chapter’s bot from chapter 2 (none in chapter 1, which has none)', async () => {
+  it('the boss shows its bot from chapter 1 (every boss is a bot fight since 1.0.3, D72), and its crown', async () => {
     await show({ records: played(19) });
     expect(screen.getByTestId('node-20-bot', hidden)).toBeTruthy();
     expect(screen.getByTestId('node-20-tile-crown', hidden)).toBeTruthy();
     await screen.unmount();
     await show({ records: played(7) });
     expect(screen.getByTestId('node-10-tile-crown', hidden)).toBeTruthy();
-    expect(screen.queryByTestId('node-10-bot', hidden)).toBeNull();
+    expect(screen.getByTestId('node-10-bot', hidden)).toBeTruthy();
   });
 
   it('LEVEL_UI.nodeKindIcon: no kind icon on a node (D60), unless it is turned on', async () => {
-    await show({ records: played(7) });
-    expect(screen.queryByTestId('node-7-kind', hidden)).toBeNull();
+    await show({ records: played(FIND_N) });
+    expect(screen.queryByTestId(`node-${FIND_N}-kind`, hidden)).toBeNull();
     await screen.unmount();
     jest.replaceProperty(LEVEL_UI, 'nodeKindIcon', true);
-    await show({ records: played(7) });
-    expect(within(screen.getByTestId('node-7-kind', hidden)).getByTestId('icon-target', hidden)).toBeTruthy();
+    await show({ records: played(FIND_N) });
+    expect(
+      within(screen.getByTestId(`node-${FIND_N}-kind`, hidden)).getByTestId('icon-target', hidden),
+    ).toBeTruthy();
   });
 
   it('the header chip opens the chapter list, and a row takes the map to its chapter', async () => {
@@ -251,24 +275,49 @@ describe('the level map', () => {
   });
 
   it('the panel: the current stage, its goal and scale, and "המשך · שלב N" plays it', async () => {
-    const { onPlay } = await show({ records: played(7) });
-    expect(screen.getByTestId('level-panel-title')).toHaveTextContent('שלב 8 · מלא את הריבוע');
+    const { onPlay } = await show({ records: played(FIND_N) });
+    expect(screen.getByTestId('level-panel-title')).toHaveTextContent(`שלב ${NEXT_N} · מלא את הריבוע`);
     expect(screen.getByTestId('level-panel-next')).toBeTruthy();
     expect(screen.getByTestId('level-scale-3')).toHaveProp('accessibilityLabel', '3 כוכבים: עד 10 ש׳');
-    await fireEvent.press(screen.getByRole('button', { name: 'המשך · שלב 8' }));
-    expect(onPlay).toHaveBeenCalledWith('L008');
+    await fireEvent.press(screen.getByRole('button', { name: `המשך · שלב ${NEXT_N}` }));
+    expect(onPlay).toHaveBeenCalledWith(levelIdOf(NEXT_N));
     // A played stage: my best, and "שחק".
-    await fireEvent.press(screen.getByTestId('node-7'));
+    await fireEvent.press(screen.getByTestId(`node-${FIND_N}`));
     expect(screen.getByTestId('level-panel-best')).toHaveProp(
       'accessibilityLabel',
       'השיא שלך: שני כוכבים מתוך שלושה, ⁦7.6⁩ ש׳',
     );
     await fireEvent.press(screen.getByRole('button', { name: 'שחק' }));
-    expect(onPlay).toHaveBeenLastCalledWith('L007');
+    expect(onPlay).toHaveBeenLastCalledWith(levelIdOf(FIND_N));
+  });
+
+  it('[D73] a best made at another rev is not shown ("השיא התאפס"); one at the level’s own rev is', async () => {
+    const id = levelIdOf(FIND_N);
+    const rev = levelById(id)!.rev;
+    const at = (bestRev: number) => ({
+      ...played(FIND_N),
+      [id]: { stars: 2 as Stars, plays: 3, metric: 7600, rev: bestRev },
+    });
+    // Played at the rev before the rebuild (1.0.2's rev 1): the stars stay, the measure is gone.
+    await show({ records: at(rev - 1) });
+    await fireEvent.press(screen.getByTestId(`node-${FIND_N}`));
+    expect(screen.getByTestId('level-panel-best')).toHaveProp(
+      'accessibilityLabel',
+      'השיא שלך: שני כוכבים מתוך שלושה',
+    );
+    expect(screen.getByTestId('level-panel-best')).not.toHaveTextContent(/7\.6/);
+    await screen.unmount();
+    // At the level's own rev: the best, as before.
+    await show({ records: at(rev) });
+    await fireEvent.press(screen.getByTestId(`node-${FIND_N}`));
+    expect(screen.getByTestId('level-panel-best')).toHaveProp(
+      'accessibilityLabel',
+      'השיא שלך: שני כוכבים מתוך שלושה, ⁦7.6⁩ ש׳',
+    );
   });
 
   it('a staging build’s "פתח את כל השלבים (בדיקה)": every stage and every gate open; the stars as they are', async () => {
-    const { onPlay } = await show({ records: played(7), unlockAll: true });
+    const { onPlay } = await show({ records: played(FIND_N), unlockAll: true });
     expect(screen.queryAllByRole('button', { name: /, נעול$/ })).toEqual([]);
     expect(screen.getByTestId('node-12')).not.toHaveProp('accessibilityLabel', 'שלב 12, נעול');
     expect(screen.getByTestId('gate-2-open')).toBeTruthy();
@@ -278,8 +327,13 @@ describe('the level map', () => {
     await fireEvent.press(screen.getByTestId('level-panel-play'));
     expect(onPlay).toHaveBeenCalledWith('L012');
     // The progress is unchanged: the current stage is still the next one to play, the stars still mine.
-    expect(screen.getByTestId('node-8')).toHaveProp('accessibilityLabel', 'שלב 8, מלא את הריבוע, השלב הבא');
-    expect(screen.getByRole('button', { name: 'שלב 7, איפה ה־7, שני כוכבים מתוך שלושה' })).toBeOnTheScreen();
+    expect(screen.getByTestId(`node-${NEXT_N}`)).toHaveProp(
+      'accessibilityLabel',
+      `שלב ${NEXT_N}, מלא את הריבוע, השלב הבא`,
+    );
+    expect(
+      screen.getByRole('button', { name: `שלב ${FIND_N}, מיקום מדויק, שני כוכבים מתוך שלושה` }),
+    ).toBeOnTheScreen();
   });
 
   it('"פתח את כל השלבים" comes from the testing switch by default (off: the gates hold)', async () => {
@@ -296,8 +350,8 @@ describe('the level map', () => {
   });
 
   it('a stage against a bot: the panel shows the bot with ▲, its name and level', async () => {
-    await show({ records: played(11) });
-    await fireEvent.press(screen.getByTestId('node-12'));
+    await show({ records: played(RACE_N - 1) });
+    await fireEvent.press(screen.getByTestId(`node-${RACE_N}`));
     expect(screen.getByTestId('level-panel-bot')).toHaveProp('accessibilityLabel', 'Pip · רמה 1 · טירון');
     expect(within(screen.getByTestId('level-panel-bot')).getByTestId('glyph-triangle', hidden)).toBeTruthy();
   });
@@ -403,8 +457,8 @@ describe.each(['he', 'en'] as const)('the way through, %s', (lang) => {
       expect(screen.getByTestId('node-1')).toHaveProp(
         'accessibilityLabel',
         lang === 'he'
-          ? 'שלב 1, איפה ה־7, שלושה כוכבים מתוך שלושה'
-          : "Stage 1, Where's the 7, three stars of three",
+          ? 'שלב 1, מיקום מדויק, שלושה כוכבים מתוך שלושה'
+          : 'Stage 1, Pinpoint, three stars of three',
       ),
     );
     expect(screen.getByTestId('node-2-tile-pin', hidden)).toBeTruthy();
@@ -418,5 +472,5 @@ describe.each(['he', 'en'] as const)('the way through, %s', (lang) => {
 /** The levels' data the map reads is the shipped file (300 stages). */
 it('reads the shipped stages', () => {
   expect(LEVELS).toHaveLength(300);
-  expect((LEVELS[6] as AppLevel).kind).toBe('find');
+  expect((LEVELS[FIND_N - 1] as AppLevel).kind).toBe('find');
 });

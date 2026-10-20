@@ -2,12 +2,13 @@ import { render, screen } from '@testing-library/react-native';
 import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 
 import { color, contrast, size } from '../../../theme';
-import { LevelTile } from '../LevelTile';
+import { LevelTile, TILE_ARENA } from '../LevelTile';
 
 /**
  * A stage tile (components.md §19.1, §19.2): a 3 × 3 box with the number in Teko, at 44 (the new-game row), 56
  * (a node) and 68 (a boss); played light, current with my P1 pin, locked dark with a lock badge and a readable
- * number (no opacity), a boss with its crown. Decorative: the button around it says what it is.
+ * number (no opacity), a boss with its crown and (1.0.3, D77) the arena's gold corners unless locked. Decorative:
+ * the button around it says what it is.
  */
 
 const hidden = { includeHiddenElements: true };
@@ -64,6 +65,39 @@ describe('LevelTile', () => {
     expect(screen.getByTestId('icon-crown', hidden)).toHaveProp('stroke', color.accent);
     await screen.rerender(<LevelTile n={20} size={68} state="locked" boss />);
     expect(screen.getByTestId('icon-crown', hidden)).toHaveProp('stroke', color.iconFaint);
+  });
+
+  it('a boss: the arena’s four gold corners when played, open or current; none while locked (D77)', async () => {
+    for (const state of ['played', 'current'] as const) {
+      await render(<LevelTile n={10} size={68} state={state} boss />);
+      expect(screen.getByTestId('level-tile-arena', hidden)).toBeTruthy();
+      const corners = ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].map((c) =>
+        styleOf(screen.getByTestId(`level-tile-arena-${c}`, hidden)),
+      );
+      for (const c of corners) {
+        expect(c).toMatchObject({ borderColor: color.accent, width: TILE_ARENA.length });
+      }
+      expect(corners[0]).toMatchObject({ borderTopWidth: 3, borderLeftWidth: 3 });
+      expect(corners[3]).toMatchObject({ borderBottomWidth: 3, borderRightWidth: 3 });
+      await screen.unmount();
+    }
+    await render(<LevelTile n={10} size={68} state="locked" boss />);
+    expect(screen.queryByTestId('level-tile-arena', hidden)).toBeNull();
+    await screen.unmount();
+    // A regular stage never; a boss's tile in its own stage header (arena off: the band says it).
+    await render(<LevelTile n={9} size={56} state="played" />);
+    expect(screen.queryByTestId('level-tile-arena', hidden)).toBeNull();
+    await screen.unmount();
+    await render(<LevelTile n={10} size={44} state="current" boss arena={false} />);
+    expect(screen.queryByTestId('level-tile-arena', hidden)).toBeNull();
+  });
+
+  it('a boss’s crown badge is 34 × 24 (1.0.3)', async () => {
+    await render(<LevelTile n={20} size={68} state="played" boss />);
+    const badge = screen.getByTestId('level-tile-crown', hidden).children[0] as unknown as {
+      props: { style?: unknown };
+    };
+    expect(styleOf(badge)).toMatchObject({ width: 34, height: 24 });
   });
 
   it('its grid lines sit at a third and two thirds (18 / 37 on 56, 14 / 29 on 44)', async () => {

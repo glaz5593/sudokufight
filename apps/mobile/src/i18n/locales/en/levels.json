@@ -19,8 +19,8 @@
   },
   "kinds": {
     "find": {
-      "name": "Where's the {{digit}}?",
-      "label": "Where's the {{digit}}"
+      "name": "Pinpoint",
+      "label": "Pinpoint"
     },
     "findDuel": {
       "name": "Race the bot",
@@ -45,18 +45,59 @@
     "chain": {
       "name": "Chain",
       "label": "Chain"
+    },
+    "fillRow": {
+      "name": "Fill the row",
+      "label": "Fill the row"
+    },
+    "fillCol": {
+      "name": "Fill the column",
+      "label": "Fill the column"
+    },
+    "puzzle": {
+      "name": "Puzzle",
+      "label": "Puzzle"
     }
   },
   "boss": {
     "chip": "Boss",
     "name": "Boss stage",
     "label": "boss, {{kind}}",
-    "versus": "The boss: {{bot}}"
+    "versus": "The boss: {{bot}}",
+    "band": "Boss · Chapter {{chapter}}",
+    "botLabel": "{{name}}, the boss",
+    "intro": {
+      "title": "Boss stage!",
+      "sub": "Stage {{n}} · {{kind}}",
+      "harder": "What's harder",
+      "label": "Boss stage! Stage {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "Your first bot: {{bot}}",
+      "faster": "{{bot}} is {{percent}} faster",
+      "overlord": "Overlord",
+      "moreCells": "{{cells}} missing cells instead of {{usual}}"
+    },
+    "result": {
+      "won": "You beat the boss!",
+      "lost": "The boss won this time",
+      "gateOpen": "Gate to chapter {{n}}: {{stars}} · open!",
+      "gateClosed": "Gate to chapter {{n}}: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Box {{n}}",
+    "row": "Row {{row}}",
+    "col": "Column {{n}}",
+    "mapLabel": "Board map: {{region}}"
   },
   "goals": {
-    "find": "One find. The stage ends at {{s}} s.",
+    "find": "Find the exact spot of one digit. The stage ends at {{s}} s.",
     "findDuel": "{{spots}} spots against {{bot}}, up to {{s}} s. First to find one takes it.",
-    "fillBox": "Fill the {{cells}} missing cells of box {{box}}, up to {{s}} s.",
+    "fillBox": "Fill the {{cells}} missing cells of one box, up to {{s}} s.",
+    "fillRow": "Fill the {{cells}} missing cells of one row, up to {{s}} s.",
+    "fillCol": "Fill the {{cells}} missing cells of one column, up to {{s}} s.",
+    "puzzle": "Put the boxes in order. A wrong swap adds {{penalty}} s. Up to {{s}} s.",
     "duel": "Against {{bot}}, to {{target}} points or {{s}} s. Stars by your lead.",
     "spotError_one": "One wrong digit hides among yours. Up to {{s}} s.",
     "spotError_two": "{{count}} wrong digits hide among yours. Up to {{s}} s.",
@@ -128,7 +169,7 @@
     "rowNewLabel": "Play stage {{n}}, {{kind}}, not played yet",
     "rowPlay": "Play",
     "primary": "Play stage {{n}}",
-    "footnote": "Every stage takes at most 30 seconds. Your best stars are kept."
+    "footnote": "Most stages last up to 30 s; fill and puzzle stages up to 60. Your best stars are kept."
   },
   "panel": {
     "label": "The chosen stage",
@@ -155,15 +196,21 @@
   },
   "ready": {
     "title": "Ready?",
-    "label": "Ready? Stage {{n}}, {{kind}}. {{goal}}"
+    "label": "Ready? Stage {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "Where's the {{digit}}?",
+    "raceSpots_one": "1 spot, a race against {{bot}}",
+    "raceSpots_two": "{{count}} spots, a race against {{bot}}",
+    "raceSpots_many": "{{count}} spots, a race against {{bot}}",
+    "raceSpots_other": "{{count}} spots, a race against {{bot}}"
   },
   "tutorial": {
     "title": "How to play",
     "got": "Got it",
     "skip": "Skip",
     "panel": "Picture {{n}} of {{total}}: {{text}}",
+    "alsoBoss": "This is also a boss: the tenth stage of every chapter.",
     "find": {
-      "1": "A big digit and an area marked on the board: a box, a row, a column or the whole board.",
+      "1": "One question, like \"Where's the {{digit}}?\", and an area marked on the board: a box, a row, a column or the whole board.",
       "2": "Find the one cell where the digit must go, and tap it.",
       "3": "A wrong tap adds 5 seconds. Two end the stage."
     },
@@ -198,9 +245,24 @@
       "3": "A digit in a cell that can't be known yet costs 5 seconds, and isn't placed."
     },
     "boss": {
-      "1": "The tenth stage of every chapter is a boss stage.",
-      "2": "The same challenge as the other stages, with a faster bot and a harder board.",
-      "3": "After the boss, the gate to the next chapter opens at 20 stars."
+      "1": "The tenth stage of every chapter is a boss: one fight against a bot, harder than the stages before it.",
+      "2": "Before it starts you see what is harder. Usually: the bot is faster.",
+      "3": "Once you have played the boss and have 20 stars in the chapter, the next chapter opens."
+    },
+    "fillRow": {
+      "1": "One row with missing cells, in a gold frame.",
+      "2": "Choose a cell in the row and type a digit. Cells outside it can't be chosen.",
+      "3": "A wrong digit adds 5 seconds. The faster you finish, the more stars."
+    },
+    "fillCol": {
+      "1": "One column with missing cells, in a gold frame.",
+      "2": "Choose a cell in the column and type a digit. Cells outside it can't be chosen.",
+      "3": "A wrong digit adds 5 seconds. The faster you finish, the more stars."
+    },
+    "puzzle": {
+      "1": "Nine full boxes, in the wrong order.",
+      "2": "Drag a box onto another and they swap. A box with a lock is fixed. A swap that puts neither box in its place adds 5 seconds.",
+      "3": "When every row and column is right, the stage ends. The faster you finish, the more stars."
     }
   },
   "result": {
@@ -235,10 +297,15 @@
     "mistakes_many": "{{count}} mistakes",
     "mistakes_other": "{{count}} mistakes",
     "noMistakes": "No mistakes",
+    "swaps_one": "1 swap · the fewest: {{min}}",
+    "swaps_two": "{{count}} swaps · the fewest: {{min}}",
+    "swaps_many": "{{count}} swaps · the fewest: {{min}}",
+    "swaps_other": "{{count}} swaps · the fewest: {{min}}",
     "time": "Time: {{s}} s",
     "youWon": "You won",
     "botWon": "{{bot}} won",
     "tie": "A tie",
+    "bossTie": "A tie: the boss holds",
     "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
     "opponentSpots": "{{count}} spots",
     "opponentScore": "{{score}} points",
@@ -283,23 +350,23 @@
   "chapters": {
     "1": {
       "name": "First steps",
-      "news": "Where's the digit, and fill the box"
+      "news": "Pinpoint, fill the box, the puzzle and fill the row"
     },
     "2": {
       "name": "Pip's challenge",
-      "news": "Race the bot"
+      "news": "Fill the column, and race the bot"
     },
     "3": {
       "name": "First duel",
-      "news": "Duel to 30, and a box with 5 missing"
+      "news": "Duel to 30, and spot the error"
     },
     "4": {
       "name": "Detective",
-      "news": "Spot the error"
+      "news": "A chain of 3 steps, and a puzzle with 4 moving boxes"
     },
     "5": {
       "name": "Biscuit",
-      "news": "A new bot: Biscuit"
+      "news": "A new bot: Biscuit, the point hunter, and fills where every digit is missing at least once"
     },
     "6": {
       "name": "Rows and columns",
@@ -307,7 +374,7 @@
     },
     "7": {
       "name": "Point hunter",
-      "news": "Point hunter: 3 moves in 30 seconds"
+      "news": "A puzzle with 5 moving boxes"
     },
     "8": {
       "name": "Two errors",
@@ -315,15 +382,15 @@
     },
     "9": {
       "name": "Chain",
-      "news": "A chain of 3 steps"
+      "news": "Every kind again, a step harder"
     },
     "10": {
       "name": "Mr. Hoot",
-      "news": "A new bot: Mr. Hoot"
+      "news": "A new bot: Mr. Hoot, and 7 missing cells in fills"
     },
     "11": {
       "name": "The whole board",
-      "news": "Targets anywhere on the board, and 7 missing in a box"
+      "news": "Targets anywhere on the board"
     },
     "12": {
       "name": "Faster",
@@ -335,7 +402,7 @@
     },
     "14": {
       "name": "Long chain",
-      "news": "A chain of 4 steps"
+      "news": "A chain of 4 steps, and 9 missing cells in fills"
     },
     "15": {
       "name": "Halfway",
@@ -343,7 +410,7 @@
     },
     "16": {
       "name": "Hard boards",
-      "news": "A hard board, and a box left empty"
+      "news": "A hard board, and a puzzle with 6 moving boxes"
     },
     "17": {
       "name": "Eliminations",
@@ -404,13 +471,14 @@
   },
   "hud": {
     "sub": "{{kind}} · Chapter {{chapter}}",
+    "subFind": "Where's the {{digit}}? · Chapter {{chapter}}",
     "subRace": "{{kind}} · {{spots}} spots · Chapter {{chapter}}",
     "clockLabel": "{{s}} seconds left of {{limit}}",
     "penalty": "{{s}} s",
     "me": "Me",
     "find": {
       "tap": "Tap where the {{digit}} must go",
-      "where": "{{scope}} · no keypad, just a tap",
+      "where": "<scope>{{scope}}</scope> · no keypad, just a tap",
       "elapsed": "s so far",
       "targetLabel": "The target: the {{digit}} {{scope}}. {{left}}",
       "ringLabel": "{{s}} seconds left in the stage",
@@ -464,6 +532,48 @@
       "rule": "A mistake adds 5 seconds, and the digit is blocked in that cell",
       "timeLabel": "Time: {{s}} seconds of {{limit}}",
       "boardLabel": "The board · fill only the {{count}} missing cells of box {{n}}"
+    },
+    "line": {
+      "taskRow": "Fill row {{row}}",
+      "taskCol": "Fill column {{n}}",
+      "boardLabelRow": "The board · fill only the {{count}} missing cells of row {{row}}",
+      "boardLabelCol": "The board · fill only the {{count}} missing cells of column {{n}}"
+    },
+    "puzzle": {
+      "task": "Put the boxes in order",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_one": "1 box moves",
+      "moving_two": "2 boxes move",
+      "moving_many": "{{count}} boxes move",
+      "moving_other": "{{count}} boxes move",
+      "fixed_one": "1 box is fixed",
+      "fixed_two": "2 boxes are fixed",
+      "fixed_many": "{{count}} boxes are fixed",
+      "fixed_other": "{{count}} boxes are fixed",
+      "allMove": "Every box moves",
+      "swaps": "Swaps: {{count}}",
+      "wrong_one": "Wrong swap {{penalty}} s",
+      "wrong_two": "{{count}} wrong swaps {{penalty}} s",
+      "wrong_many": "{{count}} wrong swaps {{penalty}} s",
+      "wrong_other": "{{count}} wrong swaps {{penalty}} s",
+      "wrongLabel_one": "One wrong swap, {{s}} seconds added",
+      "wrongLabel_two": "{{count}} wrong swaps, {{s}} seconds added",
+      "wrongLabel_many": "{{count}} wrong swaps, {{s}} seconds added",
+      "wrongLabel_other": "{{count}} wrong swaps, {{s}} seconds added",
+      "dragHint": "Drag a box onto another to swap them",
+      "tapHint": "Or: tap a box, then another",
+      "slotLabel": "Box {{n}}, {{state}}: {{rows}}",
+      "state": {
+        "movable": "can move",
+        "fixed": "fixed",
+        "selected": "selected"
+      },
+      "slotHint": "Tap to choose, then tap another box",
+      "swapped": "Boxes {{a}} and {{b}} swapped",
+      "swappedPenalty": "Boxes {{a}} and {{b}} swapped. Plus {{s}} seconds",
+      "fixedTap": "This box is fixed",
+      "solved": "Every row and every column is right",
+      "boardLabel": "The puzzle · {{counts}}"
     },
     "duel": {
       "gap": "Lead",
@@ -538,6 +648,10 @@
     "points": "You scored {{points}} of {{max}} points, {{percent}} of the board’s best.",
     "line": "The best line: {{moves}}.",
     "move": "{{digit}} in {{cell}} {{points}}",
-    "step": "Step {{n}}: {{text}}"
+    "step": "Step {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "Only the box that started at place {{from}} fits place {{place}}: any other would repeat a digit in a row or a column.",
+      "onlyPlaceForBox": "The box that started at place {{from}} fits only place {{place}}: anywhere else it would repeat a digit in a row or a column."
+    }
   }
 }

@@ -43,6 +43,19 @@ export type GamesQuery = z.infer<typeof gamesQuerySchema>;
 export const daysQuerySchema = z.object({ days: int(1, MAX_STATS_DAYS, DEFAULT_STATS_DAYS) });
 export type DaysQuery = z.infer<typeof daysQuerySchema>;
 
+/** A yes/no switch: '1' or 'true' is on; missing, blank, '0' or 'false' is off; anything else is refused. */
+const flag = z
+  .preprocess(blankToUndefined, z.enum(['0', '1', 'true', 'false'], { error: 'expected 1 or 0' }).optional())
+  .transform((v) => v === '1' || v === 'true');
+
+/**
+ * GET /admin/api/levels (1.0.3, spec §27.3): the period, and `allRevs` to count every rev of a level together
+ * (the plays from before a rebuild too, e.g. 1.0.2's for the D74 calibration); by default only the rev each
+ * level has now.
+ */
+export const levelsQuerySchema = daysQuerySchema.extend({ allRevs: flag });
+export type LevelsQueryParams = z.infer<typeof levelsQuerySchema>;
+
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; message: string };
 
 export function parseQuery<T>(schema: z.ZodType<T>, query: unknown): ParseResult<T> {

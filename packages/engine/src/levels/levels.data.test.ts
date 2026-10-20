@@ -5,14 +5,15 @@ import { BOT_CONFIG } from '../bot/levels';
 import type { BankFile } from '../sudoku/bank';
 import { buildLevel, CHECKED_ATTEMPTS } from './builder/build';
 import { botConfigFingerprint, type LevelsFile, validateLevel, validateLevelSet } from './builder/validate';
-import { LEVEL_RULES, levelIdOf, maxLevel } from './progress';
+import { LEVEL_REV_BASE, LEVEL_RULES, levelIdOf, maxLevel } from './progress';
 import { LEVEL_KINDS, type LevelKind, type LevelSpec } from './spec';
 import { transformLevel } from './transform';
 
 /*
  * levels:validate (`npm run levels:validate`, also part of `npm test`): the frozen levels file
  * (packages/engine/data/levels.json, `npm run levels:build`) against every rule of plan §5.6, as dev-plan §1.4
- * adjusts it (dev-plan §3.1, 2ד), on its stored boards and on the equivalent boards of attempts 2 to 8.
+ * adjusts it (dev-plan §3.1, 2ד) and 1.0.3 adds to it (levels-content.md §4.2, §5.7, §6, §7, §11), on its
+ * stored boards and on the equivalent boards of attempts 2 to 8.
  */
 
 const DATA = join(__dirname, '..', '..', 'data');
@@ -36,17 +37,41 @@ describe('the levels file (plan §5.6)', () => {
     });
   });
 
-  it('43 find, 58 races, 63 boxes, 56 duels and 50 ideas, and 30 bosses: 1 box, 15 races, 14 duels', () => {
+  it('the ten kinds (levels-content.md §3.4): 270 regular levels, and 30 bosses: 16 races, 14 duels', () => {
     const regular = levels.filter((l) => !l.boss);
     const bosses = levels.filter((l) => l.boss);
     const count = (list: readonly LevelSpec[], kind: LevelKind) => list.filter((l) => l.kind === kind).length;
-    expect(LEVEL_KINDS.map((k) => count(regular, k))).toEqual([43, 58, 63, 56, 18, 16, 16]);
-    expect(count(regular, 'spotError') + count(regular, 'pointHunter') + count(regular, 'chain')).toBe(50);
-    expect([count(bosses, 'fillBox'), count(bosses, 'findDuel'), count(bosses, 'duel')]).toEqual([1, 15, 14]);
+    // find, findDuel, fillBox, duel, spotError, pointHunter, chain, fillRow, fillCol, puzzle
+    expect(LEVEL_KINDS.map((k) => count(regular, k))).toEqual([32, 30, 31, 29, 29, 27, 28, 16, 17, 31]);
+    expect([count(bosses, 'findDuel'), count(bosses, 'duel')]).toEqual([16, 14]);
+    expect(bosses.every((l) => l.bot !== undefined)).toBe(true);
+  });
+
+  it('[D73] every level rebuilt at rev 2, its seed from `${id}:r2`', () => {
+    expect(LEVEL_REV_BASE).toBe(2);
+    expect(levels.filter((l) => l.rev !== 2).map((l) => l.id)).toEqual([]);
+  });
+
+  it('chapter 1 (levels-content.md §11, device checks): find, box, puzzle, row ×2, find; the boss a race against Pip', () => {
+    expect(levels.slice(0, 10).map((l) => l.kind)).toEqual([
+      'find',
+      'fillBox',
+      'puzzle',
+      'fillRow',
+      'find',
+      'fillBox',
+      'puzzle',
+      'fillRow',
+      'find',
+      'findDuel',
+    ]);
+    expect(levels[9]!.bot).toMatchObject({ level: 1, pace: 1.1 });
+    for (const box of levels.slice(0, 10).filter((l) => l.kind === 'fillBox'))
+      expect([box.id, box.kind === 'fillBox' && box.targets.cells.length]).toEqual([box.id, 2]);
   });
 
   it(
-    'matches levels.config level by level: kinds per chapter, seeds from id:rev, the plan numbers, bots and bosses; no two levels share givens or a solution; every box is used',
+    'matches levels.config level by level: kinds per chapter, seeds from id:rev, the plan numbers, bots and bosses; no two levels share givens or a solution; every box, row and column is used',
     () => {
       expect(validateLevelSet(file)).toEqual([]);
     },

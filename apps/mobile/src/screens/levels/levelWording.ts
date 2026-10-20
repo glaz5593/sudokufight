@@ -1,10 +1,14 @@
 import {
   type AppLevel,
+  type BossTrait,
   botLevel,
   type BotLevelId,
+  type FillRegion,
   LEVEL_METRIC,
+  LEVEL_RULES,
   type LevelKind,
   type LevelOutcome,
+  ROW_LETTERS,
   type StarRule,
   type Stars,
 } from '@sudoku-fight/engine';
@@ -14,10 +18,20 @@ import { formatScore, ltr } from '../../components/player/format';
 import { secondsText } from '../home/homeModel';
 
 /**
- * What a stage says about itself (components.md §19; plan §2, §3, §6), in the 'levels' namespace. Pure: a stage
- * and a t() bound to 'levels' in, words out, so the map, its panel, "מוכן?", the result and the gate sheet say
- * the same thing, and the tests read the very same words. No rule lives here: the numbers come from the stage's
- * data (its star rule, its time limit, its targets) and the engine's reading of an end (levelOutcome).
+ * What a stage says about itself (components.md §19; plan §2, §3, §6; 1.0.3: levels-ui.md §6), in the 'levels'
+ * namespace. Pure: a stage and a t() bound to 'levels' in, words out, so the map, its panel, "מוכן?", the result
+ * and the gate sheet say the same thing, and the tests read the very same words. No rule lives here: the numbers
+ * come from the stage's data (its star rule, its time limit, its targets), the engine's reading of an end
+ * (levelOutcome) and the engine's facts (bossTraits, fillRegionOf, the puzzle's view).
+ *
+ * [D79] `find` is "מיקום מדויק" / "Pinpoint" wherever a stage is spoken of from outside (the map, its panel,
+ * "מוכן?", "איך משחקים", the gate sheet, the result, a screen reader's labels), with no digit: "איפה ה־6?" is
+ * said only inside the stage and "מוכן?", from the digit of the board being played (findPrompt, findSub), so
+ * "שוב" with its digits relabelled [D63] never says a digit that is not on the board.
+ *
+ * The goals of the map's panel and the result name no region ("בריבוע אחד", "בשורה אחת"): "שוב" moves the
+ * rows, columns and boxes, and only the stage screen knows the board played (fillTaskText, fillBoardLabel,
+ * regionName, from fillRegionOf of the attempt's level).
  *
  * Times, scores and "18/30" are Latin and LTR inside Hebrew (ltr()); a range ("4–5") is an LTR isolate, or its
  * dash would turn it around in a right-to-left line.
@@ -29,22 +43,185 @@ export type LevelsT = TFunction<'levels'>;
 export const botNameOf = (level: Pick<AppLevel, 'bot'>): string | null =>
   level.bot ? botLevel(level.bot.level as BotLevelId).name : null;
 
-/** The kind's name as a title says it: "איפה ה־7?", "מרוץ מול הבוט", "דו־קרב ל־30". */
+/** The kind's name as a title says it: "מיקום מדויק", "מרוץ מול הבוט", "דו־קרב ל־30". */
 export function kindName(level: Pick<AppLevel, 'kind' | 'targets'>, t: LevelsT): string {
   return t(`kinds.${level.kind}.name`, kindParams(level));
 }
 
-/** The kind as a label says it, without a question mark: "איפה ה־7". */
+/** The kind as a label says it, without a question mark: "מיקום מדויק", "דו־קרב ל־30". */
 export function kindLabel(level: Pick<AppLevel, 'kind' | 'targets'>, t: LevelsT): string {
   return t(`kinds.${level.kind}.label`, kindParams(level));
 }
 
+/** [D79] find's name takes no digit: only the duel's name has a number (its target). */
 function kindParams(level: Pick<AppLevel, 'kind' | 'targets'>): Record<string, string | number> {
   const l = level as AppLevel;
-  if (l.kind === 'find') return { digit: l.targets.target.digit };
   if (l.kind === 'duel') return { target: l.targets.endAtScore };
   return {};
 }
+
+/**
+ * [D79] "איפה ה־6?": find's question, in the stage and in "מוכן?" only, with the digit of the board being
+ * played (GameView's level.find.digit, or the attempt's level), never the stored stage's.
+ */
+export const findPrompt = (digit: number, t: LevelsT): string => t('ready.findPrompt', { digit });
+
+/** find's header line in the stage: "איפה ה־6? · פרק 1" (every other kind keeps hud.sub, "פאזל · פרק 3"). */
+export const findSub = (digit: number, chapter: number, t: LevelsT): string =>
+  t('hud.subFind', { digit, chapter });
+
+/** "מוכן?" of a race: "5 מקומות, מרוץ מול Pip": no spot and no digit, no head start on the bot [D76]. */
+export const raceSpotsText = (count: number, bot: string, t: LevelsT): string =>
+  t('ready.raceSpots', { count, bot });
+
+// ---------------------------------------------------------------------------------------------------------
+// A region (a fill stage's box, row or column; a find target's scope), as the stage played says it
+
+/** A region by unit and index: the box (0–8), the row (0–8, A–I) or the column (0–8, 1–9). */
+export type RegionRef = Pick<FillRegion, 'unit' | 'index'>;
+
+const rowLetter = (index: number): string => ROW_LETTERS[index] ?? '';
+
+/** "ריבוע 5", "שורה D", "עמודה 5" ("מוכן?"'s caption under the small map, the map's label). */
+export function regionName(region: RegionRef, t: LevelsT): string {
+  switch (region.unit) {
+    case 'box':
+      return t('region.box', { n: region.index + 1 });
+    case 'row':
+      return t('region.row', { row: rowLetter(region.index) });
+    case 'col':
+      return t('region.col', { n: region.index + 1 });
+  }
+}
+
+/** The small map's label for a screen reader: "מפת הלוח: שורה D". */
+export const regionMapLabel = (region: RegionRef, t: LevelsT): string =>
+  t('region.mapLabel', { region: regionName(region, t) });
+
+/** A fill stage's task in its header: "מלא את ריבוע 5", "מלא את שורה D", "מלא את עמודה 5". */
+export function fillTaskText(region: RegionRef, t: LevelsT): string {
+  switch (region.unit) {
+    case 'box':
+      return t('hud.box.task', { n: region.index + 1 });
+    case 'row':
+      return t('hud.line.taskRow', { row: rowLetter(region.index) });
+    case 'col':
+      return t('hud.line.taskCol', { n: region.index + 1 });
+  }
+}
+
+/** A fill stage's board label: "הלוח · ממלאים רק את 4 המשבצות החסרות בשורה D". */
+export function fillBoardLabel(region: FillRegion, t: LevelsT): string {
+  const count = region.cells.length;
+  switch (region.unit) {
+    case 'box':
+      return t('hud.box.boardLabel', { n: region.index + 1, count });
+    case 'row':
+      return t('hud.line.boardLabelRow', { row: rowLetter(region.index), count });
+    case 'col':
+      return t('hud.line.boardLabelCol', { n: region.index + 1, count });
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// The puzzle
+
+/**
+ * "3 ריבועים זזים · 6 ריבועים קבועים" ("מוכן?", the puzzle's header), or "כל הריבועים זזים". `moving` and
+ * `fixed` from the engine: the view's `moving` and its 'fixed' slots, or a level's targets before the view.
+ */
+export function puzzleCountsText(moving: number, fixed: number, t: LevelsT): string {
+  if (fixed === 0) return t('hud.puzzle.allMove');
+  return t('hud.puzzle.counts', {
+    moving: t('hud.puzzle.moving', { count: moving }),
+    fixed: t('hud.puzzle.fixed', { count: fixed }),
+  });
+}
+
+/** The puzzle board's label for a screen reader: "לוח הפאזל · 3 ריבועים זזים · 6 ריבועים קבועים". */
+export const puzzleBoardLabel = (moving: number, fixed: number, t: LevelsT): string =>
+  t('hud.puzzle.boardLabel', { counts: puzzleCountsText(moving, fixed, t) });
+
+/** A puzzle level's counts before it is played: the boxes fixed at home, and the rest. */
+export function puzzleCountsOf(level: AppLevel): { moving: number; fixed: number } | null {
+  if (level.kind !== 'puzzle') return null;
+  const fixed = level.targets.fixed.length;
+  return { moving: level.targets.start.length - fixed, fixed };
+}
+
+/** A puzzle slot's state for a screen reader: "אפשר להזיז", "קבוע", "נבחר". */
+export type PuzzleSlotWording = 'movable' | 'fixed' | 'selected';
+
+/**
+ * A puzzle slot as a screen reader says it: "ריבוע 4, אפשר להזיז: 5 3 9, 6 1 2, 8 7 4". `place` 0–8 (said
+ * 1–9); `digits` its nine digits row by row, left to right (the board is always LTR).
+ */
+export function puzzleSlotLabel(
+  place: number,
+  state: PuzzleSlotWording,
+  digits: readonly number[],
+  t: LevelsT,
+): string {
+  const rows = [0, 3, 6].map((r) => digits.slice(r, r + 3).join(' ')).join(', ');
+  return t('hud.puzzle.slotLabel', { n: place + 1, state: t(`hud.puzzle.state.${state}`), rows });
+}
+
+/** The live region after a swap: "ריבוע 4 וריבוע 7 התחלפו", with ". עוד 5 שניות" when it was a wrong one. */
+export function puzzleSwapAnnouncement(from: number, to: number, penaltyMs: number, t: LevelsT): string {
+  const values = { a: from + 1, b: to + 1 };
+  return penaltyMs > 0
+    ? t('hud.puzzle.swappedPenalty', { ...values, s: secondsText(penaltyMs) })
+    : t('hud.puzzle.swapped', values);
+}
+
+/** The result's swaps: "4 החלפות · המינימום 3". */
+export const puzzleSwapsText = (swaps: number, minSwaps: number, t: LevelsT): string =>
+  t('result.swaps', { count: swaps, min: minSwaps });
+
+// ---------------------------------------------------------------------------------------------------------
+// The boss
+
+/**
+ * A boss's "what's harder" chip (levels-ui.md §3.2), only from the engine's bossTraits(level): "הבוט הראשון:
+ * Pip", "Pip מהיר ב־10%" (the per cent an LTR isolate), "Overlord", "5 משבצות חסרות במקום 4".
+ */
+export function bossTraitText(trait: BossTrait, t: LevelsT): string {
+  switch (trait.key) {
+    case 'firstBot':
+      return t('boss.traits.firstBot', { bot: trait.bot });
+    case 'faster':
+      return t('boss.traits.faster', { bot: trait.bot, percent: ltr(`${trait.pct}%`) });
+    case 'overlord':
+      return t('boss.traits.overlord');
+    case 'moreCells':
+      return t('boss.traits.moreCells', { cells: trait.to, usual: trait.from });
+  }
+}
+
+/** The result's boss line, from the engine's levelOutcome().bossBeaten: "ניצחת את הבוס!" / "הבוס ניצח הפעם". */
+export function bossResultText(bossBeaten: boolean | null | undefined, t: LevelsT): string | null {
+  if (bossBeaten === true) return t('boss.result.won');
+  if (bossBeaten === false) return t('boss.result.lost');
+  return null;
+}
+
+/**
+ * The boss result's chapter line: "השער לפרק 2: ★ 22/20 · נפתח!", or "השער לפרק 2: ★ 18/20" while it is
+ * shut (`chapter`: the boss's chapter; the gate opens the next one). The count is an LTR isolate.
+ */
+export function bossGateText(
+  chapter: number,
+  stars: number,
+  need: number,
+  open: boolean,
+  t: LevelsT,
+): string {
+  const count = ltr(`★ ${stars}/${need}`);
+  return t(open ? 'boss.result.gateOpen' : 'boss.result.gateClosed', { n: chapter + 1, stars: count });
+}
+
+/** The boss band over a boss's stage: "בוס · פרק 3". */
+export const bossBandText = (chapter: number, t: LevelsT): string => t('boss.band', { chapter });
 
 /** A chapter's name ("בלש"). */
 export const chapterName = (chapter: number, t: LevelsT): string => t(`chapters.${chapter}.name`);
@@ -55,7 +232,10 @@ export const chapterNews = (chapter: number, t: LevelsT): string => t(`chapters.
 /** Whole seconds, or one decimal: "20", "7.6". */
 const seconds = (ms: number): string => secondsText(ms);
 
-/** The goal in one sentence (the panel, "מוכן?"): "מציאה אחת. השלב נגמר ב־20 ש׳." */
+/**
+ * The goal in one sentence (the panel, "מוכן?", the result): "מצא את המקום המדויק של ספרה אחת. השלב נגמר
+ * ב־20 ש׳." A fill stage's goal names no box, row or column: "שוב" moves them (levels-ui.md §5).
+ */
 export function goalText(level: AppLevel, t: LevelsT): string {
   const s = seconds(level.timeLimitMs);
   const bot = botNameOf(level) ?? '';
@@ -65,7 +245,11 @@ export function goalText(level: AppLevel, t: LevelsT): string {
     case 'findDuel':
       return t('goals.findDuel', { s, bot, spots: level.targets.spots.length });
     case 'fillBox':
-      return t('goals.fillBox', { s, cells: level.targets.cells.length, box: level.targets.box + 1 });
+    case 'fillRow':
+    case 'fillCol':
+      return t(`goals.${level.kind}`, { s, cells: level.targets.cells.length });
+    case 'puzzle':
+      return t('goals.puzzle', { s, penalty: seconds(LEVEL_RULES.puzzleSwapPenaltyMs) });
     case 'duel':
       return t('goals.duel', { s, bot, target: level.targets.endAtScore });
     case 'spotError':

@@ -1,6 +1,6 @@
 import type { AppLevel } from '@sudoku-fight/engine';
 import type { LevelTutorialKind } from '@sudoku-fight/protocol';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,10 +9,12 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { Icon } from '../../components/Icon';
 import { Button } from '../../components/ui';
+import { LEVEL_UI } from '../../config/levels';
 import { levelTutorialProps } from '../../levels/analyticsProps';
 import { track } from '../../services/analytics';
 import { syncSettingsStorage } from '../../state/settings';
 import { color, radius, size, space, text, tokens } from '../../theme';
+import { TUTORIAL_LINE_PARAMS } from './howToPlayFixtures';
 import { KIND_ICON } from './LevelNode';
 import { kindName } from './levelWording';
 
@@ -22,6 +24,11 @@ import { kindName } from './levelWording';
  * end is reported (`level_tutorial`: the kind, and whether it was skipped). This is the shell: the pictures are
  * drawn from the real board (HowToPlayPanels, the stage screens' part) and come in through `renderPanel`; until
  * then each slot shows the kind's mark. Every panel says its line to a screen reader.
+ *
+ * 1.0.3 (levels-ui.md §3.2) [D77]: the first boss (L010) is also the first race. With
+ * LEVEL_UI.mergeFirstBossTutorial (on), a boss whose own kind's card was not seen yet gets that card, with a
+ * fourth panel "זה גם שלב בוס" (the boss's first picture), and both cards count as seen: one card, not two in a
+ * row. The title of find is its name, "מיקום מדויק", with no digit [D79].
  */
 
 /** Which kinds were seen on this phone (kept on the phone, like the settings). */
@@ -47,17 +54,32 @@ export const useTutorials = create<TutorialsState>()(
 
 /**
  * The card a stage needs first, or none: the boss's before the first boss, else its kind's before the first of
- * that kind.
+ * that kind. [D77] With `merge` (LEVEL_UI.mergeFirstBossTutorial), a first boss whose kind was not seen yet gets
+ * its kind's card (HowToPlay adds the boss's panel to it).
  */
 export function tutorialFor(
   level: Pick<AppLevel, 'kind' | 'boss'>,
   seen: Partial<Record<LevelTutorialKind, true>>,
+  merge: boolean = LEVEL_UI.mergeFirstBossTutorial,
 ): LevelTutorialKind | null {
-  if (level.boss && !seen.boss) return 'boss';
+  if (level.boss && !seen.boss) return merge && !seen[level.kind] ? level.kind : 'boss';
   return seen[level.kind] ? null : level.kind;
 }
 
-/** Three panels a kind. */
+/**
+ * [D77] The kind's card of a first boss carries the boss's panel too: a boss stage, a kind's card (not the
+ * boss's own), the boss's card not seen yet, and the merge on.
+ */
+export function withBossPanel(
+  kind: LevelTutorialKind,
+  level: Pick<AppLevel, 'boss'>,
+  seen: Partial<Record<LevelTutorialKind, true>>,
+  merge: boolean = LEVEL_UI.mergeFirstBossTutorial,
+): boolean {
+  return merge && level.boss && kind !== 'boss' && !seen.boss;
+}
+
+/** Three panels a kind (a fourth, the boss's, on a merged first boss). */
 export const TUTORIAL_PANELS = 3;
 
 export interface HowToPlayProps {
@@ -66,19 +88,38 @@ export interface HowToPlayProps {
   level: AppLevel;
   /** Seen or skipped: the stage goes on to "מוכן?". */
   onDone: (skipped: boolean) => void;
-  /** A panel's picture (the real board); the kind's mark until the stage screens give one. */
+  /**
+   * A panel's picture (the real board); the kind's mark until the stage screens give one. The merged boss panel
+   * asks for the boss's first picture ('boss', 0).
+   */
   renderPanel?: (kind: LevelTutorialKind, index: number) => ReactNode;
 }
 
 export function HowToPlay({ kind, level, onDone, renderPanel }: HowToPlayProps) {
   const { t } = useTranslation('levels');
   const { top, bottom } = useSafeAreaInsets();
+  // Decided once, when the card opens: finishing it marks the boss seen, which would take the panel away.
+  const [bossPanel] = useState(() => withBossPanel(kind, level, useTutorials.getState().seen));
   const finish = (skipped: boolean) => {
-    useTutorials.getState().markSeen(kind);
+    const { markSeen } = useTutorials.getState();
+    markSeen(kind);
+    if (bossPanel) markSeen('boss');
     track('level_tutorial', levelTutorialProps(kind, skipped));
     onDone(skipped);
   };
   const title = kind === 'boss' ? t('boss.name') : kindName(level, t);
+  const params = TUTORIAL_LINE_PARAMS[kind] ?? {};
+  // Each panel: its line, its picture (or, without one, the mark of the card it belongs to).
+  const panels: { line: string; picture: ReactNode; mark: LevelTutorialKind }[] = [
+    ...Array.from({ length: TUTORIAL_PANELS }, (_, i) => ({
+      line: t(`tutorial.${kind}.${i + 1}`, params),
+      picture: renderPanel?.(kind, i),
+      mark: kind,
+    })),
+    ...(bossPanel
+      ? [{ line: t('tutorial.alsoBoss'), picture: renderPanel?.('boss', 0), mark: 'boss' as const }]
+      : []),
+  ];
   return (
     <View style={[styles.screen, { paddingTop: top, paddingBottom: bottom + space[8] }]} testID="how-to-play">
       <View style={styles.header}>
@@ -96,31 +137,28 @@ export function HowToPlay({ kind, level, onDone, renderPanel }: HowToPlayProps) 
         />
       </View>
       <ScrollView contentContainerStyle={styles.panels}>
-        {Array.from({ length: TUTORIAL_PANELS }, (_, i) => {
-          const line = t(`tutorial.${kind}.${i + 1}`);
-          return (
-            <View
-              key={i}
-              style={styles.panel}
-              accessible
-              accessibilityLabel={t('tutorial.panel', { n: i + 1, total: TUTORIAL_PANELS, text: line })}
-              testID={`how-to-play-panel-${i + 1}`}
-            >
-              <View style={styles.picture} testID={`how-to-play-picture-${i + 1}`}>
-                {renderPanel?.(kind, i) ?? (
-                  <View style={styles.placeholder}>
-                    <Icon
-                      name={kind === 'boss' ? 'crown' : KIND_ICON[kind]}
-                      size={size.icon.nav * 2}
-                      color={color.textMuted}
-                    />
-                  </View>
-                )}
-              </View>
-              <Text style={styles.line}>{line}</Text>
+        {panels.map(({ line, picture, mark }, i) => (
+          <View
+            key={i}
+            style={styles.panel}
+            accessible
+            accessibilityLabel={t('tutorial.panel', { n: i + 1, total: panels.length, text: line })}
+            testID={`how-to-play-panel-${i + 1}`}
+          >
+            <View style={styles.picture} testID={`how-to-play-picture-${i + 1}`}>
+              {picture ?? (
+                <View style={styles.placeholder}>
+                  <Icon
+                    name={mark === 'boss' ? 'crown' : KIND_ICON[mark]}
+                    size={size.icon.nav * 2}
+                    color={color.textMuted}
+                  />
+                </View>
+              )}
             </View>
-          );
-        })}
+            <Text style={styles.line}>{line}</Text>
+          </View>
+        ))}
       </ScrollView>
       <Button label={t('tutorial.got')} size="lg" onPress={() => finish(false)} testID="how-to-play-got" />
     </View>

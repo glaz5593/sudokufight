@@ -22,34 +22,53 @@ import { seedFromString } from '../../util/random';
 import {
   chainPlan,
   DUEL,
-  fillBoxPlan,
+  fillPlan,
+  FIRST_BOSS,
   LEVEL_GIVENS,
   type LevelLogic,
   levelPlan,
   levelRev,
   levelSeed,
   pointHunterPlan,
+  puzzlePlan,
   RACE,
   spotErrorPlan,
   targetBoxEmpties,
   tierOfSlot,
 } from '../levels.config';
-import { chapterOf, LEVEL_RULES, levelIdOf, type LevelRules, maxLevel } from '../progress';
-import type { FindTarget, LevelSpec, LevelSpecOf } from '../spec';
+import { chapterOf, LEVEL_RULES, levelIdOf, type LevelRules, maxLevel, maxMsOf } from '../progress';
+import {
+  type FillLevelKind,
+  fillRegionOf,
+  type FindTarget,
+  isFillKind,
+  type LevelSpec,
+  type LevelSpecOf,
+} from '../spec';
 import { pointStars, starRuleIsOrdered } from '../stars';
 import { boxEmpties, withoutNeeded } from './common';
 import { gradeTechniques } from './duel';
-import { boxCloses } from './fillBox';
+import {
+  digitGapsOutside,
+  fillRegionModelMs,
+  fillRegionSolve,
+  givensAround,
+  regionCellsOf,
+  regionCloses,
+} from './fillRegion';
 import { boxEmptiesFit, meetsLogic } from './find';
 import { staysTarget, withSpots } from './findDuel';
 import { pointHunterBest, scoreYOf } from './pointHunter';
+import { FILL_MODEL } from './profiles';
+import { blindSwapperProblem, puzzleProblems } from './puzzle';
 import { cleanedBoard } from './spotError';
 
 /**
- * levels:validate (plan §5.6, as dev-plan §1.4 adjusts it; dev-plan §3.1, 2ד): every rule a level must keep.
- * validateLevel() holds for a level and for every equivalent board of it (transformLevel, "שוב" [D63]): it
- * reads only the level itself and the chapter's numbers. validateLevelSet() checks the stored file against
- * the config: ids, kinds, seeds, the plan's numbers, and what holds only across levels.
+ * levels:validate (plan §5.6, as dev-plan §1.4 adjusts it; dev-plan §3.1, 2ד; 1.0.3: levels-content.md §4.2,
+ * §5.3, §5.7, §6): every rule a level must keep. validateLevel() holds for a level and for every equivalent
+ * board of it (transformLevel, "שוב" [D63]): it reads only the level itself and the chapter's numbers.
+ * validateLevelSet() checks the stored file against the config: ids, kinds, seeds, the plan's numbers, and
+ * what holds only across levels.
  *
  * A problem is a sentence starting with the level's id; none means the level is good.
  */
@@ -153,23 +172,75 @@ function validateFindDuel(spec: LevelSpecOf<'findDuel'>, grid: Grid, solution: G
   }
 }
 
-function validateFillBox(spec: LevelSpecOf<'fillBox'>, grid: Grid, out: string[]): void {
-  const { box, cells } = spec.targets;
+/**
+ * fillBox, fillRow and fillCol (levels-content.md §4) [D67, D69]: through fillRegionOf, one reading for the
+ * three. The region's empties are exactly its editable cells (a fillRow whose cells became a column, as a
+ * transposed "שוב" would make them, fails here), the ladder's missing cells and givens around, every digit
+ * missing outside from chapter 5 (§4.2), and one answer with the chapter's techniques, not without its must.
+ */
+function validateFillRegion(
+  spec: LevelSpecOf<FillLevelKind>,
+  grid: Grid,
+  solution: Grid,
+  out: string[],
+): void {
+  const region = fillRegionOf(spec)!;
+  const { unit, index, cells } = region;
   const logic = logicOf(spec);
-  const plan = fillBoxPlan(spec.chapter, tierOfSlot(spec.slot), spec.boss);
-  if (!(Number.isInteger(box) && box >= 0 && box <= 8)) {
-    out.push(`no box ${box}`);
+  const plan = fillPlan(spec.chapter, tierOfSlot(spec.slot));
+  if (!(Number.isInteger(index) && index >= 0 && index <= 8)) {
+    out.push(`no ${unit} ${index}`);
     return;
   }
-  const empties = BOXES[box]!.cells.filter((c) => grid[c] === 0);
+  const all = regionCellsOf(unit, index);
+  const empties = all.filter((c) => grid[c] === 0);
   if (empties.join(',') !== [...cells].sort((a, b) => a - b).join(','))
-    out.push('editable cells are not the box empties');
+    out.push(`editable cells are not the ${unit} empties`);
   if (cells.length !== plan.missing) out.push(`${cells.length} missing, not ${plan.missing}`);
-  const around = grid.reduce((n, v, i) => n + (v !== 0 && boxOf(i) !== box ? 1 : 0), 0);
-  if (around !== plan.around) out.push(`${around} givens around the box, not ${plan.around}`);
-  if (!boxCloses(grid, cells, logic.techniques)) out.push('the box does not fill with its techniques');
-  if (logic.mustNeed.length && boxCloses(grid, cells, withoutNeeded(logic)))
-    out.push(`the box fills without ${logic.mustNeed.join('/')}`);
+  const around = givensAround(grid, all);
+  if (around !== plan.around) out.push(`${around} givens around the ${unit}, not ${plan.around}`);
+  if (plan.minDigitGaps > 0) {
+    const gaps = digitGapsOutside(grid, solution, all);
+    const short = gaps.flatMap((n, d) => (n < plan.minDigitGaps ? [d + 1] : []));
+    if (short.length)
+      out.push(`digit ${short.join(', ')} has no empty cell outside the ${unit} (every digit must miss)`);
+  }
+  if (!regionCloses(grid, cells, logic.techniques)) out.push(`the ${unit} does not fill with its techniques`);
+  if (logic.mustNeed.length && regionCloses(grid, cells, withoutNeeded(logic)))
+    out.push(`the ${unit} fills without ${logic.mustNeed.join('/')}`);
+}
+
+/**
+ * [D67, D74] A fill level's region as a good player fills it by the time model (profiles.ts FILL_MODEL, per cell
+ * by what it needs: fillRegionSolve) takes no longer than its ★★. The ladder's thresholds come from that model
+ * with a typical mix of cells (§4.4: one to three hidden singles, one elimination from chapter 16); a region
+ * that needs far more (five hidden singles and three pairs) would be out of a good player's reach in 60 s.
+ * Checked on the stored board only: an equivalent board ("שוב") may read its cells in another order. A sentence
+ * with the level's id, or null.
+ */
+export function fillModelProblem(spec: LevelSpec): string | null {
+  if (!isFillKind(spec.kind) || spec.stars.by !== 'timeMs') return null;
+  const region = fillRegionOf(spec)!;
+  const solve = fillRegionSolve(parse(spec.board.grid), region.cells, logicOf(spec).techniques);
+  // A region that does not fill is validateLevel's problem.
+  if (!solve) return null;
+  const ms = fillRegionModelMs(solve, FILL_MODEL);
+  return ms > spec.stars.two
+    ? `${spec.id}: a good player needs ${ms / 1000} s by the model, over its ★★ ${spec.stars.two / 1000} s`
+    : null;
+}
+
+/**
+ * The puzzle (levels-content.md §5.7) [D70, D71]: its own rules (builder/puzzle.ts puzzleProblems: one valid
+ * arrangement, step by step, one cycle, the fixed boxes apart, the chapter's moving boxes and lock), and from 4
+ * moving boxes a blind swapper does not get ★★★ (§5.3), only once the rest holds (it plays the level).
+ */
+function validatePuzzle(spec: LevelSpecOf<'puzzle'>, rules: LevelRules, out: string[]): void {
+  const plan = puzzlePlan(spec.chapter, tierOfSlot(spec.slot));
+  out.push(...puzzleProblems(spec, { moving: plan.moving, lockOnCorrect: plan.lockOnCorrect }));
+  if (out.length) return;
+  const blind = blindSwapperProblem(spec, { rules });
+  if (blind) out.push(blind);
 }
 
 function validateFullBoard(spec: LevelSpec, grid: Grid, out: string[]): void {
@@ -286,8 +357,9 @@ export function validateLevel(spec: LevelSpec, rules: LevelRules = LEVEL_RULES):
   const solution = parse(s);
   if (!isSolvedGrid(solution)) out.push('the solution is not a solved grid');
   if (!agreesWith(grid, solution)) out.push('the givens disagree with the solution');
-  if (!(Number.isInteger(spec.timeLimitMs) && spec.timeLimitMs > 0 && spec.timeLimitMs <= rules.levelMaxMs))
-    out.push(`time limit ${spec.timeLimitMs} not within ${rules.levelMaxMs}`);
+  const maxMs = maxMsOf(spec.kind, rules);
+  if (!(Number.isInteger(spec.timeLimitMs) && spec.timeLimitMs > 0 && spec.timeLimitMs <= maxMs))
+    out.push(`time limit ${spec.timeLimitMs} not within ${maxMs}`);
   if (!starRuleIsOrdered(spec.stars)) out.push('the star thresholds are not ordered');
   if (
     spec.stars.by === 'timeMs' &&
@@ -296,6 +368,9 @@ export function validateLevel(spec: LevelSpec, rules: LevelRules = LEVEL_RULES):
     out.push('a threshold lies beyond the time limit');
   if (/interfer/i.test(JSON.stringify(spec))) out.push('an interference field');
   if (spec.bot && !(spec.bot.pace >= 0.7 && spec.bot.pace <= 1.2)) out.push(`bot pace ${spec.bot.pace}`);
+  // [D72] Every boss is a fight against a named bot; only D72 ב's chapter-1 box has none.
+  if (spec.boss && !spec.bot && !(spec.chapter === 1 && FIRST_BOSS.kind !== 'findDuel'))
+    out.push('a boss needs its bot');
   if (!spec.check) out.push('no build check');
   if (D43_KINDS.has(spec.kind)) {
     const n = filledCount(grid);
@@ -312,7 +387,12 @@ export function validateLevel(spec: LevelSpec, rules: LevelRules = LEVEL_RULES):
         validateFindDuel(spec, grid, solution, out);
         break;
       case 'fillBox':
-        validateFillBox(spec, grid, out);
+      case 'fillRow':
+      case 'fillCol':
+        validateFillRegion(spec, grid, solution, out);
+        break;
+      case 'puzzle':
+        validatePuzzle(spec, rules, out);
         break;
       case 'duel':
         if (spec.targets.endAtScore !== DUEL.endAtScore) out.push(`target ${spec.targets.endAtScore}`);
@@ -392,9 +472,19 @@ function planProblems(spec: LevelSpec, n: number, rules: LevelRules): string[] {
   const check =
     'logic' in plan
       ? plan.logic
-      : { techniques: plan.kind === 'duel' ? gradeTechniques(plan.gameType) : plan.techniques, mustNeed: [] };
+      : plan.kind === 'puzzle'
+        ? // A puzzle reads no sudoku technique: its "technique" is the step-by-step fit (puzzleProblems).
+          { techniques: [], mustNeed: [] }
+        : {
+            techniques: plan.kind === 'duel' ? gradeTechniques(plan.gameType) : plan.techniques,
+            mustNeed: [],
+          };
   if (!same(spec.check, { techniques: check.techniques, mustNeed: check.mustNeed }))
     out.push('check is not the plan logic');
+  if (plan.kind === 'fillBox' || plan.kind === 'fillRow' || plan.kind === 'fillCol') {
+    const index = isFillKind(spec.kind) ? fillRegionOf(spec)?.index : undefined;
+    if (index !== plan.index) out.push(`region ${String(index)}, not the plan's ${plan.index}`);
+  }
   if ('bot' in plan) {
     if (spec.bot?.level !== plan.bot.level || spec.bot.pace !== plan.bot.pace)
       out.push(`bot ${spec.bot?.level}×${spec.bot?.pace}, not ${plan.bot.level}×${plan.bot.pace}`);
@@ -409,7 +499,12 @@ export function validateLevelSet(file: LevelsFile, rules: LevelRules = LEVEL_RUL
   if (levels.length !== maxLevel(rules)) out.push(`${levels.length} levels, not ${maxLevel(rules)}`);
   const seenGrid = new Map<string, string>();
   const seenSolution = new Map<string, string>();
-  const boxes = new Set<number>();
+  /** The regions the fill kinds used: every box, row and column at least once (levels-content.md §11). */
+  const used: Record<FillLevelKind, Set<number>> = {
+    fillBox: new Set(),
+    fillRow: new Set(),
+    fillCol: new Set(),
+  };
   levels.forEach((spec, k) => {
     const n = k + 1;
     const id = levelIdOf(n);
@@ -421,19 +516,27 @@ export function validateLevelSet(file: LevelsFile, rules: LevelRules = LEVEL_RUL
     if (spec.rev !== levelRev(spec.id)) p.push(`rev ${spec.rev}, not ${levelRev(spec.id)}`);
     if (spec.seed !== levelSeed(spec.id, spec.rev)) p.push('seed not from id:rev');
     p.push(...planProblems(spec, n, rules));
+    const slow = fillModelProblem(spec);
+    if (slow) p.push(slow.slice(spec.id.length + 2));
     const dupGrid = seenGrid.get(spec.board.grid);
     if (dupGrid) p.push(`the givens of ${dupGrid}`);
     const dupSolution = seenSolution.get(spec.board.solution);
     if (dupSolution) p.push(`the solution of ${dupSolution}`);
     seenGrid.set(spec.board.grid, spec.id);
     seenSolution.set(spec.board.solution, spec.id);
-    if (spec.kind === 'fillBox') boxes.add(spec.targets.box);
+    if (isFillKind(spec.kind)) used[spec.kind].add(fillRegionOf(spec)!.index);
     const overlord = spec.bot?.level === 5;
     if (overlord !== (spec.boss && spec.chapter >= 28))
       p.push(overlord ? 'Overlord out of place' : 'no Overlord');
     out.push(...p.map((x) => `${spec.id}: ${x}`));
   });
-  const unused = BOXES.map((b) => b.index).filter((b) => !boxes.has(b));
-  if (unused.length) out.push(`no fillBox in box ${unused.join(', ')}`);
+  for (const [kind, unit] of [
+    ['fillBox', 'box'],
+    ['fillRow', 'row'],
+    ['fillCol', 'column'],
+  ] as const) {
+    const unused = BOXES.map((b) => b.index).filter((i) => !used[kind].has(i));
+    if (unused.length) out.push(`no ${kind} in ${unit} ${unused.join(', ')}`);
+  }
   return out;
 }

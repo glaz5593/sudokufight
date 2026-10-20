@@ -3,7 +3,6 @@ import {
   chapterOf,
   countsAsPlayed,
   ENGINE_VERSION,
-  type FindLevelOver,
   type GameResult,
   gateState,
   type GateState,
@@ -12,6 +11,8 @@ import {
   isLevelOpen,
   LEVEL_PENALTY_MS,
   LEVEL_RULES,
+  type LevelBest,
+  type LevelEndOf,
   type LevelEndReason,
   levelIdOf,
   type LevelKind,
@@ -23,6 +24,7 @@ import {
   maxLevel,
   mergeBest,
   openedChaptersOf,
+  type PuzzleLevelOver,
   type Stars,
 } from '@sudoku-fight/engine';
 import type { LevelBest as ServerLevelBest } from '@sudoku-fight/protocol';
@@ -40,6 +42,12 @@ import { LEVELS_MIGRATIONS, migrateLevels } from './levelsSchema';
  * (countsAsPlayed, which reads quitCountsAsPlayed), the best of two (mergeBest, isBetterMetric), what is open
  * (isLevelOpen, with the gates that opened once) and the gates (gateState). This file only stores.
  *
+ * A rebuilt level (1.0.3: every level at rev 2) [D73]: its stars stay (never lower, by id, whatever its kind
+ * is now), and its best measure ("השיא שלי") starts over with the first attempt at the new rev (mergeBest
+ * with the rev of the row, best_rev, and the attempt's). Until then bestMetricAt hides the old rev's. Its
+ * attempts are numbered at the new rev from 1 again (attemptOf takes the rev): the first attempt at a rebuilt
+ * level is its stored board (spec §5.3.10, D63), and the admin counts it as a first try.
+ *
  * The sync (levelsSync.ts) reads the rows the server does not have yet (`dirty`), marks what it took
  * (`markSynced`, only rows unchanged since they were sent) and merges the server's answer (`mergeFromServer`:
  * the max of each, never lower).
@@ -48,21 +56,33 @@ import { LEVELS_MIGRATIONS, migrateLevels } from './levelsSchema';
  * read sees every write before it; expo-sqlite's transactions are not exclusive, which the queue makes safe.
  */
 
-/** The level an attempt was at: what levelOutcome and the attempt's row need of it. */
-export type FinishedLevel = Pick<AppLevel, 'id' | 'rev' | 'kind' | 'chapter' | 'stars' | 'bot'>;
+/**
+ * The level an attempt was at: what levelOutcome and the attempt's row need of it. A boss's `boss` (and a
+ * race's `targets`) give the outcome the engine's verdict, bossBeaten [D72]; without them it is null.
+ */
+export type FinishedLevel = Pick<AppLevel, 'id' | 'rev' | 'kind' | 'chapter' | 'stars' | 'bot'> & {
+  boss?: boolean;
+  targets?: AppLevel['targets'];
+};
 
 /** An attempt that ended (any end: a quit with the X too), as a host gave it. */
 export interface LevelFinish {
   owner: string;
   /** The level as stored (its stars rule is the same on a replay's equivalent board, D63). */
   level: FinishedLevel;
-  /** The end: the game engine's result (a digit kind) or the tap engine's levelOver (a tap kind). */
-  end: GameResult | FindLevelOver;
+  /**
+   * The end: the game engine's result (a digit kind), the tap engine's levelOver (a tap kind) or the puzzle's
+   * levelOver (1.0.3).
+   */
+  end: LevelEndOf;
   /** The player on this phone: whose mistakes a digit level's result counts. */
   playerId?: string;
   /** This attempt's number, the one its board was played with (attemptOf at its start); default attemptOf. */
   attempt?: number;
-  /** My mistakes; by default a digit level's ranking row, or a tap level's time penalties. */
+  /**
+   * My mistakes; by default a digit level's ranking row, a tap level's time penalties, or a puzzle's wrong
+   * swaps (neither box landed at its home) [D70c].
+   */
   mistakes?: number;
   /** Started by "לשלב הבא", straight from a result (the quick entry). */
   quick?: boolean;
@@ -143,8 +163,12 @@ export interface LevelsRepo {
    * played). Throws for an id that is not a level's.
    */
   recordAttempt(finish: LevelFinish): Promise<RecordedAttempt>;
-  /** The number of the next attempt at a level: the plays or the attempts recorded (the larger), + 1. */
-  attemptOf(owner: string, levelId: string): Promise<number>;
+  /**
+   * The number of the next attempt at a level at `rev` (its rev now): the attempts recorded at that rev, or the
+   * plays not accounted for by another rev's attempts (a row restored from the server), the larger, + 1. A
+   * rebuilt level (a new rev) starts again at 1 [D73, D63].
+   */
+  attemptOf(owner: string, levelId: string, rev: number): Promise<number>;
   progress(owner: string): Promise<LevelsProgress>;
   /** The chapters a gate opened once (2 and up), for isLevelOpen. */
   openedGates(owner: string): Promise<number[]>;
@@ -240,14 +264,32 @@ const toAttempt = (r: AttemptRow): LevelAttemptRecord => ({
   engineVersion: r.engine_version,
 });
 
-const isGameResult = (end: GameResult | FindLevelOver): end is GameResult => 'ranking' in end;
+const isGameResult = (end: LevelEndOf): end is GameResult => 'ranking' in end;
+const isPuzzleOver = (end: LevelEndOf): end is PuzzleLevelOver => 'swaps' in end;
 
-/** My mistakes in an end: the session's count, or else a digit level's ranking row, a tap level's penalties. */
-export function mistakesOf(finish: Omit<LevelFinish, 'owner'>): number {
+/**
+ * My mistakes in an end: the session's count, or else a digit level's ranking row, a puzzle's wrong swaps
+ * [D70c], a tap level's penalties.
+ */
+export function mistakesOf(finish: Pick<LevelFinish, 'end' | 'playerId' | 'mistakes'>): number {
   if (finish.mistakes !== undefined) return Math.max(0, Math.round(finish.mistakes));
   const { end } = finish;
   if (isGameResult(end)) return end.ranking.find((r) => r.playerId === finish.playerId)?.mistakes ?? 0;
+  if (isPuzzleOver(end)) return Math.max(0, Math.round(end.mistakes));
   return Math.max(0, Math.round(end.penaltyMs / LEVEL_PENALTY_MS));
+}
+
+/**
+ * The best measure to show for a level now at `rev` ("השיא שלי"): the stored one, unless it was made on
+ * another rev of the level [D73]. A rebuilt level (a new board, maybe a new kind) starts its best over, so the
+ * old rev's measure means nothing there. A row without a rev (restored from the server) has no measure anyway.
+ */
+export function bestMetricAt(
+  record: Pick<LevelProgressRecord, 'metric' | 'rev'> | null | undefined,
+  rev: number,
+): number | null {
+  if (!record || record.metric === null) return null;
+  return record.rev === null || record.rev === rev ? record.metric : null;
 }
 
 /** A level from the server as this app stores it: a level id, 0–3 stars, whole plays; else null. */
@@ -290,13 +332,17 @@ class SqlLevelsRepo implements LevelsRepo {
         const records = await this.records(owner);
         const opened = await this.gates(owner);
         const row = records[level.id];
-        const attempt = finish.attempt ?? (await this.nextAttempt(owner, level.id, row));
+        const attempt = finish.attempt ?? (await this.nextAttempt(owner, level.id, level.rev, row));
         const outcome = levelOutcome(level, finish.end);
         const played = countsAsPlayed(outcome.reason, this.rules);
         const mistakes = mistakesOf(finish);
-        const prev = row ? { stars: row.stars, metric: row.metric } : null;
-        const best = played
-          ? mergeBest(level.kind, prev, { stars: outcome.stars, metric: outcome.metric })
+        // [D73] The row's rev (best_rev) and the attempt's: across a new rev the stars stay, the measure starts
+        // over. A row restored from the server has no rev: merged as one rev (it has no measure anyway).
+        const prev: LevelBest | null = row
+          ? { stars: row.stars, metric: row.metric, ...(row.rev === null ? null : { rev: row.rev }) }
+          : null;
+        const best: LevelBest = played
+          ? mergeBest(level.kind, prev, { stars: outcome.stars, metric: outcome.metric, rev: level.rev })
           : (prev ?? { stars: 0 as Stars, metric: null });
         const prevBest = prev?.stars ?? 0;
         const chapter = chapterOf(level.id, this.rules);
@@ -304,24 +350,29 @@ class SqlLevelsRepo implements LevelsRepo {
         const gateBefore = lastChapter ? null : gateState(chapter, records, opened, this.rules);
 
         if (played) {
-          // The rev of the best: of the attempt that made it (or the row's, when this one did not beat it).
-          const better =
-            !row ||
-            best.stars > row.stars ||
-            (outcome.metric !== null &&
-              (row.metric === null || isBetterMetric(level.kind, outcome.metric, row.metric)));
+          // The rev of the best: the attempt's when it made the best (or opened a new rev), else the row's.
+          const bestRev = !row
+            ? level.rev
+            : row.rev !== null && row.rev !== level.rev
+              ? (best.rev ?? level.rev)
+              : best.stars > row.stars ||
+                  (outcome.metric !== null &&
+                    (row.metric === null || isBetterMetric(level.kind, outcome.metric, row.metric)))
+                ? level.rev
+                : row.rev;
           await this.db.runAsync(
             'INSERT INTO level_progress (owner, level_id, best_stars, plays, best_metric, best_rev, ' +
               'first_played_at, last_played_at) VALUES (?, ?, ?, 1, ?, ?, ?, ?) ' +
               'ON CONFLICT (owner, level_id) DO UPDATE SET best_stars = excluded.best_stars, ' +
               'plays = level_progress.plays + 1, best_metric = excluded.best_metric, ' +
-              `best_rev = ${better ? 'excluded.best_rev' : 'level_progress.best_rev'}, ` +
+              'best_rev = excluded.best_rev, ' +
               'first_played_at = COALESCE(level_progress.first_played_at, excluded.first_played_at), ' +
               'last_played_at = excluded.last_played_at, rejected = 0',
-            [owner, level.id, best.stars, best.metric, level.rev, finish.startedAt, finish.endedAt],
+            [owner, level.id, best.stars, best.metric, bestRev, finish.startedAt, finish.endedAt],
           );
           records[level.id] = {
-            ...(row ?? { rev: level.rev, firstPlayedAt: finish.startedAt }),
+            ...(row ?? { firstPlayedAt: finish.startedAt }),
+            rev: bestRev,
             stars: best.stars,
             plays: (row?.plays ?? 0) + 1,
             lastPlayedAt: finish.endedAt,
@@ -372,13 +423,13 @@ class SqlLevelsRepo implements LevelsRepo {
     });
   }
 
-  attemptOf(owner: string, levelId: string): Promise<number> {
+  attemptOf(owner: string, levelId: string, rev: number): Promise<number> {
     return this.serial(async () => {
       const row = await this.db.getFirstAsync<{ plays: number }>(
         'SELECT plays FROM level_progress WHERE owner = ? AND level_id = ?',
         [owner, levelId],
       );
-      return this.nextAttempt(owner, levelId, row ?? undefined);
+      return this.nextAttempt(owner, levelId, rev, row ?? undefined);
     });
   }
 
@@ -572,16 +623,27 @@ class SqlLevelsRepo implements LevelsRepo {
     ).map((r) => r.chapter);
   }
 
+  /**
+   * [D73, D63] The next attempt's number at `rev`: the attempts recorded at this rev, or the row's plays less
+   * the attempts recorded at other revs (so a row restored from the server, with plays and no attempts here,
+   * still counts them), the larger, + 1. `plays` is the level's, over every rev, so it never counts alone: a
+   * player with 3 plays at rev 1 starts rev 2 at 1, then 2.
+   */
   private async nextAttempt(
     owner: string,
     levelId: string,
+    rev: number,
     row: Pick<LevelRecord, 'plays'> | undefined,
   ): Promise<number> {
-    const counted = await this.db.getFirstAsync<{ n: number }>(
-      'SELECT COUNT(*) AS n FROM level_attempts WHERE owner = ? AND level_id = ?',
-      [owner, levelId],
+    const counted = await this.db.getFirstAsync<{ atRev: number | null; otherRevs: number | null }>(
+      'SELECT SUM(CASE WHEN rev = ? THEN 1 ELSE 0 END) AS atRev, ' +
+        'SUM(CASE WHEN rev = ? THEN 0 ELSE 1 END) AS otherRevs ' +
+        'FROM level_attempts WHERE owner = ? AND level_id = ?',
+      [rev, rev, owner, levelId],
     );
-    return Math.max(row?.plays ?? 0, counted?.n ?? 0) + 1;
+    const atRev = counted?.atRev ?? 0;
+    const otherRevs = counted?.otherRevs ?? 0;
+    return Math.max(atRev, (row?.plays ?? 0) - otherRevs) + 1;
   }
 
   /** `sql` on each row still as it was sent (same stars, same plays), in one transaction. */

@@ -471,6 +471,17 @@ export class RemoteGameHost implements GameHost {
     this.emit({ kind: 'rejected', action: { type: 'tap', cell }, reason: 'badAction', view: this.getView() });
   }
 
+  /** The puzzle's move (1.0.3): no online game has one. Refused here ('badAction'), and never sent. */
+  swapBoxes(from: number, to: number): void {
+    if (this.closed || !this.state) return;
+    this.emit({
+      kind: 'rejected',
+      action: { type: 'swapBoxes', from, to },
+      reason: 'badAction',
+      view: this.getView(),
+    });
+  }
+
   /** [D65] is for local play only: an online game never freezes for the app's background (onAppState). */
   pause(): void {
     // Nothing: the server's game runs on, and the background is a disconnect here.

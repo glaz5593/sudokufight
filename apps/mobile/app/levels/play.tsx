@@ -1,4 +1,11 @@
-import { type AppLevel, chapterStars, isTapKind, LEVEL_RULES } from '@sudoku-fight/engine';
+import {
+  type AppLevel,
+  attemptLevel,
+  chapterStars,
+  isTapKind,
+  LEVEL_RULES,
+  levelEngineOf,
+} from '@sudoku-fight/engine';
 import type { LevelTutorialKind } from '@sudoku-fight/protocol';
 import { type Href, router, Stack, useLocalSearchParams } from 'expo-router';
 import {
@@ -17,7 +24,8 @@ import { AppState, StyleSheet, View } from 'react-native';
 import { ResumeCountdown } from '../../src/components/board/ResumeCountdown';
 import { LEVEL_UI } from '../../src/config/levels';
 import { gameEndConfig } from '../../src/config/gameEnd';
-import { useUnlockAllLevels } from '../../src/config/testing';
+import { levelRulesNow, useUnlockAllLevels } from '../../src/config/testing';
+import { levelAttemptOf } from '../../src/levels/appLevels';
 import {
   type LevelSession,
   type LevelSessionDeps,
@@ -33,6 +41,7 @@ import { GameScreen } from '../../src/screens/game/GameScreen';
 import { HowToPlay, tutorialFor, useTutorials } from '../../src/screens/levels/HowToPlay';
 import { renderTutorialPanel } from '../../src/screens/levels/HowToPlayPanels';
 import { levelChrome, levelPlayedOf } from '../../src/screens/levels/levelChrome';
+import { PuzzleLevelScreen } from '../../src/screens/levels/PuzzleLevelScreen';
 import { TapLevelScreen } from '../../src/screens/levels/TapLevelScreen';
 import {
   type LevelPlayed,
@@ -50,10 +59,14 @@ import { ReadyView } from '../../src/screens/levels/ReadyView';
  * LEVEL_UI.quickEntry off: back to the map with it chosen), "שוב" plays this one again (the session plays an
  * equivalent board from the second attempt, D63), "למפה" goes back to the map.
  *
- * The `playing` phase is the stage screens' (the tap kinds' screen, the game screen with a stage's chrome): they
- * fill `Playing` (LevelPlayingProps), report the end once with what the result shows (LevelPlayed), and call
- * onLeave for a way out with no end. Never an empty screen: no stage to play, a fallback; a way out that did not
- * leave in time (the watchdog), the fallback's actions, reported.
+ * The `playing` phase is the stage screens' (the tap kinds' screen, the puzzle's, the game screen with a stage's
+ * chrome): they fill `Playing` (LevelPlayingProps), report the end once with what the result shows
+ * (LevelPlayed), and call onLeave for a way out with no end. Never an empty screen: no stage to play, a
+ * fallback; a way out that did not leave in time (the watchdog), the fallback's actions, reported.
+ *
+ * [D76] The attempt's number is read once, as the run starts (before "איך משחקים" and "מוכן?"): "מוכן?" shows
+ * the board that attempt plays (attemptLevel: its digit, its region), and the session plays the very same
+ * attempt. A read that fails, or does not answer within ATTEMPT_READ_MS: attempt 1 for both.
  */
 
 /** What the `playing` phase gets: the stage, and the two ways out of it. */
@@ -64,6 +77,11 @@ export interface LevelPlayingProps {
   quick: boolean;
   /** The stage ended (any end, the X confirmed included), once: the result shows in this route. */
   onFinished: (played: LevelPlayed) => void;
+  /**
+   * [D76] The attempt's number as the run read it before "מוכן?" (never rejects): the session plays this one, so
+   * it always agrees with what "מוכן?" showed. Left out: the session reads it itself.
+   */
+  attempt?: Promise<number>;
   /**
    * Out with no end (nothing could start): back to the map. Call it only once every window of the stage (its
    * exit dialog) has left the screen.
@@ -96,6 +114,7 @@ export function LevelStage({
   quick,
   onFinished,
   onLeave,
+  attempt,
   deps,
   startWatchdogMs = gameEndConfig.resultsWatchdogMs,
 }: LevelStageProps) {
@@ -110,10 +129,16 @@ export function LevelStage({
     return () => clearTimeout(timer);
   }, [session, failed, startWatchdogMs]);
   const startDeps = useRef(deps);
+  // The run's attempt (read before "מוכן?"), unless the dependencies bring their own reader (the tests).
+  const runAttempt = useRef(attempt);
   useEffect(() => {
     let live = true;
     let made: LevelSession | null = null;
-    startLevel(level, { quick }, startDeps.current).then(
+    const read = runAttempt.current;
+    const given = startDeps.current;
+    const sessionDeps: LevelSessionDeps | undefined =
+      read && !given?.attemptOf ? { ...given, attemptOf: () => read } : given;
+    startLevel(level, { quick }, sessionDeps).then(
       (s) => {
         if (!live) return s.close();
         made = s;
@@ -167,6 +192,9 @@ export function LevelStage({
   }
   if (isTapKind(session.played.kind))
     return <TapLevelScreen session={session} onOver={onOver} onLeave={onLeave} />;
+  // 1.0.3 (levels-ui.md §4.6): the puzzle has a screen of its own, neither the tap screen nor the game screen.
+  if (levelEngineOf(session.played.kind) === 'puzzle')
+    return <PuzzleLevelScreen session={session} onOver={onOver} onLeave={onLeave} />;
   if (!chrome) return <FlowFallback reason={`levels/play: no screen for ${level.kind}`} onHome={onLeave} />;
   // "לבית" of the game screen's fallbacks (the results watchdog, no seat) leaves the stage, to the map.
   return (
@@ -190,6 +218,51 @@ export interface LevelPlayFlowProps {
   Playing: ComponentType<LevelPlayingProps>;
   /** "איך משחקים"'s pictures (HowToPlayPanels); the kind's mark until then. */
   renderTutorialPanel?: (kind: LevelTutorialKind, index: number) => ReactNode;
+  /** Reads an attempt's number at the level's rev (levels.db: the attempts, plus one); levelAttemptOf by default. */
+  attemptOf?: (levelId: string, rev: number) => Promise<number>;
+}
+
+/**
+ * [D76] How long the run waits for the attempt's number before "מוכן?" counts down with attempt 1 (levels.db
+ * that does not answer; it usually answers within a tenth of a second). The session then plays attempt 1 too.
+ */
+export const ATTEMPT_READ_MS = 1500;
+
+/** The attempt's number, read once for the run: a valid answer, else 1 (an error, a bad value, no answer). */
+export function readRunAttempt(
+  levelId: string,
+  attemptOf: (levelId: string) => Promise<number>,
+  timeoutMs: number = ATTEMPT_READ_MS,
+): Promise<number> {
+  return new Promise((resolve) => {
+    let done = false;
+    const settle = (n: number) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      resolve(Number.isInteger(n) && n >= 1 ? n : 1);
+    };
+    const timer = setTimeout(() => settle(1), timeoutMs);
+    try {
+      attemptOf(levelId).then(settle, (error: unknown) => {
+        console.warn('[levels] could not read the attempt', error);
+        settle(1);
+      });
+    } catch (error) {
+      console.warn('[levels] could not read the attempt', error);
+      settle(1);
+    }
+  });
+}
+
+/** The board an attempt plays, for "מוכן?" (the session plays the same: attemptLevel, the same rules). */
+function playedOf(level: AppLevel, attempt: number): AppLevel {
+  try {
+    return attemptLevel(level, attempt, levelRulesNow());
+  } catch (error) {
+    console.warn('[levels] could not prepare the attempt', error);
+    return level;
+  }
 }
 
 interface Run {
@@ -203,7 +276,11 @@ const toMap = () => router.dismissTo('/levels');
 const home = () => router.replace('/');
 
 /** The route's flow, with its `playing` phase given (the tests give a stand-in). */
-export function LevelPlayFlow({ Playing, renderTutorialPanel }: LevelPlayFlowProps) {
+export function LevelPlayFlow({
+  Playing,
+  renderTutorialPanel,
+  attemptOf = levelAttemptOf,
+}: LevelPlayFlowProps) {
   const params = useLocalSearchParams<{ id?: string; quick?: string }>();
   const [run, setRun] = useState<Run>(() => ({ id: params.id ?? '', quick: params.quick === '1', n: 0 }));
   const [leaving, setLeaving] = useState(false);
@@ -243,6 +320,7 @@ export function LevelPlayFlow({ Playing, renderTutorialPanel }: LevelPlayFlowPro
         quick={run.quick}
         Playing={Playing}
         renderTutorialPanel={renderTutorialPanel}
+        attemptOf={attemptOf}
         onNext={(next) => {
           if (LEVEL_UI.quickEntry) start(next, true);
           else leave({ pathname: '/levels', params: { select: next } });
@@ -275,17 +353,40 @@ interface StageRunProps {
   quick: boolean;
   Playing: ComponentType<LevelPlayingProps>;
   renderTutorialPanel?: LevelPlayFlowProps['renderTutorialPanel'];
+  attemptOf: (levelId: string, rev: number) => Promise<number>;
   onNext: (id: string) => void;
   onAgain: () => void;
   onMap: () => void;
 }
 
 /** One attempt: its phases, from the card or "מוכן?" to the result. */
-function StageRun({ level, quick, Playing, renderTutorialPanel, onNext, onAgain, onMap }: StageRunProps) {
+function StageRun({
+  level,
+  quick,
+  Playing,
+  renderTutorialPanel,
+  attemptOf,
+  onNext,
+  onAgain,
+  onMap,
+}: StageRunProps) {
   const [phase, setPhase] = useState<Phase>(() => {
     const tutorial = tutorialFor(level, useTutorials.getState().seen);
     return tutorial ? { kind: 'tutorial', tutorial } : { kind: 'ready' };
   });
+  // [D76] The attempt, read once as the run starts: "מוכן?" and the session both take it from here.
+  const [attemptRead] = useState(() => readRunAttempt(level.id, (id) => attemptOf(id, level.rev)));
+  const [attempt, setAttempt] = useState<number | null>(null);
+  useEffect(() => {
+    let live = true;
+    void attemptRead.then((n) => {
+      if (live) setAttempt(n);
+    });
+    return () => {
+      live = false;
+    };
+  }, [attemptRead]);
+  const readyPlayed = useMemo(() => (attempt === null ? null : playedOf(level, attempt)), [level, attempt]);
   const records = useLevelsProgress() ?? NO_RECORDS;
   const opened = useOpenedChapters();
   // A staging build's "פתח את כל השלבים (בדיקה)": "לשלב הבא" goes on past a closed gate too.
@@ -308,6 +409,7 @@ function StageRun({ level, quick, Playing, renderTutorialPanel, onNext, onAgain,
     return (
       <ReadyView
         level={level}
+        played={readyPlayed}
         paused={LEVEL_UI.backgroundPause && !active}
         onDone={() => setPhase({ kind: 'playing' })}
       />
@@ -317,6 +419,7 @@ function StageRun({ level, quick, Playing, renderTutorialPanel, onNext, onAgain,
       <Playing
         level={level}
         quick={quick}
+        attempt={attemptRead}
         onFinished={(played) => {
           if (finishedOnce.current) return;
           finishedOnce.current = true;

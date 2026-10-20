@@ -547,11 +547,14 @@ function elapsedAt(s: FindState, at: number): number {
 function endLevel(tx: Tx, reason: FindEndReason, at: number): void {
   const s = tx.state;
   const me = human(s);
+  // A race's bot: its spots go with the end, so levelOutcome().bossBeaten reads mine against its own (1.0.3).
+  const bot = s.config.spec.kind === 'findDuel' ? s.players.find((p) => p.isBot) : undefined;
   const over: FindLevelOver = {
     reason,
     elapsedMs: elapsedAt(s, at),
     penaltyMs: s.penaltyMs,
     spots: me.spots,
+    ...(bot ? { opponentSpots: bot.spots } : {}),
     found: s.found.length,
     stars: 0,
   };

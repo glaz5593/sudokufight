@@ -1,4 +1,4 @@
-import type { LevelEvent } from '../levels/spec';
+import type { LevelEvent, PuzzleEvent } from '../levels/spec';
 import type { CellIndex, Digit } from '../sudoku/board';
 import type { Clock } from '../util/clock';
 import type { Rng } from '../util/random';
@@ -28,15 +28,27 @@ export type ClientAction = WithoutPlayer<PlayerAction>;
  * once ('badAction'), as the screens of other games never send it.
  */
 export type TapAction = { type: 'tap'; cell: CellIndex };
+/**
+ * A swap of two boxes (places 0–8, row-major, LTR): the only move of the puzzle (1.0.3), which LocalPuzzleHost
+ * plays. Like a tap: not a game-engine or wire action, refused at once ('badAction') by every other host.
+ */
+export type SwapBoxesAction = { type: 'swapBoxes'; from: number; to: number };
 /** Whatever a screen can ask a host for. */
-export type HostAction = ClientAction | TapAction;
+export type HostAction = ClientAction | TapAction | SwapBoxesAction;
 
 export type HostUpdate =
   /**
    * Something happened; `view` is the picture after it. Events never carry the solution. A tap level's host
-   * (LocalFindHost) has events of its own instead (`levelEvents`, `events` empty).
+   * (LocalFindHost) has events of its own instead (`levelEvents`, `events` empty), and so has the puzzle's
+   * (LocalPuzzleHost: `puzzleEvents`, `events` empty).
    */
-  | { kind: 'events'; events: GameEvent[]; view: GameView; levelEvents?: LevelEvent[] }
+  | {
+      kind: 'events';
+      events: GameEvent[];
+      view: GameView;
+      levelEvents?: LevelEvent[];
+      puzzleEvents?: PuzzleEvent[];
+    }
   /** The local player's action was refused (e.g. "taken": a short buzz, no penalty). */
   | { kind: 'rejected'; action: HostAction; reason: RejectReason; view: GameView };
 
@@ -126,14 +138,12 @@ export class LocalGameHost {
 
   /** Not a move of this game (the tap levels have their own host): refused here, the log untouched. */
   tap(cell: CellIndex): void {
-    if (this.closed) throw new Error('The game host is closed');
-    this.enqueue({
-      kind: 'rejected',
-      action: { type: 'tap', cell },
-      reason: 'badAction',
-      view: this.getView(),
-    });
-    this.rethrow();
+    this.refuseLocally({ type: 'tap', cell });
+  }
+
+  /** Not a move of this game (the puzzle has its own host): refused here, the log untouched. */
+  swapBoxes(from: number, to: number): void {
+    this.refuseLocally({ type: 'swapBoxes', from, to });
   }
 
   /**
@@ -177,6 +187,13 @@ export class LocalGameHost {
     const result = this.apply(action);
     this.rethrow();
     return result;
+  }
+
+  /** A move of another host (a tap, a swap): one 'badAction' refusal, nothing applied. */
+  private refuseLocally(action: TapAction | SwapBoxesAction): void {
+    if (this.closed) throw new Error('The game host is closed');
+    this.enqueue({ kind: 'rejected', action, reason: 'badAction', view: this.getView() });
+    this.rethrow();
   }
 
   private apply(action: Action): ActionResult {

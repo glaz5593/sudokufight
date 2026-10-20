@@ -13,14 +13,20 @@ import { LEVEL_RULES, type LevelRules } from './progress';
  * targets (sudoku/targets.ts), the builder (levels/builder/) and the app import these types and never declare
  * their own.
  *
- * A level is short (at most LEVEL_RULES.levelMaxMs, 30 s), has one task and no interferences at all [D49]. The
- * digit kinds (fillBox, duel, pointHunter, chain) run in the game engine as a 'solo' or 'bot' game with
- * `config.level` set and the rules of levelRulesFor(); the tap kinds (find, findDuel, spotError) run in the tap
- * engine (LocalFindHost). Both go through the GameHost interface, and levelOutcome() (progress.ts) reads the
- * end of either.
+ * A level is short (at most maxMsOf(kind): 30 s, 60 s for the fill kinds and the puzzle [D68]), has one task
+ * and no interferences at all [D49]. The digit kinds (fillBox, fillRow, fillCol, duel, pointHunter, chain) run in
+ * the game engine as a 'solo' or 'bot' game with `config.level` set and the rules of levelRulesFor(); the tap
+ * kinds (find, findDuel, spotError) run in the tap engine (LocalFindHost); the puzzle runs in its own small
+ * engine (puzzle.ts, LocalPuzzleHost). All go through the GameHost interface, and levelOutcome() (progress.ts)
+ * reads the end of any.
  */
 
-/** The seven kinds (plan §2, §3): the four Moshe defined, and the three ideas of V1 [D54]. */
+/**
+ * The ten kinds (1.0.3; levels-content.md §3.1) [D54, D66]: the four Moshe defined, the three ideas of V1, and
+ * fill the row, fill the column and the puzzle (his feedback on 1.0.2). The id `find` stays; its name on screen
+ * is "מיקום מדויק" / Pinpoint [D79]. New kinds go at the end: the order is what the server and the admin site
+ * list them by.
+ */
 export const LEVEL_KINDS = [
   'find',
   'findDuel',
@@ -29,6 +35,9 @@ export const LEVEL_KINDS = [
   'spotError',
   'pointHunter',
   'chain',
+  'fillRow',
+  'fillCol',
+  'puzzle',
 ] as const;
 export type LevelKind = (typeof LEVEL_KINDS)[number];
 
@@ -40,8 +49,29 @@ export const TAP_LEVEL_KINDS: readonly LevelKind[] = ['find', 'findDuel', 'spotE
 export const isTapKind = (kind: LevelKind): boolean => TAP_LEVEL_KINDS.includes(kind);
 
 /**
- * A wrong digit (fillBox, chain), a digit that cannot be known yet (chain, D64) and a wrong tap (find,
- * spotError) cost this much time (plan §2.1, §2.3, §3.1).
+ * "Fill a region" (levels-content.md §4.6) [D69]: a box, a row or a column, one path in the engine. The same
+ * rules (levelRulesFor), the same ladder, and fillRegionOf() is how the builder, the validator, "שוב" and the
+ * screens read the region.
+ */
+export const FILL_LEVEL_KINDS = ['fillBox', 'fillRow', 'fillCol'] as const;
+export type FillLevelKind = (typeof FILL_LEVEL_KINDS)[number];
+
+export const isFillKind = (kind: LevelKind): kind is FillLevelKind =>
+  (FILL_LEVEL_KINDS as readonly LevelKind[]).includes(kind);
+
+/**
+ * Which engine plays a kind: the game engine (LocalGameHost, through levelGameConfig), the tap engine
+ * (LocalFindHost), or the puzzle's own (LocalPuzzleHost). The app picks the host, and the screen, by this.
+ */
+export type LevelEngine = 'game' | 'tap' | 'puzzle';
+
+export const levelEngineOf = (kind: LevelKind): LevelEngine =>
+  kind === 'puzzle' ? 'puzzle' : isTapKind(kind) ? 'tap' : 'game';
+
+/**
+ * A wrong digit (fillBox, fillRow, fillCol, chain), a digit that cannot be known yet (chain, D64) and a wrong tap
+ * (find, spotError) cost this much time (plan §2.1, §2.3, §3.1). A puzzle's wrong swap has its own setting,
+ * LEVEL_RULES.puzzleSwapPenaltyMs (the same 5 s by default) [D70c].
  */
 export const LEVEL_PENALTY_MS = 5000;
 
@@ -128,6 +158,30 @@ export interface BestLineMove {
   points: number;
 }
 
+/**
+ * A puzzle's task (levels-content.md §5) [D70, D71]. The board is a solved sudoku cut into its nine boxes; a
+ * box is named by its home, the place (0–8, row-major, LTR) it has in the solution, and `board.grid` is the
+ * solution itself. The player swaps two boxes at a time until every row and column is right.
+ */
+export interface PuzzleTargets {
+  /**
+   * The arrangement at the start: start[place] is the home of the box standing there. A fixed box stands at
+   * home (start[p] === p); every moving box starts away from home, and the moving boxes make one cycle, so the
+   * fewest swaps are their count less one.
+   */
+  start: readonly number[];
+  /**
+   * The places of the fixed boxes, ascending: at home, never moved (at least two, in different bands and
+   * stacks: then the arrangement has one solution, which the builder checks).
+   */
+  fixed: readonly number[];
+  /**
+   * A box that reaches its home locks there, and the view says so ('placed'). Off in every chapter [D71]: a lock
+   * gives the answer away. Kept in the level itself, so a change of the table never alters a built level.
+   */
+  lockOnCorrect: boolean;
+}
+
 /** What each kind's task is made of. */
 export interface LevelTargetMap {
   find: { target: FindTarget };
@@ -142,6 +196,11 @@ export interface LevelTargetMap {
   pointHunter: { maxMoves: number; best: readonly BestLineMove[] };
   /** The chain's cells, in the order they become knowable (plan Idea-3). */
   chain: { cells: readonly CellIndex[] };
+  /** The row (0–8, A–I) and its missing cells: the only cells that can be chosen (levels-content.md §4.6). */
+  fillRow: { row: number; cells: readonly CellIndex[] };
+  /** The column (0–8, 1–9) and its missing cells: the only cells that can be chosen. */
+  fillCol: { col: number; cells: readonly CellIndex[] };
+  puzzle: PuzzleTargets;
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -186,14 +245,18 @@ interface LevelSpecBase {
   chapter: number;
   /** 1–10 in the chapter; 10 is the boss. */
   slot: number;
-  /** The tenth level of a chapter (plan §3.3): its kind is the challenge's (fillBox, findDuel or duel). */
+  /**
+   * The tenth level of a chapter (plan §3.3): one fight against a named bot [D72], a race (findDuel) or a duel;
+   * bossTraits() (boss.ts) says what is really harder, levelOutcome().bossBeaten whether I won it.
+   */
   boss: boolean;
   /** The builder's seed (from `${id}:r${rev}`), and the base of the bot's draws (with the attempt). */
   seed: number;
   /** The board's type: the lock time of a duel comes with it (spec §5.2) [D43]. */
   gameType: GameType;
+  /** A puzzle: `grid` is the solution (the boxes are moved, never filled); the start is targets.start. */
   board: LevelBoard;
-  /** At most LEVEL_RULES.levelMaxMs. */
+  /** At most maxMsOf(kind) (progress.ts): 30 s, 60 s for fillBox, fillRow, fillCol and the puzzle [D68]. */
   timeLimitMs: number;
   stars: StarRule;
   bot?: LevelBot;
@@ -213,6 +276,34 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K>
 
 /** The part of a level the app ships and plays (apps/mobile/src/levels/data/levels.json): no build checks. */
 export type AppLevel = DistributiveOmit<LevelSpec, 'check'>;
+
+export type AppLevelOf<K extends LevelKind> = Extract<AppLevel, { kind: K }>;
+
+/** fillRegionOf(): the region of a fill level, whichever its unit (levels-content.md §4.6) [D69]. */
+export interface FillRegion {
+  unit: 'box' | 'row' | 'col';
+  /** 0–8: the box (row-major), the row (A–I) or the column (1–9). */
+  index: number;
+  /** Its missing cells: the only cells that can be chosen. */
+  cells: readonly CellIndex[];
+}
+
+/**
+ * The region of fillBox, fillRow or fillCol, the one way the builder, the validator, "שוב" and the screens read
+ * it (the HUD's "row D" comes from the attempt's level, so it follows "שוב"); null for every other kind.
+ */
+export function fillRegionOf(level: AppLevel): FillRegion | null {
+  switch (level.kind) {
+    case 'fillBox':
+      return { unit: 'box', index: level.targets.box, cells: level.targets.cells };
+    case 'fillRow':
+      return { unit: 'row', index: level.targets.row, cells: level.targets.cells };
+    case 'fillCol':
+      return { unit: 'col', index: level.targets.col, cells: level.targets.cells };
+    default:
+      return null;
+  }
+}
 
 // ---------------------------------------------------------------------------------------------------------
 // A level being played
@@ -240,12 +331,16 @@ export interface LevelResult {
   penaltyMs: number;
 }
 
-/** How far the task is (GameView.level.progress); a chain says how many steps, never which cell is next. */
+/**
+ * How far the task is (GameView.level.progress); a chain says how many steps, never which cell is next; a
+ * puzzle how many swaps I made and how many were wrong, never how many boxes are home.
+ */
 export type LevelProgressView =
   | { kind: 'cells'; done: number; total: number }
   | { kind: 'chain'; done: number; total: number }
   | { kind: 'moves'; used: number; max: number; score: number }
-  | { kind: 'score'; mine: number; opponent: number | null; target: number };
+  | { kind: 'score'; mine: number; opponent: number | null; target: number }
+  | { kind: 'swaps'; used: number; mistakes: number };
 
 /** GameView.level: present only in a level, by either host. */
 export interface LevelView {
@@ -269,7 +364,7 @@ export interface LevelView {
   /** Stars if the level ended well now (provisional), or as it ended (`final`). */
   stars: Stars;
   final: boolean;
-  /** fillBox: the cells that can be chosen; null when any empty cell can. */
+  /** fillBox, fillRow, fillCol: the cells that can be chosen; null when any empty cell can. */
   editableCells: readonly CellIndex[] | null;
   progress: LevelProgressView | null;
   /** False when locks have no timer (rules.lockTimeout false): the board shows no countdown on my cell. */
@@ -278,6 +373,8 @@ export interface LevelView {
   selectedWorth?: number;
   /** The tap kinds (LocalFindHost). */
   find?: LevelFindView;
+  /** The puzzle (LocalPuzzleHost). */
+  puzzle?: LevelPuzzleView;
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -293,6 +390,11 @@ export interface FindLevelOver {
   penaltyMs: number;
   /** findDuel: the spots I took; find: 1 when found. */
   spots: number;
+  /**
+   * findDuel: the spots the bot took (1.0.3), for levelOutcome().bossBeaten. Without it (an older end) a race
+   * counts as won only with more than half of all its spots.
+   */
+  opponentSpots?: number;
   /** spotError: the planted errors found. */
   found: number;
   stars: Stars;
@@ -401,17 +503,105 @@ export type LevelEventType = LevelEvent['type'];
 export type NewLevelEvent = LevelEventBody;
 
 // ---------------------------------------------------------------------------------------------------------
+// The puzzle engine (puzzle.ts, puzzleHost.ts): its view and its events (levels-content.md §5.4, §5.5)
+
+/** How a puzzle ends: every row and column right ('targetReached'), the limit, or the X. */
+export type PuzzleEndReason = Extract<FindEndReason, 'targetReached' | 'timeUp' | 'quit'>;
+
+/** How a puzzle ended (its levelOver event): levelOutcome() reads it. */
+export interface PuzzleLevelOver {
+  reason: PuzzleEndReason;
+  /** The level clock at the end: the time played plus the time penalties. */
+  elapsedMs: number;
+  /** The wrong swaps' penalties [D70c]. */
+  penaltyMs: number;
+  swaps: number;
+  /** The wrong swaps: neither box landed at its home [D70c]. */
+  mistakes: number;
+  stars: Stars;
+}
+
+/**
+ * One of the nine places as the screen draws it. The answer never shows: `id` is the place the box started at
+ * (a stable id for the animation), never its home; without the lock a box at home still reads 'movable'.
+ */
+export interface PuzzleSlotView {
+  id: number;
+  /** 'placed' only when lockOnCorrect is on [D71]. */
+  state: 'movable' | 'fixed' | 'placed';
+}
+
+/** What the puzzle's view adds (GameView.level.puzzle). The board (GameView.grid) is the boxes as they stand. */
+export interface LevelPuzzleView {
+  /** The 9 places, row-major (0 top-left … 8 bottom-right), LTR. */
+  slots: readonly PuzzleSlotView[];
+  /** How many boxes move. */
+  moving: number;
+  swaps: number;
+  /** Swaps that put neither box in its place (each one cost PuzzleRules.swapPenaltyMs). */
+  mistakes: number;
+  /** The fewest swaps that solve it: `moving` − 1 (the moving boxes start as one cycle). */
+  minSwaps: number;
+  lockOnCorrect: boolean;
+  /** The cells whose digit repeats in their row or column; empty unless PuzzleRules.conflicts [D78b]. */
+  conflicts: readonly CellIndex[];
+  /** After the end: how it ended (the levelOver event), for levelOutcome(). */
+  over?: PuzzleLevelOver;
+}
+
+/** The rules a puzzle is played by, as they were when it was created. */
+export interface PuzzleRules {
+  /** A wrong swap costs this much time (LEVEL_RULES.puzzleSwapPenaltyMs, 5 s) [D70c]. */
+  swapPenaltyMs: number;
+  /** The level's targets.lockOnCorrect [D71]. */
+  lockOnCorrect: boolean;
+  /** The view lists repeated digits (puzzleConflictsOn(), LEVEL_RULES.puzzleConflicts) [D78b]. */
+  conflicts: boolean;
+}
+
+/** A puzzle as created: everything replayPuzzle needs (it has no RNG at all: the level froze everything). */
+export interface PuzzleConfig {
+  id: string;
+  level: LevelRun;
+  /** The level as played: attemptLevel(spec, attempt) [D63]. */
+  spec: AppLevelOf<'puzzle'>;
+  /** Me: a puzzle is played alone. */
+  players: PlayerInfo[];
+  rules: PuzzleRules;
+}
+
+type PuzzleEventBody =
+  | { type: 'puzzleCreated'; config: PuzzleConfig }
+  | { type: 'levelStarted' }
+  /** Two boxes changed places; a wrong swap's penalty (0 or PuzzleRules.swapPenaltyMs). */
+  | { type: 'boxesSwapped'; from: number; to: number; penaltyMs: number }
+  /** A box reached its home and locked there: only while lockOnCorrect [D71]. */
+  | { type: 'boxPlaced'; place: number }
+  /** [D65] The app left the foreground; everything stands still. */
+  | { type: 'levelPaused' }
+  /** The limit moves on by `pausedMs`. */
+  | { type: 'levelResumed'; pausedMs: number }
+  | ({ type: 'levelOver' } & PuzzleLevelOver);
+
+/** The puzzle engine's events, delivered as HostUpdate.puzzleEvents (apart from the tap engine's levelEvents). */
+export type PuzzleEvent = PuzzleEventBody & { seq: number; t: number };
+export type PuzzleEventType = PuzzleEvent['type'];
+/** The body of a puzzle event before it gets its seq and time. */
+export type NewPuzzleEvent = PuzzleEventBody;
+
+// ---------------------------------------------------------------------------------------------------------
 // The rules of a digit level
 
 /**
  * The game rules of each digit kind, the only place these choices live (plan §2.3, §2.4, §3.1, dev-plan §2א):
- * - fillBox: only the box's missing cells; a wrong digit costs 5 s; no lock timer (no opponent), and after a
- *   mistake the lock stays, with no wait to lock again.
+ * - fillBox, fillRow, fillCol: only the region's missing cells; a wrong digit costs 5 s; no lock timer (no
+ *   opponent), and after a mistake the lock stays, with no wait to lock again (the row and the column exactly
+ *   as the box, levels-content.md §4.6) [D69].
  * - duel: first to `endAtScore` within the time limit, and otherwise the game as it is (locks, scores, §6.5).
  * - pointHunter: 3 moves, no lock timer, the lock kept after a mistake.
  * - chain: only the chain's order counts (chainNotYet, D64), a wrong digit costs 5 s, as fillBox's locks.
- * The tap kinds read their spec in the tap engine: only the limit here. No kind has an interference key: a
- * level's mode ('solo' or 'bot') has none [D44, D49].
+ * The tap kinds read their spec in the tap engine, the puzzle in its own: only the limit here. No kind has an
+ * interference key: a level's mode ('solo' or 'bot') has none [D44, D49].
  */
 export function levelRulesFor(spec: AppLevel, rules: LevelRules = LEVEL_RULES): Partial<Rules> {
   const noOpponentLocks = {
@@ -421,6 +611,8 @@ export function levelRulesFor(spec: AppLevel, rules: LevelRules = LEVEL_RULES): 
   } as const satisfies Partial<Rules>;
   switch (spec.kind) {
     case 'fillBox':
+    case 'fillRow':
+    case 'fillCol':
       return {
         editableCells: spec.targets.cells,
         timeLimitMs: spec.timeLimitMs,
@@ -442,11 +634,15 @@ export function levelRulesFor(spec: AppLevel, rules: LevelRules = LEVEL_RULES): 
     case 'find':
     case 'findDuel':
     case 'spotError':
+    case 'puzzle':
       return { timeLimitMs: spec.timeLimitMs };
   }
 }
 
-/** The engine mode a level runs in: against the bot (findDuel, duel, and their bosses) or alone. */
+/**
+ * The engine mode a level runs in: against the bot (findDuel, duel, and their bosses) or alone (every other
+ * kind, fillRow, fillCol and the puzzle too).
+ */
 export const levelModeFor = (spec: Pick<AppLevel, 'kind'>): Extract<GameMode, 'solo' | 'bot'> =>
   spec.kind === 'findDuel' || spec.kind === 'duel' ? 'bot' : 'solo';
 
@@ -480,7 +676,11 @@ export interface LevelGameOptions {
  * the attempt, so the first attempt always meets the same bot and "שוב" draws again.
  */
 export function levelGameConfig(spec: AppLevel, o: LevelGameOptions): GameConfig {
-  if (isTapKind(spec.kind)) throw new RangeError(`A ${spec.kind} level is played by the tap engine`);
+  const engine = levelEngineOf(spec.kind);
+  if (engine !== 'game')
+    throw new RangeError(
+      `A ${spec.kind} level is played by ${engine === 'tap' ? 'the tap engine' : 'the puzzle engine'}`,
+    );
   if (!(Number.isInteger(o.attempt) && o.attempt >= 1)) throw new RangeError('An attempt is 1 or more');
   const mode = levelModeFor(spec);
   let players = [o.player];

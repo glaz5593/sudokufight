@@ -1,7 +1,7 @@
 import { boxOf, parseGrid } from '../../sudoku/board';
 import { requiresTechniques } from '../../sudoku/targets';
 import { createRng } from '../../util/random';
-import { levelPlan, type LevelPlanOf } from '../levels.config';
+import { levelPlan, type LevelPlanOf, levelsOfKind } from '../levels.config';
 import { boxEmpties } from './common';
 import { buildFind } from './find';
 import { validateLevel } from './validate';
@@ -9,12 +9,17 @@ import { validateLevel } from './validate';
 /* find (plan §2.1): one target, as the chapter asks for it. */
 
 const plan = (n: number) => levelPlan(n) as LevelPlanOf<'find'>;
+/** The first level of a kind in a chapter (bosses only with `boss`): by kind, never a fixed id (a rebuild moves them). */
+const nOf = (kind: Parameters<typeof levelsOfKind>[0], chapter: number, boss = false): number =>
+  levelsOfKind(kind, { chapter, boss })[0]!;
+/** Chapter 17's find: the whole board, needing pointing or claiming (not its easy slots). */
+const CH17 = levelsOfKind('find', { chapter: 17 }).find((n) => n % 10 > 3)!;
 
 describe('buildFind', () => {
   it.each([
     [1, 'box'],
-    [56, 'row|col'],
-    [164, 'board'],
+    [nOf('find', 6), 'row|col'],
+    [CH17, 'board'],
   ])('L%i: deterministic per seed, a %s target, and valid', (n, scope) => {
     const p = plan(n);
     const a = buildFind(p).spec;
@@ -33,7 +38,7 @@ describe('buildFind', () => {
   });
 
   it('chapter 17: the target needs pointing or claiming (not known with singles alone)', () => {
-    const spec = buildFind(plan(164)).spec;
+    const spec = buildFind(plan(CH17)).spec;
     const grid = parseGrid(spec.board.grid);
     expect(spec.check).toEqual({
       techniques: ['nakedSingle', 'hiddenSingle', 'pointing', 'claiming'],

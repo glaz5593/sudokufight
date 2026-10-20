@@ -86,6 +86,20 @@ Remaining device-only checks are listed in docs/STAGE7-DEVICE-CHECKS.md (new 2ג
    Final `npm run verify` green: 444 suites / 10015 tests; format:check clean. app.json 1.0.2, ENGINE_VERSION 0.3.0.
    Device checks: docs/LEVELS-DEVICE-CHECKS.md. Next, only with Moshe's OK: commit → push → staging server deploy
    (migration 0008; no puzzle seed needed) → APK 1.0.2 (one ABI; C: has ~11 GB free).
+   **2026-10-19 (Moshe: "go 1+2+3"):** commit 00c3249 pushed; staging deployed (health engine 0.3.0, /v1/me/levels
+   answers 401 without auth); APK 1.0.2 built against staging (see apps/mobile/apk/). Next: Moshe tests on devices.
+   **2026-10-19/20 Moshe's 1.0.2 device feedback (7 items) + 2 new features.** Plan workflow wf_994f1f85-721 wrote
+   `docs/handoff/2026-10-19/` (plan.md for Moshe, levels-content.md, levels-ui.md, friends-room.md, stealth-bot.md,
+   critique-log.md; decisions D66–D99). Moshe (2026-10-20): "את הסעיפים הממוספרים תבצע בלי לשאול" → items 1–7 BUILD with
+   every recommended default (D66–D79); friends room (D80–D89) and stealth bot (D90–D99) PLAN ONLY, wait for his answers.
+   Build workflow wf_59df1b94-5d3 (lanes A → B/C/E/UI-4 → content rebuild → UI-1/2/3 + docs → integrate → 3 reviewers +
+   skeptics → fix) writes `docs/handoff/2026-10-19/build-report.md` at the end. Uncommitted. Next, only with Moshe's OK:
+   commit → staging server deploy FIRST (new kinds in telemetry) → version:bump 1.0.3 → APK (no native change).
+   **BUILT 2026-10-20:** all 7 items; 13 review findings, 12 confirmed and fixed. Re-checked by the main session:
+   `npm run verify` exit 0 (462 suites / 10,619 tests), format:check clean. Then the main session changed the
+   staged-practice tagline to "שלבים קצרים · עד 3 כוכבים" / "Short stages · up to 3 stars" (fill/puzzle are 60 s now;
+   app + 2 tests + 01-SPEC §5.1 + QA-CHECKLIST + components.md; those tests pass). Details: build-report.md.
+   Waiting for Moshe: device test after his OK for commit/deploy/APK; answers on D80–D99 (friends room, stealth bot).
 4. **Only with Moshe's OK:** `npm run version:bump` → commit → push → deploy staging (server FIRST: migration
    0007 runs; then `npm run db:seed-puzzles` against staging) → `npm run apk` (see docs/BUILD-APK.md; check free
    space on C: first).

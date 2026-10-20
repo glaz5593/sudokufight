@@ -3,8 +3,11 @@ import 'react-native-reanimated';
 import {
   type AppLevel,
   type FindLevelOver,
+  type GameView,
   type GateState,
   levelOutcome,
+  levelIdOf,
+  levelNumber,
   type LevelOutcome,
   parseCellName,
 } from '@sudoku-fight/engine';
@@ -18,9 +21,10 @@ import { ltr } from '../../../components/player/format';
 import { LEVEL_UI } from '../../../config/levels';
 import i18n from '../../../i18n';
 import type { LevelFinished } from '../../../levels/appLevels';
-import { levelById } from '../../../levels/levelsData';
+import { firstBossOf, firstLevelOf, levelsOf } from '../../../levels/__tests__/helpers/levelsOf';
 import { useSettings } from '../../../state/settings';
 import { useTutorials } from '../HowToPlay';
+import { levelPlayedOf } from '../levelChrome';
 import { type LevelPlayed, LevelResultView, type LevelResultViewProps } from '../LevelResultView';
 
 /**
@@ -42,9 +46,13 @@ const METRICS = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-const FIND = levelById('L007')!;
-const RACE = levelById('L012')!;
-const DUEL = levelById('L021')!;
+// Picked by kind, never by id (a rebuild may give an id another kind): helpers/levelsOf. FIND is a find that is
+// not its chapter's first (chapter 1's second); NEXT the stage after it.
+const FIND = levelsOf('find', { chapter: 1 })[1]!;
+const RACE = firstLevelOf('findDuel');
+const DUEL = firstLevelOf('duel');
+const N = levelNumber(FIND.id)!;
+const NEXT = levelIdOf(N + 1);
 
 const found = (elapsedMs: number, penaltyMs = 0): FindLevelOver => ({
   reason: 'targetReached',
@@ -101,7 +109,7 @@ async function show(level: AppLevel, played: LevelPlayed, over: Partial<LevelRes
     chapter: played.finished?.gate
       ? { stars: played.finished.gate.stars, max: 30, gate: played.finished.gate }
       : null,
-    next: 'L008',
+    next: NEXT,
     onNext: jest.fn(),
     onAgain: jest.fn(),
     onMap: jest.fn(),
@@ -124,7 +132,7 @@ afterEach(() => jest.useRealTimers());
 describe('LevelResultView', () => {
   it('three stars: the title, the stars, the measure, "שיא חדש!", and one confetti burst', async () => {
     await show(FIND, playedOf(FIND, found(4200)));
-    expect(screen.getByTestId('level-result-title')).toHaveTextContent('שלב 7 הושלם');
+    expect(screen.getByTestId('level-result-title')).toHaveTextContent(`שלב ${N} הושלם`);
     expect(screen.getByRole('image', { name: 'שלושה כוכבים מתוך שלושה' })).toBeOnTheScreen();
     expect(screen.getByTestId('level-result-metric')).toHaveProp('accessibilityLabel', `${ltr('4.2')} ש׳`);
     expect(screen.getByTestId('level-result-new-best')).toHaveTextContent('שיא חדש!');
@@ -269,7 +277,7 @@ describe('LevelResultView', () => {
       stars: 0,
     };
     await show(level, playedOf(level, end), { next: null });
-    expect(screen.getByTestId('level-result-title')).toHaveTextContent('שלב 7');
+    expect(screen.getByTestId('level-result-title')).toHaveTextContent(`שלב ${N}`);
     expect(screen.getByTestId('level-result-reason')).toHaveTextContent('הזמן נגמר');
     expect(screen.getByRole('image', { name: 'בלי כוכבים' })).toBeOnTheScreen();
     expect(screen.queryByTestId('level-result-xp')).toBeNull();
@@ -277,10 +285,171 @@ describe('LevelResultView', () => {
     expect(screen.getByTestId('level-result-no-next')).toHaveTextContent('השלב הבא עוד נעול');
   });
 
+  it('a regular stage has no boss medallion and keeps its chapter line', async () => {
+    await show(FIND, playedOf(FIND, found(4200)));
+    expect(screen.queryByTestId('level-result-boss')).toBeNull();
+    expect(screen.getByTestId('level-result-chapter')).toHaveProp(
+      'accessibilityLabel',
+      'בפרק הזה: 18 כוכבים מתוך 30. לשער צריך 20',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------
+// A boss's result (levels-ui.md §3.2, D77): "ניצחת את הבוס!" from the engine's bossBeaten, never from the stars
+
+describe('a boss’s result', () => {
+  // Chapter 1's boss: the race against Pip [D72].
+  const BOSS = firstBossOf('findDuel', 1);
+  const BOSS_N = levelNumber(BOSS.id)!;
+  const total = BOSS.targets.spots.length;
+  const race = (spots: number, opponentSpots: number): FindLevelOver => ({
+    reason: 'targetReached',
+    elapsedMs: 24000,
+    penaltyMs: 0,
+    spots,
+    opponentSpots,
+    found: 0,
+    stars: 0,
+  });
+  const pip = (value: number, verdict: 'won' | 'lost') =>
+    ({ name: 'Pip', avatar: 'hatchling', botLevel: 1, value, verdict }) as const;
+  const bossGate = (stars: number, open: boolean): GateState => ({
+    chapter: 1,
+    open,
+    stars,
+    need: 20,
+    bossPlayed: true,
+  });
+
+  it('beaten (the engine says so): the crown medallion pops and "ניצחת את הבוס!"', async () => {
+    jest.useFakeTimers();
+    const end = race(3, total - 3);
+    const outcome = levelOutcome(BOSS, end);
+    expect(outcome.bossBeaten).toBe(true);
+    await show(BOSS, { ...playedOf(BOSS, end, { opponent: pip(total - 3, 'won') }) });
+    expect(screen.getByTestId('level-result-boss-words')).toHaveTextContent('ניצחת את הבוס!');
+    const crown = screen.getByTestId('level-result-boss-crown', hidden);
+    expect(crown).toHaveAnimatedStyle({ transform: [{ scale: 0.4 }] });
+    await act(async () => void jest.advanceTimersByTime(1000));
+    expect(crown).toHaveAnimatedStyle({ transform: [{ scale: 1 }] });
+    // Over the title.
+    const content = screen.getByTestId('level-result-boss');
+    expect(content).toBeOnTheScreen();
+  });
+
+  it('a race boss with 2 spots against the bot’s 3: a star, and still "הבוס ניצח הפעם", still', async () => {
+    jest.useFakeTimers();
+    const end = race(2, 3);
+    const outcome = levelOutcome(BOSS, end);
+    expect(outcome.stars).toBeGreaterThanOrEqual(1);
+    expect(outcome.bossBeaten).toBe(false);
+    await show(BOSS, playedOf(BOSS, end, { opponent: pip(3, 'lost') }));
+    expect(screen.getByTestId('level-result-boss-words')).toHaveTextContent('הבוס ניצח הפעם');
+    expect(screen.getByTestId('level-result-boss-words')).not.toHaveTextContent('ניצחת');
+    // No pop: the crown is simply there.
+    expect(screen.getByTestId('level-result-boss-crown', hidden)).toHaveAnimatedStyle({
+      transform: [{ scale: 1 }],
+    });
+  });
+
+  it('a tied race boss (2–2 when the time ran out): the bot’s row agrees with "הבוס ניצח הפעם"', async () => {
+    const end: FindLevelOver = { ...race(2, 2), reason: 'timeUp', elapsedMs: 30000 };
+    const tie = (level: AppLevel) => {
+      const outcome = levelOutcome(level, end);
+      // Equal places in the engine's ranking (a race's place: 1 + the players with more spots).
+      const view = {
+        players: [
+          { id: 'me', name: 'Tester', isBot: false, place: 1, score: 2 },
+          { id: 'pip', name: 'Pip', isBot: true, place: 1, score: 2 },
+        ],
+      } as unknown as GameView;
+      return levelPlayedOf(
+        { playerId: 'me', botLevel: 1, played: level },
+        { end, outcome, finished: finishedOf(outcome), mistakes: 0, wrongTaps: [], view },
+        'he',
+      );
+    };
+    const played = tie(BOSS);
+    // A tie does not beat the boss [D72]: the row says so, never a plain "תיקו" under the boss's win.
+    expect(played.outcome.bossBeaten).toBe(false);
+    expect(played.opponent?.verdict).toBe('bossTie');
+    await show(BOSS, played);
+    expect(screen.getByTestId('level-result-boss-words')).toHaveTextContent('הבוס ניצח הפעם');
+    expect(screen.getByTestId('level-result-verdict')).toHaveTextContent('תיקו: הבוס נשאר');
+    // A regular race keeps its plain tie (no boss, no verdict of the engine).
+    expect(tie(RACE).opponent?.verdict).toBe('tie');
+  });
+
+  it('a boss: the row takes the engine’s verdict, even where the places say otherwise (a quit while ahead)', async () => {
+    const end: FindLevelOver = { ...race(3, 1), reason: 'quit' };
+    const outcome = levelOutcome(BOSS, end);
+    expect(outcome.bossBeaten).toBe(false);
+    const view = {
+      players: [
+        { id: 'me', name: 'Tester', isBot: false, place: 1, score: 3 },
+        { id: 'pip', name: 'Pip', isBot: true, place: 2, score: 1 },
+      ],
+    } as unknown as GameView;
+    const played = levelPlayedOf(
+      { playerId: 'me', botLevel: 1, played: BOSS },
+      { end, outcome, finished: finishedOf(outcome), mistakes: 0, wrongTaps: [], view },
+      'en',
+    );
+    expect(played.opponent?.verdict).toBe('lost');
+  });
+
+  it('Reduced Motion: the crown is there without the pop', async () => {
+    useSettings.setState({ reduceMotion: 'on' });
+    await show(BOSS, playedOf(BOSS, race(4, 1), { opponent: pip(1, 'won') }));
+    expect(screen.getByTestId('level-result-boss-words')).toHaveTextContent('ניצחת את הבוס!');
+    expect(screen.getByTestId('level-result-boss-crown', hidden)).toHaveAnimatedStyle({
+      transform: [{ scale: 1 }],
+    });
+  });
+
+  it('the gate’s line in front: "השער לפרק 2: ★ 22/20 · נפתח!" (the count LTR)', async () => {
+    const end = race(3, 2);
+    const outcome = levelOutcome(BOSS, end);
+    await show(BOSS, {
+      ...playedOf(BOSS, end),
+      finished: finishedOf(outcome, { gate: bossGate(22, true), gateOpened: true }),
+    });
+    expect(screen.getByTestId('level-result-chapter')).toHaveProp(
+      'accessibilityLabel',
+      `השער לפרק 2: ${ltr('★ 22/20')} · נפתח!`,
+    );
+    await screen.unmount();
+    await show(BOSS, {
+      ...playedOf(BOSS, end),
+      finished: finishedOf(outcome, { gate: bossGate(17, false) }),
+    });
+    expect(screen.getByTestId('level-result-chapter')).toHaveProp(
+      'accessibilityLabel',
+      `השער לפרק 2: ${ltr('★ 17/20')}`,
+    );
+  });
+
+  it('an outcome with no verdict (read before 1.0.3): no medallion, the result as before', async () => {
+    const end = race(3, 2);
+    const { bossBeaten: _verdict, ...old } = levelOutcome(BOSS, end);
+    await show(BOSS, { ...playedOf(BOSS, end), outcome: old });
+    expect(screen.queryByTestId('level-result-boss')).toBeNull();
+    expect(screen.getByTestId('level-result-title')).toHaveTextContent(`שלב ${BOSS_N} הושלם`);
+  });
+
+  it('speaks English: "You beat the boss!"', async () => {
+    await i18n.changeLanguage('en');
+    await show(BOSS, playedOf(BOSS, race(4, 1), { opponent: pip(1, 'won') }));
+    expect(screen.getByTestId('level-result-boss-words')).toHaveTextContent('You beat the boss!');
+  });
+});
+
+describe('LevelResultView in English', () => {
   it('speaks English: "Stage 7 complete", "Next stage"', async () => {
     await i18n.changeLanguage('en');
     await show(FIND, playedOf(FIND, found(4200)));
-    expect(screen.getByTestId('level-result-title')).toHaveTextContent('Stage 7 complete');
+    expect(screen.getByTestId('level-result-title')).toHaveTextContent(`Stage ${N} complete`);
     expect(screen.getByRole('button', { name: 'Next stage' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Again' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'To the map' })).toBeOnTheScreen();
@@ -322,43 +491,43 @@ const ROUTES = {
 describe('in the stage’s route', () => {
   beforeEach(() => useTutorials.setState({ seen: { find: true, fillBox: true, boss: true } }));
 
-  /** Plays L007 to its result; the router (a thenable: it is returned inside an object). */
-  async function playL007() {
-    const app = renderRouter(ROUTES, { initialUrl: '/levels/play?id=L007' });
+  /** Plays FIND to its result; the router (a thenable: it is returned inside an object). */
+  async function playFind() {
+    const app = renderRouter(ROUTES, { initialUrl: `/levels/play?id=${FIND.id}` });
     await app;
     expect(screen.getByTestId('level-ready')).toBeOnTheScreen();
     await act(async () => void jest.advanceTimersByTime(LEVEL_UI.readyMs));
-    expect(screen.getByTestId('fake-stage-id')).toHaveTextContent('L007');
+    expect(screen.getByTestId('fake-stage-id')).toHaveTextContent(FIND.id);
     await fireEvent.press(screen.getByTestId('fake-stage-finish'));
     expect(screen.getByTestId('level-result')).toBeOnTheScreen();
     return { app };
   }
 
-  it('the end is a state: the pathname stays; "לשלב הבא" starts L008 through "מוכן?", as a quick entry', async () => {
-    const { app } = await playL007();
+  it('the end is a state: the pathname stays; "לשלב הבא" starts the next through "מוכן?", as a quick entry', async () => {
+    const { app } = await playFind();
     expect(app.getPathname()).toBe('/levels/play');
     await fireEvent.press(screen.getByTestId('level-result-next'));
     expect(app.getPathname()).toBe('/levels/play');
-    expect(app.getSearchParams()).toMatchObject({ id: 'L008', quick: '1' });
+    expect(app.getSearchParams()).toMatchObject({ id: NEXT, quick: '1' });
     expect(screen.getByTestId('level-ready')).toBeOnTheScreen();
     await act(async () => void jest.advanceTimersByTime(LEVEL_UI.readyMs));
-    expect(screen.getByTestId('fake-stage-id')).toHaveTextContent('L008 quick');
+    expect(screen.getByTestId('fake-stage-id')).toHaveTextContent(`${NEXT} quick`);
   });
 
   it('"שוב" plays the same stage again, from "מוכן?"', async () => {
-    await playL007();
+    await playFind();
     await fireEvent.press(screen.getByTestId('level-result-again'));
     expect(screen.getByTestId('level-ready')).toBeOnTheScreen();
     await act(async () => void jest.advanceTimersByTime(LEVEL_UI.readyMs));
-    expect(screen.getByTestId('fake-stage-id')).toHaveTextContent('L007');
+    expect(screen.getByTestId('fake-stage-id')).toHaveTextContent(FIND.id);
   });
 
   it('LEVEL_UI.quickEntry off: "לשלב הבא" goes back to the map with the next stage chosen', async () => {
     jest.replaceProperty(LEVEL_UI, 'quickEntry', false);
-    const { app } = await playL007();
+    const { app } = await playFind();
     await fireEvent.press(screen.getByTestId('level-result-next'));
     expect(app.getPathname()).toBe('/levels');
-    expect(app.getSearchParams()).toMatchObject({ select: 'L008' });
+    expect(app.getSearchParams()).toMatchObject({ select: NEXT });
   });
 
   it('a stage that does not exist: the fallback, never an empty screen', async () => {

@@ -1,11 +1,12 @@
-import type { GameView, HostUpdate, LevelEvent } from '@sudoku-fight/engine';
+import type { GameView, HostUpdate, LevelEvent, PuzzleEvent } from '@sudoku-fight/engine';
 
 import { levelEffectsOf } from '../levelEffects';
 
 /**
  * What a tap stage's screen plays (dev-plan §2ח): read off the tap engine's events alone. A right tap is found,
  * a race's spot is won (by whom), a wrong tap carries its "‎+5 ש׳" or its 3 s freeze, the bot's 😂 is a
- * reaction, the end carries how it ended; a refused tap says why; nothing else is played.
+ * reaction, the end carries how it ended; a refused tap says why; nothing else is played. The puzzle (1.0.3):
+ * a swap with or without its penalty, a box locked home, the freeze, the end, and a refused swap ('boxFixed').
  */
 
 const view = {} as GameView;
@@ -99,5 +100,43 @@ describe('levelEffectsOf', () => {
         'me',
       ),
     ).toEqual([]);
+  });
+
+  it('a puzzle: two boxes swapped, with a wrong swap’s penalty or without; the freeze and the end', () => {
+    const over = {
+      reason: 'targetReached',
+      elapsedMs: 21000,
+      penaltyMs: 5000,
+      swaps: 3,
+      mistakes: 1,
+      stars: 3,
+    } as const;
+    const events: PuzzleEvent[] = [
+      { type: 'levelStarted', seq: 2, ...at },
+      { type: 'boxesSwapped', from: 0, to: 5, penaltyMs: 0, seq: 3, ...at },
+      { type: 'boxesSwapped', from: 8, to: 5, penaltyMs: 5000, seq: 4, ...at },
+      { type: 'boxPlaced', place: 5, seq: 5, ...at },
+      { type: 'levelPaused', seq: 6, ...at },
+      { type: 'levelResumed', pausedMs: 3000, seq: 7, ...at },
+      { type: 'levelOver', ...over, seq: 8, ...at },
+    ];
+    expect(levelEffectsOf({ kind: 'events', events: [], view, puzzleEvents: events }, 'me')).toEqual([
+      { kind: 'swapped', seq: 3, from: 0, to: 5, penaltyMs: 0 },
+      { kind: 'swapped', seq: 4, from: 8, to: 5, penaltyMs: 5000 },
+      { kind: 'boxPlaced', seq: 5, place: 5 },
+      { kind: 'paused', seq: 6 },
+      { kind: 'resumed', seq: 7, pausedMs: 3000 },
+      { kind: 'puzzleEnded', seq: 8, over },
+    ]);
+  });
+
+  it('a refused swap says why (boxFixed, a bad place, paused, over): its two places', () => {
+    for (const reason of ['boxFixed', 'badCell', 'paused', 'gameOver'] as const)
+      expect(
+        levelEffectsOf(
+          { kind: 'rejected', action: { type: 'swapBoxes', from: 3, to: 1 }, reason, view },
+          'me',
+        ),
+      ).toEqual([{ kind: 'swapRefused', reason, from: 3, to: 1 }]);
   });
 });

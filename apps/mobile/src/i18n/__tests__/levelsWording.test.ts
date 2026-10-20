@@ -48,9 +48,9 @@ describe('English says "Stage", not "Level", for a stage', () => {
     }
   });
 
-  it('the row’s English: "Staged practice", "30-second stages · up to 3 stars"', () => {
+  it('the row’s English: "Staged practice", "Short stages · up to 3 stars"', () => {
     expect(enHome.modes.levels.title).toBe('Staged practice');
-    expect(enHome.modes.levels.tagline).toBe('30-second stages · up to 3 stars');
+    expect(enHome.modes.levels.tagline).toBe('Short stages · up to 3 stars');
     expect(enLevels.stage).toBe('Stage {{n}}');
   });
 

@@ -28,10 +28,11 @@ import type { NodeInfo } from './mapModel';
  * of 11 under it. Played: the stars it got in gold. Current: the gold ring, pulsing (`level.node.current`: the
  * map's only loop, still under Reduced Motion), and my P1 pin. Locked: dark, a lock badge, no stars; a tap shakes
  * it once (`level.node.locked`; Reduced Motion: the lock badge's border lights up instead) and the map says why.
- * A boss is 68 with a crown, and from chapter 2 its bot's avatar. No kind icon (D60), unless
- * LEVEL_UI.nodeKindIcon is turned on.
+ * A boss is 68 with a crown, the arena's gold corners (LevelTile; never the current node's ring) and its bot's
+ * avatar, from chapter 1 (every boss is a bot fight since 1.0.3, D72; a boss with no bot, only under D72 ב, has
+ * none). No kind icon (D60), unless LEVEL_UI.nodeKindIcon is turned on.
  *
- * Its label says it all: "שלב 7, איפה ה־7, שני כוכבים מתוך שלושה", "שלב 12, נעול".
+ * Its label says it all: "שלב 5, מיקום מדויק, שני כוכבים מתוך שלושה", "שלב 12, נעול".
  */
 
 export interface LevelNodeProps {
@@ -53,6 +54,10 @@ export const KIND_ICON: Record<AppLevel['kind'], IconName> = {
   spotError: 'search',
   pointHunter: 'leaderboard',
   chain: 'links',
+  // 1.0.3 (levels-ui.md §5): the row and the column lit in a 3 × 3 grid, and the puzzle's swapped boxes (Icon.tsx).
+  fillRow: 'gridRow',
+  fillCol: 'gridCol',
+  puzzle: 'puzzle',
 };
 
 /** The label of a node (pure; the map's tests read it). */
@@ -94,7 +99,7 @@ function LevelNodeBase({ info, level, selected, shakeKey, onPress }: LevelNodePr
   }, [shakeKey, reduce, x]);
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: x.get() }] }));
 
-  const bot = boss && level?.bot && level.chapter > 1 ? botLevel(level.bot.level as BotLevelId) : null;
+  const bot = boss && level?.bot ? botLevel(level.bot.level as BotLevelId) : null;
   const kindIcon = LEVEL_UI.nodeKindIcon && level && !locked ? KIND_ICON[level.kind] : null;
 
   return (

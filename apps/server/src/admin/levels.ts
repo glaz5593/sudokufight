@@ -5,6 +5,7 @@ import {
   LEVEL_RULES,
   type LevelKind,
   levelIdOf,
+  levelRev,
   maxLevel,
 } from '@sudoku-fight/engine';
 import type {
@@ -35,6 +36,10 @@ import { boundsSql, numOrNull, type StatsWindow } from './sql';
  *   the window). quitRate: plays with reason 'quit', out of the plays.
  * - firstTryZeroRate: plays with attempt 1 and 0 stars, out of the plays with attempt 1.
  * - kind: the most frequent valid `kind` of the level's starts and plays.
+ * - Only the level's current rev [D73] (1.0.3 rebuilt every level, maybe as another kind: old and new plays
+ *   must not mix): level_start, level_end and level_quit whose `rev` is the engine's levelRev(id). An event
+ *   without a `rev` (a number) is an app's before 1.0.3, whose levels were all at LEGACY_LEVEL_REV (1).
+ *   `allRevs` counts every rev, as before 1.0.3. The gates are not per level, so no rev applies to them.
  *
  * Gates, over every chapter_gate event (all time: getting stuck builds up), per install and `chapter` (the
  * chapter behind the gate, 2 … chapterCount) with a boolean `open`:
@@ -46,6 +51,16 @@ import { boundsSql, numOrNull, type StatsWindow } from './sql';
  */
 
 const LEVEL_EVENTS: readonly TelemetryEventName[] = ['level_start', 'level_end', 'level_quit'];
+
+/** The rev of a level event that has none: an app before 1.0.3 sent none, and its levels were all at rev 1. */
+export const LEGACY_LEVEL_REV = 1;
+
+export interface LevelsQuery {
+  /** Every rev of each level, old and new mixed (default: the current rev only) [D73]. */
+  allRevs?: boolean;
+  /** The current rev of a level, by id: the engine's levelRev (tests may pin one). */
+  revOf?: (levelId: string) => number;
+}
 
 const list = (values: readonly string[]) =>
   sql.join(
@@ -81,8 +96,18 @@ interface GateRow extends Record<string, unknown> {
 
 const rate = (part: number, whole: number): number | null => (whole > 0 ? part / whole : null);
 
-export async function getLevels(db: Db, window: StatsWindow): Promise<AdminLevels> {
+export async function getLevels(
+  db: Db,
+  window: StatsWindow,
+  { allRevs = false, revOf = levelRev }: LevelsQuery = {},
+): Promise<AdminLevels> {
   const last = maxLevel(LEVEL_RULES);
+  // Each level's current rev, level n at position n (whole numbers, as parameters).
+  const revs = sql.join(
+    Array.from({ length: last }, (_, k) => sql`${revOf(levelIdOf(k + 1))}::int`),
+    sql`, `,
+  );
+  const currentRevOnly = allRevs ? sql`` : sql`and coalesce(ev.rev, ${LEGACY_LEVEL_REV}::int) = cur.rev_now`;
   const [levelRows, gateRows] = await Promise.all([
     queryRows<LevelRow>(
       db,
@@ -91,6 +116,7 @@ export async function getLevels(db: Db, window: StatsWindow): Promise<AdminLevel
         ev as (
           select install_id, name,
             case when jsonb_typeof(props->'level') = 'number' then (props->>'level')::numeric end as level,
+            case when jsonb_typeof(props->'rev') = 'number' then (props->>'rev')::numeric end as rev,
             case when jsonb_typeof(props->'kind') = 'string' then props->>'kind' end as kind,
             case when jsonb_typeof(props->'stars') = 'number' then (props->>'stars')::numeric end as stars,
             case when jsonb_typeof(props->'attempt') = 'number' then (props->>'attempt')::numeric end as attempt,
@@ -102,14 +128,18 @@ export async function getLevels(db: Db, window: StatsWindow): Promise<AdminLevel
             and t_server >= (select start from bounds)
             and least(t_client, t_server) >= (select start from bounds)
         ),
+        cur as (
+          select n, rev_now from unnest(array[${revs}]::int[]) with ordinality as u(rev_now, n)
+        ),
         valid as (
           select install_id, name, level::int as level, reason,
             case when kind in (${list(LEVEL_KINDS)}) then kind end as kind,
             case when stars in (0, 1, 2, 3) then stars::int end as stars,
             case when attempt >= 1 and attempt = trunc(attempt) then attempt end as attempt,
             case when duration >= 0 then duration::float8 end as duration
-          from ev
+          from ev left join cur on cur.n = ev.level
           where level between 1 and ${last}::int and level = trunc(level)
+            ${currentRevOnly}
         ),
         marked as (select *, (name = 'level_end' and stars is not null) as is_play from valid)
         select level,

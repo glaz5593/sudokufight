@@ -3,6 +3,7 @@ import { attachBot } from '../../bot/runner';
 import { LocalGameHost } from '../../game/host';
 import type { PlayerInfo } from '../../game/types';
 import { boxOf, CELL_COUNT, type CellIndex, colOf, type Digit, type Grid, rowOf } from '../../sudoku/board';
+import { TECHNIQUES } from '../../sudoku/logic';
 import { knowablePlacements } from '../../sudoku/reading';
 import { missedPoints, moveScore } from '../../sudoku/scoring';
 import { ManualClock } from '../../util/clock';
@@ -10,8 +11,11 @@ import { createRng, pick, type Rng, seedFromString, shuffled } from '../../util/
 import { ManualScheduler } from '../../util/scheduler';
 import { applyFind, createFind, type FindState, nextFindDeadline, tickFind } from '../find';
 import { actOf } from '../levels.config';
-import { LEVEL_RULES, levelOutcome, levelStars } from '../progress';
+import { LEVEL_RULES, levelOutcome, levelStars, maxMsOf } from '../progress';
+import { PUZZLE_PLACES } from '../puzzle';
 import {
+  type FillLevelKind,
+  fillRegionOf,
   type FindTarget,
   LEVEL_PENALTY_MS,
   levelGameConfig,
@@ -21,17 +25,23 @@ import {
 } from '../spec';
 import { starsFor } from '../stars';
 import { boxEmpties, withoutNeeded } from './common';
+import { type FillRegionSolve, fillRegionSolve } from './fillRegion';
 import {
+  FILL_MODEL,
+  MODEL_SPREAD,
   type PlayerProfile,
   PROFILE_IDS,
   type ProfileId,
   PROFILES,
+  PUZZLE_MODEL,
+  puzzleBoxMs,
   SEARCH_FACTORS,
   TARGET_STARS,
   TARGET_TOLERANCE,
   type ModelNumber,
   modelNumbers,
 } from './profiles';
+import { BLIND_SWAPPER, blindSwapperRuns } from './puzzle';
 
 /**
  * The profile simulation (plan §4.4; dev-plan §2ד): how many stars a casual, a good and an excellent player
@@ -39,10 +49,15 @@ import {
  *
  * - The tap kinds (find, the race, spot the error) play the tap engine itself (levels/find.ts) with the
  *   level's bot, the player's taps drawn from the profile.
- * - fillBox and the duel play LocalGameHost, the player's seat played by a bot whose level row is the
- *   profile (its think time and mistakes; the bot's own difficulty model stretches hard cells), the duel's
- *   bot by levelBotConfig of the level's pace, as on the phone.
+ * - The duel plays LocalGameHost, the player's seat played by a bot whose level row is the profile (its think
+ *   time and mistakes; the bot's own difficulty model stretches hard cells), the duel's bot by levelBotConfig
+ *   of the level's pace, as on the phone.
  * - The point hunter and the chain are a Monte Carlo of the profile's move or step times and mistakes.
+ * - 1.0.3 (levels-content.md §4.4, §5.3, §7): the fill kinds (fillBox, fillRow, fillCol) and the puzzle are a
+ *   Monte Carlo of the same time model the thresholds come from (profiles.ts: FILL_MODEL per cell by what the
+ *   built region's cells need, PUZZLE_MODEL per moving box and swap), at the profile's modelPace, each part
+ *   spread by MODEL_SPREAD; a wrong digit or swap costs its 5 s. Each level runs to its own limit (maxMsOf).
+ *   The puzzle also gets the blind swapper (builder/puzzle.ts): its ★★★ share is reported per puzzle.
  * Deterministic per seed: each level and profile draws from its own seed.
  */
 
@@ -203,14 +218,14 @@ function profileBot(think: MsRange, mistakeRate: number): Partial<BotConfig> {
   };
 }
 
-function playGame(spec: LevelSpecOf<'fillBox' | 'duel'>, me: Partial<BotConfig>, rng: Rng): Stars {
+function playGame(spec: LevelSpecOf<'duel'>, me: Partial<BotConfig>, rng: Rng): Stars {
   const config = levelGameConfig(spec, { id: `sim-${spec.id}`, player: ME, attempt: 1 });
   const clock = new ManualClock(0);
   const scheduler = new ManualScheduler(clock);
   const host = new LocalGameHost({ config, playerId: ME.id, clock, scheduler });
   const seed = rng.next() * 2 ** 32;
   attachBot(host, { botId: ME.id, level: 1, clock, scheduler, rng: createRng(seed), config: me });
-  if (spec.kind === 'duel' && spec.bot) {
+  if (spec.bot) {
     const bot = botPlayer(spec.bot.level);
     attachBot(host, {
       botId: bot.id,
@@ -221,7 +236,7 @@ function playGame(spec: LevelSpecOf<'fillBox' | 'duel'>, me: Partial<BotConfig>,
       config: levelBotConfig(spec.bot.pace),
     });
   }
-  for (let t = 0; t < LEVEL_RULES.levelMaxMs + 5000 && host.state.status !== 'over'; t += 500)
+  for (let t = 0; t < maxMsOf(spec.kind) + 5000 && host.state.status !== 'over'; t += 500)
     scheduler.advance(500);
   const result = host.state.result;
   host.close();
@@ -275,6 +290,87 @@ function simChain(spec: LevelSpecOf<'chain'>, p: PlayerProfile, rng: Rng): Stars
 }
 
 // ---------------------------------------------------------------------------------------------------------
+// The fill kinds and the puzzle: Monte Carlo of the time model (levels-content.md §4.4, §5.3)
+
+/** One part's factor: ×(1 ± MODEL_SPREAD), uniformly. */
+const spread = (rng: Rng): number => 1 - MODEL_SPREAD + 2 * MODEL_SPREAD * rng.next();
+
+const fillSolves = new WeakMap<LevelSpec, FillRegionSolve | null>();
+
+/** How a player fills the level's region, cell by cell, and what each cell needs (once per level). */
+function fillSolveOf(spec: LevelSpecOf<FillLevelKind>): FillRegionSolve | null {
+  let solve = fillSolves.get(spec);
+  if (solve === undefined) {
+    const region = fillRegionOf(spec)!;
+    solve = fillRegionSolve(parse(spec.board.grid), region.cells, spec.check?.techniques ?? TECHNIQUES);
+    fillSolves.set(spec, solve);
+  }
+  return solve;
+}
+
+/**
+ * A fill level (§4.4): orientation, then for every cell in the order a player fills it, choosing and typing it
+ * and thinking by what it needs (the full board's quicker single in chapters 1–2), all at the profile's pace;
+ * a wrong digit (the profile's share a cell) costs 5 s and another try.
+ */
+function simFill(spec: LevelSpecOf<FillLevelKind>, p: PlayerProfile, rng: Rng): Stars {
+  const solve = fillSolveOf(spec);
+  if (!solve) return 0;
+  const m = FILL_MODEL;
+  let t = m.orientMs * p.modelPace * spread(rng);
+  for (const step of solve.steps) {
+    const think = m.thinkMs[step.need === 'single' && solve.fullBoard ? 'fullBoard' : step.need];
+    t += (m.typeMs + think) * p.modelPace * spread(rng);
+    if (rng.next() < p.mistakeShare) t += LEVEL_PENALTY_MS + m.typeMs * p.modelPace;
+    if (t > spec.timeLimitMs) return 0;
+  }
+  return starsFor(spec.stars, t);
+}
+
+/**
+ * A puzzle (§5.3), a player who thinks: orientation, thinking for each moving box, then the fewest swaps; a
+ * wrong swap (the profile's share a swap) costs its 5 s and one swap more.
+ */
+function simPuzzle(spec: LevelSpecOf<'puzzle'>, p: PlayerProfile, rng: Rng): Stars {
+  const moving = PUZZLE_PLACES.length - spec.targets.fixed.length;
+  const m = PUZZLE_MODEL;
+  let t = m.orientMs * p.modelPace * spread(rng);
+  for (let k = 0; k < moving; k++) t += puzzleBoxMs(moving, m) * p.modelPace * spread(rng);
+  for (let k = 0; k < moving - 1; k++) {
+    t += m.swapMs * p.modelPace * spread(rng);
+    if (rng.next() < p.mistakeShare) t += LEVEL_RULES.puzzleSwapPenaltyMs + m.swapMs * p.modelPace;
+  }
+  return t > spec.timeLimitMs ? 0 : starsFor(spec.stars, t);
+}
+
+/** The blind swapper on one puzzle (§5.3): how often it gets ★★★, and its median time. */
+export interface BlindSwapperRow {
+  id: string;
+  chapter: number;
+  moving: number;
+  /** Its share of ★★★ over BLIND_SWAPPER.runs runs. */
+  threeShare: number;
+  /** Its median level clock at the end (the limit when the time ran out). */
+  medianMs: number;
+  /** Whether levels:validate holds it to ★★★ in under BLIND_SWAPPER.maxThreeShare (from BLIND_SWAPPER.fromMoving). */
+  checked: boolean;
+}
+
+export function blindSwapperRow(spec: LevelSpecOf<'puzzle'>): BlindSwapperRow {
+  const runs = blindSwapperRuns(spec);
+  const times = runs.map((r) => r.elapsedMs).sort((a, b) => a - b);
+  const moving = PUZZLE_PLACES.length - spec.targets.fixed.length;
+  return {
+    id: spec.id,
+    chapter: spec.chapter,
+    moving,
+    threeShare: runs.filter((r) => r.stars === 3).length / runs.length,
+    medianMs: times[Math.floor(times.length / 2)] ?? 0,
+    checked: moving >= BLIND_SWAPPER.fromMoving,
+  };
+}
+
+// ---------------------------------------------------------------------------------------------------------
 // Levels and chapters
 
 /** One first attempt of a profile at a level. */
@@ -287,7 +383,11 @@ export function simulateOnce(spec: LevelSpec, p: PlayerProfile, rng: Rng): Stars
     case 'spotError':
       return simSpotError(spec, p, rng);
     case 'fillBox':
-      return playGame(spec, profileBot(p.fillBoxCellMs, p.mistakeShare), rng);
+    case 'fillRow':
+    case 'fillCol':
+      return simFill(spec, p, rng);
+    case 'puzzle':
+      return simPuzzle(spec, p, rng);
     case 'duel':
       return playGame(spec, profileBot(p.duelMoveMs, p.mistakeShare), rng);
     case 'pointHunter':
@@ -325,14 +425,17 @@ export interface ChapterRow {
 export type SimWarning =
   | { type: 'offTarget'; chapter: number; profile: ProfileId; stars: number; target: number; text: string }
   | { type: 'order'; chapter: number; text: string }
-  | { type: 'tooHard'; id: string; kind: LevelSpec['kind']; zeroShare: number; text: string };
+  | { type: 'tooHard'; id: string; kind: LevelSpec['kind']; zeroShare: number; text: string }
+  | { type: 'blindSwapper'; id: string; threeShare: number; text: string };
 
 export interface ChapterReport {
   runs: number;
   chapters: ChapterRow[];
   /** Per level and profile, in the order of the levels. */
   levels: { id: string; kind: LevelSpec['kind']; byProfile: Record<ProfileId, LevelSimulation> }[];
-  /** Chapters off their target, profiles out of order, levels too hard. */
+  /** The blind swapper on every puzzle (§5.3), in the order of the levels. */
+  blind: BlindSwapperRow[];
+  /** Chapters off their target, profiles out of order, levels too hard, a puzzle a blind swapper wins. */
   warnings: SimWarning[];
   /** Every number of the model, and whether real play set it (none yet). */
   assumptions: ModelNumber[];
@@ -407,5 +510,14 @@ export function chapterReport(levels: readonly LevelSpec[], o: ReportOptions = {
         text: `${row.id} (${row.kind}): good gets 0 stars in ${Math.round(100 * zeroShare)}%`,
       });
   }
-  return { runs, chapters, levels: rows, warnings, assumptions: modelNumbers(profiles) };
+  const blind = levels.flatMap((spec) => (spec.kind === 'puzzle' ? [blindSwapperRow(spec)] : []));
+  for (const b of blind)
+    if (b.checked && b.threeShare >= BLIND_SWAPPER.maxThreeShare)
+      warnings.push({
+        type: 'blindSwapper',
+        id: b.id,
+        threeShare: b.threeShare,
+        text: `${b.id} (puzzle, ${b.moving} moving): a blind swapper gets ★★★ in ${Math.round(100 * b.threeShare)}%`,
+      });
+  return { runs, chapters, levels: rows, blind, warnings, assumptions: modelNumbers(profiles) };
 }

@@ -409,7 +409,12 @@ const he = {
   'levels.more': 'ועוד {count}',
   'levels.byLevel': 'לפי שלב',
   'levels.byLevelHint':
-    'זמן חציוני: בלי יציאות ב־X. משחק חוזר: ניסיון שני ואילך. יציאה באמצע: התחלה בלי סוף, כי האפליקציה נסגרה.',
+    'רק משחקים בגרסה הנוכחית של כל שלב. זמן חציוני: בלי יציאות ב־X. משחק חוזר: ניסיון שני ואילך. יציאה באמצע: התחלה בלי סוף, כי האפליקציה נסגרה.',
+  'levels.byLevelHintAll':
+    'כל הגרסאות של כל שלב יחד, גם משחקים מלפני שנבנה מחדש (למשל מגרסה 1.0.2), כשייתכן שהשלב היה אז מסוג אחר. זמן חציוני: בלי יציאות ב־X. משחק חוזר: ניסיון שני ואילך. יציאה באמצע: התחלה בלי סוף, כי האפליקציה נסגרה.',
+  'levels.revs': 'גרסת השלבים',
+  'levels.revsNow': 'רק הגרסה הנוכחית',
+  'levels.revsAll': 'כל הגרסאות',
   'levels.chapter': 'פרק',
   'levels.allChapters': 'כל הפרקים',
   'levels.chapterOption': 'פרק {chapter}',
@@ -427,13 +432,17 @@ const he = {
   'levels.gatesEmpty': 'אף שחקן עוד לא הגיע לשער.',
   'levels.gateName': 'מפרק {from} לפרק {to}',
   'levels.softenBadge': 'לרכך',
-  'levelKind.find': 'מציאת מקום',
+  // [D79] find is "מיקום מדויק" everywhere, as in the app (1.0.3).
+  'levelKind.find': 'מיקום מדויק',
   'levelKind.findDuel': 'מרוץ מול הבוט',
   'levelKind.fillBox': 'מלא את הריבוע',
   'levelKind.duel': 'דו־קרב ל־30',
   'levelKind.spotError': 'מצא את הטעות',
   'levelKind.pointHunter': 'צייד הנקודות',
   'levelKind.chain': 'שרשרת',
+  'levelKind.fillRow': 'מלא את השורה',
+  'levelKind.fillCol': 'מלא את העמודה',
+  'levelKind.puzzle': 'פאזל',
   'table.sortBy': 'מיון לפי {column}',
 } satisfies Record<string, string>;
 
@@ -843,7 +852,12 @@ const en: Record<StringKey, string> = {
   'levels.more': 'and {count} more',
   'levels.byLevel': 'By stage',
   'levels.byLevelHint':
-    'Median time: without quits with the X. Replays: second tries and later. Left midway: a start without an end, because the app closed.',
+    'Only plays of each stage’s current version. Median time: without quits with the X. Replays: second tries and later. Left midway: a start without an end, because the app closed.',
+  'levels.byLevelHintAll':
+    'Every version of each stage together, plays from before it was rebuilt too (from version 1.0.2, say), when the stage may have been another kind. Median time: without quits with the X. Replays: second tries and later. Left midway: a start without an end, because the app closed.',
+  'levels.revs': 'Stage versions',
+  'levels.revsNow': 'Current version only',
+  'levels.revsAll': 'All versions',
   'levels.chapter': 'Chapter',
   'levels.allChapters': 'All chapters',
   'levels.chapterOption': 'Chapter {chapter}',
@@ -861,13 +875,16 @@ const en: Record<StringKey, string> = {
   'levels.gatesEmpty': 'No player has reached a gate yet.',
   'levels.gateName': 'Chapter {from} to {to}',
   'levels.softenBadge': 'Soften',
-  'levelKind.find': 'Find the cell',
+  'levelKind.find': 'Pinpoint',
   'levelKind.findDuel': 'Race the bot',
   'levelKind.fillBox': 'Fill the box',
   'levelKind.duel': 'Duel to 30',
   'levelKind.spotError': 'Spot the error',
   'levelKind.pointHunter': 'Point hunter',
   'levelKind.chain': 'Chain',
+  'levelKind.fillRow': 'Fill the row',
+  'levelKind.fillCol': 'Fill the column',
+  'levelKind.puzzle': 'Puzzle',
   'table.sortBy': 'Sort by {column}',
 };
 

@@ -811,18 +811,23 @@ Render each of these in Hebrew and in English. The board and keypad must look id
 - **Keypad:** armed, idle, pressed, complete digit, tried-wrong digit · cancel selection (enabled and disabled).
 - **Overlays:** the interference picker (§13: 2P target line and 3–4P route, price row, the 3 × 2 grid with a locked and a blocked kind, no scroll at 360 × 640) · in-game confirm modal (surrender and practice) · centred dialog · toasts (all 5) · interference banner (and the generic one for an unknown kind) · the board dim (§15.3) · scramble, ink and the keypad shuffle (§15.4).
 - **Navigation:** bottom nav with each tab active.
-- **Staged practice (§19, version 1.0.2):** the new-game row "אימון בשלבים" (new player and returning) · map nodes × {played 0–3 stars, current, locked, boss with crown and bot} · chapter header · gate plate × {locked 17/20, enough stars but the boss unplayed 22/20, open} · the docked bottom panel · star row (12 / 14 / 16 / 44) · star meter × {time, count, gap} · the "+5 ש׳" chip · region frame and dimmed cells · tap target, red X, correction, "mine" digit with ● · race freeze layer · RaceTo30 bars and the gap meter · chain links · point chips and "שווה 6" · ready view · resume countdown over the covered board (D65) · result × {0, 1, 3 stars, vs bot} · gate sheet · chapter unlocked · how-to-play frame · the exit dialog · the player-card line. In Hebrew and English: English says "Stage", never "Level", for a stage.
+- **Staged practice (§19, version 1.0.2):** the new-game row "אימון בשלבים" (new player and returning) · map nodes × {played 0–3 stars, current, locked, boss with crown and bot} · chapter header · gate plate × {locked 17/20, enough stars but the boss unplayed 22/20, open} · the docked bottom panel · star row (12 / 14 / 16 / 44) · star meter × {time, count, gap} · the "+5 ש׳" chip · region frame and dimmed cells · tap target, red X, correction, "mine" digit with ● · race freeze layer · RaceTo30 bars and the gap meter · chain links · point chips and "שווה 6" · ready view · resume countdown over the covered board (D65) · result × {0, 1, 3 stars, vs bot} · gate sheet · chapter unlocked · how-to-play frame · the exit dialog · the player-card line · **1.0.3:** the region look (in, out, the frame with its keylines, the spotlight) on a box, a row and a column · the answer ring · `MiniRegion` (27 and 72) · the ready view per kind · the fill row and fill column HUD · the boss intro, band, arena corners and crowned bot avatar · the boss result × {won, lost} · the boss node with arena corners beside a current node · the puzzle × {rest, held, target, over a fixed box, tap-selected, solved}. In Hebrew and English: English says "Stage", never "Level", for a stage.
 - **Reduced motion:** toggle it and check every row above again.
 
 ---
 
-## 19. Staged practice components [new] (version 1.0.2)
+## 19. Staged practice components [new] (versions 1.0.2 and 1.0.3)
 The level map, a stage and its result (`docs/01-SPEC.md` §5.3, D48–D65). **Provenance:** where a row names a board
 (`Levels-Map`, `Levels-Gate`, `Level-Result`, `Lv-*`, `Modes-Levels`; copied from the staged-practice canvas, see
 `docs/03-DESIGN.md`), that board decides the look, in C. A row marked **no board** has no drawing: Moshe decided
 (2026-10-18) to build it from C's tokens and the brief (`docs/handoff/2026-10-15/staged-practice/brief.md`) and to
 check it on the device. Values come from `tokens.json`; the star colours, node sizes and the cell dim are added there
 by the screen stages (2ז, 2ח). Motion and its Reduced Motion forms: `motion.md` §4.11.
+
+**1.0.3 (D66–D79; `docs/handoff/2026-10-19/levels-ui.md`): no new board was drawn.** The plan proposed three (Lv-Focus, Lv-Puzzle and
+Lv-Boss), but Moshe asked to build the numbered items of his feedback without asking (2026-10-20). So every 1.0.3 row below is
+**no board**: built from the written plan and C's tokens, and judged by Moshe on the device (`docs/LEVELS-DEVICE-CHECKS.md`, checks
+12–19). Where a 1.0.2 board still draws the old dim (Lv-Find, Lv-Race, Lv-Box), the region look of §19.7 wins.
 
 Rules that hold for every row: me = P1 with ●, the bot = P2 with ▲ (ownership never by colour alone) · the board, the
 keypad, cell names (D5), times ("7.6 ש׳"), scores and "14/20" are LTR (`ltr()`) · signed numbers ("‎+5 ש׳", "‎−6",
@@ -835,25 +840,29 @@ stage (D49) · no reactions button for me (D62; `LEVEL_UI.reactions` brings it b
 - The sixth row of the Modes screen (D48), after "אימון לבד · לוח מלא" (only the solo row's title changes). Same row as the
   others (§1.2 row: 64 min height, radius 14, `color.surface`, 1 dp `color.border`).
 - **Leading 44:** a mini level node (a 3 × 3 tile, lines at 14 / 29, the current stage number in Teko 24).
-- **Text:** title "אימון בשלבים"; subtitle "שלבים של חצי דקה · עד 3 כוכבים" (English "30-second stages · up to 3 stars");
+- **Text:** title "אימון בשלבים"; subtitle "שלבים קצרים · עד 3 כוכבים" (English "Short stages · up to 3 stars");
   chips "שלב 14 · ★ 29" and "עובד גם בלי אינטרנט". A new player: "300 שלבים קצרים · 0–3 כוכבים". No "דורש חיבור" tag.
-- **A11y:** one button, label "אימון בשלבים · שלבים של חצי דקה · עד 3 כוכבים · שלב 14 · 29 כוכבים · עובד גם בלי אינטרנט".
+- **A11y:** one button, label "אימון בשלבים · שלבים קצרים · עד 3 כוכבים · שלב 14 · 29 כוכבים · עובד גם בלי אינטרנט".
 - Six rows and the bottom line fit at 360 × 780 with navigation buttons, in Hebrew and English, without scrolling. Fallback: drop
   the bottom line (DECISIONS-PENDING 3.23, option ד).
 
 ### 19.2 Map node (`LevelNode`) [Levels-Map]
 - **One button, 56 × 72:** a tile 56 × 56 (radius 10) drawn as a mini 3 × 3 sudoku box (1 dp lines at 18 / 37), the stage
-  number in Teko 600 30 (LTR, three digits fit), and 3 stars of 12 (gap 2) 4 below. Boss: tile **68** with a crown, and from
-  chapter 2 the bot's avatar (D60, `size.levelNode`). **No kind icon** on a node (`LEVEL_UI.nodeKindIcon = false`).
+  number in Teko 600 30 (LTR, three digits fit), and 3 stars of 12 (gap 2) 4 below. Boss: tile **68** with a crown (34 × 24 since
+  1.0.3, was 28 × 20), and the bot's avatar (from chapter 1 since 1.0.3; D60, D77, `size.levelNode`). **No kind icon** on a node
+  (`LEVEL_UI.nodeKindIcon = false`).
 
 | State | Tile / lines / number | Extras | A11y label |
 |---|---|---|---|
-| played | `color.board.cell` / `color.board.grid` / `color.board.given` | 0–3 stars filled gold, the rest outlined `color.iconFaint` | "שלב 7, איפה ה־7, שני כוכבים מתוך שלושה" |
+| played | `color.board.cell` / `color.board.grid` / `color.board.given` | 0–3 stars filled gold, the rest outlined `color.iconFaint` | "שלב 5, מיקום מדויק, שני כוכבים מתוך שלושה" |
 | current | as played | gold ring `0 0 0 2px bg, 0 0 0 4px accent`, pulsing (`level.node.current`; static under reduced motion); 3 empty stars; **my pin** at the top-start corner (22, radius 7, `color.surface2`, 2 dp P1, ● in P1) | "שלב 37, השלב הבא" |
 | locked | `color.surface2` / `color.border` / `color.textFaint` | no stars (the row keeps its height); a lock badge at the top-end corner (20 circle, `color.bg`, 1 dp `color.border`, lock 12 `color.textMuted`) | "שלב 12, נעול" |
 
 - **No opacity on a locked number** (contrast ≥ 4.5:1). Pressed: tile scale .96. **Tap on a locked node:** `level.node.locked`
   (one shake) and the toast "קודם משחקים את שלב 37".
+- **Boss node (1.0.3, D77):** short gold **arena corners** (`color.accent`, as around the boss's board in §19.6) at the tile's four
+  corners, in every state but locked. **Not the gold ring:** the ring means "current" (and pulses; under reduced motion it is
+  still), so a boss that is not the current node never gets it.
 
 ### 19.3 Path, chapter header and gate plate (`LevelPath`, `GateNode`) [Levels-Map, Levels-Gate]
 - **Path:** a zigzag **top to bottom** (`LEVEL_UI.mapDirection = 'down'`; `'up'` reverses it), stage 1 first. Centres from the start
@@ -875,13 +884,16 @@ stage (D49) · no reactions button for me (D62; `LEVEL_UI.reactions` brings it b
   the star scale ("★★★ עד 5 ש׳ · ★★ עד 10 · ★ עד 20"), the bot (avatar with ▲, name and level) when the kind has one, my best
   ("★★ · 7.6 ש׳"), and the primary md button "המשך · שלב 37" (or "שחק" for a replay).
 - This is the stage's opening: there is no separate opening sheet.
+- **1.0.3 (D76, D79):** the kind's name is fixed ("מיקום מדויק", never "איפה ה־7?"), and the goal names no box, row or column
+  ("מלא את 4 המשבצות החסרות בריבוע אחד, עד 20 ש׳"): "שוב" plays an equivalent board where the region moves. The fill kinds and the
+  puzzle show their own end of the stage (up to 60 s, D68).
 
 ### 19.5 Stars (`StarRow`) and the star meter (`StarsBar`) [Lv-*, Level-Result]
 - **Star:** the 24 viewBox star of the brief; filled `color.accent`, empty outlined `color.iconFaint` (decorative). Sizes 12 node ·
   14 counter · 16 sheet and panel · 44 result. A row carries one label (`role="img"` "2 כוכבים מתוך 3"); stars count from the
   **start** side (right in Hebrew).
 - **Star meter**, the "scale" of a stage, by kind:
-  - **Time** (kind 1, box, spot the mistake, chain): a 6 dp bar (radius 3, track `color.surface2`), filling **left to right in both
+  - **Time** (kind 1, box, row, column, puzzle, spot the mistake, chain; up to 60 s for the fill kinds and the puzzle): a 6 dp bar (radius 3, track `color.surface2`), filling **left to right in both
     languages** (`level.timeBar`), ticks at the thresholds (2 dp `color.bg` cuts), the stars of each band above it (gold while
     reachable, `color.iconFaint` once lost), the seconds under the ticks (Teko 15, muted). `role="progressbar"`, "זמן: 7 שניות,
     עכשיו 2 כוכבים".
@@ -892,9 +904,9 @@ stage (D49) · no reactions button for me (D62; `LEVEL_UI.reactions` brings it b
 - **Penalty chip** "‎+5 ש׳" beside the clock (chip 22, `color.surface2`, text `color.danger`, `signedText`): `level.miss.flash`.
 
 ### 19.6 Stage chrome and HUD [Lv-*]
-- **Header** (top 48, h 56): "שלב 37" (h1) over the kind ("איפה ה־5?", caption muted); the chapter chip "פרק 4"; at the end an icon
-  button **X** "יציאה מהשלב" (no surrender button; spec §6.6). A boss adds the bot's avatar with a small crown and a "בוס" chip
-  (**no board** for a boss inside a stage).
+- **Header** (top 48, h 56): "שלב 37" (h1) over the kind's name (caption muted; "מיקום מדויק" for Pinpoint since 1.0.3, D79); the
+  chapter chip "פרק 4"; at the end an icon button **X** "יציאה מהשלב" (no surrender button; spec §6.6). Pinpoint's digit ("איפה
+  ה־5? · פרק 4", `hud.subFind`) comes only from the attempt's board, never from the stored stage. A boss: the boss band (below).
 - **Goal line** (status 15), the digit as a dark chip (24 × 24, radius 6, Teko 20), and the star meter (§19.5).
 - **Kind 1:** the target chip (a big digit and "6 · ריבוע 5") with a 20 s ring; under the board, in place of the keypad, the digit
   big and "הקש איפה ה־6 חייב להיות".
@@ -908,12 +920,31 @@ stage (D49) · no reactions button for me (D62; `LEVEL_UI.reactions` brings it b
   step.
 - **Duel (kind 4):** the Game-Bot screen without the interference button, plus RaceTo30 (§19.9).
 - **Exit:** X, or Android "חזרה", opens the in-game confirm (§14.1) "לצאת מהשלב? תקבל 0 כוכבים, והשלב הבא ייפתח." (**no board**).
+- **Fill row and fill column (1.0.3, D69):** as the box: clock, time bar, "1/4 משבצות", mistakes, the keypad. The task line "מלא
+  את שורה D" / "מלא את עמודה 5" with a 27 dp `MiniRegion` (the box's HUD map grows from 20 to 27 too). The letter or number comes from
+  the played board (`fillRegionOf` on the attempt). Board label: "הלוח · ממלאים רק את 4 המשבצות החסרות בשורה D".
+- **Puzzle (1.0.3):** §19.13.
+- **Boss (1.0.3, D77; no board):** a boss band at the top, in place of the small chip (`accentSubtle` background, a 1 dp gold rule,
+  a crown and "בוס · פרק 3" in gold); gold **arena corners** around the board (3 dp thick, 20 long; deliberately not a full frame,
+  so it never reads as the region frame); and a 16 dp crown on the bot's avatar in the race and duel cards. All static.
 
 ### 19.7 Board additions [Lv-*]
 New states of §11.3, all from the engine's view (no game logic in the board):
-- **Region frame** (`RegionFrame`): the target area (box, row or column) in a 2 dp gold frame; "the whole board" has no frame.
-- **Dimmed cells:** cells outside the area (kind 1) or outside the box (kind 3) are dimmed (`board.cellDim` / `cellDimAlt`, and the
-  dim given colour), still readable; in kind 3 only the box's cells can be selected.
+- **Region frame** (`RegionFrame`; 1.0.3, D75): the target area (box, row or column) in a **3 dp gold frame between two 1 dp dark
+  keylines** (`board.given`), the same frame for every shape; "the whole board" has no frame. The keylines give it contrast against
+  both sides (gold alone on a light cell is about 1.3:1). The 1.0.2 frame in the text colour (1.07:1) is gone.
+- **In and out** (1.0.3, D75; replaces the 1.0.2 dim, `cellDim`): cells in the area get `board.focusCell` / `focusCellAlt` (warm
+  cream), cells outside `board.outCell` / `outCellAlt` (a much darker grey-blue) with their givens in `board.givenOut`, still
+  readable, because they are part of the logic. Pinpoint's target chips and solved cells (P1 or P2 tint) keep their look outside
+  too. In and out differ first in lightness (at least 1.6:1), so it holds in greyscale and with colour blindness. In a fill stage
+  only the region's empty cells can be selected.
+- **Spotlight** (`level.region.intro`, `LEVEL_UI.regionIntro`): when the board first shows, the frame lands and a gold band
+  (`board.regionBand`) flashes once, under a second, while the clock runs; a race flashes the band at each new spot. Reduced
+  motion: the frame is simply there.
+- **Answer** (a missed Pinpoint or race spot; 1.0.3): its own look, never the region's gold: a 3 dp dark ring (`board.given`) with a
+  1 dp white inner line, and the digit in a dark chip. In the `contrast` list (at least 3:1).
+- **Rails** (`LEVEL_UI.regionRails`, off by default, D75c): the board's A–I and 1–9 rails, with the region's letter or number in
+  gold. On, the board is about 20 dp smaller.
 - **Tap target** (tap kinds): every empty cell is a button; a filled cell does nothing (`LEVEL_RULES.tapOnFilled = 'ignore'`).
 - **Red X** on a wrong tap (2 dp, `color.danger`; reduced motion: a static frame), and the miss flash (`level.miss.flash`).
 - **A lock without a timer** (box, point hunter, chain): the ring stays, with no seconds pill and no draining bar.
@@ -930,8 +961,21 @@ New states of §11.3, all from the engine's view (no game logic in the board):
 ### 19.8 Ready, how to play, resume countdown [no board]
 - **"מוכן?"** (quick entry, D56): for 2 s (`LEVEL_UI.readyMs`), the kind, the goal and the star scale over the empty stage area,
   without the board (`level.ready`). Then the board appears and the clock starts.
+  - **Where to look (1.0.3, D76, `LEVEL_UI.readyRegion`):** Pinpoint: "איפה ה־6?" big, and in a region a 72 dp `MiniRegion` (9 × 9,
+    the region in gold, always LTR) with "בריבוע 5" / "בשורה D". The fill kinds: the map and "ריבוע 5" / "שורה D" / "עמודה 5". The
+    puzzle: "3 ריבועים זזים · 6 ריבועים קבועים", no map. **The race: no spot and no digit** ("5 מקומות, מרוץ מול Pip"), so there is
+    no head start on the bot. The other kinds as before. The digit and the region are the attempt's: `play.tsx` reads the attempt
+    before "מוכן?", and on a failure both "מוכן?" and the stage use attempt 1.
+- **Boss intro** (1.0.3, D77; `BossIntro`, in place of "מוכן?"): 3 s (`LEVEL_UI.bossReadyMs`). "שלב בוס!" big in gold; the bot's
+  avatar (96, P2 ring with ▲) under a 32 dp gold crown (a gold medallion with a crown only under D72 ב, a boss with no bot);
+  "שלב 10 · מרוץ מול הבוט" and "הבוס: Pip"; up to two "מה קשה יותר" chips, **only from the engine's `bossTraits(level)`**
+  (`firstBot` "הבוט הראשון: Pip", `faster` "Pip מהיר ב־10%" with the per cent through `ltr()`, `overlord` "Overlord"; never a
+  "hard board" chip); then the goal and the star scale. Motion: `level.boss.intro`.
 - **"איך משחקים"** (before a kind's first stage): a card of 3 panels drawn from the real board (`HowToPlayPanels`), with "הבנתי"
   (primary) and "דלג" (ghost). Once per kind. Each panel has an accessibility label.
+  - **1.0.3:** three panels for each new kind too (the row and the column each their own, saying "שורה" or "עמודה"; the puzzle:
+    the wrong order, a drag with the gold target, the solved board). Pinpoint's title is its name, with no digit. The first boss
+    (L010, also the first race) shows one card, the race's, with a fourth panel "זה גם שלב בוס" (`LEVEL_UI.mergeFirstBossTutorial`).
 - **Resume countdown** (D65): when the app is back in front mid-stage, the board is **covered** (a dark cover over the board slot,
   so the pause gives no free thinking time) and "3 · 2 · 1" counts down over it (`level.resume.countdown`; reduced motion: the
   number just changes); then the cover goes and the stage continues with the same time left. `LEVEL_UI.backgroundPause`,
@@ -953,12 +997,20 @@ New states of §11.3, all from the engine's view (no game logic in the board):
 - **"למה?":** a short explanation of the target from the engine's `explain()`, including the wrong tap, with cell names LTR.
 - **Buttons:** primary lg "לשלב הבא" (quick entry), secondary "שוב", ghost "למפה". 3 stars: one confetti burst (`level.confetti`).
 - **0 stars** (time up, a second wrong tap, a quit): the same layout with three empty stars, the answer shown, and no XP line.
+- **Boss** (1.0.3, D77; no board): a 56 dp crown medallion over the title: "ניצחת את הבוס!" when the engine's
+  `levelOutcome().bossBeaten` is true (the crown pops, `level.boss.won`; reduced motion: no pop), else "הבוס ניצח הפעם", still. The
+  screen never decides it from the stars: a race boss can give a star and still be lost to the bot. The chapter line stands out
+  ("השער לפרק 2: ★ 22/20 · נפתח!"). The gate still asks only that the boss was played.
+- **Puzzle** (1.0.3): the metric is the time; the swaps under it ("4 החלפות, המינימום 3"), with no effect on the stars. "למה?" comes
+  from the engine's `puzzleExplainSteps`.
 
 ### 19.11 Gate sheet and "פרק חדש נפתח" [Levels-Gate; chapter unlocked: no board]
 - **Gate sheet** (§13 sheet): "פרק 5 נעול", "צריך 20 כוכבים בפרק 4. יש לך 17, חסרים 3.", up to 3 stages to replay ("שלב 34 · ★☆☆"
   with "שחק"; first a stage of the chapter not played yet, such as the boss), the primary "שחק את שלב 34", and muted "כל שלב עד
   30 שניות. הכוכבים הטובים ביותר נשמרים." With enough stars and the boss unplayed: "יש לך מספיק כוכבים. שחק את שלב 40 (בוס)
   כדי לפתוח", and the boss is the primary.
+  - **1.0.3 (D68):** the muted line reads "רוב השלבים עד 30 שניות, ומילוי ופאזל עד 60. הכוכבים הטובים ביותר נשמרים."
+    (`gate.footnote`).
 - **"פרק חדש נפתח"** (once per chapter): "פרק 5 · Biscuit", the new bot introducing itself in one line, what is new in the chapter,
   and "‎+50 XP" once (`level.chapter.unlocked`; reduced motion: no motion, the content appears at once).
 
@@ -966,10 +1018,52 @@ New states of §11.3, all from the engine's view (no game logic in the board):
 - On **my** card only, under the XP bar: "שלבים: 87 · ★ 214" (stages played, total stars), only after the first stage
   (`LEVEL_UI.cardShowsToOthers = false`; D58).
 
-**Tokens:** `color.accent` (stars, current ring, gate bar), `color.iconFaint` (empty stars, connectors), `color.board.*`,
-`color.players[n].*`, `color.surface`, `color.surface2`, `color.border`, `color.danger`, `color.scrim`, `color.text`,
-`color.textMuted`, `color.textFaint`; new in 2ז and 2ח: the star colours, `size.levelNode`, `board.cellDim` / `cellDimAlt` and the
-dim given colour.
+### 19.13 Puzzle (`PuzzleLevelScreen`, `PuzzleBoard`, `PuzzleHud`) [no board; 1.0.3]
+The puzzle (spec §5.3.2; D70, D71, D78): nine full boxes, some of them fixed; swap two at a time. The screen draws only the engine's
+`GameView.level.puzzle` and calls `session.swap(from, to)`, which calls `GameHost.swapBoxes`. It never decides whether a swap is
+allowed, or whether the puzzle is solved.
+- **Header:** "שלב 23" and "פאזל · פרק 3", the clock and X; the time star meter (§19.5). **Task line:** "סדר את הריבועים" · "3
+  ריבועים זזים · 6 ריבועים קבועים" ("כל הריבועים זזים" when none is fixed) · "החלפות: 2".
+- **Board:** 3 × 3 boxes, **always LTR**, box 1 at the top left; a 6 dp gap between the boxes (`PUZZLE_UI.slotGap`; the game board's
+  is 3), so each reads as a tile. Under it, in place of the keypad: "גרור ריבוע אל ריבוע אחר כדי להחליף ביניהם" and "או: הקש על
+  ריבוע, ואז על ריבוע אחר".
+
+| State | Look |
+|---|---|
+| movable | `board.focusCell` background and a 2 dp bottom edge that gives it the depth of a tile |
+| fixed | `board.outCell` background, no depth, and a 16 dp lock at the top corner (a shape, not only a colour). Its digits stay dark (9.8:1): a fixed box is the anchor of the logic |
+| held (dragging) | follows the finger, scale 1.06, a shadow, and a 3 dp P1 frame (me is always P1) with a 1 dp dark inner keyline (`lockEdge`; P1 alone on cream is 1.8:1) |
+| its home while held | a hole: a dashed 2 dp `color.border` frame on `surface2` |
+| target (over a movable box) | a 3 dp gold frame with dark keylines, as the region frame |
+| over a fixed box | no frame; the lock turns `board.wrongDigit` (not `color.danger`, which is for dark surfaces and is 1.7:1 on the grey). A drop there goes to the host, which refuses (`boxFixed`), and the box goes home |
+| selected (tap mode) | a 3 dp P1 frame with the `lockEdge` keyline, and `selected` for the screen reader |
+| in its right place | **not marked** (D71: no lock, because marking gives the answer away) |
+
+- **Gestures:** one `GestureDetector` on the board: `Gesture.Pan().minDistance(6)` and `Gesture.Tap()` in `Gesture.Exclusive`. The box
+  under the finger comes from the board's geometry, LTR. A drop on another box (movable or fixed) always calls the host; a drop off
+  the board or on its own place calls nothing, and the box goes home.
+- **Tap, then tap** (`LEVEL_UI.puzzleTapSwap = true`, for everyone, D78a): a tap selects a movable box, a tap on another swaps them,
+  a second tap on the same box cancels, and a tap on a fixed box buzzes with "הריבוע הזה קבוע".
+- **Screen reader:** each box is a button, "ריבוע 4, אפשר להזיז: 5 3 9, 6 1 2, 8 7 4" (the digits row by row, LTR), with the hint
+  "הקש כדי לבחור, ואז הקש על ריבוע אחר". TalkBack's double tap is the `activate` action, not a touch, so every box has
+  `onAccessibilityAction('activate')`, which runs the same select and swap. A live region announces "ריבוע 4 וריבוע 7 התחלפו"
+  (with a penalty: "… עוד 5 שניות").
+- **A wrong swap** (neither box lands in its place, D70c): the "‎+5 ש׳" chip of §19.5, from `boxesSwapped.penaltyMs`.
+- **Repeated digits are never marked** (D78b, `LEVEL_RULES.puzzleConflicts = 'none'`). If the setting allows it, the screen only
+  paints the engine's `conflicts` red.
+- **Solved:** a gold frame on all nine boxes flashes once, then the usual hold on the final board before the result.
+- **The rest** is the shell of every stage: the exit confirm, the background freeze with 3, 2, 1 (D65), the live region, and the
+  hold on the final board (`useStageShell`).
+- **Motion:** `level.puzzle.lift`, `.swap`, `.home`, `.denied` and `.solved` (`motion.md` §4.11). **Haptics and sound:** existing
+  cues only (`cellSelect`, `cellRelease`, `cellDenied`, `correct`).
+
+
+**Tokens:** `color.accent` (stars, current ring, gate bar, region frame, arena corners), `color.iconFaint` (empty stars, connectors),
+`color.board.*`, `color.players[n].*`, `color.surface`, `color.surface2`, `color.border`, `color.danger`, `color.scrim`,
+`color.text`, `color.textMuted`, `color.textFaint`; new in 2ז and 2ח: the star colours, `size.levelNode`, `board.cellDim` /
+`cellDimAlt` and the dim given colour. **New in 1.0.3 (D75):** `board.focusCell` / `focusCellAlt`, `board.outCell` / `outCellAlt`,
+`board.givenOut` and `board.regionBand` replace the dim tokens, with `border.regionFrame` (3) and `border.regionKeyline` (1). Each
+pair is in the `contrast` list (`contrast.test.ts`).
 
 **New icons** (24 viewBox, stroke 2, `currentColor`): star (filled), crown, chain links, box, swords (duel), open lock, and the
-levels mark of the new-game row.
+levels mark of the new-game row. New in 1.0.3: `gridRow`, `gridCol` and `puzzle` (`Icon.tsx`, for `KIND_ICON`).

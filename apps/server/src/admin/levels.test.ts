@@ -1,4 +1,4 @@
-import { LEVEL_RULES, maxLevel } from '@sudoku-fight/engine';
+import { LEVEL_RULES, levelIdOf, levelRev, maxLevel } from '@sudoku-fight/engine';
 import {
   ADMIN_API_PREFIX,
   type AdminGateStat,
@@ -22,6 +22,7 @@ import {
   testConfig,
 } from '../testing';
 import { GATE_STUCK_ATTEMPTS, GATE_STUCK_SHARE, LEVEL_TOO_HARD_SHARE } from './constants';
+import { getLevels, LEGACY_LEVEL_REV } from './levels';
 
 /**
  * GET /admin/api/levels (plan §5.5) on a small dataset whose numbers are worked out by hand below.
@@ -61,9 +62,28 @@ function event(
   return { id: `e${eventNo}`, installId, name, props, tClient: at(tClient), tServer: at(tServer) };
 }
 
-/** A level_start with the props the app sends. */
-const start = (id: InstallId, tClient: string, level: number, attempt: number, kind = 'find') =>
-  event(id, 'level_start', tClient, { level, chapter: 1, kind, attempt, bestStars: 0, quick: false });
+/** The rev level n is at now (the engine's levelRev): what a 1.0.3 app sends with it [D73]. */
+const revAt = (n: number) => (Number.isInteger(n) && n >= 1 ? levelRev(levelIdOf(n)) : LEGACY_LEVEL_REV);
+
+/** A level_start with the props the app sends (the level's current rev, unless `over` says otherwise). */
+const start = (
+  id: InstallId,
+  tClient: string,
+  level: number,
+  attempt: number,
+  kind = 'find',
+  over: TelemetryProps = {},
+) =>
+  event(id, 'level_start', tClient, {
+    level,
+    rev: revAt(level),
+    chapter: 1,
+    kind,
+    attempt,
+    bestStars: 0,
+    quick: false,
+    ...over,
+  });
 
 /** A level_end; `over` replaces or adds props (junk included). */
 function end(
@@ -79,6 +99,7 @@ function end(
     tClient,
     {
       kind: 'find',
+      rev: revAt(props.level),
       prevBest: 0,
       mistakes: 0,
       metric: null,
@@ -89,6 +110,17 @@ function end(
     tServer,
   );
 }
+
+/** A level_quit (the app went away mid-level). */
+const quit = (id: InstallId, tClient: string, level: number, over: TelemetryProps = {}) =>
+  event(id, 'level_quit', tClient, { level, rev: revAt(level), atMs: 3_000, ...over });
+
+/** An event as a 1.0.2 app sent it: no rev. */
+const withoutRev = <E extends { props: TelemetryProps }>(e: E): E => {
+  const props = { ...e.props };
+  delete props.rev;
+  return { ...e, props };
+};
 
 /** A chapter_gate; junk may come in as a string. */
 const gate = (id: InstallId, tClient: string, chapter: number | string, open: boolean | string) =>
@@ -145,7 +177,7 @@ describe('GET /admin/api/levels', () => {
       start('d', DAY5, 1, 1),
       end('d', DAY5, { level: 1, stars: 0, attempt: 1, durationMs: 5_000, reason: 'quit' }),
       start('d', DAY5, 1, 2),
-      event('d', 'level_quit', DAY5, { level: 1, atMs: 3_000 }),
+      quit('d', DAY5, 1),
 
       // L002 today, fillBox. c is on its third try (the first two before the window).
       start('a', TODAY, 2, 1, 'fillBox'),
@@ -367,6 +399,132 @@ describe('GET /admin/api/levels', () => {
       status: 401,
       body: { error: 'unauthorized' },
     });
+  });
+});
+
+describe('only the current rev of each level [D73]', () => {
+  const WINDOW = { tz: testConfig().adminTz, now: NOW, days: 30 };
+
+  beforeEach(async () => {
+    await t.db.insert(installs).values(
+      INSTALLS.map((id) => ({
+        id,
+        platform: 'android' as const,
+        appVersion: '1.0.3',
+        firstSeen: at('2026-07-01T00:00:00Z'),
+        lastSeen: at(TODAY),
+      })),
+    );
+    await t.db.insert(appEvents).values([
+      // L003 at rev 1, from a 1.0.2 app (no rev): find, 3 stars twice, and a start left midway.
+      withoutRev(start('a', DAY5, 3, 1)),
+      withoutRev(end('a', DAY5, { level: 3, stars: 3, attempt: 1, durationMs: 4_000, reason: 'completed' })),
+      withoutRev(start('b', DAY5, 3, 1)),
+      withoutRev(end('b', DAY5, { level: 3, stars: 3, attempt: 1, durationMs: 5_000, reason: 'completed' })),
+      withoutRev(start('c', DAY5, 3, 1)),
+      withoutRev(quit('c', DAY5, 3)),
+      // L003 rebuilt (rev 2) as a puzzle: a's second try, 1 star; d leaves midway.
+      start('a', TODAY, 3, 2, 'puzzle', { rev: 2 }),
+      end(
+        'a',
+        TODAY,
+        { level: 3, stars: 1, attempt: 2, durationMs: 40_000, reason: 'completed' },
+        { kind: 'puzzle', rev: 2 },
+      ),
+      start('d', TODAY, 3, 1, 'puzzle', { rev: 2 }),
+      quit('d', TODAY, 3, { rev: 2 }),
+      // Another rev (3); and a rev that is not a number, read as none (rev 1).
+      end(
+        'e',
+        TODAY,
+        { level: 3, stars: 0, attempt: 1, durationMs: 60_000, reason: 'timeUp' },
+        { kind: 'puzzle', rev: 3 },
+      ),
+      end(
+        'e',
+        TODAY,
+        { level: 3, stars: 2, attempt: 1, durationMs: 6_000, reason: 'completed' },
+        { rev: '2' },
+      ),
+    ]);
+  });
+
+  it('at rev 2: only the rebuilt level’s plays, and its new kind', async () => {
+    const body = await getLevels(t.db, WINDOW, { revOf: () => 2 });
+    expect(level(body, 'L003')).toEqual({
+      ...empty('L003', 1),
+      kind: 'puzzle',
+      starts: 2,
+      plays: 1,
+      players: 1,
+      stars: [0, 1, 0, 0],
+      medianMs: 40_000,
+      replayRate: 1,
+      midQuitRate: 1 / 2,
+      quitRate: 0,
+      firstTries: 0,
+      firstTryZeroRate: null,
+    });
+  });
+
+  it(`at rev ${LEGACY_LEVEL_REV}: the events without a rev are a 1.0.2 app’s, at rev 1`, async () => {
+    const body = await getLevels(t.db, WINDOW, { revOf: () => LEGACY_LEVEL_REV });
+    expect(level(body, 'L003')).toEqual({
+      ...empty('L003', 1),
+      kind: 'find',
+      starts: 3,
+      plays: 3,
+      players: 3,
+      stars: [0, 0, 1, 2],
+      medianMs: 5_000,
+      replayRate: 0,
+      midQuitRate: 1 / 3,
+      quitRate: 0,
+      firstTries: 3,
+      firstTryZeroRate: 0,
+    });
+  });
+
+  it('allRevs: every rev mixed, as before 1.0.3', async () => {
+    const body = await getLevels(t.db, WINDOW, { revOf: () => 2, allRevs: true });
+    expect(level(body, 'L003')).toEqual({
+      ...empty('L003', 1),
+      kind: 'find', // 6 of find, 4 of puzzle
+      starts: 5,
+      plays: 5,
+      players: 3,
+      stars: [1, 1, 1, 2],
+      medianMs: 6_000,
+      replayRate: 1 / 5,
+      midQuitRate: 2 / 5,
+      quitRate: 0,
+      firstTries: 4,
+      firstTryZeroRate: 1 / 4,
+    });
+  });
+
+  it('?allRevs=1 counts every rev, as getLevels(…, { allRevs: true }); off by default; a bad value is a 400', async () => {
+    const all = (await admin.get<AdminLevels>('/levels', { allRevs: '1' })).body;
+    expect(all).toEqual(await getLevels(t.db, WINDOW, { allRevs: true }));
+    expect((await admin.get<AdminLevels>('/levels', { allRevs: 'true' })).body).toEqual(all);
+    const now = await getLevels(t.db, WINDOW);
+    expect((await admin.get<AdminLevels>('/levels', { allRevs: '0' })).body).toEqual(now);
+    expect((await admin.get<AdminLevels>('/levels', { allRevs: '' })).body).toEqual(now);
+    // The 1.0.2 plays (no rev, read as rev 1) are there only with the switch on.
+    expect(level(all, 'L003')?.plays).toBe(5);
+    const bad = await admin.get('/levels', { allRevs: 'maybe' });
+    expect({ status: bad.status, body: bad.body }).toMatchObject({
+      status: 400,
+      body: { error: 'badRequest' },
+    });
+  });
+
+  it('the route counts each level at the engine’s levelRev', async () => {
+    const byRoute = (await admin.get<AdminLevels>('/levels')).body;
+    expect(byRoute).toEqual(await getLevels(t.db, WINDOW));
+    expect(byRoute).toEqual(await getLevels(t.db, WINDOW, { revOf: levelRev }));
+    const playsAt: Record<number, number> = { 1: 3, 2: 1, 3: 1 };
+    expect(level(byRoute, 'L003')?.plays).toBe(playsAt[levelRev('L003')] ?? 0);
   });
 });
 

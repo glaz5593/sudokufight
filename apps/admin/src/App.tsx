@@ -199,7 +199,13 @@ function Page({ route }: { route: Route }) {
     case 'screens':
       return <ScreensPage days={route.days ?? DEFAULT_DAYS} />;
     case 'levels':
-      return <LevelsPage days={route.days ?? DEFAULT_DAYS} chapter={route.chapter ?? 0} />;
+      return (
+        <LevelsPage
+          days={route.days ?? DEFAULT_DAYS}
+          chapter={route.chapter ?? 0}
+          allRevs={route.allRevs ?? false}
+        />
+      );
     case 'reports':
       return <ReportsPage status={route.status ?? DEFAULT_REPORT_FILTER} page={route.page ?? 1} />;
     case 'audit':

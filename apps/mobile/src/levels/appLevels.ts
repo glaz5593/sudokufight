@@ -108,14 +108,15 @@ export const levelFinished: LevelFinisher = createLevelFinisher({
 });
 
 /**
- * The number of the signed-in player's next attempt at a level (level_start's `attempt`, and the board of
- * "שוב", D63): 1 when nobody is signed in or levels.db is unavailable.
+ * The number of the signed-in player's next attempt at a level at its rev now (level_start's `attempt`, and the
+ * board of "שוב", D63; a rebuilt level starts again at 1, D73): 1 when nobody is signed in or levels.db is
+ * unavailable.
  */
-export async function levelAttemptOf(levelId: string): Promise<number> {
+export async function levelAttemptOf(levelId: string, rev: number): Promise<number> {
   const owner = currentOwner();
   if (!owner) return 1;
   try {
-    return await (await openLevelsStorage()).attemptOf(owner, levelId);
+    return await (await openLevelsStorage()).attemptOf(owner, levelId, rev);
   } catch (error) {
     log('could not read the attempts', error);
     return 1;

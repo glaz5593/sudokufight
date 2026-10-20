@@ -8,10 +8,10 @@ import {
 } from '@sudoku-fight/engine';
 import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { BossBadge } from '../../../components/levels/BossBadge';
+import { BossBand } from '../../../components/levels/BossBadge';
 import { LevelTile } from '../../../components/levels/LevelTile';
 import { StarsBar } from '../../../components/levels/StarsBar';
 import { secondsOf, signedText } from '../../../components/player/format';
@@ -19,7 +19,7 @@ import { TimerRing } from '../../../components/player/TimerRing';
 import { IconButton } from '../../../components/ui';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { secondsText } from '../../home/homeModel';
-import { kindName, type LevelsT } from '../levelWording';
+import { findSub, kindName, type LevelsT } from '../levelWording';
 
 /**
  * A find stage's HUD (components.md §19.7, the Lv-Find board): over the board, the stage's header (its number,
@@ -67,22 +67,23 @@ export interface StageHeaderProps {
 }
 
 /**
- * "שלב 8" over "איפה ה־6? · פרק 1", and the X at the end (Lv-Find, Lv-Box). A boss stage (plan §3.3) shows its
- * tile with the crown (LevelTile's boss state) and the "בוס" chip (BossBadge) beside its title.
+ * "שלב 8" over "פאזל · פרק 3" (find: "איפה ה־6? · פרק 1", its `sub`), and the X at the end (Lv-Find, Lv-Box). A
+ * boss stage (levels-ui.md §3.2, D77) has the boss band over it, "👑 בוס · פרק 3" (BossBand, in place of 1.0.2's
+ * small chip; testID `stage-boss`), and its tile with the crown (LevelTile's boss state; no arena corners here:
+ * the band says it, and the board has its own, BossFrame). All static.
  */
 export function StageHeader({ level, sub, onExit, end, style }: StageHeaderProps) {
   const { t } = useTranslation('levels');
   const n = levelNumber(level.id) ?? 0;
-  return (
-    <View style={[styles.header, style]} testID="stage-header">
-      {level.boss ? <LevelTile n={n} size={TILE} state="current" boss testID="stage-tile" /> : null}
+  const row = (
+    <View style={[styles.header, level.boss ? null : style]} testID="stage-header">
+      {level.boss ? (
+        <LevelTile n={n} size={TILE} state="current" boss arena={false} testID="stage-tile" />
+      ) : null}
       <View style={styles.titles}>
-        <View style={styles.titleRow}>
-          <Text accessibilityRole="header" style={styles.title} numberOfLines={1} testID="stage-title">
-            {t('stage', { n })}
-          </Text>
-          {level.boss ? <BossBadge testID="stage-boss" /> : null}
-        </View>
+        <Text accessibilityRole="header" style={styles.title} numberOfLines={1} testID="stage-title">
+          {t('stage', { n })}
+        </Text>
         <Text style={styles.sub} numberOfLines={1} testID="stage-sub">
           {sub ?? t('hud.sub', { kind: kindName(level, t), chapter: level.chapter })}
         </Text>
@@ -99,6 +100,13 @@ export function StageHeader({ level, sub, onExit, end, style }: StageHeaderProps
       ) : null}
     </View>
   );
+  if (!level.boss) return row;
+  return (
+    <View style={[styles.bossHeader, style]}>
+      <BossBand chapter={level.chapter} testID="stage-boss" />
+      {row}
+    </View>
+  );
 }
 
 export interface FindHudProps {
@@ -112,13 +120,19 @@ export interface FindHudProps {
   style?: StyleProp<ViewStyle>;
 }
 
-/** Over the board: the header and the star scale, 0–20 s, filling with the stage's clock (left to right). */
+/**
+ * Over the board: the header and the star scale, 0–20 s, filling with the stage's clock (left to right). The
+ * header's line asks "איפה ה־6? · פרק 1" with the digit of the board being played (the view's), never the stored
+ * stage's [D79]: "שוב" relabels the digits [D63].
+ */
 export function FindHud({ level, view, now, onExit, style }: FindHudProps) {
   const { t } = useTranslation('levels');
   const { elapsedMs } = levelClock(view, now);
+  const digit = view.find?.digit ?? null;
+  const sub = level.kind === 'find' && digit !== null ? findSub(digit, level.chapter, t) : undefined;
   return (
     <View style={[styles.hud, style]} testID="find-hud">
-      <StageHeader level={level} onExit={onExit} />
+      <StageHeader level={level} sub={sub} onExit={onExit} />
       <StarsBar rule={view.marks} value={elapsedMs} max={view.limitMs ?? undefined} />
       <Text style={styles.one}>{t('hud.find.one')}</Text>
     </View>
@@ -172,8 +186,14 @@ export function FindTargetPanel({ view, now, penaltyMs, penalty = null, style }:
           <Text style={styles.tap} numberOfLines={2} testID="find-tap">
             {digit === null ? '' : t('hud.find.tap', { digit })}
           </Text>
-          <Text style={styles.where} numberOfLines={1}>
-            {t('hud.find.where', { scope })}
+          {/* [D75] The region's words ("בריבוע 5", "בשורה D") stand out; the rest stays a muted note. */}
+          <Text style={styles.where} numberOfLines={2} testID="find-where">
+            <Trans
+              t={t}
+              i18nKey="hud.find.where"
+              values={{ scope }}
+              components={{ scope: <Text style={styles.scope} testID="find-scope" /> }}
+            />
           </Text>
         </View>
         <View style={styles.elapsed}>
@@ -230,8 +250,8 @@ const TILE = 44;
 const styles = StyleSheet.create({
   hud: { gap: space[4] },
   header: { flexDirection: 'row', alignItems: 'center', gap: space[6], minHeight: size.header },
+  bossHeader: { gap: space[4] },
   titles: { flex: 1, minWidth: 0, alignItems: 'flex-start', gap: space[1] },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
   title: { ...text('h1'), color: color.text },
   sub: { ...text('label'), color: color.textMuted },
   one: { ...text('label'), color: color.text },
@@ -263,6 +283,7 @@ const styles = StyleSheet.create({
   words: { flex: 1, minWidth: 0, gap: space[2], alignItems: 'flex-start' },
   tap: { ...text('rowTitle'), color: color.text },
   where: { ...text('label'), color: color.textMuted },
+  scope: { ...text('rowTitle'), color: color.text },
   elapsed: { alignItems: 'center', gap: space[3] },
   elapsedValue: { ...text('scoreCompact'), color: color.players[0].ring },
   elapsedUnit: { ...text('caption'), color: color.textMuted },

@@ -1,83 +1,83 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`"למה?" (en) a sentence for every kind (snapshot): chain 1`] = `
-"Step 1: H4 → 2. Row H is only missing 2.
-Step 2: 2 must appear in column 6. All the other empty cells in it are blocked: A6 sees a 2 in row A, C6 sees a 2 in row C, D6 sees a 2 in row D, G6 sees a 2 in box 8 and I6 sees a 2 in box 8. So B6 = 2.
-Step 3: 5 must appear in column 6. All the other empty cells in it are blocked: C6 sees a 5 in row C, D6 sees a 5 in box 5, G6 sees a 5 in row G and I6 sees a 5 in box 8. So A6 = 5."
+"Step 1: 3 must appear in column 8. All the other empty cells in it are blocked: D8 sees a 3 in row D, E8 sees a 3 in row E and F8 sees a 3 in row F. So A8 = 3.
+Step 2: 1 must appear in box 3. All the other empty cells in it are blocked: A7 sees a 1 in column 7, B9 sees a 1 in row B, C7 sees a 1 in row C and C9 sees a 1 in row C. So A9 = 1.
+Step 3: 7 must appear in box 3. All the other empty cells in it are blocked: B9 sees a 7 in row B, C7 sees a 7 in row C and C9 sees a 7 in row C. So A7 = 7."
 `;
 
 exports[`"למה?" (en) a sentence for every kind (snapshot): duel, a mistake 1`] = `
-"Your mistake: 1 in ⁦A7⁩. 1 is already in row A (A5).
-A7 → 5. Row A is missing 4 and 5. Column 7 already has 4. So only 5."
+"Your mistake: 1 in ⁦A3⁩. 1 is already in column 3 (F3).
+A3 → 8. Row A is missing 1 and 8. Column 3 already has 1. So only 8."
 `;
 
-exports[`"למה?" (en) a sentence for every kind (snapshot): duel, my best move 1`] = `"Your best move, 8 in ⁦A4⁩: 8 must appear in row A. All the other empty cells in it are blocked: A7 sees a 8 in column 7 and A8 sees a 8 in column 8. So A4 = 8."`;
+exports[`"למה?" (en) a sentence for every kind (snapshot): duel, my best move 1`] = `"Your best move, 9 in ⁦A2⁩: A2 → 9. Row A is missing 1, 8 and 9. Column 2 already has 1 and 8. So only 9."`;
 
 exports[`"למה?" (en) a sentence for every kind (snapshot): fillBox, a mistake 1`] = `
-"Your mistake: 1 in ⁦G6⁩. 1 is already in row G (G2).
-8 must appear in box 8. All the other empty cells in it are blocked: H4 sees a 8 in row H, H5 sees a 8 in row H and I4 sees a 8 in row I. So G6 = 8."
+"Your mistake: 9 in ⁦A1⁩. 9 is already in column 1 (H1).
+1 must appear in box 1. All the other empty cells in it are blocked: A3 sees a 1 in column 3. So A1 = 1."
 `;
 
-exports[`"למה?" (en) a sentence for every kind (snapshot): fillBox, no mistake 1`] = `"8 must appear in box 8. All the other empty cells in it are blocked: H4 sees a 8 in row H, H5 sees a 8 in row H and I4 sees a 8 in row I. So G6 = 8."`;
+exports[`"למה?" (en) a sentence for every kind (snapshot): fillBox, no mistake 1`] = `"1 must appear in box 1. All the other empty cells in it are blocked: A3 sees a 1 in column 3. So A1 = 1."`;
 
 exports[`"למה?" (en) a sentence for every kind (snapshot): find 1`] = `
-"7 must appear in box 8. All the other empty cells in it are blocked: G5 sees a 7 in row G and I6 sees a 7 in column 6. So I4 = 7.
-G5 can't hold 7: row G has a 7."
+"7 must appear in box 4. All the other empty cells in it are blocked: F2 sees a 7 in row F and F3 sees a 7 in row F. So D1 = 7.
+F2 can't hold 7: row F has a 7."
 `;
 
-exports[`"למה?" (en) a sentence for every kind (snapshot): findDuel 1`] = `"Spot 1: 6 must appear in box 1. All the other empty cells in it are blocked: B2 sees a 6 in row B and B3 sees a 6 in row B. So A3 = 6."`;
+exports[`"למה?" (en) a sentence for every kind (snapshot): findDuel 1`] = `"Spot 1: 2 must appear in box 1. All the other empty cells in it are blocked: A3 sees a 2 in column 3 and C2 sees a 2 in row C. So A1 = 2."`;
 
 exports[`"למה?" (en) a sentence for every kind (snapshot): pointHunter 1`] = `
 "You scored 6 of 18 points, ⁦33%⁩ of the board’s best.
-The best line: 9 in ⁦A2⁩ ⁦+6⁩ · 7 in ⁦C4⁩ ⁦+6⁩ · 3 in ⁦C7⁩ ⁦+6⁩.
-9 must appear in row A. All the other empty cells in it are blocked: A4 sees a 9 in column 4, A8 sees a 9 in column 8 and A9 sees a 9 in column 9. So A2 = 9."
+The best line: 5 in ⁦A4⁩ ⁦+6⁩ · 2 in ⁦D9⁩ ⁦+6⁩ · 7 in ⁦E6⁩ ⁦+6⁩.
+5 must appear in box 2. All the other empty cells in it are blocked: A5 sees a 5 in column 5, B6 sees a 5 in column 6 and C6 sees a 5 in row C. So A4 = 5."
 `;
 
 exports[`"למה?" (en) a sentence for every kind (snapshot): spotError 1`] = `
-"⁦A8⁩, found: 9 is already in column 8 (D8).
-A8 → 3. Box 3 is only missing 3.
-⁦H7⁩, not found: 3 is already in row H (H9).
-H7 → 1. Column 7 is only missing 1.
-The 5 in ⁦A3⁩ is right: tapping it cost ⁦+5⁩ s."
+"⁦A2⁩, found: 5 is already in column 2 (F2).
+A2 → 8. Column 2 is only missing 8.
+⁦F3⁩, not found: 8 is already in column 3 (H3).
+F3 → 2. Column 3 is missing 2 and 5. Row F already has 5. So only 2.
+The 7 in ⁦B1⁩ is right: tapping it cost ⁦+5⁩ s."
 `;
 
 exports[`"למה?" (he) a sentence for every kind (snapshot): chain 1`] = `
-"צעד 1: ⁦H4 → 2⁩. בשורה H חסר רק 2.
-צעד 2: הספרה 2 חייבת להופיע בעמודה 6. כל שאר המשבצות הריקות בו חסומות: ב־⁦A6⁩ יש 2 בשורה A, ב־⁦C6⁩ יש 2 בשורה C, ב־⁦D6⁩ יש 2 בשורה D, ב־⁦G6⁩ יש 2 בריבוע 8, וב־⁦I6⁩ יש 2 בריבוע 8. לכן ⁦B6 = 2⁩.
-צעד 3: הספרה 5 חייבת להופיע בעמודה 6. כל שאר המשבצות הריקות בו חסומות: ב־⁦C6⁩ יש 5 בשורה C, ב־⁦D6⁩ יש 5 בריבוע 5, ב־⁦G6⁩ יש 5 בשורה G, וב־⁦I6⁩ יש 5 בריבוע 8. לכן ⁦A6 = 5⁩."
+"צעד 1: הספרה 3 חייבת להופיע בעמודה 8. כל שאר המשבצות הריקות בו חסומות: ב־⁦D8⁩ יש 3 בשורה D, ב־⁦E8⁩ יש 3 בשורה E, וב־⁦F8⁩ יש 3 בשורה F. לכן ⁦A8 = 3⁩.
+צעד 2: הספרה 1 חייבת להופיע בריבוע 3. כל שאר המשבצות הריקות בו חסומות: ב־⁦A7⁩ יש 1 בעמודה 7, ב־⁦B9⁩ יש 1 בשורה B, ב־⁦C7⁩ יש 1 בשורה C, וב־⁦C9⁩ יש 1 בשורה C. לכן ⁦A9 = 1⁩.
+צעד 3: הספרה 7 חייבת להופיע בריבוע 3. כל שאר המשבצות הריקות בו חסומות: ב־⁦B9⁩ יש 7 בשורה B, ב־⁦C7⁩ יש 7 בשורה C, וב־⁦C9⁩ יש 7 בשורה C. לכן ⁦A7 = 7⁩."
 `;
 
 exports[`"למה?" (he) a sentence for every kind (snapshot): duel, a mistake 1`] = `
-"הטעות שלך: 1 ב־⁦A7⁩. 1 כבר נמצא בשורה A (⁦A5⁩).
-⁦A7 → 5⁩. בשורה A חסרים 4 ו־5. בעמודה 7 כבר יש 4. לכן רק 5."
+"הטעות שלך: 1 ב־⁦A3⁩. 1 כבר נמצא בעמודה 3 (⁦F3⁩).
+⁦A3 → 8⁩. בשורה A חסרים 1 ו־8. בעמודה 3 כבר יש 1. לכן רק 8."
 `;
 
-exports[`"למה?" (he) a sentence for every kind (snapshot): duel, my best move 1`] = `"המהלך הכי שווה שלך, 8 ב־⁦A4⁩: הספרה 8 חייבת להופיע בשורה A. כל שאר המשבצות הריקות בו חסומות: ב־⁦A7⁩ יש 8 בעמודה 7, וב־⁦A8⁩ יש 8 בעמודה 8. לכן ⁦A4 = 8⁩."`;
+exports[`"למה?" (he) a sentence for every kind (snapshot): duel, my best move 1`] = `"המהלך הכי שווה שלך, 9 ב־⁦A2⁩: ⁦A2 → 9⁩. בשורה A חסרים 1, 8 ו־9. בעמודה 2 כבר יש 1 ו־8. לכן רק 9."`;
 
 exports[`"למה?" (he) a sentence for every kind (snapshot): fillBox, a mistake 1`] = `
-"הטעות שלך: 1 ב־⁦G6⁩. 1 כבר נמצא בשורה G (⁦G2⁩).
-הספרה 8 חייבת להופיע בריבוע 8. כל שאר המשבצות הריקות בו חסומות: ב־⁦H4⁩ יש 8 בשורה H, ב־⁦H5⁩ יש 8 בשורה H, וב־⁦I4⁩ יש 8 בשורה I. לכן ⁦G6 = 8⁩."
+"הטעות שלך: 9 ב־⁦A1⁩. 9 כבר נמצא בעמודה 1 (⁦H1⁩).
+הספרה 1 חייבת להופיע בריבוע 1. כל שאר המשבצות הריקות בו חסומות: ב־⁦A3⁩ יש 1 בעמודה 3. לכן ⁦A1 = 1⁩."
 `;
 
-exports[`"למה?" (he) a sentence for every kind (snapshot): fillBox, no mistake 1`] = `"הספרה 8 חייבת להופיע בריבוע 8. כל שאר המשבצות הריקות בו חסומות: ב־⁦H4⁩ יש 8 בשורה H, ב־⁦H5⁩ יש 8 בשורה H, וב־⁦I4⁩ יש 8 בשורה I. לכן ⁦G6 = 8⁩."`;
+exports[`"למה?" (he) a sentence for every kind (snapshot): fillBox, no mistake 1`] = `"הספרה 1 חייבת להופיע בריבוע 1. כל שאר המשבצות הריקות בו חסומות: ב־⁦A3⁩ יש 1 בעמודה 3. לכן ⁦A1 = 1⁩."`;
 
 exports[`"למה?" (he) a sentence for every kind (snapshot): find 1`] = `
-"הספרה 7 חייבת להופיע בריבוע 8. כל שאר המשבצות הריקות בו חסומות: ב־⁦G5⁩ יש 7 בשורה G, וב־⁦I6⁩ יש 7 בעמודה 6. לכן ⁦I4 = 7⁩.
-⁦G5⁩ לא יכול להכיל 7: בשורה G יש 7."
+"הספרה 7 חייבת להופיע בריבוע 4. כל שאר המשבצות הריקות בו חסומות: ב־⁦F2⁩ יש 7 בשורה F, וב־⁦F3⁩ יש 7 בשורה F. לכן ⁦D1 = 7⁩.
+⁦F2⁩ לא יכול להכיל 7: בשורה F יש 7."
 `;
 
-exports[`"למה?" (he) a sentence for every kind (snapshot): findDuel 1`] = `"מקום 1: הספרה 6 חייבת להופיע בריבוע 1. כל שאר המשבצות הריקות בו חסומות: ב־⁦B2⁩ יש 6 בשורה B, וב־⁦B3⁩ יש 6 בשורה B. לכן ⁦A3 = 6⁩."`;
+exports[`"למה?" (he) a sentence for every kind (snapshot): findDuel 1`] = `"מקום 1: הספרה 2 חייבת להופיע בריבוע 1. כל שאר המשבצות הריקות בו חסומות: ב־⁦A3⁩ יש 2 בעמודה 3, וב־⁦C2⁩ יש 2 בשורה C. לכן ⁦A1 = 2⁩."`;
 
 exports[`"למה?" (he) a sentence for every kind (snapshot): pointHunter 1`] = `
 "צברת 6 מתוך 18 נקודות, ⁦33%⁩ מהמקסימום של הלוח.
-הקו הטוב ביותר: 9 ב־⁦A2⁩ ⁦+6⁩ · 7 ב־⁦C4⁩ ⁦+6⁩ · 3 ב־⁦C7⁩ ⁦+6⁩.
-הספרה 9 חייבת להופיע בשורה A. כל שאר המשבצות הריקות בו חסומות: ב־⁦A4⁩ יש 9 בעמודה 4, ב־⁦A8⁩ יש 9 בעמודה 8, וב־⁦A9⁩ יש 9 בעמודה 9. לכן ⁦A2 = 9⁩."
+הקו הטוב ביותר: 5 ב־⁦A4⁩ ⁦+6⁩ · 2 ב־⁦D9⁩ ⁦+6⁩ · 7 ב־⁦E6⁩ ⁦+6⁩.
+הספרה 5 חייבת להופיע בריבוע 2. כל שאר המשבצות הריקות בו חסומות: ב־⁦A5⁩ יש 5 בעמודה 5, ב־⁦B6⁩ יש 5 בעמודה 6, וב־⁦C6⁩ יש 5 בשורה C. לכן ⁦A4 = 5⁩."
 `;
 
 exports[`"למה?" (he) a sentence for every kind (snapshot): spotError 1`] = `
-"⁦A8⁩, נמצאה: 9 כבר נמצא בעמודה 8 (⁦D8⁩).
-⁦A8 → 3⁩. בריבוע 3 חסר רק 3.
-⁦H7⁩, לא נמצאה: 3 כבר נמצא בשורה H (⁦H9⁩).
-⁦H7 → 1⁩. בעמודה 7 חסר רק 1.
-ב־⁦A3⁩ ה־5 נכון: ההקשה עליו עלתה ⁦+5⁩ ש׳."
+"⁦A2⁩, נמצאה: 5 כבר נמצא בעמודה 2 (⁦F2⁩).
+⁦A2 → 8⁩. בעמודה 2 חסר רק 8.
+⁦F3⁩, לא נמצאה: 8 כבר נמצא בעמודה 3 (⁦H3⁩).
+⁦F3 → 2⁩. בעמודה 3 חסרים 2 ו־5. בשורה F כבר יש 5. לכן רק 2.
+ב־⁦B1⁩ ה־7 נכון: ההקשה עליו עלתה ⁦+5⁩ ש׳."
 `;

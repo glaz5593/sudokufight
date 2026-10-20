@@ -108,7 +108,7 @@
     "levels": {
       "name": "Staged practice",
       "title": "Staged practice",
-      "tagline": "30-second stages · up to 3 stars",
+      "tagline": "Short stages · up to 3 stars",
       "taglineNew": "{{total}} short stages · 0–3 stars",
       "chip": "Stage {{stage}} ·",
       "offline": "Offline too",

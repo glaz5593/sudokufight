@@ -1270,6 +1270,24 @@ describe('RemoteGameHost: what only local play has (staged practice, 1.0.2)', ()
     expect(table.room.sent).toHaveLength(sent);
   });
 
+  it('a swap of boxes (the puzzle’s move, 1.0.3) is refused here at once, and never sent', async () => {
+    const table = await liveTable();
+    const { updates } = record(table);
+    const sent = table.room.sent.length;
+    const actions = table.room.actions.length;
+    table.host.swapBoxes(1, 5);
+    expect(updates).toEqual([
+      {
+        kind: 'rejected',
+        action: { type: 'swapBoxes', from: 1, to: 5 },
+        reason: 'badAction',
+        view: table.host.getView(),
+      },
+    ]);
+    expect(table.room.sent).toHaveLength(sent);
+    expect(table.room.actions).toHaveLength(actions);
+  });
+
   it('pause and resume [D65] do nothing and send nothing: an online game never freezes that way', async () => {
     const table = await liveTable();
     const { updates } = record(table);

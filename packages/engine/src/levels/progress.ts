@@ -1,6 +1,14 @@
 import type { EndReason, GameResult } from '../game/types';
 import { DEFAULT_PROGRESS_RULES, type ProgressRules } from '../progress/progress';
-import type { AppLevel, FindEndReason, FindLevelOver, LevelKind, StarRule, Stars } from './spec';
+import type {
+  AppLevel,
+  FindEndReason,
+  FindLevelOver,
+  LevelKind,
+  PuzzleLevelOver,
+  StarRule,
+  Stars,
+} from './spec';
 import { starsFor } from './stars';
 
 /**
@@ -23,8 +31,21 @@ export interface LevelRules {
   chapterCount: number;
   /** The stars of chapter k that open chapter k + 1 (with its boss played) [D51]. */
   gateStars: number;
-  /** No level is longer [D49]. */
+  /** No level is longer [D49], but the kinds kindMaxMs names (maxMsOf). */
   levelMaxMs: number;
+  /**
+   * [D68] Moshe asked for more time in the fill kinds (2026-10-19, "צריך יותר זמן"): it updates D49 for these
+   * kinds only, up to this much; every other kind stays at levelMaxMs. Still one task a level.
+   */
+  kindMaxMs: Readonly<Partial<Record<LevelKind, number>>>;
+  /** [D70c] A puzzle swap that puts neither box at its home costs this much time (a wrong digit's 5 s). */
+  puzzleSwapPenaltyMs: number;
+  /**
+   * [D78b] Whether a puzzle's view marks the digits that repeat in a row or column: never (the default: finding
+   * them is the puzzle), only in the first `puzzleConflictsFirstStages` puzzles of the levels, or always.
+   */
+  puzzleConflicts: 'none' | 'firstStages' | 'always';
+  puzzleConflictsFirstStages: number;
   /** A quit (the X, confirmed) counts as played: the next level opens [D51]. */
   quitCountsAsPlayed: boolean;
   /** From the second attempt on, "שוב" plays an equivalent board (transformLevel) [D63]. */
@@ -44,17 +65,52 @@ export const LEVEL_RULES: LevelRules = {
   chapterCount: 30,
   gateStars: 20,
   levelMaxMs: 30000,
+  kindMaxMs: { fillBox: 60000, fillRow: 60000, fillCol: 60000, puzzle: 60000 },
   quitCountsAsPlayed: true,
   replayTransform: true,
   chainNotYet: 'accept',
   tapOnFilled: 'ignore',
+  puzzleSwapPenaltyMs: 5000,
+  puzzleConflicts: 'none',
+  puzzleConflictsFirstStages: 3,
 };
 
 /** How many levels there are (300): the server and the phone both take the number from here. */
 export const maxLevel = (rules: LevelRules = LEVEL_RULES): number => rules.chapterCount * rules.chapterSize;
 
+/**
+ * The longest a level of this kind may be [D49, D68]: 60 s for fillBox, fillRow, fillCol and the puzzle, 30 s
+ * for every other kind. The builder, the validator and the simulation read it; a level's own limit
+ * (timeLimitMs) is at most this.
+ */
+export const maxMsOf = (kind: LevelKind, rules: LevelRules = LEVEL_RULES): number =>
+  rules.kindMaxMs[kind] ?? rules.levelMaxMs;
+
+/**
+ * [D78b] Whether the puzzle that is the `ordinal`-th of the levels (1 for the first puzzle level, by level
+ * number) marks its repeated digits, by LEVEL_RULES.puzzleConflicts. The phone counts the ordinal from its
+ * levels (as the point hunter's worth hint), and passes the answer to the puzzle (PuzzleRules.conflicts).
+ */
+export function puzzleConflictsOn(ordinal: number, rules: LevelRules = LEVEL_RULES): boolean {
+  switch (rules.puzzleConflicts) {
+    case 'none':
+      return false;
+    case 'always':
+      return true;
+    case 'firstStages':
+      return Number.isInteger(ordinal) && ordinal >= 1 && ordinal <= rules.puzzleConflictsFirstStages;
+  }
+}
+
 // ---------------------------------------------------------------------------------------------------------
 // Ids
+
+/**
+ * [D73] The rev every level is built at (1.0.3: all 300 rebuilt, rev 2; seed `L001:r2`). levels.config.ts's
+ * LEVEL_REVS moves a single level further later, and levelRev() (catalog.ts) reads both. Here, beside the ids,
+ * so that levels.config.ts and catalog.ts both import it with no cycle between them.
+ */
+export const LEVEL_REV_BASE = 2;
 
 const LEVEL_ID = /^L(\d{3,})$/;
 
@@ -250,9 +306,9 @@ export function openedChaptersOf(
 export type LevelMetric = 'timeMs' | 'spots' | 'gap' | 'points' | 'found';
 
 /**
- * Each kind's measure: the level clock where the stars go by time (find, fillBox, chain), the spots I took
- * (findDuel), my lead (duel), my points (pointHunter), and the errors found (spotError, whose stars go by time
- * once all are found).
+ * Each kind's measure: the level clock where the stars go by time (find, fillBox, fillRow, fillCol, chain,
+ * puzzle), the spots I took (findDuel), my lead (duel), my points (pointHunter), and the errors found
+ * (spotError, whose stars go by time once all are found).
  */
 export const LEVEL_METRIC: Readonly<Record<LevelKind, LevelMetric>> = {
   find: 'timeMs',
@@ -262,6 +318,9 @@ export const LEVEL_METRIC: Readonly<Record<LevelKind, LevelMetric>> = {
   spotError: 'found',
   pointHunter: 'points',
   chain: 'timeMs',
+  fillRow: 'timeMs',
+  fillCol: 'timeMs',
+  puzzle: 'timeMs',
 };
 
 /** Whether measure `a` beats `b` in this kind: a time lower, every other measure higher. Equal does not. */
@@ -272,19 +331,31 @@ export interface LevelBest {
   stars: Stars;
   /** The best measure of an attempt that had one (levelOutcome); null before any. */
   metric: number | null;
+  /** The rev of the level the measure was made on; absent when the caller does not track it. */
+  rev?: number;
 }
 
-/** The best of two, never lower: the stars, and the better measure (also across a new rev of the level). */
+/**
+ * The best of two, never lower: the stars, and the better measure. [D73] Across a new rev of the level (it was
+ * rebuilt: a new board, maybe a new kind) the stars still never drop, but the old measure says nothing about
+ * the new level: the best measure starts over from the new rev's ("השיא שלי" resets). An attempt at an older rev
+ * than the record's (one that synced late) adds its stars only. Without revs on both sides: as one rev.
+ */
 export function mergeBest(kind: LevelKind, prev: LevelBest | null | undefined, next: LevelBest): LevelBest {
   if (!prev) return next;
   const stars = Math.max(prev.stars, next.stars) as Stars;
+  if (prev.rev !== undefined && next.rev !== undefined && prev.rev !== next.rev)
+    return next.rev > prev.rev
+      ? { stars, metric: next.metric, rev: next.rev }
+      : { stars, metric: prev.metric, rev: prev.rev };
   const metric =
     prev.metric === null
       ? next.metric
       : next.metric !== null && isBetterMetric(kind, next.metric, prev.metric)
         ? next.metric
         : prev.metric;
-  return { stars, metric };
+  const rev = prev.rev ?? next.rev;
+  return rev === undefined ? { stars, metric } : { stars, metric, rev };
 }
 
 /**
@@ -369,17 +440,55 @@ export interface LevelOutcome {
   metric: number | null;
   /** The level clock at the end. */
   elapsedMs: number;
+  /**
+   * [D72] A boss: whether I beat it ("ניצחת את הבוס!"), the engine's verdict and never the screen's. Against the
+   * bot only a win over the bot counts: a race can give a star (2 of 5 spots) and still be the bot's (3). A boss
+   * with no bot (only under D72 ב) is beaten by finishing it with a star. Null when the level is not a boss.
+   * levelOutcome() always sets it; optional only so that an outcome stored or written before 1.0.3 still reads.
+   */
+  bossBeaten?: boolean | null;
 }
 
-const isGameResult = (end: GameResult | FindLevelOver): end is GameResult => 'ranking' in end;
+/** Any end a level host gives: the game engine's result, the tap engine's levelOver, the puzzle's levelOver. */
+export type LevelEndOf = GameResult | FindLevelOver | PuzzleLevelOver;
+
+const isGameResult = (end: LevelEndOf): end is GameResult => 'ranking' in end;
+const isPuzzleOver = (end: LevelEndOf): end is PuzzleLevelOver => 'swaps' in end;
+
+/** A race's spots when the level does not say (RACE.spots of levels.config.ts). */
+const RACE_SPOTS = 5;
 
 /**
- * One reading of every end, from either host (dev-plan §2א): the game engine's result of a digit level, or the
- * tap engine's levelOver. The stars are worked out again from the level's rule.
+ * Whether the boss was beaten [D72]: the duel by my lead at the end (a win to the target or a lead when the
+ * time ran out), the race by more spots than the bot's, any other boss by a star. A quit never beats it.
+ */
+function bossBeatenOf(
+  spec: Pick<AppLevel, 'kind'> & { boss?: boolean; targets?: AppLevel['targets'] },
+  end: LevelEndOf,
+  reason: LevelEndReason,
+  value: number,
+  stars: Stars,
+): boolean | null {
+  if (!spec.boss) return null;
+  if (reason === 'quit' || reason === 'failed' || reason === 'botWon') return false;
+  if (spec.kind === 'duel') return value > 0;
+  if (spec.kind === 'findDuel') {
+    if (isGameResult(end) || isPuzzleOver(end)) return false;
+    if (end.opponentSpots !== undefined) return end.spots > end.opponentSpots;
+    const all = spec.targets && 'spots' in spec.targets ? spec.targets.spots.length : RACE_SPOTS;
+    return end.spots * 2 > all;
+  }
+  return reason === 'completed' && stars >= 1;
+}
+
+/**
+ * One reading of every end, from any host (dev-plan §2א): the game engine's result of a digit level, the tap
+ * engine's levelOver, or the puzzle's (its measure the level clock, its mistakes the wrong swaps). The stars are
+ * worked out again from the level's rule; a boss also gets the engine's verdict (bossBeaten).
  */
 export function levelOutcome(
-  spec: Pick<AppLevel, 'kind' | 'stars'>,
-  end: GameResult | FindLevelOver,
+  spec: Pick<AppLevel, 'kind' | 'stars'> & { boss?: boolean; targets?: AppLevel['targets'] },
+  end: LevelEndOf,
 ): LevelOutcome {
   const measure = LEVEL_METRIC[spec.kind];
   let value: number;
@@ -387,6 +496,9 @@ export function levelOutcome(
   if (isGameResult(end)) {
     value = end.level?.metric ?? 0;
     elapsedMs = end.level?.elapsedMs ?? end.durationMs;
+  } else if (isPuzzleOver(end)) {
+    elapsedMs = end.elapsedMs;
+    value = end.elapsedMs;
   } else {
     elapsedMs = end.elapsedMs;
     value = measure === 'spots' ? end.spots : measure === 'found' ? end.found : end.elapsedMs;
@@ -395,5 +507,6 @@ export function levelOutcome(
   const stars = levelStars(spec.stars, reason, value, elapsedMs);
   const comparable =
     reason !== 'quit' && reason !== 'failed' && (measure !== 'timeMs' || reason === 'completed');
-  return { reason, stars, metric: comparable ? value : null, elapsedMs };
+  const bossBeaten = bossBeatenOf(spec, end, reason, value, stars);
+  return { reason, stars, metric: comparable ? value : null, elapsedMs, bossBeaten };
 }

@@ -21,6 +21,8 @@ import {
   isLevelId,
   isLevelOpen,
   LEVEL_END_REASONS,
+  LEVEL_METRIC,
+  LEVEL_REV_BASE,
   LEVEL_RULES,
   type LevelOutcome,
   type LevelRecord,
@@ -31,14 +33,25 @@ import {
   levelsXpEarned,
   levelXpFor,
   maxLevel,
+  maxMsOf,
   mergeBest,
   nextLevelId,
   openedChaptersOf,
+  puzzleConflictsOn,
   replayCandidates,
 } from './progress';
-import type { FindLevelOver, Stars } from './spec';
+import { type FindLevelOver, type FindTarget, LEVEL_KINDS, type PuzzleLevelOver, type Stars } from './spec';
 
 /* Progress through the levels (plan §4.5, §5.1; dev-plan §1.4, §3.1) [D50, D51, D55]. */
+
+/** One spot of a race (only counted here). */
+const FIND_TARGET: FindTarget = {
+  digit: 7,
+  scope: { kind: 'box', index: 4 },
+  cell: 40,
+  accept: [40],
+  tier: 'single',
+};
 
 const rec = (stars: Stars, plays = 1, lastPlayedAt?: number): LevelRecord =>
   lastPlayedAt === undefined ? { stars, plays } : { stars, plays, lastPlayedAt };
@@ -180,12 +193,113 @@ describe('the next level, and the gate (plan §4.5)', () => {
   });
 });
 
+describe('the time a level may take [D49, D68]', () => {
+  it('30 s by default; 60 s for fillBox, fillRow, fillCol and the puzzle (Moshe’s request, 2026-10-19)', () => {
+    expect(LEVEL_RULES.levelMaxMs).toBe(30000);
+    expect(LEVEL_RULES.kindMaxMs).toEqual({ fillBox: 60000, fillRow: 60000, fillCol: 60000, puzzle: 60000 });
+    expect(Object.fromEntries(LEVEL_KINDS.map((k) => [k, maxMsOf(k)]))).toEqual({
+      find: 30000,
+      findDuel: 30000,
+      fillBox: 60000,
+      duel: 30000,
+      spotError: 30000,
+      pointHunter: 30000,
+      chain: 30000,
+      fillRow: 60000,
+      fillCol: 60000,
+      puzzle: 60000,
+    });
+  });
+
+  it('both are settings: another table changes maxMsOf', () => {
+    const rules = { ...LEVEL_RULES, levelMaxMs: 25000, kindMaxMs: { puzzle: 45000 } };
+    expect([maxMsOf('puzzle', rules), maxMsOf('fillBox', rules), maxMsOf('find', rules)]).toEqual([
+      45000, 25000, 25000,
+    ]);
+  });
+});
+
+describe('the puzzle’s settings', () => {
+  it('[D70c] a wrong swap costs 5 s, as a wrong digit', () => {
+    expect(LEVEL_RULES.puzzleSwapPenaltyMs).toBe(5000);
+  });
+
+  it("[D78b] repeated digits are never marked by default ('none')", () => {
+    expect(LEVEL_RULES.puzzleConflicts).toBe('none');
+    for (const n of [1, 2, 3, 4, 30]) expect(puzzleConflictsOn(n)).toBe(false);
+  });
+
+  it("'always' marks them in every puzzle; 'firstStages' in the first 3 puzzles, not the 4th", () => {
+    const always = { ...LEVEL_RULES, puzzleConflicts: 'always' } as const;
+    for (const n of [1, 3, 4, 30]) expect(puzzleConflictsOn(n, always)).toBe(true);
+    const first = { ...LEVEL_RULES, puzzleConflicts: 'firstStages' } as const;
+    expect(LEVEL_RULES.puzzleConflictsFirstStages).toBe(3);
+    expect([1, 2, 3, 4, 5].map((n) => puzzleConflictsOn(n, first))).toEqual([true, true, true, false, false]);
+    expect(puzzleConflictsOn(0, first)).toBe(false);
+    expect(puzzleConflictsOn(2, { ...first, puzzleConflictsFirstStages: 1 })).toBe(false);
+  });
+});
+
 describe('bests', () => {
-  it('stars never go down: ★★★ then ★ → ★★★, and a new rev with ★ keeps ★★★', () => {
+  it('stars never go down: ★★★ then ★ → ★★★; without revs, as one rev', () => {
     const three = mergeBest('fillBox', null, { stars: 3, metric: 9000 });
     expect(mergeBest('fillBox', three, { stars: 1, metric: 18000 })).toEqual({ stars: 3, metric: 9000 });
-    // Rev 2 of the level: the record carries over.
     expect(mergeBest('fillBox', three, { stars: 1, metric: null })).toEqual({ stars: 3, metric: 9000 });
+  });
+
+  it('[D73] a new rev keeps the stars and starts the best measure over; the same rev, as always', () => {
+    const rev1 = { stars: 3, metric: 7600, rev: 1 } as const;
+    // L003 was a find at rev 1 (★★★, 7.6 s); at rev 2 it is a puzzle: ★ in 40 s.
+    expect(mergeBest('puzzle', rev1, { stars: 1, metric: 40000, rev: 2 })).toEqual({
+      stars: 3,
+      metric: 40000,
+      rev: 2,
+    });
+    // A quit at the new rev: the stars stay, and there is no measure yet.
+    expect(mergeBest('puzzle', rev1, { stars: 0, metric: null, rev: 2 })).toEqual({
+      stars: 3,
+      metric: null,
+      rev: 2,
+    });
+    // Then the same rev: the better time is kept, as before.
+    const rev2 = { stars: 1, metric: 40000, rev: 2 } as const;
+    expect(mergeBest('puzzle', rev2, { stars: 2, metric: 31000, rev: 2 })).toEqual({
+      stars: 2,
+      metric: 31000,
+      rev: 2,
+    });
+    expect(mergeBest('puzzle', rev2, { stars: 1, metric: 50000, rev: 2 })).toEqual(rev2);
+  });
+
+  it('[D73] an attempt at an older rev than the record (synced late) adds its stars, never its measure', () => {
+    expect(
+      mergeBest('fillBox', { stars: 1, metric: 40000, rev: 2 }, { stars: 3, metric: 5000, rev: 1 }),
+    ).toEqual({ stars: 3, metric: 40000, rev: 2 });
+  });
+
+  it('a rev on one side only: as one rev, and the rev is kept', () => {
+    expect(mergeBest('find', { stars: 2, metric: 7600 }, { stars: 2, metric: 6000, rev: 2 })).toEqual({
+      stars: 2,
+      metric: 6000,
+      rev: 2,
+    });
+  });
+
+  it('LEVEL_REV_BASE: every level is rebuilt at rev 2 in 1.0.3', () => {
+    expect(LEVEL_REV_BASE).toBe(2);
+  });
+
+  it('every kind has a measure; the three new ones go by the level clock', () => {
+    for (const kind of LEVEL_KINDS) expect(LEVEL_METRIC[kind]).toBeDefined();
+    expect([LEVEL_METRIC.fillRow, LEVEL_METRIC.fillCol, LEVEL_METRIC.puzzle]).toEqual([
+      'timeMs',
+      'timeMs',
+      'timeMs',
+    ]);
+    expect([isBetterMetric('puzzle', 30000, 31000), isBetterMetric('fillRow', 31000, 30000)]).toEqual([
+      true,
+      false,
+    ]);
   });
 
   it('the better measure is kept, by the kind’s direction', () => {
@@ -404,9 +518,50 @@ describe('levelOutcome: every end of every kind, through both hosts', () => {
     });
   }
 
+  // The puzzle engine (LocalPuzzleHost): its levelOver, stars by the level clock (wrong swaps included).
+  const puzzle = {
+    kind: 'puzzle',
+    stars: { by: 'timeMs', three: 26000, two: 36000, one: 45000 },
+  } as const;
+  const solved = (o: Partial<PuzzleLevelOver> & Pick<PuzzleLevelOver, 'reason'>): PuzzleLevelOver => ({
+    elapsedMs: 0,
+    penaltyMs: 0,
+    swaps: 0,
+    mistakes: 0,
+    stars: 0,
+    ...o,
+  });
+  add(
+    'puzzle, solved at 26.000 s (the edge is still ★★★), one wrong swap in it',
+    levelOutcome(
+      puzzle,
+      solved({ reason: 'targetReached', elapsedMs: 26000, penaltyMs: 5000, swaps: 3, mistakes: 1 }),
+    ),
+    { reason: 'completed', stars: 3, metric: 26000, elapsedMs: 26000 },
+  );
+  add(
+    'puzzle, solved at 37 s',
+    levelOutcome(puzzle, solved({ reason: 'targetReached', elapsedMs: 37000, swaps: 5 })),
+    { reason: 'completed', stars: 1, metric: 37000 },
+  );
+  add(
+    'puzzle, time up',
+    levelOutcome(puzzle, solved({ reason: 'timeUp', elapsedMs: 45000, swaps: 9, mistakes: 4 })),
+    { reason: 'timeUp', stars: 0, metric: null, elapsedMs: 45000 },
+  );
+  add('puzzle, quit', levelOutcome(puzzle, solved({ reason: 'quit', elapsedMs: 9000, swaps: 1 })), {
+    reason: 'quit',
+    stars: 0,
+    metric: null,
+  });
+
   it.each(outcomes)('%s', (_, outcome, expected) => {
     expect(outcome).toMatchObject(expected);
     expect(LEVEL_END_REASONS).toContain(outcome.reason);
+  });
+
+  it('a level that is not a boss: bossBeaten is null, whatever the end', () => {
+    for (const [, outcome] of outcomes) expect(outcome.bossBeaten).toBeNull();
   });
 
   it('the engine’s own stars agree with the outcome’s', () => {
@@ -418,5 +573,85 @@ describe('levelOutcome: every end of every kind, through both hosts', () => {
 
   it('LEVEL_END_REASONS: completed, timeUp, botWon, failed, quit', () => {
     expect(LEVEL_END_REASONS).toEqual(['completed', 'timeUp', 'botWon', 'failed', 'quit']);
+  });
+});
+
+describe('levelOutcome().bossBeaten: the engine says whether I beat the boss [D72]', () => {
+  const over = (o: Partial<FindLevelOver> & Pick<FindLevelOver, 'reason'>): FindLevelOver => ({
+    elapsedMs: 30000,
+    penaltyMs: 0,
+    spots: 0,
+    found: 0,
+    stars: 0,
+    ...o,
+  });
+  const raceBoss = {
+    kind: 'findDuel',
+    boss: true,
+    stars: { by: 'spots', three: 4, two: 3, one: 2 },
+  } as const;
+
+  it('a race boss, 2 spots mine and 3 the bot’s: a star, and still the bot’s win', () => {
+    const outcome = levelOutcome(raceBoss, over({ reason: 'targetReached', spots: 2, opponentSpots: 3 }));
+    expect(outcome).toMatchObject({ reason: 'completed', stars: 1, bossBeaten: false });
+  });
+
+  it('a race boss, 3 against 2: beaten; 2 against 1 with two void: beaten; 2 against 2: not', () => {
+    expect(
+      levelOutcome(raceBoss, over({ reason: 'targetReached', spots: 3, opponentSpots: 2 })).bossBeaten,
+    ).toBe(true);
+    expect(levelOutcome(raceBoss, over({ reason: 'timeUp', spots: 2, opponentSpots: 1 })).bossBeaten).toBe(
+      true,
+    );
+    expect(levelOutcome(raceBoss, over({ reason: 'timeUp', spots: 2, opponentSpots: 2 })).bossBeaten).toBe(
+      false,
+    );
+  });
+
+  it('an older end with no bot count: beaten only with more than half of the race’s spots', () => {
+    expect(levelOutcome(raceBoss, over({ reason: 'targetReached', spots: 2 })).bossBeaten).toBe(false);
+    expect(levelOutcome(raceBoss, over({ reason: 'targetReached', spots: 3 })).bossBeaten).toBe(true);
+    // The level says how many spots it has: 3 of 7 is not more than half.
+    const seven = { ...raceBoss, targets: { spots: Array.from({ length: 7 }, () => FIND_TARGET) } };
+    expect(levelOutcome(seven, over({ reason: 'targetReached', spots: 3 })).bossBeaten).toBe(false);
+  });
+
+  it('a race boss I quit: not beaten', () => {
+    expect(levelOutcome(raceBoss, over({ reason: 'quit', spots: 3, opponentSpots: 0 })).bossBeaten).toBe(
+      false,
+    );
+  });
+
+  it('a duel boss: beaten by the target first or a lead when the time runs out; not by the bot’s win or a quit', () => {
+    const boss = { ...DUEL_LEVEL, boss: true };
+    const race = (id: string) => {
+      const g = levelDriver(DUEL_LEVEL);
+      for (const [k, cell] of ['A1', 'A2', 'B4', 'G8', 'A5'].entries()) g.solve(id, cell, 1000 * (k + 1));
+      return g.state.result!;
+    };
+    expect(levelOutcome(boss, race('me'))).toMatchObject({ reason: 'completed', bossBeaten: true });
+    expect(levelOutcome(boss, race(PIP.id))).toMatchObject({ reason: 'botWon', bossBeaten: false });
+    const ahead = levelDriver(DUEL_LEVEL);
+    ahead.solve('me', 'A1', 1000);
+    ahead.tickTo(30000);
+    expect(levelOutcome(boss, ahead.state.result!)).toMatchObject({ reason: 'timeUp', bossBeaten: true });
+    const behind = levelDriver(DUEL_LEVEL);
+    behind.solve(PIP.id, 'A1', 1000);
+    behind.tickTo(30000);
+    expect(levelOutcome(boss, behind.state.result!)).toMatchObject({ reason: 'timeUp', bossBeaten: false });
+    const quit = levelDriver(DUEL_LEVEL);
+    quit.solve('me', 'A1', 1000);
+    quit.playerAct('me', { type: 'surrender' }, 2000);
+    expect(levelOutcome(boss, quit.state.result!).bossBeaten).toBe(false);
+  });
+
+  it('a boss with no bot (only under D72 ב): beaten by finishing it with a star', () => {
+    const boss = { ...FILL_BOX_LEVEL, boss: true };
+    const g = levelDriver(FILL_BOX_LEVEL);
+    for (const cell of ['D4', 'D5', 'E4', 'E5', 'F4']) g.solve('me', cell, 9000);
+    expect(levelOutcome(boss, g.state.result!)).toMatchObject({ stars: 3, bossBeaten: true });
+    const t = levelDriver(FILL_BOX_LEVEL);
+    t.tickTo(20000);
+    expect(levelOutcome(boss, t.state.result!)).toMatchObject({ reason: 'timeUp', bossBeaten: false });
   });
 });

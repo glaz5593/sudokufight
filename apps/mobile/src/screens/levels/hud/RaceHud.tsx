@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import type { AvatarIdOrNone } from '../../../avatars';
+import { BossCrown } from '../../../components/levels/BossBadge';
 import { type SpotOwner, StarsBar } from '../../../components/levels/StarsBar';
 import { Avatar, SeatGlyph } from '../../../components/player';
 import { secondsOf } from '../../../components/player/format';
@@ -26,6 +27,9 @@ import { levelClock, scopeText, StageHeader } from './FindHud';
  * laughs at my wrong tap; the five spots as pips in their taker's colour and shape (StarsBar's count); the task
  * line "מקום 4 מתוך 5 · מצא את ה־4 בריבוע 9" and "עוד 13 ש׳". My reactions button only with LEVEL_UI.reactions
  * (D62: off). Everything comes from the tap engine's view.
+ *
+ * A boss (levels-ui.md §3.2, D77): the header's boss band (StageHeader) and a 16 dp crown on the bot's avatar
+ * (BossCrown, static), its label "Pip, הבוס".
  *
  * Motion: the bot's avatar hops when it takes a spot (`level.bot.hop`, full motion only; Reduced Motion: it stays,
  * and the pip and the live region say it).
@@ -90,7 +94,14 @@ export function RaceHud({
           VS
         </Text>
         {bot ? (
-          <BotCard player={bot} view={view} searching={open} reaction={botReaction} hop={botHop} />
+          <BotCard
+            player={bot}
+            view={view}
+            boss={level.boss}
+            searching={open}
+            reaction={botReaction}
+            hop={botHop}
+          />
         ) : null}
       </View>
       <StarsBar rule={level.stars} value={me?.score ?? 0} spots={spots} />
@@ -162,12 +173,15 @@ function MeCard({
 function BotCard({
   player,
   view,
+  boss,
   searching,
   reaction,
   hop,
 }: {
   player: PlayerView;
   view: GameView;
+  /** A boss stage: the crown on the avatar, and "Pip, הבוס" in the label. */
+  boss: boolean;
   searching: boolean;
   reaction: { id: number; emoji: string } | null;
   hop: number | null;
@@ -199,11 +213,17 @@ function BotCard({
       <View
         style={styles.who}
         accessible
-        accessibilityLabel={t('hud.race.botLabel', { name, n: level ?? '', title, spots })}
+        accessibilityLabel={t('hud.race.botLabel', {
+          name: boss ? t('boss.botLabel', { name }) : name,
+          n: level ?? '',
+          title,
+          spots,
+        })}
         testID="race-bot-who"
       >
         <Animated.View style={hopStyle} testID="race-bot-avatar">
           <Avatar avatarId={who.avatar} size="compact" colorIndex={1} bot />
+          {boss ? <BossCrown testID="race-bot-crown" /> : null}
         </Animated.View>
         <View style={styles.nameRow}>
           <SeatGlyph colorIndex={1} size={GLYPH} />

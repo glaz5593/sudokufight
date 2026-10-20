@@ -6,6 +6,7 @@ import {
   explain,
   type ExplainOptions,
   explainSpotError,
+  fillRegionOf,
   formatExplanation,
   formatWrong,
   type GameView,
@@ -13,6 +14,7 @@ import {
   LEVEL_PENALTY_MS,
   type LevelSpecOf,
   parseGrid,
+  puzzleExplainSteps,
   whyWrong,
 } from '@sudoku-fight/engine';
 
@@ -28,13 +30,15 @@ import type { LevelsT } from './levelWording';
  *
  * - find: the target in its scope, and why my first wrong tap could not hold it (the session's findWhy).
  * - the race: the first spot I did not take (else the first), in its scope, on the board as it was shown.
- * - fill the box: my first wrong digit in the box and why, and why the right one holds (in the box's frame);
- *   with no mistake, the box's first missing cell.
+ * - fill the box, the row, the column (one path, fillRegionOf [D69]): my first wrong digit in the region and
+ *   why, and why the right one holds (in the region's frame); with no mistake, the region's first missing cell.
  * - the duel: my first wrong digit and why; with none, why my best move holds.
  * - spot the error: each planted error, found or not, why it is wrong and why the right digit holds; and my
  *   first tap on a right digit of mine.
  * - the point hunter: my points against the board's best, as a share; the best line; why its first move holds.
  * - the chain: each step, why it is the one cell known at that moment (on the board with the steps before it).
+ * - the puzzle: the engine's puzzleExplainSteps, one place at a time from the start to the solution, each with
+ *   its reason (the one box that fits a place, or the one place a box fits); this file only words it.
  *
  * The board an explanation reads: the stage's start for a target (plus a race's spots or a chain's steps
  * before it); the end's board, the cell emptied, for a digit of mine (its right digits only: a wrong one never
@@ -71,14 +75,19 @@ function whyLines(played: AppLevel, r: WhyInput, lang: Lang, t: LevelsT): string
     }
     case 'findDuel':
       return raceWhy(played, ctx, t);
-    case 'fillBox': {
-      const unit = { kind: 'box', index: played.targets.box } as const;
-      const first = played.targets.cells[0];
+    case 'fillBox':
+    case 'fillRow':
+    case 'fillCol': {
+      const region = fillRegionOf(played)!;
+      const unit = { kind: region.unit, index: region.index };
+      const first = region.cells[0];
       return (
-        mistakeWhy(ctx, t, played.targets.cells, unit) ??
+        mistakeWhy(ctx, t, region.cells, unit) ??
         lineOf(first === undefined ? null : ctx.explained(ctx.endBoard(first), first, { unit }))
       );
     }
+    case 'puzzle':
+      return puzzleWhy(played, t);
     case 'duel': {
       const best = ctx.me?.bestMove ?? null;
       return (
@@ -236,6 +245,19 @@ function pointHunterWhy(played: LevelSpecOf<'pointHunter'>, ctx: WhyContext, t: 
     ...(best.length ? [t('explain.line', { moves })] : []),
     ...lineOf(ctx.explained(ctx.grid, best[0]?.cell)),
   ];
+}
+
+/**
+ * The puzzle: the engine's steps from the start to the solution, each "Step 2: only the box that started at
+ * place 7 fits place 3: …" (places said 1–9, row-major, as on the board, which is always LTR).
+ */
+function puzzleWhy(played: LevelSpecOf<'puzzle'>, t: LevelsT): string[] {
+  return puzzleExplainSteps(played).map((step, k) =>
+    t('explain.step', {
+      n: k + 1,
+      text: t(`explain.puzzle.${step.reason}`, { place: step.place + 1, from: step.from + 1 }),
+    }),
+  );
 }
 
 /** The chain: each step on the board with the steps before it (its digits are forced in every solution). */

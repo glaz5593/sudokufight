@@ -40,6 +40,8 @@ import { installSignedInPlayer, installTestAuth } from '../auth/testing/testAuth
 import { type RankedDeps, useGameStore } from '../game/gameStore';
 import { openPracticeRepo, type PracticeRepo } from '../game/practiceRepo';
 import { practiceStorageOrNull } from '../game/storage';
+import { firstBossOf, firstLevelOf, levelsOf } from '../levels/__tests__/helpers/levelsOf';
+import { levelById } from '../levels/levelsData';
 import { answerIn, emptyCellsOf, PUZZLE } from '../game/testing/practice';
 import { memoryDb } from '../game/testing/sqlJsDb';
 import i18n from '../i18n';
@@ -630,24 +632,39 @@ const CASES: Case[] = [
   },
   {
     name: 'levels: a stage’s result',
-    url: '/levels/play?id=L001',
+    url: `/levels/play?id=${firstLevelOf('find', 1).id}`,
     setup: () => void useTutorials.setState({ seen: { find: true, fillBox: true, boss: true } }),
     drive: () => settle(2500),
     ready: 'level-ready',
     shows: 'level-result',
   },
-  // ---- staged practice: the stage screens themselves (2ח), one per kind, after "מוכן?"
+  {
+    // A boss's opening, in place of "מוכן?" (levels-ui.md §3.2, D77): chapter 1's, the race against Pip.
+    name: 'levels: a boss’s opening',
+    url: `/levels/play?id=${firstBossOf('findDuel', 1).id}`,
+    setup: () => void useTutorials.setState({ seen: { findDuel: true, boss: true } }),
+    drive: () => settle(1000),
+    ready: 'level-ready',
+    shows: 'boss-intro',
+  },
+  // ---- staged practice: the stage screens themselves (2ח), one per kind, after "מוכן?" (each picked by its kind,
+  // never by id: a rebuild may give an id another kind; levels/__tests__/helpers/levelsOf)
   ...(
     [
-      ['find (kind 1)', 'L001', 'tap-level', 'level-live'],
-      ['the race (kind 2)', 'L012', 'race-hud', 'level-live'],
-      ['fill the box (kind 3)', 'L002', 'box-hud', 'game-live'],
-      ['the duel (kind 4)', 'L021', 'duel-hud', 'game-live'],
-      ['a boss (fill the box)', 'L010', 'stage-boss', 'game-live'],
+      ['find (kind 1)', firstLevelOf('find', 1).id, 'tap-level', 'level-live'],
+      ['the race (kind 2)', firstLevelOf('findDuel').id, 'race-hud', 'level-live'],
+      ['fill the box (kind 3)', firstLevelOf('fillBox', 1).id, 'box-hud', 'game-live'],
+      ['the duel (kind 4)', firstLevelOf('duel').id, 'duel-hud', 'game-live'],
+      ['a boss (the duel)', firstBossOf('duel').id, 'stage-boss', 'game-live'],
+      // 1.0.3 (levels-ui.md §10): the puzzle (its nine box buttons), fill the row and the column, the race boss.
+      ['the puzzle', firstLevelOf('puzzle').id, 'puzzle-board', 'level-live'],
+      ['fill the row', firstLevelOf('fillRow').id, 'box-hud', 'game-live'],
+      ['fill the column', firstLevelOf('fillCol').id, 'box-hud', 'game-live'],
+      ['a boss (the race)', firstBossOf('findDuel').id, 'stage-boss', 'level-live'],
       // The three ideas (2ט): spot the error with its tip card, the point hunter, the chain.
-      ['spot the error', 'L034', 'spot-tip', 'level-live'],
-      ['the point hunter', 'L066', 'hunt-hud', 'game-live'],
-      ['the chain', 'L085', 'chain-hud', 'game-live'],
+      ['spot the error', levelsOf('spotError')[0]!.id, 'spot-tip', 'level-live'],
+      ['the point hunter', levelsOf('pointHunter')[0]!.id, 'hunt-hud', 'game-live'],
+      ['the chain', levelsOf('chain')[0]!.id, 'chain-hud', 'game-live'],
     ] as const
   ).map(([kind, id, shows, live]): Case => ({
     name: `levels: a stage, ${kind}`,
@@ -658,6 +675,9 @@ const CASES: Case[] = [
           find: true,
           findDuel: true,
           fillBox: true,
+          fillRow: true,
+          fillCol: true,
+          puzzle: true,
           duel: true,
           boss: true,
           spotError: true,
@@ -666,7 +686,8 @@ const CASES: Case[] = [
         },
       }),
     drive: async () => {
-      await settle(2500);
+      // "מוכן?" (2 s), or a boss's opening in its place (LEVEL_UI.bossReadyMs, 3 s; D77), for any boss.
+      await settle(levelById(id)?.boss ? 3500 : 2500);
       await settle(100);
     },
     ready: 'level-ready',
@@ -675,7 +696,7 @@ const CASES: Case[] = [
   })),
   {
     name: 'levels: a stage’s exit dialog',
-    url: '/levels/stage?id=L001',
+    url: `/levels/stage?id=${firstLevelOf('find', 1).id}`,
     setup: () => void useTutorials.setState({ seen: { find: true } }),
     drive: async () => {
       await settle(2500);
@@ -688,14 +709,21 @@ const CASES: Case[] = [
   },
   {
     name: 'levels: "איך משחקים" with its pictures',
-    url: '/levels/stage?id=L012',
+    url: `/levels/stage?id=${firstLevelOf('findDuel').id}`,
     setup: () => void useTutorials.setState({ seen: {} }),
     ready: 'how-to-play',
     shows: 'how-to-play-board-findDuel-1',
   },
   {
+    name: 'levels: "איך משחקים" of the puzzle (the lock, the held box)',
+    url: `/levels/stage?id=${firstLevelOf('puzzle').id}`,
+    setup: () => void useTutorials.setState({ seen: {} }),
+    ready: 'how-to-play',
+    shows: 'how-to-play-board-puzzle-1',
+  },
+  {
     name: 'levels: "איך משחקים" of an idea (spot the error)',
-    url: '/levels/stage?id=L034',
+    url: `/levels/stage?id=${levelsOf('spotError')[0]!.id}`,
     setup: () => void useTutorials.setState({ seen: {} }),
     ready: 'how-to-play',
     shows: 'how-to-play-board-spotError-1',

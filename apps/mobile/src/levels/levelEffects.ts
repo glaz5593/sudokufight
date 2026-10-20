@@ -4,6 +4,8 @@ import type {
   HostUpdate,
   LevelEvent,
   PlayerId,
+  PuzzleEvent,
+  PuzzleLevelOver,
   RejectReason,
 } from '@sudoku-fight/engine';
 
@@ -12,6 +14,10 @@ import type {
  * tap's red X and its "‎+5 ש׳" or 3 s freeze, the bot taking a spot, its 😂, a spot nobody took, the next spot,
  * and the end. Pure: it reads the tap engine's events (`levelEvents`) and nothing else, so the screen keeps no
  * game logic. Each effect carries its event's `seq`, a ready-made id for replaying the same flash twice.
+ *
+ * The puzzle (1.0.3, levels-ui.md §4.3): its engine's events (`puzzleEvents`) the same way: two boxes swapped
+ * (with a wrong swap's "‎+5 ש׳"), a box locked home (only with lockOnCorrect), the freeze, and the end; a swap
+ * the engine refused says why ('boxFixed' sends the dragged box home). The screen decides none of it.
  */
 export type LevelEffect =
   /** A right tap: a find's target or a race's spot (then `spotWon` follows), or a planted error found. */
@@ -43,7 +49,15 @@ export type LevelEffect =
   /** My tap was refused: frozen (the race), a filled cell, the stage paused or over. */
   | { kind: 'refused'; reason: RejectReason; cell?: CellIndex }
   /** The stage is over (the levelOver event): the screen holds its last picture, then shows the result. */
-  | { kind: 'ended'; seq: number; over: FindLevelOver };
+  | { kind: 'ended'; seq: number; over: FindLevelOver }
+  /** A puzzle: two boxes changed places; `penaltyMs` > 0 for a wrong swap (its "‎+5 ש׳") [D70c]. */
+  | { kind: 'swapped'; seq: number; from: number; to: number; penaltyMs: number }
+  /** A puzzle's box reached its home and locked there (only with lockOnCorrect) [D71]. */
+  | { kind: 'boxPlaced'; seq: number; place: number }
+  /** A puzzle's swap was refused: a fixed box ('boxFixed'), a bad place, the puzzle paused or over. */
+  | { kind: 'swapRefused'; reason: RejectReason; from: number; to: number }
+  /** The puzzle is over (its levelOver event): the screen holds its last picture, then shows the result. */
+  | { kind: 'puzzleEnded'; seq: number; over: PuzzleLevelOver };
 
 export type LevelEffectKind = LevelEffect['kind'];
 
@@ -96,16 +110,46 @@ function effectOf(e: LevelEvent, myId: PlayerId | null): LevelEffect | null {
   }
 }
 
-/** The effects of one update of a tap stage's host, in order. */
+function puzzleEffectOf(e: PuzzleEvent): LevelEffect | null {
+  switch (e.type) {
+    case 'boxesSwapped':
+      return { kind: 'swapped', seq: e.seq, from: e.from, to: e.to, penaltyMs: e.penaltyMs };
+    case 'boxPlaced':
+      return { kind: 'boxPlaced', seq: e.seq, place: e.place };
+    case 'levelPaused':
+      return { kind: 'paused', seq: e.seq };
+    case 'levelResumed':
+      return { kind: 'resumed', seq: e.seq, pausedMs: e.pausedMs };
+    case 'levelOver': {
+      const { reason, elapsedMs, penaltyMs, swaps, mistakes, stars } = e;
+      return {
+        kind: 'puzzleEnded',
+        seq: e.seq,
+        over: { reason, elapsedMs, penaltyMs, swaps, mistakes, stars },
+      };
+    }
+    case 'puzzleCreated':
+    case 'levelStarted':
+      return null;
+  }
+}
+
+/** The effects of one update of a tap stage's (or a puzzle's) host, in order. */
 export function levelEffectsOf(update: HostUpdate, myId: PlayerId | null): LevelEffect[] {
   if (update.kind === 'rejected') {
     const { action, reason } = update;
+    if (action.type === 'swapBoxes')
+      return [{ kind: 'swapRefused', reason, from: action.from, to: action.to }];
     const cell = 'cell' in action ? action.cell : undefined;
     return action.type === 'tap' ? [{ kind: 'refused', reason, cell }] : [];
   }
   const out: LevelEffect[] = [];
   for (const e of update.levelEvents ?? []) {
     const effect = effectOf(e, myId);
+    if (effect) out.push(effect);
+  }
+  for (const e of update.puzzleEvents ?? []) {
+    const effect = puzzleEffectOf(e);
     if (effect) out.push(effect);
   }
   return out;

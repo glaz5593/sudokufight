@@ -14,11 +14,22 @@ import { navigate } from '../router';
  * `tooHardShare` of its first tries get 0 stars; a chapter needs softening when more than `stuckShare` of the
  * players who reached the gate at its end are stuck there after `stuckAttempts` tries. The server sends the
  * thresholds with the numbers; the page only compares.
+ *
+ * 1.0.3 [D73]: each level counts only the plays of its rev now (a rebuilt level is a new stage); "כל הגרסאות"
+ * (`allRevs`) counts every rev together, for the plays from before a rebuild (1.0.2's, for the D74 calibration).
  */
-export function LevelsPage({ days, chapter }: { days: number; chapter: number }) {
+export function LevelsPage({
+  days,
+  chapter,
+  allRevs = false,
+}: {
+  days: number;
+  chapter: number;
+  allRevs?: boolean;
+}) {
   const { t } = useI18n();
   const api = useApi();
-  const load = useCallback(() => api.levels(days), [api, days]);
+  const load = useCallback(() => api.levels(days, allRevs), [api, days, allRevs]);
   const result = useAsync(load);
   const title = t('levels.title');
 
@@ -26,11 +37,20 @@ export function LevelsPage({ days, chapter }: { days: number; chapter: number })
     <>
       <PageHeader title={title} docTitle={title}>
         <div className="toolbar">
-          <DaysSelect days={days} onChange={(d) => navigate({ name: 'levels', days: d, chapter })} />
+          <DaysSelect days={days} onChange={(d) => navigate({ name: 'levels', days: d, chapter, allRevs })} />
+          <Select
+            label={t('levels.revs')}
+            value={allRevs ? 'all' : 'now'}
+            options={[
+              { value: 'now', label: t('levels.revsNow') },
+              { value: 'all', label: t('levels.revsAll') },
+            ]}
+            onChange={(v) => navigate({ name: 'levels', days, chapter, allRevs: v === 'all' })}
+          />
         </div>
       </PageHeader>
       <AsyncView result={result}>
-        {(data) => <LevelsBody data={data} days={days} chapter={chapter} />}
+        {(data) => <LevelsBody data={data} days={days} chapter={chapter} allRevs={allRevs} />}
       </AsyncView>
     </>
   );
@@ -85,7 +105,17 @@ export function sortLevels(rows: readonly AdminLevelStat[], sort: Sort): AdminLe
 const CALLOUT_MAX = 12;
 
 /** The page under its header, for an answer of the server (exported for a static render of real data). */
-export function LevelsBody({ data, days, chapter }: { data: AdminLevels; days: number; chapter: number }) {
+export function LevelsBody({
+  data,
+  days,
+  chapter,
+  allRevs = false,
+}: {
+  data: AdminLevels;
+  days: number;
+  chapter: number;
+  allRevs?: boolean;
+}) {
   const { t, lang, label } = useI18n();
   const [sort, setSort] = useState<Sort>({ column: 'level', dir: 'asc' });
   const pct = (ratio: number) => formatPercent(lang, ratio);
@@ -331,7 +361,7 @@ export function LevelsBody({ data, days, chapter }: { data: AdminLevels; days: n
         </div>
       )}
 
-      <Section title={t('levels.byLevel')} hint={t('levels.byLevelHint')}>
+      <Section title={t('levels.byLevel')} hint={t(allRevs ? 'levels.byLevelHintAll' : 'levels.byLevelHint')}>
         {!anyPlay ? (
           <Empty>{t('levels.empty')}</Empty>
         ) : (
@@ -347,7 +377,7 @@ export function LevelsBody({ data, days, chapter }: { data: AdminLevels; days: n
                     label: t('levels.chapterOption', { chapter: formatNumber(lang, c) }),
                   })),
                 ]}
-                onChange={(c) => navigate({ name: 'levels', days, chapter: c })}
+                onChange={(c) => navigate({ name: 'levels', days, chapter: c, allRevs })}
               />
               <StarsLegend />
             </div>

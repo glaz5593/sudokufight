@@ -7,12 +7,13 @@ import { transformLevel } from '../transform';
 import { buildChain } from './chain';
 import { BuildError } from './common';
 import { buildDuel } from './duel';
-import { buildFillBox } from './fillBox';
+import { buildFillRegion } from './fillRegion';
 import { buildFind, type Built } from './find';
 import { buildFindDuel } from './findDuel';
 import { buildPointHunter } from './pointHunter';
+import { buildPuzzle } from './puzzle';
 import { buildSpotError } from './spotError';
-import { botConfigFingerprint, type LevelsFile, validateLevel } from './validate';
+import { botConfigFingerprint, fillModelProblem, type LevelsFile, validateLevel } from './validate';
 
 /**
  * Builds the 300 levels (`npm run levels:build`, dev-plan §2ד): each from its plan (levels.config) with a fresh
@@ -41,7 +42,11 @@ export function buildByKind(plan: LevelPlan, rng: Rng, config: BotConfig = BOT_C
     case 'findDuel':
       return buildFindDuel(plan, rng, config);
     case 'fillBox':
-      return buildFillBox(plan, rng);
+    case 'fillRow':
+    case 'fillCol':
+      return buildFillRegion(plan, rng);
+    case 'puzzle':
+      return buildPuzzle(plan, rng);
     case 'duel':
       return buildDuel(plan, rng);
     case 'spotError':
@@ -53,10 +58,15 @@ export function buildByKind(plan: LevelPlan, rng: Rng, config: BotConfig = BOT_C
   }
 }
 
-/** Every problem of a level and of its checked equivalent boards. */
+/**
+ * Every problem of a level and of its checked equivalent boards; and of the stored board alone, a fill region
+ * slower than its ★★ by the time model (fillModelProblem).
+ */
 export function levelProblems(spec: LevelSpec, rules: LevelRules = LEVEL_RULES): string[] {
+  const slow = fillModelProblem(spec);
   return [
     ...validateLevel(spec, rules),
+    ...(slow ? [slow] : []),
     ...CHECKED_ATTEMPTS.flatMap((a) =>
       validateLevel(transformLevel(spec, a), rules).map((p) => `${p} (attempt ${a})`),
     ),

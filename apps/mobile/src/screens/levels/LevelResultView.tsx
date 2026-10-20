@@ -24,11 +24,21 @@ import { formatScore, ltr, signedText } from '../../components/player/format';
 import { Button } from '../../components/ui';
 import { Confetti } from '../../components/ui/Confetti';
 import { timing } from '../../components/ui/motion';
+import { LEVEL_MOTION } from '../../config/levels';
 import type { LevelFinished } from '../../levels/appLevels';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { KIND_ICON } from './LevelNode';
-import { chapterName, headline, kindName, type LevelsT, metricParts, starsOf3 } from './levelWording';
+import {
+  bossGateText,
+  bossResultText,
+  chapterName,
+  headline,
+  kindName,
+  type LevelsT,
+  metricParts,
+  starsOf3,
+} from './levelWording';
 
 /**
  * A stage's result (components.md §19.10; the Level-Result board): a state inside the stage's own route, never a
@@ -43,6 +53,11 @@ import { chapterName, headline, kindName, type LevelsT, metricParts, starsOf3 } 
  *   point hunter;
  * - "למה?": the session's explanation of the target, with my wrong tap;
  * - "לשלב הבא" (the quick entry), "שוב" and "למפה". Three stars: one confetti burst (never under Reduced Motion).
+ * - a boss (levels-ui.md §3.2, D77): over the title, a 56 dp crown medallion and "ניצחת את הבוס!" (the crown
+ *   pops, `level.boss.won`; at once under Reduced Motion) or "הבוס ניצח הפעם" (still), and the gate's line in
+ *   front: "השער לפרק 2: ★ 22/20 · נפתח!". Who won is the engine's verdict, levelOutcome().bossBeaten, never the
+ *   stars: a race gives a star for 2 spots of 5 and is still the bot's with 3. It is only the word on the screen:
+ *   the gate still needs only "played the boss" (spec §5.3.5).
  * Every number in it comes from the engine's reading of the end (levelOutcome) and what levels.db stored.
  */
 
@@ -53,8 +68,11 @@ export interface LevelOpponent {
   botLevel: BotLevelId;
   /** Its score (a duel) or the spots it took (a race). */
   value: number;
-  /** The end, as the engine ranked it: I won, the bot did, or a tie. */
-  verdict: 'won' | 'lost' | 'tie';
+  /**
+   * The end, as the engine ranked it: I won, the bot did, or a tie. A boss: the engine's bossBeaten [D72], and
+   * `bossTie` for equal places that do not beat it ("תיקו: הבוס נשאר"), never a plain tie under "הבוס ניצח הפעם".
+   */
+  verdict: 'won' | 'lost' | 'tie' | 'bossTie';
 }
 
 /** What the stage screens hand the result when a stage ends (app/levels/play.tsx's `playing` phase). */
@@ -115,6 +133,7 @@ export function LevelResultView({
   }, [opacity, reduce]);
   const enter = useAnimatedStyle(() => ({ opacity: opacity.get() }));
 
+  const bossWords = level.boss ? bossResultText(outcome.bossBeaten, t) : null;
   const big = headline(level, outcome);
   const parts = metricParts(level, big.measure, big.value, t);
   const newBest =
@@ -126,6 +145,9 @@ export function LevelResultView({
     <View style={[styles.screen, { paddingTop: top }]} testID="level-result">
       <Animated.View style={[styles.flex, enter]}>
         <ScrollView contentContainerStyle={styles.content}>
+          {bossWords ? (
+            <BossVerdict won={outcome.bossBeaten === true} words={bossWords} reduce={reduce} />
+          ) : null}
           <Text style={styles.over} numberOfLines={1}>
             {t('panel.sub', { chapter: level.chapter, name: chapterName(level.chapter, t) })}
           </Text>
@@ -188,7 +210,13 @@ export function LevelResultView({
 
           {xp > 0 ? <XpLine xp={xp} stars={outcome.stars} reduce={reduce} t={t} /> : null}
 
-          {chapter ? <ChapterLine chapter={chapter} t={t} /> : null}
+          {chapter ? (
+            level.boss && chapter.gate ? (
+              <BossGateLine level={level} gate={chapter.gate} t={t} />
+            ) : (
+              <ChapterLine chapter={chapter} t={t} />
+            )
+          ) : null}
 
           <Stats level={level} played={played} measure={big.measure} t={t} />
 
@@ -246,6 +274,56 @@ export function LevelResultView({
       {outcome.stars === 3 && !reduce ? (
         <Confetti delayMs={STAR_MOTION.confettiAtMs} testID="level-result-confetti" />
       ) : null}
+    </View>
+  );
+}
+
+/**
+ * A boss's verdict over the title: the 56 dp crown medallion and the engine's word. Won: gold, the crown pops
+ * (LEVEL_MOTION.bossWonPopMs, `lv-pop`; Reduced Motion: it is simply there). Lost: muted, still.
+ */
+function BossVerdict({ won, words, reduce }: { won: boolean; words: string; reduce: boolean }) {
+  const pop = won && !reduce;
+  const scale = useSharedValue(pop ? POP_FROM : 1);
+  useEffect(() => {
+    if (!pop) {
+      scale.set(1);
+      return;
+    }
+    scale.set(withTiming(1, timing(LEVEL_MOTION.bossWonPopMs, 'emphasized', false)));
+  }, [pop, scale]);
+  const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }] }));
+  return (
+    <View style={styles.boss} testID="level-result-boss">
+      <Animated.View
+        style={[styles.medallion, won ? styles.medallionWon : styles.medallionLost, popStyle]}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        testID="level-result-boss-crown"
+      >
+        <Icon name="crown" size={MEDALLION_CROWN} color={won ? color.accent : color.textMuted} />
+      </Animated.View>
+      <Text
+        style={[styles.bossWords, won ? styles.bossWon : styles.bossLost]}
+        testID="level-result-boss-words"
+      >
+        {words}
+      </Text>
+    </View>
+  );
+}
+
+/** A boss's chapter line, in front: "השער לפרק 2: ★ 22/20 · נפתח!" (the count an LTR isolate). */
+function BossGateLine({ level, gate, t }: { level: AppLevel; gate: GateState; t: LevelsT }) {
+  const words = bossGateText(level.chapter, gate.stars, gate.need, gate.open, t);
+  return (
+    <View
+      style={[styles.bossGate, gate.open && styles.bossGateOpen]}
+      accessible
+      accessibilityLabel={words}
+      testID="level-result-chapter"
+    >
+      <Text style={[styles.bossGateText, gate.open && styles.bossGateTextOpen]}>{words}</Text>
     </View>
   );
 }
@@ -348,7 +426,9 @@ function OpponentRow({ level, opponent, t }: { level: AppLevel; opponent: LevelO
       ? t('result.youWon')
       : opponent.verdict === 'lost'
         ? t('result.botWon', { bot: opponent.name })
-        : t('result.tie');
+        : opponent.verdict === 'bossTie'
+          ? t('result.bossTie')
+          : t('result.tie');
   return (
     <View
       style={styles.opponent}
@@ -374,6 +454,10 @@ function OpponentRow({ level, opponent, t }: { level: AppLevel; opponent: LevelO
 }
 
 const ME = color.players[0]!;
+/** levels-ui.md §3.2: the boss's crown medallion over the result's title, and its pop. */
+const MEDALLION = 56;
+const MEDALLION_CROWN = 30;
+const POP_FROM = 0.4;
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
@@ -385,6 +469,31 @@ const styles = StyleSheet.create({
     paddingTop: space[8],
     paddingBottom: space[8],
   },
+  boss: { alignItems: 'center', gap: space[4] },
+  medallion: {
+    width: MEDALLION,
+    height: MEDALLION,
+    borderRadius: MEDALLION / 2,
+    borderWidth: tokens.border.focus,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  medallionWon: { borderColor: color.accent, backgroundColor: color.accentSubtle },
+  medallionLost: { borderColor: color.border, backgroundColor: color.surface2 },
+  bossWords: { ...text('h1'), textAlign: 'center' },
+  bossWon: { color: color.accent },
+  bossLost: { color: color.textMuted },
+  bossGate: {
+    paddingHorizontal: space[6],
+    paddingVertical: space[3],
+    borderRadius: radius.pill,
+    borderWidth: tokens.border.hairline,
+    borderColor: color.border,
+    backgroundColor: color.surface,
+  },
+  bossGateOpen: { borderColor: color.accent, backgroundColor: color.accentSubtle },
+  bossGateText: { ...text('rowTitle'), color: color.text, textAlign: 'center' },
+  bossGateTextOpen: { color: color.accent },
   over: { ...text('label'), color: color.textMuted },
   title: { ...text('screenTitle'), color: color.text, textAlign: 'center' },
   reason: { ...text('status'), color: color.textMuted, textAlign: 'center' },

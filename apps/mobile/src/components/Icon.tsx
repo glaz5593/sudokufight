@@ -264,6 +264,29 @@ const ICONS = {
       <Path d="M9.3 4v16M14.7 4v16M4 9.3h16M4 14.7h16" />
     </>
   ),
+  /** "מלא את השורה" (1.0.3): one row of the board, three cells wide. */
+  gridRow: (
+    <>
+      <Rect x="2.5" y="8.5" width="19" height="7" rx="1.5" />
+      <Path d="M8.8 8.5v7M15.2 8.5v7" />
+    </>
+  ),
+  /** "מלא את העמודה" (1.0.3): one column of the board, three cells tall. */
+  gridCol: (
+    <>
+      <Rect x="8.5" y="2.5" width="7" height="19" rx="1.5" />
+      <Path d="M8.5 8.8h7M8.5 15.2h7" />
+    </>
+  ),
+  /** "פאזל" (1.0.3): two boxes trading places, an arrow each way. */
+  puzzle: (
+    <>
+      <Rect x="3" y="3" width="8" height="8" rx="1.5" />
+      <Rect x="13" y="13" width="8" height="8" rx="1.5" />
+      <Path d="M13.5 7H16a2.5 2.5 0 0 1 2.5 2.5V11M16.5 9.5l2 2 2-2" />
+      <Path d="M10.5 17H8a2.5 2.5 0 0 1-2.5-2.5V13M7.5 14.5l-2-2-2 2" />
+    </>
+  ),
   /** "דו־קרב ל־30": two crossed swords. */
   swords: (
     <>

@@ -84,10 +84,26 @@ describe('strings: Hebrew and English', () => {
     ).toEqual(['שם פוגעני', 'רמאות', 'אחר']);
   });
 
-  it('every kind of stage has its words (staged practice, 1.0.2)', () => {
+  it('every kind of stage has its words (staged practice, 1.0.2; 1.0.3 adds three)', () => {
     for (const kind of ADMIN_LEVEL_KINDS)
       expect([kind, isStringKey(`levelKind.${kind}`)]).toEqual([kind, true]);
-    expect(ADMIN_LEVEL_KINDS).toHaveLength(7);
+    expect(ADMIN_LEVEL_KINDS).toHaveLength(10);
+    // [D79] find is named as in the app: "מיקום מדויק" / Pinpoint, never "מציאת מקום" any more.
+    expect([translate('he', 'levelKind.find'), translate('en', 'levelKind.find')]).toEqual([
+      'מיקום מדויק',
+      'Pinpoint',
+    ]);
+    const names = (lang: 'he' | 'en') =>
+      (['fillRow', 'fillCol', 'puzzle'] as const).map((k) => translate(lang, `levelKind.${k}`));
+    expect(names('he')).toEqual(['מלא את השורה', 'מלא את העמודה', 'פאזל']);
+    expect(names('en')).toEqual(['Fill the row', 'Fill the column', 'Puzzle']);
+    // Each kind its own name.
+    for (const lang of LANGS) {
+      const all = ADMIN_LEVEL_KINDS.map((k) =>
+        isStringKey(`levelKind.${k}`) ? translate(lang, `levelKind.${k}`) : k,
+      );
+      expect(new Set(all).size).toBe(ADMIN_LEVEL_KINDS.length);
+    }
     // English says "Stage", never "Level", for a stage: "Level" is the XP level.
     const stageKeys = Object.keys(en).filter(
       (k) => k.startsWith('levels.') || k === 'nav.levels' || k === 'col.level',

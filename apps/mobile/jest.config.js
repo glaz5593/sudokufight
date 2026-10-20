@@ -10,7 +10,8 @@ module.exports = {
   displayName: 'mobile',
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/app/'],
+  // __tests__/helpers/ holds test helpers (levels/__tests__/helpers/levelsOf.ts), not tests.
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/app/', '[\\\\/]__tests__[\\\\/]helpers[\\\\/]'],
   // The Node scripts' pure parts (scripts/lib/*.mjs, and the monorepo's scripts/lib they import) are ES modules:
   // the server's tests already turn them into CommonJS with this transform (apps/server/jest/script-transform.cjs).
   // Jest merges it with jest-expo's, which only matches .js/.jsx/.ts/.tsx.

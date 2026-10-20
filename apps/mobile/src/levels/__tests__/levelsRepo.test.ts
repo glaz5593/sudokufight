@@ -5,10 +5,18 @@ import {
   LEVEL_RULES,
   levelIdOf,
   type LevelResult,
+  type PuzzleLevelOver,
 } from '@sudoku-fight/engine';
 
 import { memoryDb, type SqlJsDb } from '../../game/testing/sqlJsDb';
-import { type FinishedLevel, type LevelFinish, type LevelsRepo, openLevelsRepo } from '../levelsRepo';
+import {
+  bestMetricAt,
+  type FinishedLevel,
+  type LevelFinish,
+  type LevelsRepo,
+  mistakesOf,
+  openLevelsRepo,
+} from '../levelsRepo';
 import { LEVELS_MIGRATIONS, migrateLevels } from '../levelsSchema';
 
 /**
@@ -150,12 +158,57 @@ describe('an attempt (plan §4.5, §5.4)', () => {
     expect((await repo.progress(OWNER)).L012).toMatchObject({ metric: 4, stars: 2, plays: 3 });
   });
 
-  it('a new rev of the level keeps its stars (mergeBest), and the rev of the best is the one that made it', async () => {
+  it('the rev of the best is the attempt’s that made it; one that did not beat it keeps the row’s', async () => {
     await record(level(1), found(4000));
-    await record(level(1, { rev: 2 }), found(12_000));
-    expect((await repo.progress(OWNER)).L001).toMatchObject({ stars: 3, rev: 1 });
-    await record(level(1, { rev: 2 }), found(3000));
-    expect((await repo.progress(OWNER)).L001).toMatchObject({ stars: 3, metric: 3000, rev: 2 });
+    await record(level(1), found(9000));
+    expect((await repo.progress(OWNER)).L001).toMatchObject({ stars: 3, metric: 4000, rev: 1 });
+  });
+
+  it('[D73] a new rev keeps the stars and starts the best measure over, even with a worse one', async () => {
+    await record(level(1), found(4000));
+    // Rebuilt: rev 2, maybe of another kind. 12 s gives ★, but the stars stay ★★★; 12 s is the new best.
+    const first = await record(level(1, { rev: 2 }), found(12_000));
+    expect(first).toMatchObject({ prevBest: 3, best: 3, newStars: 0, bestMetric: 12_000 });
+    expect(first.outcome.stars).toBe(1);
+    expect((await repo.progress(OWNER)).L001).toMatchObject({ stars: 3, plays: 2, metric: 12_000, rev: 2 });
+    // On the new rev the best goes on as usual: 9 s beats 12 s, 15 s does not.
+    await record(level(1, { rev: 2 }), found(9000));
+    await record(level(1, { rev: 2 }), found(15_000));
+    expect((await repo.progress(OWNER)).L001).toMatchObject({ stars: 3, metric: 9000, rev: 2 });
+    // An attempt at the old rev (an older app's, synced late): its stars count, its measure does not.
+    await record(level(1), found(1000));
+    expect((await repo.progress(OWNER)).L001).toMatchObject({ stars: 3, metric: 9000, rev: 2, plays: 5 });
+    // Every attempt keeps the rev it was played at.
+    expect((await repo.attempts(OWNER, 'L001')).map((a) => a.rev)).toEqual([1, 2, 2, 2, 1]);
+  });
+
+  it('[D73] a new rev with more stars, or a kind that changed: the stars rise, the measure is the new rev’s', async () => {
+    await record(level(1), found(15_000)); // ★ at rev 1, 15 s
+    // Now a race (the kind changed): 4 spots, ★★.
+    await record({ ...RACE, id: 'L001', chapter: 1, rev: 2 }, tapEnd('targetReached', 20_000, 4));
+    expect((await repo.progress(OWNER)).L001).toMatchObject({ stars: 2, metric: 4, rev: 2 });
+  });
+
+  it('[D73] a quit that counts as played on a new rev: the stars stay, there is no best measure yet', async () => {
+    await record(level(1), found(4000));
+    await record(level(1, { rev: 2 }), tapEnd('quit', 3000));
+    expect((await repo.progress(OWNER)).L001).toMatchObject({ stars: 3, metric: null, rev: 2 });
+  });
+
+  it('[D73] a row restored from the server (no rev) takes the rev of its first attempt here', async () => {
+    await repo.mergeFromServer(OWNER, [{ id: 'L001', stars: 2, plays: 3 }], T0);
+    expect((await repo.progress(OWNER)).L001).toMatchObject({ stars: 2, metric: null, rev: null });
+    await record(level(1, { rev: 2 }), found(15_000)); // ★: not more stars, but the first measure
+    expect((await repo.progress(OWNER)).L001).toMatchObject({ stars: 2, plays: 4, metric: 15_000, rev: 2 });
+  });
+
+  it('[D73] bestMetricAt: the stored best on its own rev, none on another rev or before any', () => {
+    expect(bestMetricAt({ metric: 4000, rev: 1 }, 1)).toBe(4000);
+    expect(bestMetricAt({ metric: 4000, rev: 1 }, 2)).toBeNull();
+    expect(bestMetricAt({ metric: 4000, rev: 3 }, 2)).toBeNull();
+    expect(bestMetricAt({ metric: 4000, rev: null }, 2)).toBe(4000);
+    expect(bestMetricAt({ metric: null, rev: 2 }, 2)).toBeNull();
+    expect(bestMetricAt(undefined, 2)).toBeNull();
   });
 
   it('a quit counts as played, with 0 stars and no measure: the next level opens [D51]', async () => {
@@ -195,16 +248,45 @@ describe('an attempt (plan §4.5, §5.4)', () => {
 
   it('counts quits and failures in the attempt number (plays or attempts, + 1)', async () => {
     const strict = await openLevelsRepo(db, { rules: { ...LEVEL_RULES, quitCountsAsPlayed: false } });
-    expect(await strict.attemptOf(OWNER, 'L001')).toBe(1);
+    expect(await strict.attemptOf(OWNER, 'L001', 1)).toBe(1);
     await strict.recordAttempt(finish(level(1), tapEnd('quit', 1000)));
     await strict.recordAttempt(finish(level(1), tapEnd('quit', 1000)));
-    expect(await strict.attemptOf(OWNER, 'L001')).toBe(3);
+    expect(await strict.attemptOf(OWNER, 'L001', 1)).toBe(3);
     const failed = await strict.recordAttempt(finish(level(1), tapEnd('tooManyMisses', 4000)));
     expect(failed.attempt).toBe(3);
-    expect(await strict.attemptOf(OWNER, 'L001')).toBe(4);
+    expect(await strict.attemptOf(OWNER, 'L001', 1)).toBe(4);
     // A phone that restored 5 plays from the server and recorded none: the plays count.
     await strict.mergeFromServer(OWNER, [{ id: 'L002', stars: 2, plays: 5 }], T0);
-    expect(await strict.attemptOf(OWNER, 'L002')).toBe(6);
+    expect(await strict.attemptOf(OWNER, 'L002', 1)).toBe(6);
+  });
+
+  it('[D73, D63] a rebuilt level (a new rev) numbers its attempts from 1 again; the plays stay cumulative', async () => {
+    for (const ms of [4000, 8000, 15_000]) await record(level(1), found(ms)); // 3 plays at rev 1
+    expect(await repo.attemptOf(OWNER, 'L001', 1)).toBe(4);
+    // Rev 2: the first attempt is the stored board (1), not the 4th.
+    expect(await repo.attemptOf(OWNER, 'L001', 2)).toBe(1);
+    const first = await record(level(1, { rev: 2 }), found(9000));
+    expect(first.attempt).toBe(1);
+    expect(await repo.attemptOf(OWNER, 'L001', 2)).toBe(2);
+    expect((await record(level(1, { rev: 2 }), found(6000))).attempt).toBe(2);
+    expect(await repo.attemptOf(OWNER, 'L001', 2)).toBe(3);
+    // The row's plays count every rev (the stars and the sync read them).
+    expect((await repo.progress(OWNER)).L001).toMatchObject({ plays: 5, rev: 2 });
+    expect(await repo.dirty(OWNER)).toEqual([{ id: 'L001', stars: 3, plays: 5 }]);
+    expect((await repo.attempts(OWNER, 'L001')).map((a) => [a.rev, a.attempt])).toEqual([
+      [1, 1],
+      [1, 2],
+      [1, 3],
+      [2, 1],
+      [2, 2],
+    ]);
+  });
+
+  it('[D73] a row restored from the server keeps its plays in the count, at any rev', async () => {
+    await repo.mergeFromServer(OWNER, [{ id: 'L003', stars: 1, plays: 2 }], T0);
+    expect(await repo.attemptOf(OWNER, 'L003', 2)).toBe(3);
+    await record(level(3, { rev: 2 }), found(9000));
+    expect(await repo.attemptOf(OWNER, 'L003', 2)).toBe(4);
   });
 
   it('stores the attempt the session played (its number, quick, the bot, my mistakes)', async () => {
@@ -239,6 +321,52 @@ describe('an attempt (plan §4.5, §5.4)', () => {
     );
     expect(lost.outcome).toMatchObject({ reason: 'botWon', stars: 0, metric: -6 });
     expect((await repo.progress(OWNER)).L021).toMatchObject({ stars: 2, metric: 9.5, plays: 2 });
+  });
+
+  it('a puzzle (1.0.3): its mistakes are the wrong swaps [D70c], its measure the level clock', async () => {
+    const PUZZLE = level(3, {
+      kind: 'puzzle',
+      stars: { by: 'timeMs', three: 26_000, two: 36_000, one: 45_000 },
+    });
+    const puzzleEnd = (reason: PuzzleLevelOver['reason'], elapsedMs: number, mistakes: number) =>
+      ({
+        reason,
+        elapsedMs,
+        penaltyMs: mistakes * LEVEL_RULES.puzzleSwapPenaltyMs,
+        swaps: mistakes + 4,
+        mistakes,
+        stars: 0,
+      }) satisfies PuzzleLevelOver;
+    const done = await record(PUZZLE, puzzleEnd('targetReached', 30_000, 2));
+    expect(done).toMatchObject({
+      outcome: { reason: 'completed', stars: 2, metric: 30_000, elapsedMs: 30_000 },
+      mistakes: 2,
+      best: 2,
+      bestMetric: 30_000,
+    });
+    const late = await record(PUZZLE, puzzleEnd('timeUp', 60_000, 3));
+    expect(late).toMatchObject({ outcome: { reason: 'timeUp', stars: 0, metric: null }, mistakes: 3 });
+    expect((await repo.attempts(OWNER, 'L003')).map((a) => [a.kind, a.mistakes, a.reason])).toEqual([
+      ['puzzle', 2, 'completed'],
+      ['puzzle', 3, 'timeUp'],
+    ]);
+    expect(mistakesOf({ end: puzzleEnd('quit', 5000, 1) })).toBe(1);
+    // The session's own count wins, as for every kind.
+    expect(mistakesOf({ end: puzzleEnd('quit', 5000, 1), mistakes: 4 })).toBe(4);
+  });
+
+  it('a boss: the outcome carries the engine’s verdict (bossBeaten), null for a level that is not one', async () => {
+    const BOSS_RACE = level(10, {
+      kind: 'findDuel',
+      boss: true,
+      stars: { by: 'spots', three: 5, two: 4, one: 3 },
+      bot: { level: 1, pace: 0.9 },
+    });
+    const won = await record(BOSS_RACE, { ...tapEnd('targetReached', 20_000, 3), opponentSpots: 2 });
+    expect(won.outcome).toMatchObject({ stars: 1, bossBeaten: true });
+    const lost = await record(BOSS_RACE, { ...tapEnd('targetReached', 20_000, 2), opponentSpots: 3 });
+    expect(lost.outcome).toMatchObject({ stars: 0, bossBeaten: false });
+    expect((await record(level(1), found(4000))).outcome.bossBeaten).toBeNull();
   });
 
   it('refuses an id that is not a level’s', async () => {
@@ -302,7 +430,7 @@ describe('owners and the summary', () => {
     await record(level(1), found(15_000), { owner: 'uid-2' });
     expect((await repo.progress(OWNER)).L001?.stars).toBe(3);
     expect((await repo.progress('uid-2')).L001?.stars).toBe(1);
-    expect(await repo.attemptOf('uid-2', 'L001')).toBe(2);
+    expect(await repo.attemptOf('uid-2', 'L001', 1)).toBe(2);
     await repo.openGate('uid-2', 2, T0);
     expect(await repo.openedGates(OWNER)).toEqual([]);
     expect(await repo.progress('uid-3')).toEqual({});

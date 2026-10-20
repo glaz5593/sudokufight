@@ -61,15 +61,24 @@ const kind = z.enum(LEVEL_KINDS, { error: `one of ${LEVEL_KINDS.join(', ')}` });
 const ms = int(0, 24 * 3600 * 1000);
 /** An attempt's number, a count of mistakes: not past what anyone plays. */
 const count = int(0, 1_000_000);
+/**
+ * A level's rev (1.0.3) [D73]: a whole number from 1, optional (an app before 1.0.3 sends none; its levels
+ * were all at rev 1), never null.
+ */
+const rev = int(1, 1_000_000).optional();
 
 /**
  * Staged practice's events (1.0.2; the protocol's LevelEventProps): every prop of the protocol there, typed
  * and ranged; another key passes, so a later app may add one without its batches being refused.
+ *
+ * 1.0.3 is additive, so a 1.0.2 app's batches stay valid: the kinds are the engine's LEVEL_KINDS (puzzle,
+ * fillRow and fillCol joined them), and level_start, level_end and level_quit may carry `rev`.
  */
 const LEVEL_EVENT_PROPS: { [N in keyof LevelEventProps]: z.ZodType<LevelEventProps[N]> } = {
   level_map_open: z.looseObject({ level, stars: int(0, 3 * maxLevel(LEVEL_RULES)) }),
   level_start: z.looseObject({
     level,
+    rev,
     chapter: int(1, LEVEL_RULES.chapterCount),
     kind,
     attempt: int(1, 1_000_000),
@@ -78,6 +87,7 @@ const LEVEL_EVENT_PROPS: { [N in keyof LevelEventProps]: z.ZodType<LevelEventPro
   }),
   level_end: z.looseObject({
     level,
+    rev,
     kind,
     stars,
     prevBest: stars,
@@ -89,7 +99,7 @@ const LEVEL_EVENT_PROPS: { [N in keyof LevelEventProps]: z.ZodType<LevelEventPro
     botLevel: z.literal(BOT_LEVEL_IDS, { error: `1 to ${BOT_LEVEL_IDS.length}, or null` }).nullable(),
     attempt: int(1, 1_000_000),
   }),
-  level_quit: z.looseObject({ level, atMs: ms }),
+  level_quit: z.looseObject({ level, rev, atMs: ms }),
   // The chapter behind the gate: chapter 1 has none in front of it.
   chapter_gate: z.looseObject({
     chapter: int(2, LEVEL_RULES.chapterCount),

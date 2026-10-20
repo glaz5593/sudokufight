@@ -4,6 +4,7 @@ import { color, radius, size, space, text, tokens } from '../../theme';
 import { Icon } from '../Icon';
 import { SeatGlyph } from '../player/SeatGlyph';
 import { paletteAt } from '../player/metrics';
+import { BossFrame } from './BossFrame';
 
 /**
  * A stage as a tile (components.md §19.1, §19.2): a mini 3 × 3 sudoku box with the stage number in Teko, the
@@ -14,7 +15,10 @@ import { paletteAt } from '../player/metrics';
  *   does not move (the node's ring pulses around it);
  * - **locked**: dark (`color.surface2`), the number in `color.textFaint` (never by opacity: it stays readable),
  *   and a lock badge at the top-end corner;
- * - **boss**: a crown over the top edge (gold, or faint while locked).
+ * - **boss**: a crown over the top edge (gold, or faint while locked; 34 × 24, levels-ui.md §3.2) and, unless it
+ *   is locked, the arena's four gold corners (BossFrame), as around a boss stage's board. Corners, never a whole
+ *   gold ring: on the map a gold ring says "you are here" (the current node's), and a boss that is not the
+ *   current stage must not look like it.
  *
  * Decorative: the button around it (the node, the row) says which stage it is.
  */
@@ -28,6 +32,11 @@ export interface LevelTileProps {
   size: number;
   state: LevelTileState;
   boss?: boolean;
+  /**
+   * A boss's arena corners (BossFrame), shown unless it is locked; true by default. Off where a band already says
+   * "boss" (a boss stage's own header, StageHeader).
+   */
+  arena?: boolean;
   /**
    * A tap on a locked node under Reduced Motion: the lock badge's border lights up for a moment instead of the
    * shake (motion.md `level.node.locked`).
@@ -43,19 +52,28 @@ function numberSize(px: number): number {
   return 24;
 }
 
-/** components.md §19.2: the pin 22 (radius 7), the lock badge 20, the crown's badge 28 × 20. */
+/**
+ * components.md §19.2: the pin 22 (radius 7), the lock badge 20; the crown's badge 34 × 24 (levels-ui.md §3.2,
+ * 28 × 20 before 1.0.3).
+ */
 const PIN = 22;
 const PIN_GLYPH = 8;
 const LOCK_BADGE = 20;
 const LOCK_ICON = 12;
-const CROWN = { width: 28, height: 20, icon: 16, top: -12 } as const;
+const CROWN = { width: 34, height: 24, icon: 20, top: -14 } as const;
 const BADGE_INSET = { pin: -8, lock: -6 } as const;
+/**
+ * The arena's corners on a tile: 3 dp like the board's, shorter arms (a tile is small), and 7 dp out, outside
+ * the current node's ring (4 dp out), so the two never cover each other.
+ */
+export const TILE_ARENA = { length: 16, thickness: 3, outset: 7 } as const;
 
 export function LevelTile({
   n,
   size: px,
   state,
   boss = false,
+  arena = true,
   flash = false,
   testID = 'level-tile',
 }: LevelTileProps) {
@@ -108,6 +126,7 @@ export function LevelTile({
           <Icon name="lock" size={LOCK_ICON} color={color.textMuted} />
         </View>
       ) : null}
+      {boss && arena && !locked ? <BossFrame {...TILE_ARENA} testID={`${testID}-arena`} /> : null}
       {boss ? (
         <View style={styles.crownRow} testID={`${testID}-crown`}>
           <View style={styles.crown}>

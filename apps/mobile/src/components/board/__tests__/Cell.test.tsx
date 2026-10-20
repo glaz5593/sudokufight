@@ -7,7 +7,7 @@ import { useSettings } from '../../../state/settings';
 import { color, size, tokens } from '../../../theme';
 import { motion } from '../../../theme/motion';
 import { type CellLock, type CellModel, type CellPlayer, emptyCell } from '../boardModel';
-import { Cell, type CellFlash, flashPart, sameCell } from '../Cell';
+import { Cell, type CellFlash, flashPart, regionBase, sameCell } from '../Cell';
 import { geometryForCell } from '../geometry';
 
 type Styled = { props: { style?: unknown } };
@@ -471,19 +471,51 @@ describe('Cell in a stage (components.md §19.7)', () => {
 
   const flash = (kind: CellFlash['kind'], id = 1): CellFlash => ({ kind, id });
 
-  it('outside the area: the dimmed colours, the given in its dim colour; the label says so', async () => {
+  it('outside the region [D75a]: blue-grey, the given in givenOut (still readable); the label says so', async () => {
     await render(<Cell cell={cell('D5', { kind: 'given', digit: 4, area: 'out' })} />);
-    expect(styleOf(face()).backgroundColor).toBe(color.board.cellDim);
-    expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(color.board.givenDim);
+    expect(styleOf(face()).backgroundColor).toBe(color.board.outCell);
+    expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(color.board.givenOut);
     expect(screen.getByRole('button')).toHaveProp('accessibilityLabel', 'D5, 4, רמז, מחוץ לאזור');
     await screen.unmount();
     await render(<Cell cell={cell('A4', { alt: true, area: 'out' })} />);
-    expect(styleOf(face('A4')).backgroundColor).toBe(color.board.cellDimAlt);
-    await screen.unmount();
-    await render(<Cell cell={cell('D5', { kind: 'given', digit: 4, area: 'in' })} />);
-    expect(styleOf(face()).backgroundColor).toBe(color.board.cell);
-    expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(color.board.given);
+    expect(styleOf(face('A4')).backgroundColor).toBe(color.board.outCellAlt);
   });
+
+  it('inside the region [D75a]: cream (focusCell, focusCellAlt in a checkerboard box), the digit as usual', async () => {
+    await render(<Cell cell={cell('D5', { kind: 'given', digit: 4, area: 'in' })} />);
+    expect(styleOf(face()).backgroundColor).toBe(color.board.focusCell);
+    expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(color.board.given);
+    await screen.unmount();
+    await render(
+      <Cell cell={cell('A4', { alt: true, area: 'in', interactive: true })} onCellPress={jest.fn()} />,
+    );
+    expect(styleOf(face('A4')).backgroundColor).toBe(color.board.focusCellAlt);
+  });
+
+  it('a board without a region keeps its own colours', () => {
+    expect(regionBase(null, false)).toBe(color.board.cell);
+    expect(regionBase(null, true)).toBe(color.board.cellAlt);
+    expect(regionBase('in', true)).toBe(color.board.focusCellAlt);
+    expect(regionBase('out', false)).toBe(color.board.outCell);
+  });
+
+  it('a target chip outside the region is unchanged: the dark chip, the light digit', async () => {
+    await render(<Cell cell={cell('A1', { kind: 'given', digit: 6, mark: 'target', area: 'out' })} />);
+    expect(styleOf(screen.getByTestId('cell-target')).backgroundColor).toBe(color.board.given);
+    expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(color.board.cell);
+  });
+
+  it.each(['in', 'out'] as const)(
+    'a solved cell keeps its seat’s tint and digit, %s the region',
+    async (area) => {
+      await render(<Cell cell={cell('D5', { kind: 'solved', digit: 7, player: nina, area })} />);
+      expect(styleOf(face()).backgroundColor).toBe(P[1].tint);
+      expect(styleOf(screen.getByTestId('cell-digit')).color).toBe(P[1].digit);
+      expect(
+        screen.getByTestId(`cell-glyph-${P[1].shapeName}`, { includeHiddenElements: true }),
+      ).toBeTruthy();
+    },
+  );
 
   it('the target’s digit already on the board: a dark chip with the light digit', async () => {
     await render(<Cell cell={cell('D5', { kind: 'given', digit: 6, mark: 'target' })} />);

@@ -27,6 +27,7 @@ import i18n from '../../../i18n';
 import { type LevelSession, type LevelSessionDeps, startLevel } from '../../../levels/levelSession';
 import { levelById, levelsOfChapter } from '../../../levels/levelsData';
 import { openLevelsStorage } from '../../../levels/levelsStorage';
+import { firstLevelOf, levelsOf } from '../../../levels/__tests__/helpers/levelsOf';
 import { forgetLevels, refreshLevels } from '../../../levels/levelsStore';
 import { useSettings } from '../../../state/settings';
 import { color } from '../../../theme';
@@ -105,11 +106,12 @@ const styleOf = (el: { props: { style?: unknown } }) =>
 const LRI = '⁦';
 const PDI = '⁩';
 
-const L034 = levelById('L034') as LevelSpecOf<'spotError'>; // one error; the kind's first stage
-const L077 = levelById('L077') as LevelSpecOf<'spotError'>; // two errors; the kind's fourth
-const L066 = levelById('L066') as LevelSpecOf<'pointHunter'>; // the kind's first: "שווה 6" on
-const L106 = levelById('L106') as LevelSpecOf<'pointHunter'>; // the kind's third: no hint
-const L085 = levelById('L085') as LevelSpecOf<'chain'>; // 3 steps
+// Picked by kind, never by id (a rebuild may give an id another kind): helpers/levelsOf.
+const SPOT_FIRST = levelsOf('spotError')[0] as LevelSpecOf<'spotError'>; // one error; the kind's first stage
+const SPOT_TWO = firstLevelOf('spotError', 8) as LevelSpecOf<'spotError'>; // two errors; past the first three
+const HUNTER_FIRST = levelsOf('pointHunter')[0] as LevelSpecOf<'pointHunter'>; // the kind's first: "שווה 6" on
+const HUNTER_THIRD = levelsOf('pointHunter')[2] as LevelSpecOf<'pointHunter'>; // the kind's third: no hint
+const CHAIN_FIRST = levelsOf('chain')[0] as LevelSpecOf<'chain'>; // 3 steps
 
 const answer = (level: AppLevel, cell: number) => Number(level.board.solution[cell]) as Digit;
 
@@ -174,6 +176,11 @@ async function wait(s: Pick<Shown, 'scheduler'>, ms: number, step = 50) {
 
 const pressCell = (cell: number) => fireEvent.press(screen.getByTestId(`cell-${cellName(cell)}`, hidden));
 const press = (testID: string) => fireEvent.press(screen.getByTestId(testID, hidden));
+/** A puzzle's place chosen as a screen reader does (its activate: the same choice and swap as a tap). */
+const activatePlace = (place: number) =>
+  fireEvent(screen.getByTestId(`puzzle-slot-${place}`, hidden), 'accessibilityAction', {
+    nativeEvent: { actionName: 'activate' },
+  });
 
 /** Lock `cell` and type `digit` on the game screen. */
 async function play(cell: number, digit: Digit) {
@@ -208,7 +215,7 @@ describe('spot the error', () => {
     [...level.board.mine!].findIndex((d, i) => d !== '0' && !level.targets.errors.some((e) => e.cell === i));
 
   it('the goal line, and under it in grey "הספרות הכהות הן של הלוח, והן תמיד נכונות."', async () => {
-    await showTap(L077);
+    await showTap(SPOT_TWO);
     expect(screen.getByTestId('spot-goal')).toHaveTextContent('בלוח מסתתרות 2 ספרות שגויות. הקש עליהן.');
     expect(screen.getByTestId('spot-note')).toHaveTextContent('הספרות הכהות הן של הלוח, והן תמיד נכונות.');
     expect(styleOf(screen.getByTestId('spot-note')).color).toBe(color.textMuted);
@@ -216,36 +223,36 @@ describe('spot the error', () => {
     // No keypad: a tap is the move.
     expect(screen.queryByTestId('keypad')).toBeNull();
     await screen.unmount();
-    await showTap(L034);
+    await showTap(SPOT_FIRST);
     expect(screen.getByTestId('spot-goal')).toHaveTextContent('בלוח מסתתרת ספרה שגויה אחת. הקש עליה.');
   });
 
   it('"mine" digits in P1 with the ● in the corner; the board’s own stay dark, with none', async () => {
-    await showTap(L077);
-    const mine = mineRight(L077);
+    await showTap(SPOT_TWO);
+    const mine = mineRight(SPOT_TWO);
     const cell = screen.getByTestId(`cell-${cellName(mine)}`);
     expect(within(cell).getByTestId('cell-glyph-circle', hidden)).toBeTruthy();
     expect(cell).toHaveProp('accessibilityLabel', expect.stringContaining('שלך'));
     // An error looks like any digit of mine until it is found.
-    const error = L077.targets.errors[0]!.cell;
+    const error = SPOT_TWO.targets.errors[0]!.cell;
     expect(
       within(screen.getByTestId(`cell-${cellName(error)}`)).getByTestId('cell-glyph-circle', hidden),
     ).toBeTruthy();
-    const given = [...L077.board.grid].findIndex((d) => d !== '0');
+    const given = [...SPOT_TWO.board.grid].findIndex((d) => d !== '0');
     expect(
       within(screen.getByTestId(`cell-${cellName(given)}`)).queryByTestId('cell-glyph-circle', hidden),
     ).toBeNull();
   });
 
   it('a found error: the wrong digit struck, the right one small, a green ring; its magnifier fills', async () => {
-    const s = await showTap(L077);
-    const [error] = L077.targets.errors;
+    const s = await showTap(SPOT_TWO);
+    const [error] = SPOT_TWO.targets.errors;
     await pressCell(error!.cell);
     const cell = screen.getByTestId(`cell-${cellName(error!.cell)}`);
     expect(within(cell).getByTestId('cell-correction-wrong', hidden)).toHaveTextContent(String(error!.digit));
     expect(within(cell).getByTestId('cell-correction-strike', hidden)).toBeTruthy();
     expect(within(cell).getByTestId('cell-correction-right', hidden)).toHaveTextContent(
-      String(answer(L077, error!.cell)),
+      String(answer(SPOT_TWO, error!.cell)),
     );
     expect(styleOf(within(cell).getByTestId('cell-correction-ring', hidden)).borderColor).toBe(color.success);
     expect(screen.getByTestId('spot-lens-0-found', hidden)).toBeTruthy();
@@ -254,14 +261,14 @@ describe('spot the error', () => {
     expect(screen.getByTestId('spot-found')).toHaveProp('accessibilityLabel', 'נמצאו 1 מתוך 2');
     await wait(s, 50);
     expect(screen.getByTestId('level-live', hidden)).toHaveTextContent(
-      `מצאת טעות ב־${LRI}${cellName(error!.cell)}${PDI}: לא ${error!.digit} אלא ${answer(L077, error!.cell)}`,
+      `מצאת טעות ב־${LRI}${cellName(error!.cell)}${PDI}: לא ${error!.digit} אלא ${answer(SPOT_TWO, error!.cell)}`,
     );
     expect(s.session.over).toBeNull();
   });
 
   it('a tap on a right digit of mine: the red X, and "⁦+5⁩ ש׳" by the clock', async () => {
-    const s = await showTap(L077);
-    const mine = mineRight(L077);
+    const s = await showTap(SPOT_TWO);
+    const mine = mineRight(SPOT_TWO);
     await pressCell(mine);
     expect(screen.getByTestId('cell-flash-miss-cross', hidden)).toBeTruthy();
     expect(screen.getByTestId('penalty-chip', hidden)).toHaveTextContent(`${signedText(5)} ש׳`);
@@ -276,8 +283,8 @@ describe('spot the error', () => {
 
   it('a tap on a given does nothing (LEVEL_RULES.tapOnFilled "ignore")', async () => {
     expect(LEVEL_RULES.tapOnFilled).toBe('ignore');
-    const s = await showTap(L077);
-    const given = [...L077.board.grid].findIndex((d) => d !== '0');
+    const s = await showTap(SPOT_TWO);
+    const given = [...SPOT_TWO.board.grid].findIndex((d) => d !== '0');
     // The board offers no tap there, and the engine takes none.
     expect(screen.getByTestId(`cell-${cellName(given)}`)).toHaveProp(
       'accessibilityState',
@@ -292,8 +299,8 @@ describe('spot the error', () => {
   it('with LEVEL_RULES.tapOnFilled "penalty", a tap on a given is a wrong tap: "⁦+5⁩ ש׳"', async () => {
     LEVEL_RULES.tapOnFilled = 'penalty';
     try {
-      const s = await showTap(L077);
-      const given = [...L077.board.grid].findIndex((d) => d !== '0');
+      const s = await showTap(SPOT_TWO);
+      const given = [...SPOT_TWO.board.grid].findIndex((d) => d !== '0');
       await pressCell(given);
       expect(s.session.levelView()!.penaltyMs).toBe(5000);
       expect(screen.getByTestId('penalty-chip', hidden)).toHaveTextContent(`${signedText(5)} ש׳`);
@@ -303,10 +310,10 @@ describe('spot the error', () => {
   });
 
   it('the tip card in the kind’s first 3 stages only, and it closes', async () => {
-    const [first, second, third, fourth] = ['L034', 'L045', 'L055', 'L077'].map((id) => levelById(id)!);
+    const [first, second, third, fourth] = levelsOf('spotError').slice(0, 4);
     for (const level of [first!, second!, third!]) expect(spotTipShown(level)).toBe(true);
     expect(spotTipShown(fourth!)).toBe(false);
-    await showTap(L034);
+    await showTap(SPOT_FIRST);
     expect(screen.getByTestId('spot-tip-text')).toHaveProp(
       'accessibilityLabel',
       'טיפ: חפש ספרה שמופיעה פעמיים באותה שורה, עמודה או ריבוע.',
@@ -314,7 +321,7 @@ describe('spot the error', () => {
     await press('spot-tip-close');
     expect(screen.queryByTestId('spot-tip')).toBeNull();
     await screen.unmount();
-    await showTap(L077);
+    await showTap(SPOT_TWO);
     expect(screen.queryByTestId('spot-tip')).toBeNull();
   });
 
@@ -322,24 +329,28 @@ describe('spot the error', () => {
     expect(LEVEL_UI.tipLevels).toBe(3);
     LEVEL_UI.tipLevels = 0;
     try {
-      expect(spotTipShown(L034)).toBe(false);
-      await showTap(L034);
+      expect(spotTipShown(SPOT_FIRST)).toBe(false);
+      await showTap(SPOT_FIRST);
       expect(screen.queryByTestId('spot-tip')).toBeNull();
       LEVEL_UI.tipLevels = 4;
-      expect(spotTipShown(L077)).toBe(true);
+      expect(spotTipShown(levelsOf('spotError')[3]!)).toBe(true);
     } finally {
       LEVEL_UI.tipLevels = 3;
     }
   });
 
   it('time runs out: the errors not found are framed, held a moment, then the result', async () => {
-    const s = await showTap(L077);
-    await pressCell(L077.targets.errors[0]!.cell);
-    await wait(s, L077.timeLimitMs, 500);
+    const s = await showTap(SPOT_TWO);
+    await pressCell(SPOT_TWO.targets.errors[0]!.cell);
+    await wait(s, SPOT_TWO.timeLimitMs, 500);
     expect(s.session.over).toMatchObject({ reason: 'timeUp', found: 1 });
-    expect(screen.getAllByTestId('answer-frame-gold', hidden)).toHaveLength(1);
+    // The answer's own ring (levels-ui.md §2.2), no digit chip: the cell shows its own wrong digit.
+    expect(screen.getAllByTestId('answer-frame', hidden)).toHaveLength(1);
+    expect(
+      (screen.getByTestId('answer-frame', hidden) as unknown as { children: unknown[] }).children,
+    ).toHaveLength(1);
     expect(screen.getByTestId('level-live', hidden)).toHaveTextContent(
-      `טעויות שלא נמצאו: ${LRI}${cellName(L077.targets.errors[1]!.cell)}${PDI}`,
+      `טעויות שלא נמצאו: ${LRI}${cellName(SPOT_TWO.targets.errors[1]!.cell)}${PDI}`,
     );
     await wait(s, 2000);
     expect(s.onOver).toHaveBeenCalledTimes(1);
@@ -347,12 +358,12 @@ describe('spot the error', () => {
 
   it('in English', async () => {
     await act(async () => void (await i18n.changeLanguage('en')));
-    await showTap(L077);
+    await showTap(SPOT_TWO);
     expect(screen.getByTestId('spot-goal')).toHaveTextContent('2 wrong digits hide on the board. Tap them.');
     expect(screen.getByTestId('spot-note')).toHaveTextContent(
       'The dark digits are the board’s, and they are always right.',
     );
-    expect(screen.getByTestId('stage-title')).toHaveTextContent('Stage 77');
+    expect(screen.getByTestId('stage-title')).toHaveTextContent(`Stage ${Number(SPOT_TWO.id.slice(1))}`);
   });
 });
 
@@ -360,7 +371,7 @@ describe('spot the error', () => {
 
 describe('the point hunter', () => {
   it('its HUD: the goal, three move dots, the clock, and the points bar to the board’s best', async () => {
-    await showGame(L066);
+    await showGame(HUNTER_FIRST);
     expect(screen.getByTestId('hunt-goal')).toHaveTextContent(`אסוף ${LRI}17.5${PDI} נקודות ב־3 מהלכים.`);
     expect(screen.getByTestId('hunt-dot-0-now')).toBeTruthy();
     expect(screen.getByTestId('hunt-dot-1-left')).toBeTruthy();
@@ -378,8 +389,8 @@ describe('the point hunter', () => {
   });
 
   it('a move’s points as a chip on the played cell', async () => {
-    const s = await showGame(L066);
-    const first = L066.targets.best[0]!;
+    const s = await showGame(HUNTER_FIRST);
+    const first = HUNTER_FIRST.targets.best[0]!;
     await play(first.cell, first.digit);
     const points = s.session.getView().players[0]!.score;
     expect(points).toBe(first.points);
@@ -390,8 +401,8 @@ describe('the point hunter', () => {
   });
 
   it('"שווה 6" over my locked cell from view.level.selectedWorth, and nothing when the view has none', async () => {
-    const s = await showGame(L066);
-    const cell = L066.targets.best[0]!.cell;
+    const s = await showGame(HUNTER_FIRST);
+    const cell = HUNTER_FIRST.targets.best[0]!.cell;
     await pressCell(cell);
     const worth = s.session.levelView()!.selectedWorth;
     expect(worth).toBeDefined();
@@ -402,17 +413,17 @@ describe('the point hunter', () => {
     );
     await screen.unmount();
 
-    const t = await showGame(L106);
-    await pressCell(L106.targets.best[0]!.cell);
+    const t = await showGame(HUNTER_THIRD);
+    await pressCell(HUNTER_THIRD.targets.best[0]!.cell);
     expect(t.session.levelView()!.selectedWorth).toBeUndefined();
-    expect(screen.queryByTestId(`hunt-chips-${L106.targets.best[0]!.cell}`, hidden)).toBeNull();
+    expect(screen.queryByTestId(`hunt-chips-${HUNTER_THIRD.targets.best[0]!.cell}`, hidden)).toBeNull();
   });
 
   it('a wrong digit: "⁦−6⁩" by the points, and a burned move dot', async () => {
-    const s = await showGame(L066);
-    const first = L066.targets.best[0]!;
+    const s = await showGame(HUNTER_FIRST);
+    const first = HUNTER_FIRST.targets.best[0]!;
     await play(first.cell, first.digit);
-    const cell = L066.targets.best[1]!.cell;
+    const cell = HUNTER_FIRST.targets.best[1]!.cell;
     await play(cell, wrongFor(s.session, cell));
     const me = s.session.getView().players[0]!;
     const penalty = me.mistakePenalties[0]!;
@@ -429,9 +440,9 @@ describe('the point hunter', () => {
   });
 
   it('two views read as my moves: the points, the burned one, and the dots in order', async () => {
-    const { session } = await sessionOf(L066);
+    const { session } = await sessionOf(HUNTER_FIRST);
     const before = session.getView();
-    const first = L066.targets.best[0]!;
+    const first = HUNTER_FIRST.targets.best[0]!;
     session.host.select(first.cell);
     session.host.place(first.cell, first.digit);
     const after = session.getView();
@@ -450,13 +461,13 @@ describe('the point hunter', () => {
   });
 
   it('the result: my points, and their share of the board’s best in "למה?"', async () => {
-    const s = await showGame(L066);
-    const [a, b] = L066.targets.best;
+    const s = await showGame(HUNTER_FIRST);
+    const [a, b] = HUNTER_FIRST.targets.best;
     await play(a!.cell, a!.digit);
     await play(b!.cell, b!.digit);
     // A right digit somewhere else: fewer points than the best line's third.
-    const other = emptyCells(L066).find((c) => !L066.targets.best.some((m) => m.cell === c))!;
-    await play(other, answer(L066, other));
+    const other = emptyCells(HUNTER_FIRST).find((c) => !HUNTER_FIRST.targets.best.some((m) => m.cell === c))!;
+    await play(other, answer(HUNTER_FIRST, other));
     const r = await s.session.result;
     expect(r.outcome.reason).toBe('completed');
     const score = r.view.players[0]!.score;
@@ -467,7 +478,7 @@ describe('the point hunter', () => {
     await screen.unmount();
     await render(
       <LevelResultView
-        level={L066}
+        level={HUNTER_FIRST}
         played={played}
         chapter={null}
         next={null}
@@ -492,11 +503,11 @@ describe('the point hunter', () => {
 describe('the chain', () => {
   const accept: LevelRules = { ...LEVEL_RULES, chainNotYet: 'accept' };
   const penalty: LevelRules = { ...LEVEL_RULES, chainNotYet: 'penalty' };
-  const [step1, step2] = L085.targets.cells;
-  const offChain = emptyCells(L085).find((c) => !L085.targets.cells.includes(c))!;
+  const [step1, step2] = CHAIN_FIRST.targets.cells;
+  const offChain = emptyCells(CHAIN_FIRST).find((c) => !CHAIN_FIRST.targets.cells.includes(c))!;
 
   it('its HUD: the links, "צעד 1 מתוך 3", the clock and the time bar; no lock strip', async () => {
-    await showGame(L085, accept);
+    await showGame(CHAIN_FIRST, accept);
     expect(screen.getByTestId('chain-goal')).toHaveTextContent(
       'בכל רגע רק משבצת אחת בלוח פתירה. מצא אותה ומלא, והיא תפתח את הבאה.',
     );
@@ -510,11 +521,11 @@ describe('the chain', () => {
   });
 
   it('the tip card in the kind’s first 3 stages only, and it closes [D64]', async () => {
-    const [first, second, third, fourth] = ['L085', 'L089', 'L095', 'L105'].map((id) => levelById(id)!);
+    const [first, second, third, fourth] = levelsOf('chain').slice(0, 4);
     for (const level of [first!, second!, third!]) expect(kindTipShown('chain', level)).toBe(true);
     expect(kindTipShown('chain', fourth!)).toBe(false);
-    expect(kindTipShown('chain', L034)).toBe(false);
-    await showGame(L085);
+    expect(kindTipShown('chain', SPOT_FIRST)).toBe(false);
+    await showGame(CHAIN_FIRST);
     expect(screen.getByTestId('chain-tip-text')).toHaveProp(
       'accessibilityLabel',
       'טיפ: בכל צעד יש בדיוק משבצת אחת שאפשר להוכיח. אם אתה בטוח בספרה, זו המשבצת.',
@@ -535,18 +546,18 @@ describe('the chain', () => {
 
   it('the default is the original §14 (LEVEL_RULES.chainNotYet "accept", D64 waiting for Moshe)', async () => {
     expect(LEVEL_RULES.chainNotYet).toBe('accept');
-    const s = await showGame(L085);
-    await play(offChain, answer(L085, offChain));
-    expect(s.session.getView().grid[offChain]).toBe(answer(L085, offChain));
+    const s = await showGame(CHAIN_FIRST);
+    await play(offChain, answer(CHAIN_FIRST, offChain));
+    expect(s.session.getView().grid[offChain]).toBe(answer(CHAIN_FIRST, offChain));
     expect(useToast.getState().current).toBeNull();
     expect(screen.getByTestId('chain-note')).toHaveTextContent(`ספרה שגויה: ${signedText(5)} ש׳.`);
   });
 
   it('"accept" (the original §14): a right digit off the chain is placed, as in a game, with no toast', async () => {
-    const s = await showGame(L085, accept);
+    const s = await showGame(CHAIN_FIRST, accept);
     expect(screen.getByTestId('chain-note')).toHaveTextContent(`ספרה שגויה: ${signedText(5)} ש׳.`);
-    await play(offChain, answer(L085, offChain));
-    expect(s.session.getView().grid[offChain]).toBe(answer(L085, offChain));
+    await play(offChain, answer(CHAIN_FIRST, offChain));
+    expect(s.session.getView().grid[offChain]).toBe(answer(CHAIN_FIRST, offChain));
     expect(s.session.levelView()!.penaltyMs).toBe(0);
     expect(useToast.getState().current).toBeNull();
     expect(screen.queryByTestId('chain-not-yet-fill', hidden)).toBeNull();
@@ -556,12 +567,12 @@ describe('the chain', () => {
   });
 
   it('"penalty" [D64]: a guess flashes red, "⁦+5⁩ ש׳" by the clock, and a toast names the cell in an LTR isolate', async () => {
-    const s = await showGame(L085, penalty);
+    const s = await showGame(CHAIN_FIRST, penalty);
     expect(screen.getByTestId('chain-note')).toHaveTextContent(
       `ספרה במשבצת שעוד אי אפשר לדעת מה נכנס בה: ${signedText(5)} ש׳.`,
     );
     // The second step's right digit, before the first: it cannot be known yet.
-    await play(step2!, answer(L085, step2!));
+    await play(step2!, answer(CHAIN_FIRST, step2!));
     expect(s.session.getView().grid[step2!]).toBe(0);
     expect(s.session.levelView()!.penaltyMs).toBe(5000);
     expect(screen.getByTestId('chain-not-yet-fill', hidden)).toBeTruthy();
@@ -574,8 +585,8 @@ describe('the chain', () => {
     await screen.unmount();
     useSettings.setState({ reduceMotion: 'on' });
     useToast.getState().clear();
-    await showGame(L085, penalty);
-    await play(offChain, answer(L085, offChain));
+    await showGame(CHAIN_FIRST, penalty);
+    await play(offChain, answer(CHAIN_FIRST, offChain));
     expect(screen.getByTestId('chain-not-yet-frame', hidden)).toBeTruthy();
     expect(useToast.getState().current?.message).toContain(`${LRI}${cellName(offChain)}${PDI}`);
   });
@@ -583,7 +594,7 @@ describe('the chain', () => {
   it('a wrong digit costs 5 s in both modes: its chip, and no toast', async () => {
     for (const rules of [accept, penalty]) {
       useToast.getState().clear();
-      const s = await showGame(L085, rules);
+      const s = await showGame(CHAIN_FIRST, rules);
       await play(step1!, wrongFor(s.session, step1!));
       expect(s.session.levelView()!.penaltyMs).toBe(5000);
       expect(screen.getByTestId('penalty-chip', hidden)).toHaveTextContent(`${signedText(5)} ש׳`);
@@ -594,8 +605,8 @@ describe('the chain', () => {
   });
 
   it('a step fills its link over 240 ms; with Reduced Motion at once', async () => {
-    await showGame(L085, penalty);
-    await play(step1!, answer(L085, step1!));
+    await showGame(CHAIN_FIRST, penalty);
+    await play(step1!, answer(CHAIN_FIRST, step1!));
     expect(screen.getByTestId('chain-step')).toHaveTextContent('צעד 2 מתוך 3');
     expect(screen.getByTestId('chain-link-0-done', hidden)).toBeTruthy();
     expect(screen.getByTestId('chain-link-1-now', hidden)).toBeTruthy();
@@ -605,14 +616,14 @@ describe('the chain', () => {
     await screen.unmount();
 
     useSettings.setState({ reduceMotion: 'on' });
-    await showGame(L085, penalty);
-    await play(step1!, answer(L085, step1!));
+    await showGame(CHAIN_FIRST, penalty);
+    await play(step1!, answer(CHAIN_FIRST, step1!));
     await act(async () => void jest.advanceTimersByTime(16));
     expect(screen.getByTestId('chain-link-0-fill', hidden)).toHaveAnimatedStyle({ width: '100%' });
   });
 
   it('the view never says which cell is next, and the board marks none', async () => {
-    const s = await showGame(L085, penalty);
+    const s = await showGame(CHAIN_FIRST, penalty);
     const progress = s.session.levelView()!.progress!;
     expect(Object.keys(progress).sort()).toEqual(['done', 'kind', 'total']);
     const sep = i18n.t('board:separator.list');
@@ -629,15 +640,15 @@ describe('the chain', () => {
   });
 
   it('every step played: the chain is done, and the stage ends', async () => {
-    const s = await showGame(L085, penalty);
-    for (const cell of L085.targets.cells) await play(cell, answer(L085, cell));
+    const s = await showGame(CHAIN_FIRST, penalty);
+    for (const cell of CHAIN_FIRST.targets.cells) await play(cell, answer(CHAIN_FIRST, cell));
     expect((await s.session.result).outcome).toMatchObject({ reason: 'completed', stars: 3 });
     expect(screen.getByTestId('chain-step')).toHaveTextContent('צעד 3 מתוך 3');
   });
 
   it('in English', async () => {
     await act(async () => void (await i18n.changeLanguage('en')));
-    await showGame(L085, accept);
+    await showGame(CHAIN_FIRST, accept);
     expect(screen.getByTestId('chain-step')).toHaveTextContent('Step 1 of 3');
     expect(screen.getByTestId('chain-note')).toHaveTextContent(`A wrong digit: ${signedText(5)} s.`);
   });
@@ -646,7 +657,7 @@ describe('the chain', () => {
 // ---------------------------------------------------------------------------------------------------------
 
 describe('"איך משחקים" of the ideas', () => {
-  const STAGE = { spotError: L034, pointHunter: L066, chain: L085 } as const;
+  const STAGE = { spotError: SPOT_FIRST, pointHunter: HUNTER_FIRST, chain: CHAIN_FIRST } as const;
 
   it.each(IDEA_TUTORIALS)(
     '%s: three pictures on the real board, LTR, each panel with its line',
@@ -706,11 +717,26 @@ async function playStage(level: AppLevel) {
       }
       return;
     case 'fillBox':
+    case 'fillRow':
+    case 'fillCol':
       for (const cell of level.targets.cells) {
         await play(cell, answer(level, cell));
         await wait(run(), 200);
       }
       return;
+    case 'puzzle': {
+      // On its own screen (PuzzleLevelScreen): a place, then another; each swap puts one box home (no penalty).
+      const now = level.targets.start.slice();
+      for (let p = 0; p < 9; p++)
+        while (now[p] !== p) {
+          const q = now.indexOf(p);
+          await activatePlace(p);
+          await activatePlace(q);
+          [now[p], now[q]] = [now[q]!, now[p]!];
+          await wait(run(), 200);
+        }
+      return;
+    }
     case 'duel': {
       // Lock an empty cell nobody holds, its right digit; the next. The bot plays meanwhile; the first to 30
       // (or the 30 s) ends it.
@@ -765,7 +791,10 @@ async function stageToResult(id: string) {
   await until(() => screen.queryByTestId('level-ready') !== null);
   await wait(run(), LEVEL_UI.readyMs + 50);
   await until(
-    () => screen.queryByTestId('tap-level') !== null || screen.queryByTestId('level-game') !== null,
+    () =>
+      screen.queryByTestId('tap-level') !== null ||
+      screen.queryByTestId('level-game') !== null ||
+      screen.queryByTestId('puzzle-level') !== null,
   );
   await playStage(level);
   await until(() => screen.queryByTestId('level-result') !== null, 40_000);
@@ -796,7 +825,7 @@ describe('end to end, with Reduced Motion', () => {
     async (lang) => {
       await act(async () => void (await i18n.changeLanguage(lang)));
       useSettings.setState({ language: lang });
-      for (const level of [L034, L066, L085]) {
+      for (const level of [SPOT_FIRST, HUNTER_FIRST, CHAIN_FIRST]) {
         await renderApp(`/levels/play?id=${level.id}`, ROUTES);
         await screen.findByTestId('how-to-play');
         expect(screen.getByTestId(`how-to-play-board-${level.kind}-1`, hidden)).toBeTruthy();
@@ -816,7 +845,7 @@ describe('end to end, with Reduced Motion', () => {
         await screen.unmount();
       }
       const progress = await (await openLevelsStorage()).progress(owner);
-      for (const level of [L034, L066, L085])
+      for (const level of [SPOT_FIRST, HUNTER_FIRST, CHAIN_FIRST])
         expect(progress[level.id]).toMatchObject({ stars: 3, plays: 1 });
     },
   );
@@ -834,6 +863,9 @@ describe('end to end, with Reduced Motion', () => {
           spotError: true,
           pointHunter: true,
           chain: true,
+          fillRow: true,
+          fillCol: true,
+          puzzle: true,
         },
       });
       // The chapters before it played with 3 stars each (its gate open), as another phone would have them.

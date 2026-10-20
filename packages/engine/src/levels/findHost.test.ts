@@ -24,6 +24,7 @@ type GameHostShape = Pick<
   | 'react'
   | 'surrender'
   | 'tap'
+  | 'swapBoxes'
   | 'pause'
   | 'resume'
   | 'close'
@@ -92,6 +93,25 @@ describe('LocalFindHost behind the GameHost interface (§17.2)', () => {
       ['interfere', 'badAction'],
     ]);
     expect(host.events).toHaveLength(n);
+  });
+
+  it("refuses the puzzle's swapBoxes at once (badAction), the log untouched; plays on after it (1.0.3)", () => {
+    const { host, updates, last } = setup(FIND_LEVEL);
+    const n = host.events.length;
+    host.swapBoxes(1, 5);
+    expect(updates).toEqual([
+      {
+        kind: 'rejected',
+        action: { type: 'swapBoxes', from: 1, to: 5 },
+        reason: 'badAction',
+        view: host.getView(),
+      },
+    ]);
+    expect(host.events).toHaveLength(n);
+    host.tap(parseCellName('D5'));
+    expect(last('levelOver')).toMatchObject({ reason: 'targetReached' });
+    host.close();
+    expect(() => host.swapBoxes(1, 5)).toThrow('closed');
   });
 
   it('has no reactions button by default [D62]; LEVEL_UI.reactions brings it back', () => {

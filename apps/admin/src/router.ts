@@ -32,8 +32,11 @@ export type Route =
   | { name: 'reports'; status?: AdminReportFilter; page?: number }
   | { name: 'audit'; page?: number }
   | { name: 'screens'; days?: number }
-  /** Staged practice (1.0.2). `chapter`: only that chapter's levels; none or 0, every chapter. */
-  | { name: 'levels'; days?: number; chapter?: number }
+  /**
+   * Staged practice (1.0.2). `chapter`: only that chapter's levels; none or 0, every chapter. `allRevs` (1.0.3):
+   * every rev of each level together (the plays from before a rebuild too); by default its rev now.
+   */
+  | { name: 'levels'; days?: number; chapter?: number; allRevs?: boolean }
   | { name: 'notFound' };
 
 /** The nav item a route belongs to. */
@@ -104,7 +107,12 @@ export function parseRoute(hash: string): Route {
     case 'screens':
       return { name: 'screens', days };
     case 'levels':
-      return { name: 'levels', days, chapter: positiveInt(query.get('chapter'), 0, MAX_CHAPTER) };
+      return {
+        name: 'levels',
+        days,
+        chapter: positiveInt(query.get('chapter'), 0, MAX_CHAPTER),
+        ...(query.get('allRevs') === '1' ? { allRevs: true } : null),
+      };
     case 'installs':
       return { name: 'installs', search: query.get('search') ?? '', page };
     case 'users':
@@ -140,7 +148,11 @@ export function routeHref(route: Route): string {
     case 'screens':
       return withQuery('#/screens', { days: days(route.days) });
     case 'levels':
-      return withQuery('#/levels', { days: days(route.days), chapter: route.chapter || undefined });
+      return withQuery('#/levels', {
+        days: days(route.days),
+        chapter: route.chapter || undefined,
+        allRevs: route.allRevs ? 1 : undefined,
+      });
     case 'installs':
       return withQuery('#/installs', { search: route.search, page: page(route.page) });
     case 'users':

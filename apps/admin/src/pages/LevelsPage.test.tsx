@@ -47,6 +47,23 @@ describe('stages (staged practice)', () => {
     expect(screen.getByText('In this period: 43 plays and 48 starts, in 4 of the 300 stages.')).toBeTruthy();
   });
 
+  it('"כל הגרסאות" asks for every rev, and keeps the period and the chapter (1.0.3, D73)', async () => {
+    const server = setup('#/levels?days=90&chapter=2');
+    await loaded();
+    expect(server.gets('/levels')).toEqual(['/admin/api/levels?days=90']);
+    expect(screen.getByText(/^Only plays of each stage’s current version\./)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Stage versions'), { target: { value: 'all' } });
+    await waitFor(() => expect(window.location.hash).toBe('#/levels?days=90&chapter=2&allRevs=1'));
+    await waitFor(() =>
+      expect(server.gets('/levels')).toEqual([
+        '/admin/api/levels?days=90',
+        '/admin/api/levels?days=90&allRevs=1',
+      ]),
+    );
+    expect(await screen.findByText(/^Every version of each stage together/)).toBeTruthy();
+    expect(screen.getByLabelText<HTMLSelectElement>('Stage versions').value).toBe('all');
+  });
+
   it('lists every stage, in order', async () => {
     setup('#/levels', levelsFixture());
     await loaded();
@@ -87,7 +104,7 @@ describe('stages (staged practice)', () => {
     expect(within(l1).getByText('25%')).toBeTruthy(); // replays
     expect(within(l1).getByText('75%')).toBeTruthy(); // 0 stars on the first try…
     expect(within(l1).getByText('of 12')).toBeTruthy(); // …of 12 first tries
-    expect(within(l1).getByText('Find the cell')).toBeTruthy();
+    expect(within(l1).getByText('Pinpoint')).toBeTruthy(); // [D79] find's name, as in the app
     // A boss, and a stage nobody played: dashes, no bar.
     expect(within(rowOf(levelsTable(), 'L010')).getByText('Boss')).toBeTruthy();
     const l3 = rowOf(levelsTable(), 'L003');
@@ -173,7 +190,7 @@ describe('stages (staged practice)', () => {
     expect(document.documentElement.dir).toBe('rtl');
     expect(screen.getByRole('heading', { name: 'שלבים', level: 1 })).toBeTruthy();
     expect(within(rowOf(table, 'L001')).getByText('קשה מדי')).toBeTruthy();
-    expect(within(rowOf(table, 'L001')).getByText('מציאת מקום')).toBeTruthy();
+    expect(within(rowOf(table, 'L001')).getByText('מיקום מדויק')).toBeTruthy();
     expect(within(rowOf(table, 'L001')).getByText('10 ש׳')).toBeTruthy();
     const gates = tableNamed('שערים');
     expect(within(rowOf(gates, 'מפרק 2 לפרק 3')).getByText('לרכך')).toBeTruthy();

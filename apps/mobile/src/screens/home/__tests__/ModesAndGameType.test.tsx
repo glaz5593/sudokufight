@@ -165,12 +165,10 @@ describe('"משחק חדש" (spec §5.1)', () => {
       'fill',
       expect.stringMatching(/#ffcf3f/i),
     );
-    expect(
-      within(screen.getByTestId('mode-levels')).getByText('שלבים של חצי דקה · עד 3 כוכבים'),
-    ).toBeTruthy();
+    expect(within(screen.getByTestId('mode-levels')).getByText('שלבים קצרים · עד 3 כוכבים')).toBeTruthy();
     expect(screen.getByTestId('mode-levels')).toHaveProp(
       'accessibilityLabel',
-      'אימון בשלבים, שלבים של חצי דקה · עד 3 כוכבים, שלב 14 · 33 כוכבים, עובד גם בלי אינטרנט',
+      'אימון בשלבים, שלבים קצרים · עד 3 כוכבים, שלב 14 · 33 כוכבים, עובד גם בלי אינטרנט',
     );
     expect(
       within(screen.getByTestId('mode-levels')).getByTestId('mode-levels-lead-number', {
@@ -253,7 +251,7 @@ describe('"משחק חדש" (spec §5.1)', () => {
       'accessibilityLabel',
       'Staged practice, 300 short stages · 0–3 stars, Works offline',
     );
-    expect(i18n.t('home:modes.levels.tagline')).toBe('30-second stages · up to 3 stars');
+    expect(i18n.t('home:modes.levels.tagline')).toBe('Short stages · up to 3 stars');
     expect(screen.queryByText('Soon')).toBeNull();
   });
 });
@@ -361,8 +359,8 @@ describe('the rows (Moshe’s device test, 15.10.2026)', () => {
         const title = i18n.t(`home:modes.${key}.title`);
         expect(textWidth(title, tokens.type.sheetTitle.size, { bold: true })).toBeLessThanOrEqual(column);
         for (const tagline of new Set([taglineOf(key, true), taglineOf(key, false)])) {
-          // Staged practice's English copy is the plan's ("30-second stages · up to 3 stars"): over the wide
-          // estimate, so it is held to its real width in the app's font (197 of 214).
+          // Staged practice's English copy ("Short stages · up to 3 stars", since fill and puzzle stages
+          // run up to 60 s, D68) is held to its real width in the app's font.
           const width =
             key === 'levels'
               ? measuredWidth(tagline, tokens.type.caption.fontFamily, tokens.type.caption.size)

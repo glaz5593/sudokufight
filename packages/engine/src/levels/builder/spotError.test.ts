@@ -1,16 +1,21 @@
 import { parseGrid, PEERS } from '../../sudoku/board';
 import { knowablePlacements } from '../../sudoku/reading';
 import { hasUniqueSolution } from '../../sudoku/solver';
-import { levelPlan, type LevelPlanOf } from '../levels.config';
+import { levelPlan, type LevelPlanOf, levelsOfKind } from '../levels.config';
 import { buildSpotError, cleanedBoard } from './spotError';
 import { validateLevel } from './validate';
 
 /* Spot the error (plan §3.1): visible errors clash with a given, silent ones only with the logic. */
 
 const plan = (n: number) => levelPlan(n) as LevelPlanOf<'spotError'>;
+/** The first level of a kind in a chapter (bosses only with `boss`): by kind, never a fixed id (a rebuild moves them). */
+const nOf = (kind: Parameters<typeof levelsOfKind>[0], chapter: number, boss = false): number =>
+  levelsOfKind(kind, { chapter, boss })[0]!;
+/** One of each band: chapters 4 (one visible), 8 (two visible), 13 (two silent), 19 (one and two). */
+const [V1, V2, S2, VS] = [4, 8, 13, 19].map((c) => nOf('spotError', c)) as [number, number, number, number];
 
 describe('buildSpotError', () => {
-  it.each([34, 77, 126, 186])('L%i: deterministic per seed, and valid', (n) => {
+  it.each([V1, V2, S2, VS])('L%i: deterministic per seed, and valid', (n) => {
     const p = plan(n);
     const spec = buildSpotError(p).spec;
     expect(buildSpotError(p).spec).toEqual(spec);
@@ -18,10 +23,10 @@ describe('buildSpotError', () => {
   });
 
   it.each([
-    [34, 1, 0],
-    [77, 2, 0],
-    [126, 0, 2],
-    [186, 1, 2],
+    [V1, 1, 0],
+    [V2, 2, 0],
+    [S2, 0, 2],
+    [VS, 1, 2],
   ])(
     'L%i: %i visible and %i silent errors among 14 of "my" digits; the givens alone have one solution',
     (n, visible, silent) => {

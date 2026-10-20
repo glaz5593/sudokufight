@@ -77,7 +77,9 @@ describe('GateSheet', () => {
     expect(rows[0]).toHaveProp('accessibilityLabel', 'שחק שוב את שלב 40, מרוץ מול הבוט, כוכב אחד מתוך שלושה');
     await fireEvent.press(screen.getByTestId('gate-sheet-primary'));
     expect(onPick).toHaveBeenCalledWith('L040');
-    expect(screen.getByText('כל שלב עד 30 שניות. הכוכבים הטובים ביותר נשמרים.')).toBeTruthy();
+    expect(
+      screen.getByText('רוב השלבים עד 30 שניות, ומילוי ופאזל עד 60. הכוכבים הטובים ביותר נשמרים.'),
+    ).toBeTruthy();
   });
 
   it('22 stars and the boss not played: the boss’s words, and the boss is the primary', async () => {

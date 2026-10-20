@@ -4,6 +4,7 @@ import { parseCellName } from '@sudoku-fight/engine';
 import { act, render, screen } from '@testing-library/react-native';
 import { StyleSheet, type ViewStyle } from 'react-native';
 
+import { LEVEL_MOTION, LEVEL_UI } from '../../../config/levels';
 import i18n from '../../../i18n';
 import { useSettings } from '../../../state/settings';
 import { color, tokens } from '../../../theme';
@@ -11,10 +12,11 @@ import { boardGeometry, cellRect } from '../../board/geometry';
 import { ResumeCountdown } from '../../board/ResumeCountdown';
 import { BoardFreezeLayer } from '../BoardFreezeLayer';
 import { CellChipsLayer } from '../CellChipsLayer';
-import { RegionFrame } from '../RegionFrame';
+import { RegionFrame, regionIntroOf } from '../RegionFrame';
 
 /**
- * What a stage draws over its board (components.md §19.7): the area's 2 dp ring (RegionFrame), chips over cells
+ * What a stage draws over its board (components.md §19.7): the region's frame and the answer's ring (RegionFrame,
+ * 1.0.3, D75), chips over cells
  * (CellChipsLayer: no touch, hidden from screen readers, a fade that honours Reduced Motion), the race's
  * 3 s freeze (BoardFreezeLayer: a scrim with its ring that takes every touch, said once), and [D65] the
  * resume countdown over the covered board (ResumeCountdown: 3, 2, 1; Reduced Motion: the number just changes).
@@ -25,6 +27,9 @@ const styleOf = (el: { props: { style?: unknown } }) =>
   (StyleSheet.flatten(el.props.style as ViewStyle) ?? {}) as ViewStyle;
 const WIDTH = 358;
 const box5 = ['D4', 'D5', 'D6', 'E4', 'E5', 'E6', 'F4', 'F5', 'F6'].map((n) => parseCellName(n)!);
+type Part = { props: { style?: unknown }; children: unknown[] };
+/** A frame's parts, inside out (they carry no ids): the gold band is the frame's child, the dark line the gold's. */
+const partsOf = (el: unknown) => (el as Part).children as Part[];
 
 beforeEach(async () => {
   await i18n.changeLanguage('he');
@@ -32,33 +37,181 @@ beforeEach(async () => {
 });
 afterEach(() => jest.useRealTimers());
 
-describe('RegionFrame', () => {
-  it('rings the area’s cells 2 dp out, in the box gap: light for a find, gold for the box to fill', async () => {
-    await render(<RegionFrame cells={box5} width={WIDTH} />);
-    const g = boardGeometry(WIDTH);
-    const first = cellRect(g, box5[0]!);
-    const last = cellRect(g, box5[8]!);
-    const ring = tokens.border.focus;
-    expect(styleOf(screen.getByTestId('region-frame-focus', hidden))).toMatchObject({
-      position: 'absolute',
-      left: first.x - ring,
-      top: first.y - ring,
-      width: last.x + last.width - first.x + 2 * ring,
-      height: last.y + last.height - first.y + 2 * ring,
-      borderWidth: ring,
-      borderColor: color.text,
-    });
+describe('RegionFrame (levels-ui.md §2.2–2.3, D75)', () => {
+  const g = boardGeometry(WIDTH);
+  const KEY = tokens.border.regionKeyline;
+  const FRAME = tokens.border.regionFrame;
+  const THICK = 2 * KEY + FRAME;
+  const named = (names: string) => names.split(' ').map((n) => parseCellName(n)!);
+  const rowD = named('D1 D2 D3 D4 D5 D6 D7 D8 D9');
+  const col5 = named('A5 B5 C5 D5 E5 F5 G5 H5 I5');
+  /** The frame's rect: the cells' bounding rect, the frame's whole thickness out on every side. */
+  const ringOf = (cells: number[]) => {
+    const first = cellRect(g, cells[0]!);
+    const last = cellRect(g, cells[cells.length - 1]!);
+    return {
+      left: first.x - THICK,
+      top: first.y - THICK,
+      width: last.x + last.width - first.x + 2 * THICK,
+      height: last.y + last.height - first.y + 2 * THICK,
+    };
+  };
+
+  it.each([
+    ['a box', box5],
+    ['a row (nine cells across)', rowD],
+    ['a column', col5],
+  ])(
+    'the same frame for %s: a dark line, the gold band, a dark line, just outside the cells',
+    async (_n, cells) => {
+      await render(<RegionFrame cells={cells} width={WIDTH} />);
+      const frame = screen.getByTestId('region-frame', hidden);
+      expect(styleOf(frame)).toMatchObject({
+        position: 'absolute',
+        ...ringOf(cells),
+        borderWidth: KEY,
+        borderColor: color.board.given,
+      });
+      const [gold] = partsOf(frame);
+      expect(styleOf(gold!)).toMatchObject({
+        borderWidth: FRAME,
+        borderColor: color.focusRing,
+      });
+      expect(styleOf(partsOf(gold)[0]!)).toMatchObject({
+        borderWidth: KEY,
+        borderColor: color.board.given,
+      });
+      expect(frame).toHaveProp('pointerEvents', 'none');
+      expect(frame).toHaveProp('accessibilityElementsHidden', true);
+    },
+  );
+
+  it('a row is nine cells wide and one high; a column the other way round', async () => {
+    await render(<RegionFrame cells={rowD} width={WIDTH} />);
+    const row = styleOf(screen.getByTestId('region-frame', hidden));
+    expect(row.height).toBeCloseTo(g.cell + 2 * THICK);
+    expect(row.width).toBeCloseTo(WIDTH + 2 * THICK);
     await screen.unmount();
-    await render(<RegionFrame cells={box5} width={WIDTH} tone="gold" />);
-    const gold = screen.getByTestId('region-frame-gold', hidden);
-    expect(styleOf(gold).borderColor).toBe(color.focusRing);
-    expect(gold).toHaveProp('pointerEvents', 'none');
-    expect(gold).toHaveProp('accessibilityElementsHidden', true);
+    await render(<RegionFrame cells={col5} width={WIDTH} />);
+    const col = styleOf(screen.getByTestId('region-frame', hidden));
+    expect(col.width).toBeCloseTo(g.cell + 2 * THICK);
+    expect(col.height).toBeCloseTo(WIDTH + 2 * THICK);
   });
 
   it('draws nothing without cells', async () => {
     await render(<RegionFrame cells={[]} width={WIDTH} />);
-    expect(screen.queryByTestId('region-frame-focus', hidden)).toBeNull();
+    expect(screen.queryByTestId('region-frame', hidden)).toBeNull();
+    expect(screen.queryByTestId('answer-frame', hidden)).toBeNull();
+  });
+
+  describe('[D75b] the spotlight', () => {
+    beforeEach(() => jest.useFakeTimers());
+    const run = (ms: number) => act(async () => void jest.advanceTimersByTime(ms));
+
+    it('full motion: the frame lands (1.06 → 1, 0 → 1), then the gold band flashes once, all under a second', async () => {
+      await render(<RegionFrame cells={box5} width={WIDTH} intro="full" />);
+      const frame = screen.getByTestId('region-frame', hidden);
+      const band = screen.getByTestId('region-frame-band', hidden);
+      expect(styleOf(band)).toMatchObject({
+        borderWidth: LEVEL_MOTION.regionBandWidth,
+        borderColor: color.board.regionBand,
+      });
+      expect(frame).toHaveAnimatedStyle({ opacity: 0, transform: [{ scale: LEVEL_MOTION.regionLandScale }] });
+      expect(band).toHaveAnimatedStyle({ opacity: 0 });
+      await run(LEVEL_MOTION.regionLandMs + LEVEL_MOTION.regionBandMs / 2);
+      expect(frame).toHaveAnimatedStyle({ opacity: 1 });
+      expect(band).not.toHaveAnimatedStyle({ opacity: 0 });
+      await run(1000);
+      expect(frame).toHaveAnimatedStyle({ opacity: 1, transform: [{ scale: 1 }] });
+      expect(band).toHaveAnimatedStyle({ opacity: 0 });
+      expect(LEVEL_MOTION.regionLandMs + LEVEL_MOTION.regionBandMs).toBeLessThan(1000);
+    });
+
+    it('Reduced Motion: the frame is there from the first frame, nothing lands, no band', async () => {
+      useSettings.setState({ reduceMotion: 'on' });
+      await render(<RegionFrame cells={box5} width={WIDTH} intro="full" />);
+      expect(screen.getByTestId('region-frame', hidden)).toHaveAnimatedStyle({
+        opacity: 1,
+        transform: [{ scale: 1 }],
+      });
+      expect(screen.queryByTestId('region-frame-band', hidden)).toBeNull();
+      expect(regionIntroOf('full', true)).toBe('none');
+    });
+
+    it('LEVEL_UI.regionIntro off: no spotlight either', async () => {
+      LEVEL_UI.regionIntro = false;
+      try {
+        await render(<RegionFrame cells={box5} width={WIDTH} intro="full" />);
+        expect(screen.getByTestId('region-frame', hidden)).toHaveAnimatedStyle({ opacity: 1 });
+        expect(screen.queryByTestId('region-frame-band', hidden)).toBeNull();
+      } finally {
+        LEVEL_UI.regionIntro = true;
+      }
+    });
+
+    it('a race’s next spot: the band only, the frame at once; a new key plays it again', async () => {
+      const view = await render(<RegionFrame key="spot-1" cells={box5} width={WIDTH} intro="band" />);
+      expect(screen.getByTestId('region-frame', hidden)).toHaveAnimatedStyle({
+        opacity: 1,
+        transform: [{ scale: 1 }],
+      });
+      await run(LEVEL_MOTION.regionBandMs / 2);
+      expect(screen.getByTestId('region-frame-band', hidden)).not.toHaveAnimatedStyle({ opacity: 0 });
+      await run(LEVEL_MOTION.regionBandMs);
+      expect(screen.getByTestId('region-frame-band', hidden)).toHaveAnimatedStyle({ opacity: 0 });
+      await view.rerender(<RegionFrame key="spot-2" cells={rowD} width={WIDTH} intro="band" />);
+      await run(LEVEL_MOTION.regionBandMs / 2);
+      expect(screen.getByTestId('region-frame-band', hidden)).not.toHaveAnimatedStyle({ opacity: 0 });
+    });
+
+    it('no intro: the frame as it is, no band', async () => {
+      await render(<RegionFrame cells={box5} width={WIDTH} />);
+      expect(screen.getByTestId('region-frame', hidden)).toHaveAnimatedStyle({ opacity: 1 });
+      expect(screen.queryByTestId('region-frame-band', hidden)).toBeNull();
+    });
+  });
+
+  describe('the answer: its own look, never the region’s gold', () => {
+    const d4 = parseCellName('D4')!;
+
+    it('a dark ring on the cell, a white line inside it, the digit in a dark chip', async () => {
+      await render(<RegionFrame cells={[d4]} width={WIDTH} look="answer" digit={6} />);
+      const r = cellRect(g, d4);
+      const ring = screen.getByTestId('answer-frame', hidden);
+      expect(styleOf(ring)).toMatchObject({
+        left: r.x,
+        top: r.y,
+        width: r.width,
+        height: r.height,
+        borderWidth: FRAME,
+        borderColor: color.board.given,
+      });
+      const [keyline, chip] = partsOf(ring);
+      expect(styleOf(keyline!)).toMatchObject({
+        borderWidth: KEY,
+        borderColor: color.board.answerKeyline,
+      });
+      expect(styleOf(chip!).backgroundColor).toBe(color.board.given);
+      expect(ring).toHaveTextContent('6');
+      // Nothing gold in it: the region's colour is the region's only.
+      expect(partsOf(ring).map((p) => styleOf(p).borderColor)).not.toContain(color.focusRing);
+      expect(ring).toHaveProp('pointerEvents', 'none');
+      expect(ring).toHaveProp('accessibilityElementsHidden', true);
+    });
+
+    it('no digit (spot the error: the cell shows its own): the ring alone; the same under Reduced Motion', async () => {
+      useSettings.setState({ reduceMotion: 'on' });
+      await render(<RegionFrame cells={[d4]} width={WIDTH} look="answer" />);
+      const ring = screen.getByTestId('answer-frame', hidden);
+      expect(partsOf(ring)).toHaveLength(1);
+      expect(ring).not.toHaveTextContent(/\d/);
+      expect(screen.queryByTestId('answer-frame-band', hidden)).toBeNull();
+    });
+
+    it('is not the region frame: dark against its gold (the pair in src/__tests__/contrast.test.ts)', () => {
+      expect(color.board.given).not.toBe(color.focusRing);
+      expect(color.board.answerKeyline).not.toBe(color.board.given);
+    });
   });
 });
 

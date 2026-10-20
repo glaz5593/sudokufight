@@ -1,8 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { LEVEL_KINDS } from '@sudoku-fight/engine';
+import { ENGINE_VERSION, LEVEL_KINDS } from '@sudoku-fight/engine';
 import { PROGRESS_PATHS, TELEMETRY_EVENT_GENERATION, TELEMETRY_EVENT_NAMES } from '@sudoku-fight/protocol';
+
+import { levelById } from '../levels/levelsData';
 
 /**
  * The release docs of the staged practice (1.0.2; dev-plan §2יא part B, §3.1 and §4): the QA checklist has a row
@@ -11,6 +13,8 @@ import { PROGRESS_PATHS, TELEMETRY_EVENT_GENERATION, TELEMETRY_EVENT_NAMES } fro
  * scripts, and the store forms cover the new data. Moshe tests on his phones from these docs, and the next sessions
  * release by them: a screen missing from the QA, a device check left out, or an APK before its server would ship
  * untested or broken. The spec's own checks are levelsSpecDocs.test.ts; this reads the rest, as a reviewer would.
+ * 1.0.3 (docs/handoff/2026-10-19/levels-ui.md §12): the name "מיקום מדויק", QA rows for the row, the column and the
+ * puzzle (no board: Moshe chose to build without asking), and a device check for each of Moshe's seven notes.
  */
 
 const ROOT = join(__dirname, '..', '..', '..', '..');
@@ -62,13 +66,17 @@ const FIRST_BOSS = LEVELS.find((l) => l.boss);
 
 /** The kinds as the device checks' table names them. */
 const KIND_NAMES: Record<string, string> = {
-  find: 'איפה ה־7? (סוג 1)',
+  find: 'מיקום מדויק (סוג 1)', // 1.0.3 [D79]; "איפה ה־7?" until 1.0.2
   fillBox: 'מלא את הריבוע (סוג 3)',
   findDuel: 'מרוץ מול הבוט (סוג 2)',
   duel: 'דו־קרב ל־30 (סוג 4)',
   spotError: 'מצא את הטעות',
   pointHunter: 'צייד הנקודות',
   chain: 'שרשרת',
+  // 1.0.3 (levels-content.md §3.1): the three new kinds.
+  fillRow: 'מלא את השורה',
+  fillCol: 'מלא את העמודה',
+  puzzle: 'פאזל',
 };
 
 const NO_BOARD = 'אין לוח';
@@ -81,7 +89,7 @@ const PLAN_SCREENS: { plan: string; row: string; board: string; kind?: string }[
   { plan: '2', row: '28. מפת השלבים', board: 'Levels-Map' },
   { plan: '2א', row: '28. מצבי צומת', board: 'Levels-Map' },
   { plan: '3', row: '28. פתיחת שלב', board: 'Levels-Map' },
-  { plan: '4', row: '31. שלב: איפה ה־7?', board: 'Lv-Find', kind: 'find' },
+  { plan: '4', row: '31. שלב: מיקום מדויק', board: 'Lv-Find', kind: 'find' },
   { plan: '5', row: '32. שלב: מרוץ מול הבוט', board: 'Lv-Race', kind: 'findDuel' },
   { plan: '6', row: '33. שלב: מלא את הריבוע', board: 'Lv-Box', kind: 'fillBox' },
   { plan: '7', row: '34. שלב: דו־קרב ל־30', board: 'Lv-Sprint', kind: 'duel' },
@@ -93,6 +101,15 @@ const PLAN_SCREENS: { plan: string; row: string; board: string; kind?: string }[
   { plan: '11', row: '29. שער פרק', board: 'Levels-Gate' },
   { plan: '12', row: '— פרק חדש נפתח', board: NO_BOARD },
   { plan: '13', row: '— איך משחקים', board: NO_BOARD },
+];
+/**
+ * 1.0.3's new stage screens (spec §4.1 rows 38–39): no board, because none was drawn (Moshe: build without asking,
+ * 2026-10-20); each opens its kind's first stage.
+ */
+const SCREENS_103: { row: string; kind: string }[] = [
+  { row: '38. שלב: מלא את השורה', kind: 'fillRow' },
+  { row: '38. שלב: מלא את העמודה', kind: 'fillCol' },
+  { row: '39. שלב: פאזל', kind: 'puzzle' },
 ];
 /** The screens with no board that spec §4.1 lists ("אין לוח ל:") beyond plan §6's own. */
 const MORE_NO_BOARD = [
@@ -137,8 +154,17 @@ describe('QA-CHECKLIST.md', () => {
     if (kind) expect(cells[2]).toContain(`/levels/play?id=${firstOf(kind).id}`);
   });
 
-  it('the boss row opens the first boss', () => {
-    expect(rowOf('— שלב בוס')[2]).toContain(`/levels/play?id=${FIRST_BOSS?.id}`);
+  it('the boss row opens the first boss, and since 1.0.3 says it is always against a bot', () => {
+    const boss = rowOf('— שלב בוס');
+    expect(boss[2]).toContain(`/levels/play?id=${FIRST_BOSS?.id}`);
+    expect(boss[7]).toContain('תמיד מול בוט');
+    expect(boss[7]).toContain('פתיחת בוס');
+  });
+
+  it.each(SCREENS_103)('1.0.3: the row "$row", no board, opens its first stage', ({ row, kind }) => {
+    const cells = rowOf(row);
+    expect(cells[1]).toBe(NO_BOARD);
+    expect(cells[2]).toContain(`/levels/play?id=${firstOf(kind).id}`);
   });
 
   it.each(MORE_NO_BOARD)('the screen with no board "%s" has its row too', (start) => {
@@ -146,7 +172,7 @@ describe('QA-CHECKLIST.md', () => {
   });
 
   it('every row has its 8 columns and a route; Hebrew and English ☐ or ✓; Android and iOS left to the phone', () => {
-    expect(rows.length).toBe(PLAN_SCREENS.length + MORE_NO_BOARD.length);
+    expect(rows.length).toBe(PLAN_SCREENS.length + SCREENS_103.length + MORE_NO_BOARD.length);
     for (const cells of rows) {
       expect({ row: cells[0], columns: cells.length }).toEqual({ row: cells[0], columns: 8 });
       expect({ row: cells[0], route: (cells[2] ?? '').includes('`/') }).toEqual({
@@ -165,6 +191,11 @@ describe('QA-CHECKLIST.md', () => {
     expect(block).toContain('(D49)');
     expect(block).toContain('אין כפתור תגובות שלי (D62)');
     expect(block).toContain('אף פעם לא "Level"');
+    // 1.0.3: the node's screen-reader label says the kind's name, never "איפה ה־7"; its example is a real
+    // Pinpoint stage (L005; L007 is a puzzle since the rebuild).
+    expect(block).not.toContain('"שלב 7, איפה ה־7');
+    expect(rowOf('28. מצבי צומת')[7]).toContain('"שלב 5, מיקום מדויק, שני כוכבים מתוך שלושה"');
+    expect(levelById('L005')?.kind).toBe('find');
   });
 
   (existsSync(join(HANDOFF, 'plan.md')) ? it : it.skip)('the rows follow plan §6, screen by screen', () => {
@@ -203,7 +234,8 @@ const DEVICE_ITEMS: { item: string; words: string[] }[] = [
   },
   {
     item: 'כל אחד מ־7 הסוגים, ובוס',
-    words: ['כל אחד מ־7 הסוגים, ובוס: שלב אחד לפחות', 'התחושה של 30 השניות', 'הקצב של הבוט'],
+    // 1.0.3: ten kinds now (the dev-plan item, above, keeps its 1.0.2 wording).
+    words: ['כל אחד מ־10 הסוגים, ובוס: שלב אחד לפחות', 'התחושה של 30 השניות', 'הקצב של הבוט'],
   },
   {
     item: 'יציאה באישור (X, וגם "חזרה")',
@@ -359,6 +391,87 @@ describe('LEVELS-DEVICE-CHECKS.md', () => {
   it('the calibration check names the first stage of every kind', () => {
     const calibration = section(doc, '## בדיקה 10', '## ');
     for (const kind of LEVEL_KINDS) expect(calibration).toContain(firstOf(kind).id);
+  });
+
+  /**
+   * 1.0.3: Moshe's seven notes on 1.0.2 (docs/handoff/2026-10-19/plan.md §1), each a "בדיקה" whose title names its
+   * note ("(הערה 4)", "(הערות 2 ו־7)") and whose checkboxes have these words; the stages named are the shipped ones.
+   */
+  const MOSHE_NOTES = (): { note: number; words: string[] }[] => [
+    { note: 1, words: ['"מיקום מדויק"', '"איפה ה־6?"', '"שוב" על מיקום מדויק'] },
+    {
+      note: 2,
+      words: ['פרק 1:', 'אף פעם לא שני שלבים רצופים מאותו סוג', 'עד פרק 5 כל 10 הסוגים הופיעו'],
+    },
+    {
+      note: 3,
+      words: [
+        `פרק 1 (${firstOf('fillBox').id}):`,
+        '2 משבצות חסרות, בלוח מלא',
+        'כל ספרה חסרה לפחות פעם אחת מחוץ לריבוע',
+        'והסרגל מראה 60',
+      ],
+    },
+    {
+      note: 4,
+      words: [
+        `${firstOf('puzzle').id}:`,
+        'גרירה:',
+        'ריבוע קבוע',
+        'הקשה ואז הקשה:',
+        '"+5 ש׳"',
+        'ריבוע שהגיע למקומו לא ננעל ולא מסומן',
+        'TalkBack:',
+        'הפחתת תנועה:',
+      ],
+    },
+    {
+      note: 5,
+      words: ['רואים את האזור תוך פחות משנייה', '"מוכן?":', '"התשובה":', 'Deuteranomaly'],
+    },
+    {
+      note: 6,
+      words: [
+        `${FIRST_BOSS?.id} (פרק 1):`,
+        '"הבוט הראשון: Pip"',
+        '"Pip מהיר ב־10%"',
+        '"ניצחת את הבוס!"',
+        '"הבוס ניצח הפעם", גם כשקיבלת כוכב',
+      ],
+    },
+    {
+      note: 7,
+      words: [`${firstOf('fillRow').id} (שורה) ו־${firstOf('fillCol').id} (עמודה)`, 'השורה נשארת שורה'],
+    },
+  ];
+
+  it.each(MOSHE_NOTES())(
+    '1.0.3: Moshe’s note $note has its own check, with all its parts',
+    ({ note, words }) => {
+      const notesOf = (title: string): number[] =>
+        (/\(הער(?:ה|ות) ([^)]*)\)/.exec(title)?.[1]?.match(/\d+/g) ?? []).map(Number);
+      const missing = (boxes: string): string[] => words.filter((w) => !boxes.includes(w));
+      // Of the checks that name this note (one note can be named by two), the one with the most of its words.
+      const best = checks
+        .filter((c) => notesOf(c.title).includes(note))
+        .sort((a, b) => missing(a.boxes).length - missing(b.boxes).length)[0];
+      expect({ note, named: best !== undefined, missing: missing(best?.boxes ?? '') }).toEqual({
+        note,
+        named: true,
+        missing: [],
+      });
+    },
+  );
+
+  it('1.0.3: the server on Staging answers the engine of this build, and the intro says Moshe judges on the phone', () => {
+    const health = `"engine":"${ENGINE_VERSION}"`;
+    expect(section(doc, '## הכנה', '## בדיקה 1')).toContain(health);
+    expect(section(doc, '## אם משהו נכשל', '## ')).toContain(health);
+    expect(doc.slice(0, doc.indexOf('## הכנה'))).toContain('"תבצע בלי לשאול"');
+    // The stars kept by id, the best reset, and the telemetry of the new kinds, after the server went first.
+    expect(allBoxes).toContain('הכוכבים שלך נשמרו');
+    expect(allBoxes).toContain('התאפס');
+    expect(allBoxes).toContain('המנות לא נדחו');
   });
 
   it('the QA checklist, the release checklist and the work plan point at it', () => {

@@ -2,11 +2,12 @@ import {
   type BotLevelId,
   chapterOf,
   isBossLevel,
-  LEVEL_KINDS,
+  kindOfLevel,
   LEVEL_METRIC,
   LEVEL_RULES,
   type LevelEndReason,
   type LevelKind,
+  maxMsOf,
   type Rng,
   type Stars,
 } from '@sudoku-fight/engine';
@@ -18,9 +19,10 @@ import { between, chance, intBetween, weighted } from './random';
  * player of some skill. A rough model of plan §4 (the real levels come from levels.json, which the server does
  * not read): good enough for the admin's "שלבים" page to show what it is for.
  *
- * - Kinds come in as in plan §4.1: chapter 1 has find and fillBox, chapter 2 adds the race, 3 the duel, 4 the
- *   first idea (spotError), 7 and 9 the other two. The boss: fillBox in chapter 1, then a race in the even
- *   chapters and a duel in the odd ones.
+ * - Kinds are the real ones: the engine's kindOfLevel (the chapter table, levels.config.ts through catalog.ts),
+ *   so the sample data follows every rebuild (1.0.3: the puzzle, fillRow and fillCol; every boss against a bot
+ *   [D72]).
+ * - Times: up to the kind's own limit, maxMsOf (60 s for fillBox, fillRow, fillCol and the puzzle [D68]).
  * - Stars: a player's level (casual, good, excellent) less a drop per chapter and the chapter's "saw tooth"
  *   (levels 1–3 easier, 7–9 harder, the boss hardest), plus what a replay has taught, plus noise.
  *   SAMPLE_HARD_LEVELS and SAMPLE_HARD_CHAPTERS are made too hard on purpose, so the page has something to
@@ -44,22 +46,9 @@ export const SAMPLE_HARD_CHAPTERS: Readonly<Record<number, number>> = { 3: 0.7 }
 /** A quit with the X: the share of attempts. */
 const QUIT_SHARE = 0.04;
 
+/** The kind of level n: the engine's (kindOfLevel), as levels.json has it. */
 export function sampleLevelKind(n: number): LevelKind {
-  const chapter = chapterOf(n);
-  if (isBossLevel(n)) return chapter === 1 ? 'fillBox' : chapter % 2 === 0 ? 'findDuel' : 'duel';
-  const kinds: readonly LevelKind[] =
-    chapter === 1
-      ? ['find', 'fillBox']
-      : chapter === 2
-        ? ['find', 'findDuel', 'fillBox']
-        : chapter === 3
-          ? ['find', 'findDuel', 'fillBox', 'duel']
-          : chapter < 7
-            ? ['find', 'findDuel', 'fillBox', 'duel', 'spotError']
-            : chapter < 9
-              ? ['find', 'findDuel', 'fillBox', 'duel', 'spotError', 'pointHunter']
-              : LEVEL_KINDS;
-  return kinds[(n - 1) % kinds.length]!;
+  return kindOfLevel(n);
 }
 
 /** The bot of a level with one (plan §4.2): Pip, Biscuit, Mr. Hoot, Maestro; Overlord as the last bosses. */
@@ -90,7 +79,7 @@ const clampStars = (x: number): Stars => Math.min(3, Math.max(0, Math.round(x)))
 /** One attempt (number `attempt`, 1 for the first) at level `n` by a player of `skill`. */
 export function sampleAttempt(rng: Rng, skill: LevelSkill, n: number, attempt: number): SampleAttempt {
   const kind = sampleLevelKind(n);
-  const limit = LEVEL_RULES.levelMaxMs;
+  const limit = maxMsOf(kind);
   if (chance(rng, QUIT_SHARE)) {
     return {
       stars: 0,

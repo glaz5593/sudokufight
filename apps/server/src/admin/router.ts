@@ -32,7 +32,7 @@ import { getGame, listGames } from './games';
 import { getInstall, listInstalls } from './installs';
 import { getLevels } from './levels';
 import { getOverview } from './overview';
-import { daysQuerySchema, gamesQuerySchema, pageQuerySchema, parseQuery } from './params';
+import { daysQuerySchema, gamesQuerySchema, levelsQuerySchema, pageQuerySchema, parseQuery } from './params';
 import { getScreens } from './screens';
 import {
   type AdminIdentity,
@@ -344,10 +344,11 @@ export function createAdminRouter({
     '/screens',
     handle(daysQuerySchema, (q) => getScreens(db, windowOf(q.days))),
   );
-  // Staged practice (1.0.2, plan §5.5): how each level plays, and the gates players get stuck at.
+  // Staged practice (1.0.2, plan §5.5): how each level plays, and the gates players get stuck at. By default
+  // only each level's rev now (1.0.3, D73); ?allRevs=1 counts the plays from before a rebuild too.
   api.get(
     '/levels',
-    handle(daysQuerySchema, (q) => getLevels(db, windowOf(q.days))),
+    handle(levelsQuerySchema, (q) => getLevels(db, windowOf(q.days), { allRevs: q.allRevs })),
   );
   api.get(
     '/installs',

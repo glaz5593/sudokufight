@@ -198,6 +198,20 @@ const COMPONENT_PAIRS: {
     },
     { fg: `players[${i}].lockEdge`, bg: 'color.board.cellAlt', kind: 'nonText' as const, usage: 'lock edge' },
   ]),
+  // The small map of a stage's region (MiniRegion, levels-ui.md §2.4–2.5): the gold region on the boxes, and the
+  // boxes on every ground it is drawn on (a fill stage's header, "מוכן?").
+  {
+    fg: 'color.focusRing',
+    bg: 'color.iconFaint',
+    kind: 'nonText',
+    usage: 'MiniRegion: the region on the boxes',
+  },
+  ...(['bg', 'surface', 'surface2'] as const).map((ground) => ({
+    fg: 'color.iconFaint',
+    bg: `color.${ground}`,
+    kind: 'nonText' as const,
+    usage: 'MiniRegion: the boxes on the ground',
+  })),
 ];
 
 describe('contrast of the pairs the components add', () => {
@@ -215,6 +229,56 @@ describe('the resolver', () => {
 
   it('refuses a path that is not a colour', () => {
     expect(() => lookup('color.nothing')).toThrow('No colour token');
+  });
+});
+
+describe('[D75a] a stage’s region (levels-ui.md §2.2): one look, told apart by lightness first', () => {
+  const board = tokens.color.board;
+  const inside = [board.focusCell, board.focusCellAlt];
+  const outside = [board.outCell, board.outCellAlt];
+
+  it.each(inside.flatMap((a) => outside.map((b) => [a, b] as const)))(
+    'inside %s against outside %s: at least 1.6:1 (1.0.2’s dimming was 1.25:1)',
+    (a, b) => {
+      expect(contrast(a, b)).toBeGreaterThanOrEqual(1.6);
+    },
+  );
+
+  it('inside is the lighter one, as light as the board’s own cells; outside clearly darker than them', () => {
+    const light = (hex: string) => contrast(hex, '#000000');
+    for (const a of inside) for (const b of outside) expect(light(a)).toBeGreaterThan(light(b));
+    expect(contrast(board.focusCell, board.cell)).toBeLessThan(1.1);
+    expect(contrast(board.cellAlt, board.outCell)).toBeGreaterThan(1.5);
+  });
+
+  it('1.0.2’s dimmed colours are gone (one look for every kind)', () => {
+    expect(board).not.toHaveProperty('cellDim');
+    expect(board).not.toHaveProperty('cellDimAlt');
+    expect(board).not.toHaveProperty('givenDim');
+  });
+
+  it('every pair of the region lives in the table (tokens.json "_contrast")', () => {
+    const pairs = new Set(passing.map((e) => `${e.fg} on ${e.bg}`));
+    const needed = [
+      'color.board.given on color.board.focusCell',
+      'color.board.given on color.board.focusCellAlt',
+      'color.board.givenOut on color.board.outCell',
+      'color.board.givenOut on color.board.outCellAlt',
+      'color.board.wrongDigit on color.board.focusCell',
+      'color.board.wrongDigit on color.board.focusCellAlt',
+      'color.board.wrongDigit on color.board.outCell',
+      'color.board.given on color.board.outCell',
+      'color.board.given on color.focusRing',
+      'color.focusRing on color.board.given',
+      'color.board.answerKeyline on color.board.given',
+      ...tokens.color.players.flatMap((_, i) => [
+        `players[${i}].digit on color.board.focusCell`,
+        `players[${i}].digit on color.board.focusCellAlt`,
+        `players[${i}].lockEdge on color.board.focusCell`,
+        `players[${i}].lockEdge on color.board.focusCellAlt`,
+      ]),
+    ];
+    expect(needed.filter((pair) => !pairs.has(pair))).toEqual([]);
   });
 });
 

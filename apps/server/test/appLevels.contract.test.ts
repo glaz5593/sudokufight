@@ -14,7 +14,7 @@
  */
 import type { AddressInfo } from 'node:net';
 
-import { type FindLevelOver, levelIdOf, maxLevel, type Stars } from '@sudoku-fight/engine';
+import { type FindLevelOver, levelIdOf, levelRev, maxLevel, type Stars } from '@sudoku-fight/engine';
 import { devToken, type LevelBest, type MyProgress, PROGRESS_PATHS } from '@sudoku-fight/protocol';
 import { asc, eq } from 'drizzle-orm';
 
@@ -187,8 +187,9 @@ describe('staged practice: the app’s levels against the real server', () => {
       L003: { stars: 0, plays: 1 },
     });
     expect(await phoneB.repo.summary(ana.uid)).toEqual({ played: 3, stars: 5, current: 4 });
-    // The next attempt's number counts the plays the other phone made ("שוב" gets its own board, D63).
-    expect(await phoneB.repo.attemptOf(ana.uid, 'L001')).toBe(2);
+    // The next attempt's number counts the plays the other phone made ("שוב" gets its own board, D63), at the
+    // level's rev now (a restored row's plays count at any rev).
+    expect(await phoneB.repo.attemptOf(ana.uid, 'L001', levelRev('L001'))).toBe(2);
     expect(await phoneB.repo.dirty(ana.uid)).toEqual([]);
   });
 

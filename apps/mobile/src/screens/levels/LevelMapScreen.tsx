@@ -21,6 +21,7 @@ import { ltr } from '../../components/player/format';
 import { useToast } from '../../components/ui';
 import { LEVEL_UI } from '../../config/levels';
 import { useUnlockAllLevels } from '../../config/testing';
+import { bestMetricAt } from '../../levels/levelsRepo';
 import { cue } from '../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { useReduceMotion } from '../../theme/motion';
@@ -61,8 +62,13 @@ import {
  * Every navigation waits for a closing sheet to leave first (no window torn down with the screen).
  */
 
-/** My bests by stage id, as levels.db reads them: the engine's records and the best measure. */
-export type MapRecords = Readonly<Record<string, (LevelRecord & { metric?: number | null }) | undefined>>;
+/**
+ * My bests by stage id, as levels.db reads them: the engine's records, the best measure and the rev it was made
+ * at (best_rev; null for a row restored from the server). A best made at another rev is not shown [D73].
+ */
+export type MapRecords = Readonly<
+  Record<string, (LevelRecord & { metric?: number | null; rev?: number | null }) | undefined>
+>;
 
 export interface LevelMapScreenProps {
   /** The stages (levels.json, read on first use). */
@@ -316,7 +322,10 @@ function panelSelection(
       : chapter > 1 && !chapterOpen(chapter, records, openedChapters)
         ? { kind: 'gate', gate: gateOf(chapter) }
         : { kind: 'previous', n: selected.n - 1 };
-  return { kind: 'level', level, info, bestMetric: records[id]?.metric ?? null, lockedBy };
+  // [D73] "השיא שלי" starts over on a rebuilt level (a new rev, maybe a new kind): the old rev's best is hidden.
+  const record = records[id];
+  const bestMetric = bestMetricAt({ metric: record?.metric ?? null, rev: record?.rev ?? null }, level.rev);
+  return { kind: 'level', level, info, bestMetric, lockedBy };
 }
 
 const TOTAL_CHIP = 32;

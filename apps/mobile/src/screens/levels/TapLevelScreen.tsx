@@ -1,17 +1,13 @@
 import {
   BOT_CONFIG,
-  boxOf,
-  CELL_COUNT,
   type CellIndex,
   cellName,
-  colOf,
   type Digit,
   type FindLevelOver,
   type FindScope,
   type GameView,
   LEVEL_PENALTY_MS,
   LEVEL_RULES,
-  rowOf,
 } from '@sudoku-fight/engine';
 import {
   useCallback,
@@ -31,6 +27,8 @@ import { Board, type BoardFlash, boardModel, type BoardModelOptions } from '../.
 import { boardGeometry, cellRect } from '../../components/board/geometry';
 import { ResumeCountdown } from '../../components/board/ResumeCountdown';
 import { BoardFreezeLayer } from '../../components/levels/BoardFreezeLayer';
+import { BossFrame } from '../../components/levels/BossFrame';
+import { regionCellsOf, regionOfScope } from '../../components/levels/MiniRegion';
 import { RegionFrame } from '../../components/levels/RegionFrame';
 import { StarsBar } from '../../components/levels/StarsBar';
 import { ltr } from '../../components/player';
@@ -70,8 +68,13 @@ import { levelEndDelayMs } from './levelChrome';
  * freezes my taps for 3 s (BoardFreezeLayer); the bot's spots flash in its colour, its avatar hops (full motion
  * only) and it laughs at my wrong tap (😂 on its card) when its plan says so. A live region says each of them.
  *
- * The area of the target is framed and the rest of the board dimmed; every digit like the target is a dark
- * chip, so the eye finds it at once. The X and Android back ask "לצאת מהשלב?" (0 stars, the next stage opens)
+ * The target's region (a box, a row, a column) has the one look of every kind (levels-ui.md §2, D75a): cream
+ * inside, blue-grey outside, the gold frame with its dark lines; when the board first shows the frame lands and
+ * its band flashes once (D75b; a race's next spot flashes the band only; nothing with Reduced Motion). Every
+ * digit like the target is a dark chip, so the eye finds it at once. A tap outside the region reaches nothing.
+ * A missed target's answer has its own look (a dark ring, a white line, its digit in a dark chip), never the
+ * region's gold. With LEVEL_UI.regionRails [D75c] a row or a column also gets the board's coordinate rails.
+ * The X and Android back ask "לצאת מהשלב?" (0 stars, the next stage opens)
  * and quit. The end holds the last picture (the answer, when it was missed) for a moment, then onOver from a
  * timer of this screen, once the dialog is gone, never inside a press or an update. The result should replace
  * this screen then; if it has not after gameEndConfig.resultsWatchdogMs (levels.db that does not answer), a way
@@ -104,14 +107,14 @@ export function tapEndDelayMs(over: FindLevelOver, reduce: boolean, answer: bool
   return levelEndDelayMs('boardComplete', reduce);
 }
 
-/** The cells of a find's scope; null for the whole board (no frame, no dimming). */
+/** The cells of a find's scope; null for the whole board (no frame, no region look). */
 export function scopeCells(scope: FindScope | null): CellIndex[] | null {
   if (!scope || scope.kind === 'board') return null;
-  const all = Array.from({ length: CELL_COUNT }, (_, i) => i);
-  if (scope.kind === 'box') return all.filter((i) => boxOf(i) === scope.index);
-  if (scope.kind === 'row') return all.filter((i) => rowOf(i) === scope.index);
-  return all.filter((i) => colOf(i) === scope.index);
+  return regionCellsOf(regionOfScope(scope));
 }
+
+/** [D75c] The board's coordinate rails take this much of the room on its left and on its top (Board's rails). */
+const RAILS_DP = space[8] + space[2];
 
 /** An error the game survives: reported (and shown in development), never thrown on. */
 function survive(error: unknown, context: string): void {
@@ -369,7 +372,11 @@ export function TapLevelScreen({
 
   // ---- the board ----
   const [roomHeight, setRoomHeight] = useState<number | null>(null);
-  const side = boardSide(windowWidth, roomHeight);
+  // [D75c] A row or a column with the rails on: A–I and 1–9 beside the board, which gives up their room.
+  const rails = LEVEL_UI.regionRails && (find?.scope?.kind === 'row' || find?.scope?.kind === 'col');
+  const side = rails
+    ? boardSide(windowWidth - RAILS_DP, roomHeight === null ? null : roomHeight - RAILS_DP)
+    : boardSide(windowWidth, roomHeight);
   const area = useMemo(() => scopeCells(find?.scope ?? null), [find?.scope]);
   const errors = level.kind === 'spotError' ? level.targets.errors : null;
   const found = find?.found;
@@ -407,19 +414,25 @@ export function TapLevelScreen({
   // Spot the error's tip card: the kind's first LEVEL_UI.tipLevels stages, until the player closes it.
   const [tipOpen, setTipOpen] = useState(() => spotTipShown(level));
   const closeTip = useCallback(() => setTipOpen(false), []);
-  const answer = find?.answer ?? null;
+  // The answer of a stage that ended without its target (find: where it was; spot the error: the errors not
+  // found); a found target needs none (its own digit is there).
+  const answer = find?.answer && find.over?.reason !== 'targetReached' ? find.answer : null;
+  const answerDigit = level.kind === 'find' ? (find?.digit ?? null) : null;
+  // A new spot of the race is a new frame: its band flashes again (the first spot's frame lands too).
+  const spot = find?.spotIndex ?? 0;
+  const intro = level.kind === 'findDuel' && spot > 0 ? 'band' : 'full';
   const overlay = useMemo(
     () => (
       <>
-        {area ? <RegionFrame cells={area} width={side} tone="focus" /> : null}
-        {/* The answer (find: where it was; spot the error: the errors not found), one frame a cell. */}
+        {area ? <RegionFrame key={`spot-${spot}`} cells={area} width={side} intro={intro} /> : null}
+        {/* The answer, one ring a cell, in its own look (never the region's gold). */}
         {answer?.map((c) => (
-          <RegionFrame key={c} cells={[c]} width={side} tone="gold" testID="answer-frame" />
+          <RegionFrame key={c} cells={[c]} width={side} look="answer" digit={answerDigit} />
         ))}
         {drop ? <DigitDrop key={drop.id} cell={drop.cell} digit={drop.digit} width={side} /> : null}
       </>
     ),
-    [area, answer, drop, side],
+    [area, spot, intro, answer, answerDigit, drop, side],
   );
 
   // The freeze's deadline is the engine's; it is over by the stage's clock even before the next update.
@@ -475,6 +488,7 @@ export function TapLevelScreen({
               onCellPress={running && pause.kind === 'none' ? onCellPress : undefined}
               flashes={flashes}
               label={boardLabel}
+              showCoordinates={rails}
               tap
             >
               {overlay}
@@ -485,6 +499,8 @@ export function TapLevelScreen({
               now={now}
               out={find?.out === true}
             />
+            {/* [D77] A boss's arena: four gold corners around its board (never a whole frame: that is the region). */}
+            {level.boss ? <BossFrame /> : null}
           </View>
         </View>
         {lv && level.kind === 'find' ? (

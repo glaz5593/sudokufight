@@ -8,7 +8,9 @@ import type {
   GameView,
   HostUpdate,
   InterferenceKind,
+  LocalFindHost,
   LocalGameHost,
+  LocalPuzzleHost,
   PlayerId,
   RejectReason,
 } from '@sudoku-fight/engine';
@@ -49,6 +51,9 @@ export const PROTOCOL_VERSION = 1;
  * engine's LocalFindHost; every other host refuses it at once, 'badAction', and nothing is ever sent), and
  * `pause` / `resume` [D65] (the app left the foreground mid-level: the local game freezes and goes on from the
  * same point; online games never pause this way, so RemoteGameHost does nothing). The wire is unchanged.
+ *
+ * 1.0.3 adds `swapBoxes` (the puzzle's one move, played by the engine's LocalPuzzleHost): local as `tap`, every
+ * other host refuses it at once ('badAction'), and nothing is ever sent. The wire is still unchanged.
  */
 export interface GameHost {
   /** The player on this device. */
@@ -65,6 +70,12 @@ export interface GameHost {
   surrender(): void;
   /** A tap level's move (LocalFindHost); refused locally ('badAction') by every other host. */
   tap(cell: CellIndex): void;
+  /**
+   * The puzzle's move (LocalPuzzleHost): swap the boxes at two places (0–8, row-major, LTR). The screen always
+   * asks and draws the answer ('boxFixed' refused, a penalty in boxesSwapped); refused locally ('badAction') by
+   * every other host.
+   */
+  swapBoxes(from: number, to: number): void;
   /** [D65] The app left the foreground: freeze a local game (nothing runs out, moves refused 'paused'). */
   pause(): void;
   /** [D65] Go on from where it froze, with the same time left. No-op when not frozen by pause(). */
@@ -75,6 +86,9 @@ export interface GameHost {
 
 // LocalGameHost must keep satisfying GameHost; this line fails to compile the day it doesn't.
 export const asGameHost = (host: LocalGameHost): GameHost => host;
+// So must the tap levels' host (its swapBoxes, refused, since 1.0.3) and the puzzle's host (1.0.3).
+export const findAsGameHost = (host: LocalFindHost): GameHost => host;
+export const puzzleAsGameHost = (host: LocalPuzzleHost): GameHost => host;
 
 // ---------------------------------------------------------------------------------------------------------
 // Messages (spec §18)
@@ -171,6 +185,7 @@ export type {
   LockTimer,
   PlayerView,
   RejectReason,
+  SwapBoxesAction,
   TapAction,
 } from '@sudoku-fight/engine';
 

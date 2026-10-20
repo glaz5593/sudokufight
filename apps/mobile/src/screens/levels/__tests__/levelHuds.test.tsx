@@ -4,9 +4,11 @@ import {
   type AppLevel,
   type Digit,
   DIGITS,
+  fillRegionOf,
   type GameView,
   ManualClock,
   ManualScheduler,
+  ROW_LETTERS,
 } from '@sudoku-fight/engine';
 import { act, render, screen, within } from '@testing-library/react-native';
 import { StyleSheet, type ViewStyle } from 'react-native';
@@ -14,7 +16,7 @@ import { StyleSheet, type ViewStyle } from 'react-native';
 import { signedText } from '../../../components/player/format';
 import i18n from '../../../i18n';
 import { type LevelSession, startLevel } from '../../../levels/levelSession';
-import { levelById } from '../../../levels/levelsData';
+import { firstBossOf, firstLevelOf, levelsOf } from '../../../levels/__tests__/helpers/levelsOf';
 import { useSettings } from '../../../state/settings';
 import { color } from '../../../theme';
 import { BoxHud } from '../hud/BoxHud';
@@ -78,11 +80,11 @@ afterEach(() => {
 
 describe('DuelLevelHud', () => {
   it('the lead meter reads "פער ⁦+10.5⁩", the number an LTR isolate, with its marks at 8 and 15', async () => {
-    const L021 = levelById('L021')!;
-    const { session, clock } = await sessionOf(L021);
+    const DUEL = firstLevelOf('duel');
+    const { session, clock } = await sessionOf(DUEL);
     await render(
       <DuelLevelHud
-        level={L021}
+        level={DUEL}
         view={withScores(session.getView(), 15, 4.5)}
         now={clock.now()}
         myAvatar="av00"
@@ -105,11 +107,11 @@ describe('DuelLevelHud', () => {
   });
 
   it('a lead the bot holds: "פער ⁦−3⁩"', async () => {
-    const L021 = levelById('L021')!;
-    const { session, clock } = await sessionOf(L021);
+    const DUEL = firstLevelOf('duel');
+    const { session, clock } = await sessionOf(DUEL);
     await render(
       <DuelLevelHud
-        level={L021}
+        level={DUEL}
         view={withScores(session.getView(), 2, 5)}
         now={clock.now()}
         myAvatar="av00"
@@ -118,12 +120,14 @@ describe('DuelLevelHud', () => {
     expect(screen.getByTestId('duel-gap-text')).toHaveTextContent(`פער ${signedText(-3)}`);
   });
 
-  it('a boss duel: its crown and the "בוס" chip', async () => {
-    const L030 = levelById('L030')!;
-    const { session, clock } = await sessionOf(L030);
-    await render(<DuelLevelHud level={L030} view={session.getView()} now={clock.now()} myAvatar="av00" />);
+  it('a boss duel: the boss band "בוס · פרק N" with its crown (1.0.3, D77), and the tile’s crown', async () => {
+    const DUEL_BOSS = firstBossOf('duel');
+    const { session, clock } = await sessionOf(DUEL_BOSS);
+    await render(
+      <DuelLevelHud level={DUEL_BOSS} view={session.getView()} now={clock.now()} myAvatar="av00" />,
+    );
     const badge = screen.getByTestId('stage-boss', hidden);
-    expect(within(badge).getByText('בוס', hidden)).toBeTruthy();
+    expect(within(badge).getByText(`בוס · פרק ${DUEL_BOSS.chapter}`, hidden)).toBeTruthy();
     expect(within(badge).getByTestId('icon-crown', hidden)).toBeTruthy();
     expect(screen.getByTestId('stage-tile-crown', hidden)).toBeTruthy();
   });
@@ -169,11 +173,12 @@ describe('RaceTo30', () => {
 
 describe('BoxHud', () => {
   it('"מלא את ריבוע 8", "1/4 משבצות" once a cell is filled, and a mistake with its "⁦+5⁩ ש׳"', async () => {
-    const L002 = levelById('L002')!;
-    if (L002.kind !== 'fillBox') throw new Error('L002 is a fill-box');
-    const { session, clock, scheduler } = await sessionOf(L002);
-    const [first, second] = L002.targets.cells;
-    const right = (c: number) => Number(L002.board.solution[c]) as Digit;
+    // A box of 4 missing cells, as Lv-Box draws it: a wrong digit is still on the keypad after the first.
+    const BOX = levelsOf('fillBox').find((l) => l.targets.cells.length === 4)!;
+    if (BOX.kind !== 'fillBox') throw new Error('BOX is a fill-box');
+    const { session, clock, scheduler } = await sessionOf(BOX);
+    const [first, second] = BOX.targets.cells;
+    const right = (c: number) => Number(BOX.board.solution[c]) as Digit;
     session.host.select(first!);
     session.host.place(first!, right(first!));
     session.host.select(second!);
@@ -181,29 +186,50 @@ describe('BoxHud', () => {
     session.host.place(second!, wrong);
     expect(session.getView().players[0]!.mistakes).toBe(1);
     scheduler.advance(2000);
-    await render(<BoxHud level={L002} view={session.getView()} now={clock.now()} />);
-    expect(screen.getByTestId('box-task')).toHaveTextContent(`מלא את ריבוע ${L002.targets.box + 1}`);
-    expect(screen.getByTestId('box-cells')).toHaveTextContent('1/4 משבצות');
+    await render(<BoxHud level={BOX} view={session.getView()} now={clock.now()} />);
+    expect(screen.getByTestId('box-task')).toHaveTextContent(`מלא את ריבוע ${BOX.targets.box + 1}`);
+    expect(screen.getByTestId('box-cells')).toHaveTextContent(`1/${BOX.targets.cells.length} משבצות`);
     expect(screen.getByTestId('box-mistakes')).toHaveTextContent(`טעות ${signedText(5)} ש׳`);
     // The clock is the stage's: the time played plus the penalty.
     expect(screen.getByTestId('box-clock')).toHaveTextContent('0:07');
     expect(screen.getByTestId('box-mini-lit', hidden)).toBeTruthy();
   });
 
+  it.each(['fillRow', 'fillCol'] as const)(
+    '%s: "מלא את שורה D" / "מלא את עמודה 5", the small map with its row or column lit (levels-ui.md §5)',
+    async (kind) => {
+      const level = firstLevelOf(kind);
+      const { session, clock } = await sessionOf(level);
+      await render(<BoxHud level={level} view={session.getView()} now={clock.now()} />);
+      const region = fillRegionOf(level)!;
+      expect(screen.getByTestId('box-task')).toHaveTextContent(
+        region.unit === 'row'
+          ? `מלא את שורה ${ROW_LETTERS[region.index]}`
+          : `מלא את עמודה ${region.index + 1}`,
+      );
+      expect(screen.getByTestId('box-cells')).toHaveTextContent(`0/${region.cells.length} משבצות`);
+      const lit = styleOf(screen.getByTestId('box-mini-lit', hidden));
+      expect(region.unit === 'row' ? lit.width : lit.height).toBe(27);
+      expect(screen.getByTestId('box-mini', hidden)).toHaveProp('accessibilityElementsHidden', true);
+    },
+  );
+
   it('a boss fill-box: the crown and "בוס"', async () => {
-    const L010 = levelById('L010')!;
-    const { session, clock } = await sessionOf(L010);
-    await render(<BoxHud level={L010} view={session.getView()} now={clock.now()} />);
-    expect(within(screen.getByTestId('stage-boss', hidden)).getByText('בוס', hidden)).toBeTruthy();
-    expect(screen.getByTestId('box-cells')).toHaveTextContent('0/5 משבצות');
+    // Every boss is a bot fight since 1.0.3 [D72]: a fill-box boss is D72 ב's, made from the first box.
+    const BOX_BOSS = { ...firstLevelOf('fillBox', 1), boss: true };
+    const { session, clock } = await sessionOf(BOX_BOSS);
+    await render(<BoxHud level={BOX_BOSS} view={session.getView()} now={clock.now()} />);
+    // The boss band (UI-2, D77): "בוס · פרק 1".
+    expect(within(screen.getByTestId('stage-boss', hidden)).getByText('בוס · פרק 1', hidden)).toBeTruthy();
+    expect(screen.getByTestId('box-cells')).toHaveTextContent(`0/${BOX_BOSS.targets.cells.length} משבצות`);
   });
 
   it('in English: "1/4 cells"', async () => {
     await act(async () => void (await i18n.changeLanguage('en')));
-    const L002 = levelById('L002')!;
-    const { session, clock } = await sessionOf(L002);
-    await render(<BoxHud level={L002} view={session.getView()} now={clock.now()} />);
-    expect(screen.getByTestId('box-cells')).toHaveTextContent('0/4 cells');
+    const BOX = firstLevelOf('fillBox', 1);
+    const { session, clock } = await sessionOf(BOX);
+    await render(<BoxHud level={BOX} view={session.getView()} now={clock.now()} />);
+    expect(screen.getByTestId('box-cells')).toHaveTextContent(`0/${BOX.targets.cells.length} cells`);
     expect(screen.getByTestId('stage-title')).toHaveTextContent('Stage 2');
   });
 });

@@ -36,6 +36,11 @@ describe('router', () => {
     expect(routeHref(parseRoute('#/levels?days=90'))).toBe('#/levels?days=90');
     expect(routeHref({ name: 'levels', days: 30, chapter: 0 })).toBe('#/levels');
     expect(routeHref({ name: 'levels', days: 7, chapter: 12 })).toBe('#/levels?days=7&chapter=12');
+    // 1.0.3: every rev together, only with ?allRevs=1.
+    expect(parseRoute('#/levels?allRevs=1')).toEqual({ name: 'levels', days: 30, chapter: 0, allRevs: true });
+    expect(parseRoute('#/levels?allRevs=yes')).toEqual({ name: 'levels', days: 30, chapter: 0 });
+    expect(routeHref({ name: 'levels', days: 30, chapter: 0, allRevs: true })).toBe('#/levels?allRevs=1');
+    expect(routeHref({ name: 'levels', days: 30, chapter: 0, allRevs: false })).toBe('#/levels');
     expect(sectionOf({ name: 'levels' })).toBe('levels');
   });
 

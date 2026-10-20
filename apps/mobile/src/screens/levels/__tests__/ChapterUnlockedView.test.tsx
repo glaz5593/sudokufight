@@ -41,7 +41,9 @@ describe('ChapterUnlockedView', () => {
     expect(screen.getByText('פרק חדש נפתח!')).toBeTruthy();
     expect(screen.getByText('פרק 5 · Biscuit')).toBeTruthy();
     expect(screen.getByText(/^Biscuit: /)).toBeTruthy();
-    expect(screen.getByTestId('chapter-unlocked-news')).toHaveTextContent('מה חדש: בוט חדש: Biscuit');
+    expect(screen.getByTestId('chapter-unlocked-news')).toHaveTextContent(
+      'מה חדש: בוט חדש: Biscuit, צייד הנקודות, ובמילוי כל ספרה חסרה לפחות פעם אחת',
+    );
     expect(screen.getAllByText(`${ltr('+50')} XP`)).toHaveLength(1);
     expect(DEFAULT_PROGRESS_RULES.xp.levelGate).toBe(50);
     await fireEvent.press(screen.getByTestId('chapter-unlocked-done'));

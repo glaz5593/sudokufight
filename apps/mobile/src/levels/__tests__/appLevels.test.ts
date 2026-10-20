@@ -188,7 +188,9 @@ describe('levelFinished, wired to the phone', () => {
         props: expect.objectContaining({ level: 1, reason: 'failed', mistakes: 1, metric: null }),
       },
     ]);
-    await expect(levelAttemptOf('L001')).resolves.toBe(2);
+    await expect(levelAttemptOf('L001', 1)).resolves.toBe(2);
+    // A rebuilt level (a new rev) starts its attempts again: the stored board first [D73, D63].
+    await expect(levelAttemptOf('L001', 2)).resolves.toBe(1);
   });
 
   it('signed out: nothing is stored, level_end is still reported', async () => {
@@ -203,7 +205,7 @@ describe('levelFinished, wired to the phone', () => {
     expect(tracked()).toEqual([
       { name: 'level_end', props: expect.objectContaining({ level: 2, stars: 3, prevBest: 0, attempt: 1 }) },
     ]);
-    await expect(levelAttemptOf('L002')).resolves.toBe(1);
+    await expect(levelAttemptOf('L002', 1)).resolves.toBe(1);
   });
 });
 
