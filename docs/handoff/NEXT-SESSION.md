@@ -107,6 +107,13 @@ Remaining device-only checks are listed in docs/STAGE7-DEVICE-CHECKS.md (new 2ג
    build-report-features.md §6, only on Moshe's word). 12 review findings, 11 confirmed and fixed. Report:
    `docs/handoff/2026-10-19/build-report-features.md` (release order §7). Still uncommitted. Moshe must give the EAS
    SHA-256 (App Links for EAS-signed APKs). C: had 8.2 GB free on 2026-10-20.
+   **2026-10-20 Moshe: "יש אישור. תסיים הכל. תכין לי APK DEBUG".** Done: app.json 1.0.4; commits a61c8fe (1.0.3 levels)
+   and f5d160f (friends + stealth OFF + 1.0.4) pushed; staging deployed f5d160f (health engine 0.4.0, migrations
+   0008–0010, log "stealth bot off", /r/123456 page and assetlinks with the RN debug key OK). Debug APK: clean prebuild
+   with EXPO_PUBLIC_SERVER_* = staging (intent filter host sudoku-fight-staging.fly.dev), `gradlew assembleDebug
+   -PreactNativeArchitectures=arm64-v8a`, copied to apps/mobile/apk/debug/. It loads JS from Metro (`npm run mobile`
+   on the PC; .env.local points at staging). Next: Moshe's two-phone test (docs/FRIENDS-DEVICE-CHECKS.md,
+   docs/LEVELS-DEVICE-CHECKS.md 12–19); the stealth bot is switched on only when he says (build-report-features.md §6).
 4. **Only with Moshe's OK:** `npm run version:bump` → commit → push → deploy staging (server FIRST: migration
    0007 runs; then `npm run db:seed-puzzles` against staging) → `npm run apk` (see docs/BUILD-APK.md; check free
    space on C: first).
