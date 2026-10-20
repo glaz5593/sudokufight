@@ -34,6 +34,10 @@ kill_timeout = "30s"
   # says this is a test server on purpose. Never copy these two lines to fly.production.toml.
   ANDROID_APP_LINK_SHA256 = "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C"
   ANDROID_APP_LINK_ALLOW_DEBUG_KEY = "true"
+  # The stealth bot (D90): available on staging at Moshe's word (2026-10-20, "להדליק"). Whether it plays is the
+  # admin site's switch ("בוט סמוי"), off until an admin turns it on. Its seed key is a fly secret
+  # (STEALTH_BOT_SECRET), never in a file. Never copy this line to fly.production.toml without Moshe's word.
+  STEALTH_BOT_ENABLED = "true"
 
 [http_service]
   internal_port = 2567

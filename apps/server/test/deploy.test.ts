@@ -463,9 +463,10 @@ describe.each([
     expect(value('SENTRY_ENVIRONMENT')).toBe(`"${environment}"`);
   });
 
-  it('leaves the stealth bot off: no STEALTH_BOT_ENABLED (default false), and its secret is no file’s [D90]', () => {
-    // Built off everywhere. Staging gets it only at Moshe's word, and this test changes with that line.
-    expect(value('STEALTH_BOT_ENABLED')).toBeUndefined();
+  it('the stealth bot: available in staging only (Moshe, 2026-10-20: "להדליק"), and its secret is no file’s [D90]', () => {
+    // Production stays without STEALTH_BOT_ENABLED (default false) until Moshe says so for production too. In
+    // staging it is available; the admin switch (server_settings) still decides whether it plays.
+    expect(value('STEALTH_BOT_ENABLED')).toBe(environment === 'staging' ? '"true"' : undefined);
     expect(value('STEALTH_BOT_SECRET')).toBeUndefined();
   });
 });
