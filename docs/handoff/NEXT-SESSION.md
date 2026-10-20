@@ -118,6 +118,8 @@ Remaining device-only checks are listed in docs/STAGE7-DEVICE-CHECKS.md (new 2ג
    production without it); STEALTH_BOT_SECRET set as a fly secret (never printed). Deployed: log "stealth bot available:
    the admin switch decides". The admin switch (admin site → "בוט סמוי" → "המתג") is Moshe's click (audited; admin login
    is his Google account). Production: still without the bot.
+   **APK (the usual way, Moshe 2026-10-20):** `npm run apk` → apps/mobile/apk/sudoku-fight-1.0.4-9662e82-staging.apk
+   (68.8 MB, release, JS bundled, staging). The debug build above was deleted: Moshe wants `npm run apk` always.
 4. **Only with Moshe's OK:** `npm run version:bump` → commit → push → deploy staging (server FIRST: migration
    0007 runs; then `npm run db:seed-puzzles` against staging) → `npm run apk` (see docs/BUILD-APK.md; check free
    space on C: first).
