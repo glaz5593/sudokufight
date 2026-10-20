@@ -4,13 +4,21 @@ import { createServer } from 'node:http';
 import { createEndpoint, createRouter, defineRoom, defineServer } from '@colyseus/core';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import { ENGINE_VERSION, type Scheduler } from '@sudoku-fight/engine';
-import { MATCHMAKING_ROOM_NAME, PROTOCOL_VERSION } from '@sudoku-fight/protocol';
+import {
+  FRIENDS_ROOM_NAME,
+  type GameRoomRuleOverrides,
+  MATCHMAKING_ROOM_NAME,
+  PROTOCOL_VERSION,
+} from '@sudoku-fight/protocol';
 
 import { roomIdentityVerifier } from './accounts/identity';
 import { defaultIdentityVerifier } from './auth';
 import { type TokenVerifier, tokenVerifierFor } from './auth/firebaseToken';
 import { DEFAULT_PORT, loadConfig, type ServerConfig } from './config';
 import { createDb, type Database, type Db } from './db';
+import type { FriendsRules } from './friends/options';
+import { FriendRoomsService } from './friends/service';
+import { dbFriendsStore } from './friends/store';
 import { bankPuzzleSource } from './game/puzzles';
 import { configureHttp, type HttpDeps } from './http';
 import { guardHttpServer } from './http/guard';
@@ -29,19 +37,30 @@ import {
 import { endInterruptedGames, rankedGames } from './persistence';
 import { dbPuzzleSource, rankedPoolSizes } from './puzzles';
 import { EchoRoom } from './rooms/EchoRoom';
+import { colyseusFriendsRooms, createFriendsRoom, friendsGameMaker } from './rooms/FriendsRoom';
 import {
   consoleGameLog,
   createGameRoom,
   type GameRoomDeps,
   gameRoomDeps,
+  type GameRoomLog,
   systemScheduler,
 } from './rooms/GameRoom';
+import { serverStealthMatcher, type StealthMatcher } from './stealth/match';
+import type { StealthSeatDeps } from './stealth/seat';
+import { dbStealthSwitchStore, StealthSwitch } from './stealth/switch';
 
 /**
  * The game server (spec §17, §18), all on one port:
  * - Colyseus: the WebSocket transport, the `game` room (rooms/GameRoom, stage 7), the `echo` room for the
  *   round-trip check, GET /health, and outside production GET /dev/metrics (action handling times); the
  *   `matchmaking` room (stage 9: src/matchmaking), whose matches open rated `game` rooms.
+ * - The `friends` room (1.0.4, rooms/FriendsRoom): playing with friends, opened by the friends service
+ *   (src/friends/service: codes, tickets, blocks) for POST /v1/rooms and entered with its tickets; the service
+ *   goes to the HTTP routes too (src/friends/router), and on a shutdown it tells every waiting room first.
+ * - The stealth bot (src/stealth; stealth-bot.md §7, §8) [D90]: OFF unless STEALTH_BOT_ENABLED, and then off
+ *   until an admin turns its switch on (serverStealth). One switch for the process: matchmaking reads it on every
+ *   round, the admin API turns it, with no restart.
  * - Express (src/http): POST /v1/events (stage 7א), and the admin site next.
  * - The database (src/db): opened and migrated before the server listens, closed on shutdown. Ranked games
  *   left running by the previous process are ended then (persistence endInterruptedGames: 'serverRestart').
@@ -99,6 +118,15 @@ export interface AppServerOptions {
    * timers (default: the game room's).
    */
   matchmaking?: { config?: Partial<MatchmakingConfig>; now?: () => number; scheduler?: Scheduler };
+  /**
+   * Playing with friends (1.0.4): rules to override (tests: a few codes, a short hold), rule overrides for its
+   * games (tests: a short grace), and the codes' RNG (default crypto.randomInt).
+   */
+  friends?: {
+    rules?: Partial<FriendsRules>;
+    gameRules?: GameRoomRuleOverrides;
+    random?: (n: number) => number;
+  };
 }
 
 /** What the game room needs to know players by their accounts (stage 8). */
@@ -143,12 +171,60 @@ export function gameDepsFor(
               cheat: config.cheat,
               puzzles: dbPuzzleSource({ db: accounts.db, rng: { next: () => randomInt(2 ** 32) / 2 ** 32 } }),
               log: overrides.log ?? consoleGameLog,
+              // A friends game's XP shares the practice day's cap (1.0.4) [D81a].
+              practiceXpDailyCap: config.progress?.practiceXpDailyCap,
             }),
       blocks:
         accounts === undefined ? undefined : roomBlocks(accounts.db, accounts.blockWatch ?? new BlockWatch()),
       ...overrides,
     },
   );
+}
+
+/** The stealth bot as one server process has it (serverStealth). */
+export interface ServerStealth {
+  /**
+   * Its switch (src/stealth/switch.ts), shared by matchmaking (isOn, every round) and the admin API (GET
+   * /admin/api/stealth, POST /admin/api/stealth/switch). Not `available` unless STEALTH_BOT_ENABLED: then it is
+   * off whatever is stored, and the admin site shows no switch.
+   */
+  switch: StealthSwitch;
+  /** Matchmaking's side (stealth/match.ts); undefined unless STEALTH_BOT_ENABLED: matchmaking as before it. */
+  matcher: StealthMatcher | undefined;
+  /** The game rooms' (the key of the bot's private seed); undefined without settings (as in tests). */
+  seats: StealthSeatDeps | undefined;
+}
+
+/**
+ * [D90] The stealth bot for these settings (config.stealth, from STEALTH_BOT_* and STEALTH_PERSONA_POOL_MAX).
+ * Built OFF: with STEALTH_BOT_ENABLED false (the default everywhere) there is no matcher, so matchmaking never
+ * asks anything of it and no persona is ever made or seated; with it true, the bot still waits for an admin to
+ * turn its switch on (no row in server_settings is off).
+ */
+export function serverStealth(
+  config: ServerConfig,
+  db: Db | (() => Db),
+  { log, now }: { log: GameRoomLog; now: () => number },
+): ServerStealth {
+  const settings = config.stealth;
+  const stealthSwitch = new StealthSwitch({
+    available: settings?.enabled === true,
+    store: dbStealthSwitchStore(db),
+    now,
+    log,
+  });
+  return {
+    switch: stealthSwitch,
+    matcher: serverStealthMatcher({
+      settings,
+      db,
+      ratingOption: config.ratingOption,
+      switch: stealthSwitch,
+      log,
+      now,
+    }),
+    seats: settings === undefined ? undefined : { secret: settings.secret },
+  };
 }
 
 export function createAppServer({
@@ -160,26 +236,52 @@ export function createAppServer({
   game,
   tokens = tokenVerifierFor(config, now),
   matchmaking: matchmakingOptions = {},
+  friends: friendsOptions = {},
 }: AppServerOptions = {}) {
   let database = injected;
   const openDb = (): Db => {
     if (database === undefined) throw new Error('The database is not open yet');
     return database.db;
   };
+  const matchmakingNow = matchmakingOptions.now ?? game?.now ?? Date.now;
+  const log = game?.log ?? consoleGameLog;
+  // The stealth bot [D90]: off unless STEALTH_BOT_ENABLED and the admin switch both say on.
+  const stealth = serverStealth(config, openDb, { log, now: matchmakingNow });
   // Ranked games (stage 9): one matchmaking for the process; its matches open rated game rooms.
   const matchmaking = new MatchmakingService({
     store: dbMatchmakingStore(openDb),
     games: colyseusMatchGames(),
     ratingOption: config.ratingOption,
-    now: matchmakingOptions.now ?? game?.now ?? Date.now,
+    now: matchmakingNow,
     scheduler: matchmakingOptions.scheduler ?? game?.scheduler ?? systemScheduler,
     newId: randomUUID,
-    log: game?.log ?? consoleGameLog,
+    log,
     config: { ...DEFAULT_MATCHMAKING, ...matchmakingOptions.config },
+    stealth: stealth.matcher,
   });
   // Blocks and unblocks (spec §3.5): told by the HTTP routes, heard by the game rooms.
   const blockWatch = new BlockWatch();
-  const gameDeps = gameDepsFor(config, { matches: matchmaking, ...game }, { tokens, db: openDb, blockWatch });
+  const gameDeps = gameDepsFor(
+    config,
+    { matches: matchmaking, ...(stealth.seats && { stealth: stealth.seats }), ...game },
+    { tokens, db: openDb, blockWatch },
+  );
+  // Playing with friends (1.0.4): one service for the process, shared by the HTTP routes and the rooms. Its
+  // games are stored through the ranked games' persistence (unrated, games.mode 'friends').
+  const ranked = gameDeps.ranked;
+  const friendRooms =
+    ranked === undefined
+      ? undefined
+      : new FriendRoomsService({
+          store: dbFriendsStore(openDb, config.ratingOption),
+          opener: colyseusFriendsRooms(),
+          now: gameDeps.now,
+          random: friendsOptions.random ?? randomInt,
+          newId: randomUUID,
+          log: gameDeps.log,
+          rules: friendsOptions.rules,
+          gameRules: friendsOptions.gameRules,
+        });
   const server = defineServer({
     greet: false,
     gracefullyShutdown,
@@ -195,6 +297,13 @@ export function createAppServer({
           ...MATCHMAKING_ROOM_DEFAULTS,
         }),
       ),
+      ...(friendRooms === undefined || ranked === undefined
+        ? {}
+        : {
+            [FRIENDS_ROOM_NAME]: defineRoom(
+              createFriendsRoom(gameDeps, { claims: friendRooms, games: friendsGameMaker(ranked) }),
+            ),
+          }),
       echo: defineRoom(EchoRoom),
     },
     routes: createRouter({
@@ -202,7 +311,7 @@ export function createAppServer({
       // Cheap numbers for the debug screen and load checks; not in production.
       devMetrics: createEndpoint('/dev/metrics', { method: 'GET' }, async (ctx) => {
         if (config.nodeEnv === 'production') throw ctx.error('NOT_FOUND');
-        return Promise.resolve(gameDeps.metrics.report());
+        return Promise.resolve({ ...gameDeps.metrics.report(), friends: friendRooms?.report() ?? null });
       }),
     }),
     // Colyseus runs these in order inside listen(): beforeListen, then express.
@@ -227,8 +336,21 @@ export function createAppServer({
     },
     express: (app) => {
       if (database === undefined) throw new Error('The database must be open before the HTTP routes');
-      configureHttp(app, { config, db: database.db, now, telemetryLimits, tokens, blockWatch });
+      configureHttp(app, {
+        config,
+        db: database.db,
+        now,
+        telemetryLimits,
+        tokens,
+        blockWatch,
+        friendRooms,
+        stealthSwitch: stealth.switch,
+      });
     },
+  });
+  // An update: every friends room still waiting is told "roomClosed" (serverRestart) before the rooms go.
+  server.onBeforeShutdown(async () => {
+    await friendRooms?.shutdown();
   });
   server.onShutdown(async () => {
     matchmaking.close();

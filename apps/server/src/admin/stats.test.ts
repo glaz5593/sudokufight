@@ -144,6 +144,8 @@ describe('GET /admin/api/overview', () => {
         { day: '2026-10-08', count: 0 },
         { day: '2026-10-09', count: 2 },
       ],
+      // No stealth bot here (stealth.test.ts counts one): g1 and g2 started in the window, g3 before it.
+      stealth: expect.objectContaining({ personas: 0, rankedGames: 2, stealthGames: 0, winRate: null }),
     });
   });
 

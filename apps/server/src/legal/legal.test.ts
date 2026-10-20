@@ -17,6 +17,7 @@ import {
   LEGAL_UPDATED,
   PAGE_COLORS,
   renderLegalPage,
+  type LegalLang,
   type LegalSettings,
 } from '.';
 import { inline } from './render';
@@ -57,14 +58,126 @@ describe('the legal texts', () => {
     }
   });
 
-  it('count the events in the App Store answers as the app has them (docs/store/APP-PRIVACY.md: 20)', () => {
+  it('count the events in the App Store answers as the app has them (docs/store/APP-PRIVACY.md: 26)', () => {
     const doc = readFileSync(
       path.join(__dirname, '..', '..', '..', '..', 'docs', 'store', 'APP-PRIVACY.md'),
       'utf8',
     );
     const counts = [...doc.matchAll(/(\d+) אירועים/g)].map((m) => Number(m[1]));
     expect(counts).toEqual([TELEMETRY_EVENT_NAMES.length]);
-    expect(TELEMETRY_EVENT_NAMES.length).toBe(20);
+    expect(TELEMETRY_EVENT_NAMES.length).toBe(26);
+  });
+
+  it('say what playing with friends keeps and shows (1.0.4): who sees what in a room, no code in the events', () => {
+    const en = textOf(renderLegalPage('privacy', 'en', SET));
+    expect(en).toMatch(/Games with friends\s+\(in a room with a code; kept on the server like a ranked game/);
+    expect(en).toMatch(/kept only in the server’s memory, until the room closes/);
+    expect(en).toMatch(
+      /anyone who has its code or link and enters the room sees the name, avatar, flag and general rating/,
+    );
+    expect(en).toMatch(/The code and the link themselves carry no personal information\./);
+    const he = textOf(renderLegalPage('privacy', 'he', SET));
+    expect(he).toMatch(/משחקים עם חברים/);
+    expect(he).toMatch(/נשמרים רק בזיכרון של השרת, עד שהחדר נסגר/);
+    expect(he).toMatch(/רואה את השם, האווטאר, הדגל והדירוג הכללי של מי שבחדר/);
+    expect(he).toMatch(/בקוד ובקישור עצמם אין שום מידע אישי\./);
+    // The six events of generation 3 are in the table, in both languages; none carries a code or who was there.
+    const friendsEvents = TELEMETRY_EVENT_NAMES.filter((name) => name.startsWith('friends_'));
+    expect(friendsEvents).toHaveLength(6);
+    for (const lang of LEGAL_LANGS) {
+      const html = renderLegalPage('privacy', lang, SET);
+      for (const name of friendsEvents) {
+        expect(html).toContain(`<code dir="ltr">${name}</code>`);
+        for (const words of EVENT_DETAILS[name][lang]) expect(textOf(html)).toContain(words);
+      }
+      for (const name of ['game_start', 'game_end'] as const)
+        expect(EVENT_DETAILS[name][lang][1]).toMatch(lang === 'en' ? /with friends/ : /עם חברים/);
+    }
+    expect(EVENT_DETAILS.friends_invite_share.en[1]).toMatch(/not the code/);
+  });
+
+  it('[D93] disclose the computer-controlled opponent in one line of the terms, and the pace in the privacy policy', () => {
+    const service = (lang: LegalLang) => {
+      const section = LEGAL_TEXTS.terms[lang].sections.find((s) => s.id === 'service');
+      return (section?.blocks ?? []).filter((b): b is string => typeof b === 'string').join('\n');
+    };
+    // The one line, in the "Availability" section the store reviewer notes point to.
+    expect(LEGAL_TEXTS.terms.en.sections.find((s) => s.id === 'service')?.title).toBe('Availability');
+    expect(service('he')).toContain(
+      'כשאין שחקנים זמינים, ייתכן שתשובצו מול יריב ממוחשב שמשחק בקצב דומה לשלכם. משחקים כאלה נספרים בדירוג.',
+    );
+    expect(service('en')).toContain(
+      'When no players are available, you may be matched with a computer-controlled opponent that plays at a pace similar to yours. Such games count toward your rating.',
+    );
+    // The practice offer ("Play a bot meanwhile") and the restart rule stay.
+    expect(service('he')).toMatch(/משחק אימון מול בוט, בלי דירוג\..*מסתיים בלי שינוי בדירוג\./s);
+    expect(service('en')).toMatch(
+      /a practice game against a bot, with no rating\..*ends with no rating change\./s,
+    );
+    expect(service('en')).not.toMatch(/the game may offer a game against a bot/i);
+    // Only there: one mention on the whole page, in each language.
+    const mentions = (lang: LegalLang, words: RegExp) =>
+      textOf(renderLegalPage('terms', lang, SET)).match(words)?.length ?? 0;
+    expect(mentions('he', /יריב ממוחשב/g)).toBe(1);
+    expect(mentions('en', /computer-controlled/g)).toBe(1);
+
+    // The privacy policy: the pace kept at the end of each ranked game, what it is for, and a link to the terms.
+    const en = renderLegalPage('privacy', 'en', SET);
+    expect(en).toMatch(
+      /<strong>Your pace:<\/strong> at the end of each ranked game we work out, from your moves, your average time per move[^<]*\(see the <a href="\/legal\/terms\?lang=en">Terms of Use<\/a>\)\. Your pace is not shown to other players\./,
+    );
+    expect(textOf(en)).toMatch(
+      /we set the pace of a computer-controlled opponent when no players are available/,
+    );
+    const he = renderLegalPage('privacy', 'he', SET);
+    expect(he).toMatch(
+      /<strong>קצב המשחק שלכם:<\/strong> בסוף כל משחק מדורג אנחנו מחשבים מהמהלכים שלכם את הזמן הממוצע שלכם למהלך[^<]*\(ראו <a href="\/legal\/terms\?lang=he">תנאי השימוש<\/a>\)\. הקצב לא מוצג לשחקנים אחרים\./,
+    );
+    expect(textOf(he)).toMatch(/נקבע הקצב של יריב ממוחשב, כשאין שחקנים זמינים/);
+    // The 1.0.3 and friends lines are still there.
+    expect(textOf(en)).toMatch(/Games with friends/);
+    expect(EVENT_DETAILS.level_start.en[1]).toMatch(/number and version/);
+
+    // The meaning changed, so the date did (the stealth bot's lines, 2026-10-20).
+    expect(LEGAL_UPDATED >= '2026-10-20').toBe(true);
+  });
+
+  it('[D93] tell the store reviewers about the computer-controlled opponent, and keep the store forms in step', () => {
+    const store = (file: string) =>
+      readFileSync(path.join(__dirname, '..', '..', '..', '..', 'docs', 'store', file), 'utf8');
+    const codeBlocks = (doc: string) =>
+      [...doc.matchAll(/```\r?\n([\s\S]*?)\r?\n```/g)].map((m) => m[1] ?? '');
+    const apple = codeBlocks(store('LISTING-APPLE.md')).find((b) => b.includes('Demo account:')) ?? '';
+    const google =
+      codeBlocks(store('LISTING-GOOGLE.md')).find((b) => b.startsWith('Sign in with the demo account')) ?? '';
+    for (const [name, notes] of [
+      ['apple', apple],
+      ['google', google],
+    ] as const) {
+      const flat = notes.replace(/\s+/g, ' ');
+      for (const words of [
+        /2-player ranked games only/,
+        /computer-controlled opponent/,
+        /a made-up name that belongs to no real player/,
+        /plays at a pace close to yours/,
+        /the game counts for the rating like any ranked game/,
+        /The game itself does not mark it as a computer/,
+        /Terms of Use \(Settings → About and legal\), section "Availability"/,
+        /a server setting and may be switched off/,
+        /"Play a bot meanwhile"/,
+        /start the same search on both within a few seconds/,
+      ])
+        expect({ name, has: words.test(flat) }).toEqual({ name, has: true });
+      expect({ name, realOnly: /needs a real opponent/.test(flat) }).toEqual({ name, realOnly: false });
+    }
+    // The forms: the pace is gameplay data the code already had (no new type, no new event).
+    const privacy = store('APP-PRIVACY.md');
+    const safety = store('DATA-SAFETY.md');
+    for (const doc of [privacy, safety]) {
+      expect(doc).toContain('`pace_ms`');
+      expect(doc).toContain('יריב ממוחשב');
+    }
+    expect(privacy).toContain("`users.kind = 'persona'`");
   });
 
   it('say where staged practice’s progress is kept: the server’s copy goes with the account, the phone’s stays until uninstall', () => {

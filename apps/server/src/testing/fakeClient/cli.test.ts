@@ -157,6 +157,31 @@ describe('parseFakeClientArgs', () => {
     expect(run('--code XVGWGD').options.account).toBeUndefined();
   });
 
+  it('1.0.4: --friends joins a friends room by its 6-digit code, as an account', () => {
+    expect(run('--friends 123-456 --name Ana_Pal').options).toMatchObject({
+      friends: '123456',
+      account: {},
+      name: 'Ana_Pal',
+    });
+    expect(run('--friends 654321 --token eyJ.abc.def --country us').options).toMatchObject({
+      friends: '654321',
+      account: { token: 'eyJ.abc.def', country: 'US' },
+    });
+    expect(run('--friends 654321').options.code).toBeUndefined();
+    expect(FAKE_CLIENT_USAGE).toContain('--friends <code>');
+  });
+
+  it.each([
+    ['--friends 12345', 'not a friends room code'],
+    ['--friends ABCDEF', 'not a friends room code'],
+    ['--friends 123456 --code XVGWGD', 'not with --code, --create or --queue'],
+    ['--friends 123456 --create', 'not with --code, --create or --queue'],
+    ['--friends 123456 --queue fast-2p', 'not with --code, --create or --queue'],
+    ['--friends 123456 --account', '--friends plays as an account already'],
+  ])('--friends refuses %j', (line, message) => {
+    expect(error(line)).toContain(message);
+  });
+
   it('a Hebrew name gets an id a dev user id can hold', () => {
     expect(run('--code XVGWGD --name משה').options.id).toBe('fake-___');
   });

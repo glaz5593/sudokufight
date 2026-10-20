@@ -2,10 +2,17 @@ import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 
 import type { RatingOption } from '@sudoku-fight/engine';
-import { type AdminGoogleWebConfig, RECENT_SIGN_IN_MS } from '@sudoku-fight/protocol';
+import {
+  type AdminGoogleWebConfig,
+  parseQueueKey,
+  type QueueKey,
+  queueKey,
+  RECENT_SIGN_IN_MS,
+} from '@sudoku-fight/protocol';
 import { z } from 'zod';
 
 import serverPackage from '../package.json';
+import type { RateLimitRule } from './http/rateLimiter';
 import type { LegalSettings } from './legal/types';
 
 /**
@@ -139,6 +146,138 @@ export interface SentryConfig {
 
 export const DEFAULT_TRACES_SAMPLE_RATE = 0.05;
 
+/**
+ * The SHA-256 of the debug key in React Native's project template (android/app/debug.keystore, alias
+ * androiddebugkey, password "android"), which signs the APKs of `npm run apk`; its SHA-1 is app.config.ts's
+ * TEMPLATE_DEBUG_KEY_SHA1. `keytool -list -v -keystore apps/mobile/android/app/debug.keystore -alias
+ * androiddebugkey -storepass android` prints both. The key is public: it is the same in every React Native project,
+ * so anyone can sign an APK named com.mosheg.sudokufight with it. Listed in assetlinks.json, such an APK would
+ * be given the room links. Fine for a test server's test phones (staging); a production server refuses it
+ * unless ANDROID_APP_LINK_ALLOW_DEBUG_KEY says otherwise (friends-room.md §6.2).
+ */
+export const TEMPLATE_DEBUG_KEY_SHA256 =
+  'FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C';
+
+/** At most this many fingerprints in ANDROID_APP_LINK_SHA256 (the keys that sign the app: a handful). */
+export const MAX_APP_LINK_FINGERPRINTS = 10;
+
+/**
+ * A SHA-256 certificate fingerprint as assetlinks.json wants it, 32 bytes as "AB:CD:…" in upper case, from
+ * what keytool, `eas credentials` or Play Console show (with or without colons, any case); null when it is not
+ * one.
+ */
+export function canonicalSha256(raw: string): string | null {
+  const hex = raw.trim().replace(/:/g, '').toUpperCase();
+  return /^[0-9A-F]{64}$/.test(hex) ? (hex.match(/../g) ?? []).join(':') : null;
+}
+
+/**
+ * An iOS app id for apple-app-site-association: "<Team ID>.<bundle id>", the Team ID being 10 upper-case letters
+ * and digits (Apple Developer → Membership), e.g. "ABCDE12345.com.mosheg.sudokufight".
+ */
+const IOS_APP_ID_PATTERN = /^[A-Z0-9]{10}\.[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/;
+
+/**
+ * Room links of playing with friends (1.0.4; docs/handoff/2026-10-19/friends-room.md §6; src/friends/links.ts).
+ * None of it is a secret: the files they make are public by design.
+ * - `androidSha256` (ANDROID_APP_LINK_SHA256): the SHA-256 of every key that signs the Android app this server's
+ *   links open (staging: the PC's test key and EAS's; production: EAS's and Google Play's app signing key), in
+ *   GET /.well-known/assetlinks.json. Empty: that file answers 404, and the links open in the browser.
+ * - `iosAppId` (IOS_APP_ID): for GET /.well-known/apple-app-site-association; null: 404 (no iOS build yet).
+ * - `storeUrls` (STORE_URL_ANDROID, STORE_URL_IOS): the store pages the link's browser page offers; null: the
+ *   page says the app is still in testing.
+ */
+export interface FriendsLinksConfig {
+  androidSha256: readonly string[];
+  iosAppId: string | null;
+  storeUrls: { android: string | null; ios: string | null };
+}
+
+/**
+ * The rate limits of the /v1/rooms routes (friends-room.md §5 [D86]; token buckets, src/http/rateLimiter.ts):
+ * - `create` (FRIENDS_CREATES_PER_HOUR, default 10): rooms one account may open in an hour;
+ * - `joinPerAccount` (FRIENDS_JOINS_PER_10_MIN, default 20): tries to join (with a code or a link) per account
+ *   in 10 minutes;
+ * - `joinPerIp` (FRIENDS_JOINS_PER_10_MIN_PER_IP, default 60): the same per IP address (an IPv6 /64 is one).
+ * With 100 rooms open, 20 random tries in 10 minutes find one in about 3.5 days, and then only reach a waiting
+ * room whose host can remove them. Past a limit: 429 `tooManyRequests` with Retry-After.
+ */
+export interface FriendsLimits {
+  create: RateLimitRule;
+  joinPerAccount: RateLimitRule;
+  joinPerIp: RateLimitRule;
+}
+
+const MINUTE_MS = 60_000;
+
+export const DEFAULT_FRIENDS_LIMITS: FriendsLimits = {
+  create: { limit: 10, windowMs: 60 * MINUTE_MS },
+  joinPerAccount: { limit: 20, windowMs: 10 * MINUTE_MS },
+  joinPerIp: { limit: 60, windowMs: 10 * MINUTE_MS },
+};
+
+/** Playing with friends (1.0.4): its links and its rate limits. */
+export interface FriendsConfig {
+  links: FriendsLinksConfig;
+  limits: FriendsLimits;
+}
+
+export const NO_FRIENDS_LINKS: FriendsLinksConfig = {
+  androidSha256: [],
+  iosAppId: null,
+  storeUrls: { android: null, ios: null },
+};
+
+/** A range of milliseconds, both ends included. */
+export interface MsSpan {
+  min: number;
+  max: number;
+}
+
+/**
+ * The stealth bot (docs/handoff/2026-10-19/stealth-bot.md §4, §7, §8) [D90–D99; Moshe's "yes" of 2026-10-20]:
+ * when a ranked two-player search finds nobody, the server may seat a bot that plays like a person (src/stealth).
+ * Built OFF: switching it on in staging waits for Moshe's word [D90].
+ * - `enabled` (STEALTH_BOT_ENABLED, default false): the master switch. False: the feature does not exist on this
+ *   server (matchmaking behaves as before it, and the admin site has no switch). True: the admin site's switch
+ *   (server_settings, src/stealth/switch.ts; off until an admin turns it on) decides, with no restart.
+ * - `queues` (STEALTH_BOT_QUEUES, default fast-2p,normal-2p,hard-2p): the queues it may enter; two-player
+ *   queues only [D94].
+ * - `afterMs` (STEALTH_BOT_AFTER_MS, default 8000-20000) [D94]: a wait drawn in this span when a search starts;
+ *   the bot may come only after it, and only while nobody the player could meet is searching.
+ * - `hideNobody` (STEALTH_BOT_HIDE_NOBODY, default true) [D95]: while the bot is on and a persona is within the
+ *   player's reach, `searching` carries no `nextRange` (the app shows the range bar, as before 15.10), instead of
+ *   "nobody else is searching".
+ * - `personaPoolMax` (STEALTH_PERSONA_POOL_MAX, default 1000) [D91]: the most personas the server makes.
+ * - `readyAfterMs` (300–1500 ms; not an environment setting): the persona connects to the game room this long
+ *   after the room opens, as a person's app does (D37: connected = ready).
+ * - `secret` (STEALTH_BOT_SECRET; random per start when unset): the key of the bot's private seed
+ *   (HMAC(secret, game id)), so the game's public seed tells an app nothing of the bot's moves. Set it to replay a
+ *   reported game's bot later. Never logged, never sent.
+ */
+export interface StealthBotSettings {
+  enabled: boolean;
+  queues: readonly QueueKey[];
+  afterMs: MsSpan;
+  hideNobody: boolean;
+  personaPoolMax: number;
+  readyAfterMs: MsSpan;
+  secret: string;
+}
+
+export const STEALTH_BOT_QUEUES: readonly QueueKey[] = ['fast-2p', 'normal-2p', 'hard-2p'];
+
+export const DEFAULT_STEALTH_BOT: Omit<StealthBotSettings, 'secret'> = {
+  enabled: false,
+  queues: STEALTH_BOT_QUEUES,
+  afterMs: { min: 8000, max: 20_000 },
+  hideNobody: true,
+  personaPoolMax: 1000,
+  readyAfterMs: { min: 300, max: 1500 },
+};
+
+export const MIN_STEALTH_BOT_SECRET_LENGTH = 32;
+
 export interface ServerConfig {
   nodeEnv: NodeEnv;
   port: number;
@@ -179,6 +318,16 @@ export interface ServerConfig {
    * "draft" note.
    */
   legal?: LegalSettings;
+  /**
+   * Playing with friends (1.0.4): ANDROID_APP_LINK_SHA256, IOS_APP_ID, STORE_URL_* and the FRIENDS_* limits.
+   * loadConfig always sets it; absent (as in tests): no app-link files, no store links, DEFAULT_FRIENDS_LIMITS.
+   */
+  friends?: FriendsConfig;
+  /**
+   * The stealth bot (STEALTH_BOT_* and STEALTH_PERSONA_POOL_MAX): loadConfig always sets it, off by default;
+   * absent (as in tests): off.
+   */
+  stealth?: StealthBotSettings;
 }
 
 export class ConfigError extends Error {
@@ -352,7 +501,144 @@ const envSchema = z.object({
     (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim()) : v),
     z.string().max(120, 'at most 120 characters').optional(),
   ),
+  // Playing with friends (1.0.4): the room links' app-link files and browser page (src/friends/links.ts).
+  ANDROID_APP_LINK_SHA256: z.preprocess(
+    unsetIfBlank,
+    z
+      .string()
+      .optional()
+      .transform((raw, ctx) => {
+        if (raw === undefined) return [];
+        const fingerprints: string[] = [];
+        for (const entry of raw.split(/[\s,;]+/).filter((x) => x !== '')) {
+          const fingerprint = canonicalSha256(entry);
+          if (fingerprint === null) {
+            ctx.addIssue({
+              code: 'custom',
+              message: `"${entry.slice(0, 120)}" is not a SHA-256 fingerprint (32 bytes in hex, e.g. FA:C6:17:…)`,
+            });
+            return z.NEVER;
+          }
+          if (!fingerprints.includes(fingerprint)) fingerprints.push(fingerprint);
+        }
+        if (fingerprints.length > MAX_APP_LINK_FINGERPRINTS) {
+          ctx.addIssue({ code: 'custom', message: `at most ${MAX_APP_LINK_FINGERPRINTS} fingerprints` });
+          return z.NEVER;
+        }
+        return fingerprints;
+      }),
+  ),
+  ANDROID_APP_LINK_ALLOW_DEBUG_KEY: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim().toLowerCase()) : v),
+    z
+      .enum(['true', 'false', '1', '0'], { error: 'expected true or false' })
+      .default('false')
+      .transform((v) => v === 'true' || v === '1'),
+  ),
+  IOS_APP_ID: z.preprocess(
+    unsetIfBlank,
+    z
+      .string()
+      .trim()
+      .regex(IOS_APP_ID_PATTERN, 'not an iOS app id (<Team ID: 10 letters and digits>.<bundle id>)')
+      .optional(),
+  ),
+  STORE_URL_ANDROID: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim()) : v),
+    z
+      .url({ protocol: /^https$/, error: 'must be an https URL' })
+      .max(500)
+      .optional(),
+  ),
+  STORE_URL_IOS: z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim()) : v),
+    z
+      .url({ protocol: /^https$/, error: 'must be an https URL' })
+      .max(500)
+      .optional(),
+  ),
+  FRIENDS_CREATES_PER_HOUR: z.preprocess(
+    unsetIfBlank,
+    z.coerce.number().int().min(1).max(1000).default(DEFAULT_FRIENDS_LIMITS.create.limit),
+  ),
+  FRIENDS_JOINS_PER_10_MIN: z.preprocess(
+    unsetIfBlank,
+    z.coerce.number().int().min(1).max(1000).default(DEFAULT_FRIENDS_LIMITS.joinPerAccount.limit),
+  ),
+  FRIENDS_JOINS_PER_10_MIN_PER_IP: z.preprocess(
+    unsetIfBlank,
+    z.coerce.number().int().min(1).max(100_000).default(DEFAULT_FRIENDS_LIMITS.joinPerIp.limit),
+  ),
+  // The stealth bot (src/stealth; stealth-bot.md §8) [D90]: off unless STEALTH_BOT_ENABLED says otherwise.
+  STEALTH_BOT_ENABLED: booleanSetting(DEFAULT_STEALTH_BOT.enabled),
+  STEALTH_BOT_QUEUES: z.preprocess(
+    unsetIfBlank,
+    z
+      .string()
+      .optional()
+      .transform((raw, ctx) => {
+        if (raw === undefined) return [...DEFAULT_STEALTH_BOT.queues];
+        const keys: QueueKey[] = [];
+        for (const entry of raw.split(/[\s,;]+/).filter((x) => x !== '')) {
+          const spec = parseQueueKey(entry.trim().toLowerCase());
+          if (spec === null || spec.players !== 2) {
+            ctx.addIssue({
+              code: 'custom',
+              message: `"${entry.slice(0, 40)}" is not a two-player queue (fast-2p, normal-2p, hard-2p) [D94]`,
+            });
+            return z.NEVER;
+          }
+          const key = queueKey(spec.gameType, spec.players);
+          if (!keys.includes(key)) keys.push(key);
+        }
+        return keys;
+      }),
+  ),
+  STEALTH_BOT_AFTER_MS: z.preprocess(
+    unsetIfBlank,
+    z
+      .string()
+      .optional()
+      .transform((raw, ctx) => {
+        if (raw === undefined) return { ...DEFAULT_STEALTH_BOT.afterMs };
+        const m = /^\s*(\d{1,7})\s*(?:-\s*(\d{1,7})\s*)?$/.exec(raw);
+        const min = m ? Number(m[1]) : NaN;
+        const max = m ? Number(m[2] ?? m[1]) : NaN;
+        if (!m || min > max || max > 600_000) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'expected "<min>-<max>" in ms (e.g. 8000-20000), min ≤ max ≤ 600000',
+          });
+          return z.NEVER;
+        }
+        return { min, max };
+      }),
+  ),
+  STEALTH_BOT_HIDE_NOBODY: booleanSetting(DEFAULT_STEALTH_BOT.hideNobody),
+  STEALTH_PERSONA_POOL_MAX: z.preprocess(
+    unsetIfBlank,
+    z.coerce.number().int().min(1).max(100_000).default(DEFAULT_STEALTH_BOT.personaPoolMax),
+  ),
+  // Not trimmed, like a password: only an empty value counts as unset.
+  STEALTH_BOT_SECRET: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z
+      .string()
+      .min(MIN_STEALTH_BOT_SECRET_LENGTH, `must be at least ${MIN_STEALTH_BOT_SECRET_LENGTH} characters`)
+      .optional(),
+  ),
 });
+
+/** A true/false setting: true, false, 1 or 0 (any case); unset or blank → `fallback`. */
+function booleanSetting(fallback: boolean) {
+  return z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim().toLowerCase()) : v),
+    z
+      .enum(['true', 'false', '1', '0'], { error: 'expected true or false' })
+      .optional()
+      .transform((v) => (v === undefined ? fallback : v === 'true' || v === '1')),
+  );
+}
 
 function isSentryDsn(dsn: string): boolean {
   try {
@@ -530,6 +816,8 @@ function adminConfig(
  * - FIREBASE_PROJECT_ID: unset in production → accounts off, with a warning (the server still starts: the
  *   game and the admin site don't need it).
  * - SENTRY_DSN: unset → `sentry: null`, no error reports (the start says so; src/index.ts).
+ * - ANDROID_APP_LINK_SHA256 with React Native's public debug key: production refuses to start, unless
+ *   ANDROID_APP_LINK_ALLOW_DEBUG_KEY=true (a test server; friendsConfig below).
  */
 export function loadConfig(
   env: Record<string, string | undefined> = process.env,
@@ -568,6 +856,7 @@ export function loadConfig(
   if (production && (legal.contactEmail === null || legal.operatorName === null)) {
     warn('[config] LEGAL_CONTACT_EMAIL or LEGAL_OPERATOR_NAME is not set: the legal pages show placeholders');
   }
+  const friends = friendsConfig(e, { production, warn });
 
   return {
     nodeEnv: e.NODE_ENV,
@@ -596,5 +885,53 @@ export function loadConfig(
             tracesSampleRate: e.SENTRY_TRACES_SAMPLE_RATE,
           },
     legal,
+    friends,
+    stealth: {
+      enabled: e.STEALTH_BOT_ENABLED,
+      queues: e.STEALTH_BOT_QUEUES,
+      afterMs: e.STEALTH_BOT_AFTER_MS,
+      hideNobody: e.STEALTH_BOT_HIDE_NOBODY,
+      personaPoolMax: e.STEALTH_PERSONA_POOL_MAX,
+      readyAfterMs: { ...DEFAULT_STEALTH_BOT.readyAfterMs },
+      secret: e.STEALTH_BOT_SECRET ?? randomSecret(),
+    },
+  };
+}
+
+/**
+ * Playing with friends' settings (friends-room.md §5, §6.2). A production server (staging too: both run
+ * NODE_ENV=production) refuses to start when ANDROID_APP_LINK_SHA256 lists React Native's public debug key
+ * (TEMPLATE_DEBUG_KEY_SHA256), unless ANDROID_APP_LINK_ALLOW_DEBUG_KEY=true says it is a test server on purpose
+ * (fly.toml, for the APKs of `npm run apk`); then it warns at every start. Never in fly.production.toml.
+ */
+function friendsConfig(
+  e: Env,
+  { production, warn }: { production: boolean; warn: (message: string) => void },
+): FriendsConfig {
+  const androidSha256 = e.ANDROID_APP_LINK_SHA256;
+  if (production && androidSha256.includes(TEMPLATE_DEBUG_KEY_SHA256)) {
+    if (!e.ANDROID_APP_LINK_ALLOW_DEBUG_KEY) {
+      throw new ConfigError([
+        'ANDROID_APP_LINK_SHA256: lists the public debug key of React Native (FA:C6:17:…:3B:9C), which anyone ' +
+          "can sign an APK with: such an APK would get this server's room links. Take it out, or on a test server " +
+          'only set ANDROID_APP_LINK_ALLOW_DEBUG_KEY=true',
+      ]);
+    }
+    warn(
+      "[config] assetlinks.json lists React Native's public debug key (ANDROID_APP_LINK_ALLOW_DEBUG_KEY): " +
+        'for a test server only',
+    );
+  }
+  return {
+    links: {
+      androidSha256,
+      iosAppId: e.IOS_APP_ID ?? null,
+      storeUrls: { android: e.STORE_URL_ANDROID ?? null, ios: e.STORE_URL_IOS ?? null },
+    },
+    limits: {
+      create: { ...DEFAULT_FRIENDS_LIMITS.create, limit: e.FRIENDS_CREATES_PER_HOUR },
+      joinPerAccount: { ...DEFAULT_FRIENDS_LIMITS.joinPerAccount, limit: e.FRIENDS_JOINS_PER_10_MIN },
+      joinPerIp: { ...DEFAULT_FRIENDS_LIMITS.joinPerIp, limit: e.FRIENDS_JOINS_PER_10_MIN_PER_IP },
+    },
   };
 }

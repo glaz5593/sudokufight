@@ -39,10 +39,10 @@
 | Health and fitness | הכל | No | | | | |
 | Messages | Emails, SMS or MMS, Other in-app messages | No | | | | אין צ׳אט. התגובות הן 6 אימוג׳י קבועים: פעולה במשחק, לא הודעה |
 | Photos and videos, Audio, Files and docs, Calendar, Contacts | הכל | No | | | | גם בכניסה עם Google: לא תמונות (רק הקישור, תחת Other info) ולא אנשי קשר |
-| App activity | **App interactions** | **Yes** | No | No | Required | Analytics, App functionality. האירועים ו־`screen_view`, כולל ששת האירועים של אימון בשלבים (1.0.2: מספר השלב, הסוג, הכוכבים, הזמן, הסיבה לסיום; בלי מזהים) |
+| App activity | **App interactions** | **Yes** | No | No | Required | Analytics, App functionality. האירועים ו־`screen_view`, כולל ששת האירועים של אימון בשלבים (1.0.2: מספר השלב, הסוג, הכוכבים, הזמן, הסיבה לסיום; בלי מזהים), וששת האירועים של משחק עם חברים (1.0.4: סוג המשחק, הדרך, התוצאה, מספר השחקנים וזמן ההמתנה; בלי קוד החדר ובלי מזהים) |
 | App activity | In-app search history, Installed apps | No | | | | |
 | App activity | Other user-generated content | No | | | | השם לתצוגה מוצהר תחת Name |
-| App activity | **Other actions** | **Yes** | No | No | Required | App functionality, Analytics, Fraud prevention, security, and compliance. מהלכים, משחקים, דירוג, XP, ‏cheat_flags. **דיווחים על שחקנים** (מי, על מי, אחת משלוש סיבות קבועות, המשחק, מתי) ו**חסימות** (את מי ומתי), אפיון 3.5. **ההתקדמות באימון בשלבים** (1.0.2): הכוכבים הטובים ביותר וכמה משחקים בכל שלב, שמסונכרנים לחשבון, וה־XP מהשלבים בכל יום |
+| App activity | **Other actions** | **Yes** | No | No | Required | App functionality, Analytics, Fraud prevention, security, and compliance. מהלכים, משחקים, דירוג, XP, ‏cheat_flags. **דיווחים על שחקנים** (מי, על מי, אחת משלוש סיבות קבועות, המשחק, מתי) ו**חסימות** (את מי ומתי), אפיון 3.5. **ההתקדמות באימון בשלבים** (1.0.2): הכוכבים הטובים ביותר וכמה משחקים בכל שלב, שמסונכרנים לחשבון, וה־XP מהשלבים בכל יום. **משחקים עם חברים** (1.0.4): נשמרים כמו משחק מדורג, בלי דירוג, עם ה־XP של כל שחקן. **קצב** (הבוט הסמוי, D90): הזמן הממוצע למהלך שנגזר מכל משחק מדורג (`pace_ms`), לקצב של יריב ממוחשב |
 | Web browsing | Web browsing history | No | | | | |
 | App info and performance | **Crash logs** | **Yes** | No | No | Required | App functionality, Analytics. ‏Crashlytics |
 | App info and performance | **Diagnostics** | **Yes** | No | No | Required | App functionality, Analytics. ‏`latency_sample`, ‏`reconnect`, דגם, מערכת וגרסה |
@@ -64,6 +64,10 @@
   - האירוע `report_sent` נושא את הסיבה בלבד (נכלל ב־"App interactions").
 - ~~אימון בשלבים~~ **נעשה (1.0.2, אפיון 5.3):** ההתקדמות (הכוכבים הטובים ביותר וכמה משחקים בכל שלב, וה־XP מהשלבים בכל יום: `user_levels`, ‏`level_xp_days`) נכנסה ל־"Other actions", וששת האירועים החדשים ל־"App interactions" (מספר השלב, לא מזהה). אין בהם סוג מידע חדש.
   - **שמירה ומחיקה:** העותק בשרת נמחק עם החשבון (`accounts/store.ts` ‏`deleteUser`). העותק בטלפון (`levels.db`) נשאר עד שמסירים את האפליקציה, כמו משחקי האימון, ולכן הוא לא "Collected". ה־XP שהשלבים נתנו נשאר, אנונימי, כמו כל XP.
+- ~~משחק עם חברים~~ **נעשה (1.0.4, אפיון 5.4):** המשחקים נכנסו ל־"Other actions" (כמו משחק מדורג, בלי דירוג), וששת האירועים החדשים ל־"App interactions" (בלי קוד החדר ובלי מזהים). קוד החדר, מי בחדר ומי הוצא ממנו נשמרים רק בזיכרון של השרת, עד שהחדר נסגר. אין בהם סוג מידע חדש.
+- ~~בוט סמוי~~ **נעשה (D90–D93, משה 20.10.2026; בשרת בלבד, נבנה כבוי):** בסוף כל משחק מדורג השרת שומר את הקצב של השחקן (הזמן הממוצע למהלך ומספר המהלכים שנמדדו: `pace_ms`, ‏`pace_moves` ב־`game_players`), כדי לקבוע את הקצב של יריב ממוחשב כשאין שחקנים. הוא נגזר מהמהלכים, ולכן נכנס ל־"Other actions" (App functionality). אין סוג מידע חדש, אין אירוע חדש, והמטרות לא משתנות.
+  - **הדמויות** (`users.kind = 'persona'`) הן חשבונות של השרת, לא משתמשים: בלי מייל, בלי כניסה ובלי טלמטריה. לא נאסף עליהן מידע של אדם.
+  - **הגילוי:** שורה בתנאי השימוש (סעיף "זמינות השירות"), והסבר מלא לבודקים (`LISTING-GOOGLE.md`, ‏"App access"). מדיניות הפרטיות מתארת את הקצב.
 - כיבוי Analytics, או הוספת מתג "שתף נתוני שימוש": משנה את "Required" ל־"Optional".
 
 </div>

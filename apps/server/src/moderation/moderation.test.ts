@@ -26,7 +26,7 @@ import {
   type TelemetryResponse,
   TELEMETRY_PATH,
 } from '@sudoku-fight/protocol';
-import type { GameEvent } from '@sudoku-fight/engine';
+import { createRng, type GameEvent } from '@sudoku-fight/engine';
 import { eq } from 'drizzle-orm';
 
 import { BlockedWords, defaultBlockedWords } from '../accounts/blockedWords';
@@ -36,6 +36,7 @@ import type { Db } from '../db';
 import {
   adminAudit,
   gameEvents,
+  games,
   playerReports,
   retiredNames,
   suspendedSignIns,
@@ -58,6 +59,7 @@ import { startHttp, type TestHttp } from '../testing/http';
 import { addGamePuzzle, addStoredGame, setRating } from '../testing/progress';
 import { addAccounts, T0 } from '../testing/ranked';
 import { testTokens, type TestTokens } from '../testing/tokens';
+import { createPersona } from '../stealth/personas';
 import { adminName, resetName, TEMPORARY_NAME_PREFIX, temporaryName } from './admin';
 import { DEFAULT_MODERATION_LIMITS } from './router';
 import { lockActor, signInFingerprints } from './store';
@@ -375,6 +377,84 @@ describe('blocks: GET, POST and DELETE /v1/me/blocks', () => {
     await block('ben', 'ana');
     const board = await api<Leaderboard>('ana', 'GET', `${PROGRESS_PATHS.leaderboard}?tab=fast`);
     expect(board.body.entries.map((e) => e.id)).toEqual(['ana', 'ben']);
+  });
+});
+
+describe('a persona (stealth-bot.md §12) [D90]: reports and blocks answer exactly as for a person', () => {
+  /** The value types of a body, by key: what the app could tell apart. */
+  const shapeOf = (body: object) =>
+    Object.fromEntries(
+      Object.entries(body)
+        .map(([k, v]) => [k, v === null ? 'null' : typeof v] as const)
+        .sort(([a], [b]) => a.localeCompare(b)),
+    );
+
+  it('report, a duplicate, block, the list and unblock: the same statuses and bodies; nothing says "bot"', async () => {
+    const persona = (await createPersona(t.db, { rng: createRng(7), now: T0, ratingOption: 'B' }))!;
+    const p = persona.userId;
+    // Ben has a country too, as every persona does: their cards then compare field for field.
+    await t.db.update(users).set({ country: 'IL' }).where(eq(users.id, 'ben'));
+    // A stealth game Ana played against the persona, and a ranked one against Ben.
+    await addGamePuzzle(t.db);
+    for (const [id, other] of [
+      ['g-ap', p],
+      ['g-ab', 'ben'],
+    ] as const)
+      await addStoredGame(t.db, {
+        id,
+        endedAt: T0,
+        seats: [
+          { userId: 'ana', place: 1 },
+          { userId: other, place: 2 },
+        ],
+      });
+    await t.db.update(games).set({ stealth: true }).where(eq(games.id, 'g-ap'));
+
+    const toPersona = await report('ana', { playerId: p, reason: 'cheating', gameId: 'g-ap' });
+    const toPerson = await report('ana', { playerId: 'ben', reason: 'cheating', gameId: 'g-ab' });
+    expect(toPersona.status).toBe(201);
+    expect(toPersona.status).toBe(toPerson.status);
+    expect(toPersona.body).toEqual({
+      ...toPerson.body,
+      id: expect.stringMatching(UUID),
+      playerId: p,
+      gameId: 'g-ap',
+    });
+    // The same report again: 409 duplicate, as for a person.
+    const again = await report('ana', { playerId: p, reason: 'cheating' });
+    const againPerson = await report('ana', { playerId: 'ben', reason: 'cheating' });
+    expect([again.status, again.body.error]).toEqual([againPerson.status, againPerson.body.error]);
+    expect(again.status).toBe(409);
+
+    const blockedPersona = await block('ana', p);
+    const blockedPerson = await block('ana', 'ben');
+    expect(blockedPersona.status).toBe(201);
+    expect(blockedPersona.status).toBe(blockedPerson.status);
+    expect(shapeOf(blockedPersona.body)).toEqual(shapeOf(blockedPerson.body));
+    expect(blockedPersona.body).toMatchObject({
+      id: p,
+      displayName: persona.displayName,
+      country: persona.country,
+      blockedAt: T0 + HOUR,
+    });
+    // Blocking it again: 200 with its time, as for a person.
+    expect((await block('ana', p)).status).toBe((await block('ana', 'ben')).status);
+
+    const list = await blocks('ana');
+    expect(list.status).toBe(200);
+    expect(list.body.blocks.map((b) => b.id).sort()).toEqual([p, 'ben'].sort());
+    const [inList, personInList] = [p, 'ben'].map((id) => list.body.blocks.find((b) => b.id === id)!);
+    expect(shapeOf(inList!)).toEqual(shapeOf(personInList!));
+    expect(heard).toEqual([
+      { blockerId: 'ana', blockedId: p, blocked: true },
+      { blockerId: 'ana', blockedId: 'ben', blocked: true },
+    ]);
+    // Nothing on the wire tells a persona from a person.
+    for (const body of [toPersona.body, blockedPersona.body, list.body])
+      expect(JSON.stringify(body)).not.toMatch(/persona|stealth|isBot|"bot"/i);
+
+    expect((await api('ana', 'DELETE', blockPath(p))).status).toBe(204);
+    expect((await blocks('ana')).body.blocks.map((b) => b.id)).toEqual(['ben']);
   });
 });
 
@@ -705,6 +785,7 @@ describe('the admin API: reports, actions and the audit log', () => {
         deletedAt: null,
         suspendedAt: null,
         nameResetRequired: false,
+        persona: false,
       },
       counts: { offensiveName: 2, cheating: 1, other: 0, total: 3, reporters: 2 },
       open: 3,

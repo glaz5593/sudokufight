@@ -98,6 +98,20 @@ describe('cards', () => {
     expect(mergeEntries(ranked, practice, 'practice', 10).map((x) => x.id)).toEqual(['p2', 'p1']);
   });
 
+  it('a game with friends (1.0.4): marked, never a rating change, and not under "מדורג" [D81a]', () => {
+    const game = { ...historyGameOf(rankedDuel()), friends: true };
+    // The server sends null ratings for it; even if a seat had numbers, the card shows none.
+    const entry = rankedEntry(game);
+    expect(entry).toMatchObject({ source: 'ranked', mode: 'ranked', friends: true, ratingDelta: null });
+    expect(rankedEntry(historyGameOf(rankedDuel())).friends).toBeUndefined();
+    const e = (id: string, startedAt: number, friends = false) =>
+      ({ id, source: 'ranked', startedAt, ...(friends && { friends: true }) }) as HistoryEntry;
+    const ranked = [e('f1', 40, true), e('r1', 30)];
+    expect(mergeEntries(ranked, [], 'all', 10).map((x) => x.id)).toEqual(['f1', 'r1']);
+    expect(mergeEntries(ranked, [], 'ranked', 10).map((x) => x.id)).toEqual(['r1']);
+    expect(mergeEntries(ranked, [], 'practice', 10).map((x) => x.id)).toEqual([]);
+  });
+
   it('"היום", "אתמול", or a date', () => {
     const now = new Date(2026, 9, 10, 9, 0).getTime();
     expect(dayOf(new Date(2026, 9, 10, 0, 5).getTime(), now)).toBe('today');

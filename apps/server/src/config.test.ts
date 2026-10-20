@@ -1,7 +1,9 @@
 import path from 'node:path';
 
 import {
+  canonicalSha256,
   ConfigError,
+  DEFAULT_FRIENDS_LIMITS,
   DEFAULT_PGLITE_DIR,
   DEFAULT_TRACES_SAMPLE_RATE,
   describeAdmin,
@@ -13,6 +15,7 @@ import {
   SERVER_VERSION,
   sentryRelease,
   splitAdminEmails,
+  TEMPLATE_DEBUG_KEY_SHA256,
 } from './config';
 
 const SECRET = 's'.repeat(32);
@@ -57,6 +60,20 @@ describe('loadConfig', () => {
       progress: { practiceXpDailyCap: 1500, inviteUrl: null },
       sentry: null,
       legal: { contactEmail: null, operatorName: null },
+      friends: {
+        links: { androidSha256: [], iosAppId: null, storeUrls: { android: null, ios: null } },
+        limits: DEFAULT_FRIENDS_LIMITS,
+      },
+      // The stealth bot: off [D90].
+      stealth: {
+        enabled: false,
+        queues: ['fast-2p', 'normal-2p', 'hard-2p'],
+        afterMs: { min: 8000, max: 20_000 },
+        hideNobody: true,
+        personaPoolMax: 1000,
+        readyAfterMs: { min: 300, max: 1500 },
+        secret: 'random-secret',
+      },
     });
     expect(DEFAULT_PGLITE_DIR).toBe(path.resolve(__dirname, '..', '.data', 'pglite'));
     // The dev password comes with a loud warning.
@@ -588,6 +605,132 @@ describe('loadConfig', () => {
     });
   });
 
+  describe('playing with friends (1.0.4): room links and rate limits', () => {
+    const PROD = { NODE_ENV: 'production', DATABASE_URL: 'postgres://h/db', ADMIN_PASSWORD: 'eight ch' };
+    /** A made-up key's fingerprint (not a real key's). */
+    const EAS = Array.from({ length: 32 }, (_, i) => (i * 7 + 16).toString(16).toUpperCase()).join(':');
+
+    it('the defaults: no app-link files, no stores, 10 rooms an hour, 20 joins in 10 minutes (60 per IP)', () => {
+      expect(DEFAULT_FRIENDS_LIMITS).toEqual({
+        create: { limit: 10, windowMs: 3_600_000 },
+        joinPerAccount: { limit: 20, windowMs: 600_000 },
+        joinPerIp: { limit: 60, windowMs: 600_000 },
+      });
+      expect(load({ NODE_ENV: 'test' }).config.friends).toEqual({
+        links: { androidSha256: [], iosAppId: null, storeUrls: { android: null, ios: null } },
+        limits: DEFAULT_FRIENDS_LIMITS,
+      });
+    });
+
+    it('ANDROID_APP_LINK_SHA256: fingerprints as assetlinks.json wants them, from what keytool or Play shows', () => {
+      expect(canonicalSha256(EAS.replace(/:/g, '').toLowerCase())).toBe(EAS);
+      expect(canonicalSha256(` ${EAS.toLowerCase()} `)).toBe(EAS);
+      expect(canonicalSha256(EAS.slice(3))).toBeNull(); // 31 bytes
+      expect(canonicalSha256('5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25')).toBeNull(); // a SHA-1
+      const raw = `${TEMPLATE_DEBUG_KEY_SHA256.toLowerCase()}, ${EAS.replace(/:/g, '')};${EAS}\n`;
+      expect(load({ ANDROID_APP_LINK_SHA256: raw }).config.friends?.links.androidSha256).toEqual([
+        TEMPLATE_DEBUG_KEY_SHA256,
+        EAS,
+      ]);
+      expect(load({ ANDROID_APP_LINK_SHA256: '  ' }).config.friends?.links.androidSha256).toEqual([]);
+      expect(issuesOf({ ANDROID_APP_LINK_SHA256: `${EAS}, not-a-key` })[0]).toMatch(
+        /^ANDROID_APP_LINK_SHA256: "not-a-key" is not a SHA-256 fingerprint/,
+      );
+      const many = Array.from(
+        { length: 11 },
+        (_, i) => `${i.toString(16).padStart(2, '0')}${'0'.repeat(62)}`,
+      );
+      expect(issuesOf({ ANDROID_APP_LINK_SHA256: many.join(',') })[0]).toMatch(
+        /^ANDROID_APP_LINK_SHA256: at most 10 fingerprints/,
+      );
+    });
+
+    it("the public debug key: production refuses to start with it, unless it says it's a test server (staging)", () => {
+      // TEMPLATE_DEBUG_KEY_SHA256 is React Native's template key: the SHA-256 next to app.config.ts's SHA-1.
+      expect(TEMPLATE_DEBUG_KEY_SHA256).toBe(
+        'FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C',
+      );
+      const withDebug = { ...PROD, ANDROID_APP_LINK_SHA256: `${EAS},${TEMPLATE_DEBUG_KEY_SHA256}` };
+      const issues = issuesOf(withDebug);
+      expect(issues).toHaveLength(1);
+      expect(issues[0]).toMatch(/^ANDROID_APP_LINK_SHA256: lists the public debug key of React Native/);
+      expect(issues[0]).toMatch(/ANDROID_APP_LINK_ALLOW_DEBUG_KEY=true/);
+      // Also written without colons, in lower case.
+      expect(
+        issuesOf({
+          ...PROD,
+          ANDROID_APP_LINK_SHA256: TEMPLATE_DEBUG_KEY_SHA256.replace(/:/g, '').toLowerCase(),
+        }),
+      ).toHaveLength(1);
+      expect(issuesOf({ ...withDebug, ANDROID_APP_LINK_ALLOW_DEBUG_KEY: 'false' })).toHaveLength(1);
+
+      const staging = load({ ...withDebug, ANDROID_APP_LINK_ALLOW_DEBUG_KEY: ' TRUE ' });
+      expect(staging.config.friends?.links.androidSha256).toEqual([EAS, TEMPLATE_DEBUG_KEY_SHA256]);
+      expect(staging.warnings.filter((w) => w.includes('public debug key'))).toHaveLength(1);
+      // Production without the debug key: no word about it.
+      const prod = load({ ...PROD, ANDROID_APP_LINK_SHA256: EAS });
+      expect(prod.config.friends?.links.androidSha256).toEqual([EAS]);
+      expect(prod.warnings.some((w) => w.includes('debug key'))).toBe(false);
+      // Outside production it's the PC's own test server: fine, quietly.
+      const dev = load({ NODE_ENV: 'test', ANDROID_APP_LINK_SHA256: TEMPLATE_DEBUG_KEY_SHA256 });
+      expect(dev.config.friends?.links.androidSha256).toEqual([TEMPLATE_DEBUG_KEY_SHA256]);
+      expect(dev.warnings).toEqual([]);
+      for (const bad of ['yes', '2'])
+        expect(issuesOf({ ANDROID_APP_LINK_ALLOW_DEBUG_KEY: bad })[0]).toMatch(
+          /^ANDROID_APP_LINK_ALLOW_DEBUG_KEY: expected true or false/,
+        );
+    });
+
+    it('IOS_APP_ID: "<Team ID>.<bundle id>", or unset', () => {
+      expect(load({ IOS_APP_ID: ' ABCDE12345.com.mosheg.sudokufight ' }).config.friends?.links.iosAppId).toBe(
+        'ABCDE12345.com.mosheg.sudokufight',
+      );
+      expect(load({ IOS_APP_ID: '' }).config.friends?.links.iosAppId).toBeNull();
+      for (const bad of [
+        'com.mosheg.sudokufight',
+        'abcde12345.com.mosheg.sudokufight',
+        'ABCDE1234.com.x',
+        'ABCDE12345',
+      ])
+        expect(issuesOf({ IOS_APP_ID: bad })[0]).toMatch(/^IOS_APP_ID: not an iOS app id/);
+    });
+
+    it('STORE_URL_ANDROID and STORE_URL_IOS: https store pages, or unset', () => {
+      const play = 'https://play.google.com/store/apps/details?id=com.mosheg.sudokufight';
+      const apple = 'https://apps.apple.com/app/id1234567890';
+      expect(
+        load({ STORE_URL_ANDROID: ` ${play} `, STORE_URL_IOS: apple }).config.friends?.links.storeUrls,
+      ).toEqual({ android: play, ios: apple });
+      expect(load({ STORE_URL_ANDROID: '', STORE_URL_IOS: ' ' }).config.friends?.links.storeUrls).toEqual({
+        android: null,
+        ios: null,
+      });
+      for (const bad of ['http://play.google.com/x', 'play.google.com/x', 'javascript:alert(1)'])
+        expect(issuesOf({ STORE_URL_ANDROID: bad })[0]).toMatch(/^STORE_URL_ANDROID: /);
+      expect(issuesOf({ STORE_URL_IOS: 'intent://x' })[0]).toMatch(/^STORE_URL_IOS: /);
+    });
+
+    it('FRIENDS_*: the limits of friends-room.md §5, each a whole number of tries', () => {
+      const { limits } = load({
+        FRIENDS_CREATES_PER_HOUR: '3',
+        FRIENDS_JOINS_PER_10_MIN: ' 5 ',
+        FRIENDS_JOINS_PER_10_MIN_PER_IP: '500',
+      }).config.friends!;
+      expect(limits).toEqual({
+        create: { limit: 3, windowMs: 3_600_000 },
+        joinPerAccount: { limit: 5, windowMs: 600_000 },
+        joinPerIp: { limit: 500, windowMs: 600_000 },
+      });
+      for (const name of [
+        'FRIENDS_CREATES_PER_HOUR',
+        'FRIENDS_JOINS_PER_10_MIN',
+        'FRIENDS_JOINS_PER_10_MIN_PER_IP',
+      ])
+        for (const bad of ['0', '-1', '1.5', 'many'])
+          expect(issuesOf({ [name]: bad })[0]).toMatch(new RegExp(`^${name}: `));
+    });
+  });
+
   it('lists every bad setting at once', () => {
     const issues = issuesOf({ NODE_ENV: 'staging', PORT: '-1', ADMIN_TZ: 'nowhere' });
     expect(issues.map((i) => i.split(':')[0])).toEqual(['NODE_ENV', 'PORT', 'ADMIN_TZ']);
@@ -608,5 +751,61 @@ describe('parseTrustProxy', () => {
     ['loopback, 10.0.0.0/8', 'loopback, 10.0.0.0/8'],
   ])('%p → %p', (raw, expected) => {
     expect(parseTrustProxy(raw)).toBe(expected);
+  });
+});
+
+describe('the stealth bot (STEALTH_BOT_*, stealth-bot.md §8) [D90, D94, D95]', () => {
+  it('is off by default, in every environment', () => {
+    for (const NODE_ENV of ['development', 'test', 'production'])
+      expect(
+        load({ NODE_ENV, DATABASE_URL: 'postgres://h/db', ADMIN_PASSWORD: 'p'.repeat(12) }).config.stealth,
+      ).toMatchObject({ enabled: false });
+    // The shipped settings files say nothing of it: off on staging and production alike.
+  });
+
+  it('reads the master switch, the queues, the wait, the notice and the pool size', () => {
+    const { config } = load({
+      STEALTH_BOT_ENABLED: ' TRUE ',
+      STEALTH_BOT_QUEUES: 'fast-2p; HARD-2p, fast-2p',
+      STEALTH_BOT_AFTER_MS: '3000 - 8000',
+      STEALTH_BOT_HIDE_NOBODY: '0',
+      STEALTH_PERSONA_POOL_MAX: '50',
+      STEALTH_BOT_SECRET: 'k'.repeat(40),
+    });
+    expect(config.stealth).toEqual({
+      enabled: true,
+      queues: ['fast-2p', 'hard-2p'],
+      afterMs: { min: 3000, max: 8000 },
+      hideNobody: false,
+      personaPoolMax: 50,
+      readyAfterMs: { min: 300, max: 1500 },
+      secret: 'k'.repeat(40),
+    });
+    expect(load({ STEALTH_BOT_AFTER_MS: '5000' }).config.stealth?.afterMs).toEqual({ min: 5000, max: 5000 });
+    expect(load({ STEALTH_BOT_ENABLED: '1', STEALTH_BOT_QUEUES: ' ' }).config.stealth?.queues).toEqual([
+      'fast-2p',
+      'normal-2p',
+      'hard-2p',
+    ]);
+  });
+
+  it('refuses a 3–4 player queue, a bad wait, a bad switch and a short secret', () => {
+    expect(issuesOf({ STEALTH_BOT_QUEUES: 'fast-2p,normal-3p' })[0]).toMatch(
+      /^STEALTH_BOT_QUEUES: .*two-player/,
+    );
+    expect(issuesOf({ STEALTH_BOT_QUEUES: 'fast' })[0]).toMatch(/^STEALTH_BOT_QUEUES: /);
+    for (const bad of ['20000-8000', 'soon', '-5', '1-700000'])
+      expect(issuesOf({ STEALTH_BOT_AFTER_MS: bad })[0]).toMatch(/^STEALTH_BOT_AFTER_MS: /);
+    expect(issuesOf({ STEALTH_BOT_ENABLED: 'yes' })[0]).toMatch(/^STEALTH_BOT_ENABLED: /);
+    expect(issuesOf({ STEALTH_BOT_HIDE_NOBODY: 'maybe' })[0]).toMatch(/^STEALTH_BOT_HIDE_NOBODY: /);
+    expect(issuesOf({ STEALTH_PERSONA_POOL_MAX: '0' })[0]).toMatch(/^STEALTH_PERSONA_POOL_MAX: /);
+    expect(issuesOf({ STEALTH_BOT_SECRET: 'short' })[0]).toMatch(/^STEALTH_BOT_SECRET: /);
+  });
+
+  it('without STEALTH_BOT_SECRET, a random secret per start', () => {
+    let n = 0;
+    const secretOf = () =>
+      loadConfig({}, { warn: () => {}, randomSecret: () => `secret-${++n}` }).stealth?.secret;
+    expect(secretOf()).not.toBe(secretOf());
   });
 });

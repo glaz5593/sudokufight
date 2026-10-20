@@ -307,9 +307,20 @@ export function staleConfigDirs(dirs) {
 export const PREBUILD_RULE = '1';
 
 /**
+ * The game server as the native project sees it (1.0.4): app.config.ts builds the room links' Android intent
+ * filter from it (`https://<host>/r/…`, verified over TLS; plain http and no `autoVerify` for --server local), so
+ * an APK for another server needs a new prebuild. One of nativeConfigHash's inputs.
+ *
+ * @param {{ host: string; port: number; secure: boolean }} server
+ */
+export const serverNativeInput = (server) =>
+  `${server.secure ? 'https' : 'http'}://${server.host.toLowerCase()}:${server.port}`;
+
+/**
  * A fingerprint of everything the android folder is generated from: the app's dependencies, app.json and
- * app.config.ts, local config plugins, the Firebase file, the installed version of each dependency, and
- * whether the APK allows plain http (--server local). Stored in android/.sf-prebuild-hash after a prebuild.
+ * app.config.ts, local config plugins, the Firebase file, the installed version of each dependency, whether
+ * the APK allows plain http (--server local), and the game server (the room links: serverNativeInput). Stored
+ * in android/.sf-prebuild-hash after a prebuild.
  *
  * @param {readonly [name: string, content: string | null][]} inputs a missing file is null
  */

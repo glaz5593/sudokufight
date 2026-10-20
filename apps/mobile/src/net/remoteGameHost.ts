@@ -20,6 +20,9 @@ import {
 } from '@sudoku-fight/engine';
 import {
   type ClientMessage,
+  type FriendsLobbyCommand,
+  type FriendsLobbyRefused,
+  type FriendsRoomClosedReason,
   type GameHost,
   type LobbyPlayer,
   type MatchSeatReservation,
@@ -82,6 +85,15 @@ import type { DevRoomOptions, OnlineClient, RoomLike } from './onlineClient';
  *   is reported as track('reconnect'), with its phase ('soft' or 'hard') and the moves queued offline.
  * - Ranked matches (stage 9): enterReserved() takes the seat matchmaking reserved (net/matchmaking.ts); the
  *   room's 3… 2… 1… shows as `online.startsAt`, and the game comes at GO like any other.
+ * - Friends rooms (1.0.4, protocol friends.ts): enterFriends() takes the seat a ticket of our HTTP routes
+ *   reserved (net/friends.ts). The room's code is its 6 digits, never the Colyseus roomId; the lobby carries the
+ *   host and each seat's avatar, flag, rating and `away`; the host's commands go out with sendLobbyCommand(),
+ *   and a refusal shows as `online.friends.refused`. The seat is held while the app is away [D84a], so the
+ *   background in the lobby is a disconnect here too (the others see "לא בחדר כרגע"), and the way back is the
+ *   token, or, without a seat for it (or no token at all: a retry, the app opened again), a fresh reservation
+ *   from POST /v1/rooms/join with the room's code (`rejoin`), which gives the same account its own seat. The
+ *   server's `roomClosed` (kicked, removed, another device, a restart) closes the host at once, with its reason
+ *   in `online.friends.closed`: nothing reconnects after it.
  *
  * Pure: the SDK is behind OnlineClient, and the clock, timers, AppState and analytics are injected, so the same
  * code runs in Jest against a fake room and in Node against the real server.
@@ -108,7 +120,33 @@ export interface LobbyInfo {
   gameType: GameType;
   playerCount: number;
   players: LobbyPlayer[];
+  /** A friends room (1.0.4): the host, who alone sends the lobby commands [D84b]. Absent elsewhere. */
+  hostId?: PlayerId;
+  /** A friends room: `start` needs at least this many connected players. */
+  minPlayers?: number;
+  /** A friends room: at most this many seats. */
+  maxPlayers?: number;
 }
+
+/** A friends room's own state (1.0.4, protocol friends.ts), in OnlineInfo.friends. */
+export interface FriendsHostInfo {
+  /** The room's 6-digit code (never its Colyseus roomId). */
+  code: string;
+  /** Why the server put this connection out of the room (its `roomClosed`); null until it did. */
+  closed: FriendsRoomClosedReason | null;
+  /**
+   * The latest lobby command of mine the server refused (`lobbyRefused`), numbered so the same refusal twice
+   * is two changes; null before any.
+   */
+  refused: (FriendsLobbyRefused & { seq: number }) | null;
+}
+
+/**
+ * Back into a friends room without a seat for the token (or with no token at all): a fresh seat reservation
+ * from POST /v1/rooms/join with the room's code, which gives the same account its own seat [D84a]. A refusal
+ * rejects with an OnlineError (net/errors.ts onlineErrorOfFriends).
+ */
+export type FriendsRejoin = (code: string) => Promise<MatchSeatReservation>;
 
 export interface ReconnectInfo {
   /** Why: the connection dropped, or the app went to the background. */
@@ -171,9 +209,12 @@ export interface OnlineInfo {
   hardLeavers?: readonly PlayerId[];
   /**
    * A ranked match's room (stage 9): GO, in the server's clock, once everyone is in and its 3… 2… 1… runs
-   * (protocol GameRoomCountdown); the snapshot follows at GO. Null (or absent) otherwise.
+   * (protocol GameRoomCountdown); the snapshot follows at GO. Null (or absent) otherwise. A friends room's too,
+   * once its host started it.
    */
   startsAt?: number | null;
+  /** A friends room (1.0.4): its code, why it put me out, my refused command. Absent for any other room. */
+  friends?: FriendsHostInfo;
 }
 
 /** What RemoteGameHost needs of React Native's AppState. */
@@ -221,6 +262,11 @@ export interface RemoteHostOptions {
    * over its rate limit, while the connection itself is fine) is sent again [D42]. 0: off.
    */
   offlineAnswerTimeoutMs: number;
+  /**
+   * A friends room's lobby holds the seat for hours [D84a]: after a drop, or back from the background, the host
+   * tries this long to come back before it gives up (then "נסה שוב" rejoins by the code).
+   */
+  friendsLobbyReturnMs: number;
   clock: ClockSyncOptions;
   metrics: Omit<NetMetricsOptions, 'track'>;
 }
@@ -241,6 +287,7 @@ export const DEFAULT_REMOTE_HOST_OPTIONS: RemoteHostOptions = {
   defaultSoftGraceMs: 10_000,
   answerTimeoutMs: 2_500,
   offlineAnswerTimeoutMs: 3_000,
+  friendsLobbyReturnMs: 60_000,
   clock: {},
   metrics: {},
 };
@@ -281,6 +328,11 @@ const FATAL_ON_RETURN = new Set<OnlineError['code']>([
   'suspended',
   'badCode',
   'protocol',
+  // A friends room's: removed by its host, closed, blocked, or a server without the routes.
+  'kicked',
+  'roomClosed',
+  'cantJoin',
+  'notAvailable',
 ]);
 /** Actions remembered for their refusals. */
 const SENT_KEPT = 64;
@@ -310,6 +362,14 @@ export class RemoteGameHost implements GameHost {
   private error: OnlineError | null = null;
   private closed = false;
   private started = false;
+  /** A friends room (1.0.4): its code, the way back without a token, and what its server said. */
+  private friends: {
+    code: string;
+    rejoin: FriendsRejoin;
+    closed: FriendsRoomClosedReason | null;
+    refused: (FriendsLobbyRefused & { seq: number }) | null;
+  } | null = null;
+  private refusedSeq = 0;
 
   private clientSeq = 0;
   private readonly sent = new Map<number, ClientAction>();
@@ -396,6 +456,25 @@ export class RemoteGameHost implements GameHost {
    */
   async enterReserved(reservation: MatchSeatReservation): Promise<void> {
     await this.enter(() => this.deps.client.consumeSeatReservation(reservation));
+  }
+
+  /**
+   * Into a friends room (1.0.4, protocol friends.ts) with the 6-digit `code`: the seat its ticket reserved, or,
+   * with none (a retry, the app opened again), a fresh one from `rejoin`. Being connected is being in the lobby;
+   * the game comes after the host's start (`online.startsAt`, then the snapshot at GO), as in a ranked match.
+   */
+  async enterFriends(
+    code: string,
+    reservation: MatchSeatReservation | null,
+    rejoin: FriendsRejoin,
+  ): Promise<void> {
+    if (this.started) throw new Error('This host has joined a room already');
+    this.friends = { code, rejoin, closed: null, refused: null };
+    this.code = code;
+    this.notifyOnline();
+    await this.enter(async () =>
+      this.deps.client.consumeSeatReservation(reservation ?? (await rejoin(code))),
+    );
   }
 
   private async enter(open: () => Promise<RoomLike>): Promise<void> {
@@ -526,9 +605,41 @@ export class RemoteGameHost implements GameHost {
     return this.solutionText;
   }
 
-  /** The room's code. */
+  /** The room's code (a friends room's 6 digits). */
   get roomCode(): string | null {
     return this.code;
+  }
+
+  /** A friends room (1.0.4): enterFriends() was its way in. */
+  get isFriendsRoom(): boolean {
+    return this.friends !== null;
+  }
+
+  /**
+   * A friends room's lobby command (protocol FriendsLobbyCommand: the host's start, setGameType, kick), sent as
+   * `room.send(command.type, command)`. Only while connected to the lobby, before the countdown; false when it
+   * could not go. The server is the judge: a refusal comes back as `online.friends.refused`.
+   */
+  sendLobbyCommand(command: FriendsLobbyCommand): boolean {
+    const room = this.room;
+    if (
+      !this.friends ||
+      this.closed ||
+      room === null ||
+      this.status !== 'lobby' ||
+      this.state !== null ||
+      this.startsAt !== null
+    )
+      return false;
+    try {
+      room.send(command.type, command);
+    } catch (error) {
+      this.log(`send ${command.type} failed: ${messageOf(error)}`);
+      this.dropConnection();
+      return false;
+    }
+    this.log(`lobby command ${command.type}`);
+    return true;
   }
 
   /** The cell tapped and not confirmed yet (spec §18): boardModel's `pendingCell`. */
@@ -632,7 +743,8 @@ export class RemoteGameHost implements GameHost {
   private attach(room: RoomLike): void {
     this.room = room;
     this.token = room.reconnectionToken || this.token;
-    this.code = room.roomId || this.code;
+    // A friends room's code is its 6 digits: its roomId is a long random id, no code (protocol friends.ts).
+    this.code = this.friends ? this.friends.code : room.roomId || this.code;
     this.lastHeardAt = this.now();
     this.run++;
     for (const type of SERVER_MESSAGE_TYPES)
@@ -649,7 +761,16 @@ export class RemoteGameHost implements GameHost {
       case 'lobby':
         this.me = m.playerId;
         this.code = m.code;
-        this.lobby = { code: m.code, gameType: m.gameType, playerCount: m.playerCount, players: m.players };
+        this.lobby = {
+          code: m.code,
+          gameType: m.gameType,
+          playerCount: m.playerCount,
+          players: m.players,
+          // A friends room's (1.0.4); absent elsewhere.
+          ...(m.hostId !== undefined && { hostId: m.hostId }),
+          ...(m.minPlayers !== undefined && { minPlayers: m.minPlayers }),
+          ...(m.maxPlayers !== undefined && { maxPlayers: m.maxPlayers }),
+        };
         if (this.state) this.notifyOnline();
         else {
           // Back in a lobby after a drop (the seat was given up, and taken again by code).
@@ -703,7 +824,30 @@ export class RemoteGameHost implements GameHost {
       case 'pong':
         this.sync.pong(m.t, m.serverTime, this.now());
         return;
+      case 'lobbyRefused':
+        // A friends room: a lobby command of mine was refused (to me only).
+        if (!this.friends) return;
+        this.friends.refused = { ...m, seq: ++this.refusedSeq };
+        this.log(`lobby command ${m.command} refused: ${m.reason}`);
+        this.notifyOnline();
+        return;
+      case 'roomClosed':
+        return this.onRoomClosed(m.reason);
     }
+  }
+
+  /**
+   * A friends room put this connection out (kicked, removed, the same account on another device, a restart, or
+   * closed): the server closes it next. Nothing comes back after it: the host closes at once, with the reason.
+   */
+  private onRoomClosed(reason: FriendsRoomClosedReason): void {
+    this.log(`the room closed this connection: ${reason}`);
+    if (this.friends) this.friends.closed = reason;
+    if (this.state?.status === 'over') return this.shutdown('gameOver', null);
+    this.shutdown(
+      'serverClosed',
+      new OnlineError(reason === 'kicked' ? 'kicked' : 'roomClosed', `roomClosed: ${reason}`),
+    );
   }
 
   private onSnapshot(m: Extract<ServerMessage, { type: 'snapshot' }>): void {
@@ -1051,16 +1195,30 @@ export class RemoteGameHost implements GameHost {
       const softGraceMs = rules ? (rules.softGraceMs ?? 0) : this.opts.defaultSoftGraceMs;
       const { serverNoticeMs, reconnectSlackMs } = this.opts;
       const lostAt = this.serverNow();
-      this.lost = {
-        cause,
-        attempt: 0,
-        since: now,
-        lostAt,
-        softEndsAt: softGraceMs > 0 ? lostAt + softGraceMs : null,
-        graceEndsAt: lostAt + softGraceMs + graceMs,
-        deadline: now + softGraceMs + graceMs + serverNoticeMs + reconnectSlackMs,
-        resyncing: false,
-      };
+      // A friends room's lobby: no soft phase, and the seat is held for hours [D84a].
+      const lobbyMs = this.inFriendsLobby() ? this.opts.friendsLobbyReturnMs : null;
+      this.lost =
+        lobbyMs !== null
+          ? {
+              cause,
+              attempt: 0,
+              since: now,
+              lostAt,
+              softEndsAt: null,
+              graceEndsAt: lostAt + lobbyMs,
+              deadline: now + lobbyMs,
+              resyncing: false,
+            }
+          : {
+              cause,
+              attempt: 0,
+              since: now,
+              lostAt,
+              softEndsAt: softGraceMs > 0 ? lostAt + softGraceMs : null,
+              graceEndsAt: lostAt + softGraceMs + graceMs,
+              deadline: now + softGraceMs + graceMs + serverNoticeMs + reconnectSlackMs,
+              resyncing: false,
+            };
       this.startOfflinePlay(inFlight);
     } else {
       this.lost = { ...this.lost, cause, attempt: 0, resyncing: false };
@@ -1180,7 +1338,13 @@ export class RemoteGameHost implements GameHost {
       if (FATAL_ON_RETURN.has(outcome.code)) break;
       if (!this.lost || this.now() >= this.lost.deadline) break;
       const delays = this.opts.reconnectDelaysMs;
-      await this.sleep(delays[Math.min(attempt, delays.length) - 1] ?? 1000);
+      let delay = delays[Math.min(attempt, delays.length) - 1] ?? 1000;
+      // A friends room's route asked to wait (429): not before then, and not at all past the deadline.
+      if (outcome.code === 'tooManyRequests' && outcome.retryAfterMs !== null) {
+        if (this.now() + outcome.retryAfterMs > this.lost.deadline) break;
+        delay = Math.max(delay, outcome.retryAfterMs);
+      }
+      await this.sleep(delay);
     }
     if (this.isStale(run)) return;
     this.shutdown('lostConnection', lastError);
@@ -1201,6 +1365,20 @@ export class RemoteGameHost implements GameHost {
       if (error.code !== 'tokenExpired') return error;
     }
     if (this.isStale(run)) return error ?? new OnlineError('unknown', 'Stale attempt');
+    const friends = this.friends;
+    if (friends) {
+      // A friends room: no seat for the token (or no token): a fresh reservation from our HTTP route, which gives
+      // the same account its own seat back (an earlier connection that still looks open is let go there).
+      const r = await this.attempt(
+        async () => this.deps.client.consumeSeatReservation(await friends.rejoin(friends.code)),
+        run,
+      );
+      if ('room' in r) {
+        this.adopt(r.room, run);
+        return 'back';
+      }
+      return r.error;
+    }
     const code = this.code;
     if (!code) return error ?? new OnlineError('notFound', 'No room to go back to');
     // The seat is not held for the token (the lobby gave it up, or the server has not noticed the drop yet):
@@ -1295,9 +1473,21 @@ export class RemoteGameHost implements GameHost {
   private onAppState(next: string): void {
     if (this.closed) return;
     if (next === 'background') {
-      if (this.backgrounded || !this.state || this.state.status === 'over') return;
-      if (this.status !== 'live' && this.status !== 'reconnecting') return;
-      this.log('in the background: disconnecting');
+      if (this.backgrounded) return;
+      // A friends room's lobby holds the seat while the app is away [D84a]: let go of the socket, so the others
+      // see "לא בחדר כרגע", and come back to it in the foreground.
+      const lobby = this.inFriendsLobby();
+      if (lobby) {
+        if (this.status !== 'lobby' && this.status !== 'reconnecting') return;
+      } else {
+        if (!this.state || this.state.status === 'over') return;
+        if (this.status !== 'live' && this.status !== 'reconnecting') return;
+      }
+      this.log(
+        lobby
+          ? 'in the background: out of the lobby until the foreground'
+          : 'in the background: disconnecting',
+      );
       this.backgrounded = true;
       this.run++;
       this.wakeSleepers();
@@ -1310,10 +1500,21 @@ export class RemoteGameHost implements GameHost {
     } else if (next === 'active' && this.backgrounded) {
       this.backgrounded = false;
       if (this.lost) {
+        // The lobby's seat was held all along [D84a]: the time to come back to it starts now.
+        if (this.inFriendsLobby())
+          this.lost = {
+            ...this.lost,
+            deadline: Math.max(this.lost.deadline, this.now() + this.opts.friendsLobbyReturnMs),
+          };
         this.log('back in the foreground: reconnecting');
         void this.comeBack();
       }
     }
+  }
+
+  /** A friends room before its game: the lobby, before the host's start (no countdown, no game). */
+  private inFriendsLobby(): boolean {
+    return this.friends !== null && this.state === null && this.startsAt === null;
   }
 
   // -- the end -------------------------------------------------------------------------------------------
@@ -1400,6 +1601,9 @@ export class RemoteGameHost implements GameHost {
       queuedMoves: this.offline.queued,
       hardLeavers: [...this.absences].filter(([, began]) => began === 'hard').map(([id]) => id),
       startsAt: this.startsAt,
+      ...(this.friends && {
+        friends: { code: this.friends.code, closed: this.friends.closed, refused: this.friends.refused },
+      }),
     };
   }
 

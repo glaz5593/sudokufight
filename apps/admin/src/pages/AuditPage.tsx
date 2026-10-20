@@ -76,8 +76,9 @@ function AuditActionLabel({ action }: { action: string }) {
 const text = (value: unknown): string | null => (typeof value === 'string' && value !== '' ? value : null);
 
 /**
- * resetName: "from X to Y" (gone once the account is deleted); a closed report: its reason; a suspension the
- * server carried to a new account of a deleted suspended one's sign-in: that account, linked.
+ * resetName: "from X to Y" (gone once the account is deleted; a persona's says it got a new invented name); a
+ * closed report: its reason; a suspension the server carried to a new account of a deleted suspended one's
+ * sign-in: that account, linked; the stealth bot's switch: on or off.
  */
 function AuditDetails({ entry }: { entry: AdminAuditEntry }) {
   const { t, label } = useI18n();
@@ -87,7 +88,8 @@ function AuditDetails({ entry }: { entry: AdminAuditEntry }) {
       const from = text(entry.details.fromName);
       const to = text(entry.details.toName);
       if (from === null || to === null) return <span className="muted">{t('audit.namesRemoved')}</span>;
-      return <Rich k="audit.renamed" nodes={{ from: <bdi>{from}</bdi>, to: <bdi>{to}</bdi> }} />;
+      const k = entry.details.persona === true ? 'audit.personaRenamed' : 'audit.renamed';
+      return <Rich k={k} nodes={{ from: <bdi>{from}</bdi>, to: <bdi>{to}</bdi> }} />;
     }
     case 'resolveReport':
     case 'dismissReport': {
@@ -109,6 +111,11 @@ function AuditDetails({ entry }: { entry: AdminAuditEntry }) {
           }}
         />
       );
+    }
+    case 'stealthSwitch': {
+      const on = entry.details.on;
+      if (typeof on !== 'boolean') return none;
+      return <>{t(on ? 'audit.stealthOn' : 'audit.stealthOff')}</>;
     }
     default:
       return none;

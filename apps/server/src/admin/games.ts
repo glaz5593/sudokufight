@@ -14,6 +14,10 @@ import { type GamesQuery, likePattern } from './params';
 /**
  * GET /admin/api/games and /games/:id (spec §27.3 "משחקים"): the games on the server, newest first, with
  * their players (score, place, rating change) and, in the detail, the rules and the event log in seq order.
+ *
+ * The stealth bot (stealth-bot.md §8) [D90]: a game against one is `stealth` (games.stealth), and the seat of
+ * its persona is `persona` (users.kind): the tag and the filter of the games page, for the admins only. The
+ * filter `stealth` takes only those games (true) or only the others (false).
  */
 
 /** Matches the game id, the puzzle id, and the players' user ids and display names. */
@@ -30,7 +34,11 @@ function searchGames(search: string | undefined): SQL | undefined {
 }
 
 export async function listGames(db: Db, q: GamesQuery): Promise<AdminPage<AdminGameRow>> {
-  const where = and(q.mode === undefined ? undefined : eq(games.mode, q.mode), searchGames(q.search));
+  const where = and(
+    q.mode === undefined ? undefined : eq(games.mode, q.mode),
+    q.stealth === undefined ? undefined : eq(games.stealth, q.stealth),
+    searchGames(q.search),
+  );
   const [rows, counted] = await Promise.all([
     db
       .select()
@@ -73,6 +81,7 @@ function toGameRow(g: Game, players: AdminGamePlayer[]): AdminGameRow {
     startedAt: g.startedAt.getTime(),
     endedAt: g.endedAt?.getTime() ?? null,
     endReason: g.endReason,
+    stealth: g.stealth,
     players,
   };
 }
@@ -94,6 +103,8 @@ async function playersOf(db: Db, gameIds: string[]): Promise<Map<string, AdminGa
       ratingKey: gamePlayers.ratingKey,
       ratingBefore: gamePlayers.ratingBefore,
       ratingAfter: gamePlayers.ratingAfter,
+      // A seat without an account (a practice bot) is no persona.
+      persona: sql<boolean>`coalesce(${users.kind} = 'persona', false)`.mapWith(Boolean),
     })
     .from(gamePlayers)
     .leftJoin(users, eq(users.id, gamePlayers.userId))

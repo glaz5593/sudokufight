@@ -3,6 +3,7 @@ import {
   type GameRoomRuleOverrides,
   isAvatarId,
   isCountryCode,
+  normalizeFriendCode,
   normalizeRoomCode,
   parseQueueKey,
   QUEUE_KEYS,
@@ -25,12 +26,14 @@ import {
  * Pure, so it is tested without a process.
  */
 
-export const FAKE_CLIENT_USAGE = `Usage: npm run fake-client -- (--code <code> | --create | --queue <queue>) [options]
+export const FAKE_CLIENT_USAGE = `Usage: npm run fake-client -- (--code <code> | --create | --queue <queue> | --friends <code>) [options]
 
   --url <url>              the server (default ws://localhost:2567)
   --code <code>            join the room with this code
   --create                 create a private room and print its code (with --code: use that code)
   --queue <queue>          a ranked game: search in this matchmaking queue (fast-2p ... hard-4p)
+  --friends <code>         join the friends room with this 6-digit code (1.0.4), as an account (--token):
+                           a ticket from POST /v1/rooms/join; its host (the app) starts the game
   --name <name>            display name, 3-16 letters/digits/_/. (default Fake<number>); with --queue the
                            account's name when it registers one
   --id <id>                dev user id (default fake-<name>); with --queue the uid of the dev token
@@ -56,7 +59,7 @@ export const FAKE_CLIENT_USAGE = `Usage: npm run fake-client -- (--code <code> |
   with --code or --create:
   --account                play as an account, by its token (--token, --avatar, --country as with --queue)
 
-  with --queue or --account (an account: registered with POST /v1/users the first time):
+  with --queue, --friends or --account (an account: registered with POST /v1/users the first time):
   --token <token>          the account's ID token (default dev:<id>, which only a dev server takes)
   --avatar <id>            the new account's avatar, an AVATAR_IDS id (default noam)
   --country <XX>           the new account's country, ISO code (default IL)
@@ -99,6 +102,7 @@ const VALUE_FLAGS = [
   'soft-grace',
   'rules',
   'queue',
+  'friends',
   'token',
   'avatar',
   'country',
@@ -176,6 +180,11 @@ function build(
 ): FakeClientCli {
   const create = switches.has('create');
   const queued = values.get('queue');
+  const friendsCode = values.get('friends');
+  if (friendsCode !== undefined && (create || queued !== undefined || values.has('code')))
+    throw new ArgError('--friends joins a friends room: not with --code, --create or --queue');
+  if (friendsCode !== undefined && switches.has('account'))
+    throw new ArgError('--friends plays as an account already');
   for (const flag of ['game-type', 'players', 'grace', 'soft-grace', 'rules'] as const)
     if (values.has(flag) && !create) throw new ArgError(`--${flag} goes with --create`);
   if (switches.has('rated') && !create) throw new ArgError('--rated goes with --create');
@@ -186,8 +195,8 @@ function build(
     if ((values.has(flag as ValueFlag) || switches.has(flag as Switch)) && queued === undefined)
       throw new ArgError(`--${flag} goes with --queue`);
   for (const flag of ['token', 'avatar', 'country'] as const)
-    if (values.has(flag) && queued === undefined && !account)
-      throw new ArgError(`--${flag} goes with --queue or --account`);
+    if (values.has(flag) && queued === undefined && !account && friendsCode === undefined)
+      throw new ArgError(`--${flag} goes with --queue or --account (or --friends)`);
   if (queued !== undefined && (create || values.has('code')))
     throw new ArgError('--queue searches for a ranked game: not with --code or --create');
 
@@ -206,9 +215,10 @@ function build(
     const normal = normalizeRoomCode(typed);
     if (normal === null) throw new ArgError(`--code: "${typed}" is not a room code (6 letters and digits)`);
     code = normal;
-  } else if (!create && queued === undefined) {
+  } else if (!create && queued === undefined && friendsCode === undefined) {
     throw new ArgError(
-      'give --code <code> to join a room, --create to make one, or --queue <queue> for a ranked game',
+      'give --code <code> to join a room, --create to make one, --queue <queue> for a ranked game, or ' +
+        '--friends <code> for a friends room',
     );
   }
 
@@ -253,10 +263,15 @@ function build(
     };
   } else if (queued !== undefined) {
     options.queue = parseQueue(queued, values, switches);
+  } else if (friendsCode !== undefined) {
+    const normal = normalizeFriendCode(friendsCode);
+    if (normal === null)
+      throw new ArgError(`--friends: "${friendsCode}" is not a friends room code (6 digits)`);
+    options.friends = normal;
   } else {
     options.code = code;
   }
-  if (account) {
+  if (account || friendsCode !== undefined) {
     const { token, avatarId, country } = parseAccount(values);
     options.account = {
       ...(token === undefined ? {} : { token }),

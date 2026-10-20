@@ -14,6 +14,8 @@
     "DS-Components.dc.html": { "h": 2000, "is_interactive": true, "title": "Design System · Components (old: the drag specimens, replaced by two taps, D45)", "w": 1440, "x": 3040, "y": 0 },
     "DS-Foundations.dc.html": { "h": 1500, "is_interactive": true, "title": "Design System · Foundations (old: the drag target in the glow note, replaced by two taps, D45)", "w": 1440, "x": 1520, "y": 0 },
     "DS-Motion.dc.html": { "h": 1500, "is_interactive": true, "title": "Design System · Motion & Feedback (old: the drag and drop specimens, replaced by two taps, D45)", "w": 1440, "x": 4560, "y": 0 },
+    "Friends-Join.dc.html": { "h": 844, "is_interactive": true, "title": "Friends · Join with a code", "w": 390, "x": 470, "y": 13512 },
+    "Friends-Room.dc.html": { "h": 844, "is_interactive": true, "title": "Friends · Waiting room", "w": 390, "x": 0, "y": 13512 },
     "Game-2P-Correct.dc.html": { "h": 844, "is_interactive": true, "title": "Game · Correct move +3.5", "w": 390, "x": 940, "y": 5204 },
     "Game-2P-EN.dc.html": { "h": 844, "is_interactive": true, "title": "Game · 2 players · English (LTR)", "w": 390, "x": 470, "y": 5204 },
     "Game-2P-Turns.dc.html": { "h": 844, "is_interactive": true, "title": "Game · Turn-based variant (open decision)", "w": 390, "x": 1880, "y": 5204 },
@@ -90,7 +92,10 @@
     "row6": { "kind": "title1", "maxW": 2740, "text": "מצבי חיבור וטעינה", "w": 240, "x": 0, "y": 9248 },
     "row7": { "kind": "title1", "maxW": 4150, "text": "אימון בשלבים (גרסה 1.0.2)", "w": 240, "x": 0, "y": 10768 },
     "d-levels": { "fill": "blue", "text": "הוחלט · אימון בשלבים (משה, 15–18.10.2026)\nשורה שישית במסך \"משחק חדש\" (D48): Modes-Levels מחליף את Modes. ‏300 שלבים של עד 30 שניות, בלי הפרעות בכלל (D49).\nאין כפתור תגובות לשחקן בשלבים, והבוט עדיין מגיב (D62). בשרשרת, ספרה במשבצת שעוד אי אפשר לדעת עולה ‎+5 ש׳ ולא נכנסת (D64).\nיציאה לרקע באמצע שלב: השלב קופא, ובחזרה 3, 2, 1 מעל לוח מכוסה, וממשיכים מאותה נקודה (D65).\nהכללים: אפיון סעיף 5.3. הרכיבים: components.md סעיף 19. התנועה: motion.md סעיף 4.11.", "w": 380, "x": 3760, "y": 11028 },
-    "d-levels-missing": { "fill": "blue", "text": "הוחלט · מסכים של השלבים בלי לוח (משה, 18.10.2026)\nבונים אותם מה־tokens של כיוון C ומהבריף, ומשה בודק במכשיר:\nפתיחת שלב (התוכן בפאנל של המפה), \"מוכן?\", רשימת הפרקים, הבוס בתוך שלב, \"פרק חדש נפתח\", \"איך משחקים\" (3 תמונות לכל סוג), דיאלוג היציאה, תוצאה עם 0 כוכבים, הספירה 3, 2, 1 בחזרה מהרקע (D65), השורה בכרטיס השחקן, וכל הגרסאות באנגלית.", "w": 380, "x": 1410, "y": 11992 }
+    "d-levels-missing": { "fill": "blue", "text": "הוחלט · מסכים של השלבים בלי לוח (משה, 18.10.2026)\nבונים אותם מה־tokens של כיוון C ומהבריף, ומשה בודק במכשיר:\nפתיחת שלב (התוכן בפאנל של המפה), \"מוכן?\", רשימת הפרקים, הבוס בתוך שלב, \"פרק חדש נפתח\", \"איך משחקים\" (3 תמונות לכל סוג), דיאלוג היציאה, תוצאה עם 0 כוכבים, הספירה 3, 2, 1 בחזרה מהרקע (D65), השורה בכרטיס השחקן, וכל הגרסאות באנגלית.", "w": 380, "x": 1410, "y": 11992 },
+    "row8": { "kind": "title1", "maxW": 1800, "text": "משחק עם חברים (גרסה 1.0.4)", "w": 240, "x": 0, "y": 13252 },
+    "d-friends": { "fill": "blue", "text": "הוחלט · משחק עם חברים (משה, 20.10.2026: \"כן כן כן, לך עם ברירות המחדל, תמשיך לבנות\")\nקבוצה שלישית במסך \"משחק חדש\", \"עם חברים\": \"צור חדר\" ו\"הצטרף עם קוד\" (D80a, \"כן\" מפורש). בלי דירוג, עם XP, היסטוריה ו־Replay (D81a).\nקוד של 6 ספרות, תמיד משמאל לימין, וקישור שפותח את האפליקציה ישר בחדר (D86, D88). כל מי שבחדר משתף (D87). המארח בוחר סוג (D82), מוציא (D85a) ולוחץ \"התחל\": רק מחוברים, ו\"להתחיל בלי Avi?\" כשמישהו ברקע (D83).\nאין מגבלת זמן: כיסא ברקע נשמר 6 שעות, והמארח נשאר מארח (D84a).\nשני הלוחות צוירו במקביל לבנייה, ולא חיכו לאישור. אם הם שונים מהאפליקציה, האפיון והקוד גוברים.\nהכללים: אפיון סעיף 5.4. הרכיבים: components.md סעיף 20. התנועה: motion.md סעיף 4.12.", "w": 380, "x": 940, "y": 13512 },
+    "d-friends-missing": { "fill": "blue", "text": "מסכים של החברים בלי לוח (נבנו מה־tokens של כיוון C, ומשה בודק בטלפון)\nהקבוצה \"עם חברים\" במסך \"משחק חדש\", חדר ההמתנה אצל אורח (\"מחכים ש־MosheG יתחיל\"), \"להתחיל בלי Avi?\", \"להוציא את Dana מהחדר?\", \"לסגור את החדר הקודם?\", הספירה של החדר, מצבי השגיאה והסגירה, השאלות כשקישור נפתח באמצע משהו, \"הקישור הזה לא מוכר\", הדף בדפדפן (/r/123456), והתווית \"משחק עם חברים · בלי דירוג\" בתוצאות ובהיסטוריה. וכל הגרסאות באנגלית.", "w": 380, "x": 1410, "y": 13512 }
   },
   "order": [
     "Dir-A-Home.dc.html", "Dir-A-Game.dc.html", "Dir-B-Home.dc.html", "Dir-B-Game.dc.html", "Dir-C-Home.dc.html", "Dir-C-Game.dc.html",
@@ -101,7 +106,8 @@
     "Arsenal.dc.html", "Interference-Target.dc.html", "Hit-Fireworks.dc.html", "Hit-Cats.dc.html", "Hit-Warp.dc.html", "Interferences.dc.html", "Reactions.dc.html", "Surrender.dc.html",
     "Results-Victory.dc.html", "Results-Defeat.dc.html", "Results-4P.dc.html", "Replay.dc.html", "History.dc.html", "History-Empty.dc.html", "Leaderboard.dc.html", "Progress.dc.html",
     "Offline.dc.html", "Opponent-Reconnecting.dc.html", "Self-Reconnecting.dc.html", "Opponent-Left.dc.html", "Connection-Error.dc.html", "Loading.dc.html",
-    "Modes-Levels.dc.html", "Levels-Map.dc.html", "Levels-Gate.dc.html", "Level-Result.dc.html", "Lv-Find.dc.html", "Lv-Race.dc.html", "Lv-Box.dc.html", "Lv-Sprint.dc.html", "Lv-SpotError.dc.html", "Lv-PointHunter.dc.html", "Lv-Chain.dc.html"
+    "Modes-Levels.dc.html", "Levels-Map.dc.html", "Levels-Gate.dc.html", "Level-Result.dc.html", "Lv-Find.dc.html", "Lv-Race.dc.html", "Lv-Box.dc.html", "Lv-Sprint.dc.html", "Lv-SpotError.dc.html", "Lv-PointHunter.dc.html", "Lv-Chain.dc.html",
+    "Friends-Room.dc.html", "Friends-Join.dc.html"
   ],
   "pages": [],
   "title": "Sudoku Fight"

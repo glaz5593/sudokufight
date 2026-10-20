@@ -1,0 +1,185 @@
+{
+  "title": "Room with friends",
+  "subtitle": "{{type}} · {{count}} of {{max}}",
+  "label": "Game with friends · unrated",
+  "mode": "With friends",
+  "modeLong": "Game with friends",
+  "unrated": "Unrated",
+  "code": {
+    "title": "Room code",
+    "label": "Room code: {{spelled}}",
+    "hint": "Send the code or the link"
+  },
+  "share": {
+    "button": "Share link",
+    "hint": "Opens your phone's share sheet, with the code and the link",
+    "message": "Join me in Sudoku Fight! Room code: {{code}}\n{{link}}",
+    "failed": "Couldn't open sharing"
+  },
+  "copy": {
+    "button": "Copy code",
+    "done": "Code copied",
+    "failed": "Couldn't copy the code"
+  },
+  "gameType": {
+    "title": "Game type",
+    "hostPicks": "Only the host can change it",
+    "guestSees": "The host picks",
+    "changed": "Game type is now {{type}}"
+  },
+  "players": {
+    "title": "Players · {{count}} of {{max}}"
+  },
+  "seat": {
+    "me": "Me",
+    "host": "Host",
+    "away": "Not in the room right now",
+    "empty": "Waiting for a player…",
+    "emptyLabel": "Empty seat, waiting for a player",
+    "rating": "Rating {{rating}}"
+  },
+  "kick": {
+    "label": "Remove {{name}} from the room",
+    "title": "Remove {{name}} from the room?",
+    "body": "They won't be able to come back to this room.",
+    "confirm": "Remove"
+  },
+  "start": {
+    "button_one": "Start game",
+    "button_two": "Start game · {{count}} players",
+    "button_many": "Start game · {{count}} players",
+    "button_other": "Start game · {{count}} players",
+    "needMore": "You need at least 2 connected players to start",
+    "waitingForHost": "Waiting for {{name}} to start",
+    "hostAway": "The host isn't in the room right now",
+    "starting": "The game is starting…"
+  },
+  "startWithout": {
+    "title": "Start without {{names}}?",
+    "body": "{{names}} isn't in the room right now. Whoever isn't in the room stays out.",
+    "confirm": "Yes, start",
+    "cancel": "No, let's wait"
+  },
+  "leave": "Leave room",
+  "reconnecting": "Connection lost. Reconnecting…",
+  "announce": {
+    "joined": "{{name}} joined",
+    "left": "{{name}} left the room",
+    "away": "{{name}} isn't in the room right now",
+    "back": "{{name}} is back in the room",
+    "host": "{{name}} is the host now",
+    "meHost": "You're the host now"
+  },
+  "opening": {
+    "create": "Opening a room…",
+    "join": "Joining the room…"
+  },
+  "replace": {
+    "title": "Close your other room?",
+    "body": "You already have an open room, {{code}}. Close it and open a new one, or go back to it.",
+    "confirm": "Close and open new",
+    "cancel": "Back to that room"
+  },
+  "errors": {
+    "notFound": "We couldn't find a room with the code {{code}}. Check the digits.",
+    "notFoundThis": "We couldn't find a room with this code.",
+    "roomFull": "The room is full ({{max}} of {{max}}).",
+    "gameStarted": "The game in this room has already started.",
+    "roomClosed": "The room has closed.",
+    "kicked": "The host removed you from the room.",
+    "cantJoin": "You blocked a player who is in this room.",
+    "suspended": "Your account is suspended, so you can't play with friends right now.",
+    "network": "No internet connection.",
+    "tooManyRequests": "Too many tries. Try again in {{wait}}.",
+    "notAvailable": "This option isn't available yet.",
+    "badRequest": "The code has 6 digits.",
+    "unauthorized": "Please sign in to your account again.",
+    "notRegistered": "Finish signing up to play with friends.",
+    "tooManyRooms": "You already have an open room.",
+    "tooLarge": "Something went wrong. Try again.",
+    "internal": "Something went wrong on the server. Try again in a moment.",
+    "disabled": "Playing with friends isn't available on this server.",
+    "unavailable": "The server isn't available right now. Try again in a moment."
+  },
+  "wait": {
+    "seconds_one": "a second",
+    "seconds_two": "{{count}} seconds",
+    "seconds_many": "{{count}} seconds",
+    "seconds_other": "{{count}} seconds",
+    "minutes_one": "a minute",
+    "minutes_two": "{{count}} minutes",
+    "minutes_many": "{{count}} minutes",
+    "minutes_other": "{{count}} minutes"
+  },
+  "closed": {
+    "kicked": "The host removed you from the room.",
+    "removed": "You left the room.",
+    "otherDevice": "The room was opened on another device.",
+    "serverRestart": "The room has closed.",
+    "closed": "The room has closed."
+  },
+  "lobbyErrors": {
+    "notHost": "Only the host can do that.",
+    "notEnoughPlayers": "You need at least 2 connected players to start.",
+    "playersAway": "{{names}} isn't in the room right now.",
+    "gameStarted": "The game has already started.",
+    "badCommand": "That didn't work. Try again.",
+    "tooManyRequests": "Easy, too many taps. Try again in a moment."
+  },
+  "startedWithout": "The game started without you.",
+  "actions": {
+    "retry": "Try again",
+    "createRoom": "Create room",
+    "joinWithCode": "Join with code",
+    "home": "Home"
+  },
+  "join": {
+    "title": "Join with code",
+    "prompt": "Type the 6 digits you got",
+    "codeLabel": "Room code, 6 digits",
+    "digitLabel": "Digit {{n}} of {{total}}",
+    "paste": "Paste",
+    "pasteHint": "You can paste the whole WhatsApp message",
+    "pasteNone": "We found no 6-digit code in the copied text",
+    "joining": "Joining the room…",
+    "submit": "Join"
+  },
+  "link": {
+    "notFound": {
+      "title": "We don't know this link",
+      "body": "It may be old, or not from Sudoku Fight. You can go on from home.",
+      "home": "Go home"
+    },
+    "badCode": "This link isn't valid"
+  },
+  "invite": {
+    "pending": "You're invited to room {{code}}",
+    "afterSignIn": "After you sign in, we'll take you straight to room {{code}}",
+    "join": "Join",
+    "later": "Not now",
+    "expired": "The invitation to room {{code}} has expired"
+  },
+  "busy": {
+    "practice": {
+      "title": "Leave the practice and join the room?",
+      "body": "The practice is saved, as when you leave it.",
+      "confirm": "Join the room"
+    },
+    "search": {
+      "title": "Stop searching and join?",
+      "body": "The search for an opponent stops.",
+      "confirm": "Join the room"
+    },
+    "room": {
+      "title": "Switch to room {{code}}?",
+      "body": "You'll leave the room you're in now.",
+      "confirm": "Switch rooms"
+    },
+    "game": {
+      "title": "You're in the middle of a game",
+      "body": "You can join after it. The invitation to room {{code}} will wait for you.",
+      "back": "Back to the game"
+    },
+    "stay": "Stay"
+  }
+}

@@ -3,7 +3,13 @@ import { useCallback } from 'react';
 
 import { AvatarImg } from '../components/AvatarImg';
 import { type Column, DataTable } from '../components/DataTable';
-import { AccountActions, type Moderation, ModerationBadges, useModeration } from '../components/moderation';
+import {
+  AccountActions,
+  type Moderation,
+  ModerationBadges,
+  StealthBadge,
+  useModeration,
+} from '../components/moderation';
 import {
   AsyncView,
   DateTime,
@@ -26,7 +32,9 @@ import { installColumns } from './InstallsPage';
 /**
  * Spec §27.3: a user's profile, level and XP (spec §15), ratings, game history and stats, the installs they
  * used, and the anomaly flags of their ranked games (spec §21: for review only). And their moderation state
- * (spec §3.5) with its actions: reset the name, suspend the account or lift the suspension.
+ * (spec §3.5) with its actions: reset the name, suspend the account or lift the suspension. A stealth bot's
+ * persona (stealth-bot.md §8) says so, and its games against people are its only games; a person's games
+ * against the stealth bot carry its tag.
  */
 export function UserDetailPage({ id }: { id: string }) {
   const { t } = useI18n();
@@ -40,6 +48,7 @@ export function UserDetailPage({ id }: { id: string }) {
     deleted: user.deletedAt !== null,
     suspended: (user.suspendedAt ?? null) !== null,
     nameReset: user.nameResetRequired ?? false,
+    persona: user.persona ?? false,
   };
 
   return (
@@ -49,7 +58,7 @@ export function UserDetailPage({ id }: { id: string }) {
         docTitle={name ?? t('user.profile')}
         back={{ href: routeHref({ name: 'users' }), label: t('user.back') }}
       >
-        {badges && (badges.deleted || badges.suspended || badges.nameReset) && (
+        {badges && (badges.deleted || badges.suspended || badges.nameReset || badges.persona) && (
           <div className="head-badges">
             <ModerationBadges {...badges} />
           </div>
@@ -77,11 +86,13 @@ function ModerationSection({
   const { t } = useI18n();
   const deleted = data.deletedAt !== null;
   const suspendedAt = data.suspendedAt ?? null;
+  const persona = data.persona ?? false;
   return (
     <Section
       title={t('user.moderation')}
       hint={deleted ? t('user.deletedNoActions') : t('user.moderationHint')}
     >
+      {persona && <p className="hint">{t('user.personaNote')}</p>}
       <Facts
         items={[
           {
@@ -121,7 +132,7 @@ function ModerationSection({
       />
       <div className="section-actions">
         <AccountActions
-          user={{ id: data.id, name: data.displayName, suspended: suspendedAt !== null, deleted }}
+          user={{ id: data.id, name: data.displayName, suspended: suspendedAt !== null, deleted, persona }}
           disabled={busy}
           onAsk={moderation.ask}
         />
@@ -166,7 +177,16 @@ function UserBody({
         </a>
       ),
     },
-    { id: 'mode', header: t('col.mode'), cell: (g) => label('mode', g.mode) },
+    {
+      id: 'mode',
+      header: t('col.mode'),
+      cell: (g) => (
+        <>
+          {label('mode', g.mode)}
+          {g.stealth && <StealthBadge label={t('games.stealth')} />}
+        </>
+      ),
+    },
     { id: 'type', header: t('col.type'), cell: (g) => label('gameType', g.gameType) },
     { id: 'players', header: t('col.players'), numeric: true, cell: (g) => <Num value={g.playerCount} /> },
     { id: 'place', header: t('col.place'), numeric: true, cell: (g) => <Num value={g.place} /> },

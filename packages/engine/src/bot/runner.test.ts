@@ -1,6 +1,6 @@
-import type { ActionResult } from '../game/engine';
+import { type ActionResult, applyAction, createGame, nextDeadline, tick } from '../game/engine';
 import { LocalGameHost } from '../game/host';
-import { defaultRules, INTERFERENCE_KINDS } from '../game/rules';
+import { defaultRules, INTERFERENCE_KINDS, type InterferenceKind, type Rules } from '../game/rules';
 import type { Action, GameConfig, GameEvent, GameState } from '../game/types';
 import { replay } from '../game/view';
 import { levelGameConfig } from '../levels/spec';
@@ -11,9 +11,18 @@ import { DUEL_LEVEL, ME, PIP } from '../testing/levels';
 import { ManualClock } from '../util/clock';
 import { createRng, type Rng } from '../util/random';
 import { ManualScheduler } from '../util/scheduler';
-import { eligibleCells, plausibleWrongDigits } from './brain';
-import { BOT_CONFIG, BOT_LEVELS, type BotConfig, type BotLevelId, botPlayer, levelBotConfig } from './levels';
-import { attachBot, type BotTrace } from './runner';
+import { canInterfere, eligibleCells, plausibleWrongDigits } from './brain';
+import {
+  BOT_CONFIG,
+  BOT_LEVELS,
+  type BotConfig,
+  type BotLevelId,
+  botPlayer,
+  type BotProfile,
+  levelBotConfig,
+} from './levels';
+import { attachBot, type BotHost, type BotHostUpdate, type BotTrace } from './runner';
+import { STEALTH_BOT_CONFIG, stealthBotConfig, stealthBotLevel } from './stealth';
 
 /* The bot at the table (spec §9): the rhythm of a move, re-planning, timers [D11], interferences and reactions. */
 
@@ -771,5 +780,434 @@ describe('staged practice: the bot of a level against it (dev-plan §2ג) [D61, 
     expect(locked.length).toBeGreaterThan(0);
     for (const c of locked) expect(box).toContain(c);
     expect(problems(g)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------
+// The stealth bot (stealth-bot plan §5) [D90, D98]
+
+/** The persona: an account like anyone's, a plain id, no isBot (plan §6). */
+const PERSONA = '6f1c2a4e-9b7d-4c3e-8a21-5d0e7f9b3c18';
+type Retaliation = Extract<BotTrace, { type: 'retaliation' }>;
+const retaliations = (g: BotGame) => g.traces.filter((t): t is Retaliation => t.type === 'retaliation');
+const hitsBy = (g: BotGame, id: string) =>
+  eventsOf(g.host.events, 'interference').filter((e) => e.fromId === id);
+const ends = (g: BotGame) =>
+  eventsOf(g.host.events, 'interferenceEnded').filter((e) => e.targetId === g.botId);
+
+/** A quick stealth bot: it soon has points to pay with. */
+const QUICK = stealthBotLevel({ baseMs: 4000, mistakeRate: 0.03 });
+/** A stealth bot that never gets to a digit in these tests: it has no points. */
+const IDLE: BotProfile = { ...QUICK, thinkMs: { min: 3_600_000, max: 3_600_000 } };
+
+/** A ranked two-player game against the stealth bot, on LocalGameHost: me and the persona. */
+function stealthGame(
+  o: { seed?: number; profile?: BotProfile; rules?: Partial<Rules>; host?: (c: GameConfig) => BotHost } = {},
+): BotGame {
+  const clock = new ManualClock();
+  const scheduler = new ManualScheduler(clock);
+  const config: GameConfig = {
+    id: `stealth-${o.seed ?? 1}`,
+    mode: 'ranked',
+    gameType: 'fast',
+    puzzle: PUZZLE,
+    players: [
+      { id: HUMAN, name: 'Me' },
+      { id: PERSONA, name: 'Tal88' },
+    ],
+    rules: defaultRules('ranked', 'fast', o.rules),
+    seed: o.seed ?? 1,
+  };
+  const host = new LocalGameHost({ config, playerId: HUMAN, clock, scheduler });
+  const traces: BotTrace[] = [];
+  const bot = attachBot(host, {
+    botId: PERSONA,
+    level: o.profile ?? QUICK,
+    clock,
+    scheduler,
+    rng: createRng(o.seed ?? 1),
+    config: stealthBotConfig(),
+    onTrace: (t) => traces.push(t),
+  });
+  return { clock, scheduler, host, bot, botId: PERSONA, traces, config };
+}
+
+/** Points for me to pay with: I solve cells now until my score reaches `points`. */
+function earn(g: BotGame, points: number): void {
+  while (g.host.state.players.find((p) => p.id === HUMAN)!.score < points) humanSolves(g);
+}
+
+/** I hit the bot now; returns when it ends (the interference lasts rules.interferenceMs). */
+function hitBot(g: BotGame, kind: InterferenceKind = 'cats'): number {
+  const n = hitsBy(g, HUMAN).length;
+  g.host.interfere(g.botId, kind);
+  expect(hitsBy(g, HUMAN)).toHaveLength(n + 1);
+  return g.clock.now() + g.config.rules.interferenceMs;
+}
+
+const scoreOf = (s: GameState, id: string) => s.players.find((p) => p.id === id)!.score;
+
+describe('the stealth bot never starts an interference [D98]', () => {
+  it('a whole ranked game with interferences on and nothing from me: it sends none', () => {
+    const g = stealthGame({ seed: 41 });
+    expect(g.config.rules.interferences).toBe(true);
+    scriptHuman(g, { missEvery: 5 });
+    runUntilOver(g);
+    expect(g.host.state.result?.reason).toBe('boardComplete');
+    expect(eventsOf(g.host.events, 'interference')).toEqual([]);
+    expect(retaliations(g)).toEqual([]);
+    expect(eventsOf(g.host.events, 'placedCorrect', g.botId).length).toBeGreaterThan(10);
+    expect(problems(g)).toEqual([]);
+  });
+
+  it('and it sends no reaction, whatever happens [D97b]', () => {
+    const g = stealthGame({ seed: 42 });
+    scriptHuman(g, { missEvery: 2 });
+    g.scheduler.advance(20_000);
+    earn(g, 2);
+    hitBot(g);
+    runUntilOver(g);
+    expect(eventsOf(g.host.events, 'placedWrong', HUMAN).length).toBeGreaterThan(3);
+    expect(eventsOf(g.host.events, 'reaction')).toEqual([]);
+  });
+});
+
+describe('the stealth bot hits back, 2–20 s after my interference ENDS [D98]', () => {
+  it('at whoever sent it, at the moment it drew, paying the usual 2 [D10]; never before T+2 s or after T+20 s', () => {
+    const offsets: number[] = [];
+    for (let seed = 1; seed <= 24; seed++) {
+      const g = stealthGame({ seed });
+      g.scheduler.advance(20_000); // it has points by now
+      earn(g, 2);
+      const end = hitBot(g);
+      g.scheduler.advance(30_000);
+      expect(ends(g).map((e) => e.t)).toEqual([end]);
+      const [planned] = retaliations(g);
+      expect(planned).toMatchObject({ at: end, targetId: HUMAN, giveUpAt: end + 20_000 });
+      const [back, ...more] = hitsBy(g, g.botId);
+      expect(more).toEqual([]);
+      expect(back).toMatchObject({ targetId: HUMAN, cost: 2, t: planned!.dueAt });
+      expect(back!.t - end).toBeGreaterThanOrEqual(2000);
+      expect(back!.t - end).toBeLessThanOrEqual(20_000);
+      // It paid: its score after it is 2 less than before.
+      const states = replay(g.host.events);
+      const k = g.host.events.indexOf(back!);
+      expect(back!.score).toBe(scoreOf(states[k - 1]!, g.botId) - 2);
+      expect(problems(g)).toEqual([]);
+      offsets.push(back!.t - end);
+    }
+    // Drawn over the whole window, not at one fixed delay.
+    expect(Math.max(...offsets) - Math.min(...offsets)).toBeGreaterThan(8000);
+  });
+
+  it('without points: it tries every second until T+20 s, then lets it go', () => {
+    const g = stealthGame({ seed: 3, profile: IDLE });
+    earn(g, 2);
+    const end = hitBot(g);
+    g.scheduler.advance(60_000);
+    expect(scoreOf(g.host.state, g.botId)).toBe(0);
+    expect(hitsBy(g, g.botId)).toEqual([]);
+    expect(g.traces.filter((t) => t.type === 'retaliationDropped')).toEqual([
+      { type: 'retaliationDropped', at: end + 20_000, targetId: HUMAN, kind: retaliations(g)[0]!.kind },
+    ]);
+    expect(problems(g)).toEqual([]);
+  });
+
+  it('points that come within the window: it hits back within a second of having them', () => {
+    let tested = 0;
+    for (let seed = 1; seed <= 12; seed++) {
+      const g = stealthGame({ seed, profile: IDLE });
+      earn(g, 2);
+      const end = hitBot(g);
+      g.scheduler.advance(5000);
+      const due = retaliations(g)[0]!.dueAt;
+      if (due > end + 14_000 || due < g.clock.now()) continue;
+      // Past its moment with nothing to pay: it is still trying. Then it solves two cells (as the server's bot
+      // would): from then on it can pay.
+      advanceUntil(g, () => g.clock.now() >= due + 1500, 30_000, 100);
+      expect(hitsBy(g, g.botId)).toEqual([]);
+      const paidAt = g.clock.now();
+      for (const cell of eligibleCells(g.host.state, g.botId, paidAt).slice(0, 3)) {
+        g.host.dispatch({ type: 'select', playerId: g.botId, cell });
+        g.host.dispatch({ type: 'place', playerId: g.botId, cell, digit: solutionOf(g.host.state, cell) });
+      }
+      expect(scoreOf(g.host.state, g.botId)).toBeGreaterThanOrEqual(2);
+      g.scheduler.advance(25_000);
+      const [back] = hitsBy(g, g.botId);
+      expect(back!.t).toBeGreaterThan(paidAt);
+      expect(back!.t - paidAt).toBeLessThanOrEqual(STEALTH_BOT_CONFIG.retaliate.retryMs);
+      expect(back!.t).toBeLessThanOrEqual(end + 20_000);
+      tested++;
+    }
+    expect(tested).toBeGreaterThan(2);
+  });
+
+  it('three from me: three back, one for each, never more', () => {
+    const g = stealthGame({ seed: 7 });
+    const mine: number[] = [];
+    for (const at of [20_000, 50_000, 80_000]) {
+      g.scheduler.advance(at - g.clock.now());
+      earn(g, 2 ** (mine.length + 1));
+      mine.push(hitBot(g));
+    }
+    g.scheduler.advance(25_000);
+    expect(g.host.state.status).toBe('running'); // every answer had its whole window
+    runUntilOver(g);
+    const back = hitsBy(g, g.botId);
+    expect(back).toHaveLength(3);
+    back.forEach((e, k) => {
+      expect(e.t - mine[k]!).toBeGreaterThanOrEqual(2000);
+      expect(e.t - mine[k]!).toBeLessThanOrEqual(20_000);
+      expect(e.cost).toBe(2 ** (k + 1));
+    });
+    expect(problems(g)).toEqual([]);
+  });
+
+  it('never more than mine, over whole games', () => {
+    for (let seed = 1; seed <= 6; seed++) {
+      const g = stealthGame({ seed: 100 + seed });
+      scriptHuman(g, { everyMs: 4000, placeMs: 1000, missEvery: 6 });
+      const hit = () => {
+        if (g.host.state.status === 'over') return;
+        if (canInterfere(g.host.state, HUMAN, g.botId, g.clock.now())) g.host.interfere(g.botId, 'warp');
+        g.scheduler.setTimeout(hit, 9000);
+      };
+      g.scheduler.setTimeout(hit, 15_000);
+      runUntilOver(g);
+      expect(hitsBy(g, HUMAN).length).toBeGreaterThan(0);
+      expect(hitsBy(g, g.botId).length).toBeLessThanOrEqual(hitsBy(g, HUMAN).length);
+      expect(retaliations(g)).toHaveLength(ends(g).length);
+      expect(problems(g)).toEqual([]);
+    }
+  });
+
+  it('a frozen game stops the count, which goes on after the resume', () => {
+    const g = stealthGame({ seed: 5 });
+    g.scheduler.advance(20_000);
+    earn(g, 2);
+    const end = hitBot(g);
+    g.scheduler.advance(5000 + 500); // the end, then half a second
+    const due = retaliations(g)[0]!.dueAt;
+    g.host.dispatch({ type: 'disconnect', playerId: HUMAN }); // two players: the game freezes [D4]
+    expect(g.host.state.status).toBe('paused');
+    g.scheduler.advance(12_000);
+    expect(hitsBy(g, g.botId)).toEqual([]);
+    g.host.dispatch({ type: 'reconnect', playerId: HUMAN });
+    expect(eventsOf(g.host.events, 'gameResumed').at(-1)).toMatchObject({ pausedMs: 12_000 });
+    g.scheduler.advance(40_000);
+    const [back] = hitsBy(g, g.botId);
+    expect(back).toMatchObject({ targetId: HUMAN, t: due + 12_000 });
+    expect(back!.t - end - 12_000).toBeLessThanOrEqual(20_000);
+  });
+
+  it('the soft phase of my lost connection does not stop the count: it waits for me, then hits back', () => {
+    let tested = 0;
+    for (let seed = 1; seed <= 12 && tested < 3; seed++) {
+      const g = stealthGame({ seed });
+      g.scheduler.advance(20_000);
+      earn(g, 2);
+      const end = hitBot(g);
+      g.scheduler.advance(5000);
+      const due = retaliations(g)[0]!.dueAt;
+      if (due > end + 8000) continue;
+      g.host.dispatch({ type: 'disconnect', playerId: HUMAN, soft: true }); // the soft phase [D42]
+      expect(g.host.state.status).toBe('running');
+      g.scheduler.advance(end + 9000 - g.clock.now());
+      expect(hitsBy(g, g.botId)).toEqual([]); // I can't take one in the soft phase
+      g.host.dispatch({ type: 'reconnect', playerId: HUMAN });
+      g.scheduler.advance(30_000);
+      const [back] = hitsBy(g, g.botId);
+      // Its moment passed while I was away: it comes within a second of my return, not shifted on.
+      expect(back!.t).toBeGreaterThan(end + 9000);
+      expect(back!.t).toBeLessThanOrEqual(end + 10_000);
+      tested++;
+    }
+    expect(tested).toBe(3);
+  });
+
+  it("the kind: the one it got, or one drawn among the game's [D47] that its level opened [D17]", () => {
+    const kinds = { received: 0, same: 0, other: new Set<string>() };
+    for (let seed = 1; seed <= 30; seed++) {
+      const g = stealthGame({
+        seed,
+        rules: { interferenceKinds: ['fireworks', 'cats', 'warp', 'scramble'] },
+        profile: stealthBotLevel({
+          baseMs: 4000,
+          mistakeRate: 0.03,
+          kinds: ['fireworks', 'cats', 'warp', 'ink'],
+        }),
+      });
+      g.scheduler.advance(20_000);
+      earn(g, 2);
+      const sent: InterferenceKind = seed % 3 ? 'cats' : 'scramble'; // scramble: one its level has not opened
+      hitBot(g, sent);
+      g.scheduler.advance(30_000);
+      const [back] = hitsBy(g, g.botId);
+      expect(['fireworks', 'cats', 'warp']).toContain(back!.kind);
+      if (sent === 'cats') {
+        kinds.received++;
+        if (back!.kind === 'cats') kinds.same++;
+      }
+      if (back!.kind !== sent) kinds.other.add(back!.kind);
+    }
+    // Half the same kind (and a third of the drawn ones), the rest drawn.
+    expect(kinds.same / kinds.received).toBeGreaterThan(0.4);
+    expect(kinds.same / kinds.received).toBeLessThan(0.95);
+    expect(kinds.other.size).toBeGreaterThan(1);
+  });
+
+  it('stops for good at the end: nothing on its way survives gameOver or detach()', () => {
+    const g = stealthGame({ seed: 9, profile: IDLE });
+    earn(g, 2);
+    hitBot(g);
+    g.scheduler.advance(5100);
+    expect(retaliations(g)).toHaveLength(1);
+    g.bot.detach();
+    expect(g.scheduler.pending).toBe(0);
+    g.scheduler.advance(60_000);
+    expect(hitsBy(g, g.botId)).toEqual([]);
+  });
+
+  it('the same seed plays the same game, retaliations included', () => {
+    const run = (seed: number) => {
+      const g = stealthGame({ seed });
+      scriptHuman(g, { everyMs: 4000, placeMs: 1000, missEvery: 5 });
+      g.scheduler.setTimeout(() => {
+        earn(g, 2);
+        hitBot(g);
+      }, 30_000);
+      runUntilOver(g);
+      expect(hitsBy(g, g.botId)).toHaveLength(1);
+      return JSON.stringify(g.host.events);
+    };
+    expect(run(11)).toBe(run(11));
+    expect(run(11)).not.toBe(run(12));
+  });
+});
+
+/**
+ * A game host that is not LocalGameHost: the pure engine on a clock, as the server's ServerGame runs it, with
+ * updates that carry only the events (no view). What the stealth bot's seat wraps on the server.
+ */
+class EngineHost implements BotHost {
+  private current: GameState;
+  readonly log: GameEvent[];
+  private readonly listeners = new Set<(u: BotHostUpdate) => void>();
+  private timer: unknown = null;
+  private readonly outbox: GameEvent[][] = [];
+  private delivering = false;
+
+  constructor(
+    config: GameConfig,
+    private readonly clock: ManualClock,
+    private readonly scheduler: ManualScheduler,
+  ) {
+    const { state, events } = createGame(config, { clock });
+    this.current = state;
+    this.log = [...events];
+  }
+
+  get state(): GameState {
+    return this.current;
+  }
+
+  subscribe(listener: (u: BotHostUpdate) => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  dispatch(action: Action): ActionResult {
+    const result = applyAction(this.current, action, this.clock.now());
+    this.commit(result.state, result.events);
+    return result;
+  }
+
+  private commit(state: GameState, events: GameEvent[]): void {
+    this.current = state;
+    this.log.push(...events);
+    if (this.timer !== null) this.scheduler.clearTimeout(this.timer);
+    const at = nextDeadline(state);
+    this.timer =
+      at === null
+        ? null
+        : this.scheduler.setTimeout(
+            () => {
+              this.timer = null;
+              const t = tick(this.current, this.clock.now());
+              this.commit(t.state, t.events);
+            },
+            Math.max(0, at - this.clock.now()),
+          );
+    if (!events.length) return;
+    this.outbox.push(events);
+    if (this.delivering) return;
+    this.delivering = true;
+    while (this.outbox.length) {
+      const next = this.outbox.shift()!;
+      for (const l of [...this.listeners]) l({ kind: 'events', events: next });
+    }
+    this.delivering = false;
+  }
+}
+
+describe('attachBot on any game host (BotHost): the server runs the stealth bot in its own game', () => {
+  it('LocalGameHost is a BotHost', () => {
+    const g = stealthGame();
+    const host: BotHost = g.host;
+    expect(host.state.status).toBe('running');
+  });
+
+  it('a host with events only (as the server’s): a whole game, a retaliation, and a log that replays', () => {
+    const clock = new ManualClock();
+    const scheduler = new ManualScheduler(clock);
+    const config: GameConfig = {
+      id: 'engine-host',
+      mode: 'ranked',
+      gameType: 'fast',
+      puzzle: PUZZLE,
+      players: [{ id: HUMAN }, { id: PERSONA }],
+      rules: defaultRules('ranked', 'fast'),
+      seed: 3,
+    };
+    const host = new EngineHost(config, clock, scheduler);
+    const traces: BotTrace[] = [];
+    attachBot(host, {
+      botId: PERSONA,
+      level: QUICK,
+      clock,
+      scheduler,
+      rng: createRng(99),
+      config: stealthBotConfig(),
+      onTrace: (t) => traces.push(t),
+    });
+    host.dispatch({ type: 'start' });
+    let mineAt: number | null = null;
+    const human = () => {
+      const s = host.state;
+      if (s.status === 'over') return;
+      const now = clock.now();
+      if (mineAt === null && now >= 30_000 && canInterfere(s, HUMAN, PERSONA, now)) {
+        host.dispatch({ type: 'interfere', playerId: HUMAN, targetId: PERSONA, kind: 'ink' });
+        mineAt = now;
+      }
+      const cell = eligibleCells(host.state, HUMAN, now)[0];
+      if (cell !== undefined) {
+        host.dispatch({ type: 'select', playerId: HUMAN, cell });
+        host.dispatch({ type: 'place', playerId: HUMAN, cell, digit: solutionOf(host.state, cell) });
+      }
+      scheduler.setTimeout(human, 7000);
+    };
+    scheduler.setTimeout(human, 7000);
+    while (host.state.status !== 'over' && clock.now() < 3600_000) scheduler.advance(1000);
+    expect(host.state.result?.reason).toBe('boardComplete');
+    expect(eventsOf(host.log, 'placedCorrect', PERSONA).length).toBeGreaterThan(10);
+    const back = eventsOf(host.log, 'interference').filter((e) => e.fromId === PERSONA);
+    expect(mineAt).not.toBeNull();
+    expect(back).toHaveLength(1);
+    expect(back[0]!.t - (mineAt! + 5000)).toBeGreaterThanOrEqual(2000);
+    expect(back[0]!.t - (mineAt! + 5000)).toBeLessThanOrEqual(20_000);
+    expect(traces.filter((t) => t.type === 'error' || (t.type === 'action' && t.rejected))).toEqual([]);
+    expect(JSON.stringify(replay(host.log).at(-1))).toBe(JSON.stringify(host.state));
+    expect(traces.at(-1)).toMatchObject({ type: 'stopped', reason: 'gameOver' });
   });
 });

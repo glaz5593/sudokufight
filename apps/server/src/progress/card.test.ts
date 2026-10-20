@@ -142,6 +142,26 @@ describe('GET /v1/players/:id (spec §14.3)', () => {
     });
   });
 
+  it('a game in a friends room (1.0.4, mode friends) counts nowhere on the card: stats, streaks, best move, results', async () => {
+    await anaGames();
+    const before = (await card('ana', 'ben')).body;
+    // The newest game of all, a win with the best move ever: unrated, so not the card's [D81a].
+    await addStoredGame(t.db, {
+      id: 'friends1',
+      mode: 'friends',
+      gameType: 'fast',
+      endedAt: T0 + 120 * MIN,
+      seats: [
+        { userId: 'ana', place: 1, score: 80, mistakes: 0, bestMove: 50 },
+        { userId: 'ben', place: 2, score: 10 },
+      ],
+    });
+    const after = (await card('ana', 'ben')).body;
+    expect(after.stats).toEqual(before.stats);
+    expect(after.recent).toEqual(before.recent);
+    expect(after.recent.map((r) => r.gameId)).not.toContain('friends1');
+  });
+
   it('the last 10 results, newest first, with outcome, rating change and time', async () => {
     await anaGames();
     const { body } = await card('ana');

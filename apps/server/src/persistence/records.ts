@@ -3,16 +3,19 @@ import {
   type GameConfig,
   type GameEvent,
   type GameState,
+  type MovePace,
+  movePace,
   type PlayerId,
   type ProgressRules,
 } from '@sudoku-fight/engine';
-import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 
 import { FAST_THINKING, fastThinkingFlags, insertCheatFlags } from '../cheat';
-import type { CheatThresholds } from '../config';
+import { type CheatThresholds, DEFAULT_PRACTICE_XP_DAILY_CAP } from '../config';
 import type { Db } from '../db';
 import {
   displayNameKey,
+  FRIENDS_GAME_MODE,
   gameEvents,
   gamePlayers,
   games,
@@ -21,6 +24,7 @@ import {
   retiredNames,
   users,
 } from '../db/schema';
+import { capFriendsXp } from '../progress/practice';
 import { addXp, rankedXpGains } from '../progress/xp';
 import { applyRatingChanges, type RatingWrite } from '../ratings';
 
@@ -47,10 +51,29 @@ import { applyRatingChanges, type RatingWrite } from '../ratings';
  * - End (`recordGameEnd`), one transaction: ended_at and end_reason; each seat's final score, mistakes,
  *   place (§6.7: whoever surrendered or abandoned ranks after those still in; the rating is a normal loss
  *   [D32] except where the §11.2 leave guards hold a pair at 0, all in the engine's result), status,
- *   rating after and best move's points (stage 12, for the player card); the ratings themselves
+ *   rating after, best move's points (stage 12, for the player card) and XP (1.0.4); the ratings themselves
  *   (../ratings); every account's XP (../progress/xp, spec §15: 50 for a win, 20 otherwise, a point per
  *   correct move); the anomaly flags (../cheat). The games row is locked and its ended_at checked first: a
  *   game already recorded is left as it is, so a retry never counts a game (its ratings, its XP) twice.
+ *
+ * A game in a friends room (1.0.4, `friends: true`) [D81a] is stored the same way (games, seats, every event
+ * for the replay, puzzle_history and opponent_history at the start; no achievements, as for every game), with
+ * three differences: games.mode is 'friends' (the config's mode is the engine's 'ranked'), no rating key and
+ * no rating ever, and each account's XP is cut to what is left of practice's daily cap on the UTC day the game
+ * ended (../progress/practice capFriendsXp, which locks the players' xp rows as practice does).
+ *
+ * The stealth bot (stealth-bot.md §7) [D90, D92, D96]: a seat played by a persona (users.kind 'persona',
+ * ../stealth/personas) is an account's seat like any other (game_players with its id, its rating and XP, its
+ * opponent_history), so the game is a ranked game in every way a player can see. Which seats are personas is
+ * read here, from users.kind, never from the caller or the config (whose players never say "bot" to an app).
+ * Then:
+ * - games.stealth is set, at the start;
+ * - a persona gets no puzzle_history (the puzzle is the person's alone, ./rankedGames pickFor: a persona that
+ *   plays a lot would otherwise use the pool up), and no anomaly flags (a quick bot is not a cheat);
+ * - at the end of a ranked game (not a friends game), each person's pace in it (the engine's movePace over the
+ *   whole log: game_players.pace_ms, pace_moves, pace_digits), which the next stealth bot is built from
+ *   (../stealth/pace). Never a persona's. A pace that can't be worked out is stored as null and never fails
+ *   the end.
  */
 
 /** A seat and the account playing it (null: no account, e.g. a bot). */
@@ -64,13 +87,35 @@ export interface GameStartRecord {
   config: GameConfig;
   startedAt: number;
   seats: readonly GameSeat[];
-  /** The rating key this game moves; null for a game that moves no rating. */
+  /** The rating key this game moves; null for a game that moves no rating (always, with `friends`). */
   ratingKey: string | null;
+  /**
+   * A friends room's game (1.0.4) [D81a]: games.mode 'friends', never rated (any `ratingKey` is ignored), its
+   * XP within the daily practice cap. Absent: the config's own mode.
+   */
+  friends?: boolean;
 }
+
+/** The rating key a start record really moves: none for a friends game. */
+const ratingKeyOf = (start: GameStartRecord): string | null => (start.friends ? null : start.ratingKey);
 
 /** The seats of a config: every player's id is its users.id, except bots'. */
 export function seatsOf(config: GameConfig): GameSeat[] {
   return config.players.map((p, seat) => ({ seat, playerId: p.id, userId: p.isBot ? null : p.id }));
+}
+
+/**
+ * Which of these accounts (users.id) are a stealth bot's personas (users.kind 'persona'), as a set. Empty
+ * for none (and for no ids, without a query).
+ */
+export async function personaIdsAmong(db: Db, userIds: readonly string[]): Promise<Set<string>> {
+  const ids = [...new Set(userIds)];
+  if (ids.length === 0) return new Set();
+  const rows = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(inArray(users.id, ids), eq(users.kind, 'persona')));
+  return new Set(rows.map((r) => r.id));
 }
 
 /** The games row with its players and histories (idempotent: what is there already stays). */
@@ -78,18 +123,24 @@ export async function recordGameStart(db: Db, start: GameStartRecord): Promise<v
   await db.transaction((tx) => writeStart(tx, start));
 }
 
-async function writeStart(db: Db, { config, startedAt, seats, ratingKey }: GameStartRecord): Promise<void> {
+/** Writes the start; returns the accounts of the game that are personas (personaIdsAmong). */
+async function writeStart(db: Db, start: GameStartRecord): Promise<Set<string>> {
+  const { config, startedAt, seats } = start;
+  const ratingKey = ratingKeyOf(start);
   const at = new Date(startedAt);
+  const accounts = seats.flatMap((s) => (s.userId === null ? [] : [s.userId]));
+  const personaIds = await personaIdsAmong(db, accounts);
   await db
     .insert(games)
     .values({
       id: config.id,
-      mode: config.mode,
+      mode: start.friends ? FRIENDS_GAME_MODE : config.mode,
       gameType: config.gameType,
       playerCount: config.players.length,
       puzzleId: config.puzzle.id,
       rules: config.rules,
       startedAt: at,
+      stealth: personaIds.size > 0,
     })
     .onConflictDoNothing();
   await db
@@ -110,18 +161,21 @@ async function writeStart(db: Db, { config, startedAt, seats, ratingKey }: GameS
     )
     .onConflictDoNothing();
 
-  const accounts = seats.flatMap((s) => (s.userId === null ? [] : [s.userId]));
-  if (accounts.length === 0) return;
-  await db
-    .insert(puzzleHistory)
-    .values(accounts.map((userId) => ({ userId, puzzleId: config.puzzle.id, playedAt: at })))
-    .onConflictDoNothing();
+  if (accounts.length === 0) return personaIds;
+  // The puzzle counts as played for the people only: a persona has no puzzle history.
+  const people = accounts.filter((userId) => !personaIds.has(userId));
+  if (people.length > 0) {
+    await db
+      .insert(puzzleHistory)
+      .values(people.map((userId) => ({ userId, puzzleId: config.puzzle.id, playedAt: at })))
+      .onConflictDoNothing();
+  }
   const pairs = accounts.flatMap((userId) =>
     accounts
       .filter((other) => other !== userId)
       .map((opponentId) => ({ userId, opponentId, gameType: config.gameType, playedAt: at })),
   );
-  if (pairs.length === 0) return;
+  if (pairs.length === 0) return personaIds;
   await db
     .insert(opponentHistory)
     .values(pairs)
@@ -129,6 +183,7 @@ async function writeStart(db: Db, { config, startedAt, seats, ratingKey }: GameS
       target: [opponentHistory.userId, opponentHistory.opponentId, opponentHistory.gameType],
       set: { playedAt: sql`greatest(${opponentHistory.playedAt}, excluded.played_at)` },
     });
+  return personaIds;
 }
 
 /** One game_events row per engine event (seq, t, type; the rest of the event is the payload). */
@@ -276,7 +331,14 @@ export interface GameEndRecord {
   cheat: CheatThresholds;
   /** XP rules (default the engine's DEFAULT_PROGRESS_RULES). */
   progress?: ProgressRules;
+  /**
+   * The daily practice cap a friends game's XP shares (PRACTICE_XP_DAILY_CAP; default
+   * DEFAULT_PRACTICE_XP_DAILY_CAP). Not used for other games.
+   */
+  xpDailyCap?: number;
 }
+
+const DAY_MS = 24 * 3600 * 1000;
 
 /** The end_reason of a game cut short by a server restart. Not an engine EndReason: no result, no rating. */
 export const SERVER_RESTART = 'serverRestart';
@@ -312,7 +374,7 @@ export async function recordGameEnd(db: Db, end: GameEndRecord): Promise<EndOutc
 
   return db.transaction(async (tx): Promise<EndOutcome> => {
     // Whatever the start did not manage to write (it failed, or is still retrying).
-    await writeStart(tx, start);
+    const personaIds = await writeStart(tx, start);
     const [row] = await tx
       .select({ endedAt: games.endedAt })
       .from(games)
@@ -325,23 +387,52 @@ export async function recordGameEnd(db: Db, end: GameEndRecord): Promise<EndOutc
     await tx.update(games).set({ endedAt: at, endReason: result.reason }).where(eq(games.id, gameId));
 
     const userOf = new Map(start.seats.map((s) => [s.playerId, s.userId]));
+    const ratingKey = ratingKeyOf(start);
+
+    // XP for every account in the game (bots have none), in this transaction: recorded once, like the ratings.
+    // Games on the server only (ranked, and friends within the daily cap): practice XP comes from the phone
+    // [D41]. Worked out before the seats are written: a friends game's cap counts the seats' xp of that day,
+    // and this game's own seats have none yet.
+    const rules = end.progress ?? DEFAULT_PROGRESS_RULES;
+    let gains: { playerId: PlayerId; userId: string; xp: number }[] = [];
+    if (start.config.mode === 'ranked') {
+      gains = rankedXpGains(result, rules).flatMap((g) => {
+        const userId = userOf.get(g.playerId) ?? null;
+        return userId === null ? [] : [{ playerId: g.playerId, userId, xp: g.xp }];
+      });
+      if (start.friends) {
+        const day = Math.floor(at.getTime() / DAY_MS);
+        const capped = await capFriendsXp(tx, gains, day, end.xpDailyCap ?? DEFAULT_PRACTICE_XP_DAILY_CAP);
+        gains = gains.map((g, k) => ({ ...g, xp: capped[k]?.xp ?? 0 }));
+      }
+    }
+    const xpOf = new Map(gains.map((g) => [g.playerId, g.xp]));
+    // [D96] Each person's pace, in a ranked game only (never practice, never a friends game: plan §5.1).
+    const paced = start.config.mode === 'ranked' && !start.friends;
+
     const ratingWrites: RatingWrite[] = [];
     for (const entry of result.ranking) {
       const userId = userOf.get(entry.playerId) ?? null;
       const change = result.ratingChanges.find((c) => c.playerId === entry.playerId);
-      const rated = start.ratingKey !== null && change !== undefined && userId !== null;
+      const rated = ratingKey !== null && change !== undefined && userId !== null;
       if (rated) ratingWrites.push({ userId, change });
       const stats = result.stats.find((s) => s.playerId === entry.playerId);
+      const pace =
+        paced && userId !== null && !personaIds.has(userId) ? paceOf(end.log, entry.playerId) : null;
       const final = {
         userId,
         finalScore: entry.score,
         mistakes: entry.mistakes,
         place: entry.place,
         status: entry.status,
-        ratingKey: rated ? start.ratingKey : null,
+        ratingKey: rated ? ratingKey : null,
         ratingBefore: rated ? change.before : null,
         ratingAfter: rated ? change.after : null,
         bestMovePoints: stats?.bestMove?.points ?? null,
+        xp: xpOf.get(entry.playerId) ?? null,
+        paceMs: pace === null ? null : Math.round(pace.baseMs),
+        paceMoves: pace?.moves ?? null,
+        paceDigits: pace?.digits ?? null,
       };
       await tx
         .insert(gamePlayers)
@@ -349,29 +440,37 @@ export async function recordGameEnd(db: Db, end: GameEndRecord): Promise<EndOutc
         .onConflictDoUpdate({ target: [gamePlayers.gameId, gamePlayers.seat], set: final });
     }
 
-    if (start.ratingKey !== null && ratingWrites.length > 0) {
-      await applyRatingChanges(tx, start.ratingKey, ratingWrites, {
+    if (ratingKey !== null && ratingWrites.length > 0) {
+      await applyRatingChanges(tx, ratingKey, ratingWrites, {
         provisionalGames: start.config.rules.rating.provisionalGames,
         at,
       });
     }
 
-    // XP for every account in the game (bots have none), in this transaction: recorded once, like the ratings.
-    // Ranked games only: practice XP comes from the phone [D41].
-    if (start.config.mode === 'ranked') {
-      const rules = end.progress ?? DEFAULT_PROGRESS_RULES;
-      const gains = rankedXpGains(result, rules).flatMap((g) => {
-        const userId = userOf.get(g.playerId) ?? null;
-        return userId === null ? [] : [{ userId, xp: g.xp }];
-      });
-      await addXp(tx, gains, rules);
-    }
+    await addXp(tx, gains, rules);
 
+    // People only: a persona is a bot, and a quick one is no cheat (stealth-bot.md §7).
     const flags = fastThinkingFlags(end.log, end.cheat).flatMap((f) => {
       const userId = userOf.get(f.playerId) ?? null;
-      return userId === null ? [] : [{ userId, gameId, reason: FAST_THINKING, value: f.avgMs }];
+      return userId === null || personaIds.has(userId)
+        ? []
+        : [{ userId, gameId, reason: FAST_THINKING, value: f.avgMs }];
     });
     await insertCheatFlags(tx, flags, at);
     return 'recorded';
   });
+}
+
+/**
+ * [D96] A person's pace in the game (the engine's movePace over the whole log, from gameCreated on), or null:
+ * no move counted, a log that does not start at gameCreated, or a log the engine can't read. The pace is
+ * extra data for the stealth bot: it never fails the end of a game.
+ */
+export function paceOf(log: readonly GameEvent[], playerId: PlayerId): MovePace | null {
+  try {
+    const pace = movePace(log, playerId);
+    return pace !== null && Number.isFinite(pace.baseMs) && pace.baseMs > 0 && pace.moves > 0 ? pace : null;
+  } catch {
+    return null;
+  }
 }

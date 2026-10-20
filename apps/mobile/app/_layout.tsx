@@ -8,6 +8,7 @@ import { I18nManager, Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useAuthGate } from '../src/auth';
+import { InviteLinkPrompt } from '../src/auth/InviteLinkPrompt';
 import { ToastViewport } from '../src/components/ui';
 import { displayConfig } from '../src/config/display';
 import { openPracticeStorage } from '../src/game/storage';
@@ -85,6 +86,8 @@ export default function RootLayout() {
       </View>
       {/* Spec §4.2: the Splash while the sign-in loads (and its "try again" when the profile can't). */}
       <SplashOverlay visible={splash} />
+      {/* 1.0.4 (friends-room.md §6.6): a room link while the app runs, in or asked first; a waiting invite. */}
+      <InviteLinkPrompt />
       {/* The one toast viewport of the app (components.md §15.1): screens call useToast().show(). */}
       <ToastViewport />
     </GestureHandlerRootView>

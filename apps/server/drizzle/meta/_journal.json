@@ -64,6 +64,20 @@
       "when": 1792332478157,
       "tag": "0008_user_levels",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792480617416,
+      "tag": "0009_friends",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792486442755,
+      "tag": "0010_stealth_bot",
+      "breakpoints": true
     }
   ]
 }

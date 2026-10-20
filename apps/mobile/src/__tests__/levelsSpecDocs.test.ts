@@ -125,9 +125,10 @@ describe('01-SPEC.md', () => {
   };
   const levels = section(spec, '### 5.3', '## 6.');
 
-  it('is version 1.4 (1.0.3, D66–D79)', () => {
-    expect(header).toMatch(/גרסת המסמך: 1\.4\b/);
+  it('is version 1.5 (1.0.4: friends and the stealth bot, D80–D99), after 1.4 (1.0.3, D66–D79)', () => {
+    expect(header).toMatch(/גרסת המסמך: 1\.5\b/);
     expect(header).toContain('D66–D79');
+    expect(header).toContain('D80–D99');
   });
 
   it.each(['D48', 'D62'])(
@@ -150,8 +151,8 @@ describe('01-SPEC.md', () => {
     expect(spec).not.toMatch(/D64[^\n]{0,40}החלטת משה/);
   });
 
-  it('§24: the rows run D1 … D79 in order, with no gap, so D48–D65 and D66–D79 sit together', () => {
-    expect(decisions.map((cells) => cells[0])).toEqual(Array.from({ length: 79 }, (_, i) => `D${i + 1}`));
+  it('§24: the rows run D1 … D99 in order, with no gap, so D48–D65, D66–D79 and D80–D99 sit together', () => {
+    expect(decisions.map((cells) => cells[0])).toEqual(Array.from({ length: 99 }, (_, i) => `D${i + 1}`));
   });
 
   it.each(LEVEL_DECISIONS)('§24 %s: ✓ only where Moshe decided, ☐ where it is a default', (id) => {
@@ -187,11 +188,12 @@ describe('01-SPEC.md', () => {
     expect(decision('D63')[2]).toContain('replayTransform');
   });
 
-  it('§5.1 no longer says "five options only", except inside the quoted original requirement', () => {
+  it('§5.1 no longer says "five options only", except inside the quoted original requirement (D48, D80a)', () => {
     const five = section(spec, '### 5.1', '### 5.2');
     const lines = five.split('\n').filter((line) => line.includes('חמש אפשרויות בלבד'));
-    expect(lines).toHaveLength(1);
-    expect(lines[0]).toContain('**הדרישה המקורית (§5):**');
+    // Quoted twice, each time as the original requirement: by D48 (six options) and by D80a (the friends group, 1.0.4).
+    expect(lines).toHaveLength(2);
+    for (const line of lines) expect(line).toContain('**הדרישה המקורית (§5):**');
     expect(five.split('\n')[1]).toContain('שש אפשרויות');
     // The table: the renamed solo row and the sixth row.
     const modes = tableRows(five).map((cells) => cells[0]);
@@ -520,7 +522,7 @@ describe('DECISIONS-PENDING.md', () => {
   });
 
   it('2.20 (1.0.3) is closed by Moshe’s "build without asking": D66–D79 in the 2.19 table, every one ✓', () => {
-    const item = section(pending, '### 2.20', '## 3.');
+    const item = section(pending, '### 2.20', '### 2.21');
     expect(item.split('\n')[1]).toContain('✓ נסגר');
     expect(item).toMatch(/\n- \*\*סטטוס:\*\* ✓ \(משה, 20\.10\.2026: "תבצע בלי לשאול"\)/);
     expect(item).toContain('את הסעיפים הממוספרים תבצע בלי לשאול');
@@ -538,8 +540,9 @@ describe('DECISIONS-PENDING.md', () => {
 
   it('the summary counts and the date follow; D41 says where the staged-practice XP goes', () => {
     const summary = tableRows(section(pending, '## סיכום', '---'));
-    expect(summary.find((cells) => cells[0]?.startsWith('[2]'))?.[2]).toMatch(/^20 /);
+    expect(summary.find((cells) => cells[0]?.startsWith('[2]'))?.[2]).toMatch(/^22 /);
     expect(summary.find((cells) => cells[0]?.startsWith('[2]'))?.[2]).toContain('2.20');
+    expect(summary.find((cells) => cells[0]?.startsWith('[2]'))?.[2]).toContain('2.21');
     expect(summary.find((cells) => cells[0]?.startsWith('[3]'))?.[2]).toContain('3.23');
     expect(pending.slice(0, pending.indexOf('## סיכום'))).toContain('20.10.2026');
     const d41 = tableRows(section(pending, '### 2.9', '### 2.10')).find((cells) => cells[0] === 'D41');
@@ -567,7 +570,7 @@ describe('02-WORK-PLAN.md', () => {
 
   it.each([
     ['14א', '## שלב 14ב'],
-    ['14ב', '## שלב 15'],
+    ['14ב', '## שלב 14ג'],
   ])(
     'stage %s is in the house format: source, six bold parts, "סיום", and a prompt that waits for approval',
     (id, next) => {
@@ -588,7 +591,7 @@ describe('02-WORK-PLAN.md', () => {
   );
 
   it('stage 14ב: the server goes before the 1.0.3 APK, and Moshe judges on the phone (no boards were drawn)', () => {
-    const stage = section(plan, '## שלב 14ב', '## שלב 15');
+    const stage = section(plan, '## שלב 14ב', '## שלב 14ג');
     expect(stage).toContain('את הסעיפים הממוספרים תבצע בלי לשאול');
     expect(stage).toContain('**השרת עולה לפני ה־APK:**');
     expect(stage).toContain('לא צוירו לוחות');

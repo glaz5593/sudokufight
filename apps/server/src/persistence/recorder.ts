@@ -13,8 +13,8 @@ import {
 } from './records';
 
 /**
- * Records one ranked game as it is played (spec §19, ./records): fed the game's updates in order (the
- * ServerGame's onUpdate, and first the events of its creation), it writes
+ * Records one ranked game (or a friends room's, 1.0.4: `friends`) as it is played (spec §19, ./records): fed
+ * the game's updates in order (the ServerGame's onUpdate, and first the events of its creation), it writes
  * - the games row and its players, once the game has started;
  * - the events in small batches: every `batchSize` events, or `flushMs` after the first one waiting;
  * - the end (result, ratings, flags) in one transaction, once the game is over.
@@ -57,6 +57,13 @@ export interface GameRecorderOptions extends Partial<RecorderTuning> {
   seats?: readonly GameSeat[];
   /** The rating key the game moves, or null. */
   ratingKey: string | null;
+  /**
+   * A friends room's game (1.0.4) [D81a]: stored as games.mode 'friends', unrated, each account's XP within the
+   * daily practice cap (`xpDailyCap`). ./records.
+   */
+  friends?: boolean;
+  /** The daily practice cap a friends game's XP shares (default DEFAULT_PRACTICE_XP_DAILY_CAP). */
+  xpDailyCap?: number;
   cheat: CheatThresholds;
   /** Batch timers and retry waits (default Node's timers). */
   scheduler?: Scheduler;
@@ -87,6 +94,8 @@ export class GameRecorder {
   private readonly config: GameConfig;
   private readonly seats: readonly GameSeat[];
   private readonly ratingKey: string | null;
+  private readonly friends: boolean;
+  private readonly xpDailyCap: number | undefined;
   private readonly cheat: CheatThresholds;
   private readonly scheduler: Scheduler;
   private readonly log: RecorderLog;
@@ -114,7 +123,9 @@ export class GameRecorder {
     this.db = typeof db === 'function' ? db : () => db;
     this.config = options.config;
     this.seats = options.seats ?? seatsOf(options.config);
-    this.ratingKey = options.ratingKey;
+    this.ratingKey = options.friends ? null : options.ratingKey;
+    this.friends = options.friends ?? false;
+    this.xpDailyCap = options.xpDailyCap;
     this.cheat = options.cheat;
     this.scheduler = options.scheduler ?? nodeScheduler;
     this.log = options.log;
@@ -135,6 +146,7 @@ export class GameRecorder {
         startedAt: state.startedAt,
         seats: this.seats,
         ratingKey: this.ratingKey,
+        ...(this.friends ? { friends: true } : null),
       };
       const start = this.start;
       this.enqueue('start', async () => {
@@ -179,6 +191,7 @@ export class GameRecorder {
       startedAt: state.startedAt ?? state.endedAt ?? state.createdAt,
       seats: this.seats,
       ratingKey: this.ratingKey,
+      ...(this.friends ? { friends: true } : null),
     };
     let outcome: RecordOutcome | null = null;
     this.enqueue('end', async () => {
@@ -188,6 +201,7 @@ export class GameRecorder {
         unwritten: this.events.slice(this.written),
         log: this.events,
         cheat: this.cheat,
+        xpDailyCap: this.xpDailyCap,
       });
       this.written = this.events.length;
       outcome = { ok: true, outcome: result };

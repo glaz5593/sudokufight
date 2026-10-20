@@ -45,12 +45,14 @@ describe('database', () => {
       'installs',
       'level_xp_days',
       'opponent_history',
+      'personas',
       'player_reports',
       'practice_results',
       'puzzle_history',
       'puzzles',
       'ratings',
       'retired_names',
+      'server_settings',
       'suspended_sign_ins',
       'user_achievements',
       'user_blocks',
@@ -431,6 +433,117 @@ describe('migration 0008: staged practice (spec §5.3.7, §15; 1.0.2)', () => {
           sql`select updated_at is not null as updated from user_levels`,
         );
         expect(row).toEqual({ updated: true });
+      } finally {
+        await after.close();
+      }
+    } finally {
+      rmSync(migrations, { recursive: true, force: true });
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
+
+describe('migration 0009: friends rooms (1.0.4) [D81a]', () => {
+  it('adds game_players.xp, null on the seats a database with 0008 already has', async () => {
+    const migrations = foldersBefore(9);
+    const dataDir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-pglite-'));
+    try {
+      const before = await createDb(
+        { database: { kind: 'pglite', dataDir } },
+        { migrationsFolder: migrations },
+      );
+      await insertOldUsers(before.db, [{ id: 'ana', avatarId: null }]);
+      await before.db
+        .execute(sql`insert into puzzles (id, givens, solution, game_type, givens_count, source, pool)
+                                  values ('p1', ${'0'.repeat(81)}, ${'1'.repeat(81)}, 'fast', 0, 'test', 'ranked')`);
+      await before.db
+        .execute(sql`insert into games (id, mode, game_type, player_count, puzzle_id, rules, started_at)
+                                  values ('g1', 'ranked', 'fast', 2, 'p1', '{}', now())`);
+      await before.db.execute(sql`insert into game_players (game_id, user_id, seat, status, place)
+                                  values ('g1', 'ana', 0, 'active', 1)`);
+      await before.close();
+
+      const after = await createDb({ database: { kind: 'pglite', dataDir } });
+      try {
+        expect(await queryRows(after.db, sql`select game_id, seat, place, xp from game_players`)).toEqual([
+          { game_id: 'g1', seat: 0, place: 1, xp: null },
+        ]);
+        await after.db.execute(sql`update game_players set xp = 53 where game_id = 'g1'`);
+        expect(await queryRows(after.db, sql`select xp from game_players`)).toEqual([{ xp: 53 }]);
+      } finally {
+        await after.close();
+      }
+    } finally {
+      rmSync(migrations, { recursive: true, force: true });
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
+
+describe('migration 0010: the stealth bot (stealth-bot.md §6, §7, §8) [D90, D96]', () => {
+  it('every account is a person, every game not stealth and without a pace; personas and server_settings start empty', async () => {
+    const migrations = foldersBefore(10);
+    const dataDir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-pglite-'));
+    try {
+      const before = await createDb(
+        { database: { kind: 'pglite', dataDir } },
+        { migrationsFolder: migrations },
+      );
+      await insertOldUsers(before.db, [{ id: 'ana', avatarId: 'moon' }]);
+      await before.db
+        .execute(sql`insert into puzzles (id, givens, solution, game_type, givens_count, source, pool)
+                                  values ('p1', ${'0'.repeat(81)}, ${'1'.repeat(81)}, 'fast', 0, 'test', 'ranked')`);
+      await before.db
+        .execute(sql`insert into games (id, mode, game_type, player_count, puzzle_id, rules, started_at)
+                                  values ('g1', 'ranked', 'fast', 2, 'p1', '{}', now())`);
+      await before.db.execute(sql`insert into game_players (game_id, user_id, seat, status, place, mistakes)
+                                  values ('g1', 'ana', 0, 'active', 1, 2)`);
+      await before.close();
+
+      const after = await createDb({ database: { kind: 'pglite', dataDir } });
+      try {
+        expect(await queryRows(after.db, sql`select id, kind from users`)).toEqual([
+          { id: 'ana', kind: 'person' },
+        ]);
+        expect(await queryRows(after.db, sql`select id, stealth from games`)).toEqual([
+          { id: 'g1', stealth: false },
+        ]);
+        expect(
+          await queryRows(after.db, sql`select mistakes, pace_ms, pace_moves, pace_digits from game_players`),
+        ).toEqual([{ mistakes: 2, pace_ms: null, pace_moves: null, pace_digits: null }]);
+        const count = async (table: string) =>
+          (
+            await queryRows<{ n: number }>(
+              after.db,
+              sql`select count(*)::int as n from ${sql.identifier(table)}`,
+            )
+          )[0]?.n;
+        expect([await count('personas'), await count('server_settings')]).toEqual([0, 0]);
+
+        // A persona: its users row and its personas row; a kind or a temperament out of the list is refused.
+        await after.db.execute(sql`insert into users (id, firebase_uid, display_name, kind)
+                                   values ('p-1', 'persona:p-1', 'Tal88', 'persona')`);
+        await after.db.execute(sql`insert into personas (user_id, temperament) values ('p-1', 'quiet')`);
+        await expect(
+          after.db.execute(sql`insert into users (id, firebase_uid, display_name, kind)
+                               values ('x', 'x', 'Xyz', 'robot')`),
+        ).rejects.toThrow();
+        await expect(
+          after.db.execute(sql`insert into personas (user_id, temperament) values ('ana', 'grumpy')`),
+        ).rejects.toThrow();
+        // A persona's name is taken like anyone's.
+        await expect(
+          after.db.execute(
+            sql`insert into users (id, firebase_uid, display_name) values ('y', 'y', 'TAL88')`,
+          ),
+        ).rejects.toThrow();
+        await after.db.execute(
+          sql`update game_players set pace_ms = 9200, pace_moves = 31, pace_digits = 33`,
+        );
+        await after.db.execute(sql`insert into server_settings (key, value) values ('stealthBot', 'true')`);
+        expect(await queryRows(after.db, sql`select key, value from server_settings`)).toEqual([
+          { key: 'stealthBot', value: true },
+        ]);
       } finally {
         await after.close();
       }

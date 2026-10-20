@@ -15,6 +15,8 @@ export {
   type GameEndRecord,
   type GameSeat,
   type GameStartRecord,
+  paceOf,
+  personaIdsAmong,
   recordGameEnd,
   recordGameStart,
   renameLoggedNames,

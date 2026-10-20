@@ -8,7 +8,7 @@ import { pick, type Rng } from '../util/random';
 import {
   BOT_CONFIG,
   type BotConfig,
-  type BotLevel,
+  type BotProfile,
   type BotReactionTrigger,
   type CellTechnique,
   type MsRange,
@@ -19,8 +19,9 @@ import {
  * (./runner) only times these decisions and sends them to the host.
  *
  * The bot reads the full state, solution included: it runs next to a LocalGameHost on the phone (practice
- * against a bot never touches the server, spec §5.1). It plays like a person all the same: it looks for
- * easy cells, thinks longer on hard ones, and its mistakes are digits a person could have believed in.
+ * against a bot never touches the server, spec §5.1), or inside the server's game room (the stealth bot, D90:
+ * the state there never leaves the server). It plays like a person all the same: it looks for easy cells,
+ * thinks longer on hard ones, and its mistakes are digits a person could have believed in.
  */
 
 const bit = (d: number): number => 1 << (d - 1);
@@ -264,7 +265,7 @@ export function chooseCell(
 export function adaptationFactor(
   state: GameState,
   botId: PlayerId,
-  level: BotLevel,
+  level: BotProfile,
   config: BotConfig = BOT_CONFIG,
 ): number {
   if (!level.adaptive) return 1;
@@ -273,7 +274,7 @@ export function adaptationFactor(
 }
 
 export interface ThinkTimeInput {
-  level: BotLevel;
+  level: BotProfile;
   gameType: GameType;
   /** The cell's difficulty factor. */
   factor: number;
@@ -390,7 +391,7 @@ export function canInterfere(state: GameState, fromId: PlayerId, targetId: Playe
 export function decideInterference(
   state: GameState,
   botId: PlayerId,
-  level: BotLevel,
+  level: BotProfile,
   now: number,
   rng: Rng,
 ): { targetId: PlayerId; kind: InterferenceKind } | null {
@@ -411,6 +412,58 @@ export function decideInterference(
   return { targetId: targets[0]!.id, kind: pick(rng, state.config.rules.interferenceKinds) };
 }
 
+/**
+ * [D98, D17, D47] The kinds a bot may hit back with: the game's `rules.interferenceKinds`, and of those only the
+ * ones its policy names (the persona's level's unlocked kinds), in the game's order. Empty without a policy.
+ */
+export function retaliationKinds(state: GameState, level: BotProfile): InterferenceKind[] {
+  const policy = level.interference.retaliate;
+  if (!policy) return [];
+  const own = policy.kinds;
+  return state.config.rules.interferenceKinds.filter((k) => !own || own.includes(k));
+}
+
+export interface RetaliationChoice {
+  /** Whoever sent the interference that just ended. */
+  targetId: PlayerId;
+  kind: InterferenceKind;
+  /** After the end of that interference (game time, without freezes). */
+  afterMs: number;
+  /** The bot lets it go if it still could not send it this long after the end (afterEndMs.max). */
+  giveUpAfterMs: number;
+}
+
+/**
+ * [D98] Whether and how to hit back for an interference on `botId` that just ended (`ended`: its interferenceEnded
+ * event): never in a game without interferences [D44], never without the level's `retaliate` policy (the five
+ * levels), never for one it did not receive. Otherwise, by the policy's chance (D98: always): a moment drawn
+ * uniformly from `afterEndMs`, and the kind: the one it received with `sameKindShare` (when it may send that one),
+ * else one drawn among `retaliationKinds`. Whether it can pay, or the target can take one, is the runner's check
+ * at that moment (canInterfere): it tries again until `giveUpAfterMs`.
+ *
+ * It returns before drawing from `rng` whenever it will not answer, so a game of the five levels draws the same
+ * random stream as before the policy existed.
+ */
+export function decideRetaliation(
+  state: GameState,
+  botId: PlayerId,
+  level: BotProfile,
+  ended: { fromId: PlayerId; targetId: PlayerId; kind: InterferenceKind },
+  rng: Rng,
+): RetaliationChoice | null {
+  const policy = level.interference.retaliate;
+  if (!policy || !state.config.rules.interferences) return null; // [D44]
+  if (ended.targetId !== botId || ended.fromId === botId || policy.chance <= 0) return null;
+  if (!state.players.some((p) => p.id === ended.fromId)) return null;
+  const kinds = retaliationKinds(state, level);
+  if (!kinds.length) return null;
+  if (policy.chance < 1 && rng.next() >= policy.chance) return null;
+  const afterMs = drawMs(rng, policy.afterEndMs);
+  const same = rng.next() < policy.sameKindShare && kinds.includes(ended.kind);
+  const kind = same ? ended.kind : pick(rng, kinds);
+  return { targetId: ended.fromId, kind, afterMs, giveUpAfterMs: policy.afterEndMs.max };
+}
+
 // ---------------------------------------------------------------------------------------------------------
 // Reactions (spec §8)
 
@@ -427,7 +480,7 @@ export function canReact(state: GameState, id: PlayerId, now: number): boolean {
 export function decideReaction(
   trigger: BotReactionTrigger,
   state: GameState,
-  level: BotLevel,
+  level: BotProfile,
   rng: Rng,
 ): string | null {
   const r = level.reactions[trigger];

@@ -14,7 +14,9 @@ import { LevelsPage } from './pages/LevelsPage';
 import { LoginPage, type LoginNotice } from './pages/LoginPage';
 import { OverviewPage } from './pages/OverviewPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { RoomsPage } from './pages/RoomsPage';
 import { ScreensPage } from './pages/ScreensPage';
+import { StealthPage } from './pages/StealthPage';
 import { UserDetailPage } from './pages/UserDetailPage';
 import { UsersPage } from './pages/UsersPage';
 import {
@@ -107,6 +109,9 @@ const NAV: { section: Section; label: StringKey; route: Route }[] = [
   { section: 'installs', label: 'nav.installs', route: { name: 'installs' } },
   { section: 'users', label: 'nav.users', route: { name: 'users' } },
   { section: 'games', label: 'nav.games', route: { name: 'games' } },
+  { section: 'rooms', label: 'nav.rooms', route: { name: 'rooms' } },
+  // The stealth bot (stealth-bot.md §8): its switch and its personas.
+  { section: 'stealth', label: 'nav.stealth', route: { name: 'stealth' } },
   { section: 'screens', label: 'nav.screens', route: { name: 'screens' } },
   { section: 'levels', label: 'nav.levels', route: { name: 'levels' } },
   { section: 'reports', label: 'nav.reports', route: { name: 'reports' } },
@@ -189,13 +194,24 @@ function Page({ route }: { route: Route }) {
     case 'install':
       return <InstallDetailPage id={route.id} />;
     case 'users':
-      return <UsersPage search={route.search ?? ''} page={route.page ?? 1} />;
+      return <UsersPage search={route.search ?? ''} page={route.page ?? 1} kind={route.kind} />;
     case 'user':
       return <UserDetailPage id={route.id} />;
     case 'games':
-      return <GamesPage mode={route.mode ?? ''} search={route.search ?? ''} page={route.page ?? 1} />;
+      return (
+        <GamesPage
+          mode={route.mode ?? ''}
+          stealth={route.stealth ?? ''}
+          search={route.search ?? ''}
+          page={route.page ?? 1}
+        />
+      );
     case 'game':
       return <GameDetailPage id={route.id} />;
+    case 'rooms':
+      return <RoomsPage days={route.days ?? DEFAULT_DAYS} />;
+    case 'stealth':
+      return <StealthPage search={route.search ?? ''} page={route.page ?? 1} />;
     case 'screens':
       return <ScreensPage days={route.days ?? DEFAULT_DAYS} />;
     case 'levels':

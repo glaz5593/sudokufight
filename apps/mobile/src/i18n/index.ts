@@ -8,6 +8,7 @@ import enAvatars from './locales/en/avatars.json';
 import enBoard from './locales/en/board.json';
 import enCommon from './locales/en/common.json';
 import enDev from './locales/en/dev.json';
+import enFriends from './locales/en/friends.json';
 import enGame from './locales/en/game.json';
 import enHistory from './locales/en/history.json';
 import enHome from './locales/en/home.json';
@@ -23,6 +24,7 @@ import heAvatars from './locales/he/avatars.json';
 import heBoard from './locales/he/board.json';
 import heCommon from './locales/he/common.json';
 import heDev from './locales/he/dev.json';
+import heFriends from './locales/he/friends.json';
 import heGame from './locales/he/game.json';
 import heHistory from './locales/he/history.json';
 import heHome from './locales/he/home.json';
@@ -40,8 +42,9 @@ import heUi from './locales/he/ui.json';
  * history (stage 11), match (stage 9: matchmaking), progress (stage 12: the leaderboard, the player card,
  * progress and the interferences collection), avatars (the characters' names, kinds, expressions and
  * motions, generated from packages/avatars by scripts/gen-avatar-strings.ts), moderation (spec §3.5:
- * reporting and blocking players, the blocked list, a name an admin reset, a suspended account) and levels
- * (1.0.2, staged practice: the map, a stage and its result; English says "Stage", never "Level", for a stage).
+ * reporting and blocking players, the blocked list, a name an admin reset, a suspended account), levels
+ * (1.0.2, staged practice: the map, a stage and its result; English says "Stage", never "Level", for a stage)
+ * and friends (1.0.4: the friends room, joining with a code, a room link and a pending invitation).
  */
 export const LANGUAGES = ['he', 'en'] as const;
 export type Language = (typeof LANGUAGES)[number];
@@ -61,6 +64,7 @@ export const NAMESPACES = [
   'avatars',
   'moderation',
   'levels',
+  'friends',
 ] as const;
 
 export const resources = {
@@ -80,6 +84,7 @@ export const resources = {
     avatars: heAvatars,
     moderation: heModeration,
     levels: heLevels,
+    friends: heFriends,
   },
   en: {
     common: enCommon,
@@ -97,6 +102,7 @@ export const resources = {
     avatars: enAvatars,
     moderation: enModeration,
     levels: enLevels,
+    friends: enFriends,
   },
 } as const;
 

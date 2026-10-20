@@ -2,9 +2,13 @@ import type { Application } from 'express';
 
 import { type AccountLimits, createAccountsRouter } from '../accounts/router';
 import { createAdminRouter, createAdminSiteRouter, findAdminSiteDir } from '../admin';
+import type { StealthSwitchControl } from '../admin/stealth';
 import { type TokenVerifier, tokenVerifierFor } from '../auth/firebaseToken';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db';
+import { createFriendsLinksRouter } from '../friends/links';
+import { createFriendsRouter } from '../friends/router';
+import type { FriendRooms } from '../friends/service';
 import { createHistoryRouter } from '../history';
 import { createLegalRouter } from '../legal';
 import type { ModerationTools } from '../moderation/admin';
@@ -25,8 +29,10 @@ import type { RateLimitRule } from './rateLimiter';
  * Everything the server answers over plain HTTP besides Colyseus's own routes (/health, /matchmake):
  * POST /v1/events, the account routes (/v1/names/available, /v1/users, /v1/me), history (stage 11), progress
  * (stage 12: leaderboards, player cards, XP; 1.0.2: staged practice's /v1/me/levels), reports and blocks
- * (spec §3.5: /v1/reports, /v1/me/blocks), the admin API (/admin/api), the admin site's files (/admin) and the
- * legal pages (stage 14: /legal/privacy, /legal/terms, /legal/delete-account).
+ * (spec §3.5: /v1/reports, /v1/me/blocks), the admin API (/admin/api), the admin site's files (/admin), the
+ * legal pages (stage 14: /legal/privacy, /legal/terms, /legal/delete-account), and playing with friends (1.0.4:
+ * POST /v1/rooms and /v1/rooms/join when a FriendRooms service is given; always the room links' page /r/:code
+ * and /.well-known/assetlinks.json, /.well-known/apple-app-site-association).
  *
  * Colyseus 0.18 builds an Express 5 app on its HTTP server when `defineServer({ express })` is given, and
  * passes it here once the database is open (createAppServer). A request that no Colyseus route matches
@@ -70,6 +76,23 @@ export interface HttpDeps {
   blockWatch?: BlockWatch;
   /** The admin's moderation actions: word filter and randomness (tests: a fixed temporary name). */
   moderationTools?: ModerationTools;
+  /**
+   * Playing with friends (1.0.4; src/friends/service.ts): the rooms' service, which createAppServer shares with
+   * the `friends` game rooms and the admin API. Absent: no /v1/rooms routes (they answer 404 without `rooms`,
+   * which the app reads as "האפשרות הזו עוד לא זמינה"), and the admin site lists no rooms.
+   */
+  friendRooms?: FriendRooms;
+  /**
+   * The flood limit per IP of the /v1/rooms routes, before the token is checked (default 120 a minute); tests
+   * make it small. The limits of friends-room.md §5 come from `config.friends.limits` (FRIENDS_*).
+   */
+  friendsFloodLimit?: RateLimitRule;
+  /**
+   * The stealth bot's switch (stealth-bot.md §8; src/stealth/switch.ts), which createAppServer shares with
+   * matchmaking, for the admin API's GET /admin/api/stealth and POST /admin/api/stealth/switch. Absent: as
+   * STEALTH_BOT_ENABLED off (no switch on the admin site).
+   */
+  stealthSwitch?: StealthSwitchControl;
 }
 
 /**
@@ -110,6 +133,21 @@ export function configureHttp(app: Application, deps: HttpDeps): void {
   app.use(createAdminSiteRouter(deps.adminSiteDir === undefined ? findAdminSiteDir() : deps.adminSiteDir));
   // The privacy policy, terms of use and account deletion page, public (src/legal).
   app.use(createLegalRouter({ legal: deps.config.legal ?? { contactEmail: null, operatorName: null } }));
+  // Playing with friends (1.0.4): POST /v1/rooms, /v1/rooms/join (only with the service); the room links' page
+  // GET /r/:code and the app-link files under /.well-known (public, src/friends/links.ts).
+  if (deps.friendRooms !== undefined) {
+    app.use(
+      createFriendsRouter({
+        db: deps.db,
+        now: deps.now,
+        tokens,
+        friendRooms: deps.friendRooms,
+        limits: deps.config.friends?.limits,
+        floodLimit: deps.friendsFloodLimit,
+      }),
+    );
+  }
+  app.use(createFriendsLinksRouter({ links: deps.config.friends?.links }));
 
   app.use('/v1', notFound);
   app.use(jsonErrorHandler);

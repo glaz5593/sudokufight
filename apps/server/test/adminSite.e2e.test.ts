@@ -149,6 +149,8 @@ describe('the app reports, the admin reads', () => {
       activeThisWeek: 1,
       gamesPerDay: days.map((day) => ({ day, count: 0 })),
       practicePerDay: onlyToday,
+      // The stealth bot (stealth-bot.md §8): nothing yet.
+      stealth: expect.objectContaining({ personas: 0, rankedGames: 0, stealthGames: 0, winRate: null }),
     });
   });
 

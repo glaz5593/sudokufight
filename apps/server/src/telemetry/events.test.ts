@@ -409,11 +409,13 @@ describe('POST /v1/events', () => {
     const levelEvent = (name: keyof LevelEventProps, props: TelemetryProps = {}) =>
       event({ name, props: { ...(VALID[name] as unknown as TelemetryProps), ...props } });
 
-    it('are events of the second generation; the older ones are of the first', () => {
+    it('are events of the second generation; the friends ones of the third (1.0.4); the older ones of the first', () => {
       const names: string[] = Object.keys(VALID);
       expect(names).toHaveLength(6);
+      const generationOf = (name: string) => (names.includes(name) ? 2 : name.startsWith('friends_') ? 3 : 1);
       for (const name of TELEMETRY_EVENT_NAMES)
-        expect([name, TELEMETRY_EVENT_GENERATION[name]]).toEqual([name, names.includes(name) ? 2 : 1]);
+        expect([name, TELEMETRY_EVENT_GENERATION[name]]).toEqual([name, generationOf(name)]);
+      expect(TELEMETRY_EVENT_NAMES.filter((n) => TELEMETRY_EVENT_GENERATION[n] === 3)).toHaveLength(6);
       expect(LEVEL_END_REASONS).toEqual(['completed', 'timeUp', 'botWon', 'failed', 'quit']);
     });
 

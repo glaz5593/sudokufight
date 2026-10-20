@@ -1,9 +1,15 @@
-import { ADMIN_REPORT_FILTERS, type AdminReportFilter } from '@sudoku-fight/protocol';
+import {
+  ADMIN_REPORT_FILTERS,
+  ADMIN_USER_KINDS,
+  type AdminReportFilter,
+  type AdminUserKind,
+} from '@sudoku-fight/protocol';
 import { useMemo, useSyncExternalStore } from 'react';
 
 /**
  * A small hash router: `#/installs?search=x&page=2`, `#/users/<id>`, `#/reports?status=all`,
- * `#/levels?days=90&chapter=3`. The hash keeps
+ * `#/levels?days=90&chapter=3`, `#/rooms?days=7`, `#/stealth?search=x`, `#/users?kind=persona`,
+ * `#/games?stealth=1`. The hash keeps
  * the server's job simple (one index.html under /admin), and Back / Forward / reload keep the page, its
  * search, its filter and its paging.
  */
@@ -16,7 +22,23 @@ export const MAX_DAYS = 365;
 export const DEFAULT_REPORT_FILTER: AdminReportFilter = 'open';
 
 export type Section =
-  'overview' | 'installs' | 'users' | 'games' | 'reports' | 'audit' | 'screens' | 'levels';
+  | 'overview'
+  | 'installs'
+  | 'users'
+  | 'games'
+  | 'rooms'
+  | 'stealth'
+  | 'reports'
+  | 'audit'
+  | 'screens'
+  | 'levels';
+
+/** The users page's default: the people (the server's too). */
+export const DEFAULT_USER_KIND: AdminUserKind = 'person';
+
+/** The games page's stealth filter: '' every game, '1' only against the stealth bot, '0' only the others. */
+export const STEALTH_FILTERS = ['', '1', '0'] as const;
+export type StealthFilter = (typeof STEALTH_FILTERS)[number];
 
 /** The levels page's chapter filter takes a chapter up to this (the server says which there are). */
 export const MAX_CHAPTER = 1000;
@@ -25,10 +47,15 @@ export type Route =
   | { name: 'overview'; days?: number }
   | { name: 'installs'; search?: string; page?: number }
   | { name: 'install'; id: string }
-  | { name: 'users'; search?: string; page?: number }
+  /** `kind` (stealth bot, D90): the people by default, the personas, or both. */
+  | { name: 'users'; search?: string; page?: number; kind?: AdminUserKind }
   | { name: 'user'; id: string }
-  | { name: 'games'; mode?: string; search?: string; page?: number }
+  | { name: 'games'; mode?: string; search?: string; page?: number; stealth?: StealthFilter }
   | { name: 'game'; id: string }
+  /** Friends rooms (1.0.4): the ones open now, and the games with friends per day. */
+  | { name: 'rooms'; days?: number }
+  /** The stealth bot (stealth-bot.md §8): its switch, and its personas (a search and a page). */
+  | { name: 'stealth'; search?: string; page?: number }
   | { name: 'reports'; status?: AdminReportFilter; page?: number }
   | { name: 'audit'; page?: number }
   | { name: 'screens'; days?: number }
@@ -46,6 +73,8 @@ export function sectionOf(route: Route): Section | null {
     case 'installs':
     case 'users':
     case 'games':
+    case 'rooms':
+    case 'stealth':
     case 'reports':
     case 'audit':
     case 'screens':
@@ -72,6 +101,16 @@ function reportFilter(value: string | null): AdminReportFilter {
   return (ADMIN_REPORT_FILTERS as readonly (string | null)[]).includes(value)
     ? (value as AdminReportFilter)
     : DEFAULT_REPORT_FILTER;
+}
+
+function userKind(value: string | null): AdminUserKind {
+  return (ADMIN_USER_KINDS as readonly (string | null)[]).includes(value)
+    ? (value as AdminUserKind)
+    : DEFAULT_USER_KIND;
+}
+
+function stealthFilter(value: string | null): StealthFilter {
+  return (STEALTH_FILTERS as readonly (string | null)[]).includes(value) ? (value as StealthFilter) : '';
 }
 
 function decode(segment: string): string | null {
@@ -106,6 +145,8 @@ export function parseRoute(hash: string): Route {
       return { name: 'overview', days };
     case 'screens':
       return { name: 'screens', days };
+    case 'rooms':
+      return { name: 'rooms', days };
     case 'levels':
       return {
         name: 'levels',
@@ -115,10 +156,27 @@ export function parseRoute(hash: string): Route {
       };
     case 'installs':
       return { name: 'installs', search: query.get('search') ?? '', page };
-    case 'users':
-      return { name: 'users', search: query.get('search') ?? '', page };
-    case 'games':
-      return { name: 'games', mode: query.get('mode') ?? '', search: query.get('search') ?? '', page };
+    case 'users': {
+      const kind = userKind(query.get('kind'));
+      return {
+        name: 'users',
+        search: query.get('search') ?? '',
+        page,
+        ...(kind === DEFAULT_USER_KIND ? null : { kind }),
+      };
+    }
+    case 'games': {
+      const stealth = stealthFilter(query.get('stealth'));
+      return {
+        name: 'games',
+        mode: query.get('mode') ?? '',
+        search: query.get('search') ?? '',
+        page,
+        ...(stealth === '' ? null : { stealth }),
+      };
+    }
+    case 'stealth':
+      return { name: 'stealth', search: query.get('search') ?? '', page };
     case 'reports':
       return { name: 'reports', status: reportFilter(query.get('status')), page };
     case 'audit':
@@ -147,6 +205,8 @@ export function routeHref(route: Route): string {
       return withQuery('#/overview', { days: days(route.days) });
     case 'screens':
       return withQuery('#/screens', { days: days(route.days) });
+    case 'rooms':
+      return withQuery('#/rooms', { days: days(route.days) });
     case 'levels':
       return withQuery('#/levels', {
         days: days(route.days),
@@ -156,9 +216,20 @@ export function routeHref(route: Route): string {
     case 'installs':
       return withQuery('#/installs', { search: route.search, page: page(route.page) });
     case 'users':
-      return withQuery('#/users', { search: route.search, page: page(route.page) });
+      return withQuery('#/users', {
+        kind: route.kind === DEFAULT_USER_KIND ? undefined : route.kind,
+        search: route.search,
+        page: page(route.page),
+      });
     case 'games':
-      return withQuery('#/games', { mode: route.mode, search: route.search, page: page(route.page) });
+      return withQuery('#/games', {
+        mode: route.mode,
+        stealth: route.stealth,
+        search: route.search,
+        page: page(route.page),
+      });
+    case 'stealth':
+      return withQuery('#/stealth', { search: route.search, page: page(route.page) });
     case 'reports':
       return withQuery('#/reports', {
         status: route.status === DEFAULT_REPORT_FILTER ? undefined : route.status,

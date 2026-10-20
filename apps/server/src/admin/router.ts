@@ -1,8 +1,10 @@
 import { randomInt } from 'node:crypto';
 
+import { createRng } from '@sudoku-fight/engine';
 import {
   ADMIN_API_PREFIX,
   ADMIN_AUTH_METHODS_PATH,
+  ADMIN_FRIEND_ROOMS_PATH,
   ADMIN_GOOGLE_LOGIN_PATH,
   ADMIN_LOGIN_PATH,
   type AdminAuthMethods,
@@ -22,6 +24,7 @@ import { notFound, sendError, sendTooManyRequests } from '../http/errors';
 import { RateLimiter, type RateLimitRule } from '../http/rateLimiter';
 import type { ModerationTools } from '../moderation/admin';
 import { moderationAdminRoutes } from '../moderation/adminRoutes';
+import { inventPersonaName } from '../stealth/personas';
 import {
   ADMIN_COOKIE_NAME,
   ADMIN_GOOGLE_MAX_AUTH_AGE_MS,
@@ -32,7 +35,15 @@ import { getGame, listGames } from './games';
 import { getInstall, listInstalls } from './installs';
 import { getLevels } from './levels';
 import { getOverview } from './overview';
-import { daysQuerySchema, gamesQuerySchema, levelsQuerySchema, pageQuerySchema, parseQuery } from './params';
+import {
+  daysQuerySchema,
+  gamesQuerySchema,
+  levelsQuerySchema,
+  pageQuerySchema,
+  parseQuery,
+  usersQuerySchema,
+} from './params';
+import { type FriendRoomsView, getFriendRooms } from './rooms';
 import { getScreens } from './screens';
 import {
   type AdminIdentity,
@@ -42,6 +53,7 @@ import {
   type VerifiedSession,
 } from './session';
 import type { StatsWindow } from './sql';
+import { type StealthSwitchControl, stealthAdminRoutes } from './stealth';
 import { getUser, listUsers } from './users';
 
 /**
@@ -66,7 +78,8 @@ import { getUser, listUsers } from './users';
  * - POST /logout → 204: clears the cookie and refuses that token from then on.
  * - GET /session → AdminSession, or 401. Every other route needs the cookie too (401 `unauthorized`). A session
  *   ends early when its method is turned off, or its address taken off ADMIN_EMAILS (checked on each request).
- * - Everything else is GET, but the moderation POSTs (JSON `{}` bodies only); any other method or path is 404.
+ * - Everything else is GET, but the moderation POSTs (JSON `{}` bodies only) and the stealth bot's switch
+ *   (POST /stealth/switch `{"on": …}`, ./stealth); any other method or path is 404.
  *   Answers are never cached (no-store).
  * - No CORS: configureHttp strips Colyseus's open CORS headers under /admin, and the guard answers preflights
  *   there without them (http/cors).
@@ -84,6 +97,16 @@ export interface AdminRouterDeps {
   log?: (message: string) => void;
   /** The moderation actions' word filter and randomness (default: the server's list, crypto randomInt). */
   moderationTools?: ModerationTools;
+  /**
+   * The friends rooms (1.0.4; friends/service.ts), for GET /rooms: the ones open now and their counts. Absent
+   * (a server without them): no open rooms; the games per day still come from the database.
+   */
+  friendRooms?: FriendRoomsView;
+  /**
+   * The stealth bot's switch (stealth-bot.md §8; src/stealth/switch.ts), for GET /stealth and POST
+   * /stealth/switch. Absent (a server without it): as STEALTH_BOT_ENABLED off, no switch.
+   */
+  stealthSwitch?: StealthSwitchControl;
 }
 
 /**
@@ -145,6 +168,24 @@ const MAX_ID_LENGTH = 200;
 const sendGoogleError = (res: Response, status: number, error: AdminGoogleLoginErrorCode, message: string) =>
   sendError(res, status, error, message);
 
+/**
+ * The moderation actions' tools on a real server: its word filter, crypto randomness, and a stealth bot's
+ * persona's new name on a reset, invented as the personas' names are (stealth/personas.ts), from a fresh seed.
+ */
+function defaultModerationTools(): ModerationTools {
+  const blockedWords = defaultBlockedWords();
+  return {
+    blockedWords,
+    random: randomInt,
+    personaName: (db, { country }) =>
+      inventPersonaName(db, {
+        rng: createRng(randomInt(0x1_0000_0000)),
+        country: country ?? '',
+        words: blockedWords,
+      }),
+  };
+}
+
 export function createAdminRouter({
   config,
   db,
@@ -153,6 +194,8 @@ export function createAdminRouter({
   adminLoginLimit = DEFAULT_LOGIN_LIMIT,
   log = console.log,
   moderationTools,
+  friendRooms,
+  stealthSwitch,
 }: AdminRouterDeps): Router {
   const { admin } = config;
   const google = admin.enabled ? admin.google : null;
@@ -350,6 +393,11 @@ export function createAdminRouter({
     '/levels',
     handle(levelsQuerySchema, (q) => getLevels(db, windowOf(q.days), { allRevs: q.allRevs })),
   );
+  // Friends rooms (1.0.4): the ones open now (no codes) and the games with friends per day.
+  api.get(
+    ADMIN_FRIEND_ROOMS_PATH,
+    handle(daysQuerySchema, (q) => getFriendRooms(db, friendRooms, windowOf(q.days))),
+  );
   api.get(
     '/installs',
     handle(pageQuerySchema, (q) => listInstalls(db, q)),
@@ -359,9 +407,10 @@ export function createAdminRouter({
     '/installs/:id',
     byId((id) => getInstall(db, id.toLowerCase())),
   );
+  // People by default; ?kind=persona the stealth bot's personas, ?kind=all both (stealth-bot.md §8).
   api.get(
     '/users',
-    handle(pageQuerySchema, (q) => listUsers(db, q)),
+    handle(usersQuerySchema, (q) => listUsers(db, q)),
   );
   api.get(
     '/users/:id',
@@ -380,7 +429,17 @@ export function createAdminRouter({
     moderationAdminRoutes({
       db,
       now,
-      tools: moderationTools ?? { blockedWords: defaultBlockedWords(), random: randomInt },
+      tools: moderationTools ?? defaultModerationTools(),
+      adminOf: (req) => sessionOf(req)?.admin ?? null,
+      googleRequired: google !== null,
+    }),
+  );
+  // The stealth bot's switch (stealth-bot.md §8): GET /stealth, POST /stealth/switch.
+  api.use(
+    stealthAdminRoutes({
+      db,
+      now,
+      control: stealthSwitch,
       adminOf: (req) => sessionOf(req)?.admin ?? null,
       googleRequired: google !== null,
     }),

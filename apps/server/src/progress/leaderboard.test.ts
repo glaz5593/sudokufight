@@ -5,9 +5,9 @@ import {
   PROGRESS_PATHS,
   type ProgressError,
 } from '@sudoku-fight/protocol';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
-import { ratings, users, xp } from '../db/schema';
+import { personas, ratings, users, xp } from '../db/schema';
 import { call } from '../testing/accounts';
 import { fakeClock } from '../testing/clock';
 import { testConfig } from '../testing/config';
@@ -345,6 +345,95 @@ describe('the friends tab (D27, V1: recent opponents and the invite button)', ()
     });
     // Before any rated game I have no row to pin.
     expect((await board('fay', '?tab=friends')).me).toBeNull();
+  });
+});
+
+describe('a stealth bot’s personas (stealth-bot.md §6) [D99]', () => {
+  /**
+   * The cast, and two personas: pia (normal 1450, fast 1320: above everyone on the general board) and rex
+   * (hard 1250, tied with dan). Both have played rated games, as personas do.
+   */
+  async function castWithPersonas() {
+    await cast();
+    await addAccounts(t.db, [
+      { id: 'pia', name: 'Pia' },
+      { id: 'rex', name: 'Rex' },
+    ]);
+    await t.db
+      .update(users)
+      .set({ kind: 'persona' })
+      .where(inArray(users.id, ['pia', 'rex']));
+    await t.db.insert(personas).values([
+      { userId: 'pia', temperament: 'quiet', createdAt: new Date(T0) },
+      { userId: 'rex', temperament: 'lively', createdAt: new Date(T0) },
+    ]);
+    await setRating(t.db, 'pia', 'normal', 1450, 14);
+    await setRating(t.db, 'pia', 'fast', 1320, 6);
+    await setRating(t.db, 'rex', 'hard', 1250, 9);
+  }
+
+  it('are on no board, and count in no rank: the boards are as without them', async () => {
+    await castWithPersonas();
+    const general = await board('ana');
+    expect(rows(general.entries)).toEqual([
+      ['ben', 1400, 1],
+      ['ana', 1350, 2],
+      ['cid', 1350, 2],
+      ['dan', 1250, 4],
+      ['gus', 1100, 5],
+    ]);
+    expect(general.me).toMatchObject({ id: 'ana', rank: 2 });
+    expect(rows((await board('cid', '?tab=fast')).entries)).toEqual([
+      ['cid', 1350, 1],
+      ['ana', 1300, 2],
+      ['gus', 1100, 3],
+    ]);
+    expect(rows((await board('dan', '?tab=hard')).entries)).toEqual([['dan', 1250, 1]]);
+    expect((await board('dan', '?tab=hard')).me).toMatchObject({ id: 'dan', rank: 1 });
+  });
+
+  it('pages walk the people only, ranked among the people', async () => {
+    const ids = await crowd(120);
+    // One in four is a persona: 30 of them, spread through every rating.
+    const personaIds = ids.filter((_, k) => k % 4 === 1);
+    await t.db.update(users).set({ kind: 'persona' }).where(inArray(users.id, personaIds));
+    await t.db
+      .insert(personas)
+      .values(
+        personaIds.map((userId) => ({ userId, temperament: 'normal' as const, createdAt: new Date(T0) })),
+      );
+    const people = ids.filter((id) => !personaIds.includes(id));
+    const ratingOf = (id: string) => 1500 - Math.floor(ids.indexOf(id) / 3) * 5;
+
+    const seen: LeaderboardEntry[] = [];
+    const sizes: number[] = [];
+    let cursor: string | null = null;
+    do {
+      const page: Leaderboard = await board('p100', pageQuery(cursor));
+      sizes.push(page.entries.length);
+      seen.push(...page.entries);
+      cursor = page.nextCursor;
+    } while (cursor !== null);
+    expect(sizes).toEqual([50, 40]);
+    expect(seen.map((e) => e.id)).toEqual(people);
+    expect(seen.map((e) => e.rank)).toEqual(
+      people.map((id) => 1 + people.filter((other) => ratingOf(other) > ratingOf(id)).length),
+    );
+  });
+
+  it('on the friends tab, a persona I met is listed like any opponent, ranked where its rating stands among the people', async () => {
+    await castWithPersonas();
+    await addOpponent(t.db, 'ana', 'pia', T0 + 4000, 'fast');
+    await addOpponent(t.db, 'ana', 'ben', T0 + 1000);
+    await addOpponent(t.db, 'ana', 'rex', T0 + 2000, 'hard');
+    const answer = await board('ana', '?tab=friends');
+    expect(answer.friends!.recentOpponents.map((e) => [e.id, e.rating, e.rank, e.games])).toEqual([
+      ['pia', 1450, 1, 14], // above ben: 1 + the people rated higher (none)
+      ['rex', 1250, 4, 9], // tied with dan: dan's rank
+      ['ben', 1400, 1, 20], // ben's rank is not pushed down by pia
+    ]);
+    expect(answer.friends!.recentOpponents[0]).toMatchObject({ displayName: 'Pia' });
+    expect(answer.me).toMatchObject({ id: 'ana', rank: 2 });
   });
 });
 

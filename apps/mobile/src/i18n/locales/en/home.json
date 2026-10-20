@@ -71,6 +71,11 @@
         "title": "Ranked",
         "note": "Real opponents, in real time"
       },
+      "friends": {
+        "title": "With friends",
+        "titleMoshe": "Real friends, in real time",
+        "note": "Private room · up to 4 · unrated"
+      },
       "practice": {
         "title": "Practice",
         "note": "No pressure, no rating"
@@ -98,6 +103,12 @@
       "title": "4 players",
       "tagline": "Free-for-all",
       "label": "Ranked · 4 players"
+    },
+    "friends": {
+      "create": "Create room",
+      "createHint": "Opens a waiting room with a code to send your friends",
+      "join": "Join with code",
+      "joinHint": "Type the 6 digits you got"
     },
     "solo": {
       "name": "Solo practice",

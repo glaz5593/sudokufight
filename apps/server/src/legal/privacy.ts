@@ -13,6 +13,14 @@ import type { LegalTexts } from './types';
  * - games and progress: persistence/, progress/ (ratings, xp, achievements, puzzle and opponent history,
  *   practice_results; staged practice, 1.0.2: user_levels and level_xp_days, progress/levels.ts), cheat_flags;
  *   deletion of the levels' rows: accounts/store.ts deleteUser → progress/levels.ts forgetLevels
+ * - playing with friends (1.0.4): friends/ (the room codes, seats and removed players: in memory only, until the
+ *   room closes); its games are stored as ranked games are (games.mode = 'friends'), without ratings; anyone in
+ *   the room sees its players' name, avatar, flag, general rating and whether they are away
+ * - the stealth bot (D90–D93; apps/server/src/stealth, built off): at the end of each ranked game the server keeps
+ *   each person's pace (game_players.pace_*, from the engine's movePace) to set a computer-controlled opponent's
+ *   pace (paceFromHistory: the newest ranked games, the mistakes, the results against it); it is never shown to
+ *   other players. Personas (users.kind = 'persona') are the server's own accounts, not people: no email, no
+ *   sign-in, no telemetry. The disclosure itself is one line in terms.ts ("service"), never in the game
  * - reports and blocks (spec §3.5): moderation/ (player_reports, user_blocks, admin_audit, retired_names,
  *   suspended_sign_ins; users.suspended_at and name_reset_required); deletion: moderation/store.ts
  *   forgetModeration and keepSuspension
@@ -34,13 +42,17 @@ export const EVENT_DETAILS: Record<TelemetryEventName, { he: [string, string]; e
   },
   register_step: { he: ['שלב בהרשמה נפתח', 'שם השלב'], en: ['A registration step opens', 'The step'] },
   register_complete: { he: ['ההרשמה הסתיימה', '—'], en: ['Registration is completed', '—'] },
+  // 1.0.4: game_start and game_end say whether it was a game with friends.
   game_start: {
-    he: ['משחק מתחיל', 'מצב המשחק, סוג המשחק ומספר השחקנים'],
-    en: ['A game starts', 'Mode, game type and number of players'],
+    he: ['משחק מתחיל', 'מצב המשחק, סוג המשחק, מספר השחקנים, והאם זה משחק עם חברים'],
+    en: ['A game starts', 'Mode, game type, number of players, and whether it is a game with friends'],
   },
   game_end: {
-    he: ['משחק מסתיים', 'מצב המשחק, התוצאה, הניקוד, מספר הטעויות ומשך המשחק'],
-    en: ['A game ends', 'Mode, result, score, number of mistakes and duration'],
+    he: ['משחק מסתיים', 'מצב המשחק, התוצאה, הניקוד, מספר הטעויות, משך המשחק, והאם זה משחק עם חברים'],
+    en: [
+      'A game ends',
+      'Mode, result, score, number of mistakes, duration, and whether it was a game with friends',
+    ],
   },
   interference_sent: {
     he: ['שליחת הפרעה', 'סוג ההפרעה ועלותה'],
@@ -109,6 +121,37 @@ export const EVENT_DETAILS: Record<TelemetryEventName, { he: [string, string]; e
     he: ['הצגת "איך משחקים" לסוג של שלב', 'הסוג, והאם דילגתם'],
     en: ['A stage kind’s “how to play” is shown', 'The kind, and whether you skipped it'],
   },
+  // 1.0.4: playing with friends (generation 3). Never a room's code, nor who was in it.
+  friends_room_open: {
+    he: ['פתיחת חדר למשחק עם חברים', 'סוג המשחק, ואיך החדר נפתח'],
+    en: ['A room to play with friends is opened', 'The game type, and how the room was opened'],
+  },
+  friends_room_join: {
+    he: ['ניסיון להצטרף לחדר של חברים', 'איך (קוד או קישור), ואיך זה הסתיים (הצלחה, או סיבת הכישלון)'],
+    en: [
+      'An attempt to join a friends’ room',
+      'How (a code or a link), and how it ended (success, or why it failed)',
+    ],
+  },
+  friends_invite_share: {
+    he: ['שיתוף הקישור לחדר', 'האם שיתף המארח או אורח (בלי הקוד, ובלי למי)'],
+    en: ['A room’s link is shared', 'Whether the host or a guest shared it (not the code, nor with whom)'],
+  },
+  friends_link_open: {
+    he: ['קישור לחדר פתח את האפליקציה', 'האם הייתם מחוברים לחשבון'],
+    en: ['A room link opens the app', 'Whether you were signed in'],
+  },
+  friends_room_start: {
+    he: ['משחק עם חברים מתחיל', 'מספר השחקנים, וכמה שניות חיכיתם בחדר'],
+    en: ['A game with friends starts', 'The number of players, and how many seconds you waited in the room'],
+  },
+  friends_room_close: {
+    he: ['יציאה מחדר לפני שהמשחק התחיל', 'הסיבה, כמה שחקנים היו בחדר, וכמה שניות חיכיתם'],
+    en: [
+      'You are out of a room before its game starts',
+      'The reason, how many players were in the room, and how many seconds you waited',
+    ],
+  },
 };
 
 const eventRows = (lang: 'he' | 'en') =>
@@ -168,8 +211,10 @@ export const PRIVACY: LegalTexts = {
           {
             list: [
               '**משחקים מדורגים** (נשמרים בשרת): הלוח, כל מהלך עם הזמן שלו, ההפרעות והתגובות ששלחתם, הניקוד, הטעויות, המיקום, הדירוג לפני המשחק ואחריו, ואיך המשחק הסתיים. מהם נבנים ההיסטוריה, הצפייה החוזרת (Replay) והסטטיסטיקה.',
+              '**משחקים עם חברים** (בחדר עם קוד; נשמרים בשרת כמו משחק מדורג, אבל בלי דירוג): אותם פרטים, חוץ מהדירוג. הם מופיעים בהיסטוריה ובצפייה החוזרת שלכם, ומי ששיחק איתכם מופיע ב"יריבים אחרונים". הקוד של החדר, מי בחדר ומי הוצא ממנו נשמרים רק בזיכרון של השרת, עד שהחדר נסגר.',
               '**דירוגים, XP, רמה והישגים.**',
               '**אילו לוחות שיחקתם ומול מי:** כדי לא לתת לכם את אותו לוח או את אותו יריב שוב ושוב.',
+              '**קצב המשחק שלכם:** בסוף כל משחק מדורג אנחנו מחשבים מהמהלכים שלכם את הזמן הממוצע שלכם למהלך (בהתחשב בקושי של המשבצות), ושומרים אותו עם המשחק, יחד עם מספר המהלכים שנמדדו. ממנו, משיעור הטעויות שלכם ומהתוצאות שלכם מול יריבים ממוחשבים נקבע הקצב של יריב ממוחשב, כשאין שחקנים זמינים (ראו [תנאי השימוש](terms)). הקצב לא מוצג לשחקנים אחרים.',
               '**תוצאות של משחקי אימון** (לבד או מול בוט), כשהאפליקציה מדווחת אותן בשביל ה־XP: מצב המשחק, הסוג, התוצאה, מספר המהלכים הנכונים, מתי הסתיים, וכמה XP הוא נתן.',
               '**אימון בשלבים:** כשהאפליקציה מסנכרנת את ההתקדמות לחשבון (כדי שתחזור גם בטלפון חדש): הכוכבים הטובים ביותר בכל שלב, כמה פעמים שיחקתם בו ומתי זה השתנה, וכמה XP נתנו השלבים בכל יום.',
               '**משחק הוגן:** כשקצב המהלכים במשחק מדורג מהיר באופן חריג, נשמרת רשומה לבדיקה של אדם. אין על סמך זה פעולה אוטומטית.',
@@ -243,6 +288,7 @@ export const PRIVACY: LegalTexts = {
               'השם לתצוגה, האווטאר, המדינה (כדגל), הדירוגים, הרמה וההישגים.',
               'בכרטיס השחקן ובטבלת המובילים: מספר המשחקים, אחוז הניצחונות, רצפים, המהלך הטוב ביותר, ממוצע טעויות, תוצאות אחרונות, ההפרעה שאתם שולחים הכי הרבה, ומתי הצטרפתם (חודש ושנה).',
               'במהלך משחק: הניקוד, הטעויות, ההפרעות והתגובות שלכם, והאם אתם מחוברים.',
+              'בחדר של משחק עם חברים: כל מי שיש לו את הקוד או את הקישור ונכנס לחדר רואה את השם, האווטאר, הדגל והדירוג הכללי של מי שבחדר, והאם הוא בחדר כרגע. בקוד ובקישור עצמם אין שום מידע אישי.',
               'צפייה חוזרת ופרטי משחק: רק לשחקנים שהשתתפו באותו משחק.',
             ],
           },
@@ -401,8 +447,10 @@ export const PRIVACY: LegalTexts = {
           {
             list: [
               '**Ranked games** (kept on the server): the board, every move with its timing, the interferences and reactions you sent, your score, mistakes, place, rating before and after, and how the game ended. They make your history, replays and stats.',
+              '**Games with friends** (in a room with a code; kept on the server like a ranked game, but without a rating): the same details, except the rating. They appear in your history and replays, and the players you played with appear under “recent opponents”. The room’s code, who is in the room and who was removed from it are kept only in the server’s memory, until the room closes.',
               '**Ratings, XP, level and achievements.**',
               '**Which puzzles you played, and against whom:** so you don’t get the same puzzle or opponent again and again.',
+              '**Your pace:** at the end of each ranked game we work out, from your moves, your average time per move (allowing for how hard each cell was), and keep it with the game, with the number of moves it was measured on. From it, your mistake rate and your results against computer-controlled opponents, we set the pace of a computer-controlled opponent when no players are available (see the [Terms of Use](terms)). Your pace is not shown to other players.',
               '**Practice results** (solo or against a bot), when the app reports them for XP: mode, game type, outcome, number of correct moves, when it ended, and the XP it earned.',
               '**Staged practice:** when the app syncs your progress to your account (so it comes back on a new phone too): your best stars on each stage, how many times you played it and when that changed, and the XP the stages gave each day.',
               '**Fair play:** when the pace of moves in a ranked game is unusually fast, a record is kept for a person to review. Nothing happens automatically because of it.',
@@ -476,6 +524,7 @@ export const PRIVACY: LegalTexts = {
               'Your display name, avatar, country (as a flag), ratings, level and achievements.',
               'On your player card and the leaderboards: number of games, win rate, streaks, best move, average mistakes, recent results, the interference you send most, and when you joined (month and year).',
               'During a game: your score, mistakes, interferences and reactions, and whether you are online.',
+              'In a room for playing with friends: anyone who has its code or link and enters the room sees the name, avatar, flag and general rating of everyone in it, and whether they are in the room right now. The code and the link themselves carry no personal information.',
               'Replays and game details: only the players of that game.',
             ],
           },

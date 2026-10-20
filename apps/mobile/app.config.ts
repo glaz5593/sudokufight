@@ -29,6 +29,10 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  * The build number comes from the version (versionCodeOf below): app.json's `expo.version` is the one number to
  * change, with `npm run version:bump`.
  *
+ * Room links (1.0.4, playing with friends: withRoomLinks below): `https://<the build's game server>/r/123456`
+ * opens the app (Android App Links, verified over TLS; iOS associated domains), so staging and production
+ * builds each open their own server's links.
+ *
  * Builds on this PC (`npm run apk`, docs/BUILD-APK.md) get more, never EAS builds: Android build fixes
  * (LOCAL_BUILD_PLUGINS: the NDK installed here for every library, and on Windows limits for C++: memory and
  * path length), and with `--server local` the APK may use plain ws:// and http:// (SF_ALLOW_CLEARTEXT), which
@@ -95,6 +99,8 @@ export interface ServerEnv {
   host?: string | undefined;
   /** EXPO_PUBLIC_SERVER_SECURE ("true" for wss/https) */
   secure?: string | undefined;
+  /** EXPO_PUBLIC_SERVER_PORT (443 when unset over TLS, else the local server's 2567) */
+  port?: string | undefined;
 }
 
 /** A host a phone in a tester's hand can't reach, or that was never filled in. */
@@ -118,6 +124,98 @@ export function assertStoreBuildHasServer(build: EasBuild, server: ServerEnv): v
     `Production build without a reachable game server: ${problems.join('; ')}. ` +
       "Set the production server in eas.json's production profile `env` (docs/DEPLOY-PRODUCTION.md).",
   );
+}
+
+/**
+ * The path of a room's link on the server: `/r/123456` (packages/protocol friends.ts roomLinkPath; this file is
+ * read by Node at build time and imports nothing of the workspace, so a test checks the two agree).
+ */
+export const ROOM_LINK_PATH_PREFIX = '/r/';
+
+/** The app's own link scheme (app.json `scheme`; protocol FRIENDS_APP_SCHEME): `sudokufight://room/123456`. */
+export const APP_SCHEME = 'sudokufight';
+
+/** A host name or an IPv4 address (no scheme, port or path), as EXPO_PUBLIC_SERVER_HOST holds it. */
+const LINK_HOST =
+  /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/;
+
+/** Where room links open the app (friends-room.md §6.1–§6.3, D87): the game server this build talks to. */
+export interface RoomLinkHost {
+  scheme: 'https' | 'http';
+  host: string;
+  /** Null for the scheme's default port (443, 80). */
+  port: number | null;
+  /**
+   * Android App Links' `autoVerify` and iOS's associated domain: only over TLS on the default port, where the
+   * server serves /.well-known/assetlinks.json and apple-app-site-association. A local server (`npm run apk --
+   * --server local`: plain http, port 2567) can't be verified: its link opens the app only by the user's choice.
+   */
+  verified: boolean;
+}
+
+/**
+ * The room links' host of a build, from its server settings (eas.json's profile `env`, or what `npm run apk`
+ * sets): null when the build names no server (a development build, `expo start`), or one that is not a plain
+ * host name or IPv4 address.
+ */
+export function roomLinkHostOf(server: ServerEnv): RoomLinkHost | null {
+  const host = server.host?.trim().toLowerCase() ?? '';
+  if (!LINK_HOST.test(host)) return null;
+  const secure = server.secure === 'true';
+  const given = Number(server.port);
+  const fallback = secure ? 443 : 2567;
+  const port = Number.isInteger(given) && given >= 1 && given <= 65_535 ? given : fallback;
+  const standard = port === (secure ? 443 : 80);
+  return {
+    scheme: secure ? 'https' : 'http',
+    host,
+    port: standard ? null : port,
+    verified: secure && standard,
+  };
+}
+
+type AndroidIntentFilter = NonNullable<NonNullable<ExpoConfig['android']>['intentFilters']>[number];
+
+/** Android's intent filter for room links: `<scheme>://<host>[:port]/r/…`, verified only when it can be. */
+export function roomLinkIntentFilter(link: RoomLinkHost): AndroidIntentFilter {
+  return {
+    action: 'VIEW',
+    ...(link.verified ? { autoVerify: true } : null),
+    data: [
+      {
+        scheme: link.scheme,
+        host: link.host,
+        ...(link.port !== null ? { port: String(link.port) } : null),
+        pathPrefix: ROOM_LINK_PATH_PREFIX,
+      },
+    ],
+    category: ['BROWSABLE', 'DEFAULT'],
+  };
+}
+
+/**
+ * The config with the room links of its server (1.0.4, friends-room.md §6.2, §6.3): Android's intent filter
+ * (App Links, `autoVerify` over TLS), and on iOS the associated domain (`applinks:<host>`, verified hosts only).
+ * The app's own scheme (`sudokufight://room/123456`, app.json `scheme`) needs nothing more: prebuild already
+ * opens the app for it. Native settings: a change needs a new build (`npm run apk` rebuilds the native project
+ * when the server changes: scripts/build-apk.mjs nativeInputs).
+ */
+export function withRoomLinks(config: ExpoConfig, server: ServerEnv): ExpoConfig {
+  const link = roomLinkHostOf(server);
+  if (!link) return config;
+  return {
+    ...config,
+    android: {
+      ...config.android,
+      intentFilters: [...(config.android?.intentFilters ?? []), roomLinkIntentFilter(link)],
+    },
+    ios: link.verified
+      ? {
+          ...config.ios,
+          associatedDomains: [...(config.ios?.associatedDomains ?? []), `applinks:${link.host}`],
+        }
+      : config.ios,
+  };
 }
 
 /** The largest minor and patch number: each takes two digits of the build number (versionCodeOf). */
@@ -323,7 +421,7 @@ export function resolveAppConfig(
   exists: (path: string) => boolean = existsSync,
   readJson: (path: string) => unknown = readJsonFile,
 ): ExpoConfig {
-  const base = withBuildNumbers(config);
+  const base = withRoomLinks(withBuildNumbers(config), env.server ?? {});
   const android = firebaseFile(env.googleServicesJson, LOCAL_ANDROID, exists);
   const ios = firebaseFile(env.googleServiceInfoPlist, LOCAL_IOS, exists);
   assertStoreBuildHasFirebase(env, { android: android !== null, ios: ios !== null });
@@ -394,6 +492,7 @@ export default ({ config }: ConfigContext): ExpoConfig =>
     server: {
       host: process.env.EXPO_PUBLIC_SERVER_HOST,
       secure: process.env.EXPO_PUBLIC_SERVER_SECURE,
+      port: process.env.EXPO_PUBLIC_SERVER_PORT,
     },
     allowCleartext: process.env.SF_ALLOW_CLEARTEXT,
     localApk: process.env.SF_LOCAL_APK,

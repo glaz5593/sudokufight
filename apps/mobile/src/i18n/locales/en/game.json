@@ -145,7 +145,9 @@
         "unauthenticated": "Sign in to your account to play against others.",
         "suspended": "Your account is suspended, so there are no ranked games for now. Practice alone or against a bot still works.",
         "codeTaken": "A room with this code already exists. Try another code.",
-        "badOptions": "The room's settings aren't valid."
+        "badOptions": "The room's settings aren't valid.",
+        "kicked": "The host removed you from the room.",
+        "roomClosed": "The room has closed."
       },
       "code": "Error code: {{code}}",
       "attemptFailed": "Try {{attempt}} failed",

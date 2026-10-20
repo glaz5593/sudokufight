@@ -84,6 +84,13 @@ export interface HistoryGame {
   mySeat: number;
   /** In seat order. */
   players: HistoryPlayer[];
+  /**
+   * A game played in a friends room (1.0.4, friends.ts; games.mode 'friends' on the server): no rating moved
+   * [D81a], so every seat's rating fields are null, and the app labels it "משחק עם חברים · בלי דירוג". It comes
+   * as mode 'ranked', because an app before 1.0.4 refuses an unknown mode and with it the whole page
+   * (isHistoryGame); the app's "ranked" filter leaves out the games with friends: true. Absent: false.
+   */
+  friends?: boolean;
 }
 
 export interface HistoryPage {
@@ -175,6 +182,7 @@ export function isHistoryGame(v: unknown): v is HistoryGame {
     isNumOrNull(v.endedAt) &&
     (v.endReason === null || END_REASONS.includes(v.endReason as EndReason)) &&
     isNum(v.mySeat) &&
+    (v.friends === undefined || typeof v.friends === 'boolean') &&
     Array.isArray(v.players) &&
     v.players.every(isHistoryPlayer) &&
     v.players.some((p: HistoryPlayer) => p.seat === v.mySeat)

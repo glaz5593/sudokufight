@@ -194,6 +194,7 @@ describe('POST /v1/users', () => {
       deletedAt: null,
       suspendedAt: null,
       nameResetRequired: false,
+      kind: 'person', // stealth bot (0010): a person, not a persona
     });
   });
 
@@ -647,6 +648,7 @@ describe('DELETE /v1/me', () => {
       deletedAt: new Date(NOW + DAY),
       suspendedAt: null,
       nameResetRequired: false,
+      kind: 'person',
     });
     // Ratings stay with the anonymous row (its games keep their players); the install is unlinked.
     expect(await t.db.$count(ratings, eq(ratings.userId, created.id))).toBe(3);

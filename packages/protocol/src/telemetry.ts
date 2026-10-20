@@ -1,4 +1,4 @@
-import type { BotLevelId, LevelEndReason, LevelKind, Stars } from '@sudoku-fight/engine';
+import type { BotLevelId, GameType, LevelEndReason, LevelKind, Stars } from '@sudoku-fight/engine';
 
 /**
  * Usage reporting from the app to our server (spec §27.1, §27.2): `POST /v1/events`.
@@ -27,7 +27,7 @@ export type Platform = (typeof PLATFORMS)[number];
 
 /**
  * The events the app reports: spec §22's analytics list, plus `screen_view` (§27.1), plus staged practice's
- * six (1.0.2, spec §5.3, §22).
+ * six (1.0.2, spec §5.3, §22), plus the six of playing with friends (1.0.4, generation 3).
  * The server stores no other name, so a typo can't fill the table with junk: since 1.0.2 it skips an event
  * whose name it does not know and stores the rest of the batch (`ignored` in the answer). A server before
  * that refuses the whole batch with a 400, which is why the app never mixes generations in one batch
@@ -64,15 +64,30 @@ export const TELEMETRY_EVENT_NAMES = [
   'chapter_gate',
   /** The "איך משחקים" card of a kind was shown: LevelTutorialProps. */
   'level_tutorial',
+  /** Friends (1.0.4), never an id or a code: a room was opened (FriendsRoomOpenProps). */
+  'friends_room_open',
+  /** An attempt to join a room, and how it ended: FriendsRoomJoinProps. */
+  'friends_room_join',
+  /** "שתף קישור" was used: FriendsInviteShareProps. */
+  'friends_invite_share',
+  /** The app was opened by a room link: FriendsLinkOpenProps. */
+  'friends_link_open',
+  /** A room's game started (the host's "התחל"): FriendsRoomStartProps. */
+  'friends_room_start',
+  /** This player was out of a room before its game: FriendsRoomCloseProps. */
+  'friends_room_close',
 ] as const;
 export type TelemetryEventName = (typeof TELEMETRY_EVENT_NAMES)[number];
 
+/** 1: before 1.0.2; 2: staged practice (1.0.2); 3: friends (1.0.4). */
+export type TelemetryEventGeneration = 1 | 2 | 3;
+
 /**
- * When each event came (1: before 1.0.2; 2: staged practice). The app sends one generation per batch, so a
- * server that does not know the newer names refuses only the batch that has them, and the older events still
- * get through (spec §22, compatibility).
+ * When each event came. The app sends one generation per batch, so a server that does not know the newer
+ * names refuses only the batch that has them (a server before 1.0.2; a newer one skips them), and the older
+ * events still get through (spec §22, compatibility).
  */
-export const TELEMETRY_EVENT_GENERATION: Readonly<Record<TelemetryEventName, 1 | 2>> = {
+export const TELEMETRY_EVENT_GENERATION: Readonly<Record<TelemetryEventName, TelemetryEventGeneration>> = {
   app_open: 1,
   screen_view: 1,
   register_step: 1,
@@ -93,6 +108,12 @@ export const TELEMETRY_EVENT_GENERATION: Readonly<Record<TelemetryEventName, 1 |
   level_quit: 2,
   chapter_gate: 2,
   level_tutorial: 2,
+  friends_room_open: 3,
+  friends_room_join: 3,
+  friends_invite_share: 3,
+  friends_link_open: 3,
+  friends_room_start: 3,
+  friends_room_close: 3,
 };
 
 // ---------------------------------------------------------------------------------------------------------
@@ -205,6 +226,119 @@ export interface LevelEventProps {
   level_quit: LevelQuitProps;
   chapter_gate: ChapterGateProps;
   level_tutorial: LevelTutorialProps;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Friends' events (1.0.4, friends-room.md §7.4): generation 3
+
+/**
+ * The props of the six friends events. As with the level events: flat values only, the server checks each one
+ * (an unknown value refuses the whole batch, so build them with these lists and friendsJoinResultOf()), and an
+ * extra key passes. Never a room code, a room id or a player id: counts, choices and outcomes only.
+ *
+ * `game_start` and `game_end` (generation 1, props not checked) carry `friends: true` for a game in a friends
+ * room, next to their `mode` ('ranked': the same game, without a rating).
+ */
+
+/** How a room was opened: "צור חדר", or "שוב עם אותם חברים" [D89, a later stage]. */
+export const FRIENDS_OPEN_VIAS = ['create', 'rematch'] as const;
+export type FriendsOpenVia = (typeof FRIENDS_OPEN_VIAS)[number];
+
+/** How a join began: the typed code, a link, or a rematch [D89, a later stage]. */
+export const FRIENDS_JOIN_VIAS = ['code', 'link', 'rematch'] as const;
+export type FriendsJoinVia = (typeof FRIENDS_JOIN_VIAS)[number];
+
+/**
+ * How a join ended: `ok`, the server's refusal (friends.ts FRIENDS_ERROR_CODES, the ones a player can meet), the
+ * app's own `network` / `notAvailable`, or `other` for anything else.
+ */
+export const FRIENDS_JOIN_RESULTS = [
+  'ok',
+  'notFound',
+  'roomFull',
+  'gameStarted',
+  'roomClosed',
+  'kicked',
+  'cantJoin',
+  'suspended',
+  'tooManyRequests',
+  'network',
+  'notAvailable',
+  'other',
+] as const;
+export type FriendsJoinResult = (typeof FRIENDS_JOIN_RESULTS)[number];
+
+/** A join's outcome as `friends_room_join.result` takes it: a code not on the list is `other`. */
+export const friendsJoinResultOf = (code: string): FriendsJoinResult =>
+  (FRIENDS_JOIN_RESULTS as readonly string[]).includes(code) ? (code as FriendsJoinResult) : 'other';
+
+/** Who shared the link: the host or a guest [D87]. */
+export const FRIENDS_SHARE_BY = ['host', 'guest'] as const;
+export type FriendsShareBy = (typeof FRIENDS_SHARE_BY)[number];
+
+/**
+ * Why this player was out of a room before its game: `left` ("יציאה מהחדר"), the server's roomClosed reasons
+ * (friends.ts FRIENDS_ROOM_CLOSED_REASONS: `kicked`, `removed`, `otherDevice`, `serverRestart`), and
+ * `abandoned` for a room that closed for any other reason (roomClosed `closed`, or the seats lapsed).
+ */
+export const FRIENDS_CLOSE_REASONS = [
+  'left',
+  'kicked',
+  'removed',
+  'otherDevice',
+  'serverRestart',
+  'abandoned',
+] as const;
+export type FriendsCloseReason = (typeof FRIENDS_CLOSE_REASONS)[number];
+
+/** friends_room_open: a room was opened, this app's player its host. */
+export interface FriendsRoomOpenProps {
+  gameType: GameType;
+  via: FriendsOpenVia;
+}
+
+/** friends_room_join: one per attempt (the code typed in full, a link, a rematch), however it ended. */
+export interface FriendsRoomJoinProps {
+  via: FriendsJoinVia;
+  result: FriendsJoinResult;
+}
+
+/** friends_invite_share: the share sheet opened with the room's message and link. */
+export interface FriendsInviteShareProps {
+  by: FriendsShareBy;
+}
+
+/** friends_link_open: a room link opened the app (before the sign-in, if there is one to do). */
+export interface FriendsLinkOpenProps {
+  /** Signed in with an account at that moment. */
+  signedIn: boolean;
+}
+
+/** friends_room_start: the countdown began (sent by every player in the game). */
+export interface FriendsRoomStartProps {
+  /** Players in the game: 2–4. */
+  players: number;
+  /** Whole seconds from this player's entry into the room (the host: its opening) to the start. */
+  waitedSec: number;
+}
+
+/** friends_room_close: this player was out of a room before its game. */
+export interface FriendsRoomCloseProps {
+  reason: FriendsCloseReason;
+  /** Seats taken in the room at that moment, this player's included: 1–4. */
+  players: number;
+  /** Whole seconds from this player's entry into the room to then. */
+  waitedSec: number;
+}
+
+/** The props of each friends event, by name. */
+export interface FriendsEventProps {
+  friends_room_open: FriendsRoomOpenProps;
+  friends_room_join: FriendsRoomJoinProps;
+  friends_invite_share: FriendsInviteShareProps;
+  friends_link_open: FriendsLinkOpenProps;
+  friends_room_start: FriendsRoomStartProps;
+  friends_room_close: FriendsRoomCloseProps;
 }
 
 /** Flat values only; keys up to 64 characters, at most MAX_PROPS_BYTES of JSON in all. */

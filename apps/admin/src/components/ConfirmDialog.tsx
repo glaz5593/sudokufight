@@ -13,6 +13,7 @@ const FINAL_ERRORS: ReadonlySet<ApiError['code']> = new Set([
   'accountDeleted',
   'notFound',
   'googleRequired',
+  'stealthDisabled',
 ]);
 
 /**

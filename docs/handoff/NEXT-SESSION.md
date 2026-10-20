@@ -100,6 +100,13 @@ Remaining device-only checks are listed in docs/STAGE7-DEVICE-CHECKS.md (new 2ג
    staged-practice tagline to "שלבים קצרים · עד 3 כוכבים" / "Short stages · up to 3 stars" (fill/puzzle are 60 s now;
    app + 2 tests + 01-SPEC §5.1 + QA-CHECKLIST + components.md; those tests pass). Details: build-report.md.
    Waiting for Moshe: device test after his OK for commit/deploy/APK; answers on D80–D99 (friends room, stealth bot).
+   **2026-10-20 Moshe: "כן כן כן לך עם ברירות המחדל, תמשיך לבנות"** (D80a, D90, D92 yes; D80–D99 defaults). The 1.0.3
+   tree was snapshotted as `refs/checkpoints/levels-1.0.3` (commit object 4cb18cc, not on a branch, not pushed). Build
+   workflow wf_eb8a2cf6-51d built the friends room (1.0.4, needs a NEW native build: expo-clipboard + intent filters;
+   migration 0009) and the stealth bot (server only, OFF by default; migration 0010; switch-on steps in
+   build-report-features.md §6, only on Moshe's word). 12 review findings, 11 confirmed and fixed. Report:
+   `docs/handoff/2026-10-19/build-report-features.md` (release order §7). Still uncommitted. Moshe must give the EAS
+   SHA-256 (App Links for EAS-signed APKs). C: had 8.2 GB free on 2026-10-20.
 4. **Only with Moshe's OK:** `npm run version:bump` → commit → push → deploy staging (server FIRST: migration
    0007 runs; then `npm run db:seed-puzzles` against staging) → `npm run apk` (see docs/BUILD-APK.md; check free
    space on C: first).

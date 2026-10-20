@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<title>Join with a code</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@keyframes sf-caret { 0%,100%{opacity:1} 50%{opacity:0} }
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<!--
+  "הצטרף עם קוד" (docs/01-SPEC.md 5.4.1, 5.4.6; components.md 20.6; D86, D88).
+  Drawn on 2026-10-20 alongside the build, from friends-room.md 3.3 and the built screen (JoinCodeScreen, CodeInput):
+  where this board and the app differ, the spec and the code win.
+  The six boxes are always left to right, three and three, in Hebrew too. Four digits are in, the fifth box has the focus;
+  the sixth digit starts the join by itself. Below the phone's number pad: two more states of the same screen, small.
+-->
+<div dir="rtl" style="width:390px;height:844px;position:relative;overflow:hidden;box-sizing:border-box;font-family:Rubik,'Segoe UI',system-ui,sans-serif;color:#eef1f6;background:#0f1218;">
+
+  <header style="position:absolute;top:48px;left:16px;right:16px;height:56px;display:flex;align-items:center;gap:12px;">
+    <a href="Modes-Levels.dc.html" aria-label="חזרה" style="flex:none;width:44px;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;text-decoration:none;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+    </a>
+    <h1 style="flex:1;min-width:0;margin:0;font:700 28px/34px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">הצטרף עם קוד</h1>
+  </header>
+
+  <div style="position:absolute;top:132px;left:16px;right:16px;display:flex;flex-direction:column;gap:16px;">
+    <p style="margin:0;font:500 16px/22px Rubik,sans-serif;color:#eef1f6;text-align:center;">הקלד את 6 הספרות שקיבלת</p>
+
+    <!-- Always LTR: box 1 on the left. 44 x 52, gap 8, a wider gap after the third. -->
+    <div dir="ltr" role="group" aria-label="קוד החדר, 6 ספרות" style="display:flex;justify-content:center;gap:8px;">
+      <span aria-label="ספרה 1 מתוך 6: 1" style="width:44px;height:52px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:12px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:34px;line-height:.8;padding-top:6px;color:#eef1f6;">1</span>
+      <span aria-label="ספרה 2 מתוך 6: 2" style="width:44px;height:52px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:12px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:34px;line-height:.8;padding-top:6px;color:#eef1f6;">2</span>
+      <span aria-label="ספרה 3 מתוך 6: 3" style="width:44px;height:52px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:12px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:34px;line-height:.8;padding-top:6px;color:#eef1f6;">3</span>
+      <span aria-label="ספרה 4 מתוך 6: 4" style="width:44px;height:52px;margin-left:8px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:12px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:34px;line-height:.8;padding-top:6px;color:#eef1f6;">4</span>
+      <span aria-label="ספרה 5 מתוך 6" style="width:44px;height:52px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:2px solid #ffcf3f;border-radius:12px;">
+        <span style="width:2px;height:26px;background:#ffcf3f;animation:sf-caret 1s steps(1) infinite;"></span>
+      </span>
+      <span aria-label="ספרה 6 מתוך 6" style="width:44px;height:52px;box-sizing:border-box;background:#1f2430;border:1px solid #2a3140;border-radius:12px;"></span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button type="button" aria-label="הדבק" style="flex:none;height:44px;margin:0;padding:0 16px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;background:#1f2430;border:1px solid #2a3140;border-radius:12px;color:#eef1f6;font:500 16px/1 Rubik,sans-serif;cursor:pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="12" height="17" rx="2"></rect><path d="M9 4V3h6v1"></path><path d="M9 10h6M9 14h4"></path></svg>
+        הדבק
+      </button>
+      <span style="flex:1;font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;">אפשר להדביק את כל ההודעה מוואטסאפ</span>
+    </div>
+  </div>
+
+  <!-- Two more states of the same screen (not on the phone at once): joining, and a refusal. -->
+  <div style="position:absolute;top:310px;left:16px;right:16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span aria-hidden="true" style="flex:1;height:1px;background:#2a3140;"></span>
+      <span style="font:500 12px/1 Rubik,sans-serif;color:#828ba1;">עוד מצבים של המסך</span>
+      <span aria-hidden="true" style="flex:1;height:1px;background:#2a3140;"></span>
+    </div>
+
+    <a href="Friends-Room.dc.html" aria-label="הספרה השישית: מצטרף לחדר" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 12px;box-sizing:border-box;background:#171b24;border:1px solid #2a3140;border-radius:14px;color:#eef1f6;text-decoration:none;">
+      <span dir="ltr" style="display:flex;gap:5px;">
+        <span style="width:28px;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">1</span>
+        <span style="width:28px;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">2</span>
+        <span style="width:28px;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">3</span>
+        <span style="width:28px;height:34px;margin-left:5px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">4</span>
+        <span style="width:28px;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">5</span>
+        <span style="width:28px;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #2a3140;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">6</span>
+      </span>
+      <span style="display:flex;align-items:center;gap:8px;font:500 14px/1 Rubik,sans-serif;color:#eef1f6;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf3f" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 3a9 9 0 1 1-9 9"></path></svg>
+        מצטרף לחדר…
+      </span>
+    </a>
+
+    <div role="alert" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 12px;box-sizing:border-box;background:#171b24;border:1px solid #2a3140;border-radius:14px;">
+      <span dir="ltr" style="display:flex;gap:5px;">
+        <span style="width:28px;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #ff4d5e;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">1</span>
+        <span style="width:28px;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #ff4d5e;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">2</span>
+        <span style="width:28px;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #ff4d5e;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">3</span>
+        <span style="width:28px;height:34px;margin-left:5px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #ff4d5e;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">4</span>
+        <span style="width:28px;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #ff4d5e;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">5</span>
+        <span style="width:28px;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#1f2430;border:1px solid #ff4d5e;border-radius:8px;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:22px;line-height:.8;padding-top:4px;">6</span>
+      </span>
+      <span style="font:400 13px/17px Rubik,sans-serif;color:#ff4d5e;text-align:center;">לא מצאנו חדר עם הקוד &#x2066;123 456&#x2069;. בדוק את הספרות.</span>
+      <button type="button" style="height:36px;margin:0;padding:0 14px;box-sizing:border-box;background:transparent;border:1px solid #2a3140;border-radius:10px;color:#eef1f6;font:500 14px/1 Rubik,sans-serif;cursor:pointer;">הצטרף</button>
+    </div>
+  </div>
+
+  <!-- The phone's number pad (system keyboard), so the boxes are seen above it. -->
+  <div aria-hidden="true" dir="ltr" style="position:absolute;left:0;right:0;bottom:0;height:236px;padding:8px 6px 18px;box-sizing:border-box;background:#1b1f27;border-top:1px solid #2a3140;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:46px;gap:6px;">
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2a3140;font:400 22px/1 Rubik,sans-serif;color:#eef1f6;">1</span>
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2a3140;font:400 22px/1 Rubik,sans-serif;color:#eef1f6;">2</span>
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2a3140;font:400 22px/1 Rubik,sans-serif;color:#eef1f6;">3</span>
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2a3140;font:400 22px/1 Rubik,sans-serif;color:#eef1f6;">4</span>
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2a3140;font:400 22px/1 Rubik,sans-serif;color:#eef1f6;">5</span>
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2a3140;font:400 22px/1 Rubik,sans-serif;color:#eef1f6;">6</span>
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2a3140;font:400 22px/1 Rubik,sans-serif;color:#eef1f6;">7</span>
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2a3140;font:400 22px/1 Rubik,sans-serif;color:#eef1f6;">8</span>
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2a3140;font:400 22px/1 Rubik,sans-serif;color:#eef1f6;">9</span>
+    <span></span>
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2a3140;font:400 22px/1 Rubik,sans-serif;color:#eef1f6;">0</span>
+    <span style="display:flex;align-items:center;justify-content:center;border-radius:8px;color:#9aa3b5;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12z"></path><path d="M12 9l6 6M18 9l-6 6"></path></svg></span>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

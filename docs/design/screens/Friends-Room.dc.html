@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<title>Friends room</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Teko:wght@500;600&family=Noto+Color+Emoji&display=swap">
+<style>
+body{margin:0}
+a{color:#ffcf3f}a:hover{color:#ffe08a}
+button{font-family:inherit}
+@keyframes sf-wait { 0%,100%{opacity:1} 50%{opacity:.35} }
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<!--
+  Friends room, the host's view (docs/01-SPEC.md 5.4.2; components.md 20.2-20.5; D80-D89).
+  Drawn on 2026-10-20 alongside the build, from friends-room.md 3.2 and the built screen (FriendsRoomScreen):
+  where this board and the app differ, the spec and the code win.
+  State shown: MosheG (me, P1, host) opened a fast room; Dana is in; Avi's app is in the background (away);
+  the fourth seat is empty. "Start" counts the connected seats only: 2.
+-->
+<div dir="rtl" style="width:390px;height:844px;position:relative;overflow:hidden;box-sizing:border-box;font-family:Rubik,'Segoe UI',system-ui,sans-serif;color:#eef1f6;background:#0f1218;">
+
+  <header style="position:absolute;top:48px;left:16px;right:16px;height:56px;display:flex;align-items:center;gap:12px;">
+    <a href="Modes-Levels.dc.html" aria-label="יציאה מהחדר" style="flex:none;width:44px;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;text-decoration:none;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+    </a>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+      <h1 style="margin:0;font:700 24px/30px Rubik,sans-serif;color:#eef1f6;white-space:nowrap;">חדר עם חברים</h1>
+      <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;white-space:nowrap;">מהיר · 3 מתוך 4</span>
+    </div>
+  </header>
+
+  <div style="position:absolute;top:112px;left:16px;right:16px;display:flex;flex-direction:column;gap:14px;">
+
+    <section aria-label="קוד החדר" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 16px;box-sizing:border-box;background:#171b24;border:1px solid #2a3140;border-radius:14px;">
+      <span style="font:500 13px/1 Rubik,sans-serif;color:#9aa3b5;">קוד החדר</span>
+      <span dir="ltr" aria-label="קוד החדר: 1 2 3 4 5 6" style="display:block;font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:64px;line-height:.8;padding-top:8px;letter-spacing:.06em;color:#eef1f6;font-variant-numeric:tabular-nums;">123 456</span>
+      <div style="align-self:stretch;display:flex;gap:12px;margin-top:4px;">
+        <button type="button" aria-label="שתף קישור" style="flex:1;height:48px;margin:0;padding:0 12px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;background:#1f2430;border:1px solid #2a3140;border-radius:12px;color:#eef1f6;font:500 16px/1 Rubik,sans-serif;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg>
+          שתף קישור
+        </button>
+        <button type="button" aria-label="העתק קוד" style="flex:1;height:48px;margin:0;padding:0 12px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;background:#1f2430;border:1px solid #2a3140;border-radius:12px;color:#eef1f6;font:500 16px/1 Rubik,sans-serif;cursor:pointer;">
+          העתק קוד
+        </button>
+      </div>
+      <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;text-align:center;">אפשר לשלוח את הקוד או את הקישור</span>
+    </section>
+
+    <section aria-label="סוג משחק" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:16px;">
+        <h2 style="margin:0;font:500 13px/1 Rubik,sans-serif;color:#9aa3b5;">סוג משחק</h2>
+        <span style="font:400 13px/16px Rubik,sans-serif;color:#9aa3b5;">רק המארח משנה</span>
+      </div>
+      <div role="radiogroup" aria-label="סוג משחק" style="display:flex;gap:8px;">
+        <button type="button" role="radio" aria-checked="true" style="flex:1;height:44px;margin:0;box-sizing:border-box;background:#171b24;border:2px solid #ffcf3f;border-radius:12px;color:#ffcf3f;font:500 16px/1 Rubik,sans-serif;cursor:pointer;">מהיר</button>
+        <button type="button" role="radio" aria-checked="false" style="flex:1;height:44px;margin:0;box-sizing:border-box;background:#171b24;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;font:500 16px/1 Rubik,sans-serif;cursor:pointer;">רגיל</button>
+        <button type="button" role="radio" aria-checked="false" style="flex:1;height:44px;margin:0;box-sizing:border-box;background:#171b24;border:1px solid #2a3140;border-radius:12px;color:#9aa3b5;font:500 16px/1 Rubik,sans-serif;cursor:pointer;">קשה</button>
+      </div>
+    </section>
+
+    <section aria-label="שחקנים · 3 מתוך 4" style="display:flex;flex-direction:column;gap:8px;">
+      <h2 style="margin:0;font:500 13px/16px Rubik,sans-serif;color:#9aa3b5;">שחקנים · 3 מתוך 4</h2>
+
+      <!-- Me: P1, circle, host. -->
+      <div aria-label="MosheG, אני, מארח, ישראל, דירוג 1287" style="min-height:56px;padding:4px 12px;box-sizing:border-box;display:flex;align-items:center;gap:8px;background:#171b24;border:1px solid #36c9f0;border-radius:12px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;"><path d="M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16z" fill="#36c9f0"></path></svg>
+        <span aria-hidden="true" style="flex:none;width:34px;height:34px;box-sizing:border-box;padding:1px;border:2px solid #36c9f0;border-radius:10px;">
+          <span style="display:flex;width:28px;height:28px;border-radius:7px;background:#1f2430;align-items:center;justify-content:center;font:700 14px/1 Rubik,sans-serif;color:#36c9f0;">M</span>
+        </span>
+        <span style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+          <span style="display:flex;align-items:center;gap:6px;">
+            <span dir="ltr" style="font:700 16px/19px Rubik,sans-serif;color:#eef1f6;">MosheG</span>
+            <span style="display:inline-flex;align-items:center;height:18px;padding:0 8px;border-radius:999px;background:#36c9f0;color:#0f1218;font:600 11px/1 Rubik,sans-serif;">אני</span>
+          </span>
+          <span style="display:flex;align-items:center;gap:6px;">
+            <span style="font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;font-size:13px;line-height:1;">🇮🇱</span>
+            <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:18px;line-height:.9;padding-top:2px;color:#9aa3b5;">1287</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;font:500 11px/1 Rubik,sans-serif;color:#ffcf3f;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffcf3f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l4 4 5-6 5 6 4-4-2 11H5z"></path></svg>
+              מארח
+            </span>
+          </span>
+        </span>
+      </div>
+
+      <!-- Dana: P2, triangle, connected; the host's X beside her. -->
+      <div style="min-height:56px;padding:4px 4px 4px 12px;box-sizing:border-box;display:flex;align-items:center;gap:8px;background:#171b24;border:1px solid #2a3140;border-radius:12px;">
+        <span aria-label="Dana, ישראל, דירוג 1190" style="flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding-right:0;">
+          <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;"><path d="M12 4l8 15H4z" fill="#ff9440"></path></svg>
+          <span aria-hidden="true" style="flex:none;width:34px;height:34px;box-sizing:border-box;padding:1px;border:2px solid #ff9440;border-radius:10px;">
+            <span style="display:flex;width:28px;height:28px;border-radius:7px;background:#1f2430;align-items:center;justify-content:center;font:700 14px/1 Rubik,sans-serif;color:#ff9440;">D</span>
+          </span>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <span dir="ltr" style="font:700 16px/19px Rubik,sans-serif;color:#eef1f6;">Dana</span>
+            <span style="display:flex;align-items:center;gap:6px;">
+              <span style="font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;font-size:13px;line-height:1;">🇮🇱</span>
+              <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:18px;line-height:.9;padding-top:2px;color:#9aa3b5;">1190</span>
+            </span>
+          </span>
+        </span>
+        <button type="button" aria-label="הוצא את Dana מהחדר" style="flex:none;width:44px;height:44px;margin:0;padding:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:12px;color:#9aa3b5;cursor:pointer;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+
+      <!-- Avi: P3, square, away (55 %), seat held. -->
+      <div style="min-height:56px;padding:4px 4px 4px 12px;box-sizing:border-box;display:flex;align-items:center;gap:8px;background:#171b24;border:1px solid #2a3140;border-radius:12px;">
+        <span aria-label="Avi, ישראל, דירוג 1305, לא בחדר כרגע" style="flex:1;min-width:0;display:flex;align-items:center;gap:8px;opacity:.55;">
+          <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;"><path d="M5 5h14v14H5z" fill="#a2e28e"></path></svg>
+          <span aria-hidden="true" style="flex:none;width:34px;height:34px;box-sizing:border-box;padding:1px;border:2px solid #a2e28e;border-radius:10px;">
+            <span style="display:flex;width:28px;height:28px;border-radius:7px;background:#1f2430;align-items:center;justify-content:center;font:700 14px/1 Rubik,sans-serif;color:#a2e28e;">A</span>
+          </span>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <span dir="ltr" style="font:700 16px/19px Rubik,sans-serif;color:#eef1f6;">Avi</span>
+            <span style="display:flex;align-items:center;gap:6px;">
+              <span style="font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;font-size:13px;line-height:1;">🇮🇱</span>
+              <span dir="ltr" style="font-family:Teko,Rubik,sans-serif;font-weight:600;font-size:18px;line-height:.9;padding-top:2px;color:#9aa3b5;">1305</span>
+              <span style="font:400 11px/1 Rubik,sans-serif;color:#9aa3b5;">לא בחדר כרגע</span>
+            </span>
+          </span>
+        </span>
+        <button type="button" aria-label="הוצא את Avi מהחדר" style="flex:none;width:44px;height:44px;margin:0;padding:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:12px;color:#9aa3b5;cursor:pointer;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+
+      <!-- Empty seat: P4's diamond in grey, dashed, the waiting dot. -->
+      <div aria-label="כיסא פנוי, ממתין לשחקן" style="min-height:56px;padding:4px 12px;box-sizing:border-box;display:flex;align-items:center;gap:8px;background:#0f1218;border:1px dashed #2a3140;border-radius:12px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;"><path d="M12 3l9 9-9 9-9-9z" fill="#9aa3b5"></path></svg>
+        <span aria-hidden="true" style="flex:none;width:34px;height:34px;box-sizing:border-box;border:1px dashed #9aa3b5;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <span style="width:6px;height:6px;border-radius:999px;background:#9aa3b5;animation:sf-wait 1.2s ease-in-out infinite;"></span>
+        </span>
+        <span style="font:500 16px/18px Rubik,sans-serif;color:#9aa3b5;">ממתין לשחקן…</span>
+      </div>
+    </section>
+
+    <!-- Host only. 2 = the connected seats (Avi is away). Pressed while a seat is away: "להתחיל בלי Avi?" (D83). -->
+    <a href="Match-Countdown.dc.html" aria-label="התחל משחק, 2 שחקנים" style="height:52px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;background:#ffcf3f;border-radius:12px;box-shadow:0 3px 0 #b88f00;color:#241a00;font:600 17px/1 Rubik,sans-serif;text-decoration:none;">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 4L4 12l13 8V4z" fill="#241a00"></path></svg>
+      התחל משחק · 2 שחקנים
+    </a>
+
+    <button type="button" style="height:44px;margin:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;background:transparent;border:0;color:#9aa3b5;font:500 15px/1 Rubik,sans-serif;cursor:pointer;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      יציאה מהחדר
+    </button>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

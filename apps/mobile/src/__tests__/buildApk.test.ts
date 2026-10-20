@@ -41,6 +41,7 @@ import {
   REPLACEABLE,
   resolveServer,
   serverEnv,
+  serverNativeInput,
   staleConfigDirs,
   uninstallCommand,
   USAGE,
@@ -306,6 +307,26 @@ describe('when expo prebuild starts from scratch', () => {
     expect(changed(2, '')).not.toBe(changed(2, null));
     // --server local allows cleartext in the manifest.
     expect(changed(3, 'yes')).not.toBe(hash);
+  });
+
+  it("1.0.4: the game server too, since the room links' intent filter is built from it (app.config.ts)", () => {
+    const staging = { host: 'sudoku-fight-staging.fly.dev', port: 443, secure: true };
+    const production = { ...staging, host: 'sudoku-fight-prod.fly.dev' };
+    const local = { host: '192.168.1.20', port: 2567, secure: false };
+    expect(serverNativeInput(staging)).toBe('https://sudoku-fight-staging.fly.dev:443');
+    expect(serverNativeInput(local)).toBe('http://192.168.1.20:2567');
+    // The host's case changes nothing; another host, port or TLS is another native project.
+    expect(serverNativeInput({ ...staging, host: 'SUDOKU-fight-staging.fly.dev' })).toBe(
+      serverNativeInput(staging),
+    );
+    const hashFor = (server: typeof staging) =>
+      nativeConfigHash([...INPUTS, ['server', serverNativeInput(server)]]);
+    expect(hashFor(production)).not.toBe(hashFor(staging));
+    expect(hashFor({ ...staging, port: 8443 })).not.toBe(hashFor(staging));
+    expect(hashFor(local)).not.toBe(hashFor({ ...local, host: '192.168.1.21' }));
+    expect(hashFor(staging)).toBe(hashFor({ ...staging }));
+    // The script hashes it with the rest (an APK for another server prebuilds again).
+    expect(readFileSync(SCRIPT, 'utf8')).toMatch(/\['server', serverNativeInput\(server\)\]/);
   });
 
   it("package.json's scripts don't count, its dependencies do", () => {

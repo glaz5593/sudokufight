@@ -22,12 +22,18 @@ import { getUserRow } from '../admin/users';
 import { type Db, queryRows } from '../db';
 import { adminAudit, type AdminAuditRow, type PlayerReport, playerReports, users } from '../db/schema';
 import { renameLoggedNames } from '../persistence/records';
-import { retireName } from './store';
+import { isRetiredName, retireName } from './store';
 
 /**
  * The admin site's moderation (spec §3.5, §27.3; routes in ./adminRoutes, the contract in protocol admin.ts):
  * the reports grouped by player, closing a report, resetting a name, suspending and lifting a suspension.
  * Every action that changes something writes one admin_audit row, in the same transaction as the change.
+ *
+ * The stealth bot's personas (stealth-bot.md §6) [D90, D91] are accounts like any other here: reported,
+ * suspended and reset the same way, and marked `persona` for the admins (the reports' tag). A persona has no
+ * app to choose a new name in, so a name reset gives it a new invented name at once (ModerationTools
+ * personaName), not a temporary one. This file also writes the audit row of the stealth bot's switch
+ * (admin/stealth.ts).
  */
 
 /** Who did it, as admin_audit and resolved_by keep it: the Google address, or `password`. */
@@ -38,6 +44,14 @@ export interface ModerationTools {
   blockedWords: BlockedWords;
   /** An integer in [0, n): the temporary name's digits. */
   random: (n: number) => number;
+  /**
+   * A new invented name for a stealth bot's persona of this country, as personas are named when they are made
+   * (src/stealth/personas.ts inventPersonaName: free and not retired when drawn): what a name reset gives a
+   * persona. resetName checks it again (the word filter, the retired names, the unique index at the update).
+   * Absent: a persona gets a temporary name and `name_reset_required` like a person, and matchmaking no
+   * longer seats it (stealth-bot.md §6).
+   */
+  personaName?: (db: Db, persona: { country: string | null }) => Promise<string>;
 }
 
 // ---- the audit log ------------------------------------------------------------------------------------------
@@ -66,6 +80,27 @@ async function writeAudit(
   const [row] = await db
     .insert(adminAudit)
     .values({ adminEmail: admin, action, targetUserId, details, createdAt: new Date(now) })
+    .returning();
+  if (row === undefined) throw new Error('insert into admin_audit returned nothing');
+  return toAuditEntry(row);
+}
+
+/** The stealth bot's switch was turned (admin/stealth.ts): `{ on }`, no player. */
+export async function recordStealthSwitch(
+  db: Db,
+  admin: string,
+  on: boolean,
+  now: number,
+): Promise<AdminAuditEntry> {
+  const [row] = await db
+    .insert(adminAudit)
+    .values({
+      adminEmail: admin,
+      action: 'stealthSwitch',
+      targetUserId: null,
+      details: { on },
+      createdAt: new Date(now),
+    })
     .returning();
   if (row === undefined) throw new Error('insert into admin_audit returned nothing');
   return toAuditEntry(row);
@@ -175,11 +210,12 @@ export async function listReportedPlayers(
       deleted_at: number | null;
       suspended_at: number | null;
       name_reset_required: boolean;
+      kind: string;
       open: number;
       oldest_open: number | null;
     }>(
       db,
-      sql`select u.id, u.display_name, u.avatar_id, u.country,
+      sql`select u.id, u.display_name, u.avatar_id, u.country, u.kind,
             (extract(epoch from u.deleted_at) * 1000)::float8 as deleted_at,
             (extract(epoch from u.suspended_at) * 1000)::float8 as suspended_at,
             u.name_reset_required,
@@ -221,6 +257,7 @@ export async function listReportedPlayers(
         deletedAt: deleted === null ? null : Number(deleted),
         suspendedAt: p === undefined || p.suspended_at === null ? null : Number(p.suspended_at),
         nameResetRequired: p?.name_reset_required ?? false,
+        persona: p?.kind === 'persona',
       },
       counts: {
         offensiveName: g.offensiveName,
@@ -300,6 +337,11 @@ async function finish(db: Db, userId: string, audit: AdminAuditEntry | null): Pr
  * account's games get the temporary name in their logs (persistence renameLoggedNames: the old name leaves
  * its opponents' replays). The old name is retired (moderation/store.ts retireName): nobody may take it again,
  * this player included, so the free rename can't bring it straight back. The audit entry keeps both names.
+ *
+ * A stealth bot's persona (users.kind 'persona', stealth-bot.md §6) has no app to ask: with
+ * `tools.personaName` it gets a new invented name at once, never a retired one, and no `name_reset_required`
+ * (a temporary "שחקן12345" would give it away, and would keep it out of matchmaking); the audit entry says
+ * `persona: true`.
  */
 export async function resetName(
   db: Db,
@@ -308,8 +350,15 @@ export async function resetName(
   now: number,
   tools: ModerationTools,
 ): Promise<AccountActionResult> {
+  const [target] = await db
+    .select({ kind: users.kind, country: users.country })
+    .from(users)
+    .where(eq(users.id, userId));
+  if (target === undefined) return { ok: false, error: 'notFound' };
+  const invent = target.kind === 'persona' ? tools.personaName : undefined;
   for (let attempt = 0; attempt < TEMPORARY_NAME_TRIES; attempt++) {
-    const name = temporaryName(tools.random);
+    const name =
+      invent === undefined ? temporaryName(tools.random) : await invent(db, { country: target.country });
     if (!checkName(name, tools.blockedWords).ok) continue;
     try {
       const done = await db.transaction(async (tx) => {
@@ -320,14 +369,22 @@ export async function resetName(
           .for('update');
         if (row === undefined) return 'notFound' as const;
         if (row.deletedAt !== null) return 'accountDeleted' as const;
+        // A retired name stays retired: a persona draws another.
+        if (invent !== undefined && (await isRetiredName(tx, name))) return null;
         await tx
           .update(users)
-          .set({ displayName: name, nameResetRequired: true })
+          .set({ displayName: name, nameResetRequired: invent === undefined })
           .where(eq(users.id, userId));
         await retireName(tx, row.displayName, now);
         await renameLoggedNames(tx, userId);
-        return writeAudit(tx, admin, 'resetName', userId, { fromName: row.displayName, toName: name }, now);
+        const details = {
+          fromName: row.displayName,
+          toName: name,
+          ...(invent === undefined ? null : { persona: true }),
+        };
+        return writeAudit(tx, admin, 'resetName', userId, details, now);
       });
+      if (done === null) continue;
       if (typeof done === 'string') return { ok: false, error: done };
       return finish(db, userId, done);
     } catch (err) {
@@ -335,7 +392,9 @@ export async function resetName(
       if (uniqueViolation(err) !== NAME_INDEX) throw err;
     }
   }
-  throw new Error(`no free temporary name after ${TEMPORARY_NAME_TRIES} draws`);
+  throw new Error(
+    `no free ${invent === undefined ? 'temporary' : 'persona'} name after ${TEMPORARY_NAME_TRIES} draws`,
+  );
 }
 
 /**

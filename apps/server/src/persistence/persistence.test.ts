@@ -8,8 +8,10 @@ import {
   type GameState,
   type GameType,
   leaveGuardsFor,
+  movePace,
   type RankEntry,
 } from '@sudoku-fight/engine';
+import { isHistoryGame } from '@sudoku-fight/protocol';
 import { and, asc, eq } from 'drizzle-orm';
 
 import { getGame, listGames } from '../admin/games';
@@ -21,15 +23,32 @@ import {
   gameEvents,
   gamePlayers,
   games,
+  levelXpDays,
   opponentHistory,
+  personas,
+  practiceResults,
   puzzleHistory,
   ratings,
+  userAchievements,
+  users,
+  xp,
 } from '../db/schema';
+import { listUserGames, readReplay } from '../history/store';
+import { practiceXpUsedOn } from '../progress/practice';
 import { dbPuzzleSource } from '../puzzles';
 import { createTestDb, NEARLY_DONE, PUZZLE, type TestDb } from '../testing';
-import { addAccounts, addPuzzles, recordingLog, T0, tableFor, type TestAccount } from '../testing/ranked';
+import {
+  addAccounts,
+  addPuzzles,
+  recordingLog,
+  standInPuzzles,
+  T0,
+  tableFor,
+  type TestAccount,
+} from '../testing/ranked';
 import {
   endInterruptedGames,
+  paceOf,
   type RankedGames,
   rankedGames,
   recordGameEnd,
@@ -58,6 +77,8 @@ interface Setup {
   cheat?: CheatThresholds;
   batchSize?: number;
   db?: Db;
+  /** PRACTICE_XP_DAILY_CAP for friends games (1.0.4). */
+  practiceXpDailyCap?: number;
 }
 
 async function setup({
@@ -66,6 +87,7 @@ async function setup({
   cheat = DEFAULT_CHEAT_THRESHOLDS,
   batchSize,
   db,
+  practiceXpDailyCap,
 }: Setup = {}) {
   await addAccounts(
     t.db,
@@ -84,6 +106,7 @@ async function setup({
     puzzles: dbPuzzleSource({ db: t.db, rng: createRng(1) }),
     log,
     recorder: { flushMs: 60_000, batchSize: batchSize ?? 1000, retries: 3, retryDelayMs: 1 },
+    ...(practiceXpDailyCap === undefined ? null : { practiceXpDailyCap }),
   });
   return { ranked, log };
 }
@@ -157,6 +180,10 @@ describe('a ranked game, stored (spec §19)', () => {
 
     expect(await recorder.done).toEqual<RecordOutcome>({ ok: true, outcome: 'recorded' });
     const bestMoveOf = (id: string) => result.stats.find((s) => s.playerId === id)!.bestMove!.points;
+    const paceColumns = (id: string) => {
+      const pace = movePace(table.game.events, id)!;
+      return { paceMs: Math.round(pace.baseMs), paceMoves: pace.moves, paceDigits: pace.digits };
+    };
 
     const [game] = await t.db.select().from(games).where(eq(games.id, 'g1'));
     expect(game).toEqual({
@@ -169,6 +196,7 @@ describe('a ranked game, stored (spec §19)', () => {
       startedAt: new Date(T0),
       endedAt: new Date(table.game.state.endedAt!),
       endReason: 'boardComplete',
+      stealth: false,
     });
 
     // 1287 beat 1305: +17 and −17 (spec §11.2's example; K = 32, neither provisional).
@@ -189,6 +217,8 @@ describe('a ranked game, stored (spec §19)', () => {
         ratingBefore: 1287,
         ratingAfter: 1304,
         bestMovePoints: bestMoveOf('ana'),
+        xp: 53, // 1.0.4: the seat's XP (50 for the win, a point per correct move)
+        ...paceColumns('ana'), // the stealth bot's yardstick [D96]: each person's pace in a ranked game
       },
       {
         gameId: 'g1',
@@ -202,6 +232,8 @@ describe('a ranked game, stored (spec §19)', () => {
         ratingBefore: 1305,
         ratingAfter: 1288,
         bestMovePoints: bestMoveOf('ben'),
+        xp: 21,
+        ...paceColumns('ben'),
       },
     ]);
     // Stage 12: each seat's best move is stored for the player card (spec §14.3).
@@ -683,5 +715,406 @@ describe('the admin site shows real ranked games (spec §27.3)', () => {
       ratingAfter: 1304,
     });
     expect(ana!.ratings.find((r) => r.key === 'fast')).toMatchObject({ rating: 1304, games: 13 });
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------
+// A friends room's game (1.0.4; friends-room.md §4, §7.1) [D81a]
+
+/** A friends room's game between `ids` on NEARLY_DONE (fast): the engine's ranked rules, nobody rated. */
+async function newFriendsGame(ranked: RankedGames, ids: string[], id = 'f1') {
+  const config = await ranked.createFriendsConfig({
+    id,
+    gameType: 'fast',
+    players: players(...ids),
+    seed: 1,
+  });
+  const recorder = ranked.recordFriends(config);
+  const table = tableFor(config, recorder);
+  table.game.start();
+  return { config, recorder, table };
+}
+
+/** `first` wins against `second`: 3 right digits (50 + 3), against a mistake then 1 right digit (20 + 1). */
+function playNearlyDone(table: ReturnType<typeof tableFor>, first = 'ana', second = 'ben') {
+  const [a, b, c, d] = NEARLY_CELLS as [CellIndex, CellIndex, CellIndex, CellIndex];
+  table.move(first, a);
+  table.move(second, b, 1500, ((table.answer(b) % 9) + 1) as Digit);
+  table.scheduler.advance(1000);
+  table.move(second, b);
+  table.move(first, c);
+  table.move(first, d);
+  expect(table.game.isOver).toBe(true);
+}
+
+const xpRows = async () =>
+  (await t.db.select().from(xp).orderBy(asc(xp.userId))).map((r) => [r.userId, r.xp] as const);
+const HOUR_MS = 3_600_000;
+const T0_DAY = Math.floor(T0 / (24 * HOUR_MS));
+
+/** A practice result of ana's, as POST /v1/me/practice-results stores it. */
+const practiceRow = (id: string, endedAt: number, earned: number) => ({
+  userId: 'ana',
+  id,
+  mode: 'bot' as const,
+  gameType: 'fast',
+  outcome: 'win',
+  correct: 10,
+  endedAt: new Date(endedAt),
+  xp: earned,
+});
+
+describe('a friends room’s game (1.0.4) [D81a]', () => {
+  it('is stored like a ranked game, as mode friends: no rating anywhere, histories, the replay, XP; no achievements', async () => {
+    const { ranked } = await setup();
+    const { config, recorder, table } = await newFriendsGame(ranked, ['ana', 'ben']);
+    // The engine's ranked rules, a puzzle of the ranked pool, and nobody with a rating.
+    expect(config).toMatchObject({ mode: 'ranked', gameType: 'fast', puzzle: NEARLY_DONE });
+    expect(config.rules).toEqual(
+      (await ranked.createConfig({ id: 'x', gameType: 'fast', players: players('ana', 'ben'), seed: 1 }))
+        .rules,
+    );
+    expect(config.players).toEqual([
+      { id: 'ana', name: 'ANA' },
+      { id: 'ben', name: 'BEN' },
+    ]);
+    const allRatings = () => t.db.select().from(ratings).orderBy(asc(ratings.userId), asc(ratings.ratingKey));
+    const ratingsBefore = await allRatings();
+
+    playNearlyDone(table);
+    expect(table.game.state.result!.ratingChanges).toEqual([]);
+    expect(await recorder.done).toEqual<RecordOutcome>({ ok: true, outcome: 'recorded' });
+
+    const [game] = await t.db.select().from(games).where(eq(games.id, 'f1'));
+    expect(game).toMatchObject({
+      mode: 'friends',
+      gameType: 'fast',
+      playerCount: 2,
+      endReason: 'boardComplete',
+    });
+    expect(
+      (await seatsRows('f1')).map((s) => [
+        s.userId,
+        s.place,
+        s.ratingKey,
+        s.ratingBefore,
+        s.ratingAfter,
+        s.xp,
+      ]),
+    ).toEqual([
+      ['ana', 1, null, null, null, 53],
+      ['ben', 2, null, null, null, 21],
+    ]);
+    expect(await allRatings()).toEqual(ratingsBefore);
+    expect(await xpRows()).toEqual([
+      ['ana', 53],
+      ['ben', 21],
+    ]);
+    // Seen and met: the puzzle does not come back to them in ranked, and they are each other's recent opponents.
+    expect((await t.db.select().from(puzzleHistory)).map((h) => [h.userId, h.puzzleId]).sort()).toEqual([
+      ['ana', NEARLY_DONE.id],
+      ['ben', NEARLY_DONE.id],
+    ]);
+    expect((await t.db.select().from(opponentHistory)).map((h) => [h.userId, h.opponentId]).sort()).toEqual([
+      ['ana', 'ben'],
+      ['ben', 'ana'],
+    ]);
+    expect(await t.db.select().from(gameEvents).where(eq(gameEvents.gameId, 'f1'))).toHaveLength(
+      table.game.events.length,
+    );
+    expect(await t.db.select().from(userAchievements)).toEqual([]);
+
+    // The history: 'ranked' with friends: true (an app before 1.0.4 still reads the page); the replay is there.
+    const page = await listUserGames(t.db, 'ben', null);
+    expect(page.games).toHaveLength(1);
+    expect(page.games[0]).toMatchObject({ id: 'f1', mode: 'ranked', friends: true, mySeat: 1 });
+    expect(page.games[0]!.players.map((p) => [p.ratingKey, p.ratingBefore, p.ratingAfter])).toEqual([
+      [null, null, null],
+      [null, null, null],
+    ]);
+    expect(isHistoryGame(page.games[0])).toBe(true);
+    const replay = await readReplay(t.db, 'f1', 'ana');
+    expect(replay.kind === 'found' && replay.events.length).toBe(table.game.events.length);
+
+    // The admin site's filter.
+    expect((await listGames(t.db, { page: 1, pageSize: 50, mode: 'friends' })).total).toBe(1);
+    expect((await listGames(t.db, { page: 1, pageSize: 50, mode: 'ranked' })).total).toBe(0);
+  });
+
+  it('recording the end again changes nothing, and a rating key passed with it is ignored', async () => {
+    const { ranked } = await setup();
+    const { config, recorder, table } = await newFriendsGame(ranked, ['ana', 'ben']);
+    playNearlyDone(table);
+    await recorder.done;
+    const endOf = (cfg: typeof config, tb: typeof table) =>
+      recordGameEnd(t.db, {
+        start: { config: cfg, startedAt: T0, seats: seatsOf(cfg), ratingKey: 'fast', friends: true },
+        state: tb.game.state,
+        unwritten: tb.game.events,
+        log: tb.game.events,
+        cheat: DEFAULT_CHEAT_THRESHOLDS,
+      });
+    expect(await endOf(config, table)).toBe('alreadyRecorded');
+    expect(await xpRows()).toEqual([
+      ['ana', 53],
+      ['ben', 21],
+    ]);
+
+    // Written straight, with a rating key (a caller's mistake): still unrated.
+    const second = await ranked.createFriendsConfig({
+      id: 'f2',
+      gameType: 'fast',
+      players: players('ana', 'ben'),
+      seed: 2,
+    });
+    const tb = tableFor(second);
+    tb.game.start();
+    playNearlyDone(tb);
+    expect(await endOf(second, tb)).toBe('recorded');
+    expect((await seatsRows('f2')).map((s) => [s.ratingKey, s.ratingBefore, s.ratingAfter])).toEqual([
+      [null, null, null],
+      [null, null, null],
+    ]);
+    expect(await rating('ana', 'fast')).toMatchObject({ rating: 1287, games: 12 });
+    expect((await t.db.select().from(games).where(eq(games.id, 'f2')))[0]?.mode).toBe('friends');
+  });
+
+  it('XP within the daily practice cap: practice and levels of that UTC day count first; the day before does not', async () => {
+    const { ranked } = await setup({ practiceXpDailyCap: 100 });
+    // ana used 80 of today's 100 (practice 60, levels 20); yesterday's 100 were yesterday's.
+    await t.db
+      .insert(practiceResults)
+      .values([practiceRow('p1', T0 - HOUR_MS, 60), practiceRow('p0', T0 - 13 * HOUR_MS, 100)]);
+    await t.db.insert(levelXpDays).values({ userId: 'ana', day: T0_DAY, xp: 20 });
+    expect(await practiceXpUsedOn(t.db, 'ana', T0_DAY)).toBe(80);
+
+    const { recorder, table } = await newFriendsGame(ranked, ['ana', 'ben']);
+    playNearlyDone(table);
+    await recorder.done;
+    // ana earned 53 and gets the 20 left; ben, with nothing used, all 21.
+    expect((await seatsRows('f1')).map((s) => [s.userId, s.xp])).toEqual([
+      ['ana', 20],
+      ['ben', 21],
+    ]);
+    expect(await xpRows()).toEqual([
+      ['ana', 20],
+      ['ben', 21],
+    ]);
+    // The friends game counts in its day's cap from now on, and only in that day's.
+    expect(await practiceXpUsedOn(t.db, 'ana', T0_DAY)).toBe(100);
+    expect(await practiceXpUsedOn(t.db, 'ben', T0_DAY)).toBe(21);
+    expect(await practiceXpUsedOn(t.db, 'ben', T0_DAY - 1)).toBe(0);
+    expect(await practiceXpUsedOn(t.db, 'ben', T0_DAY + 1)).toBe(0);
+    // A ranked game is not practice: the cap neither cuts its XP nor counts it.
+    const rankedGame = await newGame(ranked, ['ana', 'ben'], { id: 'g1' });
+    playNearlyDone(rankedGame.table);
+    await rankedGame.recorder.done;
+    expect((await seatsRows('g1')).map((s) => s.xp)).toEqual([53, 21]);
+    expect(await practiceXpUsedOn(t.db, 'ana', T0_DAY)).toBe(100);
+    expect(await xpRows()).toEqual([
+      ['ana', 73],
+      ['ben', 42],
+    ]);
+  });
+
+  it('two games ending at once never pass the cap together; a full cap still stores the game, with 0 XP', async () => {
+    const { ranked } = await setup({
+      practiceXpDailyCap: 100,
+      accounts: [
+        { id: 'ana', rating: 1287, games: 12 },
+        { id: 'ben', rating: 1305, games: 12 },
+        { id: 'cid', rating: 1250, games: 12 },
+      ],
+    });
+    // Two games of ana's, played out but not recorded yet: both ends at once.
+    const configs = await Promise.all([
+      ranked.createFriendsConfig({ id: 'f1', gameType: 'fast', players: players('ana', 'ben'), seed: 1 }),
+      ranked.createFriendsConfig({ id: 'f2', gameType: 'fast', players: players('ana', 'cid'), seed: 2 }),
+    ]);
+    const tables = configs.map((config) => tableFor(config));
+    for (const tb of tables) tb.game.start();
+    playNearlyDone(tables[0]!, 'ana', 'ben');
+    playNearlyDone(tables[1]!, 'ana', 'cid');
+    const ends = configs.map((config, k) =>
+      recordGameEnd(t.db, {
+        start: { config, startedAt: T0, seats: seatsOf(config), ratingKey: null, friends: true },
+        state: tables[k]!.game.state,
+        unwritten: tables[k]!.game.events,
+        log: tables[k]!.game.events,
+        cheat: DEFAULT_CHEAT_THRESHOLDS,
+        xpDailyCap: 100,
+      }),
+    );
+    expect(await Promise.all(ends)).toEqual(['recorded', 'recorded']);
+    // ana won both (53 each): 100 in all, the second end cut to what was left.
+    const anaSeats = [...(await seatsRows('f1')), ...(await seatsRows('f2'))].filter(
+      (s) => s.userId === 'ana',
+    );
+    expect(anaSeats.map((s) => s.xp!).sort((a, b) => b - a)).toEqual([53, 47]);
+    expect(await xpRows()).toEqual([
+      ['ana', 100],
+      ['ben', 21],
+      ['cid', 21],
+    ]);
+
+    // A third game the same day: stored, in the history, 0 XP for ana.
+    const third = await newFriendsGame(ranked, ['ana', 'ben'], 'f3');
+    playNearlyDone(third.table);
+    expect(await third.recorder.done).toEqual<RecordOutcome>({ ok: true, outcome: 'recorded' });
+    expect((await seatsRows('f3')).map((s) => [s.userId, s.xp])).toEqual([
+      ['ana', 0],
+      ['ben', 21],
+    ]);
+    expect((await xpRows())[0]).toEqual(['ana', 100]);
+    expect((await listUserGames(t.db, 'ana', null)).games.map((g) => g.id).sort()).toEqual([
+      'f1',
+      'f2',
+      'f3',
+    ]);
+  });
+});
+
+describe('a game against a stealth bot (stealth-bot.md §7) [D90, D92, D96]', () => {
+  /** Makes `id` (an account of the setup) a persona: users.kind and its personas row. */
+  async function makePersona(id: string) {
+    await t.db.update(users).set({ kind: 'persona' }).where(eq(users.id, id));
+    await t.db.insert(personas).values({ userId: id, temperament: 'quiet', createdAt: new Date(T0) });
+  }
+
+  it('is a ranked game in every way a player sees (seats, ratings, XP, opponents), marked stealth; the puzzle and the flags are the person’s alone', async () => {
+    await addPuzzles(t.db, [PUZZLE]);
+    // Every correct move flags: the person is checked, the persona never (a quick bot is no cheat).
+    const { ranked } = await setup({ cheat: { thinkMs: 10_000, moves: 1 } });
+    await makePersona('ben');
+    const config = {
+      ...(await ranked.createConfig({ id: 'g1', gameType: 'fast', players: players('ana', 'ben'), seed: 1 })),
+      puzzle: PUZZLE,
+    };
+    // Nothing in the config says which seat is the bot (it goes to the app in gameCreated).
+    expect(config.players).toEqual([
+      { id: 'ana', name: 'ANA', rating: 1287, ratedGames: 12 },
+      { id: 'ben', name: 'BEN', rating: 1305, ratedGames: 12 },
+    ]);
+    const recorder = ranked.record(config);
+    const table = tableFor(config, recorder);
+    table.game.start();
+    // A wrong digit from ana first, then they take turns.
+    const first = table.empty()[0]!;
+    table.move('ana', first, 4000, ((table.answer(first) % 9) + 1) as Digit);
+    table.scheduler.advance(1000);
+    table.fillAll(
+      (k) => (k % 2 === 0 ? 'ana' : 'ben'),
+      (k) => 3000 + (k % 5) * 700,
+    );
+    expect(await recorder.done).toEqual<RecordOutcome>({ ok: true, outcome: 'recorded' });
+    const result = table.game.state.result!;
+
+    const [game] = await t.db.select().from(games).where(eq(games.id, 'g1'));
+    expect(game).toMatchObject({ mode: 'ranked', stealth: true, endReason: 'boardComplete' });
+
+    // Both seats, each with its account; both rated in the key, both with XP.
+    const seats = await seatsRows('g1');
+    expect(seats.map((s) => [s.userId, s.ratingKey, s.ratingBefore])).toEqual([
+      ['ana', 'fast', 1287],
+      ['ben', 'fast', 1305],
+    ]);
+    for (const seat of seats) {
+      const change = result.ratingChanges.find((c) => c.playerId === seat.userId)!;
+      expect(seat.ratingAfter).toBe(change.after);
+      expect(seat.xp).toBeGreaterThan(0);
+    }
+    expect(await rating('ana', 'fast')).toMatchObject({ games: 13 });
+    expect(await rating('ben', 'fast')).toMatchObject({ games: 13 });
+    expect((await t.db.select().from(xp).orderBy(asc(xp.userId))).map((r) => [r.userId, r.xp > 0])).toEqual([
+      ['ana', true],
+      ['ben', true],
+    ]);
+
+    // The pace: the person's, as the engine measures it; never the persona's.
+    const pace = movePace(table.game.events, 'ana')!;
+    expect(pace.mistakes).toBe(1);
+    expect(seats[0]).toMatchObject({
+      paceMs: Math.round(pace.baseMs),
+      paceMoves: pace.moves,
+      paceDigits: pace.digits,
+      mistakes: 1,
+    });
+    const anaStats = result.stats.find((s) => s.playerId === 'ana')!;
+    expect(seats[0]!.paceDigits).toBe(seats[0]!.mistakes! + anaStats.correct);
+    expect(seats[1]).toMatchObject({ paceMs: null, paceMoves: null, paceDigits: null });
+
+    // The puzzle is the person's alone; both met each other (the friends tab, and no repeat persona).
+    expect((await t.db.select().from(puzzleHistory)).map((r) => r.userId)).toEqual(['ana']);
+    expect(
+      (await t.db.select().from(opponentHistory).orderBy(asc(opponentHistory.userId))).map((r) => [
+        r.userId,
+        r.opponentId,
+      ]),
+    ).toEqual([
+      ['ana', 'ben'],
+      ['ben', 'ana'],
+    ]);
+    // Flags: the person only.
+    expect((await t.db.select().from(cheatFlags)).map((f) => f.userId)).toEqual(['ana']);
+  });
+
+  it('the puzzle is picked by the person’s history alone (a persona that plays a lot uses up nothing)', async () => {
+    const [other] = standInPuzzles(1, 'fast-other');
+    await addPuzzles(t.db, [other!]);
+    const { ranked } = await setup();
+    await makePersona('ben');
+    // ana played NEARLY_DONE long ago; ben (were his history read) played the other one since.
+    await t.db.insert(puzzleHistory).values([
+      { userId: 'ana', puzzleId: NEARLY_DONE.id, playedAt: new Date(T0 - 10 * 86_400_000) },
+      { userId: 'ben', puzzleId: other!.id, playedAt: new Date(T0 - 86_400_000) },
+    ]);
+    const config = await ranked.createConfig({
+      id: 'g1',
+      gameType: 'fast',
+      players: players('ana', 'ben'),
+      seed: 1,
+    });
+    expect(config.puzzle.id).toBe(other!.id);
+
+    // Between two people, both histories count: the one played longest ago.
+    await t.db.update(users).set({ kind: 'person' }).where(eq(users.id, 'ben'));
+    const between = await ranked.createConfig({
+      id: 'g2',
+      gameType: 'fast',
+      players: players('ana', 'ben'),
+      seed: 1,
+    });
+    expect(between.puzzle.id).toBe(NEARLY_DONE.id);
+  });
+
+  it('a game between people is not stealth; a friends game stores no pace (ranked only, D96)', async () => {
+    const { ranked } = await setup();
+    const { recorder, table } = await newFriendsGame(ranked, ['ana', 'ben']);
+    for (const cell of NEARLY_CELLS) table.move('ana', cell);
+    expect(await recorder.done).toMatchObject({ ok: true });
+    const [game] = await t.db.select().from(games);
+    expect(game).toMatchObject({ mode: 'friends', stealth: false });
+    expect((await seatsRows('f1')).map((s) => [s.userId, s.paceMs, s.paceMoves, s.paceDigits])).toEqual([
+      ['ana', null, null, null],
+      ['ben', null, null, null],
+    ]);
+  });
+
+  it('a person who entered no digit has no pace (null), and a log the engine can’t read never fails the end', async () => {
+    const { ranked } = await setup();
+    const { recorder, table } = await newGame(ranked, ['ana', 'ben']);
+    for (const cell of NEARLY_CELLS) table.move('ana', cell);
+    expect(await recorder.done).toMatchObject({ ok: true });
+    const [ana, ben] = await seatsRows('g1');
+    expect(ana!.paceMs).toBeGreaterThan(0);
+    expect(ana).toMatchObject({ paceMoves: 4, paceDigits: 4 });
+    expect(ben).toMatchObject({ paceMs: null, paceMoves: null, paceDigits: null });
+
+    const events = table.game.events;
+    expect(paceOf(events, 'ana')).toEqual(movePace(events, 'ana'));
+    expect(paceOf([], 'ana')).toBeNull();
+    expect(paceOf(events.slice(1), 'ana')).toBeNull(); // not from gameCreated
+    expect(paceOf(events, 'nobody')).toBeNull();
+    expect(paceOf([{ type: 'gameCreated' } as unknown as GameEvent, ...events.slice(1)], 'ana')).toBeNull();
   });
 });

@@ -17,9 +17,9 @@
 | מקור | מה נאסף | איפה בקוד |
 |---|---|---|
 | חשבון | מייל, שם לתצוגה, מדינה, אווטאר, מזהה חשבון, uid של Firebase. **בכניסה עם Google** (רשות, מ־14.10.2026, ב־Android בלבד בינתיים): ‏Firebase Auth שומר גם את מזהה חשבון Google, ואת השם ואת הקישור לתמונה של חשבון Google. השרת שלנו לא שומר אותם ולא מציג אותם | `apps/server/src/accounts`, ‏Firebase Auth, ‏`apps/mobile/src/auth/firebaseProvider.ts` |
-| משחקים | מהלכים עם זמנים, ניקוד, טעויות, מיקום, דירוג, XP, היסטוריית לוחות ויריבים, תוצאות אימון, ‏cheat_flags. **אימון בשלבים** (מגרסה 1.0.2): הכוכבים הטובים ביותר וכמה משחקים בכל שלב, וה־XP מהשלבים בכל יום (`user_levels`, ‏`level_xp_days`). נמחקים עם החשבון; העותק בטלפון (`levels.db`) נשאר עד שמסירים את האפליקציה | `apps/server/src/persistence`, ‏`progress` (‏`progress/levels.ts`), ‏`db/schema.ts` |
+| משחקים | מהלכים עם זמנים, ניקוד, טעויות, מיקום, דירוג, XP, היסטוריית לוחות ויריבים, תוצאות אימון, ‏cheat_flags. **אימון בשלבים** (מגרסה 1.0.2): הכוכבים הטובים ביותר וכמה משחקים בכל שלב, וה־XP מהשלבים בכל יום (`user_levels`, ‏`level_xp_days`). נמחקים עם החשבון; העותק בטלפון (`levels.db`) נשאר עד שמסירים את האפליקציה. **קצב** (הבוט הסמוי, ‏D90–D93, בשרת בלבד): בסוף כל משחק מדורג, הזמן הממוצע למהלך ומספר המהלכים שנמדדו (`pace_ms`, ‏`pace_moves` ב־`game_players`), כדי לקבוע את הקצב של יריב ממוחשב כשאין שחקנים. נגזר מהמהלכים שכבר נשמרים, ולא גלוי לשחקנים אחרים. **דמויות** (`users.kind = 'persona'`): החשבונות של היריב הממוחשב הם של השרת, לא של אנשים: בלי מייל, בלי כניסה ובלי טלמטריה | `apps/server/src/persistence`, ‏`progress` (‏`progress/levels.ts`), ‏`stealth`, ‏`db/schema.ts` |
 | דיווחים וחסימות (אפיון 3.5, מ־14.10.2026) | דיווח: מי דיווח, על מי, אחת משלוש סיבות קבועות (בלי טקסט חופשי), המשחק המדורג אם יש, מתי, והטיפול בו. חסימה: את מי ומתי. יומן פעולות המנהלים (איפוס שם עם השם הקודם והחדש, השעיה), עם המייל של המנהל | `apps/server/src/moderation`, ‏`db/schema.ts` (`player_reports`, ‏`user_blocks`, ‏`admin_audit`, ‏`retired_names`, ‏`suspended_sign_ins`: שמות שאופסו, בלי קישור לשחקן; וטביעות חד־כיווניות של הכניסה של חשבון מושעה שנמחק) |
-| אירועי שימוש | ‏`installId` אקראי, פלטפורמה, גרסה, 20 אירועים עם props (טבלה במדיניות; ‏`report_sent` נושא רק את הסיבה; ששת האירועים של אימון בשלבים, מ־1.0.2, נושאים את מספר השלב, ולא שום מזהה) | `apps/mobile/src/services/telemetry`, ‏`POST /v1/events` |
+| אירועי שימוש | ‏`installId` אקראי, פלטפורמה, גרסה, 26 אירועים עם props (טבלה במדיניות; ‏`report_sent` נושא רק את הסיבה; ששת האירועים של אימון בשלבים, מ־1.0.2, נושאים את מספר השלב, ולא שום מזהה; ששת האירועים של משחק עם חברים, מ־1.0.4, נושאים את סוג המשחק, הדרך, התוצאה, מספר השחקנים וזמן ההמתנה, ואף פעם לא את קוד החדר או מזהה) | `apps/mobile/src/services/telemetry`, ‏`POST /v1/events` |
 | Firebase Analytics | אותם אירועים, ‏App Instance ID, פרטי מכשיר, מיקום משוער מה־IP | `apps/mobile/src/services/analytics.ts` ← ‏`firebaseAnalytics.ts`, ‏`ga4.ts` |
 | Crashlytics | דוחות קריסה, דגם, מערכת, גרסה, מזהה חשבון (לא מייל) | `apps/mobile/src/services/crashlytics.ts` |
 | Sentry (שרת) | פרטי שגיאה טכניים, לפעמים מזהה חשבון | `apps/server/src/monitoring` |
@@ -42,13 +42,13 @@
 | Sensitive Info | — | לא | — | — | — | |
 | Contacts | — | לא | — | — | — | |
 | User Content | Emails or Text Messages, Photos or Videos, Audio, Customer Support | לא | — | — | — | אין צ׳אט. תמיכה במייל, מחוץ לאפליקציה |
-| User Content | **Gameplay Content** | **כן** | כן | לא | App Functionality | משחקים מדורגים, מהלכים, Replay, תוצאות אימון, דירוג ו־XP. גם ההתקדמות באימון בשלבים (כוכבים ומשחקים לכל שלב), שמסונכרנת לחשבון |
-| User Content | **Other User Content** | **כן** | כן | לא | App Functionality | המדינה והאווטאר שהשחקן בוחר, גלויים לאחרים. גם הדיווחים על שחקנים (סיבה קבועה, בלי טקסט) והחסימות שלו (אפיון 3.5): נשמרים בשרת, ולא גלויים לשחקנים אחרים |
+| User Content | **Gameplay Content** | **כן** | כן | לא | App Functionality | משחקים מדורגים, מהלכים, Replay, תוצאות אימון, דירוג ו־XP. גם ההתקדמות באימון בשלבים (כוכבים ומשחקים לכל שלב), שמסונכרנת לחשבון. וגם משחקים עם חברים (מ־1.0.4): נשמרים כמו משחק מדורג, בלי דירוג. וגם הקצב למהלך שנגזר מכל משחק מדורג (הבוט הסמוי, D90), לקצב של יריב ממוחשב |
+| User Content | **Other User Content** | **כן** | כן | לא | App Functionality | המדינה והאווטאר שהשחקן בוחר, גלויים לאחרים (גם למי שנכנס עם הקוד לחדר של משחק עם חברים, מ־1.0.4: שם, אווטאר, דגל ודירוג כללי, שממילא מופיעים בטבלת המובילים). גם הדיווחים על שחקנים (סיבה קבועה, בלי טקסט) והחסימות שלו (אפיון 3.5): נשמרים בשרת, ולא גלויים לשחקנים אחרים |
 | Browsing / Search History | — | לא | — | — | — | |
 | Identifiers | **User ID** | **כן** | כן | לא | App Functionality, Analytics | מזהה החשבון, ה־uid של Firebase, והשם לתצוגה (screen name) |
 | Identifiers | **Device ID** | **כן** | כן | לא | App Functionality, Analytics | ‏`installId` שלנו, ‏App Instance ID של Firebase, מזהה ההתקנה של Crashlytics. **לא IDFA** |
 | Purchases | — | לא | — | — | — | |
-| Usage Data | **Product Interaction** | **כן** | כן | לא | Analytics | ‏`app_open`, ‏`screen_view` ושאר האירועים, כולל ששת האירועים של אימון בשלבים (‏`level_start`, ‏`level_end` ועוד) |
+| Usage Data | **Product Interaction** | **כן** | כן | לא | Analytics | ‏`app_open`, ‏`screen_view` ושאר האירועים, כולל ששת האירועים של אימון בשלבים (‏`level_start`, ‏`level_end` ועוד) וששת האירועים של משחק עם חברים (‏`friends_room_open`, ‏`friends_room_join` ועוד, בלי קוד החדר) |
 | Usage Data | Advertising Data | לא | — | — | — | |
 | Usage Data | Other Usage Data | לא | — | — | — | הכל נכלל ב־Product Interaction |
 | Diagnostics | **Crash Data** | **כן** | כן | לא | App Functionality | ‏Crashlytics (אפליקציה), ‏Sentry (שרת) |
@@ -62,6 +62,7 @@
 - **Coarse Location מוצהר בזהירות.** אם משה מחליט לכבות ב־Firebase את איסוף האזור (Google Signals / granular location), אפשר להסיר אותו. לא להסיר בלי שינוי כזה.
 - **Coarse Location לא מקושר:** הוא מגיע רק מ־Firebase Analytics, ו־Analytics לא מקבל מזהה משתמש ולא מחובר לנתונים שלנו. אם בעתיד מוסיפים `setUserId` או ייצוא ל־BigQuery שמצליב עם החשבונות, משנים לLinked. (סימון "Linked" גם עכשיו הוא בחירה זהירה ומותרת.)
 - **Product Interaction מקושר:** אף ש־Analytics לא מקבל את מזהה החשבון, השרת שלנו שומר את אותם אירועים עם המזהה. לכן "Linked".
+- **הבוט הסמוי (D90–D93, משה 20.10.2026; נבנה כבוי):** אין סוג מידע חדש ואין אירוע חדש. הקצב נגזר מהמהלכים של המשחקים המדורגים, ולכן הוא תחת Gameplay Content, במטרה App Functionality. האפליקציה לא יודעת שהיריב ממוחשב, ולא שולחת עליו כלום. הגילוי לשחקנים הוא שורה בתנאי השימוש (סעיף "זמינות השירות"), והבודקים מקבלים הסבר מלא בהערות (`LISTING-APPLE.md`, סעיף 5). מדיניות הפרטיות מתארת את הקצב ("משחקים והתקדמות").
 
 ## 3. בתוך האפליקציה
 

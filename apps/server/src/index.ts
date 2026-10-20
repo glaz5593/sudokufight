@@ -30,6 +30,14 @@ async function main(): Promise<void> {
   // A function from the shared engine, to show the server runs the same code as the app.
   console.log(`[server] engine ${ENGINE_VERSION}: cell 31 is ${cellName(31)}`);
   console.log(`[server] ${config.nodeEnv}, database ${db}, admin site ${admin}, ${sentry}`);
+  // The stealth bot [D90]: built off everywhere. Never its secret.
+  const stealth = config.stealth;
+  console.log(
+    stealth?.enabled
+      ? `[server] stealth bot available: the admin switch decides (${stealth.queues.join(', ')}; ` +
+          `after ${stealth.afterMs.min}-${stealth.afterMs.max} ms)`
+      : '[server] stealth bot off (STEALTH_BOT_ENABLED=false)',
+  );
   console.log(`[server] listening on http://localhost:${config.port} (WebSocket on the same port)`);
 }
 

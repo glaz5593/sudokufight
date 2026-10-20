@@ -3,9 +3,13 @@ import { join } from 'node:path';
 
 import type { ExpoConfig } from 'expo/config';
 
+import { FRIENDS_APP_SCHEME, roomLinkPath } from '@sudoku-fight/protocol';
+
+import { resolveServer, serverEnv } from '../../scripts/lib/build-apk.mjs';
 import appConfig, {
   AD_ID_PERMISSION,
   allowsCleartext,
+  APP_SCHEME,
   type AppConfigEnv,
   assertStoreBuildHasFirebase,
   assertStoreBuildHasServer,
@@ -16,6 +20,8 @@ import appConfig, {
   LOCAL_BUILD_PLUGINS,
   readGoogleSignIn,
   resolveAppConfig,
+  ROOM_LINK_PATH_PREFIX,
+  roomLinkHostOf,
   STORE_PROFILES,
   TEMPLATE_DEBUG_KEY_SHA1,
 } from '../../app.config';
@@ -556,5 +562,137 @@ describe('builds on this PC (npm run apk, docs/BUILD-APK.md)', () => {
     expect(
       buildProperties(resolve({ ...EAS_PREVIEW, allowCleartext: '1', googleServicesJson: ANDROID_FILE })),
     ).toEqual([['expo-build-properties', { ios: { useFrameworks: 'static' } }]]);
+  });
+});
+
+describe('room links open the app (1.0.4, friends-room.md §6.1–§6.3, D87)', () => {
+  const STAGING = { host: 'sudoku-fight-staging.fly.dev', secure: 'true', port: '443' };
+  const eas = JSON.parse(readFileSync(join(__dirname, '..', '..', 'eas.json'), 'utf8')) as {
+    build: Record<string, { env?: Record<string, string> }>;
+  };
+  const app = JSON.parse(readFileSync(join(__dirname, '..', '..', 'app.json'), 'utf8')) as {
+    expo: ExpoConfig;
+  };
+  const serverOf = (env: Record<string, string>) => ({
+    host: env.EXPO_PUBLIC_SERVER_HOST,
+    secure: env.EXPO_PUBLIC_SERVER_SECURE,
+    port: env.EXPO_PUBLIC_SERVER_PORT,
+  });
+
+  it('over TLS: an App Links filter for https://<server>/r/, verified, and the iOS associated domain', () => {
+    const config = resolve({ server: STAGING });
+    expect(config.android?.intentFilters).toEqual([
+      {
+        action: 'VIEW',
+        autoVerify: true,
+        data: [{ scheme: 'https', host: 'sudoku-fight-staging.fly.dev', pathPrefix: '/r/' }],
+        category: ['BROWSABLE', 'DEFAULT'],
+      },
+    ]);
+    expect(config.ios?.associatedDomains).toEqual(['applinks:sudoku-fight-staging.fly.dev']);
+  });
+
+  it("each built profile opens its own server's links: staging the preview APK's, production the store's", () => {
+    for (const name of ['preview', 'production']) {
+      const server = serverOf(eas.build[name]!.env!);
+      const config = resolveAppConfig(BASE, { ...NO_ENV, server }, easFilesOnly);
+      const [filter] = config.android?.intentFilters ?? [];
+      expect({ name, host: filter?.data, verify: filter?.autoVerify }).toEqual({
+        name,
+        host: [{ scheme: 'https', host: server.host, pathPrefix: '/r/' }],
+        verify: true,
+      });
+    }
+    // The development build names no server: no room links (the app's own scheme still works).
+    expect(eas.build.development!.env).toBeUndefined();
+    expect(resolve().android?.intentFilters).toBeUndefined();
+    expect(resolve().ios?.associatedDomains).toBeUndefined();
+  });
+
+  it('`npm run apk -- --server local` (plain http, port 2567): the filter, never autoVerify, no iOS domain', () => {
+    const local = resolveServer(
+      'local',
+      {},
+      { 'Wi-Fi': [{ address: '192.168.1.20', family: 'IPv4', internal: false }] },
+    );
+    if (local.kind !== 'server') throw new Error(local.error);
+    const env = serverEnv(local.server);
+    const config = resolve({
+      server: {
+        host: env.EXPO_PUBLIC_SERVER_HOST,
+        secure: env.EXPO_PUBLIC_SERVER_SECURE,
+        port: env.EXPO_PUBLIC_SERVER_PORT,
+      },
+    });
+    expect(config.android?.intentFilters).toEqual([
+      {
+        action: 'VIEW',
+        data: [{ scheme: 'http', host: '192.168.1.20', port: '2567', pathPrefix: '/r/' }],
+        category: ['BROWSABLE', 'DEFAULT'],
+      },
+    ]);
+    expect(config.ios?.associatedDomains).toBeUndefined();
+  });
+
+  it('TLS on another port: the filter with its port, but nothing to verify there', () => {
+    expect(roomLinkHostOf({ host: 'play.example.com', secure: 'true', port: '8443' })).toEqual({
+      scheme: 'https',
+      host: 'play.example.com',
+      port: 8443,
+      verified: false,
+    });
+    expect(roomLinkHostOf({ host: 'Play.Example.com', secure: 'true' })).toEqual({
+      scheme: 'https',
+      host: 'play.example.com',
+      port: null,
+      verified: true,
+    });
+    expect(roomLinkHostOf({ host: '10.0.2.2', secure: 'false', port: '80' })).toEqual({
+      scheme: 'http',
+      host: '10.0.2.2',
+      port: null,
+      verified: false,
+    });
+  });
+
+  it('no host, or not a plain host name: no room links', () => {
+    for (const host of [
+      undefined,
+      '',
+      ' ',
+      'https://sudoku-fight-staging.fly.dev',
+      'host/path',
+      'a b',
+      '::1',
+      'x:443',
+    ])
+      expect([host, roomLinkHostOf({ host, secure: 'true' })]).toEqual([host, null]);
+  });
+
+  it("other intent filters and domains stay; the store build's own settings too", () => {
+    const config = resolveAppConfig(
+      {
+        ...BASE,
+        android: { intentFilters: [{ action: 'SEND' }] },
+        ios: { associatedDomains: ['webcredentials:example.com'] },
+      },
+      { ...NO_ENV, server: STAGING },
+      easFilesOnly,
+    );
+    expect(config.android?.intentFilters?.map((f) => f.action)).toEqual(['SEND', 'VIEW']);
+    expect(config.ios?.associatedDomains).toEqual([
+      'webcredentials:example.com',
+      'applinks:sudoku-fight-staging.fly.dev',
+    ]);
+    const withFirebase = resolve({ server: STAGING, googleServicesJson: ANDROID_FILE });
+    expect(withFirebase.android?.googleServicesFile).toBe(ANDROID_FILE);
+    expect(withFirebase.android?.intentFilters).toHaveLength(1);
+  });
+
+  it("the path and the scheme are the protocol's (this file imports nothing of the workspace)", () => {
+    expect(ROOM_LINK_PATH_PREFIX).toBe(roomLinkPath(''));
+    expect(APP_SCHEME).toBe(FRIENDS_APP_SCHEME);
+    // sudokufight://room/123456 (the browser page's "פתח באפליקציה") needs only app.json's scheme.
+    expect(app.expo.scheme).toBe(FRIENDS_APP_SCHEME);
   });
 });

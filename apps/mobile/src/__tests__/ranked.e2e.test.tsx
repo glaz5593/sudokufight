@@ -382,10 +382,11 @@ describe('ranked games, end to end (work plan stages 9–10)', () => {
     const app = await launch();
     expect(screen.getByTestId(`rating-${PUZZLE.gameType}`)).toHaveTextContent(/1200זמני$/);
 
-    // ---- Home → "שחק" → "מדורג · 2" (my rating in its card) → the type → "מצא יריב" ----
+    // ---- Home → "שחק" → "מדורג · 2" → the type (my rating there: the row has none since 1.0.4, D80a) → "מצא יריב" ----
     await fireEvent.press(screen.getByRole('button', { name: 'שחק' }));
     await waitFor(() => expect(app.pathname()).toBe('/modes'));
-    expect(screen.getByTestId('rating-ranked2')).toHaveTextContent('דירוג 1200 · רגיל');
+    expect(screen.getByTestId('mode-ranked2')).toBeOnTheScreen();
+    expect(screen.queryByTestId('rating-ranked2')).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'חזרה' }));
     await waitFor(() => expect(app.pathname()).toBe('/'));
     await search(app, 2, 'מצא יריב');

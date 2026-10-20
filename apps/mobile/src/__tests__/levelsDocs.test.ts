@@ -138,7 +138,10 @@ describe('QA-CHECKLIST.md', () => {
     expect(names(row?.[1] ?? '')).toContain('Modes-Levels');
     const notes = row?.[7] ?? '';
     expect(notes).toContain('שש שורות');
-    expect(notes).toContain('לבדוק בטלפון של 360×780, בעברית ובאנגלית: שש השורות והשורה התחתונה בלי גלילה');
+    // 1.0.4 (D80a): the friends group takes the bottom line's place, and the six rows still fit with it.
+    expect(notes).toContain(
+      'לבדוק בטלפון של 360×780, בעברית ובאנגלית: שש השורות וקבוצת "עם חברים" בלי גלילה',
+    );
     expect(notes).not.toContain('חמש השורות');
     expect(notes).not.toContain('מקום לשורה שישית');
   });

@@ -15,6 +15,7 @@ import type {
   RejectReason,
 } from '@sudoku-fight/engine';
 
+import type { FriendsLobbyRefused, FriendsRoomClosed } from './friends';
 import type { GameRoomCountdown, LobbyPlayer } from './room';
 
 /**
@@ -36,6 +37,10 @@ import type { GameRoomCountdown, LobbyPlayer } from './room';
  * The interference kinds an app declares on joining [D47] (`interferenceKinds`, interferenceKinds.ts) only add
  * too: an older server ignores them and keeps its rooms to the kinds it has, which the snapshot's
  * rules.interferenceKinds tells the app.
+ * Friends rooms (1.0.4, friends.ts) only add as well: optional fields of `lobby` and of LobbyPlayer, two server
+ * messages (`lobbyRefused`, `roomClosed`) that only a friends room sends, the host's lobby commands
+ * (FRIENDS_LOBBY_COMMAND_TYPES, apart from CLIENT_MESSAGE_TYPES: the friends room handles them itself) and new
+ * HTTP routes. An older app has no way into a friends room, so it never meets any of them.
  */
 export const PROTOCOL_VERSION = 1;
 
@@ -110,15 +115,31 @@ export type ClientMessage = ({ clientSeq: number } & ClientAction) | { type: 'pi
  * by one, t is the server time).
  */
 export type ServerMessage =
-  /** Before the game: who is in the room so far. Sent to everyone on every join and leave. */
+  /**
+   * Before the game: who is in the room so far. Sent to everyone on every join and leave (and, in a friends
+   * room, on every change of a seat's `away`, of the host and of the game type).
+   */
   | {
       type: 'lobby';
+      /** The room's code: a dev room's 6 characters, or a friends room's 6 digits (not its roomId). */
       code: string;
+      /** A friends room: the host's current choice [D82]. */
       gameType: GameType;
+      /** The seats of the room: a dev room's players; a friends room's FRIENDS_MAX_PLAYERS. */
       playerCount: number;
+      /** In the order they came in. */
       players: LobbyPlayer[];
       /** The receiving player. */
       playerId: PlayerId;
+      /**
+       * Friends rooms only (1.0.4; absent elsewhere, and an older app ignores them): the host, who alone sends
+       * the lobby commands (friends.ts) [D84b: passes to the earliest of the others when the host leaves].
+       */
+      hostId?: PlayerId;
+      /** Friends rooms: `start` needs at least this many connected players (FRIENDS_MIN_PLAYERS). */
+      minPlayers?: number;
+      /** Friends rooms: at most this many seats (FRIENDS_MAX_PLAYERS). */
+      maxPlayers?: number;
     }
   /** A ranked match's room: everyone is in, 3… 2… 1… GO at startsAt; the snapshot follows at GO. */
   | GameRoomCountdown
@@ -148,7 +169,14 @@ export type ServerMessage =
   | { type: 'rejected'; clientSeq: number; reason: RejectReason }
   /** After gameOver: the solution, for the replay (spec §21). */
   | { type: 'solution'; solution: string }
-  | { type: 'pong'; t: number; serverTime: number };
+  | { type: 'pong'; t: number; serverTime: number }
+  /**
+   * Friends rooms only (1.0.4, friends.ts), before the game: the host's command was refused (to the sender
+   * only), and why this connection is out of the room (just before the server closes it). An older app never
+   * gets them: it has no way into a friends room.
+   */
+  | FriendsLobbyRefused
+  | FriendsRoomClosed;
 
 export type ServerMessageType = ServerMessage['type'];
 
@@ -160,6 +188,8 @@ export const SERVER_MESSAGE_TYPES = [
   'rejected',
   'solution',
   'pong',
+  'lobbyRefused',
+  'roomClosed',
 ] as const satisfies readonly ServerMessageType[];
 
 export const CLIENT_MESSAGE_TYPES = [
@@ -200,3 +230,4 @@ export * from './interferenceKinds';
 export * from './history';
 export * from './progress';
 export * from './moderation';
+export * from './friends';

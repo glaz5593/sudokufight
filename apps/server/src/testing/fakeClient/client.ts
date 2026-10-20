@@ -26,6 +26,11 @@ import {
   type ClientMessage,
   type CountryCode,
   devToken,
+  formatFriendCode,
+  FRIENDS_PATHS,
+  type FriendRoomTicket,
+  friendsErrorOf,
+  type FriendsRoomClosedReason,
   GAME_ROOM_NAME,
   type GameRoomCreateOptions,
   type GameRoomJoinOptions,
@@ -37,6 +42,7 @@ import {
   type MatchPlayer,
   type MatchSeatReservation,
   type Me,
+  isFriendRoomTicket,
   normalizeRoomCode,
   parseQueueKey,
   type QueueKey,
@@ -141,9 +147,14 @@ export interface FakeClientOptions {
   code?: string;
   /** …create a private room and join it (its code is then `client.code`)… */
   create?: Omit<GameRoomCreateOptions, 'private' | 'devUserId' | 'name'>;
-  /** …or search for a ranked game (stage 9). */
+  /** …or search for a ranked game (stage 9)… */
   queue?: FakeQueueOptions;
-  /** With `code` or `create`: play the room as an account (a rated room needs one). */
+  /**
+   * …or join a friends room (1.0.4) by its 6-digit code, as an account (`account`: its token, default
+   * dev:<id>): a ticket from POST /v1/rooms/join, then the room. Its host (the app) starts the game.
+   */
+  friends?: string;
+  /** With `code`, `create` or `friends`: play the room as an account (a rated room needs one). */
   account?: FakeAccountOptions;
   /** The bot level to play like (spec §9), default 3. */
   level?: BotLevelId;
@@ -330,6 +341,8 @@ export class FakeClient {
   private readonly timers = new Set<ReturnType<typeof setTimeout>>();
   private readonly sleepers = new Set<() => void>();
   private readonly rejectedCounts: Partial<Record<RejectReason, number>> = {};
+  /** A friends room: why the server said it closed it (`roomClosed`), if it did. */
+  private closedReason: FriendsRoomClosedReason | null = null;
   /** Ranked: the account's token and where its routes are. */
   private readonly account: { origin: string; token: string } | null;
   private readonly match: FakeMatchSummary | null;
@@ -401,8 +414,9 @@ export class FakeClient {
    * account route's error).
    */
   static async connect(opts: FakeClientOptions): Promise<FakeClient> {
-    const ways = [opts.code, opts.create, opts.queue].filter((w) => w !== undefined).length;
-    if (ways !== 1) throw new Error('Give exactly one of: a room code to join, create options, or a queue');
+    const ways = [opts.code, opts.create, opts.queue, opts.friends].filter((w) => w !== undefined).length;
+    if (ways !== 1)
+      throw new Error('Give exactly one of: a room code to join, create options, a queue, or a friends code');
     if (opts.queue) {
       const origin = httpOrigin(opts.url);
       const token = opts.queue.token ?? devToken(opts.id ?? defaultFakeId(opts.name));
@@ -420,17 +434,19 @@ export class FakeClient {
       await client.search();
       return client;
     }
-    if (opts.account) {
+    if (opts.account || opts.friends !== undefined) {
+      const account = opts.account ?? {};
       const origin = httpOrigin(opts.url);
-      const token = opts.account.token ?? devToken(opts.id ?? defaultFakeId(opts.name));
+      const token = account.token ?? devToken(opts.id ?? defaultFakeId(opts.name));
       const { me, registered } = await signIn(origin, token, {
         displayName: opts.name,
-        avatarId: opts.account.avatarId ?? AVATAR_IDS[0],
-        country: opts.account.country ?? 'IL',
+        avatarId: account.avatarId ?? AVATAR_IDS[0],
+        country: account.country ?? 'IL',
       });
       const client = new FakeClient(opts, me.id, { origin, token, registered, me });
       client.log(`${registered ? 'registered' : 'signed in as'} ${me.displayName} (${me.id})`);
-      await client.join();
+      if (opts.friends !== undefined) await client.joinFriends();
+      else await client.join();
       return client;
     }
     const client = new FakeClient(opts, opts.id ?? defaultFakeId(opts.name), null);
@@ -554,6 +570,39 @@ export class FakeClient {
     this.log(`${this.opts.create ? 'created' : 'joined'} room ${this.roomCode} as ${this.playerId}`);
   }
 
+  /** A friends room (1.0.4): a ticket for its code (POST /v1/rooms/join), then into the room with it. */
+  private async joinFriends(): Promise<void> {
+    const ticket = await this.friendsTicket();
+    const room = await this.sdk.consumeSeatReservation(ticket.reservation);
+    this.roomCode = ticket.room.code;
+    this.stage = 'lobby';
+    this.attach(room);
+    const { players, maxPlayers, host } = ticket.room;
+    this.log(
+      `joined friends room ${formatFriendCode(ticket.room.code)} (${players}/${maxPlayers}, host ${host.name}) ` +
+        `as ${this.playerId}; the host starts the game`,
+    );
+  }
+
+  /** POST /v1/rooms/join with the account's token: a seat reservation in the friends room. */
+  private async friendsTicket(): Promise<FriendRoomTicket> {
+    const { origin, token } = this.account!;
+    const res = await fetch(origin + FRIENDS_PATHS.join, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json', connection: 'close' },
+      body: JSON.stringify({ code: this.opts.friends, ...this.declaredKinds }),
+    });
+    const text = await res.text();
+    let json: unknown = null;
+    try {
+      json = text === '' ? null : JSON.parse(text);
+    } catch {
+      json = null;
+    }
+    if (res.ok && isFriendRoomTicket(json)) return json;
+    throw new Error(`POST ${FRIENDS_PATHS.join}: ${res.status} ${friendsErrorOf(res.status, json)}`);
+  }
+
   private attach(room: Room): void {
     this.room = room;
     // Reconnecting is ours to do: on demand (a simulated drop), and with the grace period in view.
@@ -591,6 +640,15 @@ export class FakeClient {
       this.log(`connection to the match's room lost (${code}); coming back`);
       const retryForMs = this.countdownAt === null ? 0 : DEFAULT_SOFT_GRACE_MS + DEFAULT_GRACE_MS + 1000;
       this.run(this.comeBack(token, performance.now(), retryForMs));
+      return;
+    }
+    if (this.stage === 'lobby' && this.opts.friends !== undefined) {
+      // A friends room's lobby (and its countdown): out on purpose (`roomClosed`), or a drop whose seat the
+      // room holds (6 h before the start [D84a]): back with the token, or with a new ticket.
+      if (code === CloseCode.CONSENTED || this.closedReason !== null)
+        return this.finish('closed', `the room closed (${this.closedReason ?? code})`);
+      this.log(`connection to the friends room lost (${code}); coming back`);
+      this.run(this.comeBack(token, performance.now(), DEFAULT_SOFT_GRACE_MS + DEFAULT_GRACE_MS + 1000));
       return;
     }
     if (this.stage !== 'playing') return this.finish('error', `the server closed the connection (${code})`);
@@ -637,7 +695,11 @@ export class FakeClient {
     }
     if (room === null) {
       try {
-        room = await this.sdk.joinById(this.roomCode, this.roomJoinOptions);
+        // A friends room is entered with a ticket only (its id is not its code).
+        room =
+          this.opts.friends !== undefined
+            ? await this.sdk.consumeSeatReservation((await this.friendsTicket()).reservation)
+            : await this.sdk.joinById(this.roomCode, this.roomJoinOptions);
         via = 'rejoin';
       } catch (error) {
         return this.finish('lostConnection', `could not come back: ${message(error)}`);
@@ -846,8 +908,13 @@ export class FakeClient {
     if (room !== this.room || this.ended) return;
     switch (m.type) {
       case 'lobby': {
-        const who = m.players.map((p) => p.name).join(', ');
-        this.log(`lobby ${m.code}: ${who} (${m.players.length}/${m.playerCount}, ${m.gameType})`);
+        // A friends room's seats say who is away and who hosts (1.0.4).
+        const host = m.players.find((p) => p.id === m.hostId)?.name;
+        const who = m.players.map((p) => `${p.name}${p.away === true ? ' (away)' : ''}`).join(', ');
+        this.log(
+          `lobby ${m.code}: ${who} (${m.players.length}/${m.playerCount}, ${m.gameType}` +
+            `${host === undefined ? '' : `, host ${host}`})`,
+        );
         return;
       }
       case 'countdown': {
@@ -898,6 +965,14 @@ export class FakeClient {
         return;
       case 'pong':
         this.sync.pong(m.t, m.serverTime, performance.now(), Date.now());
+        return;
+      // A friends room (1.0.4): out of the room, and why; a host's command refused (this client sends none).
+      case 'roomClosed':
+        this.closedReason = m.reason;
+        this.log(`the room closed for me: ${m.reason}`);
+        return;
+      case 'lobbyRefused':
+        this.log(`${m.command} refused: ${m.reason}`);
         return;
     }
   }

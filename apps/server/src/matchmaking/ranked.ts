@@ -1,6 +1,8 @@
 import type { GameType } from '@sudoku-fight/engine';
 import type { GameRoomRuleOverrides, QueueKey } from '@sudoku-fight/protocol';
 
+import type { StealthBotSeat } from '../stealth/seat';
+
 /**
  * The contract between matchmaking and the ranked game room (stage 9, spec §10, D37).
  *
@@ -49,9 +51,17 @@ export interface RankedMatchSetup {
   countdownMs: number;
   /**
    * Rule overrides for the game: MatchmakingConfig.gameRules (tests and development; none in production),
-   * and always `interferenceKinds`, the kinds every player's app declared on joining [D47].
+   * and always `interferenceKinds`, the kinds every player's app declared on joining [D47]. A persona declares
+   * them all, so with the stealth bot they are the person's own.
    */
   rules: GameRoomRuleOverrides;
+  /**
+   * The stealth bot's seats (stealth-bot.md §7) [D90]: personas among `players`, which have no seat
+   * reservation. The room seats each one itself, `readyAfterMs` after it opened, and calls join() for it as
+   * for a person who connected; in the game the engine's bot plays it (stealth/seat.ts). Absent: everyone is a
+   * person (always so for 3–4 players [D94]).
+   */
+  bots?: StealthBotSeat[];
 }
 
 export interface RankedRoomHooks {

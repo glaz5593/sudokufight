@@ -44,6 +44,71 @@ describe('router', () => {
     expect(sectionOf({ name: 'levels' })).toBe('levels');
   });
 
+  it('the friends rooms page (1.0.4): a period, its href round-trips; no detail page', () => {
+    expect(parseRoute('#/rooms')).toEqual({ name: 'rooms', days: 30 });
+    expect(parseRoute('#/rooms?days=7')).toEqual({ name: 'rooms', days: 7 });
+    expect(parseRoute('#/rooms?days=0')).toEqual({ name: 'rooms', days: 30 });
+    expect(parseRoute('#/rooms/r1')).toEqual({ name: 'notFound' });
+    expect(routeHref({ name: 'rooms', days: 30 })).toBe('#/rooms');
+    expect(routeHref({ name: 'rooms', days: 90 })).toBe('#/rooms?days=90');
+    expect(parseRoute(routeHref({ name: 'rooms', days: 7 }))).toEqual({ name: 'rooms', days: 7 });
+    expect(sectionOf({ name: 'rooms' })).toBe('rooms');
+    // The games list filters games with friends like any mode.
+    expect(parseRoute('#/games?mode=friends')).toEqual({
+      name: 'games',
+      mode: 'friends',
+      search: '',
+      page: 1,
+    });
+  });
+
+  it('the stealth bot (stealth-bot.md §8): its page, the personas filter, the games filter', () => {
+    expect(parseRoute('#/stealth')).toEqual({ name: 'stealth', search: '', page: 1 });
+    expect(parseRoute('#/stealth?search=noa&page=2')).toEqual({ name: 'stealth', search: 'noa', page: 2 });
+    expect(parseRoute('#/stealth/x')).toEqual({ name: 'notFound' });
+    expect(sectionOf({ name: 'stealth' })).toBe('stealth');
+    expect(routeHref({ name: 'stealth', search: '', page: 1 })).toBe('#/stealth');
+    expect(routeHref({ name: 'stealth', search: 'a b', page: 3 })).toBe('#/stealth?search=a+b&page=3');
+
+    // Users: the people by default, left out of the href; an unknown kind is the people.
+    expect(parseRoute('#/users?kind=persona')).toEqual({
+      name: 'users',
+      search: '',
+      page: 1,
+      kind: 'persona',
+    });
+    expect(parseRoute('#/users?kind=all&search=x')).toEqual({
+      name: 'users',
+      search: 'x',
+      page: 1,
+      kind: 'all',
+    });
+    expect(parseRoute('#/users?kind=person')).toEqual({ name: 'users', search: '', page: 1 });
+    expect(parseRoute('#/users?kind=robot')).toEqual({ name: 'users', search: '', page: 1 });
+    expect(routeHref({ name: 'users', kind: 'person' })).toBe('#/users');
+    expect(routeHref({ name: 'users', kind: 'persona', page: 2 })).toBe('#/users?kind=persona&page=2');
+
+    // Games: '' every game (left out), 1 only against the stealth bot, 0 only the others.
+    expect(parseRoute('#/games?stealth=1')).toEqual({
+      name: 'games',
+      mode: '',
+      search: '',
+      page: 1,
+      stealth: '1',
+    });
+    expect(parseRoute('#/games?stealth=0&mode=ranked')).toMatchObject({ mode: 'ranked', stealth: '0' });
+    expect(parseRoute('#/games?stealth=yes')).toEqual({ name: 'games', mode: '', search: '', page: 1 });
+    expect(routeHref({ name: 'games', stealth: '' })).toBe('#/games');
+    expect(routeHref({ name: 'games', mode: 'ranked', stealth: '1' })).toBe('#/games?mode=ranked&stealth=1');
+    for (const route of [
+      { name: 'stealth', search: 'q', page: 2 },
+      { name: 'users', search: 's', page: 1, kind: 'persona' },
+      { name: 'games', mode: '', search: '', page: 1, stealth: '0' },
+    ] as Route[]) {
+      expect(parseRoute(routeHref(route))).toEqual(route);
+    }
+  });
+
   it('an unknown report status is the open reports', () => {
     expect(parseRoute('#/reports?status=closed')).toEqual({ name: 'reports', status: 'open', page: 1 });
     expect(parseRoute('#/reports/x')).toEqual({ name: 'notFound' });

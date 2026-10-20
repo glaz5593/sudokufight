@@ -58,12 +58,15 @@
 </div>
 
 ```
-Sign in with the demo account (email verified). Practice (Home → Play → "Practice vs bot" or "Solo practice") works without other players and offline. Ranked games need a real opponent: if nobody is online, the search ends after about a minute and offers "Play a bot meanwhile". A second demo account for a ranked game on two devices: <demo2 email> / <password>. Account deletion: Settings → Delete account.
+Sign in with the demo account (email verified). Practice (Home → Play → "Practice vs bot" or "Solo practice") works without other players and offline. Ranked games: the server looks for another player with a similar rating. In 2-player ranked games only, when no player is available, the server may instead match you, after a short wait, with a computer-controlled opponent: a made-up name that belongs to no real player, an avatar and a flag; it plays at a pace close to yours, and the game counts for the rating like any ranked game. The game itself does not mark it as a computer; players are told in the Terms of Use (Settings → About and legal), section "Availability". This is a server setting and may be switched off. When no such opponent is available either, the search screen says so right away and offers "Play a bot meanwhile" (a practice game); after about a minute the search ends with the same option. A second demo account, to see a ranked game between two people (start the same search on both within a few seconds): <demo2 email> / <password>. Account deletion: Settings → Delete account.
 ```
 
 <div dir="rtl">
 
 - את חשבונות הדמו מכינים כמו ב־`LISTING-APPLE.md`, סעיף 5 (שניהם עם מייל מאומת). אפשר להשתמש באותם חשבונות לשתי החנויות.
+- **היריב הממוחשב (הבוט הסמוי, ‏D90–D93):** ההוראות מתארות אותו במפורש, כמו ההערות ל־Apple, כי אסור להסתיר התנהגות מהבודקים. הנוסח נכון גם כשהבוט כבוי וגם כשהוא דולק. ההסבר המלא ב־`LISTING-APPLE.md`, סעיף 5.
+  - **מדיניות Play על הטעיה:** התיאור (הקצר והמלא) לא מבטיח "רק אנשים אמיתיים". ‏"Ranked, live, fair" נשאר. לא מוסיפים טענה כזו כל עוד יש בשרת בוט סמוי.
+  - אם Play Console מגביל את אורך השדה, מקצרים את שאר ההוראות, לא את הפסקה על היריב הממוחשב.
 
 ### Advertising ID
 

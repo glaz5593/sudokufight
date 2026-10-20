@@ -25,12 +25,21 @@ import type { TelemetryEventName, TelemetryProps } from './telemetry';
  *   GET  /admin/api/overview?days=30                      → AdminOverview
  *   GET  /admin/api/installs?search=&page=1&pageSize=50   → AdminPage<AdminInstallRow>
  *   GET  /admin/api/installs/:id                          → AdminInstallDetail · 404
- *   GET  /admin/api/users?search=&page=1&pageSize=50      → AdminPage<AdminUserRow>
+ *   GET  /admin/api/users?kind=person&search=&page=1&pageSize=50 → AdminPage<AdminUserRow>
+ *        kind: person (default: the people) | persona (the stealth bot's personas) | all.
  *   GET  /admin/api/users/:id                             → AdminUserDetail · 404
- *   GET  /admin/api/games?mode=&search=&page=1&pageSize=50 → AdminPage<AdminGameRow>
+ *   GET  /admin/api/games?mode=&stealth=&search=&page=1&pageSize=50 → AdminPage<AdminGameRow>
+ *        stealth: '' every game · 1 only the games against a stealth bot · 0 only the others.
  *   GET  /admin/api/games/:id                             → AdminGameDetail · 404
  *   GET  /admin/api/screens?days=30                       → AdminScreens
  *   GET  /admin/api/levels?days=30                        → AdminLevels (staged practice, 1.0.2)
+ *   GET  /admin/api/stealth                               → AdminStealthSwitch (the stealth bot, D90)
+ *
+ * The stealth bot (stealth-bot.md §8) [D90]: the admin site is the only place that tells a persona from a
+ * person, and a game against one from a game between people (`persona`, `stealth` below). Its switch:
+ *   POST /admin/api/stealth/switch  AdminStealthSwitchRequest → AdminStealthSwitchResult · 409 stealthDisabled
+ *        (STEALTH_BOT_ENABLED is off on this server: there is no switch) · 403 googleRequired. Like the
+ *        moderation actions: a JSON body (`{"on": true}`), confirmed on the site, written to the audit log.
  *
  * Moderation (spec §3.5; AdminActionError for the codes):
  *   GET  /admin/api/reports?status=open&page=1&pageSize=50 → AdminPage<AdminReportedPlayer>
@@ -162,8 +171,15 @@ export interface AdminError {
  * - 409 notOpen: the report is resolved or dismissed already.
  * - 409 accountDeleted: the account is deleted (nothing to reset or suspend).
  * - 403 googleRequired: a password session on a server that offers Google sign-in: sign in with Google.
+ * - 409 stealthDisabled: the stealth bot's switch, on a server whose settings leave the bot out
+ *   (STEALTH_BOT_ENABLED false): there is nothing to turn.
  */
-export const ADMIN_ACTION_ERRORS = ['notOpen', 'accountDeleted', 'googleRequired'] as const;
+export const ADMIN_ACTION_ERRORS = [
+  'notOpen',
+  'accountDeleted',
+  'googleRequired',
+  'stealthDisabled',
+] as const;
 export type AdminActionErrorCode = (typeof ADMIN_ACTION_ERRORS)[number];
 
 export interface AdminActionError {
@@ -187,6 +203,7 @@ export interface AdminOverview {
   days: number;
   totals: {
     installs: number;
+    /** Accounts of people, not deleted: never the stealth bot's personas. */
     users: number;
     /** Ranked games on the server. */
     games: number;
@@ -205,6 +222,113 @@ export interface AdminOverview {
   gamesPerDay: AdminDayCount[];
   /** Practice games the apps reported ending that day. */
   practicePerDay: AdminDayCount[];
+  /**
+   * The stealth bot over the window (stealth-bot.md §8) [D90]. This server always sends it; optional only so
+   * older fixtures still type-check.
+   */
+  stealth?: AdminStealthOverview;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// The stealth bot (stealth-bot.md §8) [D90–D99]: a ranked opponent when nobody else is there, that looks and
+// plays like a player. Only the admin site tells it apart: nothing an app gets says "bot".
+
+/** GET /admin/api/stealth and its switch, under ADMIN_API_PREFIX. */
+export const ADMIN_STEALTH_PATH = '/stealth';
+export const ADMIN_STEALTH_SWITCH_PATH = '/stealth/switch';
+
+/** The players' win rate against the stealth bot that the tuning aims at (stealth-bot.md §8): 45%–55%. */
+export const STEALTH_WIN_TARGET = { min: 0.45, max: 0.55 } as const;
+
+/** "Came back to play": another game on the server within this many minutes of a game's end. */
+export const STEALTH_RETURN_MINUTES = 10;
+
+/**
+ * "Did the bot take a game from people?" (stealth-bot.md §3.5): a stealth game that started within this many
+ * seconds after another person's stealth game of the same type had started. Two people who searched about
+ * together, and might have played each other, got a bot each.
+ */
+export const STEALTH_CLOSE_CALL_SECONDS = 60;
+
+/**
+ * The stealth bot's switch (stealth-bot.md §8): turned on the admin site, kept in the database, and read by
+ * matchmaking on every tick, so it needs no restart (a restart ends every ranked game being played). Off stops
+ * new stealth bots at once; the games already running end as usual.
+ */
+export interface AdminStealthSwitch {
+  /**
+   * STEALTH_BOT_ENABLED in this server's settings, the master switch: false, the stealth bot does not exist on
+   * this server at all, and there is no switch to turn.
+   */
+  enabled: boolean;
+  /** The switch: new stealth bots may start. Always false when not `enabled`. */
+  on: boolean;
+  /** When it was last turned, and by whom (an admin's address, or `password`); null when never. */
+  changedAt: number | null;
+  changedBy: string | null;
+}
+
+/** POST /admin/api/stealth/switch: on or off. */
+export interface AdminStealthSwitchRequest {
+  on: boolean;
+}
+
+/** What the switch answers: its state now, and the audit entry (null when it was so already). */
+export interface AdminStealthSwitchResult {
+  switch: AdminStealthSwitch;
+  audit: AdminAuditEntry | null;
+}
+
+/** Of the people's games of one kind (after a stealth game, after a game between people): how many… */
+export interface AdminReturnCount {
+  /** …ended in the window, at least STEALTH_RETURN_MINUTES before now (a seat of a person each), */
+  games: number;
+  /** …and of them, the ones whose player started another game on the server within those minutes. */
+  returned: number;
+}
+
+/** How long people searched before "נמצא יריב", as their apps reported it (matchmaking_wait). */
+export interface AdminWaitStat {
+  /** Seats of people whose wait was found: one per game and person. */
+  games: number;
+  /** Their mean, in seconds; null without any. */
+  avgSec: number | null;
+}
+
+export interface AdminStealthOverview {
+  /** Personas the server has made so far (not deleted), of at most STEALTH_PERSONA_POOL_MAX. */
+  personas: number;
+  /** Ranked games that started in the window. */
+  rankedGames: number;
+  /** Of them, against a stealth bot. */
+  stealthGames: number;
+  /** Stealth games that started that day, zero-filled. */
+  stealthPerDay: AdminDayCount[];
+  /**
+   * The people's results in the stealth games that ended in the window: place 1 a win (a shared first place
+   * too), a later place a loss. winRate = wins / (wins + losses), null without any; the aim is
+   * STEALTH_WIN_TARGET.
+   */
+  wins: number;
+  losses: number;
+  winRate: number | null;
+  /**
+   * The wait until "found", against the stealth bot and against people, matched to the window's ranked games:
+   * a person's latest matchmaking_wait 'found' from any of their installs in the 2 minutes before the game
+   * started (the phone's clock). Only the apps that send analytics count.
+   */
+  wait: { stealth: AdminWaitStat; people: AdminWaitStat };
+  /** Reports sent about personas, and blocks of personas, in the window. */
+  reports: number;
+  blocks: number;
+  /** People who came back to play within STEALTH_RETURN_MINUTES: after a stealth game, after one between people. */
+  returned: { stealth: AdminReturnCount; people: AdminReturnCount };
+  /**
+   * The stealth games that started in the window within STEALTH_CLOSE_CALL_SECONDS after another person's stealth
+   * game of the same game type and player count had started (stealth-bot.md §3.5): two people who each got a
+   * bot, and might have met each other. Often: lengthen the wait (STEALTH_BOT_AFTER_MS).
+   */
+  closeCalls: number;
 }
 
 export interface AdminInstallRow {
@@ -269,7 +393,16 @@ export interface AdminUserRow {
   nameResetRequired?: boolean;
   /** Open reports about this player. */
   openReports?: number;
+  /**
+   * A stealth bot's persona (users.kind 'persona', stealth-bot.md §6), not a person: told apart here only.
+   * This server always sends it; optional only so older fixtures still type-check.
+   */
+  persona?: boolean;
 }
+
+/** The `kind` filter of GET /admin/api/users. */
+export const ADMIN_USER_KINDS = ['person', 'persona', 'all'] as const;
+export type AdminUserKind = (typeof ADMIN_USER_KINDS)[number];
 
 export interface AdminUserGame {
   gameId: string;
@@ -285,6 +418,8 @@ export interface AdminUserGame {
   ratingKey: string | null;
   ratingBefore: number | null;
   ratingAfter: number | null;
+  /** A game against a stealth bot (games.stealth). Always sent by this server. */
+  stealth?: boolean;
 }
 
 /** An anomaly flagged for review (spec §21); V1 takes no action on it. */
@@ -341,6 +476,8 @@ export interface AdminGamePlayer {
   ratingKey: string | null;
   ratingBefore: number | null;
   ratingAfter: number | null;
+  /** The seat of a stealth bot's persona. Always sent by this server. */
+  persona?: boolean;
 }
 
 export interface AdminGameRow {
@@ -352,6 +489,8 @@ export interface AdminGameRow {
   startedAt: number;
   endedAt: number | null;
   endReason: string | null;
+  /** Against a stealth bot (games.stealth): one seat is a persona. Always sent by this server. */
+  stealth?: boolean;
   players: AdminGamePlayer[];
 }
 
@@ -506,6 +645,11 @@ export interface AdminReportedPlayer {
     deletedAt: number | null;
     suspendedAt: number | null;
     nameResetRequired: boolean;
+    /**
+     * A stealth bot's persona: the reporter got the usual thanks, and a block keeps that persona from them
+     * (stealth-bot.md §6). Always sent by this server.
+     */
+    persona?: boolean;
   };
   /**
    * The player's reports that match the filter: by reason, in all, and the different accounts that sent them
@@ -531,15 +675,18 @@ export const ADMIN_AUDIT_ACTIONS = [
   'unsuspend',
   'resolveReport',
   'dismissReport',
+  'stealthSwitch',
 ] as const;
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];
 
 /**
  * One admin action (admin_audit). `details` by action:
- * - resetName: `{ fromName, toName }` (the names; scrubbed when the account is deleted later);
+ * - resetName: `{ fromName, toName }` (the names; scrubbed when the account is deleted later); a persona's
+ *   (stealth-bot.md §6) also `persona: true`: it got a new invented name at once, not a temporary one;
  * - suspend, unsuspend: `{}`; a suspend by `system` (a new account of the sign-in of a suspended account that
  *   was deleted starts suspended): `{ previousUserId }`, the deleted account;
- * - resolveReport, dismissReport: `{ reportId, reason }`.
+ * - resolveReport, dismissReport: `{ reportId, reason }`;
+ * - stealthSwitch: `{ on }`, the stealth bot's switch turned on or off; no player (`targetUserId` null).
  */
 export interface AdminAuditEntry {
   id: string;

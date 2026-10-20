@@ -1,9 +1,18 @@
-import { type GameRoomError, gameRoomErrorOf } from '@sudoku-fight/protocol';
+import {
+  type FriendsAppError,
+  type FriendsErrorCode,
+  type GameRoomError,
+  gameRoomErrorOf,
+} from '@sudoku-fight/protocol';
 
 /**
  * Why going online failed, as the app acts on it (spec §16.3: "connection error: there is a network, but the
  * game server did not answer"). The server's own refusals come as GameRoomError (protocol, room.ts: the message
  * starts with it); Colyseus's refusals and network failures are recognised by their code and message.
+ *
+ * A friends room (1.0.4, protocol friends.ts) is entered through our HTTP routes (POST /v1/rooms/join, also to
+ * come back without a reconnection token): their refusals become OnlineErrors with onlineErrorOfFriends(), and
+ * keep the route's own code in `friends` for the friends screens' texts.
  */
 export type OnlineErrorCode =
   | GameRoomError
@@ -21,18 +30,48 @@ export type OnlineErrorCode =
   | 'network'
   /** The server speaks another protocol version: the app needs an update. */
   | 'protocol'
+  /** A friends room: the caller blocked a player who is in it [D85c] ("חסמת שחקן שנמצא בחדר הזה"). */
+  | 'cantJoin'
+  /** A friends room: too many tries; `retryAfterMs` says how long to wait. */
+  | 'tooManyRequests'
+  /** A friends room: the server has no /v1/rooms routes (older than 1.0.4). */
+  | 'notAvailable'
   | 'unknown';
+
+/**
+ * What a friends screen explains (friends.json): a code of the /v1/rooms routes, or the app's own `network` and
+ * `notAvailable` (protocol FRIENDS_APP_ERRORS).
+ */
+export type FriendsProblem = FriendsErrorCode | FriendsAppError;
+
+export interface OnlineErrorDetails {
+  /** 429: how long the server asked to wait (ms). */
+  retryAfterMs?: number | null;
+  /** A friends room's refusal, as its route said it (see FriendsProblem). */
+  friends?: FriendsProblem | null;
+}
 
 export class OnlineError extends Error {
   readonly code: OnlineErrorCode;
   /** The SDK's own code (an HTTP status, a close code, an errno), for the small support code; null without. */
   readonly status: number | string | null;
+  /** tooManyRequests: how long the server asked to wait (ms); null otherwise. */
+  readonly retryAfterMs: number | null;
+  /** A refusal of the friends rooms' HTTP routes, as they said it; null for anything else. */
+  readonly friends: FriendsProblem | null;
 
-  constructor(code: OnlineErrorCode, message: string, status: number | string | null = null) {
+  constructor(
+    code: OnlineErrorCode,
+    message: string,
+    status: number | string | null = null,
+    details: OnlineErrorDetails = {},
+  ) {
     super(message);
     this.name = 'OnlineError';
     this.code = code;
     this.status = status;
+    this.retryAfterMs = details.retryAfterMs ?? null;
+    this.friends = details.friends ?? null;
   }
 
   /** For the error screen (spec §16.3): e.g. "notFound-522". Never carries a token. */
@@ -75,4 +114,70 @@ export function onlineErrorOf(error: unknown): OnlineError {
     status >= 500 ||
     /network|fetch failed|timed? ?out|ECONN|socket/i.test(message);
   return new OnlineError(network ? 'network' : 'unknown', message, status);
+}
+
+/** The OnlineErrorCode of each friends route refusal (FriendsProblem), as the host acts on it. */
+const FRIENDS_ONLINE_CODES: Readonly<Record<FriendsProblem, OnlineErrorCode>> = {
+  notFound: 'notFound',
+  roomFull: 'roomFull',
+  gameStarted: 'gameStarted',
+  roomClosed: 'roomClosed',
+  kicked: 'kicked',
+  suspended: 'suspended',
+  cantJoin: 'cantJoin',
+  tooManyRequests: 'tooManyRequests',
+  notAvailable: 'notAvailable',
+  unauthorized: 'unauthenticated',
+  notRegistered: 'unauthenticated',
+  network: 'network',
+  unavailable: 'network',
+  internal: 'network',
+  disabled: 'network',
+  badRequest: 'unknown',
+  tooLarge: 'unknown',
+  tooManyRooms: 'unknown',
+};
+
+/**
+ * A refusal of the friends rooms' HTTP routes (POST /v1/rooms, /v1/rooms/join) as an OnlineError: the code the
+ * host acts on (a refusal that a later try can't change ends the way back), with the route's own code kept in
+ * `friends`. A server that could not answer now (5xx) counts as `network`: worth another try.
+ */
+export function onlineErrorOfFriends(
+  problem: FriendsProblem,
+  status: number | null = null,
+  retryAfterMs: number | null = null,
+): OnlineError {
+  return new OnlineError(FRIENDS_ONLINE_CODES[problem], `friends: ${problem}`, status, {
+    retryAfterMs,
+    friends: problem,
+  });
+}
+
+/**
+ * What a friends screen says about an OnlineError: the route's own code when it came from one, else the code a
+ * friends room's refusal or lost connection maps to (the room's own refusals, `gameStarted: …`, `kicked: …`).
+ */
+export function friendsProblemOf(error: OnlineError): FriendsProblem {
+  if (error.friends) return error.friends;
+  switch (error.code) {
+    case 'notFound':
+    case 'badCode':
+    case 'roomGone':
+      return 'notFound';
+    case 'roomFull':
+    case 'gameStarted':
+    case 'kicked':
+    case 'roomClosed':
+    case 'suspended':
+    case 'cantJoin':
+    case 'tooManyRequests':
+    case 'notAvailable':
+    case 'network':
+      return error.code;
+    case 'unauthenticated':
+      return 'unauthorized';
+    default:
+      return 'internal';
+  }
 }

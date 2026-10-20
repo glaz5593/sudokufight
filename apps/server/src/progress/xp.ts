@@ -53,17 +53,44 @@ export function rankedXpGains(result: GameResult, rules: ProgressRules = DEFAULT
   });
 }
 
+/** By user id: the one order every writer takes players' xp rows in, so two transactions never deadlock. */
+const byUserId = (a: { userId: string }, b: { userId: string }) =>
+  a.userId < b.userId ? -1 : a.userId > b.userId ? 1 : 0;
+
+/**
+ * Locks users' xp rows for the rest of the transaction, making the missing ones (0 XP, level 1): what a
+ * daily-cap check holds while it reads what was used and writes what it gives (practice and the levels lock
+ * one player's row; the end of a friends game, every account's in it). Rows are taken in user id order, as
+ * addXp writes them, so two games ending at once with the same players wait for each other instead of
+ * deadlocking.
+ */
+export async function lockXpRows(db: Db, userIds: readonly string[]): Promise<void> {
+  const ids = [...new Set(userIds)].sort();
+  if (ids.length === 0) return;
+  await db
+    .insert(xp)
+    .values(ids.map((userId) => ({ userId })))
+    .onConflictDoNothing();
+  await db
+    .select({ userId: xp.userId })
+    .from(xp)
+    .where(inArray(xp.userId, ids))
+    .orderBy(xp.userId)
+    .for('update');
+}
+
 /**
  * Adds XP to users (one row each in `xp`, made on the first gain) and keeps the stored level equal to
  * levelFor(xp). Call it inside the transaction that records what earned the XP: that transaction's own
- * "already recorded" check is what keeps a retry from adding it twice.
+ * "already recorded" check is what keeps a retry from adding it twice. Rows are written in user id order
+ * (lockXpRows).
  */
 export async function addXp(
   db: Db,
   gains: readonly { userId: string; xp: number }[],
   rules: ProgressRules = DEFAULT_PROGRESS_RULES,
 ): Promise<void> {
-  for (const { userId, xp: gained } of gains) {
+  for (const { userId, xp: gained } of [...gains].sort(byUserId)) {
     if (gained <= 0) continue;
     const [row] = await db
       .insert(xp)

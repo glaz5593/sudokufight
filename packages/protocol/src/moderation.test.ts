@@ -89,7 +89,9 @@ describe('the moderation contract', () => {
       'unsuspend',
       'resolveReport',
       'dismissReport',
+      // The stealth bot's switch (stealth-bot.md §8).
+      'stealthSwitch',
     ]);
-    expect(ADMIN_ACTION_ERRORS).toEqual(['notOpen', 'accountDeleted', 'googleRequired']);
+    expect(ADMIN_ACTION_ERRORS).toEqual(['notOpen', 'accountDeleted', 'googleRequired', 'stealthDisabled']);
   });
 });

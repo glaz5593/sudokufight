@@ -812,6 +812,7 @@ Render each of these in Hebrew and in English. The board and keypad must look id
 - **Overlays:** the interference picker (§13: 2P target line and 3–4P route, price row, the 3 × 2 grid with a locked and a blocked kind, no scroll at 360 × 640) · in-game confirm modal (surrender and practice) · centred dialog · toasts (all 5) · interference banner (and the generic one for an unknown kind) · the board dim (§15.3) · scramble, ink and the keypad shuffle (§15.4).
 - **Navigation:** bottom nav with each tab active.
 - **Staged practice (§19, version 1.0.2):** the new-game row "אימון בשלבים" (new player and returning) · map nodes × {played 0–3 stars, current, locked, boss with crown and bot} · chapter header · gate plate × {locked 17/20, enough stars but the boss unplayed 22/20, open} · the docked bottom panel · star row (12 / 14 / 16 / 44) · star meter × {time, count, gap} · the "+5 ש׳" chip · region frame and dimmed cells · tap target, red X, correction, "mine" digit with ● · race freeze layer · RaceTo30 bars and the gap meter · chain links · point chips and "שווה 6" · ready view · resume countdown over the covered board (D65) · result × {0, 1, 3 stars, vs bot} · gate sheet · chapter unlocked · how-to-play frame · the exit dialog · the player-card line · **1.0.3:** the region look (in, out, the frame with its keylines, the spotlight) on a box, a row and a column · the answer ring · `MiniRegion` (27 and 72) · the ready view per kind · the fill row and fill column HUD · the boss intro, band, arena corners and crowned bot avatar · the boss result × {won, lost} · the boss node with arena corners beside a current node · the puzzle × {rest, held, target, over a fixed box, tap-selected, solved}. In Hebrew and English: English says "Stage", never "Level", for a stage.
+- **Playing with friends (§20, version 1.0.4):** the "עם חברים" group on the Modes screen × {online, offline, suspended} and the ranked rows without their chip · the code card × {code, copied} · the game-type picker × {host, guest} · seat rows × {me (P1 ●), host with the crown, a guest with the host's X, away, empty and waiting} · the start box × {1 connected (off, with the hint), 2 connected, someone away} and the guest's "מחכים ש־MosheG יתחיל" · the six code boxes × {empty, half, full, joining, refused} with "הדבק" · the room's countdown · the closed and failed states · the "משחק עם חברים · בלי דירוג" label on a result and a history card. In Hebrew and English: the code and the boxes are LTR in both.
 - **Reduced motion:** toggle it and check every row above again.
 
 ---
@@ -1067,3 +1068,113 @@ pair is in the `contrast` list (`contrast.test.ts`).
 
 **New icons** (24 viewBox, stroke 2, `currentColor`): star (filled), crown, chain links, box, swords (duel), open lock, and the
 levels mark of the new-game row. New in 1.0.3: `gridRow`, `gridCol` and `puzzle` (`Icon.tsx`, for `KIND_ICON`).
+
+---
+
+## 20. Playing with friends components [new] (version 1.0.4)
+The friends room, "join with a code" and the new-game group (`docs/01-SPEC.md` §5.4, D80–D89; plan
+`docs/handoff/2026-10-19/friends-room.md`). **Provenance:** two boards, `Friends-Room` (the host's lobby) and `Friends-Join`
+(the six boxes), drawn on 2026-10-20 **alongside the build**, from the written plan and the built screens: Moshe said "לך עם
+ברירות המחדל, תמשיך לבנות", so nothing waited for a board. Every other row here is **no board**, built from C's tokens. Where a
+board and this file disagree, the spec and the code win, and the board is updated. Motion: `motion.md` §4.12 (no new animation).
+
+Rules that hold for every row: me = P1 with ● (my seat's frame, the "אני" tag), the others P2–P4 with ▲ ■ ◆ in the order
+they came in (ownership never by colour alone) · **the code is LTR everywhere** ("123 456", three and three), and inside a
+Hebrew sentence it is wrapped in an LTR isolate (LRI…PDI), or "123 456" turns into "456 123" · the six boxes are LTR in
+Hebrew too, like the board and the keypad · every string through `t()` in the `friends` namespace (the group's in `home`),
+Hebrew and English · one gold action per screen · touch targets ≥ 44 · the screens only draw what the server says: who the
+host is, who is away, whether "התחל" is on, and the code itself all come from `lobby` (`friendsModel.ts`).
+
+### 20.1 New-game group "עם חברים" [no board; D80a]
+- **Between the ranked group and the practice group** of the Modes screen (§19.1's screen). Its label row is the groups'
+  (`SectionLabel`: an icon, the title "עם חברים", a 1 dp rule, the note "חדר פרטי · עד 4 · בלי דירוג"). Title setting:
+  `FRIENDS_UI.groupName` (`'short'` "עם חברים", or `'moshe'` "חברים אמיתיים בזמן אמת", D80b).
+- **One row of two buttons**, `flex: 1` each, 44 min height, radius 14 (`radius.card`), `color.surface`, 1 dp border, gap 12:
+  **"צור חדר"** (`color.accent` border and label: the group's action) and **"הצטרף עם קוד"** (`color.border`, `color.text`).
+  Hints: "פותח חדר המתנה עם קוד ששולחים לחברים", "מקלידים את 6 הספרות שקיבלת".
+- **Offline / suspended:** both buttons dimmed and disabled; the note becomes the ranked rows' ("דורש חיבור", "החשבון
+  מושעה"), and each button's label says why.
+- **To fit 360 × 780 without scrolling (D80a):** the ranked rows lose their "דירוג 1287 · מהיר" chip (two lines: title and
+  tagline; `FRIENDS_UI.rankedChip` brings it back) and the footnote line goes. `ModesAndGameType.test.tsx` checks the budget in
+  Hebrew and English. `FRIENDS_UI.modesGroup = false` is 1.0.3's screen.
+
+### 20.2 Room header and code card (`FriendsRoomScreen`) [Friends-Room]
+- **Header:** back (= "יציאה מהחדר" in the lobby), the title "חדר עם חברים", and the subtitle "מהיר · 3 מתוך 4" (type · seats).
+- **Code card:** `color.surface`, radius 14, 1 dp border, padding 16, centred. "קוד החדר" (label, `color.textMuted`), then the
+  code in **Teko 64** (`scoreXL`), `color.text`, LTR, selectable. Screen reader: "קוד החדר: 1 2 3 4 5 6" (digit by digit).
+- **Actions:** two secondary buttons in one row, 52 high: **"שתף קישור"** (share icon; the phone's share sheet with "בוא לשחק
+  איתי סודוקו פייט! קוד החדר: 123456" and the link on its own line; the code **without** a space there, so WhatsApp can't flip
+  it) and **"העתק קוד"** (expo-clipboard). "שתף קישור" shows to everyone (`FRIENDS_UI.shareBy = 'everyone'`, D87).
+- **Under them:** "אפשר לשלוח את הקוד או את הקישור" (caption), replaced for 2.5 s (`FRIENDS_UI.copiedHoldMs`) by "הקוד הועתק"
+  in `color.success`, with a check on the button. The live region says it too.
+
+### 20.3 Game-type picker [Friends-Room]
+- "סוג משחק" and, at the row's end, "רק המארח משנה" (host) or "המארח בוחר" (guest).
+- Three options in a radio group, `flex: 1`, 44 high, radius 12, `color.surface`: "מהיר", "רגיל", "קשה". **Checked:** a 2 dp
+  `color.accent` border and an accent label. A guest's are not pressable; a change is announced ("סוג המשחק עכשיו: קשה").
+
+### 20.4 Seat row (`RoomSeatRow`) [Friends-Room]
+- **56 min height** (`size.recentRow`), radius 12, `color.surface`, 1 dp `color.border`, padding 12 × 4; my row's border is P1's.
+- **Taken:** the seat shape (12) · the compact avatar (34 frame) in the seat's colour, smiling ("ready") · the name (`playerName`)
+  with the P1 pill "אני" on mine · under it the flag, the general rating (small, LTR, `color.textMuted`), and **"מארח"** with a
+  12 dp crown in `color.accent`. One element for the screen reader: "Dana, ישראל, דירוג 1190, לא בחדר כרגע".
+- **Away** [D84a]: the row's content at 55 % opacity, the avatar inactive, and "לא בחדר כרגע" (micro, `color.textMuted`).
+- **Empty:** a dashed border on `color.bg`, a dashed 34 frame with a dot that blinks (`friends.seat.wait`; static with
+  Reduced Motion), and "ממתין לשחקן…" (`color.textMuted`). Screen reader: "כיסא פנוי, ממתין לשחקן".
+- **Host only, on a guest's row:** an X icon button (44), "הוצא את Dana מהחדר" [D85a] → the confirm "להוציא את Dana מהחדר?" ·
+  "לא תהיה לו דרך לחזור לחדר הזה." · "הוצא" (§14.2 centred dialog). `FRIENDS_UI.kick = false` hides it.
+
+### 20.5 Start box and the guest's wait [Friends-Room; guest: no board]
+- **Host:** the primary gold button **"התחל משחק · 2 שחקנים"** (the count is the **connected** seats only). Off below 2
+  connected, with "צריך לפחות 2 שחקנים מחוברים כדי להתחיל" under it.
+- **Someone away** [D83]: pressing asks (§14.2 dialog) "להתחיל בלי Avi?" · "Avi לא בחדר כרגע. מי שלא בחדר נשאר בחוץ." ·
+  "כן, להתחיל" / "לא, נחכה". (`FRIENDS_UI.startWithoutAway = 'wait'`: the button stays off instead.)
+- **Guest**, in its place: a small accent spinner and "מחכים ש־MosheG יתחיל" (`rowTitle`); "המארח לא בחדר כרגע" while the host
+  is away.
+- **Last:** the ghost button "יציאה מהחדר" (X icon), no confirm: nothing is lost in a lobby.
+- **Lost connection in the lobby:** a line over the card, "החיבור אבד. מתחבר מחדש…", with a spinner; the app comes back to the
+  same seat by itself.
+
+### 20.6 Join with a code (`JoinCodeScreen`, `CodeInput`) [Friends-Join]
+- Header "הצטרף עם קוד"; the prompt "הקלד את 6 הספרות שקיבלת".
+- **Six boxes**, 44 × 52 each, radius 12, `color.input.bg` with a 1 dp `color.input.border`, gap 8 and a wider gap between the
+  third and the fourth: **always LTR** (`direction: 'ltr'`), the number pad. The focused box: a 2 dp `color.input.borderFocus`
+  (gold) border. A refusal: every box `color.input.borderError`.
+- A digit moves on; backspace in an empty box goes back and clears the one before. **Pasting or typing several digits** into any
+  box reads the whole text with `extractFriendCode` (a whole WhatsApp message, or a link) and fills all six.
+- **"הדבק"** (a secondary button, the clipboard's text) with the caption "אפשר להדביק את כל ההודעה מוואטסאפ". No code in the
+  text: "לא מצאנו קוד של 6 ספרות בטקסט שהועתק".
+- **At the sixth digit the join starts by itself** (`FRIENDS_UI.autoJoin`): "מצטרף לחדר…" with a spinner; "הצטרף" does it too,
+  and again after a refusal. A refusal is one line under the boxes, e.g. "לא מצאנו חדר עם הקוד ⁦123 456⁩. בדוק את הספרות." (a
+  block reads exactly the same, D85c).
+- **Screen reader:** the row is "קוד החדר, 6 ספרות"; each box is its own field, "ספרה 3 מתוך 6", so the digits are heard one by
+  one. Nothing here moves.
+
+### 20.7 Countdown, closed and failed states [no board]
+- **Countdown** (`FriendsCountdown`): the match's 3 · 2 · 1 · GO (`countdown.digit` in motion.md §4.6) with the game's players,
+  each in their seat colour and shape, me in P1's. Then the board, as in a ranked game.
+- **Closed** ("החדר נסגר.", "המארח הוציא אותך מהחדר.", "יצאת מהחדר.", "החדר נפתח במכשיר אחר.", "המשחק התחיל בלעדיך."): a centred
+  state on `color.bg` with the line and a way out; "החדר נסגר." also offers "צור חדר".
+- **Failed** (no network, server, rate limit "נסה שוב בעוד 4 דקות", "האפשרות הזו עוד לא זמינה."): the line, "נסה שוב" and "לבית".
+- **Busy when a link opens** (spec §5.4.5): the §14.2 dialog ("לעזוב את האימון ולהצטרף לחדר?", "לבטל את החיפוש ולהצטרף?", "לעבור
+  לחדר ⁦654 321⁩?", "אתה באמצע משחק"). Over a frozen stage (D65) the dialog sits above the covered board.
+- **Unknown link** (`+not-found`): "הקישור הזה לא מוכר" · "אולי הוא ישן, או שהוא לא של סודוקו פייט. אפשר להמשיך מהבית." ·
+  "למסך הבית".
+
+### 20.8 Result and history label [no board]
+- **Result:** the ranked results screen (spec §12) with **no rating change**, no wait for a rating, and the label "משחק עם חברים ·
+  בלי דירוג". "עוד סיבוב" on Home is not saved for it.
+- **History card:** "עם חברים · בלי דירוג" where the rating change was; the "מדורג" filter leaves it out, "הכל" shows it.
+
+### 20.9 The link's browser page (`GET /r/<code>`) [no board; a server page]
+- In the style of the server's legal pages (`apps/server/src/legal/render.ts`), Hebrew or English by the browser (`?lang=en`):
+  "הוזמנת למשחק סודוקו פייט · קוד החדר ⁦123 456⁩", the button "פתח באפליקציה" (falling back to the page), and the store link when
+  there is one; without a store: the steps (משחק חדש ← הצטרף עם קוד) and "צריך גרסה 1.0.4 ומעלה".
+- The same page for every valid code: it never says whether the room exists, or who is in it.
+
+**Tokens:** no new token. `color.accent` (the group's create button, the checked game type, the host's crown), `color.surface`,
+`color.border`, `color.bg` (the empty seat), `color.input.*` (the boxes), `color.success` ("הקוד הועתק"), `color.players[n].*`
+(seat shapes, avatars, "אני"), `color.text`, `color.textMuted`; type `scoreXL` (the code), `playerName`, `ratingCompact`, `micro`,
+`label`, `caption`, `rowTitle`, `button`.
+
+**Icons:** existing only: `share`, `check`, `close`, `crown`, `lock`.

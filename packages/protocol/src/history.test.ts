@@ -90,6 +90,18 @@ describe('answer checks (the app refuses what it can not read)', () => {
     expect(isHistoryPage({ games: [{}], nextCursor: null })).toBe(false);
   });
 
+  it('a game with friends (1.0.4): mode ranked with friends: true and no rating; a bad flag is refused', () => {
+    const unrated = { ratingKey: null, ratingBefore: null, ratingAfter: null };
+    const friends = game({ friends: true, players: [player(0, unrated), player(1, unrated)] });
+    expect(isHistoryGame(friends)).toBe(true);
+    expect(isHistoryGame(game({ friends: false }))).toBe(true);
+    expect(isHistoryGame(game({ friends: 'yes' as never }))).toBe(false);
+    // An app before 1.0.4 checks without the flag, and so takes the same game (an extra key passes).
+    const { friends: _flag, ...withoutFlag } = friends;
+    expect(isHistoryGame({ ...withoutFlag, extra: 1 })).toBe(true);
+    expect(friends.mode).toBe('ranked');
+  });
+
   it('refuses a replay without its log, or one that does not start with gameCreated', () => {
     expect(isReplayAnswer({ game: game(), events: [] })).toBe(false);
     expect(isReplayAnswer({ game: game(), events: [{ seq: 1, t: 5, type: 'gameStarted' }] })).toBe(false);

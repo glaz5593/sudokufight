@@ -462,6 +462,12 @@ describe.each([
   it(`tells Sentry it is ${environment} (both run NODE_ENV=production)`, () => {
     expect(value('SENTRY_ENVIRONMENT')).toBe(`"${environment}"`);
   });
+
+  it('leaves the stealth bot off: no STEALTH_BOT_ENABLED (default false), and its secret is no file’s [D90]', () => {
+    // Built off everywhere. Staging gets it only at Moshe's word, and this test changes with that line.
+    expect(value('STEALTH_BOT_ENABLED')).toBeUndefined();
+    expect(value('STEALTH_BOT_SECRET')).toBeUndefined();
+  });
 });
 
 describe('production and staging are separate apps', () => {

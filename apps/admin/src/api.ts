@@ -3,12 +3,16 @@ import {
   ADMIN_API_PREFIX,
   ADMIN_AUTH_METHODS_PATH,
   ADMIN_DEFAULT_PAGE_SIZE,
+  ADMIN_FRIEND_ROOMS_PATH,
   ADMIN_GOOGLE_LOGIN_PATH,
   ADMIN_LOGIN_PATH,
+  ADMIN_STEALTH_PATH,
+  ADMIN_STEALTH_SWITCH_PATH,
   type AdminActionErrorCode,
   type AdminAuditEntry,
   type AdminAuthMethods,
   type AdminError,
+  type AdminFriendRooms,
   type AdminGameDetail,
   type AdminGameRow,
   type AdminGoogleLoginErrorCode,
@@ -25,7 +29,11 @@ import {
   type AdminReportFilter,
   type AdminScreens,
   type AdminSession,
+  type AdminStealthSwitch,
+  type AdminStealthSwitchRequest,
+  type AdminStealthSwitchResult,
   type AdminUserDetail,
+  type AdminUserKind,
   type AdminUserRow,
   isAdminGoogleLoginErrorCode,
 } from '@sudoku-fight/protocol';
@@ -37,8 +45,9 @@ import {
  * Every failure is an ApiError. A 401 from any route but the sign-in ones and session also calls
  * `onUnauthorized`, so the site goes back to the login screen wherever it was.
  *
- * The moderation actions (spec §3.5) are the site's only writes: each is a POST with the JSON body `{}`
- * (the server refuses anything else), and the page asks for a confirmation first.
+ * The moderation actions (spec §3.5) are the site's writes, each a POST with the JSON body `{}` (the server
+ * refuses anything else); and the stealth bot's switch (stealth-bot.md §8), a POST of `{"on": …}`. The page
+ * asks for a confirmation first.
  */
 
 /**
@@ -98,8 +107,15 @@ export interface ListQuery {
   pageSize?: number;
 }
 
+/** The users list: by default the people; 'persona' the stealth bot's personas, 'all' both. */
+export interface UserListQuery extends ListQuery {
+  kind?: AdminUserKind;
+}
+
 export interface GameListQuery {
   mode?: string;
+  /** '' every game, '1' only the games against the stealth bot, '0' only the others. */
+  stealth?: '' | '1' | '0';
   search?: string;
   page?: number;
   pageSize?: number;
@@ -128,7 +144,7 @@ export interface AdminApi {
   overview(days: number): Promise<AdminOverview>;
   installs(query: ListQuery): Promise<AdminPage<AdminInstallRow>>;
   install(id: string): Promise<AdminInstallDetail>;
-  users(query: ListQuery): Promise<AdminPage<AdminUserRow>>;
+  users(query: UserListQuery): Promise<AdminPage<AdminUserRow>>;
   user(id: string): Promise<AdminUserDetail>;
   games(query: GameListQuery): Promise<AdminPage<AdminGameRow>>;
   game(id: string): Promise<AdminGameDetail>;
@@ -138,6 +154,8 @@ export interface AdminApi {
    * rev together with `allRevs` (1.0.3).
    */
   levels(days: number, allRevs?: boolean): Promise<AdminLevels>;
+  /** Friends rooms (1.0.4): the ones open now (no codes), and the games with friends per day. */
+  friendRooms(days: number): Promise<AdminFriendRooms>;
   /** Reported players, the most reported first (spec §3.5). */
   reports(query: ReportListQuery): Promise<AdminPage<AdminReportedPlayer>>;
   resolveReport(reportId: string): Promise<AdminReport>;
@@ -147,6 +165,10 @@ export interface AdminApi {
   unsuspend(userId: string): Promise<AdminModerationResult>;
   /** The admin actions, newest first. */
   audit(query: PageQuery): Promise<AdminPage<AdminAuditEntry>>;
+  /** The stealth bot's switch (stealth-bot.md §8): whether it exists on this server, and on or off. */
+  stealthSwitch(): Promise<AdminStealthSwitch>;
+  /** Turns the stealth bot on or off (confirmed on the page first). */
+  setStealth(on: boolean): Promise<AdminStealthSwitchResult>;
 }
 
 /** The body of every moderation action: an empty JSON object, nothing else (the server checks). */
@@ -266,17 +288,23 @@ export function createApi(options: ApiOptions = {}): AdminApi {
       request<AdminPage<AdminInstallRow>>('GET', `/installs${queryString({ search: q.search, ...page(q) })}`),
     install: (installId) => request<AdminInstallDetail>('GET', `/installs/${id(installId)}`),
     users: (q) =>
-      request<AdminPage<AdminUserRow>>('GET', `/users${queryString({ search: q.search, ...page(q) })}`),
+      request<AdminPage<AdminUserRow>>(
+        'GET',
+        // The server's default kind is the people: left out.
+        `/users${queryString({ kind: q.kind === 'person' ? undefined : q.kind, search: q.search, ...page(q) })}`,
+      ),
     user: (userId) => request<AdminUserDetail>('GET', `/users/${id(userId)}`),
     games: (q) =>
       request<AdminPage<AdminGameRow>>(
         'GET',
-        `/games${queryString({ mode: q.mode, search: q.search, ...page(q) })}`,
+        `/games${queryString({ mode: q.mode, stealth: q.stealth, search: q.search, ...page(q) })}`,
       ),
     game: (gameId) => request<AdminGameDetail>('GET', `/games/${id(gameId)}`),
     screens: (days) => request<AdminScreens>('GET', `/screens${queryString({ days })}`),
     levels: (days, allRevs = false) =>
       request<AdminLevels>('GET', `/levels${queryString({ days, allRevs: allRevs ? 1 : undefined })}`),
+    friendRooms: (days) =>
+      request<AdminFriendRooms>('GET', `${ADMIN_FRIEND_ROOMS_PATH}${queryString({ days })}`),
     reports: (q) =>
       request<AdminPage<AdminReportedPlayer>>(
         'GET',
@@ -293,5 +321,10 @@ export function createApi(options: ApiOptions = {}): AdminApi {
     unsuspend: (userId) =>
       request<AdminModerationResult>('POST', `/users/${id(userId)}/unsuspend`, { body: ACTION_BODY }),
     audit: (q) => request<AdminPage<AdminAuditEntry>>('GET', `/audit${queryString(page(q))}`),
+    stealthSwitch: () => request<AdminStealthSwitch>('GET', ADMIN_STEALTH_PATH),
+    setStealth: (on) =>
+      request<AdminStealthSwitchResult>('POST', ADMIN_STEALTH_SWITCH_PATH, {
+        body: { on } satisfies AdminStealthSwitchRequest,
+      }),
   };
 }

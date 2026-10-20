@@ -202,7 +202,14 @@ function ResultsBody({
         ? t('results.outOf', { players })
         : t('results.placeOf', { place: model.place, total: model.players });
   const ranked = model.mode === 'ranked';
-  const modeTitle = ranked ? t('titleRanked') : model.mode === 'bot' ? t('titleBot') : t('title');
+  // A friends room's game (1.0.4) is a ranked game without a rating [D81a]: named for what it is.
+  const modeTitle = model.friends
+    ? t('friends:modeLong')
+    : ranked
+      ? t('titleRanked')
+      : model.mode === 'bot'
+        ? t('titleBot')
+        : t('title');
   const header = versus
     ? t('results.header', { title: modeTitle, type: t(`type.${model.gameType}`), players })
     : t('subtitle', { title: modeTitle, type: t(`type.${model.gameType}`) });
@@ -380,7 +387,7 @@ function ResultsBody({
 
         {versus && !model.rating ? (
           <Text style={[text('caption'), styles.muted, styles.centered]} testID="results-unrated">
-            {ranked ? t('results.ratingSoon') : t('results.unrated')}
+            {model.friends ? t('friends:label') : ranked ? t('results.ratingSoon') : t('results.unrated')}
           </Text>
         ) : null}
 

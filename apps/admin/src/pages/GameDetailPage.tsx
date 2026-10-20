@@ -2,6 +2,7 @@ import type { AdminGameDetail, AdminGameEvent, AdminGamePlayer } from '@sudoku-f
 import { useCallback } from 'react';
 
 import { type Column, DataTable } from '../components/DataTable';
+import { StealthBadge } from '../components/moderation';
 import {
   AsyncView,
   DateTime,
@@ -72,6 +73,7 @@ function GameBody({ data }: { data: AdminGameDetail }) {
           ) : (
             playerName(p, t('games.bot'))
           )}
+          {p.persona && <StealthBadge label={t('mod.persona')} />}
         </span>
       ),
     },
@@ -115,7 +117,15 @@ function GameBody({ data }: { data: AdminGameDetail }) {
         <Facts
           items={[
             { label: t('col.id'), value: <Ltr className="mono">{data.id}</Ltr> },
-            { label: t('col.mode'), value: label('mode', data.mode) },
+            {
+              label: t('col.mode'),
+              value: (
+                <>
+                  {label('mode', data.mode)}
+                  {data.stealth && <StealthBadge label={t('games.stealth')} />}
+                </>
+              ),
+            },
             { label: t('col.type'), value: label('gameType', data.gameType) },
             { label: t('col.players'), value: <Num value={data.playerCount} /> },
             { label: t('col.puzzle'), value: <Ltr className="mono">{data.puzzleId}</Ltr> },

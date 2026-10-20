@@ -8,13 +8,15 @@ import {
 } from '@sudoku-fight/protocol';
 import { asc } from 'drizzle-orm';
 
-import { practiceResults, xp } from '../db/schema';
+import { gamePlayers, games, practiceResults, xp } from '../db/schema';
 import { call, type CallOptions } from '../testing/accounts';
 import { fakeClock } from '../testing/clock';
 import { testConfig } from '../testing/config';
 import { createTestDb, type TestDb } from '../testing/db';
+import { NEARLY_DONE } from '../testing/game';
 import { startHttp, type TestHttp } from '../testing/http';
-import { addAccounts, T0 } from '../testing/ranked';
+import { addAccounts, addPuzzles, T0 } from '../testing/ranked';
+import { practiceXpUsedOn } from './practice';
 import { testTokens, type TestTokens } from '../testing/tokens';
 import { PRACTICE_BODY_BYTES } from './router';
 
@@ -210,6 +212,56 @@ describe('POST /v1/me/practice-results (D41)', () => {
       accepted: 1,
       progress: { xp: 260 },
     });
+  });
+
+  it('shares the cap with the games in a friends room (1.0.4) [D81a]: their XP of that UTC day counts first', async () => {
+    // A friends game ana ended today with 53 XP, one of yesterday's, and a ranked game (outside the cap).
+    await addPuzzles(t.db, [NEARLY_DONE]);
+    const game = async (id: string, mode: string, endedAt: number, earned: number | null) => {
+      await t.db.insert(games).values({
+        id,
+        mode,
+        gameType: 'fast',
+        playerCount: 2,
+        puzzleId: NEARLY_DONE.id,
+        rules: {},
+        startedAt: new Date(endedAt - 5 * 60_000),
+        endedAt: new Date(endedAt),
+        endReason: 'boardComplete',
+      });
+      await t.db.insert(gamePlayers).values([
+        { gameId: id, userId: 'ana', seat: 0, status: 'active', place: 1, xp: earned },
+        { gameId: id, userId: 'ben', seat: 1, status: 'active', place: 2, xp: 21 },
+      ]);
+    };
+    await game('f-today', 'friends', T0 - 2 * H, 53);
+    await game('f-yesterday', 'friends', T0 - 13 * H, 90);
+    await game('ranked', 'ranked', T0 - 3 * H, 80);
+    await game('f-before-1-0-4', 'friends', T0 - 4 * H, null);
+    const day = Math.floor(T0 / DAY);
+    expect(await practiceXpUsedOn(t.db, 'ana', day)).toBe(53);
+    expect(await practiceXpUsedOn(t.db, 'ana', day - 1)).toBe(90);
+
+    // 47 of the 100 are left today: a bot win (80) gets them, the next result nothing; yesterday's room is 10.
+    const answer = await send(
+      {
+        results: [
+          result('t1', { endedAt: T0 - H }),
+          result('t2', { endedAt: T0 - H / 2 }),
+          result('y1', { endedAt: T0 - 12.5 * H }),
+        ],
+      },
+      { server: capped },
+    );
+    expect(answer.body).toMatchObject({ accepted: 3, duplicates: 0, rejected: 0 });
+    expect((await stored()).map((r) => [r.id, r.xp])).toEqual([
+      ['y1', 10],
+      ['t1', 47],
+      ['t2', 0],
+    ]);
+    expect(await practiceXpUsedOn(t.db, 'ana', day)).toBe(100);
+    // Another player's friends XP is theirs: ben's 21 a game leave his own room.
+    expect(await practiceXpUsedOn(t.db, 'ben', day)).toBe(21 + 21);
   });
 
   it('refuses a malformed batch whole (400), and stores nothing of it', async () => {

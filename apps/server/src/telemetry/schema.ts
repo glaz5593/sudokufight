@@ -1,5 +1,13 @@
-import { BOT_LEVEL_IDS, LEVEL_KINDS, LEVEL_RULES, maxLevel } from '@sudoku-fight/engine';
+import { BOT_LEVEL_IDS, GAME_TYPES, LEVEL_KINDS, LEVEL_RULES, maxLevel } from '@sudoku-fight/engine';
 import {
+  FRIENDS_CLOSE_REASONS,
+  FRIENDS_JOIN_RESULTS,
+  FRIENDS_JOIN_VIAS,
+  FRIENDS_MAX_PLAYERS,
+  FRIENDS_MIN_PLAYERS,
+  FRIENDS_OPEN_VIAS,
+  FRIENDS_SHARE_BY,
+  type FriendsEventProps,
   isReportReason,
   LEVEL_END_REASONS,
   type LevelEventProps,
@@ -23,7 +31,8 @@ import { z } from 'zod';
  * every older event in it). A name that is not a name at all (not a string of 1–64 characters) is still a 400.
  *
  * Some events have their props checked too (EVENT_PROPS): `report_sent` exactly, the six of staged practice
- * by type and range, with an extra key let through (the next app may add one).
+ * and the six of playing with friends (1.0.4, generation 3) by type and range, with an extra key let through
+ * (the next app may add one).
  */
 
 /** Events from before this are refused: the app did not exist, so the phone's clock is wrong. */
@@ -112,6 +121,34 @@ const LEVEL_EVENT_PROPS: { [N in keyof LevelEventProps]: z.ZodType<LevelEventPro
   }),
 };
 
+/** One of a list; the message says which values there are. */
+const oneOf = <const T extends readonly [string, ...string[]]>(list: T) =>
+  z.enum(list, { error: `one of ${list.join(', ')}` });
+
+/** Whole seconds a player waited in a room: from 0 to a week (a room has no time limit [D84a]; junk out). */
+const waitedSec = int(0, 7 * 24 * 3600);
+
+/**
+ * Playing with friends' events (1.0.4, generation 3; the protocol's FriendsEventProps, friends-room.md §7.4):
+ * counts, choices and outcomes only, never a code or an id. Each value is checked against the protocol's lists
+ * (an app sends nothing else: friendsJoinResultOf() turns any other join outcome into `other`); another key
+ * passes, so a later app may add one without its batches being refused. `game_start` and `game_end` carry
+ * `friends: true` for a game in a friends room; their props are not checked (generation 1).
+ */
+const FRIENDS_EVENT_PROPS: { [N in keyof FriendsEventProps]: z.ZodType<FriendsEventProps[N]> } = {
+  friends_room_open: z.looseObject({ gameType: oneOf(GAME_TYPES), via: oneOf(FRIENDS_OPEN_VIAS) }),
+  friends_room_join: z.looseObject({ via: oneOf(FRIENDS_JOIN_VIAS), result: oneOf(FRIENDS_JOIN_RESULTS) }),
+  friends_invite_share: z.looseObject({ by: oneOf(FRIENDS_SHARE_BY) }),
+  friends_link_open: z.looseObject({ signedIn: z.boolean() }),
+  friends_room_start: z.looseObject({ players: int(FRIENDS_MIN_PLAYERS, FRIENDS_MAX_PLAYERS), waitedSec }),
+  // The seats when this player was out: 1 (alone) to 4, this player's included.
+  friends_room_close: z.looseObject({
+    reason: oneOf(FRIENDS_CLOSE_REASONS),
+    players: int(1, FRIENDS_MAX_PLAYERS),
+    waitedSec,
+  }),
+};
+
 /**
  * The events whose props are checked, beyond the flat values every event has. `report_sent` (spec §3.5)
  * carries the reason only, so a report's player or game never lands in the usage data: anything else in it is
@@ -127,6 +164,7 @@ export const EVENT_PROPS: Partial<Record<TelemetryEventName, z.ZodType>> = {
     { error: 'not the props of this event (report_sent: { reason } only)' },
   ),
   ...LEVEL_EVENT_PROPS,
+  ...FRIENDS_EVENT_PROPS,
 };
 
 export const telemetryEventSchema = z

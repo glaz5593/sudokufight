@@ -72,6 +72,7 @@ export declare function apksToPrune(
 export declare function newestApk(files: readonly { name: string; mtimeMs: number }[]): string | null;
 export declare function staleConfigDirs(dirs: readonly { name: string; mtimeMs: number }[]): string[];
 
+export declare function serverNativeInput(server: Pick<Server, 'host' | 'port' | 'secure'>): string;
 export declare const PREBUILD_RULE: string;
 export declare function nativeConfigHash(inputs: readonly (readonly [string, string | null])[]): string;
 export declare function packageDeps(packageJsonText: string): string;

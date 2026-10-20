@@ -57,6 +57,16 @@ export type PuzzlePool = (typeof PUZZLE_POOLS)[number];
 export const displayNameKey = (column: AnyPgColumn | SQL): SQL =>
   sql`translate(lower(${column}), ${sql.raw(`'${HEBREW_FINAL_LETTERS}'`)}, ${sql.raw(`'${HEBREW_REGULAR_LETTERS}'`)})`;
 
+/**
+ * users.kind (stealth-bot.md §6) [D90, D91]: a person (someone who signed up), or a stealth bot's persona: an
+ * account the server made for the bot it seats in a ranked game when nobody else is there (src/stealth). A
+ * persona is an account like any other wherever a player sees it (its card, history, replay, recent opponents,
+ * reports, blocks), and is left out of what counts people: the leaderboards, the admin site's counts, the
+ * puzzle history and the anomaly check. Never sent to an app.
+ */
+export const USER_KINDS = ['person', 'persona'] as const;
+export type UserKind = (typeof USER_KINDS)[number];
+
 export const users = pgTable(
   'users',
   {
@@ -85,9 +95,16 @@ export const users = pgTable(
      * of the 30-day rule [D20]. False again after it.
      */
     nameResetRequired: boolean('name_reset_required').notNull().default(false),
+    /**
+     * 'person', or 'persona': a stealth bot's account (USER_KINDS; src/stealth/personas.ts), whose sign-in id
+     * is `persona:<id>`, which no sign-in has: nobody can sign in to it. The rest of the row is filled as a
+     * registration fills it (an invented name, an avatar, a country); its details are in `personas`.
+     */
+    kind: text('kind', { enum: USER_KINDS }).notNull().default('person'),
   },
   (t) => [
     // Spec §19's unique lower(display_name), widened to Hebrew final letters, among accounts not deleted.
+    // A persona's name is in it too: a person who tries to take it gets `taken` [D91].
     uniqueIndex('users_display_name_key_uq')
       .on(displayNameKey(t.displayName))
       .where(sql`${t.deletedAt} is null`),
@@ -96,8 +113,52 @@ export const users = pgTable(
     index('users_deleted_idx')
       .on(t.id)
       .where(sql`${t.deletedAt} is not null`),
+    // The few personas (≤ STEALTH_PERSONA_POOL_MAX): what the leaderboards leave out [D99], as the deleted.
+    index('users_persona_idx')
+      .on(t.id)
+      .where(sql`${t.kind} = 'persona'`),
+    check('users_kind_check', sql`${t.kind} in ('person', 'persona')`),
   ],
 );
+
+/**
+ * A stealth bot's personas (stealth-bot.md §6, §7) [D90, D91, D97b]: one row per users row of kind 'persona',
+ * made when matchmaking needs one and has none free (src/stealth/personas.ts createPersona), up to
+ * STEALTH_PERSONA_POOL_MAX. Its users row is the account (users.kind is what says "persona", everywhere);
+ * this is what only the server knows about it. Both are written in one transaction.
+ */
+export const PERSONA_TEMPERAMENTS = ['quiet', 'normal', 'lively'] as const;
+export type PersonaTemperament = (typeof PERSONA_TEMPERAMENTS)[number];
+
+export const personas = pgTable(
+  'personas',
+  {
+    userId: text('user_id')
+      .primaryKey()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /**
+     * [D97b] Its temperament: how it would react, were reactions on. They are off (the engine's
+     * STEALTH_BOT_CONFIG.reactions is empty: no persona reacts); drawn when it is made (40% quiet, 40% normal,
+     * 20% lively) so the alternative needs no backfill.
+     */
+    temperament: text('temperament', { enum: PERSONA_TEMPERAMENTS }).notNull(),
+    createdAt: timestamptz('created_at').notNull().defaultNow(),
+  },
+  (t) => [check('personas_temperament_check', sql`${t.temperament} in ('quiet', 'normal', 'lively')`)],
+);
+
+/**
+ * The server's switches an admin turns at run time (stealth-bot.md §8): one row per switch, read on every
+ * matchmaking tick, so changing one needs no restart (a restart ends every ranked game being played). The
+ * first is the stealth bot's on/off (src/stealth/switch.ts), under the STEALTH_BOT_ENABLED master switch. A
+ * switch without a row has its default. `updated_by` is the admin's address (admin_audit keeps the history).
+ */
+export const serverSettings = pgTable('server_settings', {
+  key: text('key').primaryKey(),
+  value: jsonb('value').notNull(),
+  updatedAt: timestamptz('updated_at').notNull().defaultNow(),
+  updatedBy: text('updated_by'),
+});
 
 export const ratings = pgTable(
   'ratings',
@@ -194,12 +255,20 @@ export const opponentHistory = pgTable(
 );
 
 // ---------------------------------------------------------------------------------------------------------
-// Games on the server (ranked; stage 7 on)
+// Games on the server (ranked; stage 7 on; friends rooms, 1.0.4)
+
+/**
+ * games.mode of a game played in a friends room (1.0.4) [D81a]: the engine plays it as 'ranked' (the same
+ * rules), with no rating, and it is stored apart so nothing that counts ranked games counts it (the player
+ * card, the leaderboards, the admin overview). The history sends it as 'ranked' with `friends: true`.
+ */
+export const FRIENDS_GAME_MODE = 'friends';
 
 export const games = pgTable(
   'games',
   {
     id: text('id').primaryKey().$defaultFn(newId),
+    /** The engine's mode ('ranked'), or FRIENDS_GAME_MODE. */
     mode: text('mode').notNull(),
     gameType: text('game_type').notNull(),
     playerCount: smallint('player_count').notNull(),
@@ -211,6 +280,13 @@ export const games = pgTable(
     startedAt: timestamptz('started_at').notNull(),
     endedAt: timestamptz('ended_at'),
     endReason: text('end_reason'),
+    /**
+     * A seat of this game is a stealth bot's persona (stealth-bot.md §7) [D90]: a ranked game, rated and
+     * stored like any other, marked for the admin site (its tag and filter, the share of such games, the
+     * players' win rate against the bot) and for the guard against farming (src/stealth/pace.ts). Written
+     * at the start, from the seats' users.kind (persistence/records.ts). Never sent to an app.
+     */
+    stealth: boolean('stealth').notNull().default(false),
   },
   (t) => [
     index('games_started_at_idx').on(t.startedAt),
@@ -240,6 +316,25 @@ export const gamePlayers = pgTable(
      * but the player card simply starts counting from here).
      */
     bestMovePoints: real('best_move_points'),
+    /**
+     * The XP this seat's account earned from the game (1.0.4; spec §15), written at the end with the rest of
+     * the seat: a ranked game's whole gain, and a friends game's (games.mode 'friends') part of it that fit in
+     * the day's practice cap [D81a], maybe 0. progress/practice.ts practiceXpUsedOn counts the friends games'
+     * by the UTC day of their ended_at. Null for a seat without an account (a bot), a game cut short
+     * (serverRestart), and the games stored before 1.0.4 (no backfill).
+     */
+    xp: integer('xp'),
+    /**
+     * This person's pace in the game (stealth-bot.md §5.1, §5.2) [D96, D97a], the stealth bot's yardstick,
+     * from the engine's movePace() over the game's whole log, written at the end of a RANKED game (never a
+     * friends game, never a persona's seat): `pace_ms` his base, an ordinary move (ms, rounded); `pace_moves`
+     * the moves it counted (its weight); `pace_digits` every digit he entered, right or wrong (with
+     * `mistakes`, his mistake rate). All null when no move counted, for a game cut short (serverRestart), and
+     * for the games stored before 0010 (no backfill: the defaults stand in until he has played some).
+     */
+    paceMs: integer('pace_ms'),
+    paceMoves: integer('pace_moves'),
+    paceDigits: integer('pace_digits'),
   },
   (t) => [primaryKey({ columns: [t.gameId, t.seat] }), index('game_players_user_idx').on(t.userId)],
 );
@@ -559,6 +654,8 @@ export const appEvents = pgTable(
 );
 
 export type User = typeof users.$inferSelect;
+export type Persona = typeof personas.$inferSelect;
+export type ServerSetting = typeof serverSettings.$inferSelect;
 export type Install = typeof installs.$inferSelect;
 export type AppEvent = typeof appEvents.$inferSelect;
 export type Game = typeof games.$inferSelect;

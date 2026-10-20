@@ -13,6 +13,7 @@ import { useAuth } from '../../auth/authStore';
 import { Icon, type IconName } from '../../components/Icon';
 import { LevelTile } from '../../components/levels/LevelTile';
 import { Avatar, paletteAt, SeatGlyph } from '../../components/player';
+import { FRIENDS_UI } from '../../config/friends';
 import type { LevelsSummary } from '../../levels/levelsRepo';
 import { refreshLevels, useLevelsSummary } from '../../levels/levelsStore';
 import { useConnectivityWatch } from '../../net/connectivity';
@@ -25,10 +26,10 @@ import {
   DEFAULT_GAME_TYPE,
   isAvailable,
   isOpenPlayerCount,
-  MODE_GROUPS,
   MODE_OPTIONS,
   type ModeGroup,
   type ModeOption,
+  modesSections,
   rankedRatingIn,
 } from './homeModel';
 import { goBack } from './navigation';
@@ -42,9 +43,14 @@ import { Chip, GUTTER, ScreenHeader, SectionLabel } from './parts';
  * 15.10.2026; the budget is in ModesAndGameType.test). Staged practice opens its map (/levels); its row shows a
  * stage tile, "שלב 14 · ★ 29" from levels.db (never the stages' data file), or "300 שלבים קצרים" for a new
  * player. The other practices open the game type (a bot practice goes on to the bot selection); a ranked table
- * (2 players since stage 9, 3 and 4 since stage 10) opens the game type of a ranked game, then the search,
- * and shows my rating in that type, in its queue's rating key (spec §11.1: `normal`, or `normal-3p` under
- * RATING_OPTION A). An option this build has not opened (homeModel AVAILABLE_MODES) says "בקרוב".
+ * (2 players since stage 9, 3 and 4 since stage 10) opens the game type of a ranked game, then the search. An
+ * option this build has not opened (homeModel AVAILABLE_MODES) says "בקרוב".
+ *
+ * 1.0.4 (friends-room.md §2, D80a, Moshe's yes of 2026-10-20): between the ranked tables and the practices, the
+ * group "עם חברים", one row of two buttons, "צור חדר" | "הצטרף עם קוד" (FriendsGroup). To fit it, a ranked row no
+ * longer shows my rating ("דירוג 1287 · מהיר": the next screen does; FRIENDS_UI.rankedChip brings it back, in
+ * its queue's rating key, spec §11.1) and the footnote goes; the budget test keeps it all on a 360 × 780 phone,
+ * in Hebrew and English.
  *
  * No connection (spec §16.1; the Offline board): the app asks the server (GET /health, net/connectivity.ts)
  * when the screen opens. Without an answer the ranked cards are dimmed with "דורש חיבור", the banner "אין
@@ -96,6 +102,18 @@ export function ModesScreen() {
     router.push({ pathname: '/game-type', params: { mode: 'solo' } });
   };
 
+  // "עם חברים" (1.0.4, D80a): the room opens at once, with my last game type [D82]; or the code's six boxes.
+  const createRoom = () => {
+    if (offline || suspended) return;
+    cue('primaryPress');
+    router.push({ pathname: '/friends/room', params: { create: '1' } });
+  };
+  const joinRoom = () => {
+    if (offline || suspended) return;
+    cue('toggle');
+    router.push('/friends/join');
+  };
+
   return (
     <View style={[styles.screen, { paddingTop: top }]}>
       <ScreenHeader
@@ -109,20 +127,31 @@ export function ModesScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: (offline ? 0 : bottom) + CONTENT_BOTTOM }]}
       >
         {offline ? <OfflineBanner checking={connectivity.checking} /> : null}
-        {MODE_GROUPS.map((group) => (
-          <Group
-            key={group}
-            group={group}
-            avatarId={avatarId}
-            offline={offline}
-            suspended={suspended}
-            ratings={group === 'ranked' ? ratings : null}
-            rankedType={rankedType}
-            levels={levels}
-            onOpen={open}
-          />
-        ))}
-        {offline ? null : <Text style={styles.footnote}>{t('modes.footnote')}</Text>}
+        {modesSections(FRIENDS_UI.modesGroup).map((group) =>
+          group === 'friends' ? (
+            <FriendsGroup
+              key={group}
+              offline={offline}
+              suspended={suspended}
+              onCreate={createRoom}
+              onJoin={joinRoom}
+            />
+          ) : (
+            <Group
+              key={group}
+              group={group}
+              avatarId={avatarId}
+              offline={offline}
+              suspended={suspended}
+              ratings={group === 'ranked' ? ratings : null}
+              rankedType={rankedType}
+              levels={levels}
+              onOpen={open}
+            />
+          ),
+        )}
+        {/* The friends group takes the footnote's place (friends-room.md §2: it repeats the rows' chips). */}
+        {offline || FRIENDS_UI.modesGroup ? null : <Text style={styles.footnote}>{t('modes.footnote')}</Text>}
       </ScrollView>
       {offline ? (
         <OfflineActions
@@ -218,6 +247,106 @@ function Group({
   );
 }
 
+/**
+ * "עם חברים" (1.0.4, D80a; friends-room.md §2): one row of two buttons between the ranked tables and the
+ * practices: "צור חדר" (the room opens at once, the accent's) and "הצטרף עם קוד" (the quieter one: most friends
+ * come in by a link). Its name is D80b's (FRIENDS_UI.groupName). No connection, or a suspended account: dimmed,
+ * as the ranked rows, with the same note.
+ */
+function FriendsGroup({
+  offline,
+  suspended,
+  onCreate,
+  onJoin,
+}: {
+  offline: boolean;
+  suspended: boolean;
+  onCreate: () => void;
+  onJoin: () => void;
+}) {
+  const { t } = useTranslation('home');
+  const { t: tm } = useTranslation('match');
+  const note = suspended
+    ? t('moderation:suspended.chip')
+    : offline
+      ? tm('offline.rankedNote')
+      : t('modes.groups.friends.note');
+  const why = suspended
+    ? t('moderation:suspended.chipLabel')
+    : offline
+      ? tm('offline.needsConnectionLabel')
+      : null;
+  return (
+    <View style={styles.group} testID="modes-group-friends">
+      <SectionLabel
+        icon={offline ? 'lock' : 'share'}
+        title={t(
+          FRIENDS_UI.groupName === 'moshe' ? 'modes.groups.friends.titleMoshe' : 'modes.groups.friends.title',
+        )}
+        note={note}
+      />
+      <View style={styles.friendsRow}>
+        <FriendsButton
+          label={t('modes.friends.create')}
+          hint={t('modes.friends.createHint')}
+          why={why}
+          primary
+          onPress={onCreate}
+          testID="modes-friends-create"
+        />
+        <FriendsButton
+          label={t('modes.friends.join')}
+          hint={t('modes.friends.joinHint')}
+          why={why}
+          onPress={onJoin}
+          testID="modes-friends-join"
+        />
+      </View>
+    </View>
+  );
+}
+
+function FriendsButton({
+  label,
+  hint,
+  why,
+  primary = false,
+  onPress,
+  testID,
+}: {
+  label: string;
+  hint: string;
+  /** Why it is out of reach (no connection, suspended); null when it is not. */
+  why: string | null;
+  primary?: boolean;
+  onPress: () => void;
+  testID: string;
+}) {
+  const { t } = useTranslation('home');
+  const disabled = why !== null;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={why ? [label, why].join(t('player:listSep')) : label}
+      accessibilityHint={disabled ? undefined : hint}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.friendsButton,
+        primary && styles.friendsPrimary,
+        disabled && styles.cardOffline,
+        pressed && styles.cardPressed,
+      ]}
+      testID={testID}
+    >
+      <Text style={[styles.friendsLabel, primary && styles.friendsLabelPrimary]} numberOfLines={1}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 function ModeCard({
   option,
   avatarId,
@@ -244,11 +373,14 @@ function ModeCard({
     ? t('modes.levels.taglineNew', { total: maxLevel() })
     : t(`modes.${option.key}.tagline`);
   const typeName = t(`gameTypes.${rankedType}.name`);
+  // [D80a] The ranked rows say no rating since 1.0.4 (two lines each; my rating is on the next screen and
+  // Home's card): FRIENDS_UI.rankedChip brings back "דירוג 1287 · מהיר".
   const shownRating =
-    ranked && available && isOpenPlayerCount(option.players)
+    ranked && available && FRIENDS_UI.rankedChip && isOpenPlayerCount(option.players)
       ? rankedRatingIn(ratings, rankedType, option.players)
       : null;
   const chips = chipsOf(option, { offline, fresh, levels, shownRating, typeName, t, tm });
+  const tag = barred || needsConnection || !built;
   const label = [
     t(`modes.${option.key}.label`),
     tagline,
@@ -289,26 +421,28 @@ function ModeCard({
         <Text style={styles.tagline} numberOfLines={1}>
           {tagline}
         </Text>
-        <View style={styles.chips}>
-          {barred ? (
-            <OfflineChip label={t('moderation:suspended.chip')} testID={`suspended-${option.key}`} />
-          ) : needsConnection ? (
-            <OfflineChip label={tm('offline.needsConnection')} testID={`offline-${option.key}`} />
-          ) : built ? null : (
-            <Chip label={t('modes.soon')} testID={`soon-${option.key}`} />
-          )}
-          {chips.map((c) => (
-            <Chip
-              key={c.label}
-              label={c.label}
-              icon={c.icon}
-              iconColor={color.star.filled}
-              iconFilled
-              value={c.value}
-              testID={c.testID}
-            />
-          ))}
-        </View>
+        {chips.length > 0 || tag ? (
+          <View style={styles.chips}>
+            {barred ? (
+              <OfflineChip label={t('moderation:suspended.chip')} testID={`suspended-${option.key}`} />
+            ) : needsConnection ? (
+              <OfflineChip label={tm('offline.needsConnection')} testID={`offline-${option.key}`} />
+            ) : built ? null : (
+              <Chip label={t('modes.soon')} testID={`soon-${option.key}`} />
+            )}
+            {chips.map((c) => (
+              <Chip
+                key={c.label}
+                label={c.label}
+                icon={c.icon}
+                iconColor={color.star.filled}
+                iconFilled
+                value={c.value}
+                testID={c.testID}
+              />
+            ))}
+          </View>
+        ) : null}
       </View>
       {available ? <Icon name="chevronForward" size={size.icon.chevron} color={color.iconFaint} /> : null}
     </Pressable>
@@ -316,7 +450,7 @@ function ModeCard({
 }
 
 /**
- * A row's chips: a ranked table's rating (or "דירוג"); a practice's "ללא דירוג" and "עובד גם בלי אינטרנט";
+ * A row's chips: none on a ranked table since 1.0.4 [D80a] (FRIENDS_UI.rankedChip: its rating, or "דירוג"); a practice's "ללא דירוג" and "עובד גם בלי אינטרנט";
  * staged practice's "עובד גם בלי אינטרנט" (no "ללא דירוג": stages never had one), and after its first stage its
  * progress, "שלב 14 · ★ 29", beside the short "גם אופליין".
  */
@@ -343,6 +477,7 @@ function chipsOf(
   const worksWords = offline ? tm('offline.availableOffline') : t('modes.chips.offline');
   const works = { label: worksWords };
   if (option.group === 'ranked') {
+    if (!FRIENDS_UI.rankedChip) return [];
     return [
       shownRating
         ? {
@@ -501,6 +636,23 @@ const styles = StyleSheet.create({
   tagline: { ...text('caption'), color: color.textMuted },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space[3], marginTop: space[1] },
   footnote: { ...text('caption'), color: color.textMuted, textAlign: 'center' },
+  // "עם חברים": two buttons a row, each half of it, a touch target high (the whole group fits the 360 × 780
+  // budget of ModesAndGameType.test).
+  friendsRow: { flexDirection: 'row', gap: space[6] },
+  friendsButton: {
+    flex: 1,
+    minHeight: size.touch,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: space[4],
+    borderRadius: radius.card,
+    borderWidth: tokens.border.hairline,
+    borderColor: color.border,
+    backgroundColor: color.surface,
+  },
+  friendsPrimary: { borderColor: color.accent },
+  friendsLabel: { ...text('button'), color: color.text },
+  friendsLabelPrimary: { color: color.accent },
   offlineChip: {
     flexDirection: 'row',
     alignItems: 'center',

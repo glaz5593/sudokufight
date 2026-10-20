@@ -1,3 +1,4 @@
+import type { InterferenceKind } from '../game/rules';
 import type { PlayerInfo } from '../game/types';
 import type { GameType } from '../gameType';
 import type { TargetTier } from '../levels/spec';
@@ -44,6 +45,35 @@ export interface BotInterferencePolicy {
   minDeficit: number | null;
   /** The chance to send one at each decision point (after each of its own moves) when the rest allows it. */
   chance: number;
+  /**
+   * Hitting back (the stealth bot, D98): absent for the five levels, which never answer an interference as such.
+   * A bot with it answers each interference it received, once that interference ENDS; with `chance` 0 it never
+   * starts one itself.
+   */
+  retaliate?: BotRetaliationPolicy;
+}
+
+/**
+ * [D98] How a bot hits back (stealth-bot plan §5.4): at a moment drawn from `afterEndMs` after the interference
+ * on it ended (interferenceEnded; a freeze of the game stops the count, the soft phase does not), at whoever sent
+ * it, paying the usual 2, 4, 8 … [D10]. One answer per interference received, never more. When it cannot at
+ * that moment (too few points, the target busy [D11] or away), it tries again every `retryMs`, but never later
+ * than `afterEndMs.max` after the end: then it lets it go.
+ */
+export interface BotRetaliationPolicy {
+  /** When, after the end of the interference it received (D98: 2–20 s). */
+  afterEndMs: MsRange;
+  /** The chance to answer an interference at all (D98: always). */
+  chance: number;
+  /** The share of answers of the kind it received; the rest a kind drawn among those it may use (D98: half). */
+  sameKindShare: number;
+  /** The wait before trying again when it could not (D98: a second). */
+  retryMs: number;
+  /**
+   * The kinds it may send (the persona's level's unlocked kinds [D17]), within the game's
+   * `rules.interferenceKinds` [D47]; absent: all of the game's.
+   */
+  kinds?: readonly InterferenceKind[];
 }
 
 /**
@@ -59,16 +89,11 @@ export interface BotReaction {
   chance: number;
 }
 
-/** One row of the level table (spec §9). */
-export interface BotLevel {
-  level: BotLevelId;
-  /** A name, not a UI string: the same in every language. The level's title ("Novice") is the app's t(). */
-  name: string;
-  /**
-   * An avatar id of the catalog (packages/avatars, protocol AVATAR_IDS). A plain string: the engine does not
-   * depend on the avatars. The bots wore the first pack until 2026-10-12 (spec §3.4); each kept its character.
-   */
-  avatar: string;
+/**
+ * How a bot plays: the playing part of a row of the level table (BotLevel), or a profile built for one game
+ * (stealthBotLevel: the stealth bot plays at its opponent's own pace). attachBot takes either.
+ */
+export interface BotProfile {
   /**
    * Base think time per move (spec §9): an ordinary move, a naked single, from the moment the bot can start
    * on it to its digit. A move takes base × the cell's difficulty factor (× `pace` of the game type, × the
@@ -82,6 +107,18 @@ export interface BotLevel {
   reactions: Partial<Record<BotReactionTrigger, BotReaction>>;
   /** Slows down a little when the human trails far behind (spec §9: levels 1–3 only). */
   adaptive: boolean;
+}
+
+/** One row of the level table (spec §9). */
+export interface BotLevel extends BotProfile {
+  level: BotLevelId;
+  /** A name, not a UI string: the same in every language. The level's title ("Novice") is the app's t(). */
+  name: string;
+  /**
+   * An avatar id of the catalog (packages/avatars, protocol AVATAR_IDS). A plain string: the engine does not
+   * depend on the avatars. The bots wore the first pack until 2026-10-12 (spec §3.4); each kept its character.
+   */
+  avatar: string;
 }
 
 /**

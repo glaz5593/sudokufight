@@ -6,6 +6,12 @@ import type { LegalTexts } from './types';
  * the two admin actions (spec §3.5: moderation/), fair play (cheat_flags, no automatic action in V1),
  * ratings and XP with no money value, no purchases and no ads, ranked games cut short by a server restart end
  * unrated (persistence endInterruptedGames). The governing-law clause is a default for Moshe to confirm.
+ *
+ * The stealth bot (D90–D93, Moshe 2026-10-20; apps/server/src/stealth, built off: STEALTH_BOT_ENABLED and the
+ * admin switch): when no player is available, a 2-player ranked game may be against a computer-controlled
+ * opponent that plays at the player's pace and counts for the rating. D93 discloses it in one line here
+ * ("service") and in the store reviewer notes (docs/store/LISTING-APPLE.md §5, LISTING-GOOGLE.md "App access"),
+ * never inside the game. The "Play a bot meanwhile" practice offer stays, for when no such opponent is available.
  */
 export const TERMS: LegalTexts = {
   he: {
@@ -93,7 +99,7 @@ export const TERMS: LegalTexts = {
         id: 'service',
         title: 'זמינות השירות',
         blocks: [
-          'משחקים מדורגים דורשים חיבור לאינטרנט. כשאין יריבים זמינים, המשחק עשוי להציע משחק מול בוט. אם השרת מופעל מחדש באמצע משחק מדורג, המשחק מסתיים בלי שינוי בדירוג.',
+          'משחקים מדורגים דורשים חיבור לאינטרנט. כשאין שחקנים זמינים, ייתכן שתשובצו מול יריב ממוחשב שמשחק בקצב דומה לשלכם. משחקים כאלה נספרים בדירוג. המשחק עשוי גם להציע משחק אימון מול בוט, בלי דירוג. אם השרת מופעל מחדש באמצע משחק מדורג, המשחק מסתיים בלי שינוי בדירוג.',
           'אנחנו רשאים לשנות, להשהות או להפסיק חלקים מהמשחק, ונשתדל להודיע מראש על שינוי מהותי.',
         ],
       },
@@ -232,7 +238,7 @@ export const TERMS: LegalTexts = {
         id: 'service',
         title: 'Availability',
         blocks: [
-          'Ranked games need an internet connection. When no opponents are available, the game may offer a game against a bot. If the server restarts during a ranked game, that game ends with no rating change.',
+          'Ranked games need an internet connection. When no players are available, you may be matched with a computer-controlled opponent that plays at a pace similar to yours. Such games count toward your rating. The game may also offer a practice game against a bot, with no rating. If the server restarts during a ranked game, that game ends with no rating change.',
           'We may change, pause or stop parts of the game, and we will try to give notice of material changes.',
         ],
       },

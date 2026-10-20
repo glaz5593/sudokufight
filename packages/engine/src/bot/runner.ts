@@ -1,7 +1,8 @@
 import type { ActionResult } from '../game/engine';
 import { isSoftOffline } from '../game/evolve';
-import type { ClientAction, HostUpdate, LocalGameHost } from '../game/host';
-import type { GameEvent, GameState, PlayerId, RejectReason } from '../game/types';
+import type { ClientAction } from '../game/host';
+import type { InterferenceKind } from '../game/rules';
+import type { Action, GameEvent, GameState, PlayerId, RejectReason } from '../game/types';
 import type { CellIndex } from '../sudoku/board';
 import type { Clock } from '../util/clock';
 import type { Rng } from '../util/random';
@@ -16,24 +17,28 @@ import {
   chooseDigit,
   decideInterference,
   decideReaction,
+  decideRetaliation,
   drawMs,
   isEligibleCell,
   leadOver,
+  type RetaliationChoice,
   splitThinkTime,
   thinkTime,
 } from './brain';
 import {
   type BotConfig,
-  type BotLevel,
   botConfig,
   botLevel,
   type BotLevelId,
+  type BotProfile,
   type BotReactionTrigger,
+  type BotRetaliationPolicy,
 } from './levels';
 
 /**
- * A bot at the table (spec §9): it listens to a LocalGameHost and plays through host.dispatch, on the
- * injected clock, scheduler and RNG, so a game against a bot replays exactly.
+ * A bot at the table (spec §9): it listens to a game host (BotHost: a LocalGameHost on the phone, the server's
+ * game for the stealth bot) and plays through host.dispatch, on the injected clock, scheduler and RNG, so a game
+ * against a bot replays exactly.
  *
  * A move has the rhythm of a person (spec §9):
  *   hesitate  think before locking (most of the move's think time)
@@ -56,6 +61,27 @@ export interface BotHandle {
   detach(): void;
 }
 
+/** What the bot reads of a host's update: only its events. LocalGameHost's HostUpdate is one. */
+export type BotHostUpdate = { kind: 'events'; events: readonly GameEvent[] } | { kind: 'rejected' };
+
+/**
+ * What the bot needs of the game it plays in: the full state (solution included), its updates, and a way to act
+ * as any player. LocalGameHost is one (practice on the phone). On the server the game room wraps its ServerGame
+ * in one for the stealth bot (D90), so the server stays authoritative: the bot's actions go through the engine
+ * like anyone's.
+ *
+ * What the runner counts on: `state` is the state after every update it was told of; updates come in order,
+ * once each, and may come synchronously inside `dispatch` (the runner only reviews its plan once dispatch
+ * returns); `dispatch` returns the engine's result (`rejected` when refused) and throws only when the game is
+ * closed; and an unsubscribed listener hears nothing more.
+ */
+export interface BotHost {
+  readonly state: GameState;
+  /** Returns the unsubscribe function. */
+  subscribe(listener: (update: BotHostUpdate) => void): () => void;
+  dispatch(action: Action): ActionResult;
+}
+
 /** What the bot is doing, for tests and debugging (attachBot's `onTrace`). */
 export type BotTrace =
   | {
@@ -71,12 +97,27 @@ export type BotTrace =
       linger: boolean;
     }
   | { type: 'action'; at: number; action: ClientAction; rejected?: RejectReason }
+  /**
+   * [D98] An interference on the bot ended: it will hit back at `dueAt`, trying again until `giveUpAt` (game
+   * times as planned; a freeze of the game moves both on).
+   */
+  | {
+      type: 'retaliation';
+      at: number;
+      targetId: PlayerId;
+      kind: InterferenceKind;
+      dueAt: number;
+      giveUpAt: number;
+    }
+  /** [D98] It could not hit back by `giveUpAt` (too few points, the target busy or away): it let it go. */
+  | { type: 'retaliationDropped'; at: number; targetId: PlayerId; kind: InterferenceKind }
   | { type: 'error'; at: number; error: unknown }
   | { type: 'stopped'; at: number; reason: 'gameOver' | 'out' | 'detached' | 'hostClosed' };
 
 export interface AttachBotOptions {
   botId: PlayerId;
-  level: BotLevelId;
+  /** A row of the level table (1–5), or a profile built for this game (stealthBotLevel). */
+  level: BotLevelId | BotProfile;
   clock: Clock;
   scheduler: Scheduler;
   rng: Rng;
@@ -85,7 +126,7 @@ export interface AttachBotOptions {
   onTrace?: (trace: BotTrace) => void;
 }
 
-export function attachBot(host: LocalGameHost, opts: AttachBotOptions): BotHandle {
+export function attachBot(host: BotHost, opts: AttachBotOptions): BotHandle {
   const bot = new BotRunner(host, opts);
   return { detach: () => bot.stop('detached') };
 }
@@ -100,9 +141,19 @@ type MovePlan =
   /** Waiting: after a refused action, or for a re-lock wait to end. */
   | { kind: 'wait' };
 
+/** [D98] An interference to hit back with, on its way. */
+interface PendingRetaliation {
+  choice: RetaliationChoice;
+  /** The next attempt, and the time it gives up (game time: a freeze moves both on). */
+  dueAt: number;
+  giveUpAt: number;
+  /** Null while the game is frozen (the count stands still) or while the attempt runs. */
+  timer: unknown;
+}
+
 class BotRunner {
   private readonly botId: PlayerId;
-  private readonly level: BotLevel;
+  private readonly level: BotProfile;
   private readonly config: BotConfig;
   private readonly clock: Clock;
   private readonly scheduler: Scheduler;
@@ -121,17 +172,21 @@ class BotRunner {
   /** The phone's own freeze [D65] holds the reaction on its way too: what it had left. */
   private heldReaction: { emoji: string; remaining: number } | null = null;
   private interferenceTimer: unknown = null;
+  /** [D98] The interferences it will hit back with, one per interference it received. */
+  private readonly retaliations = new Set<PendingRetaliation>();
+  /** [D98] Since when the game is frozen: the count to hitting back stands still meanwhile. */
+  private retaliationsHeldAt: number | null = null;
   /** Inside host.dispatch: updates are only observed; the plan is reviewed once it returns. */
   private acting = false;
   private done = false;
 
   constructor(
-    private readonly host: LocalGameHost,
+    private readonly host: BotHost,
     opts: AttachBotOptions,
   ) {
     this.botId = opts.botId;
     this.config = botConfig(opts.config);
-    this.level = botLevel(opts.level, this.config);
+    this.level = typeof opts.level === 'number' ? botLevel(opts.level, this.config) : opts.level;
     this.clock = opts.clock;
     this.scheduler = opts.scheduler;
     this.rng = opts.rng;
@@ -149,6 +204,8 @@ class BotRunner {
     if (this.reactionTimer !== null) this.scheduler.clearTimeout(this.reactionTimer);
     if (this.interferenceTimer !== null) this.scheduler.clearTimeout(this.interferenceTimer);
     this.reactionTimer = this.interferenceTimer = null;
+    for (const r of this.retaliations) if (r.timer !== null) this.scheduler.clearTimeout(r.timer);
+    this.retaliations.clear();
     this.reaction = this.heldReaction = null;
     this.plan = null;
     this.frozen = null;
@@ -158,7 +215,7 @@ class BotRunner {
 
   // -- listening ------------------------------------------------------------------------------------------
 
-  private onUpdate(update: HostUpdate): void {
+  private onUpdate(update: BotHostUpdate): void {
     if (this.done) return;
     // The host collects a listener's error and throws it at whoever acted: the bot must never be that.
     this.guard(() => {
@@ -181,6 +238,8 @@ class BotRunner {
         if (lead !== null && lead > 0 && lead - e.points <= 0) this.considerReaction('tookLead');
       } else if (e.type === 'interference' && e.targetId === me) {
         this.considerReaction('hit');
+      } else if (e.type === 'interferenceEnded' && e.targetId === me) {
+        this.considerRetaliation(e);
       }
     }
   }
@@ -195,6 +254,9 @@ class BotRunner {
     if (s.status === 'over') return this.stop('gameOver');
     const me = s.players.find((p) => p.id === this.botId);
     if (!me || me.status !== 'active') return this.stop('out');
+    // [D98] Only a frozen game stops the count to hitting back; being hit, or the soft phase, does not.
+    if (s.status === 'running') this.releaseRetaliations(now);
+    else this.holdRetaliations(now);
     const lock = s.locks.find((l) => l.playerId === this.botId);
     // Frozen game, not started yet, or under interference: stand still, as the lock timer does [D11]. With
     // the [D11] alternative its lock's timer runs on under interference: it still finishes that lock in time.
@@ -389,6 +451,84 @@ class BotRunner {
       },
       drawMs(this.rng, this.config.interferenceDelayMs),
     );
+  }
+
+  // -- hitting back [D98] ---------------------------------------------------------------------------------
+
+  /** An interference on it ended: plan the answer, when its level has one. */
+  private considerRetaliation(ended: Extract<GameEvent, { type: 'interferenceEnded' }>): void {
+    const choice = decideRetaliation(this.host.state, this.botId, this.level, ended, this.rng);
+    if (!choice) return;
+    const r: PendingRetaliation = {
+      choice,
+      dueAt: ended.t + choice.afterMs,
+      giveUpAt: ended.t + choice.giveUpAfterMs,
+      timer: null,
+    };
+    this.retaliations.add(r);
+    const { targetId, kind } = choice;
+    const now = this.clock.now();
+    this.trace({ type: 'retaliation', at: now, targetId, kind, dueAt: r.dueAt, giveUpAt: r.giveUpAt });
+    // While the game is frozen it waits for the resume, which moves both times on.
+    if (this.retaliationsHeldAt === null) this.armRetaliation(r, now);
+  }
+
+  private armRetaliation(r: PendingRetaliation, now: number): void {
+    if (r.timer !== null) this.scheduler.clearTimeout(r.timer);
+    r.timer = this.scheduler.setTimeout(() => this.onRetaliationTimer(r), Math.max(0, r.dueAt - now));
+  }
+
+  /** Its moment came: hit back if it can, else try again in a moment, but never after giveUpAt. */
+  private onRetaliationTimer(r: PendingRetaliation): void {
+    r.timer = null;
+    if (this.done || !this.retaliations.has(r)) return;
+    this.guard(() => {
+      const now = this.clock.now();
+      const s = this.host.state;
+      // The game froze meanwhile and the bot was not told yet: the resume re-arms it.
+      if (s.status !== 'running') return this.review();
+      const { targetId, kind } = r.choice;
+      if (canInterfere(s, this.botId, targetId, now) && this.act({ type: 'interfere', targetId, kind })) {
+        this.retaliations.delete(r);
+      } else if (now >= r.giveUpAt) {
+        this.retaliations.delete(r);
+        if (!this.done) this.trace({ type: 'retaliationDropped', at: now, targetId, kind });
+      } else if (!this.done) {
+        r.dueAt = Math.min(now + this.retaliationPolicy().retryMs, r.giveUpAt);
+        this.armRetaliation(r, now);
+      }
+      this.review();
+    });
+  }
+
+  /** The game froze: every answer on its way keeps the time it had left. */
+  private holdRetaliations(now: number): void {
+    if (this.retaliationsHeldAt !== null) return;
+    this.retaliationsHeldAt = now;
+    for (const r of this.retaliations) {
+      if (r.timer !== null) this.scheduler.clearTimeout(r.timer);
+      r.timer = null;
+    }
+  }
+
+  /** The game goes on: every answer on its way goes on, moved on by the freeze. */
+  private releaseRetaliations(now: number): void {
+    const heldAt = this.retaliationsHeldAt;
+    if (heldAt === null) return;
+    this.retaliationsHeldAt = null;
+    const frozenMs = Math.max(0, now - heldAt);
+    for (const r of this.retaliations) {
+      r.dueAt += frozenMs;
+      r.giveUpAt += frozenMs;
+      this.armRetaliation(r, now);
+    }
+  }
+
+  private retaliationPolicy(): BotRetaliationPolicy {
+    const policy = this.level.interference.retaliate;
+    // Only a level with a policy plans an answer (decideRetaliation).
+    if (!policy) throw new Error('No retaliation policy');
+    return policy;
   }
 
   // -- acting ---------------------------------------------------------------------------------------------

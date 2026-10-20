@@ -7,6 +7,8 @@ import type { RemoteGameHost } from '../net/remoteGameHost';
 import { onlineGameEnded, practiceFinished } from '../progress/appProgress';
 import { track } from '../services/analytics';
 import {
+  type FriendsRequest,
+  type FriendsSessionDeps,
   type OnlineEnd,
   type OnlineProfiles,
   type OnlineRequest,
@@ -32,6 +34,9 @@ export interface RankedDeps extends Omit<MatchmakingClientDeps<OnlineSession>, '
 /** A ranked search whose match's room is an OnlineSession. */
 export type RankedSearch = MatchmakingClient<OnlineSession>;
 
+/** What a friends room's session needs (1.0.4): defined with the session (game/onlineSession.ts). */
+export type { FriendsSessionDeps };
+
 /**
  * The game in progress, for the screens (not persisted: a saved game lives in the practice database, a ranked
  * one on the server). The game screen reads `session` (a practice) or `online` (a game on the server, stage 7)
@@ -41,6 +46,9 @@ export type RankedSearch = MatchmakingClient<OnlineSession>;
  * A ranked game (stage 9) starts as a search: `match`, the matchmaking client the match screens follow. At
  * "found" its match's room (an OnlineSession) becomes `online`, so the game is followed before its snapshot
  * comes at GO; if the match falls through, `online` goes back to null and the search goes on.
+ *
+ * A friends room (1.0.4) is `online` from its ticket on (net/friends.ts startFriends): its lobby, its countdown,
+ * its game and its end, like any online game. Its "נסה שוב" comes back through POST /v1/rooms/join.
  */
 export interface GameStoreState {
   session: PracticeSession | null;
@@ -72,8 +80,15 @@ export interface GameStoreState {
    */
   startRanked(request: RankedRequest, makeDeps?: () => RankedDeps): RankedSearch;
   /**
+   * Closes any game in progress and enters a friends room (1.0.4) with its ticket's reservation (or, with none,
+   * through `deps.rejoin`). Returns the session at once; its `online` says how the entering goes. Called by
+   * net/friends.ts (createRoom, joinByCode), not by the screens.
+   */
+  startFriends(request: FriendsRequest, deps: FriendsSessionDeps): OnlineSession;
+  /**
    * "נסה שוב" after a refusal or a lost connection: a new session for the same room (by its code, with the
-   * same identity, when it had one), or the same request again. Null without an online session.
+   * same identity, when it had one), or the same request again. A friends room's: back in by its code through
+   * POST /v1/rooms/join (the same account's own seat). Null without an online session.
    */
   retryOnline(): OnlineSession | null;
   /** "End practice" (spec §6.6), or the surrender of an online game; the session stays for the result. */
@@ -127,6 +142,8 @@ export function createGameStore(deps: GameStoreDeps = defaultGameStoreDeps) {
     let lastMakeHost: (() => RemoteGameHost) | null = null;
     /** Where the last ranked search's deps came from: "search again" makes the next one the same way. */
     let lastMakeRanked: (() => RankedDeps) | null = null;
+    /** The last friends room's way back in: its retry comes back the same way. */
+    let lastFriends: FriendsSessionDeps | null = null;
 
     const detach = () => {
       unsubscribe?.();
@@ -162,6 +179,7 @@ export function createGameStore(deps: GameStoreDeps = defaultGameStoreDeps) {
       request: OnlineRequest,
       makeHost?: () => RemoteGameHost,
       profiles: OnlineProfiles | null = null,
+      friends: FriendsSessionDeps | null = null,
     ): OnlineSession => {
       const make = makeHost ?? deps.onlineHost ?? lastMakeHost;
       if (!make) throw new Error('startOnline needs a host: pass net/device deviceHost');
@@ -175,6 +193,7 @@ export function createGameStore(deps: GameStoreDeps = defaultGameStoreDeps) {
         track: deps.onlineTrack ?? track,
         profiles,
         onEnd: deps.onlineEnd,
+        friends: friends ? { rejoin: friends.rejoin } : null,
         onError: (error) => {
           // A session let go of meanwhile (a retry, a practice) has nothing to report.
           if (__DEV__ && get().online === online)
@@ -251,9 +270,25 @@ export function createGameStore(deps: GameStoreDeps = defaultGameStoreDeps) {
 
       startRanked: (request, makeDeps) => goRanked(request, makeDeps),
 
+      startFriends(request, friends) {
+        lastFriends = friends;
+        return goOnline(request, friends.makeHost, null, friends);
+      },
+
       retryOnline() {
         const online = get().online;
         if (!online) return null;
+        // A friends room: back in by its code through our route (its roomId is no code), with no reservation.
+        if (online.request.kind === 'friends') {
+          if (!lastFriends) return null;
+          const { code, room } = online.request;
+          return goOnline(
+            { kind: 'friends', code, reservation: null, room, gameType: online.gameType },
+            lastFriends.makeHost,
+            online.profiles,
+            lastFriends,
+          );
+        }
         const code = online.host.roomCode;
         // Back in by its code, with the players' avatars as the match had them (and its game type, for the
         // loading card before the game says it).

@@ -1,5 +1,6 @@
 import type {
   AdminAuditEntry,
+  AdminFriendRooms,
   AdminGameDetail,
   AdminGameRow,
   AdminInstallDetail,
@@ -12,6 +13,8 @@ import type {
   AdminReport,
   AdminReportedPlayer,
   AdminScreens,
+  AdminStealthOverview,
+  AdminStealthSwitch,
   AdminUserDetail,
   AdminUserRow,
 } from '@sudoku-fight/protocol';
@@ -423,4 +426,91 @@ export function moderationResult(
   now = Date.now(),
 ): AdminModerationResult {
   return { user: userRow(user, now), audit: audit === null ? null : auditEntry(audit, now) };
+}
+
+/** GET /rooms (1.0.4): two open rooms (one waiting, one playing), and games with friends on two days. */
+export function friendRoomsFixture(now = Date.now()): AdminFriendRooms {
+  return {
+    counts: { lobby: 2, playing: 1 },
+    rooms: [
+      {
+        roomId: 'kQ3fZ9xLm',
+        state: 'lobby',
+        gameType: 'fast',
+        players: 3,
+        maxPlayers: 4,
+        hostId: USER_A,
+        hostName: 'Moshe',
+        openedAt: now - 90 * 60_000,
+        startedAt: null,
+      },
+      {
+        roomId: 'Bv7pW2nHc',
+        state: 'playing',
+        gameType: 'hard',
+        players: 2,
+        maxPlayers: 4,
+        hostId: USER_B,
+        hostName: 'Dana',
+        openedAt: now - 3 * HOUR,
+        startedAt: now - 2 * HOUR,
+      },
+    ],
+    days: 7,
+    gamesPerDay: [
+      { day: daysAgo(2, now), count: 4 },
+      { day: daysAgo(0, now), count: 1 },
+    ],
+  };
+}
+
+// ---- the stealth bot (stealth-bot.md §8) ------------------------------------------------------------------------
+
+export const PERSONA_A = 'b7e1c2d3-0000-4000-8000-0000000000a1';
+
+/** The overview's stealth bot: 12 of 40 ranked games, 6 wins of 9 (67%: off the 45%–55% target). */
+export function stealthOverview(now = Date.now()): AdminStealthOverview {
+  return {
+    personas: 3,
+    rankedGames: 40,
+    stealthGames: 12,
+    stealthPerDay: [
+      { day: daysAgo(2, now), count: 5 },
+      { day: daysAgo(0, now), count: 7 },
+    ],
+    wins: 6,
+    losses: 3,
+    winRate: 6 / 9,
+    wait: { stealth: { games: 10, avgSec: 14.2 }, people: { games: 20, avgSec: 6.5 } },
+    reports: 3,
+    blocks: 1,
+    returned: { stealth: { games: 8, returned: 6 }, people: { games: 20, returned: 10 } },
+    closeCalls: 2,
+  };
+}
+
+/** GET /stealth: the switch on a server with the stealth bot. */
+export function stealthSwitchFixture(over: Partial<AdminStealthSwitch> = {}): AdminStealthSwitch {
+  return { enabled: true, on: false, changedAt: null, changedBy: null, ...over };
+}
+
+/** A persona as the users list shows it (kind=persona). */
+export function personaRow(over: Partial<AdminUserRow> = {}, now = Date.now()): AdminUserRow {
+  return userRow(
+    {
+      id: PERSONA_A,
+      displayName: 'Noa_K',
+      email: null,
+      country: 'IL',
+      avatarId: 'lava-lamp',
+      createdAt: now - 5 * DAY,
+      lastSeen: null,
+      games: 9,
+      bestRating: 1234,
+      openReports: 1,
+      persona: true,
+      ...over,
+    },
+    now,
+  );
 }

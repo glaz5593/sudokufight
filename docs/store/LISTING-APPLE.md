@@ -104,6 +104,7 @@ In Hebrew and English. The board always reads left to right.
 
 - **"What's New"** בגרסה הראשונה: ‏`First release.` / ‏`גרסה ראשונה.`
 - כל טענה בתיאור קיימת בקוד של V1. **לא להוסיף** חברים, עונות או רכישות לפני שהם קיימים (הנחיה 2.3.1: תיאור מדויק).
+- **לא לכתוב "רק שחקנים אמיתיים"** או משהו דומה, בשום שדה, כל עוד יש בשרת בוט סמוי (D90, ‏D93). התיאור היום לא מבטיח את זה, וכך זה צריך להישאר. "No opponents online? Practice against a bot while you wait." נשאר נכון: כשאין גם יריב ממוחשב, מסך החיפוש מציע "שחק מול בוט בינתיים".
 
 ## 2. כתובות
 
@@ -177,7 +178,7 @@ Demo account: <demo1 email> / <password>. Its email is verified, so ranked play 
 How to try it:
 1. Sign in with the demo account.
 2. Practice works without other players: Home → Play → "Practice vs bot" (or "Solo practice"). It also works offline.
-3. Ranked play (Home → Play → "Ranked · 2 players") needs a real opponent. If no other player is searching, the search screen says so right away ("No one else is searching for this game right now") and offers "Play a bot meanwhile", which starts a game against a bot at once; after about a minute the search ends with the same option. To see a ranked game between two people, sign in on a second device with the second demo account (<demo2 email> / <password>) and start the same search on both.
+3. Ranked play (Home → Play → "Ranked · 2 players"). The server looks for another player with a similar rating. In 2-player ranked games only, when no player is available, the server may instead match you, after a short wait, with a computer-controlled opponent: it has a made-up name that belongs to no real player, an avatar and a flag, it plays at a pace close to yours (from your recent ranked games), and the game counts for the rating like any ranked game. The game itself does not mark it as a computer; players are told in the Terms of Use (Settings → About and legal), section "Availability". It is never used in 3- or 4-player games or in games with friends. This is a server setting and may be switched off. When no such opponent is available either, the search screen says right away that no one else is searching ("No one else is searching for this game right now") and offers "Play a bot meanwhile", a practice game against a bot that starts at once; after about a minute the search ends with the same option. To see a ranked game between two people, sign in on a second device with the second demo account (<demo2 email> / <password>) and start the same search on both within a few seconds: two players searching together are matched with each other.
 4. Replay with explanations: History → any game → Replay.
 
 Account deletion (Guideline 5.1.1(v)): Settings → Delete account → confirm → enter the password. It deletes the account on our server and the Firebase sign-in at once.
@@ -192,6 +193,11 @@ The app has no ads, no in-app purchases, and does not track users.
 
 - **אם מוסיפים "דווח על שחקן" ו"חסימה"** (`docs/store/UGC-PROPOSAL.md`), מעדכנים את הפסקה על User-generated content בהתאם.
 - **התפריטים בהערות** (Home → Play, ‏"Practice vs bot" וכו') צריכים להתאים לשמות באפליקציה באנגלית. לבדוק מול הבנייה לפני ההדבקה.
+- **היריב הממוחשב (הבוט הסמוי, ‏D90–D93, משה 20.10.2026):** שלב 3 בהערות מתאר אותו במפורש, כי **אסור להסתיר התנהגות מהבודקים** (`docs/handoff/2026-10-19/stealth-bot.md`, סעיף 3.3).
+  - הנוסח נכון גם כשהבוט כבוי בשרת (`STEALTH_BOT_ENABLED`, והמתג באתר הניהול) וגם כשהוא דולק. אין בו מספרים (כמו 8–20 ש׳), כדי שלא יתיישן כשמכווננים.
+  - הגילוי למשתמשים הוא שורה אחת בתנאי השימוש, בסעיף "זמינות השירות" (`apps/server/src/legal/terms.ts`, ‏`service`). אם משנים את שם הסעיף באנגלית ("Availability"), מעדכנים גם כאן וב־`LISTING-GOOGLE.md`.
+  - **לפני ההגשה הראשונה ל־iOS:** ההנחיה 2.3.1 רוצה שהפונקציות יהיו ברורות **גם למשתמשים**, ושורה בתנאי השימוש היא גילוי חלקי. לחזור לזה עם משה לפני הבנייה ל־iOS.
+  - `legal.test.ts` בודק שההערות כאן וב־Google מזכירות את היריב הממוחשב, ושאין בהן "needs a real opponent".
 - **Sign in with Apple** (הנחיה 4.8): ב־14.10.2026 נוספה, לבקשת משה, "המשך עם Google", אבל **ב־Android בלבד**. בגרסת iOS הכניסה עדיין מייל וסיסמה בלבד, ולכן Sign in with Apple עוד לא נדרש. **ברגע שהכפתור של Google מגיע ל־iOS, ‏Sign in with Apple חובה באותה גרסה** (אפיון סעיף 23), ומעדכנים גם את `APP-PRIVACY.md`.
 
 ## 6. Export Compliance (הצפנה)

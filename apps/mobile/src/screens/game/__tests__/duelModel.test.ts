@@ -48,6 +48,17 @@ describe('who a player is (identity)', () => {
     expect(playerIdentity({ id: 'me' }).name).toBeNull();
   });
 
+  it('an account’s id (a UUID, as a stealth bot’s persona has too: D90) is never a bot', () => {
+    const id = '6f1d3c3e-8c1b-4d8e-9a55-0c1e2f3a4b5c';
+    expect(botLevelOf(id)).toBeNull();
+    expect(playerIdentity({ id, name: 'Tal88' })).toEqual({
+      name: 'Tal88',
+      avatar: 'av00',
+      isBot: false,
+      botLevel: null,
+    });
+  });
+
   it('from a game’s view', () => {
     const g = duel();
     const view = g.host.getView();

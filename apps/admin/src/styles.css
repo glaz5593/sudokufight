@@ -1191,6 +1191,18 @@ select.input {
   background: var(--data-wash);
 }
 
+/* The stealth bot's mark (stealth-bot.md §8): a persona, a game against it. Dashed, so it is not colour alone. */
+.badge-stealth {
+  border-style: dashed;
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--accent-subtle);
+}
+
+.stealth-state {
+  font-weight: 600;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

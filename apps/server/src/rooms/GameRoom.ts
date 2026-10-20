@@ -25,6 +25,7 @@ import {
 import {
   type GameRoomError,
   type GameRoomRuleOverrides,
+  type LobbyPlayer,
   MUTED_REACTION_EMOJI,
   parseDeclaredInterferenceKinds,
   PROTOCOL_VERSION,
@@ -50,6 +51,13 @@ import {
 import type { RoomBlocks } from '../moderation/watch';
 import { reportError } from '../monitoring/report';
 import type { GameRecorder, RankedGames } from '../persistence';
+import {
+  fallbackSecret,
+  type SeatedBot,
+  seatStealthBot,
+  type StealthBotSeat,
+  type StealthSeatDeps,
+} from '../stealth/seat';
 
 /**
  * The game room (stage 7, spec §16.2, §17, §18, §21). The server is authoritative: it runs the engine
@@ -120,6 +128,23 @@ import type { GameRecorder, RankedGames } from '../persistence';
  * an action slower than slowActionMs is logged on its own. So do the connections [D42] (lost, back within
  * the soft phase, hard, back from it: counted from the engine's events) and the moves made offline (applied,
  * or lost by reason).
+ *
+ * Friends rooms (1.0.4, rooms/FriendsRoom.ts) are this room with a waiting room of their own. The points they
+ * hook into change nothing for the rooms above (friends-room.md §7.1):
+ * 1. roomSetup() and roomIdIsCode(): the setup comes from the friends service's claim, and the room keeps
+ *    Colyseus's random id (the 6-digit code is only a key in the service, never the room's id).
+ * 2. They never use joinLobby(): their lobby has no auto-start; the host's `start` runs countDown().
+ * 3. Their lobby holds a dropped seat (D84a) and lets the same account take its seat over, with the protected
+ *    seat helpers (takeSeat, moveSeat, freeSeat, keepSeats), in place of leaveLobby() and `alreadyInRoom`.
+ * 4. lobbyContent(): their `lobby` carries avatar, flag, rating, `away` and the host.
+ * 5. gameMaker(): their game's config (a ranked-pool puzzle, nobody rated) and its record (stored unrated).
+ *
+ * The stealth bot (stealth-bot.md §7) [D90]: a match's setup may name a persona's seat (`bots`), which has no
+ * connection, ever. The room seats it `readyAfterMs` after it opened (the `lobby` goes out, and matchmaking hears
+ * it is in, as for a person who connected: D37), and at the start the engine's bot plays it through the game
+ * (stealth/seat.ts: ServerGame.act, so the server stays authoritative), with a private seed. Its seat is never
+ * disconnected, never rejoined, and never waited for at the end. Everything the clients get is what a game
+ * between two people sends.
  */
 
 export interface GameRoomLog {
@@ -156,6 +181,11 @@ export interface GameRoomDeps {
   matches?: RankedRooms;
   /** Blocks among the players (spec §3.5), to mute reactions. Without it, nothing is muted. */
   blocks?: RoomBlocks;
+  /**
+   * The stealth bot's seats (config.stealth.secret): the key of its private seed. Without it, a seat a match
+   * names gets a secret of the process (stealth/seat.ts fallbackSecret).
+   */
+  stealth?: StealthSeatDeps;
 }
 
 /** Node's timers, for the engine. */
@@ -202,7 +232,19 @@ export const GAME_ROOM_DEFAULTS = {
   slowActionMs: 50,
 } as const;
 
-type Phase = 'lobby' | 'countdown' | 'starting' | 'playing' | 'over';
+export type GameRoomPhase = 'lobby' | 'countdown' | 'starting' | 'playing' | 'over';
+type Phase = GameRoomPhase;
+
+/** What makes a game's config and records it (hook 5): a rated room's RankedGames, or a friends room's. */
+export type GameMaker = Pick<RankedGames, 'createConfig' | 'record'>;
+
+/** The `lobby` message's own fields (hook 4): the seats, and a friends room's host and seat counts. */
+export interface GameRoomLobbyContent {
+  players: LobbyPlayer[];
+  hostId?: PlayerId;
+  minPlayers?: number;
+  maxPlayers?: number;
+}
 
 /**
  * A match room holds its reserved seats this much longer than matchmaking's ready check (a seat is taken by
@@ -225,6 +267,8 @@ interface Seat {
    * match room has its kinds from matchmaking). Undefined: none declared, the legacy kinds.
    */
   interferenceKinds?: readonly string[];
+  /** A persona's seat (the stealth bot): no connection, ever; the engine's bot plays it. */
+  bot?: StealthBotSeat;
 }
 
 /**
@@ -280,7 +324,11 @@ export abstract class GameRoom extends Room {
   private goAt: number | null = null;
   private readonly seats: Seat[] = [];
   private game: ServerGame | null = null;
+  /** What made this game's config and records it (hook 5), once a rated or friends game starts. */
+  private maker: GameMaker | null = null;
   private recorder: GameRecorder | null = null;
+  /** GO of a room that counts down by itself (countDown(): a friends room's `start`). */
+  private goTimer: unknown = null;
   private gate: MessageGate | null = null;
   private closeTimer: unknown = null;
   /** When the finished game's room closes at the latest (gameOver + closeAfterGameMs, this room's clock). */
@@ -301,6 +349,10 @@ export abstract class GameRoom extends Room {
   private readonly mutes = new Set<string>();
   /** Stops listening for block changes (the room closes). */
   private stopBlocks: (() => void) | null = null;
+  /** The stealth bots' "connections" on their way (their seats, readyAfterMs after the room opened). */
+  private readonly botTimers = new Set<unknown>();
+  /** The stealth bots playing this game. */
+  private readonly bots: SeatedBot[] = [];
 
   /** The game, once every seat is taken (diagnostics and tests; stage 9 stores its events). */
   get currentGame(): ServerGame | null {
@@ -317,30 +369,40 @@ export abstract class GameRoom extends Room {
   override async onCreate(options: unknown): Promise<void> {
     let setup;
     try {
-      const matchId = rankedMatchIdOf(options);
-      setup = matchId === null ? parseCreateOptions(options, this.deps.nodeEnv) : this.claimMatch(matchId);
+      setup = this.roomSetup(options);
     } catch (error) {
       if (error instanceof RoomOptionsError)
         throw refuse(ErrorCode.MATCHMAKE_INVALID_CRITERIA, 'badOptions', error.message);
       throw error;
     }
-    if (setup.code !== null && (await matchMaker.getRoomById(setup.code)))
+    const codeIsId = this.roomIdIsCode();
+    if (codeIsId && setup.code !== null && (await matchMaker.getRoomById(setup.code)))
       throw refuse(
         ErrorCode.MATCHMAKE_INVALID_CRITERIA,
         'codeTaken',
         `a room already has the code ${setup.code}`,
       );
     this.code = setup.code ?? (await this.freeCode());
-    this.roomId = this.code;
+    // Hook 1: a friends room keeps Colyseus's own random id; its code is a key in the friends service only.
+    if (codeIsId) this.roomId = this.code;
     this.gameType = setup.gameType;
     this.playerCount = setup.playerCount;
     this.ruleOverrides = setup.rules;
     this.rated = setup.rated;
     if (this.rated && this.deps.ranked === undefined)
       throw refuse(ErrorCode.MATCHMAKE_INVALID_CRITERIA, 'badOptions', 'rated rooms need the database');
-    this.maxClients = setup.playerCount;
+    // A persona's seat (the stealth bot) takes no connection.
+    const bots = this.match?.setup.bots ?? [];
+    this.maxClients = setup.playerCount - bots.length;
     if (this.match)
       this.seatReservationTimeout = (this.match.setup.readyTimeoutMs + MATCH_SEAT_SLACK_MS) / 1000;
+    for (const bot of bots) {
+      const timer = this.deps.scheduler.setTimeout(() => {
+        this.botTimers.delete(timer);
+        this.seatBot(bot);
+      }, bot.readyAfterMs);
+      this.botTimers.add(timer);
+    }
     this.maxMessagesPerSecond = this.deps.maxMessagesPerSecond;
     this.gate = new MessageGate({
       now: this.deps.now,
@@ -364,7 +426,8 @@ export abstract class GameRoom extends Room {
     // The game is on (or over): only its own players come back, after leaving on purpose.
     const seat = this.seatOfPlayer(identity.userId);
     if (!seat) throw refuse(ErrorCode.APPLICATION_ERROR, 'gameStarted', 'the game in this room has started');
-    if (seat.sessionId !== null)
+    // A persona's seat is the bot's for good (nobody can sign in as one; this is the room's own guard).
+    if (seat.sessionId !== null || seat.bot)
       throw refuse(ErrorCode.APPLICATION_ERROR, 'alreadyInRoom', `${seat.playerId} is connected already`);
     seat.sessionId = client.sessionId;
     this.gate!.newSession(seat.playerId);
@@ -444,6 +507,10 @@ export abstract class GameRoom extends Room {
   override onDispose(): void {
     this.stopBlocks?.();
     this.stopBlocks = null;
+    for (const timer of this.botTimers) this.deps.scheduler.clearTimeout(timer);
+    this.botTimers.clear();
+    for (const bot of this.bots) bot.stop();
+    this.bots.length = 0;
     // A match that never got to its countdown is off (matchmaking requeues whoever was here).
     this.match?.closed();
     this.game?.close();
@@ -451,6 +518,8 @@ export abstract class GameRoom extends Room {
     this.recorder?.close();
     if (this.closeTimer !== null) this.deps.scheduler.clearTimeout(this.closeTimer);
     this.closeTimer = null;
+    if (this.goTimer !== null) this.deps.scheduler.clearTimeout(this.goTimer);
+    this.goTimer = null;
     if (this.opened) this.deps.metrics.roomClosed();
     this.opened = false;
   }
@@ -488,9 +557,9 @@ export abstract class GameRoom extends Room {
     this.allowReconnection(client, seconds).catch(() => undefined);
   }
 
-  /** Everyone has had the end: nothing keeps an empty room open any more. */
+  /** Everyone has had the end: nothing keeps an empty room open any more (a bot's seat waits for nothing). */
   private everyoneSawEnd(): boolean {
-    return this.seats.every((s) => this.sawEnd.has(s.playerId));
+    return this.seats.every((s) => s.bot !== undefined || this.sawEnd.has(s.playerId));
   }
 
   // -- lobby ---------------------------------------------------------------------------------------------
@@ -528,6 +597,115 @@ export abstract class GameRoom extends Room {
     this.match?.leave(seat.playerId);
   }
 
+  // -- hook points of a room with a lobby of its own (the friends room, 1.0.4) ---------------------------
+
+  /**
+   * Hook 1: this room's setup from its create options. Here: a matchmaking match's claim, or a dev room's
+   * options (outside production). Throws RoomOptionsError (refused `badOptions`).
+   */
+  protected roomSetup(options: unknown): GameRoomSetup {
+    const matchId = rankedMatchIdOf(options);
+    return matchId === null ? parseCreateOptions(options, this.deps.nodeEnv) : this.claimMatch(matchId);
+  }
+
+  /** Hook 1: the room's id is its code (dev and match rooms). A friends room keeps a random one. */
+  protected roomIdIsCode(): boolean {
+    return true;
+  }
+
+  /** Hook 4: the seats (and extra fields) of `lobby`. Here: each seat's id and name. */
+  protected lobbyContent(): GameRoomLobbyContent {
+    return { players: this.seats.map((s) => ({ id: s.playerId, name: s.name })) };
+  }
+
+  /**
+   * Hook 5: what makes this room's game config and records it. Here: a rated room's deps.ranked (null for an
+   * unrated dev room: a puzzle from deps.puzzles, nothing stored).
+   */
+  protected gameMaker(): GameMaker | null {
+    return this.rated ? (this.deps.ranked ?? null) : null;
+  }
+
+  /** The room's phase (a subclass's lobby runs while it is 'lobby'). */
+  protected get gamePhase(): GameRoomPhase {
+    return this.phase;
+  }
+
+  /** The room's code: a dev room's id, a friends room's 6 digits. */
+  protected get roomCode(): string {
+    return this.code;
+  }
+
+  /** The player a connection plays for, if any. */
+  protected playerOfSession(sessionId: string): PlayerId | undefined {
+    return this.seatOfSession(sessionId)?.playerId;
+  }
+
+  /** The connection that holds a player's seat now (null: nobody; undefined: no such seat). */
+  protected sessionOfPlayer(playerId: PlayerId): string | null | undefined {
+    return this.seatOfPlayer(playerId)?.sessionId;
+  }
+
+  /** A seat for this connection, last in the order (a subclass's lobby). */
+  protected takeSeat(playerId: PlayerId, name: string, sessionId: string, interferenceKinds: unknown): void {
+    this.seats.push({
+      playerId,
+      name,
+      sessionId,
+      interferenceKinds: parseDeclaredInterferenceKinds(interferenceKinds),
+    });
+    this.gate!.newSession(playerId);
+  }
+
+  /**
+   * The same player on a new connection (another device, or the app opened again): the seat keeps its place.
+   * The earlier connection plays for nobody from now on.
+   */
+  protected moveSeat(playerId: PlayerId, name: string, sessionId: string, interferenceKinds: unknown): void {
+    const seat = this.seatOfPlayer(playerId);
+    if (!seat) return this.takeSeat(playerId, name, sessionId, interferenceKinds);
+    seat.sessionId = sessionId;
+    seat.name = name;
+    seat.away = false;
+    seat.interferenceKinds = parseDeclaredInterferenceKinds(interferenceKinds);
+    this.gate!.newSession(playerId);
+  }
+
+  /** The seat is marked away (dropped) or back. */
+  protected markAway(playerId: PlayerId, away: boolean): void {
+    const seat = this.seatOfPlayer(playerId);
+    if (seat) seat.away = away;
+  }
+
+  /** The seat is gone (left the lobby, its hold ran out, kicked). */
+  protected freeSeat(playerId: PlayerId): void {
+    const i = this.seats.findIndex((s) => s.playerId === playerId);
+    if (i >= 0) this.seats.splice(i, 1);
+  }
+
+  /** Before the game: only these seats stay, in this order (the game's players). */
+  protected keepSeats(playerIds: readonly PlayerId[]): void {
+    const kept = this.seats.filter((s) => playerIds.includes(s.playerId));
+    kept.sort((a, b) => playerIds.indexOf(a.playerId) - playerIds.indexOf(b.playerId));
+    this.seats.splice(0, this.seats.length, ...kept);
+  }
+
+  /**
+   * A room that starts by itself (a friends room's `start`): from now the seats are fixed (leaving is
+   * abandonment [D32]); everyone gets the `countdown`, and the game starts at GO, as in a match's room.
+   */
+  protected countDown(countdownMs: number): void {
+    if (this.phase !== 'lobby') return;
+    this.phase = 'countdown';
+    this.autoDispose = false;
+    this.goAt = this.deps.now() + countdownMs;
+    for (const client of this.clients) if (this.seatOfSession(client.sessionId)) this.sendCountdown(client);
+    this.goTimer = this.deps.scheduler.setTimeout(() => {
+      this.goTimer = null;
+      if (this.phase === 'countdown') this.startGame();
+    }, countdownMs);
+  }
+
   // -- a matchmaking match (stage 9, spec §10, D37) ------------------------------------------------------
 
   /**
@@ -544,6 +722,18 @@ export abstract class GameRoom extends Room {
     this.match = link;
     const { gameType, playerCount, rules } = link.setup;
     return { code: null, gameType, playerCount, rules, rated: true };
+  }
+
+  /**
+   * A persona "connects" (the stealth bot, readyAfterMs after the room opened): its seat is taken as a person's
+   * would be (last in the order, the `lobby` to everyone here), and matchmaking hears it is in (D37: ready). A
+   * match that fell through meanwhile has no seat for it.
+   */
+  private seatBot(bot: StealthBotSeat): void {
+    if (this.phase !== 'lobby' || !this.match || this.seatOfPlayer(bot.userId)) return;
+    this.seats.push({ playerId: bot.userId, name: bot.name, sessionId: null, bot });
+    this.sendLobby();
+    this.match.join(bot.userId);
   }
 
   /**
@@ -584,8 +774,9 @@ export abstract class GameRoom extends Room {
     );
   }
 
-  private sendLobby(): void {
-    const players = this.seats.map((s) => ({ id: s.playerId, name: s.name }));
+  /** `lobby` to everyone with a seat (hook 4: lobbyContent()). */
+  protected sendLobby(): void {
+    const { players, ...extra } = this.lobbyContent();
     for (const client of this.clients) {
       const seat = this.seatOfSession(client.sessionId);
       if (!seat) continue;
@@ -596,8 +787,14 @@ export abstract class GameRoom extends Room {
         playerCount: this.playerCount,
         players,
         playerId: seat.playerId,
+        ...extra,
       });
     }
+  }
+
+  /** The room's game type until the start (a friends room's host changes it [D82]). */
+  protected setGameType(gameType: GameType): void {
+    if (this.phase === 'lobby') this.gameType = gameType;
   }
 
   // -- the game ------------------------------------------------------------------------------------------
@@ -619,9 +816,11 @@ export abstract class GameRoom extends Room {
     this.watchBlocks();
     const id = randomUUID();
     const seed = this.deps.random(2 ** 31);
-    const ranked = this.deps.ranked;
+    // Hook 5: a rated room's deps.ranked, a friends room's own; none for a dev room.
+    const ranked = this.gameMaker();
+    this.maker = ranked;
     const rules = this.gameRules();
-    if (!this.rated || ranked === undefined) {
+    if (ranked === null) {
       return this.launch({
         id,
         mode: 'ranked',
@@ -650,7 +849,7 @@ export abstract class GameRoom extends Room {
   }
 
   private launch(config: GameConfig): void {
-    this.recorder = this.rated ? (this.deps.ranked?.record(config) ?? null) : null;
+    this.recorder = this.maker?.record(config) ?? null;
     this.game = new ServerGame({
       config,
       clock: { now: this.deps.now },
@@ -658,10 +857,13 @@ export abstract class GameRoom extends Room {
       onUpdate: (update) => {
         this.recorder?.push(update);
         this.onGameUpdate(update);
+        // The stealth bot hears the game after everyone was sent it.
+        for (const bot of this.bots) bot.host.push(update);
       },
       onError: (error) => this.deps.log.error(`[game ${this.code}] error`, error),
     });
     this.recorder?.push({ events: this.game.events, state: this.game.state });
+    this.seatBots(this.game);
     this.phase = 'playing';
     // The game is kept on the server while it runs (spec §16.2), even with nobody connected: players who left
     // on purpose are in their grace and may rejoin by code. It ends at the latest when the last grace runs out;
@@ -677,15 +879,38 @@ export abstract class GameRoom extends Room {
     // now on: one who left on purpose is disconnected (the grace starts now); a dropped seat has lost its
     // connection (the soft phase starts now [D42], then the grace), and may still come back with its
     // reconnection token.
-    for (const seat of this.seats)
+    // A bot's seat is in the game, connected, from the start.
+    for (const seat of this.seats) {
+      if (seat.bot) continue;
       if (seat.sessionId === null) this.game.disconnect(seat.playerId);
       else if (seat.away) this.game.disconnect(seat.playerId, { soft: true });
+    }
     this.deps.metrics.gameStarted();
     const who = this.seats.map((s) => s.playerId).join(', ');
-    const rated = this.rated ? ' (rated)' : '';
+    const rated = this.rated ? (this.bots.length > 0 ? ' (rated, stealth bot)' : ' (rated)') : '';
     this.deps.log.info(
       `[game ${this.code}] started${rated}: ${this.gameType}, ${who}, puzzle ${config.puzzle.id}`,
     );
+  }
+
+  /**
+   * The stealth bot takes its seats in the game, before the start, so it hears it (stealth/seat.ts). Its RNG's
+   * seed is private: HMAC of the server's secret and the game id, kept in the server's log only.
+   */
+  private seatBots(game: ServerGame): void {
+    for (const seat of this.seats) {
+      if (!seat.bot) continue;
+      const bot = seatStealthBot({
+        game,
+        seat: seat.bot,
+        secret: this.deps.stealth?.secret ?? fallbackSecret(),
+        clock: { now: this.deps.now },
+        scheduler: this.deps.scheduler,
+        log: this.deps.log,
+      });
+      this.bots.push(bot);
+      this.deps.log.info(`[game ${this.code}] stealth bot in seat ${seat.playerId} (seed ${bot.seed})`);
+    }
   }
 
   private onGameUpdate({ events, state }: ServerGameUpdate): void {

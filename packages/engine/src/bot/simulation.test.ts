@@ -1,7 +1,11 @@
-import type { GameEvent, GameState } from '../game/types';
+import { createHash } from 'node:crypto';
+
+import { LocalGameHost } from '../game/host';
+import { defaultRules, INTERFERENCE_KINDS } from '../game/rules';
+import type { Action, GameConfig, GameEvent, GameState } from '../game/types';
 import { replay } from '../game/view';
 import { GAME_TYPES, type GameType } from '../gameType';
-import { type CellIndex, DIGITS, missingDigits, unitsOf } from '../sudoku/board';
+import { type CellIndex, type Digit, DIGITS, missingDigits, unitsOf } from '../sudoku/board';
 import {
   bankPuzzles,
   type BotGame,
@@ -11,15 +15,30 @@ import {
   runUntilOver,
   scriptHuman,
 } from '../testing/bot';
-import { adaptationFactor, cellDifficulty, eligibleCells } from './brain';
+import { ManualClock } from '../util/clock';
+import { createRng, pick, type Rng } from '../util/random';
+import { ManualScheduler } from '../util/scheduler';
+import {
+  adaptationFactor,
+  canInterfere,
+  cellDifficulties,
+  cellDifficulty,
+  eligibleCells,
+  isEligibleCell,
+  plausibleWrongDigits,
+} from './brain';
 import {
   BOT_CONFIG,
+  BOT_LEVEL_IDS,
   BOT_LEVELS,
   BOT_PACE,
   type BotLevel,
   CELL_TECHNIQUES,
   type CellTechnique,
 } from './levels';
+import { type MovePace, movePace, type PaceGame, paceFromHistory } from './pace';
+import { attachBot } from './runner';
+import { stealthBotConfig, stealthBotLevel } from './stealth';
 
 /*
  * The statistical check of work plan stage 5 ("done when"): a simulation on an injected clock and RNG with
@@ -298,5 +317,312 @@ describe('a game against the Novice still ends in a reasonable time', () => {
     // It still plays: a fair share of the board, less than the quicker human.
     expect(d.share).toBeGreaterThan(0.15);
     expect(d.share).toBeLessThan(0.5);
+  });
+});
+
+/*
+ * The five levels did not change with the stealth bot (stealth-bot plan §12): the same seed plays exactly the same
+ * game as before (fingerprints of the event logs recorded on 2026-10-20, before the retaliation policy, the
+ * general host and the built levels went in). The first scenario has interferences on, mine at the bot every
+ * 15 s (so its interferenceEnded events now reach the runner), its own interferences and its reactions; the
+ * second a hard board alone.
+ */
+describe('the five levels play exactly as before the stealth bot (regression)', () => {
+  const fingerprint = (events: readonly GameEvent[]) =>
+    createHash('sha256').update(JSON.stringify(events)).digest('hex').slice(0, 16);
+  const BEFORE: Record<string, string> = {
+    'L1 ranked-like': '8b12e5b9d7a4b830',
+    'L1 hard alone': '9d32ac420c0aa829',
+    'L2 ranked-like': '5d4f07b9fa843af9',
+    'L2 hard alone': 'cfa3ddc318cd426a',
+    'L3 ranked-like': 'df496a79312bf397',
+    'L3 hard alone': '5908d042b957191f',
+    'L4 ranked-like': '38cfdd71f9230314',
+    'L4 hard alone': 'f77b77ecb97c82b6',
+    'L5 ranked-like': '6e6e2fca7a83f61d',
+    'L5 hard alone': 'c69955c71acd5272',
+  };
+
+  it.each(BOT_LEVEL_IDS.map((level) => ({ level })))(
+    'L$level: the same events, seed for seed',
+    ({ level }) => {
+      const hit = botGame({ level, seed: 900 + level, rules: { interferences: true } });
+      scriptHuman(hit, { missEvery: 4 });
+      let k = 0;
+      const interfere = () => {
+        if (hit.host.state.status === 'over') return;
+        if (canInterfere(hit.host.state, HUMAN, hit.botId, hit.clock.now()))
+          hit.host.interfere(hit.botId, INTERFERENCE_KINDS[k++ % INTERFERENCE_KINDS.length]!);
+        hit.scheduler.setTimeout(interfere, 15_000);
+      };
+      hit.scheduler.setTimeout(interfere, 15_000);
+      runUntilOver(hit);
+      // Mine reached it, and ended: what the stealth bot answers. The five levels do not.
+      expect(eventsOf(hit.host.events, 'interferenceEnded').some((e) => e.targetId === hit.botId)).toBe(true);
+      expect(hit.traces.some((t) => t.type === 'retaliation')).toBe(false);
+      expect(fingerprint(hit.host.events)).toBe(BEFORE[`L${level} ranked-like`]);
+
+      const alone = botGame({
+        level,
+        gameType: 'hard',
+        puzzle: bankPuzzles('hard', 1)[0],
+        seed: 950 + level,
+      });
+      runUntilOver(alone);
+      expect(fingerprint(alone.host.events)).toBe(BEFORE[`L${level} hard alone`]);
+    },
+  );
+});
+
+// ---------------------------------------------------------------------------------------------------------
+// The stealth bot's pace, closed loop (stealth-bot plan §5.1, §12)
+
+/**
+ * A model of a person, written apart from the bot's runner. He looks for a cell less surely the easiest one than
+ * the bot does (a softmax over the cells' difficulty at `temperature`, the bot's is 0.15), thinks his base × the
+ * cell's difficulty × 0.7–1.3, locks the cell when he has worked it out and enters the digit a little later (a
+ * plausible wrong one at `mistakeRate`). When someone takes or solves the cell he was thinking about, he looks
+ * again, and the time spent on it is lost. He never interferes.
+ */
+class ModelPlayer {
+  private timer: unknown = null;
+  private plan: { cell: CellIndex; phase: 'think' | 'type'; typeMs: number } | null = null;
+  private acting = false;
+
+  constructor(
+    private readonly g: { host: LocalGameHost; clock: ManualClock; scheduler: ManualScheduler },
+    private readonly id: string,
+    private readonly o: { baseMs: number; temperature: number; mistakeRate: number; rng: Rng },
+  ) {
+    g.host.subscribe(() => {
+      if (!this.acting) this.review();
+    });
+    this.review();
+  }
+
+  private review(): void {
+    const s = this.g.host.state;
+    const now = this.g.clock.now();
+    if (s.status !== 'running') return this.cancel();
+    const lock = s.locks.find((l) => l.playerId === this.id);
+    if (this.plan?.phase === 'type' && lock?.cell === this.plan.cell && this.timer !== null) return;
+    if (
+      this.plan?.phase === 'think' &&
+      this.timer !== null &&
+      isEligibleCell(s, this.id, this.plan.cell, now)
+    )
+      return;
+    this.think(s, now);
+  }
+
+  private think(s: GameState, now: number): void {
+    this.cancel();
+    const cells = eligibleCells(s, this.id, now);
+    if (!cells.length) {
+      const waits = s.cooldowns.filter((c) => c.playerId === this.id && c.until > now).map((c) => c.until);
+      if (waits.length) this.arm(Math.min(...waits) - now, () => this.review());
+      return;
+    }
+    const diffs = cellDifficulties(s);
+    const factors = cells.map((c) => diffs[c]!.factor);
+    const easiest = Math.min(...factors);
+    const weights = factors.map((f) => Math.exp(-(f - easiest) / this.o.temperature));
+    let r = this.o.rng.next() * weights.reduce((a, b) => a + b, 0);
+    let k = 0;
+    while (k < cells.length - 1 && (r -= weights[k]!) >= 0) k++;
+    const cell = cells[k]!;
+    const totalMs = this.o.baseMs * factors[k]! * (0.7 + 0.6 * this.o.rng.next());
+    const typeMs = Math.min(totalMs * 0.2, 0.5 * s.config.rules.thinkTimeMs);
+    this.plan = { cell, phase: 'think', typeMs };
+    this.arm(totalMs - typeMs, () => this.lock());
+  }
+
+  private lock(): void {
+    const plan = this.plan!;
+    const s = this.g.host.state;
+    if (s.status !== 'running' || !isEligibleCell(s, this.id, plan.cell, this.g.clock.now()))
+      return this.review();
+    this.act({ type: 'select', playerId: this.id, cell: plan.cell });
+    this.plan = { ...plan, phase: 'type' };
+    this.arm(plan.typeMs, () => this.type());
+  }
+
+  private type(): void {
+    const plan = this.plan!;
+    const s = this.g.host.state;
+    this.plan = null;
+    if (s.status === 'running' && s.locks.some((l) => l.playerId === this.id && l.cell === plan.cell)) {
+      const right = Number(s.config.puzzle.solution[plan.cell]) as Digit;
+      const wrong = plausibleWrongDigits(s, plan.cell);
+      const digit = this.o.rng.next() < this.o.mistakeRate && wrong.length ? pick(this.o.rng, wrong) : right;
+      this.act({ type: 'place', playerId: this.id, cell: plan.cell, digit });
+    }
+    this.review();
+  }
+
+  private act(action: Action): void {
+    this.acting = true;
+    try {
+      this.g.host.dispatch(action);
+    } finally {
+      this.acting = false;
+    }
+  }
+
+  private arm(ms: number, fn: () => void): void {
+    this.timer = this.g.scheduler.setTimeout(
+      () => {
+        this.timer = null;
+        fn();
+      },
+      Math.max(0, Math.round(ms)),
+    );
+  }
+
+  private cancel(): void {
+    if (this.timer !== null) this.g.scheduler.clearTimeout(this.timer);
+    this.timer = null;
+  }
+}
+
+/** Seats of a ranked two-player game: the model player, and his opponent (another model, or the stealth bot). */
+function rankedGame(
+  gameType: GameType,
+  puzzle: ReturnType<typeof bankPuzzles>[number],
+  seed: number,
+  players: string[],
+) {
+  const clock = new ManualClock();
+  const scheduler = new ManualScheduler(clock);
+  const config: GameConfig = {
+    id: `closed-loop-${seed}`,
+    mode: 'ranked',
+    gameType,
+    puzzle,
+    players: players.map((id) => ({ id })),
+    rules: defaultRules('ranked', gameType),
+    seed,
+  };
+  const host = new LocalGameHost({ config, playerId: players[0]!, clock, scheduler });
+  return { clock, scheduler, host, config };
+}
+
+const runToEnd = (g: { host: LocalGameHost; scheduler: ManualScheduler; clock: ManualClock }) => {
+  while (g.host.state.status !== 'over' && g.clock.now() < 3 * 3600_000) g.scheduler.advance(2000);
+};
+
+/** Moves and their total time, of one player over games (from movePace: the same yardstick as the server's). */
+interface Tally {
+  moves: number;
+  ms: number;
+}
+const add = (t: Tally, p: MovePace | null) => {
+  if (!p) return;
+  t.moves += p.moves;
+  t.ms += p.rawMs * p.moves;
+};
+
+/*
+ * The plan's closed loop, in place of "bot against bot" (which is 50% by construction): model players at six
+ * paces and on the three game types play ranked games against each other; movePace reads each game;
+ * paceFromHistory makes his pace; stealthBotLevel builds the bot; then he plays the stealth bot 12 times. Over
+ * all of them the bot's mean time per move must be within ±10% of his, and he must win 40%–60% of the games.
+ *
+ * STEALTH_BOT_CONFIG.normalization is calibrated on this (2026-10-20): at 1 the bot is about 6% quicker per
+ * move and he wins about half; at 1.1 the bot was 5% slower and lost three games of four; at 0.95 it was 12%
+ * quicker. Two things pull against each other: the bot takes easier cells than the model (quicker per move,
+ * but an easy cell is worth fewer points, §6.4), and the base measured from his games already holds the time
+ * he lost to cells taken from under him, which the bot then loses again. Against a model that picks cells as
+ * surely as the bot (temperature 0.15), the bot at 1 is about 8% slower and wins only a third: the model is an
+ * assumption, and the real tuning is the win rate the admin site shows (paceScale, plan §5.1).
+ */
+describe('the stealth bot plays at the pace of its opponent (closed loop, plan §5.1, §12)', () => {
+  const MODEL = { temperature: 0.4, mistakeRate: 0.06 };
+  const PEOPLE = [
+    { baseMs: 5000, gameType: 'fast' as GameType },
+    { baseMs: 8000, gameType: 'normal' as GameType },
+    { baseMs: 10_000, gameType: 'fast' as GameType },
+    { baseMs: 14_000, gameType: 'normal' as GameType },
+    { baseMs: 18_000, gameType: 'fast' as GameType },
+    { baseMs: 7000, gameType: 'hard' as GameType },
+  ];
+  const HISTORY_GAMES = 3;
+  const STEALTH_GAMES = 12;
+  const ME_ID = 'person';
+  const BOT_ID = 'persona';
+
+  const people = PEOPLE.map((person, pi) => {
+    const puzzles = bankPuzzles(person.gameType, 300).slice(100 + 20 * pi);
+    // His ranked games against people of his pace: what the server would have measured.
+    const history: PaceGame[] = [];
+    for (let k = 0; k < HISTORY_GAMES; k++) {
+      const g = rankedGame(person.gameType, puzzles[k]!, 7000 + 100 * pi + k, [ME_ID, 'other']);
+      new ModelPlayer(g, ME_ID, { ...person, ...MODEL, rng: createRng(1000 + 100 * pi + k) });
+      new ModelPlayer(g, 'other', { ...person, ...MODEL, rng: createRng(2000 + 100 * pi + k) });
+      runToEnd(g);
+      const p = movePace(g.host.events, ME_ID)!;
+      history.unshift({
+        gameType: person.gameType,
+        paceMs: p.baseMs,
+        paceMoves: p.moves,
+        digits: p.digits,
+        mistakes: p.mistakes,
+      });
+    }
+    const pace = paceFromHistory({ gameType: person.gameType, games: history });
+    const level = stealthBotLevel(pace);
+    // Then the stealth bot, built from that pace.
+    const me: Tally = { moves: 0, ms: 0 };
+    const bot: Tally = { moves: 0, ms: 0 };
+    let wins = 0;
+    for (let k = 0; k < STEALTH_GAMES; k++) {
+      const seed = 9000 + 100 * pi + k;
+      const g = rankedGame(person.gameType, puzzles[HISTORY_GAMES + k]!, seed, [ME_ID, BOT_ID]);
+      new ModelPlayer(g, ME_ID, { ...person, ...MODEL, rng: createRng(3000 + seed) });
+      attachBot(g.host, {
+        botId: BOT_ID,
+        level,
+        clock: g.clock,
+        scheduler: g.scheduler,
+        rng: createRng(seed),
+        config: stealthBotConfig(),
+      });
+      runToEnd(g);
+      const result = g.host.state.result!;
+      expect(result.reason).toBe('boardComplete');
+      const place = (id: string) => result.ranking.find((r) => r.playerId === id)!.place;
+      wins += place(ME_ID) < place(BOT_ID) ? 1 : place(ME_ID) === place(BOT_ID) ? 0.5 : 0;
+      add(me, movePace(g.host.events, ME_ID));
+      add(bot, movePace(g.host.events, BOT_ID));
+    }
+    return { person, pace, me, bot, wins };
+  });
+
+  const total = (pick: (p: (typeof people)[number]) => Tally) =>
+    people.reduce((t, p) => ({ moves: t.moves + pick(p).moves, ms: t.ms + pick(p).ms }), { moves: 0, ms: 0 });
+  const meAll = total((p) => p.me);
+  const botAll = total((p) => p.bot);
+  const winShare = people.reduce((a, p) => a + p.wins, 0) / (people.length * STEALTH_GAMES);
+
+  it.each(
+    people.map((p) => ({
+      ...p,
+      line: `${sec(p.person.baseMs)} ${p.person.gameType}: measured ${sec(p.pace.baseMs)}, mistakes ${pct(p.pace.mistakeRate)}; per move he ${sec(p.me.ms / p.me.moves)}, the bot ${sec(p.bot.ms / p.bot.moves)}; he won ${p.wins}/${STEALTH_GAMES}`,
+    })),
+  )('$line', ({ person, pace, me, bot }) => {
+    // movePace reads his base back from his games (his base × 0.7–1.3, the mean 1).
+    expect(Math.abs(pace.baseMs / person.baseMs - 1)).toBeLessThanOrEqual(0.1);
+    // [D97a] It errs at his rate, within the bounds.
+    expect(pace.mistakeRate).toBeGreaterThanOrEqual(0.02);
+    expect(pace.mistakeRate).toBeLessThanOrEqual(0.14);
+    // One person over 12 games: a rough check only. How much easier the bot's cells are than his depends on
+    // the board (most on a hard one), which one normalization for all cannot follow.
+    expect(Math.abs(bot.ms / bot.moves / (me.ms / me.moves) - 1)).toBeLessThanOrEqual(0.25);
+  });
+
+  it(`over all of them: the bot ${sec(botAll.ms / botAll.moves)} a move, he ${sec(meAll.ms / meAll.moves)} (within ±10%); he won ${pct(winShare)} (40%–60%)`, () => {
+    expect(Math.abs(botAll.ms / botAll.moves / (meAll.ms / meAll.moves) - 1)).toBeLessThanOrEqual(0.1);
+    expect(winShare).toBeGreaterThanOrEqual(0.4);
+    expect(winShare).toBeLessThanOrEqual(0.6);
   });
 });

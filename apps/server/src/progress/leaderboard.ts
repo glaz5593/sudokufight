@@ -28,6 +28,10 @@ import { keysOf, type ProgressSettings } from './settings';
  * - My row (pinned at the bottom) is my place in the same board, wherever it is, with my exact rank.
  * - The friends tab [D27, V1]: my recent opponents (opponent_history: the last time we met, newest first),
  *   live accounts only, each with their 'general' row; and the invite link (INVITE_URL, null when unset).
+ * - A stealth bot's personas (stealth-bot.md §6) [D99] are on no board, and count in no rank: the boards are
+ *   of people (original §34: "שחקנים מובילים"), and a persona would push them down. On the friends tab a
+ *   persona I met is shown like any opponent, with the rank its rating would have among the people (leaving it
+ *   out there would give it away).
  */
 
 /** Recent opponents on the friends tab. */
@@ -63,14 +67,16 @@ const betterRow = sql`(b.rating > r.rating or (b.rating = r.rating and (b.games 
 
 /**
  * The rated rows of live users in the board's keys (for 'general', a user may have several). Deleted accounts
- * are left out against their own small index (users_deleted_idx), not by joining every user.
+ * are left out against their own small index (users_deleted_idx), not by joining every user; personas [D99]
+ * likewise (users_persona_idx).
  */
 function ratedRows(board: Board): SQL {
   const keys =
     board.kind === 'key' ? sql`r.rating_key = ${board.key}` : sql`r.rating_key in (${inList(board.keys)})`;
   return sql`from ratings r
     where ${keys} and r.games > 0
-      and not exists (select 1 from users d where d.id = r.user_id and d.deleted_at is not null)`;
+      and not exists (select 1 from users d where d.id = r.user_id and d.deleted_at is not null)
+      and not exists (select 1 from users p where p.id = r.user_id and p.kind = 'persona')`;
 }
 
 /** The rows of a board: one per live user with a rated game in it (for 'general', their best key). */

@@ -2,11 +2,12 @@
 import 'react-native-reanimated';
 import { ManualClock, ManualScheduler } from '@sudoku-fight/engine';
 import type { Me } from '@sudoku-fight/protocol';
-import { act, fireEvent, screen, waitFor } from 'expo-router/testing-library';
+import { act, fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 
 import MatchRoute from '../../../../app/match/index';
 import { useAuth } from '../../../auth/authStore';
+import { FRIENDS_UI } from '../../../config/friends';
 import { useToast } from '../../../components/ui';
 import { useGameStore } from '../../../game/gameStore';
 import { openPracticeRepo } from '../../../game/practiceRepo';
@@ -107,13 +108,14 @@ afterEach(() => {
 });
 
 describe('ranked 2 players (stage 9)', () => {
-  it('shows my rating in the type I play, opens the ranked game type, and "מצא יריב" searches', async () => {
+  it('opens the ranked game type (my rating is there, not on the row: D80a), and "מצא יריב" searches', async () => {
     const mm = fakeWiring();
     const app = await renderApp('/modes', routes);
-    expect(screen.getByTestId('rating-ranked2')).toHaveTextContent('דירוג 1287 · רגיל');
+    // Two lines since 1.0.4: the rating chip made room for "עם חברים" [D80a].
+    expect(screen.queryByTestId('rating-ranked2')).toBeNull();
     expect(screen.getByTestId('mode-ranked2')).toHaveProp(
       'accessibilityLabel',
-      'מדורג · 2 שחקנים, אחד על אחד · אותו לוח, הדירוג שלך במשחק רגיל: 1287',
+      'מדורג · 2 שחקנים, אחד על אחד · אותו לוח',
     );
 
     await fireEvent.press(screen.getByTestId('mode-ranked2'));
@@ -203,7 +205,13 @@ describe('ranked 2 players (stage 9)', () => {
 });
 
 describe('ranked 3 and 4 players (stage 10)', () => {
-  it('each card shows my rating in its own queue’s key, and "מצא יריבים" searches that table', async () => {
+  afterEach(() => {
+    FRIENDS_UI.rankedChip = false;
+  });
+
+  it('with the rating chip (FRIENDS_UI.rankedChip), each card shows my rating in its own queue’s key; "מצא יריבים" searches that table', async () => {
+    // [D80a] The chip is off by default since 1.0.4; the setting brings it back, as it was.
+    FRIENDS_UI.rankedChip = true;
     const mm = fakeWiring();
     // RATING_OPTION A (spec §11.1): a rating per type and table.
     const entry = (key: string, rating: number) => ({
@@ -242,6 +250,18 @@ describe('ranked 3 and 4 players (stage 10)', () => {
   });
 });
 
+describe('a suspended account (spec §3.5)', () => {
+  it('dims "עם חברים" too (1.0.4), with "החשבון מושעה"', async () => {
+    useAuth.setState({ me: { ...ME_ACCOUNT, suspended: true } });
+    await renderApp('/modes', routes);
+    const create = screen.getByTestId('modes-friends-create');
+    expect(create).toHaveProp('accessibilityState', { disabled: true });
+    expect(create).toHaveProp('accessibilityLabel', 'צור חדר, לא זמין: החשבון מושעה');
+    expect(screen.getByTestId('modes-friends-join')).toHaveProp('accessibilityState', { disabled: true });
+    expect(within(screen.getByTestId('modes-group-friends')).getByText('החשבון מושעה')).toBeTruthy();
+  });
+});
+
 describe('no connection before a game (spec §16.1)', () => {
   it('dims the ranked cards, shows the banner, offers practice and another check, and comes back online', async () => {
     let online = false;
@@ -259,7 +279,7 @@ describe('no connection before a game (spec §16.1)', () => {
     expect(ranked).toHaveProp('accessibilityState', { disabled: true });
     expect(ranked).toHaveProp(
       'accessibilityLabel',
-      'מדורג · 2 שחקנים, אחד על אחד · אותו לוח, דירוג, דורש חיבור לאינטרנט',
+      'מדורג · 2 שחקנים, אחד על אחד · אותו לוח, דורש חיבור לאינטרנט',
     );
     expect(screen.getByTestId('offline-ranked2')).toHaveTextContent('דורש חיבור');
     // Every ranked table needs the connection, 3 and 4 players too (stage 10).
@@ -267,7 +287,14 @@ describe('no connection before a game (spec §16.1)', () => {
       expect(screen.getByTestId(`mode-${k}`)).toHaveProp('accessibilityState', { disabled: true });
       expect(screen.getByTestId(`offline-${k}`)).toHaveTextContent('דורש חיבור');
     }
-    expect(screen.getByText('זמין כשיש חיבור')).toBeOnTheScreen();
+    // "עם חברים" needs the connection too (1.0.4): dimmed, with the ranked group's note.
+    for (const id of ['modes-friends-create', 'modes-friends-join'])
+      expect(screen.getByTestId(id)).toHaveProp('accessibilityState', { disabled: true });
+    expect(screen.getByTestId('modes-friends-create')).toHaveProp(
+      'accessibilityLabel',
+      'צור חדר, דורש חיבור לאינטרנט',
+    );
+    expect(screen.getAllByText('זמין כשיש חיבור')).toHaveLength(2);
     expect(screen.getByText('זמין גם בלי אינטרנט')).toBeOnTheScreen();
     expect(screen.getByTestId('mode-solo')).toHaveProp('accessibilityState', { disabled: false });
     expect(screen.getByTestId('mode-solo')).toHaveProp(
@@ -287,6 +314,7 @@ describe('no connection before a game (spec §16.1)', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'בדוק שוב' }));
     await waitFor(() => expect(screen.queryByTestId('offline-banner')).not.toBeOnTheScreen());
     expect(screen.getByTestId('mode-ranked2')).toHaveProp('accessibilityState', { disabled: false });
+    expect(screen.getByTestId('modes-friends-create')).toHaveProp('accessibilityState', { disabled: false });
     expect(screen.getByTestId('modes-live')).toHaveTextContent('החיבור חזר. משחקים מדורגים זמינים.');
     expect(app.pathname()).toBe('/modes');
   });
@@ -331,7 +359,8 @@ describe('no connection before a game (spec §16.1)', () => {
     expect(screen.getByTestId('offline-banner')).toHaveAccessibleName(
       "No internet connection. Ranked games aren't available",
     );
-    expect(screen.getByText('Available when online')).toBeOnTheScreen();
+    // The ranked group's note, and the friends group's (it needs the connection too).
+    expect(screen.getAllByText('Available when online')).toHaveLength(2);
     expect(screen.getByTestId('offline-ranked2')).toHaveTextContent('Needs connection');
     expect(screen.getByRole('button', { name: 'Go to practice' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Check again' })).toBeOnTheScreen();

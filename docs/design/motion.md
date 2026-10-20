@@ -291,6 +291,25 @@ pulse, shake, hop or confetti, and the stars appear at once (spec §22).
 - **Not here:** there is no interference row (D49), no reactions strip (D62), and no avatar idle on the map (§1.4).
 - **1.0.3 (D75–D78):** the eight rows above marked 1.0.3. No new board was drawn for them (Moshe: build without asking, 2026-10-20), so their timings come from `docs/handoff/2026-10-19/levels-ui.md` and live in `apps/mobile/src/config/levels.ts` (`LEVEL_MOTION`, `PUZZLE_UI`). The puzzle's swap is the one exception to §1 rule 3: two boxes move at once, because the boxes are the pieces. The puzzle's haptics and sounds are existing cues: `cellSelect` on a lift, `cellRelease` on a swap, `cellDenied` on a fixed box, and `correct` when solved.
 
+### 4.12 Playing with friends (spec §5.4, version 1.0.4)
+
+The friends room and "join with a code" add **no new animation**: they reuse the connection and match-flow rows above, through
+the same hooks (`apps/mobile/src/screens/game/connection/motion.ts`), so each keeps its Reduced Motion form. Boards: `Friends-Room`,
+`Friends-Join` (components.md §20).
+
+| ID | Trigger | ms | Easing | What moves | Reduced Motion |
+|---|---|---|---|---|---|
+| `friends.enter` (`useEnter`, as `flow.fade`) | The lobby, the join screen or the room's countdown appears | 240 (`stateChange`) | `standard` | The content fades in | A 200 ms fade |
+| `friends.seat.wait` (`usePulse`, as `self.lost`'s dots) | An empty seat, "ממתין לשחקן…" | 1200 loop | `loop` | The seat's dot fades 1 ↔ 0.35. A waiting loop (functional), never on a taken seat | Static dot |
+| `friends.seat.away` | A seat goes "לא בחדר כרגע" (`away`) [D84a] | none | — | The row turns 55 % opaque at once; no motion | The same |
+| `friends.copied` (`toast`) | "העתק קוד" | in place, held 2500 (`FRIENDS_UI.copiedHoldMs`) | — | "הקוד הועתק" replaces the hint under the buttons; the button shows a check | The same (no motion) |
+| `friends.countdown` (`countdown.digit`, `useSlam`) | `start`: 3 · 2 · 1 · GO, from the server's clock | about 530 + hold | `slam` spring | Each step slams 1.4 → 1, the players of the game around it in their colours and shapes | Each step fades in (200 ms) |
+
+- **A friend joining:** the existing match-found cue (a short sound and a light haptic, `FRIENDS_UI.joinCue`), and the live region
+  says "Dana הצטרף". No motion of its own: the seat is simply there (with Reduced Motion too).
+- **The code** never animates: it is read aloud and copied, and it stays LTR ("123 456").
+- **Not here:** the game itself is the ranked game's motion (§4.1–§4.8), and the result is §4.7 without `rating.count` (no rating, D81a).
+
 ## 5. Timelines
 
 ```

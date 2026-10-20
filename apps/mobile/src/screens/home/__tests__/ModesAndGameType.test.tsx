@@ -9,6 +9,7 @@ import { useAuth } from '../../../auth/authStore';
 import { paletteAt } from '../../../components/player';
 import { directionProblems, PHONE, textWidth } from '../../../components/ui/testing/layout';
 import { useToast } from '../../../components/ui';
+import { FRIENDS_UI } from '../../../config/friends';
 import { useGameStore } from '../../../game/gameStore';
 import { openPracticeRepo, type PracticeRepo } from '../../../game/practiceRepo';
 import { practiceStorageOrNull } from '../../../game/storage';
@@ -91,11 +92,11 @@ describe('"משחק חדש" (spec §5.1)', () => {
     for (const k of keys) expect(screen.queryByTestId(`soon-${k}`)).toBeNull();
     expect(screen.getByTestId('mode-ranked2')).toHaveProp(
       'accessibilityLabel',
-      'מדורג · 2 שחקנים, אחד על אחד · אותו לוח, דירוג',
+      'מדורג · 2 שחקנים, אחד על אחד · אותו לוח',
     );
     expect(screen.getByTestId('mode-ranked4')).toHaveProp(
       'accessibilityLabel',
-      'מדורג · 4 שחקנים, כולם נגד כולם, דירוג',
+      'מדורג · 4 שחקנים, כולם נגד כולם',
     );
     // Only the solo row's title changed (D48): "אימון לבד · לוח מלא". Its history and results still say "אימון לבד".
     expect(screen.getByTestId('mode-solo')).toHaveProp(
@@ -256,6 +257,94 @@ describe('"משחק חדש" (spec §5.1)', () => {
   });
 });
 
+/** The friends screens' routes, stand-ins here (screens/friends has its own tests). */
+const FRIENDS_STUBS = {
+  'friends/room': () => <Text testID="stub-friends-room">room</Text>,
+  'friends/join': () => <Text testID="stub-friends-join">join</Text>,
+};
+
+describe('"עם חברים" (1.0.4, friends-room.md §2, D80a)', () => {
+  afterEach(() => {
+    Object.assign(FRIENDS_UI, { modesGroup: true, groupName: 'short', rankedChip: false });
+  });
+
+  it('sits between the ranked tables and the practices: one row, "צור חדר" | "הצטרף עם קוד"', async () => {
+    await renderApp('/modes');
+    expect(screen.getAllByTestId(/^modes-group-/).map((g) => g.props.testID)).toEqual([
+      'modes-group-ranked',
+      'modes-group-friends',
+      'modes-group-practice',
+    ]);
+    const group = screen.getByTestId('modes-group-friends');
+    expect(within(group).getByRole('header', { name: 'עם חברים' })).toBeTruthy();
+    expect(within(group).getByText('חדר פרטי · עד 4 · בלי דירוג')).toBeTruthy();
+    const create = screen.getByTestId('modes-friends-create');
+    const join = screen.getByTestId('modes-friends-join');
+    expect(create).toHaveProp('accessibilityLabel', 'צור חדר');
+    expect(create).toHaveProp('accessibilityHint', 'פותח חדר המתנה עם קוד ששולחים לחברים');
+    expect(join).toHaveProp('accessibilityLabel', 'הצטרף עם קוד');
+    expect([create, join].map((b) => b.props.accessibilityState.disabled)).toEqual([false, false]);
+    // One row of two: each a touch target high, "צור חדר" in the accent.
+    expect(styleOf(create)).toMatchObject({ minHeight: size.touch, flex: 1, borderColor: color.accent });
+    expect(styleOf(join)).toMatchObject({ minHeight: size.touch, flex: 1 });
+    expect(within(create).getByText('צור חדר')).toHaveStyle({ color: color.accent });
+    expect(contrast(color.accent, color.surface)).toBeGreaterThanOrEqual(4.5);
+    expect(directionProblems(group)).toEqual([]);
+    // The ranked rows are two lines now: no "דירוג" chip [D80a].
+    for (const k of ['ranked2', 'ranked3', 'ranked4'])
+      expect(within(screen.getByTestId(`mode-${k}`)).queryByText('דירוג')).toBeNull();
+  });
+
+  it('"צור חדר" opens the room at once; "הצטרף עם קוד" the six boxes', async () => {
+    const app = await renderApp('/modes', FRIENDS_STUBS);
+    await fireEvent.press(screen.getByTestId('modes-friends-create'));
+    expect(app.pathname()).toBe('/friends/room');
+    expect(app.searchParams()).toEqual({ create: '1' });
+    expect(screen.getByTestId('stub-friends-room')).toBeOnTheScreen();
+    await act(async () => {
+      router.back();
+    });
+    await fireEvent.press(screen.getByTestId('modes-friends-join'));
+    expect(app.pathname()).toBe('/friends/join');
+    expect(useGameStore.getState().online).toBeNull();
+  });
+
+  it('settings: Moshe’s name for the group [D80b], the ranked chip back, or no group at all (1.0.3’s screen)', async () => {
+    FRIENDS_UI.groupName = 'moshe';
+    await renderApp('/modes');
+    expect(
+      within(screen.getByTestId('modes-group-friends')).getByRole('header', {
+        name: 'חברים אמיתיים בזמן אמת',
+      }),
+    ).toBeTruthy();
+
+    FRIENDS_UI.modesGroup = false;
+    FRIENDS_UI.rankedChip = true;
+    await renderApp('/modes');
+    expect(screen.queryByTestId('modes-group-friends')).toBeNull();
+    expect(screen.getByText(i18n.t('home:modes.footnote'))).toBeOnTheScreen();
+    expect(within(screen.getByTestId('mode-ranked2')).getByText('דירוג')).toBeTruthy();
+    expect(screen.getByTestId('mode-ranked2')).toHaveProp(
+      'accessibilityLabel',
+      'מדורג · 2 שחקנים, אחד על אחד · אותו לוח, דירוג',
+    );
+  });
+
+  it('speaks English too', async () => {
+    await i18n.changeLanguage('en');
+    await renderApp('/modes');
+    const group = screen.getByTestId('modes-group-friends');
+    expect(within(group).getByRole('header', { name: 'With friends' })).toBeTruthy();
+    expect(within(group).getByText('Private room · up to 4 · unrated')).toBeTruthy();
+    expect(screen.getByTestId('modes-friends-create')).toHaveProp('accessibilityLabel', 'Create room');
+    expect(screen.getByTestId('modes-friends-join')).toHaveProp('accessibilityLabel', 'Join with code');
+    expect(screen.getByTestId('mode-ranked2')).toHaveProp(
+      'accessibilityLabel',
+      'Ranked · 2 players, One on one · same board',
+    );
+  });
+});
+
 /**
  * Moshe's phone (layout.ts PHONE: Samsung S22, 360 × 780 dp) with 3-button navigation: the system bars around the
  * screen, which Jest can't see. The status bar is 24–32 dp (the camera's cut-out): the most of it. Gesture
@@ -263,8 +352,11 @@ describe('"משחק חדש" (spec §5.1)', () => {
  */
 const STATUS_BAR = 32;
 const NAV_BAR_BUTTONS = 48;
-/** The six options: the sixth is "אימון בשלבים" (Moshe's device test, 15.10.2026; D48). */
-const ROWS_TO_FIT = 6;
+/**
+ * The six options (the sixth is "אימון בשלבים": Moshe's device test, 15.10.2026; D48) in their two groups, and
+ * between them (1.0.4, D80a) the "עם חברים" group: its label and one row of two buttons.
+ */
+const GROUPS_TO_FIT = ['modes-group-ranked', 'modes-group-friends', 'modes-group-practice'] as const;
 
 const num = (v: unknown): number => (typeof v === 'number' ? v : 0);
 const textStyleOf = (el: { props: { style?: unknown } }): TextStyle =>
@@ -285,13 +377,13 @@ function rowHeight(key: ModeKey): number {
   ) as unknown as Node;
   const texts = title.parent!;
   const [, tagline, chips] = texts.children as Node[];
-  const chip = (chips!.children as Node[])[0]!;
+  // A ranked row has no chips since 1.0.4 [D80a]: two lines.
+  const chip = chips ? (chips.children as Node[])[0]! : null;
   const stack =
     num(textStyleOf(title).lineHeight) +
     num(textStyleOf(tagline!).lineHeight) +
-    num(styleOf(chips!).marginTop) +
-    num(styleOf(chip).height) +
-    2 * num(styleOf(texts).gap);
+    (chips && chip ? num(styleOf(chips).marginTop) + num(styleOf(chip).height) : 0) +
+    (chips ? 2 : 1) * num(styleOf(texts).gap);
   return Math.max(num(box.minHeight), stack + 2 * (num(box.paddingVertical) + num(box.borderWidth)));
 }
 
@@ -316,35 +408,60 @@ describe('the rows (Moshe’s device test, 15.10.2026)', () => {
   });
 
   it.each(['he', 'en'] as const)(
-    'on Moshe’s phone, the six rows and the footnote fit without scrolling (%s)',
+    'on Moshe’s phone, the six rows and the friends group fit without scrolling (%s)',
     async (lang) => {
       await i18n.changeLanguage(lang);
       await renderApp('/modes');
-      const row = Math.max(...KEYS.map(rowHeight));
+      const rows = Object.fromEntries(KEYS.map((k) => [k, rowHeight(k)]));
       // The header row (56), around "me" at its end.
       const header = num(styleOf((screen.getByTestId('modes-me') as unknown as Node).parent!).minHeight);
       const content = (StyleSheet.flatten(screen.getByTestId('modes-scroll').props.contentContainerStyle) ??
         {}) as ViewStyle;
-      const groupEl = screen.getByTestId('modes-group-ranked') as unknown as Node;
-      const groupGap = num(styleOf(groupEl).gap);
-      const label = num(styleOf(groupEl.children[0] as Node).minHeight);
-      // Under the rows: the footnote, on as many lines as it takes (English needs two).
-      const foot = textStyleOf(screen.getByText(i18n.t('home:modes.footnote')));
+      // Each group: its label, then its rows (or the friends' one row of buttons), the group's gap between.
+      const groupHeight = (testID: string): number => {
+        const group = screen.getByTestId(testID) as unknown as Node;
+        const [label, ...items] = group.children as Node[];
+        const heights = items.map((item) =>
+          item.props.testID?.startsWith('mode-')
+            ? rows[item.props.testID.slice('mode-'.length)]!
+            : Math.max(...(item.children as Node[]).map((b) => num(styleOf(b).minHeight))),
+        );
+        return (
+          num(styleOf(label!).minHeight) + heights.reduce((sum, h) => sum + num(styleOf(group).gap) + h, 0)
+        );
+      };
       const width = PHONE.width - 2 * num(content.paddingHorizontal);
-      const footLines = Math.ceil(textWidth(i18n.t('home:modes.footnote'), num(foot.fontSize)) / width);
+      // The friends group takes the footnote's place [D80a].
+      expect(screen.queryByText(i18n.t('home:modes.footnote'))).toBeNull();
       // No inset here; on the phone, the navigation bar's (NAV_BAR_BUTTONS) comes on top of it.
       expect(content.paddingBottom).toBe(tokens.space[8]);
 
+      const groups = GROUPS_TO_FIT.map(groupHeight);
       const needed =
         num(content.paddingTop) +
-        2 * label +
-        ROWS_TO_FIT * (groupGap + row) +
-        2 * num(content.gap) +
-        footLines * num(foot.lineHeight) +
+        groups.reduce((a, b) => a + b, 0) +
+        (GROUPS_TO_FIT.length - 1) * num(content.gap) +
         num(content.paddingBottom);
       const available = PHONE.height - STATUS_BAR - header - NAV_BAR_BUTTONS;
-      expect({ row, needed }).toEqual({ row: 77, needed: lang === 'he' ? 622 : 638 });
+      // Ranked rows of two lines (64, the list row's minimum), the practices' 77, the friends' 72.
+      expect({ ranked: rows.ranked2, practice: rows.solo, groups, needed }).toEqual({
+        ranked: 64,
+        practice: 77,
+        groups: [236, 72, 275],
+        needed: 639,
+      });
       expect(needed).toBeLessThanOrEqual(available);
+
+      // The friends buttons' words fit their half of the row on one line (estimated wide).
+      const button = styleOf(screen.getByTestId('modes-friends-join'));
+      const half =
+        (width - num(styleOf(screen.getByTestId('modes-friends-join').parent!).gap)) / 2 -
+        2 * num(button.paddingHorizontal) -
+        2 * num(button.borderWidth);
+      for (const key of ['create', 'join'])
+        expect(textWidth(i18n.t(`home:modes.friends.${key}`), tokens.type.button.size)).toBeLessThanOrEqual(
+          half,
+        );
 
       // The texts fit their one line beside the picture and the chevron (estimated wide, as layout.ts does).
       const card = styleOf(screen.getByTestId('mode-ranked2'));

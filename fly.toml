@@ -27,6 +27,13 @@ kill_timeout = "30s"
   ADMIN_TZ = "Asia/Jerusalem"
   # Sentry tells staging from production by this (both run NODE_ENV=production).
   SENTRY_ENVIRONMENT = "staging"
+  # Playing with friends (1.0.4): the keys whose app opens this server's room links (https://<server>/r/123456;
+  # GET /.well-known/assetlinks.json). Public fingerprints, not secrets. For now the PC's test key, React Native's
+  # debug key, which signs the APKs of `npm run apk`; add EAS's key's SHA-256 after a comma (`eas credentials`;
+  # docs/MOSHE-TODO.md). That key is public, so a production server refuses it; ANDROID_APP_LINK_ALLOW_DEBUG_KEY
+  # says this is a test server on purpose. Never copy these two lines to fly.production.toml.
+  ANDROID_APP_LINK_SHA256 = "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C"
+  ANDROID_APP_LINK_ALLOW_DEBUG_KEY = "true"
 
 [http_service]
   internal_port = 2567

@@ -1,4 +1,10 @@
-import { type GameType, ratingKey, type RatingOption, type Scheduler } from '@sudoku-fight/engine';
+import {
+  type GameType,
+  INTERFERENCE_KINDS,
+  ratingKey,
+  type RatingOption,
+  type Scheduler,
+} from '@sudoku-fight/engine';
 import {
   type AvatarId,
   COUNTDOWN_MS,
@@ -25,6 +31,8 @@ import {
 
 import type { Identity } from '../auth';
 import type { GameRoomLog } from '../rooms/GameRoom';
+import type { StealthMatchmaking, StealthPick } from '../stealth/match';
+import type { StealthBotSeat } from '../stealth/seat';
 import {
   DEFAULT_MATCHER,
   type MatcherConfig,
@@ -68,6 +76,16 @@ import type { RankedMatchLink, RankedMatchSetup, RankedRoomHooks, RankedRooms } 
  * One ranked game at a time: from GO until its room reports the game over (and its result stored) or closes,
  * a player's search is refused (`alreadyQueued`). A player who left their game is in it until the grace runs
  * out (they may go back to it meanwhile), and their next search starts from their stored rating.
+ *
+ * The stealth bot (deps.stealth; stealth-bot.md §4, §7) [D90, D94, D95], off unless the server's settings and
+ * the admin switch say otherwise (stealth/match.ts has the rules). In a two-player queue it may let, each round,
+ * one search that has waited its drawn 8–20 s with nobody to meet (nextRange null) be "found" by a persona:
+ * the persona is a member of the match like a person, with no connection. The room has no seat reservation for
+ * it; its seat goes to the game room in the match's setup (`bots`), which seats it when it "connects" (0.3–1.5 s
+ * after the room opened) and tells matchmaking it is in, as a person's app would (D37). From there the ready
+ * check, the countdown, GO, a no-show and the game's end run as for anyone, and the persona is busy (no other
+ * search gets it) until its game is over. While a persona is within a player's reach, his `searching` leaves out
+ * `nextRange` (D95). Nothing a player is sent tells the persona from a person.
  */
 
 export interface StoredPlayer {
@@ -172,6 +190,8 @@ export interface MatchmakingDeps {
   newId: () => string;
   log: GameRoomLog;
   config: MatchmakingConfig;
+  /** The stealth bot (stealth/match.ts StealthMatcher): absent (or off in the settings) → none, as before it. */
+  stealth?: StealthMatchmaking;
 }
 
 type EntryPhase = 'joining' | 'searching' | 'matched' | 'timedOut';
@@ -190,7 +210,10 @@ interface Entry {
   ticket: Ticket | null;
   /** The range in the last `searching` sent. */
   lastRange: number | null;
-  /** The next range in the last `searching` sent (undefined before the first). */
+  /**
+   * The next range in the last `searching` sent; undefined before the first, and when it was left out (D95:
+   * a persona within reach).
+   */
   lastNextRange: number | null | undefined;
   /** The keep-searching window after a timeout. */
   timer: unknown;
@@ -199,6 +222,13 @@ interface Entry {
    * malformed list), which counts as LEGACY_INTERFERENCE_KINDS.
    */
   interferenceKinds: readonly string[] | undefined;
+  /**
+   * [D94] The searching time after which a stealth bot may find this player (drawn when the search starts);
+   * null: not a stealth bot's queue.
+   */
+  stealthAfterMs: number | null;
+  /** A persona's entry (the stealth bot): its seat for the game room. It has no connection, ever. */
+  bot?: StealthBotSeat;
 }
 
 type MatchState = 'opening' | 'waiting' | 'countdown' | 'started' | 'cancelled';
@@ -230,6 +260,11 @@ export class MatchmakingService implements RankedRooms {
   private readonly playing = new Map<string, string>();
   private tickTimer: unknown = null;
   private closed = false;
+  /** [D94] A stealth bot is being chosen (a database round trip) for this player: one at a time. */
+  private picking: string | null = null;
+  /** A persona in a match or a game now: no other search gets it. */
+  private readonly personaBusy = (userId: string): boolean =>
+    this.entries.has(userId) || this.playing.has(userId);
 
   constructor(private readonly deps: MatchmakingDeps) {}
 
@@ -264,11 +299,13 @@ export class MatchmakingService implements RankedRooms {
       );
     if (this.playing.has(identity.userId))
       throw new MatchmakingRefusal('alreadyQueued', 'this account is in a ranked game that has not ended');
+    const key = queueKey(spec.gameType, spec.players);
+    const stealth = this.deps.stealth?.isStealthQueue(key) ? this.deps.stealth : undefined;
     const entry: Entry = {
       userId: identity.userId,
       identity,
       session,
-      queueKey: queueKey(spec.gameType, spec.players),
+      queueKey: key,
       spec,
       player: null,
       phase: 'joining',
@@ -277,15 +314,20 @@ export class MatchmakingService implements RankedRooms {
       lastNextRange: undefined,
       timer: null,
       interferenceKinds: parseDeclaredInterferenceKinds(rawInterferenceKinds),
+      stealthAfterMs: stealth ? stealth.drawAfterMs() : null,
     };
     this.entries.set(entry.userId, entry);
     this.bySession.set(session.id, entry);
     try {
-      const key = ratingKey(spec.gameType, spec.players, this.deps.ratingOption);
+      const rKey = ratingKey(spec.gameType, spec.players, this.deps.ratingOption);
       const [player, opponents, blocked] = await Promise.all([
-        this.deps.store.player(entry.userId, key),
+        this.deps.store.player(entry.userId, rKey),
         this.deps.store.opponents(entry.userId, spec.gameType),
         this.deps.store.blocked(entry.userId),
+        // [D95] What the first `searching` needs to know of the personas; never a reason to refuse a search.
+        stealth
+          ?.prepare(rKey)
+          .catch((error: unknown) => this.deps.log.error('[matchmaking] stealth bot: not prepared', error)),
       ]);
       if (player === undefined)
         throw new MatchmakingRefusal('unauthenticated', 'no account for this player: register first');
@@ -393,10 +435,11 @@ export class MatchmakingService implements RankedRooms {
         if (
           entry &&
           (rangeOf(ticket, now, queue.config) !== entry.lastRange ||
-            queue.nextRange(ticket.userId) !== entry.lastNextRange)
+            this.shownNextRange(entry, ticket, queue) !== entry.lastNextRange)
         )
           this.sendSearching(entry, false, now);
       }
+      this.stealthRound(queue, now);
     }
     this.ensureTicking();
   }
@@ -442,7 +485,7 @@ export class MatchmakingService implements RankedRooms {
     const t = entry.ticket;
     if (t === null || entry.session === null) return;
     const range = rangeOf(t, now, this.deps.config.matcher);
-    const nextRange = this.queueFor(entry).nextRange(t.userId);
+    const nextRange = this.shownNextRange(entry, t, this.queueFor(entry));
     entry.lastRange = range;
     entry.lastNextRange = nextRange;
     entry.session.send({
@@ -455,8 +498,25 @@ export class MatchmakingService implements RankedRooms {
       timeoutAt: t.deadline,
       serverTime: now,
       ...(requeued ? { requeued: true } : {}),
-      nextRange,
+      ...(nextRange === undefined ? {} : { nextRange }),
     });
+  }
+
+  /**
+   * Rule 7's next range as the player is told it: undefined (left out) instead of null while the stealth bot
+   * is on in his queue and a persona is within his reach [D95]: the app then shows the range bar, not "nobody
+   * else is searching". `nextRange` null for the ticket's own next range (one that has just timed out).
+   */
+  private shownNextRange(
+    entry: Entry,
+    ticket: Ticket,
+    queue: MatchQueue,
+    nextRange: number | null = queue.nextRange(ticket.userId),
+  ): number | null | undefined {
+    const stealth = this.deps.stealth;
+    if (nextRange !== null || stealth === undefined || entry.stealthAfterMs === null) return nextRange;
+    const key = ratingKey(entry.spec.gameType, entry.spec.players, this.deps.ratingOption);
+    return stealth.hidesNobody(entry.queueKey, key, ticket, this.personaBusy) ? undefined : null;
   }
 
   private timedOut(queue: MatchQueue, ticket: Ticket, now: number): void {
@@ -465,6 +525,7 @@ export class MatchmakingService implements RankedRooms {
     entry.phase = 'timedOut';
     entry.ticket = ticket;
     const window = this.deps.config.keepSearchingWindowMs;
+    const nextRange = this.shownNextRange(entry, ticket, queue, queue.nextRangeOf(ticket));
     entry.session?.send({
       type: 'timeout',
       queueKey: entry.queueKey,
@@ -472,7 +533,7 @@ export class MatchmakingService implements RankedRooms {
       range: rangeOf(ticket, now, this.deps.config.matcher),
       extended: ticket.extended,
       keepSearchingUntil: now + window,
-      nextRange: queue.nextRangeOf(ticket),
+      ...(nextRange === undefined ? {} : { nextRange }),
     });
     this.deps.log.info(`[matchmaking] ${entry.userId} timed out in ${entry.queueKey}`);
     entry.timer = this.deps.scheduler.setTimeout(() => {
@@ -482,6 +543,106 @@ export class MatchmakingService implements RankedRooms {
       this.forget(entry);
       session?.close();
     }, window);
+  }
+
+  // -- the stealth bot [D90, D94] ------------------------------------------------------------------------
+
+  /**
+   * The stealth bot's turn on a queue, after the round's matches: the first search (in order of service) that
+   * waited its drawn time with nobody it could meet (nextRange null), and that the personas known now could
+   * serve, gets one chosen for it (a database round trip; one at a time in the process).
+   */
+  private stealthRound(queue: MatchQueue, now: number): void {
+    const stealth = this.deps.stealth;
+    if (stealth === undefined || this.picking !== null || this.closed || queue.groupSize !== 2) return;
+    if (!stealth.activeFor(queue.key)) return;
+    for (const ticket of queue.list()) {
+      const entry = this.entries.get(ticket.userId);
+      if (!entry || entry.phase !== 'searching' || entry.session === null || entry.ticket !== ticket)
+        continue;
+      if (entry.stealthAfterMs === null || now - ticket.searchStart < entry.stealthAfterMs) continue;
+      // Someone he could meet is searching: a person first, always.
+      if (queue.nextRange(ticket.userId) !== null) continue;
+      const key = ratingKey(entry.spec.gameType, entry.spec.players, this.deps.ratingOption);
+      if (!stealth.wouldPick(key, ticket, now, this.personaBusy)) continue;
+      this.picking = entry.userId;
+      stealth
+        .pick(entry.spec.gameType, key, ticket, now, this.personaBusy)
+        .then((pick) => {
+          if (pick !== null) this.seatStealth(queue, entry, ticket, pick);
+        })
+        .catch((error: unknown) =>
+          this.deps.log.error(`[matchmaking] ${entry.userId}: no stealth bot (the pick failed)`, error),
+        )
+        .finally(() => {
+          this.picking = null;
+        });
+      return;
+    }
+  }
+
+  /**
+   * The persona is chosen: "found", if all still holds (he is still searching, still alone, the bot still on,
+   * the persona still free). Otherwise nothing happened: the persona stays free, and the search goes on.
+   */
+  private seatStealth(queue: MatchQueue, entry: Entry, ticket: Ticket, pick: StealthPick): void {
+    const persona = pick.profile;
+    if (
+      this.closed ||
+      this.entries.get(entry.userId) !== entry ||
+      entry.phase !== 'searching' ||
+      entry.session === null ||
+      queue.get(entry.userId) !== ticket ||
+      queue.nextRange(entry.userId) !== null ||
+      !this.deps.stealth?.activeFor(queue.key) ||
+      this.personaBusy(persona.userId)
+    )
+      return;
+    const now = this.now();
+    queue.remove(entry.userId);
+    const personaTicket: Ticket = {
+      userId: persona.userId,
+      queueKey: queue.key,
+      rating: persona.rating,
+      enqueuedAt: now,
+      searchStart: now,
+      deadline: now,
+      extended: false,
+      priority: false,
+      opponents: [],
+      blocked: new Set(),
+      seq: 0,
+    };
+    const bot: Entry = {
+      userId: persona.userId,
+      identity: { userId: persona.userId, name: persona.name },
+      session: null,
+      queueKey: queue.key,
+      spec: entry.spec,
+      player: {
+        name: persona.name,
+        avatarId: persona.avatarId,
+        country: persona.country,
+        rating: persona.rating,
+        games: persona.games,
+        provisional: persona.provisional,
+      },
+      phase: 'matched',
+      ticket: personaTicket,
+      lastRange: null,
+      lastNextRange: undefined,
+      timer: null,
+      // It declares every kind, so the room's kinds are the player's own [D47] (stealth-bot.md §5.4).
+      interferenceKinds: [...INTERFERENCE_KINDS],
+      stealthAfterMs: null,
+      bot: pick.seat,
+    };
+    this.entries.set(bot.userId, bot);
+    this.deps.log.info(
+      `[matchmaking] ${queue.key}: stealth bot ${persona.userId} (${persona.rating}) for ${entry.userId} ` +
+        `(${ticket.rating}) after ${((now - ticket.searchStart) / 1000).toFixed(1)} s`,
+    );
+    this.found(queue, [ticket, personaTicket], pick.rematch, now);
   }
 
   // -- a match -------------------------------------------------------------------------------------------
@@ -518,9 +679,11 @@ export class MatchmakingService implements RankedRooms {
   }
 
   private async open(match: Match): Promise<void> {
+    // A persona (the stealth bot) gets no seat reservation: the room seats it itself (setup.bots).
+    const people = match.members.filter((m) => !m.bot);
     let opened: OpenedMatch;
     try {
-      opened = await this.deps.games.open({ id: match.id, players: match.members.map((m) => m.identity) });
+      opened = await this.deps.games.open({ id: match.id, players: people.map((m) => m.identity) });
     } catch (error) {
       this.deps.log.error(`[matchmaking] match ${match.id}: the game room did not open`, error);
       this.fail(match, 'error', []);
@@ -528,9 +691,9 @@ export class MatchmakingService implements RankedRooms {
     }
     if (match.state !== 'opening') return;
     // Gone before they could be told: they can't come, and the others need not wait for them.
-    const gone = match.members.filter((m) => m.session === null).map((m) => m.userId);
+    const gone = people.filter((m) => m.session === null).map((m) => m.userId);
     if (gone.length > 0) return this.fail(match, 'noShow', gone);
-    if (match.members.some((m) => !opened.reservations.has(m.userId))) {
+    if (people.some((m) => !opened.reservations.has(m.userId))) {
       this.deps.log.error(`[matchmaking] match ${match.id}: a seat reservation is missing`);
       return this.fail(match, 'error', []);
     }
@@ -542,7 +705,7 @@ export class MatchmakingService implements RankedRooms {
     match.readyBy = now + readyTimeoutMs;
     match.timer = this.deps.scheduler.setTimeout(() => this.readyCheck(match), readyTimeoutMs);
     const players = match.members.map((m, i) => this.profile(m, match.tickets[i]!));
-    for (const m of match.members)
+    for (const m of people)
       m.session!.send({
         type: 'found',
         matchId: match.id,
@@ -554,6 +717,8 @@ export class MatchmakingService implements RankedRooms {
         readyBy: match.readyBy,
         serverTime: now,
       });
+    // A persona the room seated before `found` went out: in, as a person who connected first would be.
+    if (match.ready.size > 0) this.sendReady(match);
   }
 
   private profile(entry: Entry, ticket: Ticket): MatchPlayer {
@@ -679,6 +844,8 @@ export class MatchmakingService implements RankedRooms {
       countdownMs: this.deps.config.countdownMs,
       rules: this.matchRules(match),
     };
+    const bots = match.members.flatMap((m) => (m.bot ? [m.bot] : []));
+    if (bots.length > 0) setup.bots = bots;
     const isMember = (userId: string) => match.members.some((m) => m.userId === userId);
     return {
       setup,
@@ -686,9 +853,10 @@ export class MatchmakingService implements RankedRooms {
       join: (userId) => {
         if (!isMember(userId) || (match.state !== 'waiting' && match.state !== 'opening')) return;
         match.ready.add(userId);
+        // Before `found` (a persona the room seated quickly): nobody to tell yet; open() tells it with `found`.
+        if (match.state === 'opening') return;
         this.sendReady(match);
-        if (match.state === 'waiting' && match.ready.size === match.members.length)
-          this.startCountdown(match);
+        if (match.ready.size === match.members.length) this.startCountdown(match);
       },
       leave: (userId) => {
         if (match.state !== 'waiting' && match.state !== 'opening') return;

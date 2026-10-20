@@ -1,5 +1,7 @@
 import type { GameType, PlayerId, Rules } from '@sudoku-fight/engine';
 
+import type { AvatarId, CountryCode, NO_AVATAR_ID } from './account';
+
 /**
  * The game room on the server (stage 7, spec §17, §18): its name, how to create one and how to join it.
  *
@@ -111,6 +113,13 @@ export const GAME_ROOM_ERRORS = [
   'alreadyInRoom',
   /** The game started without this player. */
   'gameStarted',
+  /**
+   * A friends room (1.0.4, friends.ts): the host removed this player from it [D85a], between the ticket and the
+   * join. No way back into this room.
+   */
+  'kicked',
+  /** A friends room: it closed between the ticket and the join ("החדר נסגר"). */
+  'roomClosed',
 ] as const;
 export type GameRoomError = (typeof GAME_ROOM_ERRORS)[number];
 
@@ -120,10 +129,24 @@ export function gameRoomErrorOf(message: string): GameRoomError | null {
   return (GAME_ROOM_ERRORS as readonly string[]).includes(head) ? (head as GameRoomError) : null;
 }
 
-/** A seat in a room whose game has not started yet. */
+/**
+ * A seat in a room whose game has not started yet. A dev room sends the id and the name only; a friends room
+ * (1.0.4, friends.ts) adds the rest, which an older app ignores.
+ */
 export interface LobbyPlayer {
   id: PlayerId;
   name: string;
+  /** Friends rooms: the player's avatar (NO_AVATAR_ID: none). */
+  avatarId?: AvatarId | typeof NO_AVATAR_ID;
+  /** Friends rooms: the flag; null without one. */
+  country?: CountryCode | null;
+  /** Friends rooms: the player's general rating, shown small; null before any rated game. */
+  rating?: number | null;
+  /**
+   * Friends rooms [D84a]: this player's app is not connected now (in the background, or closed), and the seat
+   * is held for them: "לא בחדר כרגע", and `start` counts only the others. Absent or false: connected.
+   */
+  away?: boolean;
 }
 
 /**
@@ -135,7 +158,8 @@ export interface LobbyPlayer {
  * The game room sends it to everyone in the room when the countdown starts, and again to a player who comes
  * back during it, so the Match-Countdown screen runs off the game room alone, even if the matchmaking
  * connection is gone (it sends its own `countdown` too: protocol matchmaking.ts). Private rooms have none:
- * their game starts as soon as the last seat is taken.
+ * their game starts as soon as the last seat is taken. A friends room (friends.ts) sends it when its host
+ * starts the game; from then on its seats are fixed as in a ranked match.
  */
 export interface GameRoomCountdown {
   type: 'countdown';

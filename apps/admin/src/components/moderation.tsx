@@ -19,7 +19,13 @@ export type ModerationAction =
       /** The reported player's name; null for a deleted account. */
       player: string | null;
     }
-  | { kind: 'resetName' | 'suspend' | 'unsuspend'; userId: string; name: string | null };
+  | {
+      kind: 'resetName' | 'suspend' | 'unsuspend';
+      userId: string;
+      name: string | null;
+      /** A stealth bot's persona: a name reset gives it a new invented name at once. */
+      persona?: boolean;
+    };
 
 /** Refusals that mean the page shows something that has changed meanwhile: it reloads. */
 const STALE_ERRORS: ReadonlySet<ApiError['code']> = new Set(['notOpen', 'accountDeleted', 'notFound']);
@@ -98,7 +104,7 @@ function question(
     case 'resetName':
       return {
         title: <Rich k="confirm.resetName.title" nodes={{ name: nameNode(i18n, action.name) }} />,
-        body: <p>{t('confirm.resetName.body')}</p>,
+        body: <p>{t(action.persona ? 'confirm.resetName.bodyPersona' : 'confirm.resetName.body')}</p>,
         confirm: t('confirm.resetName.confirm'),
         danger: true,
       };
@@ -233,7 +239,7 @@ export function AccountActions({
   disabled,
   onAsk,
 }: {
-  user: { id: string; name: string | null; suspended: boolean; deleted: boolean };
+  user: { id: string; name: string | null; suspended: boolean; deleted: boolean; persona?: boolean };
   disabled: boolean;
   onAsk: (action: ModerationAction) => void;
 }) {
@@ -247,7 +253,9 @@ export function AccountActions({
         target={target}
         danger
         disabled={disabled}
-        onClick={() => onAsk({ kind: 'resetName', userId: user.id, name: user.name })}
+        onClick={() =>
+          onAsk({ kind: 'resetName', userId: user.id, name: user.name, persona: user.persona ?? false })
+        }
       />
       {/* One button that changes its words, so it keeps the focus across the change. */}
       <ActionButton
@@ -299,24 +307,35 @@ export function ReportActions({
   );
 }
 
-/** A player's moderation state, as badges beside their name. */
+/**
+ * A player's moderation state, as badges beside their name; and whether the account is a stealth bot's
+ * persona (stealth-bot.md §8: the admin site is the only place that says so).
+ */
 export function ModerationBadges({
   deleted,
   suspended,
   nameReset,
+  persona = false,
 }: {
   deleted: boolean;
   suspended: boolean;
   nameReset: boolean;
+  persona?: boolean;
 }) {
   const { t } = useI18n();
   return (
     <>
+      {persona && <StealthBadge label={t('mod.persona')} />}
       {deleted && <span className="badge badge-danger">{t('users.deleted')}</span>}
       {suspended && <span className="badge badge-danger">{t('mod.suspended')}</span>}
       {nameReset && <span className="badge badge-warn">{t('mod.nameReset')}</span>}
     </>
   );
+}
+
+/** The stealth bot's mark: on a persona, a game against it, its seat. */
+export function StealthBadge({ label }: { label: string }) {
+  return <span className="badge badge-stealth">{label}</span>;
 }
 
 /** Who acted: an admin's address, the password sign-in, or the system (an account deletion). */

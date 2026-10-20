@@ -1,4 +1,9 @@
-import { ADMIN_DEFAULT_PAGE_SIZE, ADMIN_MAX_PAGE_SIZE, ADMIN_REPORT_FILTERS } from '@sudoku-fight/protocol';
+import {
+  ADMIN_DEFAULT_PAGE_SIZE,
+  ADMIN_MAX_PAGE_SIZE,
+  ADMIN_REPORT_FILTERS,
+  ADMIN_USER_KINDS,
+} from '@sudoku-fight/protocol';
 import { z } from 'zod';
 
 import { DEFAULT_STATS_DAYS, MAX_SEARCH_LENGTH, MAX_STATS_DAYS } from './constants';
@@ -37,7 +42,32 @@ export const pageQuerySchema = z.object({
 });
 export type PageQuery = z.infer<typeof pageQuerySchema>;
 
-export const gamesQuerySchema = pageQuerySchema.extend({ mode: text(32) });
+/**
+ * GET /admin/api/users: `kind` person (the default: the people), persona (the stealth bot's personas,
+ * stealth-bot.md §8) or all.
+ */
+export const usersQuerySchema = pageQuerySchema.extend({
+  kind: z.preprocess(
+    blankToUndefined,
+    z.enum(ADMIN_USER_KINDS, { error: 'expected person, persona or all' }).default('person'),
+  ),
+});
+export type UsersQuery = z.infer<typeof usersQuerySchema>;
+
+/**
+ * GET /admin/api/games: `mode`, and `stealth` (stealth-bot.md §8): '1' only the games against a stealth bot,
+ * '0' only the others; missing or blank, every game.
+ */
+export const gamesQuerySchema = pageQuerySchema.extend({
+  mode: text(32),
+  stealth: z.preprocess(
+    blankToUndefined,
+    z
+      .enum(['0', '1'], { error: 'expected 1 or 0' })
+      .transform((v) => v === '1')
+      .optional(),
+  ),
+});
 export type GamesQuery = z.infer<typeof gamesQuerySchema>;
 
 export const daysQuerySchema = z.object({ days: int(1, MAX_STATS_DAYS, DEFAULT_STATS_DAYS) });

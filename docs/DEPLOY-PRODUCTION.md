@@ -138,6 +138,26 @@ fly secrets list -a sudoku-fight-prod
 
 - **לא סודות, ולכן ב־`[env]` של `fly.production.toml`:** ‏`NODE_ENV=production`, ‏`TRUST_PROXY=1` (‏proxy אחד של Fly לפני השרת, לא `true`), ‏`RATING_OPTION` [D7], ‏`ADMIN_TZ` ו־`SENTRY_ENVIRONMENT=production`.
 - `--stage` שומר בלי להפעיל מחדש. הפריסה בסעיף 5 מפעילה עם כולם.
+
+### 4א. משחק עם חברים (1.0.4): הקישור לחדר
+הקישור לחדר הוא `https://sudoku-fight-prod.fly.dev/r/<code>` (ההחלטה C1 של משה, `docs/MOSHE-TODO.md`). השרת מגיש את הדף בדפדפן, ואת הקבצים שמאמתים שהאפליקציה שלנו רשאית לפתוח את הקישורים האלה (אפיון 5.4.5). **אף אחד מאלה לא סוד,** ולכן הם ב־`[env]` של `fly.production.toml` (הם כבר שם, בהערה):
+
+| הגדרה | מה | בלעדיה |
+|---|---|---|
+| `ANDROID_APP_LINK_SHA256` | טביעות האצבע (SHA-256) של **כל מפתח שחותם על האפליקציה** בייצור, מופרדות בפסיקים: מפתח EAS, ואחרי שלב F7 גם Play App Signing (‏`docs/MOSHE-TODO.md`, ‏B8). **לא** מפתח הבדיקות של `npm run apk`: הוא ציבורי, ושרת ייצור מסרב לעלות איתו | ‏`/.well-known/assetlinks.json` מחזיר 404, והקישור נפתח בדפדפן ולא באפליקציה ("פתח באפליקציה" בדף עדיין עובד) |
+| `IOS_APP_ID` | ‏`<Team ID>.com.mosheg.sudokufight`, כשתהיה בנייה ל־iOS | אין `apple-app-site-association` |
+| `STORE_URL_ANDROID`, ‏`STORE_URL_IOS` | הדפים בחנויות, לדף בדפדפן | הדף מציג "האפליקציה עדיין בבדיקות" במקום קישור לחנות |
+| `FRIENDS_CREATES_PER_HOUR`, ‏`FRIENDS_JOINS_PER_10_MIN`, ‏`FRIENDS_JOINS_PER_10_MIN_PER_IP` (לא חובה) | הגבלות הקצב של חדרים (10, ‏20 ו־60 כברירת מחדל) | ברירות המחדל |
+
+- **ב־staging** (`fly.toml`) הרשימה כוללת את מפתח הבדיקות, עם `ANDROID_APP_LINK_ALLOW_DEBUG_KEY = "true"`, כדי שה־APK מהמחשב ייפתח מהקישור. **בייצור אסור להגדיר את זה.** השרת מזהיר בעלייה כשזה דלוק.
+- **בדיקה אחרי פריסה:** `https://sudoku-fight-prod.fly.dev/.well-known/assetlinks.json` מחזיר JSON עם טביעות האצבע, ו־`/r/123456` מחזיר את הדף.
+- **דומיין משלך בעתיד:** צריך גרסה חדשה בחנות (הכתובת בתוך האפליקציה), ו־`assetlinks.json` בדומיין החדש. קישורים ישנים בוואטסאפ ימשיכו להוביל ל־`fly.dev`.
+- **מכונה אחת:** טבלת החדרים בזיכרון של השרת. אם יעברו לכמה מכונות, היא תעבור ל־Redis או ל־Postgres, ו־Colyseus ל־RedisDriver. עד אז `fly.production.toml` נשאר עם מכונה אחת.
+- **פריסה סוגרת את החדרים הפתוחים,** כמו שהיא מסיימת משחקים. מי שבחדר רואה "החדר נסגר.".
+
+### 4ב. הבוט הסמוי: כבוי
+- `STEALTH_BOT_ENABLED` לא מוגדר (או `false`) בייצור וב־staging. **כך הוא נשאר עד שמשה אומר אחרת** (D90): קודם staging בלבד, ורק אחרי בדיקה שם, ייצור.
+- כשמדליקים: `STEALTH_BOT_ENABLED = "true"` ב־`[env]`, ואחר כך המתג "בוט סמוי" באתר הניהול מדליק ומכבה **בלי הפעלה מחדש**. שינוי של משתנה סביבה מפעיל מחדש את השרת, ומסיים כל משחק מדורג שרץ, ולכן לכיבוי מהיר משתמשים במתג. שאר ההגדרות (`STEALTH_BOT_QUEUES`, ‏`STEALTH_BOT_AFTER_MS`, ‏`STEALTH_BOT_HIDE_NOBODY`, ‏`STEALTH_PERSONA_POOL_MAX`) בברירת המחדל שלהן (`apps/server/.env.example`).
 - אף סוד לא נכנס לקובץ בריפו. `apps/server/test/deploy.test.ts` בודק שאין סודות ב־`fly.toml` וב־`fly.production.toml`.
 
 ## 5. פריסה

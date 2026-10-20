@@ -406,6 +406,7 @@ describe('GET /admin/api/users', () => {
     suspendedAt: null,
     nameResetRequired: false,
     openReports: 0,
+    persona: false,
   };
 
   it('lists users, latest activity first, with games and best rating; deleted ones too', async () => {
@@ -427,6 +428,7 @@ describe('GET /admin/api/users', () => {
           suspendedAt: null,
           nameResetRequired: false,
           openReports: 0,
+          persona: false,
         },
         {
           id: 'u3',
@@ -442,6 +444,7 @@ describe('GET /admin/api/users', () => {
           suspendedAt: null,
           nameResetRequired: false,
           openReports: 0,
+          persona: false,
         },
       ],
       page: 1,
@@ -497,6 +500,7 @@ describe('GET /admin/api/users', () => {
           ratingKey: null,
           ratingBefore: null,
           ratingAfter: null,
+          stealth: false,
         },
         {
           gameId: 'g1',
@@ -512,6 +516,7 @@ describe('GET /admin/api/users', () => {
           ratingKey: 'fast',
           ratingBefore: 1270,
           ratingAfter: 1287.5,
+          stealth: false,
         },
         expect.objectContaining({ gameId: 'g2', place: 2, finalScore: 12 }),
         expect.objectContaining({ gameId: 'g4', place: 1, mode: 'friend' }),
@@ -561,6 +566,7 @@ describe('GET /admin/api/games', () => {
       startedAt: ms('2026-10-08T10:00:00Z'),
       endedAt: ms('2026-10-08T10:05:00Z'),
       endReason: 'boardComplete',
+      stealth: false,
       players: [
         {
           userId: 'u1',
@@ -573,6 +579,7 @@ describe('GET /admin/api/games', () => {
           ratingKey: 'fast',
           ratingBefore: 1270,
           ratingAfter: 1287.5,
+          persona: false,
         },
         {
           userId: 'u2',
@@ -585,14 +592,16 @@ describe('GET /admin/api/games', () => {
           ratingKey: 'fast',
           ratingBefore: 1197.5,
           ratingAfter: 1180,
+          persona: false,
         },
       ],
     });
-    // A seat without an account (a bot): no user, no name.
+    // A seat without an account (a bot): no user, no name, and no persona.
     expect(res.body.items[2]?.players[2]).toMatchObject({
       userId: null,
       displayName: null,
       status: 'abandoned',
+      persona: false,
     });
   });
 

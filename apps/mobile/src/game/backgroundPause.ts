@@ -12,6 +12,10 @@ import { motion } from '../theme/motion';
  * a step) over the covered board (the screens draw `state` with ResumeCountdown), then host.resume(), from the
  * very same point and with the same time left. Away again mid-countdown: frozen again, and the countdown starts
  * over at the next return. `backgroundPause` off: no freeze at all.
+ *
+ * A hold (holdLocalGames) keeps every local game frozen while something is asked over it (1.0.4,
+ * friends-room.md §6.6: a room link that came mid-practice asks "לעזוב את האימון?" over the frozen board, and
+ * the "3", "2", "1" comes only after "לא"). It freezes like the app going away, and its release is the return.
  */
 
 /**
@@ -55,18 +59,64 @@ export interface BackgroundPauseOptions {
 /** The countdown's step: one number a second (motion.md `countdownStep`). */
 const COUNT_STEP_MS = motion.duration.countdownStep;
 
+/** The holds now on (holdLocalGames), and the games that follow them. */
+const holds = new Set<object>();
+const holdListeners = new Set<(held: boolean) => void>();
+
+const tellHold = (held: boolean) => {
+  for (const listener of [...holdListeners]) {
+    try {
+      listener(held);
+    } catch (error) {
+      // One game's failure never keeps the others (or the question over them) from going on.
+      if (__DEV__) console.warn('[pause] a hold could not reach a game', error);
+    }
+  }
+};
+
+/**
+ * Keeps every local game frozen until the returned release is called: a running one freezes as if the app went
+ * away, one counting down to its resume freezes again, and none resumes meanwhile. At the last release, a
+ * frozen game counts down to its resume if the app is in the foreground (else at its return). Releasing twice
+ * does nothing. Online games have no freeze, so a hold changes nothing for them.
+ */
+export function holdLocalGames(): () => void {
+  const token = {};
+  holds.add(token);
+  if (holds.size === 1) tellHold(true);
+  return () => {
+    if (!holds.delete(token)) return;
+    if (holds.size === 0) tellHold(false);
+  };
+}
+
+/** Some hold is on (holdLocalGames). */
+export const localGamesHeld = (): boolean => holds.size > 0;
+
 export class BackgroundPause {
   private current: PauseState = NOT_PAUSED;
   private readonly listeners = new Set<(state: PauseState) => void>();
   private countdownTimer: unknown = null;
   private readonly subscription: { remove(): void } | null = null;
+  private readonly holdListener: ((held: boolean) => void) | null = null;
   private stopped = false;
+  /** The app is in the foreground, as far as its AppState said (a game starts in the foreground). */
+  private appActive = true;
 
   constructor(private readonly opts: BackgroundPauseOptions) {
-    if (opts.appState && opts.settings.backgroundPause)
-      this.subscription = opts.appState.addEventListener('change', (state) =>
-        state === 'active' ? this.foreground() : this.background(),
-      );
+    if (!opts.settings.backgroundPause) return;
+    if (opts.appState)
+      this.subscription = opts.appState.addEventListener('change', (state) => {
+        this.appActive = state === 'active';
+        if (this.appActive) this.foreground();
+        else this.background();
+      });
+    // A hold freezes like the app going away; its release is the return, when the app is in the foreground.
+    this.holdListener = (held) => {
+      if (held) this.background();
+      else if (this.appActive) this.foreground();
+    };
+    holdListeners.add(this.holdListener);
   }
 
   get state(): PauseState {
@@ -93,9 +143,9 @@ export class BackgroundPause {
     if (host.getView().status === 'paused') this.set({ kind: 'paused' });
   }
 
-  /** The app is active again: the countdown, then the game goes on. */
+  /** The app is active again: the countdown, then the game goes on (not while a hold is on). */
   foreground(): void {
-    if (this.stopped || this.current.kind !== 'paused') return;
+    if (this.stopped || this.current.kind !== 'paused' || localGamesHeld()) return;
     const total = Math.max(0, this.opts.settings.resumeCountdownMs);
     const count = Math.ceil(total / COUNT_STEP_MS);
     if (count === 0) return this.resumeNow();
@@ -116,6 +166,7 @@ export class BackgroundPause {
     this.stopped = true;
     this.stopCountdown();
     this.subscription?.remove();
+    if (this.holdListener) holdListeners.delete(this.holdListener);
     this.listeners.clear();
   }
 

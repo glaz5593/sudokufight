@@ -53,6 +53,17 @@ export const MODE_OPTIONS: readonly ModeOption[] = [
 export const MODE_GROUPS: readonly ModeGroup[] = ['ranked', 'practice'];
 
 /**
+ * The sections of "משחק חדש", top to bottom: the option groups, and between them "עם חברים" (1.0.4, D80a): one
+ * row of two buttons, "צור חדר" | "הצטרף עם קוד", not options of its own (friends-room.md §2). Without it
+ * (config/friends.ts FRIENDS_UI.modesGroup off) the screen is as in 1.0.3.
+ */
+export type ModesSection = ModeGroup | 'friends';
+
+export function modesSections(friendsGroup: boolean): readonly ModesSection[] {
+  return friendsGroup ? ['ranked', 'friends', 'practice'] : MODE_GROUPS;
+}
+
+/**
  * The options that can be played in this build: all six (ranked 2 players since stage 9, 3 and 4 since stage
  * 10, staged practice since 1.0.2), in the screen's order. A setting: an option left out shows "בקרוב" (with
  * its player count out of RANKED_TABLES_OPEN below).

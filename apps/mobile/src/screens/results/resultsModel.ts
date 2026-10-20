@@ -177,6 +177,11 @@ export interface ResultsModel {
   startedAt: number;
   /** False when the practice database was unavailable and the numbers come from the session itself. */
   saved: boolean;
+  /**
+   * A game in a friends room (1.0.4; friends-room.md §3.5): never rated [D81a], so the screen says "משחק עם
+   * חברים · בלי דירוג" instead of waiting for a rating. Absent: not one.
+   */
+  friends?: true;
 }
 
 function bestMoveOf(stats: PlayerStats | undefined): BestMoveModel | null {
@@ -450,6 +455,8 @@ export function resultsModel(game: PracticeGame, events: readonly GameEvent[] = 
  */
 export type ResultsSession = Pick<PracticeSession, 'id' | 'mode' | 'gameType' | 'playerId' | 'getView'> & {
   readonly profiles?: AvatarsById | null;
+  /** A friends room's game (OnlineSession.isFriends, 1.0.4): unrated, labelled so. */
+  readonly isFriends?: boolean;
 };
 
 /**
@@ -485,6 +492,7 @@ export function sessionResultsModel(session: ResultsSession): ResultsModel | nul
     bestMove: bestMoveOf(stats),
     startedAt: view.startedAt ?? 0,
     saved: false,
+    ...(session.isFriends === true && { friends: true as const }),
   };
 }
 

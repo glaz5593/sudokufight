@@ -73,6 +73,7 @@ import {
   REPLACEABLE,
   resolveServer,
   serverEnv,
+  serverNativeInput,
   staleConfigDirs,
   uninstallCommand,
   USAGE,
@@ -341,6 +342,9 @@ function nativeInputs(server) {
     ['app.config.ts', read(join(MOBILE, 'app.config.ts'))],
     ['google-services.json', read(FIREBASE_FILE)],
     ['cleartext', server.secure ? 'no' : 'yes'],
+    // The room links' intent filter is built from the server (app.config.ts withRoomLinks): another server,
+    // another native project.
+    ['server', serverNativeInput(server)],
     ...installedVersions(packageJson, installedVersion),
   ];
   for (const name of listFiles(join(MOBILE, 'plugins')))

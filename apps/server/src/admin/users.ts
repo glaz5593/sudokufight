@@ -5,17 +5,18 @@ import {
   type AdminRating,
   type AdminUserDetail,
   type AdminUserGame,
+  type AdminUserKind,
   type AdminUserRow,
   normalizeAvatarId,
 } from '@sudoku-fight/protocol';
-import { asc, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm';
 
 import { type Db, queryRows } from '../db';
-import { cheatFlags, gamePlayers, games, ratings, users, xp } from '../db/schema';
+import { cheatFlags, gamePlayers, games, ratings, type UserKind, users, xp } from '../db/schema';
 import { RECENT_GAMES_LIMIT } from './constants';
 import { installsOfUser } from './installs';
 import { levelsOfUser } from './levels';
-import { likePattern, type PageQuery } from './params';
+import { likePattern, type UsersQuery } from './params';
 import { epochMs, msOrNull, numOrNull } from './sql';
 
 /**
@@ -24,6 +25,11 @@ import { epochMs, msOrNull, numOrNull } from './sql';
  * Deleted accounts stay listed (deletedAt set): their games still point at them. Every row carries its
  * moderation state (spec §3.5): suspended since, a name reset waiting for a new name, open reports. The detail
  * also sums the staged-practice progress the account synced (./levels), when it has any.
+ *
+ * The stealth bot (stealth-bot.md §6, §8) [D90]: its personas are accounts too (users.kind 'persona'), marked
+ * `persona` here, the only place that tells them apart. The list shows the people by default (`kind`
+ * 'person'), so its total counts people; 'persona' lists the personas (the admin site's stealth bot page),
+ * 'all' both. A game against a stealth bot is `stealth` in the detail's recent games.
  */
 
 const lastSeenSql = sql<
@@ -46,6 +52,7 @@ const userRow = {
   bestRating: sql<number | null>`(select max(r.rating) from ratings as r where r.user_id = users.id)`,
   suspendedAt: users.suspendedAt,
   nameResetRequired: users.nameResetRequired,
+  kind: users.kind,
   openReports: sql<number>`(select count(*)::int from player_reports as pr
     where pr.reported_id = users.id and pr.status = 'open')`.mapWith(Number),
 };
@@ -63,10 +70,12 @@ function toUserRow(r: {
   bestRating: unknown;
   suspendedAt: Date | null;
   nameResetRequired: boolean;
+  kind: UserKind;
   openReports: number;
 }): AdminUserRow {
+  const { kind, ...rest } = r;
   return {
-    ...r,
+    ...rest,
     // An old pack's id as its replacement, an unknown one as NO_AVATAR_ID; none stays null.
     avatarId: r.avatarId === null ? null : normalizeAvatarId(r.avatarId),
     createdAt: r.createdAt.getTime(),
@@ -74,6 +83,7 @@ function toUserRow(r: {
     lastSeen: msOrNull(r.lastSeen),
     bestRating: numOrNull(r.bestRating),
     suspendedAt: r.suspendedAt?.getTime() ?? null,
+    persona: kind === 'persona',
   };
 }
 
@@ -98,9 +108,14 @@ function searchUsers(search: string | undefined): SQL | undefined {
   );
 }
 
+/** The accounts of a `kind` filter: undefined for 'all'. */
+function ofKind(kind: AdminUserKind): SQL | undefined {
+  return kind === 'all' ? undefined : eq(users.kind, kind);
+}
+
 /** Newest activity first; users never seen on an install last, newest account first. */
-export async function listUsers(db: Db, q: PageQuery): Promise<AdminPage<AdminUserRow>> {
-  const where = searchUsers(q.search);
+export async function listUsers(db: Db, q: UsersQuery): Promise<AdminPage<AdminUserRow>> {
+  const where = and(ofKind(q.kind), searchUsers(q.search));
   const [rows, counted] = await Promise.all([
     selectUsers(db)
       .where(where)
@@ -215,6 +230,7 @@ async function gamesOf(db: Db, userId: string): Promise<AdminUserGame[]> {
       ratingKey: gamePlayers.ratingKey,
       ratingBefore: gamePlayers.ratingBefore,
       ratingAfter: gamePlayers.ratingAfter,
+      stealth: games.stealth,
     })
     .from(gamePlayers)
     .innerJoin(games, eq(games.id, gamePlayers.gameId))

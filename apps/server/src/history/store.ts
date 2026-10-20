@@ -21,7 +21,7 @@ import {
 import { and, asc, desc, eq, inArray, isNotNull, lt, or, sql } from 'drizzle-orm';
 
 import type { Db } from '../db';
-import { type Game, gameEvents, gamePlayers, games, users } from '../db/schema';
+import { FRIENDS_GAME_MODE, type Game, gameEvents, gamePlayers, games, users } from '../db/schema';
 
 /**
  * The history and replay reads (spec §13, §14.1, §19; protocol history.ts), straight from games,
@@ -32,11 +32,15 @@ import { type Game, gameEvents, gamePlayers, games, users } from '../db/schema';
  *   numbers, rating change and public profile. A deleted account shows no name and no avatar.
  * - A replay: the game as above and its whole log, gameCreated with the solution included; only for a player
  *   of the game, and only once it is over (spec §21).
+ * - A game in a friends room (1.0.4, games.mode 'friends') [D81a] goes out as mode 'ranked' with
+ *   `friends: true`: an app before 1.0.4 refuses a mode it does not know (protocol isHistoryGame), and with it
+ *   the whole page, and shows such a game as a ranked one without a rating change. Its seats have no rating.
  */
 
 const PLAYER_STATUSES: readonly PlayerStatus[] = ['active', 'surrendered', 'abandoned'];
 const END_REASONS: readonly EndReason[] = ['boardComplete', 'lastPlayerStanding', 'practiceEnded'];
 
+/** The engine's mode; any other (a friends game's 'friends') goes out as 'ranked'. */
 const modeOf = (mode: string): GameMode =>
   GAME_MODES.includes(mode as GameMode) ? (mode as GameMode) : 'ranked';
 const typeOf = (type: string): GameType => (isGameType(type) ? type : 'normal');
@@ -107,6 +111,8 @@ function toHistoryGame(g: Game, seats: HistoryPlayer[], userId: string): History
     endReason: endReasonOf(g.endReason),
     mySeat: mine.seat,
     players: seats,
+    // Only on a friends game: the others' answers stay exactly as they were.
+    ...(g.mode === FRIENDS_GAME_MODE ? { friends: true } : null),
   };
 }
 

@@ -4,6 +4,8 @@ import {
   type ClientMessage,
   type ClientMessageType,
   type DevJoinOptions,
+  type FriendsLobbyCommand,
+  type FriendsLobbyCommandType,
   GAME_ROOM_NAME,
   type GameRoomCreateOptions,
   type GameRoomRuleOverrides,
@@ -17,8 +19,11 @@ import { OnlineError, onlineErrorOf } from './errors';
 
 /**
  * The way into the game server (stage 7): create a private room, join one by its code, come back with a
- * reconnection token; and (stage 9) take the seat matchmaking reserved in a ranked match's room. It hides the Colyseus SDK behind a small interface (RoomLike), so RemoteGameHost runs
- * on any of: the SDK on the phone, the SDK in a Node test against the real server, a fake in Jest.
+ * reconnection token; and (stage 9) take the seat matchmaking reserved in a ranked match's room. A friends room
+ * (1.0.4, protocol friends.ts) is entered the same way, with the seat its ticket reserved (our HTTP routes give
+ * it: api/roomsApi.ts); its host's lobby commands go out through `send` too. It hides the Colyseus SDK behind a
+ * small interface (RoomLike), so RemoteGameHost runs on any of: the SDK on the phone, the SDK in a Node test
+ * against the real server, a fake in Jest.
  *
  * Who the player is comes from an IdentitySource, asked again on every join (a Firebase ID token expires
  * after an hour; a rejoin needs a fresh one):
@@ -48,7 +53,8 @@ export interface RoomLike {
   /** The connection is gone: closed by the server, dropped, or left. */
   onLeave(callback: (code: number) => void): void;
   onError(callback: (code: number, message?: string) => void): void;
-  send(type: ClientMessageType, message: ClientMessage): void;
+  /** An action or a ping; in a friends room's lobby, also the host's commands (protocol FriendsLobbyCommand). */
+  send(type: ClientMessageType | FriendsLobbyCommandType, message: ClientMessage | FriendsLobbyCommand): void;
   /** Consented: leaving on purpose. Not consented: the socket just closes (the server sees a drop). */
   leave(consented: boolean): Promise<unknown>;
 }
@@ -74,7 +80,8 @@ export interface OnlineClient {
   reconnect(token: string): Promise<RoomLike>;
   /**
    * Into a ranked match's room (stage 9): the seat matchmaking reserved for this player (protocol
-   * matchmaking.ts `found`). The reservation carries who it is, so no identity is asked.
+   * matchmaking.ts `found`); or a friends room's (1.0.4): the seat its ticket reserved. The reservation carries
+   * who it is, so no identity is asked.
    */
   consumeSeatReservation(reservation: MatchSeatReservation): Promise<RoomLike>;
 }

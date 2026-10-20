@@ -15,6 +15,7 @@ import {
   asGameHost,
   CLIENT_MESSAGE_TYPES,
   type ClientMessage,
+  FRIENDS_LOBBY_COMMAND_TYPES,
   GAME_ROOM_NAME,
   type GameHost,
   normalizeRoomCode,
@@ -66,7 +67,15 @@ describe('protocol', () => {
       'rejected',
       'solution',
       'pong',
+      // A friends room's own two (1.0.4, friends.ts): additive, the version stays.
+      'lobbyRefused',
+      'roomClosed',
     ]);
+  });
+
+  it("keeps a friends room's lobby commands apart from the game's client messages", () => {
+    for (const type of FRIENDS_LOBBY_COMMAND_TYPES)
+      expect((CLIENT_MESSAGE_TYPES as readonly string[]).includes(type)).toBe(false);
   });
 
   it('builds on the engine package', () => {

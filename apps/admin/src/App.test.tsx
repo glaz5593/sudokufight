@@ -166,6 +166,8 @@ describe('language', () => {
       ['Installs', '#/installs'],
       ['Users', '#/users'],
       ['Games', '#/games'],
+      ['Rooms', '#/rooms'],
+      ['Stealth bot', '#/stealth'],
       ['Screens', '#/screens'],
       ['Stages', '#/levels'],
       ['Reports', '#/reports'],

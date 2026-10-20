@@ -16,6 +16,7 @@ import {
   type HistoryError,
   type HistoryGame,
   type HistoryPage,
+  isHistoryGame,
   isHistoryPage,
   isReplayAnswer,
   LEGACY_AVATAR_MAP,
@@ -275,6 +276,44 @@ describe('GET /v1/me/games (spec §14.1)', () => {
       return kb - ka || (a < b ? 1 : -1);
     });
     expect(ids).toEqual(expected);
+  });
+
+  it('a friends room’s game (1.0.4): mode ranked with friends: true, unrated, and an app before 1.0.4 reads the page', async () => {
+    const config = await ranked.createFriendsConfig({
+      id: 'f1',
+      gameType: 'fast',
+      players: [
+        { id: 'ana', name: 'ANA' },
+        { id: 'ben', name: 'BEN' },
+      ],
+      seed: 1,
+    });
+    const recorder = ranked.recordFriends(config);
+    const table = tableFor(config, recorder);
+    table.game.start();
+    table.fillAll((k) => (k % 2 === 0 ? 'ana' : 'ben'));
+    expect(await recorder.done).toMatchObject({ ok: true });
+    await playedGame('g1'); // a ranked game, later: no friends flag on it
+
+    const page = await get<HistoryPage>(HISTORY_PATHS.myGames, 'ana');
+    expect(page.status).toBe(200);
+    expect(isHistoryPage(page.body)).toBe(true);
+    const [ranked1, friends] = page.body.games;
+    expect(ranked1).toMatchObject({ id: 'g1', mode: 'ranked' });
+    expect(ranked1).not.toHaveProperty('friends');
+    expect(friends).toMatchObject({ id: 'f1', mode: 'ranked', friends: true });
+    expect(friends!.players.map((p) => [p.ratingKey, p.ratingBefore, p.ratingAfter])).toEqual([
+      [null, null, null],
+      [null, null, null],
+    ]);
+    // An app before 1.0.4 checks each game with the same function, with no `friends` in its type: it passes.
+    const { friends: _flag, ...asOld } = friends!;
+    expect(isHistoryGame(asOld)).toBe(true);
+    expect(isHistoryGame(friends)).toBe(true);
+    // The replay, for a player of the game.
+    const replayed = await get<ReplayAnswer>(replayPath('f1'), 'ben');
+    expect(replayed.status).toBe(200);
+    expect(replayed.body.game).toMatchObject({ id: 'f1', friends: true });
   });
 
   it('refuses a cursor it did not make', async () => {

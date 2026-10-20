@@ -183,6 +183,7 @@ function ReportGroup({
                 deleted={deleted}
                 suspended={player.suspendedAt !== null}
                 nameReset={player.nameResetRequired}
+                persona={player.persona ?? false}
               />
               {overdue && (
                 <span className="badge badge-stop">
@@ -193,7 +194,13 @@ function ReportGroup({
           </div>
         </div>
         <AccountActions
-          user={{ id: player.id, name, suspended: player.suspendedAt !== null, deleted }}
+          user={{
+            id: player.id,
+            name,
+            suspended: player.suspendedAt !== null,
+            deleted,
+            persona: player.persona ?? false,
+          }}
           disabled={busy}
           onAsk={onAsk}
         />

@@ -79,9 +79,16 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
       : duel
         ? ltr(`${duel.mine} : ${duel.theirs}`)
         : t('card.points', { score: scoreText(e.myScore) });
-  const rating =
-    e.source === 'practice' ? t('card.unrated') : e.ratingDelta === null ? null : signedText(e.ratingDelta);
-  const mode = t(`card.mode.${e.mode}`);
+  // A game with friends (1.0.4) never moves a rating [D81a]: "עם חברים", and "בלי דירוג" where a change would be.
+  const unrated = e.source === 'practice' || e.friends === true;
+  const rating = unrated
+    ? e.friends
+      ? t('friends:unrated')
+      : t('card.unrated')
+    : e.ratingDelta === null
+      ? null
+      : signedText(e.ratingDelta);
+  const mode = e.friends ? t('friends:mode') : t(`card.mode.${e.mode}`);
   const type = tg(`type.${e.gameType}`);
   const outcome = t(`card.outcome.${e.outcome}`);
   const label = t('card.label', {
@@ -90,7 +97,7 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
     mode,
     type,
     score,
-    rating: rating === null ? '' : e.source === 'practice' ? rating : t('card.rating', { delta: rating }),
+    rating: rating === null ? '' : unrated ? rating : t('card.rating', { delta: rating }),
     date,
   });
 

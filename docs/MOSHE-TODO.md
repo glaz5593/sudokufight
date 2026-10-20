@@ -305,6 +305,18 @@ The full Hebrew guide is `docs/FIREBASE-SETUP.md`; the steps below follow it, An
 
 **Before the first store build (F6):** remove the local debug key's SHA-1 from Firebase. That key is React Native's public template key, the same in every project: while Firebase lists it, anyone can sign an APK with this app's package name, get someone to install it, and take over the Google sign-ins made in it. **The production build on EAS now refuses to build while `google-services.json` still lists it**, and says what to do: Firebase console → **Project settings → General → Your apps → Sudoku Fight Android** → the fingerprint `5e:8f:16:...:f6:25` → delete → download the new `google-services.json` into `apps/mobile/config/firebase/` → tell Claude (it re-uploads the file to EAS with `--force`). APKs from this PC then show no Google button (email and password only); test Google on an EAS `preview` APK or the Play build. If you want Google in APKs from this PC too, ask Claude to give `npm run apk` a key of its own (its SHA-1 goes into Firebase instead; phones with the old APK uninstall it once).
 
+### B8. Room links (1.0.4): the SHA-256 of the signing keys (new)
+
+- [ ] **B8** The **SHA-256** of the EAS key, sent to Claude (and later the Play App Signing key's, at F7)
+
+**Why.** Playing with friends (spec §5.4) shares a link, `https://sudoku-fight-staging.fly.dev/r/123456` (in production `https://sudoku-fight-prod.fly.dev/r/…`, per C1). Android opens it straight in the app, in the room, only when the server lists the **SHA-256** of the key that signed the installed app (`/.well-known/assetlinks.json`, setting `ANDROID_APP_LINK_SHA256`). Without it the link opens a small page in the browser, whose "פתח באפליקציה" button still works.
+
+**What to do.** `eas credentials -p android` → the profile → copy **SHA256 Fingerprint** (not SHA1) → tell Claude. It is not a secret (anyone can read it from the app), so the chat is fine; Claude puts it in `fly.toml` (staging) and `fly.production.toml` (production) `[env]`. At **F7**, the same for Play App Signing (Play Console → App integrity → App signing → the SHA-256 under the SHA-1).
+
+**Not needed for the APK from this PC on staging:** staging already lists the local debug key, on purpose (`ANDROID_APP_LINK_ALLOW_DEBUG_KEY = "true"` in `fly.toml`). Production never does: that key is public, and the production server refuses to start with it.
+
+**Later, for iOS:** your Apple Team ID (`IOS_APP_ID = <Team ID>.com.mosheg.sudokufight`), when there is an iOS build.
+
 ### Sources (Part B)
 - Firebase pricing (Spark, 50K MAU): https://firebase.google.com/pricing
 - File variables in EAS (`GOOGLE_SERVICES_JSON` holds a path during the build): https://docs.expo.dev/eas/environment-variables/faq/
@@ -327,7 +339,7 @@ Only the ones that block these three goals. Everything else in `docs/DECISIONS-P
 
 **Quick yes/no that saves a rebuild (optional, before E3):**
 - DECISIONS-PENDING 2.13: add `expo-network` (a native module) so "no internet" and "server not answering" are told apart. If yes, it should go in before the first EAS build; adding it later costs another build.
-- DECISIONS-PENDING 2.8: "Play with a friend by code" in V1. Not required, but it makes the closed test easier (testers can meet without waiting in the ranked queue).
+- ~~DECISIONS-PENDING 2.8: "Play with a friend by code" in V1.~~ Done: you asked for it (2026-10-19) and approved the plan (2026-10-20). It ships in 1.0.4 (friends room, 6-digit code and link), and it makes the closed test easier: testers can meet without waiting in the ranked queue. Needs B8 for the link.
 - DECISIONS-PENDING 1.7: production database on Neon (the recommendation, and what this list assumes) or Fly Postgres. With Fly Postgres, D9 and the puzzle loading in D12 change (`fly proxy` instead of a direct connection, `docs/DEPLOY-PRODUCTION.md` §2 and §7), and Claude must remove Neon from the privacy policy first.
 
 - [x] **C1** server address decided
@@ -1296,6 +1308,10 @@ The full list is in `docs/RELEASE-CHECKLIST.md` (stages ב, ג, ז, ח, יא) wi
 | `ADMIN_SESSION_SECRET` | `fly secrets`, by you (your own window, generated, D4) | a real secret: with Google only, it alone signs admin sessions. At least 32 characters, a different one per server; without it you sign in with Google again after each deploy or restart | no |
 | `SENTRY_DSN` | `fly secrets`, by you (`Read-Host`, D8) | Sentry → Project settings → Client Keys (D8) | optional |
 | `INVITE_URL` | `fly secrets` | the "invite friends" link [D27] | optional |
+| `ANDROID_APP_LINK_SHA256` | `fly.toml` / `fly.production.toml` `[env]`, by Claude | the SHA-256 of every key that signs the app on that server (B8); staging also lists the local debug key, with `ANDROID_APP_LINK_ALLOW_DEBUG_KEY = "true"` (never in production: it refuses to start) | yes, for room links (1.0.4) |
+| `IOS_APP_ID`, `STORE_URL_ANDROID`, `STORE_URL_IOS` | `[env]`, by Claude | the Apple Team ID and bundle id; the store pages for the room link's browser page | later |
+| `FRIENDS_CREATES_PER_HOUR`, `FRIENDS_JOINS_PER_10_MIN`, `FRIENDS_JOINS_PER_10_MIN_PER_IP` | not set | defaults (`10`, `20`, `60`): the friends rooms' rate limits | no |
+| `STEALTH_BOT_ENABLED` (and the other `STEALTH_BOT_*`) | not set | **off** (D90): the stealth bot is switched on in staging only when you say so, then on and off from the admin site without a restart | no |
 | `GIT_SHA` | `fly deploy --env GIT_SHA=$(git rev-parse --short HEAD)` | the deployed commit | optional |
 | `RANKED_REQUIRES_VERIFIED_EMAIL`, `PRACTICE_XP_DAILY_CAP`, `CHEAT_FAST_THINK_MS`, `CHEAT_FAST_THINK_MOVES`, `ACCOUNT_DELETE_MAX_AUTH_AGE_MS`, `SENTRY_TRACES_SAMPLE_RATE` | not set | defaults (`true`, `1500`, `1200`, `20`, `300000`, `0.05`); explained in `apps/server/.env.example` | no |
 | `SENTRY_RELEASE`, `PGLITE_DIR` | not set | Sentry's release name is built from the version and `GIT_SHA`; `PGLITE_DIR` is for local development only (never set it on Fly) | no |

@@ -1,4 +1,9 @@
-import { ADMIN_DEFAULT_PAGE_SIZE, type AdminUserRow } from '@sudoku-fight/protocol';
+import {
+  ADMIN_DEFAULT_PAGE_SIZE,
+  ADMIN_USER_KINDS,
+  type AdminUserKind,
+  type AdminUserRow,
+} from '@sudoku-fight/protocol';
 import { useCallback } from 'react';
 
 import { AvatarImg } from '../components/AvatarImg';
@@ -13,21 +18,31 @@ import {
   Pager,
   RelativeTime,
   SearchForm,
+  Select,
 } from '../components/ui';
 import { useApi, useAsync } from '../data';
 import { useI18n } from '../i18n';
-import { navigate, routeHref } from '../router';
+import { DEFAULT_USER_KIND, navigate, routeHref } from '../router';
 
 /**
  * Spec §27.3 "משתמשים": registered users with search, "last seen", games and their best rating, and their
- * moderation state (spec §3.5): suspended, waiting for a new name, open reports.
+ * moderation state (spec §3.5): suspended, waiting for a new name, open reports. The people by default; the
+ * stealth bot's personas (stealth-bot.md §8) with the account-type filter, marked as such.
  */
-export function UsersPage({ search, page }: { search: string; page: number }) {
+export function UsersPage({
+  search,
+  page,
+  kind = DEFAULT_USER_KIND,
+}: {
+  search: string;
+  page: number;
+  kind?: AdminUserKind;
+}) {
   const { t } = useI18n();
   const api = useApi();
   const load = useCallback(
-    () => api.users({ search, page, pageSize: ADMIN_DEFAULT_PAGE_SIZE }),
-    [api, search, page],
+    () => api.users({ kind, search, page, pageSize: ADMIN_DEFAULT_PAGE_SIZE }),
+    [api, kind, search, page],
   );
   const result = useAsync(load);
   const title = t('users.title');
@@ -46,6 +61,7 @@ export function UsersPage({ search, page }: { search: string; page: number }) {
             deleted={u.deletedAt !== null}
             suspended={(u.suspendedAt ?? null) !== null}
             nameReset={u.nameResetRequired ?? false}
+            persona={u.persona ?? false}
           />
         </>
       ),
@@ -77,11 +93,17 @@ export function UsersPage({ search, page }: { search: string; page: number }) {
     <>
       <PageHeader title={title} docTitle={title}>
         <div className="toolbar">
+          <Select
+            label={t('users.kind')}
+            value={kind}
+            options={ADMIN_USER_KINDS.map((k) => ({ value: k, label: t(`userKind.${k}`) }))}
+            onChange={(k) => navigate({ name: 'users', kind: k, search, page: 1 })}
+          />
           <SearchForm
             key={search}
             label={t('users.search')}
             value={search}
-            onSearch={(s) => navigate({ name: 'users', search: s, page: 1 })}
+            onSearch={(s) => navigate({ name: 'users', kind, search: s, page: 1 })}
           />
         </div>
       </PageHeader>
@@ -89,7 +111,7 @@ export function UsersPage({ search, page }: { search: string; page: number }) {
         {(data) => (
           <>
             {data.items.length === 0 ? (
-              <Empty>{search ? t('users.noMatch') : t('users.empty')}</Empty>
+              <Empty>{search || kind !== DEFAULT_USER_KIND ? t('users.noMatch') : t('users.empty')}</Empty>
             ) : (
               <DataTable
                 caption={title}
@@ -104,7 +126,7 @@ export function UsersPage({ search, page }: { search: string; page: number }) {
                 page={data.page}
                 pageSize={data.pageSize}
                 total={data.total}
-                onPage={(p) => navigate({ name: 'users', search, page: p })}
+                onPage={(p) => navigate({ name: 'users', kind, search, page: p })}
               />
             )}
           </>

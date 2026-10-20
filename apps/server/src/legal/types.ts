@@ -22,7 +22,7 @@ export type LegalDocId = (typeof LEGAL_DOCS)[number];
  * When the texts last changed: shown as "עודכן לאחרונה". Change it with any change to their meaning (the app
  * links to the current version; the stores keep only the URL).
  */
-export const LEGAL_UPDATED = '2026-10-18';
+export const LEGAL_UPDATED = '2026-10-20';
 
 export type Block =
   | string

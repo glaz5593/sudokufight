@@ -68,6 +68,8 @@ const ERROR_TEXT: Record<ApiError['code'], StringKey> = {
   notOpen: 'error.notOpen',
   accountDeleted: 'error.accountDeleted',
   googleRequired: 'error.googleRequired',
+  // The stealth bot's switch on a server without the stealth bot (pages/StealthPage.tsx).
+  stealthDisabled: 'error.stealthDisabled',
   // Only the Google sign-in answers these, and the login page words them itself (pages/LoginPage.tsx).
   invalidToken: 'error.server',
   wrongProvider: 'error.server',

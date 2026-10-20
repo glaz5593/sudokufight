@@ -37,6 +37,35 @@ describe('api client', () => {
     ]);
   });
 
+  it('the stealth bot (stealth-bot.md §8): its switch, the personas, the games against it', async () => {
+    const empty = { body: { items: [], page: 1, pageSize: 50, total: 0 } };
+    const state = { enabled: true, on: false, changedAt: null, changedBy: null };
+    const server = fakeServer({
+      'GET /stealth': { body: state },
+      'POST /stealth/switch': { body: { switch: { ...state, on: true }, audit: null } },
+      'GET /users': empty,
+      'GET /games': empty,
+    });
+    const api = createApi({ fetch: server.fetch });
+    expect(await api.stealthSwitch()).toEqual(state);
+    expect((await api.setStealth(true)).switch.on).toBe(true);
+    await api.users({ kind: 'persona', search: 'noa' });
+    await api.users({ kind: 'person' });
+    await api.users({ kind: 'all' });
+    await api.games({ stealth: '1' });
+    await api.games({ stealth: '' });
+    expect(server.requests.map((r) => [r.method, r.url, r.body])).toEqual([
+      ['GET', '/admin/api/stealth', undefined],
+      ['POST', '/admin/api/stealth/switch', { on: true }],
+      ['GET', '/admin/api/users?kind=persona&search=noa&page=1&pageSize=50', undefined],
+      // The people are the server's default: no kind.
+      ['GET', '/admin/api/users?page=1&pageSize=50', undefined],
+      ['GET', '/admin/api/users?kind=all&page=1&pageSize=50', undefined],
+      ['GET', '/admin/api/games?stealth=1&page=1&pageSize=50', undefined],
+      ['GET', '/admin/api/games?page=1&pageSize=50', undefined],
+    ]);
+  });
+
   it('asks for the reports (open by default, or by status) and the audit log', async () => {
     const empty = { body: { items: [], page: 1, pageSize: 50, total: 0 } };
     const server = fakeServer({ 'GET /reports': empty, 'GET /audit': empty });

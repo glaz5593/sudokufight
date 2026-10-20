@@ -48,6 +48,11 @@ export interface HistoryEntry {
   opponentScore: number | null;
   /** A ranked game's rating change for me; null when it moved none (and for practice, spec §6.6). */
   ratingDelta: number | null;
+  /**
+   * A game in a friends room (1.0.4, protocol HistoryGame.friends): it comes as a ranked one, never rated
+   * [D81a]; the card says "עם חברים · בלי דירוג", and the "מדורג" filter leaves it out. Absent: not one.
+   */
+  friends?: true;
 }
 
 const outcomeOfPlace = (place: number | null, players: readonly { place: number | null }[]) =>
@@ -85,9 +90,10 @@ export function rankedEntry(game: HistoryGame): HistoryEntry {
     myScore: me?.score ?? null,
     opponentScore: others.length === 1 ? (others[0]!.score ?? null) : null,
     ratingDelta:
-      me?.ratingBefore != null && me.ratingAfter != null
+      game.friends !== true && me?.ratingBefore != null && me.ratingAfter != null
         ? Math.round(me.ratingAfter - me.ratingBefore)
         : null,
+    ...(game.friends === true && { friends: true as const }),
   };
 }
 
@@ -131,8 +137,10 @@ export function practiceEntry(record: PracticeGameRecord, result: GameResult | n
   };
 }
 
+/** "מדורג" is the rated games: a game with friends (from the server too) shows under "הכל" only. */
 const inFilter = (filter: HistoryFilter, e: HistoryEntry): boolean =>
-  filter === 'all' || (filter === 'ranked') === (e.source === 'ranked');
+  filter === 'all' ||
+  (filter === 'ranked' ? e.source === 'ranked' && e.friends !== true : e.source === 'practice');
 
 /** Both lists, newest first (equal times: ranked first, then by id), in the filter, the first `count`. */
 export function mergeEntries(
