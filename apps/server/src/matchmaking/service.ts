@@ -36,9 +36,11 @@ import type { StealthBotSeat } from '../stealth/seat';
 import {
   DEFAULT_MATCHER,
   type MatcherConfig,
+  lastMet,
   MatchQueue,
   type NewTicket,
   type OpponentRecord,
+  queueStanding,
   rangeOf,
   type Ticket,
 } from './matcher';
@@ -241,6 +243,7 @@ interface Match {
   /** In seat order, with the tickets they were matched with. */
   members: Entry[];
   tickets: Ticket[];
+  /** Some pair of them met before in this game type (each player's own `found.rematch`: rematchFor). */
   rematch: boolean;
   matchedAt: number;
   state: MatchState;
@@ -427,7 +430,7 @@ export class MatchmakingService implements RankedRooms {
     for (const queue of this.queues.values()) {
       if (queue.size === 0) continue;
       const { groups, timedOut } = queue.tick(now);
-      for (const group of groups) this.found(queue, group.tickets, group.rematch, now);
+      for (const group of groups) this.found(queue, group.tickets, group.rematch, now, group.recentPair);
       for (const ticket of timedOut) this.timedOut(queue, ticket, now);
       // The matched and the timed out are out of the queue by now: no `searching` after their `found`.
       for (const ticket of queue.list()) {
@@ -470,8 +473,28 @@ export class MatchmakingService implements RankedRooms {
   private search(entry: Entry, ticket: NewTicket, requeued = false, now = this.now()): void {
     // One instant for the ticket and its message: a new search's time starts at 0, its timeout is whole.
     this.requeue(entry, ticket, now);
+    this.logSearch(entry);
     this.sendSearching(entry, requeued, now);
     this.ensureTicking();
+  }
+
+  /**
+   * One line when a search starts (or "keep searching" does), for live checks in the server's logs: ids and
+   * numbers only, never names, and never per round. "recent r of n queued": of the n others in the queue this
+   * player could meet in this search (not blocked, within both maximum ranges), r are recent opponents
+   * (matcher.ts rule 2); the rest of the queue is out of reach or blocked.
+   */
+  private logSearch(entry: Entry): void {
+    const t = entry.ticket;
+    if (t === null) return;
+    const queue = this.queueFor(entry);
+    const s = queueStanding(t, queue.list(), queue.config);
+    const elsewhere = s.others - s.available;
+    this.deps.log.info(
+      `[matchmaking] ${entry.userId} ${t.extended ? 'keeps searching' : 'searching'} ${entry.queueKey} ` +
+        `(rating ${t.rating}, recent ${s.recent} of ${s.available} queued` +
+        `${elsewhere > 0 ? `, ${elsewhere} more out of reach or blocked` : ''})`,
+    );
   }
 
   /** Into the queue without a word yet (search() sends the `searching`). */
@@ -647,7 +670,17 @@ export class MatchmakingService implements RankedRooms {
 
   // -- a match -------------------------------------------------------------------------------------------
 
-  private found(queue: MatchQueue, tickets: Ticket[], rematch: boolean, now: number): void {
+  /**
+   * `recentPair`: the matcher let recent opponents in (rule 2's pass 2: none of them could have a game without
+   * a repeat); the log says so.
+   */
+  private found(
+    queue: MatchQueue,
+    tickets: Ticket[],
+    rematch: boolean,
+    now: number,
+    recentPair = false,
+  ): void {
     const members = tickets.map((t) => this.entries.get(t.userId)!);
     const spec = members[0]!.spec;
     const match: Match = {
@@ -671,7 +704,12 @@ export class MatchmakingService implements RankedRooms {
     const who = tickets.map(
       (t) => `${t.userId} (${t.rating}, ${((now - t.searchStart) / 1000).toFixed(1)} s)`,
     );
-    this.deps.log.info(`[matchmaking] ${queue.key} match ${match.id}: ${who.join(' vs ')}`);
+    const note = recentPair
+      ? ' (rematch: recent opponents, nobody new to meet)'
+      : rematch
+        ? ' (rematch)'
+        : '';
+    this.deps.log.info(`[matchmaking] ${queue.key} match ${match.id}: ${who.join(' vs ')}${note}`);
     this.open(match).catch((error: unknown) => {
       this.deps.log.error(`[matchmaking] match ${match.id} failed to open`, error);
       this.fail(match, 'error', []);
@@ -712,13 +750,26 @@ export class MatchmakingService implements RankedRooms {
         queueKey: match.queueKey,
         playerId: m.userId,
         players,
-        rematch: match.rematch,
+        rematch: this.rematchFor(match, match.members.indexOf(m)),
         reservation: opened.reservations.get(m.userId)!,
         readyBy: match.readyBy,
         serverTime: now,
       });
     // A persona the room seated before `found` went out: in, as a person who connected first would be.
     if (match.ready.size > 0) this.sendReady(match);
+  }
+
+  /**
+   * `found`'s `rematch` for the player in seat `seat`: they met one of the others before in this game type.
+   * At a table of two it is the match's own flag (the matcher's for the pair, or the stealth pick's). At a
+   * table of 3–4 it is the player's own: a group may form with one pair who met (matcher.ts rule 2's pass 2,
+   * or after the 80% reset), and the others at the table, who never met any of them, must not be told "you
+   * played each other recently" (review of 23.10.2026: in Moshe's four-device test only two had met).
+   */
+  private rematchFor(match: Match, seat: number): boolean {
+    if (match.tickets.length <= 2) return match.rematch;
+    const mine = match.tickets[seat]!;
+    return match.tickets.some((other) => other !== mine && lastMet(mine, other) !== null);
   }
 
   private profile(entry: Entry, ticket: Ticket): MatchPlayer {

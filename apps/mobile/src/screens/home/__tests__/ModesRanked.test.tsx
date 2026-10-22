@@ -250,8 +250,51 @@ describe('ranked 3 and 4 players (stage 10)', () => {
   });
 });
 
+/** The friends settings as the app has them; a test that flips one gets them back after it. */
+const FRIENDS_DEFAULTS = { ...FRIENDS_UI };
+
 describe('a suspended account (spec §3.5)', () => {
-  it('dims "עם חברים" too (1.0.4), with "החשבון מושעה"', async () => {
+  afterEach(() => {
+    Object.assign(FRIENDS_UI, FRIENDS_DEFAULTS);
+  });
+
+  it('the friends footer stays, its two buttons disabled, with "החשבון מושעה" over them [D100]', async () => {
+    useAuth.setState({ me: { ...ME_ACCOUNT, suspended: true } });
+    const app = await renderApp('/modes', routes);
+    const footer = screen.getByTestId('modes-group-friends');
+    expect(within(screen.getByTestId('modes-scroll')).queryByTestId('modes-group-friends')).toBeNull();
+    const create = screen.getByTestId('modes-friends-create');
+    const join = screen.getByTestId('modes-friends-join');
+    for (const button of [create, join]) {
+      expect(button).toHaveProp('accessibilityState', expect.objectContaining({ disabled: true }));
+      expect(button.props.accessibilityHint).toBeUndefined();
+    }
+    expect(create).toHaveProp('accessibilityLabel', 'צור חדר, לא זמין: החשבון מושעה');
+    expect(join).toHaveProp('accessibilityLabel', 'הצטרף עם קוד, לא זמין: החשבון מושעה');
+    // The short note over the buttons, with the lock, as on the ranked rows.
+    const note = within(footer).getByTestId('suspended-friends');
+    expect(note).toHaveTextContent('החשבון מושעה');
+    expect(within(note).getByTestId('icon-lock', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByTestId('suspended-ranked2')).toHaveTextContent('החשבון מושעה');
+    // A press does nothing.
+    await fireEvent.press(create);
+    await fireEvent.press(join);
+    expect(app.pathname()).toBe('/modes');
+
+    // English (the screen on show hears the change: inside act).
+    await act(async () => {
+      await i18n.changeLanguage('en');
+    });
+    await renderApp('/modes', routes);
+    expect(screen.getByTestId('suspended-friends')).toHaveTextContent('Account suspended');
+    expect(screen.getByTestId('modes-friends-create')).toHaveProp(
+      'accessibilityLabel',
+      expect.stringMatching(/^New room, /),
+    );
+  });
+
+  it('the setting \'list\': "עם חברים" in the list is dimmed (1.0.4), with "החשבון מושעה" as its note', async () => {
+    FRIENDS_UI.modesPlacement = 'list';
     useAuth.setState({ me: { ...ME_ACCOUNT, suspended: true } });
     await renderApp('/modes', routes);
     const create = screen.getByTestId('modes-friends-create');
@@ -259,6 +302,7 @@ describe('a suspended account (spec §3.5)', () => {
     expect(create).toHaveProp('accessibilityLabel', 'צור חדר, לא זמין: החשבון מושעה');
     expect(screen.getByTestId('modes-friends-join')).toHaveProp('accessibilityState', { disabled: true });
     expect(within(screen.getByTestId('modes-group-friends')).getByText('החשבון מושעה')).toBeTruthy();
+    expect(screen.queryByTestId('suspended-friends')).toBeNull();
   });
 });
 
@@ -287,14 +331,13 @@ describe('no connection before a game (spec §16.1)', () => {
       expect(screen.getByTestId(`mode-${k}`)).toHaveProp('accessibilityState', { disabled: true });
       expect(screen.getByTestId(`offline-${k}`)).toHaveTextContent('דורש חיבור');
     }
-    // "עם חברים" needs the connection too (1.0.4): dimmed, with the ranked group's note.
-    for (const id of ['modes-friends-create', 'modes-friends-join'])
-      expect(screen.getByTestId(id)).toHaveProp('accessibilityState', { disabled: true });
-    expect(screen.getByTestId('modes-friends-create')).toHaveProp(
-      'accessibilityLabel',
-      'צור חדר, דורש חיבור לאינטרנט',
-    );
-    expect(screen.getAllByText('זמין כשיש חיבור')).toHaveLength(2);
+    // A room needs the connection too: the friends footer gives the bottom to "עבור לאימון" and "בדוק שוב"
+    // [D100] (the banner says why).
+    expect(screen.queryByTestId('modes-group-friends')).toBeNull();
+    expect(screen.queryByTestId('modes-friends-create')).toBeNull();
+    expect(screen.queryByTestId('modes-friends-join')).toBeNull();
+    expect(screen.getByTestId('offline-actions')).toBeOnTheScreen();
+    expect(screen.getAllByText('זמין כשיש חיבור')).toHaveLength(1);
     expect(screen.getByText('זמין גם בלי אינטרנט')).toBeOnTheScreen();
     expect(screen.getByTestId('mode-solo')).toHaveProp('accessibilityState', { disabled: false });
     expect(screen.getByTestId('mode-solo')).toHaveProp(
@@ -314,9 +357,45 @@ describe('no connection before a game (spec §16.1)', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'בדוק שוב' }));
     await waitFor(() => expect(screen.queryByTestId('offline-banner')).not.toBeOnTheScreen());
     expect(screen.getByTestId('mode-ranked2')).toHaveProp('accessibilityState', { disabled: false });
-    expect(screen.getByTestId('modes-friends-create')).toHaveProp('accessibilityState', { disabled: false });
+    // The friends footer is back, in the offline bottom's place.
+    expect(screen.queryByTestId('offline-actions')).toBeNull();
+    expect(screen.getByTestId('modes-friends-create')).toHaveProp(
+      'accessibilityState',
+      expect.objectContaining({ disabled: false }),
+    );
+    expect(screen.getByTestId('modes-friends-join')).toHaveProp(
+      'accessibilityState',
+      expect.objectContaining({ disabled: false }),
+    );
     expect(screen.getByTestId('modes-live')).toHaveTextContent('החיבור חזר. משחקים מדורגים זמינים.');
     expect(app.pathname()).toBe('/modes');
+  });
+
+  it('the setting \'list\': "עם חברים" stays in the list, dimmed, with the ranked group’s note (1.0.4)', async () => {
+    FRIENDS_UI.modesPlacement = 'list';
+    let online = false;
+    setHealthCheck(async () => online);
+    try {
+      await renderApp('/modes', routes);
+      await screen.findByTestId('offline-banner');
+      for (const id of ['modes-friends-create', 'modes-friends-join'])
+        expect(screen.getByTestId(id)).toHaveProp('accessibilityState', { disabled: true });
+      expect(screen.getByTestId('modes-friends-create')).toHaveProp(
+        'accessibilityLabel',
+        'צור חדר, דורש חיבור לאינטרנט',
+      );
+      expect(screen.getAllByText('זמין כשיש חיבור')).toHaveLength(2);
+      expect(screen.getByTestId('offline-actions')).toBeOnTheScreen();
+
+      online = true;
+      await fireEvent.press(screen.getByRole('button', { name: 'בדוק שוב' }));
+      await waitFor(() => expect(screen.queryByTestId('offline-banner')).not.toBeOnTheScreen());
+      expect(screen.getByTestId('modes-friends-create')).toHaveProp('accessibilityState', {
+        disabled: false,
+      });
+    } finally {
+      Object.assign(FRIENDS_UI, FRIENDS_DEFAULTS);
+    }
   });
 
   it('"עבור לאימון" opens a solo practice’s game type', async () => {
@@ -359,8 +438,9 @@ describe('no connection before a game (spec §16.1)', () => {
     expect(screen.getByTestId('offline-banner')).toHaveAccessibleName(
       "No internet connection. Ranked games aren't available",
     );
-    // The ranked group's note, and the friends group's (it needs the connection too).
-    expect(screen.getAllByText('Available when online')).toHaveLength(2);
+    // The ranked group's note; the friends footer is not there (the offline bottom is) [D100].
+    expect(screen.getAllByText('Available when online')).toHaveLength(1);
+    expect(screen.queryByTestId('modes-group-friends')).toBeNull();
     expect(screen.getByTestId('offline-ranked2')).toHaveTextContent('Needs connection');
     expect(screen.getByRole('button', { name: 'Go to practice' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Check again' })).toBeOnTheScreen();

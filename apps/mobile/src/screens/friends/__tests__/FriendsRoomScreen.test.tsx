@@ -87,10 +87,12 @@ describe('the friends room (Hebrew, friends-room.md §3.2)', () => {
     expect(screen.getByRole('header', { name: 'חדר עם חברים' })).toBeOnTheScreen();
     expect(screen.getByText('מהיר · 3 מתוך 4')).toBeOnTheScreen();
     const code = screen.getByTestId('friends-code');
-    expect(code).toHaveTextContent('123 456');
+    // An LRI…PDI isolate: Android ignores `writingDirection` (iOS only), and the bare "123 456" in the RTL
+    // layout showed as "456 123" on the phone (1.0.4).
+    expect(code).toHaveTextContent(`${LRI}123 456${PDI}`);
     expect(code).toHaveProp('selectable', true);
     expect(code).toHaveAccessibleName('קוד החדר: 1 2 3 4 5 6');
-    expect(styleOf(code)).toMatchObject({ writingDirection: 'ltr' });
+    expect(styleOf(code)).toMatchObject({ writingDirection: 'ltr', textAlign: 'center' });
     expect(screen.getByText('שחקנים · 3 מתוך 4')).toBeOnTheScreen();
     expect(screen.getByRole('radio', { name: 'מהיר' })).toHaveProp(
       'accessibilityState',
@@ -163,7 +165,7 @@ describe('the friends room (Hebrew, friends-room.md §3.2)', () => {
     FRIENDS_UI.shareBy = 'host';
     await render(<FriendsRoomScreen {...props(inLobby([MOSHE, DANA], 'p-dana'))} />);
     expect(screen.queryByRole('button', { name: 'שתף קישור' })).not.toBeOnTheScreen();
-    expect(screen.getByTestId('friends-code')).toHaveTextContent('123 456');
+    expect(screen.getByTestId('friends-code')).toHaveTextContent(`${LRI}123 456${PDI}`);
   });
 
   it('the host’s controls are the host’s alone: start, kick, the game type', async () => {
@@ -386,6 +388,8 @@ describe('the friends room (English)', () => {
     expect(screen.getByRole('header', { name: 'Room with friends' })).toBeOnTheScreen();
     expect(screen.getByText('Fast · 3 of 4')).toBeOnTheScreen();
     expect(screen.getByTestId('friends-code')).toHaveAccessibleName('Room code: 1 2 3 4 5 6');
+    // The same isolate in English: harmless in an LTR line, and the code never depends on the language.
+    expect(screen.getByTestId('friends-code')).toHaveTextContent(`${LRI}123 456${PDI}`);
     expect(screen.getByRole('button', { name: 'Start game · 2 players' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Share link' })).toBeOnTheScreen();
     expect(screen.getByTestId('friends-seat-2-who')).toHaveAccessibleName('Avi, Not in the room right now');

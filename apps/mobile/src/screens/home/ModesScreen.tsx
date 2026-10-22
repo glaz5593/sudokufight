@@ -13,6 +13,7 @@ import { useAuth } from '../../auth/authStore';
 import { Icon, type IconName } from '../../components/Icon';
 import { LevelTile } from '../../components/levels/LevelTile';
 import { Avatar, paletteAt, SeatGlyph } from '../../components/player';
+import { Button, type ButtonSize } from '../../components/ui/Button';
 import { FRIENDS_UI } from '../../config/friends';
 import type { LevelsSummary } from '../../levels/levelsRepo';
 import { refreshLevels, useLevelsSummary } from '../../levels/levelsStore';
@@ -46,19 +47,23 @@ import { Chip, GUTTER, ScreenHeader, SectionLabel } from './parts';
  * (2 players since stage 9, 3 and 4 since stage 10) opens the game type of a ranked game, then the search. An
  * option this build has not opened (homeModel AVAILABLE_MODES) says "בקרוב".
  *
- * 1.0.4 (friends-room.md §2, D80a, Moshe's yes of 2026-10-20): between the ranked tables and the practices, the
- * group "עם חברים", one row of two buttons, "צור חדר" | "הצטרף עם קוד" (FriendsGroup). To fit it, a ranked row no
- * longer shows my rating ("דירוג 1287 · מהיר": the next screen does; FRIENDS_UI.rankedChip brings it back, in
- * its queue's rating key, spec §11.1) and the footnote goes; the budget test keeps it all on a 360 × 780 phone,
- * in Hebrew and English.
+ * Playing with friends (1.0.4, friends-room.md §2, D80a, Moshe's yes of 2026-10-20): two buttons, "צור חדר" |
+ * "הצטרף עם קוד". Since Moshe's device test of 2026-10-23 [D100] they are pinned under the list, always in view
+ * without scrolling, and drawn as the app's own buttons (FriendsFooter: the primary and the secondary, as every
+ * other bottom of a screen); FRIENDS_UI.modesPlacement 'list' puts back 1.0.4's group "עם חברים" between the
+ * ranked tables and the practices (FriendsGroup). Either way, a ranked row no longer shows my rating ("דירוג
+ * 1287 · מהיר": the next screen does; FRIENDS_UI.rankedChip brings it back, in its queue's rating key, spec
+ * §11.1) and the footnote goes; the budget test keeps it all on a 360 × 780 phone, in Hebrew and English.
  *
  * No connection (spec §16.1; the Offline board): the app asks the server (GET /health, net/connectivity.ts)
  * when the screen opens. Without an answer the ranked cards are dimmed with "דורש חיבור", the banner "אין
  * חיבור לאינטרנט" shows, the practices say "זמין אופליין", and the bottom offers "עבור לאימון" and "בדוק
- * שוב" ("עדיין אין חיבור · ניסיון 2" after another miss); meanwhile it checks again in the background, and
- * the ranked cards come back with the connection.
+ * שוב" ("עדיין אין חיבור · ניסיון 2" after another miss), in the friends footer's place (a room needs the
+ * connection, and the banner says so); meanwhile it checks again in the background, and the ranked cards and
+ * the friends buttons come back with the connection.
  *
- * A suspended account (spec §3.5): the ranked cards are dimmed with "החשבון מושעה", and the group's note says why.
+ * A suspended account (spec §3.5): the ranked cards are dimmed with "החשבון מושעה", and the friends buttons are
+ * disabled, with the same words over them (or, in the list, as the group's note).
  */
 export function ModesScreen() {
   const { t } = useTranslation('home');
@@ -102,7 +107,11 @@ export function ModesScreen() {
     router.push({ pathname: '/game-type', params: { mode: 'solo' } });
   };
 
-  // "עם חברים" (1.0.4, D80a): the room opens at once, with my last game type [D82]; or the code's six boxes.
+  // Playing with friends (1.0.4, D80a): the room opens at once, with my last game type [D82]; or the code's six
+  // boxes. Where the buttons sit is a setting [D100]: under the list (offline, the offline bottom is there
+  // instead), or a group in it.
+  const friends = FRIENDS_UI.modesGroup ? FRIENDS_UI.modesPlacement : null;
+  const friendsFooter = friends === 'footer' && !offline;
   const createRoom = () => {
     if (offline || suspended) return;
     cue('primaryPress');
@@ -124,10 +133,14 @@ export function ModesScreen() {
       />
       <ScrollView
         testID="modes-scroll"
-        contentContainerStyle={[styles.content, { paddingBottom: (offline ? 0 : bottom) + CONTENT_BOTTOM }]}
+        contentContainerStyle={[
+          styles.content,
+          // Over a bottom of the screen's own (the friends footer, or offline's), which takes the inset.
+          { paddingBottom: (offline || friendsFooter ? 0 : bottom) + CONTENT_BOTTOM },
+        ]}
       >
         {offline ? <OfflineBanner checking={connectivity.checking} /> : null}
-        {modesSections(FRIENDS_UI.modesGroup).map((group) =>
+        {modesSections(friends === 'list').map((group) =>
           group === 'friends' ? (
             <FriendsGroup
               key={group}
@@ -150,8 +163,9 @@ export function ModesScreen() {
             />
           ),
         )}
-        {/* The friends group takes the footnote's place (friends-room.md §2: it repeats the rows' chips). */}
-        {offline || FRIENDS_UI.modesGroup ? null : <Text style={styles.footnote}>{t('modes.footnote')}</Text>}
+        {/* The friends buttons take the footnote's place, in the list or under it (friends-room.md §2: it
+            repeats the rows' chips). */}
+        {offline || friends !== null ? null : <Text style={styles.footnote}>{t('modes.footnote')}</Text>}
       </ScrollView>
       {offline ? (
         <OfflineActions
@@ -161,6 +175,8 @@ export function ModesScreen() {
           onCheck={() => void connectivity.check()}
           bottom={bottom}
         />
+      ) : friendsFooter ? (
+        <FriendsFooter suspended={suspended} onCreate={createRoom} onJoin={joinRoom} bottom={bottom} />
       ) : null}
       <Announcer line={announcement} testID="modes-live" />
     </View>
@@ -248,10 +264,75 @@ function Group({
 }
 
 /**
- * "עם חברים" (1.0.4, D80a; friends-room.md §2): one row of two buttons between the ranked tables and the
- * practices: "צור חדר" (the room opens at once, the accent's) and "הצטרף עם קוד" (the quieter one: most friends
- * come in by a link). Its name is D80b's (FRIENDS_UI.groupName). No connection, or a suspended account: dimmed,
- * as the ranked rows, with the same note.
+ * The friends buttons pinned under the list [D100] (Moshe's device test of 2026-10-23: in the middle of the
+ * screen, drawn unlike any other button, they looked odd): the bottom every screen with an action has (the
+ * hairline rule, the screen's ground, the gutters, the inset under it; as GameType's and OfflineActions), with
+ * two of the app's buttons side by side, each half the row: "צור חדר" the one primary (the room opens at once)
+ * and first in reading order, on the right in Hebrew; "הצטרף עם קוד" the secondary (most friends come in by a
+ * link). Their size is the pair's, 'modal' (48: ConfirmModal's dialog, the room's "שתף קישור" | "העתק קוד"):
+ * at 'lg' or 'md' the primary's words are too large for half of a 360 dp row. No caption: the buttons say what
+ * they do, and the rows above keep their room. Not shown without a connection (the offline bottom is there).
+ * A suspended account (spec §3.5): both disabled, "החשבון מושעה" over them, and each label says why.
+ */
+function FriendsFooter({
+  suspended,
+  onCreate,
+  onJoin,
+  bottom,
+}: {
+  suspended: boolean;
+  onCreate: () => void;
+  onJoin: () => void;
+  /** The bottom safe area. */
+  bottom: number;
+}) {
+  const { t } = useTranslation('home');
+  const why = suspended ? t('moderation:suspended.chipLabel') : null;
+  const spoken = (label: string) => (why ? [label, why].join(t('player:listSep')) : label);
+  const create = t('modes.friends.create');
+  const join = t('modes.friends.join');
+  return (
+    <View style={[styles.footer, { paddingBottom: bottom + space[8] }]} testID="modes-group-friends">
+      {suspended ? (
+        <View style={styles.footerNote} testID="suspended-friends">
+          <Icon name="lock" size={space[7]} color={color.textMuted} />
+          <Text style={styles.offlineChipText} numberOfLines={1}>
+            {t('moderation:suspended.chip')}
+          </Text>
+        </View>
+      ) : null}
+      <View style={styles.footerRow}>
+        <Button
+          label={create}
+          size={FOOTER_BUTTON}
+          disabled={suspended}
+          onPress={onCreate}
+          accessibilityLabel={spoken(create)}
+          accessibilityHint={suspended ? undefined : t('modes.friends.createHint')}
+          style={styles.half}
+          testID="modes-friends-create"
+        />
+        <Button
+          label={join}
+          variant="secondary"
+          size={FOOTER_BUTTON}
+          disabled={suspended}
+          onPress={onJoin}
+          accessibilityLabel={spoken(join)}
+          accessibilityHint={suspended ? undefined : t('modes.friends.joinHint')}
+          style={styles.half}
+          testID="modes-friends-join"
+        />
+      </View>
+    </View>
+  );
+}
+
+/**
+ * "עם חברים" in the list (1.0.4, D80a; friends-room.md §2; FRIENDS_UI.modesPlacement 'list'): one row of two
+ * buttons between the ranked tables and the practices: "צור חדר" (the room opens at once, the accent's) and
+ * "הצטרף עם קוד" (the quieter one: most friends come in by a link). Its name is D80b's (FRIENDS_UI.groupName).
+ * No connection, or a suspended account: dimmed, as the ranked rows, with the same note.
  */
 function FriendsGroup({
   offline,
@@ -574,8 +655,10 @@ const BOT_COLOR_INDEX = 1;
 const BOT_PALETTE = paletteAt(BOT_COLOR_INDEX);
 /** The robot in the bot's frame: the Modes board's 26 in a 40 box, scaled to the 44 frame (no token). */
 const BOT_GLYPH = 28;
-/** Under the last row, above the navigation bar's inset. */
+/** Under the last row: above the navigation bar's inset, or above the screen's own bottom (it takes the inset). */
 const CONTENT_BOTTOM = space[8];
+/** The friends footer's two buttons, side by side: the pair's size (see FriendsFooter). */
+const FOOTER_BUTTON: ButtonSize = 'modal';
 /** The Modes board's chips (22). */
 const CHIP_HEIGHT = 22;
 /** Offline: the ranked cards stay readable but plainly out of reach. */
@@ -636,8 +719,20 @@ const styles = StyleSheet.create({
   tagline: { ...text('caption'), color: color.textMuted },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space[3], marginTop: space[1] },
   footnote: { ...text('caption'), color: color.textMuted, textAlign: 'center' },
-  // "עם חברים": two buttons a row, each half of it, a touch target high (the whole group fits the 360 × 780
-  // budget of ModesAndGameType.test).
+  // The friends footer [D100]: as GameType's bottom and OfflineActions (its inset added where it is drawn).
+  footer: {
+    paddingHorizontal: GUTTER.screen,
+    paddingTop: space[6],
+    gap: space[3],
+    borderTopWidth: tokens.border.hairline,
+    borderTopColor: color.border,
+    backgroundColor: color.bg,
+  },
+  footerNote: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space[2] },
+  footerRow: { flexDirection: 'row', gap: space[6] },
+  half: { flex: 1 },
+  // "עם חברים" in the list ('list'): two buttons a row, each half of it, a touch target high (the whole group
+  // fits the 360 × 780 budget of ModesAndGameType.test).
   friendsRow: { flexDirection: 'row', gap: space[6] },
   friendsButton: {
     flex: 1,

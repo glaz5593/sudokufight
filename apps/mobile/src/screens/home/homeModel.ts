@@ -53,9 +53,10 @@ export const MODE_OPTIONS: readonly ModeOption[] = [
 export const MODE_GROUPS: readonly ModeGroup[] = ['ranked', 'practice'];
 
 /**
- * The sections of "משחק חדש", top to bottom: the option groups, and between them "עם חברים" (1.0.4, D80a): one
- * row of two buttons, "צור חדר" | "הצטרף עם קוד", not options of its own (friends-room.md §2). Without it
- * (config/friends.ts FRIENDS_UI.modesGroup off) the screen is as in 1.0.3.
+ * The sections of the list of "משחק חדש", top to bottom: the option groups, and between them, when the friends
+ * buttons sit in the list (config/friends.ts FRIENDS_UI.modesPlacement 'list', 1.0.4's D80a), "עם חברים": one
+ * row of two buttons, "צור חדר" | "הצטרף עם קוד", not options of its own (friends-room.md §2). Without it (the
+ * buttons pinned under the list, D100, or FRIENDS_UI.modesGroup off) the list is the two groups, as in 1.0.3.
  */
 export type ModesSection = ModeGroup | 'friends';
 

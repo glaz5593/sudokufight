@@ -10,6 +10,7 @@ import RoomByCodeRoute from '../../../../app/room/[code]';
 import { RoomsApiError } from '../../../api/roomsApi';
 import { useAuth } from '../../../auth/authStore';
 import { rememberRoom, usePendingInvite } from '../../../auth/pendingInvite';
+import { ltr } from '../../../components/player/format';
 import { useGameStore } from '../../../game/gameStore';
 import { openPracticeRepo } from '../../../game/practiceRepo';
 import { practiceStorageOrNull } from '../../../game/storage';
@@ -92,7 +93,7 @@ describe('the friends routes', () => {
     await serve();
     // POST /v1/rooms with my last game type [D82].
     expect(api.calls).toEqual([{ kind: 'create', body: expect.objectContaining({ gameType: 'hard' }) }]);
-    await waitFor(() => expect(screen.getByTestId('friends-code')).toHaveTextContent('123 456'));
+    await waitFor(() => expect(screen.getByTestId('friends-code')).toHaveTextContent(ltr('123 456')));
     expect(screen.getByTestId('friends-seat-0-who')).toHaveAccessibleName(
       'Moshe, אני, מארח, ישראל, דירוג 1287',
     );
@@ -196,7 +197,7 @@ describe('the friends routes', () => {
       expect.objectContaining({ code: FCODE }),
     ]);
     await serve();
-    await waitFor(() => expect(screen.getByTestId('friends-code')).toHaveTextContent('123 456'));
+    await waitFor(() => expect(screen.getByTestId('friends-code')).toHaveTextContent(ltr('123 456')));
   });
 
   it('a link (/room/123456) goes straight in [D88]; a room that is not there is said, with the way on', async () => {

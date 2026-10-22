@@ -151,8 +151,9 @@ describe('01-SPEC.md', () => {
     expect(spec).not.toMatch(/D64[^\n]{0,40}החלטת משה/);
   });
 
-  it('§24: the rows run D1 … D99 in order, with no gap, so D48–D65, D66–D79 and D80–D99 sit together', () => {
-    expect(decisions.map((cells) => cells[0])).toEqual(Array.from({ length: 99 }, (_, i) => `D${i + 1}`));
+  it('§24: the rows run D1 … D100 in order, with no gap, so D48–D65, D66–D79 and D80–D99 sit together', () => {
+    // D100 (23.10.2026): where "צור חדר" and "הצטרף עם קוד" sit on "משחק חדש", after Moshe's device test of 1.0.4.
+    expect(decisions.map((cells) => cells[0])).toEqual(Array.from({ length: 100 }, (_, i) => `D${i + 1}`));
   });
 
   it.each(LEVEL_DECISIONS)('§24 %s: ✓ only where Moshe decided, ☐ where it is a default', (id) => {

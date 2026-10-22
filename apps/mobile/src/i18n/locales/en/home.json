@@ -105,7 +105,7 @@
       "label": "Ranked · 4 players"
     },
     "friends": {
-      "create": "Create room",
+      "create": "New room",
       "createHint": "Opens a waiting room with a code to send your friends",
       "join": "Join with code",
       "joinHint": "Type the 6 digits you got"

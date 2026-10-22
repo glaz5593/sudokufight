@@ -1,9 +1,5 @@
 import { GAME_TYPES, type GameType, type PlayerId } from '@sudoku-fight/engine';
-import {
-  formatFriendCode,
-  type FriendsLobbyError,
-  type FriendsRoomClosedReason,
-} from '@sudoku-fight/protocol';
+import type { FriendsLobbyError, FriendsRoomClosedReason } from '@sudoku-fight/protocol';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -374,13 +370,15 @@ function Lobby({
 
           <View style={styles.codeCard}>
             <Text style={styles.codeTitle}>{t('code.title')}</Text>
+            {/* An LRI…PDI isolate, not the style alone: Android ignores `writingDirection`, and in the RTL
+                layout "123 456" (two numbers and a space, no letter) showed as "456 123". */}
             <Text
               selectable
               accessibilityLabel={t('code.label', { spelled: spellDigits(lobby.code) })}
               style={styles.code}
               testID="friends-code"
             >
-              {formatFriendCode(lobby.code)}
+              {isolateCode(lobby.code)}
             </Text>
             <View style={styles.codeActions}>
               {canShare ? (
@@ -567,7 +565,8 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface,
   },
   codeTitle: { ...text('label'), color: color.textMuted },
-  // The code is the hero: Teko, always left to right ("123 456"), as the dev rooms' (LobbyView).
+  // The code is the hero: Teko, always left to right ("123 456"), as the dev rooms' (LobbyView). The text is
+  // isolated (isolateCode) for Android; `writingDirection` sets the paragraph's direction on iOS only.
   code: {
     ...text('scoreXL'),
     color: color.text,

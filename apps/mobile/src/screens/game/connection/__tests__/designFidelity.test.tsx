@@ -171,6 +171,18 @@ describe('ScoreLine', () => {
     expect(screen.queryByTestId('line-bar')).not.toBeOnTheScreen();
     expect(screen.queryByTestId('line-lead')).not.toBeOnTheScreen();
   });
+
+  it('isolates a negative score left to right, so Android’s RTL line keeps the minus before it', async () => {
+    // Android ignores `writingDirection`: a bare "−2" in the Hebrew layout would show as "2−" (CLAUDE.md).
+    await render(<ScoreLine {...duel(-2, -0.5)} testID="line" />);
+    expect(screen.getByTestId('line-my-score')).toHaveTextContent('⁦−2⁩');
+    expect(screen.getByTestId('line-their-score')).toHaveTextContent('⁦−0.5⁩');
+    await screen.unmount();
+    // A score of 0 or more needs no isolate.
+    await render(<ScoreLine {...duel(55, 39.5)} testID="line" />);
+    expect(screen.getByTestId('line-my-score')).toHaveTextContent('55');
+    expect(screen.getByTestId('line-their-score')).toHaveTextContent('39.5');
+  });
 });
 
 const player = (over: Partial<PlayerView>): PlayerView =>

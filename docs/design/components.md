@@ -812,7 +812,7 @@ Render each of these in Hebrew and in English. The board and keypad must look id
 - **Overlays:** the interference picker (§13: 2P target line and 3–4P route, price row, the 3 × 2 grid with a locked and a blocked kind, no scroll at 360 × 640) · in-game confirm modal (surrender and practice) · centred dialog · toasts (all 5) · interference banner (and the generic one for an unknown kind) · the board dim (§15.3) · scramble, ink and the keypad shuffle (§15.4).
 - **Navigation:** bottom nav with each tab active.
 - **Staged practice (§19, version 1.0.2):** the new-game row "אימון בשלבים" (new player and returning) · map nodes × {played 0–3 stars, current, locked, boss with crown and bot} · chapter header · gate plate × {locked 17/20, enough stars but the boss unplayed 22/20, open} · the docked bottom panel · star row (12 / 14 / 16 / 44) · star meter × {time, count, gap} · the "+5 ש׳" chip · region frame and dimmed cells · tap target, red X, correction, "mine" digit with ● · race freeze layer · RaceTo30 bars and the gap meter · chain links · point chips and "שווה 6" · ready view · resume countdown over the covered board (D65) · result × {0, 1, 3 stars, vs bot} · gate sheet · chapter unlocked · how-to-play frame · the exit dialog · the player-card line · **1.0.3:** the region look (in, out, the frame with its keylines, the spotlight) on a box, a row and a column · the answer ring · `MiniRegion` (27 and 72) · the ready view per kind · the fill row and fill column HUD · the boss intro, band, arena corners and crowned bot avatar · the boss result × {won, lost} · the boss node with arena corners beside a current node · the puzzle × {rest, held, target, over a fixed box, tap-selected, solved}. In Hebrew and English: English says "Stage", never "Level", for a stage.
-- **Playing with friends (§20, version 1.0.4):** the "עם חברים" group on the Modes screen × {online, offline, suspended} and the ranked rows without their chip · the code card × {code, copied} · the game-type picker × {host, guest} · seat rows × {me (P1 ●), host with the crown, a guest with the host's X, away, empty and waiting} · the start box × {1 connected (off, with the hint), 2 connected, someone away} and the guest's "מחכים ש־MosheG יתחיל" · the six code boxes × {empty, half, full, joining, refused} with "הדבק" · the room's countdown · the closed and failed states · the "משחק עם חברים · בלי דירוג" label on a result and a history card. In Hebrew and English: the code and the boxes are LTR in both.
+- **Playing with friends (§20, version 1.0.4):** the friends footer on the Modes screen × {online, suspended; offline: none, the offline bottom} (D100) and the ranked rows without their chip · the code card × {code, copied} · the game-type picker × {host, guest} · seat rows × {me (P1 ●), host with the crown, a guest with the host's X, away, empty and waiting} · the start box × {1 connected (off, with the hint), 2 connected, someone away} and the guest's "מחכים ש־MosheG יתחיל" · the six code boxes × {empty, half, full, joining, refused} with "הדבק" · the room's countdown · the closed and failed states · the "משחק עם חברים · בלי דירוג" label on a result and a history card. In Hebrew and English: the code and the boxes are LTR in both.
 - **Reduced motion:** toggle it and check every row above again.
 
 ---
@@ -1085,18 +1085,29 @@ Hebrew too, like the board and the keypad · every string through `t()` in the `
 Hebrew and English · one gold action per screen · touch targets ≥ 44 · the screens only draw what the server says: who the
 host is, who is away, whether "התחל" is on, and the code itself all come from `lobby` (`friendsModel.ts`).
 
-### 20.1 New-game group "עם חברים" [no board; D80a]
-- **Between the ranked group and the practice group** of the Modes screen (§19.1's screen). Its label row is the groups'
-  (`SectionLabel`: an icon, the title "עם חברים", a 1 dp rule, the note "חדר פרטי · עד 4 · בלי דירוג"). Title setting:
-  `FRIENDS_UI.groupName` (`'short'` "עם חברים", or `'moshe'` "חברים אמיתיים בזמן אמת", D80b).
-- **One row of two buttons**, `flex: 1` each, 44 min height, radius 14 (`radius.card`), `color.surface`, 1 dp border, gap 12:
-  **"צור חדר"** (`color.accent` border and label: the group's action) and **"הצטרף עם קוד"** (`color.border`, `color.text`).
-  Hints: "פותח חדר המתנה עם קוד ששולחים לחברים", "מקלידים את 6 הספרות שקיבלת".
-- **Offline / suspended:** both buttons dimmed and disabled; the note becomes the ranked rows' ("דורש חיבור", "החשבון
-  מושעה"), and each button's label says why.
+### 20.1 New-game friends buttons: the footer [no board; D80a, D100]
+- **Pinned under the list** of the Modes screen (§19.1's screen), out of the scroll, always in view (D100, Moshe's device
+  test of 2026-10-23: in the middle of the list, drawn unlike any other button, they looked odd). The bottom every screen
+  with an action has (GameType's, `OfflineActions`): a 1 dp `color.border` rule on top, `color.bg`, the 16 gutters, 12 over
+  the buttons, the inset + 16 under them. The list above no longer adds the inset.
+- **Two app buttons (`Button`, §1) side by side**, `flex: 1` each, gap 12, size `'modal'` (48: the pair's size, as
+  ConfirmModal's dialog and the room's "שתף קישור" | "העתק קוד"; at `'lg'` or `'md'` the primary's words do not fit half
+  of a 360 dp row): **"צור חדר"** the one primary (skewed gold, first in reading order: on the right in Hebrew) and
+  **"הצטרף עם קוד"** the secondary outline. English: "New room" ("Create room" is too wide for the half), "Join with
+  code". No caption, no section label. Hints: "פותח חדר המתנה עם קוד ששולחים לחברים", "מקלידים את 6 הספרות שקיבלת".
+- **Offline:** no footer; `OfflineActions` ("עבור לאימון", "בדוק שוב") takes the bottom, and the banner says why.
+- **Suspended:** both buttons disabled; "החשבון מושעה" with the lock (micro, `color.textMuted`) over them, and each
+  button's label says why ("צור חדר, לא זמין: החשבון מושעה").
+- **Setting:** `FRIENDS_UI.modesPlacement` (`'footer'`; `'list'` is 1.0.4's group below).
+- **1.0.4's group (`'list'`):** between the ranked group and the practice group, a `SectionLabel` (an icon, the title
+  "עם חברים", a 1 dp rule, the note "חדר פרטי · עד 4 · בלי דירוג"; title setting `FRIENDS_UI.groupName`: `'short'` "עם
+  חברים", or `'moshe'` "חברים אמיתיים בזמן אמת", D80b), then one row of two flat buttons, `flex: 1` each, 44 min height,
+  radius 14 (`radius.card`), `color.surface`, 1 dp border, gap 12: "צור חדר" (`color.accent` border and label) and
+  "הצטרף עם קוד" (`color.border`, `color.text`). Offline or suspended: both dimmed and disabled, the note the ranked
+  rows' ("דורש חיבור", "החשבון מושעה").
 - **To fit 360 × 780 without scrolling (D80a):** the ranked rows lose their "דירוג 1287 · מהיר" chip (two lines: title and
   tagline; `FRIENDS_UI.rankedChip` brings it back) and the footnote line goes. `ModesAndGameType.test.tsx` checks the budget in
-  Hebrew and English. `FRIENDS_UI.modesGroup = false` is 1.0.3's screen.
+  Hebrew and English, footer (628 of 644 dp) and list. `FRIENDS_UI.modesGroup = false` is 1.0.3's screen.
 
 ### 20.2 Room header and code card (`FriendsRoomScreen`) [Friends-Room]
 - **Header:** back (= "יציאה מהחדר" in the lobby), the title "חדר עם חברים", and the subtitle "מהיר · 3 מתוך 4" (type · seats).

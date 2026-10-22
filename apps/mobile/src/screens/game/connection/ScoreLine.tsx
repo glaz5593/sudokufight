@@ -90,7 +90,14 @@ export function ScoreLine({
                 {me}
               </Text>
             </View>
-            <Text style={[styles.score, { color: paletteAt(0).ring }]}>{formatScore(myScore)}</Text>
+            {/* scoreText, not formatScore: a negative score is an LRI…PDI isolate, or Android's RTL line
+                would show "−2" as "2−" (`writingDirection` is iOS only). */}
+            <Text
+              style={[styles.score, { color: paletteAt(0).ring }]}
+              testID={testID && `${testID}-my-score`}
+            >
+              {scoreText(myScore)}
+            </Text>
           </View>
         </View>
         {showLead ? (
@@ -112,8 +119,11 @@ export function ScoreLine({
               </Text>
               <SeatGlyph colorIndex={opponentColorIndex} size={GLYPH} />
             </View>
-            <Text style={[styles.score, { color: paletteAt(opponentColorIndex).ring }]}>
-              {formatScore(opponentScore)}
+            <Text
+              style={[styles.score, { color: paletteAt(opponentColorIndex).ring }]}
+              testID={testID && `${testID}-their-score`}
+            >
+              {scoreText(opponentScore)}
             </Text>
           </View>
           <Avatar

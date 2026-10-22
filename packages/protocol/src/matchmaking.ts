@@ -214,10 +214,13 @@ export type MatchmakingServerMessage =
       requeued?: boolean;
       /**
        * The narrowest range (D6 grid: rangeCovering) at which enough players this one could be matched with
-       * are within reach: groupSize − 1 of them. They are in the same queue, not blocked either way, within
-       * both players' maximum range (±cap, or no cap after "keep searching"), and not a recent opponent
-       * (after the 80% reset). It may be ≤ `range`: they are covered already, and the match waits on their
-       * side of the mutual range (or, at a table of 3–4, on the others accepting each other).
+       * are within reach: groupSize − 1 of them. They are in the same queue, not blocked either way, and
+       * within both players' maximum range (±cap, or no cap after "keep searching"). Players who are not
+       * recent opponents (after the 80% reset) count first; when there are not enough of them, recent ones
+       * count too (a repeat is allowed when no game without one is possible). It may be ≤ `range`: they are
+       * covered already, and the match waits on their side of the mutual range (or, at a table of 3–4, on
+       * the others accepting each other; and a repeat waits while one of its players could still meet
+       * someone new).
        * null: not enough such players are searching now; the app says "nobody else is searching" at once.
        * Absent (an older server): unknown, and the app shows the range as before.
        * Advisory only: matching still follows the time-based range [D6].
@@ -232,7 +235,11 @@ export type MatchmakingServerMessage =
       playerId: PlayerId;
       /** Everyone in the match, this player included, in seat order. */
       players: MatchPlayer[];
-      /** Some of these players met before in this game type (false: "you haven't played each other lately"). */
+      /**
+       * The receiving player met one of the others before in this game type (the app: "you played each other
+       * recently"). Per player: at a table of 3–4, two others may have met while this one never met any of
+       * them, and then it is false for this one (until 23.10.2026 it was one flag for the whole table).
+       */
       rematch: boolean;
       /** Join the game room with it at once. */
       reservation: MatchSeatReservation;

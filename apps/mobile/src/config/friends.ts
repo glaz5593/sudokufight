@@ -7,18 +7,30 @@
  */
 export interface FriendsUiSettings {
   /**
-   * [D80a] The "עם חברים" group on "משחק חדש": one row, "צור חדר" | "הצטרף עם קוד" (ModesScreen). Off: the
-   * screen has its six rows only, as in 1.0.3 (original §5: "חמש אפשרויות בלבד"; Moshe approved the group).
+   * [D80a] "צור חדר" | "הצטרף עם קוד" on "משחק חדש" (ModesScreen), where modesPlacement puts them. Off: the
+   * screen has its six rows only, as in 1.0.3 (original §5: "חמש אפשרויות בלבד"; Moshe approved the group),
+   * with the footnote under them again.
    */
   modesGroup: boolean;
   /**
+   * [D100] Where the two buttons sit (Moshe's device test of 1.0.4, 2026-10-23: in the middle of the screen
+   * they looked odd, "כדאי שיהיה מעוצב כמו שאר הלחצנים או לחילופין שיופיעו בתחתית המסך בלי גלילה"):
+   * 'footer' (the default) pins them under the list, always in view, as the app's own buttons (components/ui
+   * Button: "צור חדר" the primary, "הצטרף עם קוד" the secondary), and hides them while there is no connection,
+   * when the offline bottom takes their place; 'list' is 1.0.4's "עם חברים" group between the ranked tables and
+   * the practices, its name D80b's (groupName), dimmed while offline.
+   */
+  modesPlacement: 'footer' | 'list';
+  /**
    * [D80b] The group's name: 'short' "עם חברים" (the default: it does not repeat the ranked group's "יריבים
-   * אמיתיים, בזמן אמת"), or 'moshe' "חברים אמיתיים בזמן אמת", Moshe's words.
+   * אמיתיים, בזמן אמת"), or 'moshe' "חברים אמיתיים בזמן אמת", Moshe's words. Shown by the 'list' placement
+   * only: the footer is its two buttons.
    */
   groupName: 'short' | 'moshe';
   /**
    * [D80a] The ranked rows' "דירוג 1287 · מהיר" chip. Off (the default): each ranked row is two lines, its title
-   * and tagline, so the friends group fits on a 360 × 780 phone; my rating shows on the next screen.
+   * and tagline, so the friends buttons fit on a 360 × 780 phone with the six rows (in the list or under it);
+   * my rating shows on the next screen.
    */
   rankedChip: boolean;
   /** [D87] Who sees "שתף קישור": 'everyone' in the room (the default), or the 'host' only. The code shows to all. */
@@ -40,6 +52,7 @@ export interface FriendsUiSettings {
 
 export const FRIENDS_UI: FriendsUiSettings = {
   modesGroup: true,
+  modesPlacement: 'footer',
   groupName: 'short',
   rankedChip: false,
   shareBy: 'everyone',

@@ -32,9 +32,11 @@ import type { StealthSwitch } from './switch';
  * When (D94): only in a two-player ranked queue the settings name (STEALTH_BOT_QUEUES), only while the bot is
  * on (STEALTH_BOT_ENABLED and the admin switch), only after the wait drawn when the search started
  * (STEALTH_BOT_AFTER_MS: 8–20 s), and only while nobody the player could meet is searching: exactly the test
- * that tells the app "nobody else is searching" today (matcher.ts rule 7: nextRange null), blocks and recent
- * opponents included. A person who comes first is met as always; matchmaking (service.ts) runs this check every
- * round and seats one bot at a time.
+ * that tells the app "nobody else is searching" today (matcher.ts rule 7: nextRange null), blocks included. A
+ * recent opponent in his reach counts as someone he could meet (since 23.10.2026, matcher.ts rule 2 lets a
+ * repeat through when no game without one is possible): a person within reach comes before the bot, a recent
+ * opponent too. A person who comes first is met as always; matchmaking (service.ts) runs this check every round
+ * and seats one bot at a time.
  *
  * As whom (§6): a persona, chosen like an opponent (choosePersona):
  * 1. free (not in a match or a game now), and blocked neither way (the player's blocks, loaded with his search);

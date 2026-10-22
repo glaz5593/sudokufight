@@ -27,6 +27,7 @@ import {
 
 const T0 = Date.UTC(2026, 9, 9, 12);
 const S = 1000;
+const DAY = 24 * 60 * 60 * S;
 
 type Message = MatchmakingServerMessage;
 type Of<T extends Message['type']> = Extract<Message, { type: T }>;
@@ -90,6 +91,7 @@ function setup({
   const scheduler = new ManualScheduler(clock);
   const asked: [string, string][] = [];
   const rooms: Room[] = [];
+  const log = quietLog();
   let ids = 0;
   const games: MatchGames = {
     open(match) {
@@ -140,7 +142,7 @@ function setup({
     },
     scheduler,
     newId: () => `match-${++ids}`,
-    log: quietLog(),
+    log,
     config: { ...DEFAULT_MATCHMAKING, ...config },
   });
   const sessions = new Map<string, FakeSession>();
@@ -159,7 +161,7 @@ function setup({
     scheduler.advance(ms);
     for (let i = 0; i < 5; i++) await new Promise((r) => setImmediate(r));
   };
-  return { clock, scheduler, service, rooms, asked, join, advance };
+  return { clock, scheduler, service, rooms, asked, join, advance, log };
 }
 
 describe('searching', () => {
@@ -737,6 +739,74 @@ describe('3 and 4 players (stage 10, spec §10)', () => {
     await t.advance(500);
     expect(cyd.last('found').players.map((p) => p.id)).toEqual(['ana', 'ben', 'cyd']);
     expect(t.service.queued('fast-3p').map((x) => x.userId)).toEqual(['far']);
+  });
+});
+
+describe('a repeat when no new game is possible (matcher.ts rule 2, pass 2)', () => {
+  it('four accounts, one pair of whom met lately (23.10.2026): found at once, a rematch for that pair only; the logs say why', async () => {
+    const lately = T0 - 7 * DAY;
+    const t = setup({
+      players: { momo: { rating: 1203 }, noam: { rating: 1201 }, ahva: { rating: 1199 } },
+      history: {
+        momo: [{ opponentId: 'uri', playedAt: lately }],
+        uri: [{ opponentId: 'momo', playedAt: lately }],
+      },
+    });
+    const sessions: FakeSession[] = [];
+    for (const id of ['noam', 'ahva', 'momo', 'uri']) sessions.push(await t.join(id, 'fast-4p'));
+    // The fourth is told there is someone to meet (not "not enough players").
+    expect(sessions[3]!.last('searching').nextRange).toBe(50);
+    expect(t.log.lines).toContain('[matchmaking] uri searching fast-4p (rating 1200, recent 1 of 3 queued)');
+    await t.advance(500);
+    for (const s of sessions) expect(s.last('found').queueKey).toBe('fast-4p');
+    expect(sessions[0]!.last('found').players.map((p) => p.id)).toEqual(['noam', 'ahva', 'momo', 'uri']);
+    // `rematch` is each player's own: only Momo and Uri met, and only they are told so.
+    expect(sessions.map((s) => [s.last('found').playerId, s.last('found').rematch])).toEqual([
+      ['noam', false],
+      ['ahva', false],
+      ['momo', true],
+      ['uri', true],
+    ]);
+    const match = t.log.lines.filter((l) => l.startsWith('[matchmaking] fast-4p match match-1: '));
+    expect(match).toHaveLength(1);
+    expect(match[0]).toMatch(/ \(rematch: recent opponents, nobody new to meet\)$/);
+  });
+
+  it('a rematch after the 80% reset says only "rematch"; a new pair says nothing', async () => {
+    const t = setup({
+      history: {
+        ana: [{ opponentId: 'ben', playedAt: T0 - DAY }],
+        ben: [{ opponentId: 'ana', playedAt: T0 - DAY }],
+      },
+    });
+    await t.join('ana');
+    await t.join('ben');
+    await t.advance(500);
+    await t.join('cyd');
+    await t.join('dan');
+    await t.advance(500);
+    const matches = t.log.lines.filter((l) => l.startsWith('[matchmaking] fast-2p match '));
+    expect(matches).toHaveLength(2);
+    expect(matches[0]).toMatch(/ \(rematch\)$/);
+    expect(matches[1]).toMatch(/ s\)$/);
+  });
+});
+
+describe('logs of a search (live checks): one line when it starts, never per round', () => {
+  it('a search and "keep searching": ids and numbers only', async () => {
+    const t = setup({ players: { far: { rating: 1600 } } });
+    const ana = await t.join('ana');
+    await t.advance(30 * S);
+    await t.join('far');
+    await t.advance(30 * S);
+    expect(ana.of('timeout')).toHaveLength(1);
+    t.service.keepSearching(ana.id);
+    expect(t.log.lines.filter((l) => l.includes('searching'))).toEqual([
+      '[matchmaking] ana searching fast-2p (rating 1200, recent 0 of 0 queued)',
+      '[matchmaking] far searching fast-2p (rating 1600, recent 0 of 0 queued, 1 more out of reach or blocked)',
+      // "Keep searching" lifts Ana's cap on the range, but Far's search still has his: 400 is out of reach.
+      '[matchmaking] ana keeps searching fast-2p (rating 1200, recent 0 of 0 queued, 1 more out of reach or blocked)',
+    ]);
   });
 });
 

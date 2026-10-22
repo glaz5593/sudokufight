@@ -82,7 +82,8 @@ describe('Register step 1: "צור את הלוחם שלך" (spec §3.2)', () => 
     );
     expect(order).toEqual(['avatar-picker', 'name', 'country', 'fighter-preview']);
     expect(screen.getByTestId('name-hint')).toHaveTextContent(
-      '3–16 תווים: אותיות בעברית או באנגלית, ספרות, קו תחתון ונקודה.',
+      // The range is isolated (LRI…PDI): bare, '3–16' reads '16–3' in a right-to-left line.
+      '\u20663–16\u2069 תווים: אותיות בעברית או באנגלית, ספרות, קו תחתון ונקודה.',
     );
     expect(screen.getByLabelText('תצוגה מקדימה של הכרטיס שלך במשחק: שחקן')).toBeOnTheScreen();
     // The layout mirrors with the language by itself (rows, start/end).
