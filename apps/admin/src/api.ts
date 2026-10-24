@@ -6,6 +6,8 @@ import {
   ADMIN_FRIEND_ROOMS_PATH,
   ADMIN_GOOGLE_LOGIN_PATH,
   ADMIN_LOGIN_PATH,
+  ADMIN_QA_CATALOG_PATH,
+  ADMIN_QA_RUNS_PATH,
   ADMIN_STEALTH_PATH,
   ADMIN_STEALTH_SWITCH_PATH,
   type AdminActionErrorCode,
@@ -24,6 +26,11 @@ import {
   type AdminModerationResult,
   type AdminOverview,
   type AdminPage,
+  type AdminQaItem,
+  type AdminQaOpenRunRequest,
+  type AdminQaResultRequest,
+  type AdminQaRun,
+  type AdminQaRunDetail,
   type AdminReport,
   type AdminReportedPlayer,
   type AdminReportFilter,
@@ -35,7 +42,10 @@ import {
   type AdminUserDetail,
   type AdminUserKind,
   type AdminUserRow,
+  adminQaItemPath,
+  adminQaRunPath,
   isAdminGoogleLoginErrorCode,
+  type QaCatalog,
 } from '@sudoku-fight/protocol';
 
 /**
@@ -47,7 +57,8 @@ import {
  *
  * The moderation actions (spec §3.5) are the site's writes, each a POST with the JSON body `{}` (the server
  * refuses anything else); and the stealth bot's switch (stealth-bot.md §8), a POST of `{"on": …}`. The page
- * asks for a confirmation first.
+ * asks for a confirmation first. The QA module (qa-module/plan.md) writes too: opening and closing a run, and
+ * a task's mark.
  */
 
 /**
@@ -169,6 +180,16 @@ export interface AdminApi {
   stealthSwitch(): Promise<AdminStealthSwitch>;
   /** Turns the stealth bot on or off (confirmed on the page first). */
   setStealth(on: boolean): Promise<AdminStealthSwitchResult>;
+  /** The QA module: the fixed set of tasks, by category (to choose a new run's categories). */
+  qaCatalog(): Promise<QaCatalog>;
+  /** The QA runs, newest first. */
+  qaRuns(query: PageQuery): Promise<AdminPage<AdminQaRun>>;
+  openQaRun(request: AdminQaOpenRunRequest): Promise<AdminQaRun>;
+  /** A run with every task, in catalog order. */
+  qaRun(runId: number): Promise<AdminQaRunDetail>;
+  closeQaRun(runId: number): Promise<AdminQaRun>;
+  /** A task's mark (V, partial, fail, or untested to clear it). */
+  markQa(runId: number, taskId: string, request: AdminQaResultRequest): Promise<AdminQaItem>;
 }
 
 /** The body of every moderation action: an empty JSON object, nothing else (the server checks). */
@@ -326,5 +347,12 @@ export function createApi(options: ApiOptions = {}): AdminApi {
       request<AdminStealthSwitchResult>('POST', ADMIN_STEALTH_SWITCH_PATH, {
         body: { on } satisfies AdminStealthSwitchRequest,
       }),
+    qaCatalog: () => request<QaCatalog>('GET', ADMIN_QA_CATALOG_PATH),
+    qaRuns: (q) => request<AdminPage<AdminQaRun>>('GET', `${ADMIN_QA_RUNS_PATH}${queryString(page(q))}`),
+    openQaRun: (body) => request<AdminQaRun>('POST', ADMIN_QA_RUNS_PATH, { body }),
+    qaRun: (runId) => request<AdminQaRunDetail>('GET', adminQaRunPath(runId)),
+    closeQaRun: (runId) => request<AdminQaRun>('POST', adminQaRunPath(runId, 'close'), { body: ACTION_BODY }),
+    markQa: (runId, taskId, body) =>
+      request<AdminQaItem>('POST', adminQaItemPath(runId, taskId, 'result'), { body }),
   };
 }

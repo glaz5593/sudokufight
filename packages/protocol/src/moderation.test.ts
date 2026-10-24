@@ -92,6 +92,16 @@ describe('the moderation contract', () => {
       // The stealth bot's switch (stealth-bot.md §8).
       'stealthSwitch',
     ]);
-    expect(ADMIN_ACTION_ERRORS).toEqual(['notOpen', 'accountDeleted', 'googleRequired', 'stealthDisabled']);
+    expect(ADMIN_ACTION_ERRORS).toEqual([
+      'notOpen',
+      'accountDeleted',
+      'googleRequired',
+      'stealthDisabled',
+      // The QA module (docs/handoff/2026-10-23/qa-module/plan.md).
+      'qaDisabled',
+      'qaCatalogInvalid',
+      'qaRunClosed',
+      'qaNotBug',
+    ]);
   });
 });

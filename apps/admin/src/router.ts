@@ -9,7 +9,7 @@ import { useMemo, useSyncExternalStore } from 'react';
 /**
  * A small hash router: `#/installs?search=x&page=2`, `#/users/<id>`, `#/reports?status=all`,
  * `#/levels?days=90&chapter=3`, `#/rooms?days=7`, `#/stealth?search=x`, `#/users?kind=persona`,
- * `#/games?stealth=1`. The hash keeps
+ * `#/games?stealth=1`, `#/qa?page=2`, `#/qa/12?show=bugs`. The hash keeps
  * the server's job simple (one index.html under /admin), and Back / Forward / reload keep the page, its
  * search, its filter and its paging.
  */
@@ -31,7 +31,8 @@ export type Section =
   | 'reports'
   | 'audit'
   | 'screens'
-  | 'levels';
+  | 'levels'
+  | 'qa';
 
 /** The users page's default: the people (the server's too). */
 export const DEFAULT_USER_KIND: AdminUserKind = 'person';
@@ -39,6 +40,10 @@ export const DEFAULT_USER_KIND: AdminUserKind = 'person';
 /** The games page's stealth filter: '' every game, '1' only against the stealth bot, '0' only the others. */
 export const STEALTH_FILTERS = ['', '1', '0'] as const;
 export type StealthFilter = (typeof STEALTH_FILTERS)[number];
+
+/** A QA run's filter: every task, the ones not tested yet, or the bugs only (open, handled, verified...). */
+export const QA_SHOWS = ['all', 'untested', 'bugs'] as const;
+export type QaShow = (typeof QA_SHOWS)[number];
 
 /** The levels page's chapter filter takes a chapter up to this (the server says which there are). */
 export const MAX_CHAPTER = 1000;
@@ -64,6 +69,9 @@ export type Route =
    * every rev of each level together (the plays from before a rebuild too); by default its rev now.
    */
   | { name: 'levels'; days?: number; chapter?: number; allRevs?: boolean }
+  /** The QA module (qa-module/plan.md): its runs (a page), and one run with a filter. */
+  | { name: 'qa'; page?: number }
+  | { name: 'qaRun'; id: number; show?: QaShow }
   | { name: 'notFound' };
 
 /** The nav item a route belongs to. */
@@ -79,7 +87,10 @@ export function sectionOf(route: Route): Section | null {
     case 'audit':
     case 'screens':
     case 'levels':
+    case 'qa':
       return route.name;
+    case 'qaRun':
+      return 'qa';
     case 'install':
       return 'installs';
     case 'user':
@@ -113,6 +124,10 @@ function stealthFilter(value: string | null): StealthFilter {
   return (STEALTH_FILTERS as readonly (string | null)[]).includes(value) ? (value as StealthFilter) : '';
 }
 
+function qaShow(value: string | null): QaShow {
+  return (QA_SHOWS as readonly (string | null)[]).includes(value) ? (value as QaShow) : 'all';
+}
+
 function decode(segment: string): string | null {
   try {
     return decodeURIComponent(segment);
@@ -135,6 +150,12 @@ export function parseRoute(hash: string): Route {
     if (first === 'installs') return { name: 'install', id };
     if (first === 'users') return { name: 'user', id };
     if (first === 'games') return { name: 'game', id };
+    if (first === 'qa') {
+      const runId = positiveInt(id, 0);
+      if (runId === 0) return { name: 'notFound' };
+      const show = qaShow(query.get('show'));
+      return { name: 'qaRun', id: runId, ...(show === 'all' ? null : { show }) };
+    }
     return { name: 'notFound' };
   }
 
@@ -181,6 +202,8 @@ export function parseRoute(hash: string): Route {
       return { name: 'reports', status: reportFilter(query.get('status')), page };
     case 'audit':
       return { name: 'audit', page };
+    case 'qa':
+      return { name: 'qa', page };
     default:
       return { name: 'notFound' };
   }
@@ -237,6 +260,10 @@ export function routeHref(route: Route): string {
       });
     case 'audit':
       return withQuery('#/audit', { page: page(route.page) });
+    case 'qa':
+      return withQuery('#/qa', { page: page(route.page) });
+    case 'qaRun':
+      return withQuery(`#/qa/${route.id}`, { show: route.show === 'all' ? undefined : route.show });
     case 'install':
       return `#/installs/${encodeURIComponent(route.id)}`;
     case 'user':

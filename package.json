@@ -22,6 +22,8 @@
     "seed": "npm run seed -w @sudoku-fight/server --",
     "db:seed-puzzles": "npm run db:seed-puzzles -w @sudoku-fight/server --",
     "fake-client": "npm run fake-client -w @sudoku-fight/server --",
+    "qa": "npm run qa -w @sudoku-fight/server --",
+    "adb": "npm run adb -w @sudoku-fight/server --",
     "admin:dev": "npm run dev -w @sudoku-fight/admin",
     "admin:build": "npm run build -w @sudoku-fight/admin",
     "typecheck": "npm run routes:types -w @sudoku-fight/mobile && tsc -b",

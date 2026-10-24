@@ -7,6 +7,7 @@ import {
   DEFAULT_PGLITE_DIR,
   DEFAULT_TRACES_SAMPLE_RATE,
   describeAdmin,
+  describeQa,
   DEV_ADMIN_PASSWORD,
   loadConfig,
   type LoadConfigOptions,
@@ -74,6 +75,8 @@ describe('loadConfig', () => {
         readyAfterMs: { min: 300, max: 1500 },
         secret: 'random-secret',
       },
+      // The QA module: off, no agent key.
+      qa: { enabled: false, agentToken: null, open: false },
     });
     expect(DEFAULT_PGLITE_DIR).toBe(path.resolve(__dirname, '..', '.data', 'pglite'));
     // The dev password comes with a loud warning.
@@ -807,5 +810,54 @@ describe('the stealth bot (STEALTH_BOT_*, stealth-bot.md §8) [D90, D94, D95]', 
     const secretOf = () =>
       loadConfig({}, { warn: () => {}, randomSecret: () => `secret-${++n}` }).stealth?.secret;
     expect(secretOf()).not.toBe(secretOf());
+  });
+});
+
+describe('the QA module (QA_ENABLED, QA_AGENT_TOKEN; docs/handoff/2026-10-23/qa-module/plan.md)', () => {
+  const KEY = 'q'.repeat(31) + ' k';
+
+  it('is off by default, without a key, in every environment', () => {
+    for (const NODE_ENV of ['development', 'test', 'production'])
+      expect(
+        load({ NODE_ENV, DATABASE_URL: 'postgres://h/db', ADMIN_PASSWORD: 'p'.repeat(12) }).config.qa,
+      ).toEqual({ enabled: false, agentToken: null, open: false });
+  });
+
+  it('reads the switch and the key, the key as written (not trimmed); blank is unset', () => {
+    expect(load({ QA_ENABLED: ' True ', QA_AGENT_TOKEN: KEY }).config.qa).toEqual({
+      enabled: true,
+      agentToken: KEY,
+      open: false,
+    });
+    expect(load({ QA_ENABLED: '1', QA_AGENT_TOKEN: '', QA_OPEN: 'true' }).config.qa).toEqual({
+      enabled: true,
+      agentToken: null,
+      open: true,
+    });
+    expect(load({ QA_ENABLED: '0', QA_AGENT_TOKEN: KEY }).config.qa).toEqual({
+      enabled: false,
+      agentToken: KEY,
+      open: false,
+    });
+  });
+
+  it('a key shorter than 32 characters, or a bad switch, is a settings error that never shows the key', () => {
+    const issues = issuesOf({ QA_AGENT_TOKEN: 'short-key-31-characters-long-xx' });
+    expect(issues).toEqual(['QA_AGENT_TOKEN: must be at least 32 characters']);
+    expect(issuesOf({ QA_ENABLED: 'yes' })[0]).toMatch(/^QA_ENABLED: /);
+  });
+
+  it('the start-up line says whether the key is set, never the key', () => {
+    expect(describeQa(undefined)).toBe('QA module off (QA_ENABLED=false)');
+    expect(describeQa({ enabled: false, agentToken: KEY })).toBe('QA module off (QA_ENABLED=false)');
+    expect(describeQa({ enabled: true, agentToken: null })).toBe(
+      'QA module on (no agent key: admin sign-in only)',
+    );
+    const on = describeQa({ enabled: true, agentToken: KEY });
+    expect(on).toBe('QA module on (agent key set)');
+    expect(on).not.toContain(KEY);
+    expect(describeQa({ enabled: true, agentToken: null, open: true })).toBe(
+      'QA module on (open: no sign-in needed)',
+    );
   });
 });

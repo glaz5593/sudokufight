@@ -35,8 +35,9 @@ describe('strings: Hebrew and English', () => {
   });
 
   it('Hebrew strings are Hebrew, apart from names and symbols', () => {
-    // Brand names, codes and symbols may stay Latin; everything else needs a Hebrew letter.
-    const latinOk = /^(iOS|Android|Web|English|—|←|→)$/;
+    // Brand names, codes and symbols may stay Latin; everything else needs a Hebrew letter. The QA module's
+    // "Claude" (a name) and "V" (its pass mark, as Moshe calls it).
+    const latinOk = /^(iOS|Android|Web|English|Claude|V|—|←|→)$/;
     for (const [key, text] of Object.entries(he)) {
       if (latinOk.test(text)) continue;
       expect({ key, hebrew: /[\u0590-\u05ff]/.test(text) }).toEqual({ key, hebrew: true });

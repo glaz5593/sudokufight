@@ -4,8 +4,16 @@ import {
   ADMIN_GOOGLE_LOGIN_ERRORS,
   ADMIN_GOOGLE_LOGIN_PATH,
   ADMIN_LOGIN_PATH,
+  ADMIN_QA_BUGS_PATH,
+  ADMIN_QA_CATALOG_PATH,
+  ADMIN_QA_PATH,
+  ADMIN_QA_RUNS_PATH,
+  adminQaItemPath,
+  adminQaRunPath,
   type AdminAuthMethods,
   isAdminGoogleLoginErrorCode,
+  QA_BUG_FILTERS,
+  QA_ID_PATTERN,
 } from './index';
 
 describe('the admin API contract', () => {
@@ -40,5 +48,23 @@ describe('the admin API contract', () => {
     };
     expect(Object.keys(methods).sort()).toEqual(['google', 'password']);
     expect(Object.keys(methods.google!).sort()).toEqual(['apiKey', 'appId', 'authDomain', 'projectId']);
+  });
+
+  it("names the QA routes and builds a run's and a task's paths (the task id escaped)", () => {
+    expect([ADMIN_QA_PATH, ADMIN_QA_CATALOG_PATH, ADMIN_QA_RUNS_PATH, ADMIN_QA_BUGS_PATH]).toEqual([
+      '/qa',
+      '/qa/catalog',
+      '/qa/runs',
+      '/qa/bugs',
+    ]);
+    expect(adminQaRunPath(7)).toBe('/qa/runs/7');
+    expect(adminQaRunPath(7, 'close')).toBe('/qa/runs/7/close');
+    expect(adminQaItemPath(7, 'friends-room-create', 'result')).toBe(
+      '/qa/runs/7/items/friends-room-create/result',
+    );
+    expect(adminQaItemPath(12, 'a/b?c', 'fix')).toBe('/qa/runs/12/items/a%2Fb%3Fc/fix');
+    expect(QA_BUG_FILTERS).toEqual(['active', 'open', 'handled', 'verified', 'reopened', 'all']);
+    expect(['friends', 'a1-b2', '0x'].every((id) => QA_ID_PATTERN.test(id))).toBe(true);
+    expect(['', '-a', 'A', 'a_b', 'א', 'a'.repeat(81)].some((id) => QA_ID_PATTERN.test(id))).toBe(false);
   });
 });

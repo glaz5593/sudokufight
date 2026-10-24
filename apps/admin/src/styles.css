@@ -1424,3 +1424,83 @@ select.input {
     stroke: CanvasText;
   }
 }
+
+/* ---- QA (docs/handoff/2026-10-23/qa-module/plan.md) ---- */
+
+.qa-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 16px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.qa-categories legend {
+  padding-inline: 4px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.qa-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qa-tasks {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.qa-task {
+  padding: 16px;
+}
+
+.qa-task h4 {
+  margin: 0 0 4px;
+}
+
+.qa-label {
+  margin: 12px 0 4px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.qa-list {
+  margin: 0;
+  padding-inline-start: 24px;
+}
+
+/* Notes as written: their line breaks kept, long words wrapped. */
+.qa-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.qa-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 12px 0;
+}
+
+.qa-result .badge,
+.qa-result .qa-label {
+  margin: 0;
+}
+
+.qa-mark {
+  display: grid;
+  gap: 12px;
+  max-inline-size: 640px;
+  margin-block-start: 12px;
+}

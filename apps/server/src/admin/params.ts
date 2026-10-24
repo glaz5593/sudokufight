@@ -3,6 +3,10 @@ import {
   ADMIN_MAX_PAGE_SIZE,
   ADMIN_REPORT_FILTERS,
   ADMIN_USER_KINDS,
+  QA_BUG_FILTERS,
+  QA_ID_PATTERN,
+  QA_RESULTS,
+  QA_RUN_WHO,
 } from '@sudoku-fight/protocol';
 import { z } from 'zod';
 
@@ -111,6 +115,46 @@ export type ReportsQuery = z.infer<typeof reportsQuerySchema>;
 
 /** GET /admin/api/audit: a page of the audit log. */
 export const auditQuerySchema = z.object({
+  page: int(1, 1_000_000, 1),
+  pageSize: int(1, ADMIN_MAX_PAGE_SIZE, ADMIN_DEFAULT_PAGE_SIZE),
+});
+
+/** GET /admin/api/qa/runs: a page of QA runs, newest first. */
+export const qaRunsQuerySchema = z.object({
+  page: int(1, 1_000_000, 1),
+  pageSize: int(1, ADMIN_MAX_PAGE_SIZE, ADMIN_DEFAULT_PAGE_SIZE),
+});
+
+/**
+ * GET /admin/api/qa/runs/:runId: which of its tasks to show (all by default): by `result`, by `who` (claude:
+ * claude's and both's; moshe: moshe's and both's; all), by `category` (its id: QA_ID_PATTERN, else a 400), and
+ * `bugs` (1: only the tasks that are or were a bug).
+ */
+export const qaRunQuerySchema = z.object({
+  result: z.preprocess(
+    blankToUndefined,
+    z.enum(QA_RESULTS, { error: 'expected untested, pass, partial or fail' }).optional(),
+  ),
+  who: z.preprocess(
+    blankToUndefined,
+    z.enum(QA_RUN_WHO, { error: 'expected claude, moshe or all' }).optional(),
+  ),
+  category: z.preprocess(
+    blankToUndefined,
+    z.string({ error: 'expected one value' }).trim().regex(QA_ID_PATTERN, 'not a category id').optional(),
+  ),
+  bugs: flag,
+});
+export type QaRunQuery = z.infer<typeof qaRunQuerySchema>;
+
+/** GET /admin/api/qa/bugs: a page of bugs by state; active (open and reopened) by default. */
+export const qaBugsQuerySchema = z.object({
+  status: z.preprocess(
+    blankToUndefined,
+    z
+      .enum(QA_BUG_FILTERS, { error: 'expected active, open, handled, verified, reopened or all' })
+      .default('active'),
+  ),
   page: int(1, 1_000_000, 1),
   pageSize: int(1, ADMIN_MAX_PAGE_SIZE, ADMIN_DEFAULT_PAGE_SIZE),
 });

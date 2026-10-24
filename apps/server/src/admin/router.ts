@@ -24,6 +24,7 @@ import { notFound, sendError, sendTooManyRequests } from '../http/errors';
 import { RateLimiter, type RateLimitRule } from '../http/rateLimiter';
 import type { ModerationTools } from '../moderation/admin';
 import { moderationAdminRoutes } from '../moderation/adminRoutes';
+import { bundledQaCatalog, qaCatalogLoader, type QaCatalogSource } from '../qa';
 import { inventPersonaName } from '../stealth/personas';
 import {
   ADMIN_COOKIE_NAME,
@@ -43,6 +44,7 @@ import {
   parseQuery,
   usersQuerySchema,
 } from './params';
+import { qaAdminRoutes } from './qa';
 import { type FriendRoomsView, getFriendRooms } from './rooms';
 import { getScreens } from './screens';
 import {
@@ -80,6 +82,9 @@ import { getUser, listUsers } from './users';
  *   ends early when its method is turned off, or its address taken off ADMIN_EMAILS (checked on each request).
  * - Everything else is GET, but the moderation POSTs (JSON `{}` bodies only) and the stealth bot's switch
  *   (POST /stealth/switch `{"on": …}`, ./stealth); any other method or path is 404.
+ * - The QA module (/qa, ./qa): before the session check, with a gate of its own that takes the session cookie
+ *   or Claude's key (`Authorization: Bearer <QA_AGENT_TOKEN>`), and answers 503 `qaDisabled` with QA_ENABLED
+ *   off. The key opens nothing else: every other route still wants the cookie.
  *   Answers are never cached (no-store).
  * - No CORS: configureHttp strips Colyseus's open CORS headers under /admin, and the guard answers preflights
  *   there without them (http/cors).
@@ -107,6 +112,13 @@ export interface AdminRouterDeps {
    * /stealth/switch. Absent (a server without it): as STEALTH_BOT_ENABLED off, no switch.
    */
   stealthSwitch?: StealthSwitchControl;
+  /**
+   * The QA catalog's JSON (default: apps/server/data/qa-catalog.json, bundled), read and checked on the first
+   * /qa route that needs it (src/qa/catalog.ts). Tests pass their own.
+   */
+  qaCatalog?: QaCatalogSource;
+  /** Requests with the QA agent's key per IP (default 120 a minute; tests make it small). */
+  qaAgentLimit?: RateLimitRule;
 }
 
 /**
@@ -196,6 +208,8 @@ export function createAdminRouter({
   moderationTools,
   friendRooms,
   stealthSwitch,
+  qaCatalog = bundledQaCatalog,
+  qaAgentLimit,
 }: AdminRouterDeps): Router {
   const { admin } = config;
   const google = admin.enabled ? admin.google : null;
@@ -350,6 +364,21 @@ export function createAdminRouter({
       email: who.method === 'google' ? who.email : null,
     } satisfies AdminSession);
   });
+
+  // The QA module (./qa): its own gate, which takes Claude's key as well as the session, so it comes before the
+  // session check below. The key opens the /qa routes only: everything after this line wants the cookie.
+  api.use(
+    qaAdminRoutes({
+      db,
+      now,
+      settings: config.qa,
+      catalog: qaCatalogLoader(qaCatalog),
+      sessionOf: (req) => sessionOf(req)?.admin ?? null,
+      googleRequired: google !== null,
+      agentLimit: qaAgentLimit,
+      log,
+    }),
+  );
 
   // Everything below needs a session.
   api.use((req, res, next) => {

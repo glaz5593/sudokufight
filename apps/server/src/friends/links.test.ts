@@ -367,6 +367,21 @@ describe('the Fly apps', () => {
     expect(env.ANDROID_APP_LINK_ALLOW_DEBUG_KEY).toBe('true');
   });
 
+  it('the QA module is on, and open (no sign-in), in staging only; a key would be a secret, never in a file', () => {
+    const staging = flyEnv('fly.toml');
+    const production = flyEnv('fly.production.toml');
+    expect(staging.QA_ENABLED).toBe('true');
+    expect(load('fly.toml').qa?.enabled).toBe(true);
+    expect(production.QA_ENABLED).toBeUndefined();
+    expect(load('fly.production.toml').qa?.enabled).toBe(false);
+    expect(staging.QA_OPEN).toBe('true');
+    expect(load('fly.toml').qa?.open).toBe(true);
+    expect(production.QA_OPEN).toBeUndefined();
+    expect(load('fly.production.toml').qa?.open).toBe(false);
+    expect(staging.QA_AGENT_TOKEN).toBeUndefined();
+    expect(production.QA_AGENT_TOKEN).toBeUndefined();
+  });
+
   it('production never lists the public debug key, nor allows it; its settings load', () => {
     const env = flyEnv('fly.production.toml');
     expect(env.SENTRY_ENVIRONMENT).toBe('production');

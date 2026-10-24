@@ -60,6 +60,26 @@ import type { TelemetryEventName, TelemetryProps } from './telemetry';
  *
  * With the admin site off on the server (no sign-in method set up), every route answers 503 `disabled`,
  * auth/methods included.
+ *
+ * The QA module (docs/handoff/2026-10-23/qa-module/plan.md): a fixed catalog of test tasks (QaCatalog, from
+ * apps/server/data/qa-catalog.json), runs opened from it (each a full copy of the tasks it took), a mark on
+ * each task, and the bugs the marks found. Off unless the server's QA_ENABLED is on: every /qa route then
+ * answers 503 `qaDisabled`. Besides the session cookie, the /qa routes, and only they, take
+ * `Authorization: Bearer <QA_AGENT_TOKEN>`: Claude's key, set on the server and kept out of the repo. A wrong
+ * key, another scheme, or a key on a server that has none → 401; too many tries with a key → 429.
+ *   GET  /admin/api/qa/catalog                          → QaCatalog · 500 qaCatalogInvalid
+ *   GET  /admin/api/qa/runs?page=1&pageSize=50          → AdminPage<AdminQaRun> (newest first)
+ *   POST /admin/api/qa/runs  AdminQaOpenRunRequest      → 201 AdminQaRun · 400 (an unknown category, or no
+ *        task left by the choice) · 500 qaCatalogInvalid
+ *   GET  /admin/api/qa/runs/:runId?result=&who=&category=&bugs=1 → AdminQaRunDetail · 404
+ *   POST /admin/api/qa/runs/:runId/close  {}             → AdminQaRun (a closed run stays as it was) · 404
+ *   POST /admin/api/qa/runs/:runId/items/:taskId/result AdminQaResultRequest → AdminQaItem · 404 ·
+ *        409 qaRunClosed
+ *   POST /admin/api/qa/runs/:runId/items/:taskId/fix    AdminQaFixRequest → AdminQaItem · 404 · 409 qaNotBug
+ *   GET  /admin/api/qa/bugs?status=active&page=1&pageSize=50 → AdminPage<AdminQaBug> (newest first)
+ * The POSTs want JSON bodies (Content-Type: application/json; 400 badRequest otherwise). Like the moderation
+ * actions, a password session on a server that offers Google sign-in may read but not write (403
+ * `googleRequired`). Who did what is kept as the admin's address, `password`, or `claude` (the key).
  */
 
 export const ADMIN_API_PREFIX = '/admin/api';
@@ -173,12 +193,24 @@ export interface AdminError {
  * - 403 googleRequired: a password session on a server that offers Google sign-in: sign in with Google.
  * - 409 stealthDisabled: the stealth bot's switch, on a server whose settings leave the bot out
  *   (STEALTH_BOT_ENABLED false): there is nothing to turn.
+ * The QA module's (the /qa routes):
+ * - 503 qaDisabled: QA_ENABLED is off on this server.
+ * - 500 qaCatalogInvalid: the server's catalog (apps/server/data/qa-catalog.json) does not load or is not
+ *   valid; the message names the problems. Only the catalog and opening a run need it: the runs already open
+ *   keep working.
+ * - 409 qaRunClosed: a mark on a task of a closed run that is not a bug (a bug may be tested again after the
+ *   run closed).
+ * - 409 qaNotBug: "handled" on a task whose mark is not fail or partial.
  */
 export const ADMIN_ACTION_ERRORS = [
   'notOpen',
   'accountDeleted',
   'googleRequired',
   'stealthDisabled',
+  'qaDisabled',
+  'qaCatalogInvalid',
+  'qaRunClosed',
+  'qaNotBug',
 ] as const;
 export type AdminActionErrorCode = (typeof ADMIN_ACTION_ERRORS)[number];
 
@@ -704,4 +736,214 @@ export interface AdminModerationResult {
   user: AdminUserRow;
   /** The entry written; null when nothing changed (no entry). */
   audit: AdminAuditEntry | null;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// The QA module (docs/handoff/2026-10-23/qa-module/plan.md): test runs and the bugs they found
+
+/** The QA routes, under ADMIN_API_PREFIX. A run is `/qa/runs/<id>`, its task `…/items/<taskId>/result|fix`. */
+export const ADMIN_QA_PATH = '/qa';
+export const ADMIN_QA_CATALOG_PATH = '/qa/catalog';
+export const ADMIN_QA_RUNS_PATH = '/qa/runs';
+export const ADMIN_QA_BUGS_PATH = '/qa/bugs';
+
+/** A run's path under ADMIN_API_PREFIX; with an action, its close (or a task's result or fix). */
+export function adminQaRunPath(runId: number, action?: 'close'): string {
+  return `${ADMIN_QA_RUNS_PATH}/${runId}${action === undefined ? '' : `/${action}`}`;
+}
+
+/** A task's mark or fix in a run, under ADMIN_API_PREFIX (the task id escaped). */
+export function adminQaItemPath(runId: number, taskId: string, action: 'result' | 'fix'): string {
+  return `${adminQaRunPath(runId)}/items/${encodeURIComponent(taskId)}/${action}`;
+}
+
+/** Who tests a task: Claude (over ADB and the API), Moshe, or either of them. */
+export const QA_WHO = ['claude', 'moshe', 'both'] as const;
+export type QaWho = (typeof QA_WHO)[number];
+
+/** Whose tasks a run takes: claude (claude and both), moshe (moshe and both), or all. */
+export const QA_RUN_WHO = ['claude', 'moshe', 'all'] as const;
+export type QaRunWho = (typeof QA_RUN_WHO)[number];
+
+/**
+ * A task's mark: untested (no mark yet), pass (the site's "V": exactly what was expected happened), partial
+ * or fail (both need `actual`, "מה קרה בפועל", and both are a bug).
+ */
+export const QA_RESULTS = ['untested', 'pass', 'partial', 'fail'] as const;
+export type QaResult = (typeof QA_RESULTS)[number];
+
+/**
+ * A bug's state (a task marked fail or partial):
+ * - open: found, not handled yet;
+ * - handled: Claude fixed it ("טופל", with what and in which version), to be tested again;
+ * - verified: tested again after the fix, and passed;
+ * - reopened: tested again after the fix, and failed (or partly) again.
+ */
+export const QA_BUG_STATUSES = ['open', 'handled', 'verified', 'reopened'] as const;
+export type QaBugStatus = (typeof QA_BUG_STATUSES)[number];
+
+/** The `status` filter of GET /admin/api/qa/bugs: active (default: open and reopened), one state, or all. */
+export const QA_BUG_FILTERS = ['active', ...QA_BUG_STATUSES, 'all'] as const;
+export type QaBugFilter = (typeof QA_BUG_FILTERS)[number];
+
+export const QA_PLATFORMS = ['android', 'ios'] as const;
+export type QaPlatform = (typeof QA_PLATFORMS)[number];
+
+export const QA_RUN_STATUSES = ['open', 'closed'] as const;
+export type QaRunStatus = (typeof QA_RUN_STATUSES)[number];
+
+/** The catalog's limits (the server checks its file against them; a Jest test checks the shipped one). */
+export const QA_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,79}$/;
+export const QA_MAX_TITLE_LENGTH = 120;
+export const QA_MAX_TEXT_LENGTH = 500;
+
+/** One task of the catalog: numbered steps, and what should happen (one line or more). All in Hebrew. */
+export interface QaCatalogTask {
+  id: string;
+  title: string;
+  steps: string[];
+  expected: string[];
+  who: QaWho;
+  /** Where it came from, e.g. "FRIENDS-DEVICE-CHECKS בדיקה 7". */
+  source?: string;
+}
+
+export interface QaCatalogSubcategory {
+  id: string;
+  title: string;
+  tasks: QaCatalogTask[];
+}
+
+export interface QaCatalogCategory {
+  id: string;
+  title: string;
+  subcategories: QaCatalogSubcategory[];
+}
+
+/** GET /admin/api/qa/catalog: the fixed set of tasks. A run copies what it takes of it. */
+export interface QaCatalog {
+  catalogVersion: number;
+  categories: QaCatalogCategory[];
+}
+
+/** POST /admin/api/qa/runs. */
+export interface AdminQaOpenRunRequest {
+  /** 1–80 characters, one line. */
+  title: string;
+  /** The app's version under test, 1–40 characters (e.g. "1.0.5"). */
+  appVersion: string;
+  /** The phone, at most 80 characters. */
+  device?: string | null;
+  platform?: QaPlatform | null;
+  /** Category ids; absent: every category. An unknown id → 400. */
+  categories?: string[];
+  /** Default 'all'. */
+  who?: QaRunWho;
+}
+
+/** What a run took of the catalog. */
+export interface AdminQaRunFilter {
+  who: QaRunWho;
+  /** null: every category. */
+  categories: string[] | null;
+}
+
+/** A run's tasks by their marks. */
+export interface AdminQaRunCounts {
+  total: number;
+  untested: number;
+  pass: number;
+  partial: number;
+  fail: number;
+  /** Bugs waiting for a fix: open and reopened. */
+  openBugs: number;
+  /** Bugs fixed, waiting for a test. */
+  handled: number;
+}
+
+export interface AdminQaRun {
+  /** A small number (friendly in a curl command). */
+  id: number;
+  title: string;
+  appVersion: string;
+  device: string | null;
+  platform: QaPlatform | null;
+  /** The server's engine when the run opened. */
+  engineVersion: string;
+  /** The catalog's version when the run opened. */
+  catalogVersion: number;
+  filter: AdminQaRunFilter;
+  status: QaRunStatus;
+  /** An admin's address, `password`, or `claude` (the agent's key). */
+  createdBy: string;
+  createdAt: number;
+  closedBy: string | null;
+  closedAt: number | null;
+  /** Over all of the run's tasks, whatever a filter shows. */
+  counts: AdminQaRunCounts;
+}
+
+/** A task of a run: the catalog's task as it was when the run opened, and its mark. */
+export interface AdminQaItem {
+  taskId: string;
+  /** Its place in the run (catalog order), from 0. */
+  position: number;
+  categoryId: string;
+  categoryTitle: string;
+  subcategoryId: string;
+  subcategoryTitle: string;
+  title: string;
+  steps: string[];
+  expected: string[];
+  who: QaWho;
+  source: string | null;
+  result: QaResult;
+  /** "מה קרה בפועל": always there on partial and fail; null on untested. */
+  actual: string | null;
+  note: string | null;
+  /** Who set the latest mark (untested too) and when; null before any. */
+  testedBy: string | null;
+  testedAt: number | null;
+  /** null: not a bug (never failed, or a fail marked pass or untested before any fix). */
+  bugStatus: QaBugStatus | null;
+  /** The latest fix ("טופל"): what was done, and in which version; kept through later marks. */
+  fixNote: string | null;
+  fixedIn: string | null;
+  handledBy: string | null;
+  handledAt: number | null;
+}
+
+/** GET /admin/api/qa/runs/:runId: the run and its tasks in catalog order (the ones the query keeps). */
+export interface AdminQaRunDetail extends AdminQaRun {
+  items: AdminQaItem[];
+}
+
+/**
+ * POST …/items/:taskId/result. `actual` is required (non-blank) for partial and fail; untested clears it.
+ * actual and note: at most 2000 characters, trimmed; blank is none. The mark replaces the previous one.
+ */
+export interface AdminQaResultRequest {
+  result: QaResult;
+  actual?: string | null;
+  note?: string | null;
+}
+
+/**
+ * POST …/items/:taskId/fix ("טופל"): on a task marked fail or partial only (409 qaNotBug otherwise), on a
+ * closed run too. Again later, it replaces the fix.
+ */
+export interface AdminQaFixRequest {
+  /** What was done, 1–4000 characters. */
+  fixNote: string;
+  /** The version with the fix, 1–40 characters on one line: "1.0.5", "1.0.5 (abc1234)", "שרת abc1234". */
+  fixedIn: string;
+}
+
+/** One bug of GET /admin/api/qa/bugs, whole: everything needed to fix it without reading its run. */
+export interface AdminQaBug extends Omit<
+  AdminQaItem,
+  'position' | 'categoryId' | 'subcategoryId' | 'who' | 'source' | 'bugStatus'
+> {
+  run: Pick<AdminQaRun, 'id' | 'title' | 'appVersion' | 'device' | 'platform' | 'status'>;
+  bugStatus: QaBugStatus;
 }

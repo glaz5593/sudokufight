@@ -18,7 +18,9 @@
     "db:check": "drizzle-kit check",
     "seed": "tsx scripts/seed.ts",
     "db:seed-puzzles": "tsx scripts/seed-puzzles.ts",
-    "fake-client": "tsx scripts/fake-client.ts"
+    "fake-client": "tsx scripts/fake-client.ts",
+    "qa": "tsx scripts/qa.ts",
+    "adb": "tsx scripts/adb.ts"
   },
   "dependencies": {
     "@colyseus/core": "0.18.18",

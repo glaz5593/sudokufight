@@ -38,6 +38,11 @@ kill_timeout = "30s"
   # admin site's switch ("בוט סמוי"), off until an admin turns it on. Its seed key is a fly secret
   # (STEALTH_BOT_SECRET), never in a file. Never copy this line to fly.production.toml without Moshe's word.
   STEALTH_BOT_ENABLED = "true"
+  # The QA module (docs/handoff/2026-10-23/qa-module/plan.md): the admin site's "בדיקות" and /admin/api/qa.
+  # Staging only: never copy these lines to fly.production.toml. QA_OPEN: no sign-in and no key needed there
+  # (Moshe, 2026-10-24: staging keeps no money or private data).
+  QA_ENABLED = "true"
+  QA_OPEN = "true"
 
 [http_service]
   internal_port = 2567

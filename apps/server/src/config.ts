@@ -278,6 +278,27 @@ export const DEFAULT_STEALTH_BOT: Omit<StealthBotSettings, 'secret'> = {
 
 export const MIN_STEALTH_BOT_SECRET_LENGTH = 32;
 
+/**
+ * The QA module (docs/handoff/2026-10-23/qa-module/plan.md; src/qa, admin/qa.ts): test runs from a fixed
+ * catalog, marked on the admin site or by Claude over the API.
+ * - `enabled` (QA_ENABLED, default false): off, every /admin/api/qa route answers 503 `qaDisabled` [Q1: on in
+ *   staging and locally only].
+ * - `agentToken` (QA_AGENT_TOKEN; 32+ characters, not trimmed): Claude's key for the /qa routes only
+ *   (`Authorization: Bearer …`); null: only the admin's own sign-in works there. A secret: fly secrets, never
+ *   the repo, never logged.
+ * - `open` (QA_OPEN, default false): the /qa routes need no sign-in and no key; such a caller is Claude.
+ *   Moshe, 2026-10-24: a key is one thing too many on staging, which keeps no money or private data. On in
+ *   staging only (fly.toml), like QA_ENABLED.
+ */
+export interface QaSettings {
+  enabled: boolean;
+  agentToken: string | null;
+  /** Absent (as in older tests): false. */
+  open?: boolean;
+}
+
+export const MIN_QA_AGENT_TOKEN_LENGTH = 32;
+
 export interface ServerConfig {
   nodeEnv: NodeEnv;
   port: number;
@@ -328,6 +349,8 @@ export interface ServerConfig {
    * absent (as in tests): off.
    */
   stealth?: StealthBotSettings;
+  /** QA_ENABLED and QA_AGENT_TOKEN: loadConfig always sets it, off by default; absent (as in tests): off. */
+  qa?: QaSettings;
 }
 
 export class ConfigError extends Error {
@@ -627,6 +650,17 @@ const envSchema = z.object({
       .min(MIN_STEALTH_BOT_SECRET_LENGTH, `must be at least ${MIN_STEALTH_BOT_SECRET_LENGTH} characters`)
       .optional(),
   ),
+  // The QA module (src/qa): off unless QA_ENABLED says otherwise.
+  QA_ENABLED: booleanSetting(false),
+  QA_OPEN: booleanSetting(false),
+  // Not trimmed, like a password: only an empty value counts as unset.
+  QA_AGENT_TOKEN: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z
+      .string()
+      .min(MIN_QA_AGENT_TOKEN_LENGTH, `must be at least ${MIN_QA_AGENT_TOKEN_LENGTH} characters`)
+      .optional(),
+  ),
 });
 
 /** A true/false setting: true, false, 1 or 0 (any case); unset or blank → `fallback`. */
@@ -895,7 +929,15 @@ export function loadConfig(
       readyAfterMs: { ...DEFAULT_STEALTH_BOT.readyAfterMs },
       secret: e.STEALTH_BOT_SECRET ?? randomSecret(),
     },
+    qa: { enabled: e.QA_ENABLED, agentToken: e.QA_AGENT_TOKEN ?? null, open: e.QA_OPEN },
   };
+}
+
+/** The QA module in the start-up line: on or off, and whether Claude's key is set (never the key). */
+export function describeQa(qa: QaSettings | undefined): string {
+  if (qa === undefined || !qa.enabled) return 'QA module off (QA_ENABLED=false)';
+  if (qa.open === true) return 'QA module on (open: no sign-in needed)';
+  return `QA module on (${qa.agentToken === null ? 'no agent key: admin sign-in only' : 'agent key set'})`;
 }
 
 /**

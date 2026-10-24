@@ -172,6 +172,7 @@ describe('language', () => {
       ['Stages', '#/levels'],
       ['Reports', '#/reports'],
       ['Audit log', '#/audit'],
+      ['QA', '#/qa'],
     ]);
     // No longer view-only (spec §27.3, changed with Moshe's approval): no "Read-only" badge.
     expect(screen.queryByText('Read-only')).toBeNull();

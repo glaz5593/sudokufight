@@ -13,6 +13,8 @@ import { InstallsPage } from './pages/InstallsPage';
 import { LevelsPage } from './pages/LevelsPage';
 import { LoginPage, type LoginNotice } from './pages/LoginPage';
 import { OverviewPage } from './pages/OverviewPage';
+import { QaRunPage } from './pages/QaRunPage';
+import { QaRunsPage } from './pages/QaRunsPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { RoomsPage } from './pages/RoomsPage';
 import { ScreensPage } from './pages/ScreensPage';
@@ -116,6 +118,8 @@ const NAV: { section: Section; label: StringKey; route: Route }[] = [
   { section: 'levels', label: 'nav.levels', route: { name: 'levels' } },
   { section: 'reports', label: 'nav.reports', route: { name: 'reports' } },
   { section: 'audit', label: 'nav.audit', route: { name: 'audit' } },
+  // The QA module (qa-module/plan.md): test runs, their marks and bugs.
+  { section: 'qa', label: 'nav.qa', route: { name: 'qa' } },
 ];
 
 /** "Now" for relative times, moved on every minute. */
@@ -136,7 +140,12 @@ function Shell({ onLogout }: { onLogout: () => void }) {
   const current = sectionOf(route);
 
   // A new page: focus its heading, so a screen reader starts there and Tab continues from it.
-  const pageKey = route.name === 'install' || route.name === 'user' || route.name === 'game' ? route.id : '';
+  const pageKey =
+    route.name === 'install' || route.name === 'user' || route.name === 'game'
+      ? route.id
+      : route.name === 'qaRun'
+        ? String(route.id)
+        : '';
   const firstPage = useRef(true);
   useEffect(() => {
     if (firstPage.current) {
@@ -226,6 +235,10 @@ function Page({ route }: { route: Route }) {
       return <ReportsPage status={route.status ?? DEFAULT_REPORT_FILTER} page={route.page ?? 1} />;
     case 'audit':
       return <AuditPage page={route.page ?? 1} />;
+    case 'qa':
+      return <QaRunsPage page={route.page ?? 1} />;
+    case 'qaRun':
+      return <QaRunPage id={route.id} show={route.show ?? 'all'} />;
     case 'notFound':
       return <NotFound />;
   }

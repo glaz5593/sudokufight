@@ -70,6 +70,11 @@ const ERROR_TEXT: Record<ApiError['code'], StringKey> = {
   googleRequired: 'error.googleRequired',
   // The stealth bot's switch on a server without the stealth bot (pages/StealthPage.tsx).
   stealthDisabled: 'error.stealthDisabled',
+  // The QA module (/qa routes; its pages come later).
+  qaDisabled: 'error.qaDisabled',
+  qaCatalogInvalid: 'error.qaCatalogInvalid',
+  qaRunClosed: 'error.qaRunClosed',
+  qaNotBug: 'error.qaNotBug',
   // Only the Google sign-in answers these, and the login page words them itself (pages/LoginPage.tsx).
   invalidToken: 'error.server',
   wrongProvider: 'error.server',

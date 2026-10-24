@@ -39,6 +39,11 @@ export const ADMIN_COOKIE_NAME = 'sf_admin';
 /** Sign-in attempts per IP, right or wrong: 5 at once, then one every 12 s. */
 export const DEFAULT_LOGIN_LIMIT: RateLimitRule = { limit: 5, windowMs: 60_000 };
 /**
+ * Requests with the QA agent's key (`Authorization: Bearer`, the /qa routes) per IP, right or wrong: 120 at once,
+ * then two a second. A budget of their own, apart from the sign-ins': wrong keys never block a sign-in.
+ */
+export const DEFAULT_QA_AGENT_LIMIT: RateLimitRule = { limit: 120, windowMs: 60_000 };
+/**
  * A Google sign-in opens an admin session only with an ID token of a sign-in this recent (its `auth_time`): the
  * page always signs in afresh in Google's popup, so its tokens are seconds old. A token refreshed later keeps
  * its first sign-in time, so a refresh token taken from anywhere (Firebase's never run out) can't open a

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { cellName, ENGINE_VERSION } from '@sudoku-fight/engine';
 
 import { createAppServer } from './app';
-import { describeAdmin, loadConfig } from './config';
+import { describeAdmin, describeQa, loadConfig } from './config';
 import { DataDirLockedError } from './db';
 import { flushReports, installProcessHandlers, reportError, setMonitor, startSentry } from './monitoring';
 
@@ -38,6 +38,8 @@ async function main(): Promise<void> {
           `after ${stealth.afterMs.min}-${stealth.afterMs.max} ms)`
       : '[server] stealth bot off (STEALTH_BOT_ENABLED=false)',
   );
+  // The QA module: whether Claude's key is set, never the key.
+  console.log(`[server] ${describeQa(config.qa)}`);
   console.log(`[server] listening on http://localhost:${config.port} (WebSocket on the same port)`);
 }
 

@@ -10,6 +10,9 @@ import type {
   AdminOverview,
   AdminModerationResult,
   AdminPage,
+  AdminQaItem,
+  AdminQaRun,
+  AdminQaRunDetail,
   AdminReport,
   AdminReportedPlayer,
   AdminScreens,
@@ -17,6 +20,7 @@ import type {
   AdminStealthSwitch,
   AdminUserDetail,
   AdminUserRow,
+  QaCatalog,
 } from '@sudoku-fight/protocol';
 
 import { dayToUtcMs, localDay, utcMsToDay } from '../format';
@@ -513,4 +517,134 @@ export function personaRow(over: Partial<AdminUserRow> = {}, now = Date.now()): 
     },
     now,
   );
+}
+
+// ---- The QA module (qa-module/plan.md) ------------------------------------------------------------------
+
+/** GET /qa/catalog: two categories (friends, staged practice). */
+export function qaCatalogFixture(): QaCatalog {
+  const task = (id: string, title: string) => ({
+    id,
+    title,
+    steps: ['פותחים את האפליקציה', 'לוחצים על הכפתור'],
+    expected: ['המסך נפתח'],
+    who: 'both' as const,
+  });
+  return {
+    catalogVersion: 1,
+    categories: [
+      {
+        id: 'friends',
+        title: 'חברים',
+        subcategories: [
+          {
+            id: 'rooms',
+            title: 'חדרים',
+            tasks: [task('friends-room-open', 'פתיחת חדר'), task('friends-join', 'הצטרפות')],
+          },
+        ],
+      },
+      {
+        id: 'practice',
+        title: 'אימון בשלבים',
+        subcategories: [{ id: 'gates', title: 'שערים', tasks: [task('practice-gate', 'מעבר שער')] }],
+      },
+    ],
+  };
+}
+
+/** A run of the runs list (GET /qa/runs). */
+export function qaRunFixture(over: Partial<AdminQaRun> = {}, now = Date.now()): AdminQaRun {
+  return {
+    id: 7,
+    title: 'Friends on the Pixel',
+    appVersion: '1.0.5',
+    device: 'Pixel 7',
+    platform: 'android',
+    engineVersion: '1.0.0',
+    catalogVersion: 1,
+    filter: { who: 'all', categories: null },
+    status: 'open',
+    createdBy: 'moshe@example.com',
+    createdAt: now - 2 * HOUR,
+    closedBy: null,
+    closedAt: null,
+    counts: { total: 12, untested: 4, pass: 5, partial: 1, fail: 2, openBugs: 2, handled: 1 },
+    ...over,
+  };
+}
+
+/** A task of a run, untested. */
+export function qaItemFixture(over: Partial<AdminQaItem> = {}): AdminQaItem {
+  return {
+    taskId: 'friends-room-open',
+    position: 0,
+    categoryId: 'friends',
+    categoryTitle: 'Friends',
+    subcategoryId: 'rooms',
+    subcategoryTitle: 'Rooms',
+    title: 'Open a room',
+    steps: ['Open the app', 'Tap "Play with friends"'],
+    expected: ['A room code shows', 'The share button works'],
+    who: 'moshe',
+    source: null,
+    result: 'untested',
+    actual: null,
+    note: null,
+    testedBy: null,
+    testedAt: null,
+    bugStatus: null,
+    fixNote: null,
+    fixedIn: null,
+    handledBy: null,
+    handledAt: null,
+    ...over,
+  };
+}
+
+/**
+ * GET /qa/runs/7: three tasks: one untested, one passed (another subcategory), and a bug Claude handled (another
+ * category).
+ */
+export function qaRunDetailFixture(over: Partial<AdminQaRunDetail> = {}, now = Date.now()): AdminQaRunDetail {
+  return {
+    ...qaRunFixture(
+      { counts: { total: 3, untested: 1, pass: 1, partial: 0, fail: 1, openBugs: 0, handled: 1 } },
+      now,
+    ),
+    items: [
+      qaItemFixture(),
+      qaItemFixture({
+        taskId: 'friends-join',
+        position: 1,
+        subcategoryId: 'joining',
+        subcategoryTitle: 'Joining',
+        title: 'Join by code',
+        who: 'claude',
+        result: 'pass',
+        testedBy: 'claude',
+        testedAt: now - HOUR,
+      }),
+      qaItemFixture({
+        taskId: 'practice-gate',
+        position: 2,
+        categoryId: 'practice',
+        categoryTitle: 'Staged practice',
+        subcategoryId: 'gates',
+        subcategoryTitle: 'Gates',
+        title: 'Pass a gate',
+        who: 'both',
+        result: 'fail',
+        actual: 'The gate stayed shut\nafter three stars',
+        testedBy: 'moshe@example.com',
+        testedAt: now - HOUR,
+        bugStatus: 'handled',
+        fixNote: 'Counted the stars again\non the server',
+        fixedIn: '1.0.6',
+        handledBy: 'claude',
+        handledAt: now - 30 * 60_000,
+      }),
+    ],
+    ...over,
+  };
 }

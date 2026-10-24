@@ -50,6 +50,8 @@ describe('database', () => {
       'practice_results',
       'puzzle_history',
       'puzzles',
+      'qa_items',
+      'qa_runs',
       'ratings',
       'retired_names',
       'server_settings',
@@ -544,6 +546,78 @@ describe('migration 0010: the stealth bot (stealth-bot.md §6, §7, §8) [D90, D
         expect(await queryRows(after.db, sql`select key, value from server_settings`)).toEqual([
           { key: 'stealthBot', value: true },
         ]);
+      } finally {
+        await after.close();
+      }
+    } finally {
+      rmSync(migrations, { recursive: true, force: true });
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
+
+describe('migration 0011: the QA module (docs/handoff/2026-10-23/qa-module/plan.md)', () => {
+  it('adds qa_runs and qa_items, empty, and leaves the rest as it was; an item goes with its run', async () => {
+    const migrations = foldersBefore(11);
+    const dataDir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-pglite-'));
+    try {
+      const before = await createDb(
+        { database: { kind: 'pglite', dataDir } },
+        { migrationsFolder: migrations },
+      );
+      await insertOldUsers(before.db, [{ id: 'ana', avatarId: 'moon' }]);
+      await before.close();
+
+      const after = await createDb({ database: { kind: 'pglite', dataDir } });
+      try {
+        expect(await queryRows(after.db, sql`select id, kind from users`)).toEqual([
+          { id: 'ana', kind: 'person' },
+        ]);
+        const count = async (table: string) =>
+          (
+            await queryRows<{ n: number }>(
+              after.db,
+              sql`select count(*)::int as n from ${sql.identifier(table)}`,
+            )
+          )[0]?.n;
+        expect([await count('qa_runs'), await count('qa_items')]).toEqual([0, 0]);
+
+        // A run: integer ids from 1, open by default; a platform or status out of the list is refused.
+        const [run] = await queryRows<{ id: number; status: string }>(
+          after.db,
+          sql`insert into qa_runs (title, app_version, platform, engine_version, catalog_version, filter, created_by)
+              values ('בדיקת 1.0.5', '1.0.5', 'android', '0.4.0', 1, '{"who":"all","categories":null}', 'claude')
+              returning id, status`,
+        );
+        expect(run).toEqual({ id: 1, status: 'open' });
+        await expect(
+          after.db
+            .execute(sql`insert into qa_runs (title, app_version, platform, engine_version, catalog_version,
+                                 filter, created_by) values ('x', '1', 'web', '0', 1, '{}', 'claude')`),
+        ).rejects.toThrow();
+        await expect(after.db.execute(sql`update qa_runs set status = 'paused'`)).rejects.toThrow();
+
+        // Its items: untested by default, one per task; a result, who or bug state out of the list is refused.
+        const item = (taskId: string, who = 'both') =>
+          after.db
+            .execute(sql`insert into qa_items (run_id, position, category_id, category_title, subcategory_id,
+                                 subcategory_title, task_id, title, steps, expected, who)
+                               values (1, 0, 'friends', 'חברים', 'friends-room', 'חדר', ${taskId}, 'פתיחת חדר',
+                                 '["פותחים"]', '["נפתח"]', ${who})`);
+        await item('friends-room-create');
+        expect(await queryRows(after.db, sql`select task_id, result, bug_status from qa_items`)).toEqual([
+          { task_id: 'friends-room-create', result: 'untested', bug_status: null },
+        ]);
+        await expect(item('friends-room-create')).rejects.toThrow(); // one row per task of a run
+        await expect(item('friends-room-join', 'everyone')).rejects.toThrow();
+        await expect(after.db.execute(sql`update qa_items set result = 'skipped'`)).rejects.toThrow();
+        await expect(after.db.execute(sql`update qa_items set bug_status = 'fixed'`)).rejects.toThrow();
+        await after.db.execute(
+          sql`update qa_items set result = 'fail', actual = 'לא נפתח', bug_status = 'open'`,
+        );
+
+        await after.db.execute(sql`delete from qa_runs where id = 1`);
+        expect(await count('qa_items')).toBe(0);
       } finally {
         await after.close();
       }

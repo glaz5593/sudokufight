@@ -14,6 +14,7 @@ import { createLegalRouter } from '../legal';
 import type { ModerationTools } from '../moderation/admin';
 import { createModerationRouter, type ModerationLimits } from '../moderation/router';
 import { BlockWatch } from '../moderation/watch';
+import type { QaCatalogSource } from '../qa';
 import {
   createProgressRouter,
   type ProgressLimits,
@@ -93,6 +94,13 @@ export interface HttpDeps {
    * STEALTH_BOT_ENABLED off (no switch on the admin site).
    */
   stealthSwitch?: StealthSwitchControl;
+  /**
+   * The QA catalog's JSON for the admin API's /qa routes (default: apps/server/data/qa-catalog.json, bundled; read
+   * on first use). Tests pass their own.
+   */
+  qaCatalog?: QaCatalogSource;
+  /** Requests with the QA agent's key per IP (default 120 a minute); tests make it small. */
+  qaAgentLimit?: RateLimitRule;
 }
 
 /**

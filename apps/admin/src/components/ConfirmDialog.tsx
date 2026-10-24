@@ -29,6 +29,7 @@ export function ConfirmDialog({
   children,
   confirmLabel,
   danger = false,
+  audited = true,
   onConfirm,
   onClose,
   onFailed,
@@ -38,6 +39,8 @@ export function ConfirmDialog({
   confirmLabel: string;
   /** The action is hard to undo (a suspension, a name reset): the confirm button says so in red. */
   danger?: boolean;
+  /** The action goes into the audit log (the moderation actions, the stealth switch); not a QA run's close. */
+  audited?: boolean;
   onConfirm: () => Promise<void>;
   /** Cancel, Escape, or "close" after a final error. */
   onClose: () => void;
@@ -121,7 +124,7 @@ export function ConfirmDialog({
       </h2>
       <div id={bodyId} className="dialog-body">
         {children}
-        <p className="muted">{t('confirm.audit')}</p>
+        {audited && <p className="muted">{t('confirm.audit')}</p>}
       </div>
       {error && (
         <p className="form-error" role="alert">

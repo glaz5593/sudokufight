@@ -109,6 +109,20 @@ describe('router', () => {
     }
   });
 
+  it('the QA module: its runs (a page) and a run (a filter); a bad run id is not found', () => {
+    expect(parseRoute('#/qa')).toEqual({ name: 'qa', page: 1 });
+    expect(parseRoute('#/qa?page=2')).toEqual({ name: 'qa', page: 2 });
+    expect(parseRoute('#/qa/12')).toEqual({ name: 'qaRun', id: 12 });
+    expect(parseRoute('#/qa/12?show=bugs')).toEqual({ name: 'qaRun', id: 12, show: 'bugs' });
+    expect(parseRoute('#/qa/12?show=nope')).toEqual({ name: 'qaRun', id: 12 });
+    expect(parseRoute('#/qa/x')).toEqual({ name: 'notFound' });
+    expect(parseRoute('#/qa/0')).toEqual({ name: 'notFound' });
+    expect(sectionOf({ name: 'qaRun', id: 1 })).toBe('qa');
+    expect(routeHref({ name: 'qaRun', id: 12, show: 'all' })).toBe('#/qa/12');
+    expect(routeHref({ name: 'qaRun', id: 12, show: 'untested' })).toBe('#/qa/12?show=untested');
+    expect(routeHref({ name: 'qa', page: 1 })).toBe('#/qa');
+  });
+
   it('an unknown report status is the open reports', () => {
     expect(parseRoute('#/reports?status=closed')).toEqual({ name: 'reports', status: 'open', page: 1 });
     expect(parseRoute('#/reports/x')).toEqual({ name: 'notFound' });

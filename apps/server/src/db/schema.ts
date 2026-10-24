@@ -2,10 +2,16 @@ import { randomUUID } from 'node:crypto';
 
 import {
   type AdminAuditAction,
+  type AdminQaRunFilter,
   HEBREW_FINAL_LETTERS,
   HEBREW_REGULAR_LETTERS,
   LEVEL_ID_PATTERN,
   type Platform,
+  QA_BUG_STATUSES,
+  QA_PLATFORMS,
+  QA_RESULTS,
+  QA_RUN_STATUSES,
+  QA_WHO,
   REPORT_REASONS,
   REPORT_STATUSES,
   type TelemetryEventName,
@@ -653,6 +659,88 @@ export const appEvents = pgTable(
   ],
 );
 
+// ---------------------------------------------------------------------------------------------------------
+// The QA module (docs/handoff/2026-10-23/qa-module/plan.md; src/qa)
+
+/**
+ * A QA run: tests of one app version, opened from the catalog (apps/server/data/qa-catalog.json) with a choice
+ * of categories and testers (`filter`), and stamped with the catalog's and the engine's versions. Its tasks are
+ * copied into qa_items when it opens, so a later change of the catalog never changes it. `created_by` and
+ * `closed_by`: an admin's address, `password`, or `claude` (the agent's key). Integer ids: short in a curl
+ * command.
+ */
+export const qaRuns = pgTable(
+  'qa_runs',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    title: text('title').notNull(),
+    appVersion: text('app_version').notNull(),
+    device: text('device'),
+    platform: text('platform', { enum: QA_PLATFORMS }),
+    engineVersion: text('engine_version').notNull(),
+    catalogVersion: integer('catalog_version').notNull(),
+    filter: jsonb('filter').$type<AdminQaRunFilter>().notNull(),
+    status: text('status', { enum: QA_RUN_STATUSES }).notNull().default('open'),
+    createdBy: text('created_by').notNull(),
+    createdAt: timestamptz('created_at').notNull().defaultNow(),
+    closedBy: text('closed_by'),
+    closedAt: timestamptz('closed_at'),
+  },
+  (t) => [
+    check('qa_runs_platform_check', sql`${t.platform} in (${inList(QA_PLATFORMS)})`),
+    check('qa_runs_status_check', sql`${t.status} in (${inList(QA_RUN_STATUSES)})`),
+  ],
+);
+
+/**
+ * A task of a QA run: the catalog's task as it was when the run opened (its category's and subcategory's titles
+ * too), and its latest mark (no history: a new mark replaces it). A fail or partial mark makes it a bug
+ * (`bug_status`, src/qa/rules.ts), which Claude marks handled with what was done and in which version; the
+ * fix stays through later marks. One row per task of a run; the rows go with their run.
+ */
+export const qaItems = pgTable(
+  'qa_items',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    runId: integer('run_id')
+      .notNull()
+      .references(() => qaRuns.id, { onDelete: 'cascade' }),
+    /** Its place in the run, in catalog order, from 0. */
+    position: integer('position').notNull(),
+    categoryId: text('category_id').notNull(),
+    categoryTitle: text('category_title').notNull(),
+    subcategoryId: text('subcategory_id').notNull(),
+    subcategoryTitle: text('subcategory_title').notNull(),
+    taskId: text('task_id').notNull(),
+    title: text('title').notNull(),
+    steps: jsonb('steps').$type<string[]>().notNull(),
+    expected: jsonb('expected').$type<string[]>().notNull(),
+    who: text('who', { enum: QA_WHO }).notNull(),
+    source: text('source'),
+    result: text('result', { enum: QA_RESULTS }).notNull().default('untested'),
+    /** "מה קרה בפועל": set on partial and fail, null on untested. */
+    actual: text('actual'),
+    note: text('note'),
+    testedBy: text('tested_by'),
+    testedAt: timestamptz('tested_at'),
+    bugStatus: text('bug_status', { enum: QA_BUG_STATUSES }),
+    fixNote: text('fix_note'),
+    fixedIn: text('fixed_in'),
+    handledBy: text('handled_by'),
+    handledAt: timestamptz('handled_at'),
+  },
+  (t) => [
+    uniqueIndex('qa_items_run_task_uq').on(t.runId, t.taskId),
+    // GET /admin/api/qa/bugs: the bugs of every run, newest first.
+    index('qa_items_bug_idx')
+      .on(t.bugStatus, t.testedAt)
+      .where(sql`${t.bugStatus} is not null`),
+    check('qa_items_who_check', sql`${t.who} in (${inList(QA_WHO)})`),
+    check('qa_items_result_check', sql`${t.result} in (${inList(QA_RESULTS)})`),
+    check('qa_items_bug_status_check', sql`${t.bugStatus} in (${inList(QA_BUG_STATUSES)})`),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type Persona = typeof personas.$inferSelect;
 export type ServerSetting = typeof serverSettings.$inferSelect;
@@ -668,3 +756,5 @@ export type PlayerReport = typeof playerReports.$inferSelect;
 export type UserBlock = typeof userBlocks.$inferSelect;
 export type AdminAuditRow = typeof adminAudit.$inferSelect;
 export type SuspendedSignIn = typeof suspendedSignIns.$inferSelect;
+export type QaRunRow = typeof qaRuns.$inferSelect;
+export type QaItemRow = typeof qaItems.$inferSelect;
