@@ -1,9 +1,10 @@
-import type { AdminQaItem, AdminQaRun } from '@sudoku-fight/protocol';
+import type { AdminQaBug, AdminQaItem, AdminQaRun } from '@sudoku-fight/protocol';
 
 import {
   centerOf,
   describeNodes,
   findNode,
+  formatBug,
   formatItem,
   formatRun,
   parseUiDump,
@@ -83,6 +84,7 @@ describe('the API side', () => {
       taskId: 'friends-room-create',
       who: 'claude',
       title: 'יצירת חדר',
+      subtitle: 'בדוק יצירת חדר עם קוד',
       categoryTitle: 'חברים',
       subcategoryTitle: 'חדר',
       steps: ['פותחים', 'לוחצים'],
@@ -97,12 +99,58 @@ describe('the API side', () => {
     expect(formatItem(item)).toBe('X friends-room-create [claude] יצירת חדר {handled}');
     expect(formatItem(item, true).split('\n')).toEqual([
       'X friends-room-create [claude] יצירת חדר {handled}',
+      '  בדוק יצירת חדר עם קוד',
       '  חברים › חדר',
       '  1. פותחים',
       '  2. לוחצים',
       '  ✓ רואים קוד',
       '  בפועל: אין קוד',
       '  טופל (1.0.5): תוקן',
+    ]);
+    // A task of a run opened before subtitles: no subtitle line.
+    expect(
+      formatItem({ ...item, subtitle: null }, true)
+        .split('\n')
+        .slice(0, 2),
+    ).toEqual(['X friends-room-create [claude] יצירת חדר {handled}', '  חברים › חדר']);
+  });
+
+  it('prints a bug with its subtitle on the second line (none on a run from before subtitles)', () => {
+    const bug = {
+      run: { id: 3, title: 'בדיקה', appVersion: '1.0.5', device: null, platform: null, status: 'open' },
+      taskId: 'friends-room-create',
+      categoryTitle: 'חברים',
+      subcategoryTitle: 'חדר',
+      title: 'יצירת חדר',
+      subtitle: 'בדוק יצירת חדר עם קוד',
+      steps: ['פותחים'],
+      expected: ['רואים קוד'],
+      result: 'partial',
+      actual: 'הקוד חתוך',
+      note: 'רק בטלפון קטן',
+      bugStatus: 'open',
+      fixNote: null,
+      fixedIn: null,
+    } as AdminQaBug;
+    expect(formatBug(bug).split('\n')).toEqual([
+      '½ friends-room-create {open} run #3 בדיקה (1.0.5)',
+      '  בדוק יצירת חדר עם קוד',
+      '  חברים › חדר › יצירת חדר',
+      '  1. פותחים',
+      '  ✓ רואים קוד',
+      '  בפועל: הקוד חתוך',
+      '  הערה: רק בטלפון קטן',
+    ]);
+    expect(
+      formatBug({ ...bug, subtitle: null })
+        .split('\n')
+        .slice(0, 2),
+    ).toEqual(['½ friends-room-create {open} run #3 בדיקה (1.0.5)', '  חברים › חדר › יצירת חדר']);
+    // Short (bugs --short): the run, the subtitle and the title, nothing more.
+    expect(formatBug(bug, false).split('\n')).toEqual([
+      '½ friends-room-create {open} run #3 בדיקה (1.0.5)',
+      '  בדוק יצירת חדר עם קוד',
+      '  חברים › חדר › יצירת חדר',
     ]);
   });
 });

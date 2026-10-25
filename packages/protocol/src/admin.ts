@@ -795,12 +795,16 @@ export type QaRunStatus = (typeof QA_RUN_STATUSES)[number];
 /** The catalog's limits (the server checks its file against them; a Jest test checks the shipped one). */
 export const QA_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,79}$/;
 export const QA_MAX_TITLE_LENGTH = 120;
+export const QA_MAX_SUBTITLE_LENGTH = 140;
 export const QA_MAX_TEXT_LENGTH = 500;
 
 /** One task of the catalog: numbered steps, and what should happen (one line or more). All in Hebrew. */
 export interface QaCatalogTask {
   id: string;
+  /** Short: "התחברות לא תקינה". */
   title: string;
+  /** One sentence under the title that starts with "בדוק", at most 140 characters: what the task checks. */
+  subtitle: string;
   steps: string[];
   expected: string[];
   who: QaWho;
@@ -893,6 +897,8 @@ export interface AdminQaItem {
   subcategoryId: string;
   subcategoryTitle: string;
   title: string;
+  /** The catalog's subtitle ("בדוק …"); null on the runs opened before subtitles were copied (migration 0012). */
+  subtitle: string | null;
   steps: string[];
   expected: string[];
   who: QaWho;

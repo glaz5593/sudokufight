@@ -2,7 +2,7 @@ import type { QaCatalog } from '@sudoku-fight/protocol';
 
 /**
  * A small QA catalog for tests (the shipped one, apps/server/data/qa-catalog.json, has its own test): three
- * categories, six tasks, every `who`.
+ * categories, six tasks, every `who`, each task with its subtitle.
  *
  *   friends   friends-room     friends-room-create (both), friends-room-join (claude)
  *             friends-invite   friends-invite-link (moshe)
@@ -26,6 +26,7 @@ export function testQaCatalog(): QaCatalog {
               {
                 id: 'friends-room-create',
                 title: 'פתיחת חדר',
+                subtitle: 'בדוק פתיחת חדר חדש מלשונית החברים',
                 steps: ['פותחים את לשונית "חברים"', 'לוחצים על "פתח חדר"'],
                 expected: ['נפתח חדר עם קוד בן 6 תווים', 'הקוד מוצג משמאל לימין'],
                 who: 'both',
@@ -34,6 +35,7 @@ export function testQaCatalog(): QaCatalog {
               {
                 id: 'friends-room-join',
                 title: 'הצטרפות עם קוד',
+                subtitle: 'בדוק הצטרפות לחדר עם הקוד מטלפון שני',
                 steps: ['בטלפון השני מקלידים את הקוד'],
                 expected: ['שני השחקנים רואים זה את זה בחדר'],
                 who: 'claude',
@@ -47,6 +49,7 @@ export function testQaCatalog(): QaCatalog {
               {
                 id: 'friends-invite-link',
                 title: 'קישור הזמנה',
+                subtitle: 'בדוק שקישור הזמנה פותח את האפליקציה ישר בחדר',
                 steps: ['שולחים את הקישור בוואטסאפ', 'פותחים אותו בטלפון השני'],
                 expected: ['האפליקציה נפתחת ישר בחדר'],
                 who: 'moshe',
@@ -66,6 +69,7 @@ export function testQaCatalog(): QaCatalog {
               {
                 id: 'practice-gate-open',
                 title: 'שער נפתח',
+                subtitle: 'בדוק שהשער לפרק הבא נפתח אחרי שלב הבוס',
                 steps: ['מסיימים את שלב הבוס של פרק 1'],
                 expected: ['השער לפרק 2 נפתח'],
                 who: 'claude',
@@ -73,6 +77,7 @@ export function testQaCatalog(): QaCatalog {
               {
                 id: 'practice-stars',
                 title: 'כוכבים',
+                subtitle: 'בדוק שסיום שלב בלי טעויות נותן 3 כוכבים',
                 steps: ['מסיימים שלב בלי טעויות'],
                 expected: ['מקבלים 3 כוכבים'],
                 who: 'moshe',
@@ -92,6 +97,7 @@ export function testQaCatalog(): QaCatalog {
               {
                 id: 'sound-mute',
                 title: 'השתקה',
+                subtitle: 'בדוק שהשתקה בהגדרות משתיקה את המשחק',
                 steps: ['משתיקים בהגדרות'],
                 expected: ['אין צליל במשחק'],
                 who: 'moshe',

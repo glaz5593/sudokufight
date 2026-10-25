@@ -713,6 +713,8 @@ export const qaItems = pgTable(
     subcategoryTitle: text('subcategory_title').notNull(),
     taskId: text('task_id').notNull(),
     title: text('title').notNull(),
+    /** One sentence under the title ("בדוק …"), from migration 0012; null on the runs opened before it. */
+    subtitle: text('subtitle'),
     steps: jsonb('steps').$type<string[]>().notNull(),
     expected: jsonb('expected').$type<string[]>().notNull(),
     who: text('who', { enum: QA_WHO }).notNull(),

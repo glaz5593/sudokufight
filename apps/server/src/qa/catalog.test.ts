@@ -48,6 +48,19 @@ describe('parseQaCatalog', () => {
     expect(problemsOf(withoutExpected)[0]).toMatch(new RegExp(`^${at}.expected: `));
   });
 
+  it('a task needs a subtitle: a non-blank text of at most 140 characters', () => {
+    const task = (c: QaCatalog) => c.categories[0]!.subcategories[0]!.tasks[0]!;
+    const at = 'categories.0.subcategories.0.tasks.0';
+    const withoutSubtitle = changed((c) => delete (task(c) as Partial<ReturnType<typeof task>>).subtitle);
+    expect(problemsOf(withoutSubtitle)).toHaveLength(1);
+    expect(problemsOf(withoutSubtitle)[0]).toMatch(new RegExp(`^${at}.subtitle: `));
+    expect(problemsOf(changed((c) => (task(c).subtitle = '   ')))).toEqual([`${at}.subtitle: blank`]);
+    expect(problemsOf(changed((c) => (task(c).subtitle = 'ב'.repeat(141))))).toEqual([
+      `${at}.subtitle: at most 140 characters`,
+    ]);
+    expect(problemsOf(changed((c) => (task(c).subtitle = 'ב'.repeat(140))))).toEqual([]);
+  });
+
   it('refuses bad ids, a bad who, long or blank texts and unknown fields', () => {
     const task = (c: QaCatalog) => c.categories[0]!.subcategories[0]!.tasks[0]!;
     for (const bad of ['', 'Friends', 'friends_room', '-x', 'חברים', 'a'.repeat(81)])
@@ -106,6 +119,7 @@ describe('selectTasks: what a new run takes', () => {
       subcategoryTitle: 'חדר עם חברים',
       taskId: 'friends-room-create',
       title: 'פתיחת חדר',
+      subtitle: 'בדוק פתיחת חדר חדש מלשונית החברים',
       steps: ['פותחים את לשונית "חברים"', 'לוחצים על "פתח חדר"'],
       expected: ['נפתח חדר עם קוד בן 6 תווים', 'הקוד מוצג משמאל לימין'],
       who: 'both',
@@ -190,7 +204,7 @@ describe('the shipped catalog (apps/server/data/qa-catalog.json)', () => {
     expect(result.ok ? [] : result.problems).toEqual([]);
   });
 
-  it('is in Hebrew: every title, step and expected result has a Hebrew letter', () => {
+  it('is in Hebrew: every title, subtitle, step and expected result has a Hebrew letter', () => {
     const result = parseQaCatalog(bundledQaCatalog());
     if (!result.ok) throw new Error(result.problems.join('\n'));
     const notHebrew: string[] = [];
@@ -203,12 +217,22 @@ describe('the shipped catalog (apps/server/data/qa-catalog.json)', () => {
         check(s.id, s.title);
         for (const t of s.tasks) {
           check(t.id, t.title);
+          check(`${t.id} subtitle`, t.subtitle);
           t.steps.forEach((step, i) => check(`${t.id} step ${i + 1}`, step));
           t.expected.forEach((line, i) => check(`${t.id} expected ${i + 1}`, line));
         }
       }
     }
     expect(notHebrew).toEqual([]);
+  });
+
+  it('every subtitle starts with "בדוק"', () => {
+    const result = parseQaCatalog(bundledQaCatalog());
+    if (!result.ok) throw new Error(result.problems.join('\n'));
+    const tasks = result.catalog.categories.flatMap((c) => c.subcategories.flatMap((s) => s.tasks));
+    expect(tasks.filter((t) => !t.subtitle.startsWith('בדוק')).map((t) => `${t.id}: ${t.subtitle}`)).toEqual(
+      [],
+    );
   });
 
   it('opens a run for each tester: every run choice finds tasks', () => {

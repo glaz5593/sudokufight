@@ -56,12 +56,22 @@ export function formatRun(run: AdminQaRun): string {
   );
 }
 
-/** A task, short (its id, mark and title) or whole (with steps, expected, what happened and the fix). */
+/** The subtitle's line ("בדוק …"), second under the head; none on a task of a run opened before subtitles. */
+const subtitleLines = (subtitle: string | null): string[] => (subtitle === null ? [] : [`  ${subtitle}`]);
+
+/**
+ * A task, short (its id, mark and title, on one line) or whole (with its subtitle on the second line, steps,
+ * expected, what happened and the fix).
+ */
 export function formatItem(item: AdminQaItem, whole = false): string {
   const head = `${RESULT_MARK[item.result]} ${item.taskId} [${item.who}] ${item.title}`;
   const bug = item.bugStatus === null ? '' : ` {${item.bugStatus}}`;
   if (!whole) return head + bug;
-  const lines = [head + bug, `  ${item.categoryTitle} › ${item.subcategoryTitle}`];
+  const lines = [
+    head + bug,
+    ...subtitleLines(item.subtitle),
+    `  ${item.categoryTitle} › ${item.subcategoryTitle}`,
+  ];
   item.steps.forEach((s, i) => lines.push(`  ${i + 1}. ${s}`));
   item.expected.forEach((e) => lines.push(`  ✓ ${e}`));
   if (item.actual !== null) lines.push(`  בפועל: ${item.actual}`);
@@ -70,12 +80,17 @@ export function formatItem(item: AdminQaItem, whole = false): string {
   return lines.join('\n');
 }
 
-/** A bug with what it needs to be fixed: its run, the task, what happened, and any fix so far. */
-export function formatBug(bug: AdminQaBug): string {
+/**
+ * A bug with what it needs to be fixed: its run, the task (its subtitle on the second line), what happened, and
+ * any fix so far. Short (`npm run qa -- bugs --short`): its run, subtitle and title only.
+ */
+export function formatBug(bug: AdminQaBug, whole = true): string {
   const lines = [
     `${RESULT_MARK[bug.result]} ${bug.taskId} {${bug.bugStatus}} run #${bug.run.id} ${bug.run.title} (${bug.run.appVersion})`,
+    ...subtitleLines(bug.subtitle),
     `  ${bug.categoryTitle} › ${bug.subcategoryTitle} › ${bug.title}`,
   ];
+  if (!whole) return lines.join('\n');
   bug.steps.forEach((s, i) => lines.push(`  ${i + 1}. ${s}`));
   bug.expected.forEach((e) => lines.push(`  ✓ ${e}`));
   if (bug.actual !== null) lines.push(`  בפועל: ${bug.actual}`);

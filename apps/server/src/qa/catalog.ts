@@ -1,6 +1,7 @@
 import {
   type AdminQaRunFilter,
   QA_ID_PATTERN,
+  QA_MAX_SUBTITLE_LENGTH,
   QA_MAX_TEXT_LENGTH,
   QA_MAX_TITLE_LENGTH,
   QA_WHO,
@@ -22,8 +23,9 @@ import { runTakes } from './rules';
  *
  * The rules: ids of lower-case letters, digits and "-" (QA_ID_PATTERN), each category, subcategory and task id
  * once in the whole file; every task with at least one step and one expected result, `who` claude, moshe or
- * both; every text non-blank, a title at most 120 characters, any other text at most 500. Nothing else in it (a
- * misspelt field is an error, not ignored), but a `_doc` note at the top.
+ * both, and a subtitle (one sentence that starts with "בדוק"); every text non-blank, a title at most 120
+ * characters, a subtitle at most 140, any other text at most 500. Nothing else in it (a misspelt field is an
+ * error, not ignored), but a `_doc` note at the top.
  */
 
 const id = z.string().regex(QA_ID_PATTERN, 'not an id: a-z, 0-9 and "-", from a letter or digit, at most 80');
@@ -33,11 +35,13 @@ const nonBlank = (max: number) =>
     .max(max, `at most ${max} characters`)
     .refine((s) => s.trim() !== '', 'blank');
 const title = nonBlank(QA_MAX_TITLE_LENGTH);
+const subtitle = nonBlank(QA_MAX_SUBTITLE_LENGTH);
 const line = nonBlank(QA_MAX_TEXT_LENGTH);
 
 const taskSchema = z.strictObject({
   id,
   title,
+  subtitle,
   steps: z.array(line).min(1, 'a task needs at least one step'),
   expected: z.array(line).min(1, 'a task needs at least one expected result'),
   who: z.enum(QA_WHO, { error: 'expected claude, moshe or both' }),
@@ -133,6 +137,7 @@ export interface QaSnapshotTask {
   subcategoryTitle: string;
   taskId: string;
   title: string;
+  subtitle: string;
   steps: string[];
   expected: string[];
   who: QaWho;
@@ -170,6 +175,7 @@ export function selectTasks(
           subcategoryTitle: s.title,
           taskId: t.id,
           title: t.title,
+          subtitle: t.subtitle,
           steps: [...t.steps],
           expected: [...t.expected],
           who: t.who,

@@ -280,12 +280,7 @@ describe('who may use the /qa routes', () => {
       qa: { enabled: true, agentToken: null, open: true },
       agentLimit: { limit: 4, windowMs: 60_000 },
     });
-    const opened = await post<AdminQaRun>(
-      url,
-      '/qa/runs',
-      { title: 'פתוח', appVersion: '1.0.5' },
-      {},
-    );
+    const opened = await post<AdminQaRun>(url, '/qa/runs', { title: 'פתוח', appVersion: '1.0.5' }, {});
     expect([opened.status, opened.body.createdBy]).toEqual([201, 'claude']);
     // A key sent to an open server without one is not asked for.
     expect((await get(url, '/qa/runs', AGENT)).status).toBe(200);
@@ -517,6 +512,7 @@ describe('opening a run', () => {
       subcategoryId: 'friends-room',
       subcategoryTitle: 'חדר עם חברים',
       title: 'פתיחת חדר',
+      subtitle: 'בדוק פתיחת חדר חדש מלשונית החברים',
       steps: ['פותחים את לשונית "חברים"', 'לוחצים על "פתח חדר"'],
       expected: ['נפתח חדר עם קוד בן 6 תווים', 'הקוד מוצג משמאל לימין'],
       who: 'both',
@@ -601,6 +597,7 @@ describe('opening a run', () => {
     next.catalogVersion = 4;
     next.categories[0]!.title = 'חברים (חדש)';
     next.categories[0]!.subcategories[0]!.tasks[0]!.steps = ['צעד אחר'];
+    next.categories[0]!.subcategories[0]!.tasks[0]!.subtitle = 'בדוק משהו אחר';
     next.categories[0]!.subcategories[0]!.tasks.splice(1, 1); // friends-room-join is gone
     url = await start({ catalog: () => next, keepClock: true });
     expect((await runOf(url, runId)).body).toEqual(before);
@@ -613,7 +610,7 @@ describe('opening a run', () => {
       5,
       'חברים (חדש)',
     ]);
-    expect(fresh.items[0]?.steps).toEqual(['צעד אחר']);
+    expect([fresh.items[0]?.steps, fresh.items[0]?.subtitle]).toEqual([['צעד אחר'], 'בדוק משהו אחר']);
   });
 });
 
@@ -928,6 +925,7 @@ describe('bugs', () => {
       categoryTitle: 'חברים',
       subcategoryTitle: 'חדר עם חברים',
       title: 'פתיחת חדר',
+      subtitle: 'בדוק פתיחת חדר חדש מלשונית החברים',
       steps: ['פותחים את לשונית "חברים"', 'לוחצים על "פתח חדר"'],
       expected: ['נפתח חדר עם קוד בן 6 תווים', 'הקוד מוצג משמאל לימין'],
       result: 'fail',

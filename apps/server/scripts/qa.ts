@@ -176,9 +176,7 @@ async function main(): Promise<void> {
     case 'bugs': {
       const status = values.status ?? 'active';
       const page = await api<AdminPage<AdminQaBug>>(`${ADMIN_QA_BUGS_PATH}?status=${status}&pageSize=200`);
-      page.items.forEach((bug) =>
-        console.log(values.short ? formatBug(bug).split('\n').slice(0, 2).join('\n') : formatBug(bug)),
-      );
+      page.items.forEach((bug) => console.log(formatBug(bug, values.short !== true)));
       console.log(`(${page.items.length} of ${page.total})`);
       return;
     }

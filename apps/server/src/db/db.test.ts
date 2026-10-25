@@ -628,6 +628,51 @@ describe('migration 0011: the QA module (docs/handoff/2026-10-23/qa-module/plan.
   }, 30_000);
 });
 
+describe('migration 0012: a QA task subtitle (docs/handoff/2026-10-23/qa-module/plan.md)', () => {
+  it('adds qa_items.subtitle, null on the items of a run opened before it; a new item may carry one', async () => {
+    const migrations = foldersBefore(12);
+    const dataDir = mkdtempSync(path.join(os.tmpdir(), 'sudoku-pglite-'));
+    try {
+      const before = await createDb(
+        { database: { kind: 'pglite', dataDir } },
+        { migrationsFolder: migrations },
+      );
+      await before.db
+        .execute(sql`insert into qa_runs (title, app_version, engine_version, catalog_version, filter, created_by)
+                     values ('בדיקת 1.0.5', '1.0.5', '0.4.0', 1, '{"who":"all","categories":null}', 'claude')`);
+      await before.db
+        .execute(sql`insert into qa_items (run_id, position, category_id, category_title, subcategory_id,
+                             subcategory_title, task_id, title, steps, expected, who, result)
+                           values (1, 0, 'friends', 'חברים', 'friends-room', 'חדר', 'friends-room-create',
+                             'פתיחת חדר', '["פותחים"]', '["נפתח"]', 'both', 'pass')`);
+      await before.close();
+
+      const after = await createDb({ database: { kind: 'pglite', dataDir } });
+      try {
+        expect(await queryRows(after.db, sql`select task_id, title, subtitle, result from qa_items`)).toEqual(
+          [{ task_id: 'friends-room-create', title: 'פתיחת חדר', subtitle: null, result: 'pass' }],
+        );
+        await after.db
+          .execute(sql`insert into qa_items (run_id, position, category_id, category_title, subcategory_id,
+                               subcategory_title, task_id, title, subtitle, steps, expected, who)
+                             values (1, 1, 'friends', 'חברים', 'friends-room', 'חדר', 'friends-room-join',
+                               'הצטרפות לחדר', 'בדוק הצטרפות לחדר עם קוד', '["מצטרפים"]', '["נכנס"]', 'both')`);
+        expect(
+          await queryRows(after.db, sql`select task_id, subtitle from qa_items order by position`),
+        ).toEqual([
+          { task_id: 'friends-room-create', subtitle: null },
+          { task_id: 'friends-room-join', subtitle: 'בדוק הצטרפות לחדר עם קוד' },
+        ]);
+      } finally {
+        await after.close();
+      }
+    } finally {
+      rmSync(migrations, { recursive: true, force: true });
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
+
 describe('one process per PGlite folder', () => {
   let dir: string;
   beforeEach(() => {

@@ -1450,20 +1450,140 @@ select.input {
   gap: 8px;
 }
 
-.qa-tasks {
-  display: grid;
-  gap: 12px;
-  margin: 0 0 20px;
+/* The setup every task assumes, once at the top of a run. */
+.qa-setup {
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+/* A run's tasks as a tree: compact rows (category, subcategory, task), each level indented. */
+.qa-tree {
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.qa-task {
-  padding: 16px;
+.qa-tree .qa-tree {
+  padding-inline-start: 24px;
 }
 
-.qa-task h4 {
-  margin: 0 0 4px;
+.qa-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  padding: 4px 0;
+  border-block-end: 1px solid var(--border);
+}
+
+.qa-row-heading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.qa-sub > .qa-row .qa-row-heading {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.qa-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 32px;
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.qa-task .qa-toggle {
+  flex: 1 1 0;
+  min-inline-size: 0;
+}
+
+.qa-sign {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 22px;
+  block-size: 22px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--accent);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.qa-toggle:hover .qa-sign {
+  border-color: var(--accent);
+}
+
+.qa-toggle .badge {
+  flex: none;
+  margin: 0;
+}
+
+.qa-tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin-inline-start: auto;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.qa-count {
+  display: inline-flex;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* A partial, a fail or an open bug: brighter and bold, not colour alone. */
+.qa-alert {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.qa-task-text {
+  display: grid;
+  gap: 2px;
+}
+
+.qa-subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.qa-quick {
+  flex: none;
+  min-inline-size: 40px;
+}
+
+.qa-detail {
+  padding-block: 0 12px;
+  padding-inline-start: 34px;
+  border-block-end: 1px solid var(--border);
+}
+
+.qa-detail > .muted:first-child {
+  margin-block: 8px 0;
+}
+
+.qa-detail .qa-actions {
+  margin-block-start: 12px;
+}
+
+.qa-error {
+  margin-block: 4px;
 }
 
 .qa-label {
