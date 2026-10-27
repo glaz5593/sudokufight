@@ -1,0 +1,608 @@
+{
+  "title": "스테이지 연습",
+  "stage": "스테이지 {{n}}",
+  "chapter": "챕터 {{n}}",
+  "units": {
+    "seconds": "초"
+  },
+  "stars": {
+    "of3": {
+      "0": "별 없음",
+      "1": "별 3개 중 1개",
+      "2": "별 3개 중 2개",
+      "3": "별 3개 중 3개"
+    },
+    "count_other": "별 {{count}}개"
+  },
+  "kinds": {
+    "find": {
+      "name": "정확한 위치",
+      "label": "정확한 위치"
+    },
+    "findDuel": {
+      "name": "봇과 경주",
+      "label": "봇과 경주"
+    },
+    "fillBox": {
+      "name": "박스 채우기",
+      "label": "박스 채우기"
+    },
+    "duel": {
+      "name": "{{target}}점 대결",
+      "label": "{{target}}점 대결"
+    },
+    "spotError": {
+      "name": "오류 찾기",
+      "label": "오류 찾기"
+    },
+    "pointHunter": {
+      "name": "점수 사냥꾼",
+      "label": "점수 사냥꾼"
+    },
+    "chain": {
+      "name": "연쇄",
+      "label": "연쇄"
+    },
+    "fillRow": {
+      "name": "행 채우기",
+      "label": "행 채우기"
+    },
+    "fillCol": {
+      "name": "열 채우기",
+      "label": "열 채우기"
+    },
+    "puzzle": {
+      "name": "퍼즐",
+      "label": "퍼즐"
+    }
+  },
+  "boss": {
+    "chip": "보스",
+    "name": "보스 스테이지",
+    "label": "보스, {{kind}}",
+    "versus": "보스: {{bot}}",
+    "band": "보스 · 챕터 {{chapter}}",
+    "botLabel": "{{name}}, 보스",
+    "intro": {
+      "title": "보스 스테이지!",
+      "sub": "스테이지 {{n}} · {{kind}}",
+      "harder": "더 어려운 점",
+      "label": "보스 스테이지! 스테이지 {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "첫 번째 봇: {{bot}}",
+      "faster": "{{bot}}: {{percent}} 더 빠름",
+      "overlord": "Overlord",
+      "moreCells_other": "빈칸 {{cells}}개 (보통은 {{usual}}개)"
+    },
+    "result": {
+      "won": "보스를 이겼어요!",
+      "lost": "이번엔 보스가 이겼어요",
+      "gateOpen": "챕터 {{n}} 관문: {{stars}} · 열림!",
+      "gateClosed": "챕터 {{n}} 관문: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "{{n}}번 박스",
+    "row": "{{row}}행",
+    "col": "{{n}}열",
+    "mapLabel": "판 지도: {{region}}"
+  },
+  "goals": {
+    "find": "숫자 하나의 정확한 위치를 찾으세요. 스테이지는 {{s}}초에 끝나요.",
+    "findDuel_other": "{{bot}} 상대로 {{spots}}곳, 최대 {{s}}초. 먼저 찾는 쪽이 가져가요.",
+    "fillBox_other": "박스 하나의 빈칸 {{cells}}개를 채우세요. 최대 {{s}}초.",
+    "fillRow_other": "행 하나의 빈칸 {{cells}}개를 채우세요. 최대 {{s}}초.",
+    "fillCol_other": "열 하나의 빈칸 {{cells}}개를 채우세요. 최대 {{s}}초.",
+    "puzzle": "박스를 제자리에 맞추세요. 잘못 바꾸면 {{penalty}}초가 더해져요. 최대 {{s}}초.",
+    "duel_other": "{{bot}} 상대로 {{target}}점 또는 {{s}}초까지. 앞선 점수에 따라 별을 받아요.",
+    "spotError_other": "내 숫자 사이에 틀린 숫자 {{count}}개가 숨어 있어요. 최대 {{s}}초.",
+    "pointHunter_other": "{{moves}}수, 최대 {{s}}초. 최대한 많은 점수를 얻으세요.",
+    "chain_other": "{{steps}}단계 연쇄, 최대 {{s}}초. 한 번에 한 칸만 풀 수 있어요."
+  },
+  "scale": {
+    "label": "받을 수 있는 별",
+    "row": "{{stars}}: {{text}}",
+    "time": "최대 {{s}}초",
+    "spots_other": "{{count}}곳",
+    "spotsRange_other": "{{range}}곳",
+    "gap": "{{gap}}점 이상 앞섬",
+    "lead": "끝날 때 앞섬",
+    "points": "{{points}}점 이상",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "스테이지 지도",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_other": "별 {{max}}개 중 {{stars}}개, 챕터로 이동",
+    "lockedToast": "스테이지 {{n}}부터 플레이하세요",
+    "gateToast_other": "챕터 {{chapter}}: 챕터 {{prev}}에서 별 {{need}}개를 모으면 열려요",
+    "loading": "지도를 불러오는 중…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_other": "별 {{max}}개 중 {{stars}}개"
+  },
+  "node": {
+    "played": "스테이지 {{n}}, {{kind}}, {{stars}}",
+    "current": "스테이지 {{n}}, {{kind}}, 다음 차례",
+    "open": "스테이지 {{n}}, {{kind}}, 아직 안 함",
+    "locked": "스테이지 {{n}}, 잠김"
+  },
+  "gate": {
+    "need_other": "별 {{need}}개에 열림",
+    "count": "{{stars}}/{{need}}",
+    "boss": "보스 스테이지를 플레이하면 열려요",
+    "open": "챕터 {{n}} 열림",
+    "lockedLabel_other": "챕터 {{n}} 잠김, 챕터 {{prev}}의 별 {{need}}개 중 {{stars}}개",
+    "bossLabel_other": "챕터 {{n}} 잠김, 챕터 {{prev}}의 별 {{need}}개 중 {{stars}}개. 보스 스테이지를 플레이하면 열려요",
+    "openLabel_other": "챕터 {{n}} 열림, 챕터 {{prev}}의 별 {{need}}개로 열렸어요"
+  },
+  "jump": {
+    "title": "챕터로 이동",
+    "row": "챕터 {{n}} · {{name}}",
+    "rowLabel_other": "챕터 {{n}}, {{name}}, 별 {{max}}개 중 {{stars}}개, {{state}}",
+    "open": "열림",
+    "locked": "잠김"
+  },
+  "gateSheet": {
+    "title": "챕터 {{n}} 잠김",
+    "missing_other": "챕터 {{prev}}에서 별 {{need}}개가 필요해요. 지금 {{stars}}개, {{missing}}개 더 모으세요.",
+    "bossOnly": "별은 충분해요. 스테이지 {{boss}}(보스)를 플레이하면 열려요",
+    "progress": "관문에 필요한 챕터 {{prev}}의 별: {{need}}개 중 {{stars}}개",
+    "rowsTitle": "더 잘할 수 있는 스테이지",
+    "rowsNote_other": "최대 별 {{count}}개 더",
+    "row": "스테이지 {{n}} · {{kind}}",
+    "rowLabel": "스테이지 {{n}} 다시 하기, {{kind}}, {{stars}}",
+    "rowNewLabel": "스테이지 {{n}} 플레이, {{kind}}, 아직 안 함",
+    "rowPlay": "플레이",
+    "primary": "스테이지 {{n}} 플레이",
+    "footnote": "대부분의 스테이지는 최대 30초, 채우기와 퍼즐 스테이지는 최대 60초예요. 가장 좋은 별 기록이 남아요."
+  },
+  "panel": {
+    "label": "선택한 스테이지",
+    "title": "스테이지 {{n}} · {{kind}}",
+    "sub": "챕터 {{chapter}} · {{name}}",
+    "subBot": "챕터 {{chapter}} · {{bot}} 상대",
+    "subBoss": "챕터 {{chapter}} · 보스: {{bot}}",
+    "next": "다음 차례",
+    "best": "최고 {{metric}}",
+    "bestLabel": "내 최고 기록: {{stars}}, {{metric}}",
+    "bestStars": "내 최고 기록: {{stars}}",
+    "bot": "{{name}} · 레벨 {{level}} · {{title}}",
+    "continue": "계속 · 스테이지 {{n}}",
+    "play": "플레이",
+    "lockedTitle": "스테이지 {{n}} · 잠김",
+    "lockedSub": "챕터 {{chapter}} · {{kind}}",
+    "lockedPrev": "스테이지 {{n}}부터 플레이하세요.",
+    "lockedGate_other": "챕터 {{chapter}} 잠김: 챕터 {{prev}}에서 별 {{need}}개가 필요해요. 지금 {{stars}}개 있어요.",
+    "gateTitleOpen": "챕터 {{n}} 열림",
+    "gateTitleClosed": "챕터 {{n}} 잠김",
+    "gateSub": "{{name}} · 스테이지 {{range}}",
+    "gateOpenBody_other": "열림: 챕터 {{prev}}에서 별 {{stars}}개를 모았고, 관문에는 {{need}}개가 필요해요.",
+    "gateBar": "관문까지 별: {{need}}개 중 {{stars}}개"
+  },
+  "ready": {
+    "title": "준비됐나요?",
+    "label": "준비됐나요? 스테이지 {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "{{digit}}의 자리는 어디일까요?",
+    "raceSpots_other": "{{count}}곳, {{bot}} 상대로 경주"
+  },
+  "tutorial": {
+    "title": "플레이 방법",
+    "got": "알겠어요",
+    "skip": "건너뛰기",
+    "panel": "그림 {{total}}개 중 {{n}}번째: {{text}}",
+    "alsoBoss": "이 스테이지는 보스이기도 해요. 모든 챕터의 열 번째 스테이지예요.",
+    "find": {
+      "1": "“{{digit}}의 자리는 어디일까요?” 같은 질문 하나와 판에 표시된 영역이 나와요. 영역은 박스, 행, 열 또는 판 전체예요.",
+      "2": "그 숫자가 꼭 들어가야 하는 칸 하나를 찾아서 탭하세요.",
+      "3": "잘못 탭하면 5초가 더해져요. 두 번 틀리면 스테이지가 끝나요."
+    },
+    "findDuel": {
+      "1": "다섯 곳을 차례로 찾아요. 봇도 함께 찾아요.",
+      "2": "맞는 칸을 먼저 탭한 쪽이 그곳을 가져가요.",
+      "3": "잘못 탭하면 3초 동안 탭할 수 없고, 그동안 봇은 계속 찾아요."
+    },
+    "fillBox": {
+      "1": "빈칸이 있는 박스 하나가 금색 테두리로 표시돼요.",
+      "2": "박스 안의 칸을 고르고 숫자를 입력하세요. 박스 밖의 칸은 고를 수 없어요.",
+      "3": "틀린 숫자를 넣으면 5초가 더해져요. 빨리 끝낼수록 별이 많아요."
+    },
+    "duel": {
+      "1": "게임처럼 나와 봇이 같은 판에서 겨뤄요.",
+      "2": "30점을 먼저 내거나, 30초가 지났을 때 앞선 쪽이 이겨요.",
+      "3": "끝날 때 앞선 점수에 따라 별을 받아요. 8점이면 별 2개, 15점이면 별 3개예요."
+    },
+    "spotError": {
+      "1": "진한 숫자는 판의 숫자이고, 언제나 맞아요.",
+      "2": "내 숫자 사이에 틀린 숫자가 숨어 있어요. 찾아서 탭하세요.",
+      "3": "맞는 숫자를 탭하면 5초가 더해져요."
+    },
+    "pointHunter": {
+      "1": "수는 딱 세 번뿐이에요.",
+      "2": "빈 영역에 있는 칸일수록 점수가 높아요.",
+      "3": "판의 최고 점수에 얼마나 가까운지에 따라 별을 받아요."
+    },
+    "chain": {
+      "1": "언제나 판에서 풀 수 있는 칸은 하나뿐이에요.",
+      "2": "그 칸을 채우면 다음 칸이 열려요.",
+      "3": "아직 알 수 없는 칸에 숫자를 넣으면 5초가 들고, 숫자는 들어가지 않아요."
+    },
+    "boss": {
+      "1": "모든 챕터의 열 번째 스테이지는 보스예요. 앞 스테이지들보다 어려운 봇과의 한판 승부예요.",
+      "2": "시작 전에 무엇이 더 어려운지 보여 줘요. 보통은 봇이 더 빨라요.",
+      "3": "보스를 플레이하고 그 챕터에서 별 20개를 모으면 다음 챕터가 열려요."
+    },
+    "fillRow": {
+      "1": "빈칸이 있는 행 하나가 금색 테두리로 표시돼요.",
+      "2": "행 안의 칸을 고르고 숫자를 입력하세요. 행 밖의 칸은 고를 수 없어요.",
+      "3": "틀린 숫자를 넣으면 5초가 더해져요. 빨리 끝낼수록 별이 많아요."
+    },
+    "fillCol": {
+      "1": "빈칸이 있는 열 하나가 금색 테두리로 표시돼요.",
+      "2": "열 안의 칸을 고르고 숫자를 입력하세요. 열 밖의 칸은 고를 수 없어요.",
+      "3": "틀린 숫자를 넣으면 5초가 더해져요. 빨리 끝낼수록 별이 많아요."
+    },
+    "puzzle": {
+      "1": "가득 찬 박스 아홉 개가 잘못된 순서로 놓여 있어요.",
+      "2": "박스를 다른 박스 위로 끌면 서로 자리가 바뀌어요. 자물쇠가 있는 박스는 고정이에요. 두 박스 모두 제자리로 가지 않는 교환은 5초가 더해져요.",
+      "3": "모든 행과 열이 맞으면 스테이지가 끝나요. 빨리 끝낼수록 별이 많아요."
+    }
+  },
+  "result": {
+    "completed": "스테이지 {{n}} 완료",
+    "ended": "스테이지 {{n}}",
+    "reasons": {
+      "timeUp": "시간 종료",
+      "failed": "두 번 잘못 탭함",
+      "quit": "스테이지를 나갔어요",
+      "botWon": "{{bot}} 쪽이 먼저 해냈어요"
+    },
+    "metric": {
+      "spotsOf_other": "{{total}}곳 중",
+      "gap": "리드",
+      "points": "점수",
+      "found": "찾음",
+      "foundOf": "{{total}}개 중"
+    },
+    "newBest": "새 최고 기록!",
+    "yourBest": "내 최고 기록:",
+    "yourBestLabel": "내 최고 기록: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, 예상치예요. 서버에서 확정돼요",
+    "chapterLabel": "이 챕터",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "관문까지 {{need}}개 필요",
+    "chapterOpen": "관문이 열렸어요",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_other": "이 챕터: 별 {{max}}개 중 {{stars}}개. {{gate}}",
+    "mistakes_other": "실수 {{count}}회",
+    "noMistakes": "실수 없음",
+    "swaps_other": "교환 {{count}}회 · 최소: {{min}}",
+    "time": "시간: {{s}}초",
+    "youWon": "내 승리",
+    "botWon": "{{bot}} 승리",
+    "tie": "무승부",
+    "bossTie": "무승부: 보스가 버텼어요",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_other": "{{count}}곳",
+    "opponentScore_other": "{{score}}점",
+    "bestMove_other": "최고의 수: {{cell}}에 {{digit}} · {{points}}점",
+    "why": "왜요?",
+    "next": "다음 스테이지",
+    "again": "다시 하기",
+    "toMap": "지도로",
+    "last": "마지막 스테이지였어요. 잘했어요!",
+    "nextLocked": "다음 스테이지는 아직 잠겨 있어요"
+  },
+  "unlocked": {
+    "heading": "새 챕터가 열렸어요!",
+    "title": "챕터 {{n}} · {{name}}",
+    "news": "새로운 점: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "계속",
+    "label": "새 챕터가 열렸어요: 챕터 {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: “이제 막 시작했지만, 보기보다 빨라요.”",
+      "2": "Biscuit: “느긋하지만, 그냥 보내 주진 않아요.”",
+      "3": "Mr. Hoot: “모든 칸이 다 보여요. 조심하세요.”",
+      "4": "Maestro: “빠르고, 정확하게, 그리고 멋지게.”",
+      "5": "Overlord: “멀리도 왔군요. 여기서 끝이에요.”"
+    }
+  },
+  "exit": {
+    "button": "스테이지 나가기",
+    "title": "스테이지에서 나갈까요?",
+    "body": "별 0개를 받고, 다음 스테이지가 열려요.",
+    "confirm": "나가기",
+    "cancel": "계속하기"
+  },
+  "card": {
+    "line": "스테이지: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_other": "스테이지: {{played}}, 별 {{count}}개"
+  },
+  "chapters": {
+    "1": {
+      "name": "첫걸음",
+      "news": "정확한 위치, 박스 채우기, 퍼즐, 행 채우기"
+    },
+    "2": {
+      "name": "Pip의 도전",
+      "news": "열 채우기, 그리고 봇과 경주"
+    },
+    "3": {
+      "name": "첫 대결",
+      "news": "30점 대결, 그리고 오류 찾기"
+    },
+    "4": {
+      "name": "탐정",
+      "news": "3단계 연쇄, 그리고 움직이는 박스가 4개인 퍼즐"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "새 봇 Biscuit, 점수 사냥꾼, 그리고 모든 숫자가 한 번 이상 빠진 채우기"
+    },
+    "6": {
+      "name": "행과 열",
+      "news": "노멀 판, 그리고 행이나 열 안의 목표"
+    },
+    "7": {
+      "name": "점수 사냥꾼",
+      "news": "움직이는 박스가 5개인 퍼즐"
+    },
+    "8": {
+      "name": "두 개의 오류",
+      "news": "판 위의 오류 두 개, 그리고 노멀 판에서의 대결"
+    },
+    "9": {
+      "name": "연쇄",
+      "news": "모든 종류를 다시, 한 단계 더 어렵게"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "새 봇 Mr. Hoot, 그리고 채우기에 빈칸 7개"
+    },
+    "11": {
+      "name": "판 전체",
+      "news": "판 어디에나 있는 목표"
+    },
+    "12": {
+      "name": "더 빠르게",
+      "news": "노멀 판에서 25초 점수 사냥꾼"
+    },
+    "13": {
+      "name": "조용한 오류",
+      "news": "눈에 띄는 충돌이 없는 오류"
+    },
+    "14": {
+      "name": "긴 연쇄",
+      "news": "4단계 연쇄, 그리고 채우기에 빈칸 9개"
+    },
+    "15": {
+      "name": "반환점",
+      "news": "모든 종류를 다시"
+    },
+    "16": {
+      "name": "하드 판",
+      "news": "하드 판, 그리고 움직이는 박스가 6개인 퍼즐"
+    },
+    "17": {
+      "name": "소거",
+      "news": "소거를 해야만 보이는 목표"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "새 봇 Maestro"
+    },
+    "19": {
+      "name": "함정",
+      "news": "판 위의 오류 세 개"
+    },
+    "20": {
+      "name": "어려운 관문",
+      "news": "소거가 필요한 빈 박스"
+    },
+    "21": {
+      "name": "페어",
+      "news": "페어, 그리고 20초 점수 사냥꾼"
+    },
+    "22": {
+      "name": "5단계 연쇄",
+      "news": "5단계 연쇄"
+    },
+    "23": {
+      "name": "힌트 없이",
+      "news": "숫자가 아주 적은 판"
+    },
+    "24": {
+      "name": "경주",
+      "news": "하드 판에서의 대결"
+    },
+    "25": {
+      "name": "전문가",
+      "news": "모든 것을 다시, 빠른 속도로"
+    },
+    "26": {
+      "name": "챔피언십",
+      "news": "가장 빠른 플레이어만 별 3개"
+    },
+    "27": {
+      "name": "챔피언십 Ⅱ",
+      "news": "점수 사냥꾼: 최고 점수에 가까워야만 별 3개"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "보스 Overlord와의 경주"
+    },
+    "29": {
+      "name": "결승",
+      "news": "빠른 연쇄, 그리고 보스 Overlord와의 대결"
+    },
+    "30": {
+      "name": "챔피언",
+      "news": "모든 것을 한데 모아, 가장 어렵게"
+    }
+  },
+  "hud": {
+    "secondsAdded_other": "{{count}}초 추가",
+    "sub": "{{kind}} · 챕터 {{chapter}}",
+    "subFind": "{{digit}}의 자리는 어디일까요? · 챕터 {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}}곳 · 챕터 {{chapter}}",
+    "clockLabel_other": "{{limit}}초 중 {{s}}초 남음",
+    "penalty": "{{s}}초",
+    "me": "나",
+    "find": {
+      "tap": "{{digit}}의 자리를 탭하세요",
+      "where": "<scope>{{scope}}</scope> · 키패드 없이 탭만",
+      "elapsed": "초 경과",
+      "targetLabel": "목표: {{scope}} {{digit}} 찾기. {{left}}",
+      "ringLabel_other": "스테이지 남은 시간 {{s}}초",
+      "one": "이 스테이지에서 한 번 찾기",
+      "wrongRule": "잘못 탭: {{penalty}}초",
+      "twoWrongRule": "두 번 잘못 탭: 스테이지 종료",
+      "found": "찾았어요: {{cell}}의 {{digit}}",
+      "missed": "{{cell}} 칸이 아니에요. {{penalty}}초",
+      "answer": "정답: {{cell}}"
+    },
+    "scope": {
+      "box": "{{n}}번 박스에서",
+      "row": "{{row}}행에서",
+      "col": "{{n}}열에서",
+      "board": "판 어디에서나"
+    },
+    "race": {
+      "task": "{{total}}곳 중 {{n}}번째 · {{scope}} {{digit}} 찾기",
+      "left": "{{s}}초 남음",
+      "searching": "찾는 중…",
+      "spots_other": "{{count}}곳",
+      "frozen_other": "멈춤, {{count}}초",
+      "out": "다음 곳까지 쉬어요",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, 봇 {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} 찾는 중",
+      "mine": "{{n}}번째 곳을 가져왔어요",
+      "theirs": "{{name}}: {{n}}번째 곳 획득",
+      "void": "{{n}}번째 곳은 아무도 못 가져갔어요",
+      "next": "{{n}}번째 곳: {{scope}} {{digit}} 찾기"
+    },
+    "box": {
+      "task": "{{n}}번 박스 채우기",
+      "cells_other": "{{done}}/{{total}}칸",
+      "cellsLabel_other": "빈칸 {{total}}개 중 {{done}}개를 채웠어요",
+      "mistakes_other": "실수 {{count}}회 {{penalty}}초",
+      "mistakesLabel_other": "실수 {{count}}회, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "실수하면 5초가 더해지고, 그 칸에서 그 숫자는 막혀요",
+      "timeLabel_other": "시간: {{limit}}초 중 {{s}}초",
+      "boardLabel_other": "판 · {{n}}번 박스의 빈칸 {{count}}개만 채우세요"
+    },
+    "line": {
+      "taskRow": "{{row}}행 채우기",
+      "taskCol": "{{n}}열 채우기",
+      "boardLabelRow_other": "판 · {{row}}행의 빈칸 {{count}}개만 채우세요",
+      "boardLabelCol_other": "판 · {{n}}열의 빈칸 {{count}}개만 채우세요"
+    },
+    "puzzle": {
+      "task": "박스를 제자리에 맞추세요",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_other": "움직이는 박스 {{count}}개",
+      "fixed_other": "고정된 박스 {{count}}개",
+      "allMove": "모든 박스가 움직여요",
+      "swaps": "교환: {{count}}",
+      "wrong_other": "잘못된 교환 {{count}}회 {{penalty}}초",
+      "wrongLabel_other": "잘못된 교환 {{count}}회, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "박스를 다른 박스 위로 끌어서 서로 바꾸세요",
+      "tapHint": "또는 박스를 탭한 다음 다른 박스를 탭하세요",
+      "slotLabel": "{{n}}번 박스, {{state}}: {{rows}}",
+      "state": {
+        "movable": "움직일 수 있음",
+        "fixed": "고정",
+        "selected": "선택됨"
+      },
+      "slotHint": "탭해서 고른 다음 다른 박스를 탭하세요",
+      "swapped": "{{a}}번과 {{b}}번 박스를 바꿨어요",
+      "swappedPenalty_other": "{{a}}번과 {{b}}번 박스를 바꿨어요. {{s}}초 추가",
+      "fixedTap": "이 박스는 고정돼 있어요",
+      "solved": "모든 행과 열이 맞아요",
+      "boardLabel": "퍼즐 · {{counts}}"
+    },
+    "duel": {
+      "gap": "리드 {{gap}}",
+      "gapLabel": "리드: {{gap}}. 끝날 때 앞서면 별 1개, {{two}}점 앞서면 별 2개, {{three}}점 앞서면 별 3개",
+      "lead": "앞섬",
+      "of": "/{{target}}",
+      "meLabel_other": "{{name}}, {{target}}점 중 {{score}}점",
+      "botLabel_other": "{{name}}, 봇 {{n}}, {{target}}점 중 {{score}}점",
+      "finishLabel": "누군가 $t(levels:hud.duel.reachPoints, {\"count\": {{target}} })에 도달하거나 $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })가 되면 스테이지가 끝나요",
+      "reachPoints_other": "{{count}}점",
+      "atSeconds_other": "{{count}}초",
+      "raceLabel": "{{target}}점 경주: {{me}}, {{bot}}"
+    },
+    "reactions": "반응",
+    "boardLabel": "스테이지 판 · {{scope}}",
+    "spotError": {
+      "goal_other": "판에 틀린 숫자 {{count}}개가 숨어 있어요. 찾아서 탭하세요.",
+      "note": "진한 숫자는 판의 숫자이고, 언제나 맞아요.",
+      "found": "찾음",
+      "foundLabel": "{{total}}개 중 {{found}}개 찾음",
+      "time": "시간",
+      "timeLabel_other": "시간: {{limit}}초 중 {{s}}초",
+      "tipTitle": "팁",
+      "tip": "같은 행, 열 또는 박스에 두 번 나오는 숫자를 찾아보세요.",
+      "tipClose": "팁 닫기",
+      "foundCell": "{{cell}}에서 오류를 찾았어요: {{wrong}} 대신 {{right}}",
+      "rightTap": "{{cell}}의 숫자는 맞아요. {{penalty}}초",
+      "missed": "찾지 못한 오류: {{cells}}",
+      "boardLabel": "스테이지 판 · 틀린 숫자를 탭하세요"
+    },
+    "hunt": {
+      "goal": "$t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }) 안에 $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} })을 얻으세요.",
+      "goalPoints_other": "{{points}}점",
+      "goalMoves_other": "{{count}}수",
+      "note": "빈 영역에 있는 칸일수록 점수가 높아요.",
+      "points": "점수",
+      "scoreLabel_other": "{{score}}점",
+      "scoreWorthLabel_other": "{{score}}점. 고른 칸의 가치는 {{worth}}",
+      "lost": "틀린 숫자로 {{points}} 잃었어요",
+      "move": "{{max}}수 중 {{n}}번째",
+      "burnt": "{{n}}번째 수 소진",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_other": "소진된 수 {{count}}개",
+      "left": "남음 · 전체 {{limit}}",
+      "timeLabel_other": "{{limit}}초 중 {{s}}초 남음",
+      "max": "판의 최고 점수: {{max}}",
+      "worth": "가치 {{points}}"
+    },
+    "chain": {
+      "goal": "판에서 풀 수 있는 칸은 한 번에 하나뿐이에요. 그 칸을 찾아 채우면 다음 칸이 열려요.",
+      "notePenalty": "아직 알 수 없는 칸에 넣은 숫자: {{penalty}}초.",
+      "noteAccept": "틀린 숫자: {{penalty}}초.",
+      "step": "{{total}}단계 중 {{n}}단계",
+      "stepLabel": "연쇄: {{total}}단계 중 {{n}}단계",
+      "time": "시간",
+      "timeLabel_other": "시간: {{limit}}초 중 {{s}}초",
+      "notYet": "{{text}} · {{penalty}}초",
+      "tipTitle": "팁",
+      "tip": "단계마다 증명할 수 있는 칸은 딱 하나예요. 어떤 숫자가 확실하다면 바로 그 칸이에요.",
+      "tipClose": "팁 닫기"
+    }
+  },
+  "explain": {
+    "spot": "{{n}}번째 곳: {{text}}",
+    "mistake": "내 실수: {{cell}}에 {{digit}}. {{reason}}",
+    "best": "내 최고의 수, {{cell}}에 {{digit}}: {{text}}",
+    "errorFound": "{{cell}}, 찾음: {{reason}}",
+    "errorMissed": "{{cell}}, 못 찾음: {{reason}}",
+    "rightTap": "{{cell}}의 {{digit}}: 맞는 숫자라서, 탭하면 {{penalty}}초가 들었어요.",
+    "points_other": "{{max}}점 중 {{points}}점을 얻었어요. 판 최고 점수의 {{percent}} 수준이에요.",
+    "line": "최고의 순서: {{moves}}.",
+    "move": "{{cell}}에 {{digit}} {{points}}",
+    "step": "{{n}}단계: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "{{place}}번 자리에 맞는 박스는 처음에 {{from}}번 자리에 있던 박스뿐이에요. 다른 박스를 놓으면 행이나 열에 같은 숫자가 반복돼요.",
+      "onlyPlaceForBox": "처음에 {{from}}번 자리에 있던 박스는 {{place}}번 자리에만 맞아요. 다른 곳에 놓으면 행이나 열에 같은 숫자가 반복돼요."
+    }
+  }
+}

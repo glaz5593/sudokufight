@@ -16,10 +16,12 @@ import i18n from '../i18n';
 import { useSettings } from '../state/settings';
 
 /**
- * Work plan stage 13, "השלמת מסך ההגדרות: החלפת שפה (עם reload)", end to end through the root layout:
- * Settings → "English" asks first (the app restarts for the new direction); "ביטול" changes nothing; the
- * confirm saves the language (on disk before the restart), switches i18next, forces LTR and reloads the app
- * (expo-updates). The next run starts in English, LTR, without another restart; and back to Hebrew, RTL.
+ * Work plan stage 13, "השלמת מסך ההגדרות: החלפת שפה (עם reload)", end to end through the root layout, with the
+ * language picker of localization plan 0י: Settings → the language field → its sheet ("שפת המכשיר", עברית,
+ * English) → "English" asks first (the app restarts for it, D104); "ביטול" changes nothing; the confirm saves
+ * the language as the player's choice (on disk before the restart), switches i18next, forces LTR and reloads the
+ * app (expo-updates). The next run starts in English, LTR, without another restart; and back to Hebrew, RTL.
+ * "שפת המכשיר" on an English phone is English: from Hebrew it asks, restarts, and is saved as 'system'.
  */
 
 const mockApp: { db: SqlJsDb | null } = { db: null };
@@ -52,6 +54,12 @@ const reload = jest.mocked(Updates.reloadAsync);
 const savedLanguage = () =>
   (JSON.parse(Storage.getItemSync('settings') ?? '{}') as { state?: { language?: string } }).state?.language;
 
+/** Opens the language sheet from its field (named "שפה: עברית", "Language: English", …) and taps a language. */
+async function pick(field: string, language: string) {
+  await fireEvent.press(screen.getByRole('button', { name: field }));
+  await fireEvent.press(await screen.findByRole('radio', { name: language }));
+}
+
 /** A run of the app on a phone whose layout direction is `rtl`, opened on Settings. */
 async function launch(rtl: boolean) {
   jest.replaceProperty(I18nManager, 'isRTL', rtl);
@@ -69,7 +77,15 @@ beforeAll(async () => {
 beforeEach(async () => {
   await installSignedInPlayer();
   await i18n.changeLanguage('he');
-  useSettings.setState({ language: 'he', reduceMotion: 'on', sound: true, haptics: true });
+  useSettings.setState({
+    language: 'he',
+    languageSource: 'app',
+    appLocalesSeen: null,
+    systemLocaleSeen: null,
+    reduceMotion: 'on',
+    sound: true,
+    haptics: true,
+  });
   savedAtReload = [];
   reload.mockReset().mockImplementation(async () => {
     savedAtReload.push(savedLanguage() ?? '');
@@ -89,10 +105,9 @@ describe('switching the language (work plan stage 13)', () => {
     await launch(true);
     expect(reload).not.toHaveBeenCalled();
 
-    await fireEvent.press(screen.getByRole('radio', { name: 'English' }));
-    const dialog = await screen.findByTestId('language-confirm');
-    expect(dialog).toBeOnTheScreen();
-    expect(screen.getByText('להחליף את השפה ל־English?')).toBeOnTheScreen();
+    await pick('שפה: עברית', 'English');
+    expect(await screen.findByText('להחליף את השפה ל־English?')).toBeOnTheScreen();
+    expect(screen.getByTestId('language-confirm')).toBeOnTheScreen();
     expect(
       screen.getByText('האפליקציה תופעל מחדש, כדי שכל המסכים יוצגו בכיוון של השפה החדשה.'),
     ).toBeOnTheScreen();
@@ -102,18 +117,18 @@ describe('switching the language (work plan stage 13)', () => {
       jest.advanceTimersByTime(1000);
     });
     expect(useSettings.getState().language).toBe('he');
-    expect(screen.getByRole('radio', { name: 'עברית' })).toHaveProp('accessibilityState', { checked: true });
+    expect(screen.getByRole('button', { name: 'שפה: עברית' })).toBeOnTheScreen();
     expect(I18nManager.forceRTL).not.toHaveBeenCalled();
     expect(reload).not.toHaveBeenCalled();
   });
 
   it('the confirm saves English, forces LTR and restarts; the next run is English without a restart', async () => {
     const first = await launch(true);
-    await fireEvent.press(screen.getByRole('radio', { name: 'English' }));
+    await pick('שפה: עברית', 'English');
     await fireEvent.press(await screen.findByRole('button', { name: 'החלפה והפעלה מחדש' }));
 
     await waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
-    expect(useSettings.getState().language).toBe('en');
+    expect(useSettings.getState()).toMatchObject({ language: 'en', languageSource: 'app' });
     expect(i18n.language).toBe('en');
     expect(I18nManager.forceRTL).toHaveBeenCalledWith(false);
     // Saved before the restart: the next run reads English.
@@ -128,18 +143,31 @@ describe('switching the language (work plan stage 13)', () => {
 
     await launch(false);
     expect(screen.getByRole('header', { name: 'Settings' })).toBeOnTheScreen();
-    expect(screen.getByRole('radio', { name: 'English' })).toHaveProp('accessibilityState', {
+    await fireEvent.press(screen.getByRole('button', { name: 'Language: English' }));
+    expect(await screen.findByRole('radio', { name: 'English' })).toHaveProp('accessibilityState', {
       checked: true,
     });
+    await fireEvent.press(screen.getByRole('button', { name: 'Close' }));
     expect(I18nManager.forceRTL).not.toHaveBeenCalled();
     expect(reload).not.toHaveBeenCalled();
 
     // And back to Hebrew: the prompt in English, then RTL and a restart.
-    await fireEvent.press(screen.getByRole('radio', { name: 'עברית' }));
+    await pick('Language: English', 'עברית');
     expect(await screen.findByText('Switch the language to עברית?')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'Switch and restart' }));
     await waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
     expect(I18nManager.forceRTL).toHaveBeenCalledWith(true);
     expect(savedAtReload).toEqual(['en', 'he']);
+  });
+  it('"שפת המכשיר" on an English phone: asks, restarts in English, and is saved as following the phone', async () => {
+    await launch(true);
+    await pick('שפה: עברית', 'שפת המכשיר');
+    expect(await screen.findByText('לעבור לשפת המכשיר?')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: 'החלפה והפעלה מחדש' }));
+    await waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
+    expect(useSettings.getState()).toMatchObject({ language: 'system', languageSource: 'app' });
+    expect(i18n.language).toBe('en');
+    expect(I18nManager.forceRTL).toHaveBeenCalledWith(false);
+    expect(savedAtReload).toEqual(['system']);
   });
 });

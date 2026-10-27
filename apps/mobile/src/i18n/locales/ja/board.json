@@ -1,0 +1,46 @@
+{
+  "separator": {
+    "list": "、",
+    "group": " · "
+  },
+  "board": {
+    "label": "盤面",
+    "myLock": "自分のマス{{cell}}",
+    "otherLock": "{{cell}}、{{name}}がロック中",
+    "tapLabel": "ステージの盤面"
+  },
+  "cell": {
+    "empty": "空き",
+    "given": "ヒント",
+    "solvedByMe": "自分が解いたマス",
+    "solvedBy": "{{name}}が解いたマス",
+    "lockedByMe": "自分がロック中",
+    "lockedBy": "{{name}}がロック中",
+    "pending": "ロック待ち",
+    "queued": "{{digit}}、接続待ち",
+    "timerStopped": "タイマー停止中",
+    "seconds_other": "{{count}}秒",
+    "wrong": "誤った数字：{{digits}}",
+    "hintMyLock": "キーパッドで数字を選んでください",
+    "player": "プレイヤー{{n}}",
+    "corrected": "誤りを発見：{{wrong}}、正しい数字は{{right}}",
+    "mine": "自分のマス",
+    "outside": "エリア外",
+    "hintTap": "マスをタップすると、それが一手になります"
+  },
+  "keypad": {
+    "armed": "数字{{digit}} · 残り{{left}}",
+    "idle": "数字{{digit}}、残り{{left}}、先にマスを選んでください",
+    "complete": "数字{{digit}}、残り{{left}}",
+    "tried": "数字{{digit}} · このマスでは試し済み"
+  },
+  "cancel": {
+    "label": "選択を取り消す",
+    "withCell": "選択を取り消す、{{cell}}"
+  },
+  "resume": {
+    "title": "再開まで",
+    "paused": "対戦は一時停止中です",
+    "label_other": "{{count}}秒後に再開"
+  }
+}

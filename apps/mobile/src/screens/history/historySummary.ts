@@ -2,6 +2,7 @@ import type { PlayerStats } from '@sudoku-fight/protocol';
 import type { TFunction } from 'i18next';
 
 import { ltr } from '../../components/player';
+import { percent } from '../../i18n/compose';
 
 /**
  * The history header's numbers (History.dc.html: "86 משחקים · 57% ניצחונות" and the "רצף 3" chip). The design's
@@ -55,9 +56,12 @@ export function historySummaryOf(
   };
 }
 
-/** A share as a whole percent, isolated so "%" stays on its side in Hebrew: "⁦57%⁩". */
-export const percentText = (rate: number): string =>
-  ltr(`${Math.round(Math.min(1, Math.max(0, rate)) * 100)}%`);
+/**
+ * A share as a whole percent in the language's pattern (common:number.percent, D108), isolated so "%" stays on
+ * its side in Hebrew: "⁦57%⁩".
+ */
+export const percentText = (rate: number, t: TFunction): string =>
+  ltr(percent(Math.round(Math.min(1, Math.max(0, rate)) * 100), t));
 
 /** The line under the title: "86 משחקים · 57% ניצחונות · 12 אימונים", or "12 אימונים · 50% ניצחונות". */
 export function summaryLine(s: HistorySummary, t: HistoryT): string {
@@ -65,12 +69,12 @@ export function summaryLine(s: HistorySummary, t: HistoryT): string {
     s.source === 'ranked'
       ? [
           t('summary.games', { count: s.games }),
-          s.winRate === null ? null : t('summary.winRate', { rate: percentText(s.winRate) }),
+          s.winRate === null ? null : t('summary.winRate', { rate: percentText(s.winRate, t) }),
           s.practices ? t('summary.practices', { count: s.practices }) : null,
         ]
       : [
           t('summary.practices', { count: s.games }),
-          s.winRate === null ? null : t('summary.winRate', { rate: percentText(s.winRate) }),
+          s.winRate === null ? null : t('summary.winRate', { rate: percentText(s.winRate, t) }),
         ];
   return parts.filter((p): p is string => p !== null).join(t('player:sep'));
 }

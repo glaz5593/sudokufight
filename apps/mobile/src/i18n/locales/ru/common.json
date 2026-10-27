@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "Привет от движка · клетка {{cell}}",
+    "versions": "движок {{engine}} · протокол {{protocol}}",
+    "taps": "Нажатия: {{count}}",
+    "server": {
+      "connecting": "Сервер: подключение…",
+      "connected": "Сервер: подключено",
+      "rtt": "Сервер: задержка {{ms}} мс",
+      "error": "Сервер: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "Что-то пошло не так",
+    "body": "На этом экране произошла ошибка. Мы уже сообщили о ней, а ты можешь попробовать ещё раз.",
+    "retry": "Повторить"
+  },
+  "fallback": {
+    "loading": "Секунду…",
+    "title": "Экран не загрузился",
+    "body": "Можно перейти к результатам или на главный экран.",
+    "bodyHome": "Можно вернуться на главный экран и продолжить оттуда.",
+    "results": "К результатам",
+    "home": "На главную"
+  },
+  "appVersion": {
+    "version": "Версия {{version}}",
+    "build": "сборка {{build}}",
+    "engine": "движок {{engine}}"
+  },
+  "number": {
+    "decimal": ",",
+    "percent": "{{value}} %"
+  },
+  "text": {
+    "labelValue": "{{label}}: {{value}}",
+    "parenthetical": "{{text}} ({{note}})",
+    "sentence": "{{text}}.",
+    "wordSpace": " "
+  }
+}

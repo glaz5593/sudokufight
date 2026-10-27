@@ -1,7 +1,7 @@
 import { type AppLevel, botLevel, type BotLevelId, type GateState, type Stars } from '@sudoku-fight/engine';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { normalizeAvatarId } from '../../avatars';
 import { Icon, type IconName } from '../../components/Icon';
@@ -11,6 +11,7 @@ import { Star, StarRow, STAR_SIZES } from '../../components/levels/StarRow';
 import { Avatar, SeatGlyph } from '../../components/player';
 import { ltr, withAlpha } from '../../components/player/format';
 import { Button } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { KIND_ICON } from './LevelNode';
 import {
@@ -140,6 +141,7 @@ function LevelBody({ selection, t }: { selection: Extract<PanelSelection, { kind
       reason = t('panel.lockedGate', {
         chapter: level.chapter,
         prev: level.chapter - 1,
+        count: lockedBy.gate.need,
         need: lockedBy.gate.need,
         stars: lockedBy.gate.stars,
       });
@@ -306,8 +308,12 @@ function GateBody({ selection, t }: { selection: Extract<PanelSelection, { kind:
         {gate.open ? null : <Icon name="lock" size={space[7]} color={color.textMuted} />}
         <Text style={[styles.goal, !gate.open && styles.strong]} testID="level-panel-goal">
           {gate.open
-            ? t('panel.gateOpenBody', values)
-            : t('gateSheet.missing', { ...values, missing: Math.max(0, gate.need - gate.stars) })}
+            ? t('panel.gateOpenBody', { ...values, count: gate.stars })
+            : t('gateSheet.missing', {
+                ...values,
+                count: gate.need,
+                missing: Math.max(0, gate.need - gate.stars),
+              })}
         </Text>
       </View>
       <View

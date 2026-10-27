@@ -1,0 +1,92 @@
+{
+  "title": "Xem lại",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Tự luyện tập",
+    "bot": "Luyện tập với máy",
+    "ranked": "Xếp hạng"
+  },
+  "back": "Quay lại",
+  "loading": "Đang tải trận đấu…",
+  "load": {
+    "missing": "Không tìm thấy trận đấu này",
+    "notFinished": "Trận đấu vẫn đang được lưu trên máy chủ. Hãy thử lại sau giây lát",
+    "offline": "Không có kết nối với máy chủ. Trận xếp hạng được tải từ máy chủ",
+    "signedOut": "Đăng nhập để xem lại trận xếp hạng",
+    "unavailable": "Không đọc được trận đấu này",
+    "retry": "Thử lại",
+    "partial": "Trận đấu này bị ngắt giữa chừng: phần xem lại chỉ đến nước đi cuối cùng đã lưu"
+  },
+  "step": {
+    "counter": "Bước {{number}}/{{total}}",
+    "clockLabel": "Đồng hồ trận đấu: {{clock}}"
+  },
+  "nav": {
+    "prev": "Bước trước",
+    "next": "Bước sau",
+    "timeline": "Dòng thời gian các bước",
+    "timelineValue": "Bước {{number}}/{{total}}, {{clock}}",
+    "timelineHint": "Vuốt lên hoặc xuống để đổi bước"
+  },
+  "narration": {
+    "start": "Trận đấu bắt đầu",
+    "select": "{{name}} · chọn {{cell}}",
+    "correct": "{{name}} · đúng ở {{cell}} · {{delta}}",
+    "wrong": "{{name}} · sai ở {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · bỏ chọn {{cell}}",
+      "timeout": "{{name}} · hết giờ ở {{cell}}"
+    },
+    "interference": "{{name}} · phá rối {{target}} · {{delta}}",
+    "disconnect": "{{name}} · đã ngắt kết nối",
+    "reconnect": "{{name}} · đã trở lại trận đấu",
+    "offline": "{{name}} · mất kết nối",
+    "surrender": "{{name}} · đã đầu hàng",
+    "endPractice": "{{name}} · đã kết thúc luyện tập",
+    "abandon": "{{name}} · đã rời trận đấu",
+    "over": "Trận đấu đã kết thúc",
+    "paused": "Trận đấu đang tạm dừng",
+    "offlineSuffix": "gửi khi có mạng trở lại"
+  },
+  "explain": {
+    "title": "Lời giải thích cho từng người chơi",
+    "none": "{{name}} chưa có nước đi nào",
+    "noneMe": "Bạn chưa có nước đi nào",
+    "noneBody": "Lời giải thích sẽ hiện sau nước đi đầu tiên",
+    "status": {
+      "choosing": "Đang chọn",
+      "released": "Bỏ chọn",
+      "correct": "Đúng",
+      "wrong": "Sai"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} thay vì {{answer}}",
+    "why": "Vì sao {{digit}} không hợp: {{text}}",
+    "noLogic": "Đáp án: {{cell}} → {{digit}}",
+    "scoreLine": "Điểm số",
+    "penaltyLine": "Mức phạt: giá trị của số đúng",
+    "released": {
+      "cancel": "Đã hủy lựa chọn",
+      "timeout": "Hết giờ",
+      "switch": "Chuyển sang ô khác",
+      "mistake": "Sau một lỗi",
+      "surrender": "Rời trận đấu",
+      "disconnect": "Mất kết nối",
+      "abandon": "Bỏ dở"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "Khoảnh khắc then chốt",
+    "bestMove": "Nước đi hay nhất",
+    "mistakes": "Lỗi · {{count}}",
+    "interferences": "Đòn phá rối · {{count}}",
+    "turningPoint": "Bước ngoặt",
+    "hint": "Nhảy tới bước đó"
+  },
+  "board": "Bảng ở bước {{number}}",
+  "me": "Bạn",
+  "unknown": "Người chơi"
+}

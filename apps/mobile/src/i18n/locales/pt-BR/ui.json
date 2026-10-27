@@ -1,0 +1,33 @@
+{
+  "button": {
+    "loading": "{{label}}, carregando"
+  },
+  "nav": {
+    "label": "Navegação principal",
+    "tabs": {
+      "home": "Início",
+      "leaderboard": "Ranking",
+      "history": "Histórico",
+      "achievements": "Conquistas"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "Cancelar"
+  },
+  "sheet": {
+    "close": "Fechar"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_one": "{{count}} segundo restante",
+    "secondsLeft_many": "{{count}} de segundos restantes",
+    "secondsLeft_other": "{{count}} segundos restantes"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "Código de erro: {{code}}"
+  }
+}

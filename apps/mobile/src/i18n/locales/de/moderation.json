@@ -1,0 +1,110 @@
+{
+  "actions": {
+    "report": "Spieler melden",
+    "block": "Spieler blockieren",
+    "unblock": "Blockierung aufheben",
+    "reportLabel": "{{name}} melden",
+    "blockLabel": "{{name}} blockieren",
+    "unblockLabel": "Blockierung von {{name}} aufheben",
+    "blockedNote": "Du hast diesen Spieler blockiert: Ihr trefft in Ranglistenspielen nicht aufeinander."
+  },
+  "report": {
+    "title": "{{name}} melden",
+    "question": "Was ist los?",
+    "reasons": {
+      "offensiveName": "Beleidigender Name",
+      "cheating": "Schummeln",
+      "other": "Sonstiges"
+    },
+    "reasonHints": {
+      "offensiveName": "Der Name ist grob, beleidigend oder unangemessen",
+      "cheating": "Sieht nach Hilfe von außen aus oder nach dem Ausnutzen eines Fehlers",
+      "other": "Etwas anderes, das nicht in die Arena gehört"
+    },
+    "privacy_one": "Die gemeldete Person erfährt nicht, wer sie gemeldet hat. Jede Meldung wird innerhalb einer Stunde geprüft.",
+    "privacy_other": "Die gemeldete Person erfährt nicht, wer sie gemeldet hat. Jede Meldung wird innerhalb von {{hours}} Stunden geprüft.",
+    "send": "Meldung senden",
+    "pickFirst": "Wähle einen Grund und sende dann.",
+    "thanks_one": "Danke. Wir prüfen die Meldung innerhalb einer Stunde.",
+    "thanks_other": "Danke. Wir prüfen die Meldung innerhalb von {{hours}} Stunden.",
+    "done": "Schließen",
+    "errors": {
+      "rateLimited_one": "Du hast in der letzten Stunde viele Meldungen gesendet. In einer Minute kannst du wieder eine senden.",
+      "rateLimited_other": "Du hast in der letzten Stunde viele Meldungen gesendet. In {{count}} Minuten kannst du wieder eine senden.",
+      "busy": "Zu viele Anfragen. Warte kurz und versuch es noch mal.",
+      "suspended": "Dein Konto ist gesperrt, deshalb kannst du gerade keine Meldungen senden.",
+      "self": "Du kannst dich nicht selbst melden.",
+      "notFound": "Dieser Spieler ist nicht mehr im Spiel.",
+      "offline": "Keine Verbindung zum Server: Die Meldung wurde nicht gesendet. Versuch es noch mal.",
+      "failed": "Wir konnten die Meldung nicht senden. Versuch es noch mal."
+    }
+  },
+  "block": {
+    "title": "{{name}} blockieren?",
+    "body": "Ihr trefft in Ranglistenspielen nicht mehr aufeinander, und die Reaktionen von {{name}} erreichen dich nicht. Niemand wird über eine Blockierung informiert. Du kannst sie jederzeit aufheben: Einstellungen → Blockierte Spieler.",
+    "confirm": "Blockieren",
+    "done": "{{name}} ist blockiert.",
+    "unblockTitle": "Blockierung von {{name}} aufheben?",
+    "unblockBody": "Ihr könnt euch wieder in Ranglistenspielen begegnen, und die Reaktionen von {{name}} erreichen dich wieder.",
+    "unblockConfirm": "Aufheben",
+    "unblocked": "{{name}} ist nicht mehr blockiert.",
+    "errors": {
+      "limitReached_one": "Du kannst höchstens 1 Spieler blockieren. Heb eine Blockierung auf (Einstellungen → Blockierte Spieler) und versuch es noch mal.",
+      "limitReached_other": "Du kannst höchstens {{max}} Spieler blockieren. Heb eine Blockierung auf (Einstellungen → Blockierte Spieler) und versuch es noch mal.",
+      "self": "Du kannst dich nicht selbst blockieren.",
+      "notFound": "Dieser Spieler ist nicht mehr im Spiel.",
+      "busy": "Zu viele Anfragen. Warte kurz und versuch es noch mal.",
+      "offline": "Keine Verbindung zum Server: Die Blockierung wurde nicht gespeichert. Versuch es noch mal.",
+      "unblockOffline": "Keine Verbindung zum Server: Die Blockierung wurde nicht aufgehoben. Versuch es noch mal.",
+      "failed": "Wir konnten die Blockierung nicht speichern. Versuch es noch mal.",
+      "unblockFailed": "Wir konnten die Blockierung nicht aufheben. Versuch es noch mal."
+    }
+  },
+  "blocked": {
+    "title": "Blockierte Spieler",
+    "settingsRow": "Blockierte Spieler",
+    "note": "Ihr trefft in Ranglistenspielen nicht aufeinander, und ihre Reaktionen erreichen dich nicht. Niemand wird über eine Blockierung informiert.",
+    "count": "{{count}} von {{max}}",
+    "since": "Blockiert seit {{date}}",
+    "rowLabel": "{{name}}, blockiert seit {{date}}",
+    "emptyTitle": "Keine blockierten Spieler",
+    "emptyBody": "Du kannst einen Spieler über seine Karte blockieren oder im Ranglistenspiel über das Menü seiner Karte.",
+    "loading": "Blockierte Spieler werden geladen…",
+    "offlineTitle": "Keine Verbindung zum Server",
+    "offlineBody": "Die Liste liegt auf dem Server. Versuch es noch mal, wenn du online bist.",
+    "errorTitle": "Wir konnten die Liste nicht laden",
+    "errorBody": "Versuch es gleich noch mal.",
+    "retry": "Erneut versuchen",
+    "signedOut": "Melde dich an, um die Liste zu sehen."
+  },
+  "chooseName": {
+    "title": "Wähle einen neuen Namen",
+    "body": "Dein bisheriger Name wurde durch einen vorläufigen ersetzt, {{name}}, weil er gegen die Namensregeln verstoßen hat. Wähle einen neuen Namen, um weiterzumachen.",
+    "rule": "Diesmal keine 30 Tage Wartezeit: Du kannst jetzt einen Namen wählen.",
+    "save": "Speichern und weiter",
+    "saved": "Dein neuer Name ist gespeichert.",
+    "same": "Das ist der vorläufige Name. Wähle deinen eigenen.",
+    "offline": "Keine Verbindung zum Server: Der Name wurde nicht gespeichert. Versuch es noch mal, wenn du online bist.",
+    "practice": "Inzwischen trainieren",
+    "settings": "Einstellungen",
+    "signOut": "Abmelden"
+  },
+  "suspended": {
+    "banner": "Konto gesperrt: keine Ranglistenspiele",
+    "bannerAction": "Mehr dazu",
+    "bannerLabel": "Konto gesperrt, keine Ranglistenspiele. Mehr dazu",
+    "title": "Konto gesperrt",
+    "body": "Nach einer Meldung wurde dein Konto gesperrt. Solange es gesperrt ist, gibt es keine Ranglistenspiele, und das Profil kann nicht geändert werden.",
+    "can": "Du kannst weiterhin allein oder gegen einen Bot trainieren, Spieler blockieren und das Konto löschen.",
+    "contactTitle": "Hältst du das für einen Fehler?",
+    "contact": "Schreib uns, dann sehen wir es uns noch mal an. Die Kontaktdaten stehen in den Nutzungsbedingungen.",
+    "contactEmail": "Du kannst uns schreiben: {{email}}",
+    "openContact": "Kontaktdaten",
+    "opensInBrowser": "Öffnet sich im Browser",
+    "practice": "Training",
+    "chip": "Konto gesperrt",
+    "chipLabel": "Nicht verfügbar: Konto gesperrt",
+    "ranked": "Dein Konto ist gesperrt, deshalb gibt es vorerst keine Ranglistenspiele.",
+    "editProfile": "Konto gesperrt: Das Profil kann nicht geändert werden"
+  }
+}

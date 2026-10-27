@@ -1,0 +1,32 @@
+{
+  "button": {
+    "loading": "{{label}}, wordt geladen"
+  },
+  "nav": {
+    "label": "Hoofdnavigatie",
+    "tabs": {
+      "home": "Start",
+      "leaderboard": "Ranglijst",
+      "history": "Geschiedenis",
+      "achievements": "Prestaties"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "Annuleren"
+  },
+  "sheet": {
+    "close": "Sluiten"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_one": "nog {{count}} seconde",
+    "secondsLeft_other": "nog {{count}} seconden"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "Foutcode: {{code}}"
+  }
+}

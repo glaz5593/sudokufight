@@ -1,0 +1,434 @@
+{
+  "title": "ソロ練習",
+  "titleBot": "ボットと練習",
+  "titleRanked": "ランク戦",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "自分",
+  "opponent": "対戦相手",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "レベル{{level}}、{{title}}"
+  },
+  "listSep": "、",
+  "type": {
+    "fast": "スピード",
+    "normal": "ノーマル",
+    "hard": "ハード"
+  },
+  "hud": {
+    "time": "時間",
+    "best": "最高の一手",
+    "none": "—",
+    "timeLabel": "時間{{time}}",
+    "bestLabel_other": "最高の一手：{{cell}}で{{points}}点",
+    "noBestLabel": "最高の一手はまだありません"
+  },
+  "progress": {
+    "label": "盤面の進み具合",
+    "value": "{{filled}}/{{total}}",
+    "a11y_other": "{{total}}マス中{{filled}}マスを埋めました"
+  },
+  "end": {
+    "button": "練習を終了",
+    "title": "練習を終了しますか？",
+    "body": "結果はこの端末に保存されます。レーティングは変わりません。",
+    "confirm": "はい、終了します",
+    "footnote": "対戦はバックグラウンドで続きます",
+    "dialog": "練習の終了を確認"
+  },
+  "out": {
+    "surrendered": "降参しました · {{place}}位",
+    "abandoned": "脱落しました · {{place}}位",
+    "goesOn": "対戦は最後まで続きます",
+    "label": "{{title}}。{{goesOn}}",
+    "home": "ホーム",
+    "homeHint": "対戦はあなた抜きで続きます。順位はすでに確定しています"
+  },
+  "connection": {
+    "sep": "。",
+    "scoreLabel": "{{me}}：{{myScore}}、{{name}}：{{theirScore}}",
+    "lead": {
+      "mine": "あなたがリード",
+      "theirs": "{{name}}がリード",
+      "theirs_female": "{{name}}がリード",
+      "tie": "同点"
+    },
+    "frozen": {
+      "title": "対戦を凍結中",
+      "timers": "すべてのタイマーが停止しています",
+      "label": "対戦を凍結中、すべてのタイマーが停止しています"
+    },
+    "opponent": {
+      "lost": "{{name}}の接続が切れました",
+      "lost_female": "{{name}}の接続が切れました",
+      "title": "対戦相手が再接続中…",
+      "timeUp": "時間切れ",
+      "notBack": "{{name}}は戻りませんでした",
+      "notBack_female": "{{name}}は戻りませんでした",
+      "seconds": "秒",
+      "ring": "再接続中…{{seconds}}",
+      "saved": "対戦はサーバーに保存されています",
+      "savedSub": "盤面と得点は保持されます",
+      "winLabel": "相手の放棄による勝利",
+      "hint": "{{name}}が時間内に戻らなければ、相手の放棄であなたの勝ちです",
+      "hint_female": "{{name}}が時間内に戻らなければ、相手の放棄であなたの勝ちです",
+      "checking": "サーバーに確認中…",
+      "timeLeft": "復帰までの残り時間：{{time}}",
+      "announce": "{{name}}の接続が切れました。戻るまで対戦は凍結されます",
+      "announce_female": "{{name}}の接続が切れました。戻るまで対戦は凍結されます",
+      "announceExpired": "時間切れです。サーバーに確認しています"
+    },
+    "self": {
+      "lostTitle": "接続が切れました",
+      "lostSub": "再接続中…",
+      "attempt": "試行",
+      "attemptLabel": "試行{{attempt}}回目",
+      "backTitle": "対戦に戻りました",
+      "syncingSub": "同期中…",
+      "syncedSub": "同期完了 · 対戦は続きます",
+      "lockedTitle": "戻るまで盤面はロックされます",
+      "lockedSub": "接続が戻ったら、次の内容を同期します：",
+      "syncingTitle": "同期中…",
+      "syncedTitle": "同期完了",
+      "savedSub": "対戦はサーバーに保存され、同じところから続きます",
+      "item": {
+        "board": "盤面",
+        "score": "得点",
+        "locks": "ロック",
+        "turn": "手番",
+        "timers": "タイマー"
+      },
+      "timeLeft_other": "復帰まであと{{seconds}}秒です",
+      "timeSub": "過ぎると放棄とみなされます",
+      "backInTime": "時間内に復帰",
+      "backInTimeSub": "タイマーは同じ秒から再開します",
+      "announceLost": "接続が切れました。再接続しています",
+      "announceAttempt": "接続が切れました。再接続しています（試行{{attempt}}回目）",
+      "announceHurry_other": "{{seconds}}秒後に放棄とみなされます",
+      "announceSyncing": "対戦に戻りました。同期しています",
+      "announceSynced": "対戦に戻りました。盤面と得点を同期しました"
+    },
+    "offline": {
+      "announce": "接続がありません。このままプレイを続けてください。接続が戻ると手が送信されます"
+    },
+    "left": {
+      "timeUp_other": "時間切れ · 接続なしで{{seconds}}秒",
+      "title": "{{name}}が対戦から退出しました",
+      "title_female": "{{name}}が対戦から退出しました",
+      "win": "相手の放棄であなたの勝ちです",
+      "rating": "レーティング",
+      "ratingLabel": "レーティングの変動：{{delta}}、{{type}}",
+      "ratingUnchanged": {
+        "opponentLeftBeforeMyMove": "レーティング変動なし：あなたの最初の手より前に相手が退出しました",
+        "opponentLeftAhead": "レーティング変動なし：相手の退出時、あなたはリードされていました"
+      },
+      "toResults": "結果を見る",
+      "home": "ホーム"
+    },
+    "error": {
+      "title": "接続エラー",
+      "offlineTitle": "インターネットに接続されていません",
+      "body": {
+        "offline": "端末が現在ネットワークにつながっていません。インターネットに接続して、もう一度お試しください。",
+        "unreachable": "ゲームサーバーに接続できませんでした。接続を確認して、もう一度お試しください。",
+        "lost": "ゲームサーバーとの接続が切れ、復旧できませんでした。",
+        "refused": "サーバーがルームへの入室を許可しませんでした。"
+      },
+      "refusal": {
+        "notFound": "このコードのルームはありません。コードを確認して、もう一度お試しください。",
+        "full": "このルームはすでに満員です。",
+        "gameStarted": "このルームの対戦はすでに始まっています。",
+        "alreadyInRoom": "別の端末で、すでにこのルームに入っています。",
+        "unauthenticated": "ほかのプレイヤーと対戦するには、アカウントにログインしてください。",
+        "suspended": "アカウントが停止中のため、現在ランク戦はプレイできません。ソロ練習とボットとの練習は引き続き利用できます。",
+        "codeTaken": "このコードのルームはすでにあります。別のコードをお試しください。",
+        "badOptions": "ルームの設定が無効です。",
+        "kicked": "ホストによってルームから外されました。",
+        "roomClosed": "ルームは閉じられました。"
+      },
+      "code": "エラーコード：{{code}}",
+      "attemptFailed": "試行{{attempt}}回目に失敗しました",
+      "retry": "再試行",
+      "practice": "練習へ",
+      "practiceNote": "ソロ練習とボットとの練習は接続なしでも遊べます",
+      "home": "ホーム"
+    },
+    "surrender": {
+      "chip": "降参",
+      "title": "本当に降参しますか？",
+      "body": "この対戦は負けになります",
+      "bodyRating": "この対戦は負けになります · レーティング変動の見込み：{{delta}}",
+      "bodyNoLoss": {
+        "leftBeforeMoving": "この対戦は負けになります · まだ一手も打っていないので、レーティングは下がりません",
+        "leftNotBehind": "この対戦は負けになります · リードされていないので、レーティングは下がりません"
+      },
+      "bodyMany": "対戦から退出します。解いたマスはあなたの色のまま残ります。",
+      "bodyManyNoLoss": "対戦から退出します。解いたマスはあなたの色のまま残ります。対戦に残っている相手に対して、レーティングは下がりません。",
+      "confirm": "はい、降参します",
+      "cancel": "キャンセル",
+      "footnote": "対戦はバックグラウンドで続きます",
+      "dialog": "降参の確認"
+    },
+    "lobby": {
+      "title": "プライベートルーム",
+      "subtitle_other": "{{type}} · {{players}}人",
+      "codeTitle": "ルームコード",
+      "codeLabel": "ルームコード：{{spelled}}",
+      "codeHint": "一緒に遊ぶ相手にコードを送ってください",
+      "share": "コードを共有",
+      "copy": "コピー",
+      "copied": "コードをコピーしました",
+      "shareMessage": "Sudoku Fightで一緒に遊びましょう！ルームコード：{{code}}",
+      "playersTitle": "ルーム内のプレイヤー",
+      "you": "自分",
+      "emptySeat": "プレイヤーを待っています…",
+      "seatMeLabel": "{{name}}、自分",
+      "seatEmptyLabel": "空席、プレイヤーを待っています",
+      "waiting_other": "あと{{count}}人を待っています",
+      "starting": "全員そろいました！対戦を開始します…",
+      "hint": "全員がルームに入るとすぐに対戦が始まります",
+      "leave": "ルームを出る",
+      "joined": "{{name}}がルームに入りました"
+    },
+    "connecting": {
+      "title": "対戦に入室中",
+      "board": "盤面を読み込み中…",
+      "step": {
+        "server": "ゲームサーバーに接続中…",
+        "room": "ルームに入室中…",
+        "sync": "得点とタイマーを同期中…"
+      },
+      "label": "対戦を読み込み中、ステップ{{step}}/{{total}}",
+      "cancel": "キャンセル",
+      "tag": "ランク戦 · {{type}}",
+      "rating": "レーティング{{rating}}",
+      "ready": "準備完了！",
+      "joining": "接続中…",
+      "tipTitle": "コツ",
+      "tips": {
+        "score_other": "行・列・ブロックが空いているほど、一手の価値は高くなります。1マス最大{{max}}点です。",
+        "lastCell_other": "盤面の最後のマスは、いつも{{points}}点だけです。周りがすべて埋まっているからです。",
+        "mistakes": "ミスをすると、そのマスの正しい数字の点数がそのまま引かれます。価値の高いマスほど、間違えたときの損も大きくなります。",
+        "interference": "妨害のコストは、使うたびに前回の2倍になります。ここぞという時に使いましょう。"
+      }
+    }
+  },
+  "live": {
+    "correct": "正解：{{cell}}に{{digit}}、{{points}}",
+    "wrong": "ミス：{{digit}}は{{cell}}に入りません、{{penalty}}",
+    "taken": "{{cell}}はすでに取られています",
+    "cooldown": "{{cell}}はもう少しで再び選べます",
+    "expired": "時間切れ、{{cell}}を解除しました",
+    "complete": "盤面完成！",
+    "oppCorrect": "{{name}}が{{cell}}を解きました：{{digit}}、{{points}}",
+    "oppWrong": "{{name}}がミス：{{digit}}は{{cell}}に入りません、{{penalty}}",
+    "leadMine_other": "あなたが{{gap}}点リード",
+    "leadTheirs_other": "{{name}}が{{gap}}点リード",
+    "leadTie": "同点です",
+    "reaction": "{{name}}のリアクション：{{emoji}}",
+    "oppSurrendered": "{{name}}が降参して脱落しました、{{place}}位",
+    "oppAbandoned": "{{name}}は時間内に戻らず脱落しました、{{place}}位",
+    "hitOther": "{{from}}が{{name}}に{{kind}}を送りました",
+    "outMine": "あなたは{{place}}位で脱落しました。対戦は最後まで続きます",
+    "queued": "{{cell}}：{{digit}}は接続待ちです",
+    "offlineLostTaken": "オフライン中に{{cell}}が取られました · ペナルティなし",
+    "offlineLost": "{{cell}}への手はカウントされませんでした · ペナルティなし"
+  },
+  "interference": {
+    "fireworks": "花火",
+    "cats": "ネコ",
+    "warp": "ワープ",
+    "scramble": "数字シャッフル",
+    "ink": "インク",
+    "keypad": "キーパッドシャッフル"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}}から花火が届きました！",
+      "cats": "{{name}}からネコが届きました！",
+      "warp": "{{name}}があなたの画面をゆがめました！",
+      "scramble": "{{name}}があなたの数字をかき混ぜました！",
+      "ink": "{{name}}がインクをかけてきました！",
+      "keypad": "{{name}}があなたのキーパッドをかき混ぜました！",
+      "generic": "{{name}}から妨害が届きました！"
+    },
+    "cost": "コストは{{cost}}点 · 対戦は続きます",
+    "goesOn": "対戦は続きます · タイマーは一時停止中",
+    "seconds_other": "残り{{count}}秒",
+    "banner": "{{title}}{{subtitle}}、{{time}}",
+    "started": "{{title}}盤面が暗くなっています（{{time}}）。タイマーは一時停止中です",
+    "withNote": "{{line}}。{{note}}",
+    "note": {
+      "scramble": "動いている数字は本物ではありません",
+      "keypad": "キーの位置が入れ替わります。各キーは表示どおりの数字を入力します"
+    },
+    "ended": "妨害が終わりました。タイマーが再開します",
+    "meow": "ニャー！",
+    "mew": "ミャー！"
+  },
+  "arsenal": {
+    "title": "妨害を選ぶ",
+    "target": "ターゲット：",
+    "targetLabel": "ターゲット：{{name}}",
+    "me": "自分",
+    "routeLabel": "自分から{{name}}への妨害",
+    "scrim": "閉じて盤面に戻る",
+    "price": "価格",
+    "priceValue": "{{cost}}点",
+    "nextPrice": "· 次：{{cost}}",
+    "unit": "点",
+    "score": "あなたの得点",
+    "costLabel_other": "この妨害のコストは{{cost}}点です。あなたの得点は{{score}}、発動後は{{after}}です。次のコストは{{next}}です",
+    "costLabelShort": "この妨害のコストは$t(game:arsenal.costPoints, {\"count\": {{cost}} })です。あなたの得点は{{score}}で、$t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })です",
+    "costPoints_other": "{{count}}点",
+    "shortPoints_other": "{{missing}}点不足",
+    "info_other": "妨害の効果は{{seconds}}秒間 · タップで発動",
+    "cost": "{{cost}}点",
+    "missing": "{{count}}点不足",
+    "locked": "未解放",
+    "level": "レベル{{level}}",
+    "busy": "妨害を受けています",
+    "unavailable": "使用不可",
+    "routeArrow": "→",
+    "sent": "{{kind}} → {{name}}",
+    "notEnough": "次の妨害に必要な点数が足りません（{{cost}}点）",
+    "busyToast_other": "{{name}}はすでに妨害を受けています。{{count}}秒後にもう一度お試しください",
+    "notNow": "今は妨害できません",
+    "refused": "妨害は送信されず、点数も引かれませんでした",
+    "label": "{{kind}} · {{cost}}点 · タップで{{name}}に発動",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kindGeneric": "妨害",
+    "kind": {
+      "fireworks": "花火",
+      "cats": "ネコ",
+      "warp": "ワープ",
+      "scramble": "数字シャッフル",
+      "ink": "インク",
+      "keypad": "キーパッドシャッフル"
+    },
+    "reason": {
+      "points": "この妨害には{{count}}点不足しています",
+      "busy": "{{name}}はすでに妨害を受けています。少し待ってからお試しください",
+      "notRunning": "今は妨害を発動できません",
+      "locked": "この妨害はまだ解放されていません",
+      "level": "レベル{{level}}で解放",
+      "out": "{{name}}は対戦から脱落しました",
+      "disconnected": "{{name}}は現在接続していません"
+    },
+    "live": {
+      "launched": "{{name}}に{{kind}}を発動しました"
+    }
+  },
+  "reactions": {
+    "picker": "リアクション",
+    "item": "リアクション：{{name}}",
+    "itemOther": "リアクション{{emoji}}",
+    "name": {
+      "laugh": "大笑い",
+      "scream": "絶叫",
+      "cool": "クール",
+      "facepalm": "あちゃー",
+      "fire": "炎",
+      "eyes": "じーっ"
+    },
+    "coolingDown": "少し待つと次のリアクションを送れます",
+    "close": "リアクションを閉じる",
+    "menu": {
+      "open": "{{name}}のカードメニュー",
+      "openHint": "ここで{{name}}のリアクションをミュートできます",
+      "openHintMuted": "{{name}}のリアクションはミュート中です。ここでミュートを解除できます",
+      "label": "{{name}}のメニュー",
+      "mute": "リアクションをミュート",
+      "unmute": "ミュートを解除",
+      "muteLabel": "{{name}}のリアクションをミュート",
+      "unmuteLabel": "{{name}}のリアクションのミュートを解除",
+      "muted": "{{name}}のリアクションをミュートしました",
+      "unmuted": "{{name}}のリアクションが再び表示されます",
+      "close": "メニューを閉じる"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "盤面完成！",
+      "ended": "練習終了",
+      "interrupted": "練習が中断されました",
+      "surrendered": "降参しました",
+      "abandoned": "対戦から退出しました",
+      "opponentSurrendered": "対戦相手が降参しました",
+      "opponentLeft": "対戦相手が退出しました"
+    },
+    "outcome": {
+      "win": "勝利！",
+      "loss": "敗北",
+      "tie": "引き分け"
+    },
+    "abandonWin": "相手の放棄により勝利",
+    "placeTitle": "{{place}}位！",
+    "placeOf": "{{total}}人中{{place}}位",
+    "outOf": "{{players}}中",
+    "header": "{{title}} · {{type}} · {{players}}",
+    "end": {
+      "label": "終了の理由",
+      "completed": "盤面をすべて埋めました",
+      "full": "盤面がすべて埋まりました",
+      "ended": "盤面が埋まる前に練習を終了しました",
+      "interrupted": "アプリが閉じられたなどの理由で、練習が途中で止まりました",
+      "line": "{{label}}：{{reason}}",
+      "surrendered": "盤面が埋まる前に降参しました",
+      "abandoned": "時間内に戻れませんでした",
+      "opponentSurrendered": "盤面が埋まる前に対戦相手が降参しました",
+      "opponentLeft": "対戦相手の接続が切れ、時間内に戻りませんでした"
+    },
+    "score": "最終得点",
+    "points": "点",
+    "scoreLabel_other": "最終得点：{{score}}点",
+    "opponents": {
+      "title": "対戦相手",
+      "label_other": "{{name}} · {{score}}点 · {{mistakes}}",
+      "left": "対戦から退出"
+    },
+    "best": {
+      "title": "この対戦の一手",
+      "move": "{{cell}} → {{digit}}",
+      "label_other": "この対戦の一手：{{points}}点、{{cell}}に{{digit}}",
+      "formula": "得点の内訳",
+      "formulaLabel": "得点の内訳：{{line}}",
+      "none": "この練習では正解の手がありませんでした"
+    },
+    "stats": {
+      "time": "対戦時間",
+      "mistakes": "ミス",
+      "correct": "正解数",
+      "think": "平均思考時間",
+      "seconds": "{{value}}秒",
+      "none": "—",
+      "label": "{{label}}：{{value}}"
+    },
+    "awards": {
+      "title": "対戦アワード",
+      "bestMove": "最高の一手",
+      "fewestMistakes": "最少ミス",
+      "fastest": "最速",
+      "comeback": "逆転",
+      "mostPoints": "最多得点",
+      "label": "{{title}}：{{who}}、{{value}}",
+      "value": {
+        "bestMove": "{{value}}点",
+        "fewestMistakes": "ミス：{{value}}",
+        "fastest": "1手あたり{{value}}秒",
+        "comeback": "{{value}}点差から",
+        "mostPoints": "{{value}}点"
+      }
+    },
+    "unrated": "練習：レーティングは変わりません",
+    "ratingSoon": "プライベートルーム：レーティングはまだ変動しません",
+    "actions": {
+      "home": "ホーム",
+      "newGame": "新しい対戦"
+    },
+    "loading": "結果を読み込み中…",
+    "missing": "この練習が見つかりませんでした",
+    "unavailable": "保存された練習を読み込めませんでした",
+    "notSaved": "この練習は端末に保存されませんでした"
+  }
+}

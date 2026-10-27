@@ -1,0 +1,92 @@
+{
+  "title": "รีเพลย์",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "ฝึกซ้อมเดี่ยว",
+    "bot": "ฝึกซ้อมกับบอท",
+    "ranked": "แรงก์"
+  },
+  "back": "กลับ",
+  "loading": "กำลังโหลดเกม…",
+  "load": {
+    "missing": "หาเกมนี้ไม่พบ",
+    "notFinished": "เซิร์ฟเวอร์ยังบันทึกเกมนี้ไม่เสร็จ ลองใหม่อีกสักครู่",
+    "offline": "ไม่ได้เชื่อมต่อกับเซิร์ฟเวอร์ เกมแรงก์ต้องโหลดจากเซิร์ฟเวอร์",
+    "signedOut": "ลงชื่อเข้าใช้เพื่อดูเกมแรงก์",
+    "unavailable": "อ่านข้อมูลเกมนี้ไม่ได้",
+    "retry": "ลองอีกครั้ง",
+    "partial": "เกมนี้จบลงกลางคัน รีเพลย์จะไปถึงตาเดินสุดท้ายที่บันทึกไว้"
+  },
+  "step": {
+    "counter": "ขั้นที่ {{number}} จาก {{total}}",
+    "clockLabel": "เวลาในเกม: {{clock}}"
+  },
+  "nav": {
+    "prev": "ขั้นก่อนหน้า",
+    "next": "ขั้นถัดไป",
+    "timeline": "เส้นเวลาของขั้น",
+    "timelineValue": "ขั้นที่ {{number}} จาก {{total}} {{clock}}",
+    "timelineHint": "ปัดขึ้นหรือลงเพื่อเปลี่ยนขั้น"
+  },
+  "narration": {
+    "start": "เกมเริ่มแล้ว",
+    "select": "{{name}} · เลือก {{cell}}",
+    "correct": "{{name}} · ถูกที่ {{cell}} · {{delta}}",
+    "wrong": "{{name}} · ผิดที่ {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · ปล่อย {{cell}}",
+      "timeout": "{{name}} · หมดเวลาที่ {{cell}}"
+    },
+    "interference": "{{name}} · ก่อกวน {{target}} · {{delta}}",
+    "disconnect": "{{name}} · หลุดการเชื่อมต่อ",
+    "reconnect": "{{name}} · กลับเข้าเกมแล้ว",
+    "offline": "{{name}} · ขาดการเชื่อมต่อ",
+    "surrender": "{{name}} · ยอมแพ้",
+    "endPractice": "{{name}} · จบการฝึกซ้อม",
+    "abandon": "{{name}} · ออกจากเกม",
+    "over": "เกมจบแล้ว",
+    "paused": "เกมถูกหยุดไว้",
+    "offlineSuffix": "ส่งเมื่อกลับมาออนไลน์"
+  },
+  "explain": {
+    "title": "คำอธิบายสำหรับผู้เล่นทุกคน",
+    "none": "{{name}} ยังไม่ได้เดิน",
+    "noneMe": "ฉันยังไม่ได้เดิน",
+    "noneBody": "คำอธิบายจะขึ้นหลังตาเดินแรก",
+    "status": {
+      "choosing": "กำลังเลือก",
+      "released": "ปล่อย",
+      "correct": "ถูก",
+      "wrong": "ผิด"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} แทน {{answer}}",
+    "why": "ทำไม {{digit}} ใส่ไม่ได้: {{text}}",
+    "noLogic": "คำตอบ: {{cell}} → {{digit}}",
+    "scoreLine": "คะแนน",
+    "penaltyLine": "โทษ: เท่ากับคะแนนของตัวเลขที่ถูก",
+    "released": {
+      "cancel": "ยกเลิกการเลือก",
+      "timeout": "หมดเวลา",
+      "switch": "ย้ายไปช่องอื่น",
+      "mistake": "หลังทำผิด",
+      "surrender": "ออกจากเกม",
+      "disconnect": "หลุดการเชื่อมต่อ",
+      "abandon": "ทิ้งเกม"
+    },
+    "label": "{{name}}: {{status}} {{move}} {{technique}} {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "ช่วงสำคัญ",
+    "bestMove": "ตาเดินที่ดีที่สุด",
+    "mistakes": "ข้อผิดพลาด · {{count}}",
+    "interferences": "การก่อกวน · {{count}}",
+    "turningPoint": "จุดพลิกเกม",
+    "hint": "ข้ามไปยังขั้นนั้น"
+  },
+  "board": "กระดานในขั้นที่ {{number}}",
+  "me": "ฉัน",
+  "unknown": "ผู้เล่น"
+}

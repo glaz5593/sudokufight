@@ -1,0 +1,33 @@
+{
+  "googlePlay": {
+    "locales": [
+      "tr-TR"
+    ],
+    "title": "Sudoku Fight: Canlı PvP Sudoku",
+    "shortDescription": "Aynı sudokuda en fazla 3 rakiple gerçek zamanlı yarış. Dereceli, canlı, adil.",
+    "fullDescription": "Sudoku Fight, sudokuyu canlı bir yarışmaya dönüştürüyor. En fazla 4 oyuncu aynı tabloyu aynı anda çözer: yerleştirdiğin her doğru rakam senindir ve her puan önemlidir.\n\nTEK TABLO, HERKES ÇÖZÜYOR\n• Tüm oyuncular aynı anda aynı tablo üzerinde çalışır. Doğru bir rakam yerleştir, hücre senin rengini alsın.\n• Zor hamleler daha çok puan getirir: zekice bir çıkarım gerektiren rakam, kolay bir rakamdan daha değerlidir.\n• Yanlış bir rakam, tam olarak doğrusunun kazandıracağı kadar puan kaybettirir. Tek başına hız kazandırmaz.\n• Düşünürken bir hücreyi kilitle, ama yalnızca birkaç saniyeliğine.\n\nSABOTAJLAR VE TEPKİLER\n• Puan harca, bir rakibi 5 saniyeliğine havai fişeklerle, kedilerle ya da bir bükülmeyle vur.\n• 😂 😱 😎 🤦 🔥 👀 ile tepki ver.\n\nDERECELİ MAÇLAR\n• 2, 3 ya da 4 oyuncu için dereceli maçlar, üç maç türünde: hızlı, standart ve zor.\n• Eşleştirme, sana denk rakipler arar ve az önce karşılaştığın rakiplerden kaçınır.\n• Her maç türü için bir derece, ligler, sıralama tabloları ve istatistiklerini gösteren oyuncu kartları.\n• Çevrimiçi rakip yok mu? Beklerken bir bota karşı antrenman yap.\n\nHER MAÇTAN ÖĞREN\n• Her dereceli maçı hamle hamle maç tekrarında izle; her hamlenin mantıksal açıklamasıyla.\n• Tüm maç geçmişin ve ilerlemen, XP ve seviyelerle.\n\nİSTEDİĞİN ZAMAN ANTRENMAN\n• Tek başına ya da farklı güçlerdeki botlara karşı antrenman yap, çevrimdışı bile.\n\nADİL OYUN\n• Sunucu her hamleyi kontrol eder ve dereceli maçların bulmacaları asla uygulamayla birlikte gelmez.\n• Reklam yok. Hesabını istediğin zaman Ayarlar bölümünden silebilirsin.\n\n19 dilde kullanılabilir. Tablo her zaman soldan sağa okunur.",
+    "whatsNew": "İlk sürüm."
+  },
+  "appStore": {
+    "locales": [
+      "tr"
+    ],
+    "name": "Sudoku Fight",
+    "subtitle": "Çok oyunculu sudoku düelloları",
+    "promotionalText": "Tek tablo. Herkes çözüyor. Yalnızca biri kazanıyor. Aynı sudokuda en fazla 3 rakiple gerçek zamanlı yarış, sabotaj gönder ve dereceli liglerde yüksel.",
+    "description": "Sudoku Fight, sudokuyu canlı bir yarışmaya dönüştürüyor. En fazla 4 oyuncu aynı tabloyu aynı anda çözer: yerleştirdiğin her doğru rakam senindir ve her puan önemlidir.\n\nTEK TABLO, HERKES ÇÖZÜYOR\n• Tüm oyuncular aynı anda aynı tablo üzerinde çalışır. Doğru bir rakam yerleştir, hücre senin rengini alsın.\n• Zor hamleler daha çok puan getirir: zekice bir çıkarım gerektiren rakam, kolay bir rakamdan daha değerlidir.\n• Yanlış bir rakam, tam olarak doğrusunun kazandıracağı kadar puan kaybettirir. Tek başına hız kazandırmaz.\n• Düşünürken bir hücreyi kilitle, ama yalnızca birkaç saniyeliğine.\n\nSABOTAJLAR VE TEPKİLER\n• Puan harca, bir rakibi 5 saniyeliğine havai fişeklerle, kedilerle ya da bir bükülmeyle vur.\n• 😂 😱 😎 🤦 🔥 👀 ile tepki ver.\n\nDERECELİ MAÇLAR\n• 2, 3 ya da 4 oyuncu için dereceli maçlar, üç maç türünde: hızlı, standart ve zor.\n• Eşleştirme, sana denk rakipler arar ve az önce karşılaştığın rakiplerden kaçınır.\n• Her maç türü için bir derece, ligler, sıralama tabloları ve istatistiklerini gösteren oyuncu kartları.\n• Çevrimiçi rakip yok mu? Beklerken bir bota karşı antrenman yap.\n\nHER MAÇTAN ÖĞREN\n• Her dereceli maçı hamle hamle maç tekrarında izle; her hamlenin mantıksal açıklamasıyla.\n• Tüm maç geçmişin ve ilerlemen, XP ve seviyelerle.\n\nİSTEDİĞİN ZAMAN ANTRENMAN\n• Tek başına ya da farklı güçlerdeki botlara karşı antrenman yap, çevrimdışı bile.\n\nADİL OYUN\n• Sunucu her hamleyi kontrol eder ve dereceli maçların bulmacaları asla uygulamayla birlikte gelmez.\n• Reklam yok. Hesabını istediğin zaman Ayarlar bölümünden silebilirsin.\n\n19 dilde kullanılabilir. Tablo her zaman soldan sağa okunur.",
+    "keywords": "bulmaca,zeka,oyun,sayı,mantık,beyin,online,arkadaş,iki kişilik,canlı,pvp,kapışma,yarış,lig",
+    "whatsNew": "İlk sürüm."
+  },
+  "screenshotCaptions": [
+    "Tek tablo. Herkes çözüyor. Yalnızca biri kazanıyor.",
+    "Aynı tabloda en fazla 4 oyuncu",
+    "Rakiplerine sabotaj gönder",
+    "Sana denk bir rakip, aynı tabloda",
+    "Zor hamleler daha çok puan getirir",
+    "Her hamle maç tekrarında, açıklamalarıyla",
+    "Ligler ve sıralamalar",
+    "Bota karşı antrenman yap, çevrimdışı bile"
+  ],
+  "variants": {}
+}

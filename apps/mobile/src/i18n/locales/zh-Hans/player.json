@@ -1,0 +1,108 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": "，",
+  "ellipsis": "…",
+  "unknownName": "玩家",
+  "temporaryName": "玩家{{digits}}",
+  "bot": "机器人",
+  "vs": "VS",
+  "seconds_other": "{{count}}秒",
+  "points_other": "{{score}}分",
+  "place": "第{{place}}名",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "在线",
+    "online_female": "在线",
+    "reconnecting": "重连中",
+    "reconnecting_female": "重连中",
+    "unstable": "无连接",
+    "unstable_female": "无连接",
+    "left": "已离开",
+    "left_female": "已离开"
+  },
+  "result": {
+    "winShort": "胜",
+    "lossShort": "负",
+    "drawShort": "平"
+  },
+  "flag": {
+    "label": "国家/地区：{{country}}"
+  },
+  "rating": {
+    "label": "积分{{value}}",
+    "labelWithKey": "{{key}}积分{{value}}",
+    "provisional": "定级中",
+    "provisionalLabel": "{{label}}，定级中"
+  },
+  "league": {
+    "bronze": "青铜",
+    "silver": "白银",
+    "gold": "黄金",
+    "diamond": "钻石",
+    "legend": "传奇",
+    "name": "{{league}}段位",
+    "level": "等级{{level}}",
+    "levelAfter": "· 等级{{level}}"
+  },
+  "mistakes": {
+    "short_zero": "没有错误",
+    "short_other": "{{count}}次错误",
+    "long_zero": "没有错误",
+    "long_other": "{{count}}次错误",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "选择中",
+    "locking_female": "选择中",
+    "turn": "回合中",
+    "turn_female": "回合中",
+    "paused": "已暂停",
+    "thinking": "思考中",
+    "thinking_female": "思考中",
+    "reconnecting": "重连中",
+    "reconnecting_female": "重连中",
+    "left": "已离开",
+    "left_female": "已离开",
+    "surrendered": "已认输",
+    "surrendered_female": "已认输",
+    "withCell": "{{word}}{{cell}}",
+    "withTime": "{{word}}，{{time}}"
+  },
+  "card": {
+    "hit": "受到干扰，{{time}}",
+    "target": "目标",
+    "targetHint": "干扰目标"
+  },
+  "actions": {
+    "surrender": "认输",
+    "endPractice": "结束练习",
+    "reactions": "表情"
+  },
+  "interfere": {
+    "button": "干扰",
+    "label": "干扰{{name}} · 花费{{cost}}分",
+    "labelMissing": "干扰{{name}} · 还差{{count}}分",
+    "labelBusy": "无法干扰{{name}}，对方正受到干扰",
+    "labelNotRunning": "现在无法干扰{{name}}",
+    "labelDisconnected": "断线期间无法干扰",
+    "labelOut": "{{name}}已退出对局",
+    "close": "关闭干扰选择"
+  },
+  "lead": {
+    "tie": "平分",
+    "label_other": "{{name}}领先{{gap}}分",
+    "label_female_other": "{{name}}领先{{gap}}分",
+    "tieLabel": "比分持平"
+  },
+  "lock": {
+    "yourCell": "你的格",
+    "paused": "已暂停",
+    "pick": "选一格",
+    "remaining_other": "还剩{{count}}秒",
+    "label": "你的格{{cell}}，{{remaining}}",
+    "labelPaused": "你的格{{cell}}，计时已停止",
+    "progress": "格{{cell}}的剩余时间",
+    "released": "格已释放"
+  }
+}

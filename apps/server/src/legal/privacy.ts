@@ -1,6 +1,7 @@
 import type { TelemetryEventName } from '@sudoku-fight/protocol';
 
-import type { LegalTexts } from './types';
+import { byTranslation } from './translations';
+import type { LegalLang, LegalTexts, OriginalLegalLang, OriginalTexts } from './types';
 
 /**
  * The privacy policy (spec §23, §27.1: "מדיניות הפרטיות מפרטת את האירועים"). It must match the code; when the
@@ -33,8 +34,8 @@ import type { LegalTexts } from './types';
  *   §2; with Fly's own Postgres instead, the "sharing" section changes), Sentry
  */
 
-/** Each reported event and what it carries, per language: [what happens, what it carries]. */
-export const EVENT_DETAILS: Record<TelemetryEventName, { he: [string, string]; en: [string, string] }> = {
+/** Each reported event and what it carries, in Hebrew and English: [what happens, what it carries]. */
+const ORIGINAL_EVENT_DETAILS: Record<TelemetryEventName, Record<OriginalLegalLang, [string, string]>> = {
   app_open: { he: ['פתיחת האפליקציה', '—'], en: ['The app opens', '—'] },
   screen_view: {
     he: ['כניסה למסך', 'שם המסך (תבנית הנתיב, בלי מזהים)'],
@@ -154,13 +155,25 @@ export const EVENT_DETAILS: Record<TelemetryEventName, { he: [string, string]; e
   },
 };
 
-const eventRows = (lang: 'he' | 'en') =>
-  (Object.keys(EVENT_DETAILS) as TelemetryEventName[]).map((name) => [
+/**
+ * Each reported event and what it carries, per language: [what happens, what it carries]. Hebrew and English
+ * above; each translation's own table (translations/), which its privacy text shows.
+ */
+export const EVENT_DETAILS = Object.fromEntries(
+  (Object.keys(ORIGINAL_EVENT_DETAILS) as TelemetryEventName[]).map((name) => [name, inEveryLanguage(name)]),
+) as Record<TelemetryEventName, Record<LegalLang, readonly [string, string]>>;
+
+function inEveryLanguage(name: TelemetryEventName): Record<LegalLang, readonly [string, string]> {
+  return { ...ORIGINAL_EVENT_DETAILS[name], ...byTranslation((t) => t.events[name]) };
+}
+
+const eventRows = (lang: OriginalLegalLang) =>
+  (Object.keys(ORIGINAL_EVENT_DETAILS) as TelemetryEventName[]).map((name) => [
     `\`${name}\``,
-    ...EVENT_DETAILS[name][lang],
+    ...ORIGINAL_EVENT_DETAILS[name][lang],
   ]);
 
-export const PRIVACY: LegalTexts = {
+const ORIGINALS: OriginalTexts = {
   he: {
     title: 'מדיניות פרטיות',
     lead: 'מה סודוקו פייט אוסף, למה, מי רואה את זה, כמה זמן זה נשמר, ואיך מוחקים.',
@@ -635,3 +648,6 @@ export const PRIVACY: LegalTexts = {
     ],
   },
 };
+
+/** Every version: Hebrew and English above, the translations of the English one (D112) from translations/. */
+export const PRIVACY: LegalTexts = { ...ORIGINALS, ...byTranslation((t) => t.texts.privacy) };

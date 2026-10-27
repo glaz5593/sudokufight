@@ -1,0 +1,179 @@
+{
+  "title": "Raum mit Freunden",
+  "subtitle": "{{type}} · {{count}} von {{max}}",
+  "label": "Spiel mit Freunden · ungewertet",
+  "mode": "Mit Freunden",
+  "modeLong": "Spiel mit Freunden",
+  "unrated": "Ungewertet",
+  "code": {
+    "title": "Raumcode",
+    "label": "Raumcode: {{spelled}}",
+    "hint": "Schick den Code oder den Link"
+  },
+  "share": {
+    "button": "Link teilen",
+    "hint": "Öffnet das Teilen-Menü deines Handys, mit Code und Link",
+    "message": "Komm in meinen Raum bei Sudoku Fight! Raumcode: {{code}}\n{{link}}",
+    "failed": "Teilen ließ sich nicht öffnen"
+  },
+  "copy": {
+    "button": "Code kopieren",
+    "done": "Code kopiert",
+    "failed": "Code konnte nicht kopiert werden"
+  },
+  "gameType": {
+    "title": "Spieltyp",
+    "hostPicks": "Nur der Gastgeber kann ihn ändern",
+    "guestSees": "Der Gastgeber wählt",
+    "changed": "Spieltyp ist jetzt {{type}}"
+  },
+  "players": {
+    "title": "Spieler · {{count}} von {{max}}"
+  },
+  "seat": {
+    "me": "Ich",
+    "host": "Gastgeber",
+    "away": "Gerade nicht im Raum",
+    "empty": "Warte auf Spieler…",
+    "emptyLabel": "Freier Platz, warte auf Spieler",
+    "rating": "Wertung {{rating}}"
+  },
+  "kick": {
+    "label": "{{name}} aus dem Raum entfernen",
+    "title": "{{name}} aus dem Raum entfernen?",
+    "body": "Eine Rückkehr in diesen Raum ist dann nicht mehr möglich.",
+    "confirm": "Entfernen"
+  },
+  "start": {
+    "button_one": "Spiel starten",
+    "button_other": "Spiel starten · {{count}} Spieler",
+    "needMore": "Zum Starten brauchst du mindestens 2 verbundene Spieler",
+    "waitingForHost": "Warte, bis {{name}} startet",
+    "hostAway": "Der Gastgeber ist gerade nicht im Raum",
+    "starting": "Das Spiel startet…"
+  },
+  "startWithout": {
+    "title": "Ohne {{names}} starten?",
+    "body": "Gerade nicht im Raum: {{names}}. Wer nicht im Raum ist, bleibt draußen.",
+    "confirm": "Ja, starten",
+    "cancel": "Nein, warten"
+  },
+  "leave": "Raum verlassen",
+  "reconnecting": "Verbindung verloren. Verbinde neu…",
+  "announce": {
+    "joined": "{{name}} ist beigetreten",
+    "left": "{{name}} hat den Raum verlassen",
+    "away": "{{name}} ist gerade nicht im Raum",
+    "back": "{{name}} ist zurück im Raum",
+    "host": "{{name}} leitet jetzt den Raum",
+    "meHost": "Du leitest jetzt den Raum"
+  },
+  "opening": {
+    "create": "Raum wird geöffnet…",
+    "join": "Raum wird betreten…"
+  },
+  "replace": {
+    "title": "Deinen anderen Raum schließen?",
+    "body": "Du hast schon einen offenen Raum, {{code}}. Schließ ihn und öffne einen neuen, oder geh zu ihm zurück.",
+    "confirm": "Schließen und neu öffnen",
+    "cancel": "Zurück zu diesem Raum"
+  },
+  "errors": {
+    "notFound": "Wir haben keinen Raum mit dem Code {{code}} gefunden. Prüf die Ziffern.",
+    "notFoundThis": "Wir haben keinen Raum mit diesem Code gefunden.",
+    "roomFull": "Der Raum ist voll ({{max}} von {{max}}).",
+    "gameStarted": "Das Spiel in diesem Raum hat schon begonnen.",
+    "roomClosed": "Der Raum wurde geschlossen.",
+    "kicked": "Der Gastgeber hat dich aus dem Raum entfernt.",
+    "cantJoin": "Du hast einen Spieler blockiert, der in diesem Raum ist.",
+    "suspended": "Dein Konto ist gesperrt, deshalb kannst du gerade nicht mit Freunden spielen.",
+    "network": "Keine Internetverbindung.",
+    "tooManyRequests": "Zu viele Versuche. Versuch es in {{wait}} noch mal.",
+    "notAvailable": "Diese Option gibt es noch nicht.",
+    "badRequest": "Der Code hat 6 Ziffern.",
+    "unauthorized": "Bitte melde dich noch mal bei deinem Konto an.",
+    "notRegistered": "Schließ die Registrierung ab, um mit Freunden zu spielen.",
+    "tooManyRooms": "Du hast schon einen offenen Raum.",
+    "tooLarge": "Etwas ist schiefgelaufen. Versuch es noch mal.",
+    "internal": "Auf dem Server ist etwas schiefgelaufen. Versuch es gleich noch mal.",
+    "disabled": "Spielen mit Freunden ist auf diesem Server nicht verfügbar.",
+    "unavailable": "Der Server ist gerade nicht erreichbar. Versuch es gleich noch mal."
+  },
+  "wait": {
+    "seconds_one": "einer Sekunde",
+    "seconds_other": "{{count}} Sekunden",
+    "minutes_one": "einer Minute",
+    "minutes_other": "{{count}} Minuten"
+  },
+  "closed": {
+    "kicked": "Der Gastgeber hat dich aus dem Raum entfernt.",
+    "removed": "Du hast den Raum verlassen.",
+    "otherDevice": "Der Raum wurde auf einem anderen Gerät geöffnet.",
+    "serverRestart": "Der Raum wurde geschlossen.",
+    "closed": "Der Raum wurde geschlossen."
+  },
+  "lobbyErrors": {
+    "notHost": "Das kann nur der Gastgeber.",
+    "notEnoughPlayers": "Zum Starten brauchst du mindestens 2 verbundene Spieler.",
+    "playersAway": "Gerade nicht im Raum: {{names}}.",
+    "gameStarted": "Das Spiel hat schon begonnen.",
+    "badCommand": "Das hat nicht geklappt. Versuch es noch mal.",
+    "tooManyRequests": "Langsam, du tippst zu schnell. Versuch es gleich noch mal."
+  },
+  "startedWithout": "Das Spiel hat ohne dich begonnen.",
+  "actions": {
+    "retry": "Erneut versuchen",
+    "createRoom": "Raum erstellen",
+    "joinWithCode": "Mit Code beitreten",
+    "home": "Start"
+  },
+  "join": {
+    "title": "Mit Code beitreten",
+    "prompt": "Gib den 6-stelligen Code ein",
+    "codeLabel": "Raumcode, 6 Ziffern",
+    "digitLabel": "Ziffer {{n}} von {{total}}",
+    "paste": "Einfügen",
+    "pasteHint": "Du kannst die ganze WhatsApp-Nachricht einfügen",
+    "pasteNone": "Im kopierten Text ist kein 6-stelliger Code",
+    "joining": "Raum wird betreten…",
+    "submit": "Beitreten"
+  },
+  "link": {
+    "notFound": {
+      "title": "Diesen Link kennen wir nicht",
+      "body": "Vielleicht ist er alt oder nicht von Sudoku Fight. Du kannst vom Start aus weitermachen.",
+      "home": "Zum Start"
+    },
+    "badCode": "Dieser Link ist ungültig"
+  },
+  "invite": {
+    "pending": "Du bist in Raum {{code}} eingeladen",
+    "afterSignIn": "Nach der Anmeldung bringen wir dich direkt in Raum {{code}}",
+    "join": "Beitreten",
+    "later": "Nicht jetzt",
+    "expired": "Die Einladung in Raum {{code}} ist abgelaufen"
+  },
+  "busy": {
+    "practice": {
+      "title": "Training verlassen und dem Raum beitreten?",
+      "body": "Das Training wird gespeichert, wie beim Verlassen.",
+      "confirm": "Raum beitreten"
+    },
+    "search": {
+      "title": "Suche beenden und beitreten?",
+      "body": "Die Suche nach einem Gegner wird beendet.",
+      "confirm": "Raum beitreten"
+    },
+    "room": {
+      "title": "Zu Raum {{code}} wechseln?",
+      "body": "Du verlässt den Raum, in dem du gerade bist.",
+      "confirm": "Raum wechseln"
+    },
+    "game": {
+      "title": "Du bist mitten in einem Spiel",
+      "body": "Du kannst danach beitreten. Die Einladung in Raum {{code}} wartet auf dich.",
+      "back": "Zurück zum Spiel"
+    },
+    "stay": "Bleiben"
+  }
+}

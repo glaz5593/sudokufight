@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, type TextStyle, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type TextStyle, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Polygon } from 'react-native-svg';
 
 import { color, text } from '../../theme';
+import { Text } from '../ui/Text';
 import { LEAGUE_THRESHOLDS, leagueFor, type League, type LeagueThresholds } from './league';
 import { metrics } from './metrics';
 

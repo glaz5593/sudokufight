@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -12,6 +12,7 @@ import Animated, {
 
 import { color, text } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
+import { Text } from '../ui/Text';
 import { easing, NEVER_REDUCE, springs, useBlink } from './anim';
 import type { Activity } from './cardModel';
 import { ltr } from './format';

@@ -1,0 +1,302 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "الإعدادات",
+    "back": "رجوع"
+  },
+  "profile": {
+    "defaultName": "لاعب",
+    "label": "بطاقتي: {{name}}",
+    "noRating": "لا تصنيف بعد",
+    "ratingTitle": "التصنيف",
+    "none": "—",
+    "games_zero": "لا مباريات",
+    "games_one": "مباراة واحدة",
+    "games_two": "مباراتان",
+    "games_few": "{{count}} مباريات",
+    "games_many": "{{count}} مباراة",
+    "games_other": "{{count}} مباراة",
+    "gamesLabel_zero": "مباراة",
+    "gamesLabel_one": "مباراة",
+    "gamesLabel_two": "مباراتان",
+    "gamesLabel_few": "مباريات",
+    "gamesLabel_many": "مباراة",
+    "gamesLabel_other": "مباراة",
+    "winsLabel": "انتصارات",
+    "streakLabel": "سلسلة",
+    "winRate": "فوز بنسبة {{percent}}%",
+    "streak_zero": "لا سلسلة انتصارات",
+    "streak_one": "سلسلة من فوز واحد",
+    "streak_two": "سلسلة من فوزين",
+    "streak_few": "سلسلة من {{count}} انتصارات",
+    "streak_many": "سلسلة من {{count}} فوزًا",
+    "streak_other": "سلسلة من {{count}} فوز"
+  },
+  "play": "هيا نلعب",
+  "playHint": "اختيار نمط اللعب",
+  "again": {
+    "title": "جولة أخرى",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "تعذّر بدء المباراة. لنحاول مجددًا."
+  },
+  "recent": {
+    "heading": "المباريات الأخيرة",
+    "all": "الكل",
+    "unavailable": "تعذّرت قراءة المباريات المحفوظة على هذا الهاتف.",
+    "emptyTitle": "لا مباريات هنا بعد",
+    "emptyBody": "يُحفظ كل تدريب هنا، حتى بعد إغلاق التطبيق.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "مكتملة",
+      "ended": "منتهية",
+      "interrupted": "متوقفة",
+      "playing": "جارية",
+      "win": "فوز",
+      "loss": "خسارة",
+      "tie": "تعادل"
+    },
+    "openHint": "يفتح النتائج",
+    "versus": "{{outcome}} ضد {{name}}"
+  },
+  "modes": {
+    "title": "مباراة جديدة",
+    "footnote": "المصنفة تتطلب اتصالًا بالإنترنت · التدريب متاح دائمًا",
+    "soon": "قريبًا",
+    "groups": {
+      "ranked": {
+        "title": "مصنفة",
+        "note": "خصوم حقيقيون، في الوقت الفعلي"
+      },
+      "friends": {
+        "title": "مع الأصدقاء",
+        "titleMoshe": "أصدقاء حقيقيون، في الوقت الفعلي",
+        "note": "غرفة خاصة · حتى 4 · دون تصنيف"
+      },
+      "practice": {
+        "title": "تدريب",
+        "note": "بلا ضغط، بلا تصنيف"
+      }
+    },
+    "chips": {
+      "rated": "بتصنيف",
+      "unrated": "دون تصنيف",
+      "offline": "يعمل دون اتصال"
+    },
+    "ranked": {
+      "name": "مصنفة"
+    },
+    "ranked2": {
+      "title": "لاعبان",
+      "tagline": "وجهًا لوجه · اللوحة نفسها",
+      "label": "مصنفة · لاعبان"
+    },
+    "ranked3": {
+      "title": "3 لاعبين",
+      "tagline": "الكل ضد الكل",
+      "label": "مصنفة · 3 لاعبين"
+    },
+    "ranked4": {
+      "title": "4 لاعبين",
+      "tagline": "الكل ضد الكل",
+      "label": "مصنفة · 4 لاعبين"
+    },
+    "friends": {
+      "create": "افتح غرفة",
+      "createHint": "يفتح غرفة انتظار برمز لإرساله إلى أصدقائك",
+      "join": "انضم برمز",
+      "joinHint": "إدخال الأرقام الستة التي وصلتك"
+    },
+    "solo": {
+      "name": "تدريب فردي",
+      "title": "فردي · لوحة كاملة",
+      "tagline": "على راحتك",
+      "label": "فردي · لوحة كاملة"
+    },
+    "levels": {
+      "name": "تدريب المراحل",
+      "title": "تدريب المراحل",
+      "tagline": "مراحل قصيرة · حتى 3 نجوم",
+      "taglineNew_zero": "لا مراحل · ⁦0–3⁩ نجوم",
+      "taglineNew_one": "مرحلة قصيرة واحدة · ⁦0–3⁩ نجوم",
+      "taglineNew_two": "مرحلتان قصيرتان · ⁦0–3⁩ نجوم",
+      "taglineNew_few": "{{total}} مراحل قصيرة · ⁦0–3⁩ نجوم",
+      "taglineNew_many": "{{total}} مرحلة قصيرة · ⁦0–3⁩ نجوم",
+      "taglineNew_other": "{{total}} مرحلة قصيرة · ⁦0–3⁩ نجوم",
+      "chip": "مرحلة {{stage}} ·",
+      "offline": "أوفلاين",
+      "chipLabel_zero": "المرحلة {{stage}} · بلا نجوم",
+      "chipLabel_one": "المرحلة {{stage}} · نجمة واحدة",
+      "chipLabel_two": "المرحلة {{stage}} · نجمتان",
+      "chipLabel_few": "المرحلة {{stage}} · {{count}} نجوم",
+      "chipLabel_many": "المرحلة {{stage}} · {{count}} نجمة",
+      "chipLabel_other": "المرحلة {{stage}} · {{count}} نجمة",
+      "label": "تدريب المراحل"
+    },
+    "bot": {
+      "name": "تدريب ضد بوت",
+      "title": "تدريب ضد بوت",
+      "tagline": "5 مستويات",
+      "label": "تدريب ضد بوت"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "سريع",
+      "difficulty": "سهل",
+      "technique": "يُحل بالمفرد الظاهر فقط"
+    },
+    "normal": {
+      "name": "عادي",
+      "difficulty": "متوسط",
+      "technique": "يتطلب المفرد المخفي"
+    },
+    "hard": {
+      "name": "صعب",
+      "difficulty": "صعب",
+      "technique": "يتطلب أزواجًا أو اختزالات"
+    }
+  },
+  "gameType": {
+    "title": "نوع المباراة",
+    "note": {
+      "solo": "دون تصنيف. اللوحة من الألغاز الموجودة على هذا الهاتف، دون تكرار لوحة لعبتها مؤخرًا.",
+      "bot": "دون تصنيف. اللوحة من الألغاز الموجودة على هذا الهاتف، دون تكرار لوحة لعبتها مؤخرًا. الخطوة التالية: اختيار خصمك.",
+      "ranked": "بتصنيف. خصم قريب من تصنيفك، ولوحة جديدة عليك من مجموعة الخادم، واللوحة نفسها لكليكما.",
+      "rankedGroup": "بتصنيف. خصوم قريبون من تصنيفك، ولوحة جديدة عليك من مجموعة الخادم، واللوحة نفسها للجميع. تبدأ المباراة عندما تكتمل الطاولة."
+    },
+    "start": {
+      "solo": "بدء التدريب",
+      "bot": "اختيار الخصم",
+      "ranked": "البحث عن خصم",
+      "rankedGroup": "البحث عن خصوم"
+    },
+    "startHint": "يبدأ تدريبًا من نوع {{type}}",
+    "rankedHint": "يبحث عن خصم لمباراة مصنفة من نوع {{type}}",
+    "rankedGroupHint": "يبحث عن خصوم لمباراة مصنفة من نوع {{type}}",
+    "lockTime": "الوقت لكل خانة",
+    "board": "صعوبة اللوحة",
+    "duration": "المدة التقريبية",
+    "seconds": "{{seconds}} ث",
+    "minutes": "{{range}} د",
+    "yourRating": "تصنيفك",
+    "cardLabel_zero": "{{name}}. {{technique}}. {{seconds}} لكل خانة، صعوبة اللوحة {{difficulty}}، حوالي {{from}} دقيقة",
+    "cardLabel_one": "{{name}}. {{technique}}. {{seconds}} لكل خانة، صعوبة اللوحة {{difficulty}}، من {{from}} إلى دقيقة واحدة تقريبًا",
+    "cardLabel_two": "{{name}}. {{technique}}. {{seconds}} لكل خانة، صعوبة اللوحة {{difficulty}}، من {{from}} إلى دقيقتين تقريبًا",
+    "cardLabel_few": "{{name}}. {{technique}}. {{seconds}} لكل خانة، صعوبة اللوحة {{difficulty}}، من {{from}} إلى {{to}} دقائق تقريبًا",
+    "cardLabel_many": "{{name}}. {{technique}}. {{seconds}} لكل خانة، صعوبة اللوحة {{difficulty}}، من {{from}} إلى {{to}} دقيقة تقريبًا",
+    "cardLabel_other": "{{name}}. {{technique}}. {{seconds}} لكل خانة، صعوبة اللوحة {{difficulty}}، من {{from}} إلى {{to}} دقيقة تقريبًا",
+    "botHint": "اختيار بوت لمباراة من نوع {{type}}"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "feedback": "الصوت والاهتزاز",
+    "sound": "الصوت",
+    "soundHint": "أصوات للحركات والإجراءات",
+    "haptics": "الاهتزاز",
+    "hapticsHint": "اهتزازات قصيرة كاستجابة للحركات",
+    "motion": "تقليل الحركة",
+    "motionHint": "رسوم متحركة أقل: تقفز النقاط مباشرة إلى النتيجة، ويظهر التشويش كغطاء ثابت للمدة نفسها.",
+    "reduceMotion": {
+      "system": "مثل الجهاز",
+      "on": "مفعّل",
+      "off": "معطّل"
+    },
+    "language": "اللغة",
+    "languageHint": "تغيير اللغة يعيد تشغيل التطبيق.",
+    "languageConfirm": {
+      "title": "تغيير اللغة إلى {{language}}؟",
+      "body": "سيُعاد تشغيل التطبيق، لتظهر كل الشاشات باتجاه اللغة الجديدة.",
+      "confirm": "التغيير وإعادة التشغيل",
+      "titleDevice": "الانتقال إلى لغة الجهاز؟"
+    },
+    "languageDevice": "لغة الجهاز",
+    "languageSheetTitle": "اختيار لغة",
+    "languageField": "اللغة: {{language}}",
+    "languageFieldDevice": "اللغة: لغة الجهاز، {{language}}",
+    "about": "حول التطبيق والمعلومات القانونية",
+    "privacy": "سياسة الخصوصية",
+    "terms": "شروط الاستخدام",
+    "licenses": "التراخيص",
+    "opensInBrowser": "يُفتح في المتصفح"
+  },
+  "placeholder": {
+    "soon": "قريبًا",
+    "leaderboard": {
+      "title": "المتصدرون",
+      "body": "تُفتح لوحة المتصدرين مع المباريات المصنفة."
+    },
+    "history": {
+      "title": "السجل",
+      "body": "ستكون كل مبارياتك هنا، مع إعادة العرض وشرح لكل حركة. في هذه الأثناء، آخر تدريباتك في الشاشة الرئيسية."
+    },
+    "achievements": {
+      "title": "الإنجازات",
+      "body": "الإنجازات والمستويات ونقاط ⁦XP⁩ في الطريق."
+    }
+  },
+  "botSelect": {
+    "title": "اختيار بوت",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "وقت التفكير لكل حركة",
+    "thinkValue": "{{range}} ث",
+    "mistakes": "الأخطاء",
+    "note": "هذا هو وقت الحركة العادية. الخانة التي تتطلب منطقًا أصعب تستغرق من البوت وقتًا أطول، وآخر فراغ في صف أو عمود أو مربع وقتًا أقل قليلًا. يلعب البوت على اللوحة نفسها، في الوقت الفعلي.",
+    "start": "هيا نلعب",
+    "startHint": "يبدأ تدريبًا من نوع {{type}} ضد {{name}}",
+    "cardLabel_zero": "المستوى {{level}}، {{title}}: {{name}}. {{behavior}}. يفكر من {{from}} إلى {{to}} ثانية لكل حركة، نسبة الأخطاء {{mistakes}}%",
+    "cardLabel_one": "المستوى {{level}}، {{title}}: {{name}}. {{behavior}}. يفكر من {{from}} إلى {{to}} ثانية لكل حركة، نسبة الأخطاء {{mistakes}}%",
+    "cardLabel_two": "المستوى {{level}}، {{title}}: {{name}}. {{behavior}}. يفكر من {{from}} إلى {{to}} ثانية لكل حركة، نسبة الأخطاء {{mistakes}}%",
+    "cardLabel_few": "المستوى {{level}}، {{title}}: {{name}}. {{behavior}}. يفكر من {{from}} إلى {{to}} ثوانٍ لكل حركة، نسبة الأخطاء {{mistakes}}%",
+    "cardLabel_many": "المستوى {{level}}، {{title}}: {{name}}. {{behavior}}. يفكر من {{from}} إلى {{to}} ثانية لكل حركة، نسبة الأخطاء {{mistakes}}%",
+    "cardLabel_other": "المستوى {{level}}، {{title}}: {{name}}. {{behavior}}. يفكر من {{from}} إلى {{to}} ثانية لكل حركة، نسبة الأخطاء {{mistakes}}%",
+    "levels": {
+      "1": {
+        "title": "مبتدئ",
+        "behavior": "بطيء، يخطئ كثيرًا، ويتيح لك التعلم"
+      },
+      "2": {
+        "title": "هاوٍ",
+        "behavior": "هادئ، يتعثر هنا وهناك، ويرسل أحيانًا 😂"
+      },
+      "3": {
+        "title": "متقدم",
+        "behavior": "ثابت ومتأنٍّ، ويصعب تجاوزه"
+      },
+      "4": {
+        "title": "خبير",
+        "behavior": "سريع، نادرًا ما يخطئ، ومغرور قليلًا 😎"
+      },
+      "5": {
+        "title": "أستاذ كبير",
+        "behavior": "سريع ودقيق، ولا يرحم"
+      }
+    }
+  },
+  "licenses": {
+    "title": "التراخيص",
+    "intro": "بُني ⁦Sudoku Fight⁩ على خطوط مفتوحة وبرمجيات مفتوحة المصدر. شكرًا لمؤلفيها. هذه تراخيصها وإشعارات حقوق النشر الخاصة بها.",
+    "fonts": "الخطوط",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_zero": "لا حزم مفتوحة المصدر",
+    "packages_one": "حزمة واحدة مفتوحة المصدر",
+    "packages_two": "حزمتان مفتوحتا المصدر",
+    "packages_few": "{{count}} حزم مفتوحة المصدر",
+    "packages_many": "{{count}} حزمة مفتوحة المصدر",
+    "packages_other": "{{count}} حزمة مفتوحة المصدر",
+    "packageLabel": "{{name}}، الإصدار {{version}}، الترخيص {{license}}",
+    "texts": "نصوص التراخيص",
+    "textsHint": "النص الكامل لكل ترخيص، كما كُتب بالإنجليزية.",
+    "show": "عرض ترخيص {{license}}",
+    "hide": "إخفاء ترخيص {{license}}"
+  }
+}

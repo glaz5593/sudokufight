@@ -2,7 +2,7 @@ import { GAME_TYPES, type GameType, type PlayerId } from '@sudoku-fight/engine';
 import type { FriendsLobbyError, FriendsRoomClosedReason } from '@sudoku-fight/protocol';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { Spinner } from '../../components/ui/Spinner';
 import { StateView } from '../../components/ui/StateView';
+import { Text } from '../../components/ui/Text';
 import { useToast } from '../../components/ui/toastStore';
 import { FRIENDS_UI, type FriendsUiSettings } from '../../config/friends';
 import { cue } from '../../services/feedback';

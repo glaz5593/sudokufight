@@ -1,0 +1,254 @@
+{
+  "devMode": {
+    "badge": "开发模式",
+    "label": "开发模式：仅限这部手机上的本地账号，不使用 Firebase",
+    "noEmail": "开发模式不会发送邮件。"
+  },
+  "fields": {
+    "email": "邮箱",
+    "emailPlaceholder": "name@example.com",
+    "password": "密码",
+    "newPassword": "密码",
+    "confirmPassword": "确认密码",
+    "displayName": "显示名称",
+    "displayNamePlaceholder": "你在竞技场的名字",
+    "avatar": "头像",
+    "country": "国家/地区",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "change": "更改"
+  },
+  "validation": {
+    "emailRequired": "请输入你的邮箱",
+    "emailInvalid": "这个邮箱地址好像不对",
+    "passwordRequired": "请输入你的密码",
+    "passwordRules": "密码至少需要8个字符",
+    "confirmMismatch": "两次输入的密码不一致",
+    "countryRequired": "请选择国家/地区"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "密码错误。请再试一次，或重置密码。",
+      "userNotFound": "没有使用这个邮箱的账号。要注册吗？",
+      "invalidCredentials": "邮箱或密码错误。",
+      "tooManyRequests": "尝试次数太多。请等几分钟再试，或重置密码。",
+      "network": "没有网络连接。请检查后再试。",
+      "emailInUse": "这个邮箱已经有账号了。请用它登录。",
+      "invalidEmail": "这个邮箱地址好像不对。",
+      "weakPassword": "这个密码太弱了。请设置一个更长的密码。",
+      "requiresRecentLogin": "请重新登录后再进行此操作。",
+      "userDisabled": "这个账号已被禁用。请联系客服。",
+      "noUser": "你还没有登录。请重新登录。",
+      "unknown": "出错了。请再试一次。",
+      "cancelled": "Google 登录已取消。",
+      "inProgress": "Google 登录已经打开。请完成登录，或关闭后再试。",
+      "playServices": "使用 Google 登录需要 Google Play 服务。请更新后再试。",
+      "googleConfig": "此版本的应用暂时无法使用 Google 登录（DEVELOPER_ERROR）。请先使用邮箱和密码登录。",
+      "accountExistsWithPassword": "这个邮箱已经有一个设置了密码的账号。请用邮箱和密码登录。",
+      "userMismatch": "这是另一个 Google 账号。请选择你登录时使用的那个。"
+    },
+    "api": {
+      "badRequest": "请求无效。请再试一次。",
+      "invalidName": "这个名字违反了规则。",
+      "unauthorized": "你与服务器的会话已过期。请重新登录。",
+      "reauthRequired": "删除账号需要重新登录。请再次输入密码后重试。",
+      "suspended": "你的账号已被停用，暂时无法修改。",
+      "notRegistered": "这个账号还没有斗士。我们来完成注册吧。",
+      "notFound": "服务器无法识别这个请求。请更新应用。",
+      "alreadyRegistered": "这个账号已经有斗士了。",
+      "taken": "这个名字已被占用。请换一个。",
+      "renameTooSoon": "每30天只能改一次名字。",
+      "tooLarge": "请求过大。",
+      "blocked": "这个名字不适合竞技场。请换一个。",
+      "tooManyRequests": "请求太多了。请稍等片刻再试。",
+      "internal": "服务器出错。请稍后再试。",
+      "disabled": "这个服务器目前未开放账号功能。",
+      "unavailable": "服务器暂时不可用。请稍后再试。",
+      "network": "无法连接服务器。请检查网络后再试。",
+      "timeout": "服务器没有及时响应。请再试一次。",
+      "signedOut": "你还没有登录。请重新登录。",
+      "unexpected": "服务器返回了意外的响应。请再试一次，或更新应用。"
+    }
+  },
+  "splash": {
+    "tagline": "同一个盘面，人人都在解，只有一人能赢。",
+    "loading": "正在加载竞技场…",
+    "tipLabel": "小贴士",
+    "tips": {
+      "lock_other": "你选中的格只会锁定给你：{{type}}对局中锁定{{seconds}}秒。",
+      "hard": "越难的一步，得分越多。",
+      "mistake": "一次错误扣除的分数，正好等于正确数字本可以得到的分数。不如多想一会儿。",
+      "interfere": "两下就能发出干扰：先点对手卡片上的“干扰”，再点你选的那一种。"
+    },
+    "errorTitle": "无法加载你的斗士",
+    "retry": "再试一次",
+    "signOut": "退出登录"
+  },
+  "login": {
+    "title": "重返<accent>竞技场</accent>",
+    "titleLabel": "重返竞技场",
+    "subtitle": "你的积分、连胜和对手都在等你。",
+    "forgot": "忘记密码",
+    "submit": "登录",
+    "noAccount": "还没有账号？",
+    "register": "注册",
+    "arenaSpot": "你的位置"
+  },
+  "google": {
+    "continue": "通过 Google 继续",
+    "orEmail": "或使用邮箱",
+    "orEmailPassword": "或使用邮箱和密码",
+    "existing": "这个 Google 账号已经有一个斗士{{name}}。你已登录该账号。",
+    "passwordHint": "用 Google 注册的？请使用“通过 Google 继续”。",
+    "emailInUseHint": "如果你是用 Google 注册的，请使用“通过 Google 继续”。",
+    "termsTitle": "条款与隐私",
+    "termsBody": "要通过 Google 继续，请接受使用条款和隐私政策。",
+    "termsAccept": "接受并继续"
+  },
+  "forgot": {
+    "title": "忘记密码",
+    "body": "输入你注册时使用的邮箱，我们会发送一个链接，让你设置新密码。",
+    "submit": "发送重置链接",
+    "sentTitle": "请查看收件箱",
+    "sentBody": "如果{{email}}有账号，我们已向它发送了重置密码的链接。找不到？请查看垃圾邮件文件夹。",
+    "backToLogin": "返回登录"
+  },
+  "register": {
+    "step": "第{{step}}步，共{{total}}步",
+    "backToLogin": "返回登录",
+    "backToFighter": "返回你的斗士"
+  },
+  "fighter": {
+    "title": "创建你的<accent>斗士</accent>",
+    "titleLabel": "创建你的斗士",
+    "resumeNote": "你的账号已准备好。只需选择你的斗士。",
+    "chooseAvatar": "选择头像",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}，等级{{level}}解锁",
+    "selectedAvatar": "已选头像：{{name}}",
+    "yourPick": "你的选择：{{name}}",
+    "previewTitle": "竞技场里的你是这样的",
+    "previewLabel": "你在对局中的卡片预览：{{name}}",
+    "previewNew": "新",
+    "continue": "继续",
+    "enterArena": "进入竞技场",
+    "signOut": "退出登录",
+    "googleNote": "你已通过 Google 登录。只需选择你的斗士。"
+  },
+  "name": {
+    "rules": "3–16个字符：希伯来文或英文字母、数字、下划线和点。",
+    "status": {
+      "checking": "检查中…",
+      "available": "可用",
+      "taken": "已被占用",
+      "invalid": "无效",
+      "blocked": "不允许",
+      "error": "未检查",
+      "current": "你的名字"
+    },
+    "problem": {
+      "invalidChars": "不能使用这些字符：{{chars}}",
+      "tooShort": "至少3个字符",
+      "tooLong": "最多16个字符"
+    },
+    "charSpace": " ",
+    "takenHint": "已经有人用了这个名字。换一个试试。",
+    "blockedHint": "这个名字不适合竞技场。换一个试试。",
+    "errorHint": "无法检查这个名字。保存时我们会再检查一次。"
+  },
+  "country": {
+    "label": "国家/地区：{{country}}",
+    "choose": "选择国家/地区",
+    "sheetTitle": "选择国家/地区",
+    "search": "搜索国家/地区",
+    "searchPlaceholder": "搜索",
+    "none": "没有找到国家/地区",
+    "hint": "根据手机设置自动识别。你随时可以更改。"
+  },
+  "account": {
+    "title": "离<accent>竞技场</accent>只差一步",
+    "titleLabel": "离竞技场只差一步",
+    "subtitle": "邮箱和密码会保护你的积分和进度。",
+    "fighterReady": "斗士已就绪",
+    "edit": "编辑",
+    "editLabel": "编辑你的斗士",
+    "submit": "创建账号",
+    "profileFailed": "账号已创建，但你的斗士还没有保存。请再试一次。",
+    "nameTakenNow": "名字{{name}}刚刚被别人占用了。请换一个：你的账号还在等你。"
+  },
+  "password": {
+    "rules": {
+      "length": "至少8个字符"
+    },
+    "ruleMet": "{{rule}}：已满足",
+    "ruleMissing": "{{rule}}：未满足",
+    "strengthLabel": "密码强度",
+    "strength": {
+      "weak": "密码强度弱",
+      "fair": "密码强度一般",
+      "good": "密码强度良好",
+      "strong": "密码强度高"
+    },
+    "match": "一致",
+    "mismatch": "不一致"
+  },
+  "terms": {
+    "accept": "我接受使用条款和隐私政策",
+    "termsLink": "使用条款",
+    "privacyLink": "隐私政策",
+    "linkHint": "在浏览器中打开",
+    "required": "接受条款后才能进入竞技场"
+  },
+  "verify": {
+    "bannerTitle": "你的邮箱还没有验证",
+    "bannerAction": "验证",
+    "bannerLabel": "你的邮箱还没有验证。验证你的邮箱",
+    "title": "验证你的邮箱",
+    "body": "我们已向{{email}}发送了验证链接。打开它，然后回到这里。",
+    "why": "练习不需要验证。排位对局需要已验证的邮箱。",
+    "resend": "重新发送",
+    "sent": "已发送新链接",
+    "check": "我已验证",
+    "notYet": "还没有验证。你打开链接了吗？",
+    "done": "邮箱已验证。谢谢！",
+    "devNote": "开发模式不会发送邮件：点击“我已验证”即可将邮箱标记为已验证。"
+  },
+  "edit": {
+    "title": "编辑个人资料",
+    "save": "保存",
+    "saved": "个人资料已保存",
+    "nameRule": "每30天可以改一次名字。",
+    "nameLocked": "每30天可以改一次名字。下次可改：{{date}}。",
+    "offline": "无法连接服务器。恢复联网后即可编辑。"
+  },
+  "home": {
+    "provisional": "定级积分：你的前10场对局"
+  },
+  "settings": {
+    "section": "账号",
+    "signedInAs": "已登录：{{email}}",
+    "editProfile": "编辑个人资料",
+    "signOut": "退出登录",
+    "signOutTitle": "要退出登录吗？",
+    "signOutBody": "这部手机上的练习记录会保留。要再次对局，需要重新登录。",
+    "deleteAccount": "删除账号",
+    "deleteTitle": "要删除你的账号吗？",
+    "deleteBody": "你的邮箱、斗士和名字将被删除，且无法恢复。对局和积分记录会保留，但不再与你关联，这样其他玩家的对局仍然完整。你的名字将可供其他玩家使用。",
+    "deleteContinue": "继续",
+    "deletePasswordTitle": "用密码确认",
+    "deletePasswordBody": "要删除账号，请输入{{email}}的密码。",
+    "deleteSubmit": "永久删除我的账号",
+    "deleted": "你的账号已删除",
+    "deletedPartly": "你的账号已删除。但我们无法删除你的登录信息：用它们登录将开始新的注册。",
+    "method": {
+      "password": "使用邮箱和密码登录",
+      "google": "使用 Google 登录",
+      "both": "使用 Google 或邮箱和密码登录"
+    },
+    "deleteGoogleTitle": "通过 Google 确认",
+    "deleteGoogleBody": "要删除账号，请再次选择 Google 账号{{email}}。",
+    "deleteGoogleSubmit": "通过 Google 确认并删除",
+    "deleteGoogleAgain": "删除账号需要重新确认。请再试一次，并选择你的 Google 账号。",
+    "deleteWithPassword": "改用密码确认"
+  }
+}

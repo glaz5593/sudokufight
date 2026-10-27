@@ -1,12 +1,13 @@
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SOUND_CANDIDATES } from '../components/dev/soundCandidates';
 import { ltr } from '../components/player';
 import { Button, IconButton } from '../components/ui';
+import { Text } from '../components/ui/Text';
 import { CUES, FEEDBACK_CUES } from '../services/feedback';
 import { haptics, type HapticPattern } from '../services/haptics';
 import { GAME_AUDIO_MODE, SOUND_IDS, SOUND_SOURCES, volumeOf, type SoundId } from '../services/sfx';

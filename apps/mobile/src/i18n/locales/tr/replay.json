@@ -1,0 +1,92 @@
+{
+  "title": "Maç tekrarı",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Tek başına antrenman",
+    "bot": "Bota karşı antrenman",
+    "ranked": "Dereceli"
+  },
+  "back": "Geri",
+  "loading": "Maç yükleniyor…",
+  "load": {
+    "missing": "Bu maçı bulamadık",
+    "notFinished": "Maç hâlâ sunucuya kaydediliyor. Birazdan tekrar dene",
+    "offline": "Sunucuyla bağlantı yok. Dereceli maçlar sunucudan yüklenir",
+    "signedOut": "Dereceli bir maçı izlemek için giriş yap",
+    "unavailable": "Bu maçı okuyamadık",
+    "retry": "Tekrar dene",
+    "partial": "Bu maç yarıda kesildi: maç tekrarı son kaydedilen hamleye kadar gider"
+  },
+  "step": {
+    "counter": "Adım {{number}} / {{total}}",
+    "clockLabel": "Maç saati: {{clock}}"
+  },
+  "nav": {
+    "prev": "Önceki adım",
+    "next": "Sonraki adım",
+    "timeline": "Adım çizelgesi",
+    "timelineValue": "Adım {{number}}, toplam {{total}}, {{clock}}",
+    "timelineHint": "Adımı değiştirmek için yukarı ya da aşağı kaydır"
+  },
+  "narration": {
+    "start": "Maç başlıyor",
+    "select": "{{name}} · {{cell}} hücresini seçiyor",
+    "correct": "{{name}} · {{cell}} hücresinde doğru · {{delta}}",
+    "wrong": "{{name}} · {{cell}} hücresinde yanlış · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · {{cell}} hücresini bırakıyor",
+      "timeout": "{{name}} · {{cell}} hücresinde süre doldu"
+    },
+    "interference": "{{name}} · {{target}} adlı oyuncuya sabotaj · {{delta}}",
+    "disconnect": "{{name}} · bağlantısı koptu",
+    "reconnect": "{{name}} · maça döndü",
+    "offline": "{{name}} · bağlantı kesildi",
+    "surrender": "{{name}} · pes etti",
+    "endPractice": "{{name}} · antrenmanı bitirdi",
+    "abandon": "{{name}} · maçtan çıktı",
+    "over": "Maç bitti",
+    "paused": "Maç donduruldu",
+    "offlineSuffix": "bağlantı dönünce gönderildi"
+  },
+  "explain": {
+    "title": "Her oyuncu için bir açıklama",
+    "none": "{{name}} henüz hamle yapmadı",
+    "noneMe": "Henüz hamle yapmadım",
+    "noneBody": "Açıklama ilk hamleden sonra görünür",
+    "status": {
+      "choosing": "Seçiyor",
+      "released": "Bıraktı",
+      "correct": "Doğru",
+      "wrong": "Yanlış"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{answer}} yerine {{digit}}",
+    "why": "{{digit}} neden olmuyor: {{text}}",
+    "noLogic": "Cevap: {{cell}} → {{digit}}",
+    "scoreLine": "Puan",
+    "penaltyLine": "Ceza: doğru rakamın değeri",
+    "released": {
+      "cancel": "Seçim iptal edildi",
+      "timeout": "Süre doldu",
+      "switch": "Başka hücreye geçti",
+      "mistake": "Hatadan sonra",
+      "surrender": "Maçtan çıktı",
+      "disconnect": "Bağlantı koptu",
+      "abandon": "Maçı terk etti"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "Önemli anlar",
+    "bestMove": "En iyi hamle",
+    "mistakes": "Hatalar · {{count}}",
+    "interferences": "Sabotajlar · {{count}}",
+    "turningPoint": "Dönüm noktası",
+    "hint": "O adıma atlar"
+  },
+  "board": "{{number}}. adımdaki tablo",
+  "me": "Ben",
+  "unknown": "Oyuncu"
+}

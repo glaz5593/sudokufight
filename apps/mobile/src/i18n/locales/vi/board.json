@@ -1,0 +1,46 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Bảng chơi",
+    "myLock": "ô {{cell}} của bạn",
+    "otherLock": "ô {{cell}} bị {{name}} khóa",
+    "tapLabel": "Bảng của màn"
+  },
+  "cell": {
+    "empty": "trống",
+    "given": "số cho sẵn",
+    "solvedByMe": "bạn đã giải",
+    "solvedBy": "{{name}} đã giải",
+    "lockedByMe": "bạn đã khóa",
+    "lockedBy": "{{name}} đã khóa",
+    "pending": "đang chờ khóa",
+    "queued": "{{digit}}, đang chờ kết nối",
+    "timerStopped": "đồng hồ đã dừng",
+    "seconds_other": "{{count}} giây",
+    "wrong": "số sai: {{digits}}",
+    "hintMyLock": "Chọn một số trên bàn phím",
+    "player": "Người chơi {{n}}",
+    "corrected": "phát hiện lỗi: {{wrong}}, số đúng là {{right}}",
+    "mine": "của bạn",
+    "outside": "ngoài vùng",
+    "hintTap": "Chạm vào ô là nước đi"
+  },
+  "keypad": {
+    "armed": "Số {{digit}} · còn {{left}}",
+    "idle": "Số {{digit}}, còn {{left}}, hãy chọn ô trước",
+    "complete": "Số {{digit}}, còn {{left}}",
+    "tried": "Số {{digit}} · đã thử ở ô này"
+  },
+  "cancel": {
+    "label": "Hủy chọn",
+    "withCell": "Hủy chọn, {{cell}}"
+  },
+  "resume": {
+    "title": "Quay lại sau",
+    "paused": "Trận đấu đang tạm dừng",
+    "label_other": "Quay lại sau {{count}} giây"
+  }
+}

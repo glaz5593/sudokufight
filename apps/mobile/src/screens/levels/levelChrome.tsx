@@ -205,7 +205,7 @@ const NO_LOCK_TIMER = { lockTimer: false } as const;
 export function levelPlayedOf(
   session: Pick<LevelSession, 'playerId' | 'botLevel' | 'played'>,
   r: LevelFinishResult,
-  lang: 'he' | 'en',
+  lang: string,
 ): LevelPlayed {
   const { view } = r;
   const me = view.players.find((p) => p.id === session.playerId) ?? null;

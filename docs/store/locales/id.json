@@ -1,0 +1,33 @@
+{
+  "googlePlay": {
+    "locales": [
+      "id"
+    ],
+    "title": "Sudoku Fight: Sudoku PvP Live",
+    "shortDescription": "Berpacu real-time dengan hingga 3 lawan di sudoku yang sama. Ranked, live, adil.",
+    "fullDescription": "Sudoku Fight mengubah sudoku menjadi kompetisi live. Hingga 4 pemain mengerjakan papan yang sama pada saat yang sama: setiap angka benar yang kamu isi menjadi milikmu, dan setiap poin berarti.\n\nSATU PAPAN, SEMUA MEMECAHKANNYA\n• Semua pemain mengerjakan papan yang sama sekaligus. Isi angka yang benar, dan sel itu berubah menjadi warnamu.\n• Langkah yang lebih sulit memberi poin lebih banyak: angka yang butuh deduksi cerdas bernilai lebih tinggi daripada angka yang mudah.\n• Angka yang salah memotong poin persis sebanyak yang akan didapat angka yang benar. Kecepatan saja tidak cukup untuk menang.\n• Kunci sel selagi kamu berpikir, tapi hanya selama beberapa detik.\n\nGANGGUAN DAN REAKSI\n• Gunakan poin untuk menyerang lawan dengan kembang api, kucing, atau distorsi layar selama 5 detik.\n• Beri reaksi dengan 😂 😱 😎 🤦 🔥 👀.\n\nPERTANDINGAN RANKED\n• Pertandingan ranked untuk 2, 3, atau 4 pemain, dalam tiga jenis permainan: cepat, biasa, dan sulit.\n• Matchmaking mencari lawan yang selevel denganmu dan menghindari lawan yang baru saja kamu hadapi.\n• Rating untuk setiap jenis permainan, liga, papan peringkat, dan kartu pemain dengan statistikmu.\n• Tidak ada lawan yang online? Berlatihlah melawan bot sambil menunggu.\n\nBELAJAR DARI SETIAP PERTANDINGAN\n• Tonton replay setiap pertandingan ranked langkah demi langkah, dengan penjelasan logis untuk setiap langkah.\n• Riwayat pertandingan dan progresmu secara lengkap, dengan XP dan level.\n\nLATIHAN KAPAN SAJA\n• Berlatih sendiri atau melawan bot dengan berbagai tingkat kekuatan, bahkan secara offline.\n\nFAIR PLAY\n• Server memeriksa setiap langkah, dan teka-teki ranked tidak pernah disertakan di dalam aplikasi.\n• Tanpa iklan. Kamu bisa menghapus akunmu kapan saja dari Pengaturan.\n\nTersedia dalam 19 bahasa. Papan selalu dibaca dari kiri ke kanan.",
+    "whatsNew": "Rilis pertama."
+  },
+  "appStore": {
+    "locales": [
+      "id"
+    ],
+    "name": "Sudoku Fight",
+    "subtitle": "Duel sudoku multiplayer live",
+    "promotionalText": "Satu papan. Semua memecahkannya. Hanya satu yang menang. Adu cepat melawan hingga 3 lawan di sudoku yang sama secara real-time, kirim gangguan, dan naiki liga ranked.",
+    "description": "Sudoku Fight mengubah sudoku menjadi kompetisi live. Hingga 4 pemain mengerjakan papan yang sama pada saat yang sama: setiap angka benar yang kamu isi menjadi milikmu, dan setiap poin berarti.\n\nSATU PAPAN, SEMUA MEMECAHKANNYA\n• Semua pemain mengerjakan papan yang sama sekaligus. Isi angka yang benar, dan sel itu berubah menjadi warnamu.\n• Langkah yang lebih sulit memberi poin lebih banyak: angka yang butuh deduksi cerdas bernilai lebih tinggi daripada angka yang mudah.\n• Angka yang salah memotong poin persis sebanyak yang akan didapat angka yang benar. Kecepatan saja tidak cukup untuk menang.\n• Kunci sel selagi kamu berpikir, tapi hanya selama beberapa detik.\n\nGANGGUAN DAN REAKSI\n• Gunakan poin untuk menyerang lawan dengan kembang api, kucing, atau distorsi layar selama 5 detik.\n• Beri reaksi dengan 😂 😱 😎 🤦 🔥 👀.\n\nPERTANDINGAN RANKED\n• Pertandingan ranked untuk 2, 3, atau 4 pemain, dalam tiga jenis permainan: cepat, biasa, dan sulit.\n• Matchmaking mencari lawan yang selevel denganmu dan menghindari lawan yang baru saja kamu hadapi.\n• Rating untuk setiap jenis permainan, liga, papan peringkat, dan kartu pemain dengan statistikmu.\n• Tidak ada lawan yang online? Berlatihlah melawan bot sambil menunggu.\n\nBELAJAR DARI SETIAP PERTANDINGAN\n• Tonton replay setiap pertandingan ranked langkah demi langkah, dengan penjelasan logis untuk setiap langkah.\n• Riwayat pertandingan dan progresmu secara lengkap, dengan XP dan level.\n\nLATIHAN KAPAN SAJA\n• Berlatih sendiri atau melawan bot dengan berbagai tingkat kekuatan, bahkan secara offline.\n\nFAIR PLAY\n• Server memeriksa setiap langkah, dan teka-teki ranked tidak pernah disertakan di dalam aplikasi.\n• Tanpa iklan. Kamu bisa menghapus akunmu kapan saja dari Pengaturan.\n\nTersedia dalam 19 bahasa. Papan selalu dibaca dari kiri ke kanan.",
+    "keywords": "teka-teki,angka,puzzle,asah otak,logika,game,online,teman,mabar,pvp,ranked,kompetisi,tantangan,liga",
+    "whatsNew": "Rilis pertama."
+  },
+  "screenshotCaptions": [
+    "Satu papan. Semua memecahkannya. Hanya satu yang menang.",
+    "Hingga 4 pemain di papan yang sama",
+    "Kirim gangguan ke lawan-lawanmu",
+    "Lawan yang selevel denganmu, di papan yang sama",
+    "Langkah yang lebih sulit, poin lebih banyak",
+    "Replay setiap langkah, dengan penjelasan",
+    "Liga dan peringkat",
+    "Berlatih melawan bot, bahkan secara offline"
+  ],
+  "variants": {}
+}

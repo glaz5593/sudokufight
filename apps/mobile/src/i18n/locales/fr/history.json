@@ -1,0 +1,112 @@
+{
+  "title": "Historique",
+  "summary": {
+    "games_one": "{{count}} partie",
+    "games_many": "{{count}} de parties",
+    "games_other": "{{count}} parties",
+    "winRate": "{{rate}} de victoires",
+    "practices_one": "{{count}} entraînement",
+    "practices_many": "{{count}} d’entraînements",
+    "practices_other": "{{count}} entraînements",
+    "streak": "Série",
+    "streakLabel_one": "Série de victoires : {{count}} victoire",
+    "streakLabel_many": "Série de victoires : {{count}} de victoires",
+    "streakLabel_other": "Série de victoires : {{count}} victoires"
+  },
+  "filters": {
+    "label": "Filtrer les parties",
+    "all": "Toutes",
+    "ranked": "Classées",
+    "practice": "Entraînement"
+  },
+  "loading": "Chargement de tes parties…",
+  "more": "Plus de parties",
+  "empty": {
+    "title": "Aucune partie pour l’instant",
+    "body": "Chaque partie est enregistrée ici pour la revoir : coup après coup, avec la raison de chaque chiffre.",
+    "action": "Joue ta première partie"
+  },
+  "notes": {
+    "practice": "Les parties d’entraînement ne changent pas ton classement, mais tu peux aussi les revoir.",
+    "offline": "Pas de connexion au serveur : seules les parties d’entraînement de ce téléphone sont affichées.",
+    "signedOut": "Les parties classées s’affichent ici après la connexion.",
+    "rankedError": "Impossible de charger tes parties classées.",
+    "practiceUnavailable": "Impossible de lire les parties d’entraînement enregistrées sur ce téléphone.",
+    "retry": "Réessayer"
+  },
+  "states": {
+    "offlineTitle": "Pas de connexion au serveur",
+    "offlineBody": "Tes parties classées se chargeront au retour de la connexion. Les parties d’entraînement de ce téléphone s’affichent ici, même hors ligne.",
+    "errorTitle": "Impossible de charger tes parties",
+    "errorBody": "Le serveur n’a pas répondu correctement. Réessaie dans un instant.",
+    "practiceTitle": "Impossible de lire tes parties d’entraînement",
+    "practiceBody": "Les parties d’entraînement enregistrées sur ce téléphone ne se sont pas ouvertes. Réessaie, et si ça continue, redémarre l’app."
+  },
+  "card": {
+    "mode": {
+      "ranked": "Classée",
+      "solo": "Entraînement solo",
+      "bot": "Entraînement vs bot"
+    },
+    "outcome": {
+      "win": "Victoire",
+      "loss": "Défaite",
+      "tie": "Nul",
+      "completed": "Grille terminée",
+      "ended": "Entraînement terminé",
+      "interrupted": "Partie interrompue"
+    },
+    "place": "Rang {{place}}",
+    "against_one": "contre {{count}} adversaire",
+    "against_many": "contre {{count}} d’adversaires",
+    "against_other": "contre {{count}} adversaires",
+    "alone": "En solo",
+    "points": "{{score}} pts",
+    "unrated": "Non classée",
+    "rating": "Classement {{delta}}",
+    "today": "Aujourd’hui",
+    "yesterday": "Hier",
+    "replay": "Revoir",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Ouvre le replay"
+  },
+  "results": {
+    "replay": "Voir le replay",
+    "replayHint": "La partie depuis le début, pas à pas, avec chaque coup expliqué",
+    "rating": {
+      "title": "Variation du classement · {{type}}",
+      "from": "depuis {{before}}",
+      "label": "Variation du classement : {{delta}}, de {{before}} à {{after}}",
+      "provisional": "Classement provisoire : les variations comptent double pendant tes 10 premières parties",
+      "perOpponent": "Calculé face à chaque adversaire séparément",
+      "pairLabel": "contre {{name}} : {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "contre {{name}} : pas de baisse de classement, tu as quitté la partie avant ton premier coup",
+        "leftNotBehind": "contre {{name}} : pas de baisse de classement, tu n’étais pas derrière au moment de ton départ",
+        "opponentLeftBeforeMyMove": "contre {{name}} : pas de hausse de classement, départ avant ton premier coup",
+        "opponentLeftAhead": "contre {{name}} : pas de hausse de classement, tu étais derrière au moment du départ"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_one": "{{name}} · {{score}} point · {{mistakes}} · classement {{delta}}",
+    "opponentLabel_many": "{{name}} · {{score}} de points · {{mistakes}} · classement {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} points · {{mistakes}} · classement {{delta}}",
+    "ranking": {
+      "title": "Ordre d’arrivée",
+      "left": "A quitté la partie",
+      "label_one": "Rang {{place}} : {{name}} · {{score}} point · {{mistakes}}",
+      "label_many": "Rang {{place}} : {{name}} · {{score}} de points · {{mistakes}}",
+      "label_other": "Rang {{place}} : {{name}} · {{score}} points · {{mistakes}}",
+      "labelRating_one": "Rang {{place}} : {{name}} · {{score}} point · {{mistakes}} · classement {{delta}}",
+      "labelRating_many": "Rang {{place}} : {{name}} · {{score}} de points · {{mistakes}} · classement {{delta}}",
+      "labelRating_other": "Rang {{place}} : {{name}} · {{score}} points · {{mistakes}} · classement {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "Le plus de points pour un seul coup",
+      "fewestMistakes": "Le moins d’erreurs. En cas d’égalité, le meilleur score",
+      "fastest": "Le temps de réflexion moyen le plus court par coup correct (au moins 5 coups)",
+      "comeback": "Une victoire après un retard de 15 points ou plus",
+      "mostPoints": "Le plus de points en coups corrects, avant pénalités"
+    }
+  }
+}

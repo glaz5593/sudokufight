@@ -1,0 +1,92 @@
+{
+  "title": "Replay de la partie",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Entraînement solo",
+    "bot": "Entraînement vs bot",
+    "ranked": "Classée"
+  },
+  "back": "Retour",
+  "loading": "Chargement de la partie…",
+  "load": {
+    "missing": "Impossible de trouver cette partie",
+    "notFinished": "La partie est encore en cours d’enregistrement sur le serveur. Réessaie dans un instant",
+    "offline": "Pas de connexion au serveur. Les parties classées se chargent depuis le serveur",
+    "signedOut": "Connecte-toi pour regarder une partie classée",
+    "unavailable": "Impossible de lire cette partie",
+    "retry": "Réessayer",
+    "partial": "Cette partie a été interrompue : le replay va jusqu’au dernier coup enregistré"
+  },
+  "step": {
+    "counter": "Action {{number}} sur {{total}}",
+    "clockLabel": "Horloge de la partie : {{clock}}"
+  },
+  "nav": {
+    "prev": "Action précédente",
+    "next": "Action suivante",
+    "timeline": "Frise des actions",
+    "timelineValue": "Action {{number}} sur {{total}}, {{clock}}",
+    "timelineHint": "Balaie vers le haut ou le bas pour changer d’action"
+  },
+  "narration": {
+    "start": "La partie commence",
+    "select": "{{name}} · choisit {{cell}}",
+    "correct": "{{name}} · juste en {{cell}} · {{delta}}",
+    "wrong": "{{name}} · erreur en {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · libère {{cell}}",
+      "timeout": "{{name}} · temps écoulé en {{cell}}"
+    },
+    "interference": "{{name}} · perturbe {{target}} · {{delta}}",
+    "disconnect": "{{name}} · déconnexion",
+    "reconnect": "{{name}} · de retour dans la partie",
+    "offline": "{{name}} · connexion perdue",
+    "surrender": "{{name}} · a abandonné",
+    "endPractice": "{{name}} · a terminé l’entraînement",
+    "abandon": "{{name}} · a quitté la partie",
+    "over": "La partie est terminée",
+    "paused": "La partie est figée",
+    "offlineSuffix": "envoyé au retour de la connexion"
+  },
+  "explain": {
+    "title": "Une explication pour chaque joueur",
+    "none": "Pas encore de coup pour {{name}}",
+    "noneMe": "Pas encore de coup de ma part",
+    "noneBody": "L’explication apparaît après le premier coup",
+    "status": {
+      "choosing": "Choix",
+      "released": "Libérée",
+      "correct": "Juste",
+      "wrong": "Faux"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} au lieu de {{answer}}",
+    "why": "Pourquoi le {{digit}} ne va pas : {{text}}",
+    "noLogic": "La réponse : {{cell}} → {{digit}}",
+    "scoreLine": "Le score",
+    "penaltyLine": "La pénalité : ce que valait le bon chiffre",
+    "released": {
+      "cancel": "Choix annulé",
+      "timeout": "Temps écoulé",
+      "switch": "Changement de case",
+      "mistake": "Après une erreur",
+      "surrender": "A quitté la partie",
+      "disconnect": "Déconnexion",
+      "abandon": "Abandon"
+    },
+    "label": "{{name}} : {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}} : {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "Moments clés",
+    "bestMove": "Meilleur coup",
+    "mistakes": "Erreurs · {{count}}",
+    "interferences": "Perturbations · {{count}}",
+    "turningPoint": "Tournant",
+    "hint": "Va à cette action"
+  },
+  "board": "La grille à l’action {{number}}",
+  "me": "Moi",
+  "unknown": "Joueur"
+}

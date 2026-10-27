@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedProps } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
+import { Text } from '../../../components/ui/Text';
 import { color, space, text } from '../../../theme';
 import { metrics } from './metrics';
 import { useDrain, useTick } from './motion';

@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "สวัสดีจากเอนจิน · ช่อง {{cell}}",
+    "versions": "เอนจิน {{engine}} · โปรโตคอล {{protocol}}",
+    "taps": "แตะแล้ว: {{count}}",
+    "server": {
+      "connecting": "เซิร์ฟเวอร์: กำลังเชื่อมต่อ…",
+      "connected": "เซิร์ฟเวอร์: เชื่อมต่อแล้ว",
+      "rtt": "เซิร์ฟเวอร์: เวลาตอบสนอง {{ms}} มิลลิวินาที",
+      "error": "เซิร์ฟเวอร์: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "มีบางอย่างผิดพลาด",
+    "body": "หน้านี้เจอปัญหา เราแจ้งเรื่องไปแล้ว ลองอีกครั้งได้เลย",
+    "retry": "ลองอีกครั้ง"
+  },
+  "fallback": {
+    "loading": "รอสักครู่…",
+    "title": "หน้านี้โหลดไม่สำเร็จ",
+    "body": "ไปดูผลลัพธ์หรือกลับหน้าหลักได้เลย",
+    "bodyHome": "กลับหน้าหลักแล้วเล่นต่อจากตรงนั้นได้เลย",
+    "results": "ไปที่ผลลัพธ์",
+    "home": "หน้าหลัก"
+  },
+  "appVersion": {
+    "version": "เวอร์ชัน {{version}}",
+    "build": "บิลด์ {{build}}",
+    "engine": "เอนจิน {{engine}}"
+  },
+  "number": {
+    "decimal": ".",
+    "percent": "{{value}}%"
+  },
+  "text": {
+    "labelValue": "{{label}}: {{value}}",
+    "parenthetical": "{{text}} ({{note}})",
+    "sentence": "{{text}}",
+    "wordSpace": " "
+  }
+}

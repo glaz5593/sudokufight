@@ -1,6 +1,6 @@
 import type { PlayerId } from '@sudoku-fight/engine';
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   interpolate,
@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { Text } from '../../components/ui/Text';
 import { space, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import type { Point } from './geometry';

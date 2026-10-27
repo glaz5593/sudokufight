@@ -20,6 +20,9 @@ import {
 
 /** The player card's pure model (spec §14.3): the ratings by key, the stats, the trend line. */
 
+// Both languages' strings, whatever language the tests start in (a language loads when it is first used).
+beforeAll(() => i18n.loadLanguages(['he', 'en']));
+
 const he = i18n.getFixedT('he', 'progress') as ProgressT;
 const en = i18n.getFixedT('en', 'progress') as ProgressT;
 

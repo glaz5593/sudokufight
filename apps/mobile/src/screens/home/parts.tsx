@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { Icon, type IconName } from '../../components/Icon';
 import { IconButton } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 
 /**

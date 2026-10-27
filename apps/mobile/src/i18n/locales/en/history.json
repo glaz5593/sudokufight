@@ -60,7 +60,8 @@
       "interrupted": "Game cut short"
     },
     "place": "Place {{place}}",
-    "against": "vs {{count}} opponents",
+    "against_one": "vs 1 opponent",
+    "against_other": "vs {{count}} opponents",
     "alone": "Alone",
     "points": "{{score}} pts",
     "unrated": "Unrated",
@@ -89,12 +90,15 @@
       }
     },
     "ratingOf": "{{before}} → {{after}}",
-    "opponentLabel": "{{name}} · {{score}} points · {{mistakes}} · rating {{delta}}",
+    "opponentLabel_one": "{{name}} · {{score}} point · {{mistakes}} · rating {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} points · {{mistakes}} · rating {{delta}}",
     "ranking": {
       "title": "Final standings",
       "left": "Left the game",
-      "label": "Place {{place}}: {{name}} · {{score}} points · {{mistakes}}",
-      "labelRating": "Place {{place}}: {{name}} · {{score}} points · {{mistakes}} · rating {{delta}}"
+      "label_one": "Place {{place}}: {{name}} · {{score}} point · {{mistakes}}",
+      "label_other": "Place {{place}}: {{name}} · {{score}} points · {{mistakes}}",
+      "labelRating_one": "Place {{place}}: {{name}} · {{score}} point · {{mistakes}} · rating {{delta}}",
+      "labelRating_other": "Place {{place}}: {{name}} · {{score}} points · {{mistakes}} · rating {{delta}}"
     },
     "awardDefinitions": {
       "bestMove": "The most points for a single move",

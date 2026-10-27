@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { Icon } from '../Icon';
+import { Text } from '../ui/Text';
 import { cancelLabel } from './labels';
 
 /**

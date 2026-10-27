@@ -1,0 +1,23 @@
+{
+  "title": "Очки",
+  "greet": "Привет, {{name}}",
+  "points_one": "{{count}} очко",
+  "points_few": "{{count}} очка",
+  "points_many": "{{count}} очков",
+  "points_other": "{{count}} очка",
+  "lead_one": "{{name}} впереди на {{gap}} очко",
+  "lead_few": "{{name}} впереди на {{gap}} очка",
+  "lead_many": "{{name}} впереди на {{gap}} очков",
+  "lead_other": "{{name}} впереди на {{gap}} очка",
+  "streak_zero": "Нет серии побед",
+  "streak_one": "{{count}} победа подряд",
+  "streak_few": "{{count}} победы подряд",
+  "streak_many": "{{count}} побед подряд",
+  "streak_other": "{{count}} победы подряд",
+  "range": "0–3 звезды",
+  "score": "Счёт: <accent>{{score}}</accent>",
+  "sep": " · ",
+  "sentenceSpace": " ",
+  "brand": "Sudoku Fight",
+  "vs": "VS"
+}

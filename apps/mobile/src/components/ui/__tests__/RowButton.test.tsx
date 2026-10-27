@@ -23,7 +23,9 @@ describe('RowButton', () => {
     expect(screen.getByText('מדורג · 2 שחקנים · רגיל')).toHaveStyle({ color: color.textMuted });
     expect(screen.getByTestId('icon-refresh', { includeHiddenElements: true })).toBeOnTheScreen();
     expect(screen.getByTestId('icon-chevronForward', { includeHiddenElements: true })).toBeOnTheScreen();
-    expect(styleOf(button)).toMatchObject({ height: size.listRow, borderColor: color.border });
+    // 64 high, or taller in a script with taller lines (localization plan 0ט).
+    expect(styleOf(button)).toMatchObject({ minHeight: size.listRow, borderColor: color.border });
+    expect(styleOf(button).height).toBeUndefined();
     await fireEvent.press(button);
     expect(onPress).toHaveBeenCalledTimes(1);
   });

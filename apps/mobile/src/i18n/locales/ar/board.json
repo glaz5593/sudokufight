@@ -1,0 +1,56 @@
+{
+  "separator": {
+    "list": "، ",
+    "group": " · "
+  },
+  "board": {
+    "label": "لوحة المباراة",
+    "myLock": "خانتك {{cell}}",
+    "otherLock": "{{cell}} مقفلة لدى {{name}}",
+    "tapLabel": "لوحة المرحلة"
+  },
+  "cell": {
+    "empty": "فارغة",
+    "given": "رقم معطى",
+    "solvedByMe": "محلولة بواسطتك",
+    "solvedBy": "محلولة بواسطة {{name}}",
+    "lockedByMe": "مقفلة لديك",
+    "lockedBy": "مقفلة لدى {{name}}",
+    "pending": "بانتظار تأكيد القفل",
+    "queued": "{{digit}}، بانتظار الاتصال",
+    "timerStopped": "المؤقت متوقف",
+    "seconds_zero": "{{count}} ثانية",
+    "seconds_one": "ثانية واحدة",
+    "seconds_two": "ثانيتان",
+    "seconds_few": "{{count}} ثوانٍ",
+    "seconds_many": "{{count}} ثانية",
+    "seconds_other": "{{count}} ثانية",
+    "wrong": "أرقام خاطئة: {{digits}}",
+    "hintMyLock": "اختيار رقم من لوحة الأرقام",
+    "player": "اللاعب {{n}}",
+    "corrected": "خطأ مكتشف: {{wrong}}، والرقم الصحيح {{right}}",
+    "mine": "لك",
+    "outside": "خارج المنطقة",
+    "hintTap": "النقر على الخانة هو الحركة"
+  },
+  "keypad": {
+    "armed": "الرقم {{digit}} · المتبقي {{left}}",
+    "idle": "الرقم {{digit}}، المتبقي {{left}}، يجب اختيار خانة أولًا",
+    "complete": "الرقم {{digit}}، المتبقي {{left}}",
+    "tried": "الرقم {{digit}} · سبقت تجربته في هذه الخانة"
+  },
+  "cancel": {
+    "label": "إلغاء الاختيار",
+    "withCell": "إلغاء الاختيار، {{cell}}"
+  },
+  "resume": {
+    "title": "نعود بعد",
+    "paused": "المباراة متوقفة مؤقتًا",
+    "label_zero": "نعود الآن",
+    "label_one": "نعود بعد ثانية",
+    "label_two": "نعود بعد ثانيتين",
+    "label_few": "نعود بعد {{count}} ثوانٍ",
+    "label_many": "نعود بعد {{count}} ثانية",
+    "label_other": "نعود بعد {{count}} ثانية"
+  }
+}

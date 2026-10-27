@@ -7,8 +7,6 @@ import {
   type ExplainOptions,
   explainSpotError,
   fillRegionOf,
-  formatExplanation,
-  formatWrong,
   type GameView,
   type Grid,
   LEVEL_PENALTY_MS,
@@ -20,13 +18,16 @@ import {
 
 import { ltr, scoreText, signedText } from '../../components/player/format';
 import i18n from '../../i18n';
+import { decimalSeparator, percent } from '../../i18n/compose';
+import { formatExplanation, formatWrong } from '../../i18n/explain';
 import { findWhy, type LevelFinishResult } from '../../levels/levelSession';
 import type { LevelsT } from './levelWording';
 
 /**
- * A stage's "למה?" on its result (components.md §19.10; dev-plan §2ט), for every kind, in the engine's own words
- * (explain, explainSpotError, formatWrong; the cell names already isolated in Hebrew) inside the 'levels'
- * namespace's frames. Pure: the stage as played and how it ended in, text out; nothing here decides a rule.
+ * A stage's "למה?" on its result (components.md §19.10; dev-plan §2ט), for every kind: the engine's explanations
+ * (explain, explainSpotError, whyWrong), worded by i18n/explain.ts in the app's language (the cell names already
+ * isolated in a right-to-left one), inside the 'levels' namespace's frames. Pure: the stage as played and how it
+ * ended in, text out; nothing here decides a rule.
  *
  * - find: the target in its scope, and why my first wrong tap could not hold it (the session's findWhy).
  * - the race: the first spot I did not take (else the first), in its scope, on the board as it was shown.
@@ -49,13 +50,14 @@ import type { LevelsT } from './levelWording';
 /** What the explanation reads of a stage's end. */
 export type WhyInput = Pick<LevelFinishResult, 'view' | 'wrongTaps'>;
 
-type Lang = 'he' | 'en';
-
-/** "למה?" for the stage as played (`played`: the attempt's board), or null when nothing explains. */
+/**
+ * "למה?" for the stage as played (`played`: the attempt's board), or null when nothing explains. `lang`: the
+ * language to write in (i18n.language).
+ */
 export function levelWhy(
   played: AppLevel,
   r: WhyInput,
-  lang: Lang,
+  lang: string,
   t: LevelsT = i18n.getFixedT(lang, 'levels') as LevelsT,
 ): string | null {
   try {
@@ -66,7 +68,7 @@ export function levelWhy(
   }
 }
 
-function whyLines(played: AppLevel, r: WhyInput, lang: Lang, t: LevelsT): string[] {
+function whyLines(played: AppLevel, r: WhyInput, lang: string, t: LevelsT): string[] {
   const ctx = context(played, r.view, lang);
   switch (played.kind) {
     case 'find': {
@@ -109,7 +111,7 @@ function whyLines(played: AppLevel, r: WhyInput, lang: Lang, t: LevelsT): string
 }
 
 interface WhyContext {
-  lang: Lang;
+  lang: string;
   view: GameView;
   /** The stage's givens. */
   grid: number[];
@@ -129,7 +131,7 @@ interface WhyContext {
   ) => string | null;
 }
 
-function context(played: AppLevel, view: GameView, lang: Lang): WhyContext {
+function context(played: AppLevel, view: GameView, lang: string): WhyContext {
   const grid = parseGrid(played.board.grid);
   const solution = parseGrid(played.board.solution);
   return {
@@ -223,7 +225,7 @@ function spotErrorWhy(
       t('explain.rightTap', {
         cell: ltr(cellName(tapped)),
         digit: mine[tapped]!,
-        penalty: signedText(LEVEL_PENALTY_MS / 1000),
+        penalty: signedText(LEVEL_PENALTY_MS / 1000, decimalSeparator(t)),
       }),
     );
   return lines;
@@ -233,15 +235,26 @@ function spotErrorWhy(
 function pointHunterWhy(played: LevelSpecOf<'pointHunter'>, ctx: WhyContext, t: LevelsT): string[] {
   const max = played.stars.by === 'points' ? played.stars.max : 0;
   const score = ctx.me?.score ?? 0;
-  const percent = max > 0 ? Math.round((Math.max(0, score) / max) * 100) : 0;
+  const share = max > 0 ? Math.round((Math.max(0, score) / max) * 100) : 0;
+  const decimal = decimalSeparator(t);
   const best = played.targets.best;
+  // The moves one after another (player:sep, " · "); a per cent in the language's pattern (D108).
   const moves = best
     .map((m) =>
-      t('explain.move', { digit: m.digit, cell: ltr(cellName(m.cell)), points: signedText(m.points) }),
+      t('explain.move', {
+        digit: m.digit,
+        cell: ltr(cellName(m.cell)),
+        points: signedText(m.points, decimal),
+      }),
     )
-    .join(' · ');
+    .join(t('player:sep'));
   return [
-    t('explain.points', { points: scoreText(score), max: scoreText(max), percent: ltr(`${percent}%`) }),
+    t('explain.points', {
+      points: scoreText(score, decimal),
+      count: max,
+      max: scoreText(max, decimal),
+      percent: ltr(percent(share, t)),
+    }),
     ...(best.length ? [t('explain.line', { moves })] : []),
     ...lineOf(ctx.explained(ctx.grid, best[0]?.cell)),
   ];

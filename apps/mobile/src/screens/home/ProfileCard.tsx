@@ -2,12 +2,14 @@ import { GAME_TYPES } from '@sudoku-fight/engine';
 import type { MyProgress, RatingEntry } from '@sudoku-fight/protocol';
 import { Fragment, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { leagueRating, ratingsByType } from '../../api/me';
 import { AVATAR_STAGES, type AvatarIdOrNone } from '../../avatars';
 import { Icon } from '../../components/Icon';
 import { Avatar, countryName, Flag, LeagueBadge, leagueFor, ltr, Rating } from '../../components/player';
+import { Text } from '../../components/ui/Text';
+import { percent as percentText } from '../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { type ProgressT, xpText } from '../player/playerCardModel';
 import { ProgressBar } from '../progress/parts';
@@ -74,7 +76,11 @@ export function ProfileCard({
       value: gamesPlayed === null ? none : String(gamesPlayed),
       label: t('profile.gamesLabel', { count: gamesPlayed ?? 0 }),
     },
-    { key: 'wins', value: percent === null ? none : ltr(`${percent}%`), label: t('profile.winsLabel') },
+    {
+      key: 'wins',
+      value: percent === null ? none : ltr(percentText(percent, t)),
+      label: t('profile.winsLabel'),
+    },
     { key: 'streak', value: streak === null ? none : String(streak), label: t('profile.streakLabel') },
   ];
   const ratingWords = byType

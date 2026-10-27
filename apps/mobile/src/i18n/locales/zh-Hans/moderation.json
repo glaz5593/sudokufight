@@ -1,0 +1,106 @@
+{
+  "actions": {
+    "report": "举报玩家",
+    "block": "屏蔽玩家",
+    "unblock": "取消屏蔽",
+    "reportLabel": "举报{{name}}",
+    "blockLabel": "屏蔽{{name}}",
+    "unblockLabel": "取消屏蔽{{name}}",
+    "blockedNote": "你已屏蔽这名玩家：排位对局中你们不会再被匹配到一起。"
+  },
+  "report": {
+    "title": "举报{{name}}",
+    "question": "有什么问题？",
+    "reasons": {
+      "offensiveName": "名字冒犯他人",
+      "cheating": "作弊",
+      "other": "其他"
+    },
+    "reasonHints": {
+      "offensiveName": "名字粗俗、侮辱他人或不恰当",
+      "cheating": "疑似借助外部帮助，或利用漏洞",
+      "other": "其他不该出现在竞技场里的行为"
+    },
+    "privacy_other": "对方不会知道是谁举报的。每条举报都会在{{hours}}小时内处理。",
+    "send": "发送举报",
+    "pickFirst": "先选一个理由，再发送。",
+    "thanks_other": "谢谢。我们会在{{hours}}小时内处理这条举报。",
+    "done": "关闭",
+    "errors": {
+      "rateLimited_other": "你在过去一小时内发送了很多举报。{{count}}分钟后可以再发送。",
+      "busy": "请求太多了。请稍等片刻再试。",
+      "suspended": "你的账号已被停用，暂时无法发送举报。",
+      "self": "你不能举报自己。",
+      "notFound": "这名玩家已不在对局中。",
+      "offline": "无法连接服务器：举报没有发送。请再试一次。",
+      "failed": "举报发送失败。请再试一次。"
+    }
+  },
+  "block": {
+    "title": "要屏蔽{{name}}吗？",
+    "body": "排位对局中你们不会再被匹配到一起，{{name}}的表情也不会再发给你。屏蔽不会通知任何人。你随时可以取消：设置 → 已屏蔽的玩家。",
+    "confirm": "屏蔽",
+    "done": "已屏蔽{{name}}。",
+    "unblockTitle": "要取消屏蔽{{name}}吗？",
+    "unblockBody": "你们可能会在排位对局中再次相遇，{{name}}的表情也会再次发给你。",
+    "unblockConfirm": "取消屏蔽",
+    "unblocked": "已取消屏蔽{{name}}。",
+    "errors": {
+      "limitReached_other": "你最多可以屏蔽{{max}}名玩家。请先取消屏蔽某人（设置 → 已屏蔽的玩家）再试。",
+      "self": "你不能屏蔽自己。",
+      "notFound": "这名玩家已不在对局中。",
+      "busy": "请求太多了。请稍等片刻再试。",
+      "offline": "无法连接服务器：屏蔽没有保存。请再试一次。",
+      "unblockOffline": "无法连接服务器：屏蔽没有取消。请再试一次。",
+      "failed": "屏蔽保存失败。请再试一次。",
+      "unblockFailed": "无法取消屏蔽。请再试一次。"
+    }
+  },
+  "blocked": {
+    "title": "已屏蔽的玩家",
+    "settingsRow": "已屏蔽的玩家",
+    "note": "排位对局中你们不会再被匹配到一起，对方的表情也不会再发给你。屏蔽不会通知任何人。",
+    "count": "{{count}}/{{max}}",
+    "since": "屏蔽于{{date}}",
+    "rowLabel": "{{name}}，屏蔽于{{date}}",
+    "emptyTitle": "没有已屏蔽的玩家",
+    "emptyBody": "你可以在玩家卡片上屏蔽对方，排位对局中也可以通过卡片菜单屏蔽。",
+    "loading": "正在加载已屏蔽的玩家…",
+    "offlineTitle": "无法连接服务器",
+    "offlineBody": "这份名单保存在服务器上。联网后请再试一次。",
+    "errorTitle": "名单加载失败",
+    "errorBody": "请稍后再试。",
+    "retry": "再试一次",
+    "signedOut": "登录后即可查看名单。"
+  },
+  "chooseName": {
+    "title": "选一个新名字",
+    "body": "你之前的名字违反了起名规则，已被替换为临时名字{{name}}。请选一个新名字后继续。",
+    "rule": "这次不用等30天：你现在就可以选名字。",
+    "save": "保存并继续",
+    "saved": "你的新名字已保存。",
+    "same": "这是临时名字。请选一个你自己的名字。",
+    "offline": "无法连接服务器：名字没有保存。联网后请再试一次。",
+    "practice": "先去练习",
+    "settings": "设置",
+    "signOut": "退出登录"
+  },
+  "suspended": {
+    "banner": "账号已停用：无法进行排位对局",
+    "bannerAction": "详情",
+    "bannerLabel": "账号已停用，无法进行排位对局。详情",
+    "title": "账号已停用",
+    "body": "由于收到举报，你的账号已被停用。停用期间无法进行排位对局，也不能修改个人资料。",
+    "can": "你仍然可以单人练习或与机器人练习、屏蔽玩家，以及删除账号。",
+    "contactTitle": "觉得是误判？",
+    "contact": "写信给我们，我们会重新审核。联系方式在使用条款中。",
+    "contactEmail": "你可以写信给我们：{{email}}",
+    "openContact": "联系方式",
+    "opensInBrowser": "在浏览器中打开",
+    "practice": "练习",
+    "chip": "账号已停用",
+    "chipLabel": "不可用：账号已停用",
+    "ranked": "你的账号已被停用，暂时无法进行排位对局。",
+    "editProfile": "账号已停用：无法修改个人资料"
+  }
+}

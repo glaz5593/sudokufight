@@ -1,0 +1,52 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Игровое поле",
+    "myLock": "твоя клетка {{cell}}",
+    "otherLock": "клетка {{cell}} заблокирована игроком {{name}}",
+    "tapLabel": "Поле этапа"
+  },
+  "cell": {
+    "empty": "пустая",
+    "given": "подсказка",
+    "solvedByMe": "решена тобой",
+    "solvedBy": "решена игроком {{name}}",
+    "lockedByMe": "заблокирована тобой",
+    "lockedBy": "заблокирована игроком {{name}}",
+    "pending": "ждёт блокировки",
+    "queued": "{{digit}}, ждёт соединения",
+    "timerStopped": "таймер остановлен",
+    "seconds_one": "{{count}} секунда",
+    "seconds_few": "{{count}} секунды",
+    "seconds_many": "{{count}} секунд",
+    "seconds_other": "{{count}} секунды",
+    "wrong": "неверные цифры: {{digits}}",
+    "hintMyLock": "Выбери цифру на клавиатуре",
+    "player": "Игрок {{n}}",
+    "corrected": "найдена ошибка: {{wrong}}, верная цифра — {{right}}",
+    "mine": "твоя",
+    "outside": "вне зоны",
+    "hintTap": "Ход — это нажатие на клетку"
+  },
+  "keypad": {
+    "armed": "Цифра {{digit}} · осталось {{left}}",
+    "idle": "Цифра {{digit}}, осталось {{left}}, сначала выбери клетку",
+    "complete": "Цифра {{digit}}, осталось {{left}}",
+    "tried": "Цифра {{digit}} · уже пробовалась в этой клетке"
+  },
+  "cancel": {
+    "label": "Отменить выбор",
+    "withCell": "Отменить выбор, {{cell}}"
+  },
+  "resume": {
+    "title": "Продолжим через",
+    "paused": "Партия на паузе",
+    "label_one": "Продолжим через {{count}} секунду",
+    "label_few": "Продолжим через {{count}} секунды",
+    "label_many": "Продолжим через {{count}} секунд",
+    "label_other": "Продолжим через {{count}} секунды"
+  }
+}

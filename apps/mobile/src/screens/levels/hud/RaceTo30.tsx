@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { formatScore, SeatGlyph } from '../../../components/player';
 import { timing } from '../../../components/ui/motion';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator } from '../../../i18n/compose';
 import { color, radius, space, text } from '../../../theme';
 import { motion, useReduceMotion } from '../../../theme/motion';
 
@@ -40,12 +42,19 @@ export function RaceTo30({
   testID = 'race-to-30',
 }: RaceTo30Props) {
   const { t } = useTranslation('levels');
-  const me = t('hud.duel.meLabel', { name: myName, score: formatScore(mine), target });
+  const decimal = decimalSeparator(t);
+  const me = t('hud.duel.meLabel', {
+    name: myName,
+    score: formatScore(mine, decimal),
+    target,
+    count: target,
+  });
   const bot = t('hud.duel.botLabel', {
     name: botName,
     n: botLevel ?? '',
-    score: formatScore(theirs),
+    score: formatScore(theirs, decimal),
     target,
+    count: target,
   });
   return (
     <View

@@ -1,9 +1,11 @@
 import type { InterferenceKind } from '@sudoku-fight/engine';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon } from '../../../components/Icon';
 import { signedText } from '../../../components/player/format';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator } from '../../../i18n/compose';
 import { color, tokens } from '../../../theme';
 import { type ArsenalToken, launchable } from './arsenalModel';
 import { arsenalMetrics as m } from './metrics';
@@ -63,7 +65,7 @@ export function KindButton({ token, targetName, width, reduce, bubble, onPress }
             <>
               {/* "⁦−2⁩ נק׳": the number in an LTR isolate, in a row that follows the app's direction. */}
               <Text style={[m.button.chipNumberStyle, styles.price]} numberOfLines={1}>
-                {signedText(-token.cost)}
+                {signedText(-token.cost, decimalSeparator(t))}
               </Text>
               <Text style={[m.button.chipTextStyle, styles.price]} numberOfLines={1}>
                 {t('arsenal.unit')}
@@ -92,7 +94,8 @@ export function KindButton({ token, targetName, width, reduce, bubble, onPress }
 
 const styles = StyleSheet.create({
   button: {
-    height: m.button.height,
+    // The least: the design's 104, or its content in a taller script (metrics.ts); never cut (plan 0ט).
+    minHeight: m.button.height,
     paddingTop: m.button.paddingTop,
     paddingHorizontal: m.button.paddingX,
     alignItems: 'center',

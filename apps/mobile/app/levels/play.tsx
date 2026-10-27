@@ -162,7 +162,7 @@ export function LevelStage({
   const pause: PauseState = useSyncExternalStore(onPause, () => session?.pause ?? NOT_PAUSED);
 
   // The stage's end, once stored: the result.
-  const lang = i18n.language === 'en' ? 'en' : 'he';
+  const lang = i18n.language;
   const onOver = useCallback(() => {
     if (!session) return;
     void session.result.then((r) => onFinished(levelPlayedOf(session, r, lang)));

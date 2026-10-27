@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next';
 import {
   type NativeSyntheticEvent,
   StyleSheet,
-  Text,
   TextInput,
   type TextInputKeyPressEventData,
   View,
 } from 'react-native';
 
 import { Button } from '../../components/ui/Button';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { FieldMessage } from '../account/Field';
 import { boxesOf, type CodeDigits, codeOf, digitsOf, typeInto } from './friendsModel';

@@ -1,0 +1,98 @@
+{
+  "title": "紀錄",
+  "summary": {
+    "games_other": "{{count}}場對局",
+    "winRate": "勝率{{rate}}",
+    "practices_other": "{{count}}次練習",
+    "streak": "連勝",
+    "streakLabel_other": "連勝：{{count}}場"
+  },
+  "filters": {
+    "label": "篩選對局",
+    "all": "全部",
+    "ranked": "排位",
+    "practice": "練習"
+  },
+  "loading": "正在載入你的對局…",
+  "more": "更多對局",
+  "empty": {
+    "title": "這裡還沒有對局",
+    "body": "每場對局都會存在這裡，隨時可以重看：一步接一步，還會說明每個數字為什麼填在那裡。",
+    "action": "開始你的第一場對局"
+  },
+  "notes": {
+    "practice": "練習對局不會影響你的積分，但同樣可以重看。",
+    "offline": "沒有連上伺服器：只顯示這支手機上的練習對局。",
+    "signedOut": "登入後，排位對局就會顯示在這裡。",
+    "rankedError": "無法載入你的排位對局。",
+    "practiceUnavailable": "無法讀取這支手機上儲存的練習對局。",
+    "retry": "再試一次"
+  },
+  "states": {
+    "offlineTitle": "沒有連上伺服器",
+    "offlineBody": "連線恢復後就會載入你的排位對局。即使離線，這支手機上的練習對局也會顯示在這裡。",
+    "errorTitle": "無法載入你的對局",
+    "errorBody": "伺服器沒有正常回應。請稍後再試。",
+    "practiceTitle": "無法讀取你的練習對局",
+    "practiceBody": "這支手機上儲存的練習對局無法開啟。請再試一次；如果一直發生，請重新啟動應用程式。"
+  },
+  "card": {
+    "mode": {
+      "ranked": "排位",
+      "solo": "單人練習",
+      "bot": "機器人練習"
+    },
+    "outcome": {
+      "win": "勝利",
+      "loss": "失敗",
+      "tie": "平手",
+      "completed": "盤面完成",
+      "ended": "練習結束",
+      "interrupted": "對局中斷"
+    },
+    "place": "第{{place}}名",
+    "against_other": "對戰{{count}}名對手",
+    "alone": "單人",
+    "points": "{{score}}分",
+    "unrated": "不計積分",
+    "rating": "積分{{delta}}",
+    "today": "今天",
+    "yesterday": "昨天",
+    "replay": "重播",
+    "label": "{{outcome}}，{{who}}。{{mode}} · {{type}}。{{score}}。{{rating}}。{{date}}",
+    "hint": "開啟重播"
+  },
+  "results": {
+    "replay": "重播",
+    "replayHint": "從頭開始一步一步重看對局，每一步都有說明",
+    "rating": {
+      "title": "積分變化 · {{type}}",
+      "from": "原本{{before}}",
+      "label": "積分變化：{{delta}}，從{{before}}到{{after}}",
+      "provisional": "暫定積分：前10場對局的積分變化加倍計算",
+      "perOpponent": "與每位對手分開計算",
+      "pairLabel": "對{{name}}：{{delta}}",
+      "guard": {
+        "leftBeforeMoving": "對{{name}}：不扣積分，你在走第一步前就離開了",
+        "leftNotBehind": "對{{name}}：不扣積分，你離開時並沒有落後",
+        "opponentLeftBeforeMyMove": "對{{name}}：不加積分，對方在你走第一步前就離開了",
+        "opponentLeftAhead": "對{{name}}：不加積分，對方離開時你處於落後"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_other": "{{name}} · {{score}}分 · {{mistakes}} · 積分{{delta}}",
+    "ranking": {
+      "title": "最終排名",
+      "left": "離開了對局",
+      "label_other": "第{{place}}名：{{name}} · {{score}}分 · {{mistakes}}",
+      "labelRating_other": "第{{place}}名：{{name}} · {{score}}分 · {{mistakes}} · 積分{{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "單步得分最高",
+      "fewestMistakes": "錯誤最少。若錯誤相同，比較得分",
+      "fastest": "每一步答對的平均思考時間最短（至少5步）",
+      "comeback": "落後15分以上後逆轉獲勝",
+      "mostPoints": "答對得分最多（扣分前）"
+    }
+  }
+}

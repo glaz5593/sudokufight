@@ -2,7 +2,7 @@ import type { CellIndex } from '@sudoku-fight/engine';
 import type { LevelTutorialKind } from '@sudoku-fight/protocol';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Icon } from '../../components/Icon';
 import { Board } from '../../components/board';
@@ -11,6 +11,8 @@ import { CellChipsLayer } from '../../components/levels/CellChipsLayer';
 import { LevelTile } from '../../components/levels/LevelTile';
 import { MeFrame, PuzzleLockMark } from '../../components/levels/PuzzleMarks';
 import { RegionFrame } from '../../components/levels/RegionFrame';
+import { Text } from '../../components/ui/Text';
+import { decimalSeparator } from '../../i18n/compose';
 import { color, radius, size as sizes, space, text, tokens } from '../../theme';
 import { GatePlate } from './GatePlate';
 import { type BossTutorialPicture, bossTutorialPicture, tutorialPicture } from './howToPlayFixtures';
@@ -47,7 +49,8 @@ export const HowToPlayPanels = memo(function HowToPlayPanels({
   size = PICTURE,
 }: HowToPlayPanelsProps) {
   const { t } = useTranslation('levels');
-  const picture = useMemo(() => tutorialPicture(kind, index), [kind, index]);
+  const decimal = decimalSeparator(t);
+  const picture = useMemo(() => tutorialPicture(kind, index, decimal), [kind, index, decimal]);
   const model = useMemo(
     () => (picture ? { cells: picture.cells, myLock: null, otherLocks: [] } : null),
     [picture],

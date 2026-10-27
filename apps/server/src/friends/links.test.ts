@@ -8,6 +8,7 @@ import { FRIENDS_APP_SCHEME, FRIENDS_PATHS } from '@sudoku-fight/protocol';
 import express from 'express';
 
 import { type FriendsLinksConfig, loadConfig, NO_FRIENDS_LINKS, TEMPLATE_DEBUG_KEY_SHA256 } from '../config';
+import { legalLangFor, PAGE_LANGUAGES } from '../legal';
 import {
   ANDROID_PACKAGE,
   appleAppSiteAssociation,
@@ -17,6 +18,7 @@ import {
   intentLink,
   IOS_BUNDLE_ID,
   langFromAcceptLanguage,
+  LINK_LANGS,
   platformOf,
   renderRoomPage,
   ROOM_PAGE_CSP,
@@ -26,9 +28,10 @@ import {
 } from './links';
 
 /**
- * friends-room.md §6, §10 (links.test.ts): a room's link outside the app. The page in Hebrew and English, the
+ * friends-room.md §6, §10 (links.test.ts): a room's link outside the app. The page in the app's 19 languages, the
  * same for every well-formed code (it never asks whether the room exists), a general page for a code that is
- * not one; the app-link files from the settings only.
+ * not one; the app-link files from the settings only. Localization (plan 0יב, D113): words per language,
+ * the way to the code quoted as the app's own labels, any other language in English.
  */
 
 const REPO = path.join(__dirname, '..', '..', '..', '..');
@@ -193,17 +196,67 @@ describe('the page of a room link', () => {
     );
   });
 
-  it('the language: ?lang, else the browser’s (Hebrew or English; English for any other), Hebrew without a header', () => {
+  it('[D113] the way to the code is quoted as the app labels it, in every language the page has', () => {
+    const appLabels = (lang: string) => {
+      const home = JSON.parse(
+        readFileSync(path.join(REPO, 'apps', 'mobile', 'src', 'i18n', 'locales', lang, 'home.json'), 'utf8'),
+      ) as { modes: { title: string; friends: { join: string } } };
+      return [home.modes.title, home.modes.friends.join];
+    };
+    for (const lang of LINK_LANGS) {
+      const t = ROOM_PAGE_TEXTS[lang];
+      // "New game", then its "Join with code" button, joined by one arrow.
+      expect({ lang, steps: t.path.split(/ [←→] /) }).toEqual({ lang, steps: appLabels(lang) });
+      expect(t.path.match(/[←→]/g)).toHaveLength(1);
+      for (const key of ['typeCode', 'testing', 'badText'] as const)
+        expect({ lang, key, quotes: t[key].includes('{path}') }).toEqual({ lang, key, quotes: true });
+      const html = page({ lang, storeUrls: { android: PLAY, ios: APPLE } });
+      expect(textOf(html)).toContain(`${t.path} ${t.path.includes('←') ? '←' : '→'} 123 456`);
+      expect(textOf(page({ lang, code: null, pageUrl: '' }))).toContain(t.path);
+    }
+    expect(ROOM_PAGE_TEXTS.he.path).toBe('משחק חדש ← הצטרף עם קוד');
+    expect(ROOM_PAGE_TEXTS.en.path).toBe('New game → Join with code');
+  });
+
+  it('[D113] its languages: Hebrew and English first, all of them the app’s, in its order; the privacy link in a version that exists', () => {
+    expect(LINK_LANGS.slice(0, 2)).toEqual(['he', 'en']);
+    // Since 1.1.0 (localization stages 1–17), every language of the app.
+    expect([...LINK_LANGS]).toEqual([...PAGE_LANGUAGES]);
+    const order = LINK_LANGS.map((l) => PAGE_LANGUAGES.indexOf(l));
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(Object.keys(ROOM_PAGE_TEXTS)).toEqual([...LINK_LANGS]);
+    for (const lang of LINK_LANGS) {
+      expect(page({ lang })).toContain(`href="/legal/privacy?lang=${legalLangFor(lang)}"`);
+      // Every language link, each by its own name; the current one marked.
+      expect(page({ lang })).toContain(
+        `<a href="?lang=${lang}" lang="${lang}" hreflang="${lang}" aria-current="page">`,
+      );
+    }
+  });
+
+  it('the language: ?lang, else the browser’s (any of the app’s 19; English for any other), Hebrew without a header', () => {
     expect(langFromAcceptLanguage(undefined)).toBe('he');
     expect(langFromAcceptLanguage('')).toBe('he');
     expect(langFromAcceptLanguage('he-IL,he;q=0.9,en-US;q=0.8,en;q=0.7')).toBe('he');
     expect(langFromAcceptLanguage('en-US,en;q=0.9,he;q=0.8')).toBe('en');
     expect(langFromAcceptLanguage('iw')).toBe('he');
-    expect(langFromAcceptLanguage('ru-RU, en;q=0.5, he;q=0.6')).toBe('he');
-    expect(langFromAcceptLanguage('fr-FR,fr;q=0.9')).toBe('en');
+    expect(langFromAcceptLanguage('sw-KE, en;q=0.5, he;q=0.6')).toBe('he');
+    expect(langFromAcceptLanguage('ru-RU, en;q=0.5, he;q=0.6')).toBe('ru');
+    expect(langFromAcceptLanguage('fr-FR,fr;q=0.9')).toBe('fr');
+    expect(langFromAcceptLanguage('sw-KE,sw;q=0.9')).toBe('en');
     expect(langFromAcceptLanguage('en;q=0, he;q=0.1')).toBe('he');
     expect(langFromAcceptLanguage('*')).toBe('he');
     expect(langFromAcceptLanguage('he;q=abc, en')).toBe('en');
+    // The tags as the app reads them (D105): iw → he, in → id, every Portuguese → pt-BR, Chinese by script or
+    // region.
+    expect(langFromAcceptLanguage('he_IL')).toBe('he');
+    expect(langFromAcceptLanguage('ar-EG,ar;q=0.9')).toBe('ar');
+    expect(langFromAcceptLanguage('in-ID')).toBe('id');
+    expect(langFromAcceptLanguage('pt-PT, he;q=0.2')).toBe('pt-BR');
+    expect(langFromAcceptLanguage('zh-TW, en;q=0.2')).toBe('zh-Hant');
+    expect(langFromAcceptLanguage('zh-Hans-HK, en;q=0.2')).toBe('zh-Hans');
+    expect(langFromAcceptLanguage('zh-CN, en;q=0.2')).toBe('zh-Hans');
   });
 
   it('the phone: Android, iPhone or iPad, or anything else', () => {
@@ -273,6 +326,15 @@ describe('GET /r/:code and /.well-known', () => {
     expect(await byBrowser.text()).toContain('<html lang="en" dir="ltr">');
     const asked = await fetch(`${none.url}/r/123456?lang=en`, { headers: { 'accept-language': 'he' } });
     expect(await asked.text()).toContain('<html lang="en" dir="ltr">');
+    // Every language of the app has its words (1.1.0); not a language of the app: the browser's.
+    const french = await fetch(`${none.url}/r/123456?lang=fr`, { headers: { 'accept-language': 'he' } });
+    expect(french.headers.get('content-language')).toBe('fr');
+    expect(await french.text()).toContain('<html lang="fr" dir="ltr">');
+    const arabic = await fetch(`${none.url}/r/123456`, { headers: { 'accept-language': 'ar-EG,ar;q=0.9' } });
+    expect(arabic.headers.get('content-language')).toBe('ar');
+    expect(await arabic.text()).toContain('<html lang="ar" dir="rtl">');
+    const unknown = await fetch(`${none.url}/r/123456?lang=xx`, { headers: { 'accept-language': 'he' } });
+    expect(unknown.headers.get('content-language')).toBe('he');
     const head = await fetch(`${none.url}/r/123456`, { method: 'HEAD' });
     expect(head.status).toBe(200);
     expect(await head.text()).toBe('');

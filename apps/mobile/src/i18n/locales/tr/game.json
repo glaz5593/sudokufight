@@ -1,0 +1,454 @@
+{
+  "title": "Tek başına antrenman",
+  "titleBot": "Bota karşı antrenman",
+  "titleRanked": "Dereceli maç",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "Ben",
+  "opponent": "Rakip",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "Seviye {{level}}, {{title}}"
+  },
+  "listSep": ", ",
+  "type": {
+    "fast": "Hızlı",
+    "normal": "Standart",
+    "hard": "Zor"
+  },
+  "hud": {
+    "time": "Süre",
+    "best": "En iyi hamle",
+    "none": "—",
+    "timeLabel": "Süre {{time}}",
+    "bestLabel_one": "En iyi hamle: {{cell}} hücresinde {{points}} puan",
+    "bestLabel_other": "En iyi hamle: {{cell}} hücresinde {{points}} puan",
+    "noBestLabel": "Henüz en iyi hamle yok"
+  },
+  "progress": {
+    "label": "Tablo ilerlemesi",
+    "value": "{{filled}}/{{total}}",
+    "a11y_one": "1 hücreden {{filled}} tanesi dolu",
+    "a11y_other": "{{total}} hücreden {{filled}} tanesi dolu"
+  },
+  "end": {
+    "button": "Antrenmanı bitir",
+    "title": "Antrenman bitirilsin mi?",
+    "body": "Sonucun bu telefona kaydedilir. Derecen değişmez.",
+    "confirm": "Evet, bitir",
+    "footnote": "Maç arka planda sürüyor",
+    "dialog": "Antrenmanı bitirmeyi onayla"
+  },
+  "out": {
+    "surrendered": "Pes ettin · {{place}}. sıra",
+    "abandoned": "Oyun dışısın · {{place}}. sıra",
+    "goesOn": "Maç sonuna kadar sürüyor",
+    "label": "{{title}}. {{goesOn}}",
+    "home": "Ana sayfa",
+    "homeHint": "Maç sensiz sürüyor. Sıralaman zaten belli"
+  },
+  "connection": {
+    "sep": ". ",
+    "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "lead": {
+      "mine": "Öndesin",
+      "theirs": "{{name}} önde",
+      "theirs_female": "{{name}} önde",
+      "tie": "Eşitlik"
+    },
+    "frozen": {
+      "title": "Maç donduruldu",
+      "timers": "Tüm sayaçlar durdu",
+      "label": "Maç donduruldu, tüm sayaçlar durdu"
+    },
+    "opponent": {
+      "lost": "{{name}} bağlantıyı kaybetti",
+      "lost_female": "{{name}} bağlantıyı kaybetti",
+      "title": "Rakip yeniden bağlanıyor…",
+      "timeUp": "Süre doldu",
+      "notBack": "{{name}} geri dönmedi",
+      "notBack_female": "{{name}} geri dönmedi",
+      "seconds": "saniye",
+      "ring": "Yeniden bağlanıyor… {{seconds}}",
+      "saved": "Maç sunucuda kayıtlı",
+      "savedSub": "Tablo ve puanlar korunuyor",
+      "winLabel": "Hükmen galibiyet",
+      "hint": "{{name}} zamanında dönmezse hükmen kazanırsın",
+      "hint_female": "{{name}} zamanında dönmezse hükmen kazanırsın",
+      "checking": "Sunucuyla kontrol ediliyor…",
+      "timeLeft": "Dönüş için kalan süre: {{time}}",
+      "announce": "{{name}} bağlantıyı kaybetti. Geri dönene kadar maç donduruldu",
+      "announce_female": "{{name}} bağlantıyı kaybetti. Geri dönene kadar maç donduruldu",
+      "announceExpired": "Süre doldu. Sunucuyla kontrol ediliyor"
+    },
+    "self": {
+      "lostTitle": "Bağlantın koptu",
+      "lostSub": "Yeniden bağlanıyor…",
+      "attempt": "Deneme",
+      "attemptLabel": "Deneme {{attempt}}",
+      "backTitle": "Maça geri döndün",
+      "syncingSub": "Eşitleniyor…",
+      "syncedSub": "Her şey eşitlendi · maç sürüyor",
+      "lockedTitle": "Sen dönene kadar tablo kilitli",
+      "lockedSub": "Bağlantı dönünce şunları eşitleyeceğiz:",
+      "syncingTitle": "Eşitleniyor…",
+      "syncedTitle": "Her şey eşitlendi",
+      "savedSub": "Maç sunucuda kayıtlı ve aynı noktadan devam ediyor",
+      "item": {
+        "board": "Tablo",
+        "score": "Puanlar",
+        "locks": "Kilitler",
+        "turn": "Sıra",
+        "timers": "Sayaçlar"
+      },
+      "timeLeft_one": "Geri dönmek için {{seconds}} saniyen var",
+      "timeLeft_other": "Geri dönmek için {{seconds}} saniyen var",
+      "timeSub": "Sonra terk sayılır",
+      "backInTime": "Zamanında döndün",
+      "backInTimeSub": "Sayaçlar aynı saniyeden devam ediyor",
+      "announceLost": "Bağlantın koptu. Yeniden bağlanıyor",
+      "announceAttempt": "Bağlantın koptu. Yeniden bağlanıyor, deneme {{attempt}}",
+      "announceHurry_one": "1 saniye sonra terk sayılacak",
+      "announceHurry_other": "{{seconds}} saniye sonra terk sayılacak",
+      "announceSyncing": "Maça geri döndün. Eşitleniyor",
+      "announceSynced": "Maça geri döndün. Tablo ve puanlar eşitlendi"
+    },
+    "offline": {
+      "announce": "Bağlantı yok. Oynamaya devam et; hamlelerin bağlantı dönünce gönderilir"
+    },
+    "left": {
+      "timeUp_one": "Süre doldu · 1 saniye bağlantısız",
+      "timeUp_other": "Süre doldu · {{seconds}} saniye bağlantısız",
+      "title": "{{name}} maçtan ayrıldı",
+      "title_female": "{{name}} maçtan ayrıldı",
+      "win": "Hükmen kazandın",
+      "rating": "derece",
+      "ratingLabel": "Derece değişimi: {{delta}}, {{type}}",
+      "ratingUnchanged": {
+        "opponentLeftBeforeMyMove": "Derece değişmedi: rakip senin ilk hamlenden önce ayrıldı",
+        "opponentLeftAhead": "Derece değişmedi: rakip ayrıldığında sen gerideydin"
+      },
+      "toResults": "Sonuçları gör",
+      "home": "Ana sayfa"
+    },
+    "error": {
+      "title": "Bağlantı hatası",
+      "offlineTitle": "İnternet bağlantısı yok",
+      "body": {
+        "offline": "Telefonunda şu an ağ yok. İnternete bağlanıp tekrar dene.",
+        "unreachable": "Oyun sunucusuna ulaşamadık. Bağlantını kontrol edip tekrar dene.",
+        "lost": "Oyun sunucusuyla bağlantı koptu ve geri getiremedik.",
+        "refused": "Sunucu odaya girmemize izin vermedi."
+      },
+      "refusal": {
+        "notFound": "Bu kodla bir oda yok. Kodu kontrol edip tekrar dene.",
+        "full": "Bu oda zaten dolu.",
+        "gameStarted": "Bu odadaki maç çoktan başladı.",
+        "alreadyInRoom": "Zaten bu odadasın, başka bir cihazda.",
+        "unauthenticated": "Başkalarına karşı oynamak için hesabına giriş yap.",
+        "suspended": "Hesabın askıda, bu yüzden şimdilik dereceli maç yok. Tek başına ya da bota karşı antrenman yine de çalışıyor.",
+        "codeTaken": "Bu koda sahip bir oda zaten var. Başka bir kod dene.",
+        "badOptions": "Odanın ayarları geçerli değil.",
+        "kicked": "Oda sahibi seni odadan çıkardı.",
+        "roomClosed": "Oda kapandı."
+      },
+      "code": "Hata kodu: {{code}}",
+      "attemptFailed": "Deneme {{attempt}} başarısız",
+      "retry": "Tekrar dene",
+      "practice": "Antrenmana git",
+      "practiceNote": "Tek başına ya da bota karşı antrenman bağlantısız da çalışır",
+      "home": "Ana sayfa"
+    },
+    "surrender": {
+      "chip": "Pes et",
+      "title": "Pes etmek istediğine emin misin?",
+      "body": "Maç mağlubiyet sayılır",
+      "bodyRating": "Maç mağlubiyet sayılır · tahmini derece değişimi {{delta}}",
+      "bodyNoLoss": {
+        "leftBeforeMoving": "Maç mağlubiyet sayılır · derecen düşmez: henüz hamle yapmadın",
+        "leftNotBehind": "Maç mağlubiyet sayılır · derecen düşmez: geride değilsin"
+      },
+      "bodyMany": "Maçtan çıkarsın; çözdüğün hücreler senin rengini korur.",
+      "bodyManyNoLoss": "Maçtan çıkarsın; çözdüğün hücreler senin rengini korur. Maçta kalan hiç kimseye karşı derecen düşmez.",
+      "confirm": "Evet, pes et",
+      "cancel": "İptal",
+      "footnote": "Maç arka planda sürüyor",
+      "dialog": "Pes etmeyi onayla"
+    },
+    "lobby": {
+      "title": "Özel oda",
+      "subtitle_one": "{{type}} · 1 oyuncu",
+      "subtitle_other": "{{type}} · {{players}} oyuncu",
+      "codeTitle": "Oda kodu",
+      "codeLabel": "Oda kodu: {{spelled}}",
+      "codeHint": "Kodu seninle oynayacak kişiye gönder",
+      "share": "Kodu paylaş",
+      "copy": "Kopyala",
+      "copied": "Kod kopyalandı",
+      "shareMessage": "Gel, Sudoku Fight oyununda benimle oyna! Oda kodu: {{code}}",
+      "playersTitle": "Odadaki oyuncular",
+      "you": "Ben",
+      "emptySeat": "Oyuncu bekleniyor…",
+      "seatMeLabel": "{{name}}, ben",
+      "seatEmptyLabel": "Boş yer, oyuncu bekleniyor",
+      "waiting_one": "Bir oyuncu daha bekleniyor",
+      "waiting_other": "{{count}} oyuncu daha bekleniyor",
+      "starting": "Herkes burada! Maç başlıyor…",
+      "hint": "Tüm oyuncular odaya girer girmez maç başlar",
+      "leave": "Odadan çık",
+      "joined": "{{name}} odada"
+    },
+    "connecting": {
+      "title": "Maça giriliyor",
+      "board": "Tablo yükleniyor…",
+      "step": {
+        "server": "Oyun sunucusuna bağlanılıyor…",
+        "room": "Odaya giriliyor…",
+        "sync": "Puanlar ve sayaçlar eşitleniyor…"
+      },
+      "label": "Maç yükleniyor, adım {{step}}, toplam {{total}}",
+      "cancel": "İptal",
+      "tag": "Dereceli · {{type}}",
+      "rating": "Derece {{rating}}",
+      "ready": "Hazır!",
+      "joining": "Bağlanıyor…",
+      "tipTitle": "Taktik",
+      "tips": {
+        "score_one": "Satır, sütun ve kutu ne kadar boşsa hamle o kadar değerlidir: hücre başına en fazla {{max}} puan.",
+        "score_other": "Satır, sütun ve kutu ne kadar boşsa hamle o kadar değerlidir: hücre başına en fazla {{max}} puan.",
+        "lastCell_one": "Tablodaki son hücre her zaman yalnızca {{points}} puan eder: etrafındaki her yer dolu.",
+        "lastCell_other": "Tablodaki son hücre her zaman yalnızca {{points}} puan eder: etrafındaki her yer dolu.",
+        "mistakes": "Bir hata, o hücrede doğru rakamın değeri kadar puan götürür. Değerli bir hücrede yanılmak pahalıya patlar.",
+        "interference": "Her sabotajın bedeli bir öncekinin iki katıdır. Onu doğru an için sakla."
+      }
+    }
+  },
+  "live": {
+    "correct": "Doğru: {{cell}} hücresinde {{digit}}, {{points}}",
+    "wrong": "Yanlış: {{digit}}, {{cell}} hücresine uymuyor, {{penalty}}",
+    "taken": "{{cell}} hücresi alınmış",
+    "cooldown": "{{cell}} hücresini birazdan yeniden seçebilirsin",
+    "expired": "Süre doldu, {{cell}} hücresi bırakıldı",
+    "complete": "Tablo tamamlandı!",
+    "oppCorrect": "{{name}}, {{cell}} hücresini çözdü: {{digit}}, {{points}}",
+    "oppWrong": "{{name}} yanıldı: {{digit}}, {{cell}} hücresine uymuyor, {{penalty}}",
+    "leadMine_one": "Bir puan öndesin",
+    "leadMine_other": "{{gap}} puan öndesin",
+    "leadTheirs_one": "{{name}} bir puan önde",
+    "leadTheirs_other": "{{name}} önde, fark {{gap}} puan",
+    "leadTie": "Puanlar eşit",
+    "reaction": "{{name}} tepki verdi: {{emoji}}",
+    "oppSurrendered": "{{name}} pes etti ve oyun dışı kaldı, {{place}}. sıra",
+    "oppAbandoned": "{{name}} zamanında dönmedi ve oyun dışı kaldı, {{place}}. sıra",
+    "hitOther": "{{from}}, {{name}} adlı oyuncuya sabotaj gönderdi: {{kind}}",
+    "outMine": "{{place}}. sırada oyun dışı kaldın. Maç sonuna kadar sürüyor",
+    "queued": "{{cell}}: {{digit}}, bağlantı bekleniyor",
+    "offlineLostTaken": "Sen çevrimdışıyken {{cell}} hücresi alındı · ceza yok",
+    "offlineLost": "{{cell}} hücresindeki hamlen sayılmadı · ceza yok"
+  },
+  "interference": {
+    "fireworks": "havai fişek",
+    "cats": "kediler",
+    "warp": "bükülme",
+    "scramble": "karışık rakamlar",
+    "ink": "mürekkep",
+    "keypad": "karışık tuş takımı"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}} sana havai fişek gönderdi!",
+      "cats": "{{name}} sana kediler gönderdi!",
+      "warp": "{{name}} ekranını büktü!",
+      "scramble": "{{name}} rakamlarını karıştırdı!",
+      "ink": "{{name}} sana mürekkep sıçrattı!",
+      "keypad": "{{name}} tuş takımını karıştırdı!",
+      "generic": "{{name}} sana sabotaj gönderdi!"
+    },
+    "cost": "Ona {{cost}} puana mal oldu · maç sürüyor",
+    "goesOn": "Maç sürüyor · sayacın duraklatıldı",
+    "seconds_one": "1 saniye kaldı",
+    "seconds_other": "{{count}} saniye kaldı",
+    "banner": "{{title}} {{subtitle}}, {{time}}",
+    "started": "{{title}} Tablon karartıldı, {{time}}. Sayacın duraklatıldı",
+    "withNote": "{{line}}. {{note}}",
+    "note": {
+      "scramble": "Karışan rakamlar gerçek değil",
+      "keypad": "Tuşlar yer değiştirir ve her tuş üzerindeki rakamı girer"
+    },
+    "ended": "Sabotaj bitti, sayacın yeniden çalışıyor",
+    "meow": "Miyav!",
+    "mew": "Miyu!"
+  },
+  "arsenal": {
+    "title": "Bir sabotaj seç",
+    "target": "Hedef:",
+    "targetLabel": "Hedef: {{name}}",
+    "me": "Ben",
+    "routeLabel": "Benden {{name}} adlı oyuncuya sabotaj",
+    "scrim": "Kapat ve tabloya dön",
+    "price": "Bedel",
+    "priceValue": "{{cost}} puan",
+    "nextPrice": "· Sonraki: {{cost}}",
+    "unit": "puan",
+    "score": "Puanın",
+    "costLabel_one": "Bu sabotajın bedeli 1 puan. Puanın {{score}}, gönderdikten sonra {{after}}. Sonrakinin bedeli {{next}}",
+    "costLabel_other": "Bu sabotajın bedeli {{cost}} puan. Puanın {{score}}, gönderdikten sonra {{after}}. Sonrakinin bedeli {{next}}",
+    "costLabelShort": "Bu sabotajın bedeli $t(game:arsenal.costPoints, {\"count\": {{cost}} }). Puanın {{score}}, $t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })",
+    "costPoints_one": "{{count}} puan",
+    "costPoints_other": "{{count}} puan",
+    "shortPoints_one": "{{missing}} puan eksik",
+    "shortPoints_other": "{{missing}} puan eksik",
+    "info_one": "Her sabotaj 1 saniye sürer · göndermek için dokun",
+    "info_other": "Her sabotaj {{seconds}} saniye sürer · göndermek için dokun",
+    "cost": "{{cost}} puan",
+    "missing": "{{count}} eksik",
+    "locked": "Kilitli",
+    "level": "Seviye {{level}}",
+    "busy": "Sabotaj altında",
+    "unavailable": "Şimdi değil",
+    "routeArrow": "→",
+    "sent": "{{kind}} → {{name}}",
+    "notEnough": "Sonraki sabotaj için yeterli puan yok ({{cost}} puan)",
+    "busyToast_one": "{{name}} zaten sabotaj altında. 1 saniye sonra tekrar dene",
+    "busyToast_other": "{{name}} zaten sabotaj altında. {{count}} saniye sonra tekrar dene",
+    "notNow": "Şu an sabotaj yapamazsın",
+    "refused": "Sabotaj gönderilmedi ve puan düşülmedi",
+    "label": "{{kind}} · {{cost}} puan · {{name}} adlı oyuncuya göndermek için dokun",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kindGeneric": "Sabotaj",
+    "kind": {
+      "fireworks": "Havai fişek",
+      "cats": "Kediler",
+      "warp": "Bükülme",
+      "scramble": "Karışık rakamlar",
+      "ink": "Mürekkep",
+      "keypad": "Karışık tuşlar"
+    },
+    "reason": {
+      "points": "Bu sabotaj için {{count}} puan eksik",
+      "busy": "{{name}} zaten sabotaj altında, birazdan tekrar dene",
+      "notRunning": "Şu an sabotaj gönderemezsin",
+      "locked": "Bu sabotaj hâlâ kilitli",
+      "level": "Seviye {{level}} olunca açılır",
+      "out": "{{name}} artık maçta değil",
+      "disconnected": "{{name}} şu an bağlı değil"
+    },
+    "live": {
+      "launched": "{{name}} adlı oyuncuya sabotaj gönderdin: {{kind}}"
+    }
+  },
+  "reactions": {
+    "picker": "Tepkiler",
+    "item": "Tepki: {{name}}",
+    "itemOther": "Tepki {{emoji}}",
+    "name": {
+      "laugh": "kahkaha",
+      "scream": "çığlık",
+      "cool": "havalı",
+      "facepalm": "yok artık",
+      "fire": "ateş",
+      "eyes": "gözler"
+    },
+    "coolingDown": "Birazdan yeni bir tepki gönderebilirsin",
+    "close": "Tepkileri kapat",
+    "menu": {
+      "open": "{{name}} adlı oyuncunun kart menüsü",
+      "openHint": "Orada {{name}} adlı oyuncunun tepkilerini sessize alabilirsin",
+      "openHintMuted": "{{name}} adlı oyuncunun tepkileri sessizde. Orada sesini açabilirsin",
+      "label": "{{name}} adlı oyuncunun menüsü",
+      "mute": "Tepkileri sessize al",
+      "unmute": "Tepkilerin sesini aç",
+      "muteLabel": "{{name}} adlı oyuncunun tepkilerini sessize al",
+      "unmuteLabel": "{{name}} adlı oyuncunun tepkilerinin sesini aç",
+      "muted": "{{name}} adlı oyuncunun tepkileri sessize alındı",
+      "unmuted": "{{name}} adlı oyuncunun tepkileri geri geldi",
+      "close": "Menüyü kapat"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "Tablo tamamlandı!",
+      "ended": "Antrenman bitti",
+      "interrupted": "Antrenman yarıda kaldı",
+      "surrendered": "Pes ettin",
+      "abandoned": "Maçtan ayrıldın",
+      "opponentSurrendered": "Rakibin pes etti",
+      "opponentLeft": "Rakibin ayrıldı"
+    },
+    "outcome": {
+      "win": "Galibiyet!",
+      "loss": "Mağlubiyet",
+      "tie": "Beraberlik"
+    },
+    "abandonWin": "Hükmen galibiyet",
+    "placeTitle": "{{place}}. sıra!",
+    "placeOf": "{{total}} oyuncu içinde {{place}}. sıra",
+    "outOf": "{{players}} arasında",
+    "header": "{{title}} · {{type}} · {{players}}",
+    "end": {
+      "label": "Nasıl bitti",
+      "completed": "Tablonun tamamını doldurdun",
+      "full": "Tablo doldu",
+      "ended": "Tablo dolmadan antrenmanı bitirdin",
+      "interrupted": "Antrenman yarıda durdu, örneğin uygulama kapatıldığında",
+      "line": "{{label}}: {{reason}}",
+      "surrendered": "Tablo dolmadan pes ettin",
+      "abandoned": "Zamanında geri dönmedin",
+      "opponentSurrendered": "Rakibin tablo dolmadan pes etti",
+      "opponentLeft": "Rakibinin bağlantısı koptu ve zamanında geri dönmedi"
+    },
+    "score": "Son puan",
+    "points": "puan",
+    "scoreLabel_one": "Son puan: {{score}} puan",
+    "scoreLabel_other": "Son puan: {{score}} puan",
+    "opponents": {
+      "title": "Rakip",
+      "label_one": "{{name}} · {{score}} puan · {{mistakes}}",
+      "label_other": "{{name}} · {{score}} puan · {{mistakes}}",
+      "left": "Maçtan çıktı"
+    },
+    "best": {
+      "title": "Maçın hamlesi",
+      "move": "{{cell}} → {{digit}}",
+      "label_one": "Maçın hamlesi: {{points}} puan, {{cell}} hücresinde {{digit}}",
+      "label_other": "Maçın hamlesi: {{points}} puan, {{cell}} hücresinde {{digit}}",
+      "formula": "Puan nasıl hesaplandı",
+      "formulaLabel": "Puan nasıl hesaplandı: {{line}}",
+      "none": "Bu antrenmanda doğru hamle yok"
+    },
+    "stats": {
+      "time": "Maç süresi",
+      "mistakes": "Hatalar",
+      "correct": "Doğru hamleler",
+      "think": "Ort. düşünme süresi",
+      "seconds": "{{value}} sn",
+      "none": "—",
+      "label": "{{label}}: {{value}}"
+    },
+    "awards": {
+      "title": "Maç ödülleri",
+      "bestMove": "En iyi hamle",
+      "fewestMistakes": "En az hata",
+      "fastest": "En hızlı",
+      "comeback": "Geri dönüş",
+      "mostPoints": "En çok puan",
+      "label": "{{title}}: {{who}}, {{value}}",
+      "value": {
+        "bestMove": "{{value}} puan",
+        "fewestMistakes": "Hata: {{value}}",
+        "fastest": "Hamle başına {{value}} sn",
+        "comeback": "{{value}} puan geriden",
+        "mostPoints": "{{value}} puan"
+      }
+    },
+    "unrated": "Antrenman: derecen değişmez",
+    "ratingSoon": "Özel oda: dereceler henüz değişmiyor",
+    "actions": {
+      "home": "Ana sayfa",
+      "newGame": "Yeni maç"
+    },
+    "loading": "Sonuç yükleniyor…",
+    "missing": "Bu antrenmanı bulamadık",
+    "unavailable": "Kaydedilen antrenmanları okuyamadık",
+    "notSaved": "Bu antrenman telefona kaydedilmedi"
+  }
+}

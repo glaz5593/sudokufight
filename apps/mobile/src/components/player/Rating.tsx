@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 
 import { color, space, text, tokens } from '../../theme';
+import { Text } from '../ui/Text';
 import { metrics } from './metrics';
 
 export type RatingSize = 'home' | 'list' | 'card' | 'compact';

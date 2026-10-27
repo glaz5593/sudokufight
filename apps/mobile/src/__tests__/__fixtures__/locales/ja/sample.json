@@ -1,0 +1,14 @@
+{
+  "title": "ポイント",
+  "greet": "こんにちは、{{name}}さん",
+  "points_other": "{{count}}ポイント",
+  "lead_other": "{{name}}が{{gap}}ポイントリード",
+  "streak_zero": "連勝なし",
+  "streak_other": "{{count}}連勝",
+  "range": "星0〜3個",
+  "score": "スコア：<accent>{{score}}</accent>",
+  "sep": " · ",
+  "sentenceSpace": "",
+  "brand": "Sudoku Fight",
+  "vs": "VS"
+}

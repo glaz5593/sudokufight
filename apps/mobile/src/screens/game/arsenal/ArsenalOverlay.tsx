@@ -7,7 +7,6 @@ import {
   type LayoutChangeEvent,
   Pressable,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -26,6 +25,8 @@ import { AVATAR_REACTIONS, type AvatarIdOrNone } from '../../../avatars';
 import { Avatar, Flag, formatScore, paletteAt, scoreText, signedText } from '../../../components/player';
 import { dragClosesSheet, IconButton } from '../../../components/ui';
 import { usePresence } from '../../../components/ui/motion';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator } from '../../../i18n/compose';
 import { cue } from '../../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { motion, useReduceMotion } from '../../../theme/motion';
@@ -363,7 +364,7 @@ export function ArsenalOverlay({
               ))}
             </View>
             <Text style={styles.info} numberOfLines={1}>
-              {t('arsenal.info', { seconds: model.seconds })}
+              {t('arsenal.info', { count: model.seconds, seconds: model.seconds })}
             </Text>
           </Animated.View>
         </>
@@ -467,12 +468,16 @@ function TargetLine({ target, label }: { target: ArsenalTargetInfo; label: strin
 function PriceRow({ model }: { model: ArsenalModel }) {
   const { t } = useTranslation('game');
   const short = model.missing > 0;
+  const decimal = decimalSeparator(t);
+  // costLabel is a plural of the cost; costLabelShort nests one plural per number (cost, missingCount).
   const values = {
+    count: model.cost,
     cost: model.cost,
     next: model.nextCost,
-    score: scoreText(model.score),
-    after: scoreText(model.scoreAfter),
-    missing: formatScore(model.missing),
+    score: scoreText(model.score, decimal),
+    after: scoreText(model.scoreAfter, decimal),
+    missing: formatScore(model.missing, decimal),
+    missingCount: model.missing,
   };
   const label = t(short ? 'arsenal.costLabelShort' : 'arsenal.costLabel', values);
   return (
@@ -480,7 +485,7 @@ function PriceRow({ model }: { model: ArsenalModel }) {
       <View style={styles.priceStart}>
         <Text style={styles.subtitle}>{t('arsenal.price')}</Text>
         <Text style={[m.price.priceStyle, styles.accent]} testID="arsenal-price">
-          {signedText(-model.cost)}
+          {signedText(-model.cost, decimal)}
         </Text>
         <Text style={[styles.unit, styles.accent]}>{t('arsenal.unit')}</Text>
         <Text style={styles.subtitle} numberOfLines={1}>

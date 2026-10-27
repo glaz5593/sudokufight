@@ -7,6 +7,9 @@ import { boardModel, type CellModel, type CellPlayer, emptyCell, type KeyModel }
 import { demoBoard } from '../demo';
 import { boardLabel, cancelLabel, cellHint, cellLabel, keyLabel } from '../labels';
 
+// Both languages' strings, whatever language the tests start in (a language loads when it is first used).
+beforeAll(() => i18n.loadLanguages(['he', 'en']));
+
 const tHe = i18n.getFixedT('he', 'board');
 const tEn = i18n.getFixedT('en', 'board');
 

@@ -501,5 +501,23 @@
     "all": "All characters",
     "expressionLabel": "Expression: {{name}}",
     "motionLabel": "Motion: {{name}}"
+  },
+  "pseudo": {
+    "title": "Pseudo language",
+    "hint": "en-XA: English with accents, about 40% longer, between brackets, so a cut end or plain English stands out. ar-XB: English right to left. None: the phone's language. The app restarts.",
+    "none": "None",
+    "plurals": "Plurals and numbers",
+    "pluralsHint": "Development screen: every plural key with 0, 1, 2, 5, 11, 21, 100 and 1.5, a date and a decimal, in the app's language"
+  },
+  "plurals": {
+    "title": "Plurals and numbers",
+    "subtitle": "{{language}} · {{forms}}",
+    "numbers": "Numbers and dates",
+    "dateLong": "Date",
+    "dateDigits": "Date in digits",
+    "decimal": "Decimal",
+    "percent": "Percent",
+    "keys": "Plural keys",
+    "fallback": "Not in this language: from {{language}}"
   }
 }

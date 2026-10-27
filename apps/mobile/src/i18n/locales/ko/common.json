@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "엔진이 보내는 인사 · {{cell}} 칸",
+    "versions": "엔진 {{engine}} · 프로토콜 {{protocol}}",
+    "taps": "탭 횟수: {{count}}",
+    "server": {
+      "connecting": "서버: 연결 중…",
+      "connected": "서버: 연결됨",
+      "rtt": "서버: 응답 시간 {{ms}}밀리초",
+      "error": "서버: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "문제가 생겼어요",
+    "body": "이 화면에서 오류가 났어요. 오류는 저희에게 보고됐고, 다시 시도할 수 있어요.",
+    "retry": "다시 시도"
+  },
+  "fallback": {
+    "loading": "잠시만요…",
+    "title": "화면을 불러오지 못했어요",
+    "body": "결과로 가거나 홈으로 갈 수 있어요.",
+    "bodyHome": "홈으로 가서 거기서 이어 갈 수 있어요.",
+    "results": "결과 보기",
+    "home": "홈"
+  },
+  "appVersion": {
+    "version": "버전 {{version}}",
+    "build": "빌드 {{build}}",
+    "engine": "엔진 {{engine}}"
+  },
+  "number": {
+    "decimal": ".",
+    "percent": "{{value}}%"
+  },
+  "text": {
+    "labelValue": "{{label}}: {{value}}",
+    "parenthetical": "{{text}} ({{note}})",
+    "sentence": "{{text}}.",
+    "wordSpace": " "
+  }
+}

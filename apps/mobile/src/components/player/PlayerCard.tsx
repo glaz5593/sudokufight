@@ -1,10 +1,11 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { type AvatarFace, type AvatarIdOrNone, sameFace } from '../../avatars';
 import { color, size, text, tokens } from '../../theme';
+import { Text } from '../ui/Text';
 import { ActivityLine, MistakesText } from './ActivityLine';
 import { Avatar } from './Avatar';
 import { HitChip, ReconnectPill } from './Badges';
@@ -239,7 +240,8 @@ const styles = StyleSheet.create({
   name: { color: color.text, flexShrink: 1 },
   // The bot's level: a small flat chip (as BotSelect's), short enough to fit under the name with it (44).
   levelChip: {
-    height: metrics.card.levelChipHeight,
+    // The least: a taller script (Thai, Arabic) may need more, never cut (localization plan 0ט).
+    minHeight: metrics.card.levelChipHeight,
     paddingHorizontal: metrics.card.levelChipPaddingX,
     justifyContent: 'center',
     borderRadius: tokens.radius.xs,

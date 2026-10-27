@@ -1,0 +1,108 @@
+{
+  "technique": {
+    "nakedSingle": "Tunggal terbuka",
+    "hiddenSingle": "Tunggal tersembunyi",
+    "pointing": "Reduksi kotak-garis",
+    "claiming": "Reduksi kotak-garis",
+    "nakedPair": "Pasangan terbuka",
+    "hiddenPair": "Pasangan tersembunyi",
+    "chain": "Teknik lanjutan",
+    "beyond": "Di luar teknik mesin"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} dan {{last}}",
+    "lastOr": "{{head}} atau {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} dan {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "Baris {{label}} hanya kekurangan {{digit}}.",
+      "col": "Kolom {{label}} hanya kekurangan {{digit}}.",
+      "box": "Kotak {{label}} hanya kekurangan {{digit}}."
+    },
+    "missing": {
+      "row": "Baris {{label}} kekurangan {{digits}}.",
+      "col": "Kolom {{label}} kekurangan {{digits}}.",
+      "box": "Kotak {{label}} kekurangan {{digits}}."
+    },
+    "seen": {
+      "row": "Baris {{label}} sudah berisi {{digits}}.",
+      "col": "Kolom {{label}} sudah berisi {{digits}}.",
+      "box": "Kotak {{label}} sudah berisi {{digits}}."
+    },
+    "eliminated": "{{digit}} sudah dicoret dari {{cell}} pada langkah {{step}}.",
+    "only": "Jadi hanya {{digit}}."
+  },
+  "hidden": {
+    "alone": {
+      "row": "{{digit}} harus ada di baris {{label}}, dan {{cell}} satu-satunya sel kosong di baris itu. Jadi {{result}}.",
+      "col": "{{digit}} harus ada di kolom {{label}}, dan {{cell}} satu-satunya sel kosong di kolom itu. Jadi {{result}}.",
+      "box": "{{digit}} harus ada di kotak {{label}}, dan {{cell}} satu-satunya sel kosong di kotak itu. Jadi {{result}}."
+    },
+    "blocked": {
+      "row": "{{digit}} harus ada di baris {{label}}. Semua sel kosong lain di baris itu terhalang: {{clauses}}. Jadi {{result}}.",
+      "col": "{{digit}} harus ada di kolom {{label}}. Semua sel kosong lain di kolom itu terhalang: {{clauses}}. Jadi {{result}}.",
+      "box": "{{digit}} harus ada di kotak {{label}}. Semua sel kosong lain di kotak itu terhalang: {{clauses}}. Jadi {{result}}."
+    },
+    "clause": {
+      "step": "{{cell}} kehilangan kandidat {{digit}} pada langkah {{step}}",
+      "unit": {
+        "row": "{{cell}} melihat angka {{digit}} di baris {{label}}",
+        "col": "{{cell}} melihat angka {{digit}} di kolom {{label}}",
+        "box": "{{cell}} melihat angka {{digit}} di kotak {{label}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "Di kotak {{box}}, {{digit}} hanya bisa berada di baris {{line}}, jadi {{digit}} dihapus dari sisa baris itu: {{cells}}.",
+    "col": "Di kotak {{box}}, {{digit}} hanya bisa berada di kolom {{line}}, jadi {{digit}} dihapus dari sisa kolom itu: {{cells}}."
+  },
+  "claiming": {
+    "row": "Di baris {{line}}, {{digit}} hanya bisa berada di kotak {{box}}, jadi {{digit}} dihapus dari sisa kotak itu: {{cells}}.",
+    "col": "Di kolom {{line}}, {{digit}} hanya bisa berada di kotak {{box}}, jadi {{digit}} dihapus dari sisa kotak itu: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "{{a}} dan {{b}} hanya bisa berisi {{digits}}, jadi {{digits}} dihapus dari sisa baris {{label}}: {{cells}}.",
+    "col": "{{a}} dan {{b}} hanya bisa berisi {{digits}}, jadi {{digits}} dihapus dari sisa kolom {{label}}: {{cells}}.",
+    "box": "{{a}} dan {{b}} hanya bisa berisi {{digits}}, jadi {{digits}} dihapus dari sisa kotak {{label}}: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "Di baris {{label}}, {{digits}} hanya bisa masuk ke {{a}} dan {{b}}, jadi kandidat lain di kedua sel itu dihapus.",
+    "col": "Di kolom {{label}}, {{digits}} hanya bisa masuk ke {{a}} dan {{b}}, jadi kandidat lain di kedua sel itu dihapus.",
+    "box": "Di kotak {{label}}, {{digits}} hanya bisa masuk ke {{a}} dan {{b}}, jadi kandidat lain di kedua sel itu dihapus."
+  },
+  "beyond": "Ini memerlukan teknik lanjutan yang belum bisa dijelaskan mesin. Jawabannya: {{formula}}.",
+  "chain": {
+    "head_other": "Sel ini belum bisa ditentukan dalam satu langkah. Perlu {{count}} langkah:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "{{digit}} sudah ada di baris {{label}} ({{cell}}).",
+      "col": "{{digit}} sudah ada di kolom {{label}} ({{cell}}).",
+      "box": "{{digit}} sudah ada di kotak {{label}} ({{cell}})."
+    },
+    "notSolution": "{{digit}} masih cocok di sini, tapi solusinya adalah {{answer}}."
+  },
+  "block": {
+    "step": "{{cell}} tidak bisa berisi {{digit}}: angka itu sudah dicoret pada langkah {{step}}",
+    "unit": {
+      "row": "{{cell}} tidak bisa berisi {{digit}}: baris {{label}} sudah punya {{digit}}",
+      "col": "{{cell}} tidak bisa berisi {{digit}}: kolom {{label}} sudah punya {{digit}}",
+      "box": "{{cell}} tidak bisa berisi {{digit}}: kotak {{label}} sudah punya {{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "Kamu belum bisa tahu apa isi {{cell}}",
+    "options": "Kamu belum bisa tahu apa isi {{cell}} ({{options}})"
+  }
+}

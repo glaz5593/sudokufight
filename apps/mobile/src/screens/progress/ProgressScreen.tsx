@@ -1,6 +1,6 @@
 import type { MyProgress } from '@sudoku-fight/protocol';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AvatarIdOrNone } from '../../avatars';
@@ -14,6 +14,7 @@ import {
   SkeletonGroup,
   StateView,
 } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import type { ProgressStatus } from '../../progress/progressStore';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { Chip, SectionLabel } from '../home/parts';
@@ -199,7 +200,7 @@ function LeaguePanel({ progress: p }: { progress: MyProgress }) {
   const step = p.leagueRating === null ? null : leagueProgress(p.leagueRating);
   const line =
     p.league === null || step === null
-      ? t('common.provisionalNote', { games: provisionalGames() })
+      ? t('common.provisionalNote', { count: provisionalGames(), games: provisionalGames() })
       : step.next && step.toNext !== null
         ? t('league.general', {
             rating: Math.round(p.leagueRating!),

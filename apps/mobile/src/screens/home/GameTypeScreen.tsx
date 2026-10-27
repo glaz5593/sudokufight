@@ -3,13 +3,14 @@ import type { QueuePlayerCount, RatingEntry } from '@sudoku-fight/protocol';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '../../auth/authStore';
 import { Icon } from '../../components/Icon';
 import { ltr, Rating } from '../../components/player';
 import { Button, useToast } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { useConnectivityWatch } from '../../net/connectivity';
 import { cue } from '../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../theme';
@@ -190,6 +191,7 @@ function TypeCard({
       difficulty,
       from,
       to,
+      count: to,
     }),
     ratingLabel && rating?.provisional
       ? t('player:rating.provisionalLabel', { label: ratingLabel })

@@ -1,0 +1,34 @@
+{
+  "button": {
+    "loading": "{{label}}, загрузка"
+  },
+  "nav": {
+    "label": "Основная навигация",
+    "tabs": {
+      "home": "Главная",
+      "leaderboard": "Лидеры",
+      "history": "История",
+      "achievements": "Достижения"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "Отмена"
+  },
+  "sheet": {
+    "close": "Закрыть"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_one": "Осталась {{count}} секунда",
+    "secondsLeft_few": "Осталось {{count}} секунды",
+    "secondsLeft_many": "Осталось {{count}} секунд",
+    "secondsLeft_other": "Осталось {{count}} секунды"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "Код ошибки: {{code}}"
+  }
+}

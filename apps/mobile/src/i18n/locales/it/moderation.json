@@ -1,0 +1,114 @@
+{
+  "actions": {
+    "report": "Segnala giocatore",
+    "block": "Blocca giocatore",
+    "unblock": "Sblocca",
+    "reportLabel": "Segnala {{name}}",
+    "blockLabel": "Blocca {{name}}",
+    "unblockLabel": "Sblocca {{name}}",
+    "blockedNote": "Hai bloccato questo giocatore: non vi troverete insieme nelle partite classificate."
+  },
+  "report": {
+    "title": "Segnala {{name}}",
+    "question": "Qual è il problema?",
+    "reasons": {
+      "offensiveName": "Nome offensivo",
+      "cheating": "Imbrogli",
+      "other": "Altro"
+    },
+    "reasonHints": {
+      "offensiveName": "Il nome è volgare, offensivo o inappropriato",
+      "cheating": "Sembra un aiuto esterno, o l’abuso di un bug",
+      "other": "Qualcos’altro che non va bene nell’arena"
+    },
+    "privacy_one": "Il giocatore non saprà chi l’ha segnalato. Ogni segnalazione viene esaminata entro {{hours}} ora.",
+    "privacy_many": "Il giocatore non saprà chi l’ha segnalato. Ogni segnalazione viene esaminata entro {{hours}} di ore.",
+    "privacy_other": "Il giocatore non saprà chi l’ha segnalato. Ogni segnalazione viene esaminata entro {{hours}} ore.",
+    "send": "Invia segnalazione",
+    "pickFirst": "Scegli un motivo, poi invia.",
+    "thanks_one": "Grazie. Esamineremo la segnalazione entro {{hours}} ora.",
+    "thanks_many": "Grazie. Esamineremo la segnalazione entro {{hours}} di ore.",
+    "thanks_other": "Grazie. Esamineremo la segnalazione entro {{hours}} ore.",
+    "done": "Chiudi",
+    "errors": {
+      "rateLimited_one": "Nell’ultima ora hai inviato molte segnalazioni. Potrai inviarne un’altra tra {{count}} minuto.",
+      "rateLimited_many": "Nell’ultima ora hai inviato molte segnalazioni. Potrai inviarne un’altra tra {{count}} di minuti.",
+      "rateLimited_other": "Nell’ultima ora hai inviato molte segnalazioni. Potrai inviarne un’altra tra {{count}} minuti.",
+      "busy": "Troppe richieste. Aspetta un attimo e riprova.",
+      "suspended": "Il tuo account è sospeso, quindi per ora non puoi inviare segnalazioni.",
+      "self": "Non puoi fare una segnalazione su di te.",
+      "notFound": "Questo giocatore non è più nella partita.",
+      "offline": "Nessuna connessione al server: la segnalazione non è stata inviata. Riprova.",
+      "failed": "Non siamo riusciti a inviare la segnalazione. Riprova."
+    }
+  },
+  "block": {
+    "title": "Bloccare {{name}}?",
+    "body": "Non vi troverete insieme nelle partite classificate, e le reazioni di {{name}} non ti arriveranno. Nessuno viene avvisato di un blocco. Puoi annullarlo quando vuoi: Impostazioni → Giocatori bloccati.",
+    "confirm": "Blocca",
+    "done": "Hai bloccato {{name}}.",
+    "unblockTitle": "Sbloccare {{name}}?",
+    "unblockBody": "Potrete di nuovo incontrarvi nelle partite classificate, e le reazioni di {{name}} ti arriveranno.",
+    "unblockConfirm": "Sblocca",
+    "unblocked": "Hai sbloccato {{name}}.",
+    "errors": {
+      "limitReached_one": "Puoi bloccare al massimo {{max}} giocatore. Sblocca qualcuno (Impostazioni → Giocatori bloccati) e riprova.",
+      "limitReached_many": "Puoi bloccare al massimo {{max}} di giocatori. Sblocca qualcuno (Impostazioni → Giocatori bloccati) e riprova.",
+      "limitReached_other": "Puoi bloccare al massimo {{max}} giocatori. Sblocca qualcuno (Impostazioni → Giocatori bloccati) e riprova.",
+      "self": "Non puoi bloccare il tuo stesso profilo.",
+      "notFound": "Questo giocatore non è più nella partita.",
+      "busy": "Troppe richieste. Aspetta un attimo e riprova.",
+      "offline": "Nessuna connessione al server: il blocco non è stato salvato. Riprova.",
+      "unblockOffline": "Nessuna connessione al server: il blocco non è stato tolto. Riprova.",
+      "failed": "Non siamo riusciti a salvare il blocco. Riprova.",
+      "unblockFailed": "Non siamo riusciti a togliere il blocco. Riprova."
+    }
+  },
+  "blocked": {
+    "title": "Giocatori bloccati",
+    "settingsRow": "Giocatori bloccati",
+    "note": "Non vi troverete insieme nelle partite classificate, e le sue reazioni non ti arriveranno. Nessuno viene avvisato di un blocco.",
+    "count": "{{count}} su {{max}}",
+    "since": "Blocco dal {{date}}",
+    "rowLabel": "{{name}}, blocco dal {{date}}",
+    "emptyTitle": "Nessun giocatore bloccato",
+    "emptyBody": "Puoi bloccare un giocatore dalla sua scheda, o dal menu della sua scheda in una partita classificata.",
+    "loading": "Caricamento dei giocatori bloccati…",
+    "offlineTitle": "Nessuna connessione al server",
+    "offlineBody": "L’elenco è salvato sul server. Riprova quando sei online.",
+    "errorTitle": "Non siamo riusciti a caricare l’elenco",
+    "errorBody": "Riprova tra un attimo.",
+    "retry": "Riprova",
+    "signedOut": "Accedi per vedere l’elenco."
+  },
+  "chooseName": {
+    "title": "Scegli un nuovo nome",
+    "body": "Il tuo nome precedente è stato sostituito con uno temporaneo, {{name}}, perché violava le regole sui nomi. Scegli un nuovo nome per continuare.",
+    "rule": "Questa volta niente attesa di 30 giorni: puoi scegliere un nome subito.",
+    "save": "Salva e continua",
+    "saved": "Il tuo nuovo nome è salvato.",
+    "same": "Questo è il nome temporaneo. Scegline uno tuo.",
+    "offline": "Nessuna connessione al server: il nome non è stato salvato. Riprova quando sei online.",
+    "practice": "Intanto allenati",
+    "settings": "Impostazioni",
+    "signOut": "Esci"
+  },
+  "suspended": {
+    "banner": "Account sospeso: niente partite classificate",
+    "bannerAction": "Dettagli",
+    "bannerLabel": "Account sospeso, niente partite classificate. Dettagli",
+    "title": "Account sospeso",
+    "body": "In seguito a una segnalazione, il tuo account è sospeso. Finché resta sospeso, niente partite classificate e il profilo non si può modificare.",
+    "can": "Puoi comunque allenarti in solitario o contro un bot, bloccare giocatori ed eliminare l’account.",
+    "contactTitle": "Pensi che sia un errore?",
+    "contact": "Scrivici e ricontrolleremo. I contatti sono nei termini d’uso.",
+    "contactEmail": "Puoi scriverci: {{email}}",
+    "openContact": "Contatti",
+    "opensInBrowser": "Si apre nel browser",
+    "practice": "Allenamento",
+    "chip": "Account sospeso",
+    "chipLabel": "Non disponibile: account sospeso",
+    "ranked": "Il tuo account è sospeso, quindi per ora niente partite classificate.",
+    "editProfile": "Account sospeso: il profilo non si può modificare"
+  }
+}

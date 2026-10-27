@@ -7,15 +7,26 @@ import { TELEMETRY_EVENT_NAMES } from '@sudoku-fight/protocol';
 import { ConfigError, loadConfig } from '../config';
 import { createTestDb, fakeClock, startHttp, type TestDb, type TestHttp, testConfig } from '../testing';
 import {
+  type Block,
+  escapeHtml,
   EVENT_DETAILS,
   formatDate,
+  isTranslation,
+  LEGAL_CATALOG,
+  LEGAL_CHROME,
   LEGAL_CSP,
   LEGAL_CSS_HASH,
   LEGAL_DOCS,
   LEGAL_LANGS,
+  LEGAL_ORIGINALS,
   LEGAL_TEXTS,
   LEGAL_UPDATED,
+  type LegalCatalog,
+  type LegalDoc,
+  legalLangFor,
   PAGE_COLORS,
+  PAGE_LANGUAGES,
+  pageDir,
   renderLegalPage,
   type LegalLang,
   type LegalSettings,
@@ -24,7 +35,9 @@ import { inline } from './render';
 
 /**
  * Work plan stage 14 (spec §23): the privacy policy, the terms of use and the account deletion page, in Hebrew
- * and English, served as static, locked-down pages at /legal/… for the app and the stores.
+ * and English, served as static, locked-down pages at /legal/… for the app and the stores. Localization (plan
+ * 0יב, D112): a translated version per language, with the same sections, links and contact details, under a
+ * line saying the English version prevails; any other language gets English.
  */
 
 const SET: LegalSettings = { contactEmail: 'privacy@sudoku.example', operatorName: 'Sudoku Fight Ltd.' };
@@ -41,12 +54,46 @@ const textOf = (html: string) =>
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'");
 
+/** Every text of a block: a paragraph, a list's items, a table's head and cells. */
+const blockTexts = (b: Block): string[] =>
+  typeof b === 'string' ? [b] : 'list' in b ? [...b.list] : [...b.table.head, ...b.table.rows.flat()];
+
+/**
+ * What every version of a document must keep from the English one, section by section: the anchor, the shape of
+ * its blocks, the pages it links to, every web address, the contact address and the operator's name, the
+ * `code` marks (event names, settings) and the numbers (48 hours, 30 days, 13 years…; digits are Western in
+ * every language, D108).
+ */
+const skeleton = (text: LegalDoc) =>
+  text.sections.map((s) => {
+    const words = [s.title, ...s.blocks.flatMap(blockTexts)].join('\n');
+    const all = (re: RegExp) => [...words.matchAll(re)].map((m) => m[1] ?? m[0]).sort();
+    return {
+      id: s.id,
+      blocks: s.blocks.map((b) =>
+        typeof b === 'string'
+          ? 'p'
+          : 'list' in b
+            ? `${b.ordered ? 'ol' : 'ul'}×${b.list.length}`
+            : `table ${b.table.head.length}×${b.table.rows.length}`,
+      ),
+      links: all(/\]\(([a-z-]+)\)/g),
+      urls: all(/https?:\/\/[^\s)"'<>]+/g),
+      email: all(/\{email\}/g).length,
+      operator: all(/\{operator\}/g).length,
+      code: all(/`([^`]+)`/g),
+      numbers: all(/\d+(?:[.,]\d+)?/g),
+    };
+  });
+
 describe('the legal texts', () => {
-  it('have the same sections, in the same order, in Hebrew and English', () => {
+  it('have, in every language, the English version’s sections, links, addresses, contact details and numbers', () => {
     for (const doc of LEGAL_DOCS) {
-      const ids = (lang: 'he' | 'en') => LEGAL_TEXTS[doc][lang].sections.map((s) => s.id);
-      expect({ doc, ids: ids('en') }).toEqual({ doc, ids: ids('he') });
-      expect(new Set(ids('he')).size).toBe(ids('he').length);
+      const en = skeleton(LEGAL_TEXTS[doc].en);
+      expect(new Set(en.map((s) => s.id)).size).toBe(en.length);
+      expect(en.some((s) => s.email > 0)).toBe(true);
+      for (const lang of LEGAL_LANGS)
+        expect({ doc, lang, s: skeleton(LEGAL_TEXTS[doc][lang]) }).toEqual({ doc, lang, s: en });
     }
   });
 
@@ -90,8 +137,11 @@ describe('the legal texts', () => {
         expect(html).toContain(`<code dir="ltr">${name}</code>`);
         for (const words of EVENT_DETAILS[name][lang]) expect(textOf(html)).toContain(words);
       }
-      for (const name of ['game_start', 'game_end'] as const)
-        expect(EVENT_DETAILS[name][lang][1]).toMatch(lang === 'en' ? /with friends/ : /עם חברים/);
+    }
+    // In the originals' words (a translation says it in its own: its table has every event, as above).
+    for (const name of ['game_start', 'game_end'] as const) {
+      expect(EVENT_DETAILS[name].en[1]).toMatch(/with friends/);
+      expect(EVENT_DETAILS[name].he[1]).toMatch(/עם חברים/);
     }
     expect(EVENT_DETAILS.friends_invite_share.en[1]).toMatch(/not the code/);
   });
@@ -246,7 +296,7 @@ describe('the legal texts', () => {
     expect(he).toMatch(/דיווחים וחסימות/);
     expect(he).toMatch(/תוך 48 שעות/);
     expect(he).toMatch(/מחיקה לא מבטלת השעיה/);
-    for (const lang of LEGAL_LANGS) {
+    for (const lang of LEGAL_ORIGINALS) {
       const terms = textOf(renderLegalPage('terms', lang, SET));
       expect(terms).toMatch(
         lang === 'en' ? /We review every report within 48 hours\./ : /אנחנו בודקים כל דיווח תוך 48 שעות\./,
@@ -255,6 +305,37 @@ describe('the legal texts', () => {
       expect(terms).toMatch(
         lang === 'en' ? /deleting it doesn’t lift the suspension/ : /המחיקה לא מבטלת את ההשעיה/,
       );
+    }
+    // Every translation keeps the 48 hours too (the skeleton test keeps every number).
+    for (const lang of LEGAL_LANGS) expect(textOf(renderLegalPage('terms', lang, SET))).toMatch(/48/);
+  });
+
+  it('[D112] quote the way to a setting as the app labels it, in every language (Settings → Blocked players…)', () => {
+    const app = (lang: string, ns: string) =>
+      JSON.parse(
+        readFileSync(
+          path.join(__dirname, '..', '..', '..', 'mobile', 'src', 'i18n', 'locales', lang, `${ns}.json`),
+          'utf8',
+        ),
+      ) as Record<string, Record<string, string> | undefined>;
+    for (const lang of LEGAL_LANGS) {
+      const settings = app(lang, 'home').settings!;
+      const labels = [
+        app(lang, 'account').settings!.deleteAccount,
+        app(lang, 'moderation').blocked!.settingsRow,
+        settings.licenses,
+      ];
+      const words = LEGAL_DOCS.flatMap((doc) =>
+        LEGAL_TEXTS[doc][lang].sections.flatMap((s) => [s.title, ...s.blocks.flatMap(blockTexts)]),
+      ).join('\n');
+      // The arrow points the way the language reads.
+      const arrow = pageDir(lang) === 'rtl' ? '←' : '→';
+      for (const label of labels)
+        expect({ lang, label, quoted: words.includes(`${settings.title} ${arrow} ${label}`) }).toEqual({
+          lang,
+          label,
+          quoted: true,
+        });
     }
   });
 
@@ -359,6 +440,81 @@ describe('a rendered page', () => {
   });
 });
 
+describe('the languages (localization plan 0יב, D112)', () => {
+  it('are Hebrew and English first, all of them languages of the app, in its order', () => {
+    expect(LEGAL_LANGS.slice(0, 2)).toEqual(['he', 'en']);
+    expect(LEGAL_ORIGINALS).toEqual(['he', 'en']);
+    const order = LEGAL_LANGS.map((l) => PAGE_LANGUAGES.indexOf(l));
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(LEGAL_CATALOG.langs).toBe(LEGAL_LANGS);
+  });
+
+  it('every translated version, and only a translated one, has the line that the English version prevails', () => {
+    for (const lang of LEGAL_LANGS) {
+      const notice = LEGAL_CHROME[lang].translationNotice;
+      expect({
+        lang,
+        translated: isTranslation(lang),
+        notice: typeof notice === 'string' && notice.trim() !== '',
+      }).toEqual({ lang, translated: !LEGAL_ORIGINALS.includes(lang), notice: isTranslation(lang) });
+      if (!isTranslation(lang))
+        for (const doc of LEGAL_DOCS)
+          expect(renderLegalPage(doc, lang, SET)).not.toContain('class="translated"');
+    }
+  });
+
+  /** The Arabic version's line (D112): "This is a translation of the English version…", in Arabic. */
+  const NOTICE = escapeHtml(LEGAL_CHROME.ar.translationNotice ?? '');
+
+  it('a translated version: the line at the very top, with a link to the English one; Arabic right to left', () => {
+    expect(NOTICE).not.toBe('');
+    for (const doc of LEGAL_DOCS) {
+      const html = renderLegalPage(doc, 'ar', SET);
+      expect(html.startsWith('<!doctype html>\n<html lang="ar" dir="rtl">')).toBe(true);
+      expect(html).toContain(
+        `<main class="wrap">\n<p class="translated" role="note">${NOTICE} ` +
+          `<a href="/legal/${doc}?lang=en" lang="en" hreflang="en" dir="ltr">English</a></p>\n<h1>`,
+      );
+      expect(html.match(/class="translated"/g)).toHaveLength(1);
+      // The language links and the alternates name every version, the Arabic one by its own name.
+      expect(html).toContain(
+        `<a href="/legal/${doc}?lang=ar" lang="ar" hreflang="ar" aria-current="page">العربية</a>`,
+      );
+      expect(html).toContain(`<link rel="alternate" hreflang="he" href="/legal/${doc}?lang=he">`);
+      // The other pages and the marks keep the language.
+      for (const other of LEGAL_DOCS) expect(html).toContain(`href="/legal/${other}?lang=ar"`);
+      // The one style is still the one the CSP allows.
+      const hash = createHash('sha256').update(styleOf(html), 'utf8').digest('base64');
+      expect(`sha256-${hash}`).toBe(LEGAL_CSS_HASH);
+    }
+    // Hebrew and English have no such line.
+    expect(renderLegalPage('terms', 'he', SET)).not.toContain('class="translated"');
+  });
+
+  it('refuses a translated version without its line, and a language without a version', () => {
+    const silent: LegalCatalog = {
+      ...LEGAL_CATALOG,
+      chrome: { ...LEGAL_CHROME, ar: { ...LEGAL_CHROME.ar, translationNotice: null } },
+    };
+    expect(() => renderLegalPage('privacy', 'ar', SET, silent)).toThrow(/no translation notice/);
+    // Every language of the app has a version since 1.1.0: a catalog of the originals only has no French.
+    const originals: LegalCatalog = { ...LEGAL_CATALOG, langs: LEGAL_ORIGINALS };
+    expect(() => renderLegalPage('privacy', 'fr', SET, originals)).toThrow(/No legal page privacy in fr/);
+  });
+
+  it('dates a translated version with Western digits (D108); Thai keeps its Buddhist year', () => {
+    expect(formatDate('2026-10-11', 'ar')).toBe('11 أكتوبر 2026');
+    expect(formatDate('2026-10-11', 'zh-Hans')).toBe('2026年10月11日');
+    expect(formatDate('2026-10-11', 'th')).toBe('11 ตุลาคม 2569');
+    for (const lang of PAGE_LANGUAGES)
+      expect({ lang, date: formatDate('2026-10-11', lang) }).toMatchObject({
+        lang,
+        date: expect.stringMatching(/^[^\u0660-\u0669\u06f0-\u06f9]*$/),
+      });
+  });
+});
+
 describe('LEGAL_CONTACT_EMAIL and LEGAL_OPERATOR_NAME', () => {
   it('are read, trimmed, and checked', () => {
     const warn = jest.fn();
@@ -427,9 +583,9 @@ describe('GET /legal/…', () => {
     }
   });
 
-  it('takes an unknown or repeated ?lang as the default', async () => {
+  it('takes an unknown or repeated ?lang as none (fetch sends `Accept-Language: *`: the default)', async () => {
     const url = await start();
-    for (const q of ['?lang=fr', '?lang=EN', '?lang=en&lang=he', '?lang[]=en']) {
+    for (const q of ['?lang=xx', '?lang=EN', '?lang=en&lang=he', '?lang[]=en', '?lang=']) {
       const res = await fetch(`${url}/legal/terms${q}`);
       expect({ q, status: res.status, lang: res.headers.get('content-language') }).toEqual({
         q,
@@ -437,6 +593,41 @@ describe('GET /legal/…', () => {
         lang: 'he',
       });
     }
+  });
+
+  it('[D112] sends a language of the app without a version to English, and serves every version it has', async () => {
+    const url = await start();
+    for (const lang of PAGE_LANGUAGES) {
+      const res = await fetch(`${url}/legal/privacy?lang=${lang}`);
+      const shown = legalLangFor(lang);
+      expect({ lang, shown: res.headers.get('content-language') }).toEqual({ lang, shown });
+      expect(await res.text()).toBe(renderLegalPage('privacy', shown, SET));
+    }
+    // Since 1.1.0, every language of the app has its own version (versionOf's English fallback:
+    // languages.test.ts).
+    expect([...LEGAL_LANGS]).toEqual([...PAGE_LANGUAGES]);
+    expect(legalLangFor('fr')).toBe('fr');
+    expect(legalLangFor('he')).toBe('he');
+    const root = await fetch(`${url}/legal?lang=ar`, { redirect: 'manual' });
+    expect(root.headers.get('location')).toBe(`/legal/privacy?lang=${legalLangFor('ar')}`);
+  });
+
+  it('without ?lang, picks among the versions by the browser’s languages (English when none fits)', async () => {
+    const url = await start();
+    const langOf = async (acceptLanguage: string) =>
+      (await fetch(`${url}/legal/terms`, { headers: { 'accept-language': acceptLanguage } })).headers.get(
+        'content-language',
+      );
+    expect(await langOf('he-IL,he;q=0.9,en;q=0.8')).toBe('he');
+    expect(await langOf('en-GB,en;q=0.9')).toBe('en');
+    expect(await langOf('iw')).toBe('he');
+    expect(await langOf('fr-FR,fr;q=0.9')).toBe('fr');
+    expect(await langOf('sw-KE,sw;q=0.9')).toBe('en');
+    expect(await langOf('sw-KE, he;q=0.5')).toBe('he');
+    expect(await langOf('zh-TW,zh;q=0.9')).toBe('zh-Hant');
+    // The same URL differs by the browser's languages, so a cache must keep them apart.
+    const res = await fetch(`${url}/legal/terms`);
+    expect(res.headers.get('vary')).toBe('Accept-Language');
   });
 
   it('answers HEAD, sends /legal to the privacy policy, and 404s anything else', async () => {

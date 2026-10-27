@@ -1,0 +1,434 @@
+{
+  "title": "Tự luyện tập",
+  "titleBot": "Luyện tập với máy",
+  "titleRanked": "Trận xếp hạng",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "Bạn",
+  "opponent": "Đối thủ",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "Cấp độ {{level}}, {{title}}"
+  },
+  "listSep": ", ",
+  "type": {
+    "fast": "Nhanh",
+    "normal": "Thường",
+    "hard": "Khó"
+  },
+  "hud": {
+    "time": "Thời gian",
+    "best": "Nước hay nhất",
+    "none": "—",
+    "timeLabel": "Thời gian {{time}}",
+    "bestLabel_other": "Nước đi hay nhất: {{points}} điểm ở ô {{cell}}",
+    "noBestLabel": "Chưa có nước đi hay nhất"
+  },
+  "progress": {
+    "label": "Tiến độ bảng",
+    "value": "{{filled}}/{{total}}",
+    "a11y_other": "Đã điền {{filled}}/{{total}} ô"
+  },
+  "end": {
+    "button": "Kết thúc luyện tập",
+    "title": "Kết thúc buổi luyện tập?",
+    "body": "Kết quả của bạn được lưu trên điện thoại này. Điểm xếp hạng không thay đổi.",
+    "confirm": "Có, kết thúc",
+    "footnote": "Trận đấu vẫn chạy ở phía sau",
+    "dialog": "Xác nhận kết thúc luyện tập"
+  },
+  "out": {
+    "surrendered": "Bạn đã đầu hàng · hạng {{place}}",
+    "abandoned": "Bạn đã bị loại · hạng {{place}}",
+    "goesOn": "Trận đấu tiếp tục đến hết",
+    "label": "{{title}}. {{goesOn}}",
+    "home": "Trang chủ",
+    "homeHint": "Trận đấu tiếp tục không có bạn. Thứ hạng của bạn đã được chốt"
+  },
+  "connection": {
+    "sep": ". ",
+    "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "lead": {
+      "mine": "Bạn dẫn trước",
+      "theirs": "{{name}} dẫn trước",
+      "theirs_female": "{{name}} dẫn trước",
+      "tie": "Hòa điểm"
+    },
+    "frozen": {
+      "title": "Trận đấu tạm dừng",
+      "timers": "Mọi đồng hồ đã dừng",
+      "label": "Trận đấu tạm dừng, mọi đồng hồ đã dừng"
+    },
+    "opponent": {
+      "lost": "{{name}} mất kết nối",
+      "lost_female": "{{name}} mất kết nối",
+      "title": "Đối thủ đang kết nối lại…",
+      "timeUp": "Hết giờ",
+      "notBack": "{{name}} đã không quay lại",
+      "notBack_female": "{{name}} đã không quay lại",
+      "seconds": "giây",
+      "ring": "Đang kết nối lại... {{seconds}}",
+      "saved": "Trận đấu được lưu trên máy chủ",
+      "savedSub": "Bảng và điểm số được giữ nguyên",
+      "winLabel": "Thắng do đối thủ bỏ trận",
+      "hint": "Nếu {{name}} không quay lại kịp, bạn thắng do đối thủ bỏ trận",
+      "hint_female": "Nếu {{name}} không quay lại kịp, bạn thắng do đối thủ bỏ trận",
+      "checking": "Đang kiểm tra với máy chủ…",
+      "timeLeft": "Thời gian để quay lại: {{time}}",
+      "announce": "{{name}} mất kết nối. Trận đấu tạm dừng cho đến khi người này quay lại",
+      "announce_female": "{{name}} mất kết nối. Trận đấu tạm dừng cho đến khi cô ấy quay lại",
+      "announceExpired": "Hết giờ. Đang kiểm tra với máy chủ"
+    },
+    "self": {
+      "lostTitle": "Bạn đã mất kết nối",
+      "lostSub": "Đang kết nối lại…",
+      "attempt": "Lần thử",
+      "attemptLabel": "Lần thử {{attempt}}",
+      "backTitle": "Bạn đã trở lại trận đấu",
+      "syncingSub": "Đang đồng bộ…",
+      "syncedSub": "Đã đồng bộ · trận đấu tiếp tục",
+      "lockedTitle": "Bảng bị khóa cho đến khi bạn quay lại",
+      "lockedSub": "Khi có kết nối trở lại, chúng tôi sẽ đồng bộ:",
+      "syncingTitle": "Đang đồng bộ…",
+      "syncedTitle": "Đã đồng bộ xong",
+      "savedSub": "Trận đấu được lưu trên máy chủ và tiếp tục từ đúng thời điểm đó",
+      "item": {
+        "board": "Bảng",
+        "score": "Điểm số",
+        "locks": "Ô khóa",
+        "turn": "Lượt",
+        "timers": "Đồng hồ"
+      },
+      "timeLeft_other": "Bạn còn {{seconds}} giây để quay lại",
+      "timeSub": "Trước khi bị tính là bỏ trận",
+      "backInTime": "Đã quay lại kịp",
+      "backInTimeSub": "Đồng hồ tiếp tục từ đúng giây đó",
+      "announceLost": "Bạn đã mất kết nối. Đang kết nối lại",
+      "announceAttempt": "Bạn đã mất kết nối. Đang kết nối lại, lần thử {{attempt}}",
+      "announceHurry_other": "Sau {{seconds}} giây nữa sẽ bị tính là bỏ trận",
+      "announceSyncing": "Bạn đã trở lại trận đấu. Đang đồng bộ",
+      "announceSynced": "Bạn đã trở lại trận đấu. Bảng và điểm số đã được đồng bộ"
+    },
+    "offline": {
+      "announce": "Không có kết nối. Cứ tiếp tục chơi; nước đi của bạn sẽ được gửi khi có kết nối trở lại"
+    },
+    "left": {
+      "timeUp_other": "Hết giờ · {{seconds}} giây không có kết nối",
+      "title": "{{name}} đã rời trận đấu",
+      "title_female": "{{name}} đã rời trận đấu",
+      "win": "Bạn thắng do đối thủ bỏ trận",
+      "rating": "điểm xếp hạng",
+      "ratingLabel": "Thay đổi điểm xếp hạng: {{delta}}, {{type}}",
+      "ratingUnchanged": {
+        "opponentLeftBeforeMyMove": "Điểm xếp hạng không đổi: đối thủ rời đi trước nước đi đầu tiên của bạn",
+        "opponentLeftAhead": "Điểm xếp hạng không đổi: bạn đang bị dẫn điểm khi đối thủ rời đi"
+      },
+      "toResults": "Xem kết quả",
+      "home": "Trang chủ"
+    },
+    "error": {
+      "title": "Lỗi kết nối",
+      "offlineTitle": "Không có kết nối Internet",
+      "body": {
+        "offline": "Điện thoại của bạn hiện không có mạng. Hãy kết nối Internet rồi thử lại.",
+        "unreachable": "Không kết nối được máy chủ trò chơi. Hãy kiểm tra kết nối rồi thử lại.",
+        "lost": "Kết nối với máy chủ trò chơi bị ngắt và không thể khôi phục.",
+        "refused": "Máy chủ không cho bạn vào phòng."
+      },
+      "refusal": {
+        "notFound": "Không có phòng nào với mã này. Hãy kiểm tra mã rồi thử lại.",
+        "full": "Phòng này đã đầy.",
+        "gameStarted": "Trận đấu trong phòng này đã bắt đầu.",
+        "alreadyInRoom": "Bạn đã ở trong phòng này, trên một thiết bị khác.",
+        "unauthenticated": "Đăng nhập vào tài khoản để đấu với người khác.",
+        "suspended": "Tài khoản của bạn đang bị đình chỉ, nên tạm thời không có trận xếp hạng. Bạn vẫn có thể luyện tập một mình hoặc với máy.",
+        "codeTaken": "Đã có phòng dùng mã này. Hãy thử mã khác.",
+        "badOptions": "Cài đặt của phòng không hợp lệ.",
+        "kicked": "Chủ phòng đã mời bạn ra khỏi phòng.",
+        "roomClosed": "Phòng đã đóng."
+      },
+      "code": "Mã lỗi: {{code}}",
+      "attemptFailed": "Lần thử {{attempt}} thất bại",
+      "retry": "Thử lại",
+      "practice": "Đi luyện tập",
+      "practiceNote": "Luyện tập một mình hoặc với máy không cần kết nối",
+      "home": "Trang chủ"
+    },
+    "surrender": {
+      "chip": "Đầu hàng",
+      "title": "Bạn có chắc muốn đầu hàng?",
+      "body": "Trận đấu sẽ bị tính là thua",
+      "bodyRating": "Trận đấu sẽ bị tính là thua · điểm xếp hạng thay đổi ước tính {{delta}}",
+      "bodyNoLoss": {
+        "leftBeforeMoving": "Trận đấu sẽ bị tính là thua · điểm xếp hạng của bạn không giảm: bạn chưa đi nước nào",
+        "leftNotBehind": "Trận đấu sẽ bị tính là thua · điểm xếp hạng của bạn không giảm: bạn không bị dẫn điểm"
+      },
+      "bodyMany": "Bạn sẽ rời trận đấu, và các ô bạn đã giải vẫn giữ màu của bạn.",
+      "bodyManyNoLoss": "Bạn sẽ rời trận đấu, và các ô bạn đã giải vẫn giữ màu của bạn. Điểm xếp hạng của bạn không giảm so với những người vẫn còn trong trận.",
+      "confirm": "Có, đầu hàng",
+      "cancel": "Hủy",
+      "footnote": "Trận đấu vẫn chạy ở phía sau",
+      "dialog": "Xác nhận đầu hàng"
+    },
+    "lobby": {
+      "title": "Phòng riêng",
+      "subtitle_other": "{{type}} · {{players}} người chơi",
+      "codeTitle": "Mã phòng",
+      "codeLabel": "Mã phòng: {{spelled}}",
+      "codeHint": "Gửi mã cho người chơi cùng bạn",
+      "share": "Chia sẻ mã",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép mã",
+      "shareMessage": "Vào chơi Sudoku Fight với mình nhé! Mã phòng: {{code}}",
+      "playersTitle": "Người chơi trong phòng",
+      "you": "Bạn",
+      "emptySeat": "Đang chờ người chơi…",
+      "seatMeLabel": "{{name}}, bạn",
+      "seatEmptyLabel": "Chỗ trống, đang chờ người chơi",
+      "waiting_other": "Đang chờ thêm {{count}} người chơi",
+      "starting": "Mọi người đã có mặt! Trận đấu đang bắt đầu…",
+      "hint": "Trận đấu bắt đầu ngay khi tất cả người chơi vào phòng",
+      "leave": "Rời phòng",
+      "joined": "{{name}} đã vào phòng"
+    },
+    "connecting": {
+      "title": "Đang vào trận",
+      "board": "Đang tải bảng…",
+      "step": {
+        "server": "Đang kết nối máy chủ trò chơi…",
+        "room": "Đang vào phòng…",
+        "sync": "Đang đồng bộ điểm số và đồng hồ…"
+      },
+      "label": "Đang tải trận đấu, bước {{step}}/{{total}}",
+      "cancel": "Hủy",
+      "tag": "Xếp hạng · {{type}}",
+      "rating": "Điểm xếp hạng {{rating}}",
+      "ready": "Sẵn sàng!",
+      "joining": "Đang kết nối…",
+      "tipTitle": "Mẹo",
+      "tips": {
+        "score_other": "Hàng, cột và khối càng trống thì nước đi càng giá trị: tối đa {{max}} điểm một ô.",
+        "lastCell_other": "Ô cuối cùng trên bảng luôn chỉ đáng {{points}} điểm: mọi thứ xung quanh đã đầy.",
+        "mistakes": "Một lỗi sẽ trừ đúng số điểm mà số đúng ở ô đó lẽ ra mang lại. Ô càng nhiều điểm thì sai càng mất nhiều.",
+        "interference": "Mỗi đòn phá rối tốn gấp đôi đòn trước. Hãy để dành cho đúng thời điểm."
+      }
+    }
+  },
+  "live": {
+    "correct": "Đúng: {{digit}} ở ô {{cell}}, {{points}}",
+    "wrong": "Sai: {{digit}} không hợp với ô {{cell}}, {{penalty}}",
+    "taken": "Ô {{cell}} đã có người chọn",
+    "cooldown": "Bạn có thể chọn lại ô {{cell}} sau giây lát",
+    "expired": "Hết giờ, ô {{cell}} đã được mở khóa",
+    "complete": "Hoàn thành bảng!",
+    "oppCorrect": "{{name}} đã giải ô {{cell}}: {{digit}}, {{points}}",
+    "oppWrong": "{{name}} đã sai: {{digit}} không hợp với ô {{cell}}, {{penalty}}",
+    "leadMine_other": "Bạn dẫn trước {{gap}} điểm",
+    "leadTheirs_other": "{{name}} dẫn trước {{gap}} điểm",
+    "leadTie": "Điểm số đang bằng nhau",
+    "reaction": "{{name}} gửi biểu cảm {{emoji}}",
+    "oppSurrendered": "{{name}} đã đầu hàng và bị loại, hạng {{place}}",
+    "oppAbandoned": "{{name}} không quay lại kịp và bị loại, hạng {{place}}",
+    "hitOther": "{{from}} đã gửi {{kind}} cho {{name}}",
+    "outMine": "Bạn đã bị loại ở hạng {{place}}. Trận đấu tiếp tục đến hết",
+    "queued": "Ô {{cell}}: {{digit}} đang chờ kết nối",
+    "offlineLostTaken": "Ô {{cell}} đã bị chọn khi bạn mất mạng · không bị phạt",
+    "offlineLost": "Nước đi ở ô {{cell}} không được tính · không bị phạt"
+  },
+  "interference": {
+    "fireworks": "pháo hoa",
+    "cats": "đàn mèo",
+    "warp": "hiệu ứng bẻ cong",
+    "scramble": "số xáo trộn",
+    "ink": "mực",
+    "keypad": "bàn phím xáo trộn"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}} gửi pháo hoa cho bạn!",
+      "cats": "{{name}} thả đàn mèo vào bạn!",
+      "warp": "{{name}} làm cong màn hình của bạn!",
+      "scramble": "{{name}} xáo trộn các số của bạn!",
+      "ink": "{{name}} vẩy mực vào bạn!",
+      "keypad": "{{name}} xáo trộn bàn phím của bạn!",
+      "generic": "{{name}} gửi cho bạn một đòn phá rối!"
+    },
+    "cost": "Tốn {{cost}} điểm · trận đấu vẫn tiếp tục",
+    "goesOn": "Trận vẫn tiếp tục · đồng hồ của bạn tạm dừng",
+    "seconds_other": "Còn {{count}} giây",
+    "banner": "{{title}} {{subtitle}}, {{time}}",
+    "started": "{{title}} Bảng của bạn bị làm mờ, {{time}}. Đồng hồ của bạn tạm dừng",
+    "withNote": "{{line}}. {{note}}",
+    "note": {
+      "scramble": "Các số đang xáo trộn không phải số thật",
+      "keypad": "Các phím đổi chỗ, và mỗi phím nhập đúng số in trên nó"
+    },
+    "ended": "Đòn phá rối đã hết, đồng hồ của bạn chạy lại",
+    "meow": "Ngao!",
+    "mew": "Meo!"
+  },
+  "arsenal": {
+    "title": "Chọn đòn phá rối",
+    "target": "Mục tiêu:",
+    "targetLabel": "Mục tiêu: {{name}}",
+    "me": "Bạn",
+    "routeLabel": "Đòn phá rối từ bạn tới {{name}}",
+    "scrim": "Đóng và quay lại bảng",
+    "price": "Giá",
+    "priceValue": "{{cost}} điểm",
+    "nextPrice": "· Tiếp theo: {{cost}}",
+    "unit": "điểm",
+    "score": "Điểm của bạn",
+    "costLabel_other": "Đòn phá rối này tốn {{cost}} điểm. Điểm của bạn là {{score}}, còn {{after}} sau khi tung đòn. Đòn tiếp theo tốn {{next}}",
+    "costLabelShort": "Đòn phá rối này tốn $t(game:arsenal.costPoints, {\"count\": {{cost}} }). Điểm của bạn là {{score}}, $t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })",
+    "costPoints_other": "{{count}} điểm",
+    "shortPoints_other": "còn thiếu {{missing}} điểm",
+    "info_other": "Đòn phá rối kéo dài {{seconds}} giây · chạm để tung",
+    "cost": "{{cost}} điểm",
+    "missing": "Thiếu {{count}}",
+    "locked": "Chưa mở",
+    "level": "Cấp {{level}}",
+    "busy": "Đang bị phá rối",
+    "unavailable": "Tạm khóa",
+    "routeArrow": "→",
+    "sent": "{{kind}} → {{name}}",
+    "notEnough": "Không đủ điểm cho đòn phá rối tiếp theo ({{cost}} điểm)",
+    "busyToast_other": "{{name}} đang bị phá rối rồi. Hãy thử lại sau {{count}} giây",
+    "notNow": "Lúc này bạn chưa thể phá rối",
+    "refused": "Đòn phá rối chưa được gửi, và bạn không bị trừ điểm",
+    "label": "{{kind}} · {{cost}} điểm · chạm để tung vào {{name}}",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kindGeneric": "Đòn phá rối",
+    "kind": {
+      "fireworks": "Pháo hoa",
+      "cats": "Mèo",
+      "warp": "Bẻ cong",
+      "scramble": "Xáo số",
+      "ink": "Mực",
+      "keypad": "Xáo bàn phím"
+    },
+    "reason": {
+      "points": "Thiếu {{count}} điểm cho đòn phá rối này",
+      "busy": "{{name}} đang bị phá rối rồi, hãy thử lại sau giây lát",
+      "notRunning": "Lúc này bạn chưa thể tung đòn phá rối",
+      "locked": "Đòn phá rối này vẫn chưa mở",
+      "level": "Mở ở cấp độ {{level}}",
+      "out": "{{name}} không còn trong trận đấu",
+      "disconnected": "{{name}} hiện không có kết nối"
+    },
+    "live": {
+      "launched": "Bạn đã tung {{kind}} vào {{name}}"
+    }
+  },
+  "reactions": {
+    "picker": "Biểu cảm",
+    "item": "Biểu cảm: {{name}}",
+    "itemOther": "Biểu cảm {{emoji}}",
+    "name": {
+      "laugh": "cười",
+      "scream": "hét",
+      "cool": "ngầu",
+      "facepalm": "ôm mặt",
+      "fire": "lửa",
+      "eyes": "đôi mắt"
+    },
+    "coolingDown": "Chờ một chút để gửi biểu cảm tiếp theo",
+    "close": "Đóng biểu cảm",
+    "menu": {
+      "open": "Menu thẻ của {{name}}",
+      "openHint": "Tại đó bạn có thể tắt biểu cảm của {{name}}",
+      "openHintMuted": "Biểu cảm của {{name}} đang bị tắt. Tại đó bạn có thể bật lại",
+      "label": "Menu của {{name}}",
+      "mute": "Tắt biểu cảm",
+      "unmute": "Bật biểu cảm",
+      "muteLabel": "Tắt biểu cảm của {{name}}",
+      "unmuteLabel": "Bật biểu cảm của {{name}}",
+      "muted": "Đã tắt biểu cảm của {{name}}",
+      "unmuted": "Đã bật lại biểu cảm của {{name}}",
+      "close": "Đóng menu"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "Hoàn thành bảng!",
+      "ended": "Đã kết thúc luyện tập",
+      "interrupted": "Luyện tập bị gián đoạn",
+      "surrendered": "Bạn đã đầu hàng",
+      "abandoned": "Bạn đã rời trận đấu",
+      "opponentSurrendered": "Đối thủ đã đầu hàng",
+      "opponentLeft": "Đối thủ đã rời đi"
+    },
+    "outcome": {
+      "win": "Chiến thắng!",
+      "loss": "Thất bại",
+      "tie": "Hòa"
+    },
+    "abandonWin": "Thắng do đối thủ bỏ trận",
+    "placeTitle": "Hạng {{place}}!",
+    "placeOf": "Hạng {{place}}/{{total}}",
+    "outOf": "trong số {{players}}",
+    "header": "{{title}} · {{type}} · {{players}}",
+    "end": {
+      "label": "Cách trận đấu kết thúc",
+      "completed": "Bạn đã điền kín cả bảng",
+      "full": "Bảng đã được điền kín",
+      "ended": "Bạn đã kết thúc luyện tập trước khi bảng được điền kín",
+      "interrupted": "Buổi luyện tập dừng giữa chừng, ví dụ khi ứng dụng bị đóng",
+      "line": "{{label}}: {{reason}}",
+      "surrendered": "Bạn đã đầu hàng trước khi bảng được điền kín",
+      "abandoned": "Bạn đã không quay lại kịp",
+      "opponentSurrendered": "Đối thủ đã đầu hàng trước khi bảng được điền kín",
+      "opponentLeft": "Đối thủ mất kết nối và không quay lại kịp"
+    },
+    "score": "Điểm chung cuộc",
+    "points": "điểm",
+    "scoreLabel_other": "Điểm chung cuộc: {{score}} điểm",
+    "opponents": {
+      "title": "Đối thủ",
+      "label_other": "{{name}} · {{score}} điểm · {{mistakes}}",
+      "left": "Đã rời trận"
+    },
+    "best": {
+      "title": "Nước đi xuất sắc nhất",
+      "move": "{{cell}} → {{digit}}",
+      "label_other": "Nước đi xuất sắc nhất: {{points}} điểm, {{digit}} ở ô {{cell}}",
+      "formula": "Cách tính điểm",
+      "formulaLabel": "Cách tính điểm: {{line}}",
+      "none": "Không có nước đi đúng nào trong buổi luyện tập này"
+    },
+    "stats": {
+      "time": "Thời gian trận",
+      "mistakes": "Lỗi",
+      "correct": "Nước đi đúng",
+      "think": "Thời gian nghĩ TB",
+      "seconds": "{{value}} giây",
+      "none": "—",
+      "label": "{{label}}: {{value}}"
+    },
+    "awards": {
+      "title": "Danh hiệu",
+      "bestMove": "Nước đi hay nhất",
+      "fewestMistakes": "Ít lỗi nhất",
+      "fastest": "Nhanh nhất",
+      "comeback": "Ngược dòng",
+      "mostPoints": "Nhiều điểm nhất",
+      "label": "{{title}}: {{who}}, {{value}}",
+      "value": {
+        "bestMove": "{{value}} điểm",
+        "fewestMistakes": "Lỗi: {{value}}",
+        "fastest": "{{value}} giây mỗi nước",
+        "comeback": "từ chỗ bị dẫn {{value}} điểm",
+        "mostPoints": "{{value}} điểm"
+      }
+    },
+    "unrated": "Luyện tập: điểm xếp hạng của bạn không thay đổi",
+    "ratingSoon": "Phòng riêng: tạm thời không tính điểm xếp hạng",
+    "actions": {
+      "home": "Trang chủ",
+      "newGame": "Trận mới"
+    },
+    "loading": "Đang tải kết quả…",
+    "missing": "Không tìm thấy buổi luyện tập này",
+    "unavailable": "Không đọc được các buổi luyện tập đã lưu",
+    "notSaved": "Buổi luyện tập này chưa được lưu trên điện thoại"
+  }
+}

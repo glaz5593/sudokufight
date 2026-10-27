@@ -1108,6 +1108,10 @@ host is, who is away, whether "התחל" is on, and the code itself all come fro
 - **To fit 360 × 780 without scrolling (D80a):** the ranked rows lose their "דירוג 1287 · מהיר" chip (two lines: title and
   tagline; `FRIENDS_UI.rankedChip` brings it back) and the footnote line goes. `ModesAndGameType.test.tsx` checks the budget in
   Hebrew and English, footer (628 of 644 dp) and list. `FRIENDS_UI.modesGroup = false` is 1.0.3's screen.
+- **In every language (1.1.0, D124):** the same budget holds in all 19 (`ModesAndGameType.test.tsx` runs each). A script with
+  taller least line heights (Arabic, Thai, Vietnamese, CJK: D106) takes what its lines add out of the rows' padding above
+  and below (6, down to 2: `cardPaddingVertical` in `ModesScreen.tsx`), so the rows keep their 64 and 77 dp. Words that
+  did not fit their line were shortened in that language.
 
 ### 20.2 Room header and code card (`FriendsRoomScreen`) [Friends-Room]
 - **Header:** back (= "יציאה מהחדר" in the lobby), the title "חדר עם חברים", and the subtitle "מהיר · 3 מתוך 4" (type · seats).
@@ -1189,3 +1193,47 @@ host is, who is away, whether "התחל" is on, and the code itself all come fro
 `label`, `caption`, `rowTitle`, `button`.
 
 **Icons:** existing only: `share`, `check`, `close`, `crown`, `lock`.
+
+## 21. Language picker [new] (localization stage 0, version 1.1.0) [no board]
+Settings → "שפה" (`screens/home/LanguagePicker.tsx`; localization plan
+`docs/handoff/2026-10-23/localization/plan.md` 0י, D102–D104). Until 1.0.4 the section held two side-by-side radio buttons,
+"עברית" and "English" (`Choice`); 19 languages do not fit there, so the section now has a field and a sheet, in the country
+picker's style (§4). **No board:** built from C's tokens and the country picker's pieces. Motion: the sheet's (§13), nothing new.
+
+- **Field** (in the section, under its label "שפה"; the hint "החלפת שפה מפעילה מחדש את האפליקציה." stays under it): the
+  country field's box, 44 min height (`size.input`), `color.input.bg`, a hairline `color.input.border`, radius 12, padding
+  4 × 12/10, the value in `input` type (`color.input.text`) and a `chevronDown` (`color.textMuted`) at the end.
+  - A chosen language: its own name, "עברית" / "English".
+  - **"שפת המכשיר"** (the setting that follows the phone, D102; where a new install starts): "שפת המכשיר", and under it, in
+    `caption` `color.textMuted`, the language it is now ("עברית").
+  - One button for screen readers: "שפה: עברית" / "שפה: שפת המכשיר, עברית" ("Language: English", "Language: device
+    language, English"), hint "בחירת שפה".
+- **Sheet** (§13, not `fill`: as tall as its rows, up to 85% of the screen, the rest scrolls inside), title "בחירת שפה", a
+  radio group named "שפה":
+  - **First row: "שפת המכשיר"** ("Device language"), in the app's language and font.
+  - **Then every language this build offers** (`ENABLED_LANGUAGES`; he and en in stage 0), in the plan's order (עברית,
+    English, then the order of the work: العربية, Español, Português (Brasil), Deutsch, Français, 日本語, Русский, 한국어, Italiano,
+    Türkçe, 简体中文, Bahasa Indonesia, Polski, 繁體中文, Tiếng Việt, ไทย, Nederlands), **each by its own name, the same in
+    every language of the app** (`LANGUAGE_NAMES`: a German player looks for "Deutsch", not "גרמנית"), **in its own font**
+    (Rubik where it has the script; the system font for 日本語, 한국어, 简体中文, 繁體中文, ไทย and Tiếng Việt, with the
+    language's own forms on iOS: `theme/typeface.ts`), and **read in its own language** by VoiceOver (`accessibilityLanguage`;
+    Android has no such prop).
+  - Rows as the country picker's: 64 min height (`size.listRow`), padding 0 × 12, radius 12, the name in `rowTitle`
+    (`color.text`, one line); the checked row on `color.surface2` with a gold `check` (`color.accent`) at the end. Each row
+    is a radio ("עברית", checked).
+- **A choice:**
+  - **That changes the language:** the sheet closes, then (once it is off the screen: two native modals at once fail on iOS)
+    the centred dialog of §14.2 with the `refresh` icon: "להחליף את השפה ל־English?" ("Switch the language to עברית?"), or for
+    "שפת המכשיר" "לעבור לשפת המכשיר?" ("Switch to the device language?"); the body "האפליקציה תופעל מחדש, כדי שכל המסכים יוצגו
+    בכיוון של השפה החדשה."; "החלפה והפעלה מחדש" and "ביטול". The confirm saves the choice and **the app restarts, on every
+    change of language** (D104: fonts and line heights are set as it starts), not only when the direction flips.
+  - **That keeps the language** ("עברית" while "שפת המכשיר" is Hebrew): saved at once, no question, no restart.
+  - On Android 13 and up the choice is also the system's "App languages" for Sudoku Fight (D103), and a language chosen there
+    shows here on return.
+- **RTL:** the field and the rows follow the app's direction (the chevron and the tick at the end); each language name is
+  written in its own script and direction.
+
+**Tokens:** no new token. `color.input.*`, `color.surface2`, `color.accent`, `color.text`, `color.textMuted`; type `input`,
+`caption`, `rowTitle`; sizes `size.input`, `size.listRow`, `size.icon.chevron`, `size.icon.card`.
+
+**Icons:** existing only: `chevronDown`, `check`, `refresh`, `close`.

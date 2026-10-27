@@ -1,6 +1,6 @@
 import type { InterferenceKind } from '@sudoku-fight/engine';
 import { type ReactNode, useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -16,6 +16,7 @@ import Svg, { Circle, Ellipse, Path } from 'react-native-svg';
 
 import { Icon } from '../../../components/Icon';
 import { paletteAt } from '../../../components/player';
+import { Text } from '../../../components/ui/Text';
 import { color, radius, tokens } from '../../../theme';
 
 /**

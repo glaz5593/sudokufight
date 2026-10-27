@@ -1,0 +1,608 @@
+{
+  "title": "ステージ練習",
+  "stage": "ステージ{{n}}",
+  "chapter": "第{{n}}章",
+  "units": {
+    "seconds": "秒"
+  },
+  "stars": {
+    "of3": {
+      "0": "星なし",
+      "1": "星3つ中1つ",
+      "2": "星3つ中2つ",
+      "3": "星3つ中3つ"
+    },
+    "count_other": "星{{count}}個"
+  },
+  "kinds": {
+    "find": {
+      "name": "ピンポイント",
+      "label": "ピンポイント"
+    },
+    "findDuel": {
+      "name": "ボットと競争",
+      "label": "ボットと競争"
+    },
+    "fillBox": {
+      "name": "ブロックを埋める",
+      "label": "ブロックを埋める"
+    },
+    "duel": {
+      "name": "{{target}}点先取の対決",
+      "label": "{{target}}点先取の対決"
+    },
+    "spotError": {
+      "name": "まちがい探し",
+      "label": "まちがい探し"
+    },
+    "pointHunter": {
+      "name": "ポイントハンター",
+      "label": "ポイントハンター"
+    },
+    "chain": {
+      "name": "チェーン",
+      "label": "チェーン"
+    },
+    "fillRow": {
+      "name": "行を埋める",
+      "label": "行を埋める"
+    },
+    "fillCol": {
+      "name": "列を埋める",
+      "label": "列を埋める"
+    },
+    "puzzle": {
+      "name": "パズル",
+      "label": "パズル"
+    }
+  },
+  "boss": {
+    "chip": "ボス",
+    "name": "ボスステージ",
+    "label": "ボス、{{kind}}",
+    "versus": "ボス：{{bot}}",
+    "band": "ボス · 第{{chapter}}章",
+    "botLabel": "{{name}}、ボス",
+    "intro": {
+      "title": "ボスステージ！",
+      "sub": "ステージ{{n}} · {{kind}}",
+      "harder": "ここが手ごわい",
+      "label": "ボスステージ！ステージ{{n}}、{{kind}}。{{details}}"
+    },
+    "traits": {
+      "firstBot": "最初のボット：{{bot}}",
+      "faster": "{{bot}}の速さが{{percent}}アップ",
+      "overlord": "Overlord",
+      "moreCells_other": "空きマス{{cells}}個（通常は{{usual}}個）"
+    },
+    "result": {
+      "won": "ボスに勝ちました！",
+      "lost": "今回はボスの勝ちです",
+      "gateOpen": "第{{n}}章への関門：{{stars}} · 開放！",
+      "gateClosed": "第{{n}}章への関門：{{stars}}"
+    }
+  },
+  "region": {
+    "box": "ブロック{{n}}",
+    "row": "{{row}}行",
+    "col": "{{n}}列",
+    "mapLabel": "盤面マップ：{{region}}"
+  },
+  "goals": {
+    "find": "1つの数字が入る場所を正確に見つけます。ステージは{{s}}秒で終わります。",
+    "findDuel_other": "{{bot}}と{{spots}}問で勝負、制限{{s}}秒。先に見つけたほうがその問を獲得します。",
+    "fillBox_other": "ブロックの空きマス{{cells}}個を埋めます。制限{{s}}秒。",
+    "fillRow_other": "行の空きマス{{cells}}個を埋めます。制限{{s}}秒。",
+    "fillCol_other": "列の空きマス{{cells}}個を埋めます。制限{{s}}秒。",
+    "puzzle": "ブロックを正しい順に並べます。間違った入れ替えは{{penalty}}秒加算。制限{{s}}秒。",
+    "duel_other": "{{bot}}と対決。{{target}}点先取か{{s}}秒まで。星はリードの大きさで決まります。",
+    "spotError_other": "あなたの数字の中に、間違った数字が{{count}}個隠れています。制限{{s}}秒。",
+    "pointHunter_other": "{{moves}}手、制限{{s}}秒。できるだけ多くの点を取りましょう。",
+    "chain_other": "{{steps}}ステップのチェーン、制限{{s}}秒。一度に解けるマスは1つだけです。"
+  },
+  "scale": {
+    "label": "獲得できる星",
+    "row": "{{stars}}：{{text}}",
+    "time": "{{s}}秒以内",
+    "spots_other": "{{count}}問",
+    "spotsRange_other": "{{range}}問",
+    "gap": "{{gap}}点差以上のリード",
+    "lead": "終了時にリード",
+    "points": "{{points}}点以上",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "ステージマップ",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_other": "星{{max}}個中{{stars}}個、章へジャンプ",
+    "lockedToast": "先にステージ{{n}}をプレイしてください",
+    "gateToast_other": "第{{chapter}}章は、第{{prev}}章で星を{{need}}個集めると開放されます",
+    "loading": "マップを読み込み中…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_other": "星{{max}}個中{{stars}}個"
+  },
+  "node": {
+    "played": "ステージ{{n}}、{{kind}}、{{stars}}",
+    "current": "ステージ{{n}}、{{kind}}、次のステージ",
+    "open": "ステージ{{n}}、{{kind}}、未プレイ",
+    "locked": "ステージ{{n}}、未開放"
+  },
+  "gate": {
+    "need_other": "星{{need}}個で開放",
+    "count": "{{stars}}/{{need}}",
+    "boss": "ボスステージをプレイすると開放されます",
+    "open": "第{{n}}章：開放済み",
+    "lockedLabel_other": "第{{n}}章は未開放、第{{prev}}章の星{{need}}個中{{stars}}個",
+    "bossLabel_other": "第{{n}}章は未開放、第{{prev}}章の星{{need}}個中{{stars}}個。ボスステージをプレイすると開放されます",
+    "openLabel_other": "第{{n}}章は開放済み、第{{prev}}章の星{{need}}個で開放されました"
+  },
+  "jump": {
+    "title": "章へジャンプ",
+    "row": "第{{n}}章 · {{name}}",
+    "rowLabel_other": "第{{n}}章、{{name}}、星{{max}}個中{{stars}}個、{{state}}",
+    "open": "開放済み",
+    "locked": "未開放"
+  },
+  "gateSheet": {
+    "title": "第{{n}}章は未開放",
+    "missing_other": "第{{prev}}章で星が{{need}}個必要です。現在{{stars}}個で、あと{{missing}}個です。",
+    "bossOnly": "星は足りています。ステージ{{boss}}（ボス）をプレイすると開放されます",
+    "progress": "関門に必要な第{{prev}}章の星：{{need}}個中{{stars}}個",
+    "rowsTitle": "星を伸ばせるステージ",
+    "rowsNote_other": "あと最大{{count}}個の星を獲得できます",
+    "row": "ステージ{{n}} · {{kind}}",
+    "rowLabel": "ステージ{{n}}をもう一度プレイ、{{kind}}、{{stars}}",
+    "rowNewLabel": "ステージ{{n}}をプレイ、{{kind}}、未プレイ",
+    "rowPlay": "プレイ",
+    "primary": "ステージ{{n}}をプレイ",
+    "footnote": "ほとんどのステージは30秒以内、穴埋めとパズルのステージは60秒以内です。いちばん多く取った星の数が記録されます。"
+  },
+  "panel": {
+    "label": "選択中のステージ",
+    "title": "ステージ{{n}} · {{kind}}",
+    "sub": "第{{chapter}}章 · {{name}}",
+    "subBot": "第{{chapter}}章 · {{bot}}と対戦",
+    "subBoss": "第{{chapter}}章 · ボス：{{bot}}",
+    "next": "次のステージ",
+    "best": "ベスト{{metric}}",
+    "bestLabel": "自己ベスト：{{stars}}、{{metric}}",
+    "bestStars": "自己ベスト：{{stars}}",
+    "bot": "{{name}} · レベル{{level}} · {{title}}",
+    "continue": "続ける · ステージ{{n}}",
+    "play": "プレイ",
+    "lockedTitle": "ステージ{{n}} · 未開放",
+    "lockedSub": "第{{chapter}}章 · {{kind}}",
+    "lockedPrev": "先にステージ{{n}}をプレイしてください。",
+    "lockedGate_other": "第{{chapter}}章は未開放です。第{{prev}}章で星が{{need}}個必要です。現在{{stars}}個です。",
+    "gateTitleOpen": "第{{n}}章：開放済み",
+    "gateTitleClosed": "第{{n}}章：未開放",
+    "gateSub": "{{name}} · ステージ{{range}}",
+    "gateOpenBody_other": "開放済み：第{{prev}}章で星を{{stars}}個獲得しました。関門に必要なのは{{need}}個です。",
+    "gateBar": "関門に必要な星：{{need}}個中{{stars}}個"
+  },
+  "ready": {
+    "title": "準備はいいですか？",
+    "label": "準備はいいですか？ステージ{{n}}、{{kind}}。{{goal}}",
+    "findPrompt": "{{digit}}はどこ？",
+    "raceSpots_other": "{{count}}問、{{bot}}と競争"
+  },
+  "tutorial": {
+    "title": "遊び方",
+    "got": "わかりました",
+    "skip": "スキップ",
+    "panel": "画像{{n}}/{{total}}：{{text}}",
+    "alsoBoss": "これはボスでもあります。各章の10番目のステージです。",
+    "find": {
+      "1": "「{{digit}}はどこ？」のような問題が1つ出て、盤面上のエリア（ブロック、行、列、または盤面全体）が示されます。",
+      "2": "その数字が必ず入るマスを1つ見つけて、タップしてください。",
+      "3": "間違ったタップは5秒加算されます。2回間違えるとステージ終了です。"
+    },
+    "findDuel": {
+      "1": "5問が順番に出ます。ボットも一緒に探します。",
+      "2": "正しいマスを先にタップしたほうが、その問を獲得します。",
+      "3": "間違ったタップ：3秒間タップできません。その間もボットは探し続けます。"
+    },
+    "fillBox": {
+      "1": "空きマスのあるブロックが1つ、金色の枠で示されます。",
+      "2": "ブロック内のマスを選んで数字を入力してください。ブロックの外のマスは選べません。",
+      "3": "間違った数字は5秒加算されます。早く終えるほど星が増えます。"
+    },
+    "duel": {
+      "1": "対戦と同じように、あなたとボットが同じ盤面で戦います。",
+      "2": "先に30点を取るか、30秒後にリードしているほうが勝ちです。",
+      "3": "星は終了時のリードで決まります。8点差で星2つ、15点差で星3つです。"
+    },
+    "spotError": {
+      "1": "濃い色の数字は盤面の数字で、常に正しいです。",
+      "2": "あなたの数字の中に間違った数字が隠れています。それをタップしてください。",
+      "3": "正しい数字をタップすると5秒加算されます。"
+    },
+    "pointHunter": {
+      "1": "使える手は3手だけです。",
+      "2": "空いているエリアのマスほど点数が高くなります。",
+      "3": "星は、盤面の最高点にどれだけ近づけたかで決まります。"
+    },
+    "chain": {
+      "1": "盤面上で解けるマスは、常に1つだけです。",
+      "2": "そのマスを埋めると、次のマスが開きます。",
+      "3": "まだ決められないマスに数字を入れると5秒加算され、数字は置かれません。"
+    },
+    "boss": {
+      "1": "各章の10番目のステージはボスです。それまでのステージより手ごわいボットとの1回勝負です。",
+      "2": "始まる前に、何が手ごわいのかが表示されます。たいていはボットが速くなります。",
+      "3": "ボスをプレイし、その章で星を20個集めると、次の章が開放されます。"
+    },
+    "fillRow": {
+      "1": "空きマスのある行が1つ、金色の枠で示されます。",
+      "2": "行内のマスを選んで数字を入力してください。行の外のマスは選べません。",
+      "3": "間違った数字は5秒加算されます。早く終えるほど星が増えます。"
+    },
+    "fillCol": {
+      "1": "空きマスのある列が1つ、金色の枠で示されます。",
+      "2": "列内のマスを選んで数字を入力してください。列の外のマスは選べません。",
+      "3": "間違った数字は5秒加算されます。早く終えるほど星が増えます。"
+    },
+    "puzzle": {
+      "1": "数字の埋まった9つのブロックが、間違った順番に並んでいます。",
+      "2": "ブロックを別のブロックにドラッグすると入れ替わります。ロックの付いたブロックは固定です。どちらのブロックも正しい位置に入らない入れ替えは、5秒加算されます。",
+      "3": "すべての行と列が正しくなると、ステージ終了です。早く終えるほど星が増えます。"
+    }
+  },
+  "result": {
+    "completed": "ステージ{{n}}クリア",
+    "ended": "ステージ{{n}}",
+    "reasons": {
+      "timeUp": "時間切れ",
+      "failed": "間違ったタップが2回",
+      "quit": "ステージを途中で抜けました",
+      "botWon": "{{bot}}に先を越されました"
+    },
+    "metric": {
+      "spotsOf_other": "/{{total}}問",
+      "gap": "リード",
+      "points": "点",
+      "found": "発見",
+      "foundOf": "/{{total}}"
+    },
+    "newBest": "自己ベスト更新！",
+    "yourBest": "自己ベスト：",
+    "yourBestLabel": "自己ベスト：{{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP（見込み。サーバーで確定します）",
+    "chapterLabel": "この章",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "関門に必要なのは{{need}}個",
+    "chapterOpen": "関門は開放済み",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_other": "この章：星{{max}}個中{{stars}}個。{{gate}}",
+    "mistakes_other": "ミス{{count}}回",
+    "noMistakes": "ミスなし",
+    "swaps_other": "入れ替え{{count}}回 · 最少：{{min}}",
+    "time": "タイム：{{s}}秒",
+    "youWon": "あなたの勝ち",
+    "botWon": "{{bot}}の勝ち",
+    "tie": "引き分け",
+    "bossTie": "引き分け：ボスは健在です",
+    "opponentLabel": "{{bot}}：{{value}}。{{verdict}}",
+    "opponentSpots_other": "{{count}}問",
+    "opponentScore_other": "{{score}}点",
+    "bestMove_other": "最高の一手：{{cell}}に{{digit}} · {{points}}点",
+    "why": "なぜ？",
+    "next": "次のステージ",
+    "again": "もう一度",
+    "toMap": "マップへ",
+    "last": "これが最後のステージでした。お見事です！",
+    "nextLocked": "次のステージはまだ開放されていません"
+  },
+  "unlocked": {
+    "heading": "新しい章が開放されました！",
+    "title": "第{{n}}章 · {{name}}",
+    "news": "新要素：{{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "続ける",
+    "label": "新しい章が開放されました：第{{n}}章、{{name}}。{{news}}",
+    "bots": {
+      "1": "Pip：「まだ始めたばかりですが、見た目より速いですよ」",
+      "2": "Biscuit：「のんびりしていますが、逃がしませんよ」",
+      "3": "Mr. Hoot：「すべてのマスが見えています。お気をつけて」",
+      "4": "Maestro：「速く、正確に、そして華麗に」",
+      "5": "Overlord：「よくぞここまで来ました。ですが、ここで終わりです」"
+    }
+  },
+  "exit": {
+    "button": "ステージを抜ける",
+    "title": "ステージを抜けますか？",
+    "body": "星は0個になり、次のステージが開放されます。",
+    "confirm": "抜ける",
+    "cancel": "プレイを続ける"
+  },
+  "card": {
+    "line": "ステージ：{{played}} · {{stars}}",
+    "stars": "★{{n}}",
+    "label_other": "ステージ：{{played}}、星{{count}}個"
+  },
+  "chapters": {
+    "1": {
+      "name": "はじめの一歩",
+      "news": "ピンポイント、ブロックを埋める、パズル、行を埋める"
+    },
+    "2": {
+      "name": "Pipの挑戦",
+      "news": "列を埋める、ボットと競争"
+    },
+    "3": {
+      "name": "初めての対決",
+      "news": "30点先取の対決、まちがい探し"
+    },
+    "4": {
+      "name": "探偵",
+      "news": "3ステップのチェーン、動くブロックが4つのパズル"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "新しいボットBiscuit、ポイントハンター、どの数字も1つ以上欠けている穴埋め"
+    },
+    "6": {
+      "name": "行と列",
+      "news": "ノーマルの盤面と、行や列の中のターゲット"
+    },
+    "7": {
+      "name": "ポイントハンター",
+      "news": "動くブロックが5つのパズル"
+    },
+    "8": {
+      "name": "2つのまちがい",
+      "news": "盤面に2つのまちがい、ノーマルの盤面での対決"
+    },
+    "9": {
+      "name": "チェーン",
+      "news": "すべての種類をもう一度、一段階難しく"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "新しいボットMr. Hoot、穴埋めの空きマスが7個に"
+    },
+    "11": {
+      "name": "盤面全体",
+      "news": "盤面のどこにでもターゲットが"
+    },
+    "12": {
+      "name": "もっと速く",
+      "news": "ノーマルの盤面で、25秒のポイントハンター"
+    },
+    "13": {
+      "name": "静かなまちがい",
+      "news": "見た目では重複が見えないまちがい"
+    },
+    "14": {
+      "name": "長いチェーン",
+      "news": "4ステップのチェーン、穴埋めの空きマスが9個に"
+    },
+    "15": {
+      "name": "折り返し地点",
+      "news": "すべての種類をもう一度"
+    },
+    "16": {
+      "name": "ハードな盤面",
+      "news": "ハードの盤面と、動くブロックが6つのパズル"
+    },
+    "17": {
+      "name": "消去法",
+      "news": "候補を消去して初めてわかるターゲット"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "新しいボットMaestro"
+    },
+    "19": {
+      "name": "わな",
+      "news": "盤面に3つのまちがい"
+    },
+    "20": {
+      "name": "難関",
+      "news": "候補の消去が必要な空のブロック"
+    },
+    "21": {
+      "name": "ペア",
+      "news": "ペアと、20秒のポイントハンター"
+    },
+    "22": {
+      "name": "5連チェーン",
+      "news": "5ステップのチェーン"
+    },
+    "23": {
+      "name": "ヒントなし",
+      "news": "数字がとても少ない盤面"
+    },
+    "24": {
+      "name": "競争",
+      "news": "ハードの盤面での対決"
+    },
+    "25": {
+      "name": "エキスパート",
+      "news": "すべてをもう一度、速いペースで"
+    },
+    "26": {
+      "name": "チャンピオンシップ",
+      "news": "星3つは最速のプレイヤーだけ"
+    },
+    "27": {
+      "name": "チャンピオンシップⅡ",
+      "news": "ポイントハンター：星3つは最高点に迫った人だけ"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "ボス：Overlordと競争"
+    },
+    "29": {
+      "name": "決勝",
+      "news": "速いチェーンと、対決のボスとしてOverlord"
+    },
+    "30": {
+      "name": "チャンピオン",
+      "news": "すべてをまとめて、最高の難しさで"
+    }
+  },
+  "hud": {
+    "secondsAdded_other": "{{count}}秒加算",
+    "sub": "{{kind}} · 第{{chapter}}章",
+    "subFind": "{{digit}}はどこ？ · 第{{chapter}}章",
+    "subRace_other": "{{kind}} · {{spots}}問 · 第{{chapter}}章",
+    "clockLabel_other": "残り{{s}}秒（制限{{limit}}秒）",
+    "penalty": "{{s}}秒",
+    "me": "自分",
+    "find": {
+      "tap": "{{digit}}が入るマスをタップ",
+      "where": "<scope>{{scope}}</scope> · キーパッドなし、タップだけ",
+      "elapsed": "秒経過",
+      "targetLabel": "ターゲット：{{scope}}の{{digit}}。{{left}}",
+      "ringLabel_other": "ステージ残り{{s}}秒",
+      "one": "このステージで探すのは1つ",
+      "wrongRule": "間違ったタップ：{{penalty}}秒",
+      "twoWrongRule": "2回間違えるとステージ終了",
+      "found": "発見：{{cell}}の{{digit}}",
+      "missed": "{{cell}}ではありません。{{penalty}}秒",
+      "answer": "正解：{{cell}}"
+    },
+    "scope": {
+      "box": "ブロック{{n}}内",
+      "row": "{{row}}行内",
+      "col": "{{n}}列内",
+      "board": "盤面全体"
+    },
+    "race": {
+      "task": "{{n}}/{{total}}問 · {{scope}}の{{digit}}を探す",
+      "left": "残り{{s}}秒",
+      "searching": "探しています…",
+      "spots_other": "{{count}}問",
+      "frozen_other": "停止中、{{count}}秒",
+      "out": "次の問まで休み",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}、{{spots}}",
+      "botLabel": "{{name}}、レベル{{n}}のボット、{{title}}、{{spots}}",
+      "botSearching": "{{name}}が探しています",
+      "mine": "第{{n}}問を獲得しました",
+      "theirs": "第{{n}}問は{{name}}が獲得",
+      "void": "第{{n}}問は獲得者なし",
+      "next": "第{{n}}問：{{scope}}の{{digit}}"
+    },
+    "box": {
+      "task": "ブロック{{n}}を埋める",
+      "cells_other": "{{done}}/{{total}}マス",
+      "cellsLabel_other": "空きマス{{total}}個中{{done}}個を埋めました",
+      "mistakes_other": "ミス{{count}}回（{{penalty}}秒）",
+      "mistakesLabel_other": "ミス{{count}}回、$t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "ミスをすると5秒加算され、そのマスにはその数字を入力できなくなります",
+      "timeLabel_other": "タイム：{{s}}秒（制限{{limit}}秒）",
+      "boardLabel_other": "盤面 · ブロック{{n}}の空きマス{{count}}個だけを埋めます"
+    },
+    "line": {
+      "taskRow": "{{row}}行を埋める",
+      "taskCol": "{{n}}列を埋める",
+      "boardLabelRow_other": "盤面 · {{row}}行の空きマス{{count}}個だけを埋めます",
+      "boardLabelCol_other": "盤面 · {{n}}列の空きマス{{count}}個だけを埋めます"
+    },
+    "puzzle": {
+      "task": "ブロックを正しい順に並べる",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_other": "動くブロック{{count}}個",
+      "fixed_other": "固定ブロック{{count}}個",
+      "allMove": "全ブロックが動きます",
+      "swaps": "入れ替え：{{count}}回",
+      "wrong_other": "間違った入れ替え{{count}}回（{{penalty}}秒）",
+      "wrongLabel_other": "間違った入れ替え{{count}}回、$t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "ブロックを別のブロックにドラッグして入れ替え",
+      "tapHint": "または、2つのブロックを順にタップ",
+      "slotLabel": "ブロック{{n}}、{{state}}：{{rows}}",
+      "state": {
+        "movable": "移動可",
+        "fixed": "固定",
+        "selected": "選択中"
+      },
+      "slotHint": "タップして選び、別のブロックをタップします",
+      "swapped": "ブロック{{a}}と{{b}}を入れ替えました",
+      "swappedPenalty_other": "ブロック{{a}}と{{b}}を入れ替えました。{{s}}秒加算",
+      "fixedTap": "このブロックは固定です",
+      "solved": "すべての行と列が正しくなりました",
+      "boardLabel": "パズル · {{counts}}"
+    },
+    "duel": {
+      "gap": "リード{{gap}}",
+      "gapLabel": "リード：{{gap}}。終了時にリードしていれば星1つ、{{two}}で星2つ、{{three}}で星3つ",
+      "lead": "リード中",
+      "of": "/{{target}}",
+      "meLabel_other": "{{name}}、{{target}}点中{{score}}点",
+      "botLabel_other": "{{name}}、レベル{{n}}のボット、{{target}}点中{{score}}点",
+      "finishLabel": "誰かが$t(levels:hud.duel.reachPoints, {\"count\": {{target}} })に達するか、$t(levels:hud.duel.atSeconds, {\"count\": {{s}} })が経過するとステージが終わります",
+      "reachPoints_other": "{{count}}点",
+      "atSeconds_other": "{{count}}秒",
+      "raceLabel": "{{target}}点先取：{{me}}、{{bot}}"
+    },
+    "reactions": "リアクション",
+    "boardLabel": "ステージの盤面 · {{scope}}",
+    "spotError": {
+      "goal_other": "盤面に間違った数字が{{count}}個隠れています。タップしてください。",
+      "note": "濃い色の数字は盤面の数字で、常に正しいです。",
+      "found": "発見",
+      "foundLabel": "{{total}}個中{{found}}個を発見",
+      "time": "タイム",
+      "timeLabel_other": "タイム：{{s}}秒（制限{{limit}}秒）",
+      "tipTitle": "コツ",
+      "tip": "同じ行・列・ブロックに2回出てくる数字を探しましょう。",
+      "tipClose": "コツを閉じる",
+      "foundCell": "{{cell}}のまちがいを発見：{{wrong}}ではなく{{right}}",
+      "rightTap": "{{cell}}の数字は正しいです。{{penalty}}秒",
+      "missed": "見つからなかったまちがい：{{cells}}",
+      "boardLabel": "ステージの盤面 · 間違った数字をタップ"
+    },
+    "hunt": {
+      "goal": "$t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} })で$t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} })を取りましょう。",
+      "goalPoints_other": "{{points}}点",
+      "goalMoves_other": "{{count}}手",
+      "note": "空いているエリアのマスほど点数が高くなります。",
+      "points": "点",
+      "scoreLabel_other": "{{score}}点",
+      "scoreWorthLabel_other": "{{score}}点。選んだマスは{{worth}}点です",
+      "lost": "間違った数字で{{points}}点を失いました",
+      "move": "{{max}}手中{{n}}手目",
+      "burnt": "{{n}}手目は無効",
+      "movesLabel": "{{moves}}。{{burnt}}",
+      "burntCount_other": "{{count}}手が無効",
+      "left": "残り · 全{{limit}}",
+      "timeLabel_other": "残り{{s}}秒（制限{{limit}}秒）",
+      "max": "盤面の最高点：{{max}}",
+      "worth": "{{points}}点"
+    },
+    "chain": {
+      "goal": "盤面上で一度に解けるマスは1つだけです。それを見つけて埋めると、次のマスが開きます。",
+      "notePenalty": "まだ決められないマスに数字を入れると{{penalty}}秒加算。",
+      "noteAccept": "間違った数字は{{penalty}}秒加算。",
+      "step": "ステップ{{n}}/{{total}}",
+      "stepLabel": "チェーン：ステップ{{n}}/{{total}}",
+      "time": "タイム",
+      "timeLabel_other": "タイム：{{s}}秒（制限{{limit}}秒）",
+      "notYet": "{{text}} · {{penalty}}秒",
+      "tipTitle": "コツ",
+      "tip": "どのステップでも、確実に決められるマスはちょうど1つです。確信できる数字があれば、そこがそのマスです。",
+      "tipClose": "コツを閉じる"
+    }
+  },
+  "explain": {
+    "spot": "第{{n}}問：{{text}}",
+    "mistake": "あなたのミス：{{cell}}に{{digit}}。{{reason}}",
+    "best": "あなたの最高の一手、{{cell}}に{{digit}}：{{text}}",
+    "errorFound": "{{cell}}、発見：{{reason}}",
+    "errorMissed": "{{cell}}、見逃し：{{reason}}",
+    "rightTap": "{{cell}}の{{digit}}は正しい数字です。タップしたため{{penalty}}秒加算されました。",
+    "points_other": "{{max}}点中{{points}}点を獲得しました。盤面の最高点の{{percent}}です。",
+    "line": "最高の手順：{{moves}}。",
+    "move": "{{cell}}に{{digit}}（{{points}}）",
+    "step": "ステップ{{n}}：{{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "位置{{place}}に合うのは、最初に位置{{from}}にあったブロックだけです。ほかのブロックでは、行か列で数字が重複します。",
+      "onlyPlaceForBox": "最初に位置{{from}}にあったブロックが合うのは、位置{{place}}だけです。ほかの位置では、行か列で数字が重複します。"
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "title": "Geçmiş",
+  "summary": {
+    "games_one": "1 maç",
+    "games_other": "{{count}} maç",
+    "winRate": "{{rate}} galibiyet",
+    "practices_one": "1 antrenman",
+    "practices_other": "{{count}} antrenman",
+    "streak": "Seri",
+    "streakLabel_one": "Galibiyet serisi: 1 galibiyet",
+    "streakLabel_other": "Galibiyet serisi: {{count}} galibiyet"
+  },
+  "filters": {
+    "label": "Maçları filtrele",
+    "all": "Tümü",
+    "ranked": "Dereceli",
+    "practice": "Antrenman"
+  },
+  "loading": "Maçların yükleniyor…",
+  "more": "Daha fazla maç",
+  "empty": {
+    "title": "Burada henüz maç yok",
+    "body": "Her maç yeniden izlemek için burada saklanır: hamle hamle, her rakamın neden oraya gittiğiyle birlikte.",
+    "action": "İlk maçını oyna"
+  },
+  "notes": {
+    "practice": "Antrenman maçları dereceni değiştirmez, ama onları da yeniden izleyebilirsin.",
+    "offline": "Sunucuyla bağlantı yok: yalnızca bu telefondaki antrenman maçları gösteriliyor.",
+    "signedOut": "Giriş yapınca dereceli maçların burada görünür.",
+    "rankedError": "Dereceli maçlarını yükleyemedik.",
+    "practiceUnavailable": "Bu telefona kaydedilen antrenman maçlarını okuyamadık.",
+    "retry": "Tekrar dene"
+  },
+  "states": {
+    "offlineTitle": "Sunucuyla bağlantı yok",
+    "offlineBody": "Dereceli maçların bağlantı geri gelince yüklenir. Bu telefondaki antrenman maçları çevrimdışıyken de burada görünür.",
+    "errorTitle": "Maçlarını yükleyemedik",
+    "errorBody": "Sunucu düzgün yanıt vermedi. Birazdan tekrar dene.",
+    "practiceTitle": "Antrenman maçlarını okuyamadık",
+    "practiceBody": "Bu telefona kaydedilen antrenman maçları açılmadı. Tekrar dene, sorun sürerse uygulamayı yeniden başlat."
+  },
+  "card": {
+    "mode": {
+      "ranked": "Dereceli",
+      "solo": "Tek başına antrenman",
+      "bot": "Bota karşı antrenman"
+    },
+    "outcome": {
+      "win": "Galibiyet",
+      "loss": "Mağlubiyet",
+      "tie": "Beraberlik",
+      "completed": "Tablo tamamlandı",
+      "ended": "Antrenman bitti",
+      "interrupted": "Maç yarıda kaldı"
+    },
+    "place": "{{place}}. sıra",
+    "against_one": "1 rakibe karşı",
+    "against_other": "{{count}} rakibe karşı",
+    "alone": "Tek başına",
+    "points": "{{score}} puan",
+    "unrated": "Derecesiz",
+    "rating": "Derece {{delta}}",
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "replay": "Maç tekrarı",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Maç tekrarını açar"
+  },
+  "results": {
+    "replay": "Maç tekrarı",
+    "replayHint": "Maç baştan, adım adım, her hamle açıklanarak",
+    "rating": {
+      "title": "Derece değişimi · {{type}}",
+      "from": "önceki: {{before}}",
+      "label": "Derece değişimi: {{delta}}, önce {{before}}, şimdi {{after}}",
+      "provisional": "Geçici derece: ilk 10 maçında değişimler iki kat sayılır",
+      "perOpponent": "Her rakibe karşı ayrı hesaplanır",
+      "pairLabel": "{{name}} karşısında: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "{{name}} karşısında: derece kaybı yok, ilk hamlenden önce ayrıldın",
+        "leftNotBehind": "{{name}} karşısında: derece kaybı yok, ayrıldığında geride değildin",
+        "opponentLeftBeforeMyMove": "{{name}} karşısında: derece kazancı yok, rakip senin ilk hamlenden önce ayrıldı",
+        "opponentLeftAhead": "{{name}} karşısında: derece kazancı yok, rakip ayrıldığında sen gerideydin"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_one": "{{name}} · {{score}} puan · {{mistakes}} · derece {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} puan · {{mistakes}} · derece {{delta}}",
+    "ranking": {
+      "title": "Son sıralama",
+      "left": "Maçtan çıktı",
+      "label_one": "{{place}}. sıra: {{name}} · {{score}} puan · {{mistakes}}",
+      "label_other": "{{place}}. sıra: {{name}} · {{score}} puan · {{mistakes}}",
+      "labelRating_one": "{{place}}. sıra: {{name}} · {{score}} puan · {{mistakes}} · derece {{delta}}",
+      "labelRating_other": "{{place}}. sıra: {{name}} · {{score}} puan · {{mistakes}} · derece {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "Tek bir hamleden en çok puan",
+      "fewestMistakes": "En az hata. Eşitlikte puanı yüksek olan",
+      "fastest": "Doğru hamle başına en düşük ortalama düşünme süresi (en az 5 hamle)",
+      "comeback": "15 puan ya da daha fazla gerideyken gelen galibiyet",
+      "mostPoints": "Cezalardan önce, doğru hamlelerden en çok puan"
+    }
+  }
+}

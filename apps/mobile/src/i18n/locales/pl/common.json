@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "Pozdrowienia z silnika · pole {{cell}}",
+    "versions": "silnik {{engine}} · protokół {{protocol}}",
+    "taps": "Dotknięcia: {{count}}",
+    "server": {
+      "connecting": "Serwer: łączenie…",
+      "connected": "Serwer: połączono",
+      "rtt": "Serwer: RTT {{ms}} ms",
+      "error": "Serwer: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "Coś poszło nie tak",
+    "body": "Na tym ekranie wystąpił błąd. Zgłosiliśmy go, a ty możesz spróbować ponownie.",
+    "retry": "Spróbuj ponownie"
+  },
+  "fallback": {
+    "loading": "Chwileczkę…",
+    "title": "Ten ekran się nie wczytał",
+    "body": "Możesz przejść do wyników albo na ekran główny.",
+    "bodyHome": "Możesz wrócić na ekran główny i stamtąd kontynuować.",
+    "results": "Do wyników",
+    "home": "Ekran główny"
+  },
+  "appVersion": {
+    "version": "Wersja {{version}}",
+    "build": "kompilacja {{build}}",
+    "engine": "silnik {{engine}}"
+  },
+  "number": {
+    "decimal": ",",
+    "percent": "{{value}}%"
+  },
+  "text": {
+    "labelValue": "{{label}}: {{value}}",
+    "parenthetical": "{{text}} ({{note}})",
+    "sentence": "{{text}}.",
+    "wordSpace": " "
+  }
+}

@@ -1,0 +1,274 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "Cài đặt",
+    "back": "Quay lại"
+  },
+  "profile": {
+    "defaultName": "Người chơi",
+    "label": "Thẻ người chơi của bạn: {{name}}",
+    "noRating": "Chưa có điểm xếp hạng",
+    "ratingTitle": "Điểm xếp hạng",
+    "none": "—",
+    "games_other": "{{count}} trận",
+    "gamesLabel_other": "trận",
+    "winsLabel": "thắng",
+    "streakLabel": "chuỗi thắng",
+    "winRate": "{{percent}}% thắng",
+    "streak_zero": "Chưa có chuỗi thắng",
+    "streak_other": "Chuỗi {{count}} trận thắng"
+  },
+  "play": "Chơi",
+  "playHint": "Chọn chế độ chơi",
+  "again": {
+    "title": "Thêm một trận nữa",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "Không thể bắt đầu. Hãy thử lại."
+  },
+  "recent": {
+    "heading": "Trận đấu gần đây",
+    "all": "Tất cả",
+    "unavailable": "Không đọc được các trận đã lưu trên điện thoại này.",
+    "emptyTitle": "Chưa có trận đấu nào",
+    "emptyBody": "Mọi buổi luyện tập đều được lưu ở đây, kể cả sau khi bạn đóng ứng dụng.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "Hoàn thành",
+      "ended": "Kết thúc",
+      "interrupted": "Gián đoạn",
+      "playing": "Đang chơi",
+      "win": "Thắng",
+      "loss": "Thua",
+      "tie": "Hòa"
+    },
+    "openHint": "Mở kết quả",
+    "versus": "{{outcome}} · với {{name}}"
+  },
+  "modes": {
+    "title": "Trận mới",
+    "footnote": "Xếp hạng cần kết nối Internet · Luyện tập luôn khả dụng",
+    "soon": "Sắp có",
+    "groups": {
+      "ranked": {
+        "title": "Xếp hạng",
+        "note": "Đối thủ thật, theo thời gian thực"
+      },
+      "friends": {
+        "title": "Với bạn bè",
+        "titleMoshe": "Bạn bè thật, theo thời gian thực",
+        "note": "Phòng riêng · tối đa 4 · không xếp hạng"
+      },
+      "practice": {
+        "title": "Luyện tập",
+        "note": "Không áp lực, không xếp hạng"
+      }
+    },
+    "chips": {
+      "rated": "Có xếp hạng",
+      "unrated": "Không xếp hạng",
+      "offline": "Không cần mạng"
+    },
+    "ranked": {
+      "name": "Xếp hạng"
+    },
+    "ranked2": {
+      "title": "2 người chơi",
+      "tagline": "Một đấu một · cùng bảng",
+      "label": "Xếp hạng · 2 người chơi"
+    },
+    "ranked3": {
+      "title": "3 người chơi",
+      "tagline": "Hỗn chiến",
+      "label": "Xếp hạng · 3 người chơi"
+    },
+    "ranked4": {
+      "title": "4 người chơi",
+      "tagline": "Hỗn chiến",
+      "label": "Xếp hạng · 4 người chơi"
+    },
+    "friends": {
+      "create": "Phòng mới",
+      "createHint": "Mở phòng chờ có mã để gửi cho bạn bè",
+      "join": "Vào bằng mã",
+      "joinHint": "Nhập 6 chữ số bạn nhận được"
+    },
+    "solo": {
+      "name": "Tự luyện tập",
+      "title": "Một mình · cả bảng",
+      "tagline": "Theo nhịp của bạn",
+      "label": "Một mình · cả bảng"
+    },
+    "levels": {
+      "name": "Luyện tập theo màn",
+      "title": "Luyện tập theo màn",
+      "tagline": "Màn ngắn · tối đa 3 sao",
+      "taglineNew_other": "{{total}} màn ngắn · 0–3 sao",
+      "chip": "Màn {{stage}} ·",
+      "offline": "Offline",
+      "chipLabel_other": "Màn {{stage}} · {{count}} sao",
+      "label": "Luyện tập theo màn"
+    },
+    "bot": {
+      "name": "Luyện tập với máy",
+      "title": "Luyện tập với máy",
+      "tagline": "5 cấp độ",
+      "label": "Luyện tập với máy"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "Nhanh",
+      "difficulty": "Dễ",
+      "technique": "Giải được chỉ với số đơn lộ diện"
+    },
+    "normal": {
+      "name": "Thường",
+      "difficulty": "Trung bình",
+      "technique": "Cần số đơn ẩn"
+    },
+    "hard": {
+      "name": "Khó",
+      "difficulty": "Khó",
+      "technique": "Cần cặp số hoặc phép loại trừ"
+    }
+  },
+  "gameType": {
+    "title": "Loại trận đấu",
+    "note": {
+      "solo": "Không xếp hạng. Bảng được lấy từ kho đề trên điện thoại này, không lặp lại bảng bạn vừa chơi gần đây.",
+      "bot": "Không xếp hạng. Bảng được lấy từ kho đề trên điện thoại này, không lặp lại bảng bạn vừa chơi gần đây. Tiếp theo, bạn chọn đối thủ.",
+      "ranked": "Có xếp hạng. Một đối thủ có điểm xếp hạng gần bạn, một bảng bạn chưa chơi từ kho đề của máy chủ, và cùng một bảng cho cả hai.",
+      "rankedGroup": "Có xếp hạng. Các đối thủ có điểm xếp hạng gần bạn, một bảng bạn chưa chơi từ kho đề của máy chủ, và cùng một bảng cho tất cả. Trận đấu bắt đầu khi đủ người."
+    },
+    "start": {
+      "solo": "Bắt đầu luyện tập",
+      "bot": "Chọn đối thủ",
+      "ranked": "Tìm đối thủ",
+      "rankedGroup": "Tìm các đối thủ"
+    },
+    "startHint": "Bắt đầu luyện tập {{type}}",
+    "rankedHint": "Tìm đối thủ cho trận xếp hạng {{type}}",
+    "rankedGroupHint": "Tìm các đối thủ cho trận xếp hạng {{type}}",
+    "lockTime": "Thời gian mỗi ô",
+    "board": "Bảng",
+    "duration": "Thời lượng",
+    "seconds": "{{seconds}} giây",
+    "minutes": "{{range}} phút",
+    "yourRating": "Điểm xếp hạng",
+    "cardLabel_other": "{{name}}. {{technique}}. {{seconds}} mỗi ô, bảng {{difficulty}}, khoảng {{from}} đến {{to}} phút",
+    "botHint": "Chọn đối thủ máy cho trận {{type}}"
+  },
+  "dev": {
+    "title": "Phát triển",
+    "designSystem": "Hệ thống thiết kế",
+    "hello": "Kiểm tra kết nối"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "feedback": "Âm thanh và rung",
+    "sound": "Âm thanh",
+    "soundHint": "Âm thanh cho nước đi và thao tác",
+    "haptics": "Rung phản hồi",
+    "hapticsHint": "Rung ngắn để phản hồi nước đi",
+    "motion": "Giảm chuyển động",
+    "motionHint": "Ít hiệu ứng hơn: điểm số nhảy thẳng đến kết quả, và đòn phá rối hiện thành một lớp phủ tĩnh trong cùng khoảng thời gian.",
+    "reduceMotion": {
+      "system": "Theo thiết bị",
+      "on": "Bật",
+      "off": "Tắt"
+    },
+    "language": "Ngôn ngữ",
+    "languageHint": "Đổi ngôn ngữ sẽ khởi động lại ứng dụng.",
+    "testing": "Kiểm thử",
+    "testingHint": "Chỉ có trong bản kiểm thử (staging). Bản trên cửa hàng không có mục này.",
+    "chainPenalty": "Chuỗi: đoán mò mất 5 giây",
+    "chainPenaltyHint": "Từ màn chuỗi tiếp theo: đặt một số vào ô chưa thể xác định sẽ mất 5 giây và số đó không được đặt.",
+    "unlockAll": "Mở mọi màn (kiểm thử)",
+    "unlockAllHint": "Mọi màn đều mở trên bản đồ. Sao và XP được tính như bình thường.",
+    "languageConfirm": {
+      "title": "Đổi ngôn ngữ sang {{language}}?",
+      "body": "Ứng dụng sẽ khởi động lại để mọi màn hình hiển thị theo hướng của ngôn ngữ mới.",
+      "confirm": "Đổi và khởi động lại",
+      "titleDevice": "Đổi sang ngôn ngữ của thiết bị?"
+    },
+    "languageDevice": "Ngôn ngữ thiết bị",
+    "languageSheetTitle": "Chọn ngôn ngữ",
+    "languageField": "Ngôn ngữ: {{language}}",
+    "languageFieldDevice": "Ngôn ngữ: ngôn ngữ của thiết bị, {{language}}",
+    "about": "Giới thiệu và pháp lý",
+    "privacy": "Chính sách quyền riêng tư",
+    "terms": "Điều khoản sử dụng",
+    "licenses": "Giấy phép",
+    "opensInBrowser": "Mở trong trình duyệt"
+  },
+  "placeholder": {
+    "soon": "Sắp ra mắt",
+    "leaderboard": {
+      "title": "Bảng xếp hạng",
+      "body": "Bảng xếp hạng sẽ mở cùng với các trận xếp hạng."
+    },
+    "history": {
+      "title": "Lịch sử",
+      "body": "Mọi trận đấu của bạn sẽ có ở đây, kèm phần xem lại và lời giải thích cho từng nước đi. Trong lúc chờ, các buổi luyện tập gần nhất có ở trang chủ."
+    },
+    "achievements": {
+      "title": "Thành tích",
+      "body": "Thành tích, cấp độ và XP đang được chuẩn bị."
+    }
+  },
+  "botSelect": {
+    "title": "Chọn đối thủ máy",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "Thời gian nghĩ mỗi nước",
+    "thinkValue": "{{range}} giây",
+    "mistakes": "Lỗi",
+    "note": "Đó là thời gian cho một nước đi bình thường. Ô cần suy luận khó hơn thì máy nghĩ lâu hơn, còn ô trống cuối cùng của một hàng, cột hoặc khối thì nhanh hơn một chút. Máy chơi trên cùng một bảng, theo thời gian thực.",
+    "start": "Chơi nào",
+    "startHint": "Bắt đầu luyện tập {{type}} với {{name}}",
+    "cardLabel_other": "Cấp độ {{level}}, {{title}}: {{name}}. {{behavior}}. Nghĩ {{from}} đến {{to}} giây mỗi nước, {{mistakes}}% lỗi",
+    "levels": {
+      "1": {
+        "title": "Tập sự",
+        "behavior": "Chậm, mắc kha khá lỗi, và để bạn học hỏi"
+      },
+      "2": {
+        "title": "Nghiệp dư",
+        "behavior": "Thong thả, thỉnh thoảng sơ suất, và đôi khi gửi 😂"
+      },
+      "3": {
+        "title": "Thành thạo",
+        "behavior": "Vững vàng, chín chắn, và khó vượt mặt"
+      },
+      "4": {
+        "title": "Cao thủ",
+        "behavior": "Nhanh, hầu như không sai, và hơi tự mãn 😎"
+      },
+      "5": {
+        "title": "Đại kiện tướng",
+        "behavior": "Nhanh, chính xác, và không khoan nhượng"
+      }
+    }
+  },
+  "licenses": {
+    "title": "Giấy phép",
+    "intro": "Sudoku Fight được xây dựng trên các phông chữ mở và phần mềm mã nguồn mở. Cảm ơn các tác giả. Dưới đây là giấy phép và thông báo bản quyền của họ.",
+    "fonts": "Phông chữ",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_other": "{{count}} gói mã nguồn mở",
+    "packageLabel": "{{name}}, phiên bản {{version}}, giấy phép {{license}}",
+    "texts": "Nội dung giấy phép",
+    "textsHint": "Toàn văn của từng giấy phép, đúng như bản gốc.",
+    "show": "Hiện giấy phép {{license}}",
+    "hide": "Ẩn giấy phép {{license}}"
+  }
+}

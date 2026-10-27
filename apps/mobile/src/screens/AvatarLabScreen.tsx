@@ -2,7 +2,7 @@ import { EXPRESSIONS, type Expression, MOTION_IDS } from '@sudoku-fight/avatars'
 import { AVATAR_IDS, type AvatarId } from '@sudoku-fight/protocol';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -15,6 +15,7 @@ import {
 } from '../avatars';
 import { ltr } from '../components/player';
 import { Button, IconButton } from '../components/ui';
+import { Text } from '../components/ui/Text';
 import { color, radius, space, text, tokens } from '../theme';
 import { useReduceMotion } from '../theme/motion';
 

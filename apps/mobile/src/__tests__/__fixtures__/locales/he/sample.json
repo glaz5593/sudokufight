@@ -1,0 +1,20 @@
+{
+  "title": "נקודות",
+  "greet": "שלום {{name}}",
+  "points_one": "נקודה אחת",
+  "points_two": "שתי נקודות",
+  "points_other": "{{count}} נקודות",
+  "lead_one": "{{name}} מוביל בנקודה",
+  "lead_two": "{{name}} מוביל בשתי נקודות",
+  "lead_other": "{{name}} מוביל ב־{{gap}} נקודות",
+  "streak_zero": "אין רצף ניצחונות",
+  "streak_one": "ניצחון אחד ברצף",
+  "streak_two": "שני ניצחונות ברצף",
+  "streak_other": "{{count}} ניצחונות ברצף",
+  "range": "⁦0–3⁩ כוכבים",
+  "score": "ניקוד: <accent>{{score}}</accent>",
+  "sep": " · ",
+  "sentenceSpace": " ",
+  "brand": "Sudoku Fight",
+  "vs": "VS"
+}

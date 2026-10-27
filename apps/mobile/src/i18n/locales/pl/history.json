@@ -1,0 +1,119 @@
+{
+  "title": "Historia",
+  "summary": {
+    "games_one": "{{count}} partia",
+    "games_few": "{{count}} partie",
+    "games_many": "{{count}} partii",
+    "games_other": "{{count}} partii",
+    "winRate": "{{rate}} wygranych",
+    "practices_one": "{{count}} trening",
+    "practices_few": "{{count}} treningi",
+    "practices_many": "{{count}} treningów",
+    "practices_other": "{{count}} treningu",
+    "streak": "Seria",
+    "streakLabel_one": "Seria: {{count}} wygrana z rzędu",
+    "streakLabel_few": "Seria: {{count}} wygrane z rzędu",
+    "streakLabel_many": "Seria: {{count}} wygranych z rzędu",
+    "streakLabel_other": "Seria: {{count}} wygranej z rzędu"
+  },
+  "filters": {
+    "label": "Filtruj partie",
+    "all": "Wszystkie",
+    "ranked": "Rankingowe",
+    "practice": "Treningowe"
+  },
+  "loading": "Wczytywanie twoich partii…",
+  "more": "Więcej partii",
+  "empty": {
+    "title": "Nie ma tu jeszcze partii",
+    "body": "Każda partia zapisuje się tutaj, żeby można ją było obejrzeć ponownie: ruch po ruchu, z wyjaśnieniem, dlaczego każda cyfra trafiła tam, gdzie trafiła.",
+    "action": "Zagraj pierwszą partię"
+  },
+  "notes": {
+    "practice": "Partie treningowe nie zmieniają twojego rankingu, ale je też możesz obejrzeć ponownie.",
+    "offline": "Brak połączenia z serwerem: widać tylko partie treningowe z tego telefonu.",
+    "signedOut": "Partie rankingowe pojawią się tutaj po zalogowaniu.",
+    "rankedError": "Nie udało się wczytać twoich partii rankingowych.",
+    "practiceUnavailable": "Nie udało się odczytać partii treningowych zapisanych na tym telefonie.",
+    "retry": "Spróbuj ponownie"
+  },
+  "states": {
+    "offlineTitle": "Brak połączenia z serwerem",
+    "offlineBody": "Partie rankingowe wczytają się, gdy wróci połączenie. Partie treningowe z tego telefonu widać tu nawet bez sieci.",
+    "errorTitle": "Nie udało się wczytać twoich partii",
+    "errorBody": "Serwer nie odpowiedział prawidłowo. Spróbuj za chwilę.",
+    "practiceTitle": "Nie udało się odczytać twoich partii treningowych",
+    "practiceBody": "Partie treningowe zapisane na tym telefonie się nie otworzyły. Spróbuj ponownie, a jeśli to się powtarza, uruchom aplikację od nowa."
+  },
+  "card": {
+    "mode": {
+      "ranked": "Rankingowa",
+      "solo": "Trening solo",
+      "bot": "Trening z botem"
+    },
+    "outcome": {
+      "win": "Wygrana",
+      "loss": "Przegrana",
+      "tie": "Remis",
+      "completed": "Plansza ukończona",
+      "ended": "Trening zakończony",
+      "interrupted": "Partia przerwana"
+    },
+    "place": "Miejsce {{place}}",
+    "against_one": "z {{count}} przeciwnikiem",
+    "against_few": "z {{count}} przeciwnikami",
+    "against_many": "z {{count}} przeciwnikami",
+    "against_other": "z {{count}} przeciwnikami",
+    "alone": "W pojedynkę",
+    "points": "{{score}} pkt",
+    "unrated": "Bez rankingu",
+    "rating": "Ranking {{delta}}",
+    "today": "Dziś",
+    "yesterday": "Wczoraj",
+    "replay": "Powtórka",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Otwiera powtórkę"
+  },
+  "results": {
+    "replay": "Powtórka",
+    "replayHint": "Partia od początku, krok po kroku, z wyjaśnieniem każdego ruchu",
+    "rating": {
+      "title": "Zmiana rankingu · {{type}}",
+      "from": "z {{before}}",
+      "label": "Zmiana rankingu: {{delta}}, z {{before}} na {{after}}",
+      "provisional": "Ranking tymczasowy: w pierwszych 10 partiach zmiany liczą się podwójnie",
+      "perOpponent": "Liczone osobno względem każdego przeciwnika",
+      "pairLabel": "Z graczem {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "Z graczem {{name}}: bez straty rankingu, wyjście przed twoim pierwszym ruchem",
+        "leftNotBehind": "Z graczem {{name}}: bez straty rankingu, w chwili wyjścia twój wynik nie był niższy",
+        "opponentLeftBeforeMyMove": "Z graczem {{name}}: bez zysku rankingu, ten gracz wyszedł przed twoim pierwszym ruchem",
+        "opponentLeftAhead": "Z graczem {{name}}: bez zysku rankingu, gdy ten gracz wyszedł, twój wynik był niższy"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_one": "{{name}} · {{score}} punkt · {{mistakes}} · ranking {{delta}}",
+    "opponentLabel_few": "{{name}} · {{score}} punkty · {{mistakes}} · ranking {{delta}}",
+    "opponentLabel_many": "{{name}} · {{score}} punktów · {{mistakes}} · ranking {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} punktu · {{mistakes}} · ranking {{delta}}",
+    "ranking": {
+      "title": "Klasyfikacja końcowa",
+      "left": "Wyjście z partii",
+      "label_one": "Miejsce {{place}}: {{name}} · {{score}} punkt · {{mistakes}}",
+      "label_few": "Miejsce {{place}}: {{name}} · {{score}} punkty · {{mistakes}}",
+      "label_many": "Miejsce {{place}}: {{name}} · {{score}} punktów · {{mistakes}}",
+      "label_other": "Miejsce {{place}}: {{name}} · {{score}} punktu · {{mistakes}}",
+      "labelRating_one": "Miejsce {{place}}: {{name}} · {{score}} punkt · {{mistakes}} · ranking {{delta}}",
+      "labelRating_few": "Miejsce {{place}}: {{name}} · {{score}} punkty · {{mistakes}} · ranking {{delta}}",
+      "labelRating_many": "Miejsce {{place}}: {{name}} · {{score}} punktów · {{mistakes}} · ranking {{delta}}",
+      "labelRating_other": "Miejsce {{place}}: {{name}} · {{score}} punktu · {{mistakes}} · ranking {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "Najwięcej punktów za jeden ruch",
+      "fewestMistakes": "Najmniej błędów. Przy remisie decyduje wyższy wynik",
+      "fastest": "Najkrótszy średni czas namysłu na poprawny ruch (co najmniej 5 ruchów)",
+      "comeback": "Wygrana po odrobieniu straty co najmniej 15 punktów",
+      "mostPoints": "Najwięcej punktów za poprawne ruchy, przed odjęciem kar"
+    }
+  }
+}

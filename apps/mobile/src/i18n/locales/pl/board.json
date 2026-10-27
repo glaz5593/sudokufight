@@ -1,0 +1,52 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Plansza",
+    "myLock": "twoje pole {{cell}}",
+    "otherLock": "{{cell}} zablokowane przez gracza {{name}}",
+    "tapLabel": "Plansza etapu"
+  },
+  "cell": {
+    "empty": "puste",
+    "given": "podpowiedź",
+    "solvedByMe": "rozwiązane przez ciebie",
+    "solvedBy": "rozwiązane przez gracza {{name}}",
+    "lockedByMe": "zablokowane przez ciebie",
+    "lockedBy": "zablokowane przez gracza {{name}}",
+    "pending": "czeka na blokadę",
+    "queued": "{{digit}}, czeka na połączenie",
+    "timerStopped": "zegar zatrzymany",
+    "seconds_one": "{{count}} sekunda",
+    "seconds_few": "{{count}} sekundy",
+    "seconds_many": "{{count}} sekund",
+    "seconds_other": "{{count}} sekundy",
+    "wrong": "błędne cyfry: {{digits}}",
+    "hintMyLock": "Wybierz cyfrę na klawiaturze",
+    "player": "Gracz {{n}}",
+    "corrected": "znaleziono błąd: {{wrong}}, właściwa cyfra to {{right}}",
+    "mine": "twoje",
+    "outside": "poza obszarem",
+    "hintTap": "Ruchem jest dotknięcie pola"
+  },
+  "keypad": {
+    "armed": "Cyfra {{digit}} · pozostało: {{left}}",
+    "idle": "Cyfra {{digit}}, pozostało: {{left}}, najpierw wybierz pole",
+    "complete": "Cyfra {{digit}}, pozostało: {{left}}",
+    "tried": "Cyfra {{digit}} · już próbowana w tym polu"
+  },
+  "cancel": {
+    "label": "Anuluj wybór",
+    "withCell": "Anuluj wybór, {{cell}}"
+  },
+  "resume": {
+    "title": "Powrót za",
+    "paused": "Partia wstrzymana",
+    "label_one": "Powrót za {{count}} sekundę",
+    "label_few": "Powrót za {{count}} sekundy",
+    "label_many": "Powrót za {{count}} sekund",
+    "label_other": "Powrót za {{count}} sekundy"
+  }
+}

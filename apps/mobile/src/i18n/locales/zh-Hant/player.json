@@ -1,0 +1,108 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": "、",
+  "ellipsis": "…",
+  "unknownName": "玩家",
+  "temporaryName": "玩家{{digits}}",
+  "bot": "機器人",
+  "vs": "VS",
+  "seconds_other": "{{count}}秒",
+  "points_other": "{{score}}分",
+  "place": "第{{place}}名",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "線上",
+    "online_female": "線上",
+    "reconnecting": "重新連線中",
+    "reconnecting_female": "重新連線中",
+    "unstable": "無連線",
+    "unstable_female": "無連線",
+    "left": "已離開",
+    "left_female": "已離開"
+  },
+  "result": {
+    "winShort": "勝",
+    "lossShort": "敗",
+    "drawShort": "平"
+  },
+  "flag": {
+    "label": "國家／地區：{{country}}"
+  },
+  "rating": {
+    "label": "積分{{value}}",
+    "labelWithKey": "{{key}}積分{{value}}",
+    "provisional": "暫定",
+    "provisionalLabel": "{{label}}，暫定"
+  },
+  "league": {
+    "bronze": "青銅",
+    "silver": "白銀",
+    "gold": "黃金",
+    "diamond": "鑽石",
+    "legend": "傳奇",
+    "name": "{{league}}段位",
+    "level": "等級{{level}}",
+    "levelAfter": "· 等級{{level}}"
+  },
+  "mistakes": {
+    "short_zero": "沒有錯誤",
+    "short_other": "{{count}}次錯誤",
+    "long_zero": "沒有錯誤",
+    "long_other": "{{count}}次錯誤",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "選擇中",
+    "locking_female": "選擇中",
+    "turn": "輪到對方",
+    "turn_female": "輪到對方",
+    "paused": "已暫停",
+    "thinking": "思考中",
+    "thinking_female": "思考中",
+    "reconnecting": "重新連線中",
+    "reconnecting_female": "重新連線中",
+    "left": "已離開",
+    "left_female": "已離開",
+    "surrendered": "已認輸",
+    "surrendered_female": "已認輸",
+    "withCell": "{{word}}{{cell}}",
+    "withTime": "{{word}}，{{time}}"
+  },
+  "card": {
+    "hit": "受干擾中，{{time}}",
+    "target": "目標",
+    "targetHint": "干擾目標"
+  },
+  "actions": {
+    "surrender": "認輸",
+    "endPractice": "結束練習",
+    "reactions": "表情"
+  },
+  "interfere": {
+    "button": "干擾",
+    "label": "干擾{{name}} · 需要{{cost}}分",
+    "labelMissing": "干擾{{name}} · 還差{{count}}分",
+    "labelBusy": "無法干擾{{name}}，對方已在受干擾中",
+    "labelNotRunning": "現在無法干擾{{name}}",
+    "labelDisconnected": "斷線時無法發動干擾",
+    "labelOut": "{{name}}已出局",
+    "close": "關閉干擾選單"
+  },
+  "lead": {
+    "tie": "同分",
+    "label_other": "{{name}}領先{{gap}}分",
+    "label_female_other": "{{name}}領先{{gap}}分",
+    "tieLabel": "目前同分"
+  },
+  "lock": {
+    "yourCell": "你的格子",
+    "paused": "已暫停",
+    "pick": "選一格",
+    "remaining_other": "剩{{count}}秒",
+    "label": "你的格子{{cell}}，{{remaining}}",
+    "labelPaused": "你的格子{{cell}}，計時已停止",
+    "progress": "格子{{cell}}的剩餘時間",
+    "released": "已放開格子"
+  }
+}

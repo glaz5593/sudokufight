@@ -1,0 +1,108 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Người chơi",
+  "temporaryName": "NgườiChơi{{digits}}",
+  "bot": "Máy",
+  "vs": "VS",
+  "seconds_other": "{{count}} giây",
+  "points_other": "{{score}} điểm",
+  "place": "Hạng {{place}}",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "Trực tuyến",
+    "online_female": "Trực tuyến",
+    "reconnecting": "Đang kết nối lại",
+    "reconnecting_female": "Đang kết nối lại",
+    "unstable": "Mất kết nối",
+    "unstable_female": "Mất kết nối",
+    "left": "Đã rời",
+    "left_female": "Đã rời"
+  },
+  "result": {
+    "winShort": "T",
+    "lossShort": "B",
+    "drawShort": "H"
+  },
+  "flag": {
+    "label": "Quốc gia: {{country}}"
+  },
+  "rating": {
+    "label": "Điểm xếp hạng {{value}}",
+    "labelWithKey": "Điểm xếp hạng {{key}} {{value}}",
+    "provisional": "Tạm tính",
+    "provisionalLabel": "{{label}}, tạm tính"
+  },
+  "league": {
+    "bronze": "Đồng",
+    "silver": "Bạc",
+    "gold": "Vàng",
+    "diamond": "Kim cương",
+    "legend": "Huyền thoại",
+    "name": "Hạng {{league}}",
+    "level": "Cấp độ {{level}}",
+    "levelAfter": "· Cấp độ {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "Không có lỗi",
+    "short_other": "{{count}} lỗi",
+    "long_zero": "Không có lỗi",
+    "long_other": "{{count}} lỗi",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Đang chọn",
+    "locking_female": "Đang chọn",
+    "turn": "Đến lượt",
+    "turn_female": "Đến lượt",
+    "paused": "Tạm dừng",
+    "thinking": "Đang nghĩ",
+    "thinking_female": "Đang nghĩ",
+    "reconnecting": "Đang kết nối lại",
+    "reconnecting_female": "Đang kết nối lại",
+    "left": "Đã rời",
+    "left_female": "Đã rời",
+    "surrendered": "Đã đầu hàng",
+    "surrendered_female": "Đã đầu hàng",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Đang bị phá rối, {{time}}",
+    "target": "Mục tiêu",
+    "targetHint": "Mục tiêu phá rối"
+  },
+  "actions": {
+    "surrender": "Đầu hàng",
+    "endPractice": "Kết thúc luyện tập",
+    "reactions": "Biểu cảm"
+  },
+  "interfere": {
+    "button": "Phá rối",
+    "label": "Phá rối {{name}} · tốn {{cost}} điểm",
+    "labelMissing": "Phá rối {{name}} · còn thiếu {{count}} điểm",
+    "labelBusy": "Chưa thể phá rối {{name}}, người này đang bị phá rối",
+    "labelNotRunning": "Lúc này chưa thể phá rối {{name}}",
+    "labelDisconnected": "Không thể phá rối khi mất kết nối",
+    "labelOut": "{{name}} không còn trong trận đấu",
+    "close": "Đóng bảng chọn đòn phá rối"
+  },
+  "lead": {
+    "tie": "Hòa điểm",
+    "label_other": "{{name}} dẫn trước {{gap}} điểm",
+    "label_female_other": "{{name}} dẫn trước {{gap}} điểm",
+    "tieLabel": "Điểm số đang bằng nhau"
+  },
+  "lock": {
+    "yourCell": "Ô của bạn",
+    "paused": "Tạm dừng",
+    "pick": "Chọn một ô",
+    "remaining_other": "Còn {{count}} giây",
+    "label": "Ô {{cell}} của bạn, {{remaining}}",
+    "labelPaused": "Ô {{cell}} của bạn, đồng hồ đã dừng",
+    "progress": "Thời gian còn lại cho ô {{cell}}",
+    "released": "Đã mở khóa ô"
+  }
+}

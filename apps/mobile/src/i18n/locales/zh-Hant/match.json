@@ -1,0 +1,112 @@
+{
+  "header": "{{mode}} · {{players}} · {{type}}",
+  "ranked": "排位",
+  "players_other": "{{count}}名玩家",
+  "me": "我",
+  "sep": "。",
+  "sentenceSpace": "",
+  "search": {
+    "title_other": "正在尋找對手…",
+    "connecting": "正在加入佇列…",
+    "elapsedLabel": "已搜尋{{time}}",
+    "myRating": "我的積分{{rating}}",
+    "rangeTitle": "積分範圍",
+    "rangeLabel": "積分範圍{{low}}到{{high}}",
+    "widening": "搜尋越久，範圍越大",
+    "noCap": "不限範圍：範圍會持續擴大",
+    "opponents": "對手",
+    "slot": "搜尋中…",
+    "slotMark": "?",
+    "slotLabel": "空位：正在尋找對手",
+    "avoidRecent": "避開最近對戰過的對手",
+    "requeued_other": "有玩家沒有及時連線。你回到了佇列的最前面。",
+    "cancel": "取消搜尋",
+    "cancelHint": "離開佇列並返回",
+    "announce_other": "正在尋找積分{{low}}到{{high}}的對手",
+    "alone": {
+      "title_other": "目前搜尋這種對局的玩家不夠",
+      "body_other": "我們會繼續搜尋：只要有足夠的玩家搜尋這種對局，就會在這裡為你配對。你也可以先和機器人玩。",
+      "bot": "先和機器人玩"
+    }
+  },
+  "found": {
+    "title_other": "找到對手了！",
+    "ready": "已準備",
+    "connecting": "連線中…",
+    "allReady": "大家都準備好了 · 對局即將開始",
+    "waiting": "等待所有人連線…",
+    "readyCount": "已準備",
+    "readyCountLabel": "{{total}}人中{{ready}}人已準備",
+    "fresh": "你們最近沒有對戰過",
+    "rematch": "你們最近對戰過",
+    "noCancel": "這裡無法取消：離開會算作棄局",
+    "seatLabel": "{{name}}，{{rating}}，{{state}}",
+    "announce_other": "找到對手：{{names}}"
+  },
+  "countdown": {
+    "getReady": "準備…",
+    "reveal_other": "盤面會在同一刻出現在所有人面前",
+    "go": "GO!",
+    "goLabel": "開始！",
+    "starting": "正在準備盤面…",
+    "stepLabel": "對局將在{{time}}後開始",
+    "boardLabel": "盤面，對局開始前隱藏"
+  },
+  "timeout": {
+    "title_other": "目前還沒有足夠的積分相近對手",
+    "body": "我們已搜尋{{time}}，尋找積分{{range}}的可配對玩家，並排除你最近對戰過的對手。你可以不限範圍繼續搜尋，或先和機器人練習。",
+    "aloneTitle_other": "搜尋這種對局的玩家還是不夠",
+    "aloneBody_other": "我們已搜尋{{time}}，但搜尋這種對局的玩家不夠。你可以繼續等待，或先和機器人練習。",
+    "minutes_other": "{{count}}分鐘",
+    "keep": "繼續搜尋",
+    "keepNote": "不限範圍",
+    "keepHint": "繼續搜尋，積分範圍不設上限",
+    "bot": "先和機器人玩",
+    "home": "回到首頁"
+  },
+  "error": {
+    "title": "搜尋已停止",
+    "offlineTitle": "無法連上伺服器",
+    "body": {
+      "network": "無法連上對局伺服器。請檢查連線後再試一次。",
+      "lost": "搜尋期間與對局伺服器的連線中斷了。",
+      "noShow": "沒能及時連上對局，所以對局已取消。",
+      "alreadyQueued": "你已經有一個排位搜尋或對局在進行中，可能是在另一台裝置上。",
+      "queueClosed": "這個佇列還沒開放。",
+      "badQueue": "這個佇列不存在。",
+      "unauthenticated": "登入帳號才能進行排位對局。",
+      "emailNotVerified": "排位對局需要已驗證的電子郵件，而你的電子郵件在我們這裡還沒有驗證。如果你已經開啟驗證連結，請在下一個畫面點「我已驗證」。",
+      "suspended": "你的帳號已被停權，目前無法進行排位對局。單人練習和機器人練習仍可使用。",
+      "signedOut": "登入帳號才能進行排位對局。",
+      "unknown": "搜尋時出了點問題。"
+    },
+    "code": "錯誤代碼：{{code}}",
+    "retry": "重新搜尋",
+    "verify": "驗證電子郵件",
+    "practice": "前往練習",
+    "practiceNote": "單人練習和機器人練習離線也能玩。",
+    "home": "回到首頁"
+  },
+  "verify": {
+    "required": "驗證你的電子郵件地址後才能進行排位對局。"
+  },
+  "offline": {
+    "title": "沒有網路連線",
+    "body": "無法進行排位對局",
+    "checking": "檢查中…",
+    "practice": "前往練習",
+    "retry": "再檢查一次",
+    "retrying": "正在檢查連線…",
+    "stillOffline": "仍然沒有連線 · 第{{count}}次嘗試",
+    "rankedNote": "連上網路後可用",
+    "needsConnection": "需要連線",
+    "needsConnectionLabel": "需要網路連線",
+    "practiceNote": "不需網路也能玩",
+    "availableOffline": "離線可玩",
+    "back": "你已恢復連線。可以進行排位對局了。"
+  },
+  "modes": {
+    "rating": "積分{{rating}}",
+    "ratingLabel": "你的{{type}}積分是{{rating}}"
+  }
+}

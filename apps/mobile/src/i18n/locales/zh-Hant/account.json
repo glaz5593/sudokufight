@@ -1,0 +1,254 @@
+{
+  "devMode": {
+    "badge": "開發模式",
+    "label": "開發模式：只有這支手機上的本機帳號，不使用 Firebase",
+    "noEmail": "開發模式不會寄送電子郵件。"
+  },
+  "fields": {
+    "email": "電子郵件",
+    "emailPlaceholder": "name@example.com",
+    "password": "密碼",
+    "newPassword": "密碼",
+    "confirmPassword": "確認密碼",
+    "displayName": "顯示名稱",
+    "displayNamePlaceholder": "你在競技場上的名字",
+    "avatar": "頭像",
+    "country": "國家／地區",
+    "showPassword": "顯示密碼",
+    "hidePassword": "隱藏密碼",
+    "change": "更改"
+  },
+  "validation": {
+    "emailRequired": "請輸入電子郵件",
+    "emailInvalid": "這個電子郵件地址看起來不太對",
+    "passwordRequired": "請輸入密碼",
+    "passwordRules": "密碼至少需要8個字元",
+    "confirmMismatch": "兩次輸入的密碼不一致",
+    "countryRequired": "請選擇國家／地區"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "密碼錯誤。請再試一次，或重設密碼。",
+      "userNotFound": "沒有使用這個電子郵件的帳號。要註冊嗎？",
+      "invalidCredentials": "電子郵件或密碼錯誤。",
+      "tooManyRequests": "嘗試次數太多。請等幾分鐘後再試，或重設密碼。",
+      "network": "沒有網路連線。請檢查後再試一次。",
+      "emailInUse": "這個電子郵件已經有帳號了。請用它登入。",
+      "invalidEmail": "這個電子郵件地址看起來不太對。",
+      "weakPassword": "這個密碼太弱了。請選擇更長的密碼。",
+      "requiresRecentLogin": "請重新登入後再執行這個操作。",
+      "userDisabled": "這個帳號已被停用。請聯絡客服。",
+      "noUser": "你尚未登入。請重新登入。",
+      "unknown": "出了點問題。請再試一次。",
+      "cancelled": "已取消 Google 登入。",
+      "inProgress": "Google 登入已經開啟。請完成登入，或關閉後再試一次。",
+      "playServices": "使用 Google 登入需要 Google Play 服務。請更新後再試一次。",
+      "googleConfig": "這個版本的應用程式目前無法使用 Google 登入（DEVELOPER_ERROR）。請先使用電子郵件和密碼。",
+      "accountExistsWithPassword": "這個電子郵件已經有一個設定密碼的帳號。請用電子郵件和密碼登入。",
+      "userMismatch": "這是另一個 Google 帳號。請選擇你登入時使用的帳號。"
+    },
+    "api": {
+      "badRequest": "這個請求無效。請再試一次。",
+      "invalidName": "這個名稱違反規則。",
+      "unauthorized": "你與伺服器的連線階段已過期。請重新登入。",
+      "reauthRequired": "刪除帳號需要重新登入。請再次輸入密碼後重試。",
+      "suspended": "你的帳號已被停權，目前無法修改。",
+      "notRegistered": "這個帳號還沒有鬥士。我們來完成註冊吧。",
+      "notFound": "伺服器無法辨識這個請求。請更新應用程式。",
+      "alreadyRegistered": "這個帳號已經有鬥士了。",
+      "taken": "這個名稱已被使用。請選擇其他名稱。",
+      "renameTooSoon": "名稱每30天只能更改一次。",
+      "tooLarge": "這個請求太大了。",
+      "blocked": "這個名稱不適合競技場。請選擇其他名稱。",
+      "tooManyRequests": "請求太多了。請稍等一下再試。",
+      "internal": "伺服器錯誤。請稍後再試。",
+      "disabled": "這個伺服器目前沒有開放帳號功能。",
+      "unavailable": "伺服器目前無法使用。請稍後再試。",
+      "network": "無法連上伺服器。請檢查網路後再試一次。",
+      "timeout": "伺服器沒有及時回應。請再試一次。",
+      "signedOut": "你尚未登入。請重新登入。",
+      "unexpected": "伺服器傳回了非預期的回應。請再試一次，或更新應用程式。"
+    }
+  },
+  "splash": {
+    "tagline": "一個盤面。人人解題。勝者唯一。",
+    "loading": "正在載入競技場…",
+    "tipLabel": "小提示",
+    "tips": {
+      "lock_other": "你選的格子只會鎖定給你：{{type}}對局中為{{seconds}}秒。",
+      "hard": "越難的一步，分數越高。",
+      "mistake": "犯錯會扣掉正確數字原本能拿到的分數。多想一下比較好。",
+      "interfere": "兩下就能發動干擾：點對手卡片上的「干擾」，再選擇你要的干擾。"
+    },
+    "errorTitle": "無法載入你的鬥士",
+    "retry": "再試一次",
+    "signOut": "登出"
+  },
+  "login": {
+    "title": "回到<accent>競技場</accent>",
+    "titleLabel": "回到競技場",
+    "subtitle": "你的積分、連勝和對手都在等你。",
+    "forgot": "忘記密碼",
+    "submit": "登入",
+    "noAccount": "還沒有帳號？",
+    "register": "註冊",
+    "arenaSpot": "你的位置"
+  },
+  "google": {
+    "continue": "使用 Google 繼續",
+    "orEmail": "或使用電子郵件",
+    "orEmailPassword": "或使用電子郵件和密碼",
+    "existing": "這個 Google 帳號已經有鬥士{{name}}了。你已登入該帳號。",
+    "passwordHint": "用 Google 註冊的嗎？請使用「使用 Google 繼續」。",
+    "emailInUseHint": "如果你是用 Google 註冊的，請使用「使用 Google 繼續」。",
+    "termsTitle": "條款與隱私權",
+    "termsBody": "要使用 Google 繼續，請接受使用條款和隱私權政策。",
+    "termsAccept": "接受並繼續"
+  },
+  "forgot": {
+    "title": "忘記密碼",
+    "body": "輸入你註冊時使用的電子郵件，我們會寄一個連結讓你設定新密碼。",
+    "submit": "寄送重設連結",
+    "sentTitle": "請查看收件匣",
+    "sentBody": "如果{{email}}有帳號，我們已寄出重設密碼的連結。找不到嗎？請檢查垃圾郵件匣。",
+    "backToLogin": "返回登入"
+  },
+  "register": {
+    "step": "第{{step}}/{{total}}步",
+    "backToLogin": "返回登入",
+    "backToFighter": "返回你的鬥士"
+  },
+  "fighter": {
+    "title": "建立你的<accent>鬥士</accent>",
+    "titleLabel": "建立你的鬥士",
+    "resumeNote": "你的帳號已經準備好了，只差選擇你的鬥士。",
+    "chooseAvatar": "選擇頭像",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}，等級{{level}}解鎖",
+    "selectedAvatar": "已選頭像：{{name}}",
+    "yourPick": "你的選擇：{{name}}",
+    "previewTitle": "競技場上的你會是這樣",
+    "previewLabel": "你在對局中的卡片預覽：{{name}}",
+    "previewNew": "新",
+    "continue": "繼續",
+    "enterArena": "進入競技場",
+    "signOut": "登出",
+    "googleNote": "你已用 Google 登入，只差選擇你的鬥士。"
+  },
+  "name": {
+    "rules": "3–16個字元：希伯來文或英文字母、數字、底線和句點。",
+    "status": {
+      "checking": "檢查中…",
+      "available": "可使用",
+      "taken": "已佔用",
+      "invalid": "無效",
+      "blocked": "不允許",
+      "error": "未檢查",
+      "current": "你的名稱"
+    },
+    "problem": {
+      "invalidChars": "不能使用這些字元：{{chars}}",
+      "tooShort": "至少3個字元",
+      "tooLong": "最多16個字元"
+    },
+    "charSpace": " ",
+    "takenHint": "已經有人選了這個名稱。試試別的吧。",
+    "blockedHint": "這個名稱不適合競技場。試試別的吧。",
+    "errorHint": "無法檢查名稱。儲存時會再檢查一次。"
+  },
+  "country": {
+    "label": "國家／地區：{{country}}",
+    "choose": "選擇國家／地區",
+    "sheetTitle": "選擇國家／地區",
+    "search": "搜尋國家／地區",
+    "searchPlaceholder": "搜尋",
+    "none": "找不到國家／地區",
+    "hint": "依手機設定偵測。你隨時可以更改。"
+  },
+  "account": {
+    "title": "距離<accent>競技場</accent>只差一步",
+    "titleLabel": "距離競技場只差一步",
+    "subtitle": "你的電子郵件和密碼會保護你的積分和進度。",
+    "fighterReady": "鬥士已就緒",
+    "edit": "編輯",
+    "editLabel": "編輯你的鬥士",
+    "submit": "建立帳號",
+    "profileFailed": "你的帳號已建立，但鬥士還沒儲存。請再試一次。",
+    "nameTakenNow": "名稱{{name}}剛剛被別人用了。請選擇其他名稱：你的帳號正在等你。"
+  },
+  "password": {
+    "rules": {
+      "length": "至少8個字元"
+    },
+    "ruleMet": "{{rule}}：已符合",
+    "ruleMissing": "{{rule}}：未符合",
+    "strengthLabel": "密碼強度",
+    "strength": {
+      "weak": "密碼太弱",
+      "fair": "密碼尚可",
+      "good": "密碼良好",
+      "strong": "密碼很強"
+    },
+    "match": "一致",
+    "mismatch": "不一致"
+  },
+  "terms": {
+    "accept": "我接受使用條款和隱私權政策",
+    "termsLink": "使用條款",
+    "privacyLink": "隱私權政策",
+    "linkHint": "在瀏覽器中開啟",
+    "required": "要進入競技場，請先接受條款"
+  },
+  "verify": {
+    "bannerTitle": "你的電子郵件尚未驗證",
+    "bannerAction": "驗證",
+    "bannerLabel": "你的電子郵件尚未驗證。驗證你的電子郵件",
+    "title": "驗證你的電子郵件",
+    "body": "我們已將驗證連結寄到{{email}}。開啟連結後，再回到這裡。",
+    "why": "練習不需要驗證。排位對局則需要已驗證的電子郵件。",
+    "resend": "重新寄送",
+    "sent": "已寄出新連結",
+    "check": "我已驗證",
+    "notYet": "還沒有驗證。你開啟連結了嗎？",
+    "done": "電子郵件已驗證。謝謝！",
+    "devNote": "開發模式不會寄送電子郵件：「我已驗證」會直接將電子郵件標記為已驗證。"
+  },
+  "edit": {
+    "title": "編輯個人資料",
+    "save": "儲存",
+    "saved": "已儲存個人資料",
+    "nameRule": "名稱每30天可以更改一次。",
+    "nameLocked": "名稱每30天可以更改一次。下次可更改：{{date}}。",
+    "offline": "無法連上伺服器。恢復連線後就可以編輯。"
+  },
+  "home": {
+    "provisional": "暫定積分：你的前10場對局"
+  },
+  "settings": {
+    "section": "帳號",
+    "signedInAs": "已登入：{{email}}",
+    "editProfile": "編輯個人資料",
+    "signOut": "登出",
+    "signOutTitle": "要登出嗎？",
+    "signOutBody": "這支手機上的練習會保留。要再玩需要重新登入。",
+    "deleteAccount": "刪除帳號",
+    "deleteTitle": "要刪除你的帳號嗎？",
+    "deleteBody": "你的電子郵件、鬥士和名稱都會被刪除，而且無法復原。對局和積分會保留，但不再與你連結，讓其他玩家的對局保持完整。你的名稱會開放給其他玩家使用。",
+    "deleteContinue": "繼續",
+    "deletePasswordTitle": "用密碼確認",
+    "deletePasswordBody": "要刪除帳號，請輸入{{email}}的密碼。",
+    "deleteSubmit": "永久刪除我的帳號",
+    "deleted": "你的帳號已刪除",
+    "deletedPartly": "你的帳號已刪除，但我們無法刪除你的登入資料：用它登入會開始新的註冊。",
+    "method": {
+      "password": "使用電子郵件和密碼登入",
+      "google": "使用 Google 登入",
+      "both": "使用 Google，或電子郵件和密碼登入"
+    },
+    "deleteGoogleTitle": "用 Google 確認",
+    "deleteGoogleBody": "要刪除帳號，請再次選擇 Google 帳號{{email}}。",
+    "deleteGoogleSubmit": "用 Google 確認並刪除",
+    "deleteGoogleAgain": "刪除帳號需要重新確認。請再試一次並選擇你的 Google 帳號。",
+    "deleteWithPassword": "改用密碼確認"
+  }
+}

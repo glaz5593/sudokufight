@@ -1,0 +1,290 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "Réglages",
+    "back": "Retour"
+  },
+  "profile": {
+    "defaultName": "Joueur",
+    "label": "Ma carte de joueur : {{name}}",
+    "noRating": "Pas encore de classement",
+    "ratingTitle": "Classement",
+    "none": "—",
+    "games_one": "{{count}} partie",
+    "games_many": "{{count}} de parties",
+    "games_other": "{{count}} parties",
+    "gamesLabel_one": "partie",
+    "gamesLabel_many": "parties",
+    "gamesLabel_other": "parties",
+    "winsLabel": "victoires",
+    "streakLabel": "série",
+    "winRate": "{{percent}} % de victoires",
+    "streak_zero": "Aucune série de victoires",
+    "streak_one": "Série de {{count}} victoire",
+    "streak_many": "Série de {{count}} de victoires",
+    "streak_other": "Série de {{count}} victoires"
+  },
+  "play": "Jouer",
+  "playHint": "Choisis un mode de jeu",
+  "again": {
+    "title": "Encore une partie",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "Impossible de lancer la partie. Réessaie."
+  },
+  "recent": {
+    "heading": "Parties récentes",
+    "all": "Tout",
+    "unavailable": "Impossible de lire les parties enregistrées sur ce téléphone.",
+    "emptyTitle": "Aucune partie pour l’instant",
+    "emptyBody": "Chaque entraînement est enregistré ici, même après la fermeture de l’app.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "Terminée",
+      "ended": "Arrêtée",
+      "interrupted": "Interrompue",
+      "playing": "En cours",
+      "win": "Gagnée",
+      "loss": "Perdue",
+      "tie": "Nul"
+    },
+    "openHint": "Ouvre les résultats",
+    "versus": "{{outcome}} contre {{name}}"
+  },
+  "modes": {
+    "title": "Nouvelle partie",
+    "footnote": "Le mode classé nécessite Internet · L’entraînement est toujours disponible",
+    "soon": "Bientôt",
+    "groups": {
+      "ranked": {
+        "title": "Classée",
+        "note": "De vrais adversaires, en temps réel"
+      },
+      "friends": {
+        "title": "Entre amis",
+        "titleMoshe": "De vrais amis, en temps réel",
+        "note": "Salon privé · jusqu’à 4 · sans classement"
+      },
+      "practice": {
+        "title": "Entraînement",
+        "note": "Sans pression, sans classement"
+      }
+    },
+    "chips": {
+      "rated": "Classée",
+      "unrated": "Non classée",
+      "offline": "Fonctionne hors ligne"
+    },
+    "ranked": {
+      "name": "Classée"
+    },
+    "ranked2": {
+      "title": "2 joueurs",
+      "tagline": "Face à face · même grille",
+      "label": "Classée · 2 joueurs"
+    },
+    "ranked3": {
+      "title": "3 joueurs",
+      "tagline": "Chacun pour soi",
+      "label": "Classée · 3 joueurs"
+    },
+    "ranked4": {
+      "title": "4 joueurs",
+      "tagline": "Chacun pour soi",
+      "label": "Classée · 4 joueurs"
+    },
+    "friends": {
+      "create": "Créer salon",
+      "createHint": "Ouvre un salon d’attente avec un code à envoyer à tes amis",
+      "join": "Entrer un code",
+      "joinHint": "Tape les 6 chiffres que tu as reçus"
+    },
+    "solo": {
+      "name": "Entraînement solo",
+      "title": "Solo · grille complète",
+      "tagline": "À ton rythme",
+      "label": "Solo · grille complète"
+    },
+    "levels": {
+      "name": "Étapes d’entraînement",
+      "title": "Étapes d’entraînement",
+      "tagline": "Étapes courtes · jusqu’à 3 étoiles",
+      "taglineNew_one": "{{total}} étape courte · 0 à 3 étoiles",
+      "taglineNew_many": "{{total}} d’étapes courtes · 0 à 3 étoiles",
+      "taglineNew_other": "{{total}} étapes courtes · 0 à 3 étoiles",
+      "chip": "Étape {{stage}} ·",
+      "offline": "Hors ligne",
+      "chipLabel_one": "Étape {{stage}} · {{count}} étoile",
+      "chipLabel_many": "Étape {{stage}} · {{count}} d’étoiles",
+      "chipLabel_other": "Étape {{stage}} · {{count}} étoiles",
+      "label": "Étapes d’entraînement"
+    },
+    "bot": {
+      "name": "Entraînement vs bot",
+      "title": "Entraînement vs bot",
+      "tagline": "5 niveaux",
+      "label": "Entraînement vs bot"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "Rapide",
+      "difficulty": "Facile",
+      "technique": "Se résout avec des singletons nus seulement"
+    },
+    "normal": {
+      "name": "Classique",
+      "difficulty": "Moyenne",
+      "technique": "Exige des singletons cachés"
+    },
+    "hard": {
+      "name": "Difficile",
+      "difficulty": "Difficile",
+      "technique": "Exige des paires ou des éliminations"
+    }
+  },
+  "gameType": {
+    "title": "Type de partie",
+    "note": {
+      "solo": "Sans classement. La grille est tirée de celles de ce téléphone, sans reprendre une grille jouée récemment.",
+      "bot": "Sans classement. La grille est tirée de celles de ce téléphone, sans reprendre une grille jouée récemment. Ensuite, tu choisis ton adversaire.",
+      "ranked": "Compte pour le classement. Un adversaire proche de ton classement, une grille du serveur que tu n’as pas encore jouée, et la même grille pour vous deux.",
+      "rankedGroup": "Compte pour le classement. Des adversaires proches de ton classement, une grille du serveur que tu n’as pas encore jouée, et la même grille pour tout le monde. La partie commence quand la table est complète."
+    },
+    "start": {
+      "solo": "Lancer l’entraînement",
+      "bot": "Choisir l’adversaire",
+      "ranked": "Trouver un adversaire",
+      "rankedGroup": "Trouver des adversaires"
+    },
+    "startHint": "Lance un entraînement en mode {{type}}",
+    "rankedHint": "Cherche un adversaire pour une partie classée en mode {{type}}",
+    "rankedGroupHint": "Cherche des adversaires pour une partie classée en mode {{type}}",
+    "lockTime": "Temps par case",
+    "board": "Grille",
+    "duration": "Durée estimée",
+    "seconds": "{{seconds}} s",
+    "minutes": "{{range}} min",
+    "yourRating": "Ton classement",
+    "cardLabel_one": "{{name}}. {{technique}}. {{seconds}} par case, difficulté : {{difficulty}}, environ {{from}} à {{to}} minute",
+    "cardLabel_many": "{{name}}. {{technique}}. {{seconds}} par case, difficulté : {{difficulty}}, environ {{from}} à {{to}} de minutes",
+    "cardLabel_other": "{{name}}. {{technique}}. {{seconds}} par case, difficulté : {{difficulty}}, environ {{from}} à {{to}} minutes",
+    "botHint": "Choisis un bot pour une partie en mode {{type}}"
+  },
+  "dev": {
+    "title": "Développement",
+    "designSystem": "Système de design",
+    "hello": "Vérification de la connexion"
+  },
+  "settings": {
+    "title": "Réglages",
+    "feedback": "Son et vibrations",
+    "sound": "Son",
+    "soundHint": "Sons des coups et des actions",
+    "haptics": "Vibrations",
+    "hapticsHint": "De courtes vibrations en retour des coups",
+    "motion": "Réduire les animations",
+    "motionHint": "Moins d’animations : les scores sautent directement au résultat, et une perturbation s’affiche comme un voile fixe pendant la même durée.",
+    "reduceMotion": {
+      "system": "Comme l’appareil",
+      "on": "Activé",
+      "off": "Désactivé"
+    },
+    "language": "Langue",
+    "languageHint": "Changer de langue redémarre l’app.",
+    "testing": "Tests",
+    "testingHint": "Uniquement dans les versions de test (staging), pas dans celle des stores.",
+    "chainPenalty": "Chaîne : deviner coûte 5 s",
+    "chainPenaltyHint": "Dès la prochaine étape de chaîne : un chiffre dans une case qu’on ne peut pas encore déduire coûte 5 secondes et n’est pas placé.",
+    "unlockAll": "Déverrouiller toutes les étapes (tests)",
+    "unlockAllHint": "Toutes les étapes sont ouvertes sur la carte. Les étoiles et les XP comptent comme d’habitude.",
+    "languageConfirm": {
+      "title": "Passer en {{language}} ?",
+      "body": "L’app redémarre, pour que chaque écran s’affiche dans le sens de la nouvelle langue.",
+      "confirm": "Changer et redémarrer",
+      "titleDevice": "Utiliser la langue de l’appareil ?"
+    },
+    "languageDevice": "Langue de l’appareil",
+    "languageSheetTitle": "Choisis une langue",
+    "languageField": "Langue : {{language}}",
+    "languageFieldDevice": "Langue : langue de l’appareil, {{language}}",
+    "about": "À propos et mentions légales",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d’utilisation",
+    "licenses": "Licences",
+    "opensInBrowser": "S’ouvre dans le navigateur"
+  },
+  "placeholder": {
+    "soon": "Bientôt disponible",
+    "leaderboard": {
+      "title": "Classements",
+      "body": "Les classements ouvriront en même temps que les parties classées."
+    },
+    "history": {
+      "title": "Historique",
+      "body": "Toutes tes parties seront ici, avec des replays et une explication pour chaque coup. En attendant, tes derniers entraînements sont sur l’écran d’accueil."
+    },
+    "achievements": {
+      "title": "Succès",
+      "body": "Les succès, les niveaux et les XP arrivent bientôt."
+    }
+  },
+  "botSelect": {
+    "title": "Choisis un bot",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "Temps de réflexion par coup",
+    "thinkValue": "{{range}} s",
+    "mistakes": "Erreurs",
+    "note": "C’est le temps d’un coup ordinaire. Une case qui demande une logique plus difficile prend plus de temps au bot, et le dernier trou d’une ligne, d’une colonne ou d’un carré un peu moins. Le bot joue la même grille, en temps réel.",
+    "start": "C’est parti",
+    "startHint": "Lance un entraînement en mode {{type}} contre {{name}}",
+    "cardLabel_one": "Niveau {{level}}, {{title}} : {{name}}. {{behavior}}. Réfléchit de {{from}} à {{to}} seconde par coup, {{mistakes}} % d’erreurs",
+    "cardLabel_many": "Niveau {{level}}, {{title}} : {{name}}. {{behavior}}. Réfléchit de {{from}} à {{to}} de secondes par coup, {{mistakes}} % d’erreurs",
+    "cardLabel_other": "Niveau {{level}}, {{title}} : {{name}}. {{behavior}}. Réfléchit de {{from}} à {{to}} secondes par coup, {{mistakes}} % d’erreurs",
+    "levels": {
+      "1": {
+        "title": "Débutant",
+        "behavior": "Lent, fait pas mal d’erreurs, et te laisse apprendre"
+      },
+      "2": {
+        "title": "Apprenti",
+        "behavior": "Détendu, se trompe de temps en temps, et envoie parfois un 😂"
+      },
+      "3": {
+        "title": "Confirmé",
+        "behavior": "Régulier et réfléchi, et difficile à dépasser"
+      },
+      "4": {
+        "title": "Maître",
+        "behavior": "Rapide, ne se trompe presque jamais, et un peu crâneur 😎"
+      },
+      "5": {
+        "title": "Grand maître",
+        "behavior": "Rapide, précis et impitoyable"
+      }
+    }
+  },
+  "licenses": {
+    "title": "Licences",
+    "intro": "Sudoku Fight repose sur des polices libres et des logiciels open source. Merci à leurs auteurs. Voici leurs licences et leurs mentions de copyright.",
+    "fonts": "Polices",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_one": "{{count}} paquet open source",
+    "packages_many": "{{count}} de paquets open source",
+    "packages_other": "{{count}} paquets open source",
+    "packageLabel": "{{name}}, version {{version}}, licence {{license}}",
+    "texts": "Textes des licences",
+    "textsHint": "Le texte intégral de chaque licence, tel quel.",
+    "show": "Afficher la licence {{license}}",
+    "hide": "Masquer la licence {{license}}"
+  }
+}

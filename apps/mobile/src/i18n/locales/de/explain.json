@@ -1,0 +1,109 @@
+{
+  "technique": {
+    "nakedSingle": "Nackter Einer",
+    "hiddenSingle": "Versteckter Einer",
+    "pointing": "Block-Linien-Reduktion",
+    "claiming": "Block-Linien-Reduktion",
+    "nakedPair": "Nacktes Paar",
+    "hiddenPair": "Verstecktes Paar",
+    "chain": "Fortgeschrittene Technik",
+    "beyond": "Über die Techniken der Engine hinaus"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} und {{last}}",
+    "lastOr": "{{head}} oder {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} und {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "Zeile {{label}} braucht nur noch die {{digit}}.",
+      "col": "Spalte {{label}} braucht nur noch die {{digit}}.",
+      "box": "Block {{label}} braucht nur noch die {{digit}}."
+    },
+    "missing": {
+      "row": "Zeile {{label}} braucht noch {{digits}}.",
+      "col": "Spalte {{label}} braucht noch {{digits}}.",
+      "box": "Block {{label}} braucht noch {{digits}}."
+    },
+    "seen": {
+      "row": "Zeile {{label}} hat schon {{digits}}.",
+      "col": "Spalte {{label}} hat schon {{digits}}.",
+      "box": "Block {{label}} hat schon {{digits}}."
+    },
+    "eliminated": "Die {{digit}} wurde in Schritt {{step}} für {{cell}} ausgeschlossen.",
+    "only": "Also bleibt nur die {{digit}}."
+  },
+  "hidden": {
+    "alone": {
+      "row": "Die {{digit}} muss in Zeile {{label}} vorkommen, und {{cell}} ist dort das einzige leere Feld. Also {{result}}.",
+      "col": "Die {{digit}} muss in Spalte {{label}} vorkommen, und {{cell}} ist dort das einzige leere Feld. Also {{result}}.",
+      "box": "Die {{digit}} muss in Block {{label}} vorkommen, und {{cell}} ist dort das einzige leere Feld. Also {{result}}."
+    },
+    "blocked": {
+      "row": "Die {{digit}} muss in Zeile {{label}} vorkommen. Alle anderen leeren Felder dort scheiden aus: {{clauses}}. Also {{result}}.",
+      "col": "Die {{digit}} muss in Spalte {{label}} vorkommen. Alle anderen leeren Felder dort scheiden aus: {{clauses}}. Also {{result}}.",
+      "box": "Die {{digit}} muss in Block {{label}} vorkommen. Alle anderen leeren Felder dort scheiden aus: {{clauses}}. Also {{result}}."
+    },
+    "clause": {
+      "step": "{{cell}} hat die {{digit}} in Schritt {{step}} verloren",
+      "unit": {
+        "row": "{{cell}} sieht eine {{digit}} in Zeile {{label}}",
+        "col": "{{cell}} sieht eine {{digit}} in Spalte {{label}}",
+        "box": "{{cell}} sieht eine {{digit}} in Block {{label}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "In Block {{box}} kann die {{digit}} nur in Zeile {{line}} stehen, also fällt sie im Rest der Zeile weg: {{cells}}.",
+    "col": "In Block {{box}} kann die {{digit}} nur in Spalte {{line}} stehen, also fällt sie im Rest der Spalte weg: {{cells}}."
+  },
+  "claiming": {
+    "row": "In Zeile {{line}} kann die {{digit}} nur in Block {{box}} stehen, also fällt sie im Rest des Blocks weg: {{cells}}.",
+    "col": "In Spalte {{line}} kann die {{digit}} nur in Block {{box}} stehen, also fällt sie im Rest des Blocks weg: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "{{a}} und {{b}} können nur {{digits}} enthalten, also fallen {{digits}} im Rest von Zeile {{label}} weg: {{cells}}.",
+    "col": "{{a}} und {{b}} können nur {{digits}} enthalten, also fallen {{digits}} im Rest von Spalte {{label}} weg: {{cells}}.",
+    "box": "{{a}} und {{b}} können nur {{digits}} enthalten, also fallen {{digits}} im Rest von Block {{label}} weg: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "In Zeile {{label}} können {{digits}} nur in {{a}} und {{b}} stehen, also fallen deren andere Kandidaten weg.",
+    "col": "In Spalte {{label}} können {{digits}} nur in {{a}} und {{b}} stehen, also fallen deren andere Kandidaten weg.",
+    "box": "In Block {{label}} können {{digits}} nur in {{a}} und {{b}} stehen, also fallen deren andere Kandidaten weg."
+  },
+  "beyond": "Dafür braucht es eine fortgeschrittene Technik, die die Engine noch nicht erklären kann. Die Lösung: {{formula}}.",
+  "chain": {
+    "head_one": "Dieses Feld lässt sich noch nicht in einem Schritt bestimmen. Es braucht {{count}} Schritt:",
+    "head_other": "Dieses Feld lässt sich noch nicht in einem Schritt bestimmen. Es braucht {{count}} Schritte:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "Die {{digit}} steht schon in Zeile {{label}} ({{cell}}).",
+      "col": "Die {{digit}} steht schon in Spalte {{label}} ({{cell}}).",
+      "box": "Die {{digit}} steht schon in Block {{label}} ({{cell}})."
+    },
+    "notSolution": "Die {{digit}} passt hier noch, aber die Lösung verlangt die {{answer}}."
+  },
+  "block": {
+    "step": "{{cell}} kann keine {{digit}} enthalten, sie wurde in Schritt {{step}} ausgeschlossen",
+    "unit": {
+      "row": "{{cell}} kann keine {{digit}} enthalten: Zeile {{label}} hat schon eine {{digit}}",
+      "col": "{{cell}} kann keine {{digit}} enthalten: Spalte {{label}} hat schon eine {{digit}}",
+      "box": "{{cell}} kann keine {{digit}} enthalten: Block {{label}} hat schon eine {{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "Was in {{cell}} kommt, lässt sich noch nicht sagen",
+    "options": "Was in {{cell}} kommt, lässt sich noch nicht sagen ({{options}})"
+  }
+}

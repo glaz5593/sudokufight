@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "Motordan merhaba · {{cell}} hücresi",
+    "versions": "motor {{engine}} · protokol {{protocol}}",
+    "taps": "Dokunma: {{count}}",
+    "server": {
+      "connecting": "Sunucu: bağlanıyor…",
+      "connected": "Sunucu: bağlandı",
+      "rtt": "Sunucu: gecikme {{ms}} ms",
+      "error": "Sunucu: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "Bir şeyler ters gitti",
+    "body": "Bu ekranda bir hata oluştu. Hatayı bildirdik, tekrar deneyebilirsin.",
+    "retry": "Tekrar dene"
+  },
+  "fallback": {
+    "loading": "Bir saniye…",
+    "title": "Bu ekran yüklenmedi",
+    "body": "Sonuçlara geçebilir ya da ana sayfaya dönebilirsin.",
+    "bodyHome": "Ana sayfaya dönüp oradan devam edebilirsin.",
+    "results": "Sonuçlara git",
+    "home": "Ana sayfa"
+  },
+  "appVersion": {
+    "version": "Sürüm {{version}}",
+    "build": "derleme {{build}}",
+    "engine": "motor {{engine}}"
+  },
+  "number": {
+    "decimal": ",",
+    "percent": "%{{value}}"
+  },
+  "text": {
+    "labelValue": "{{label}}: {{value}}",
+    "parenthetical": "{{text}} ({{note}})",
+    "sentence": "{{text}}.",
+    "wordSpace": " "
+  }
+}

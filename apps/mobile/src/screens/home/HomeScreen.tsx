@@ -2,13 +2,14 @@ import { botLevel as botLevelInfo } from '@sudoku-fight/engine';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isSuspended } from '../../api/me';
 import { refreshMeIfStale, useAuth } from '../../auth/authStore';
 import { ltr } from '../../components/player';
 import { BottomNav, Button, IconButton, RowButton, useToast } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { useGameStore } from '../../game/gameStore';
 import { useConnectivityWatch } from '../../net/connectivity';
 import { refreshMyProgress } from '../../progress/appProgress';

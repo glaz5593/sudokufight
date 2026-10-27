@@ -1,0 +1,108 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "플레이어",
+  "temporaryName": "플레이어{{digits}}",
+  "bot": "봇",
+  "vs": "VS",
+  "seconds_other": "{{count}}초",
+  "points_other": "{{score}}점",
+  "place": "{{place}}위",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "온라인",
+    "online_female": "온라인",
+    "reconnecting": "다시 연결 중",
+    "reconnecting_female": "다시 연결 중",
+    "unstable": "연결 없음",
+    "unstable_female": "연결 없음",
+    "left": "나감",
+    "left_female": "나감"
+  },
+  "result": {
+    "winShort": "승",
+    "lossShort": "패",
+    "drawShort": "무"
+  },
+  "flag": {
+    "label": "국가: {{country}}"
+  },
+  "rating": {
+    "label": "레이팅 {{value}}",
+    "labelWithKey": "{{key}} 레이팅 {{value}}",
+    "provisional": "임시",
+    "provisionalLabel": "{{label}}, 임시"
+  },
+  "league": {
+    "bronze": "브론즈",
+    "silver": "실버",
+    "gold": "골드",
+    "diamond": "다이아",
+    "legend": "레전드",
+    "name": "{{league}} 리그",
+    "level": "레벨 {{level}}",
+    "levelAfter": "· 레벨 {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "실수 없음",
+    "short_other": "실수 {{count}}회",
+    "long_zero": "실수 없음",
+    "long_other": "실수 {{count}}회",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "고르는 중",
+    "locking_female": "고르는 중",
+    "turn": "상대 차례",
+    "turn_female": "상대 차례",
+    "paused": "일시정지",
+    "thinking": "생각 중",
+    "thinking_female": "생각 중",
+    "reconnecting": "다시 연결 중",
+    "reconnecting_female": "다시 연결 중",
+    "left": "나감",
+    "left_female": "나감",
+    "surrendered": "기권",
+    "surrendered_female": "기권",
+    "withCell": "{{word}}: {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "방해받는 중, {{time}}",
+    "target": "대상",
+    "targetHint": "방해 대상"
+  },
+  "actions": {
+    "surrender": "기권",
+    "endPractice": "연습 끝내기",
+    "reactions": "반응"
+  },
+  "interfere": {
+    "button": "방해하기",
+    "label": "{{name}} 님 방해하기 · {{cost}}점",
+    "labelMissing": "{{name}} 님 방해하기 · {{count}}점 부족",
+    "labelBusy": "{{name}} 님은 이미 방해받는 중이라 방해할 수 없어요",
+    "labelNotRunning": "지금은 {{name}} 님을 방해할 수 없어요",
+    "labelDisconnected": "연결이 끊긴 동안에는 방해할 수 없어요",
+    "labelOut": "{{name}} 님은 게임에서 탈락했어요",
+    "close": "방해 선택 닫기"
+  },
+  "lead": {
+    "tie": "동점",
+    "label_other": "{{name}} 님이 {{gap}}점 앞서요",
+    "label_female_other": "{{name}} 님이 {{gap}}점 앞서요",
+    "tieLabel": "동점이에요"
+  },
+  "lock": {
+    "yourCell": "내 칸",
+    "paused": "일시정지",
+    "pick": "칸을 고르세요",
+    "remaining_other": "{{count}}초 남음",
+    "label": "내 칸 {{cell}}, {{remaining}}",
+    "labelPaused": "내 칸 {{cell}}, 타이머 멈춤",
+    "progress": "{{cell}} 칸의 남은 시간",
+    "released": "칸 잠금 해제"
+  }
+}

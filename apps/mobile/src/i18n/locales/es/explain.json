@@ -1,0 +1,110 @@
+{
+  "technique": {
+    "nakedSingle": "Solitario desnudo",
+    "hiddenSingle": "Solitario oculto",
+    "pointing": "Reducción cuadro-línea",
+    "claiming": "Reducción cuadro-línea",
+    "nakedPair": "Par desnudo",
+    "hiddenPair": "Par oculto",
+    "chain": "Técnica avanzada",
+    "beyond": "Más allá de las técnicas del motor"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} y {{last}}",
+    "lastOr": "{{head}} o {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} y {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "En la fila {{label}} solo falta el {{digit}}.",
+      "col": "En la columna {{label}} solo falta el {{digit}}.",
+      "box": "En el cuadro {{label}} solo falta el {{digit}}."
+    },
+    "missing": {
+      "row": "En la fila {{label}} faltan {{digits}}.",
+      "col": "En la columna {{label}} faltan {{digits}}.",
+      "box": "En el cuadro {{label}} faltan {{digits}}."
+    },
+    "seen": {
+      "row": "La fila {{label}} ya tiene {{digits}}.",
+      "col": "La columna {{label}} ya tiene {{digits}}.",
+      "box": "El cuadro {{label}} ya tiene {{digits}}."
+    },
+    "eliminated": "En el paso {{step}} se descartó el {{digit}} en {{cell}}.",
+    "only": "Así que solo queda el {{digit}}."
+  },
+  "hidden": {
+    "alone": {
+      "row": "El {{digit}} tiene que estar en la fila {{label}}, y {{cell}} es su única casilla vacía. Por lo tanto, {{result}}.",
+      "col": "El {{digit}} tiene que estar en la columna {{label}}, y {{cell}} es su única casilla vacía. Por lo tanto, {{result}}.",
+      "box": "El {{digit}} tiene que estar en el cuadro {{label}}, y {{cell}} es su única casilla vacía. Por lo tanto, {{result}}."
+    },
+    "blocked": {
+      "row": "El {{digit}} tiene que estar en la fila {{label}}. En las demás casillas vacías de la fila no puede ir: {{clauses}}. Por lo tanto, {{result}}.",
+      "col": "El {{digit}} tiene que estar en la columna {{label}}. En las demás casillas vacías de la columna no puede ir: {{clauses}}. Por lo tanto, {{result}}.",
+      "box": "El {{digit}} tiene que estar en el cuadro {{label}}. En las demás casillas vacías del cuadro no puede ir: {{clauses}}. Por lo tanto, {{result}}."
+    },
+    "clause": {
+      "step": "{{cell}} perdió el {{digit}} en el paso {{step}}",
+      "unit": {
+        "row": "{{cell}} ve un {{digit}} en la fila {{label}}",
+        "col": "{{cell}} ve un {{digit}} en la columna {{label}}",
+        "box": "{{cell}} ve un {{digit}} en el cuadro {{label}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "En el cuadro {{box}}, el {{digit}} solo puede estar en la fila {{line}}, así que se elimina del resto de la fila: {{cells}}.",
+    "col": "En el cuadro {{box}}, el {{digit}} solo puede estar en la columna {{line}}, así que se elimina del resto de la columna: {{cells}}."
+  },
+  "claiming": {
+    "row": "En la fila {{line}}, el {{digit}} solo puede estar en el cuadro {{box}}, así que se elimina del resto del cuadro: {{cells}}.",
+    "col": "En la columna {{line}}, el {{digit}} solo puede estar en el cuadro {{box}}, así que se elimina del resto del cuadro: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "{{a}} y {{b}} solo pueden tener {{digits}}, así que {{digits}} se eliminan del resto de la fila {{label}}: {{cells}}.",
+    "col": "{{a}} y {{b}} solo pueden tener {{digits}}, así que {{digits}} se eliminan del resto de la columna {{label}}: {{cells}}.",
+    "box": "{{a}} y {{b}} solo pueden tener {{digits}}, así que {{digits}} se eliminan del resto del cuadro {{label}}: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "En la fila {{label}}, {{digits}} solo pueden ir en {{a}} y {{b}}, así que se eliminan sus demás candidatos.",
+    "col": "En la columna {{label}}, {{digits}} solo pueden ir en {{a}} y {{b}}, así que se eliminan sus demás candidatos.",
+    "box": "En el cuadro {{label}}, {{digits}} solo pueden ir en {{a}} y {{b}}, así que se eliminan sus demás candidatos."
+  },
+  "beyond": "Esto requiere una técnica avanzada que el motor todavía no sabe explicar. La respuesta: {{formula}}.",
+  "chain": {
+    "head_one": "Esta casilla todavía no se puede resolver en un solo paso. Hace falta {{count}} paso:",
+    "head_many": "Esta casilla todavía no se puede resolver en un solo paso. Hacen falta {{count}} de pasos:",
+    "head_other": "Esta casilla todavía no se puede resolver en un solo paso. Hacen falta {{count}} pasos:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "El {{digit}} ya está en la fila {{label}} ({{cell}}).",
+      "col": "El {{digit}} ya está en la columna {{label}} ({{cell}}).",
+      "box": "El {{digit}} ya está en el cuadro {{label}} ({{cell}})."
+    },
+    "notSolution": "El {{digit}} todavía encaja aquí, pero la solución pide el {{answer}}."
+  },
+  "block": {
+    "step": "{{cell}} no puede tener el {{digit}}: se descartó en el paso {{step}}",
+    "unit": {
+      "row": "{{cell}} no puede tener el {{digit}}: la fila {{label}} ya tiene un {{digit}}",
+      "col": "{{cell}} no puede tener el {{digit}}: la columna {{label}} ya tiene un {{digit}}",
+      "box": "{{cell}} no puede tener el {{digit}}: el cuadro {{label}} ya tiene un {{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "Todavía no se puede saber qué va en {{cell}}",
+    "options": "Todavía no se puede saber qué va en {{cell}} ({{options}})"
+  }
+}

@@ -1,11 +1,12 @@
 import type { PlayerId } from '@sudoku-fight/engine';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AVATAR_REACTIONS, AVATAR_STAGES } from '../../avatars/reactions';
 import { Avatar } from '../../components/player/Avatar';
 import { SeatGlyph } from '../../components/player/SeatGlyph';
+import { Text } from '../../components/ui/Text';
 import { color, space, text } from '../../theme';
 import { useReduceMotion } from '../../theme/motion';
 import { Announcer } from '../game/connection/Announcer';

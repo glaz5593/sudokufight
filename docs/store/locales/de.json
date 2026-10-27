@@ -1,0 +1,33 @@
+{
+  "googlePlay": {
+    "locales": [
+      "de-DE"
+    ],
+    "title": "Sudoku Fight: Live-PvP-Sudoku",
+    "shortDescription": "Löse in Echtzeit gegen bis zu 3 Gegner dasselbe Sudoku. Gewertet, live, fair.",
+    "fullDescription": "Sudoku Fight macht Sudoku zum Live-Wettkampf. Bis zu 4 Spieler lösen dasselbe Spielfeld im selben Moment: Jede richtige Ziffer, die du setzt, gehört dir, und jeder Punkt zählt.\n\nEIN SPIELFELD, ALLE LÖSEN\n• Alle Spieler lösen gleichzeitig dasselbe Spielfeld. Setze eine richtige Ziffer, und das Feld nimmt deine Farbe an.\n• Schwierigere Züge bringen mehr Punkte: Eine Ziffer, die eine clevere Schlussfolgerung erfordert, ist mehr wert als eine leichte.\n• Eine falsche Ziffer kostet genauso viel, wie die richtige eingebracht hätte. Tempo allein reicht nicht zum Sieg.\n• Sperre ein Feld, während du nachdenkst, aber nur für ein paar Sekunden.\n\nSTÖRUNGEN UND REAKTIONEN\n• Setze Punkte ein, um einen Gegner 5 Sekunden lang mit Feuerwerk, Katzen oder einer Verzerrung zu treffen.\n• Reagiere mit 😂 😱 😎 🤦 🔥 👀.\n\nRANGLISTENSPIELE\n• Ranglistenspiele für 2, 3 oder 4 Spieler, in drei Spieltypen: Schnell, Standard und Schwer.\n• Das Matchmaking sucht Gegner auf deinem Niveau und vermeidet Gegner, gegen die du gerade gespielt hast.\n• Eine Wertung für jeden Spieltyp, Ligen, Bestenlisten und Spielerkarten mit deinen Statistiken.\n• Keine Gegner online? Trainiere gegen einen Bot, während du wartest.\n\nLERNE AUS JEDEM SPIEL\n• Sieh dir jedes Ranglistenspiel Zug für Zug als Wiederholung an, mit einer logischen Erklärung zu jedem Zug.\n• Dein gesamter Spielverlauf und Fortschritt, mit XP und Levels.\n\nTRAINING, WANN DU WILLST\n• Trainiere allein oder gegen Bots in verschiedenen Stärken, auch offline.\n\nFAIRPLAY\n• Der Server prüft jeden Zug, und die Rätsel der Ranglistenspiele sind nie in der App enthalten.\n• Keine Werbung. Du kannst dein Konto jederzeit in den Einstellungen löschen.\n\nIn 19 Sprachen verfügbar. Das Spielfeld wird immer von links nach rechts gelesen.",
+    "whatsNew": "Erste Version."
+  },
+  "appStore": {
+    "locales": [
+      "de-DE"
+    ],
+    "name": "Sudoku Fight",
+    "subtitle": "Multiplayer-Sudoku-Duelle live",
+    "promotionalText": "Ein Spielfeld. Alle lösen. Nur einer gewinnt. Tritt in Echtzeit gegen bis zu 3 Gegner am selben Sudoku an, sende Störungen und steig in den Ligen der Rangliste auf.",
+    "description": "Sudoku Fight macht Sudoku zum Live-Wettkampf. Bis zu 4 Spieler lösen dasselbe Spielfeld im selben Moment: Jede richtige Ziffer, die du setzt, gehört dir, und jeder Punkt zählt.\n\nEIN SPIELFELD, ALLE LÖSEN\n• Alle Spieler lösen gleichzeitig dasselbe Spielfeld. Setze eine richtige Ziffer, und das Feld nimmt deine Farbe an.\n• Schwierigere Züge bringen mehr Punkte: Eine Ziffer, die eine clevere Schlussfolgerung erfordert, ist mehr wert als eine leichte.\n• Eine falsche Ziffer kostet genauso viel, wie die richtige eingebracht hätte. Tempo allein reicht nicht zum Sieg.\n• Sperre ein Feld, während du nachdenkst, aber nur für ein paar Sekunden.\n\nSTÖRUNGEN UND REAKTIONEN\n• Setze Punkte ein, um einen Gegner 5 Sekunden lang mit Feuerwerk, Katzen oder einer Verzerrung zu treffen.\n• Reagiere mit 😂 😱 😎 🤦 🔥 👀.\n\nRANGLISTENSPIELE\n• Ranglistenspiele für 2, 3 oder 4 Spieler, in drei Spieltypen: Schnell, Standard und Schwer.\n• Das Matchmaking sucht Gegner auf deinem Niveau und vermeidet Gegner, gegen die du gerade gespielt hast.\n• Eine Wertung für jeden Spieltyp, Ligen, Bestenlisten und Spielerkarten mit deinen Statistiken.\n• Keine Gegner online? Trainiere gegen einen Bot, während du wartest.\n\nLERNE AUS JEDEM SPIEL\n• Sieh dir jedes Ranglistenspiel Zug für Zug als Wiederholung an, mit einer logischen Erklärung zu jedem Zug.\n• Dein gesamter Spielverlauf und Fortschritt, mit XP und Levels.\n\nTRAINING, WANN DU WILLST\n• Trainiere allein oder gegen Bots in verschiedenen Stärken, auch offline.\n\nFAIRPLAY\n• Der Server prüft jeden Zug, und die Rätsel der Ranglistenspiele sind nie in der App enthalten.\n• Keine Werbung. Du kannst dein Konto jederzeit in den Einstellungen löschen.\n\nIn 19 Sprachen verfügbar. Das Spielfeld wird immer von links nach rechts gelesen.",
+    "keywords": "Zahlenrätsel,Rätsel,Zahlen,Logik,Denkspiel,online,Freunde,Mehrspieler,PvP,Gehirnjogging,Knobeln",
+    "whatsNew": "Erste Version."
+  },
+  "screenshotCaptions": [
+    "Ein Spielfeld. Alle lösen. Nur einer gewinnt.",
+    "Bis zu 4 Spieler auf demselben Spielfeld",
+    "Sende Störungen an deine Gegner",
+    "Ein Gegner auf deinem Niveau, auf demselben Spielfeld",
+    "Schwierigere Züge bringen mehr Punkte",
+    "Jeder Zug als Wiederholung, mit Erklärungen",
+    "Ligen und Bestenlisten",
+    "Trainiere gegen einen Bot, auch offline"
+  ],
+  "variants": {}
+}

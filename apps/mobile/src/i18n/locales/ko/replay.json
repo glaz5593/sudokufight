@@ -1,0 +1,92 @@
+{
+  "title": "리플레이",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "혼자 연습",
+    "bot": "봇과 연습",
+    "ranked": "랭크"
+  },
+  "back": "뒤로",
+  "loading": "게임을 불러오는 중…",
+  "load": {
+    "missing": "이 게임을 찾지 못했어요",
+    "notFinished": "게임이 아직 서버에 저장되는 중이에요. 잠시 후 다시 시도하세요",
+    "offline": "서버에 연결되지 않았어요. 랭크 게임은 서버에서 불러와요",
+    "signedOut": "랭크 게임을 보려면 로그인하세요",
+    "unavailable": "이 게임을 읽지 못했어요",
+    "retry": "다시 시도",
+    "partial": "중간에 끊긴 게임이에요. 리플레이는 마지막으로 저장된 수까지 보여요"
+  },
+  "step": {
+    "counter": "{{total}}단계 중 {{number}}단계",
+    "clockLabel": "게임 시계: {{clock}}"
+  },
+  "nav": {
+    "prev": "이전 단계",
+    "next": "다음 단계",
+    "timeline": "단계 타임라인",
+    "timelineValue": "{{total}}단계 중 {{number}}단계, {{clock}}",
+    "timelineHint": "위아래로 쓸어서 단계를 바꾸세요"
+  },
+  "narration": {
+    "start": "게임 시작",
+    "select": "{{name}} · {{cell}} 선택",
+    "correct": "{{name}} · {{cell}} 정답 · {{delta}}",
+    "wrong": "{{name}} · {{cell}} 오답 · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · {{cell}} 선택 취소",
+      "timeout": "{{name}} · {{cell}} 시간 초과"
+    },
+    "interference": "{{name}} · {{target}} 님 방해 · {{delta}}",
+    "disconnect": "{{name}} · 연결 해제",
+    "reconnect": "{{name}} · 게임 복귀",
+    "offline": "{{name}} · 연결 끊김",
+    "surrender": "{{name}} · 기권",
+    "endPractice": "{{name}} · 연습 종료",
+    "abandon": "{{name}} · 게임 이탈",
+    "over": "게임 종료",
+    "paused": "게임 정지",
+    "offlineSuffix": "온라인 복귀 후 전송됨"
+  },
+  "explain": {
+    "title": "모든 플레이어를 위한 설명",
+    "none": "{{name}} 님은 아직 둔 수가 없어요",
+    "noneMe": "아직 내가 둔 수가 없어요",
+    "noneBody": "첫 수가 나오면 설명이 보여요",
+    "status": {
+      "choosing": "고르는 중",
+      "released": "놓음",
+      "correct": "정답",
+      "wrong": "오답"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{answer}} 대신 {{digit}}",
+    "why": "{{digit}}의 자리가 아닌 이유: {{text}}",
+    "noLogic": "정답: {{cell}} → {{digit}}",
+    "scoreLine": "점수",
+    "penaltyLine": "벌점: 맞는 숫자가 받았을 점수",
+    "released": {
+      "cancel": "선택 취소",
+      "timeout": "시간 초과",
+      "switch": "다른 칸으로 옮김",
+      "mistake": "실수 후",
+      "surrender": "게임을 떠남",
+      "disconnect": "연결 끊김",
+      "abandon": "이탈"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "주요 순간",
+    "bestMove": "최고의 수",
+    "mistakes": "실수 · {{count}}",
+    "interferences": "방해 · {{count}}",
+    "turningPoint": "전환점",
+    "hint": "그 단계로 이동"
+  },
+  "board": "{{number}}단계의 판",
+  "me": "나",
+  "unknown": "플레이어"
+}

@@ -1,0 +1,254 @@
+{
+  "devMode": {
+    "badge": "Chế độ phát triển",
+    "label": "Chế độ phát triển: chỉ có tài khoản cục bộ trên điện thoại này, không dùng Firebase",
+    "noEmail": "Chế độ phát triển không gửi email."
+  },
+  "fields": {
+    "email": "Địa chỉ email",
+    "emailPlaceholder": "name@example.com",
+    "password": "Mật khẩu",
+    "newPassword": "Mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "displayName": "Tên hiển thị",
+    "displayNamePlaceholder": "Tên của bạn trong đấu trường",
+    "avatar": "Ảnh đại diện",
+    "country": "Quốc gia",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "change": "Đổi"
+  },
+  "validation": {
+    "emailRequired": "Nhập email của bạn",
+    "emailInvalid": "Địa chỉ email có vẻ không đúng",
+    "passwordRequired": "Nhập mật khẩu của bạn",
+    "passwordRules": "Mật khẩu cần ít nhất 8 ký tự",
+    "confirmMismatch": "Mật khẩu không khớp",
+    "countryRequired": "Chọn một quốc gia"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "Sai mật khẩu. Hãy thử lại, hoặc đặt lại mật khẩu.",
+      "userNotFound": "Không có tài khoản nào dùng email này. Đăng ký nhé?",
+      "invalidCredentials": "Sai email hoặc mật khẩu.",
+      "tooManyRequests": "Quá nhiều lần thử. Hãy chờ vài phút rồi thử lại, hoặc đặt lại mật khẩu.",
+      "network": "Không có kết nối Internet. Hãy kiểm tra rồi thử lại.",
+      "emailInUse": "Email này đã có tài khoản. Hãy đăng nhập bằng email này.",
+      "invalidEmail": "Địa chỉ email có vẻ không đúng.",
+      "weakPassword": "Mật khẩu quá yếu. Hãy chọn mật khẩu dài hơn.",
+      "requiresRecentLogin": "Vui lòng đăng nhập lại để làm việc này.",
+      "userDisabled": "Tài khoản này đã bị vô hiệu hóa. Hãy liên hệ bộ phận hỗ trợ.",
+      "noUser": "Bạn chưa đăng nhập. Hãy đăng nhập lại.",
+      "unknown": "Đã có lỗi xảy ra. Hãy thử lại.",
+      "cancelled": "Đã hủy đăng nhập bằng Google.",
+      "inProgress": "Cửa sổ đăng nhập Google đang mở. Hãy hoàn tất, hoặc đóng lại rồi thử lại.",
+      "playServices": "Đăng nhập bằng Google cần Dịch vụ Google Play. Hãy cập nhật rồi thử lại.",
+      "googleConfig": "Đăng nhập bằng Google hiện không khả dụng trong phiên bản ứng dụng này (DEVELOPER_ERROR). Trong lúc chờ, hãy dùng email và mật khẩu.",
+      "accountExistsWithPassword": "Email này đã có tài khoản dùng mật khẩu. Hãy đăng nhập bằng email và mật khẩu.",
+      "userMismatch": "Đó là một tài khoản Google khác. Hãy chọn tài khoản bạn đã dùng để đăng nhập."
+    },
+    "api": {
+      "badRequest": "Yêu cầu không hợp lệ. Hãy thử lại.",
+      "invalidName": "Tên này vi phạm quy tắc.",
+      "unauthorized": "Phiên làm việc với máy chủ đã hết hạn. Hãy đăng nhập lại.",
+      "reauthRequired": "Để xóa tài khoản, bạn cần đăng nhập lại. Hãy nhập lại mật khẩu rồi thử lại.",
+      "suspended": "Tài khoản của bạn đang bị đình chỉ, nên lúc này không thể thay đổi.",
+      "notRegistered": "Tài khoản này chưa có đấu sĩ. Hãy hoàn tất đăng ký nhé.",
+      "notFound": "Máy chủ không nhận ra yêu cầu này. Hãy cập nhật ứng dụng.",
+      "alreadyRegistered": "Tài khoản này đã có đấu sĩ.",
+      "taken": "Tên này đã có người dùng. Hãy chọn tên khác.",
+      "renameTooSoon": "Bạn chỉ có thể đổi tên 30 ngày một lần.",
+      "tooLarge": "Yêu cầu quá lớn.",
+      "blocked": "Tên này không phù hợp với đấu trường. Hãy chọn tên khác.",
+      "tooManyRequests": "Quá nhiều yêu cầu. Chờ một chút rồi thử lại.",
+      "internal": "Lỗi máy chủ. Hãy thử lại sau giây lát.",
+      "disabled": "Tài khoản hiện đang tắt trên máy chủ này.",
+      "unavailable": "Máy chủ hiện không khả dụng. Hãy thử lại sau giây lát.",
+      "network": "Không kết nối được máy chủ. Hãy kiểm tra Internet rồi thử lại.",
+      "timeout": "Máy chủ không phản hồi kịp. Hãy thử lại.",
+      "signedOut": "Bạn chưa đăng nhập. Hãy đăng nhập lại.",
+      "unexpected": "Máy chủ gửi phản hồi không mong đợi. Hãy thử lại, hoặc cập nhật ứng dụng."
+    }
+  },
+  "splash": {
+    "tagline": "Một bảng. Ai cũng giải. Chỉ một người thắng.",
+    "loading": "Đang tải đấu trường…",
+    "tipLabel": "Mẹo",
+    "tips": {
+      "lock_other": "Ô bạn chọn sẽ bị khóa cho riêng bạn: {{seconds}} giây trong trận {{type}}.",
+      "hard": "Nước đi càng khó càng được nhiều điểm.",
+      "mistake": "Một lỗi sẽ mất đúng số điểm mà số đúng lẽ ra mang lại. Thà nghĩ thêm một chút còn hơn.",
+      "interfere": "Gửi đòn phá rối chỉ với hai lần chạm: “Phá rối” trên thẻ của đối thủ, rồi chọn đòn bạn muốn."
+    },
+    "errorTitle": "Không tải được đấu sĩ của bạn",
+    "retry": "Thử lại",
+    "signOut": "Đăng xuất"
+  },
+  "login": {
+    "title": "Trở lại <accent>đấu trường</accent>",
+    "titleLabel": "Trở lại đấu trường",
+    "subtitle": "Điểm xếp hạng, chuỗi thắng và các đối thủ của bạn đang chờ.",
+    "forgot": "Quên mật khẩu",
+    "submit": "Đăng nhập",
+    "noAccount": "Chưa có tài khoản?",
+    "register": "Đăng ký",
+    "arenaSpot": "Chỗ của bạn"
+  },
+  "google": {
+    "continue": "Tiếp tục với Google",
+    "orEmail": "hoặc bằng email",
+    "orEmailPassword": "hoặc bằng email và mật khẩu",
+    "existing": "Tài khoản Google này đã có đấu sĩ {{name}}. Bạn đã đăng nhập vào đó.",
+    "passwordHint": "Bạn đã đăng ký bằng Google? Hãy dùng “Tiếp tục với Google”.",
+    "emailInUseHint": "Nếu bạn đã đăng ký bằng Google, hãy dùng “Tiếp tục với Google”.",
+    "termsTitle": "Điều khoản và quyền riêng tư",
+    "termsBody": "Để tiếp tục với Google, hãy chấp nhận điều khoản sử dụng và chính sách quyền riêng tư.",
+    "termsAccept": "Chấp nhận và tiếp tục"
+  },
+  "forgot": {
+    "title": "Quên mật khẩu",
+    "body": "Nhập email bạn đã dùng để đăng ký, chúng tôi sẽ gửi đến đó một liên kết để chọn mật khẩu mới.",
+    "submit": "Gửi liên kết đặt lại",
+    "sentTitle": "Kiểm tra hộp thư của bạn",
+    "sentBody": "Nếu {{email}} có tài khoản, chúng tôi đã gửi đến đó một liên kết để đặt lại mật khẩu. Không thấy thư? Hãy kiểm tra thư mục thư rác.",
+    "backToLogin": "Quay lại đăng nhập"
+  },
+  "register": {
+    "step": "Bước {{step}}/{{total}}",
+    "backToLogin": "Quay lại đăng nhập",
+    "backToFighter": "Quay lại đấu sĩ của bạn"
+  },
+  "fighter": {
+    "title": "Tạo <accent>đấu sĩ</accent> của bạn",
+    "titleLabel": "Tạo đấu sĩ của bạn",
+    "resumeNote": "Tài khoản đã sẵn sàng. Chỉ cần chọn đấu sĩ của bạn.",
+    "chooseAvatar": "Chọn ảnh đại diện",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}, mở ở cấp độ {{level}}",
+    "selectedAvatar": "Ảnh đại diện đã chọn: {{name}}",
+    "yourPick": "Bạn chọn: {{name}}",
+    "previewTitle": "Đấu trường sẽ thấy bạn như thế này",
+    "previewLabel": "Xem trước thẻ của bạn trong trận đấu: {{name}}",
+    "previewNew": "Mới",
+    "continue": "Tiếp tục",
+    "enterArena": "Vào đấu trường",
+    "signOut": "Đăng xuất",
+    "googleNote": "Bạn đã đăng nhập bằng Google. Chỉ cần chọn đấu sĩ của bạn."
+  },
+  "name": {
+    "rules": "3–16 ký tự: chữ cái tiếng Hebrew hoặc tiếng Anh, chữ số, dấu gạch dưới và dấu chấm.",
+    "status": {
+      "checking": "Đang kiểm tra…",
+      "available": "Còn trống",
+      "taken": "Trùng tên",
+      "invalid": "Không hợp lệ",
+      "blocked": "Không được phép",
+      "error": "Chưa kiểm tra",
+      "current": "Tên của bạn"
+    },
+    "problem": {
+      "invalidChars": "Không thể dùng các ký tự này: {{chars}}",
+      "tooShort": "Ít nhất 3 ký tự",
+      "tooLong": "Tối đa 16 ký tự"
+    },
+    "charSpace": " ",
+    "takenHint": "Đã có người chọn tên này. Hãy thử tên khác.",
+    "blockedHint": "Tên này không phù hợp với đấu trường. Hãy thử tên khác.",
+    "errorHint": "Không kiểm tra được tên. Chúng tôi sẽ kiểm tra lại khi bạn lưu."
+  },
+  "country": {
+    "label": "Quốc gia: {{country}}",
+    "choose": "Chọn quốc gia",
+    "sheetTitle": "Chọn quốc gia",
+    "search": "Tìm quốc gia",
+    "searchPlaceholder": "Tìm kiếm",
+    "none": "Không tìm thấy quốc gia",
+    "hint": "Được xác định từ cài đặt điện thoại. Bạn có thể đổi bất cứ lúc nào."
+  },
+  "account": {
+    "title": "Thêm một bước nữa để vào <accent>đấu trường</accent>",
+    "titleLabel": "Thêm một bước nữa để vào đấu trường",
+    "subtitle": "Email và mật khẩu giúp giữ an toàn cho điểm xếp hạng và tiến độ của bạn.",
+    "fighterReady": "Đấu sĩ sẵn sàng",
+    "edit": "Sửa",
+    "editLabel": "Sửa đấu sĩ của bạn",
+    "submit": "Tạo tài khoản",
+    "profileFailed": "Tài khoản đã được tạo, nhưng đấu sĩ của bạn chưa được lưu. Hãy thử lại.",
+    "nameTakenNow": "Trong lúc đó, tên {{name}} đã có người lấy. Hãy chọn tên khác: tài khoản của bạn đang chờ."
+  },
+  "password": {
+    "rules": {
+      "length": "Ít nhất 8 ký tự"
+    },
+    "ruleMet": "{{rule}}: đã đạt",
+    "ruleMissing": "{{rule}}: chưa đạt",
+    "strengthLabel": "Độ mạnh mật khẩu",
+    "strength": {
+      "weak": "Mật khẩu yếu",
+      "fair": "Mật khẩu tạm được",
+      "good": "Mật khẩu tốt",
+      "strong": "Mật khẩu mạnh"
+    },
+    "match": "Khớp",
+    "mismatch": "Không khớp"
+  },
+  "terms": {
+    "accept": "Tôi chấp nhận điều khoản sử dụng và chính sách quyền riêng tư",
+    "termsLink": "Điều khoản sử dụng",
+    "privacyLink": "Chính sách quyền riêng tư",
+    "linkHint": "Mở trong trình duyệt",
+    "required": "Để vào đấu trường, hãy chấp nhận điều khoản"
+  },
+  "verify": {
+    "bannerTitle": "Email của bạn chưa được xác minh",
+    "bannerAction": "Xác minh",
+    "bannerLabel": "Email của bạn chưa được xác minh. Xác minh email",
+    "title": "Xác minh email của bạn",
+    "body": "Chúng tôi đã gửi liên kết xác minh đến {{email}}. Hãy mở liên kết, rồi quay lại đây.",
+    "why": "Luyện tập không cần xác minh. Trận xếp hạng sẽ cần email đã xác minh.",
+    "resend": "Gửi lại",
+    "sent": "Đã gửi liên kết mới",
+    "check": "Tôi đã xác minh",
+    "notYet": "Chưa được xác minh. Bạn đã mở liên kết chưa?",
+    "done": "Đã xác minh email. Cảm ơn!",
+    "devNote": "Chế độ phát triển không gửi email: “Tôi đã xác minh” sẽ đánh dấu email là đã xác minh."
+  },
+  "edit": {
+    "title": "Sửa hồ sơ",
+    "save": "Lưu",
+    "saved": "Đã lưu hồ sơ",
+    "nameRule": "Bạn có thể đổi tên 30 ngày một lần.",
+    "nameLocked": "Bạn có thể đổi tên 30 ngày một lần. Lần đổi tiếp theo: {{date}}.",
+    "offline": "Không kết nối được máy chủ. Bạn có thể sửa khi có mạng trở lại."
+  },
+  "home": {
+    "provisional": "Điểm xếp hạng tạm tính: 10 trận đầu tiên của bạn"
+  },
+  "settings": {
+    "section": "Tài khoản",
+    "signedInAs": "Đã đăng nhập bằng {{email}}",
+    "editProfile": "Sửa hồ sơ",
+    "signOut": "Đăng xuất",
+    "signOutTitle": "Đăng xuất?",
+    "signOutBody": "Các trận luyện tập trên điện thoại này vẫn được giữ. Bạn sẽ cần đăng nhập để chơi tiếp.",
+    "deleteAccount": "Xóa tài khoản",
+    "deleteTitle": "Xóa tài khoản của bạn?",
+    "deleteBody": "Email, đấu sĩ và tên của bạn sẽ bị xóa, và không thể hoàn tác. Các trận đấu và điểm xếp hạng vẫn được giữ nhưng không còn gắn với bạn, để trận đấu của người chơi khác vẫn nguyên vẹn. Tên của bạn sẽ được trả lại để người chơi khác dùng.",
+    "deleteContinue": "Tiếp tục",
+    "deletePasswordTitle": "Xác nhận bằng mật khẩu",
+    "deletePasswordBody": "Để xóa tài khoản, hãy nhập mật khẩu của {{email}}.",
+    "deleteSubmit": "Xóa vĩnh viễn tài khoản của tôi",
+    "deleted": "Tài khoản của bạn đã bị xóa",
+    "deletedPartly": "Đã xóa tài khoản. Chưa xóa được thông tin đăng nhập: nếu đăng nhập lại bằng thông tin đó, bạn sẽ bắt đầu đăng ký mới.",
+    "method": {
+      "password": "Đăng nhập bằng email và mật khẩu",
+      "google": "Đăng nhập bằng Google",
+      "both": "Đăng nhập bằng Google, hoặc bằng email và mật khẩu"
+    },
+    "deleteGoogleTitle": "Xác nhận bằng Google",
+    "deleteGoogleBody": "Để xóa tài khoản, hãy chọn lại tài khoản Google {{email}}.",
+    "deleteGoogleSubmit": "Xác nhận bằng Google và xóa",
+    "deleteGoogleAgain": "Xóa tài khoản cần xác nhận lại. Hãy thử lại và chọn tài khoản Google của bạn.",
+    "deleteWithPassword": "Thay vào đó, xác nhận bằng mật khẩu"
+  }
+}

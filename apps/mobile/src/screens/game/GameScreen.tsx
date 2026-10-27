@@ -21,14 +21,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  BackHandler,
-  type LayoutChangeEvent,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { BackHandler, type LayoutChangeEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { type AvatarIdOrNone, NO_AVATAR_ID, normalizeAvatarId } from '../../avatars';
@@ -59,6 +52,7 @@ import {
   signedText,
 } from '../../components/player';
 import { ConfirmModal, useToast } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { NOT_PAUSED, type PauseState } from '../../game/backgroundPause';
 import type { MatchEffect, UiEffect } from '../../game/effects';
 import type { SessionConnection } from '../../game/onlineSession';
@@ -66,6 +60,7 @@ import type { PracticeSession } from '../../game/session';
 import { useAvatarFaces } from '../../game/useAvatarFaces';
 import { useGameEffects, useMatchEffects } from '../../game/useGameEffects';
 import { useNow } from '../../game/useNow';
+import { decimalSeparator } from '../../i18n/compose';
 import { blockedIds, loadBlocks, useBlocks, useIsBlocked } from '../../moderation/moderation';
 import { useMyLevel } from '../../progress/hooks';
 import { track } from '../../services/analytics';
@@ -867,7 +862,13 @@ export function GameScreen({
     const to = targetOf(playerId);
     if (to) {
       fly(
-        { id: moveId, label: signedText(move.value), tone: kind, tint: tintOf(playerId), timeline },
+        {
+          id: moveId,
+          label: signedText(move.value, decimalSeparator(t)),
+          tone: kind,
+          tint: tintOf(playerId),
+          timeline,
+        },
         move.cell,
         to,
       );
@@ -892,7 +893,7 @@ export function GameScreen({
     const shift = leadShift(leader.current, lead, shownView.me);
     if (!shift) return;
     leader.current = shift.leader;
-    const gap = { count: shift.gap, gap: formatScore(shift.gap) };
+    const gap = { count: shift.gap, gap: formatScore(shift.gap, decimalSeparator(t)) };
     if (shift.leader === null) announce(t('live.leadTie'));
     else if (shift.took) announce(t('live.leadMine', gap));
     else announce(t('live.leadTheirs', { name: nameOf(shift.leader), ...gap }));
@@ -906,7 +907,7 @@ export function GameScreen({
     switch (e.kind) {
       case 'correct': {
         const cell = ltr(cellName(e.cell));
-        const points = signedText(e.points);
+        const points = signedText(e.points, decimalSeparator(t));
         flash({ cell: e.cell, kind: 'correct', id: e.seq });
         if (e.byMe) cue('correct'); // an opponent's board move is silent (motion.md §7)
         scoreMove({
@@ -926,7 +927,7 @@ export function GameScreen({
       }
       case 'wrong': {
         const cell = ltr(cellName(e.cell));
-        const penalty = signedText(-e.penalty);
+        const penalty = signedText(-e.penalty, decimalSeparator(t));
         flash({ cell: e.cell, kind: 'wrong', id: e.seq, digit: e.digit });
         if (e.byMe) cue('wrong');
         scoreMove({

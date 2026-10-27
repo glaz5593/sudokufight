@@ -1,0 +1,92 @@
+{
+  "title": "回放",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "单人练习",
+    "bot": "人机练习",
+    "ranked": "排位赛"
+  },
+  "back": "返回",
+  "loading": "正在加载对局…",
+  "load": {
+    "missing": "找不到这场对局",
+    "notFinished": "对局还在服务器上保存中，请稍后再试",
+    "offline": "无法连接服务器。排位对局需要从服务器加载",
+    "signedOut": "登录后即可观看排位对局",
+    "unavailable": "无法读取这场对局",
+    "retry": "再试一次",
+    "partial": "这场对局中途中断：回放只到最后保存的一步"
+  },
+  "step": {
+    "counter": "第{{number}}步，共{{total}}步",
+    "clockLabel": "对局时间：{{clock}}"
+  },
+  "nav": {
+    "prev": "上一步",
+    "next": "下一步",
+    "timeline": "步骤时间轴",
+    "timelineValue": "第{{number}}步，共{{total}}步，{{clock}}",
+    "timelineHint": "上下滑动可切换步骤"
+  },
+  "narration": {
+    "start": "对局开始",
+    "select": "{{name}} · 选择{{cell}}",
+    "correct": "{{name}} · {{cell}}填对了 · {{delta}}",
+    "wrong": "{{name}} · {{cell}}填错了 · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · 放弃{{cell}}",
+      "timeout": "{{name}} · {{cell}}超时"
+    },
+    "interference": "{{name}} · 干扰{{target}} · {{delta}}",
+    "disconnect": "{{name}} · 断开连接",
+    "reconnect": "{{name}} · 回到对局",
+    "offline": "{{name}} · 连接中断",
+    "surrender": "{{name}} · 认输了",
+    "endPractice": "{{name}} · 结束了练习",
+    "abandon": "{{name}} · 离开了对局",
+    "over": "对局结束",
+    "paused": "对局已冻结",
+    "offlineSuffix": "恢复联网后发送"
+  },
+  "explain": {
+    "title": "每位玩家的讲解",
+    "none": "{{name}}还没走过一步",
+    "noneMe": "我还没走过一步",
+    "noneBody": "第一步之后就会出现讲解",
+    "status": {
+      "choosing": "选择中",
+      "released": "已放弃",
+      "correct": "正确",
+      "wrong": "错误"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "填了{{digit}}，应为{{answer}}",
+    "why": "{{digit}}为什么不对：{{text}}",
+    "noLogic": "答案：{{cell}} → {{digit}}",
+    "scoreLine": "得分",
+    "penaltyLine": "罚分：正确数字原本的分值",
+    "released": {
+      "cancel": "取消了选择",
+      "timeout": "时间到了",
+      "switch": "换到了另一格",
+      "mistake": "出错之后",
+      "surrender": "离开了对局",
+      "disconnect": "断开了连接",
+      "abandon": "中途退出"
+    },
+    "label": "{{name}}：{{status}}，{{move}}。{{technique}}。{{text}}",
+    "labelNone": "{{name}}：{{text}}",
+    "chip": "{{status}}：{{points}}"
+  },
+  "moments": {
+    "title": "关键时刻",
+    "bestMove": "最佳一步",
+    "mistakes": "错误 · {{count}}",
+    "interferences": "干扰 · {{count}}",
+    "turningPoint": "转折点",
+    "hint": "跳到那一步"
+  },
+  "board": "第{{number}}步的盘面",
+  "me": "我",
+  "unknown": "玩家"
+}

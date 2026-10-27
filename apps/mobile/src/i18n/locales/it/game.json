@@ -1,0 +1,474 @@
+{
+  "title": "Allenamento in solitario",
+  "titleBot": "Allenamento contro il bot",
+  "titleRanked": "Partita classificata",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "Io",
+  "opponent": "Avversario",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "Livello {{level}}, {{title}}"
+  },
+  "listSep": ", ",
+  "type": {
+    "fast": "Veloce",
+    "normal": "Normale",
+    "hard": "Difficile"
+  },
+  "hud": {
+    "time": "Tempo",
+    "best": "Mossa migliore",
+    "none": "—",
+    "timeLabel": "Tempo {{time}}",
+    "bestLabel_one": "Mossa migliore: {{points}} punto in {{cell}}",
+    "bestLabel_many": "Mossa migliore: {{points}} di punti in {{cell}}",
+    "bestLabel_other": "Mossa migliore: {{points}} punti in {{cell}}",
+    "noBestLabel": "Ancora nessuna mossa migliore"
+  },
+  "progress": {
+    "label": "Avanzamento della griglia",
+    "value": "{{filled}}/{{total}}",
+    "a11y_one": "{{filled}} su {{total}} casella riempita",
+    "a11y_many": "{{filled}} su {{total}} di caselle riempite",
+    "a11y_other": "{{filled}} su {{total}} caselle riempite"
+  },
+  "end": {
+    "button": "Chiudi allenamento",
+    "title": "Chiudere l’allenamento?",
+    "body": "Il risultato viene salvato su questo telefono. Il tuo punteggio non cambia.",
+    "confirm": "Sì, chiudi",
+    "footnote": "La partita continua in sottofondo",
+    "dialog": "Conferma la chiusura dell’allenamento"
+  },
+  "out": {
+    "surrendered": "Hai scelto la resa · {{place}}° posto",
+    "abandoned": "Sei fuori · {{place}}° posto",
+    "goesOn": "La partita continua fino alla fine",
+    "label": "{{title}}. {{goesOn}}",
+    "home": "Alla home",
+    "homeHint": "La partita continua senza di te. La tua posizione è già decisa"
+  },
+  "connection": {
+    "sep": ". ",
+    "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "lead": {
+      "mine": "Sei in testa",
+      "theirs": "{{name}} è in testa",
+      "theirs_female": "{{name}} è in testa",
+      "tie": "Parità"
+    },
+    "frozen": {
+      "title": "Partita congelata",
+      "timers": "Tutti i timer sono fermi",
+      "label": "Partita congelata, tutti i timer sono fermi"
+    },
+    "opponent": {
+      "lost": "{{name}} ha perso la connessione",
+      "lost_female": "{{name}} ha perso la connessione",
+      "title": "Riconnessione dell’avversario…",
+      "timeUp": "Tempo scaduto",
+      "notBack": "{{name}} non ha fatto ritorno",
+      "notBack_female": "{{name}} non ha fatto ritorno",
+      "seconds": "secondi",
+      "ring": "Riconnessione… {{seconds}}",
+      "saved": "La partita è salvata sul server",
+      "savedSub": "La griglia e i punti restano al sicuro",
+      "winLabel": "Vittoria per abbandono",
+      "hint": "Se {{name}} non torna in tempo, vinci per abbandono",
+      "hint_female": "Se {{name}} non torna in tempo, vinci per abbandono",
+      "checking": "Verifica con il server…",
+      "timeLeft": "Tempo per tornare: {{time}}",
+      "announce": "{{name}} ha perso la connessione. La partita è congelata finché non torna",
+      "announce_female": "{{name}} ha perso la connessione. La partita è congelata finché non torna",
+      "announceExpired": "Tempo scaduto. Verifica con il server"
+    },
+    "self": {
+      "lostTitle": "Hai perso la connessione",
+      "lostSub": "Riconnessione…",
+      "attempt": "Tentativo",
+      "attemptLabel": "Tentativo {{attempt}}",
+      "backTitle": "Sei di nuovo in partita",
+      "syncingSub": "Sincronizzazione…",
+      "syncedSub": "Tutto sincronizzato · la partita continua",
+      "lockedTitle": "La griglia è bloccata finché non torni",
+      "lockedSub": "Quando torna la connessione sincronizzeremo:",
+      "syncingTitle": "Sincronizzazione…",
+      "syncedTitle": "Tutto sincronizzato",
+      "savedSub": "La partita è salvata sul server e riprende dallo stesso punto",
+      "item": {
+        "board": "Griglia",
+        "score": "Punti",
+        "locks": "Blocchi",
+        "turn": "Turno",
+        "timers": "Timer"
+      },
+      "timeLeft_one": "Hai {{seconds}} secondo per tornare",
+      "timeLeft_many": "Hai {{seconds}} di secondi per tornare",
+      "timeLeft_other": "Hai {{seconds}} secondi per tornare",
+      "timeSub": "Prima che valga come abbandono",
+      "backInTime": "Rientro in tempo",
+      "backInTimeSub": "I timer ripartono dallo stesso secondo",
+      "announceLost": "Hai perso la connessione. Riconnessione in corso",
+      "announceAttempt": "Hai perso la connessione. Riconnessione in corso, tentativo {{attempt}}",
+      "announceHurry_one": "Tra {{seconds}} secondo vale come abbandono",
+      "announceHurry_many": "Tra {{seconds}} di secondi vale come abbandono",
+      "announceHurry_other": "Tra {{seconds}} secondi vale come abbandono",
+      "announceSyncing": "Sei di nuovo in partita. Sincronizzazione in corso",
+      "announceSynced": "Sei di nuovo in partita. La griglia e i punti sono sincronizzati"
+    },
+    "offline": {
+      "announce": "Nessuna connessione. Continua a giocare: le tue mosse partono quando torna"
+    },
+    "left": {
+      "timeUp_one": "Tempo scaduto · {{seconds}} secondo senza connessione",
+      "timeUp_many": "Tempo scaduto · {{seconds}} di secondi senza connessione",
+      "timeUp_other": "Tempo scaduto · {{seconds}} secondi senza connessione",
+      "title": "{{name}} ha lasciato la partita",
+      "title_female": "{{name}} ha lasciato la partita",
+      "win": "Vinci per abbandono",
+      "rating": "punteggio",
+      "ratingLabel": "Variazione del punteggio: {{delta}}, {{type}}",
+      "ratingUnchanged": {
+        "opponentLeftBeforeMyMove": "Punteggio invariato: ha lasciato prima della tua prima mossa",
+        "opponentLeftAhead": "Punteggio invariato: quando ha lasciato eri in svantaggio"
+      },
+      "toResults": "Vedi i risultati",
+      "home": "Alla home"
+    },
+    "error": {
+      "title": "Errore di connessione",
+      "offlineTitle": "Nessuna connessione a internet",
+      "body": {
+        "offline": "Al momento il telefono non ha rete. Connettiti a internet e riprova.",
+        "unreachable": "Non siamo riusciti a raggiungere il server di gioco. Controlla la connessione e riprova.",
+        "lost": "La connessione al server di gioco si è interrotta e non siamo riusciti a ripristinarla.",
+        "refused": "Il server non ci ha fatto entrare nella stanza."
+      },
+      "refusal": {
+        "notFound": "Non c’è nessuna stanza con questo codice. Controlla il codice e riprova.",
+        "full": "Questa stanza è già piena.",
+        "gameStarted": "La partita in questa stanza è già iniziata.",
+        "alreadyInRoom": "Sei già in questa stanza, su un altro dispositivo.",
+        "unauthenticated": "Accedi al tuo account per giocare contro altri.",
+        "suspended": "Il tuo account è sospeso, quindi per ora niente partite classificate. Puoi comunque allenarti in solitario o contro un bot.",
+        "codeTaken": "Esiste già una stanza con questo codice. Prova un altro codice.",
+        "badOptions": "Le impostazioni della stanza non sono valide.",
+        "kicked": "L’host ti ha rimosso dalla stanza.",
+        "roomClosed": "La stanza è stata chiusa."
+      },
+      "code": "Codice errore: {{code}}",
+      "attemptFailed": "Tentativo {{attempt}} fallito",
+      "retry": "Riprova",
+      "practice": "Vai all’allenamento",
+      "practiceNote": "L’allenamento in solitario o contro un bot funziona senza connessione",
+      "home": "Alla home"
+    },
+    "surrender": {
+      "chip": "Arrenditi",
+      "title": "Vuoi davvero arrenderti?",
+      "body": "La partita conta come sconfitta",
+      "bodyRating": "La partita conta come sconfitta · variazione stimata del punteggio {{delta}}",
+      "bodyNoLoss": {
+        "leftBeforeMoving": "La partita conta come sconfitta · il tuo punteggio non scende: non hai ancora fatto una mossa",
+        "leftNotBehind": "La partita conta come sconfitta · il tuo punteggio non scende: non sei in svantaggio"
+      },
+      "bodyMany": "Esci dalla partita, e le caselle che hai risolto mantengono il tuo colore.",
+      "bodyManyNoLoss": "Esci dalla partita, e le caselle che hai risolto mantengono il tuo colore. Il tuo punteggio non scende contro chi è ancora in partita.",
+      "confirm": "Sì, mi arrendo",
+      "cancel": "Annulla",
+      "footnote": "La partita continua in sottofondo",
+      "dialog": "Conferma la resa"
+    },
+    "lobby": {
+      "title": "Stanza privata",
+      "subtitle_one": "{{type}} · {{players}} giocatore",
+      "subtitle_many": "{{type}} · {{players}} di giocatori",
+      "subtitle_other": "{{type}} · {{players}} giocatori",
+      "codeTitle": "Codice stanza",
+      "codeLabel": "Codice stanza: {{spelled}}",
+      "codeHint": "Invia il codice a chi gioca con te",
+      "share": "Condividi il codice",
+      "copy": "Copia",
+      "copied": "Codice copiato",
+      "shareMessage": "Vieni a giocare a Sudoku Fight con me! Codice stanza: {{code}}",
+      "playersTitle": "Giocatori nella stanza",
+      "you": "Io",
+      "emptySeat": "In attesa di un giocatore…",
+      "seatMeLabel": "{{name}}, io",
+      "seatEmptyLabel": "Posto libero, in attesa di un giocatore",
+      "waiting_one": "In attesa di un altro giocatore",
+      "waiting_many": "In attesa di altri {{count}} di giocatori",
+      "waiting_other": "In attesa di altri {{count}} giocatori",
+      "starting": "Ci sono tutti! La partita sta per iniziare…",
+      "hint": "La partita inizia appena tutti i giocatori sono nella stanza",
+      "leave": "Esci dalla stanza",
+      "joined": "{{name}} è nella stanza"
+    },
+    "connecting": {
+      "title": "Ingresso in partita",
+      "board": "Caricamento della griglia…",
+      "step": {
+        "server": "Connessione al server di gioco…",
+        "room": "Ingresso nella stanza…",
+        "sync": "Sincronizzazione di punti e timer…"
+      },
+      "label": "Caricamento della partita, passo {{step}} di {{total}}",
+      "cancel": "Annulla",
+      "tag": "Classificata · {{type}}",
+      "rating": "Punteggio {{rating}}",
+      "ready": "Tutto pronto!",
+      "joining": "Connessione…",
+      "tipTitle": "Consiglio",
+      "tips": {
+        "score_one": "Più la riga, la colonna e il riquadro sono vuoti, più vale la mossa: fino a {{max}} punto per casella.",
+        "score_many": "Più la riga, la colonna e il riquadro sono vuoti, più vale la mossa: fino a {{max}} di punti per casella.",
+        "score_other": "Più la riga, la colonna e il riquadro sono vuoti, più vale la mossa: fino a {{max}} punti per casella.",
+        "lastCell_one": "L’ultima casella della griglia vale sempre solo {{points}} punto: tutto intorno è pieno.",
+        "lastCell_many": "L’ultima casella della griglia vale sempre solo {{points}} di punti: tutto intorno è pieno.",
+        "lastCell_other": "L’ultima casella della griglia vale sempre solo {{points}} punti: tutto intorno è pieno.",
+        "mistakes": "Un errore toglie esattamente quanto valeva il numero giusto in quella casella. Se sbagli una casella che vale tanto, ti costa tanto.",
+        "interference": "Ogni disturbo costa il doppio del precedente. Tienilo per il momento giusto."
+      }
+    }
+  },
+  "live": {
+    "correct": "Giusto: {{digit}} in {{cell}}, {{points}}",
+    "wrong": "Sbagliato: {{digit}} non va in {{cell}}, {{penalty}}",
+    "taken": "{{cell}} è occupata",
+    "cooldown": "Potrai scegliere di nuovo {{cell}} tra un attimo",
+    "expired": "Tempo scaduto, {{cell}} è stata liberata",
+    "complete": "Griglia completata!",
+    "oppCorrect": "{{name}} ha risolto {{cell}}: {{digit}}, {{points}}",
+    "oppWrong": "{{name}} ha sbagliato: {{digit}} non va in {{cell}}, {{penalty}}",
+    "leadMine_one": "Sei avanti di un punto",
+    "leadMine_many": "Sei avanti di {{gap}} di punti",
+    "leadMine_other": "Sei avanti di {{gap}} punti",
+    "leadTheirs_one": "{{name}} è avanti di un punto",
+    "leadTheirs_many": "{{name}} è avanti di {{gap}} di punti",
+    "leadTheirs_other": "{{name}} è avanti di {{gap}} punti",
+    "leadTie": "Punti in parità",
+    "reaction": "{{name}} ha reagito con {{emoji}}",
+    "oppSurrendered": "{{name}} ha scelto la resa ed è fuori, {{place}}° posto",
+    "oppAbandoned": "{{name}} non ha fatto ritorno in tempo ed è fuori, {{place}}° posto",
+    "hitOther": "{{from}} ha mandato {{kind}} a {{name}}",
+    "outMine": "Sei fuori al {{place}}° posto. La partita continua fino alla fine",
+    "queued": "{{cell}}: {{digit}} in attesa della connessione",
+    "offlineLostTaken": "{{cell}} è stata presa mentre eri offline · nessuna penalità",
+    "offlineLost": "La tua mossa in {{cell}} non è stata contata · nessuna penalità"
+  },
+  "interference": {
+    "fireworks": "dei fuochi d’artificio",
+    "cats": "dei gatti",
+    "warp": "una distorsione",
+    "scramble": "dei numeri mescolati",
+    "ink": "dell’inchiostro",
+    "keypad": "un tastierino mescolato"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}} ti ha mandato dei fuochi d’artificio!",
+      "cats": "{{name}} ti ha mandato dei gatti!",
+      "warp": "{{name}} ti ha distorto lo schermo!",
+      "scramble": "{{name}} ti ha mescolato i numeri!",
+      "ink": "{{name}} ti ha schizzato d’inchiostro!",
+      "keypad": "{{name}} ti ha mescolato il tastierino!",
+      "generic": "{{name}} ti ha mandato un disturbo!"
+    },
+    "cost": "È costato {{cost}} pt · la partita continua",
+    "goesOn": "La partita continua · il tuo timer è in pausa",
+    "seconds_one": "{{count}} secondo rimasto",
+    "seconds_many": "{{count}} di secondi rimasti",
+    "seconds_other": "{{count}} secondi rimasti",
+    "banner": "{{title}} {{subtitle}}, {{time}}",
+    "started": "{{title}} La tua griglia è oscurata, {{time}}. Il tuo timer è in pausa",
+    "withNote": "{{line}}. {{note}}",
+    "note": {
+      "scramble": "I numeri che si mescolano non sono veri",
+      "keypad": "I tasti si scambiano di posto e ogni tasto inserisce il numero che c’è sopra"
+    },
+    "ended": "Il disturbo è finito, il tuo timer riparte",
+    "meow": "Miao!",
+    "mew": "Miu!"
+  },
+  "arsenal": {
+    "title": "Scegli un disturbo",
+    "target": "Bersaglio:",
+    "targetLabel": "Bersaglio: {{name}}",
+    "me": "Io",
+    "routeLabel": "Disturbo da me a {{name}}",
+    "scrim": "Chiudi e torna alla griglia",
+    "price": "Prezzo",
+    "priceValue": "{{cost}} pt",
+    "nextPrice": "· Prossimo: {{cost}}",
+    "unit": "pt",
+    "score": "I tuoi punti",
+    "costLabel_one": "Questo disturbo costa {{cost}} punto. I tuoi punti: {{score}}, {{after}} dopo il lancio. Il prossimo costa {{next}}",
+    "costLabel_many": "Questo disturbo costa {{cost}} di punti. I tuoi punti: {{score}}, {{after}} dopo il lancio. Il prossimo costa {{next}}",
+    "costLabel_other": "Questo disturbo costa {{cost}} punti. I tuoi punti: {{score}}, {{after}} dopo il lancio. Il prossimo costa {{next}}",
+    "costLabelShort": "Questo disturbo costa $t(game:arsenal.costPoints, {\"count\": {{cost}} }). I tuoi punti: {{score}}, $t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })",
+    "costPoints_one": "{{count}} punto",
+    "costPoints_many": "{{count}} di punti",
+    "costPoints_other": "{{count}} punti",
+    "shortPoints_one": "manca {{missing}} punto",
+    "shortPoints_many": "mancano {{missing}} di punti",
+    "shortPoints_other": "mancano {{missing}} punti",
+    "info_one": "Ogni disturbo dura {{seconds}} secondo · tocca per lanciare",
+    "info_many": "Ogni disturbo dura {{seconds}} di secondi · tocca per lanciare",
+    "info_other": "Ogni disturbo dura {{seconds}} secondi · tocca per lanciare",
+    "cost": "{{cost}} pt",
+    "missing": "Mancano {{count}}",
+    "locked": "Bloccato",
+    "level": "Livello {{level}}",
+    "busy": "Disturbo in corso",
+    "unavailable": "Non ora",
+    "routeArrow": "→",
+    "sent": "{{kind}} → {{name}}",
+    "notEnough": "Punti insufficienti per il prossimo disturbo ({{cost}} pt)",
+    "busyToast_one": "{{name}} ha già un disturbo in corso. Riprova tra {{count}} secondo",
+    "busyToast_many": "{{name}} ha già un disturbo in corso. Riprova tra {{count}} di secondi",
+    "busyToast_other": "{{name}} ha già un disturbo in corso. Riprova tra {{count}} secondi",
+    "notNow": "Al momento non puoi disturbare",
+    "refused": "Il disturbo non è stato inviato e non ti sono stati tolti punti",
+    "label": "{{kind}} · {{cost}} pt · tocca per lanciarlo contro {{name}}",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kindGeneric": "Disturbo",
+    "kind": {
+      "fireworks": "Fuochi d’artificio",
+      "cats": "Gatti",
+      "warp": "Distorsione",
+      "scramble": "Numeri mescolati",
+      "ink": "Inchiostro",
+      "keypad": "Tastierino mescolato"
+    },
+    "reason": {
+      "points": "Mancano {{count}} pt per questo disturbo",
+      "busy": "{{name}} ha già un disturbo in corso, riprova tra un attimo",
+      "notRunning": "Al momento non puoi lanciare un disturbo",
+      "locked": "Questo disturbo è ancora bloccato",
+      "level": "Si sblocca al livello {{level}}",
+      "out": "{{name}} è fuori dalla partita",
+      "disconnected": "Al momento {{name}} non ha connessione"
+    },
+    "live": {
+      "launched": "Hai lanciato {{kind}} contro {{name}}"
+    }
+  },
+  "reactions": {
+    "picker": "Reazioni",
+    "item": "Reazione: {{name}}",
+    "itemOther": "Reazione {{emoji}}",
+    "name": {
+      "laugh": "risata",
+      "scream": "urlo",
+      "cool": "figo",
+      "facepalm": "mano in faccia",
+      "fire": "fuoco",
+      "eyes": "occhi"
+    },
+    "coolingDown": "Potrai inviare un’altra reazione tra un attimo",
+    "close": "Chiudi le reazioni",
+    "menu": {
+      "open": "Menu della scheda di {{name}}",
+      "openHint": "Lì puoi silenziare le reazioni di {{name}}",
+      "openHintMuted": "Le reazioni di {{name}} sono silenziate. Lì puoi riattivarle",
+      "label": "Menu di {{name}}",
+      "mute": "Silenzia reazioni",
+      "unmute": "Riattiva reazioni",
+      "muteLabel": "Silenzia le reazioni di {{name}}",
+      "unmuteLabel": "Riattiva le reazioni di {{name}}",
+      "muted": "Le reazioni di {{name}} sono silenziate",
+      "unmuted": "Le reazioni di {{name}} sono di nuovo attive",
+      "close": "Chiudi il menu"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "Griglia completata!",
+      "ended": "Allenamento chiuso",
+      "interrupted": "Allenamento interrotto",
+      "surrendered": "Hai scelto la resa",
+      "abandoned": "Hai abbandonato la partita",
+      "opponentSurrendered": "L’avversario ha scelto la resa",
+      "opponentLeft": "L’avversario ha lasciato la partita"
+    },
+    "outcome": {
+      "win": "Vittoria!",
+      "loss": "Sconfitta",
+      "tie": "Pareggio"
+    },
+    "abandonWin": "Vittoria per abbandono",
+    "placeTitle": "{{place}}° posto!",
+    "placeOf": "{{place}}° posto su {{total}}",
+    "outOf": "su {{players}}",
+    "header": "{{title}} · {{type}} · {{players}}",
+    "end": {
+      "label": "Come è finita",
+      "completed": "Hai riempito tutta la griglia",
+      "full": "La griglia si è riempita",
+      "ended": "Hai chiuso l’allenamento prima che la griglia fosse piena",
+      "interrupted": "L’allenamento si è fermato a metà, per esempio quando l’app è stata chiusa",
+      "line": "{{label}}: {{reason}}",
+      "surrendered": "Hai scelto la resa prima che la griglia fosse piena",
+      "abandoned": "Non hai fatto ritorno in tempo",
+      "opponentSurrendered": "L’avversario ha scelto la resa prima che la griglia fosse piena",
+      "opponentLeft": "L’avversario ha perso la connessione e non ha fatto ritorno in tempo"
+    },
+    "score": "Punti finali",
+    "points": "pt",
+    "scoreLabel_one": "Punti finali: {{score}} punto",
+    "scoreLabel_many": "Punti finali: {{score}} di punti",
+    "scoreLabel_other": "Punti finali: {{score}} punti",
+    "opponents": {
+      "title": "Avversario",
+      "label_one": "{{name}} · {{score}} punto · {{mistakes}}",
+      "label_many": "{{name}} · {{score}} di punti · {{mistakes}}",
+      "label_other": "{{name}} · {{score}} punti · {{mistakes}}",
+      "left": "Ha lasciato la partita"
+    },
+    "best": {
+      "title": "Mossa della partita",
+      "move": "{{cell}} → {{digit}}",
+      "label_one": "Mossa della partita: {{points}} punto, {{digit}} in {{cell}}",
+      "label_many": "Mossa della partita: {{points}} di punti, {{digit}} in {{cell}}",
+      "label_other": "Mossa della partita: {{points}} punti, {{digit}} in {{cell}}",
+      "formula": "Calcolo dei punti",
+      "formulaLabel": "Calcolo dei punti: {{line}}",
+      "none": "Nessuna mossa giusta in questo allenamento"
+    },
+    "stats": {
+      "time": "Tempo di gioco",
+      "mistakes": "Errori",
+      "correct": "Mosse giuste",
+      "think": "Riflessione media",
+      "seconds": "{{value}} sec",
+      "none": "—",
+      "label": "{{label}}: {{value}}"
+    },
+    "awards": {
+      "title": "Premi della partita",
+      "bestMove": "Mossa migliore",
+      "fewestMistakes": "Meno errori",
+      "fastest": "Più veloce",
+      "comeback": "Rimonta",
+      "mostPoints": "Più punti",
+      "label": "{{title}}: {{who}}, {{value}}",
+      "value": {
+        "bestMove": "{{value}} pt",
+        "fewestMistakes": "Errori: {{value}}",
+        "fastest": "{{value}} sec a mossa",
+        "comeback": "da {{value}} pt di svantaggio",
+        "mostPoints": "{{value}} pt"
+      }
+    },
+    "unrated": "Allenamento: il tuo punteggio non cambia",
+    "ratingSoon": "Stanza privata: per ora il punteggio non cambia",
+    "actions": {
+      "home": "Alla home",
+      "newGame": "Nuova partita"
+    },
+    "loading": "Caricamento del risultato…",
+    "missing": "Non abbiamo trovato questo allenamento",
+    "unavailable": "Non siamo riusciti a leggere gli allenamenti salvati",
+    "notSaved": "Questo allenamento non è stato salvato sul telefono"
+  }
+}

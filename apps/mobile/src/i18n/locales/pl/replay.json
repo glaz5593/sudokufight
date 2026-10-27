@@ -1,0 +1,92 @@
+{
+  "title": "Powtórka",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Trening solo",
+    "bot": "Trening z botem",
+    "ranked": "Rankingowa"
+  },
+  "back": "Wstecz",
+  "loading": "Wczytywanie partii…",
+  "load": {
+    "missing": "Nie znaleźliśmy tej partii",
+    "notFinished": "Serwer wciąż zapisuje tę partię. Spróbuj za chwilę",
+    "offline": "Brak połączenia z serwerem. Partie rankingowe wczytują się z serwera",
+    "signedOut": "Zaloguj się, aby obejrzeć partię rankingową",
+    "unavailable": "Nie udało się odczytać tej partii",
+    "retry": "Spróbuj ponownie",
+    "partial": "Ta partia została przerwana: powtórka sięga do ostatniego zapisanego ruchu"
+  },
+  "step": {
+    "counter": "Krok {{number}} z {{total}}",
+    "clockLabel": "Zegar partii: {{clock}}"
+  },
+  "nav": {
+    "prev": "Poprzedni krok",
+    "next": "Następny krok",
+    "timeline": "Oś kroków",
+    "timelineValue": "Krok {{number}} z {{total}}, {{clock}}",
+    "timelineHint": "Przesuń w górę lub w dół, aby zmienić krok"
+  },
+  "narration": {
+    "start": "Partia się zaczyna",
+    "select": "{{name}} · wybiera {{cell}}",
+    "correct": "{{name}} · dobrze w {{cell}} · {{delta}}",
+    "wrong": "{{name}} · błąd w {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · zwalnia {{cell}}",
+      "timeout": "{{name}} · koniec czasu w {{cell}}"
+    },
+    "interference": "{{name}} · zakłóca grę gracza {{target}} · {{delta}}",
+    "disconnect": "{{name}} · rozłączenie",
+    "reconnect": "{{name}} · wraca do partii",
+    "offline": "{{name}} · utrata połączenia",
+    "surrender": "{{name}} · poddaje partię",
+    "endPractice": "{{name}} · kończy trening",
+    "abandon": "{{name}} · opuszcza partię",
+    "over": "Partia zakończona",
+    "paused": "Partia zamrożona",
+    "offlineSuffix": "wysłane po odzyskaniu połączenia"
+  },
+  "explain": {
+    "title": "Wyjaśnienie dla każdego gracza",
+    "none": "Jeszcze brak ruchów gracza {{name}}",
+    "noneMe": "Jeszcze brak moich ruchów",
+    "noneBody": "Wyjaśnienie pojawi się po pierwszym ruchu",
+    "status": {
+      "choosing": "Wybór",
+      "released": "Zwolnione",
+      "correct": "Dobrze",
+      "wrong": "Źle"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} zamiast {{answer}}",
+    "why": "Dlaczego {{digit}} nie pasuje: {{text}}",
+    "noLogic": "Odpowiedź: {{cell}} → {{digit}}",
+    "scoreLine": "Wynik",
+    "penaltyLine": "Kara: tyle była warta właściwa cyfra",
+    "released": {
+      "cancel": "Wybór anulowany",
+      "timeout": "Koniec czasu",
+      "switch": "Przejście na inne pole",
+      "mistake": "Po błędzie",
+      "surrender": "Wyjście z partii",
+      "disconnect": "Rozłączenie",
+      "abandon": "Porzucenie"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "Kluczowe momenty",
+    "bestMove": "Najlepszy ruch",
+    "mistakes": "Błędy · {{count}}",
+    "interferences": "Zakłócenia · {{count}}",
+    "turningPoint": "Punkt zwrotny",
+    "hint": "Przeskakuje do tego kroku"
+  },
+  "board": "Plansza w kroku {{number}}",
+  "me": "Ja",
+  "unknown": "Gracz"
+}

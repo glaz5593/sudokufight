@@ -1,0 +1,674 @@
+{
+  "title": "Etappentraining",
+  "stage": "Etappe {{n}}",
+  "chapter": "Kapitel {{n}}",
+  "units": {
+    "seconds": "Sek."
+  },
+  "stars": {
+    "of3": {
+      "0": "keine Sterne",
+      "1": "ein Stern von drei",
+      "2": "zwei Sterne von drei",
+      "3": "drei Sterne von drei"
+    },
+    "count_one": "1 Stern",
+    "count_other": "{{count}} Sterne"
+  },
+  "kinds": {
+    "find": {
+      "name": "Punktgenau",
+      "label": "Punktgenau"
+    },
+    "findDuel": {
+      "name": "Wettlauf gegen Bot",
+      "label": "Wettlauf gegen Bot"
+    },
+    "fillBox": {
+      "name": "Block füllen",
+      "label": "Block füllen"
+    },
+    "duel": {
+      "name": "Duell bis {{target}}",
+      "label": "Duell bis {{target}}"
+    },
+    "spotError": {
+      "name": "Fehlersuche",
+      "label": "Fehlersuche"
+    },
+    "pointHunter": {
+      "name": "Punktejagd",
+      "label": "Punktejagd"
+    },
+    "chain": {
+      "name": "Kette",
+      "label": "Kette"
+    },
+    "fillRow": {
+      "name": "Zeile füllen",
+      "label": "Zeile füllen"
+    },
+    "fillCol": {
+      "name": "Spalte füllen",
+      "label": "Spalte füllen"
+    },
+    "puzzle": {
+      "name": "Blockpuzzle",
+      "label": "Blockpuzzle"
+    }
+  },
+  "boss": {
+    "chip": "Boss",
+    "name": "Boss-Etappe",
+    "label": "Boss, {{kind}}",
+    "versus": "Der Boss: {{bot}}",
+    "band": "Boss · Kapitel {{chapter}}",
+    "botLabel": "{{name}}, der Boss",
+    "intro": {
+      "title": "Boss-Etappe!",
+      "sub": "Etappe {{n}} · {{kind}}",
+      "harder": "Was schwerer ist",
+      "label": "Boss-Etappe! Etappe {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "Dein erster Bot: {{bot}}",
+      "faster": "{{bot}} ist {{percent}} schneller",
+      "overlord": "Overlord",
+      "moreCells_one": "1 fehlendes Feld statt {{usual}}",
+      "moreCells_other": "{{cells}} fehlende Felder statt {{usual}}"
+    },
+    "result": {
+      "won": "Du hast den Boss besiegt!",
+      "lost": "Diesmal hat der Boss gewonnen",
+      "gateOpen": "Tor zu Kapitel {{n}}: {{stars}} · offen!",
+      "gateClosed": "Tor zu Kapitel {{n}}: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Block {{n}}",
+    "row": "Zeile {{row}}",
+    "col": "Spalte {{n}}",
+    "mapLabel": "Spielfeldkarte: {{region}}"
+  },
+  "goals": {
+    "find": "Finde den genauen Platz einer Ziffer. Die Etappe endet nach {{s}} Sek.",
+    "findDuel_one": "1 Runde gegen {{bot}}, höchstens {{s}} Sek. Wer zuerst findet, gewinnt die Runde.",
+    "findDuel_other": "{{spots}} Runden gegen {{bot}}, höchstens {{s}} Sek. Wer zuerst findet, gewinnt die Runde.",
+    "fillBox_one": "Füll das 1 fehlende Feld eines Blocks, in höchstens {{s}} Sek.",
+    "fillBox_other": "Füll die {{cells}} fehlenden Felder eines Blocks, in höchstens {{s}} Sek.",
+    "fillRow_one": "Füll das 1 fehlende Feld einer Zeile, in höchstens {{s}} Sek.",
+    "fillRow_other": "Füll die {{cells}} fehlenden Felder einer Zeile, in höchstens {{s}} Sek.",
+    "fillCol_one": "Füll das 1 fehlende Feld einer Spalte, in höchstens {{s}} Sek.",
+    "fillCol_other": "Füll die {{cells}} fehlenden Felder einer Spalte, in höchstens {{s}} Sek.",
+    "puzzle": "Bring die Blöcke in die richtige Reihenfolge. Ein falscher Tausch kostet {{penalty}} Sek. Höchstens {{s}} Sek.",
+    "duel_one": "Gegen {{bot}}, bis 1 Punkt oder {{s}} Sek. Sterne nach deinem Vorsprung.",
+    "duel_other": "Gegen {{bot}}, bis {{target}} Punkte oder {{s}} Sek. Sterne nach deinem Vorsprung.",
+    "spotError_one": "Eine falsche Ziffer versteckt sich unter deinen. Höchstens {{s}} Sek.",
+    "spotError_other": "{{count}} falsche Ziffern verstecken sich unter deinen. Höchstens {{s}} Sek.",
+    "pointHunter_one": "1 Zug, höchstens {{s}} Sek. Hol so viele Punkte wie möglich.",
+    "pointHunter_other": "{{moves}} Züge, höchstens {{s}} Sek. Hol so viele Punkte wie möglich.",
+    "chain_one": "Eine Kette aus 1 Schritt, höchstens {{s}} Sek. Es lässt sich immer nur ein Feld lösen.",
+    "chain_other": "Eine Kette aus {{steps}} Schritten, höchstens {{s}} Sek. Es lässt sich immer nur ein Feld lösen."
+  },
+  "scale": {
+    "label": "Mögliche Sterne",
+    "row": "{{stars}}: {{text}}",
+    "time": "bis {{s}} Sek.",
+    "spots_one": "1 Runde",
+    "spots_other": "{{count}} Runden",
+    "spotsRange_one": "{{range}} Runde",
+    "spotsRange_other": "{{range}} Runden",
+    "gap": "Vorsprung ab {{gap}}",
+    "lead": "vorn am Ende",
+    "points": "ab {{points}} Punkten",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "Die Etappenkarte",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_one": "1 Stern von {{max}}, zu einem Kapitel springen",
+    "totalLabel_other": "{{stars}} Sterne von {{max}}, zu einem Kapitel springen",
+    "lockedToast": "Spiel zuerst Etappe {{n}}",
+    "gateToast_one": "Kapitel {{chapter}} öffnet bei 1 Stern in Kapitel {{prev}}",
+    "gateToast_other": "Kapitel {{chapter}} öffnet bei {{need}} Sternen in Kapitel {{prev}}",
+    "loading": "Karte wird geladen…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_one": "1 Stern von {{max}}",
+    "label_other": "{{stars}} Sterne von {{max}}"
+  },
+  "node": {
+    "played": "Etappe {{n}}, {{kind}}, {{stars}}",
+    "current": "Etappe {{n}}, {{kind}}, als Nächstes",
+    "open": "Etappe {{n}}, {{kind}}, noch nicht gespielt",
+    "locked": "Etappe {{n}}, gesperrt"
+  },
+  "gate": {
+    "need_one": "Öffnet bei 1 Stern",
+    "need_other": "Öffnet bei {{need}} Sternen",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Spiel die Boss-Etappe, um es zu öffnen",
+    "open": "Kapitel {{n}} offen",
+    "lockedLabel_one": "Kapitel {{n}} gesperrt, {{stars}} von 1 Stern in Kapitel {{prev}}",
+    "lockedLabel_other": "Kapitel {{n}} gesperrt, {{stars}} von {{need}} Sternen in Kapitel {{prev}}",
+    "bossLabel_one": "Kapitel {{n}} gesperrt, {{stars}} von 1 Stern in Kapitel {{prev}}. Spiel die Boss-Etappe, um es zu öffnen",
+    "bossLabel_other": "Kapitel {{n}} gesperrt, {{stars}} von {{need}} Sternen in Kapitel {{prev}}. Spiel die Boss-Etappe, um es zu öffnen",
+    "openLabel_one": "Kapitel {{n}} offen, geöffnet mit 1 Stern aus Kapitel {{prev}}",
+    "openLabel_other": "Kapitel {{n}} offen, geöffnet mit {{need}} Sternen aus Kapitel {{prev}}"
+  },
+  "jump": {
+    "title": "Kapitel wählen",
+    "row": "Kapitel {{n}} · {{name}}",
+    "rowLabel_one": "Kapitel {{n}}, {{name}}, 1 Stern von {{max}}, {{state}}",
+    "rowLabel_other": "Kapitel {{n}}, {{name}}, {{stars}} Sterne von {{max}}, {{state}}",
+    "open": "offen",
+    "locked": "gesperrt"
+  },
+  "gateSheet": {
+    "title": "Kapitel {{n}} gesperrt",
+    "missing_one": "Du brauchst 1 Stern in Kapitel {{prev}}. Du hast {{stars}}, es fehlen noch {{missing}}.",
+    "missing_other": "Du brauchst {{need}} Sterne in Kapitel {{prev}}. Du hast {{stars}}, es fehlen noch {{missing}}.",
+    "bossOnly": "Du hast genug Sterne. Spiel Etappe {{boss}} (den Boss), um es zu öffnen",
+    "progress": "Sterne in Kapitel {{prev}} für das Tor: {{stars}} von {{need}}",
+    "rowsTitle": "Etappen zum Verbessern",
+    "rowsNote_one": "Darin noch bis zu 1 Stern mehr",
+    "rowsNote_other": "Darin noch bis zu {{count}} Sterne mehr",
+    "row": "Etappe {{n}} · {{kind}}",
+    "rowLabel": "Etappe {{n}} noch mal spielen, {{kind}}, {{stars}}",
+    "rowNewLabel": "Etappe {{n}} spielen, {{kind}}, noch nicht gespielt",
+    "rowPlay": "Spielen",
+    "primary": "Etappe {{n}} spielen",
+    "footnote": "Die meisten Etappen dauern höchstens 30 Sek., Füll- und Puzzle-Etappen höchstens 60. Deine besten Sterne bleiben erhalten."
+  },
+  "panel": {
+    "label": "Die gewählte Etappe",
+    "title": "Etappe {{n}} · {{kind}}",
+    "sub": "Kapitel {{chapter}} · {{name}}",
+    "subBot": "Kapitel {{chapter}} · gegen {{bot}}",
+    "subBoss": "Kapitel {{chapter}} · der Boss: {{bot}}",
+    "next": "Als Nächstes",
+    "best": "Rekord: {{metric}}",
+    "bestLabel": "Dein Rekord: {{stars}}, {{metric}}",
+    "bestStars": "Dein Rekord: {{stars}}",
+    "bot": "{{name}} · Level {{level}} · {{title}}",
+    "continue": "Weiter · Etappe {{n}}",
+    "play": "Spielen",
+    "lockedTitle": "Etappe {{n}} · gesperrt",
+    "lockedSub": "Kapitel {{chapter}} · {{kind}}",
+    "lockedPrev": "Spiel zuerst Etappe {{n}}.",
+    "lockedGate_one": "Kapitel {{chapter}} ist gesperrt: Es braucht 1 Stern in Kapitel {{prev}}. Du hast {{stars}}.",
+    "lockedGate_other": "Kapitel {{chapter}} ist gesperrt: Es braucht {{need}} Sterne in Kapitel {{prev}}. Du hast {{stars}}.",
+    "gateTitleOpen": "Kapitel {{n}} offen",
+    "gateTitleClosed": "Kapitel {{n}} gesperrt",
+    "gateSub": "{{name}} · Etappen {{range}}",
+    "gateOpenBody_one": "Offen: Du hast 1 Stern in Kapitel {{prev}} geholt, und das Tor braucht {{need}}.",
+    "gateOpenBody_other": "Offen: Du hast {{stars}} Sterne in Kapitel {{prev}} geholt, und das Tor braucht {{need}}.",
+    "gateBar": "Sterne für das Tor: {{stars}} von {{need}}"
+  },
+  "ready": {
+    "title": "Bereit?",
+    "label": "Bereit? Etappe {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "Wo ist die {{digit}}?",
+    "raceSpots_one": "1 Runde, ein Wettlauf gegen {{bot}}",
+    "raceSpots_other": "{{count}} Runden, ein Wettlauf gegen {{bot}}"
+  },
+  "tutorial": {
+    "title": "So wird gespielt",
+    "got": "Verstanden",
+    "skip": "Überspringen",
+    "panel": "Bild {{n}} von {{total}}: {{text}}",
+    "alsoBoss": "Das ist auch ein Boss: die zehnte Etappe jedes Kapitels.",
+    "find": {
+      "1": "Eine Frage, etwa „Wo ist die {{digit}}?“, und ein markierter Bereich auf dem Spielfeld: ein Block, eine Zeile, eine Spalte oder das ganze Spielfeld.",
+      "2": "Finde das eine Feld, in das die Ziffer gehört, und tippe darauf.",
+      "3": "Tippst du falsch, kommen 5 Sekunden dazu. Beim zweiten Mal endet die Etappe."
+    },
+    "findDuel": {
+      "1": "Fünf Runden, eine nach der anderen. Der Bot sucht mit dir.",
+      "2": "Wer zuerst auf das richtige Feld tippt, gewinnt die Runde.",
+      "3": "Tippst du falsch: 3 Sekunden ohne Tippen, während der Bot weitersucht."
+    },
+    "fillBox": {
+      "1": "Ein Block mit fehlenden Feldern, in goldenem Rahmen.",
+      "2": "Wähle ein Feld im Block und gib eine Ziffer ein. Felder außerhalb lassen sich nicht wählen.",
+      "3": "Eine falsche Ziffer kostet 5 Sekunden. Je schneller du fertig bist, desto mehr Sterne."
+    },
+    "duel": {
+      "1": "Du und der Bot auf demselben Spielfeld, wie in einem Spiel.",
+      "2": "Wer zuerst 30 Punkte hat, gewinnt, oder wer nach 30 Sekunden vorn liegt.",
+      "3": "Sterne nach deinem Vorsprung am Ende: 8 Punkte für zwei Sterne, 15 für drei."
+    },
+    "spotError": {
+      "1": "Die dunklen Ziffern gehören zum Spielfeld und sind immer richtig.",
+      "2": "Unter deinen verstecken sich falsche Ziffern. Tippe sie an.",
+      "3": "Tippst du eine richtige Ziffer an, kommen 5 Sekunden dazu."
+    },
+    "pointHunter": {
+      "1": "Du hast nur drei Züge.",
+      "2": "Ein Feld in einem leeren Bereich bringt mehr Punkte.",
+      "3": "Sterne danach, wie nah du an den Bestwert des Spielfelds kommst."
+    },
+    "chain": {
+      "1": "In jedem Moment lässt sich nur ein Feld auf dem Spielfeld lösen.",
+      "2": "Füll es, und es öffnet das nächste.",
+      "3": "Eine Ziffer in einem Feld, das sich noch nicht bestimmen lässt, kostet 5 Sekunden und wird nicht gesetzt."
+    },
+    "boss": {
+      "1": "Die zehnte Etappe jedes Kapitels ist ein Boss: ein Kampf gegen einen Bot, schwerer als die Etappen davor.",
+      "2": "Vor dem Start siehst du, was schwerer ist. Meistens: Der Bot ist schneller.",
+      "3": "Hast du den Boss gespielt und 20 Sterne im Kapitel, öffnet sich das nächste Kapitel."
+    },
+    "fillRow": {
+      "1": "Eine Zeile mit fehlenden Feldern, in goldenem Rahmen.",
+      "2": "Wähle ein Feld in der Zeile und gib eine Ziffer ein. Felder außerhalb lassen sich nicht wählen.",
+      "3": "Eine falsche Ziffer kostet 5 Sekunden. Je schneller du fertig bist, desto mehr Sterne."
+    },
+    "fillCol": {
+      "1": "Eine Spalte mit fehlenden Feldern, in goldenem Rahmen.",
+      "2": "Wähle ein Feld in der Spalte und gib eine Ziffer ein. Felder außerhalb lassen sich nicht wählen.",
+      "3": "Eine falsche Ziffer kostet 5 Sekunden. Je schneller du fertig bist, desto mehr Sterne."
+    },
+    "puzzle": {
+      "1": "Neun volle Blöcke, in falscher Reihenfolge.",
+      "2": "Zieh einen Block auf einen anderen, dann tauschen sie die Plätze. Ein Block mit Schloss ist fest. Ein Tausch, der keinen der beiden Blöcke an seinen Platz bringt, kostet 5 Sekunden.",
+      "3": "Wenn jede Zeile und Spalte stimmt, endet die Etappe. Je schneller du fertig bist, desto mehr Sterne."
+    }
+  },
+  "result": {
+    "completed": "Etappe {{n}} geschafft",
+    "ended": "Etappe {{n}}",
+    "reasons": {
+      "timeUp": "Zeit abgelaufen",
+      "failed": "Zweimal falsch getippt",
+      "quit": "Du hast die Etappe verlassen",
+      "botWon": "{{bot}} war schneller"
+    },
+    "metric": {
+      "spotsOf_one": "von 1 Runde",
+      "spotsOf_other": "von {{total}} Runden",
+      "gap": "Vorsprung",
+      "points": "Punkte",
+      "found": "Gefunden",
+      "foundOf": "von {{total}}"
+    },
+    "newBest": "Neuer Rekord!",
+    "yourBest": "Dein Rekord:",
+    "yourBestLabel": "Dein Rekord: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, geschätzt: Der Server bestätigt es",
+    "chapterLabel": "Dieses Kapitel",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "das Tor braucht {{need}}",
+    "chapterOpen": "das Tor ist offen",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_one": "Dieses Kapitel: 1 Stern von {{max}}. {{gate}}",
+    "chapterLine_other": "Dieses Kapitel: {{stars}} Sterne von {{max}}. {{gate}}",
+    "mistakes_one": "1 Fehler",
+    "mistakes_other": "{{count}} Fehler",
+    "noMistakes": "Keine Fehler",
+    "swaps_one": "1 Tausch · Minimum: {{min}}",
+    "swaps_other": "{{count}} Tausche · Minimum: {{min}}",
+    "time": "Zeit: {{s}} Sek.",
+    "youWon": "Du hast gewonnen",
+    "botWon": "{{bot}} hat gewonnen",
+    "tie": "Unentschieden",
+    "bossTie": "Unentschieden: Der Boss hält stand",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_one": "1 Runde",
+    "opponentSpots_other": "{{count}} Runden",
+    "opponentScore_one": "{{score}} Punkt",
+    "opponentScore_other": "{{score}} Punkte",
+    "bestMove_one": "Der beste Zug: {{digit}} in {{cell}} · {{points}} Punkt",
+    "bestMove_other": "Der beste Zug: {{digit}} in {{cell}} · {{points}} Punkte",
+    "why": "Warum?",
+    "next": "Nächste Etappe",
+    "again": "Noch mal",
+    "toMap": "Zur Karte",
+    "last": "Das war die letzte Etappe. Gut gemacht!",
+    "nextLocked": "Die nächste Etappe ist noch gesperrt"
+  },
+  "unlocked": {
+    "heading": "Ein neues Kapitel ist offen!",
+    "title": "Kapitel {{n}} · {{name}}",
+    "news": "Neu: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Weiter",
+    "label": "Ein neues Kapitel ist offen: Kapitel {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: „Ich fange gerade erst an, aber ich bin schneller, als ich aussehe.“",
+      "2": "Biscuit: „Ich bin entspannt, aber entkommen lasse ich dich nicht.“",
+      "3": "Mr. Hoot: „Ich sehe jedes Feld. Vorsicht.“",
+      "4": "Maestro: „Schnell, präzise und mit Stil.“",
+      "5": "Overlord: „Du bist weit gekommen. Hier ist Schluss.“"
+    }
+  },
+  "exit": {
+    "button": "Etappe verlassen",
+    "title": "Etappe verlassen?",
+    "body": "Du bekommst 0 Sterne, und die nächste Etappe öffnet sich.",
+    "confirm": "Verlassen",
+    "cancel": "Weiterspielen"
+  },
+  "card": {
+    "line": "Etappen: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_one": "Etappen: {{played}}, 1 Stern",
+    "label_other": "Etappen: {{played}}, {{count}} Sterne"
+  },
+  "chapters": {
+    "1": {
+      "name": "Erste Schritte",
+      "news": "Punktgenau, Block füllen, das Blockpuzzle und Zeile füllen"
+    },
+    "2": {
+      "name": "Pips Herausforderung",
+      "news": "Spalte füllen und Wettlauf gegen den Bot"
+    },
+    "3": {
+      "name": "Erstes Duell",
+      "news": "Duell bis 30 und Fehlersuche"
+    },
+    "4": {
+      "name": "Detektiv",
+      "news": "Eine Kette aus 3 Schritten und ein Blockpuzzle mit 4 beweglichen Blöcken"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "Ein neuer Bot: Biscuit, dazu die Punktejagd und Füllaufgaben, in denen jede Ziffer mindestens einmal fehlt"
+    },
+    "6": {
+      "name": "Zeilen und Spalten",
+      "news": "Ein Standard-Spielfeld und Ziele in einer Zeile oder Spalte"
+    },
+    "7": {
+      "name": "Punktejagd",
+      "news": "Ein Blockpuzzle mit 5 beweglichen Blöcken"
+    },
+    "8": {
+      "name": "Zwei Fehler",
+      "news": "Zwei Fehler auf dem Spielfeld und ein Duell auf einem Standard-Spielfeld"
+    },
+    "9": {
+      "name": "Kette",
+      "news": "Alle Arten noch mal, eine Stufe schwerer"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "Ein neuer Bot: Mr. Hoot, und 7 fehlende Felder beim Füllen"
+    },
+    "11": {
+      "name": "Das ganze Spielfeld",
+      "news": "Ziele überall auf dem Spielfeld"
+    },
+    "12": {
+      "name": "Schneller",
+      "news": "Punktejagd in 25 Sekunden, auf einem Standard-Spielfeld"
+    },
+    "13": {
+      "name": "Stille Fehler",
+      "news": "Fehler ohne sichtbaren Konflikt"
+    },
+    "14": {
+      "name": "Lange Kette",
+      "news": "Eine Kette aus 4 Schritten und 9 fehlende Felder beim Füllen"
+    },
+    "15": {
+      "name": "Halbzeit",
+      "news": "Alle Arten noch mal"
+    },
+    "16": {
+      "name": "Schwere Spielfelder",
+      "news": "Ein schweres Spielfeld und ein Blockpuzzle mit 6 beweglichen Blöcken"
+    },
+    "17": {
+      "name": "Ausschlüsse",
+      "news": "Ziele, die sich erst nach einem Ausschluss zeigen"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "Ein neuer Bot: Maestro"
+    },
+    "19": {
+      "name": "Fallen",
+      "news": "Drei Fehler auf dem Spielfeld"
+    },
+    "20": {
+      "name": "Das schwere Tor",
+      "news": "Ein leerer Block, der einen Ausschluss braucht"
+    },
+    "21": {
+      "name": "Paare",
+      "news": "Paare und Punktejagd in 20 Sekunden"
+    },
+    "22": {
+      "name": "Kette aus 5",
+      "news": "Eine Kette aus 5 Schritten"
+    },
+    "23": {
+      "name": "Kaum Vorgaben",
+      "news": "Spielfelder mit sehr wenigen Ziffern"
+    },
+    "24": {
+      "name": "Wettlauf",
+      "news": "Duelle auf schweren Spielfeldern"
+    },
+    "25": {
+      "name": "Experten",
+      "news": "Alles noch mal, in hohem Tempo"
+    },
+    "26": {
+      "name": "Meisterschaft",
+      "news": "Drei Sterne nur für die Schnellsten"
+    },
+    "27": {
+      "name": "Meisterschaft II",
+      "news": "Punktejagd: drei Sterne nur nah am Bestwert"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "Der Boss: Overlord, im Wettlauf"
+    },
+    "29": {
+      "name": "Das Finale",
+      "news": "Eine schnelle Kette und Overlord als Boss im Duell"
+    },
+    "30": {
+      "name": "Der Champion",
+      "news": "Alles zusammen, so schwer wie nie"
+    }
+  },
+  "hud": {
+    "secondsAdded_one": "{{count}} Sekunde dazu",
+    "secondsAdded_other": "{{count}} Sekunden dazu",
+    "sub": "{{kind}} · Kapitel {{chapter}}",
+    "subFind": "Wo ist die {{digit}}? · Kapitel {{chapter}}",
+    "subRace_one": "{{kind}} · 1 Runde · Kapitel {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} Runden · Kapitel {{chapter}}",
+    "clockLabel_one": "Noch 1 Sekunde von {{limit}}",
+    "clockLabel_other": "Noch {{s}} Sekunden von {{limit}}",
+    "penalty": "{{s}} Sek.",
+    "me": "Ich",
+    "find": {
+      "tap": "Tippe dort, wo die {{digit}} hingehört",
+      "where": "<scope>{{scope}}</scope> · ohne Tastenfeld, nur tippen",
+      "elapsed": "Sek. bisher",
+      "targetLabel": "Das Ziel: die {{digit}} {{scope}}. {{left}}",
+      "ringLabel_one": "Noch 1 Sekunde in der Etappe",
+      "ringLabel_other": "Noch {{s}} Sekunden in der Etappe",
+      "one": "Ein Fund in dieser Etappe",
+      "wrongRule": "Falsch getippt: {{penalty}} Sek.",
+      "twoWrongRule": "Zweimal falsch getippt: Die Etappe endet",
+      "found": "Gefunden: die {{digit}} in {{cell}}",
+      "missed": "Nicht in {{cell}}. {{penalty}} Sek.",
+      "answer": "Die Lösung: {{cell}}"
+    },
+    "scope": {
+      "box": "in Block {{n}}",
+      "row": "in Zeile {{row}}",
+      "col": "in Spalte {{n}}",
+      "board": "irgendwo auf dem Spielfeld"
+    },
+    "race": {
+      "task": "Runde {{n}} von {{total}} · finde die {{digit}} {{scope}}",
+      "left": "noch {{s}} Sek.",
+      "searching": "Sucht…",
+      "spots_one": "1 Runde",
+      "spots_other": "{{count}} Runden",
+      "frozen_one": "Eingefroren, 1 Sekunde",
+      "frozen_other": "Eingefroren, {{count}} Sekunden",
+      "out": "Raus bis zur nächsten Runde",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, Bot-Level {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} sucht",
+      "mine": "Runde {{n}} geht an dich",
+      "theirs": "Runde {{n}} geht an {{name}}",
+      "void": "Runde {{n}} geht an niemanden",
+      "next": "Runde {{n}}: die {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "Füll Block {{n}}",
+      "cells_one": "{{done}}/{{total}} Feld",
+      "cells_other": "{{done}}/{{total}} Felder",
+      "cellsLabel_one": "Du hast {{done}} von 1 fehlenden Feld ausgefüllt",
+      "cellsLabel_other": "Du hast {{done}} von {{total}} fehlenden Feldern ausgefüllt",
+      "mistakes_one": "Fehler {{penalty}} Sek.",
+      "mistakes_other": "{{count}} Fehler {{penalty}} Sek.",
+      "mistakesLabel_one": "Ein Fehler, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_other": "{{count}} Fehler, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "Ein Fehler kostet 5 Sekunden, und die Ziffer scheidet für dieses Feld aus",
+      "timeLabel_one": "Zeit: 1 Sekunde von {{limit}}",
+      "timeLabel_other": "Zeit: {{s}} Sekunden von {{limit}}",
+      "boardLabel_one": "Das Spielfeld · füll nur das 1 fehlende Feld von Block {{n}}",
+      "boardLabel_other": "Das Spielfeld · füll nur die {{count}} fehlenden Felder von Block {{n}}"
+    },
+    "line": {
+      "taskRow": "Füll Zeile {{row}}",
+      "taskCol": "Füll Spalte {{n}}",
+      "boardLabelRow_one": "Das Spielfeld · füll nur das 1 fehlende Feld von Zeile {{row}}",
+      "boardLabelRow_other": "Das Spielfeld · füll nur die {{count}} fehlenden Felder von Zeile {{row}}",
+      "boardLabelCol_one": "Das Spielfeld · füll nur das 1 fehlende Feld von Spalte {{n}}",
+      "boardLabelCol_other": "Das Spielfeld · füll nur die {{count}} fehlenden Felder von Spalte {{n}}"
+    },
+    "puzzle": {
+      "task": "Ordne die Blöcke",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_one": "1 Block beweglich",
+      "moving_other": "{{count}} Blöcke beweglich",
+      "fixed_one": "1 Block fest",
+      "fixed_other": "{{count}} Blöcke fest",
+      "allMove": "Alle Blöcke beweglich",
+      "swaps": "Tausche: {{count}}",
+      "wrong_one": "Falscher Tausch {{penalty}} Sek.",
+      "wrong_other": "{{count}} falsche Tausche {{penalty}} Sek.",
+      "wrongLabel_one": "Ein falscher Tausch, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_other": "{{count}} falsche Tausche, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "Zieh einen Block auf einen anderen, um sie zu tauschen",
+      "tapHint": "Oder: Tippe einen Block an, dann einen anderen",
+      "slotLabel": "Block {{n}}, {{state}}: {{rows}}",
+      "state": {
+        "movable": "beweglich",
+        "fixed": "fest",
+        "selected": "ausgewählt"
+      },
+      "slotHint": "Zum Auswählen tippen, dann einen anderen Block antippen",
+      "swapped": "Blöcke {{a}} und {{b}} getauscht",
+      "swappedPenalty_one": "Blöcke {{a}} und {{b}} getauscht. Plus 1 Sekunde",
+      "swappedPenalty_other": "Blöcke {{a}} und {{b}} getauscht. Plus {{s}} Sekunden",
+      "fixedTap": "Dieser Block ist fest",
+      "solved": "Jede Zeile und jede Spalte stimmt",
+      "boardLabel": "Das Puzzle · {{counts}}"
+    },
+    "duel": {
+      "gap": "Vorsprung {{gap}}",
+      "gapLabel": "Der Vorsprung: {{gap}}. Ein Stern, wenn du am Ende vorn liegst, 2 Sterne ab {{two}}, 3 Sterne ab {{three}}",
+      "lead": "Vorn",
+      "of": "/{{target}}",
+      "meLabel_one": "{{name}}, {{score}} von 1 Punkt",
+      "meLabel_other": "{{name}}, {{score}} von {{target}} Punkten",
+      "botLabel_one": "{{name}}, Bot-Level {{n}}, {{score}} von 1 Punkt",
+      "botLabel_other": "{{name}}, Bot-Level {{n}}, {{score}} von {{target}} Punkten",
+      "finishLabel": "Die Etappe endet, wenn jemand $t(levels:hud.duel.reachPoints, {\"count\": {{target}} }) erreicht, oder nach $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })",
+      "reachPoints_one": "{{count}} Punkt",
+      "reachPoints_other": "{{count}} Punkte",
+      "atSeconds_one": "{{count}} Sekunde",
+      "atSeconds_other": "{{count}} Sekunden",
+      "raceLabel": "Wettlauf bis {{target}}: {{me}}, {{bot}}"
+    },
+    "reactions": "Reaktionen",
+    "boardLabel": "Das Spielfeld der Etappe · {{scope}}",
+    "spotError": {
+      "goal_one": "Eine falsche Ziffer versteckt sich auf dem Spielfeld. Tippe sie an.",
+      "goal_other": "{{count}} falsche Ziffern verstecken sich auf dem Spielfeld. Tippe sie an.",
+      "note": "Die dunklen Ziffern gehören zum Spielfeld und sind immer richtig.",
+      "found": "Gefunden",
+      "foundLabel": "{{found}} von {{total}} gefunden",
+      "time": "Zeit",
+      "timeLabel_one": "Zeit: 1 Sekunde von {{limit}}",
+      "timeLabel_other": "Zeit: {{s}} Sekunden von {{limit}}",
+      "tipTitle": "Tipp",
+      "tip": "Such eine Ziffer, die in derselben Zeile, Spalte oder im selben Block doppelt vorkommt.",
+      "tipClose": "Tipp schließen",
+      "foundCell": "Du hast einen Fehler in {{cell}} gefunden: nicht {{wrong}}, sondern {{right}}",
+      "rightTap": "Die Ziffer in {{cell}} ist richtig. {{penalty}} Sek.",
+      "missed": "Nicht gefundene Fehler: {{cells}}",
+      "boardLabel": "Das Spielfeld der Etappe · tippe auf eine falsche Ziffer"
+    },
+    "hunt": {
+      "goal": "Hol $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) in $t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }).",
+      "goalPoints_one": "{{points}} Punkt",
+      "goalPoints_other": "{{points}} Punkte",
+      "goalMoves_one": "{{count}} Zug",
+      "goalMoves_other": "{{count}} Zügen",
+      "note": "Ein Feld in einem leeren Bereich ist mehr wert.",
+      "points": "Punkte",
+      "scoreLabel_one": "{{score}} Punkt",
+      "scoreLabel_other": "{{score}} Punkte",
+      "scoreWorthLabel_one": "{{score}} Punkt. Das gewählte Feld ist {{worth}} wert",
+      "scoreWorthLabel_other": "{{score}} Punkte. Das gewählte Feld ist {{worth}} wert",
+      "lost": "Die falsche Ziffer hat {{points}} gekostet",
+      "move": "Zug {{n}} von {{max}}",
+      "burnt": "Zug {{n}} verschenkt",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_one": "Ein Zug verschenkt",
+      "burntCount_other": "{{count}} Züge verschenkt",
+      "left": "übrig · von {{limit}}",
+      "timeLabel_one": "Noch 1 Sekunde von {{limit}}",
+      "timeLabel_other": "Noch {{s}} Sekunden von {{limit}}",
+      "max": "Bestwert des Spielfelds: {{max}}",
+      "worth": "Wert {{points}}"
+    },
+    "chain": {
+      "goal": "Es lässt sich immer nur ein Feld auf dem Spielfeld lösen. Finde es und füll es, dann öffnet es das nächste.",
+      "notePenalty": "Eine Ziffer in einem Feld, das sich noch nicht bestimmen lässt: {{penalty}} Sek.",
+      "noteAccept": "Eine falsche Ziffer: {{penalty}} Sek.",
+      "step": "Schritt {{n}} von {{total}}",
+      "stepLabel": "Kette: Schritt {{n}} von {{total}}",
+      "time": "Zeit",
+      "timeLabel_one": "Zeit: 1 Sekunde von {{limit}}",
+      "timeLabel_other": "Zeit: {{s}} Sekunden von {{limit}}",
+      "notYet": "{{text}} · {{penalty}} Sek.",
+      "tipTitle": "Tipp",
+      "tip": "In jedem Schritt lässt sich genau ein Feld beweisen. Wenn du dir bei einer Ziffer sicher bist, ist das das Feld.",
+      "tipClose": "Tipp schließen"
+    }
+  },
+  "explain": {
+    "spot": "Runde {{n}}: {{text}}",
+    "mistake": "Dein Fehler: {{digit}} in {{cell}}. {{reason}}",
+    "best": "Dein bester Zug, {{digit}} in {{cell}}: {{text}}",
+    "errorFound": "{{cell}}, gefunden: {{reason}}",
+    "errorMissed": "{{cell}}, nicht gefunden: {{reason}}",
+    "rightTap": "Die {{digit}} in {{cell}} ist richtig: Das Antippen hat {{penalty}} Sek. gekostet.",
+    "points_one": "Du hast {{points}} von {{max}} Punkt geholt, {{percent}} vom Bestwert des Spielfelds.",
+    "points_other": "Du hast {{points}} von {{max}} Punkten geholt, {{percent}} vom Bestwert des Spielfelds.",
+    "line": "Die beste Zugfolge: {{moves}}.",
+    "move": "{{digit}} in {{cell}} ({{points}})",
+    "step": "Schritt {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "Nur der Block, der auf Platz {{from}} begann, passt auf Platz {{place}}: Jeder andere würde eine Ziffer in einer Zeile oder Spalte wiederholen.",
+      "onlyPlaceForBox": "Der Block, der auf Platz {{from}} begann, passt nur auf Platz {{place}}: Überall sonst würde er eine Ziffer in einer Zeile oder Spalte wiederholen."
+    }
+  }
+}

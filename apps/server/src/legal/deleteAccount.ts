@@ -1,11 +1,12 @@
-import type { LegalTexts } from './types';
+import { byTranslation } from './translations';
+import type { LegalTexts, OriginalTexts } from './types';
 
 /**
  * How to delete an account (spec §3.3, §23). Apple wants deletion inside the app (Settings → מחיקת חשבון,
  * auth/authStore.ts deleteAccount); Google Play's Data safety form also wants a web page that says how to ask
  * for it without the app. What is deleted and what stays: accounts/store.ts deleteUser.
  */
-export const DELETE_ACCOUNT: LegalTexts = {
+const ORIGINALS: OriginalTexts = {
   he: {
     title: 'מחיקת חשבון',
     lead: 'איך מוחקים את חשבון סודוקו פייט, ומה קורה למידע.',
@@ -91,4 +92,10 @@ export const DELETE_ACCOUNT: LegalTexts = {
       },
     ],
   },
+};
+
+/** Every version: Hebrew and English above, the translations of the English one (D112) from translations/. */
+export const DELETE_ACCOUNT: LegalTexts = {
+  ...ORIGINALS,
+  ...byTranslation((t) => t.texts['delete-account']),
 };

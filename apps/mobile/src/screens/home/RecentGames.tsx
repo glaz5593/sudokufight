@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon, type IconName } from '../../components/Icon';
 import { Avatar, type GameResultKind, ltr, scoreText } from '../../components/player';
 import { SkeletonGroup, SkeletonRows } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import type { PracticeGameRecord } from '../../game/practiceRepo';
+import { decimalSeparator } from '../../i18n/compose';
 import type { PracticeHistoryState } from '../../state/practiceHistory';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { playerIdentity } from '../game/identity';
@@ -97,12 +99,15 @@ function RecentRow({ game, onPress }: { game: PracticeGameRecord; onPress: () =>
         })
       : t(`recent.outcome.${outcome}`);
   const when = playedAtText(game.startedAt, i18n.language);
-  const score = game.score === null ? t('profile.none') : scoreText(game.score);
+  const decimal = decimalSeparator(t);
+  const score = game.score === null ? t('profile.none') : scoreText(game.score, decimal);
   const mistakes = game.mistakes === null ? null : t('player:mistakes.short', { count: game.mistakes });
   const label = [
     title,
     outcomeText,
-    game.score === null ? null : t('player:points', { count: game.score, score: scoreText(game.score) }),
+    game.score === null
+      ? null
+      : t('player:points', { count: game.score, score: scoreText(game.score, decimal) }),
     mistakes,
     when,
   ]

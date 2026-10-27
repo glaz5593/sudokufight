@@ -1,0 +1,111 @@
+{
+  "technique": {
+    "nakedSingle": "Nagi singiel",
+    "hiddenSingle": "Ukryty singiel",
+    "pointing": "Redukcja kwadrat–linia",
+    "claiming": "Redukcja kwadrat–linia",
+    "nakedPair": "Naga para",
+    "hiddenPair": "Ukryta para",
+    "chain": "Technika zaawansowana",
+    "beyond": "Poza technikami silnika"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} i {{last}}",
+    "lastOr": "{{head}} lub {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} i {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "W wierszu {{label}} brakuje już tylko {{digit}}.",
+      "col": "W kolumnie {{label}} brakuje już tylko {{digit}}.",
+      "box": "W kwadracie {{label}} brakuje już tylko {{digit}}."
+    },
+    "missing": {
+      "row": "W wierszu {{label}} brakuje: {{digits}}.",
+      "col": "W kolumnie {{label}} brakuje: {{digits}}.",
+      "box": "W kwadracie {{label}} brakuje: {{digits}}."
+    },
+    "seen": {
+      "row": "W wierszu {{label}} są już: {{digits}}.",
+      "col": "W kolumnie {{label}} są już: {{digits}}.",
+      "box": "W kwadracie {{label}} są już: {{digits}}."
+    },
+    "eliminated": "Cyfra {{digit}} odpadła z pola {{cell}} w kroku {{step}}.",
+    "only": "Zostaje więc tylko {{digit}}."
+  },
+  "hidden": {
+    "alone": {
+      "row": "Cyfra {{digit}} musi się znaleźć w wierszu {{label}}, a {{cell}} to jego jedyne puste pole. Zatem {{result}}.",
+      "col": "Cyfra {{digit}} musi się znaleźć w kolumnie {{label}}, a {{cell}} to jej jedyne puste pole. Zatem {{result}}.",
+      "box": "Cyfra {{digit}} musi się znaleźć w kwadracie {{label}}, a {{cell}} to jego jedyne puste pole. Zatem {{result}}."
+    },
+    "blocked": {
+      "row": "Cyfra {{digit}} musi się znaleźć w wierszu {{label}}. W żadnym z pozostałych pustych pól tego wiersza nie może jej być: {{clauses}}. Zatem {{result}}.",
+      "col": "Cyfra {{digit}} musi się znaleźć w kolumnie {{label}}. W żadnym z pozostałych pustych pól tej kolumny nie może jej być: {{clauses}}. Zatem {{result}}.",
+      "box": "Cyfra {{digit}} musi się znaleźć w kwadracie {{label}}. W żadnym z pozostałych pustych pól tego kwadratu nie może jej być: {{clauses}}. Zatem {{result}}."
+    },
+    "clause": {
+      "step": "pole {{cell}} straciło {{digit}} w kroku {{step}}",
+      "unit": {
+        "row": "pole {{cell}} widzi {{digit}} w wierszu {{label}}",
+        "col": "pole {{cell}} widzi {{digit}} w kolumnie {{label}}",
+        "box": "pole {{cell}} widzi {{digit}} w kwadracie {{label}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "W kwadracie {{box}} cyfra {{digit}} może być tylko w wierszu {{line}}, więc znika z reszty tego wiersza: {{cells}}.",
+    "col": "W kwadracie {{box}} cyfra {{digit}} może być tylko w kolumnie {{line}}, więc znika z reszty tej kolumny: {{cells}}."
+  },
+  "claiming": {
+    "row": "W wierszu {{line}} cyfra {{digit}} może być tylko w kwadracie {{box}}, więc znika z reszty tego kwadratu: {{cells}}.",
+    "col": "W kolumnie {{line}} cyfra {{digit}} może być tylko w kwadracie {{box}}, więc znika z reszty tego kwadratu: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "W polach {{a}} i {{b}} mogą być tylko {{digits}}, więc {{digits}} znikają z reszty wiersza {{label}}: {{cells}}.",
+    "col": "W polach {{a}} i {{b}} mogą być tylko {{digits}}, więc {{digits}} znikają z reszty kolumny {{label}}: {{cells}}.",
+    "box": "W polach {{a}} i {{b}} mogą być tylko {{digits}}, więc {{digits}} znikają z reszty kwadratu {{label}}: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "W wierszu {{label}} cyfry {{digits}} mogą trafić tylko do pól {{a}} i {{b}}, więc pozostali kandydaci znikają z tych pól.",
+    "col": "W kolumnie {{label}} cyfry {{digits}} mogą trafić tylko do pól {{a}} i {{b}}, więc pozostali kandydaci znikają z tych pól.",
+    "box": "W kwadracie {{label}} cyfry {{digits}} mogą trafić tylko do pól {{a}} i {{b}}, więc pozostali kandydaci znikają z tych pól."
+  },
+  "beyond": "Tu potrzebna jest zaawansowana technika, której silnik jeszcze nie umie wyjaśnić. Odpowiedź: {{formula}}.",
+  "chain": {
+    "head_one": "Tego pola nie da się jeszcze rozstrzygnąć w jednym kroku. Potrzebny jest {{count}} krok:",
+    "head_few": "Tego pola nie da się jeszcze rozstrzygnąć w jednym kroku. Potrzebne są {{count}} kroki:",
+    "head_many": "Tego pola nie da się jeszcze rozstrzygnąć w jednym kroku. Potrzeba {{count}} kroków:",
+    "head_other": "Tego pola nie da się jeszcze rozstrzygnąć w jednym kroku. Potrzeba {{count}} kroku:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "Cyfra {{digit}} jest już w wierszu {{label}} ({{cell}}).",
+      "col": "Cyfra {{digit}} jest już w kolumnie {{label}} ({{cell}}).",
+      "box": "Cyfra {{digit}} jest już w kwadracie {{label}} ({{cell}})."
+    },
+    "notSolution": "Cyfra {{digit}} wciąż tu pasuje, ale w rozwiązaniu jest tu {{answer}}."
+  },
+  "block": {
+    "step": "W polu {{cell}} nie może być {{digit}}: ta cyfra odpadła w kroku {{step}}",
+    "unit": {
+      "row": "W polu {{cell}} nie może być {{digit}}: w wierszu {{label}} jest już {{digit}}",
+      "col": "W polu {{cell}} nie może być {{digit}}: w kolumnie {{label}} jest już {{digit}}",
+      "box": "W polu {{cell}} nie może być {{digit}}: w kwadracie {{label}} jest już {{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "Jeszcze nie wiadomo, co wpisać w polu {{cell}}",
+    "options": "Jeszcze nie wiadomo, co wpisać w polu {{cell}} ({{options}})"
+  }
+}

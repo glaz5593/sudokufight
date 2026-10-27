@@ -1,0 +1,32 @@
+{
+  "button": {
+    "loading": "{{label}}, yükleniyor"
+  },
+  "nav": {
+    "label": "Ana gezinme",
+    "tabs": {
+      "home": "Ana sayfa",
+      "leaderboard": "Sıralama",
+      "history": "Geçmiş",
+      "achievements": "Başarılar"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "İptal"
+  },
+  "sheet": {
+    "close": "Kapat"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_one": "1 saniye kaldı",
+    "secondsLeft_other": "{{count}} saniye kaldı"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "Hata kodu: {{code}}"
+  }
+}

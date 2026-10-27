@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '../../components/ui/Button';
+import { Text } from '../../components/ui/Text';
 import { FRIENDS_UI, type FriendsUiSettings } from '../../config/friends';
 import { cue } from '../../services/feedback';
 import { color, space, text, tokens } from '../../theme';

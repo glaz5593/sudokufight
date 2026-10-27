@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 
 import { color, space, text } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
+import { Text } from '../ui/Text';
 import { POP_FROM, springs, timing } from './animation';
 
 /**

@@ -1,0 +1,254 @@
+{
+  "devMode": {
+    "badge": "Mode pengembangan",
+    "label": "Mode pengembangan: akun lokal hanya di ponsel ini, tanpa Firebase",
+    "noEmail": "Mode pengembangan tidak mengirim email."
+  },
+  "fields": {
+    "email": "Alamat email",
+    "emailPlaceholder": "name@example.com",
+    "password": "Kata sandi",
+    "newPassword": "Kata sandi",
+    "confirmPassword": "Konfirmasi kata sandi",
+    "displayName": "Nama tampilan",
+    "displayNamePlaceholder": "Nama arenamu",
+    "avatar": "Avatarmu",
+    "country": "Negara",
+    "showPassword": "Tampilkan kata sandi",
+    "hidePassword": "Sembunyikan kata sandi",
+    "change": "Ubah"
+  },
+  "validation": {
+    "emailRequired": "Masukkan emailmu",
+    "emailInvalid": "Alamat email itu sepertinya tidak benar",
+    "passwordRequired": "Masukkan kata sandimu",
+    "passwordRules": "Kata sandi minimal 8 karakter",
+    "confirmMismatch": "Kata sandinya tidak cocok",
+    "countryRequired": "Pilih negara"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "Kata sandi salah. Coba lagi, atau setel ulang.",
+      "userNotFound": "Tidak ada akun dengan email ini. Mau daftar?",
+      "invalidCredentials": "Email atau kata sandi salah.",
+      "tooManyRequests": "Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi, atau setel ulang kata sandimu.",
+      "network": "Tidak ada koneksi internet. Periksa koneksimu lalu coba lagi.",
+      "emailInUse": "Email ini sudah punya akun. Masuk dengan email ini.",
+      "invalidEmail": "Alamat email itu sepertinya tidak benar.",
+      "weakPassword": "Kata sandi itu terlalu lemah. Pilih yang lebih panjang.",
+      "requiresRecentLogin": "Masuk lagi dulu untuk melakukan itu.",
+      "userDisabled": "Akun ini dinonaktifkan. Hubungi dukungan.",
+      "noUser": "Kamu belum masuk. Masuk lagi.",
+      "unknown": "Terjadi kesalahan. Coba lagi.",
+      "cancelled": "Masuk dengan Google dibatalkan.",
+      "inProgress": "Masuk dengan Google sudah terbuka. Selesaikan, atau tutup lalu coba lagi.",
+      "playServices": "Masuk dengan Google memerlukan layanan Google Play. Perbarui layanan itu lalu coba lagi.",
+      "googleConfig": "Masuk dengan Google belum tersedia di versi aplikasi ini (DEVELOPER_ERROR). Sementara itu, gunakan email dan kata sandimu.",
+      "accountExistsWithPassword": "Email ini sudah punya akun dengan kata sandi. Masuk dengan email dan kata sandimu.",
+      "userMismatch": "Itu akun Google yang berbeda. Pilih akun yang kamu pakai untuk masuk."
+    },
+    "api": {
+      "badRequest": "Permintaan itu tidak valid. Coba lagi.",
+      "invalidName": "Nama itu melanggar aturan.",
+      "unauthorized": "Sesimu di server sudah berakhir. Masuk lagi.",
+      "reauthRequired": "Untuk menghapus akun, kamu perlu masuk ulang. Masukkan kata sandimu lagi dan coba lagi.",
+      "suspended": "Akunmu sedang ditangguhkan, jadi belum bisa diubah sekarang.",
+      "notRegistered": "Akun ini belum punya petarung. Ayo selesaikan pendaftarannya.",
+      "notFound": "Server tidak mengenali permintaan ini. Perbarui aplikasinya.",
+      "alreadyRegistered": "Akun ini sudah punya petarung.",
+      "taken": "Nama itu sudah dipakai. Pilih yang lain.",
+      "renameTooSoon": "Kamu hanya bisa mengganti nama sekali setiap 30 hari.",
+      "tooLarge": "Permintaan itu terlalu besar.",
+      "blocked": "Nama itu tidak cocok untuk arena. Pilih yang lain.",
+      "tooManyRequests": "Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.",
+      "internal": "Kesalahan server. Coba lagi sebentar lagi.",
+      "disabled": "Akun sedang tidak aktif di server ini.",
+      "unavailable": "Server sedang tidak tersedia. Coba lagi sebentar lagi.",
+      "network": "Tidak bisa terhubung ke server. Periksa internetmu lalu coba lagi.",
+      "timeout": "Server tidak menjawab tepat waktu. Coba lagi.",
+      "signedOut": "Kamu belum masuk. Masuk lagi.",
+      "unexpected": "Server mengirim jawaban yang tidak terduga. Coba lagi, atau perbarui aplikasinya."
+    }
+  },
+  "splash": {
+    "tagline": "Satu papan. Semua memecahkannya. Hanya satu yang menang.",
+    "loading": "Memuat arena…",
+    "tipLabel": "Tips",
+    "tips": {
+      "lock_other": "Sel yang kamu pilih terkunci hanya untukmu: {{seconds}} detik dalam pertandingan {{type}}.",
+      "hard": "Langkah yang lebih sulit bernilai lebih banyak poin.",
+      "mistake": "Kesalahan memotong poin sebanyak nilai angka yang benar. Lebih baik berpikir sedikit lebih lama.",
+      "interfere": "Kirim gangguan dengan dua ketukan: “Ganggu” di kartu lawanmu, lalu gangguan yang kamu pilih."
+    },
+    "errorTitle": "Petarungmu gagal dimuat",
+    "retry": "Coba lagi",
+    "signOut": "Keluar"
+  },
+  "login": {
+    "title": "Kembali ke <accent>arena</accent>",
+    "titleLabel": "Kembali ke arena",
+    "subtitle": "Rating, rentetan kemenangan, dan rivalmu sudah menunggu.",
+    "forgot": "Lupa kata sandi",
+    "submit": "Masuk",
+    "noAccount": "Belum punya akun?",
+    "register": "Daftar",
+    "arenaSpot": "Tempatmu"
+  },
+  "google": {
+    "continue": "Lanjutkan dengan Google",
+    "orEmail": "atau dengan email",
+    "orEmailPassword": "atau dengan email dan kata sandi",
+    "existing": "Akun Google ini sudah punya petarung, {{name}}. Kamu sudah masuk ke akun itu.",
+    "passwordHint": "Daftar dengan Google? Gunakan “Lanjutkan dengan Google”.",
+    "emailInUseHint": "Jika kamu mendaftar dengan Google, gunakan “Lanjutkan dengan Google”.",
+    "termsTitle": "Ketentuan dan privasi",
+    "termsBody": "Untuk melanjutkan dengan Google, setujui ketentuan penggunaan dan kebijakan privasi.",
+    "termsAccept": "Setujui dan lanjutkan"
+  },
+  "forgot": {
+    "title": "Lupa kata sandi",
+    "body": "Masukkan email yang kamu pakai untuk mendaftar, dan kami akan mengirim tautan untuk memilih kata sandi baru.",
+    "submit": "Kirim tautan setel ulang",
+    "sentTitle": "Cek kotak masukmu",
+    "sentBody": "Jika {{email}} punya akun, kami sudah mengirim tautan untuk menyetel ulang kata sandi. Tidak ketemu? Cek folder spam.",
+    "backToLogin": "Kembali ke halaman masuk"
+  },
+  "register": {
+    "step": "Langkah {{step}} dari {{total}}",
+    "backToLogin": "Kembali ke halaman masuk",
+    "backToFighter": "Kembali ke petarungmu"
+  },
+  "fighter": {
+    "title": "Buat <accent>petarungmu</accent>",
+    "titleLabel": "Buat petarungmu",
+    "resumeNote": "Akunmu sudah siap. Tinggal pilih petarungmu.",
+    "chooseAvatar": "Pilih avatar",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}, terbuka di level {{level}}",
+    "selectedAvatar": "Avatar terpilih: {{name}}",
+    "yourPick": "Pilihanmu: {{name}}",
+    "previewTitle": "Begini arena melihatmu",
+    "previewLabel": "Pratinjau kartumu dalam pertandingan: {{name}}",
+    "previewNew": "Baru",
+    "continue": "Lanjut",
+    "enterArena": "Masuk ke arena",
+    "signOut": "Keluar",
+    "googleNote": "Kamu masuk dengan Google. Tinggal pilih petarungmu."
+  },
+  "name": {
+    "rules": "3–16 karakter: huruf Ibrani atau Inggris, angka, garis bawah, dan titik.",
+    "status": {
+      "checking": "Memeriksa…",
+      "available": "Tersedia",
+      "taken": "Sudah dipakai",
+      "invalid": "Tidak valid",
+      "blocked": "Tidak diizinkan",
+      "error": "Belum diperiksa",
+      "current": "Namamu"
+    },
+    "problem": {
+      "invalidChars": "Karakter ini tidak bisa dipakai: {{chars}}",
+      "tooShort": "Minimal 3 karakter",
+      "tooLong": "Maksimal 16 karakter"
+    },
+    "charSpace": " ",
+    "takenHint": "Seseorang sudah memakai nama ini. Coba yang lain.",
+    "blockedHint": "Nama itu tidak cocok untuk arena. Coba yang lain.",
+    "errorHint": "Kami tidak bisa memeriksa nama ini. Kami akan memeriksanya lagi saat kamu menyimpan."
+  },
+  "country": {
+    "label": "Negara: {{country}}",
+    "choose": "Pilih negara",
+    "sheetTitle": "Pilih negara",
+    "search": "Cari negara",
+    "searchPlaceholder": "Cari",
+    "none": "Negara tidak ditemukan",
+    "hint": "Terdeteksi dari pengaturan ponselmu. Kamu bisa mengubahnya kapan saja."
+  },
+  "account": {
+    "title": "Satu langkah lagi ke <accent>arena</accent>",
+    "titleLabel": "Satu langkah lagi ke arena",
+    "subtitle": "Email dan kata sandimu menjaga rating dan kemajuanmu tetap aman.",
+    "fighterReady": "Petarung siap",
+    "edit": "Ubah",
+    "editLabel": "Ubah petarungmu",
+    "submit": "Buat akun",
+    "profileFailed": "Akunmu sudah dibuat, tapi petarungmu belum tersimpan. Coba lagi.",
+    "nameTakenNow": "Nama {{name}} baru saja dipakai orang lain. Pilih nama lain: akunmu sudah menunggu."
+  },
+  "password": {
+    "rules": {
+      "length": "Minimal 8 karakter"
+    },
+    "ruleMet": "{{rule}}: terpenuhi",
+    "ruleMissing": "{{rule}}: belum terpenuhi",
+    "strengthLabel": "Kekuatan kata sandi",
+    "strength": {
+      "weak": "Kata sandi lemah",
+      "fair": "Kata sandi cukup",
+      "good": "Kata sandi bagus",
+      "strong": "Kata sandi kuat"
+    },
+    "match": "Cocok",
+    "mismatch": "Tidak cocok"
+  },
+  "terms": {
+    "accept": "Aku menyetujui ketentuan penggunaan dan kebijakan privasi",
+    "termsLink": "Ketentuan penggunaan",
+    "privacyLink": "Kebijakan privasi",
+    "linkHint": "Dibuka di browser",
+    "required": "Untuk masuk ke arena, setujui ketentuannya"
+  },
+  "verify": {
+    "bannerTitle": "Emailmu belum diverifikasi",
+    "bannerAction": "Verifikasi",
+    "bannerLabel": "Emailmu belum diverifikasi. Verifikasi emailmu",
+    "title": "Verifikasi emailmu",
+    "body": "Kami sudah mengirim tautan verifikasi ke {{email}}. Buka tautannya, lalu kembali ke sini.",
+    "why": "Latihan bisa dimainkan tanpa verifikasi. Pertandingan ranked akan memerlukan email terverifikasi.",
+    "resend": "Kirim lagi",
+    "sent": "Kami sudah mengirim tautan baru",
+    "check": "Aku sudah verifikasi",
+    "notYet": "Belum terverifikasi. Sudah buka tautannya?",
+    "done": "Email terverifikasi. Terima kasih!",
+    "devNote": "Mode pengembangan tidak mengirim email: “Aku sudah verifikasi” menandai email sebagai terverifikasi."
+  },
+  "edit": {
+    "title": "Ubah profil",
+    "save": "Simpan",
+    "saved": "Profil tersimpan",
+    "nameRule": "Kamu bisa mengganti nama sekali setiap 30 hari.",
+    "nameLocked": "Kamu bisa mengganti nama sekali setiap 30 hari. Penggantian berikutnya: {{date}}.",
+    "offline": "Tidak bisa terhubung ke server. Kamu bisa mengubahnya setelah online lagi."
+  },
+  "home": {
+    "provisional": "Rating sementara: 10 pertandingan pertamamu"
+  },
+  "settings": {
+    "section": "Akun",
+    "signedInAs": "Masuk sebagai {{email}}",
+    "editProfile": "Ubah profil",
+    "signOut": "Keluar",
+    "signOutTitle": "Keluar?",
+    "signOutBody": "Latihan di ponsel ini tetap tersimpan. Kamu perlu masuk lagi untuk bermain.",
+    "deleteAccount": "Hapus akun",
+    "deleteTitle": "Hapus akunmu?",
+    "deleteBody": "Email, petarung, dan namamu akan dihapus, dan ini tidak bisa dibatalkan. Pertandingan dan rating tetap ada tanpa terhubung denganmu, jadi pertandingan pemain lain tetap utuh. Namamu bisa dipakai pemain lain.",
+    "deleteContinue": "Lanjut",
+    "deletePasswordTitle": "Konfirmasi dengan kata sandimu",
+    "deletePasswordBody": "Untuk menghapus akun, masukkan kata sandi {{email}}.",
+    "deleteSubmit": "Hapus akunku selamanya",
+    "deleted": "Akunmu sudah dihapus",
+    "deletedPartly": "Akunmu sudah dihapus. Kami tidak bisa menghapus data masukmu: masuk dengan data itu akan memulai pendaftaran baru.",
+    "method": {
+      "password": "Masuk dengan email dan kata sandi",
+      "google": "Masuk dengan Google",
+      "both": "Masuk dengan Google, atau dengan email dan kata sandi"
+    },
+    "deleteGoogleTitle": "Konfirmasi dengan Google",
+    "deleteGoogleBody": "Untuk menghapus akun, pilih lagi akun Google {{email}}.",
+    "deleteGoogleSubmit": "Konfirmasi dengan Google dan hapus",
+    "deleteGoogleAgain": "Menghapus akun memerlukan konfirmasi baru. Coba lagi dan pilih akun Google milikmu.",
+    "deleteWithPassword": "Konfirmasi dengan kata sandi saja"
+  }
+}

@@ -4,7 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import type { TFunction } from 'i18next';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isSuspended } from '../../api/me';
@@ -14,13 +14,24 @@ import { Icon, type IconName } from '../../components/Icon';
 import { LevelTile } from '../../components/levels/LevelTile';
 import { Avatar, paletteAt, SeatGlyph } from '../../components/player';
 import { Button, type ButtonSize } from '../../components/ui/Button';
+import { Text } from '../../components/ui/Text';
 import { FRIENDS_UI } from '../../config/friends';
 import type { LevelsSummary } from '../../levels/levelsRepo';
 import { refreshLevels, useLevelsSummary } from '../../levels/levelsStore';
 import { useConnectivityWatch } from '../../net/connectivity';
 import { cue } from '../../services/feedback';
 import { useProfile } from '../../state/profile';
-import { color, radius, size, space, text, tokens } from '../../theme';
+import {
+  appTypeface,
+  color,
+  lineHeightIn,
+  radius,
+  size,
+  space,
+  text,
+  tokens,
+  type Typeface,
+} from '../../theme';
 import { Announcer } from '../game/connection/Announcer';
 import { isolateName } from '../game/hit/hitModel';
 import {
@@ -451,7 +462,7 @@ function ModeCard({
   // A new player (nothing played yet, or no account): the stages there are, and no progress chip.
   const fresh = option.key === 'levels' && (levels === null || levels.played === 0);
   const tagline = fresh
-    ? t('modes.levels.taglineNew', { total: maxLevel() })
+    ? t('modes.levels.taglineNew', { count: maxLevel(), total: maxLevel() })
     : t(`modes.${option.key}.tagline`);
   const typeName = t(`gameTypes.${rankedType}.name`);
   // [D80a] The ranked rows say no rating since 1.0.4 (two lines each; my rating is on the next screen and
@@ -659,6 +670,19 @@ const BOT_GLYPH = 28;
 const CONTENT_BOTTOM = space[8];
 /** The friends footer's two buttons, side by side: the pair's size (see FriendsFooter). */
 const FOOTER_BUTTON: ButtonSize = 'modal';
+/**
+ * A row's padding above and below in a typeface: the design's 6, less what a taller script's least line heights
+ * (Arabic, Thai, Vietnamese, CJK: theme/typeface.ts, D106) add to the title's and the tagline's lines, down to 2.
+ * The words keep their whole line height (nothing is cut); the rows keep the height that fits the six of them on
+ * Moshe's phone without scrolling, in every language (D124).
+ */
+export function cardPaddingVertical(typeface: Typeface = appTypeface()): number {
+  const growth = (name: 'sheetTitle' | 'caption') =>
+    lineHeightIn(typeface, tokens.type[name].size, tokens.type[name].lineHeight) -
+    tokens.type[name].lineHeight;
+  return Math.max(space[1], space[3] - Math.ceil((growth('sheetTitle') + growth('caption')) / 2));
+}
+
 /** The Modes board's chips (22). */
 const CHIP_HEIGHT = 22;
 /** Offline: the ranked cards stay readable but plainly out of reach. */
@@ -677,7 +701,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space[6],
     minHeight: size.listRow,
-    paddingVertical: space[3],
+    paddingVertical: cardPaddingVertical(),
     paddingHorizontal: space[6],
     borderRadius: radius.card,
     borderWidth: tokens.border.hairline,

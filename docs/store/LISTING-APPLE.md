@@ -5,6 +5,7 @@
 שלב 14 בתוכנית העבודה, לפי אפיון סעיף 23. מה שמודבקים ב־App Store Connect, בעברית ובאנגלית.
 
 - **שפות הדף:** ‏English (U.S.) כשפה הראשית, ו־Hebrew כשפה נוספת. השפה הראשית קובעת מה רואים במדינות שאין להן תרגום.
+- **17 השפות האחרות (מ־1.1.0):** קובץ לכל שפה ב־[`locales/`](locales/README.md), עם הקודים של App Store ומגבלות התווים. מ־1.1.0, שבה יוצאות כל 19 השפות, התיאור אומר "Available in 19 languages" / "זמין ב־19 שפות" במקום "In Hebrew and English" / "בעברית ובאנגלית" (D115ב).
 - **אייקון וצילומי מסך:** ב־`docs/store/ASSETS.md`.
 - **פרטיות:** ‏`docs/store/APP-PRIVACY.md` (השאלון של App Privacy).
 - **מספרי התווים** שבסוגריים נספרו בסקריפט. Apple סופרת תווים, אבל בשדה מילות המפתח היו דיווחים שהיא סופרת בתים בשפות שאינן לטיניות. אם השדה העברי נדחה, מורידים את המילים האחרונות.
@@ -28,7 +29,7 @@
 
 ### Description (עד 4,000)
 
-**English (1,463):**
+**English (1,474):**
 
 </div>
 
@@ -62,12 +63,12 @@ FAIR PLAY
 • The server checks every move, and ranked puzzles never ship inside the app.
 • No ads. You can delete your account at any time from Settings.
 
-In Hebrew and English. The board always reads left to right.
+Available in 19 languages. The board always reads left to right.
 ```
 
 <div dir="rtl">
 
-**עברית (1,196):**
+**עברית (1,210):**
 
 ```
 סודוקו פייט הופך את הסודוקו לתחרות חיה. עד 4 שחקנים פותרים את אותו לוח באותו רגע: כל ספרה נכונה שאתם מניחים שייכת לכם, וכל נקודה קובעת.
@@ -99,7 +100,7 @@ In Hebrew and English. The board always reads left to right.
 • השרת בודק כל מהלך, והלוחות המדורגים לא נמצאים בתוך האפליקציה.
 • בלי פרסומות. אפשר למחוק את החשבון בכל רגע מההגדרות.
 
-בעברית ובאנגלית. הלוח תמיד משמאל לימין.
+זמין ב־19 שפות. הלוח תמיד משמאל לימין.
 ```
 
 - **"What's New"** בגרסה הראשונה: ‏`First release.` / ‏`גרסה ראשונה.`
@@ -114,7 +115,7 @@ In Hebrew and English. The board always reads left to right.
 | Support URL | **כן** | `https://<שרת ה־Production>/legal/privacy?lang=en#contact`. עדיף בהמשך דף תמיכה של המשחק |
 | Marketing URL | לא | — |
 
-- הדפים מוגשים מהשרת (`apps/server/src/legal`): ‏`/legal/privacy`, ‏`/legal/terms` ו־`/legal/delete-account`, בעברית (ברירת המחדל) ובאנגלית.
+- הדפים מוגשים מהשרת (`apps/server/src/legal`): ‏`/legal/privacy`, ‏`/legal/terms` ו־`/legal/delete-account`, ב־19 השפות של האפליקציה (עברית היא ברירת המחדל). הגרסאות המתורגמות נפתחות בשורה שהגרסה האנגלית גוברת (D112).
 - **לפני שנותנים את הכתובות:** להגדיר בשרת `LEGAL_CONTACT_EMAIL` ו־`LEGAL_OPERATOR_NAME` (`fly secrets set`). בלעדיהם הדפים מציגים placeholder אדום ופס "טיוטה".
   **כתובת המייל של משה לא מתפרסמת בלי אישורו.** ההצעה: תיבה ייעודית, למשל `privacy@<הדומיין>` או `support@<הדומיין>`.
 - **Copyright:** ‏`2026 <שם המפעיל>` (אותו שם כמו ב־`LEGAL_OPERATOR_NAME`).

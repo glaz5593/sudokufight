@@ -1,11 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { color, radius, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { Icon } from '../Icon';
+import { Text } from '../ui/Text';
 import { easing, NEVER_REDUCE } from './anim';
 import { metrics } from './metrics';
 

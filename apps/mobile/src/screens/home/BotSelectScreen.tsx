@@ -1,12 +1,14 @@
 import type { BotLevelId, GameType } from '@sudoku-fight/engine';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '../../components/Icon';
 import { Avatar, ltr } from '../../components/player';
 import { Button, useToast } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
+import { decimalSeparator, percent } from '../../i18n/compose';
 import { cue } from '../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { type BotOption, botOptions, percentOf, secondsText } from './homeModel';
@@ -95,8 +97,9 @@ function BotCard({ option, checked, onPress }: { option: BotOption; checked: boo
   const { level, name, avatar, thinkMs, mistakeRate } = option;
   const title = t(`botSelect.levels.${level}.title`);
   const behavior = t(`botSelect.levels.${level}.behavior`);
-  const from = secondsText(thinkMs.min);
-  const to = secondsText(thinkMs.max);
+  const decimal = decimalSeparator(t);
+  const from = secondsText(thinkMs.min, decimal);
+  const to = secondsText(thinkMs.max, decimal);
   const mistakes = percentOf(mistakeRate);
   const facts = [
     {
@@ -104,9 +107,19 @@ function BotCard({ option, checked, onPress }: { option: BotOption; checked: boo
       label: t('botSelect.thinkTime'),
       value: t('botSelect.thinkValue', { range: ltr(`${from}–${to}`) }),
     },
-    { key: 'mistakes', label: t('botSelect.mistakes'), value: ltr(`${mistakes}%`) },
+    { key: 'mistakes', label: t('botSelect.mistakes'), value: ltr(percent(mistakes, t)) },
   ];
-  const label = t('botSelect.cardLabel', { level, title, name, behavior, from, to, mistakes });
+  // A plural of the longest think time, in seconds.
+  const label = t('botSelect.cardLabel', {
+    level,
+    title,
+    name,
+    behavior,
+    from,
+    to,
+    mistakes,
+    count: thinkMs.max / 1000,
+  });
 
   return (
     <Pressable

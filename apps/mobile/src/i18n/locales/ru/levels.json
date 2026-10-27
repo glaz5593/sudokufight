@@ -1,0 +1,806 @@
+{
+  "title": "Тренировка по этапам",
+  "stage": "Этап {{n}}",
+  "chapter": "Глава {{n}}",
+  "units": {
+    "seconds": "с"
+  },
+  "stars": {
+    "of3": {
+      "0": "нет звёзд",
+      "1": "одна звезда из трёх",
+      "2": "две звезды из трёх",
+      "3": "три звезды из трёх"
+    },
+    "count_one": "{{count}} звезда",
+    "count_few": "{{count}} звезды",
+    "count_many": "{{count}} звёзд",
+    "count_other": "{{count}} звезды"
+  },
+  "kinds": {
+    "find": {
+      "name": "Точное место",
+      "label": "Точное место"
+    },
+    "findDuel": {
+      "name": "Гонка с ботом",
+      "label": "Гонка с ботом"
+    },
+    "fillBox": {
+      "name": "Заполни квадрат",
+      "label": "Заполни квадрат"
+    },
+    "duel": {
+      "name": "Дуэль до {{target}}",
+      "label": "Дуэль до {{target}}"
+    },
+    "spotError": {
+      "name": "Найди ошибку",
+      "label": "Найди ошибку"
+    },
+    "pointHunter": {
+      "name": "Охотник за очками",
+      "label": "Охотник за очками"
+    },
+    "chain": {
+      "name": "Цепочка",
+      "label": "Цепочка"
+    },
+    "fillRow": {
+      "name": "Заполни строку",
+      "label": "Заполни строку"
+    },
+    "fillCol": {
+      "name": "Заполни столбец",
+      "label": "Заполни столбец"
+    },
+    "puzzle": {
+      "name": "Пазл",
+      "label": "Пазл"
+    }
+  },
+  "boss": {
+    "chip": "Босс",
+    "name": "Этап с боссом",
+    "label": "босс, {{kind}}",
+    "versus": "Босс: {{bot}}",
+    "band": "Босс · Глава {{chapter}}",
+    "botLabel": "{{name}}, босс",
+    "intro": {
+      "title": "Этап с боссом!",
+      "sub": "Этап {{n}} · {{kind}}",
+      "harder": "Что сложнее",
+      "label": "Этап с боссом! Этап {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "Твой первый бот: {{bot}}",
+      "faster": "{{bot}} быстрее на {{percent}}",
+      "overlord": "Overlord",
+      "moreCells_one": "{{cells}} пустая клетка вместо {{usual}}",
+      "moreCells_few": "{{cells}} пустые клетки вместо {{usual}}",
+      "moreCells_many": "{{cells}} пустых клеток вместо {{usual}}",
+      "moreCells_other": "{{cells}} пустой клетки вместо {{usual}}"
+    },
+    "result": {
+      "won": "Босс побеждён!",
+      "lost": "В этот раз победил босс",
+      "gateOpen": "Проход в главу {{n}}: {{stars}} · открыт!",
+      "gateClosed": "Проход в главу {{n}}: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Квадрат {{n}}",
+    "row": "Строка {{row}}",
+    "col": "Столбец {{n}}",
+    "mapLabel": "Карта поля: {{region}}"
+  },
+  "goals": {
+    "find": "Найди точное место одной цифры. Этап заканчивается через {{s}} с.",
+    "findDuel_one": "{{spots}} раунд против {{bot}}, до {{s}} с. Кто первым найдёт, забирает раунд.",
+    "findDuel_few": "{{spots}} раунда против {{bot}}, до {{s}} с. Кто первым найдёт, забирает раунд.",
+    "findDuel_many": "{{spots}} раундов против {{bot}}, до {{s}} с. Кто первым найдёт, забирает раунд.",
+    "findDuel_other": "{{spots}} раунда против {{bot}}, до {{s}} с. Кто первым найдёт, забирает раунд.",
+    "fillBox_one": "Заполни {{cells}} пустую клетку в одном квадрате, до {{s}} с.",
+    "fillBox_few": "Заполни {{cells}} пустые клетки в одном квадрате, до {{s}} с.",
+    "fillBox_many": "Заполни {{cells}} пустых клеток в одном квадрате, до {{s}} с.",
+    "fillBox_other": "Заполни {{cells}} пустой клетки в одном квадрате, до {{s}} с.",
+    "fillRow_one": "Заполни {{cells}} пустую клетку в одной строке, до {{s}} с.",
+    "fillRow_few": "Заполни {{cells}} пустые клетки в одной строке, до {{s}} с.",
+    "fillRow_many": "Заполни {{cells}} пустых клеток в одной строке, до {{s}} с.",
+    "fillRow_other": "Заполни {{cells}} пустой клетки в одной строке, до {{s}} с.",
+    "fillCol_one": "Заполни {{cells}} пустую клетку в одном столбце, до {{s}} с.",
+    "fillCol_few": "Заполни {{cells}} пустые клетки в одном столбце, до {{s}} с.",
+    "fillCol_many": "Заполни {{cells}} пустых клеток в одном столбце, до {{s}} с.",
+    "fillCol_other": "Заполни {{cells}} пустой клетки в одном столбце, до {{s}} с.",
+    "puzzle": "Расставь квадраты по местам. Неверный обмен добавляет {{penalty}} с. До {{s}} с.",
+    "duel_one": "Против {{bot}}, до {{target}} очка или {{s}} с. Звёзды — по отрыву.",
+    "duel_few": "Против {{bot}}, до {{target}} очков или {{s}} с. Звёзды — по отрыву.",
+    "duel_many": "Против {{bot}}, до {{target}} очков или {{s}} с. Звёзды — по отрыву.",
+    "duel_other": "Против {{bot}}, до {{target}} очка или {{s}} с. Звёзды — по отрыву.",
+    "spotError_one": "Среди твоих цифр прячется {{count}} неверная цифра. До {{s}} с.",
+    "spotError_few": "Среди твоих цифр прячутся {{count}} неверные цифры. До {{s}} с.",
+    "spotError_many": "Среди твоих цифр прячется {{count}} неверных цифр. До {{s}} с.",
+    "spotError_other": "Среди твоих цифр прячутся {{count}} неверной цифры. До {{s}} с.",
+    "pointHunter_one": "{{moves}} ход, до {{s}} с. Набери как можно больше очков.",
+    "pointHunter_few": "{{moves}} хода, до {{s}} с. Набери как можно больше очков.",
+    "pointHunter_many": "{{moves}} ходов, до {{s}} с. Набери как можно больше очков.",
+    "pointHunter_other": "{{moves}} хода, до {{s}} с. Набери как можно больше очков.",
+    "chain_one": "Цепочка из {{steps}} шага, до {{s}} с. Решить можно только одну клетку за раз.",
+    "chain_few": "Цепочка из {{steps}} шагов, до {{s}} с. Решить можно только одну клетку за раз.",
+    "chain_many": "Цепочка из {{steps}} шагов, до {{s}} с. Решить можно только одну клетку за раз.",
+    "chain_other": "Цепочка из {{steps}} шага, до {{s}} с. Решить можно только одну клетку за раз."
+  },
+  "scale": {
+    "label": "Сколько звёзд можно получить",
+    "row": "{{stars}}: {{text}}",
+    "time": "до {{s}} с",
+    "spots_one": "{{count}} раунд",
+    "spots_few": "{{count}} раунда",
+    "spots_many": "{{count}} раундов",
+    "spots_other": "{{count}} раунда",
+    "spotsRange_one": "{{range}} раунд",
+    "spotsRange_few": "{{range}} раунда",
+    "spotsRange_many": "{{range}} раундов",
+    "spotsRange_other": "{{range}} раунда",
+    "gap": "отрыв {{gap}}+",
+    "lead": "впереди в конце",
+    "points": "{{points}}+ оч.",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "Карта этапов",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_one": "{{stars}} звезда из {{max}}, переход к главе",
+    "totalLabel_few": "{{stars}} звезды из {{max}}, переход к главе",
+    "totalLabel_many": "{{stars}} звёзд из {{max}}, переход к главе",
+    "totalLabel_other": "{{stars}} звезды из {{max}}, переход к главе",
+    "lockedToast": "Сначала пройди этап {{n}}",
+    "gateToast_one": "Глава {{chapter}} откроется с {{need}} звезды в главе {{prev}}",
+    "gateToast_few": "Глава {{chapter}} откроется с {{need}} звёзд в главе {{prev}}",
+    "gateToast_many": "Глава {{chapter}} откроется с {{need}} звёзд в главе {{prev}}",
+    "gateToast_other": "Глава {{chapter}} откроется с {{need}} звезды в главе {{prev}}",
+    "loading": "Загружаем карту…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_one": "{{stars}} звезда из {{max}}",
+    "label_few": "{{stars}} звезды из {{max}}",
+    "label_many": "{{stars}} звёзд из {{max}}",
+    "label_other": "{{stars}} звезды из {{max}}"
+  },
+  "node": {
+    "played": "Этап {{n}}, {{kind}}, {{stars}}",
+    "current": "Этап {{n}}, {{kind}}, следующий",
+    "open": "Этап {{n}}, {{kind}}, ещё не пройден",
+    "locked": "Этап {{n}}, закрыт"
+  },
+  "gate": {
+    "need_one": "Откроется с {{need}} звезды",
+    "need_few": "Откроется с {{need}} звёзд",
+    "need_many": "Откроется с {{need}} звёзд",
+    "need_other": "Откроется с {{need}} звезды",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Нужно сыграть с боссом",
+    "open": "Глава {{n}} открыта",
+    "lockedLabel_one": "Глава {{n}} закрыта, {{stars}} из {{need}} звезды в главе {{prev}}",
+    "lockedLabel_few": "Глава {{n}} закрыта, {{stars}} из {{need}} звёзд в главе {{prev}}",
+    "lockedLabel_many": "Глава {{n}} закрыта, {{stars}} из {{need}} звёзд в главе {{prev}}",
+    "lockedLabel_other": "Глава {{n}} закрыта, {{stars}} из {{need}} звезды в главе {{prev}}",
+    "bossLabel_one": "Глава {{n}} закрыта, {{stars}} из {{need}} звезды в главе {{prev}}. Пройди этап с боссом, чтобы открыть её",
+    "bossLabel_few": "Глава {{n}} закрыта, {{stars}} из {{need}} звёзд в главе {{prev}}. Пройди этап с боссом, чтобы открыть её",
+    "bossLabel_many": "Глава {{n}} закрыта, {{stars}} из {{need}} звёзд в главе {{prev}}. Пройди этап с боссом, чтобы открыть её",
+    "bossLabel_other": "Глава {{n}} закрыта, {{stars}} из {{need}} звезды в главе {{prev}}. Пройди этап с боссом, чтобы открыть её",
+    "openLabel_one": "Глава {{n}} открыта, порог — {{need}} звезда из главы {{prev}}",
+    "openLabel_few": "Глава {{n}} открыта, порог — {{need}} звезды из главы {{prev}}",
+    "openLabel_many": "Глава {{n}} открыта, порог — {{need}} звёзд из главы {{prev}}",
+    "openLabel_other": "Глава {{n}} открыта, порог — {{need}} звезды из главы {{prev}}"
+  },
+  "jump": {
+    "title": "Переход к главе",
+    "row": "Глава {{n}} · {{name}}",
+    "rowLabel_one": "Глава {{n}}, {{name}}, {{stars}} звезда из {{max}}, {{state}}",
+    "rowLabel_few": "Глава {{n}}, {{name}}, {{stars}} звезды из {{max}}, {{state}}",
+    "rowLabel_many": "Глава {{n}}, {{name}}, {{stars}} звёзд из {{max}}, {{state}}",
+    "rowLabel_other": "Глава {{n}}, {{name}}, {{stars}} звезды из {{max}}, {{state}}",
+    "open": "открыта",
+    "locked": "закрыта"
+  },
+  "gateSheet": {
+    "title": "Глава {{n}} закрыта",
+    "missing_one": "Нужна {{need}} звезда в главе {{prev}}. У тебя {{stars}}, осталось {{missing}}.",
+    "missing_few": "Нужны {{need}} звезды в главе {{prev}}. У тебя {{stars}}, осталось {{missing}}.",
+    "missing_many": "Нужно {{need}} звёзд в главе {{prev}}. У тебя {{stars}}, осталось {{missing}}.",
+    "missing_other": "Нужно {{need}} звезды в главе {{prev}}. У тебя {{stars}}, осталось {{missing}}.",
+    "bossOnly": "Звёзд хватает. Пройди этап {{boss}} (босс), чтобы открыть главу",
+    "progress": "Звёзды в главе {{prev}} для прохода: {{stars}} из {{need}}",
+    "rowsTitle": "Можно улучшить",
+    "rowsNote_one": "В них ещё до {{count}} звезды",
+    "rowsNote_few": "В них ещё до {{count}} звёзд",
+    "rowsNote_many": "В них ещё до {{count}} звёзд",
+    "rowsNote_other": "В них ещё до {{count}} звезды",
+    "row": "Этап {{n}} · {{kind}}",
+    "rowLabel": "Пройти этап {{n}} ещё раз, {{kind}}, {{stars}}",
+    "rowNewLabel": "Пройти этап {{n}}, {{kind}}, ещё не пройден",
+    "rowPlay": "Играть",
+    "primary": "Пройти этап {{n}}",
+    "footnote": "Большинство этапов длятся до 30 с, заполнения и пазлы — до 60. Сохраняются лучшие звёзды."
+  },
+  "panel": {
+    "label": "Выбранный этап",
+    "title": "Этап {{n}} · {{kind}}",
+    "sub": "Глава {{chapter}} · {{name}}",
+    "subBot": "Глава {{chapter}} · против {{bot}}",
+    "subBoss": "Глава {{chapter}} · босс: {{bot}}",
+    "next": "Следующий",
+    "best": "Лучшее: {{metric}}",
+    "bestLabel": "Твой рекорд: {{stars}}, {{metric}}",
+    "bestStars": "Твой рекорд: {{stars}}",
+    "bot": "{{name}} · Уровень {{level}} · {{title}}",
+    "continue": "Продолжить · этап {{n}}",
+    "play": "Играть",
+    "lockedTitle": "Этап {{n}} · закрыт",
+    "lockedSub": "Глава {{chapter}} · {{kind}}",
+    "lockedPrev": "Сначала пройди этап {{n}}.",
+    "lockedGate_one": "Глава {{chapter}} закрыта: нужна {{need}} звезда в главе {{prev}}. У тебя {{stars}}.",
+    "lockedGate_few": "Глава {{chapter}} закрыта: нужны {{need}} звезды в главе {{prev}}. У тебя {{stars}}.",
+    "lockedGate_many": "Глава {{chapter}} закрыта: нужно {{need}} звёзд в главе {{prev}}. У тебя {{stars}}.",
+    "lockedGate_other": "Глава {{chapter}} закрыта: нужно {{need}} звезды в главе {{prev}}. У тебя {{stars}}.",
+    "gateTitleOpen": "Глава {{n}} открыта",
+    "gateTitleClosed": "Глава {{n}} закрыта",
+    "gateSub": "{{name}} · этапы {{range}}",
+    "gateOpenBody_one": "Открыта: в главе {{prev}} у тебя {{stars}} звезда, а для прохода нужно {{need}}.",
+    "gateOpenBody_few": "Открыта: в главе {{prev}} у тебя {{stars}} звезды, а для прохода нужно {{need}}.",
+    "gateOpenBody_many": "Открыта: в главе {{prev}} у тебя {{stars}} звёзд, а для прохода нужно {{need}}.",
+    "gateOpenBody_other": "Открыта: в главе {{prev}} у тебя {{stars}} звезды, а для прохода нужно {{need}}.",
+    "gateBar": "Звёзды для прохода: {{stars}} из {{need}}"
+  },
+  "ready": {
+    "title": "Начинаем?",
+    "label": "Начинаем? Этап {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "Где {{digit}}?",
+    "raceSpots_one": "{{count}} раунд, гонка против {{bot}}",
+    "raceSpots_few": "{{count}} раунда, гонка против {{bot}}",
+    "raceSpots_many": "{{count}} раундов, гонка против {{bot}}",
+    "raceSpots_other": "{{count}} раунда, гонка против {{bot}}"
+  },
+  "tutorial": {
+    "title": "Как играть",
+    "got": "Понятно",
+    "skip": "Пропустить",
+    "panel": "Картинка {{n}} из {{total}}: {{text}}",
+    "alsoBoss": "Это ещё и босс: десятый этап каждой главы.",
+    "find": {
+      "1": "Один вопрос, например «Где {{digit}}?», и отмеченная область на поле: квадрат, строка, столбец или всё поле.",
+      "2": "Найди единственную клетку, где должна стоять эта цифра, и нажми на неё.",
+      "3": "Неверное нажатие добавляет 5 секунд. Два — и этап окончен."
+    },
+    "findDuel": {
+      "1": "Пять раундов подряд. Бот ищет вместе с тобой.",
+      "2": "Кто первым нажмёт на верную клетку, забирает раунд.",
+      "3": "Неверное нажатие — 3 секунды без нажатий, а бот тем временем продолжает искать."
+    },
+    "fillBox": {
+      "1": "Один квадрат с пустыми клетками, в золотой рамке.",
+      "2": "Выбери клетку в квадрате и введи цифру. Клетки за его пределами выбрать нельзя.",
+      "3": "Неверная цифра добавляет 5 секунд. Чем быстрее закончишь, тем больше звёзд."
+    },
+    "duel": {
+      "1": "Ты и бот на одном поле, как в партии.",
+      "2": "Побеждает тот, кто первым наберёт 30 очков или будет впереди через 30 секунд.",
+      "3": "Звёзды — по отрыву в конце: 8 очков для двух звёзд, 15 для трёх."
+    },
+    "spotError": {
+      "1": "Тёмные цифры — подсказки поля, они всегда верны.",
+      "2": "Среди твоих цифр прячутся неверные. Нажми на них.",
+      "3": "Нажатие на верную цифру добавляет 5 секунд."
+    },
+    "pointHunter": {
+      "1": "У тебя всего три хода.",
+      "2": "Клетка в пустой области стоит больше очков.",
+      "3": "Звёзды — по тому, насколько близко ты к лучшему результату поля."
+    },
+    "chain": {
+      "1": "В каждый момент на поле можно решить только одну клетку.",
+      "2": "Заполни её — и откроется следующая.",
+      "3": "Цифра в клетке, которую пока нельзя определить, стоит 5 секунд и не ставится."
+    },
+    "boss": {
+      "1": "Десятый этап каждой главы — босс: бой с ботом, сложнее предыдущих этапов.",
+      "2": "Перед началом видно, что именно сложнее. Обычно — бот быстрее.",
+      "3": "Когда этап с боссом сыгран и в главе набрано 20 звёзд, открывается следующая глава."
+    },
+    "fillRow": {
+      "1": "Одна строка с пустыми клетками, в золотой рамке.",
+      "2": "Выбери клетку в строке и введи цифру. Клетки за её пределами выбрать нельзя.",
+      "3": "Неверная цифра добавляет 5 секунд. Чем быстрее закончишь, тем больше звёзд."
+    },
+    "fillCol": {
+      "1": "Один столбец с пустыми клетками, в золотой рамке.",
+      "2": "Выбери клетку в столбце и введи цифру. Клетки за его пределами выбрать нельзя.",
+      "3": "Неверная цифра добавляет 5 секунд. Чем быстрее закончишь, тем больше звёзд."
+    },
+    "puzzle": {
+      "1": "Девять заполненных квадратов в неправильном порядке.",
+      "2": "Перетащи квадрат на другой — и они поменяются местами. Квадрат с замком закреплён. Обмен, после которого ни один из двух квадратов не встал на своё место, добавляет 5 секунд.",
+      "3": "Когда все строки и столбцы верны, этап заканчивается. Чем быстрее закончишь, тем больше звёзд."
+    }
+  },
+  "result": {
+    "completed": "Этап {{n}} пройден",
+    "ended": "Этап {{n}}",
+    "reasons": {
+      "timeUp": "Время вышло",
+      "failed": "Два неверных нажатия",
+      "quit": "Выход из этапа",
+      "botWon": "Бот {{bot}} оказался быстрее"
+    },
+    "metric": {
+      "spotsOf_one": "из {{total}} раунда",
+      "spotsOf_few": "из {{total}} раундов",
+      "spotsOf_many": "из {{total}} раундов",
+      "spotsOf_other": "из {{total}} раунда",
+      "gap": "Отрыв",
+      "points": "оч.",
+      "found": "Найдено",
+      "foundOf": "из {{total}}"
+    },
+    "newBest": "Новый рекорд!",
+    "yourBest": "Твой рекорд:",
+    "yourBestLabel": "Твой рекорд: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, предварительно: сервер подтвердит",
+    "chapterLabel": "Эта глава",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "для прохода нужно {{need}}",
+    "chapterOpen": "проход открыт",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_one": "Эта глава: {{stars}} звезда из {{max}}. {{gate}}",
+    "chapterLine_few": "Эта глава: {{stars}} звезды из {{max}}. {{gate}}",
+    "chapterLine_many": "Эта глава: {{stars}} звёзд из {{max}}. {{gate}}",
+    "chapterLine_other": "Эта глава: {{stars}} звезды из {{max}}. {{gate}}",
+    "mistakes_one": "{{count}} ошибка",
+    "mistakes_few": "{{count}} ошибки",
+    "mistakes_many": "{{count}} ошибок",
+    "mistakes_other": "{{count}} ошибки",
+    "noMistakes": "Без ошибок",
+    "swaps_one": "{{count}} обмен · минимум: {{min}}",
+    "swaps_few": "{{count}} обмена · минимум: {{min}}",
+    "swaps_many": "{{count}} обменов · минимум: {{min}}",
+    "swaps_other": "{{count}} обмена · минимум: {{min}}",
+    "time": "Время: {{s}} с",
+    "youWon": "Твоя победа",
+    "botWon": "{{bot}} побеждает",
+    "tie": "Ничья",
+    "bossTie": "Ничья: босс не сдаётся",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_one": "{{count}} раунд",
+    "opponentSpots_few": "{{count}} раунда",
+    "opponentSpots_many": "{{count}} раундов",
+    "opponentSpots_other": "{{count}} раунда",
+    "opponentScore_one": "{{score}} очко",
+    "opponentScore_few": "{{score}} очка",
+    "opponentScore_many": "{{score}} очков",
+    "opponentScore_other": "{{score}} очка",
+    "bestMove_one": "Лучший ход: {{digit}} в {{cell}} · {{points}} очко",
+    "bestMove_few": "Лучший ход: {{digit}} в {{cell}} · {{points}} очка",
+    "bestMove_many": "Лучший ход: {{digit}} в {{cell}} · {{points}} очков",
+    "bestMove_other": "Лучший ход: {{digit}} в {{cell}} · {{points}} очка",
+    "why": "Почему?",
+    "next": "Следующий этап",
+    "again": "Ещё раз",
+    "toMap": "К карте",
+    "last": "Это был последний этап. Отлично!",
+    "nextLocked": "Следующий этап пока закрыт"
+  },
+  "unlocked": {
+    "heading": "Открыта новая глава!",
+    "title": "Глава {{n}} · {{name}}",
+    "news": "Что нового: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Продолжить",
+    "label": "Открыта новая глава: глава {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: «Я только начинаю, но я быстрее, чем кажусь».",
+      "2": "Biscuit: «Я спокоен, но тебя не упущу».",
+      "3": "Mr. Hoot: «Я вижу каждую клетку. Осторожно».",
+      "4": "Maestro: «Быстро, точно и со стилем».",
+      "5": "Overlord: «Путь был долгим. Здесь он и закончится»."
+    }
+  },
+  "exit": {
+    "button": "Выйти из этапа",
+    "title": "Выйти из этапа?",
+    "body": "Ты получишь 0 звёзд, и откроется следующий этап.",
+    "confirm": "Выйти",
+    "cancel": "Играть дальше"
+  },
+  "card": {
+    "line": "Этапы: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_one": "Этапы: {{played}}, {{count}} звезда",
+    "label_few": "Этапы: {{played}}, {{count}} звезды",
+    "label_many": "Этапы: {{played}}, {{count}} звёзд",
+    "label_other": "Этапы: {{played}}, {{count}} звезды"
+  },
+  "chapters": {
+    "1": {
+      "name": "Первые шаги",
+      "news": "Точное место, заполнение квадрата, пазл и заполнение строки"
+    },
+    "2": {
+      "name": "Вызов от Pip",
+      "news": "Заполнение столбца и гонка с ботом"
+    },
+    "3": {
+      "name": "Первая дуэль",
+      "news": "Дуэль до 30 и поиск ошибки"
+    },
+    "4": {
+      "name": "Детектив",
+      "news": "Цепочка из 3 шагов и пазл с 4 подвижными квадратами"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "Новый бот Biscuit, «Охотник за очками» и заполнения, где каждой цифры не хватает хотя бы раз"
+    },
+    "6": {
+      "name": "Строки и столбцы",
+      "news": "Обычное поле и цели в строке или столбце"
+    },
+    "7": {
+      "name": "Охотник за очками",
+      "news": "Пазл с 5 подвижными квадратами"
+    },
+    "8": {
+      "name": "Две ошибки",
+      "news": "Две ошибки на поле и дуэль на обычном поле"
+    },
+    "9": {
+      "name": "Цепочка",
+      "news": "Все виды снова, на шаг сложнее"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "Новый бот Mr. Hoot и 7 пустых клеток в заполнениях"
+    },
+    "11": {
+      "name": "Всё поле",
+      "news": "Цели в любом месте поля"
+    },
+    "12": {
+      "name": "Быстрее",
+      "news": "«Охотник за очками» за 25 секунд на обычном поле"
+    },
+    "13": {
+      "name": "Тихие ошибки",
+      "news": "Ошибки без видимого конфликта"
+    },
+    "14": {
+      "name": "Длинная цепочка",
+      "news": "Цепочка из 4 шагов и 9 пустых клеток в заполнениях"
+    },
+    "15": {
+      "name": "Полпути",
+      "news": "Все виды снова"
+    },
+    "16": {
+      "name": "Сложные поля",
+      "news": "Сложное поле и пазл с 6 подвижными квадратами"
+    },
+    "17": {
+      "name": "Исключения",
+      "news": "Цели, которые видны только после исключения"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "Новый бот: Maestro"
+    },
+    "19": {
+      "name": "Ловушки",
+      "news": "Три ошибки на поле"
+    },
+    "20": {
+      "name": "Трудный рубеж",
+      "news": "Пустой квадрат, для которого нужно исключение"
+    },
+    "21": {
+      "name": "Пары",
+      "news": "Пары и «Охотник за очками» за 20 секунд"
+    },
+    "22": {
+      "name": "Цепочка из 5",
+      "news": "Цепочка из 5 шагов"
+    },
+    "23": {
+      "name": "Без подсказок",
+      "news": "Поля с очень малым числом цифр"
+    },
+    "24": {
+      "name": "Гонка",
+      "news": "Дуэли на сложных полях"
+    },
+    "25": {
+      "name": "Эксперты",
+      "news": "Всё снова, в быстром темпе"
+    },
+    "26": {
+      "name": "Чемпионат",
+      "news": "Три звезды — только самым быстрым"
+    },
+    "27": {
+      "name": "Чемпионат II",
+      "news": "«Охотник за очками»: три звезды — только рядом с лучшим результатом"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "Босс Overlord, в гонке"
+    },
+    "29": {
+      "name": "Финал",
+      "news": "Быстрая цепочка и Overlord — босс в дуэли"
+    },
+    "30": {
+      "name": "Чемпион",
+      "news": "Всё вместе, на пределе сложности"
+    }
+  },
+  "hud": {
+    "secondsAdded_one": "добавлена {{count}} секунда",
+    "secondsAdded_few": "добавлено {{count}} секунды",
+    "secondsAdded_many": "добавлено {{count}} секунд",
+    "secondsAdded_other": "добавлено {{count}} секунды",
+    "sub": "{{kind}} · Глава {{chapter}}",
+    "subFind": "Где {{digit}}? · Глава {{chapter}}",
+    "subRace_one": "{{kind}} · {{spots}} раунд · Глава {{chapter}}",
+    "subRace_few": "{{kind}} · {{spots}} раунда · Глава {{chapter}}",
+    "subRace_many": "{{kind}} · {{spots}} раундов · Глава {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} раунда · Глава {{chapter}}",
+    "clockLabel_one": "Осталась {{s}} секунда из {{limit}}",
+    "clockLabel_few": "Осталось {{s}} секунды из {{limit}}",
+    "clockLabel_many": "Осталось {{s}} секунд из {{limit}}",
+    "clockLabel_other": "Осталось {{s}} секунды из {{limit}}",
+    "penalty": "{{s}} с",
+    "me": "Я",
+    "find": {
+      "tap": "Нажми, куда встанет {{digit}}",
+      "where": "<scope>{{scope}}</scope> · без клавиатуры, только касание",
+      "elapsed": "с прошло",
+      "targetLabel": "Цель: цифра {{digit}} {{scope}}. {{left}}",
+      "ringLabel_one": "До конца этапа осталась {{s}} секунда",
+      "ringLabel_few": "До конца этапа осталось {{s}} секунды",
+      "ringLabel_many": "До конца этапа осталось {{s}} секунд",
+      "ringLabel_other": "До конца этапа осталось {{s}} секунды",
+      "one": "Одна находка за этап",
+      "wrongRule": "Неверное нажатие: {{penalty}} с",
+      "twoWrongRule": "Два неверных нажатия — этап окончен",
+      "found": "Найдено: {{digit}} в {{cell}}",
+      "missed": "Не в {{cell}}. {{penalty}} с",
+      "answer": "Ответ: {{cell}}"
+    },
+    "scope": {
+      "box": "в квадрате {{n}}",
+      "row": "в строке {{row}}",
+      "col": "в столбце {{n}}",
+      "board": "на всём поле"
+    },
+    "race": {
+      "task": "Раунд {{n}} из {{total}} · найди {{digit}} {{scope}}",
+      "left": "Осталось {{s}} с",
+      "searching": "Поиск…",
+      "spots_one": "{{count}} раунд",
+      "spots_few": "{{count}} раунда",
+      "spots_many": "{{count}} раундов",
+      "spots_other": "{{count}} раунда",
+      "frozen_one": "Заморозка, {{count}} секунда",
+      "frozen_few": "Заморозка, {{count}} секунды",
+      "frozen_many": "Заморозка, {{count}} секунд",
+      "frozen_other": "Заморозка, {{count}} секунды",
+      "out": "Вне игры до следующего раунда",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, бот уровня {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} ищет",
+      "mine": "Раунд {{n}} твой",
+      "theirs": "Раунд {{n}} забирает {{name}}",
+      "void": "Раунд {{n}} никому не достался",
+      "next": "Раунд {{n}}: {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "Заполни квадрат {{n}}",
+      "cells_one": "Клетки: {{done}}/{{total}}",
+      "cells_few": "Клетки: {{done}}/{{total}}",
+      "cells_many": "Клетки: {{done}}/{{total}}",
+      "cells_other": "Клетки: {{done}}/{{total}}",
+      "cellsLabel_one": "Заполнено {{done}} из {{total}} пустой клетки",
+      "cellsLabel_few": "Заполнено {{done}} из {{total}} пустых клеток",
+      "cellsLabel_many": "Заполнено {{done}} из {{total}} пустых клеток",
+      "cellsLabel_other": "Заполнено {{done}} из {{total}} пустой клетки",
+      "mistakes_one": "{{count}} ошибка {{penalty}} с",
+      "mistakes_few": "{{count}} ошибки {{penalty}} с",
+      "mistakes_many": "{{count}} ошибок {{penalty}} с",
+      "mistakes_other": "{{count}} ошибки {{penalty}} с",
+      "mistakesLabel_one": "{{count}} ошибка, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_few": "{{count}} ошибки, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_many": "{{count}} ошибок, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_other": "{{count}} ошибки, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "Ошибка добавляет 5 секунд, и эта цифра в этой клетке больше недоступна",
+      "timeLabel_one": "Время: {{s}} секунда из {{limit}}",
+      "timeLabel_few": "Время: {{s}} секунды из {{limit}}",
+      "timeLabel_many": "Время: {{s}} секунд из {{limit}}",
+      "timeLabel_other": "Время: {{s}} секунды из {{limit}}",
+      "boardLabel_one": "Поле · заполни только {{count}} пустую клетку квадрата {{n}}",
+      "boardLabel_few": "Поле · заполни только {{count}} пустые клетки квадрата {{n}}",
+      "boardLabel_many": "Поле · заполни только {{count}} пустых клеток квадрата {{n}}",
+      "boardLabel_other": "Поле · заполни только {{count}} пустой клетки квадрата {{n}}"
+    },
+    "line": {
+      "taskRow": "Заполни строку {{row}}",
+      "taskCol": "Заполни столбец {{n}}",
+      "boardLabelRow_one": "Поле · заполни только {{count}} пустую клетку строки {{row}}",
+      "boardLabelRow_few": "Поле · заполни только {{count}} пустые клетки строки {{row}}",
+      "boardLabelRow_many": "Поле · заполни только {{count}} пустых клеток строки {{row}}",
+      "boardLabelRow_other": "Поле · заполни только {{count}} пустой клетки строки {{row}}",
+      "boardLabelCol_one": "Поле · заполни только {{count}} пустую клетку столбца {{n}}",
+      "boardLabelCol_few": "Поле · заполни только {{count}} пустые клетки столбца {{n}}",
+      "boardLabelCol_many": "Поле · заполни только {{count}} пустых клеток столбца {{n}}",
+      "boardLabelCol_other": "Поле · заполни только {{count}} пустой клетки столбца {{n}}"
+    },
+    "puzzle": {
+      "task": "Расставь квадраты",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_one": "{{count}} квадрат двигается",
+      "moving_few": "{{count}} квадрата двигаются",
+      "moving_many": "{{count}} квадратов двигаются",
+      "moving_other": "{{count}} квадрата двигаются",
+      "fixed_one": "{{count}} квадрат закреплён",
+      "fixed_few": "{{count}} квадрата закреплены",
+      "fixed_many": "{{count}} квадратов закреплены",
+      "fixed_other": "{{count}} квадрата закреплены",
+      "allMove": "Двигаются все квадраты",
+      "swaps": "Обмены: {{count}}",
+      "wrong_one": "{{count}} неверный обмен {{penalty}} с",
+      "wrong_few": "{{count}} неверных обмена {{penalty}} с",
+      "wrong_many": "{{count}} неверных обменов {{penalty}} с",
+      "wrong_other": "{{count}} неверного обмена {{penalty}} с",
+      "wrongLabel_one": "{{count}} неверный обмен, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_few": "{{count}} неверных обмена, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_many": "{{count}} неверных обменов, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_other": "{{count}} неверного обмена, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "Перетащи квадрат на другой, чтобы поменять их местами",
+      "tapHint": "Или нажми на квадрат, а затем на другой",
+      "slotLabel": "Квадрат {{n}}, {{state}}: {{rows}}",
+      "state": {
+        "movable": "подвижный",
+        "fixed": "закреплён",
+        "selected": "выбран"
+      },
+      "slotHint": "Нажми, чтобы выбрать, затем нажми на другой квадрат",
+      "swapped": "Квадраты {{a}} и {{b}} поменялись местами",
+      "swappedPenalty_one": "Квадраты {{a}} и {{b}} поменялись местами. Плюс {{s}} секунда",
+      "swappedPenalty_few": "Квадраты {{a}} и {{b}} поменялись местами. Плюс {{s}} секунды",
+      "swappedPenalty_many": "Квадраты {{a}} и {{b}} поменялись местами. Плюс {{s}} секунд",
+      "swappedPenalty_other": "Квадраты {{a}} и {{b}} поменялись местами. Плюс {{s}} секунды",
+      "fixedTap": "Этот квадрат закреплён",
+      "solved": "Все строки и все столбцы верны",
+      "boardLabel": "Пазл · {{counts}}"
+    },
+    "duel": {
+      "gap": "Отрыв {{gap}}",
+      "gapLabel": "Отрыв: {{gap}}. Одна звезда, если ты впереди в конце, 2 звезды при {{two}}, 3 звезды при {{three}}",
+      "lead": "Впереди",
+      "of": "/{{target}}",
+      "meLabel_one": "{{name}}, {{score}} из {{target}} очка",
+      "meLabel_few": "{{name}}, {{score}} из {{target}} очков",
+      "meLabel_many": "{{name}}, {{score}} из {{target}} очков",
+      "meLabel_other": "{{name}}, {{score}} из {{target}} очка",
+      "botLabel_one": "{{name}}, бот уровня {{n}}, {{score}} из {{target}} очка",
+      "botLabel_few": "{{name}}, бот уровня {{n}}, {{score}} из {{target}} очков",
+      "botLabel_many": "{{name}}, бот уровня {{n}}, {{score}} из {{target}} очков",
+      "botLabel_other": "{{name}}, бот уровня {{n}}, {{score}} из {{target}} очка",
+      "finishLabel": "Этап заканчивается, когда кто-то наберёт $t(levels:hud.duel.reachPoints, {\"count\": {{target}} }), или через $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })",
+      "reachPoints_one": "{{count}} очко",
+      "reachPoints_few": "{{count}} очка",
+      "reachPoints_many": "{{count}} очков",
+      "reachPoints_other": "{{count}} очка",
+      "atSeconds_one": "{{count}} секунду",
+      "atSeconds_few": "{{count}} секунды",
+      "atSeconds_many": "{{count}} секунд",
+      "atSeconds_other": "{{count}} секунды",
+      "raceLabel": "Гонка до {{target}}: {{me}}, {{bot}}"
+    },
+    "reactions": "Реакции",
+    "boardLabel": "Поле этапа · {{scope}}",
+    "spotError": {
+      "goal_one": "На поле прячется {{count}} неверная цифра. Нажми на неё.",
+      "goal_few": "На поле прячутся {{count}} неверные цифры. Нажми на них.",
+      "goal_many": "На поле прячется {{count}} неверных цифр. Нажми на них.",
+      "goal_other": "На поле прячутся {{count}} неверной цифры. Нажми на них.",
+      "note": "Тёмные цифры — подсказки поля, они всегда верны.",
+      "found": "Найдено",
+      "foundLabel": "Найдено {{found}} из {{total}}",
+      "time": "Время",
+      "timeLabel_one": "Время: {{s}} секунда из {{limit}}",
+      "timeLabel_few": "Время: {{s}} секунды из {{limit}}",
+      "timeLabel_many": "Время: {{s}} секунд из {{limit}}",
+      "timeLabel_other": "Время: {{s}} секунды из {{limit}}",
+      "tipTitle": "Совет",
+      "tip": "Ищи цифру, которая встречается дважды в одной строке, столбце или квадрате.",
+      "tipClose": "Закрыть совет",
+      "foundCell": "Ошибка в {{cell}} найдена: не {{wrong}}, а {{right}}",
+      "rightTap": "Цифра в {{cell}} верная. {{penalty}} с",
+      "missed": "Ненайденные ошибки: {{cells}}",
+      "boardLabel": "Поле этапа · нажми на неверную цифру"
+    },
+    "hunt": {
+      "goal": "Набери $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) за $t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }).",
+      "goalPoints_one": "{{points}} очко",
+      "goalPoints_few": "{{points}} очка",
+      "goalPoints_many": "{{points}} очков",
+      "goalPoints_other": "{{points}} очка",
+      "goalMoves_one": "{{count}} ход",
+      "goalMoves_few": "{{count}} хода",
+      "goalMoves_many": "{{count}} ходов",
+      "goalMoves_other": "{{count}} хода",
+      "note": "Клетка в пустой области стоит больше.",
+      "points": "оч.",
+      "scoreLabel_one": "{{score}} очко",
+      "scoreLabel_few": "{{score}} очка",
+      "scoreLabel_many": "{{score}} очков",
+      "scoreLabel_other": "{{score}} очка",
+      "scoreWorthLabel_one": "{{score}} очко. Выбранная клетка стоит {{worth}}",
+      "scoreWorthLabel_few": "{{score}} очка. Выбранная клетка стоит {{worth}}",
+      "scoreWorthLabel_many": "{{score}} очков. Выбранная клетка стоит {{worth}}",
+      "scoreWorthLabel_other": "{{score}} очка. Выбранная клетка стоит {{worth}}",
+      "lost": "Неверная цифра стоила {{points}}",
+      "move": "Ход {{n}} из {{max}}",
+      "burnt": "Ход {{n}} сгорел",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_one": "{{count}} ход сгорел",
+      "burntCount_few": "{{count}} хода сгорели",
+      "burntCount_many": "{{count}} ходов сгорело",
+      "burntCount_other": "{{count}} хода сгорело",
+      "left": "осталось · из {{limit}}",
+      "timeLabel_one": "Осталась {{s}} секунда из {{limit}}",
+      "timeLabel_few": "Осталось {{s}} секунды из {{limit}}",
+      "timeLabel_many": "Осталось {{s}} секунд из {{limit}}",
+      "timeLabel_other": "Осталось {{s}} секунды из {{limit}}",
+      "max": "Лучший результат поля: {{max}}",
+      "worth": "Стоит {{points}}"
+    },
+    "chain": {
+      "goal": "В каждый момент на поле можно решить только одну клетку. Найди и заполни её — и откроется следующая.",
+      "notePenalty": "Цифра в клетке, которую пока нельзя определить: {{penalty}} с.",
+      "noteAccept": "Неверная цифра: {{penalty}} с.",
+      "step": "Шаг {{n}} из {{total}}",
+      "stepLabel": "Цепочка: шаг {{n}} из {{total}}",
+      "time": "Время",
+      "timeLabel_one": "Время: {{s}} секунда из {{limit}}",
+      "timeLabel_few": "Время: {{s}} секунды из {{limit}}",
+      "timeLabel_many": "Время: {{s}} секунд из {{limit}}",
+      "timeLabel_other": "Время: {{s}} секунды из {{limit}}",
+      "notYet": "{{text}} · {{penalty}} с",
+      "tipTitle": "Совет",
+      "tip": "На каждом шаге можно доказать ровно одну клетку. Если цифра в клетке не вызывает сомнений, это та самая клетка.",
+      "tipClose": "Закрыть совет"
+    }
+  },
+  "explain": {
+    "spot": "Раунд {{n}}: {{text}}",
+    "mistake": "Твоя ошибка: {{digit}} в {{cell}}. {{reason}}",
+    "best": "Твой лучший ход, {{digit}} в {{cell}}: {{text}}",
+    "errorFound": "{{cell}}, найдена: {{reason}}",
+    "errorMissed": "{{cell}}, не найдена: {{reason}}",
+    "rightTap": "Цифра {{digit}} в {{cell}} верная: нажатие на неё стоило {{penalty}} с.",
+    "points_one": "Набрано {{points}} из {{max}} очка — {{percent}} от лучшего результата поля.",
+    "points_few": "Набрано {{points}} из {{max}} очков — {{percent}} от лучшего результата поля.",
+    "points_many": "Набрано {{points}} из {{max}} очков — {{percent}} от лучшего результата поля.",
+    "points_other": "Набрано {{points}} из {{max}} очка — {{percent}} от лучшего результата поля.",
+    "line": "Лучшие ходы: {{moves}}.",
+    "move": "{{digit}} в {{cell}} {{points}}",
+    "step": "Шаг {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "На место {{place}} подходит только квадрат, стоявший сначала на месте {{from}}: любой другой повторил бы цифру в строке или столбце.",
+      "onlyPlaceForBox": "Квадрат, стоявший сначала на месте {{from}}, подходит только на место {{place}}: в любом другом месте он повторил бы цифру в строке или столбце."
+    }
+  }
+}

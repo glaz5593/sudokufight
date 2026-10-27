@@ -1,7 +1,7 @@
 import type { AppLevel, GameView, PlayerView } from '@sudoku-fight/engine';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -16,6 +16,7 @@ import { Avatar, SeatGlyph } from '../../../components/player';
 import { secondsOf } from '../../../components/player/format';
 import { IconButton } from '../../../components/ui';
 import { timing } from '../../../components/ui/motion';
+import { Text } from '../../../components/ui/Text';
 import { color, radius, space, text, tokens } from '../../../theme';
 import { motion, useReduceMotion } from '../../../theme/motion';
 import { identityOf } from '../../game/identity';
@@ -82,6 +83,7 @@ export function RaceHud({
   const open = find?.spots[find.spotIndex]?.state === 'open';
   const sub = t('hud.subRace', {
     kind: t('kinds.findDuel.name'),
+    count: total,
     spots: total,
     chapter: level.chapter,
   });
@@ -91,7 +93,7 @@ export function RaceHud({
       <View style={styles.cards}>
         {me ? <MeCard player={me} avatar={myAvatar} onReactions={onReactions} /> : null}
         <Text style={styles.vs} accessibilityElementsHidden importantForAccessibility="no">
-          VS
+          {t('player:vs')}
         </Text>
         {bot ? (
           <BotCard
@@ -115,6 +117,7 @@ export function RaceHud({
           style={styles.left}
           accessibilityRole="timer"
           accessibilityLabel={t('hud.clockLabel', {
+            count: secondsOf(remaining),
             s: secondsOf(remaining),
             limit: secondsOf(lv?.limitMs ?? 0),
           })}

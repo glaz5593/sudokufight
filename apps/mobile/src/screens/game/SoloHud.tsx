@@ -1,7 +1,7 @@
 import type { GameType } from '@sudoku-fight/engine';
 import { memo, type ReactNode, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type LayoutChangeEvent, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type LayoutChangeEvent, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { type AvatarFace, type AvatarIdOrNone, sameFace } from '../../avatars';
 import {
@@ -25,6 +25,8 @@ import {
 } from '../../components/player';
 import { metrics } from '../../components/player/metrics';
 import { Button } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
+import { decimalSeparator } from '../../i18n/compose';
 import { color, size, space, text, tokens } from '../../theme';
 import { type Rect, within } from './geometry';
 import { formatClock, type SoloStats } from './model';
@@ -95,12 +97,17 @@ export const SoloHud = memo(function SoloHud({
     [report],
   );
 
+  const decimal = decimalSeparator(t);
   const time = formatClock(stats.elapsedMs);
   const best = stats.best;
   const statsLabel = [
     t('hud.timeLabel', { time }),
     best
-      ? t('hud.bestLabel', { points: ltr(formatScore(best.points)), cell: ltr(best.cell) })
+      ? t('hud.bestLabel', {
+          count: best.points,
+          points: ltr(formatScore(best.points, decimal)),
+          cell: ltr(best.cell),
+        })
       : t('hud.noBestLabel'),
   ].join(t('listSep'));
   const canEnd = card.mine?.canSurrender ?? false;
@@ -188,7 +195,7 @@ export const SoloHud = memo(function SoloHud({
           <Stat label={t('hud.best')}>
             {best ? (
               <View style={styles.best} testID={`${testID}-best`}>
-                <Text style={[text('cellRef'), styles.bestPoints]}>{signedText(best.points)}</Text>
+                <Text style={[text('cellRef'), styles.bestPoints]}>{signedText(best.points, decimal)}</Text>
                 <Text style={[text('scoreSm'), styles.value]}>{best.cell}</Text>
               </View>
             ) : (

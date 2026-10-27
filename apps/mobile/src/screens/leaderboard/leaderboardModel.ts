@@ -9,6 +9,7 @@ import {
 import type { TFunction } from 'i18next';
 
 import { countryName, ltr } from '../../components/player';
+import { shownName } from '../../components/player/temporaryName';
 
 /**
  * The leaderboard as a pure view model (spec §14.2; Leaderboard.dc.html): which tab, the podium of the first
@@ -73,9 +74,10 @@ export function leagueWords(entry: Pick<LeaderboardEntry, 'league'>, t: Progress
 export function entryLabel(entry: LeaderboardEntry, t: ProgressT, language: string, isMe: boolean): string {
   const sep = t('player:listSep');
   const rating = t('player:rating.label', { value: ratingText(entry.rating) });
+  const name = shownName(entry.displayName, t);
   return [
     t('leaderboard.rankLabel', { rank: entry.rank }),
-    isMe ? t('leaderboard.meName', { name: entry.displayName }) : entry.displayName,
+    isMe ? t('leaderboard.meName', { name }) : name,
     entry.country ? countryName(entry.country, language) : null,
     leagueWords(entry, t),
     t('common.level', { level: entry.level }),

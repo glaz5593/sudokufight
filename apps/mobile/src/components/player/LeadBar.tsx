@@ -1,10 +1,12 @@
 import { memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
+import { decimalSeparator } from '../../i18n/compose';
 import { color, radius, size, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
+import { Text } from '../ui/Text';
 import { easing, NEVER_REDUCE } from './anim';
 import type { LeadModel } from './cardModel';
 import { signedText } from './format';
@@ -81,7 +83,9 @@ export const LeadBar = memo(function LeadBar({ model, gender, style, testID }: L
             {leader ? (
               <>
                 {many ? <SeatGlyph colorIndex={leader.colorIndex} size={metrics.glyph.leadTag} /> : null}
-                <Text style={[metrics.lead.tagStyle, { color: tint }]}>{signedText(leader.gap)}</Text>
+                <Text style={[metrics.lead.tagStyle, { color: tint }]}>
+                  {signedText(leader.gap, decimalSeparator(t))}
+                </Text>
               </>
             ) : (
               <Text style={[text('plateNameCompact'), styles.tie]}>{t('lead.tie')}</Text>

@@ -5,6 +5,7 @@
 שלב 14 בתוכנית העבודה, לפי אפיון סעיף 23. מה שמודבקים ב־Play Console, בעברית ובאנגלית.
 
 - **שפות הדף:** ‏English (United States) – en-US כשפת ברירת המחדל, ו־Hebrew – iw-IL כתרגום.
+- **17 השפות האחרות (מ־1.1.0):** קובץ לכל שפה ב־[`locales/`](locales/README.md), עם הקודים של Google Play ומגבלות התווים.
 - **אייקון 512, Feature graphic וצילומי מסך:** ב־`docs/store/ASSETS.md`.
 - **Data safety:** ‏`docs/store/DATA-SAFETY.md`.
 - **מספרי התווים** שבסוגריים נספרו בסקריפט.
@@ -15,7 +16,7 @@
 |---|---|---|---|
 | App name | 30 | `Sudoku Fight: Live PvP Sudoku` (29) | `סודוקו פייט: סודוקו תחרותי` (26) |
 | Short description | 80 | `Race up to 3 rivals on the same sudoku board in real time. Ranked, live, fair.` (78) | `מתחרים עד 3 יריבים על אותו לוח סודוקו בזמן אמת. מדורג, חי והוגן.` (64) |
-| Full description | 4,000 | אותו תיאור כמו ב־App Store (1,463) | אותו תיאור כמו ב־App Store (1,196) |
+| Full description | 4,000 | אותו תיאור כמו ב־App Store (1,474) | אותו תיאור כמו ב־App Store (1,210) |
 
 - **התיאור המלא:** מעתיקים מ־`docs/store/LISTING-APPLE.md`, סעיף 1 ("Description"). אותו טקסט מתאים לשתי החנויות.
 - **מדיניות Play על מטא־דאטה:** בלי "#1", ‏"Best", ‏"Free" או אימוג׳י בשם ובתיאור הקצר, ובלי קריאה לפעולה כמו "Download now". האימוג׳י בתיאור המלא מותרים (הם התגובות של המשחק).

@@ -1,0 +1,109 @@
+{
+  "technique": {
+    "nakedSingle": "Naked single",
+    "hiddenSingle": "Hidden single",
+    "pointing": "Box-line reduction",
+    "claiming": "Box-line reduction",
+    "nakedPair": "Naked pair",
+    "hiddenPair": "Hidden pair",
+    "chain": "Advanced technique",
+    "beyond": "Beyond the engine’s techniques"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} and {{last}}",
+    "lastOr": "{{head}} or {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} and {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "Row {{label}} is only missing {{digit}}.",
+      "col": "Column {{label}} is only missing {{digit}}.",
+      "box": "Box {{label}} is only missing {{digit}}."
+    },
+    "missing": {
+      "row": "Row {{label}} is missing {{digits}}.",
+      "col": "Column {{label}} is missing {{digits}}.",
+      "box": "Box {{label}} is missing {{digits}}."
+    },
+    "seen": {
+      "row": "Row {{label}} already has {{digits}}.",
+      "col": "Column {{label}} already has {{digits}}.",
+      "box": "Box {{label}} already has {{digits}}."
+    },
+    "eliminated": "{{digit}} was ruled out of {{cell}} in step {{step}}.",
+    "only": "So only {{digit}}."
+  },
+  "hidden": {
+    "alone": {
+      "row": "{{digit}} must appear in row {{label}}, and {{cell}} is its only empty cell. So {{result}}.",
+      "col": "{{digit}} must appear in column {{label}}, and {{cell}} is its only empty cell. So {{result}}.",
+      "box": "{{digit}} must appear in box {{label}}, and {{cell}} is its only empty cell. So {{result}}."
+    },
+    "blocked": {
+      "row": "{{digit}} must appear in row {{label}}. All the other empty cells in it are blocked: {{clauses}}. So {{result}}.",
+      "col": "{{digit}} must appear in column {{label}}. All the other empty cells in it are blocked: {{clauses}}. So {{result}}.",
+      "box": "{{digit}} must appear in box {{label}}. All the other empty cells in it are blocked: {{clauses}}. So {{result}}."
+    },
+    "clause": {
+      "step": "{{cell}} lost the {{digit}} in step {{step}}",
+      "unit": {
+        "row": "{{cell}} sees a {{digit}} in row {{label}}",
+        "col": "{{cell}} sees a {{digit}} in column {{label}}",
+        "box": "{{cell}} sees a {{digit}} in box {{label}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "In box {{box}}, {{digit}} can only be in row {{line}}, so it is removed from the rest of the row: {{cells}}.",
+    "col": "In box {{box}}, {{digit}} can only be in column {{line}}, so it is removed from the rest of the column: {{cells}}."
+  },
+  "claiming": {
+    "row": "In row {{line}}, {{digit}} can only be in box {{box}}, so it is removed from the rest of the box: {{cells}}.",
+    "col": "In column {{line}}, {{digit}} can only be in box {{box}}, so it is removed from the rest of the box: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "{{a}} and {{b}} can only hold {{digits}}, so {{digits}} are removed from the rest of row {{label}}: {{cells}}.",
+    "col": "{{a}} and {{b}} can only hold {{digits}}, so {{digits}} are removed from the rest of column {{label}}: {{cells}}.",
+    "box": "{{a}} and {{b}} can only hold {{digits}}, so {{digits}} are removed from the rest of box {{label}}: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "In row {{label}}, {{digits}} can only go in {{a}} and {{b}}, so their other candidates are removed.",
+    "col": "In column {{label}}, {{digits}} can only go in {{a}} and {{b}}, so their other candidates are removed.",
+    "box": "In box {{label}}, {{digits}} can only go in {{a}} and {{b}}, so their other candidates are removed."
+  },
+  "beyond": "This needs an advanced technique the engine can't explain yet. The answer: {{formula}}.",
+  "chain": {
+    "head_one": "This cell can't be decided in one step yet. It takes {{count}} step:",
+    "head_other": "This cell can't be decided in one step yet. It takes {{count}} steps:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "{{digit}} is already in row {{label}} ({{cell}}).",
+      "col": "{{digit}} is already in column {{label}} ({{cell}}).",
+      "box": "{{digit}} is already in box {{label}} ({{cell}})."
+    },
+    "notSolution": "{{digit}} still fits here, but the solution needs {{answer}}."
+  },
+  "block": {
+    "step": "{{cell}} can't hold {{digit}}: it was ruled out in step {{step}}",
+    "unit": {
+      "row": "{{cell}} can't hold {{digit}}: row {{label}} has a {{digit}}",
+      "col": "{{cell}} can't hold {{digit}}: column {{label}} has a {{digit}}",
+      "box": "{{cell}} can't hold {{digit}}: box {{label}} has a {{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "You can't tell yet what goes in {{cell}}",
+    "options": "You can't tell yet what goes in {{cell}} ({{options}})"
+  }
+}

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { AvatarIdOrNone } from '../../avatars';
 import { Icon } from '../../components/Icon';
@@ -13,6 +13,8 @@ import {
   scoreText,
   signedText,
 } from '../../components/player';
+import { Text } from '../../components/ui/Text';
+import { decimalSeparator } from '../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { dayOf, type HistoryEntry, type HistoryOutcome, shortDate } from './historyModel';
 
@@ -56,6 +58,7 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
   const { t: tProgress } = useTranslation('progress');
   const { t: tg } = useTranslation('game');
   const { t: tp } = useTranslation('player');
+  const decimal = decimalSeparator(t);
   const day = dayOf(e.startedAt, now);
   const date = day ? t(`card.${day}`) : shortDate(e.startedAt, i18n.language);
   const opponent = e.opponents.length === 1 ? e.opponents[0]! : null;
@@ -67,18 +70,18 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
           t('card.against', { count: e.opponents.length }),
         ]
           .filter(Boolean)
-          .join(' · ')
+          .join(tp('sep'))
       : t('card.alone');
   const duel =
     e.myScore !== null && opponent && e.opponentScore !== null
-      ? { mine: formatScore(e.myScore), theirs: formatScore(e.opponentScore) }
+      ? { mine: formatScore(e.myScore, decimal), theirs: formatScore(e.opponentScore, decimal) }
       : null;
   const score =
     e.myScore === null
       ? '—'
       : duel
         ? ltr(`${duel.mine} : ${duel.theirs}`)
-        : t('card.points', { score: scoreText(e.myScore) });
+        : t('card.points', { score: scoreText(e.myScore, decimal) });
   // A game with friends (1.0.4) never moves a rating [D81a]: "עם חברים", and "בלי דירוג" where a change would be.
   const unrated = e.source === 'practice' || e.friends === true;
   const rating = unrated
@@ -87,7 +90,7 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
       : t('card.unrated')
     : e.ratingDelta === null
       ? null
-      : signedText(e.ratingDelta);
+      : signedText(e.ratingDelta, decimal);
   const mode = e.friends ? t('friends:mode') : t(`card.mode.${e.mode}`);
   const type = tg(`type.${e.gameType}`);
   const outcome = t(`card.outcome.${e.outcome}`);
@@ -166,7 +169,7 @@ export function HistoryCard({ entry: e, myAvatar, now, onOpen, onOpenPlayer }: H
           {opponent?.country ? <Flag country={opponent.country} size="compact" decorative /> : null}
         </View>
         <Text style={[text('caption'), styles.muted]} numberOfLines={1}>
-          {`${outcome} · ${mode} · ${type}`}
+          {[outcome, mode, type].join(tp('sep'))}
         </Text>
       </View>
       <View style={styles.end}>

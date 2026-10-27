@@ -77,7 +77,8 @@ describe('historySummaryOf', () => {
     const practice = historySummaryOf(null, { gamesPlayed: 4, winRate: 0.25, streak: 0 })!;
     expect(summaryLine(practice, he)).toBe(`4 אימונים · ${ltr('25%')} ניצחונות`);
     expect(summaryLine({ ...practice, winRate: null }, en)).toBe('4 practices');
-    expect(percentText(2 / 3)).toBe(ltr('67%'));
+    expect(percentText(2 / 3, he)).toBe(ltr('67%'));
+    expect(percentText(2 / 3, en)).toBe(ltr('67%'));
   });
 });
 

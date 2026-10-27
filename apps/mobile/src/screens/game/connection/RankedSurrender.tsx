@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { signedText } from '../../../components/player/format';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator } from '../../../i18n/compose';
 import { color, space, text } from '../../../theme';
 import { ScoreLine, type ScoreLineData } from './ScoreLine';
 import type { SurrenderEstimate } from './surrenderEstimate';
@@ -106,11 +108,12 @@ export function RankedSurrender({
 function RatingBody({ delta, testID }: { delta: number; testID: string }) {
   const { t } = useTranslation('game');
   const parts = splitMarked(t('connection.surrender.bodyRating', { delta: MARK }));
-  const spoken = t('connection.surrender.bodyRating', { delta: signedText(delta) });
+  const shown = signedText(delta, decimalSeparator(t));
+  const spoken = t('connection.surrender.bodyRating', { delta: shown });
   return (
     <Text style={styles.body} accessibilityLabel={spoken} testID={testID}>
       {parts?.[0]}
-      <Text style={styles.delta}>{signedText(delta)}</Text>
+      <Text style={styles.delta}>{shown}</Text>
       {parts?.[1]}
     </Text>
   );

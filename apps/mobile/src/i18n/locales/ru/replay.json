@@ -1,0 +1,92 @@
+{
+  "title": "Повтор",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Одиночная тренировка",
+    "bot": "Тренировка с ботом",
+    "ranked": "Рейтинговая"
+  },
+  "back": "Назад",
+  "loading": "Загружаем партию…",
+  "load": {
+    "missing": "Не удалось найти эту партию",
+    "notFinished": "Партия ещё сохраняется на сервере. Попробуй чуть позже",
+    "offline": "Нет связи с сервером. Рейтинговые партии загружаются с сервера",
+    "signedOut": "Войди, чтобы посмотреть рейтинговую партию",
+    "unavailable": "Не удалось прочитать эту партию",
+    "retry": "Повторить",
+    "partial": "Партия прервалась: повтор доходит до последнего сохранённого хода"
+  },
+  "step": {
+    "counter": "Шаг {{number}} из {{total}}",
+    "clockLabel": "Время партии: {{clock}}"
+  },
+  "nav": {
+    "prev": "Предыдущий шаг",
+    "next": "Следующий шаг",
+    "timeline": "Шкала шагов",
+    "timelineValue": "Шаг {{number}} из {{total}}, {{clock}}",
+    "timelineHint": "Проведи вверх или вниз, чтобы сменить шаг"
+  },
+  "narration": {
+    "start": "Партия начинается",
+    "select": "{{name}} · выбор {{cell}}",
+    "correct": "{{name}} · верно в {{cell}} · {{delta}}",
+    "wrong": "{{name}} · ошибка в {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · отмена выбора {{cell}}",
+      "timeout": "{{name}} · время на {{cell}} вышло"
+    },
+    "interference": "{{name}} · помеха игроку {{target}} · {{delta}}",
+    "disconnect": "{{name}} · отключение",
+    "reconnect": "{{name}} · возвращение в игру",
+    "offline": "{{name}} · нет связи",
+    "surrender": "{{name}} · сдача партии",
+    "endPractice": "{{name}} · конец тренировки",
+    "abandon": "{{name}} · уход из партии",
+    "over": "Партия окончена",
+    "paused": "Партия заморожена",
+    "offlineSuffix": "отправлено после восстановления связи"
+  },
+  "explain": {
+    "title": "Объяснение для каждого игрока",
+    "none": "У игрока {{name}} ещё нет ходов",
+    "noneMe": "У меня ещё нет ходов",
+    "noneBody": "Объяснение появится после первого хода",
+    "status": {
+      "choosing": "Выбор",
+      "released": "Отпущена",
+      "correct": "Верно",
+      "wrong": "Ошибка"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} вместо {{answer}}",
+    "why": "Почему {{digit}} не подходит: {{text}}",
+    "noLogic": "Ответ: {{cell}} → {{digit}}",
+    "scoreLine": "Расчёт очков",
+    "penaltyLine": "Штраф: сколько стоила верная цифра",
+    "released": {
+      "cancel": "Выбор отменён",
+      "timeout": "Время вышло",
+      "switch": "Переход на другую клетку",
+      "mistake": "После ошибки",
+      "surrender": "Выход из партии",
+      "disconnect": "Отключение",
+      "abandon": "Уход из партии"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "Ключевые моменты",
+    "bestMove": "Лучший ход",
+    "mistakes": "Ошибки · {{count}}",
+    "interferences": "Помехи · {{count}}",
+    "turningPoint": "Перелом",
+    "hint": "Переход к этому шагу"
+  },
+  "board": "Поле на шаге {{number}}",
+  "me": "Я",
+  "unknown": "Игрок"
+}

@@ -11,12 +11,39 @@ import {
 import { type Request, type Response, Router } from 'express';
 
 import { type FriendsLinksConfig, NO_FRIENDS_LINKS } from '../config';
-import { escapeHtml, legalHref, PAGE_COLORS } from '../legal';
+import {
+  escapeHtml,
+  legalHref,
+  legalLangFor,
+  negotiatePageLanguage,
+  PAGE_COLORS,
+  PAGE_LANGUAGE_NAMES,
+  pageDir,
+  pageLanguageOfQuery,
+  versionOf,
+} from '../legal';
+import { ROOM_PAGE_TEXTS_AR } from './translations/ar';
+import { ROOM_PAGE_TEXTS_DE } from './translations/de';
+import { ROOM_PAGE_TEXTS_ES } from './translations/es';
+import { ROOM_PAGE_TEXTS_FR } from './translations/fr';
+import { ROOM_PAGE_TEXTS_ID } from './translations/id';
+import { ROOM_PAGE_TEXTS_IT } from './translations/it';
+import { ROOM_PAGE_TEXTS_JA } from './translations/ja';
+import { ROOM_PAGE_TEXTS_KO } from './translations/ko';
+import { ROOM_PAGE_TEXTS_NL } from './translations/nl';
+import { ROOM_PAGE_TEXTS_PL } from './translations/pl';
+import { ROOM_PAGE_TEXTS_PT_BR } from './translations/pt-BR';
+import { ROOM_PAGE_TEXTS_RU } from './translations/ru';
+import { ROOM_PAGE_TEXTS_TH } from './translations/th';
+import { ROOM_PAGE_TEXTS_TR } from './translations/tr';
+import { ROOM_PAGE_TEXTS_VI } from './translations/vi';
+import { ROOM_PAGE_TEXTS_ZH_HANS } from './translations/zh-Hans';
+import { ROOM_PAGE_TEXTS_ZH_HANT } from './translations/zh-Hant';
 
 /**
  * A room's link outside the app (playing with friends, 1.0.4; docs/handoff/2026-10-19/friends-room.md §6), public:
  *   GET /r/:code                                → the page a link opens in a browser (no app, an old app, or
- *                                                 App Links not verified), in Hebrew or English
+ *                                                 App Links not verified), in the browser's language
  *   GET /.well-known/assetlinks.json            → Android App Links (ANDROID_APP_LINK_SHA256), else 404
  *   GET /.well-known/apple-app-site-association → iOS universal links (IOS_APP_ID), else 404
  *
@@ -87,7 +114,32 @@ export function appleAppSiteAssociation(iosAppId: string): AppleAppSiteAssociati
 
 // ---- the page ---------------------------------------------------------------------------------------------------
 
-export const LINK_LANGS = ['he', 'en'] as const;
+/**
+ * The languages the page has words in (ROOM_PAGE_TEXTS), in the order of its language links: the app's 19
+ * (legal/languages.ts PAGE_LANGUAGES, in its order) since 1.1.0; any other gets English (D113, D101). A
+ * language's words are in translations/<code>.ts, Hebrew's and English's below.
+ */
+export const LINK_LANGS = [
+  'he',
+  'en',
+  'ar',
+  'es',
+  'pt-BR',
+  'de',
+  'fr',
+  'ja',
+  'ru',
+  'ko',
+  'it',
+  'tr',
+  'zh-Hans',
+  'id',
+  'pl',
+  'zh-Hant',
+  'vi',
+  'th',
+  'nl',
+] as const;
 export type LinkLang = (typeof LINK_LANGS)[number];
 
 /** What the browser is, for the "open in the app" link and which store to offer. */
@@ -116,9 +168,15 @@ export function intentLink(code: string, fallbackUrl: string): string {
   );
 }
 
-interface PageTexts {
+export interface PageTexts {
   brand: string;
   languages: string;
+  /**
+   * The way to the code in the app, in its own words and order: the screen "New game", then its "Join with
+   * code" button (apps/mobile home:modes.title, home:modes.friends.join; a test keeps them equal), joined by an
+   * arrow that points the way the language reads. {path} in the texts below.
+   */
+  path: string;
   /** <title> of a room's page; {code} is the code, isolated. */
   title: string;
   heading: string;
@@ -128,9 +186,9 @@ interface PageTexts {
   noApp: string;
   googlePlay: string;
   appStore: string;
-  /** With a store: the app is there but did not open. {code}, {version}. */
+  /** With a store: the app is there but did not open. {path}, {code}, {version}. */
   typeCode: string;
-  /** Without a store (staging): {code}, {version}. */
+  /** Without a store (staging): {path}, {code}, {version}. */
   testing: string;
   testingHeading: string;
   /** Under it all, quietly. */
@@ -138,15 +196,15 @@ interface PageTexts {
   privacy: string;
   badTitle: string;
   badHeading: string;
+  /** {path}. */
   badText: string;
 }
-
-const LANGUAGE_NAMES: Record<LinkLang, string> = { he: 'עברית', en: 'English' };
 
 export const ROOM_PAGE_TEXTS: Record<LinkLang, PageTexts> = {
   he: {
     brand: 'סודוקו פייט',
     languages: 'שפה',
+    path: 'משחק חדש ← הצטרף עם קוד',
     title: 'הזמנה לחדר {code} · סודוקו פייט',
     heading: 'הוזמנת למשחק סודוקו פייט',
     codeLabel: 'קוד החדר',
@@ -155,20 +213,19 @@ export const ROOM_PAGE_TEXTS: Record<LinkLang, PageTexts> = {
     googlePlay: 'להורדה מ־Google Play',
     appStore: 'להורדה מ־App Store',
     typeCode:
-      'האפליקציה כבר מותקנת ולא נפתחה? עדכנו אותה (צריך גרסה {version} ומעלה), או הקלידו את הקוד: משחק חדש ← הצטרף עם קוד ← {code}.',
-    testing:
-      'האפליקציה עדיין בבדיקות. אם היא מותקנת אצלך: משחק חדש ← הצטרף עם קוד ← {code}. צריך גרסה {version} ומעלה.',
+      'האפליקציה כבר מותקנת ולא נפתחה? עדכנו אותה (צריך גרסה {version} ומעלה), או הקלידו את הקוד: {path} ← {code}.',
+    testing: 'האפליקציה עדיין בבדיקות. אם היא מותקנת אצלך: {path} ← {code}. צריך גרסה {version} ומעלה.',
     testingHeading: 'הצטרפות עם הקוד',
     closedNote: 'אם החדר כבר נסגר, האפליקציה תגיד לך, ואפשר לבקש מהחבר קוד חדש.',
     privacy: 'מדיניות פרטיות',
     badTitle: 'קישור לא תקין · סודוקו פייט',
     badHeading: 'הקישור לא שלם',
-    badText:
-      'בקישור הזה אין קוד חדר תקין. בקשו מהחבר ששלח אותו את קוד החדר (6 ספרות), ובאפליקציה: משחק חדש ← הצטרף עם קוד.',
+    badText: 'בקישור הזה אין קוד חדר תקין. בקשו מהחבר ששלח אותו את קוד החדר (6 ספרות), ובאפליקציה: {path}.',
   },
   en: {
     brand: 'Sudoku Fight',
     languages: 'Language',
+    path: 'New game → Join with code',
     title: 'Invitation to room {code} · Sudoku Fight',
     heading: 'You’re invited to a game of Sudoku Fight',
     codeLabel: 'Room code',
@@ -177,9 +234,9 @@ export const ROOM_PAGE_TEXTS: Record<LinkLang, PageTexts> = {
     googlePlay: 'Get it on Google Play',
     appStore: 'Download on the App Store',
     typeCode:
-      'Have the app, and it didn’t open? Update it (you need version {version} or later), or type the code: New game → Join with code → {code}.',
+      'Have the app, and it didn’t open? Update it (you need version {version} or later), or type the code: {path} → {code}.',
     testing:
-      'The app is still in testing. If you have it: New game → Join with code → {code}. You need version {version} or later.',
+      'The app is still in testing. If you have it: {path} → {code}. You need version {version} or later.',
     testingHeading: 'Join with the code',
     closedNote:
       'If the room has closed already, the app will tell you, and you can ask your friend for a new code.',
@@ -187,8 +244,25 @@ export const ROOM_PAGE_TEXTS: Record<LinkLang, PageTexts> = {
     badTitle: 'Broken link · Sudoku Fight',
     badHeading: 'This link is incomplete',
     badText:
-      'This link has no valid room code. Ask the friend who sent it for the room code (6 digits), then in the app: New game → Join with code.',
+      'This link has no valid room code. Ask the friend who sent it for the room code (6 digits), then in the app: {path}.',
   },
+  ar: ROOM_PAGE_TEXTS_AR,
+  es: ROOM_PAGE_TEXTS_ES,
+  'pt-BR': ROOM_PAGE_TEXTS_PT_BR,
+  de: ROOM_PAGE_TEXTS_DE,
+  fr: ROOM_PAGE_TEXTS_FR,
+  ja: ROOM_PAGE_TEXTS_JA,
+  ru: ROOM_PAGE_TEXTS_RU,
+  ko: ROOM_PAGE_TEXTS_KO,
+  it: ROOM_PAGE_TEXTS_IT,
+  tr: ROOM_PAGE_TEXTS_TR,
+  'zh-Hans': ROOM_PAGE_TEXTS_ZH_HANS,
+  id: ROOM_PAGE_TEXTS_ID,
+  pl: ROOM_PAGE_TEXTS_PL,
+  'zh-Hant': ROOM_PAGE_TEXTS_ZH_HANT,
+  vi: ROOM_PAGE_TEXTS_VI,
+  th: ROOM_PAGE_TEXTS_TH,
+  nl: ROOM_PAGE_TEXTS_NL,
 };
 
 const LIGHT = {
@@ -271,9 +345,13 @@ export interface RoomPageInput {
 const fill = (text: string, values: Record<string, string>): string =>
   text.replace(/\{(\w+)\}/g, (whole, key: string) => values[key] ?? whole);
 
-/** The code inside a text: escaped first, then the code in an isolate that reads left to right. */
-const withCode = (text: string, code: string, version: string): string =>
-  fill(escapeHtml(text), { code: `<bdi dir="ltr">${escapeHtml(formatFriendCode(code))}</bdi>`, version });
+/** A text as HTML: escaped first, then the way to the code in the app. */
+const withPath = (text: string, t: PageTexts, values: Record<string, string> = {}): string =>
+  fill(escapeHtml(text), { path: escapeHtml(t.path), ...values });
+
+/** The code inside a text too, in an isolate that reads left to right. */
+const withCode = (text: string, t: PageTexts, code: string, version: string): string =>
+  withPath(text, t, { code: `<bdi dir="ltr">${escapeHtml(formatFriendCode(code))}</bdi>`, version });
 
 interface StoreLink {
   href: string;
@@ -300,17 +378,17 @@ function openHref(input: RoomPageInput & { code: string }): string {
 export function renderRoomPage(input: RoomPageInput): string {
   const { code, lang } = input;
   const t = ROOM_PAGE_TEXTS[lang];
-  const dir = lang === 'he' ? 'rtl' : 'ltr';
+  const dir = pageDir(lang);
   const langLinks = LINK_LANGS.map((l) => {
     const current = l === lang ? ' aria-current="page"' : '';
-    return `<a href="?lang=${l}" lang="${l}" hreflang="${l}"${current}>${LANGUAGE_NAMES[l]}</a>`;
+    return `<a href="?lang=${l}" lang="${l}" hreflang="${l}"${current}>${PAGE_LANGUAGE_NAMES[l]}</a>`;
   }).join('');
 
   let title: string;
   let main: string[];
   if (code === null) {
     title = escapeHtml(t.badTitle);
-    main = [`<h1>${escapeHtml(t.badHeading)}</h1>`, `<p>${escapeHtml(t.badText)}</p>`];
+    main = [`<h1>${escapeHtml(t.badHeading)}</h1>`, `<p>${withPath(t.badText, t)}</p>`];
   } else {
     const shown = formatFriendCode(code);
     title = escapeHtml(fill(t.title, { code: `${LRI}${shown}${PDI}` }));
@@ -319,14 +397,14 @@ export function renderRoomPage(input: RoomPageInput): string {
       stores.length === 0
         ? [
             `<h2 id="get-app-h">${escapeHtml(t.testingHeading)}</h2>`,
-            `<p>${withCode(t.testing, code, FRIENDS_MIN_APP_VERSION)}</p>`,
+            `<p>${withCode(t.testing, t, code, FRIENDS_MIN_APP_VERSION)}</p>`,
           ]
         : [
             `<h2 id="get-app-h">${escapeHtml(t.noApp)}</h2>`,
             `<ul class="stores">${stores
               .map((s) => `<li><a href="${escapeHtml(s.href)}">${escapeHtml(s.label)}</a></li>`)
               .join('')}</ul>`,
-            `<p>${withCode(t.typeCode, code, FRIENDS_MIN_APP_VERSION)}</p>`,
+            `<p>${withCode(t.typeCode, t, code, FRIENDS_MIN_APP_VERSION)}</p>`,
           ];
     main = [
       `<h1>${escapeHtml(t.heading)}</h1>`,
@@ -358,7 +436,7 @@ export function renderRoomPage(input: RoomPageInput): string {
     '<main class="wrap">',
     ...main,
     '</main>',
-    `<footer><div class="wrap"><a href="${escapeHtml(legalHref('privacy', lang))}">${escapeHtml(t.privacy)}</a></div></footer>`,
+    `<footer><div class="wrap"><a href="${escapeHtml(legalHref('privacy', legalLangFor(lang)))}">${escapeHtml(t.privacy)}</a></div></footer>`,
     '</body>',
     '</html>',
     '',
@@ -368,31 +446,22 @@ export function renderRoomPage(input: RoomPageInput): string {
 // ---- the router -------------------------------------------------------------------------------------------------
 
 /**
- * The page's language from the browser's Accept-Language: the preferred one of Hebrew (he, or the old iw) and
- * English, by `q` (on a tie, the first); `*` counts as Hebrew. No header: Hebrew, like the legal pages. A header
- * with neither (say, only French): English, which more people read than Hebrew.
+ * The page's language from the browser's Accept-Language: the preferred one, by `q` (on a tie, the first), of
+ * the languages the page has words in (LINK_LANGS), reading each tag as the app does (D105: iw → he, Chinese by
+ * script, every Portuguese → pt-BR…); `*` counts as Hebrew. No header: Hebrew, like the legal pages. A header
+ * with none of them (say, only French while the page has no French): English, which more people read than
+ * Hebrew.
  */
-export function langFromAcceptLanguage(header: string | undefined): LinkLang {
-  if (header === undefined || header.trim() === '') return 'he';
-  let best: { lang: LinkLang; q: number } | undefined;
-  for (const part of header.split(',').slice(0, 32)) {
-    const [tag = '', ...params] = part.split(';').map((s) => s.trim());
-    const primary = tag.toLowerCase().split('-')[0];
-    const lang: LinkLang | null =
-      primary === 'he' || primary === 'iw' || primary === '*' ? 'he' : primary === 'en' ? 'en' : null;
-    if (lang === null) continue;
-    const qParam = params.find((p) => /^q=/i.test(p));
-    const q = qParam === undefined ? 1 : Number(qParam.slice(2));
-    if (!(q > 0 && q <= 1)) continue; // q=0: "not this one"; anything else malformed
-    if (best === undefined || q > best.q) best = { lang, q };
-  }
-  return best?.lang ?? 'en';
-}
+export const langFromAcceptLanguage = (header: string | undefined): LinkLang =>
+  negotiatePageLanguage(header, LINK_LANGS, 'he');
 
-/** ?lang=he|en; else the browser's languages (langFromAcceptLanguage). */
+/**
+ * ?lang=<a language of the app>: its words, or English while the page has none in it; else the browser's
+ * languages (langFromAcceptLanguage).
+ */
 export function linkLangOf(req: Request): LinkLang {
-  const asked = req.query.lang;
-  if (asked === 'he' || asked === 'en') return asked;
+  const asked = pageLanguageOfQuery(req.query.lang);
+  if (asked !== null) return versionOf(asked, LINK_LANGS);
   return langFromAcceptLanguage(req.get('accept-language'));
 }
 

@@ -1,6 +1,6 @@
 import { type ComponentRef, type ReactNode, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, Modal, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { AccessibilityInfo, Modal, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ import { Button } from './Button';
 import { usePresence } from './motion';
 import { Scrim } from './Scrim';
 
+import { Text } from './Text';
 /**
  * `danger`: the confirm action is destructive (surrender, end practice). Spec §6.6: "ביטול" is the prominent,
  * safe button (gold primary, wider), and the confirm is the red outline. `neutral`: the confirm is the primary.

@@ -1,4 +1,5 @@
-import type { LegalTexts } from './types';
+import { byTranslation } from './translations';
+import type { LegalTexts, OriginalTexts } from './types';
 
 /**
  * The terms of use (spec §3.2: accepted at registration; §23). They describe the game as built: display names
@@ -13,7 +14,7 @@ import type { LegalTexts } from './types';
  * ("service") and in the store reviewer notes (docs/store/LISTING-APPLE.md §5, LISTING-GOOGLE.md "App access"),
  * never inside the game. The "Play a bot meanwhile" practice offer stays, for when no such opponent is available.
  */
-export const TERMS: LegalTexts = {
+const ORIGINALS: OriginalTexts = {
   he: {
     title: 'תנאי שימוש',
     lead: 'הכללים לשימוש בסודוקו פייט. השימוש במשחק פירושו הסכמה להם.',
@@ -292,3 +293,6 @@ export const TERMS: LegalTexts = {
     ],
   },
 };
+
+/** Every version: Hebrew and English above, the translations of the English one (D112) from translations/. */
+export const TERMS: LegalTexts = { ...ORIGINALS, ...byTranslation((t) => t.texts.terms) };

@@ -1,9 +1,10 @@
 import type { Expression } from '@sudoku-fight/avatars';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { AvatarArt, type AvatarIdOrNone, type AvatarReaction } from '../../avatars';
 import { color, text, tokens } from '../../theme';
+import { Text } from '../ui/Text';
 import type { Presence } from './cardModel';
 import { AVATAR_SIZES, type AvatarSize, metrics, paletteAt } from './metrics';
 

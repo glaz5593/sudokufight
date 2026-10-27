@@ -19,7 +19,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { BackHandler, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -35,9 +35,11 @@ import { ltr } from '../../components/player';
 import { signedText } from '../../components/player/format';
 import { ConfirmModal } from '../../components/ui';
 import { timing } from '../../components/ui/motion';
+import { Text } from '../../components/ui/Text';
 import { gameEndConfig } from '../../config/gameEnd';
 import { LEVEL_UI } from '../../config/levels';
 import { useNow } from '../../game/useNow';
+import { decimalSeparator, listOf } from '../../i18n/compose';
 import type { LevelEffect } from '../../levels/levelEffects';
 import type { LevelSession, PauseState } from '../../levels/levelSession';
 import { useLevelEffects } from '../../levels/useLevelEffects';
@@ -275,7 +277,7 @@ export function TapLevelScreen({
         const cell = ltr(cellName(e.cell));
         if (e.penaltyMs !== null) {
           setPenalty({ id: e.seq, ms: e.penaltyMs });
-          const penalty = signedText(e.penaltyMs / 1000);
+          const penalty = signedText(e.penaltyMs / 1000, decimalSeparator(t));
           // Spot the error: the digit tapped was a right one.
           announce(
             level.kind === 'spotError'
@@ -311,7 +313,10 @@ export function TapLevelScreen({
         return;
       case 'ended': {
         const answer = session.getView().level?.find?.answer ?? [];
-        const cells = answer.map((c) => ltr(cellName(c))).join(', ');
+        const cells = listOf(
+          answer.map((c) => ltr(cellName(c))),
+          t,
+        );
         if (answer.length && e.over.reason !== 'targetReached' && e.over.reason !== 'quit')
           announce(
             level.kind === 'spotError'

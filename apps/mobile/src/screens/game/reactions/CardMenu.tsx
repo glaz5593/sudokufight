@@ -6,7 +6,6 @@ import {
   Pressable,
   type StyleProp,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
   type ViewStyle,
@@ -14,6 +13,7 @@ import {
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { Icon, type IconName } from '../../../components/Icon';
+import { Text } from '../../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { useReduceMotion } from '../../../theme/motion';
 import type { Rect } from '../geometry';

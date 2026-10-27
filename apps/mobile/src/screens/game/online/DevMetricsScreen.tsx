@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '../../../components/ui';
+import { Text } from '../../../components/ui/Text';
 import { color, space, text, tokens } from '../../../theme';
 import { NetMetricsPanel, type NetMetricsSource } from './NetMetricsPanel';
 

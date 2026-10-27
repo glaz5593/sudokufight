@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '../../../components/Icon';
 import { Spinner } from '../../../components/ui/Spinner';
 import { usePresence } from '../../../components/ui/motion';
+import { Text } from '../../../components/ui/Text';
 import { cue } from '../../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { motion, useReduceMotion } from '../../../theme/motion';
@@ -78,7 +79,7 @@ export function SelfReconnecting({
     ? null
     : m.phase === 'lost'
       ? m.secondsLeft !== null && m.secondsLeft <= HURRY_SECONDS
-        ? t('connection.self.announceHurry', { seconds: HURRY_SECONDS })
+        ? t('connection.self.announceHurry', { count: HURRY_SECONDS, seconds: HURRY_SECONDS })
         : m.attempt !== null
           ? t('connection.self.announceAttempt', { attempt: m.attempt })
           : t('connection.self.announceLost')

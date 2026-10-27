@@ -5,12 +5,12 @@ import {
   I18nManager,
   Pressable,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withSpring } from 'react-native-reanimated';
 
+import { Text } from '../../../components/ui/Text';
 import { cue } from '../../../services/feedback';
 import { color, radius, space, tokens } from '../../../theme';
 import { motion, useReduceMotion } from '../../../theme/motion';

@@ -1,0 +1,108 @@
+{
+  "technique": {
+    "nakedSingle": "Số đơn lộ diện",
+    "hiddenSingle": "Số đơn ẩn",
+    "pointing": "Loại trừ khối–hàng/cột",
+    "claiming": "Loại trừ khối–hàng/cột",
+    "nakedPair": "Cặp lộ diện",
+    "hiddenPair": "Cặp ẩn",
+    "chain": "Kỹ thuật nâng cao",
+    "beyond": "Vượt ngoài kỹ thuật của bộ máy"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} và {{last}}",
+    "lastOr": "{{head}} hoặc {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} và {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "Hàng {{label}} chỉ còn thiếu {{digit}}.",
+      "col": "Cột {{label}} chỉ còn thiếu {{digit}}.",
+      "box": "Khối {{label}} chỉ còn thiếu {{digit}}."
+    },
+    "missing": {
+      "row": "Hàng {{label}} còn thiếu {{digits}}.",
+      "col": "Cột {{label}} còn thiếu {{digits}}.",
+      "box": "Khối {{label}} còn thiếu {{digits}}."
+    },
+    "seen": {
+      "row": "Hàng {{label}} đã có {{digits}}.",
+      "col": "Cột {{label}} đã có {{digits}}.",
+      "box": "Khối {{label}} đã có {{digits}}."
+    },
+    "eliminated": "Số {{digit}} đã bị loại khỏi ô {{cell}} ở bước {{step}}.",
+    "only": "Vậy chỉ còn {{digit}}."
+  },
+  "hidden": {
+    "alone": {
+      "row": "Số {{digit}} phải có trong hàng {{label}}, và ô {{cell}} là ô trống duy nhất của hàng. Vậy {{result}}.",
+      "col": "Số {{digit}} phải có trong cột {{label}}, và ô {{cell}} là ô trống duy nhất của cột. Vậy {{result}}.",
+      "box": "Số {{digit}} phải có trong khối {{label}}, và ô {{cell}} là ô trống duy nhất của khối. Vậy {{result}}."
+    },
+    "blocked": {
+      "row": "Số {{digit}} phải có trong hàng {{label}}. Mọi ô trống khác của hàng đều bị loại: {{clauses}}. Vậy {{result}}.",
+      "col": "Số {{digit}} phải có trong cột {{label}}. Mọi ô trống khác của cột đều bị loại: {{clauses}}. Vậy {{result}}.",
+      "box": "Số {{digit}} phải có trong khối {{label}}. Mọi ô trống khác của khối đều bị loại: {{clauses}}. Vậy {{result}}."
+    },
+    "clause": {
+      "step": "ô {{cell}} mất số {{digit}} ở bước {{step}}",
+      "unit": {
+        "row": "ô {{cell}} thấy số {{digit}} ở hàng {{label}}",
+        "col": "ô {{cell}} thấy số {{digit}} ở cột {{label}}",
+        "box": "ô {{cell}} thấy số {{digit}} ở khối {{label}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "Trong khối {{box}}, số {{digit}} chỉ có thể nằm ở hàng {{line}}, nên nó bị loại khỏi phần còn lại của hàng: {{cells}}.",
+    "col": "Trong khối {{box}}, số {{digit}} chỉ có thể nằm ở cột {{line}}, nên nó bị loại khỏi phần còn lại của cột: {{cells}}."
+  },
+  "claiming": {
+    "row": "Trong hàng {{line}}, số {{digit}} chỉ có thể nằm ở khối {{box}}, nên nó bị loại khỏi phần còn lại của khối: {{cells}}.",
+    "col": "Trong cột {{line}}, số {{digit}} chỉ có thể nằm ở khối {{box}}, nên nó bị loại khỏi phần còn lại của khối: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "Hai ô {{a}} và {{b}} chỉ có thể chứa {{digits}}, nên {{digits}} bị loại khỏi phần còn lại của hàng {{label}}: {{cells}}.",
+    "col": "Hai ô {{a}} và {{b}} chỉ có thể chứa {{digits}}, nên {{digits}} bị loại khỏi phần còn lại của cột {{label}}: {{cells}}.",
+    "box": "Hai ô {{a}} và {{b}} chỉ có thể chứa {{digits}}, nên {{digits}} bị loại khỏi phần còn lại của khối {{label}}: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "Trong hàng {{label}}, {{digits}} chỉ có thể nằm ở hai ô {{a}} và {{b}}, nên các ứng viên khác của hai ô này bị loại.",
+    "col": "Trong cột {{label}}, {{digits}} chỉ có thể nằm ở hai ô {{a}} và {{b}}, nên các ứng viên khác của hai ô này bị loại.",
+    "box": "Trong khối {{label}}, {{digits}} chỉ có thể nằm ở hai ô {{a}} và {{b}}, nên các ứng viên khác của hai ô này bị loại."
+  },
+  "beyond": "Ô này cần một kỹ thuật nâng cao mà bộ máy chưa giải thích được. Đáp án: {{formula}}.",
+  "chain": {
+    "head_other": "Ô này chưa thể xác định trong một bước. Cần {{count}} bước:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "Số {{digit}} đã có trong hàng {{label}} ({{cell}}).",
+      "col": "Số {{digit}} đã có trong cột {{label}} ({{cell}}).",
+      "box": "Số {{digit}} đã có trong khối {{label}} ({{cell}})."
+    },
+    "notSolution": "Số {{digit}} vẫn hợp ở đây, nhưng lời giải cần số {{answer}}."
+  },
+  "block": {
+    "step": "Ô {{cell}} không thể chứa {{digit}}: số này đã bị loại ở bước {{step}}",
+    "unit": {
+      "row": "Ô {{cell}} không thể chứa {{digit}}: hàng {{label}} đã có số {{digit}}",
+      "col": "Ô {{cell}} không thể chứa {{digit}}: cột {{label}} đã có số {{digit}}",
+      "box": "Ô {{cell}} không thể chứa {{digit}}: khối {{label}} đã có số {{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "Chưa thể biết số nào nằm ở ô {{cell}}",
+    "options": "Chưa thể biết số nào nằm ở ô {{cell}} ({{options}})"
+  }
+}

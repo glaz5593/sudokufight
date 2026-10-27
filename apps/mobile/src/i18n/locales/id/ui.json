@@ -1,0 +1,31 @@
+{
+  "button": {
+    "loading": "{{label}}, memuat"
+  },
+  "nav": {
+    "label": "Navigasi utama",
+    "tabs": {
+      "home": "Beranda",
+      "leaderboard": "Peringkat",
+      "history": "Riwayat",
+      "achievements": "Pencapaian"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "Batal"
+  },
+  "sheet": {
+    "close": "Tutup"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_other": "Sisa {{count}} detik"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "Kode kesalahan: {{code}}"
+  }
+}

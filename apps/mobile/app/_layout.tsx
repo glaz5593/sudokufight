@@ -12,28 +12,30 @@ import { InviteLinkPrompt } from '../src/auth/InviteLinkPrompt';
 import { ToastViewport } from '../src/components/ui';
 import { displayConfig } from '../src/config/display';
 import { openPracticeStorage } from '../src/game/storage';
-import i18n, { applyDirection } from '../src/i18n';
+import i18n from '../src/i18n';
+import { syncLanguageWithSystem, useLanguageLifecycle } from '../src/i18n/languageSync';
+import { installPseudoLanguages } from '../src/i18n/pseudoLanguages';
 import { startProgress } from '../src/progress';
 import { SplashOverlay } from '../src/screens/account/SplashScreen';
 import { ErrorScreen } from '../src/screens/ErrorScreen';
 import { track } from '../src/services/analytics';
 import { useKeepScreenOn } from '../src/services/keepAwake';
-import { restartApp } from '../src/services/restart';
 import { logFirstScreen, useAfterFirstScreen } from '../src/services/startup';
 import { startTelemetry } from '../src/services/telemetry';
 import { useScreenViews } from '../src/services/telemetry/useScreenViews';
-import { useSettings } from '../src/state/settings';
 import { color } from '../src/theme';
 import { useAppFonts } from '../src/theme/fonts';
 import { motion, useReduceMotion } from '../src/theme/motion';
 
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
-// The saved language from the first frame (the settings are read synchronously), not the device's.
-void i18n.changeLanguage(useSettings.getState().language);
+// Development and staging builds: the pseudo languages en-XA and ar-XB (plan 0יג); elsewhere a saved one goes.
+installPseudoLanguages();
+// The language from the first frame (localization plan 0א): the saved setting (read synchronously), after the
+// system's word (a language chosen for the app in the system settings wins), saved; i18n/index.ts started in it.
+void i18n.changeLanguage(syncLanguageWithSystem());
 
 export default function RootLayout() {
   const fontsReady = useAppFonts();
-  const language = useSettings((s) => s.language);
   const reduceMotion = useReduceMotion();
   // Accounts (stage 8): who is signed in, and the screens their status allows (login, registration, Home).
   const { splash } = useAuthGate();
@@ -50,11 +52,10 @@ export default function RootLayout() {
   // Spec §22 (Moshe's device test, 15.10.2026): the screen stays on while the app is open, on every screen.
   useKeepScreenOn(displayConfig.keepScreenOn);
 
-  // The chosen language, and its direction: a flip from LTR to RTL (or back) needs a reload.
-  useEffect(() => {
-    void i18n.changeLanguage(language);
-    if (applyDirection(language)) void restartApp();
-  }, [language]);
+  // The language and its direction: a direction React Native didn't start with needs a restart (once, D104's
+  // guard); a change while running restarts (D104), and so does one made in the system settings, read on every
+  // return to the foreground (i18n/languageSync.ts).
+  useLanguageLifecycle();
 
   useEffect(() => {
     if (fontsReady) void SplashScreen.hideAsync().catch(() => undefined);

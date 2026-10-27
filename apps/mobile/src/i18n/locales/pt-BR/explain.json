@@ -1,0 +1,110 @@
+{
+  "technique": {
+    "nakedSingle": "Candidato único",
+    "hiddenSingle": "Único oculto",
+    "pointing": "Redução quadrado-linha",
+    "claiming": "Redução quadrado-linha",
+    "nakedPair": "Par nu",
+    "hiddenPair": "Par oculto",
+    "chain": "Técnica avançada",
+    "beyond": "Além das técnicas do motor"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} e {{last}}",
+    "lastOr": "{{head}} ou {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} e {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "Na linha {{label}} só falta o {{digit}}.",
+      "col": "Na coluna {{label}} só falta o {{digit}}.",
+      "box": "No quadrado {{label}} só falta o {{digit}}."
+    },
+    "missing": {
+      "row": "Na linha {{label}} faltam {{digits}}.",
+      "col": "Na coluna {{label}} faltam {{digits}}.",
+      "box": "No quadrado {{label}} faltam {{digits}}."
+    },
+    "seen": {
+      "row": "A linha {{label}} já tem {{digits}}.",
+      "col": "A coluna {{label}} já tem {{digits}}.",
+      "box": "O quadrado {{label}} já tem {{digits}}."
+    },
+    "eliminated": "O {{digit}} foi descartado em {{cell}} no passo {{step}}.",
+    "only": "Então só pode ser o {{digit}}."
+  },
+  "hidden": {
+    "alone": {
+      "row": "O {{digit}} precisa aparecer na linha {{label}}, e {{cell}} é a única célula vazia dela. Então {{result}}.",
+      "col": "O {{digit}} precisa aparecer na coluna {{label}}, e {{cell}} é a única célula vazia dela. Então {{result}}.",
+      "box": "O {{digit}} precisa aparecer no quadrado {{label}}, e {{cell}} é a única célula vazia dele. Então {{result}}."
+    },
+    "blocked": {
+      "row": "O {{digit}} precisa aparecer na linha {{label}}. Nenhuma outra célula vazia dela pode recebê-lo: {{clauses}}. Então {{result}}.",
+      "col": "O {{digit}} precisa aparecer na coluna {{label}}. Nenhuma outra célula vazia dela pode recebê-lo: {{clauses}}. Então {{result}}.",
+      "box": "O {{digit}} precisa aparecer no quadrado {{label}}. Nenhuma outra célula vazia dele pode recebê-lo: {{clauses}}. Então {{result}}."
+    },
+    "clause": {
+      "step": "{{cell}} perdeu o {{digit}} no passo {{step}}",
+      "unit": {
+        "row": "{{cell}} vê um {{digit}} na linha {{label}}",
+        "col": "{{cell}} vê um {{digit}} na coluna {{label}}",
+        "box": "{{cell}} vê um {{digit}} no quadrado {{label}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "No quadrado {{box}}, o {{digit}} só pode ficar na linha {{line}}, então ele é eliminado do resto da linha: {{cells}}.",
+    "col": "No quadrado {{box}}, o {{digit}} só pode ficar na coluna {{line}}, então ele é eliminado do resto da coluna: {{cells}}."
+  },
+  "claiming": {
+    "row": "Na linha {{line}}, o {{digit}} só pode ficar no quadrado {{box}}, então ele é eliminado do resto do quadrado: {{cells}}.",
+    "col": "Na coluna {{line}}, o {{digit}} só pode ficar no quadrado {{box}}, então ele é eliminado do resto do quadrado: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "{{a}} e {{b}} só podem conter {{digits}}, então {{digits}} são eliminados do resto da linha {{label}}: {{cells}}.",
+    "col": "{{a}} e {{b}} só podem conter {{digits}}, então {{digits}} são eliminados do resto da coluna {{label}}: {{cells}}.",
+    "box": "{{a}} e {{b}} só podem conter {{digits}}, então {{digits}} são eliminados do resto do quadrado {{label}}: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "Na linha {{label}}, {{digits}} só podem ficar em {{a}} e {{b}}, então os outros candidatos dessas células são eliminados.",
+    "col": "Na coluna {{label}}, {{digits}} só podem ficar em {{a}} e {{b}}, então os outros candidatos dessas células são eliminados.",
+    "box": "No quadrado {{label}}, {{digits}} só podem ficar em {{a}} e {{b}}, então os outros candidatos dessas células são eliminados."
+  },
+  "beyond": "Isto exige uma técnica avançada que o motor ainda não sabe explicar. A resposta: {{formula}}.",
+  "chain": {
+    "head_one": "Esta célula ainda não pode ser decidida em um só passo. Leva {{count}} passo:",
+    "head_many": "Esta célula ainda não pode ser decidida em um só passo. Leva {{count}} de passos:",
+    "head_other": "Esta célula ainda não pode ser decidida em um só passo. Leva {{count}} passos:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "O {{digit}} já está na linha {{label}} ({{cell}}).",
+      "col": "O {{digit}} já está na coluna {{label}} ({{cell}}).",
+      "box": "O {{digit}} já está no quadrado {{label}} ({{cell}})."
+    },
+    "notSolution": "O {{digit}} ainda cabe aqui, mas a solução pede o {{answer}}."
+  },
+  "block": {
+    "step": "{{cell}} não pode ter o {{digit}}: ele foi descartado no passo {{step}}",
+    "unit": {
+      "row": "{{cell}} não pode ter o {{digit}}: a linha {{label}} tem um {{digit}}",
+      "col": "{{cell}} não pode ter o {{digit}}: a coluna {{label}} tem um {{digit}}",
+      "box": "{{cell}} não pode ter o {{digit}}: o quadrado {{label}} tem um {{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "Ainda não dá para saber o que vai em {{cell}}",
+    "options": "Ainda não dá para saber o que vai em {{cell}} ({{options}})"
+  }
+}

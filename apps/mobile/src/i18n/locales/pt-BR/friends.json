@@ -1,0 +1,182 @@
+{
+  "title": "Sala com amigos",
+  "subtitle": "{{type}} · {{count}} de {{max}}",
+  "label": "Partida com amigos · sem rating",
+  "mode": "Com amigos",
+  "modeLong": "Partida com amigos",
+  "unrated": "Sem rating",
+  "code": {
+    "title": "Código da sala",
+    "label": "Código da sala: {{spelled}}",
+    "hint": "Envie o código ou o link"
+  },
+  "share": {
+    "button": "Compartilhar link",
+    "hint": "Abre o menu de compartilhamento do celular, com o código e o link",
+    "message": "Venha jogar comigo no Sudoku Fight! Código da sala: {{code}}\n{{link}}",
+    "failed": "Não foi possível compartilhar"
+  },
+  "copy": {
+    "button": "Copiar código",
+    "done": "Código copiado",
+    "failed": "Não foi possível copiar o código"
+  },
+  "gameType": {
+    "title": "Tipo de partida",
+    "hostPicks": "Só o anfitrião pode mudar",
+    "guestSees": "O anfitrião escolhe",
+    "changed": "O tipo de partida agora é {{type}}"
+  },
+  "players": {
+    "title": "Jogadores · {{count}} de {{max}}"
+  },
+  "seat": {
+    "me": "Eu",
+    "host": "Anfitrião",
+    "away": "Fora da sala agora",
+    "empty": "Esperando um jogador…",
+    "emptyLabel": "Lugar vazio, esperando um jogador",
+    "rating": "Rating: {{rating}}"
+  },
+  "kick": {
+    "label": "Remover {{name}} da sala",
+    "title": "Remover {{name}} da sala?",
+    "body": "Essa pessoa não vai poder voltar para esta sala.",
+    "confirm": "Remover"
+  },
+  "start": {
+    "button_one": "Iniciar partida · {{count}} jogador",
+    "button_many": "Iniciar partida · {{count}} de jogadores",
+    "button_other": "Iniciar partida · {{count}} jogadores",
+    "needMore": "Você precisa de pelo menos 2 jogadores conectados para começar",
+    "waitingForHost": "Esperando {{name}} iniciar",
+    "hostAway": "O anfitrião não está na sala agora",
+    "starting": "A partida está começando…"
+  },
+  "startWithout": {
+    "title": "Começar sem {{names}}?",
+    "body": "{{names}} não está na sala agora. Quem não estiver na sala fica de fora.",
+    "confirm": "Sim, começar",
+    "cancel": "Não, vamos esperar"
+  },
+  "leave": "Sair da sala",
+  "reconnecting": "Conexão perdida. Reconectando…",
+  "announce": {
+    "joined": "{{name}} entrou",
+    "left": "{{name}} saiu da sala",
+    "away": "{{name}} não está na sala agora",
+    "back": "{{name}} voltou para a sala",
+    "host": "{{name}} agora comanda a sala",
+    "meHost": "Agora você comanda a sala"
+  },
+  "opening": {
+    "create": "Abrindo uma sala…",
+    "join": "Entrando na sala…"
+  },
+  "replace": {
+    "title": "Fechar sua outra sala?",
+    "body": "Você já tem uma sala aberta, {{code}}. Feche-a e abra uma nova, ou volte para ela.",
+    "confirm": "Fechar e abrir nova",
+    "cancel": "Voltar para aquela sala"
+  },
+  "errors": {
+    "notFound": "Não encontramos uma sala com o código {{code}}. Confira os dígitos.",
+    "notFoundThis": "Não encontramos uma sala com este código.",
+    "roomFull": "A sala está cheia ({{max}} de {{max}}).",
+    "gameStarted": "A partida desta sala já começou.",
+    "roomClosed": "A sala foi fechada.",
+    "kicked": "O anfitrião removeu você da sala.",
+    "cantJoin": "Você bloqueou um jogador que está nesta sala.",
+    "suspended": "Sua conta está suspensa, então você não pode jogar com amigos agora.",
+    "network": "Sem conexão com a internet.",
+    "tooManyRequests": "Tentativas demais. Tente de novo em {{wait}}.",
+    "notAvailable": "Esta opção ainda não está disponível.",
+    "badRequest": "O código tem 6 dígitos.",
+    "unauthorized": "Entre na sua conta de novo.",
+    "notRegistered": "Termine o cadastro para jogar com amigos.",
+    "tooManyRooms": "Você já tem uma sala aberta.",
+    "tooLarge": "Algo deu errado. Tente de novo.",
+    "internal": "Algo deu errado no servidor. Tente de novo daqui a pouco.",
+    "disabled": "Jogar com amigos não está disponível neste servidor.",
+    "unavailable": "O servidor não está disponível agora. Tente de novo daqui a pouco."
+  },
+  "wait": {
+    "seconds_one": "{{count}} segundo",
+    "seconds_many": "{{count}} de segundos",
+    "seconds_other": "{{count}} segundos",
+    "minutes_one": "{{count}} minuto",
+    "minutes_many": "{{count}} de minutos",
+    "minutes_other": "{{count}} minutos"
+  },
+  "closed": {
+    "kicked": "O anfitrião removeu você da sala.",
+    "removed": "Você saiu da sala.",
+    "otherDevice": "A sala foi aberta em outro aparelho.",
+    "serverRestart": "A sala foi fechada.",
+    "closed": "A sala foi fechada."
+  },
+  "lobbyErrors": {
+    "notHost": "Só o anfitrião pode fazer isso.",
+    "notEnoughPlayers": "Você precisa de pelo menos 2 jogadores conectados para começar.",
+    "playersAway": "{{names}} não está na sala agora.",
+    "gameStarted": "A partida já começou.",
+    "badCommand": "Não funcionou. Tente de novo.",
+    "tooManyRequests": "Calma, toques demais. Tente de novo daqui a pouco."
+  },
+  "startedWithout": "A partida começou sem você.",
+  "actions": {
+    "retry": "Tentar de novo",
+    "createRoom": "Criar sala",
+    "joinWithCode": "Entrar com código",
+    "home": "Início"
+  },
+  "join": {
+    "title": "Entrar com código",
+    "prompt": "Digite os 6 dígitos que você recebeu",
+    "codeLabel": "Código da sala, 6 dígitos",
+    "digitLabel": "Dígito {{n}} de {{total}}",
+    "paste": "Colar",
+    "pasteHint": "Você pode colar a mensagem inteira do WhatsApp",
+    "pasteNone": "Não encontramos um código de 6 dígitos no texto copiado",
+    "joining": "Entrando na sala…",
+    "submit": "Entrar"
+  },
+  "link": {
+    "notFound": {
+      "title": "Não reconhecemos este link",
+      "body": "Ele pode ser antigo ou não ser do Sudoku Fight. Você pode continuar pelo início.",
+      "home": "Ir para o início"
+    },
+    "badCode": "Este link não é válido"
+  },
+  "invite": {
+    "pending": "Você tem um convite para a sala {{code}}",
+    "afterSignIn": "Depois que você entrar, levamos você direto para a sala {{code}}",
+    "join": "Entrar",
+    "later": "Agora não",
+    "expired": "O convite para a sala {{code}} expirou"
+  },
+  "busy": {
+    "practice": {
+      "title": "Sair do treino e entrar na sala?",
+      "body": "O treino fica salvo, como quando você sai dele.",
+      "confirm": "Entrar na sala"
+    },
+    "search": {
+      "title": "Parar a busca e entrar?",
+      "body": "A busca por um adversário vai parar.",
+      "confirm": "Entrar na sala"
+    },
+    "room": {
+      "title": "Trocar para a sala {{code}}?",
+      "body": "Você vai sair da sala em que está agora.",
+      "confirm": "Trocar de sala"
+    },
+    "game": {
+      "title": "Você está no meio de uma partida",
+      "body": "Você pode entrar depois dela. O convite para a sala {{code}} vai esperar por você.",
+      "back": "Voltar para a partida"
+    },
+    "stay": "Ficar"
+  }
+}

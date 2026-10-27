@@ -1,14 +1,6 @@
 import { type ComponentRef, type ReactNode, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  AccessibilityInfo,
-  Modal,
-  PanResponder,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { AccessibilityInfo, Modal, PanResponder, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -18,6 +10,7 @@ import { IconButton } from './IconButton';
 import { usePresence } from './motion';
 import { Scrim } from './Scrim';
 
+import { Text } from './Text';
 /** Dragging the sheet down past this share of its height closes it (components.md §13). */
 const DRAG_CLOSE_SHARE = 0.25;
 /** A downward fling faster than this (dp per ms) closes it too. */

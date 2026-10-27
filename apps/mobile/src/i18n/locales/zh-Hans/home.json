@@ -1,0 +1,274 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "设置",
+    "back": "返回"
+  },
+  "profile": {
+    "defaultName": "玩家",
+    "label": "我的玩家卡片：{{name}}",
+    "noRating": "还没有积分",
+    "ratingTitle": "积分",
+    "none": "—",
+    "games_other": "{{count}}场对局",
+    "gamesLabel_other": "对局",
+    "winsLabel": "胜场",
+    "streakLabel": "连胜",
+    "winRate": "胜率{{percent}}%",
+    "streak_zero": "没有连胜",
+    "streak_other": "连胜{{count}}场"
+  },
+  "play": "开始",
+  "playHint": "选择对局模式",
+  "again": {
+    "title": "再来一局",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "无法开始对局。请再试一次。"
+  },
+  "recent": {
+    "heading": "最近的对局",
+    "all": "全部",
+    "unavailable": "无法读取这部手机上保存的对局。",
+    "emptyTitle": "这里还没有对局",
+    "emptyBody": "每次练习都会保存在这里，关闭应用后也不会丢失。",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "已完成",
+      "ended": "已结束",
+      "interrupted": "已中断",
+      "playing": "进行中",
+      "win": "获胜",
+      "loss": "失败",
+      "tie": "平局"
+    },
+    "openHint": "打开结果",
+    "versus": "对阵{{name}} · {{outcome}}"
+  },
+  "modes": {
+    "title": "新对局",
+    "footnote": "排位赛需要联网 · 练习随时可玩",
+    "soon": "即将推出",
+    "groups": {
+      "ranked": {
+        "title": "排位赛",
+        "note": "真实对手，实时对战"
+      },
+      "friends": {
+        "title": "好友对战",
+        "titleMoshe": "真实好友，实时对战",
+        "note": "私人房间 · 最多4人 · 不计积分"
+      },
+      "practice": {
+        "title": "练习",
+        "note": "没有压力，不计积分"
+      }
+    },
+    "chips": {
+      "rated": "计积分",
+      "unrated": "不计积分",
+      "offline": "离线可玩"
+    },
+    "ranked": {
+      "name": "排位赛"
+    },
+    "ranked2": {
+      "title": "2人",
+      "tagline": "一对一 · 同一盘面",
+      "label": "排位赛 · 2人"
+    },
+    "ranked3": {
+      "title": "3人",
+      "tagline": "大混战",
+      "label": "排位赛 · 3人"
+    },
+    "ranked4": {
+      "title": "4人",
+      "tagline": "大混战",
+      "label": "排位赛 · 4人"
+    },
+    "friends": {
+      "create": "新房间",
+      "createHint": "开一个等候房间，并生成可以发给好友的房间码",
+      "join": "输入房间码加入",
+      "joinHint": "输入你收到的6位数字"
+    },
+    "solo": {
+      "name": "单人练习",
+      "title": "单人 · 完整盘面",
+      "tagline": "按自己的节奏来",
+      "label": "单人 · 完整盘面"
+    },
+    "levels": {
+      "name": "关卡练习",
+      "title": "关卡练习",
+      "tagline": "短小关卡 · 最多3星",
+      "taglineNew_other": "{{total}}个短小关卡 · 0–3星",
+      "chip": "第{{stage}}关 ·",
+      "offline": "离线也能玩",
+      "chipLabel_other": "第{{stage}}关 · {{count}}星",
+      "label": "关卡练习"
+    },
+    "bot": {
+      "name": "人机练习",
+      "title": "人机练习",
+      "tagline": "5个等级",
+      "label": "人机练习"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "快速",
+      "difficulty": "简单",
+      "technique": "只用显性唯一数即可解出"
+    },
+    "normal": {
+      "name": "普通",
+      "difficulty": "中等",
+      "technique": "需要隐性唯一数"
+    },
+    "hard": {
+      "name": "困难",
+      "difficulty": "困难",
+      "technique": "需要数对或区块排除"
+    }
+  },
+  "gameType": {
+    "title": "对局类型",
+    "note": {
+      "solo": "不计积分。盘面来自这部手机上的题库，不会重复你最近玩过的题。",
+      "bot": "不计积分。盘面来自这部手机上的题库，不会重复你最近玩过的题。接下来选择你的对手。",
+      "ranked": "计积分。对手的积分与你相近，盘面来自服务器题库中你没玩过的题，你们两人使用同一盘面。",
+      "rankedGroup": "计积分。对手的积分与你相近，盘面来自服务器题库中你没玩过的题，所有人使用同一盘面。人满后对局开始。"
+    },
+    "start": {
+      "solo": "开始练习",
+      "bot": "选择对手",
+      "ranked": "寻找对手",
+      "rankedGroup": "寻找对手"
+    },
+    "startHint": "开始一场{{type}}练习",
+    "rankedHint": "为{{type}}排位对局寻找一名对手",
+    "rankedGroupHint": "为{{type}}排位对局寻找多名对手",
+    "lockTime": "每格时间",
+    "board": "盘面",
+    "duration": "预计时长",
+    "seconds": "{{seconds}}秒",
+    "minutes": "{{range}}分钟",
+    "yourRating": "你的积分",
+    "cardLabel_other": "{{name}}。{{technique}}。每格{{seconds}}，{{difficulty}}难度盘面，约{{from}}到{{to}}分钟",
+    "botHint": "为{{type}}对局选择机器人"
+  },
+  "dev": {
+    "title": "开发",
+    "designSystem": "设计系统",
+    "hello": "连接检查"
+  },
+  "settings": {
+    "title": "设置",
+    "feedback": "声音与触感",
+    "sound": "声音",
+    "soundHint": "落子和操作时的音效",
+    "haptics": "触感反馈",
+    "hapticsHint": "落子时用短促振动作为反馈",
+    "motion": "减少动态效果",
+    "motionHint": "减少动画：分数直接跳到结果，干扰会显示为静止的遮罩，持续时间相同。",
+    "reduceMotion": {
+      "system": "跟随设备",
+      "on": "开",
+      "off": "关"
+    },
+    "language": "语言",
+    "languageHint": "更改语言会重启应用。",
+    "testing": "测试",
+    "testingHint": "仅限测试版（预发布）。商店版本没有此项。",
+    "chainPenalty": "推理链：猜一次加5秒",
+    "chainPenaltyHint": "从下一个推理链关卡开始：在还无法确定的格里填数字会加5秒，且不会填入。",
+    "unlockAll": "解锁所有关卡（测试）",
+    "unlockAllHint": "地图上的所有关卡全部开放。星星和 XP 照常计算。",
+    "languageConfirm": {
+      "title": "将语言切换为{{language}}？",
+      "body": "应用会重启，让每个页面都按新语言的书写方向显示。",
+      "confirm": "切换并重启",
+      "titleDevice": "切换为设备语言？"
+    },
+    "languageDevice": "设备语言",
+    "languageSheetTitle": "选择语言",
+    "languageField": "语言：{{language}}",
+    "languageFieldDevice": "语言：设备语言，{{language}}",
+    "about": "关于与法律信息",
+    "privacy": "隐私政策",
+    "terms": "使用条款",
+    "licenses": "许可证",
+    "opensInBrowser": "在浏览器中打开"
+  },
+  "placeholder": {
+    "soon": "即将推出",
+    "leaderboard": {
+      "title": "排行榜",
+      "body": "排行榜将与排位对局一同开放。"
+    },
+    "history": {
+      "title": "历史",
+      "body": "你的所有对局都会出现在这里，附带回放和每一步的讲解。在此之前，你最近的练习显示在首页。"
+    },
+    "achievements": {
+      "title": "成就",
+      "body": "成就、等级和 XP 即将推出。"
+    }
+  },
+  "botSelect": {
+    "title": "选择机器人",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "每步思考时间",
+    "thinkValue": "{{range}}秒",
+    "mistakes": "错误率",
+    "note": "这是普通一步所需的时间。需要更难推理的格，机器人会想得更久；一行、一列或一宫的最后一个空格则稍快一些。机器人和你玩同一盘面，实时进行。",
+    "start": "开始吧",
+    "startHint": "开始一场与{{name}}的{{type}}练习",
+    "cardLabel_other": "等级{{level}}，{{title}}：{{name}}。{{behavior}}。每步思考{{from}}到{{to}}秒，错误率{{mistakes}}%",
+    "levels": {
+      "1": {
+        "title": "新手",
+        "behavior": "慢悠悠，错误不少，让你边玩边学"
+      },
+      "2": {
+        "title": "业余",
+        "behavior": "轻松随意，偶尔失误，有时还会发个😂"
+      },
+      "3": {
+        "title": "进阶",
+        "behavior": "稳健细致，很难超越"
+      },
+      "4": {
+        "title": "大师",
+        "behavior": "速度快，几乎从不出错，还有点小得意😎"
+      },
+      "5": {
+        "title": "宗师",
+        "behavior": "又快又准，毫不留情"
+      }
+    }
+  },
+  "licenses": {
+    "title": "许可证",
+    "intro": "Sudoku Fight 基于开源字体和开源软件构建，感谢它们的作者。以下是它们的许可证和版权声明。",
+    "fonts": "字体",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_other": "{{count}}个开源软件包",
+    "packageLabel": "{{name}}，版本{{version}}，许可证{{license}}",
+    "texts": "许可证全文",
+    "textsHint": "每个许可证的完整原文。",
+    "show": "显示{{license}}许可证",
+    "hide": "隐藏{{license}}许可证"
+  }
+}

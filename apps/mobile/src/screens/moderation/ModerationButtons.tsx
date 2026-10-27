@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Button } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { loadBlocks, useIsBlocked } from '../../moderation/moderation';
 import { color, space, text } from '../../theme';
 import { isolateName } from '../game/hit/hitModel';

@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { isAccountApiError } from '../../api/accountApi';
 import { isSuspended } from '../../api/me';
@@ -17,6 +17,7 @@ import type { SignInMethod } from '../../auth/types';
 import { ROUTES } from '../../auth/redirect';
 import { ltr } from '../../components/player';
 import { Button, ConfirmModal, RowButton, useToast } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { track } from '../../services/analytics';
 import { cue } from '../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../theme';

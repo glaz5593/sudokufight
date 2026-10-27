@@ -1,10 +1,11 @@
 import { Canvas, Circle, Group, Oval, type Transforms3d } from '@shopify/react-native-skia';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { type SharedValue, useAnimatedStyle, useDerivedValue } from 'react-native-reanimated';
 
 import { color, radius, space, text, tokens } from '../../theme';
+import { Text } from '../ui/Text';
 import { CatArt } from './CatArt';
 import {
   captionAt,

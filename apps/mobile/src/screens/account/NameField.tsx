@@ -35,7 +35,8 @@ export function NameField({
 
   let liveError: string | null = null;
   if (state === 'invalid' && check.problem) {
-    liveError = t(`name.problem.${check.problem}`, { chars: check.chars.join(' ') });
+    // The characters apart, each said alone (name.charSpace: a space in Hebrew and English).
+    liveError = t(`name.problem.${check.problem}`, { chars: check.chars.join(t('name.charSpace')) });
   } else if (state === 'taken') liveError = t('name.takenHint');
   else if (state === 'blocked') liveError = t('name.blockedHint');
 

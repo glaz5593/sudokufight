@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { type AppVersionInfo, appVersionInfo } from '../config/appVersion';
 import { color, space, text } from '../theme';
 import { ltr } from './player/format';
 
+import { Text } from './ui/Text';
 export interface VersionInfoProps {
   /** What to show; by default this app's (config/appVersion.ts). Null, or no version: nothing. */
   info?: AppVersionInfo | null;

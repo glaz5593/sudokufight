@@ -1,0 +1,176 @@
+{
+  "title": "好友房间",
+  "subtitle": "{{type}} · {{count}}/{{max}}",
+  "label": "好友对局 · 不计积分",
+  "mode": "好友对战",
+  "modeLong": "好友对局",
+  "unrated": "不计积分",
+  "code": {
+    "title": "房间码",
+    "label": "房间码：{{spelled}}",
+    "hint": "发送房间码或链接"
+  },
+  "share": {
+    "button": "分享链接",
+    "hint": "打开手机的分享面板，附带房间码和链接",
+    "message": "来 Sudoku Fight 和我一起玩！房间码：{{code}}\n{{link}}",
+    "failed": "无法打开分享"
+  },
+  "copy": {
+    "button": "复制房间码",
+    "done": "房间码已复制",
+    "failed": "无法复制房间码"
+  },
+  "gameType": {
+    "title": "对局类型",
+    "hostPicks": "只有房主可以更改",
+    "guestSees": "由房主选择",
+    "changed": "对局类型已改为{{type}}"
+  },
+  "players": {
+    "title": "玩家 · {{count}}/{{max}}"
+  },
+  "seat": {
+    "me": "我",
+    "host": "房主",
+    "away": "暂时不在房间",
+    "empty": "等待玩家加入…",
+    "emptyLabel": "空座位，等待玩家加入",
+    "rating": "积分{{rating}}"
+  },
+  "kick": {
+    "label": "将{{name}}移出房间",
+    "title": "要将{{name}}移出房间吗？",
+    "body": "对方将无法再回到这个房间。",
+    "confirm": "移出"
+  },
+  "start": {
+    "button_other": "开始对局 · {{count}}名玩家",
+    "needMore": "至少需要2名在线玩家才能开始",
+    "waitingForHost": "等待{{name}}开始",
+    "hostAway": "房主暂时不在房间",
+    "starting": "对局即将开始…"
+  },
+  "startWithout": {
+    "title": "不等{{names}}就开始吗？",
+    "body": "{{names}}现在不在房间里。不在房间的人将无法参加。",
+    "confirm": "是，开始",
+    "cancel": "不，再等等"
+  },
+  "leave": "离开房间",
+  "reconnecting": "连接中断，正在重连…",
+  "announce": {
+    "joined": "{{name}}加入了",
+    "left": "{{name}}离开了房间",
+    "away": "{{name}}暂时不在房间",
+    "back": "{{name}}回到了房间",
+    "host": "{{name}}现在是房主",
+    "meHost": "你现在是房主"
+  },
+  "opening": {
+    "create": "正在开房间…",
+    "join": "正在加入房间…"
+  },
+  "replace": {
+    "title": "关闭你的另一个房间？",
+    "body": "你已经有一个开着的房间{{code}}。关闭它并开新房间，或者回到那个房间。",
+    "confirm": "关闭并开新房间",
+    "cancel": "回到那个房间"
+  },
+  "errors": {
+    "notFound": "找不到房间码为{{code}}的房间。请检查数字。",
+    "notFoundThis": "找不到这个房间码对应的房间。",
+    "roomFull": "房间已满（{{max}}/{{max}}）。",
+    "gameStarted": "这个房间的对局已经开始了。",
+    "roomClosed": "房间已关闭。",
+    "kicked": "房主已将你移出房间。",
+    "cantJoin": "你屏蔽了这个房间里的一名玩家。",
+    "suspended": "你的账号已被停用，暂时无法和好友对局。",
+    "network": "没有网络连接。",
+    "tooManyRequests": "尝试次数太多。请{{wait}}后再试。",
+    "notAvailable": "这个选项暂时还不可用。",
+    "badRequest": "房间码是6位数字。",
+    "unauthorized": "请重新登录你的账号。",
+    "notRegistered": "完成注册后即可和好友对局。",
+    "tooManyRooms": "你已经有一个开着的房间。",
+    "tooLarge": "出错了。请再试一次。",
+    "internal": "服务器出错了。请稍后再试。",
+    "disabled": "这个服务器不支持好友对局。",
+    "unavailable": "服务器暂时不可用。请稍后再试。"
+  },
+  "wait": {
+    "seconds_other": "{{count}}秒",
+    "minutes_other": "{{count}}分钟"
+  },
+  "closed": {
+    "kicked": "房主已将你移出房间。",
+    "removed": "你离开了房间。",
+    "otherDevice": "房间已在另一台设备上打开。",
+    "serverRestart": "房间已关闭。",
+    "closed": "房间已关闭。"
+  },
+  "lobbyErrors": {
+    "notHost": "只有房主可以这样做。",
+    "notEnoughPlayers": "至少需要2名在线玩家才能开始。",
+    "playersAway": "{{names}}现在不在房间里。",
+    "gameStarted": "对局已经开始了。",
+    "badCommand": "操作没有成功。请再试一次。",
+    "tooManyRequests": "慢点，点得太快了。请稍后再试。"
+  },
+  "startedWithout": "对局已在你不在时开始了。",
+  "actions": {
+    "retry": "再试一次",
+    "createRoom": "创建房间",
+    "joinWithCode": "输入房间码加入",
+    "home": "首页"
+  },
+  "join": {
+    "title": "输入房间码加入",
+    "prompt": "输入你收到的6位数字",
+    "codeLabel": "房间码，6位数字",
+    "digitLabel": "第{{n}}位，共{{total}}位",
+    "paste": "粘贴",
+    "pasteHint": "可以直接粘贴整条邀请消息",
+    "pasteNone": "复制的文字里没有找到6位房间码",
+    "joining": "正在加入房间…",
+    "submit": "加入"
+  },
+  "link": {
+    "notFound": {
+      "title": "无法识别这个链接",
+      "body": "它可能已经过期，或者不是来自 Sudoku Fight。你可以从首页继续。",
+      "home": "回到首页"
+    },
+    "badCode": "这个链接无效"
+  },
+  "invite": {
+    "pending": "你被邀请加入房间{{code}}",
+    "afterSignIn": "登录后，我们会直接带你进入房间{{code}}",
+    "join": "加入",
+    "later": "以后再说",
+    "expired": "房间{{code}}的邀请已过期"
+  },
+  "busy": {
+    "practice": {
+      "title": "离开练习并加入房间？",
+      "body": "练习会被保存，就像你平时离开时一样。",
+      "confirm": "加入房间"
+    },
+    "search": {
+      "title": "停止匹配并加入？",
+      "body": "寻找对手将会停止。",
+      "confirm": "加入房间"
+    },
+    "room": {
+      "title": "切换到房间{{code}}？",
+      "body": "你将离开当前所在的房间。",
+      "confirm": "切换房间"
+    },
+    "game": {
+      "title": "你正在对局中",
+      "body": "对局结束后就可以加入。房间{{code}}的邀请会一直等你。",
+      "back": "回到对局"
+    },
+    "stay": "留下"
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "actions": {
+    "report": "Báo cáo người chơi",
+    "block": "Chặn người chơi",
+    "unblock": "Bỏ chặn",
+    "reportLabel": "Báo cáo {{name}}",
+    "blockLabel": "Chặn {{name}}",
+    "unblockLabel": "Bỏ chặn {{name}}",
+    "blockedNote": "Bạn đã chặn người chơi này: hai bạn sẽ không bị ghép cặp với nhau trong trận xếp hạng."
+  },
+  "report": {
+    "title": "Báo cáo {{name}}",
+    "question": "Có vấn đề gì vậy?",
+    "reasons": {
+      "offensiveName": "Tên xúc phạm",
+      "cheating": "Gian lận",
+      "other": "Khác"
+    },
+    "reasonHints": {
+      "offensiveName": "Tên thô lỗ, xúc phạm hoặc không phù hợp",
+      "cheating": "Có vẻ nhờ trợ giúp bên ngoài, hoặc lợi dụng lỗi",
+      "other": "Điều gì khác không nên có trong đấu trường"
+    },
+    "privacy_other": "Người chơi sẽ không biết ai đã báo cáo họ. Mọi báo cáo đều được xem xét trong vòng {{hours}} giờ.",
+    "send": "Gửi báo cáo",
+    "pickFirst": "Chọn một lý do rồi gửi.",
+    "thanks_other": "Cảm ơn bạn. Chúng tôi sẽ xem xét báo cáo trong vòng {{hours}} giờ.",
+    "done": "Đóng",
+    "errors": {
+      "rateLimited_other": "Bạn đã gửi nhiều báo cáo trong giờ qua. Bạn có thể gửi tiếp sau {{count}} phút.",
+      "busy": "Quá nhiều yêu cầu. Chờ một chút rồi thử lại.",
+      "suspended": "Tài khoản của bạn đang bị đình chỉ, nên lúc này bạn không thể gửi báo cáo.",
+      "self": "Bạn không thể tự báo cáo chính mình.",
+      "notFound": "Người chơi này không còn trong trận đấu.",
+      "offline": "Không có kết nối với máy chủ: báo cáo chưa được gửi. Hãy thử lại.",
+      "failed": "Không gửi được báo cáo. Hãy thử lại."
+    }
+  },
+  "block": {
+    "title": "Chặn {{name}}?",
+    "body": "Hai bạn sẽ không bị ghép cặp với nhau trong trận xếp hạng, và biểu cảm của {{name}} sẽ không đến được với bạn. Không ai được thông báo về việc chặn. Bạn có thể bỏ chặn bất cứ lúc nào: Cài đặt → Người chơi bị chặn.",
+    "confirm": "Chặn",
+    "done": "Đã chặn {{name}}.",
+    "unblockTitle": "Bỏ chặn {{name}}?",
+    "unblockBody": "Hai bạn có thể gặp lại nhau trong trận xếp hạng, và biểu cảm của {{name}} sẽ đến được với bạn.",
+    "unblockConfirm": "Bỏ chặn",
+    "unblocked": "Đã bỏ chặn {{name}}.",
+    "errors": {
+      "limitReached_other": "Bạn chỉ có thể chặn tối đa {{max}} người chơi. Hãy bỏ chặn ai đó (Cài đặt → Người chơi bị chặn) rồi thử lại.",
+      "self": "Bạn không thể tự chặn chính mình.",
+      "notFound": "Người chơi này không còn trong trận đấu.",
+      "busy": "Quá nhiều yêu cầu. Chờ một chút rồi thử lại.",
+      "offline": "Không có kết nối với máy chủ: việc chặn chưa được lưu. Hãy thử lại.",
+      "unblockOffline": "Không có kết nối với máy chủ: chưa bỏ chặn được. Hãy thử lại.",
+      "failed": "Không lưu được việc chặn. Hãy thử lại.",
+      "unblockFailed": "Không bỏ chặn được. Hãy thử lại."
+    }
+  },
+  "blocked": {
+    "title": "Người chơi bị chặn",
+    "settingsRow": "Người chơi bị chặn",
+    "note": "Hai bạn sẽ không bị ghép cặp với nhau trong trận xếp hạng, và biểu cảm của họ sẽ không đến được với bạn. Không ai được thông báo về việc chặn.",
+    "count": "{{count}}/{{max}}",
+    "since": "Bị chặn từ {{date}}",
+    "rowLabel": "{{name}}, bị chặn từ {{date}}",
+    "emptyTitle": "Không có người chơi bị chặn",
+    "emptyBody": "Bạn có thể chặn một người chơi từ thẻ của họ, hoặc từ menu trên thẻ của họ trong trận xếp hạng.",
+    "loading": "Đang tải danh sách người chơi bị chặn…",
+    "offlineTitle": "Không có kết nối với máy chủ",
+    "offlineBody": "Danh sách được lưu trên máy chủ. Hãy thử lại khi có mạng.",
+    "errorTitle": "Không tải được danh sách",
+    "errorBody": "Hãy thử lại sau giây lát.",
+    "retry": "Thử lại",
+    "signedOut": "Đăng nhập để xem danh sách."
+  },
+  "chooseName": {
+    "title": "Chọn tên mới",
+    "body": "Tên trước đây của bạn đã được thay bằng tên tạm thời {{name}}, vì nó vi phạm quy tắc đặt tên. Hãy chọn tên mới để tiếp tục.",
+    "rule": "Lần này không phải chờ 30 ngày: bạn có thể chọn tên ngay.",
+    "save": "Lưu và tiếp tục",
+    "saved": "Đã lưu tên mới của bạn.",
+    "same": "Đó là tên tạm thời. Hãy chọn tên của riêng bạn.",
+    "offline": "Không có kết nối với máy chủ: tên chưa được lưu. Hãy thử lại khi có mạng.",
+    "practice": "Luyện tập trong lúc chờ",
+    "settings": "Cài đặt",
+    "signOut": "Đăng xuất"
+  },
+  "suspended": {
+    "banner": "Tài khoản bị đình chỉ: không có trận xếp hạng",
+    "bannerAction": "Chi tiết",
+    "bannerLabel": "Tài khoản bị đình chỉ, không có trận xếp hạng. Chi tiết",
+    "title": "Tài khoản bị đình chỉ",
+    "body": "Sau một báo cáo, tài khoản của bạn đã bị đình chỉ. Trong thời gian này, bạn không thể chơi trận xếp hạng và không thể thay đổi hồ sơ.",
+    "can": "Bạn vẫn có thể luyện tập một mình hoặc với máy, chặn người chơi và xóa tài khoản.",
+    "contactTitle": "Bạn nghĩ đây là nhầm lẫn?",
+    "contact": "Hãy viết cho chúng tôi và chúng tôi sẽ xem xét lại. Thông tin liên hệ có trong điều khoản sử dụng.",
+    "contactEmail": "Bạn có thể viết cho chúng tôi: {{email}}",
+    "openContact": "Thông tin liên hệ",
+    "opensInBrowser": "Mở trong trình duyệt",
+    "practice": "Luyện tập",
+    "chip": "Bị đình chỉ",
+    "chipLabel": "Không khả dụng: tài khoản bị đình chỉ",
+    "ranked": "Tài khoản của bạn đang bị đình chỉ, nên tạm thời không có trận xếp hạng.",
+    "editProfile": "Tài khoản bị đình chỉ: không thể thay đổi hồ sơ"
+  }
+}

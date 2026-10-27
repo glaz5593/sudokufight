@@ -1,0 +1,608 @@
+{
+  "title": "關卡練習",
+  "stage": "第{{n}}關",
+  "chapter": "第{{n}}章",
+  "units": {
+    "seconds": "秒"
+  },
+  "stars": {
+    "of3": {
+      "0": "沒有星星",
+      "1": "三顆星中的一顆",
+      "2": "三顆星中的兩顆",
+      "3": "三顆星全拿"
+    },
+    "count_other": "{{count}}顆星"
+  },
+  "kinds": {
+    "find": {
+      "name": "精準定位",
+      "label": "精準定位"
+    },
+    "findDuel": {
+      "name": "和機器人競速",
+      "label": "和機器人競速"
+    },
+    "fillBox": {
+      "name": "填滿宮",
+      "label": "填滿宮"
+    },
+    "duel": {
+      "name": "{{target}}分對決",
+      "label": "{{target}}分對決"
+    },
+    "spotError": {
+      "name": "找出錯誤",
+      "label": "找出錯誤"
+    },
+    "pointHunter": {
+      "name": "得分獵人",
+      "label": "得分獵人"
+    },
+    "chain": {
+      "name": "連鎖",
+      "label": "連鎖"
+    },
+    "fillRow": {
+      "name": "填滿橫列",
+      "label": "填滿橫列"
+    },
+    "fillCol": {
+      "name": "填滿直行",
+      "label": "填滿直行"
+    },
+    "puzzle": {
+      "name": "拼圖",
+      "label": "拼圖"
+    }
+  },
+  "boss": {
+    "chip": "頭目",
+    "name": "頭目關卡",
+    "label": "頭目，{{kind}}",
+    "versus": "頭目：{{bot}}",
+    "band": "頭目 · 第{{chapter}}章",
+    "botLabel": "{{name}}，頭目",
+    "intro": {
+      "title": "頭目關卡！",
+      "sub": "第{{n}}關 · {{kind}}",
+      "harder": "難在哪裡",
+      "label": "頭目關卡！第{{n}}關，{{kind}}。{{details}}"
+    },
+    "traits": {
+      "firstBot": "你的第一個機器人：{{bot}}",
+      "faster": "{{bot}}快了{{percent}}",
+      "overlord": "Overlord",
+      "moreCells_other": "{{cells}}個空格，平常是{{usual}}個"
+    },
+    "result": {
+      "won": "你打敗頭目了！",
+      "lost": "這次頭目贏了",
+      "gateOpen": "第{{n}}章關口：{{stars}} · 已開啟！",
+      "gateClosed": "第{{n}}章關口：{{stars}}"
+    }
+  },
+  "region": {
+    "box": "第{{n}}宮",
+    "row": "橫列{{row}}",
+    "col": "直行{{n}}",
+    "mapLabel": "盤面圖：{{region}}"
+  },
+  "goals": {
+    "find": "找出一個數字的精確位置。關卡在{{s}}秒時結束。",
+    "findDuel_other": "和{{bot}}搶{{spots}}題，最多{{s}}秒。先找到的人拿下該題。",
+    "fillBox_other": "填滿一個宮的{{cells}}個空格，最多{{s}}秒。",
+    "fillRow_other": "填滿一個橫列的{{cells}}個空格，最多{{s}}秒。",
+    "fillCol_other": "填滿一個直行的{{cells}}個空格，最多{{s}}秒。",
+    "puzzle": "把宮排回正確順序。換錯一次加{{penalty}}秒。最多{{s}}秒。",
+    "duel_other": "對戰{{bot}}，先到{{target}}分或{{s}}秒時結束。依領先分數給星。",
+    "spotError_other": "你的數字中藏著{{count}}個錯誤數字。最多{{s}}秒。",
+    "pointHunter_other": "{{moves}}步，最多{{s}}秒。盡可能拿高分。",
+    "chain_other": "{{steps}}步的連鎖，最多{{s}}秒。每次只有一格能解。"
+  },
+  "scale": {
+    "label": "可獲得的星星",
+    "row": "{{stars}}：{{text}}",
+    "time": "最多{{s}}秒",
+    "spots_other": "{{count}}題",
+    "spotsRange_other": "{{range}}題",
+    "gap": "領先{{gap}}分以上",
+    "lead": "結束時領先",
+    "points": "{{points}}分以上",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "關卡地圖",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_other": "{{max}}顆星中得到{{stars}}顆，跳到某一章",
+    "lockedToast": "請先玩第{{n}}關",
+    "gateToast_other": "在第{{prev}}章拿到{{need}}顆星後，第{{chapter}}章就會開啟",
+    "loading": "正在載入地圖…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_other": "{{max}}顆星中得到{{stars}}顆"
+  },
+  "node": {
+    "played": "第{{n}}關，{{kind}}，{{stars}}",
+    "current": "第{{n}}關，{{kind}}，下一關",
+    "open": "第{{n}}關，{{kind}}，還沒玩過",
+    "locked": "第{{n}}關，未解鎖"
+  },
+  "gate": {
+    "need_other": "{{need}}顆星開啟",
+    "count": "{{stars}}/{{need}}",
+    "boss": "玩過頭目關卡後開啟",
+    "open": "第{{n}}章已開啟",
+    "lockedLabel_other": "第{{n}}章未解鎖，第{{prev}}章已得{{stars}}/{{need}}顆星",
+    "bossLabel_other": "第{{n}}章未解鎖，第{{prev}}章已得{{stars}}/{{need}}顆星。玩過頭目關卡後開啟",
+    "openLabel_other": "第{{n}}章已開啟，在第{{prev}}章拿到{{need}}顆星時開啟"
+  },
+  "jump": {
+    "title": "跳到某一章",
+    "row": "第{{n}}章 · {{name}}",
+    "rowLabel_other": "第{{n}}章，{{name}}，{{max}}顆星中得到{{stars}}顆，{{state}}",
+    "open": "已開啟",
+    "locked": "未解鎖"
+  },
+  "gateSheet": {
+    "title": "第{{n}}章未解鎖",
+    "missing_other": "你需要在第{{prev}}章拿到{{need}}顆星。你有{{stars}}顆，還差{{missing}}顆。",
+    "bossOnly": "星星已經夠了。玩第{{boss}}關（頭目）就能開啟",
+    "progress": "第{{prev}}章關口所需星星：{{stars}}/{{need}}",
+    "rowsTitle": "可以提升的關卡",
+    "rowsNote_other": "這些關卡最多還能多拿{{count}}顆星",
+    "row": "第{{n}}關 · {{kind}}",
+    "rowLabel": "再玩一次第{{n}}關，{{kind}}，{{stars}}",
+    "rowNewLabel": "玩第{{n}}關，{{kind}}，還沒玩過",
+    "rowPlay": "開始",
+    "primary": "玩第{{n}}關",
+    "footnote": "大多數關卡最多30秒；填滿和拼圖關卡最多60秒。會保留你最好的星數。"
+  },
+  "panel": {
+    "label": "選擇的關卡",
+    "title": "第{{n}}關 · {{kind}}",
+    "sub": "第{{chapter}}章 · {{name}}",
+    "subBot": "第{{chapter}}章 · 對戰{{bot}}",
+    "subBoss": "第{{chapter}}章 · 頭目：{{bot}}",
+    "next": "下一關",
+    "best": "最佳{{metric}}",
+    "bestLabel": "你的最佳：{{stars}}，{{metric}}",
+    "bestStars": "你的最佳：{{stars}}",
+    "bot": "{{name}} · 等級{{level}} · {{title}}",
+    "continue": "繼續 · 第{{n}}關",
+    "play": "開始",
+    "lockedTitle": "第{{n}}關 · 未解鎖",
+    "lockedSub": "第{{chapter}}章 · {{kind}}",
+    "lockedPrev": "請先玩第{{n}}關。",
+    "lockedGate_other": "第{{chapter}}章未解鎖：需要在第{{prev}}章拿到{{need}}顆星。你有{{stars}}顆。",
+    "gateTitleOpen": "第{{n}}章已開啟",
+    "gateTitleClosed": "第{{n}}章未解鎖",
+    "gateSub": "{{name}} · 第{{range}}關",
+    "gateOpenBody_other": "已開啟：你在第{{prev}}章拿到{{stars}}顆星，關口需要{{need}}顆。",
+    "gateBar": "關口所需星星：{{stars}}/{{need}}"
+  },
+  "ready": {
+    "title": "準備好了嗎？",
+    "label": "準備好了嗎？第{{n}}關，{{kind}}。{{goal}}",
+    "findPrompt": "{{digit}}在哪裡？",
+    "raceSpots_other": "{{count}}題，和{{bot}}競速"
+  },
+  "tutorial": {
+    "title": "玩法說明",
+    "got": "知道了",
+    "skip": "跳過",
+    "panel": "第{{n}}/{{total}}張圖：{{text}}",
+    "alsoBoss": "這也是頭目關卡：每章的第十關。",
+    "find": {
+      "1": "一個問題，例如「{{digit}}在哪裡？」，盤面上會標出一個範圍：一個宮、一個橫列、一個直行或整個盤面。",
+      "2": "找出這個數字唯一能放的格子，點它。",
+      "3": "點錯一次加5秒。點錯兩次，關卡就結束。"
+    },
+    "findDuel": {
+      "1": "五道題，一題接一題。機器人會和你一起找。",
+      "2": "先點到正確格子的人拿下這題。",
+      "3": "點錯：3秒內不能點，機器人則會繼續找。"
+    },
+    "fillBox": {
+      "1": "一個有空格的宮，框著金色邊框。",
+      "2": "在這個宮裡選一格並輸入數字。宮外的格子不能選。",
+      "3": "填錯一次加5秒。越快完成，星星越多。"
+    },
+    "duel": {
+      "1": "你和機器人在同一個盤面上，就像正式對局。",
+      "2": "先到30分的人獲勝，或是30秒後領先的人獲勝。",
+      "3": "依結束時的領先分數給星：領先8分兩顆星，15分三顆星。"
+    },
+    "spotError": {
+      "1": "深色數字是盤面原有的，永遠正確。",
+      "2": "錯誤數字藏在你的數字中。點出它們。",
+      "3": "點到正確的數字會加5秒。"
+    },
+    "pointHunter": {
+      "1": "你只有三步。",
+      "2": "空曠區域的格子分數更高。",
+      "3": "依你接近盤面最高分的程度給星。"
+    },
+    "chain": {
+      "1": "任何時候，盤面上都只有一格能解。",
+      "2": "填好它，就會開啟下一格。",
+      "3": "在還無法確定的格子填數字會罰5秒，而且不會填入。"
+    },
+    "boss": {
+      "1": "每章的第十關是頭目關卡：和機器人的一場對戰，比之前的關卡更難。",
+      "2": "開始前會告訴你難在哪裡。通常是：機器人更快。",
+      "3": "玩過頭目關卡，並在這一章拿到20顆星後，下一章就會開啟。"
+    },
+    "fillRow": {
+      "1": "一個有空格的橫列，框著金色邊框。",
+      "2": "在這個橫列裡選一格並輸入數字。橫列外的格子不能選。",
+      "3": "填錯一次加5秒。越快完成，星星越多。"
+    },
+    "fillCol": {
+      "1": "一個有空格的直行，框著金色邊框。",
+      "2": "在這個直行裡選一格並輸入數字。直行外的格子不能選。",
+      "3": "填錯一次加5秒。越快完成，星星越多。"
+    },
+    "puzzle": {
+      "1": "九個完整的宮，順序是錯的。",
+      "2": "把一個宮拖到另一個宮上，兩者就會交換。有鎖的宮是固定的。如果交換後兩個宮都沒有歸位，會加5秒。",
+      "3": "每個橫列和直行都正確時，關卡就結束。越快完成，星星越多。"
+    }
+  },
+  "result": {
+    "completed": "第{{n}}關完成",
+    "ended": "第{{n}}關",
+    "reasons": {
+      "timeUp": "時間到",
+      "failed": "點錯兩次",
+      "quit": "你離開了關卡",
+      "botWon": "{{bot}}搶先了"
+    },
+    "metric": {
+      "spotsOf_other": "/{{total}}題",
+      "gap": "領先",
+      "points": "分",
+      "found": "找到",
+      "foundOf": "/{{total}}"
+    },
+    "newBest": "新紀錄！",
+    "yourBest": "你的最佳：",
+    "yourBestLabel": "你的最佳：{{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP，預估值：以伺服器確認為準",
+    "chapterLabel": "本章",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "關口需要{{need}}",
+    "chapterOpen": "關口已開啟",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_other": "本章：{{max}}顆星中得到{{stars}}顆。{{gate}}",
+    "mistakes_other": "{{count}}次錯誤",
+    "noMistakes": "沒有錯誤",
+    "swaps_other": "交換{{count}}次 · 最少：{{min}}",
+    "time": "時間：{{s}}秒",
+    "youWon": "你贏了",
+    "botWon": "{{bot}}贏了",
+    "tie": "平手",
+    "bossTie": "平手：頭目守住了",
+    "opponentLabel": "{{bot}}：{{value}}。{{verdict}}",
+    "opponentSpots_other": "{{count}}題",
+    "opponentScore_other": "{{score}}分",
+    "bestMove_other": "最佳一步：{{cell}}填{{digit}} · {{points}}分",
+    "why": "為什麼？",
+    "next": "下一關",
+    "again": "再玩一次",
+    "toMap": "回到地圖",
+    "last": "這是最後一關了。做得好！",
+    "nextLocked": "下一關還沒解鎖"
+  },
+  "unlocked": {
+    "heading": "新的一章開啟了！",
+    "title": "第{{n}}章 · {{name}}",
+    "news": "新內容：{{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "繼續",
+    "label": "新的一章開啟了：第{{n}}章，{{name}}。{{news}}",
+    "bots": {
+      "1": "Pip：「我才剛起步，但我比看起來還快。」",
+      "2": "Biscuit：「我很悠哉，但不會讓你跑掉。」",
+      "3": "Mr. Hoot：「每一格我都看得到。小心點。」",
+      "4": "Maestro：「快速、精準，而且有型。」",
+      "5": "Overlord：「你走了很遠，但旅程就到這裡為止。」"
+    }
+  },
+  "exit": {
+    "button": "離開關卡",
+    "title": "要離開關卡嗎？",
+    "body": "你會得到0顆星，下一關會開啟。",
+    "confirm": "離開",
+    "cancel": "繼續玩"
+  },
+  "card": {
+    "line": "關卡：{{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_other": "關卡：{{played}}，{{count}}顆星"
+  },
+  "chapters": {
+    "1": {
+      "name": "第一步",
+      "news": "精準定位、填滿宮、拼圖和填滿橫列"
+    },
+    "2": {
+      "name": "Pip 的挑戰",
+      "news": "填滿直行，以及和機器人競速"
+    },
+    "3": {
+      "name": "第一場對決",
+      "news": "30分對決，以及找出錯誤"
+    },
+    "4": {
+      "name": "偵探",
+      "news": "3步連鎖，以及4個可移動宮的拼圖"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "新機器人 Biscuit、得分獵人，以及每個數字至少缺一次的填滿關卡"
+    },
+    "6": {
+      "name": "橫列與直行",
+      "news": "一般盤面，以及在橫列或直行中的目標"
+    },
+    "7": {
+      "name": "得分獵人",
+      "news": "5個可移動宮的拼圖"
+    },
+    "8": {
+      "name": "兩個錯誤",
+      "news": "盤面上有兩個錯誤，以及一般盤面上的對決"
+    },
+    "9": {
+      "name": "連鎖",
+      "news": "所有類型再來一次，難度再高一點"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "新機器人 Mr. Hoot，以及有7個空格的填滿關卡"
+    },
+    "11": {
+      "name": "整個盤面",
+      "news": "目標可能在盤面任何位置"
+    },
+    "12": {
+      "name": "更快",
+      "news": "一般盤面上，25秒的得分獵人"
+    },
+    "13": {
+      "name": "無聲的錯誤",
+      "news": "沒有明顯衝突的錯誤"
+    },
+    "14": {
+      "name": "長連鎖",
+      "news": "4步連鎖，以及有9個空格的填滿關卡"
+    },
+    "15": {
+      "name": "半途",
+      "news": "所有類型再來一次"
+    },
+    "16": {
+      "name": "困難盤面",
+      "news": "困難盤面，以及6個可移動宮的拼圖"
+    },
+    "17": {
+      "name": "排除法",
+      "news": "要先排除才會出現的目標"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "新機器人：Maestro"
+    },
+    "19": {
+      "name": "陷阱",
+      "news": "盤面上有三個錯誤"
+    },
+    "20": {
+      "name": "困難關口",
+      "news": "需要排除法的空宮"
+    },
+    "21": {
+      "name": "數對",
+      "news": "數對，以及20秒的得分獵人"
+    },
+    "22": {
+      "name": "5步連鎖",
+      "news": "5步的連鎖"
+    },
+    "23": {
+      "name": "極少提示數",
+      "news": "提示數極少的盤面"
+    },
+    "24": {
+      "name": "競速",
+      "news": "困難盤面上的對決"
+    },
+    "25": {
+      "name": "專家",
+      "news": "全部再來一次，節奏更快"
+    },
+    "26": {
+      "name": "錦標賽",
+      "news": "只有最快的玩家能拿到三顆星"
+    },
+    "27": {
+      "name": "錦標賽Ⅱ",
+      "news": "得分獵人：只有接近最高分才能拿到三顆星"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "頭目：Overlord，競速賽"
+    },
+    "29": {
+      "name": "決賽",
+      "news": "快速連鎖，以及頭目 Overlord 的對決"
+    },
+    "30": {
+      "name": "冠軍",
+      "news": "全部集合，難度最高"
+    }
+  },
+  "hud": {
+    "secondsAdded_other": "加了{{count}}秒",
+    "sub": "{{kind}} · 第{{chapter}}章",
+    "subFind": "{{digit}}在哪裡？ · 第{{chapter}}章",
+    "subRace_other": "{{kind}} · {{spots}}題 · 第{{chapter}}章",
+    "clockLabel_other": "剩{{s}}秒，共{{limit}}秒",
+    "penalty": "{{s}}秒",
+    "me": "我",
+    "find": {
+      "tap": "點出{{digit}}該放的位置",
+      "where": "<scope>{{scope}}</scope> · 不用鍵盤，點一下就好",
+      "elapsed": "已用秒數",
+      "targetLabel": "目標：{{scope}}的{{digit}}。{{left}}",
+      "ringLabel_other": "本關剩{{s}}秒",
+      "one": "本關只要找一次",
+      "wrongRule": "點錯：{{penalty}}秒",
+      "twoWrongRule": "點錯兩次：關卡結束",
+      "found": "找到了：{{cell}}的{{digit}}",
+      "missed": "不在{{cell}}。{{penalty}}秒",
+      "answer": "答案：{{cell}}"
+    },
+    "scope": {
+      "box": "在第{{n}}宮",
+      "row": "在橫列{{row}}",
+      "col": "在直行{{n}}",
+      "board": "在盤面任何位置"
+    },
+    "race": {
+      "task": "第{{n}}/{{total}}題 · 找出{{scope}}的{{digit}}",
+      "left": "剩{{s}}秒",
+      "searching": "搜尋中…",
+      "spots_other": "{{count}}題",
+      "frozen_other": "凍結{{count}}秒",
+      "out": "下一題前不能作答",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}，{{spots}}",
+      "botLabel": "{{name}}，等級{{n}}機器人，{{title}}，{{spots}}",
+      "botSearching": "{{name}}正在找",
+      "mine": "你拿下第{{n}}題",
+      "theirs": "{{name}}拿下第{{n}}題",
+      "void": "沒有人拿下第{{n}}題",
+      "next": "第{{n}}題：{{scope}}的{{digit}}"
+    },
+    "box": {
+      "task": "填滿第{{n}}宮",
+      "cells_other": "{{done}}/{{total}}格",
+      "cellsLabel_other": "{{total}}個空格中已填{{done}}個",
+      "mistakes_other": "{{count}}次錯誤 {{penalty}}秒",
+      "mistakesLabel_other": "{{count}}次錯誤，$t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "填錯會加5秒，而且那一格不能再填這個數字",
+      "timeLabel_other": "時間：{{s}}秒，共{{limit}}秒",
+      "boardLabel_other": "盤面 · 只填第{{n}}宮的{{count}}個空格"
+    },
+    "line": {
+      "taskRow": "填滿橫列{{row}}",
+      "taskCol": "填滿直行{{n}}",
+      "boardLabelRow_other": "盤面 · 只填橫列{{row}}的{{count}}個空格",
+      "boardLabelCol_other": "盤面 · 只填直行{{n}}的{{count}}個空格"
+    },
+    "puzzle": {
+      "task": "把宮排回正確順序",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_other": "{{count}}個宮可移動",
+      "fixed_other": "{{count}}個宮固定",
+      "allMove": "每個宮都可移動",
+      "swaps": "交換：{{count}}",
+      "wrong_other": "{{count}}次換錯 {{penalty}}秒",
+      "wrongLabel_other": "{{count}}次換錯，$t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "把一個宮拖到另一個宮上來交換",
+      "tapHint": "或：點一個宮，再點另一個",
+      "slotLabel": "第{{n}}宮，{{state}}：{{rows}}",
+      "state": {
+        "movable": "可移動",
+        "fixed": "固定",
+        "selected": "已選取"
+      },
+      "slotHint": "點一下選取，再點另一個宮",
+      "swapped": "第{{a}}宮和第{{b}}宮已交換",
+      "swappedPenalty_other": "第{{a}}宮和第{{b}}宮已交換。加{{s}}秒",
+      "fixedTap": "這個宮是固定的",
+      "solved": "每個橫列和直行都正確",
+      "boardLabel": "拼圖 · {{counts}}"
+    },
+    "duel": {
+      "gap": "領先{{gap}}",
+      "gapLabel": "領先分數：{{gap}}。結束時領先得一顆星，領先{{two}}分得兩顆星，{{three}}分得三顆星",
+      "lead": "領先",
+      "of": "/{{target}}",
+      "meLabel_other": "{{name}}，{{score}}/{{target}}分",
+      "botLabel_other": "{{name}}，等級{{n}}機器人，{{score}}/{{target}}分",
+      "finishLabel": "有人達到$t(levels:hud.duel.reachPoints, {\"count\": {{target}} })，或到$t(levels:hud.duel.atSeconds, {\"count\": {{s}} })時，關卡結束",
+      "reachPoints_other": "{{count}}分",
+      "atSeconds_other": "{{count}}秒",
+      "raceLabel": "搶先到{{target}}：{{me}}，{{bot}}"
+    },
+    "reactions": "表情",
+    "boardLabel": "關卡盤面 · {{scope}}",
+    "spotError": {
+      "goal_other": "盤面上藏著{{count}}個錯誤數字。點出它們。",
+      "note": "深色數字是盤面原有的，永遠正確。",
+      "found": "找到",
+      "foundLabel": "已找到{{found}}/{{total}}",
+      "time": "時間",
+      "timeLabel_other": "時間：{{s}}秒，共{{limit}}秒",
+      "tipTitle": "小提示",
+      "tip": "找找在同一個橫列、直行或宮中出現兩次的數字。",
+      "tipClose": "關閉提示",
+      "foundCell": "你在{{cell}}找到一個錯誤：不是{{wrong}}，而是{{right}}",
+      "rightTap": "{{cell}}的數字是正確的。{{penalty}}秒",
+      "missed": "沒找到的錯誤：{{cells}}",
+      "boardLabel": "關卡盤面 · 點出錯誤的數字"
+    },
+    "hunt": {
+      "goal": "在$t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} })內拿到$t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} })。",
+      "goalPoints_other": "{{points}}分",
+      "goalMoves_other": "{{count}}步",
+      "note": "空曠區域的格子分數更高。",
+      "points": "分",
+      "scoreLabel_other": "{{score}}分",
+      "scoreWorthLabel_other": "{{score}}分。你選的格子值{{worth}}",
+      "lost": "填錯的數字扣了{{points}}",
+      "move": "第{{n}}/{{max}}步",
+      "burnt": "第{{n}}步作廢",
+      "movesLabel": "{{moves}}。{{burnt}}",
+      "burntCount_other": "{{count}}步作廢",
+      "left": "剩餘 · 共{{limit}}",
+      "timeLabel_other": "剩{{s}}秒，共{{limit}}秒",
+      "max": "盤面最高分：{{max}}",
+      "worth": "值{{points}}"
+    },
+    "chain": {
+      "goal": "盤面上每次只有一格能解。找到它並填好，就會開啟下一格。",
+      "notePenalty": "在還無法確定的格子填數字：{{penalty}}秒。",
+      "noteAccept": "填錯數字：{{penalty}}秒。",
+      "step": "第{{n}}/{{total}}步",
+      "stepLabel": "連鎖：第{{n}}/{{total}}步",
+      "time": "時間",
+      "timeLabel_other": "時間：{{s}}秒，共{{limit}}秒",
+      "notYet": "{{text}} · {{penalty}}秒",
+      "tipTitle": "小提示",
+      "tip": "每一步都剛好只有一格能被證明。如果你確定某個數字，就是那一格。",
+      "tipClose": "關閉提示"
+    }
+  },
+  "explain": {
+    "spot": "第{{n}}題：{{text}}",
+    "mistake": "你的錯誤：{{cell}}填{{digit}}。{{reason}}",
+    "best": "你的最佳一步，{{cell}}填{{digit}}：{{text}}",
+    "errorFound": "{{cell}}，已找到：{{reason}}",
+    "errorMissed": "{{cell}}，沒找到：{{reason}}",
+    "rightTap": "{{cell}}的{{digit}}是正確的：點它花了{{penalty}}秒。",
+    "points_other": "你拿到{{points}}/{{max}}分，是盤面最高分的{{percent}}。",
+    "line": "最佳路線：{{moves}}。",
+    "move": "{{cell}}填{{digit}}（{{points}}）",
+    "step": "第{{n}}步：{{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "只有原本在位置{{from}}的宮能放在位置{{place}}：其他宮都會讓某個橫列或直行出現重複的數字。",
+      "onlyPlaceForBox": "原本在位置{{from}}的宮只能放在位置{{place}}：放在其他地方都會讓某個橫列或直行出現重複的數字。"
+    }
+  }
+}

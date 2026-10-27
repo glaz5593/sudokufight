@@ -1,7 +1,7 @@
 import { botLevel, type BotLevelId } from '@sudoku-fight/engine';
 import { type ReactNode, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -17,6 +17,8 @@ import { Avatar } from '../../components/player';
 import { signedText } from '../../components/player/format';
 import { Button } from '../../components/ui';
 import { curve } from '../../components/ui/motion';
+import { Text } from '../../components/ui/Text';
+import { decimalSeparator } from '../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, reduceMotionFlag, useReduceMotion } from '../../theme/motion';
 import { chapterName, chapterNews } from './levelWording';
@@ -93,7 +95,7 @@ export function ChapterUnlockedView({ chapter, bot, xp, onDone }: ChapterUnlocke
           {t('unlocked.news', { news })}
         </Text>
         <Enter reduce={reduce} kind="pop" delayMs={SLAM_MS + POP_MS} testID="chapter-unlocked-xp">
-          <Text style={styles.xp}>{t('unlocked.xp', { xp: signedText(xp) })}</Text>
+          <Text style={styles.xp}>{t('unlocked.xp', { xp: signedText(xp, decimalSeparator(t)) })}</Text>
         </Enter>
       </View>
       <Button label={t('unlocked.continue')} size="lg" onPress={onDone} testID="chapter-unlocked-done" />

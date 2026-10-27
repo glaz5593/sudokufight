@@ -1,0 +1,36 @@
+{
+  "button": {
+    "loading": "{{label}}، جارٍ التحميل"
+  },
+  "nav": {
+    "label": "التنقل الرئيسي",
+    "tabs": {
+      "home": "الرئيسية",
+      "leaderboard": "المتصدرون",
+      "history": "السجل",
+      "achievements": "الإنجازات"
+    }
+  },
+  "row": {
+    "label": "{{title}}، {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "إلغاء"
+  },
+  "sheet": {
+    "close": "إغلاق"
+  },
+  "toast": {
+    "withCountdown": "{{message}}، {{time}}",
+    "secondsLeft_zero": "انتهى الوقت",
+    "secondsLeft_one": "بقيت ثانية واحدة",
+    "secondsLeft_two": "بقيت ثانيتان",
+    "secondsLeft_few": "بقيت {{count}} ثوانٍ",
+    "secondsLeft_many": "بقيت {{count}} ثانية",
+    "secondsLeft_other": "بقيت {{count}} ثانية"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "رمز الخطأ: {{code}}"
+  }
+}

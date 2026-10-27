@@ -1,0 +1,474 @@
+{
+  "title": "Treino solo",
+  "titleBot": "Treino contra robô",
+  "titleRanked": "Partida ranqueada",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "Eu",
+  "opponent": "Adversário",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "Nível {{level}}, {{title}}"
+  },
+  "listSep": ", ",
+  "type": {
+    "fast": "Rápido",
+    "normal": "Normal",
+    "hard": "Difícil"
+  },
+  "hud": {
+    "time": "Tempo",
+    "best": "Melhor jogada",
+    "none": "—",
+    "timeLabel": "Tempo {{time}}",
+    "bestLabel_one": "Melhor jogada: {{points}} ponto em {{cell}}",
+    "bestLabel_many": "Melhor jogada: {{points}} de pontos em {{cell}}",
+    "bestLabel_other": "Melhor jogada: {{points}} pontos em {{cell}}",
+    "noBestLabel": "Ainda sem melhor jogada"
+  },
+  "progress": {
+    "label": "Progresso do tabuleiro",
+    "value": "{{filled}}/{{total}}",
+    "a11y_one": "{{filled}} de {{total}} célula preenchida",
+    "a11y_many": "{{filled}} de {{total}} de células preenchidas",
+    "a11y_other": "{{filled}} de {{total}} células preenchidas"
+  },
+  "end": {
+    "button": "Encerrar treino",
+    "title": "Encerrar o treino?",
+    "body": "Seu resultado fica salvo neste celular. Seu rating não muda.",
+    "confirm": "Sim, encerrar",
+    "footnote": "A partida continua em segundo plano",
+    "dialog": "Confirmar o fim do treino"
+  },
+  "out": {
+    "surrendered": "Você desistiu · {{place}}º lugar",
+    "abandoned": "Você está fora · {{place}}º lugar",
+    "goesOn": "A partida segue até o fim",
+    "label": "{{title}}. {{goesOn}}",
+    "home": "Início",
+    "homeHint": "A partida continua sem você. Sua colocação já está definida"
+  },
+  "connection": {
+    "sep": ". ",
+    "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "lead": {
+      "mine": "Você lidera",
+      "theirs": "{{name}} lidera",
+      "theirs_female": "{{name}} lidera",
+      "tie": "Empate"
+    },
+    "frozen": {
+      "title": "Partida congelada",
+      "timers": "Cronômetros parados",
+      "label": "Partida congelada, todos os cronômetros parados"
+    },
+    "opponent": {
+      "lost": "{{name}} perdeu a conexão",
+      "lost_female": "{{name}} perdeu a conexão",
+      "title": "Adversário reconectando…",
+      "timeUp": "Tempo esgotado",
+      "notBack": "{{name}} não voltou",
+      "notBack_female": "{{name}} não voltou",
+      "seconds": "segundos",
+      "ring": "Reconectando… {{seconds}}",
+      "saved": "A partida está salva no servidor",
+      "savedSub": "O tabuleiro e as pontuações estão preservados",
+      "winLabel": "Vitória por abandono",
+      "hint": "Se {{name}} não voltar a tempo, você vence por abandono",
+      "hint_female": "Se {{name}} não voltar a tempo, você vence por abandono",
+      "checking": "Verificando com o servidor…",
+      "timeLeft": "Tempo para voltar: {{time}}",
+      "announce": "{{name}} perdeu a conexão. A partida fica congelada até {{name}} voltar",
+      "announce_female": "{{name}} perdeu a conexão. A partida fica congelada até {{name}} voltar",
+      "announceExpired": "Tempo esgotado. Verificando com o servidor"
+    },
+    "self": {
+      "lostTitle": "Você perdeu a conexão",
+      "lostSub": "Reconectando…",
+      "attempt": "Tentativa",
+      "attemptLabel": "Tentativa {{attempt}}",
+      "backTitle": "Você voltou para a partida",
+      "syncingSub": "Sincronizando…",
+      "syncedSub": "Tudo sincronizado · a partida continua",
+      "lockedTitle": "O tabuleiro fica travado até você voltar",
+      "lockedSub": "Quando a conexão voltar, vamos sincronizar:",
+      "syncingTitle": "Sincronizando…",
+      "syncedTitle": "Tudo sincronizado",
+      "savedSub": "A partida está salva no servidor e continua do mesmo ponto",
+      "item": {
+        "board": "Tabuleiro",
+        "score": "Pontuações",
+        "locks": "Travas",
+        "turn": "Vez",
+        "timers": "Cronômetros"
+      },
+      "timeLeft_one": "Você tem {{seconds}} segundo para voltar",
+      "timeLeft_many": "Você tem {{seconds}} de segundos para voltar",
+      "timeLeft_other": "Você tem {{seconds}} segundos para voltar",
+      "timeSub": "Antes de contar como abandono",
+      "backInTime": "Voltou a tempo",
+      "backInTimeSub": "Os cronômetros continuam do mesmo segundo",
+      "announceLost": "Você perdeu a conexão. Reconectando",
+      "announceAttempt": "Você perdeu a conexão. Reconectando, tentativa {{attempt}}",
+      "announceHurry_one": "Em {{seconds}} segundo, conta como abandono",
+      "announceHurry_many": "Em {{seconds}} de segundos, conta como abandono",
+      "announceHurry_other": "Em {{seconds}} segundos, conta como abandono",
+      "announceSyncing": "Você voltou para a partida. Sincronizando",
+      "announceSynced": "Você voltou para a partida. O tabuleiro e as pontuações estão sincronizados"
+    },
+    "offline": {
+      "announce": "Sem conexão. Continue jogando; suas jogadas são enviadas quando ela voltar"
+    },
+    "left": {
+      "timeUp_one": "Tempo esgotado · {{seconds}} segundo sem conexão",
+      "timeUp_many": "Tempo esgotado · {{seconds}} de segundos sem conexão",
+      "timeUp_other": "Tempo esgotado · {{seconds}} segundos sem conexão",
+      "title": "{{name}} saiu da partida",
+      "title_female": "{{name}} saiu da partida",
+      "win": "Você vence por abandono",
+      "rating": "de rating",
+      "ratingLabel": "Variação de rating: {{delta}}, {{type}}",
+      "ratingUnchanged": {
+        "opponentLeftBeforeMyMove": "Rating sem alteração: o adversário saiu antes da sua primeira jogada",
+        "opponentLeftAhead": "Rating sem alteração: você estava atrás quando o adversário saiu"
+      },
+      "toResults": "Ver resultados",
+      "home": "Início"
+    },
+    "error": {
+      "title": "Erro de conexão",
+      "offlineTitle": "Sem conexão com a internet",
+      "body": {
+        "offline": "Seu celular está sem rede agora. Conecte-se à internet e tente de novo.",
+        "unreachable": "Não conseguimos acessar o servidor do jogo. Confira sua conexão e tente de novo.",
+        "lost": "A conexão com o servidor do jogo caiu e não conseguimos recuperá-la.",
+        "refused": "O servidor não nos deixou entrar na sala."
+      },
+      "refusal": {
+        "notFound": "Não existe sala com este código. Confira o código e tente de novo.",
+        "full": "Esta sala já está cheia.",
+        "gameStarted": "A partida desta sala já começou.",
+        "alreadyInRoom": "Você já está nesta sala, em outro aparelho.",
+        "unauthenticated": "Entre na sua conta para jogar contra outras pessoas.",
+        "suspended": "Sua conta está suspensa, então não há partidas ranqueadas por enquanto. O treino solo ou contra robô continua funcionando.",
+        "codeTaken": "Já existe uma sala com este código. Tente outro código.",
+        "badOptions": "As configurações da sala não são válidas.",
+        "kicked": "O anfitrião removeu você da sala.",
+        "roomClosed": "A sala foi fechada."
+      },
+      "code": "Código de erro: {{code}}",
+      "attemptFailed": "A tentativa {{attempt}} falhou",
+      "retry": "Tentar de novo",
+      "practice": "Ir para o treino",
+      "practiceNote": "O treino solo ou contra robô funciona sem conexão",
+      "home": "Início"
+    },
+    "surrender": {
+      "chip": "Desistir",
+      "title": "Tem certeza de que quer desistir?",
+      "body": "A partida conta como derrota",
+      "bodyRating": "A partida conta como derrota · variação estimada de rating: {{delta}}",
+      "bodyNoLoss": {
+        "leftBeforeMoving": "A partida conta como derrota · seu rating não cai: você ainda não fez nenhuma jogada",
+        "leftNotBehind": "A partida conta como derrota · seu rating não cai: você não está atrás"
+      },
+      "bodyMany": "Você sai da partida, e as células que resolveu ficam com a sua cor.",
+      "bodyManyNoLoss": "Você sai da partida, e as células que resolveu ficam com a sua cor. Seu rating não cai contra quem ainda está na partida.",
+      "confirm": "Sim, desistir",
+      "cancel": "Cancelar",
+      "footnote": "A partida continua em segundo plano",
+      "dialog": "Confirmar desistência"
+    },
+    "lobby": {
+      "title": "Sala privada",
+      "subtitle_one": "{{type}} · {{players}} jogador",
+      "subtitle_many": "{{type}} · {{players}} de jogadores",
+      "subtitle_other": "{{type}} · {{players}} jogadores",
+      "codeTitle": "Código da sala",
+      "codeLabel": "Código da sala: {{spelled}}",
+      "codeHint": "Envie o código para quem vai jogar com você",
+      "share": "Compartilhar o código",
+      "copy": "Copiar",
+      "copied": "Código copiado",
+      "shareMessage": "Venha jogar Sudoku Fight comigo! Código da sala: {{code}}",
+      "playersTitle": "Jogadores na sala",
+      "you": "Eu",
+      "emptySeat": "Esperando um jogador…",
+      "seatMeLabel": "{{name}}, eu",
+      "seatEmptyLabel": "Lugar vazio, esperando um jogador",
+      "waiting_one": "Esperando mais {{count}} jogador",
+      "waiting_many": "Esperando mais {{count}} de jogadores",
+      "waiting_other": "Esperando mais {{count}} jogadores",
+      "starting": "Todo mundo chegou! A partida está começando…",
+      "hint": "A partida começa assim que todos os jogadores estiverem na sala",
+      "leave": "Sair da sala",
+      "joined": "{{name}} está na sala"
+    },
+    "connecting": {
+      "title": "Entrando na partida",
+      "board": "Carregando o tabuleiro…",
+      "step": {
+        "server": "Conectando ao servidor do jogo…",
+        "room": "Entrando na sala…",
+        "sync": "Sincronizando pontuações e cronômetros…"
+      },
+      "label": "Carregando a partida, etapa {{step}} de {{total}}",
+      "cancel": "Cancelar",
+      "tag": "Ranqueada · {{type}}",
+      "rating": "Rating: {{rating}}",
+      "ready": "Tudo pronto!",
+      "joining": "Conectando…",
+      "tipTitle": "Dica",
+      "tips": {
+        "score_one": "Quanto mais vazios a linha, a coluna e o quadrado, mais vale a jogada: até {{max}} ponto por célula.",
+        "score_many": "Quanto mais vazios a linha, a coluna e o quadrado, mais vale a jogada: até {{max}} de pontos por célula.",
+        "score_other": "Quanto mais vazios a linha, a coluna e o quadrado, mais vale a jogada: até {{max}} pontos por célula.",
+        "lastCell_one": "A última célula do tabuleiro sempre vale só {{points}} ponto: tudo em volta já está preenchido.",
+        "lastCell_many": "A última célula do tabuleiro sempre vale só {{points}} de pontos: tudo em volta já está preenchido.",
+        "lastCell_other": "A última célula do tabuleiro sempre vale só {{points}} pontos: tudo em volta já está preenchido.",
+        "mistakes": "Um erro tira exatamente o que o número certo valia naquela célula. Errar uma célula valiosa custa caro.",
+        "interference": "Cada interferência custa o dobro da anterior. Guarde para a hora certa."
+      }
+    }
+  },
+  "live": {
+    "correct": "Certo: {{digit}} em {{cell}}, {{points}}",
+    "wrong": "Errado: {{digit}} não cabe em {{cell}}, {{penalty}}",
+    "taken": "{{cell}} está ocupada",
+    "cooldown": "Você poderá escolher {{cell}} de novo daqui a pouco",
+    "expired": "Tempo esgotado, {{cell}} foi liberada",
+    "complete": "Tabuleiro completo!",
+    "oppCorrect": "{{name}} resolveu {{cell}}: {{digit}}, {{points}}",
+    "oppWrong": "{{name}} errou: {{digit}} não cabe em {{cell}}, {{penalty}}",
+    "leadMine_one": "Você está na frente por {{gap}} ponto",
+    "leadMine_many": "Você está na frente por {{gap}} de pontos",
+    "leadMine_other": "Você está na frente por {{gap}} pontos",
+    "leadTheirs_one": "{{name}} está na frente por {{gap}} ponto",
+    "leadTheirs_many": "{{name}} está na frente por {{gap}} de pontos",
+    "leadTheirs_other": "{{name}} está na frente por {{gap}} pontos",
+    "leadTie": "Pontuações empatadas",
+    "reaction": "{{name}} reagiu com {{emoji}}",
+    "oppSurrendered": "{{name}} desistiu e está fora, {{place}}º lugar",
+    "oppAbandoned": "{{name}} não voltou a tempo e está fora, {{place}}º lugar",
+    "hitOther": "{{from}} enviou {{kind}} para {{name}}",
+    "outMine": "Você está fora, em {{place}}º lugar. A partida segue até o fim",
+    "queued": "{{cell}}: {{digit}} aguardando a conexão",
+    "offlineLostTaken": "{{cell}} foi ocupada com você off-line · sem penalidade",
+    "offlineLost": "Sua jogada em {{cell}} não contou · sem penalidade"
+  },
+  "interference": {
+    "fireworks": "fogos de artifício",
+    "cats": "gatos",
+    "warp": "uma distorção",
+    "scramble": "números bagunçados",
+    "ink": "tinta",
+    "keypad": "um teclado bagunçado"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}} mandou fogos de artifício para você!",
+      "cats": "{{name}} mandou gatos para você!",
+      "warp": "{{name}} distorceu sua tela!",
+      "scramble": "{{name}} embaralhou seus números!",
+      "ink": "{{name}} jogou tinta em você!",
+      "keypad": "{{name}} embaralhou seu teclado!",
+      "generic": "{{name}} mandou uma interferência para você!"
+    },
+    "cost": "Custou {{cost}} pts · a partida continua",
+    "goesOn": "A partida continua · seu cronômetro está pausado",
+    "seconds_one": "{{count}} segundo restante",
+    "seconds_many": "{{count}} de segundos restantes",
+    "seconds_other": "{{count}} segundos restantes",
+    "banner": "{{title}} {{subtitle}}, {{time}}",
+    "started": "{{title}} Seu tabuleiro está escurecido, {{time}}. Seu cronômetro está pausado",
+    "withNote": "{{line}}. {{note}}",
+    "note": {
+      "scramble": "Os números que se embaralham não são de verdade",
+      "keypad": "As teclas trocam de lugar, e cada tecla digita o número que está nela"
+    },
+    "ended": "A interferência acabou, seu cronômetro voltou a correr",
+    "meow": "Miau!",
+    "mew": "Miu!"
+  },
+  "arsenal": {
+    "title": "Qual interferência?",
+    "target": "Alvo:",
+    "targetLabel": "Alvo: {{name}}",
+    "me": "Eu",
+    "routeLabel": "Minha interferência para {{name}}",
+    "scrim": "Fechar e voltar ao tabuleiro",
+    "price": "Preço",
+    "priceValue": "{{cost}} pts",
+    "nextPrice": "· Próxima: {{cost}}",
+    "unit": "pts",
+    "score": "Sua pontuação",
+    "costLabel_one": "Esta interferência custa {{cost}} ponto. Sua pontuação é {{score}}, {{after}} depois do lançamento. A próxima custa {{next}}",
+    "costLabel_many": "Esta interferência custa {{cost}} de pontos. Sua pontuação é {{score}}, {{after}} depois do lançamento. A próxima custa {{next}}",
+    "costLabel_other": "Esta interferência custa {{cost}} pontos. Sua pontuação é {{score}}, {{after}} depois do lançamento. A próxima custa {{next}}",
+    "costLabelShort": "Esta interferência custa $t(game:arsenal.costPoints, {\"count\": {{cost}} }). Sua pontuação é {{score}}, $t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })",
+    "costPoints_one": "{{count}} ponto",
+    "costPoints_many": "{{count}} de pontos",
+    "costPoints_other": "{{count}} pontos",
+    "shortPoints_one": "falta {{missing}} ponto",
+    "shortPoints_many": "faltam {{missing}} de pontos",
+    "shortPoints_other": "faltam {{missing}} pontos",
+    "info_one": "Cada uma dura {{seconds}} segundo · toque para lançar",
+    "info_many": "Cada uma dura {{seconds}} de segundos · toque para lançar",
+    "info_other": "Cada uma dura {{seconds}} segundos · toque para lançar",
+    "cost": "{{cost}} pts",
+    "missing": "Faltam {{count}}",
+    "locked": "Fechada",
+    "level": "Nível {{level}}",
+    "busy": "Sob interferência",
+    "unavailable": "Indisponível",
+    "routeArrow": "→",
+    "sent": "{{kind}} → {{name}}",
+    "notEnough": "Pontos insuficientes para a próxima interferência ({{cost}} pts)",
+    "busyToast_one": "{{name}} já está sob interferência. Tente de novo em {{count}} segundo",
+    "busyToast_many": "{{name}} já está sob interferência. Tente de novo em {{count}} de segundos",
+    "busyToast_other": "{{name}} já está sob interferência. Tente de novo em {{count}} segundos",
+    "notNow": "Você não pode interferir agora",
+    "refused": "A interferência não foi enviada e você não perdeu pontos",
+    "label": "{{kind}} · {{cost}} pts · toque para lançar em {{name}}",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kindGeneric": "Interferência",
+    "kind": {
+      "fireworks": "Fogos de artifício",
+      "cats": "Gatos",
+      "warp": "Distorção",
+      "scramble": "Números bagunçados",
+      "ink": "Tinta",
+      "keypad": "Teclado bagunçado"
+    },
+    "reason": {
+      "points": "Faltando {{count}} pts para esta interferência",
+      "busy": "{{name}} já está sob interferência, tente de novo daqui a pouco",
+      "notRunning": "Você não pode lançar uma interferência agora",
+      "locked": "Esta interferência ainda está bloqueada",
+      "level": "Abre no nível {{level}}",
+      "out": "{{name}} está fora da partida",
+      "disconnected": "{{name}} está sem conexão agora"
+    },
+    "live": {
+      "launched": "Você lançou {{kind}} em {{name}}"
+    }
+  },
+  "reactions": {
+    "picker": "Reações",
+    "item": "Reação: {{name}}",
+    "itemOther": "Reação {{emoji}}",
+    "name": {
+      "laugh": "risada",
+      "scream": "grito",
+      "cool": "maneiro",
+      "facepalm": "mão na testa",
+      "fire": "fogo",
+      "eyes": "olhos"
+    },
+    "coolingDown": "Você pode enviar outra reação daqui a pouco",
+    "close": "Fechar reações",
+    "menu": {
+      "open": "Menu do cartão de {{name}}",
+      "openHint": "Lá você pode silenciar as reações de {{name}}",
+      "openHintMuted": "As reações de {{name}} estão silenciadas. Lá você pode reativá-las",
+      "label": "Menu de {{name}}",
+      "mute": "Silenciar reações",
+      "unmute": "Reativar reações",
+      "muteLabel": "Silenciar as reações de {{name}}",
+      "unmuteLabel": "Reativar as reações de {{name}}",
+      "muted": "As reações de {{name}} estão silenciadas",
+      "unmuted": "As reações de {{name}} voltaram",
+      "close": "Fechar o menu"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "Tabuleiro completo!",
+      "ended": "Treino encerrado",
+      "interrupted": "Treino interrompido",
+      "surrendered": "Você desistiu",
+      "abandoned": "Você saiu da partida",
+      "opponentSurrendered": "Seu adversário desistiu",
+      "opponentLeft": "Seu adversário saiu"
+    },
+    "outcome": {
+      "win": "Vitória!",
+      "loss": "Derrota",
+      "tie": "Empate"
+    },
+    "abandonWin": "Vitória por abandono",
+    "placeTitle": "{{place}}º lugar!",
+    "placeOf": "{{place}}º lugar de {{total}}",
+    "outOf": "entre {{players}}",
+    "header": "{{title}} · {{type}} · {{players}}",
+    "end": {
+      "label": "Como terminou",
+      "completed": "Você preencheu o tabuleiro inteiro",
+      "full": "O tabuleiro foi preenchido",
+      "ended": "Você encerrou o treino antes de o tabuleiro ficar completo",
+      "interrupted": "O treino parou no meio, por exemplo quando o app foi fechado",
+      "line": "{{label}}: {{reason}}",
+      "surrendered": "Você desistiu antes de o tabuleiro ficar completo",
+      "abandoned": "Você não voltou a tempo",
+      "opponentSurrendered": "Seu adversário desistiu antes de o tabuleiro ficar completo",
+      "opponentLeft": "Seu adversário perdeu a conexão e não voltou a tempo"
+    },
+    "score": "Pontuação final",
+    "points": "pts",
+    "scoreLabel_one": "Pontuação final: {{score}}",
+    "scoreLabel_many": "Pontuação final: {{score}} de pontos",
+    "scoreLabel_other": "Pontuação final: {{score}} pontos",
+    "opponents": {
+      "title": "Adversário",
+      "label_one": "{{name}} · pontuação: {{score}} · {{mistakes}}",
+      "label_many": "{{name}} · {{score}} de pontos · {{mistakes}}",
+      "label_other": "{{name}} · {{score}} pontos · {{mistakes}}",
+      "left": "Saiu da partida"
+    },
+    "best": {
+      "title": "Jogada da partida",
+      "move": "{{cell}} → {{digit}}",
+      "label_one": "Jogada da partida: {{points}} ponto, {{digit}} em {{cell}}",
+      "label_many": "Jogada da partida: {{points}} de pontos, {{digit}} em {{cell}}",
+      "label_other": "Jogada da partida: {{points}} pontos, {{digit}} em {{cell}}",
+      "formula": "Como pontuou",
+      "formulaLabel": "Como pontuou: {{line}}",
+      "none": "Nenhuma jogada certa neste treino"
+    },
+    "stats": {
+      "time": "Tempo de partida",
+      "mistakes": "Erros",
+      "correct": "Jogadas certas",
+      "think": "Tempo por jogada",
+      "seconds": "{{value}} s",
+      "none": "—",
+      "label": "{{label}}: {{value}}"
+    },
+    "awards": {
+      "title": "Prêmios da partida",
+      "bestMove": "Melhor jogada",
+      "fewestMistakes": "Menos erros",
+      "fastest": "Mais veloz",
+      "comeback": "Virada",
+      "mostPoints": "Mais pontos",
+      "label": "{{title}}: {{who}}, {{value}}",
+      "value": {
+        "bestMove": "{{value}} pts",
+        "fewestMistakes": "Erros: {{value}}",
+        "fastest": "{{value}} s por jogada",
+        "comeback": "após estar {{value}} pts atrás",
+        "mostPoints": "{{value}} pts"
+      }
+    },
+    "unrated": "Treino: seu rating não muda",
+    "ratingSoon": "Sala privada: o rating ainda não muda",
+    "actions": {
+      "home": "Início",
+      "newGame": "Nova partida"
+    },
+    "loading": "Carregando o resultado…",
+    "missing": "Não encontramos este treino",
+    "unavailable": "Não conseguimos ler os treinos salvos",
+    "notSaved": "Este treino não foi salvo no celular"
+  }
+}

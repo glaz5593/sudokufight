@@ -1,0 +1,454 @@
+{
+  "title": "Solotraining",
+  "titleBot": "Training gegen Bot",
+  "titleRanked": "Ranglistenspiel",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "Ich",
+  "opponent": "Gegner",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "Level {{level}}, {{title}}"
+  },
+  "listSep": ", ",
+  "type": {
+    "fast": "Schnell",
+    "normal": "Standard",
+    "hard": "Schwer"
+  },
+  "hud": {
+    "time": "Zeit",
+    "best": "Bester Zug",
+    "none": "—",
+    "timeLabel": "Zeit {{time}}",
+    "bestLabel_one": "Bester Zug: {{points}} Punkt in {{cell}}",
+    "bestLabel_other": "Bester Zug: {{points}} Punkte in {{cell}}",
+    "noBestLabel": "Noch kein bester Zug"
+  },
+  "progress": {
+    "label": "Fortschritt",
+    "value": "{{filled}}/{{total}}",
+    "a11y_one": "{{filled}} von 1 Feld ausgefüllt",
+    "a11y_other": "{{filled}} von {{total}} Feldern ausgefüllt"
+  },
+  "end": {
+    "button": "Training beenden",
+    "title": "Training beenden?",
+    "body": "Dein Ergebnis wird auf diesem Handy gespeichert. Deine Wertung ändert sich nicht.",
+    "confirm": "Ja, beenden",
+    "footnote": "Das Spiel läuft im Hintergrund weiter",
+    "dialog": "Beenden des Trainings bestätigen"
+  },
+  "out": {
+    "surrendered": "Du hast aufgegeben · Platz {{place}}",
+    "abandoned": "Du bist raus · Platz {{place}}",
+    "goesOn": "Das Spiel geht bis zum Ende weiter",
+    "label": "{{title}}. {{goesOn}}",
+    "home": "Start",
+    "homeHint": "Das Spiel geht ohne dich weiter. Dein Platz steht schon fest"
+  },
+  "connection": {
+    "sep": ". ",
+    "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "lead": {
+      "mine": "Du führst",
+      "theirs": "{{name}} führt",
+      "theirs_female": "{{name}} führt",
+      "tie": "Gleichstand"
+    },
+    "frozen": {
+      "title": "Spiel eingefroren",
+      "timers": "Alle Timer gestoppt",
+      "label": "Spiel eingefroren, alle Timer gestoppt"
+    },
+    "opponent": {
+      "lost": "{{name}} hat die Verbindung verloren",
+      "lost_female": "{{name}} hat die Verbindung verloren",
+      "title": "Gegner verbindet sich neu…",
+      "timeUp": "Zeit abgelaufen",
+      "notBack": "{{name}} ist nicht zurückgekommen",
+      "notBack_female": "{{name}} ist nicht zurückgekommen",
+      "seconds": "Sekunden",
+      "ring": "Verbindet neu… {{seconds}}",
+      "saved": "Das Spiel ist auf dem Server gespeichert",
+      "savedSub": "Spielfeld und Punkte bleiben erhalten",
+      "winLabel": "Sieg durch Spielflucht",
+      "hint": "Ist {{name}} nicht rechtzeitig zurück, gewinnst du durch Spielflucht",
+      "hint_female": "Ist {{name}} nicht rechtzeitig zurück, gewinnst du durch Spielflucht",
+      "checking": "Rückfrage beim Server…",
+      "timeLeft": "Zeit für die Rückkehr: {{time}}",
+      "announce": "{{name}} hat die Verbindung verloren. Das Spiel ist eingefroren, bis er zurück ist",
+      "announce_female": "{{name}} hat die Verbindung verloren. Das Spiel ist eingefroren, bis sie zurück ist",
+      "announceExpired": "Zeit abgelaufen. Rückfrage beim Server"
+    },
+    "self": {
+      "lostTitle": "Du hast die Verbindung verloren",
+      "lostSub": "Verbinde neu…",
+      "attempt": "Versuch",
+      "attemptLabel": "Versuch {{attempt}}",
+      "backTitle": "Du bist zurück im Spiel",
+      "syncingSub": "Wird synchronisiert…",
+      "syncedSub": "Alles synchron · das Spiel geht weiter",
+      "lockedTitle": "Das Spielfeld ist gesperrt, bis du zurück bist",
+      "lockedSub": "Sobald die Verbindung zurück ist, synchronisieren wir:",
+      "syncingTitle": "Wird synchronisiert…",
+      "syncedTitle": "Alles synchron",
+      "savedSub": "Das Spiel ist auf dem Server gespeichert und geht an derselben Stelle weiter",
+      "item": {
+        "board": "Spielfeld",
+        "score": "Punkte",
+        "locks": "Sperren",
+        "turn": "Zug",
+        "timers": "Timer"
+      },
+      "timeLeft_one": "Du hast {{seconds}} Sekunde, um zurückzukommen",
+      "timeLeft_other": "Du hast {{seconds}} Sekunden, um zurückzukommen",
+      "timeSub": "Bevor es als Spielflucht zählt",
+      "backInTime": "Rechtzeitig zurück",
+      "backInTimeSub": "Die Timer laufen ab derselben Sekunde weiter",
+      "announceLost": "Du hast die Verbindung verloren. Verbinde neu",
+      "announceAttempt": "Du hast die Verbindung verloren. Verbinde neu, Versuch {{attempt}}",
+      "announceHurry_one": "In 1 Sekunde zählt es als Spielflucht",
+      "announceHurry_other": "In {{seconds}} Sekunden zählt es als Spielflucht",
+      "announceSyncing": "Du bist zurück im Spiel. Wird synchronisiert",
+      "announceSynced": "Du bist zurück im Spiel. Spielfeld und Punkte sind synchron"
+    },
+    "offline": {
+      "announce": "Keine Verbindung. Spiel weiter; deine Züge werden gesendet, sobald sie zurück ist"
+    },
+    "left": {
+      "timeUp_one": "Zeit abgelaufen · 1 Sekunde ohne Verbindung",
+      "timeUp_other": "Zeit abgelaufen · {{seconds}} Sekunden ohne Verbindung",
+      "title": "{{name}} hat das Spiel verlassen",
+      "title_female": "{{name}} hat das Spiel verlassen",
+      "win": "Du gewinnst durch Spielflucht",
+      "rating": "Wertung",
+      "ratingLabel": "Wertungsänderung: {{delta}}, {{type}}",
+      "ratingUnchanged": {
+        "opponentLeftBeforeMyMove": "Wertung unverändert: Der Gegner ist vor deinem ersten Zug gegangen",
+        "opponentLeftAhead": "Wertung unverändert: Du lagst hinten, als der Gegner gegangen ist"
+      },
+      "toResults": "Zu den Ergebnissen",
+      "home": "Start"
+    },
+    "error": {
+      "title": "Verbindungsfehler",
+      "offlineTitle": "Keine Internetverbindung",
+      "body": {
+        "offline": "Dein Handy hat gerade kein Netz. Verbinde dich mit dem Internet und versuch es noch mal.",
+        "unreachable": "Wir konnten den Spielserver nicht erreichen. Prüf deine Verbindung und versuch es noch mal.",
+        "lost": "Die Verbindung zum Spielserver ist abgebrochen, und wir konnten sie nicht wiederherstellen.",
+        "refused": "Der Server hat uns nicht in den Raum gelassen."
+      },
+      "refusal": {
+        "notFound": "Es gibt keinen Raum mit diesem Code. Prüf den Code und versuch es noch mal.",
+        "full": "Dieser Raum ist schon voll.",
+        "gameStarted": "Das Spiel in diesem Raum hat schon begonnen.",
+        "alreadyInRoom": "Du bist schon in diesem Raum, auf einem anderen Gerät.",
+        "unauthenticated": "Melde dich bei deinem Konto an, um gegen andere zu spielen.",
+        "suspended": "Dein Konto ist gesperrt, deshalb gibt es vorerst keine Ranglistenspiele. Training allein oder gegen einen Bot geht weiterhin.",
+        "codeTaken": "Ein Raum mit diesem Code existiert schon. Versuch einen anderen Code.",
+        "badOptions": "Die Einstellungen des Raums sind ungültig.",
+        "kicked": "Der Gastgeber hat dich aus dem Raum entfernt.",
+        "roomClosed": "Der Raum wurde geschlossen."
+      },
+      "code": "Fehlercode: {{code}}",
+      "attemptFailed": "Versuch {{attempt}} fehlgeschlagen",
+      "retry": "Erneut versuchen",
+      "practice": "Zum Training",
+      "practiceNote": "Training allein oder gegen einen Bot geht ohne Verbindung",
+      "home": "Start"
+    },
+    "surrender": {
+      "chip": "Aufgeben",
+      "title": "Willst du wirklich aufgeben?",
+      "body": "Das Spiel zählt als Niederlage",
+      "bodyRating": "Das Spiel zählt als Niederlage · geschätzte Wertungsänderung {{delta}}",
+      "bodyNoLoss": {
+        "leftBeforeMoving": "Das Spiel zählt als Niederlage · deine Wertung sinkt nicht: Du hast noch keinen Zug gemacht",
+        "leftNotBehind": "Das Spiel zählt als Niederlage · deine Wertung sinkt nicht: Du liegst nicht hinten"
+      },
+      "bodyMany": "Du verlässt das Spiel, und die Felder, die du gelöst hast, behalten deine Farbe.",
+      "bodyManyNoLoss": "Du verlässt das Spiel, und die Felder, die du gelöst hast, behalten deine Farbe. Gegen alle, die noch im Spiel sind, sinkt deine Wertung nicht.",
+      "confirm": "Ja, aufgeben",
+      "cancel": "Abbrechen",
+      "footnote": "Das Spiel läuft im Hintergrund weiter",
+      "dialog": "Aufgeben bestätigen"
+    },
+    "lobby": {
+      "title": "Privater Raum",
+      "subtitle_one": "{{type}} · 1 Spieler",
+      "subtitle_other": "{{type}} · {{players}} Spieler",
+      "codeTitle": "Raumcode",
+      "codeLabel": "Raumcode: {{spelled}}",
+      "codeHint": "Schick den Code an alle, die mit dir spielen",
+      "share": "Code teilen",
+      "copy": "Kopieren",
+      "copied": "Code kopiert",
+      "shareMessage": "Komm, spiel mit mir Sudoku Fight! Raumcode: {{code}}",
+      "playersTitle": "Spieler im Raum",
+      "you": "Ich",
+      "emptySeat": "Warte auf Spieler…",
+      "seatMeLabel": "{{name}}, ich",
+      "seatEmptyLabel": "Freier Platz, warte auf Spieler",
+      "waiting_one": "Warte auf einen weiteren Spieler",
+      "waiting_other": "Warte auf {{count}} weitere Spieler",
+      "starting": "Alle sind da! Das Spiel beginnt…",
+      "hint": "Das Spiel beginnt, sobald alle Spieler im Raum sind",
+      "leave": "Raum verlassen",
+      "joined": "{{name}} ist im Raum"
+    },
+    "connecting": {
+      "title": "Betrete das Spiel",
+      "board": "Spielfeld wird geladen…",
+      "step": {
+        "server": "Verbinde mit dem Spielserver…",
+        "room": "Betrete den Raum…",
+        "sync": "Punkte und Timer werden synchronisiert…"
+      },
+      "label": "Spiel wird geladen, Schritt {{step}} von {{total}}",
+      "cancel": "Abbrechen",
+      "tag": "Rangliste · {{type}}",
+      "rating": "Wertung {{rating}}",
+      "ready": "Bereit!",
+      "joining": "Verbinde…",
+      "tipTitle": "Tipp",
+      "tips": {
+        "score_one": "Je leerer Zeile, Spalte und Block, desto mehr ist ein Zug wert: bis zu {{max}} Punkt pro Feld.",
+        "score_other": "Je leerer Zeile, Spalte und Block, desto mehr ist ein Zug wert: bis zu {{max}} Punkte pro Feld.",
+        "lastCell_one": "Das letzte Feld auf dem Spielfeld ist immer nur {{points}} Punkt wert: Alles drumherum ist voll.",
+        "lastCell_other": "Das letzte Feld auf dem Spielfeld ist immer nur {{points}} Punkte wert: Alles drumherum ist voll.",
+        "mistakes": "Ein Fehler kostet genau so viel, wie die richtige Ziffer in diesem Feld wert war. Ein wertvolles Feld kostet viel, wenn du danebenliegst.",
+        "interference": "Jede Störung kostet doppelt so viel wie die vorige. Heb sie dir für den richtigen Moment auf."
+      }
+    }
+  },
+  "live": {
+    "correct": "Richtig: {{digit}} in {{cell}}, {{points}}",
+    "wrong": "Falsch: {{digit}} passt nicht in {{cell}}, {{penalty}}",
+    "taken": "{{cell}} ist belegt",
+    "cooldown": "Du kannst {{cell}} gleich wieder wählen",
+    "expired": "Zeit abgelaufen, {{cell}} wurde freigegeben",
+    "complete": "Spielfeld komplett!",
+    "oppCorrect": "{{name}} hat {{cell}} gelöst: {{digit}}, {{points}}",
+    "oppWrong": "{{name}} lag daneben: {{digit}} passt nicht in {{cell}}, {{penalty}}",
+    "leadMine_one": "Du führst mit einem Punkt",
+    "leadMine_other": "Du führst mit {{gap}} Punkten",
+    "leadTheirs_one": "{{name}} führt mit einem Punkt",
+    "leadTheirs_other": "{{name}} führt mit {{gap}} Punkten",
+    "leadTie": "Punktgleichstand",
+    "reaction": "{{name}} hat mit {{emoji}} reagiert",
+    "oppSurrendered": "{{name}} hat aufgegeben und ist raus, Platz {{place}}",
+    "oppAbandoned": "{{name}} ist nicht rechtzeitig zurückgekommen und ist raus, Platz {{place}}",
+    "hitOther": "{{from}} hat {{kind}} an {{name}} geschickt",
+    "outMine": "Du bist raus, auf Platz {{place}}. Das Spiel geht bis zum Ende weiter",
+    "queued": "{{cell}}: {{digit}} wartet auf die Verbindung",
+    "offlineLostTaken": "{{cell}} wurde belegt, während du offline warst · kein Abzug",
+    "offlineLost": "Dein Zug in {{cell}} hat nicht gezählt · kein Abzug"
+  },
+  "interference": {
+    "fireworks": "ein Feuerwerk",
+    "cats": "Katzen",
+    "warp": "eine Verzerrung",
+    "scramble": "einen Ziffernsalat",
+    "ink": "Tinte",
+    "keypad": "einen Tastensalat"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}} hat dir ein Feuerwerk geschickt!",
+      "cats": "{{name}} hat dir Katzen geschickt!",
+      "warp": "{{name}} hat deinen Bildschirm verzerrt!",
+      "scramble": "{{name}} hat deine Ziffern durcheinandergebracht!",
+      "ink": "{{name}} hat dich mit Tinte bespritzt!",
+      "keypad": "{{name}} hat dein Tastenfeld durcheinandergebracht!",
+      "generic": "{{name}} hat dir eine Störung geschickt!"
+    },
+    "cost": "Hat {{cost}} Pkt. gekostet · das Spiel geht weiter",
+    "goesOn": "Das Spiel geht weiter · dein Timer ist pausiert",
+    "seconds_one": "Noch 1 Sekunde",
+    "seconds_other": "Noch {{count}} Sekunden",
+    "banner": "{{title}} {{subtitle}}, {{time}}",
+    "started": "{{title}} Dein Spielfeld ist abgedunkelt, {{time}}. Dein Timer ist pausiert",
+    "withNote": "{{line}}. {{note}}",
+    "note": {
+      "scramble": "Die wirbelnden Ziffern sind nicht echt",
+      "keypad": "Die Tasten tauschen die Plätze, und jede Taste setzt die Ziffer, die auf ihr steht"
+    },
+    "ended": "Die Störung ist vorbei, dein Timer läuft wieder",
+    "meow": "Miau!",
+    "mew": "Maunz!"
+  },
+  "arsenal": {
+    "title": "Wähle eine Störung",
+    "target": "Ziel:",
+    "targetLabel": "Ziel: {{name}}",
+    "me": "Ich",
+    "routeLabel": "Störung von mir an {{name}}",
+    "scrim": "Schließen und zurück zum Spielfeld",
+    "price": "Preis",
+    "priceValue": "{{cost}} Pkt.",
+    "nextPrice": "· Nächste: {{cost}}",
+    "unit": "Pkt.",
+    "score": "Deine Punkte",
+    "costLabel_one": "Diese Störung kostet 1 Punkt. Du hast {{score}}, nach dem Start {{after}}. Die nächste kostet {{next}}",
+    "costLabel_other": "Diese Störung kostet {{cost}} Punkte. Du hast {{score}}, nach dem Start {{after}}. Die nächste kostet {{next}}",
+    "costLabelShort": "Diese Störung kostet $t(game:arsenal.costPoints, {\"count\": {{cost}} }). Du hast {{score}}, $t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })",
+    "costPoints_one": "{{count}} Punkt",
+    "costPoints_other": "{{count}} Punkte",
+    "shortPoints_one": "{{missing}} Punkt zu wenig",
+    "shortPoints_other": "{{missing}} Punkte zu wenig",
+    "info_one": "Jede Störung dauert 1 Sekunde · Tippen startet",
+    "info_other": "Jede Störung dauert {{seconds}} Sekunden · Tippen startet",
+    "cost": "{{cost}} Pkt.",
+    "missing": "{{count}} fehlen",
+    "locked": "Gesperrt",
+    "level": "Level {{level}}",
+    "busy": "Wird gestört",
+    "unavailable": "Nicht jetzt",
+    "routeArrow": "→",
+    "sent": "{{kind}} → {{name}}",
+    "notEnough": "Nicht genug Punkte für die nächste Störung ({{cost}} Pkt.)",
+    "busyToast_one": "{{name}} wird schon gestört. Versuch es in 1 Sekunde noch mal",
+    "busyToast_other": "{{name}} wird schon gestört. Versuch es in {{count}} Sekunden noch mal",
+    "notNow": "Du kannst gerade nicht stören",
+    "refused": "Störung nicht gesendet, keine Punkte abgezogen",
+    "label": "{{kind}} · {{cost}} Pkt. · tippen, um {{name}} zu stören",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kindGeneric": "Störung",
+    "kind": {
+      "fireworks": "Feuerwerk",
+      "cats": "Katzen",
+      "warp": "Verzerrung",
+      "scramble": "Ziffernsalat",
+      "ink": "Tinte",
+      "keypad": "Tastensalat"
+    },
+    "reason": {
+      "points": "{{count}} Pkt. zu wenig für diese Störung",
+      "busy": "{{name}} wird schon gestört, versuch es gleich noch mal",
+      "notRunning": "Du kannst gerade keine Störung starten",
+      "locked": "Diese Störung ist noch gesperrt",
+      "level": "Ab Level {{level}}",
+      "out": "{{name}} ist aus dem Spiel",
+      "disconnected": "{{name}} ist gerade nicht verbunden"
+    },
+    "live": {
+      "launched": "Du hast {{kind}} auf {{name}} losgelassen"
+    }
+  },
+  "reactions": {
+    "picker": "Reaktionen",
+    "item": "Reaktion: {{name}}",
+    "itemOther": "Reaktion {{emoji}}",
+    "name": {
+      "laugh": "Lachen",
+      "scream": "Schrei",
+      "cool": "Lässig",
+      "facepalm": "Stirnklatscher",
+      "fire": "Feuer",
+      "eyes": "Augen"
+    },
+    "coolingDown": "Du kannst gleich wieder eine Reaktion senden",
+    "close": "Reaktionen schließen",
+    "menu": {
+      "open": "Kartenmenü von {{name}}",
+      "openHint": "Dort kannst du die Reaktionen von {{name}} stummschalten",
+      "openHintMuted": "Die Reaktionen von {{name}} sind stummgeschaltet. Dort kannst du sie wieder einschalten",
+      "label": "Menü von {{name}}",
+      "mute": "Reaktionen stummschalten",
+      "unmute": "Reaktionen einschalten",
+      "muteLabel": "Reaktionen von {{name}} stummschalten",
+      "unmuteLabel": "Reaktionen von {{name}} einschalten",
+      "muted": "Die Reaktionen von {{name}} sind stummgeschaltet",
+      "unmuted": "Die Reaktionen von {{name}} sind wieder an",
+      "close": "Menü schließen"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "Spielfeld komplett!",
+      "ended": "Training beendet",
+      "interrupted": "Training unterbrochen",
+      "surrendered": "Du hast aufgegeben",
+      "abandoned": "Du hast das Spiel verlassen",
+      "opponentSurrendered": "Dein Gegner hat aufgegeben",
+      "opponentLeft": "Dein Gegner ist gegangen"
+    },
+    "outcome": {
+      "win": "Sieg!",
+      "loss": "Niederlage",
+      "tie": "Unentschieden"
+    },
+    "abandonWin": "Sieg durch Spielflucht",
+    "placeTitle": "Platz {{place}}!",
+    "placeOf": "Platz {{place}} von {{total}}",
+    "outOf": "von {{players}}",
+    "header": "{{title}} · {{type}} · {{players}}",
+    "end": {
+      "label": "Wie es endete",
+      "completed": "Du hast das ganze Spielfeld ausgefüllt",
+      "full": "Das Spielfeld wurde voll",
+      "ended": "Du hast das Training beendet, bevor das Spielfeld voll war",
+      "interrupted": "Das Training wurde mittendrin unterbrochen, zum Beispiel weil die App geschlossen wurde",
+      "line": "{{label}}: {{reason}}",
+      "surrendered": "Du hast aufgegeben, bevor das Spielfeld voll war",
+      "abandoned": "Du bist nicht rechtzeitig zurückgekommen",
+      "opponentSurrendered": "Dein Gegner hat aufgegeben, bevor das Spielfeld voll war",
+      "opponentLeft": "Dein Gegner hat die Verbindung verloren und ist nicht rechtzeitig zurückgekommen"
+    },
+    "score": "Endpunktzahl",
+    "points": "Pkt.",
+    "scoreLabel_one": "Endpunktzahl: {{score}} Punkt",
+    "scoreLabel_other": "Endpunktzahl: {{score}} Punkte",
+    "opponents": {
+      "title": "Gegner",
+      "label_one": "{{name}} · {{score}} Punkt · {{mistakes}}",
+      "label_other": "{{name}} · {{score}} Punkte · {{mistakes}}",
+      "left": "Ausgestiegen"
+    },
+    "best": {
+      "title": "Zug des Spiels",
+      "move": "{{cell}} → {{digit}}",
+      "label_one": "Zug des Spiels: {{points}} Punkt, {{digit}} in {{cell}}",
+      "label_other": "Zug des Spiels: {{points}} Punkte, {{digit}} in {{cell}}",
+      "formula": "So wurde gezählt",
+      "formulaLabel": "So wurde gezählt: {{line}}",
+      "none": "Kein richtiger Zug in diesem Training"
+    },
+    "stats": {
+      "time": "Spielzeit",
+      "mistakes": "Fehler",
+      "correct": "Richtige Züge",
+      "think": "Ø Denkzeit",
+      "seconds": "{{value}} Sek.",
+      "none": "—",
+      "label": "{{label}}: {{value}}"
+    },
+    "awards": {
+      "title": "Auszeichnungen",
+      "bestMove": "Bester Zug",
+      "fewestMistakes": "Wenigste Fehler",
+      "fastest": "Am schnellsten",
+      "comeback": "Aufholjagd",
+      "mostPoints": "Meiste Punkte",
+      "label": "{{title}}: {{who}}, {{value}}",
+      "value": {
+        "bestMove": "{{value}} Pkt.",
+        "fewestMistakes": "Fehler: {{value}}",
+        "fastest": "{{value}} Sek. pro Zug",
+        "comeback": "nach {{value}} Pkt. Rückstand",
+        "mostPoints": "{{value}} Pkt."
+      }
+    },
+    "unrated": "Training: Deine Wertung ändert sich nicht",
+    "ratingSoon": "Privater Raum: Wertungen ändern sich noch nicht",
+    "actions": {
+      "home": "Start",
+      "newGame": "Neues Spiel"
+    },
+    "loading": "Ergebnis wird geladen…",
+    "missing": "Wir haben dieses Training nicht gefunden",
+    "unavailable": "Wir konnten die gespeicherten Trainings nicht lesen",
+    "notSaved": "Dieses Training wurde nicht auf dem Handy gespeichert"
+  }
+}

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '../../../components/Icon';
+import { Text } from '../../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { NetMetricsPanel, type NetMetricsSource } from './NetMetricsPanel';
 

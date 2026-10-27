@@ -4,6 +4,7 @@
   "listSep": ", ",
   "ellipsis": "…",
   "unknownName": "Player",
+  "temporaryName": "Player{{digits}}",
   "bot": "Bot",
   "vs": "VS",
   "seconds_one": "1 second",
@@ -102,8 +103,10 @@
   },
   "lead": {
     "tie": "Tie",
-    "label": "{{name}} leads by {{gap}} points",
-    "label_female": "{{name}} leads by {{gap}} points",
+    "label_one": "{{name}} leads by {{gap}} point",
+    "label_other": "{{name}} leads by {{gap}} points",
+    "label_female_one": "{{name}} leads by {{gap}} point",
+    "label_female_other": "{{name}} leads by {{gap}} points",
     "tieLabel": "Scores are tied"
   },
   "lock": {

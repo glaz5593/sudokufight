@@ -1,8 +1,10 @@
 import type { LeaderboardEntry } from '@sudoku-fight/protocol';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar, Flag, LeagueBadge, paletteAt, Rating, SeatGlyph } from '../../components/player';
+import { shownName } from '../../components/player/temporaryName';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { entryLabel, rankText, type ProgressT } from './leaderboardModel';
 
@@ -67,7 +69,7 @@ export function Podium({
                 style={[text('label'), mine ? styles.me : styles.strong, styles.shrink]}
                 numberOfLines={1}
               >
-                {entry.displayName}
+                {shownName(entry.displayName, t)}
               </Text>
               <Flag country={entry.country} size="compact" decorative />
             </View>
@@ -129,7 +131,7 @@ export function LeaderboardRow({
             style={[text('playerName'), mine ? styles.me : styles.strong, styles.shrink]}
             numberOfLines={1}
           >
-            {entry.displayName}
+            {shownName(entry.displayName, t)}
           </Text>
           <Flag country={entry.country} size="compact" decorative />
         </View>

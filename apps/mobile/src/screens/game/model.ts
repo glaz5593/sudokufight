@@ -9,6 +9,7 @@ import {
 } from '@sudoku-fight/engine';
 
 import { compactCardGap, compactCardWidth, type LeadModel } from '../../components/player';
+import { DEFAULT_DECIMAL } from '../../components/player/format';
 import { gameEndConfig } from '../../config/gameEnd';
 import type { FeedbackCue } from '../../services/feedback';
 import { motion } from '../../theme/motion';
@@ -30,8 +31,9 @@ export function formatClock(ms: number): string {
   return h > 0 ? `${h}:${pad2(m)}:${pad2(s)}` : `${m}:${pad2(s)}`;
 }
 
-/** A think time in seconds with one decimal: 5140 ms → "5.1". */
-export const formatSeconds = (ms: number): string => (Math.max(0, ms) / 1000).toFixed(1);
+/** A think time in seconds with one decimal: 5140 ms → "5.1" ("5,1" with the German separator, D108). */
+export const formatSeconds = (ms: number, decimal: string = DEFAULT_DECIMAL): string =>
+  (Math.max(0, ms) / 1000).toFixed(1).replace('.', decimal);
 
 /** What the solo HUD shows besides the score (Game-Solo: time, best move, board progress). */
 export interface SoloStats {

@@ -1,0 +1,115 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Spieler",
+  "temporaryName": "Spieler{{digits}}",
+  "bot": "Bot",
+  "vs": "VS",
+  "seconds_one": "1 Sekunde",
+  "seconds_other": "{{count}} Sekunden",
+  "points_one": "{{score}} Punkt",
+  "points_other": "{{score}} Punkte",
+  "place": "Platz {{place}}",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "Online",
+    "online_female": "Online",
+    "reconnecting": "Verbindet neu",
+    "reconnecting_female": "Verbindet neu",
+    "unstable": "Keine Verbindung",
+    "unstable_female": "Keine Verbindung",
+    "left": "Ausgestiegen",
+    "left_female": "Ausgestiegen"
+  },
+  "result": {
+    "winShort": "S",
+    "lossShort": "N",
+    "drawShort": "U"
+  },
+  "flag": {
+    "label": "Land: {{country}}"
+  },
+  "rating": {
+    "label": "Wertung {{value}}",
+    "labelWithKey": "{{key}}-Wertung {{value}}",
+    "provisional": "Vorläufig",
+    "provisionalLabel": "{{label}}, vorläufig"
+  },
+  "league": {
+    "bronze": "Bronze",
+    "silver": "Silber",
+    "gold": "Gold",
+    "diamond": "Diamant",
+    "legend": "Legende",
+    "name": "{{league}}-Liga",
+    "level": "Level {{level}}",
+    "levelAfter": "· Level {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "Keine Fehler",
+    "short_one": "{{count}} Fehler",
+    "short_other": "{{count}} Fehler",
+    "long_zero": "Keine Fehler",
+    "long_one": "Ein Fehler",
+    "long_other": "{{count}} Fehler",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Wählt",
+    "locking_female": "Wählt",
+    "turn": "Am Zug",
+    "turn_female": "Am Zug",
+    "paused": "Pausiert",
+    "thinking": "Überlegt",
+    "thinking_female": "Überlegt",
+    "reconnecting": "Verbindet neu",
+    "reconnecting_female": "Verbindet neu",
+    "left": "Ausgestiegen",
+    "left_female": "Ausgestiegen",
+    "surrendered": "Aufgegeben",
+    "surrendered_female": "Aufgegeben",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Wird gestört, {{time}}",
+    "target": "Ziel",
+    "targetHint": "Ziel der Störung"
+  },
+  "actions": {
+    "surrender": "Aufgeben",
+    "endPractice": "Training beenden",
+    "reactions": "Reaktionen"
+  },
+  "interfere": {
+    "button": "Stören",
+    "label": "{{name}} stören · kostet {{cost}} Pkt.",
+    "labelMissing": "{{name}} stören · {{count}} Pkt. zu wenig",
+    "labelBusy": "{{name}} stören geht nicht, wird schon gestört",
+    "labelNotRunning": "{{name}} stören geht gerade nicht",
+    "labelDisconnected": "Keine Störungen ohne Verbindung",
+    "labelOut": "{{name}} ist aus dem Spiel",
+    "close": "Störungsauswahl schließen"
+  },
+  "lead": {
+    "tie": "Gleichstand",
+    "label_one": "{{name}} führt mit {{gap}} Punkt",
+    "label_other": "{{name}} führt mit {{gap}} Punkten",
+    "label_female_one": "{{name}} führt mit {{gap}} Punkt",
+    "label_female_other": "{{name}} führt mit {{gap}} Punkten",
+    "tieLabel": "Punktgleichstand"
+  },
+  "lock": {
+    "yourCell": "Dein Feld",
+    "paused": "Pausiert",
+    "pick": "Wähle ein Feld",
+    "remaining_one": "Noch 1 Sekunde",
+    "remaining_other": "Noch {{count}} Sekunden",
+    "label": "Dein Feld {{cell}}, {{remaining}}",
+    "labelPaused": "Dein Feld {{cell}}, Timer gestoppt",
+    "progress": "Restzeit für Feld {{cell}}",
+    "released": "Feld freigegeben"
+  }
+}

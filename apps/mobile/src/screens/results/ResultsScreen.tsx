@@ -2,13 +2,15 @@ import type { GameMode, GameType } from '@sudoku-fight/engine';
 import { router } from 'expo-router';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInUp, ReduceMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '../../components/Icon';
-import { formatScore, ltr, paletteAt, scoreText, signedText } from '../../components/player';
+import { formatScore, ltr, paletteAt, scoreText, signedText, withDecimal } from '../../components/player';
 import { Button, Spinner } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
+import { decimalSeparator } from '../../i18n/compose';
 import { crashReporter } from '../../services/crashlytics';
 import { cue } from '../../services/feedback';
 import { openPlayerCard } from '../player/navigation';
@@ -176,6 +178,7 @@ function ResultsBody({
   const reduce = useReduceMotion();
   const enter = enteringFor(reduce);
   const none = t('results.stats.none');
+  const decimal = decimalSeparator(t);
   const best = model.bestMove;
   // Another player's card from here carries this game: a report from it is about this game (spec §3.5).
   const { gameId } = model;
@@ -230,7 +233,7 @@ function ResultsBody({
       value:
         model.avgThinkMs === null
           ? none
-          : t('results.stats.seconds', { value: formatSeconds(model.avgThinkMs) }),
+          : t('results.stats.seconds', { value: formatSeconds(model.avgThinkMs, decimal) }),
     },
   ];
 
@@ -284,12 +287,15 @@ function ResultsBody({
           style={styles.scoreBlock}
           accessible
           accessibilityRole="text"
-          accessibilityLabel={t('results.scoreLabel', { score: scoreText(model.score) })}
+          accessibilityLabel={t('results.scoreLabel', {
+            count: model.score,
+            score: scoreText(model.score, decimal),
+          })}
         >
           <Text style={[text('label'), styles.muted]}>{t('results.score')}</Text>
           <View style={styles.scoreRow}>
             <Text style={[text('scoreXL'), styles.score]} testID="results-score">
-              {scoreText(model.score)}
+              {scoreText(model.score, decimal)}
             </Text>
             <Text style={[text('status'), styles.muted]}>{t('results.points')}</Text>
           </View>
@@ -332,11 +338,12 @@ function ResultsBody({
               best
                 ? [
                     t('results.best.label', {
-                      points: ltr(formatScore(best.points)),
+                      count: best.points,
+                      points: ltr(formatScore(best.points, decimal)),
                       digit: best.digit,
                       cell: ltr(best.cell),
                     }),
-                    t('results.best.formulaLabel', { line: ltr(best.line) }),
+                    t('results.best.formulaLabel', { line: ltr(withDecimal(best.line, decimal)) }),
                   ].join(t('listSep'))
                 : t('results.best.none')
             }
@@ -345,14 +352,14 @@ function ResultsBody({
             {best ? (
               <>
                 <View style={styles.bestRow}>
-                  <Text style={[text('rating'), styles.bestPoints]}>{signedText(best.points)}</Text>
+                  <Text style={[text('rating'), styles.bestPoints]}>{signedText(best.points, decimal)}</Text>
                   <Text style={[text('cellRef'), styles.strong]}>
                     {ltr(t('results.best.move', { cell: best.cell, digit: best.digit }))}
                   </Text>
                 </View>
                 <Text style={[text('micro'), styles.muted]}>{t('results.best.formula')}</Text>
                 <Text style={[text('body'), styles.strong, styles.ltr]} testID="results-best-line">
-                  {ltr(best.line)}
+                  {ltr(withDecimal(best.line, decimal))}
                 </Text>
               </>
             ) : (

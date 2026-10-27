@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AVATAR_STAGES } from '../../avatars/reactions';
@@ -11,6 +11,8 @@ import { Flag } from '../../components/player/Flag';
 import { ltr } from '../../components/player/format';
 import { paletteAt } from '../../components/player/metrics';
 import { SeatGlyph } from '../../components/player/SeatGlyph';
+import { Text } from '../../components/ui/Text';
+import { parenthetical } from '../../i18n/compose';
 import { color, radius, space, text, tokens } from '../../theme';
 import { usePulse } from '../game/connection/motion';
 import { isolateName } from '../game/hit/hitModel';
@@ -24,15 +26,22 @@ import { metrics } from './metrics';
 
 export type MatchT = TFunction<'match'>;
 
-/** A part that already ends a sentence ("מחכים…", "נמצא יריב!") takes no full stop after it. */
-const ENDS_SENTENCE = /[.…!?:]$/;
+/**
+ * A part that already ends a sentence ("מחכים…", "נמצא יריב!") takes no full stop after it: Latin and Hebrew
+ * punctuation, the full-width 。！？ of Japanese and Chinese, and the Arabic ؟ (plan 0ה).
+ */
+const ENDS_SENTENCE = /[.…!?:。！？؟]$/;
 
-/** Sentences as one label or announcement: "כל השחקנים מוכנים. 2 מתוך 2 מוכנים". */
+/**
+ * Sentences as one label or announcement: "כל השחקנים מוכנים. 2 מתוך 2 מוכנים". After a part that ends itself
+ * comes the space after a sentence (sentenceSpace: none in Japanese and Chinese), else the full stop with it (sep).
+ */
 export function joinSentences(parts: readonly (string | null | false | undefined)[], t: MatchT): string {
   return parts
     .filter((p): p is string => !!p)
     .reduce(
-      (all, part) => (!all ? part : ENDS_SENTENCE.test(all) ? `${all} ${part}` : `${all}${t('sep')}${part}`),
+      (all, part) =>
+        !all ? part : `${all}${ENDS_SENTENCE.test(all) ? t('sentenceSpace') : t('sep')}${part}`,
       '',
     );
 }
@@ -91,7 +100,7 @@ export function SeatTile({ seat, showReady, reduce, style }: SeatTileProps) {
   const state = seat.ready ? t('found.ready') : t('found.connecting');
   // The name isolated, so a Latin one keeps its order in a Hebrew sentence.
   const label = t('found.seatLabel', {
-    name: seat.isMe ? `${isolateName(name)} (${t('me')})` : isolateName(name),
+    name: seat.isMe ? parenthetical(isolateName(name), t('me'), t) : isolateName(name),
     rating: ratingLabel,
     state,
   });

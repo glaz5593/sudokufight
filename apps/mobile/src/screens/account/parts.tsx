@@ -7,7 +7,6 @@ import {
   ScrollView,
   type StyleProp,
   StyleSheet,
-  Text,
   View,
   type ViewStyle,
 } from 'react-native';
@@ -28,6 +27,7 @@ import {
 } from '../../auth/password';
 import { Icon, type IconName } from '../../components/Icon';
 import { SeatGlyph } from '../../components/player';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, reduceMotionFlag, useReduceMotion } from '../../theme/motion';
 import { BackButton, GUTTER } from '../home/parts';

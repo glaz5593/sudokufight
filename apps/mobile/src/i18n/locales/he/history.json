@@ -60,7 +60,9 @@
       "interrupted": "המשחק נקטע"
     },
     "place": "מקום {{place}}",
-    "against": "מול {{count}} יריבים",
+    "against_one": "מול יריב אחד",
+    "against_two": "מול {{count}} יריבים",
+    "against_other": "מול {{count}} יריבים",
     "alone": "לבד",
     "points": "{{score}} נק׳",
     "unrated": "ללא דירוג",
@@ -89,12 +91,18 @@
       }
     },
     "ratingOf": "{{before}} → {{after}}",
-    "opponentLabel": "{{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}",
+    "opponentLabel_one": "{{name}} · {{score}} נקודה · {{mistakes}} · דירוג {{delta}}",
+    "opponentLabel_two": "{{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}",
     "ranking": {
       "title": "דירוג המשחק",
       "left": "יצא מהמשחק",
-      "label": "מקום {{place}}: {{name}} · {{score}} נקודות · {{mistakes}}",
-      "labelRating": "מקום {{place}}: {{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}"
+      "label_one": "מקום {{place}}: {{name}} · {{score}} נקודה · {{mistakes}}",
+      "label_two": "מקום {{place}}: {{name}} · {{score}} נקודות · {{mistakes}}",
+      "label_other": "מקום {{place}}: {{name}} · {{score}} נקודות · {{mistakes}}",
+      "labelRating_one": "מקום {{place}}: {{name}} · {{score}} נקודה · {{mistakes}} · דירוג {{delta}}",
+      "labelRating_two": "מקום {{place}}: {{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}",
+      "labelRating_other": "מקום {{place}}: {{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}"
     },
     "awardDefinitions": {
       "bestMove": "הניקוד הגבוה ביותר במהלך בודד",

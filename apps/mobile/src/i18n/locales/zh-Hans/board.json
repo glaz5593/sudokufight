@@ -1,0 +1,46 @@
+{
+  "separator": {
+    "list": "，",
+    "group": " · "
+  },
+  "board": {
+    "label": "对局盘面",
+    "myLock": "你的格{{cell}}",
+    "otherLock": "{{cell}}已被{{name}}锁定",
+    "tapLabel": "本关盘面"
+  },
+  "cell": {
+    "empty": "空",
+    "given": "提示数",
+    "solvedByMe": "由你填出",
+    "solvedBy": "由{{name}}填出",
+    "lockedByMe": "被你锁定",
+    "lockedBy": "被{{name}}锁定",
+    "pending": "等待锁定",
+    "queued": "{{digit}}，等待连接",
+    "timerStopped": "计时已停止",
+    "seconds_other": "{{count}}秒",
+    "wrong": "错误数字：{{digits}}",
+    "hintMyLock": "在数字键盘上选一个数字",
+    "player": "玩家{{n}}",
+    "corrected": "发现错误：{{wrong}}，正确数字是{{right}}",
+    "mine": "你的",
+    "outside": "区域外",
+    "hintTap": "点击格子即作答"
+  },
+  "keypad": {
+    "armed": "数字{{digit}} · 还剩{{left}}个",
+    "idle": "数字{{digit}}，还剩{{left}}个，请先选一格",
+    "complete": "数字{{digit}}，还剩{{left}}个",
+    "tried": "数字{{digit}} · 此格已试过"
+  },
+  "cancel": {
+    "label": "取消选择",
+    "withCell": "取消选择，{{cell}}"
+  },
+  "resume": {
+    "title": "即将继续",
+    "paused": "对局已暂停",
+    "label_other": "{{count}}秒后继续"
+  }
+}

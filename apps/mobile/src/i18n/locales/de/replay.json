@@ -1,0 +1,92 @@
+{
+  "title": "Wiederholung",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Solotraining",
+    "bot": "Training gegen Bot",
+    "ranked": "Rangliste"
+  },
+  "back": "Zurück",
+  "loading": "Spiel wird geladen…",
+  "load": {
+    "missing": "Wir haben dieses Spiel nicht gefunden",
+    "notFinished": "Das Spiel wird noch auf dem Server gespeichert. Versuch es gleich noch mal",
+    "offline": "Keine Verbindung zum Server. Ranglistenspiele werden vom Server geladen",
+    "signedOut": "Melde dich an, um ein Ranglistenspiel anzusehen",
+    "unavailable": "Wir konnten dieses Spiel nicht lesen",
+    "retry": "Erneut versuchen",
+    "partial": "Dieses Spiel wurde vorzeitig beendet: Die Wiederholung reicht bis zum letzten gespeicherten Zug"
+  },
+  "step": {
+    "counter": "Schritt {{number}} von {{total}}",
+    "clockLabel": "Spieluhr: {{clock}}"
+  },
+  "nav": {
+    "prev": "Schritt zurück",
+    "next": "Weiter",
+    "timeline": "Zeitleiste der Schritte",
+    "timelineValue": "Schritt {{number}} von {{total}}, {{clock}}",
+    "timelineHint": "Nach oben oder unten wischen, um den Schritt zu wechseln"
+  },
+  "narration": {
+    "start": "Das Spiel beginnt",
+    "select": "{{name}} · wählt {{cell}}",
+    "correct": "{{name}} · richtig in {{cell}} · {{delta}}",
+    "wrong": "{{name}} · falsch in {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · gibt {{cell}} frei",
+      "timeout": "{{name}} · Zeit abgelaufen in {{cell}}"
+    },
+    "interference": "{{name}} · stört {{target}} · {{delta}}",
+    "disconnect": "{{name}} · Verbindung getrennt",
+    "reconnect": "{{name}} · wieder im Spiel",
+    "offline": "{{name}} · Verbindung verloren",
+    "surrender": "{{name}} · hat aufgegeben",
+    "endPractice": "{{name}} · hat das Training beendet",
+    "abandon": "{{name}} · hat das Spiel verlassen",
+    "over": "Das Spiel ist vorbei",
+    "paused": "Das Spiel ist eingefroren",
+    "offlineSuffix": "nach Wiederverbindung gesendet"
+  },
+  "explain": {
+    "title": "Eine Erklärung für jeden Spieler",
+    "none": "Noch kein Zug von {{name}}",
+    "noneMe": "Noch kein Zug von mir",
+    "noneBody": "Die Erklärung erscheint nach dem ersten Zug",
+    "status": {
+      "choosing": "Wählt",
+      "released": "Freigegeben",
+      "correct": "Richtig",
+      "wrong": "Falsch"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} statt {{answer}}",
+    "why": "Warum {{digit}} nicht passt: {{text}}",
+    "noLogic": "Die Lösung: {{cell}} → {{digit}}",
+    "scoreLine": "Die Punkte",
+    "penaltyLine": "Der Abzug: so viel war die richtige Ziffer wert",
+    "released": {
+      "cancel": "Auswahl aufgehoben",
+      "timeout": "Zeit abgelaufen",
+      "switch": "Zu einem anderen Feld gewechselt",
+      "mistake": "Nach einem Fehler",
+      "surrender": "Hat das Spiel verlassen",
+      "disconnect": "Verbindung getrennt",
+      "abandon": "Spielflucht"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "Schlüsselmomente",
+    "bestMove": "Bester Zug",
+    "mistakes": "Fehler · {{count}}",
+    "interferences": "Störungen · {{count}}",
+    "turningPoint": "Wendepunkt",
+    "hint": "Springt zu diesem Schritt"
+  },
+  "board": "Das Spielfeld bei Schritt {{number}}",
+  "me": "Ich",
+  "unknown": "Spieler"
+}

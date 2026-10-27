@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '../../../components/Icon';
 import { useShake } from '../../../components/player/anim';
 import { Button } from '../../../components/ui/Button';
+import { Text } from '../../../components/ui/Text';
 import { color, radius, space, text, tokens } from '../../../theme';
 import { useReduceMotion } from '../../../theme/motion';
 import { Announcer } from './Announcer';

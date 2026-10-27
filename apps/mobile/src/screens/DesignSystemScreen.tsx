@@ -1,10 +1,12 @@
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DS_SECTIONS, type DsSectionKey, DsSection, useContentWidth } from '../components/dev';
 import { IconButton } from '../components/ui';
+import { Text } from '../components/ui/Text';
+import { chooseLanguage } from '../i18n/languageSync';
 import { useSettings } from '../state/settings';
 import { color, radius, size, space, text, tokens } from '../theme';
 import { useReduceMotion } from '../theme/motion';
@@ -12,8 +14,8 @@ import { useReduceMotion } from '../theme/motion';
 /**
  * Stage 3's development screen, /dev/design-system (docs/02-WORK-PLAN.md, components.md §18): every component
  * of direction C in its states, grouped like the canvas boards DS-Foundations and DS-Components. The header
- * switches the language (the root layout reloads the app when the direction flips) and reduced motion, so each
- * row can be checked in Hebrew, in English, and without motion.
+ * switches between Hebrew and English like the language picker (chooseLanguage; the root layout then restarts the
+ * app, D104) and reduced motion, so each row can be checked in Hebrew, in English, and without motion.
  */
 export interface DesignSystemScreenProps {
   /** The close button; the route passes the router's back. Without it there is no close button. */
@@ -80,12 +82,11 @@ export function DesignSystemScreen({ onClose }: DesignSystemScreenProps) {
 }
 
 function Header({ top, onClose }: { top: number; onClose?: () => void }) {
-  const { t } = useTranslation('dev');
-  const language = useSettings((s) => s.language);
-  const setLanguage = useSettings((s) => s.setLanguage);
+  const { t, i18n } = useTranslation('dev');
   const setReduceMotion = useSettings((s) => s.setReduceMotion);
   const reduce = useReduceMotion();
-  const english = language === 'en';
+  // The running language, not the setting: that may be "שפת המכשיר" ('system') while English runs.
+  const english = i18n.language === 'en';
 
   return (
     <View style={[styles.header, { paddingTop: top + space[4] }]}>
@@ -110,7 +111,7 @@ function Header({ top, onClose }: { top: number; onClose?: () => void }) {
           <Text style={[styles.switchText, !english && styles.switchOn]}>{t('languages.he')}</Text>
           <Switch
             value={english}
-            onValueChange={(on) => setLanguage(on ? 'en' : 'he')}
+            onValueChange={(on) => chooseLanguage(on ? 'en' : 'he')}
             accessibilityLabel={t('screen.englishSwitch')}
             accessibilityHint={t('screen.languageHint')}
             trackColor={TRACK}

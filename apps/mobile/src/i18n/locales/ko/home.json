@@ -1,0 +1,263 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "설정",
+    "back": "뒤로"
+  },
+  "profile": {
+    "defaultName": "플레이어",
+    "label": "내 플레이어 카드: {{name}}",
+    "noRating": "아직 레이팅 없음",
+    "ratingTitle": "레이팅",
+    "none": "—",
+    "games_other": "{{count}}게임",
+    "gamesLabel_other": "게임",
+    "winsLabel": "승리",
+    "streakLabel": "연승",
+    "winRate": "승률 {{percent}}%",
+    "streak_zero": "연승 없음",
+    "streak_other": "{{count}}연승"
+  },
+  "play": "플레이",
+  "playHint": "게임 모드를 고르세요",
+  "again": {
+    "title": "한 판 더",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "시작하지 못했어요. 다시 시도하세요."
+  },
+  "recent": {
+    "heading": "최근 게임",
+    "all": "전체",
+    "unavailable": "이 휴대폰에 저장된 게임을 읽지 못했어요.",
+    "emptyTitle": "아직 게임이 없어요",
+    "emptyBody": "모든 연습이 여기에 저장돼요. 앱을 닫아도요.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "완료",
+      "ended": "종료",
+      "interrupted": "중단",
+      "playing": "진행 중",
+      "win": "승리",
+      "loss": "패배",
+      "tie": "무승부"
+    },
+    "openHint": "결과 열기",
+    "versus": "{{name}} 상대로 {{outcome}}"
+  },
+  "modes": {
+    "title": "새 게임",
+    "footnote": "랭크 게임은 인터넷 연결이 필요해요 · 연습은 언제든 할 수 있어요",
+    "soon": "곧 출시",
+    "groups": {
+      "ranked": {
+        "title": "랭크",
+        "note": "진짜 상대와 실시간으로"
+      },
+      "friends": {
+        "title": "친구와 함께",
+        "titleMoshe": "진짜 친구들과 실시간으로",
+        "note": "비공개 방 · 최대 4명 · 레이팅 미반영"
+      },
+      "practice": {
+        "title": "연습",
+        "note": "부담 없이, 레이팅 없이"
+      }
+    },
+    "chips": {
+      "rated": "레이팅 반영",
+      "unrated": "레이팅 미반영",
+      "offline": "오프라인 가능"
+    },
+    "ranked": {
+      "name": "랭크"
+    },
+    "ranked2": {
+      "title": "2인",
+      "tagline": "일대일 · 같은 판",
+      "label": "랭크 · 2인"
+    },
+    "ranked3": {
+      "title": "3인",
+      "tagline": "개인전",
+      "label": "랭크 · 3인"
+    },
+    "ranked4": {
+      "title": "4인",
+      "tagline": "개인전",
+      "label": "랭크 · 4인"
+    },
+    "friends": {
+      "create": "새 방",
+      "createHint": "친구에게 보낼 코드가 있는 대기실을 열어요",
+      "join": "코드로 참가",
+      "joinHint": "받은 6자리 숫자를 입력하세요"
+    },
+    "solo": {
+      "name": "혼자 연습",
+      "title": "혼자 · 전체 판",
+      "tagline": "내 속도대로",
+      "label": "혼자 · 전체 판"
+    },
+    "levels": {
+      "name": "스테이지 연습",
+      "title": "스테이지 연습",
+      "tagline": "짧은 스테이지 · 최대 별 3개",
+      "taglineNew_other": "짧은 스테이지 {{total}}개 · 별 0–3개",
+      "chip": "스테이지 {{stage}} ·",
+      "offline": "오프라인",
+      "chipLabel_other": "스테이지 {{stage}} · 별 {{count}}개",
+      "label": "스테이지 연습"
+    },
+    "bot": {
+      "name": "봇과 연습",
+      "title": "봇과 연습",
+      "tagline": "레벨 5개",
+      "label": "봇과 연습"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "스피드",
+      "difficulty": "쉬움",
+      "technique": "네이키드 싱글만으로 풀려요"
+    },
+    "normal": {
+      "name": "노멀",
+      "difficulty": "보통",
+      "technique": "히든 싱글이 필요해요"
+    },
+    "hard": {
+      "name": "하드",
+      "difficulty": "어려움",
+      "technique": "페어나 소거가 필요해요"
+    }
+  },
+  "gameType": {
+    "title": "게임 유형",
+    "note": {
+      "solo": "레이팅 미반영. 이 휴대폰에 있는 퍼즐에서 판을 고르고, 최근에 한 판은 다시 나오지 않아요.",
+      "bot": "레이팅 미반영. 이 휴대폰에 있는 퍼즐에서 판을 고르고, 최근에 한 판은 다시 나오지 않아요. 다음 단계에서 상대를 골라요.",
+      "ranked": "레이팅 반영. 레이팅이 비슷한 상대, 서버 퍼즐 중 아직 안 해 본 판, 그리고 두 사람 모두 같은 판으로 겨뤄요.",
+      "rankedGroup": "레이팅 반영. 레이팅이 비슷한 상대들, 서버 퍼즐 중 아직 안 해 본 판, 그리고 모두 같은 판으로 겨뤄요. 자리가 다 차면 게임이 시작돼요."
+    },
+    "start": {
+      "solo": "연습 시작",
+      "bot": "상대 고르기",
+      "ranked": "상대 찾기",
+      "rankedGroup": "상대 찾기"
+    },
+    "startHint": "{{type}} 연습을 시작해요",
+    "rankedHint": "{{type}} 랭크 게임 상대를 찾아요",
+    "rankedGroupHint": "{{type}} 랭크 게임 상대들을 찾아요",
+    "lockTime": "칸당 시간",
+    "board": "판",
+    "duration": "예상 시간",
+    "seconds": "{{seconds}}초",
+    "minutes": "{{range}}분",
+    "yourRating": "내 레이팅",
+    "cardLabel_other": "{{name}}. {{technique}}. 칸당 {{seconds}}, 난이도 {{difficulty}}, 약 {{from}}~{{to}}분",
+    "botHint": "{{type}} 게임에서 겨룰 봇을 고르세요"
+  },
+  "settings": {
+    "title": "설정",
+    "feedback": "소리와 진동",
+    "sound": "소리",
+    "soundHint": "수와 동작에 맞춘 효과음",
+    "haptics": "진동",
+    "hapticsHint": "수를 둘 때 짧은 진동으로 알려 줘요",
+    "motion": "동작 줄이기",
+    "motionHint": "애니메이션을 줄여요. 점수는 바로 결과로 바뀌고, 방해는 같은 시간 동안 정지된 화면으로 가려져요.",
+    "reduceMotion": {
+      "system": "기기 설정대로",
+      "on": "켬",
+      "off": "끔"
+    },
+    "language": "언어",
+    "languageHint": "언어를 바꾸면 앱이 다시 시작돼요.",
+    "languageConfirm": {
+      "title": "{{language}} 언어로 바꿀까요?",
+      "body": "앱이 다시 시작되어 모든 화면이 새 언어의 방향에 맞게 표시돼요.",
+      "confirm": "바꾸고 다시 시작",
+      "titleDevice": "기기 언어로 바꿀까요?"
+    },
+    "languageDevice": "기기 언어",
+    "languageSheetTitle": "언어 선택",
+    "languageField": "언어: {{language}}",
+    "languageFieldDevice": "언어: 기기 언어, {{language}}",
+    "about": "정보 및 법적 고지",
+    "privacy": "개인정보 처리방침",
+    "terms": "이용약관",
+    "licenses": "라이선스",
+    "opensInBrowser": "브라우저에서 열려요"
+  },
+  "placeholder": {
+    "soon": "곧 출시",
+    "leaderboard": {
+      "title": "순위표",
+      "body": "순위표는 랭크 게임과 함께 열려요."
+    },
+    "history": {
+      "title": "기록",
+      "body": "모든 게임이 리플레이, 그리고 모든 수의 설명과 함께 여기에 모일 거예요. 그동안 최근 연습은 홈 화면에 있어요."
+    },
+    "achievements": {
+      "title": "업적",
+      "body": "업적, 레벨, XP가 준비 중이에요."
+    }
+  },
+  "botSelect": {
+    "title": "봇 고르기",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "수당 생각 시간",
+    "thinkValue": "{{range}}초",
+    "mistakes": "실수",
+    "note": "보통 수에 걸리는 시간이에요. 더 어려운 논리가 필요한 칸은 봇이 더 오래 걸리고, 행·열·박스의 마지막 빈칸은 조금 덜 걸려요. 봇도 같은 판을 실시간으로 플레이해요.",
+    "start": "시작하기",
+    "startHint": "{{name}} 상대로 {{type}} 연습을 시작해요",
+    "cardLabel_other": "레벨 {{level}}, {{title}}: {{name}}. {{behavior}}. 한 수에 {{from}}~{{to}}초 생각, 실수 {{mistakes}}%",
+    "levels": {
+      "1": {
+        "title": "초보",
+        "behavior": "느리고 실수도 꽤 해서, 배우면서 할 수 있어요"
+      },
+      "2": {
+        "title": "아마추어",
+        "behavior": "느긋하고 여기저기서 실수하며, 가끔 😂 반응을 보내요"
+      },
+      "3": {
+        "title": "상급자",
+        "behavior": "꾸준하고 신중해서 따라잡기 어려워요"
+      },
+      "4": {
+        "title": "마스터",
+        "behavior": "빠르고 거의 틀리지 않으며, 살짝 거만해요 😎"
+      },
+      "5": {
+        "title": "그랜드마스터",
+        "behavior": "빠르고 정확하며, 자비가 없어요"
+      }
+    }
+  },
+  "licenses": {
+    "title": "라이선스",
+    "intro": "Sudoku Fight는 오픈 폰트와 오픈 소스 소프트웨어로 만들어졌어요. 만든 분들께 감사드려요. 아래는 그 라이선스와 저작권 고지예요.",
+    "fonts": "글꼴",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_other": "오픈 소스 패키지 {{count}}개",
+    "packageLabel": "{{name}}, 버전 {{version}}, 라이선스 {{license}}",
+    "texts": "라이선스 전문",
+    "textsHint": "각 라이선스의 원문 전체예요.",
+    "show": "{{license}} 라이선스 보기",
+    "hide": "{{license}} 라이선스 숨기기"
+  }
+}

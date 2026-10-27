@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "Lời chào từ bộ máy · ô {{cell}}",
+    "versions": "bộ máy {{engine}} · giao thức {{protocol}}",
+    "taps": "Số lần chạm: {{count}}",
+    "server": {
+      "connecting": "Máy chủ: đang kết nối…",
+      "connected": "Máy chủ: đã kết nối",
+      "rtt": "Máy chủ: RTT {{ms}} ms",
+      "error": "Máy chủ: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "Đã có lỗi xảy ra",
+    "body": "Màn hình này gặp lỗi. Chúng tôi đã báo cáo lỗi, và bạn có thể thử lại.",
+    "retry": "Thử lại"
+  },
+  "fallback": {
+    "loading": "Chờ một chút…",
+    "title": "Màn hình này chưa tải được",
+    "body": "Bạn có thể xem kết quả hoặc về trang chủ.",
+    "bodyHome": "Bạn có thể về trang chủ và chơi tiếp từ đó.",
+    "results": "Xem kết quả",
+    "home": "Trang chủ"
+  },
+  "appVersion": {
+    "version": "Phiên bản {{version}}",
+    "build": "bản dựng {{build}}",
+    "engine": "bộ máy {{engine}}"
+  },
+  "number": {
+    "decimal": ",",
+    "percent": "{{value}}%"
+  },
+  "text": {
+    "labelValue": "{{label}}: {{value}}",
+    "parenthetical": "{{text}} ({{note}})",
+    "sentence": "{{text}}.",
+    "wordSpace": " "
+  }
+}

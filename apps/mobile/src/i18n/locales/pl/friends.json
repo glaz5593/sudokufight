@@ -1,0 +1,185 @@
+{
+  "title": "Pokój ze znajomymi",
+  "subtitle": "{{type}} · {{count}} z {{max}}",
+  "label": "Partia ze znajomymi · bez rankingu",
+  "mode": "Ze znajomymi",
+  "modeLong": "Partia ze znajomymi",
+  "unrated": "Bez rankingu",
+  "code": {
+    "title": "Kod pokoju",
+    "label": "Kod pokoju: {{spelled}}",
+    "hint": "Wyślij kod albo link"
+  },
+  "share": {
+    "button": "Udostępnij link",
+    "hint": "Otwiera menu udostępniania telefonu z kodem i linkiem",
+    "message": "Zagraj ze mną w Sudoku Fight! Kod pokoju: {{code}}\n{{link}}",
+    "failed": "Nie udało się otworzyć udostępniania"
+  },
+  "copy": {
+    "button": "Kopiuj kod",
+    "done": "Kod skopiowany",
+    "failed": "Nie udało się skopiować kodu"
+  },
+  "gameType": {
+    "title": "Typ partii",
+    "hostPicks": "Zmienić go może tylko gospodarz",
+    "guestSees": "Wybiera gospodarz",
+    "changed": "Typ partii: {{type}}"
+  },
+  "players": {
+    "title": "Gracze · {{count}} z {{max}}"
+  },
+  "seat": {
+    "me": "Ja",
+    "host": "Gospodarz",
+    "away": "Teraz poza pokojem",
+    "empty": "Czekamy na gracza…",
+    "emptyLabel": "Wolne miejsce, czekamy na gracza",
+    "rating": "Ranking {{rating}}"
+  },
+  "kick": {
+    "label": "Usuń gracza {{name}} z pokoju",
+    "title": "Usunąć gracza {{name}} z pokoju?",
+    "body": "Ten gracz nie będzie mógł wrócić do tego pokoju.",
+    "confirm": "Usuń"
+  },
+  "start": {
+    "button_one": "Zacznij partię",
+    "button_few": "Zacznij partię · {{count}} graczy",
+    "button_many": "Zacznij partię · {{count}} graczy",
+    "button_other": "Zacznij partię · {{count}} gracza",
+    "needMore": "Do startu potrzeba co najmniej 2 połączonych graczy",
+    "waitingForHost": "Czekamy, aż {{name}} zacznie partię",
+    "hostAway": "Gospodarza nie ma teraz w pokoju",
+    "starting": "Partia się zaczyna…"
+  },
+  "startWithout": {
+    "title": "Zacząć bez nieobecnych: {{names}}?",
+    "body": "Poza pokojem: {{names}}. Kogo nie ma w pokoju, ten nie zagra w tej partii.",
+    "confirm": "Tak, zaczynamy",
+    "cancel": "Nie, poczekajmy"
+  },
+  "leave": "Opuść pokój",
+  "reconnecting": "Połączenie przerwane. Łączymy ponownie…",
+  "announce": {
+    "joined": "{{name}} dołącza",
+    "left": "{{name}} opuszcza pokój",
+    "away": "Gracza {{name}} nie ma teraz w pokoju",
+    "back": "{{name}} wraca do pokoju",
+    "host": "Teraz {{name}} prowadzi pokój",
+    "meHost": "Teraz ty prowadzisz pokój"
+  },
+  "opening": {
+    "create": "Otwieramy pokój…",
+    "join": "Dołączanie do pokoju…"
+  },
+  "replace": {
+    "title": "Zamknąć drugi pokój?",
+    "body": "Masz już otwarty pokój {{code}}. Zamknij go i otwórz nowy albo do niego wróć.",
+    "confirm": "Zamknij i otwórz nowy",
+    "cancel": "Wróć do tamtego pokoju"
+  },
+  "errors": {
+    "notFound": "Nie znaleźliśmy pokoju o kodzie {{code}}. Sprawdź cyfry.",
+    "notFoundThis": "Nie znaleźliśmy pokoju o tym kodzie.",
+    "roomFull": "Pokój jest pełny ({{max}} z {{max}}).",
+    "gameStarted": "Partia w tym pokoju już się zaczęła.",
+    "roomClosed": "Pokój został zamknięty.",
+    "kicked": "Gospodarz usunął cię z pokoju.",
+    "cantJoin": "W tym pokoju jest gracz, którego blokujesz.",
+    "suspended": "Twoje konto jest zawieszone, więc na razie nie możesz grać ze znajomymi.",
+    "network": "Brak połączenia z internetem.",
+    "tooManyRequests": "Za dużo prób. Spróbuj ponownie za {{wait}}.",
+    "notAvailable": "Ta opcja nie jest jeszcze dostępna.",
+    "badRequest": "Kod ma 6 cyfr.",
+    "unauthorized": "Zaloguj się ponownie na swoje konto.",
+    "notRegistered": "Dokończ rejestrację, aby grać ze znajomymi.",
+    "tooManyRooms": "Masz już otwarty pokój.",
+    "tooLarge": "Coś poszło nie tak. Spróbuj ponownie.",
+    "internal": "Coś poszło nie tak na serwerze. Spróbuj ponownie za chwilę.",
+    "disabled": "Gra ze znajomymi nie jest dostępna na tym serwerze.",
+    "unavailable": "Serwer jest teraz niedostępny. Spróbuj ponownie za chwilę."
+  },
+  "wait": {
+    "seconds_one": "sekundę",
+    "seconds_few": "{{count}} sekundy",
+    "seconds_many": "{{count}} sekund",
+    "seconds_other": "{{count}} sekundy",
+    "minutes_one": "minutę",
+    "minutes_few": "{{count}} minuty",
+    "minutes_many": "{{count}} minut",
+    "minutes_other": "{{count}} minuty"
+  },
+  "closed": {
+    "kicked": "Gospodarz usunął cię z pokoju.",
+    "removed": "Nie jesteś już w pokoju.",
+    "otherDevice": "Pokój został otwarty na innym urządzeniu.",
+    "serverRestart": "Pokój został zamknięty.",
+    "closed": "Pokój został zamknięty."
+  },
+  "lobbyErrors": {
+    "notHost": "Tylko gospodarz może to zrobić.",
+    "notEnoughPlayers": "Do startu potrzeba co najmniej 2 połączonych graczy.",
+    "playersAway": "Poza pokojem: {{names}}.",
+    "gameStarted": "Partia już się zaczęła.",
+    "badCommand": "Nie udało się. Spróbuj ponownie.",
+    "tooManyRequests": "Spokojnie, za dużo dotknięć. Spróbuj za chwilę."
+  },
+  "startedWithout": "Partia zaczęła się bez ciebie.",
+  "actions": {
+    "retry": "Spróbuj ponownie",
+    "createRoom": "Utwórz pokój",
+    "joinWithCode": "Dołącz z kodem",
+    "home": "Ekran główny"
+  },
+  "join": {
+    "title": "Dołącz z kodem",
+    "prompt": "Wpisz otrzymane 6 cyfr",
+    "codeLabel": "Kod pokoju, 6 cyfr",
+    "digitLabel": "Cyfra {{n}} z {{total}}",
+    "paste": "Wklej",
+    "pasteHint": "Możesz wkleić całą wiadomość z WhatsAppa",
+    "pasteNone": "W skopiowanym tekście nie ma 6-cyfrowego kodu",
+    "joining": "Dołączanie do pokoju…",
+    "submit": "Dołącz"
+  },
+  "link": {
+    "notFound": {
+      "title": "Nie znamy tego linku",
+      "body": "Może jest stary albo nie pochodzi z Sudoku Fight. Możesz kontynuować z ekranu głównego.",
+      "home": "Na ekran główny"
+    },
+    "badCode": "Ten link jest nieprawidłowy"
+  },
+  "invite": {
+    "pending": "Masz zaproszenie do pokoju {{code}}",
+    "afterSignIn": "Po zalogowaniu przeniesiemy cię prosto do pokoju {{code}}",
+    "join": "Dołącz",
+    "later": "Nie teraz",
+    "expired": "Zaproszenie do pokoju {{code}} wygasło"
+  },
+  "busy": {
+    "practice": {
+      "title": "Przerwać trening i dołączyć do pokoju?",
+      "body": "Trening zostanie zapisany, tak jak przy wyjściu.",
+      "confirm": "Dołącz do pokoju"
+    },
+    "search": {
+      "title": "Przerwać szukanie i dołączyć?",
+      "body": "Szukanie przeciwnika zostanie przerwane.",
+      "confirm": "Dołącz do pokoju"
+    },
+    "room": {
+      "title": "Przejść do pokoju {{code}}?",
+      "body": "Opuścisz pokój, w którym jesteś teraz.",
+      "confirm": "Zmień pokój"
+    },
+    "game": {
+      "title": "Jesteś w trakcie partii",
+      "body": "Możesz dołączyć po jej końcu. Zaproszenie do pokoju {{code}} na ciebie poczeka.",
+      "back": "Wróć do partii"
+    },
+    "stay": "Zostań"
+  }
+}

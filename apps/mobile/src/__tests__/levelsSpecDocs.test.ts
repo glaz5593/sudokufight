@@ -125,8 +125,10 @@ describe('01-SPEC.md', () => {
   };
   const levels = section(spec, '### 5.3', '## 6.');
 
-  it('is version 1.5 (1.0.4: friends and the stealth bot, D80–D99), after 1.4 (1.0.3, D66–D79)', () => {
-    expect(header).toMatch(/גרסת המסמך: 1\.5\b/);
+  it('is version 1.6 (1.1.0: 19 languages, D101–D124), after 1.5 (1.0.4, D80–D99) and 1.4 (1.0.3, D66–D79)', () => {
+    expect(header).toMatch(/גרסת המסמך: 1\.6\b/);
+    expect(header).toContain('לפני כן 1.5');
+    expect(header).toContain('D101–D124');
     expect(header).toContain('D66–D79');
     expect(header).toContain('D80–D99');
   });
@@ -151,9 +153,10 @@ describe('01-SPEC.md', () => {
     expect(spec).not.toMatch(/D64[^\n]{0,40}החלטת משה/);
   });
 
-  it('§24: the rows run D1 … D100 in order, with no gap, so D48–D65, D66–D79 and D80–D99 sit together', () => {
+  it('§24: the rows run D1 … D124 in order, with no gap, so D48–D65, D66–D79 and D80–D99 sit together', () => {
     // D100 (23.10.2026): where "צור חדר" and "הצטרף עם קוד" sit on "משחק חדש", after Moshe's device test of 1.0.4.
-    expect(decisions.map((cells) => cells[0])).toEqual(Array.from({ length: 100 }, (_, i) => `D${i + 1}`));
+    // D101–D124 (24.10.2026): the 19 languages (localizationDocs.test.ts).
+    expect(decisions.map((cells) => cells[0])).toEqual(Array.from({ length: 124 }, (_, i) => `D${i + 1}`));
   });
 
   it.each(LEVEL_DECISIONS)('§24 %s: ✓ only where Moshe decided, ☐ where it is a default', (id) => {

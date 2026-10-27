@@ -1,10 +1,12 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { type AvatarFace, type AvatarIdOrNone, sameFace } from '../../avatars';
+import { decimalSeparator } from '../../i18n/compose';
 import { color, radius, text, tokens } from '../../theme';
+import { Text } from '../ui/Text';
 import { ActivityLine } from './ActivityLine';
 import { Avatar } from './Avatar';
 import { HitChip, RankBadge, ReconnectPill } from './Badges';
@@ -197,10 +199,11 @@ function sameCompactCard(a: PlayerCardCompactProps, b: PlayerCardCompactProps): 
 function Pips({ pips }: { pips: MistakePips }) {
   const { t } = useTranslation('player');
   if (!pips.penalties.length) return null;
+  const decimal = decimalSeparator(t);
   // LTR isolates: "−2" and "×6" keep the sign before the number in Hebrew (CLAUDE.md).
   const labels = [
     ...(pips.overflow === null ? [] : [ltr(t('mistakes.overflow', { count: pips.overflow }))]),
-    ...pips.penalties.map((p) => signedText(-p)),
+    ...pips.penalties.map((p) => signedText(-p, decimal)),
   ];
   return (
     <View style={styles.pips} testID="pips">

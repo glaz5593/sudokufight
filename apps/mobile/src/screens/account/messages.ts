@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import { isAccountApiError } from '../../api/accountApi';
 import { toAuthError } from '../../auth/errors';
 import type { AuthErrorCode } from '../../auth/types';
+import { spaceSentences } from '../../i18n/compose';
 
 /**
  * What to tell the player about a failed account action, in the app's language: the sign-in's errors
@@ -30,5 +31,5 @@ export function withGoogleHint(t: TFunction, error: unknown, google: boolean): s
   const message = errorMessage(t, error);
   if (!google || isAccountApiError(error)) return message;
   const hint = GOOGLE_HINTS[toAuthError(error).code];
-  return hint ? `${message} ${t(hint)}` : message;
+  return hint ? spaceSentences([message, t(hint)], t) : message;
 }

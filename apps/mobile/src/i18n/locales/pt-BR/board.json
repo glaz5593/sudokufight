@@ -1,0 +1,50 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Tabuleiro",
+    "myLock": "sua célula {{cell}}",
+    "otherLock": "{{cell}} travada por {{name}}",
+    "tapLabel": "O tabuleiro da fase"
+  },
+  "cell": {
+    "empty": "vazia",
+    "given": "pista",
+    "solvedByMe": "resolvida por você",
+    "solvedBy": "resolvida por {{name}}",
+    "lockedByMe": "travada por você",
+    "lockedBy": "travada por {{name}}",
+    "pending": "aguardando a trava",
+    "queued": "{{digit}}, aguardando a conexão",
+    "timerStopped": "cronômetro parado",
+    "seconds_one": "{{count}} segundo",
+    "seconds_many": "{{count}} de segundos",
+    "seconds_other": "{{count}} segundos",
+    "wrong": "números errados: {{digits}}",
+    "hintMyLock": "Escolha um número no teclado",
+    "player": "Jogador {{n}}",
+    "corrected": "erro encontrado: {{wrong}}, o número certo é {{right}}",
+    "mine": "sua",
+    "outside": "fora da área",
+    "hintTap": "Tocar na célula é a jogada"
+  },
+  "keypad": {
+    "armed": "Número {{digit}} · restantes: {{left}}",
+    "idle": "Número {{digit}}, restantes: {{left}}, escolha uma célula primeiro",
+    "complete": "Número {{digit}}, restantes: {{left}}",
+    "tried": "Número {{digit}} · já testado nesta célula"
+  },
+  "cancel": {
+    "label": "Cancelar seleção",
+    "withCell": "Cancelar seleção, {{cell}}"
+  },
+  "resume": {
+    "title": "Retomando em",
+    "paused": "A partida está pausada",
+    "label_one": "Retomando em {{count}} segundo",
+    "label_many": "Retomando em {{count}} de segundos",
+    "label_other": "Retomando em {{count}} segundos"
+  }
+}

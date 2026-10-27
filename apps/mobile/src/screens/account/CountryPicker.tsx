@@ -1,11 +1,12 @@
 import { COUNTRY_CODES, type CountryCode } from '@sudoku-fight/protocol';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { Icon } from '../../components/Icon';
 import { countryName, flagEmoji } from '../../components/player';
 import { Sheet } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text } from '../../theme';
 import { countrySearchTerms, foldForSearch } from './countrySearch';
 import { Field } from './Field';
@@ -22,8 +23,9 @@ export interface CountryOption {
   code: CountryCode;
   name: string;
   /**
-   * What a search may match (countrySearch.ts): its names in both languages and the other names people use,
-   * folded, so a search in Latin letters finds it in Hebrew too, and back, as the phone's keyboard types it.
+   * What a search may match (countrySearch.ts): its name in the app's language, in Hebrew and in English, and
+   * the other names people use, folded, so a search in Latin letters finds it in Hebrew too, and back, as the
+   * phone's keyboard types it.
    */
   terms: readonly string[];
   flag: string;
@@ -40,7 +42,11 @@ export function countryOptions(language: string): CountryOption[] {
   const options = COUNTRY_CODES.map((code) => ({
     code,
     name: countryName(code, language),
-    terms: countrySearchTerms(code, [countryName(code, 'he'), countryName(code, 'en')]),
+    terms: countrySearchTerms(code, [
+      countryName(code, language),
+      countryName(code, 'he'),
+      countryName(code, 'en'),
+    ]),
     flag: flagEmoji(code) ?? '',
   }));
   let compare: (a: string, b: string) => number;

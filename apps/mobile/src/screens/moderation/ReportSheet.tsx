@@ -1,11 +1,12 @@
 import { REPORT_REASONS, REPORT_RESPONSE_HOURS, type ReportReason } from '@sudoku-fight/protocol';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native';
 
 import type { ReportOutcome } from '../../api/moderationApi';
 import { Icon } from '../../components/Icon';
 import { Button, Sheet } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { cue } from '../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { isolateName } from '../game/hit/hitModel';
@@ -67,7 +68,9 @@ export function ReportSheet({
       const outcome = await onSend(reason);
       setHours(outcome.respondWithinHours);
       setPhase('thanks');
-      AccessibilityInfo.announceForAccessibility(t('report.thanks', { hours: outcome.respondWithinHours }));
+      AccessibilityInfo.announceForAccessibility(
+        t('report.thanks', { count: outcome.respondWithinHours, hours: outcome.respondWithinHours }),
+      );
     } catch (e) {
       setPhase('choose');
       setError(reportErrorText(t, e, now()));
@@ -90,7 +93,7 @@ export function ReportSheet({
             <Icon name="check" size={size.icon.header} color={color.success} />
           </View>
           <Text style={styles.thanksText} accessibilityLiveRegion="polite">
-            {t('report.thanks', { hours })}
+            {t('report.thanks', { count: hours, hours })}
           </Text>
           <Button
             label={t('report.done')}
@@ -126,7 +129,7 @@ export function ReportSheet({
               />
             ))}
           </View>
-          <Text style={styles.privacy}>{t('report.privacy', { hours })}</Text>
+          <Text style={styles.privacy}>{t('report.privacy', { count: hours, hours })}</Text>
           <FormAlert message={error} testID={`${testID}-alert`} />
           <Button
             label={t('report.send')}

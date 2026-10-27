@@ -1,0 +1,129 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Игрок",
+  "temporaryName": "Игрок{{digits}}",
+  "bot": "Бот",
+  "vs": "VS",
+  "seconds_one": "{{count}} секунда",
+  "seconds_few": "{{count}} секунды",
+  "seconds_many": "{{count}} секунд",
+  "seconds_other": "{{count}} секунды",
+  "points_one": "{{score}} очко",
+  "points_few": "{{score}} очка",
+  "points_many": "{{score}} очков",
+  "points_other": "{{score}} очка",
+  "place": "{{place}}-е место",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "В сети",
+    "online_female": "В сети",
+    "reconnecting": "Переподключается",
+    "reconnecting_female": "Переподключается",
+    "unstable": "Нет связи",
+    "unstable_female": "Нет связи",
+    "left": "Вне игры",
+    "left_female": "Вышла"
+  },
+  "result": {
+    "winShort": "В",
+    "lossShort": "П",
+    "drawShort": "Н"
+  },
+  "flag": {
+    "label": "Страна: {{country}}"
+  },
+  "rating": {
+    "label": "Рейтинг {{value}}",
+    "labelWithKey": "{{key}}: рейтинг {{value}}",
+    "provisional": "Временный",
+    "provisionalLabel": "{{label}}, предварительный"
+  },
+  "league": {
+    "bronze": "Бронза",
+    "silver": "Серебро",
+    "gold": "Золото",
+    "diamond": "Алмаз",
+    "legend": "Легенда",
+    "name": "Лига «{{league}}»",
+    "level": "Уровень {{level}}",
+    "levelAfter": "· Уровень {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "Без ошибок",
+    "short_one": "{{count}} ошибка",
+    "short_few": "{{count}} ошибки",
+    "short_many": "{{count}} ошибок",
+    "short_other": "{{count}} ошибки",
+    "long_zero": "Без ошибок",
+    "long_one": "{{count}} ошибка",
+    "long_few": "{{count}} ошибки",
+    "long_many": "{{count}} ошибок",
+    "long_other": "{{count}} ошибки",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Выбирает",
+    "locking_female": "Выбирает",
+    "turn": "Ходит",
+    "turn_female": "Ходит",
+    "paused": "Пауза",
+    "thinking": "Думает",
+    "thinking_female": "Думает",
+    "reconnecting": "Переподключается",
+    "reconnecting_female": "Переподключается",
+    "left": "Вне игры",
+    "left_female": "Вышла",
+    "surrendered": "Партия сдана",
+    "surrendered_female": "Сдалась",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Под помехой, {{time}}",
+    "target": "Цель",
+    "targetHint": "Цель помехи"
+  },
+  "actions": {
+    "surrender": "Сдаться",
+    "endPractice": "Закончить тренировку",
+    "reactions": "Реакции"
+  },
+  "interfere": {
+    "button": "Помешать",
+    "label": "Помешать игроку {{name}} · стоит {{cost}} оч.",
+    "labelMissing": "Помешать игроку {{name}} · не хватает {{count}} оч.",
+    "labelBusy": "Помешать игроку {{name}} нельзя: на нём уже помеха",
+    "labelNotRunning": "Помешать игроку {{name}} сейчас нельзя",
+    "labelDisconnected": "Без связи помехи недоступны",
+    "labelOut": "Игрок {{name}} выбыл из партии",
+    "close": "Закрыть выбор помехи"
+  },
+  "lead": {
+    "tie": "Равный счёт",
+    "label_one": "{{name}} впереди на {{gap}} очко",
+    "label_few": "{{name}} впереди на {{gap}} очка",
+    "label_many": "{{name}} впереди на {{gap}} очков",
+    "label_other": "{{name}} впереди на {{gap}} очка",
+    "label_female_one": "{{name}} впереди на {{gap}} очко",
+    "label_female_few": "{{name}} впереди на {{gap}} очка",
+    "label_female_many": "{{name}} впереди на {{gap}} очков",
+    "label_female_other": "{{name}} впереди на {{gap}} очка",
+    "tieLabel": "Счёт равный"
+  },
+  "lock": {
+    "yourCell": "Твоя клетка",
+    "paused": "Пауза",
+    "pick": "Выбери клетку",
+    "remaining_one": "Осталась {{count}} секунда",
+    "remaining_few": "Осталось {{count}} секунды",
+    "remaining_many": "Осталось {{count}} секунд",
+    "remaining_other": "Осталось {{count}} секунды",
+    "label": "Твоя клетка {{cell}}, {{remaining}}",
+    "labelPaused": "Твоя клетка {{cell}}, таймер остановлен",
+    "progress": "Оставшееся время для клетки {{cell}}",
+    "released": "Клетка освобождена"
+  }
+}

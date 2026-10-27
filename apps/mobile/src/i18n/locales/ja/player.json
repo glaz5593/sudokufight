@@ -1,0 +1,108 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": "、",
+  "ellipsis": "…",
+  "unknownName": "プレイヤー",
+  "temporaryName": "プレイヤー{{digits}}",
+  "bot": "ボット",
+  "vs": "VS",
+  "seconds_other": "{{count}}秒",
+  "points_other": "{{score}}点",
+  "place": "{{place}}位",
+  "rank": "{{place}}位",
+  "presence": {
+    "online": "オンライン",
+    "online_female": "オンライン",
+    "reconnecting": "再接続中",
+    "reconnecting_female": "再接続中",
+    "unstable": "接続なし",
+    "unstable_female": "接続なし",
+    "left": "退出",
+    "left_female": "退出"
+  },
+  "result": {
+    "winShort": "勝",
+    "lossShort": "敗",
+    "drawShort": "分"
+  },
+  "flag": {
+    "label": "国：{{country}}"
+  },
+  "rating": {
+    "label": "レーティング{{value}}",
+    "labelWithKey": "{{key}}のレーティング{{value}}",
+    "provisional": "暫定",
+    "provisionalLabel": "{{label}}、暫定"
+  },
+  "league": {
+    "bronze": "ブロンズ",
+    "silver": "シルバー",
+    "gold": "ゴールド",
+    "diamond": "ダイヤモンド",
+    "legend": "レジェンド",
+    "name": "{{league}}リーグ",
+    "level": "レベル{{level}}",
+    "levelAfter": "· レベル{{level}}"
+  },
+  "mistakes": {
+    "short_zero": "ミスなし",
+    "short_other": "ミス{{count}}回",
+    "long_zero": "ミスなし",
+    "long_other": "{{count}}回のミス",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "選択中",
+    "locking_female": "選択中",
+    "turn": "相手の番",
+    "turn_female": "相手の番",
+    "paused": "一時停止",
+    "thinking": "思考中",
+    "thinking_female": "思考中",
+    "reconnecting": "再接続中",
+    "reconnecting_female": "再接続中",
+    "left": "退出",
+    "left_female": "退出",
+    "surrendered": "降参",
+    "surrendered_female": "降参",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}、{{time}}"
+  },
+  "card": {
+    "hit": "妨害を受けています、{{time}}",
+    "target": "ターゲット",
+    "targetHint": "妨害の対象"
+  },
+  "actions": {
+    "surrender": "降参",
+    "endPractice": "練習を終了",
+    "reactions": "リアクション"
+  },
+  "interfere": {
+    "button": "妨害",
+    "label": "{{name}}を妨害 · {{cost}}点",
+    "labelMissing": "{{name}}を妨害 · {{count}}点不足",
+    "labelBusy": "{{name}}はすでに妨害を受けているため、妨害できません",
+    "labelNotRunning": "今は{{name}}を妨害できません",
+    "labelDisconnected": "切断中は妨害できません",
+    "labelOut": "{{name}}は対戦から脱落しました",
+    "close": "妨害の選択を閉じる"
+  },
+  "lead": {
+    "tie": "同点",
+    "label_other": "{{name}}が{{gap}}点リード",
+    "label_female_other": "{{name}}が{{gap}}点リード",
+    "tieLabel": "同点です"
+  },
+  "lock": {
+    "yourCell": "自分のマス",
+    "paused": "一時停止",
+    "pick": "マスを選択",
+    "remaining_other": "残り{{count}}秒",
+    "label": "自分のマス{{cell}}、{{remaining}}",
+    "labelPaused": "自分のマス{{cell}}、タイマー停止中",
+    "progress": "マス{{cell}}の残り時間",
+    "released": "マスを解除しました"
+  }
+}

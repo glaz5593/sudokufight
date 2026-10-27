@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "Halo dari mesin · sel {{cell}}",
+    "versions": "mesin {{engine}} · protokol {{protocol}}",
+    "taps": "Ketukan: {{count}}",
+    "server": {
+      "connecting": "Server: menghubungkan…",
+      "connected": "Server: terhubung",
+      "rtt": "Server: latensi {{ms}} ms",
+      "error": "Kesalahan server: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "Terjadi kesalahan",
+    "body": "Layar ini mengalami kesalahan. Kami sudah melaporkannya, dan kamu bisa mencoba lagi.",
+    "retry": "Coba lagi"
+  },
+  "fallback": {
+    "loading": "Sebentar…",
+    "title": "Layar ini gagal dimuat",
+    "body": "Kamu bisa lanjut ke hasil atau kembali ke beranda.",
+    "bodyHome": "Kamu bisa kembali ke beranda dan lanjut dari sana.",
+    "results": "Ke hasil",
+    "home": "Beranda"
+  },
+  "appVersion": {
+    "version": "Versi {{version}}",
+    "build": "nomor build {{build}}",
+    "engine": "mesin {{engine}}"
+  },
+  "number": {
+    "decimal": ",",
+    "percent": "{{value}}%"
+  },
+  "text": {
+    "labelValue": "{{label}}: {{value}}",
+    "parenthetical": "{{text}} ({{note}})",
+    "sentence": "{{text}}.",
+    "wordSpace": " "
+  }
+}

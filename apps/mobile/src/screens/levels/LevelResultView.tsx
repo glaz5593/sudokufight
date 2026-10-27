@@ -11,7 +11,7 @@ import {
 } from '@sudoku-fight/engine';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -24,7 +24,9 @@ import { formatScore, ltr, signedText } from '../../components/player/format';
 import { Button } from '../../components/ui';
 import { Confetti } from '../../components/ui/Confetti';
 import { timing } from '../../components/ui/motion';
+import { Text } from '../../components/ui/Text';
 import { LEVEL_MOTION } from '../../config/levels';
+import { decimalSeparator } from '../../i18n/compose';
 import type { LevelFinished } from '../../levels/appLevels';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
@@ -227,7 +229,8 @@ export function LevelResultView({
               {t('result.bestMove', {
                 digit: played.bestMove.digit,
                 cell: ltr(cellName(played.bestMove.cell)),
-                points: formatScore(played.bestMove.points),
+                count: played.bestMove.points,
+                points: formatScore(played.bestMove.points, decimalSeparator(t)),
               })}
             </Text>
           ) : null}
@@ -338,15 +341,16 @@ function XpLine({ xp, stars, reduce, t }: { xp: number; stars: number; reduce: b
   }, [xp, stars, reduce]);
   const shown = reduce ? xp : counted;
   const unit = t('result.xpUnit');
+  const decimal = decimalSeparator(t);
   const format = (value: number): string => {
     'worklet';
-    return `${ltr(`+${formatScore(value)}`)} ${unit}`;
+    return `${ltr(`+${formatScore(value, decimal)}`)} ${unit}`;
   };
   return (
     <View
       style={styles.xp}
       accessible
-      accessibilityLabel={t('result.xpLabel', { xp: signedText(xp) })}
+      accessibilityLabel={t('result.xpLabel', { xp: signedText(xp, decimal) })}
       testID="level-result-xp"
     >
       <CountUpText value={shown} format={format} style={styles.xpText} testID="level-result-xp-value" />
@@ -367,6 +371,7 @@ function ChapterLine({ chapter, t }: { chapter: ResultChapter; t: LevelsT }) {
       style={styles.chapter}
       accessible
       accessibilityLabel={t('result.chapterLine', {
+        count: chapter.stars,
         stars: chapter.stars,
         max: chapter.max,
         gate: gateWords,
@@ -420,7 +425,10 @@ function OpponentRow({ level, opponent, t }: { level: AppLevel; opponent: LevelO
   const value =
     level.kind === 'findDuel'
       ? t('result.opponentSpots', { count: opponent.value })
-      : t('result.opponentScore', { score: formatScore(opponent.value) });
+      : t('result.opponentScore', {
+          count: opponent.value,
+          score: formatScore(opponent.value, decimalSeparator(t)),
+        });
   const verdict =
     opponent.verdict === 'won'
       ? t('result.youWon')

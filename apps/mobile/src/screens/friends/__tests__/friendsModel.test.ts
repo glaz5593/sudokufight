@@ -33,6 +33,9 @@ const LRI = String.fromCharCode(0x2066);
 const PDI = String.fromCharCode(0x2069);
 const FSI = String.fromCharCode(0x2068);
 
+// Both languages' strings, whatever language the tests start in (a language loads when it is first used).
+beforeAll(() => i18n.loadLanguages(['he', 'en']));
+
 const he = () => i18n.getFixedT('he', 'friends') as FriendsT;
 const en = () => i18n.getFixedT('en', 'friends') as FriendsT;
 

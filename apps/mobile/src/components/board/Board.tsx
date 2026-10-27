@@ -1,9 +1,10 @@
 import type { CellIndex } from '@sudoku-fight/engine';
 import { memo, type ReactNode, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { color, space, text, tokens } from '../../theme';
+import { Text } from '../ui/Text';
 import type { BoardModel } from './boardModel';
 import { Cell, type CellFlash, sameCell } from './Cell';
 import { boardGeometry, cellHitSlop, cornerOf, px } from './geometry';

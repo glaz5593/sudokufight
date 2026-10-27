@@ -1,0 +1,50 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Griglia di gioco",
+    "myLock": "la tua casella {{cell}}",
+    "otherLock": "{{cell}} bloccata da {{name}}",
+    "tapLabel": "La griglia della fase"
+  },
+  "cell": {
+    "empty": "vuota",
+    "given": "indizio",
+    "solvedByMe": "risolta da te",
+    "solvedBy": "risolta da {{name}}",
+    "lockedByMe": "bloccata da te",
+    "lockedBy": "bloccata da {{name}}",
+    "pending": "in attesa del blocco",
+    "queued": "{{digit}}, in attesa della connessione",
+    "timerStopped": "timer fermo",
+    "seconds_one": "{{count}} secondo",
+    "seconds_many": "{{count}} di secondi",
+    "seconds_other": "{{count}} secondi",
+    "wrong": "numeri sbagliati: {{digits}}",
+    "hintMyLock": "Scegli un numero sul tastierino",
+    "player": "Giocatore {{n}}",
+    "corrected": "errore trovato: {{wrong}}, il numero giusto è {{right}}",
+    "mine": "tua",
+    "outside": "fuori dall’area",
+    "hintTap": "La mossa è toccare la casella"
+  },
+  "keypad": {
+    "armed": "Numero {{digit}} · ne restano {{left}}",
+    "idle": "Numero {{digit}}, ne restano {{left}}, prima scegli una casella",
+    "complete": "Numero {{digit}}, ne restano {{left}}",
+    "tried": "Numero {{digit}} · già provato in questa casella"
+  },
+  "cancel": {
+    "label": "Annulla la selezione",
+    "withCell": "Annulla la selezione, {{cell}}"
+  },
+  "resume": {
+    "title": "Si riprende tra",
+    "paused": "La partita è in pausa",
+    "label_one": "Si riprende tra {{count}} secondo",
+    "label_many": "Si riprende tra {{count}} di secondi",
+    "label_other": "Si riprende tra {{count}} secondi"
+  }
+}

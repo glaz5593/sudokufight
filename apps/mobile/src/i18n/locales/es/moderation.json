@@ -1,0 +1,114 @@
+{
+  "actions": {
+    "report": "Denunciar jugador",
+    "block": "Bloquear jugador",
+    "unblock": "Desbloquear",
+    "reportLabel": "Denunciar a {{name}}",
+    "blockLabel": "Bloquear a {{name}}",
+    "unblockLabel": "Desbloquear a {{name}}",
+    "blockedNote": "Bloqueaste a este jugador: no volverán a coincidir en partidas clasificatorias."
+  },
+  "report": {
+    "title": "Denunciar a {{name}}",
+    "question": "¿Qué pasa?",
+    "reasons": {
+      "offensiveName": "Nombre ofensivo",
+      "cheating": "Trampas",
+      "other": "Otro motivo"
+    },
+    "reasonHints": {
+      "offensiveName": "El nombre es grosero, insultante o inapropiado",
+      "cheating": "Parece que recibe ayuda externa o que aprovecha un error del juego",
+      "other": "Otra cosa que no tiene lugar en la arena"
+    },
+    "privacy_one": "El jugador no sabrá quién lo denunció. Revisamos cada denuncia en un plazo de 1 hora.",
+    "privacy_many": "El jugador no sabrá quién lo denunció. Revisamos cada denuncia en un plazo de {{hours}} de horas.",
+    "privacy_other": "El jugador no sabrá quién lo denunció. Revisamos cada denuncia en un plazo de {{hours}} horas.",
+    "send": "Enviar denuncia",
+    "pickFirst": "Elige un motivo y luego envía.",
+    "thanks_one": "Gracias. Revisaremos la denuncia en un plazo de 1 hora.",
+    "thanks_many": "Gracias. Revisaremos la denuncia en un plazo de {{hours}} de horas.",
+    "thanks_other": "Gracias. Revisaremos la denuncia en un plazo de {{hours}} horas.",
+    "done": "Cerrar",
+    "errors": {
+      "rateLimited_one": "Enviaste muchas denuncias en la última hora. Podrás enviar otra en un minuto.",
+      "rateLimited_many": "Enviaste muchas denuncias en la última hora. Podrás enviar otra en {{count}} de minutos.",
+      "rateLimited_other": "Enviaste muchas denuncias en la última hora. Podrás enviar otra en {{count}} minutos.",
+      "busy": "Demasiadas solicitudes. Espera un momento y vuelve a intentarlo.",
+      "suspended": "Tu cuenta está suspendida, así que ahora no puedes enviar denuncias.",
+      "self": "No puedes denunciar tu propia cuenta.",
+      "notFound": "Este jugador ya no está en la partida.",
+      "offline": "Sin conexión con el servidor: la denuncia no se envió. Vuelve a intentarlo.",
+      "failed": "No pudimos enviar la denuncia. Vuelve a intentarlo."
+    }
+  },
+  "block": {
+    "title": "¿Bloquear a {{name}}?",
+    "body": "No volverán a coincidir en partidas clasificatorias, y las reacciones de {{name}} no te llegarán. No avisamos a nadie de un bloqueo. Puedes quitarlo cuando quieras: Configuración → Jugadores bloqueados.",
+    "confirm": "Bloquear",
+    "done": "Bloqueaste a {{name}}.",
+    "unblockTitle": "¿Desbloquear a {{name}}?",
+    "unblockBody": "Puede que vuelvan a coincidir en partidas clasificatorias, y las reacciones de {{name}} te llegarán.",
+    "unblockConfirm": "Desbloquear",
+    "unblocked": "Desbloqueaste a {{name}}.",
+    "errors": {
+      "limitReached_one": "Puedes bloquear hasta 1 jugador. Desbloquea a alguien (Configuración → Jugadores bloqueados) y vuelve a intentarlo.",
+      "limitReached_many": "Puedes bloquear hasta {{max}} de jugadores. Desbloquea a alguien (Configuración → Jugadores bloqueados) y vuelve a intentarlo.",
+      "limitReached_other": "Puedes bloquear hasta {{max}} jugadores. Desbloquea a alguien (Configuración → Jugadores bloqueados) y vuelve a intentarlo.",
+      "self": "No puedes bloquear tu propia cuenta.",
+      "notFound": "Este jugador ya no está en la partida.",
+      "busy": "Demasiadas solicitudes. Espera un momento y vuelve a intentarlo.",
+      "offline": "Sin conexión con el servidor: el bloqueo no se guardó. Vuelve a intentarlo.",
+      "unblockOffline": "Sin conexión con el servidor: el bloqueo no se quitó. Vuelve a intentarlo.",
+      "failed": "No pudimos guardar el bloqueo. Vuelve a intentarlo.",
+      "unblockFailed": "No pudimos quitar el bloqueo. Vuelve a intentarlo."
+    }
+  },
+  "blocked": {
+    "title": "Jugadores bloqueados",
+    "settingsRow": "Jugadores bloqueados",
+    "note": "No volverán a coincidir en partidas clasificatorias, y sus reacciones no te llegarán. No avisamos a nadie de un bloqueo.",
+    "count": "{{count}} de {{max}}",
+    "since": "Bloqueo desde el {{date}}",
+    "rowLabel": "{{name}}, bloqueo desde el {{date}}",
+    "emptyTitle": "No hay jugadores bloqueados",
+    "emptyBody": "Puedes bloquear a un jugador desde su tarjeta, o desde el menú de su tarjeta en una partida clasificatoria.",
+    "loading": "Cargando jugadores bloqueados…",
+    "offlineTitle": "Sin conexión con el servidor",
+    "offlineBody": "La lista se guarda en el servidor. Vuelve a intentarlo cuando estés en línea.",
+    "errorTitle": "No pudimos cargar la lista",
+    "errorBody": "Vuelve a intentarlo en un momento.",
+    "retry": "Reintentar",
+    "signedOut": "Inicia sesión para ver la lista."
+  },
+  "chooseName": {
+    "title": "Elige un nombre nuevo",
+    "body": "Tu nombre anterior se cambió por uno temporal, {{name}}, porque no cumplía las reglas de nombres. Elige un nombre nuevo para continuar.",
+    "rule": "Esta vez no tienes que esperar 30 días: puedes elegir un nombre ahora.",
+    "save": "Guardar y continuar",
+    "saved": "Tu nombre nuevo está guardado.",
+    "same": "Ese es el nombre temporal. Elige uno propio.",
+    "offline": "Sin conexión con el servidor: el nombre no se guardó. Vuelve a intentarlo cuando estés en línea.",
+    "practice": "Practicar mientras tanto",
+    "settings": "Configuración",
+    "signOut": "Cerrar sesión"
+  },
+  "suspended": {
+    "banner": "Cuenta suspendida: sin partidas clasificatorias",
+    "bannerAction": "Detalles",
+    "bannerLabel": "Cuenta suspendida, sin partidas clasificatorias. Detalles",
+    "title": "Cuenta suspendida",
+    "body": "Tras una denuncia, tu cuenta está suspendida. Mientras dure, no hay partidas clasificatorias y el perfil no se puede modificar.",
+    "can": "Todavía puedes practicar a solas o contra un bot, bloquear jugadores y eliminar la cuenta.",
+    "contactTitle": "¿Crees que es un error?",
+    "contact": "Escríbenos y lo revisaremos de nuevo. Los datos de contacto están en los términos de uso.",
+    "contactEmail": "Puedes escribirnos a: {{email}}",
+    "openContact": "Datos de contacto",
+    "opensInBrowser": "Se abre en el navegador",
+    "practice": "Practicar",
+    "chip": "Cuenta suspendida",
+    "chipLabel": "No disponible: cuenta suspendida",
+    "ranked": "Tu cuenta está suspendida: por ahora no hay partidas clasificatorias.",
+    "editProfile": "Cuenta suspendida: el perfil no se puede modificar"
+  }
+}

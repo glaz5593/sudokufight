@@ -1,0 +1,17 @@
+{
+  "title": "Points",
+  "greet": "Hello {{name}}",
+  "points_one": "{{count}} point",
+  "points_other": "{{count}} points",
+  "lead_one": "{{name}} leads by 1 point",
+  "lead_other": "{{name}} leads by {{gap}} points",
+  "streak_zero": "No win streak",
+  "streak_one": "{{count}}-game win streak",
+  "streak_other": "{{count}}-game win streak",
+  "range": "0–3 stars",
+  "score": "Score: <accent>{{score}}</accent>",
+  "sep": " · ",
+  "sentenceSpace": " ",
+  "brand": "Sudoku Fight",
+  "vs": "VS"
+}

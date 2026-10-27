@@ -2,9 +2,10 @@ import type { AppLevel } from '@sudoku-fight/engine';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Spinner } from '../../src/components/ui';
+import { Text } from '../../src/components/ui/Text';
 import { levelMapOpenProps } from '../../src/levels/analyticsProps';
 import { allLevels } from '../../src/levels/levelsData';
 import { openLevelsStorage } from '../../src/levels/levelsStorage';

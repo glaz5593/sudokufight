@@ -1,0 +1,48 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Spelbord",
+    "myLock": "jouw vakje {{cell}}",
+    "otherLock": "{{cell}} vergrendeld door {{name}}",
+    "tapLabel": "Het bord van de etappe"
+  },
+  "cell": {
+    "empty": "leeg",
+    "given": "startcijfer",
+    "solvedByMe": "opgelost door jou",
+    "solvedBy": "opgelost door {{name}}",
+    "lockedByMe": "vergrendeld door jou",
+    "lockedBy": "vergrendeld door {{name}}",
+    "pending": "wacht op de vergrendeling",
+    "queued": "{{digit}}, wacht op de verbinding",
+    "timerStopped": "timer gestopt",
+    "seconds_one": "{{count}} seconde",
+    "seconds_other": "{{count}} seconden",
+    "wrong": "foute cijfers: {{digits}}",
+    "hintMyLock": "Kies een cijfer op het toetsenblok",
+    "player": "Speler {{n}}",
+    "corrected": "fout gevonden: {{wrong}}, het juiste cijfer is {{right}}",
+    "mine": "van jou",
+    "outside": "buiten het gebied",
+    "hintTap": "Op het vakje tikken is de zet"
+  },
+  "keypad": {
+    "armed": "Cijfer {{digit}} · nog {{left}}",
+    "idle": "Cijfer {{digit}}, nog {{left}}, kies eerst een vakje",
+    "complete": "Cijfer {{digit}}, nog {{left}}",
+    "tried": "Cijfer {{digit}} · al geprobeerd in dit vakje"
+  },
+  "cancel": {
+    "label": "Selectie annuleren",
+    "withCell": "Selectie annuleren, {{cell}}"
+  },
+  "resume": {
+    "title": "Verder over",
+    "paused": "Het spel is gepauzeerd",
+    "label_one": "Verder over {{count}} seconde",
+    "label_other": "Verder over {{count}} seconden"
+  }
+}

@@ -45,7 +45,17 @@ export {
   timeLeft,
 } from './cardModel';
 export { countryName, flagEmoji } from './countryFlag';
-export { formatScore, formatSigned, ltr, MINUS, scoreText, secondsOf, signedText } from './format';
+export {
+  formatScore,
+  formatSigned,
+  ltr,
+  MINUS,
+  scoreFormat,
+  scoreText,
+  secondsOf,
+  signedText,
+  withDecimal,
+} from './format';
 export {
   type League,
   leagueFloor,

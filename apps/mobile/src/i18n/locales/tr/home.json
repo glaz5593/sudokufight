@@ -1,0 +1,282 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "Ayarlar",
+    "back": "Geri"
+  },
+  "profile": {
+    "defaultName": "Oyuncu",
+    "label": "Oyuncu kartım: {{name}}",
+    "noRating": "Henüz derece yok",
+    "ratingTitle": "Derece",
+    "none": "—",
+    "games_one": "1 maç",
+    "games_other": "{{count}} maç",
+    "gamesLabel_one": "maç",
+    "gamesLabel_other": "maç",
+    "winsLabel": "galibiyet",
+    "streakLabel": "seri",
+    "winRate": "%{{percent}} galibiyet",
+    "streak_zero": "Galibiyet serisi yok",
+    "streak_one": "1 galibiyetlik seri",
+    "streak_other": "{{count}} galibiyetlik seri"
+  },
+  "play": "Oyna",
+  "playHint": "Bir oyun modu seç",
+  "again": {
+    "title": "Bir tur daha",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "Maç başlatılamadı. Tekrar dene."
+  },
+  "recent": {
+    "heading": "Son maçlar",
+    "all": "Tümü",
+    "unavailable": "Bu telefona kaydedilen maçlar okunamadı.",
+    "emptyTitle": "Burada henüz maç yok",
+    "emptyBody": "Her antrenman burada saklanır, uygulamayı kapatsan bile.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "Tamamlandı",
+      "ended": "Bitti",
+      "interrupted": "Yarıda kaldı",
+      "playing": "Sürüyor",
+      "win": "Kazandın",
+      "loss": "Kaybettin",
+      "tie": "Berabere"
+    },
+    "openHint": "Sonuçları açar",
+    "versus": "{{outcome}}, rakip: {{name}}"
+  },
+  "modes": {
+    "title": "Yeni maç",
+    "footnote": "Dereceli için internet bağlantısı gerekir · Antrenman her zaman açık",
+    "soon": "Yakında",
+    "groups": {
+      "ranked": {
+        "title": "Dereceli",
+        "note": "Gerçek rakipler, gerçek zamanlı"
+      },
+      "friends": {
+        "title": "Arkadaşlarla",
+        "titleMoshe": "Gerçek arkadaşlar, gerçek zamanlı",
+        "note": "Özel oda · en fazla 4 · derecesiz"
+      },
+      "practice": {
+        "title": "Antrenman",
+        "note": "Baskı yok, derece yok"
+      }
+    },
+    "chips": {
+      "rated": "Dereceli",
+      "unrated": "Derecesiz",
+      "offline": "Çevrimdışı çalışır"
+    },
+    "ranked": {
+      "name": "Dereceli"
+    },
+    "ranked2": {
+      "title": "2 oyuncu",
+      "tagline": "Bire bir · aynı tablo",
+      "label": "Dereceli · 2 oyuncu"
+    },
+    "ranked3": {
+      "title": "3 oyuncu",
+      "tagline": "Herkes herkese karşı",
+      "label": "Dereceli · 3 oyuncu"
+    },
+    "ranked4": {
+      "title": "4 oyuncu",
+      "tagline": "Herkes herkese karşı",
+      "label": "Dereceli · 4 oyuncu"
+    },
+    "friends": {
+      "create": "Yeni oda",
+      "createHint": "Arkadaşlarına göndereceğin bir kodla bekleme odası açar",
+      "join": "Kodla katıl",
+      "joinHint": "Aldığın 6 haneli kodu yaz"
+    },
+    "solo": {
+      "name": "Tek başına antrenman",
+      "title": "Tek başına · tam tablo",
+      "tagline": "Kendi hızında",
+      "label": "Tek başına · tam tablo"
+    },
+    "levels": {
+      "name": "Aşamalı antrenman",
+      "title": "Aşamalı antrenman",
+      "tagline": "Kısa aşamalar · en fazla 3 yıldız",
+      "taglineNew_one": "1 kısa aşama · 0–3 yıldız",
+      "taglineNew_other": "{{total}} kısa aşama · 0–3 yıldız",
+      "chip": "Aşama {{stage}} ·",
+      "offline": "Offline",
+      "chipLabel_one": "Aşama {{stage}} · 1 yıldız",
+      "chipLabel_other": "Aşama {{stage}} · {{count}} yıldız",
+      "label": "Aşamalı antrenman"
+    },
+    "bot": {
+      "name": "Bota karşı antrenman",
+      "title": "Bota karşı antrenman",
+      "tagline": "5 seviye",
+      "label": "Bota karşı antrenman"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "Hızlı",
+      "difficulty": "Kolay",
+      "technique": "Yalnızca açık teklilerle çözülür"
+    },
+    "normal": {
+      "name": "Standart",
+      "difficulty": "Orta",
+      "technique": "Gizli tekliler gerekir"
+    },
+    "hard": {
+      "name": "Zor",
+      "difficulty": "Zor",
+      "technique": "İkililer ya da elemeler gerekir"
+    }
+  },
+  "gameType": {
+    "title": "Maç türü",
+    "note": {
+      "solo": "Derecesiz. Tablo bu telefondaki bulmacalardan gelir; son zamanlarda oynadığın bir tablo tekrarlanmaz.",
+      "bot": "Derecesiz. Tablo bu telefondaki bulmacalardan gelir; son zamanlarda oynadığın bir tablo tekrarlanmaz. Sonra rakibini seçersin.",
+      "ranked": "Dereceli. Derecene yakın bir rakip, sunucunun havuzundan oynamadığın bir tablo ve ikiniz için aynı tablo.",
+      "rankedGroup": "Dereceli. Derecene yakın rakipler, sunucunun havuzundan oynamadığın bir tablo ve herkes için aynı tablo. Masa dolunca maç başlar."
+    },
+    "start": {
+      "solo": "Antrenmanı başlat",
+      "bot": "Rakip seç",
+      "ranked": "Rakip bul",
+      "rankedGroup": "Rakipleri bul"
+    },
+    "startHint": "{{type}} türünde bir antrenman başlatır",
+    "rankedHint": "{{type}} türünde dereceli bir maç için rakip arar",
+    "rankedGroupHint": "{{type}} türünde dereceli bir maç için rakipler arar",
+    "lockTime": "Hücre başına süre",
+    "board": "Tablo",
+    "duration": "Tahmini süre",
+    "seconds": "{{seconds}} sn",
+    "minutes": "{{range}} dk",
+    "yourRating": "Derecen",
+    "cardLabel_one": "{{name}}. {{technique}}. Hücre başına {{seconds}}, {{difficulty}} tablo, yaklaşık {{from}} ile 1 dakika arası",
+    "cardLabel_other": "{{name}}. {{technique}}. Hücre başına {{seconds}}, {{difficulty}} tablo, yaklaşık {{from}} ile {{to}} dakika arası",
+    "botHint": "{{type}} türünde bir maç için bot seç"
+  },
+  "dev": {
+    "title": "Geliştirme",
+    "designSystem": "Tasarım sistemi",
+    "hello": "Bağlantı kontrolü"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "feedback": "Ses ve titreşim",
+    "sound": "Ses",
+    "soundHint": "Hamleler ve işlemler için sesler",
+    "haptics": "Titreşim",
+    "hapticsHint": "Hamlelerde geri bildirim olarak kısa titreşimler",
+    "motion": "Hareketi azalt",
+    "motionHint": "Daha az animasyon: puanlar doğrudan sonuca atlar, sabotaj da aynı süre boyunca sabit bir örtü olarak görünür.",
+    "reduceMotion": {
+      "system": "Cihaz gibi",
+      "on": "Açık",
+      "off": "Kapalı"
+    },
+    "language": "Dil",
+    "languageHint": "Dili değiştirmek uygulamayı yeniden başlatır.",
+    "testing": "Test",
+    "testingHint": "Yalnızca test (staging) sürümlerinde var. Mağaza sürümünde yok.",
+    "chainPenalty": "Zincir: tahmine 5 sn ceza",
+    "chainPenaltyHint": "Sonraki zincir aşamasından itibaren: henüz bilinemeyen bir hücreye yazılan rakam 5 saniye ceza getirir ve yerleştirilmez.",
+    "unlockAll": "Tüm aşamaları aç (test)",
+    "unlockAllHint": "Haritada her aşama açık. Yıldızlar ve XP her zamanki gibi sayılır.",
+    "languageConfirm": {
+      "title": "Dil {{language}} olarak değiştirilsin mi?",
+      "body": "Uygulama yeniden başlar, böylece her ekran yeni dilin yönünde görünür.",
+      "confirm": "Değiştir ve yeniden başlat",
+      "titleDevice": "Cihaz diline geçilsin mi?"
+    },
+    "languageDevice": "Cihaz dili",
+    "languageSheetTitle": "Bir dil seç",
+    "languageField": "Dil: {{language}}",
+    "languageFieldDevice": "Dil: cihaz dili, {{language}}",
+    "about": "Hakkında ve yasal",
+    "privacy": "Gizlilik politikası",
+    "terms": "Kullanım koşulları",
+    "licenses": "Lisanslar",
+    "opensInBrowser": "Tarayıcıda açılır"
+  },
+  "placeholder": {
+    "soon": "Yakında",
+    "leaderboard": {
+      "title": "Sıralama",
+      "body": "Sıralama, dereceli maçlarla birlikte açılıyor."
+    },
+    "history": {
+      "title": "Geçmiş",
+      "body": "Tüm maçların burada olacak; maç tekrarları ve her hamle için bir açıklamayla. Bu arada son antrenmanların ana ekranda."
+    },
+    "achievements": {
+      "title": "Başarılar",
+      "body": "Başarılar, seviyeler ve XP yolda."
+    }
+  },
+  "botSelect": {
+    "title": "Bir bot seç",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "Hamle başına düşünme süresi",
+    "thinkValue": "{{range}} sn",
+    "mistakes": "Hatalar",
+    "note": "Bu, sıradan bir hamlenin süresi. Daha zor mantık gerektiren bir hücrede bot daha uzun düşünür; bir satırın, sütunun ya da kutunun son boşluğunda biraz daha kısa. Bot aynı tabloyu gerçek zamanlı oynar.",
+    "start": "Hadi oynayalım",
+    "startHint": "{{name}} karşısında {{type}} türünde bir antrenman başlatır",
+    "cardLabel_one": "Seviye {{level}}, {{title}}: {{name}}. {{behavior}}. Hamle başına {{from}} ile {{to}} saniye düşünür, hata oranı %{{mistakes}}",
+    "cardLabel_other": "Seviye {{level}}, {{title}}: {{name}}. {{behavior}}. Hamle başına {{from}} ile {{to}} saniye düşünür, hata oranı %{{mistakes}}",
+    "levels": {
+      "1": {
+        "title": "Acemi",
+        "behavior": "Yavaş, epey hata yapar ve öğrenmene fırsat verir"
+      },
+      "2": {
+        "title": "Amatör",
+        "behavior": "Rahat, arada bir yanılır ve bazen 😂 gönderir"
+      },
+      "3": {
+        "title": "İleri",
+        "behavior": "İstikrarlı ve düşünceli, geçmesi zor"
+      },
+      "4": {
+        "title": "Usta",
+        "behavior": "Hızlı, neredeyse hiç yanılmaz ve biraz kendini beğenmiş 😎"
+      },
+      "5": {
+        "title": "Büyük usta",
+        "behavior": "Hızlı, kusursuz ve acımasız"
+      }
+    }
+  },
+  "licenses": {
+    "title": "Lisanslar",
+    "intro": "Sudoku Fight açık yazı tipleri ve açık kaynak yazılımlar üzerine kurulu. Yazarlarına teşekkürler. İşte lisansları ve telif hakkı bildirimleri.",
+    "fonts": "Yazı tipleri",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_one": "1 açık kaynak paket",
+    "packages_other": "{{count}} açık kaynak paket",
+    "packageLabel": "{{name}}, sürüm {{version}}, lisans {{license}}",
+    "texts": "Lisans metinleri",
+    "textsHint": "Her lisansın tam metni, yazıldığı gibi.",
+    "show": "{{license}} lisansını göster",
+    "hide": "{{license}} lisansını gizle"
+  }
+}

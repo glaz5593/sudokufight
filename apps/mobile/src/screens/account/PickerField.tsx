@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon } from '../../components/Icon';
+import { Text } from '../../components/ui/Text';
+import { listOf } from '../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { FieldMessage } from './Field';
 
@@ -46,7 +48,7 @@ export function PickerField({
       </Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={[accessibilityLabel, error].filter(Boolean).join(', ')}
+        accessibilityLabel={listOf([accessibilityLabel, error], t)}
         accessibilityHint={accessibilityHint}
         onPress={onPress}
         style={({ pressed }) => [styles.box, error ? styles.boxError : null, pressed && styles.pressed]}

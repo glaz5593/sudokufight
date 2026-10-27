@@ -1,11 +1,12 @@
 import type { AppLevel, GateState } from '@sudoku-fight/engine';
 import { memo, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, I18nManager, type LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
+import { FlatList, I18nManager, type LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 
 import { Star } from '../../components/levels/StarRow';
 import { ltr } from '../../components/player/format';
+import { Text } from '../../components/ui/Text';
 import { color, space, text, tokens } from '../../theme';
 import { GatePlate } from './GatePlate';
 import { LevelNode } from './LevelNode';
@@ -157,7 +158,11 @@ const ChapterBlock = memo(function ChapterBlock({
         <View
           accessible
           accessibilityRole="image"
-          accessibilityLabel={t('chapterHeader.label', stars)}
+          accessibilityLabel={t('chapterHeader.label', {
+            count: stars.stars,
+            stars: stars.stars,
+            max: stars.max,
+          })}
           style={styles.count}
           testID={`chapter-${item.chapter}-stars`}
         >
@@ -207,7 +212,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     start: tokens.layout.gutterGame,
     end: tokens.layout.gutterGame,
-    height: MAP.headerRow,
+    // The least: a taller script may need more, never cut (localization plan 0ט).
+    minHeight: MAP.headerRow,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space[4],

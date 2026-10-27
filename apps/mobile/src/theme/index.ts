@@ -1,12 +1,16 @@
-import type { TextStyle } from 'react-native';
+import { Platform, type TextStyle } from 'react-native';
 
+import { I18N_CONFIG } from '../config/i18n';
+import i18n from '../i18n';
 import { tokens } from './tokens.generated';
+import { lineHeightIn, type Typeface, typefaceFor, uiFont, type UiWeight } from './typeface';
 
 /**
  * The design system of direction C, "Calm Night" (spec §24 D30), from docs/design/tokens.json.
  * Components read colors, type, spacing and motion from here and nowhere else.
  */
 export { tokens };
+export { lineHeightIn, type Typeface, typefaceFor, uiFont, usesRubik } from './typeface';
 
 export const color = tokens.color;
 export const space = tokens.space;
@@ -16,14 +20,45 @@ export const size = tokens.size;
 export type TypeName = keyof typeof tokens.type;
 type TypeToken = (typeof tokens.type)[TypeName];
 
-/** A named text style from the tokens, as a React Native style. */
-export function text(name: TypeName): TextStyle {
+let launchTypeface: Typeface | null = null;
+
+/**
+ * The typeface of the language the app started in (theme/typeface.ts: the font and least line heights of its
+ * script). Read once: the app restarts on every change of language (D104), and styles made as a module loads
+ * must agree with those made later. Importing i18n here makes it start (with the saved language) before any
+ * module that imports the theme.
+ */
+export function appTypeface(): Typeface {
+  launchTypeface ??= typefaceFor(i18n.language || I18N_CONFIG.fallbackLanguage, Platform.OS);
+  return launchTypeface;
+}
+
+/**
+ * Rubik's styles of digits only: the board's (a given, an owned and a wrong digit) and the keypad's counts. The
+ * board and the keypad are the same in every language (Western digits 1–9, left to right), so these keep Rubik
+ * and the tokens' metrics, as Teko's do.
+ */
+export const DIGIT_TYPES: ReadonlySet<TypeName> = new Set<TypeName>([
+  'digitCell',
+  'digitCellOwned',
+  'wrongDigit',
+  'keyCount',
+]);
+
+/**
+ * A named text style from the tokens, as a React Native style, in the app's typeface (or `typeface`, for a test
+ * of another language). Rubik's styles of words take the language's font and least line height; Teko's
+ * (numbers) and the digits' (DIGIT_TYPES) are the same in every language. Hebrew and English get the tokens
+ * exactly.
+ */
+export function text(name: TypeName, typeface: Typeface = appTypeface()): TextStyle {
   const t: TypeToken & { paddingTop?: number; writingDirection?: string; fontVariant?: readonly string[] } =
     tokens.type[name];
+  const ui = t.family === 'Rubik' && !DIGIT_TYPES.has(name);
   return {
-    fontFamily: t.fontFamily,
+    ...(ui ? uiFont(typeface, String(t.weight) as UiWeight) : { fontFamily: t.fontFamily }),
     fontSize: t.size,
-    lineHeight: t.lineHeight,
+    lineHeight: ui ? lineHeightIn(typeface, t.size, t.lineHeight) : t.lineHeight,
     letterSpacing: t.letterSpacing,
     ...(t.paddingTop ? { paddingTop: t.paddingTop } : null),
     ...(t.writingDirection === 'ltr' ? { writingDirection: 'ltr' as const } : null),

@@ -13,7 +13,7 @@ import type { LevelTutorialKind } from '@sudoku-fight/protocol';
 import { NO_AVATAR_ID } from '../../avatars';
 import { type CellModel, type CellPlayer, emptyCell } from '../../components/board/boardModel';
 import type { CellChip } from '../../components/levels/CellChipsLayer';
-import { signedText } from '../../components/player/format';
+import { DEFAULT_DECIMAL, signedText, withDecimal } from '../../components/player/format';
 
 /**
  * The pictures of "איך משחקים" (components.md §19.8; dev-plan §2ח; 1.0.3: levels-ui.md §3.2, §6), as boards the
@@ -211,11 +211,19 @@ const PUZZLE_MOVING: ReadonlySet<number> = new Set([0, 4, 8]);
 const PUZZLE_FIXED = [1, 2, 3, 5, 6, 7] as const;
 const PUZZLE_SOLVED = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
 
-/** The picture of `kind`'s panel `index` (0–2); null for a kind not drawn here on a board (and the boss). */
-export function tutorialPicture(kind: LevelTutorialKind, index: number): TutorialPicture | null {
+/**
+ * The picture of `kind`'s panel `index` (0–2); null for a kind not drawn here on a board (and the boss). Its
+ * chips' numbers ("‎+3.5") in the language's decimal separator (D108: "‎+3,5" with ",").
+ */
+export function tutorialPicture(
+  kind: LevelTutorialKind,
+  index: number,
+  decimal: string = DEFAULT_DECIMAL,
+): TutorialPicture | null {
   if (!isDrawnTutorial(kind)) return null;
-  const pictures = PICTURES[kind];
-  return pictures[index] ?? null;
+  const picture = PICTURES[kind][index] ?? null;
+  if (!picture || decimal === DEFAULT_DECIMAL) return picture;
+  return { ...picture, chips: picture.chips.map((c) => ({ ...c, text: withDecimal(c.text, decimal) })) };
 }
 
 const PICTURES: Record<DrawnTutorial, readonly TutorialPicture[]> = {

@@ -1,13 +1,23 @@
 import { createHash } from 'node:crypto';
 
 import { DELETE_ACCOUNT } from './deleteAccount';
+import {
+  FALLBACK_PAGE_LANGUAGE,
+  PAGE_LANGUAGE_NAMES,
+  pageDir,
+  type PageLanguage,
+  versionOf,
+} from './languages';
 import { PRIVACY } from './privacy';
 import { TERMS } from './terms';
+import { byTranslation } from './translations';
 import {
   type Block,
   LEGAL_DOCS,
   LEGAL_LANGS,
+  LEGAL_ORIGINALS,
   LEGAL_UPDATED,
+  type LegalDoc,
   type LegalDocId,
   type LegalLang,
   type LegalSettings,
@@ -17,8 +27,9 @@ import {
 /**
  * A legal page as one self-contained HTML document: no script, no external file, no font download (system
  * fonts), one inline <style> that the CSP allows by its hash. Responsive (one column, 16 px gutters, tables
- * scroll inside their own box) and direction-aware: Hebrew is `dir="rtl"`, English `ltr`; event names and
- * addresses are isolated left to right inside Hebrew.
+ * scroll inside their own box) and direction-aware: Hebrew and Arabic are `dir="rtl"`, the others `ltr`; event
+ * names and addresses are isolated left to right inside them. A translated version (not Hebrew, not English:
+ * D112) opens with one line saying the English version prevails.
  *
  * Every text is escaped first; the few marks in types.ts are the only markup a text can make.
  */
@@ -34,8 +45,11 @@ export const isLegalDoc = (value: unknown): value is LegalDocId =>
 export const isLegalLang = (value: unknown): value is LegalLang =>
   typeof value === 'string' && (LEGAL_LANGS as readonly string[]).includes(value);
 
+/** The version to show for a language: its own, else English (D101). */
+export const legalLangFor = (lang: PageLanguage): LegalLang => versionOf(lang, LEGAL_LANGS);
+
 /** The page's address on this server, e.g. /legal/terms?lang=en. */
-export const legalHref = (doc: LegalDocId, lang: LegalLang): string => `/legal/${doc}?lang=${lang}`;
+export const legalHref = (doc: LegalDocId, lang: PageLanguage): string => `/legal/${doc}?lang=${lang}`;
 
 /** The app's dark palette (docs/design/tokens.json `color`; a test keeps them equal), and a light one. */
 export const PAGE_COLORS = {
@@ -92,6 +106,7 @@ export const LEGAL_CSS = [
   'tr:last-child td{border-bottom:0}',
   '.ph{color:var(--danger);border:1px dashed var(--danger);border-radius:4px;padding:0 4px}',
   '.draft{border:1px solid var(--danger);border-radius:12px;padding:12px 16px;margin:24px 0 0}',
+  '.translated{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin:24px 0 0}',
   'footer{margin-top:48px;border-top:1px solid var(--border);color:var(--muted);font-size:.9rem}',
   'footer .wrap{padding-top:16px;padding-bottom:32px}',
   'footer nav{display:flex;flex-wrap:wrap;gap:4px 16px}',
@@ -113,20 +128,25 @@ export const LEGAL_CSP = [
   "frame-ancestors 'none'",
 ].join('; ');
 
-/** The words around the texts. */
-const CHROME: Record<
-  LegalLang,
-  {
-    brand: string;
-    languages: string;
-    contents: string;
-    documents: string;
-    updated: string;
-    emailPlaceholder: string;
-    operatorPlaceholder: string;
-    draft: string;
-  }
-> = {
+/** The words around the texts, per language. */
+export interface LegalChrome {
+  brand: string;
+  languages: string;
+  contents: string;
+  documents: string;
+  updated: string;
+  emailPlaceholder: string;
+  operatorPlaceholder: string;
+  draft: string;
+  /**
+   * A translated version's first line (D112): "This is a translation of the English version. If they differ,
+   * the English version prevails.", in that language; null in the originals (Hebrew and English), which stay
+   * as they are.
+   */
+  translationNotice: string | null;
+}
+
+export const LEGAL_CHROME: Record<LegalLang, LegalChrome> = {
   he: {
     brand: 'סודוקו פייט',
     languages: 'שפה',
@@ -136,6 +156,7 @@ const CHROME: Record<
     emailPlaceholder: 'privacy@<domain>',
     operatorPlaceholder: '[שם המפעיל]',
     draft: 'טיוטה: פרטי הקשר עוד לא הוגדרו בשרת (LEGAL_CONTACT_EMAIL, ‏LEGAL_OPERATOR_NAME).',
+    translationNotice: null,
   },
   en: {
     brand: 'Sudoku Fight',
@@ -147,10 +168,27 @@ const CHROME: Record<
     operatorPlaceholder: '[operator name]',
     draft:
       'Draft: the contact details are not set on the server yet (LEGAL_CONTACT_EMAIL, LEGAL_OPERATOR_NAME).',
+    translationNotice: null,
   },
+  // The translated versions (D112): each with its line that the English version prevails.
+  ...byTranslation((t) => t.chrome),
 };
 
-const LANGUAGE_NAMES: Record<LegalLang, string> = { he: 'עברית', en: 'English' };
+/**
+ * Everything the pages are made of: the languages with a version (in the order of the language links), the
+ * texts and the words around them. The server's is LEGAL_CATALOG; a test may render another one (say, a
+ * translated version that does not exist yet).
+ */
+export interface LegalCatalog {
+  langs: readonly PageLanguage[];
+  texts: Readonly<Record<LegalDocId, Partial<Record<PageLanguage, LegalDoc>>>>;
+  chrome: Partial<Record<PageLanguage, LegalChrome>>;
+}
+
+export const LEGAL_CATALOG: LegalCatalog = { langs: LEGAL_LANGS, texts: LEGAL_TEXTS, chrome: LEGAL_CHROME };
+
+/** A translation of the English version (D112): any version but the originals. */
+export const isTranslation = (lang: PageLanguage): boolean => !LEGAL_ORIGINALS.includes(lang);
 
 export function escapeHtml(text: string): string {
   return text
@@ -162,8 +200,16 @@ export function escapeHtml(text: string): string {
 }
 
 interface Context {
-  lang: LegalLang;
+  lang: PageLanguage;
   settings: LegalSettings;
+  /** The words around the texts in `lang` (default: the server's). */
+  chrome?: LegalChrome;
+}
+
+function chromeOf({ lang, chrome }: Context): LegalChrome {
+  const words = chrome ?? LEGAL_CATALOG.chrome[lang];
+  if (words === undefined) throw new Error(`No legal pages in ${lang}`);
+  return words;
 }
 
 const MARKS = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([a-z-]+)\)|\{(email|operator)\}/g;
@@ -187,16 +233,16 @@ export function inline(text: string, ctx: Context): string {
   return out + escapeHtml(text.slice(last));
 }
 
-function email({ lang, settings }: Context): string {
-  const address = settings.contactEmail;
+function email(ctx: Context): string {
+  const address = ctx.settings.contactEmail;
   if (address === null)
-    return `<span class="ph" dir="ltr">${escapeHtml(CHROME[lang].emailPlaceholder)}</span>`;
+    return `<span class="ph" dir="ltr">${escapeHtml(chromeOf(ctx).emailPlaceholder)}</span>`;
   return `<a href="mailto:${escapeHtml(address)}" dir="ltr">${escapeHtml(address)}</a>`;
 }
 
-function operator({ lang, settings }: Context): string {
-  const name = settings.operatorName;
-  if (name === null) return `<span class="ph">${escapeHtml(CHROME[lang].operatorPlaceholder)}</span>`;
+function operator(ctx: Context): string {
+  const name = ctx.settings.operatorName;
+  if (name === null) return `<span class="ph">${escapeHtml(chromeOf(ctx).operatorPlaceholder)}</span>`;
   return `<bdi>${escapeHtml(name)}</bdi>`;
 }
 
@@ -213,9 +259,13 @@ function block(b: Block, ctx: Context): string {
   return `<div class="table"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
+/** The date's locale: Hebrew and English as they always were; the others with Western digits (D108). */
+const dateLocale = (lang: PageLanguage): string =>
+  lang === 'he' ? 'he-IL' : lang === 'en' ? 'en-US' : `${lang}-u-nu-latn`;
+
 /** "11 באוקטובר 2026" / "October 11, 2026". */
-export function formatDate(iso: string, lang: LegalLang): string {
-  return new Intl.DateTimeFormat(lang === 'he' ? 'he-IL' : 'en-US', {
+export function formatDate(iso: string, lang: PageLanguage): string {
+  return new Intl.DateTimeFormat(dateLocale(lang), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -223,19 +273,34 @@ export function formatDate(iso: string, lang: LegalLang): string {
   }).format(new Date(`${iso}T00:00:00Z`));
 }
 
-/** The whole page of one document in one language. */
-export function renderLegalPage(doc: LegalDocId, lang: LegalLang, settings: LegalSettings): string {
-  const text = LEGAL_TEXTS[doc][lang];
-  const chrome = CHROME[lang];
-  const ctx: Context = { lang, settings };
-  const dir = lang === 'he' ? 'rtl' : 'ltr';
+/**
+ * The whole page of one document in one of the catalog's languages (the server's: LEGAL_LANGS; the router sends
+ * any other language to English).
+ */
+export function renderLegalPage(
+  doc: LegalDocId,
+  lang: PageLanguage,
+  settings: LegalSettings,
+  catalog: LegalCatalog = LEGAL_CATALOG,
+): string {
+  const text = catalog.texts[doc][lang];
+  const chrome = catalog.chrome[lang];
+  if (text === undefined || chrome === undefined || !catalog.langs.includes(lang))
+    throw new Error(`No legal page ${doc} in ${lang}`);
+  const ctx: Context = { lang, settings, chrome };
+  const dir = pageDir(lang);
   const unset = settings.contactEmail === null || settings.operatorName === null;
+  const notice = isTranslation(lang) ? chrome.translationNotice : null;
+  if (isTranslation(lang) && !notice) throw new Error(`The ${lang} version has no translation notice`);
 
-  const langLinks = LEGAL_LANGS.map((l) => {
-    const current = l === lang ? ' aria-current="page"' : '';
-    return `<a href="${escapeHtml(legalHref(doc, l))}" lang="${l}" hreflang="${l}"${current}>${LANGUAGE_NAMES[l]}</a>`;
-  }).join('');
-  const alternates = LEGAL_LANGS.filter((l) => l !== lang)
+  const langLinks = catalog.langs
+    .map((l) => {
+      const current = l === lang ? ' aria-current="page"' : '';
+      return `<a href="${escapeHtml(legalHref(doc, l))}" lang="${l}" hreflang="${l}"${current}>${PAGE_LANGUAGE_NAMES[l]}</a>`;
+    })
+    .join('');
+  const alternates = catalog.langs
+    .filter((l) => l !== lang)
     .map((l) => `<link rel="alternate" hreflang="${l}" href="${escapeHtml(legalHref(doc, l))}">`)
     .join('');
   const toc = text.sections
@@ -252,8 +317,15 @@ export function renderLegalPage(doc: LegalDocId, lang: LegalLang, settings: Lega
     .join('\n');
   const docLinks = LEGAL_DOCS.map((d) => {
     const current = d === doc ? ' aria-current="page"' : '';
-    return `<a href="${escapeHtml(legalHref(d, lang))}"${current}>${escapeHtml(LEGAL_TEXTS[d][lang].title)}</a>`;
+    const title = catalog.texts[d][lang]?.title ?? '';
+    return `<a href="${escapeHtml(legalHref(d, lang))}"${current}>${escapeHtml(title)}</a>`;
   }).join('');
+  // At the very top of a translated version, with a link to the English one (D112).
+  const translated = notice
+    ? `<p class="translated" role="note">${escapeHtml(notice)} ` +
+      `<a href="${escapeHtml(legalHref(doc, FALLBACK_PAGE_LANGUAGE))}" lang="en" hreflang="en" dir="ltr">` +
+      `${PAGE_LANGUAGE_NAMES.en}</a></p>`
+    : '';
 
   return [
     '<!doctype html>',
@@ -271,6 +343,7 @@ export function renderLegalPage(doc: LegalDocId, lang: LegalLang, settings: Lega
     `<header class="top"><div class="wrap"><span class="brand">${escapeHtml(chrome.brand)}</span>` +
       `<nav class="langs" aria-label="${escapeHtml(chrome.languages)}">${langLinks}</nav></div></header>`,
     '<main class="wrap">',
+    translated,
     unset ? `<p class="draft" role="note">${escapeHtml(chrome.draft)}</p>` : '',
     `<h1>${escapeHtml(text.title)}</h1>`,
     `<p class="lead">${inline(text.lead, ctx)}</p>`,

@@ -1,0 +1,92 @@
+{
+  "title": "Herhaling",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Solo oefenen",
+    "bot": "Oefenen tegen bot",
+    "ranked": "Ranked spel"
+  },
+  "back": "Terug",
+  "loading": "Spel laden…",
+  "load": {
+    "missing": "We konden dit spel niet vinden",
+    "notFinished": "Het spel wordt nog op de server opgeslagen. Probeer het zo opnieuw",
+    "offline": "Geen verbinding met de server. Ranked spellen laden van de server",
+    "signedOut": "Log in om een ranked spel te bekijken",
+    "unavailable": "We konden dit spel niet lezen",
+    "retry": "Opnieuw proberen",
+    "partial": "Dit spel is voortijdig afgebroken: de herhaling loopt tot de laatst opgeslagen zet"
+  },
+  "step": {
+    "counter": "Stap {{number}} van {{total}}",
+    "clockLabel": "Spelklok: {{clock}}"
+  },
+  "nav": {
+    "prev": "Vorige stap",
+    "next": "Volgende stap",
+    "timeline": "Tijdlijn",
+    "timelineValue": "Stap {{number}} van {{total}}, {{clock}}",
+    "timelineHint": "Veeg omhoog of omlaag om van stap te wisselen"
+  },
+  "narration": {
+    "start": "Het spel begint",
+    "select": "{{name}} · kiest {{cell}}",
+    "correct": "{{name}} · goed in {{cell}} · {{delta}}",
+    "wrong": "{{name}} · fout in {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · laat {{cell}} los",
+      "timeout": "{{name}} · tijd voorbij in {{cell}}"
+    },
+    "interference": "{{name}} · verstoort {{target}} · {{delta}}",
+    "disconnect": "{{name}} · verbinding verbroken",
+    "reconnect": "{{name}} · terug in het spel",
+    "offline": "{{name}} · verbinding kwijt",
+    "surrender": "{{name}} · gaf op",
+    "endPractice": "{{name}} · stopte met oefenen",
+    "abandon": "{{name}} · verliet het spel",
+    "over": "Het spel is afgelopen",
+    "paused": "Het spel is bevroren",
+    "offlineSuffix": "verstuurd toen weer online"
+  },
+  "explain": {
+    "title": "Uitleg voor elke speler",
+    "none": "Nog geen zet van {{name}}",
+    "noneMe": "Nog geen zet van mij",
+    "noneBody": "De uitleg verschijnt na de eerste zet",
+    "status": {
+      "choosing": "Kiest",
+      "released": "Losgelaten",
+      "correct": "Goed",
+      "wrong": "Fout"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} in plaats van {{answer}}",
+    "why": "Waarom {{digit}} niet past: {{text}}",
+    "noLogic": "Het antwoord: {{cell}} → {{digit}}",
+    "scoreLine": "De score",
+    "penaltyLine": "De straf: wat het juiste cijfer waard was",
+    "released": {
+      "cancel": "Keuze geannuleerd",
+      "timeout": "Tijd voorbij",
+      "switch": "Naar een ander vakje",
+      "mistake": "Na een fout",
+      "surrender": "Spel verlaten",
+      "disconnect": "Verbinding verbroken",
+      "abandon": "Afgehaakt"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "Sleutelmomenten",
+    "bestMove": "Beste zet",
+    "mistakes": "Fouten · {{count}}",
+    "interferences": "Verstoringen · {{count}}",
+    "turningPoint": "Keerpunt",
+    "hint": "Springt naar die stap"
+  },
+  "board": "Het bord bij stap {{number}}",
+  "me": "Ik",
+  "unknown": "Speler"
+}

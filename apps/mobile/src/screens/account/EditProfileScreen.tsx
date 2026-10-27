@@ -13,6 +13,7 @@ import { isAccountApiError, isOfflineError } from '../../api/accountApi';
 import { nextRenameAt } from '../../api/me';
 import { updateProfile, useAuth } from '../../auth/authStore';
 import { Button, useToast } from '../../components/ui';
+import { dateFormat } from '../../i18n/compose';
 import { useMyLevel } from '../../progress/hooks';
 import { cue } from '../../services/feedback';
 import { space } from '../../theme';
@@ -26,10 +27,10 @@ import { NameField } from './NameField';
 import { AccountScreen, DevModeBadge, FormAlert } from './parts';
 import { nameSubmittable, useNameCheck } from './useNameCheck';
 
-/** The date a rename is allowed again, in the app's language ("9 בנוב׳ 2026"). */
+/** The date a rename is allowed again, in the app's language with Western digits (D108): "9 בנוב׳ 2026". */
 export function renameDate(at: number, language: string): string {
   try {
-    return new Intl.DateTimeFormat(language, { day: 'numeric', month: 'short', year: 'numeric' }).format(at);
+    return dateFormat(language, { day: 'numeric', month: 'short', year: 'numeric' }).format(at);
   } catch {
     return new Date(at).toISOString().slice(0, 10);
   }

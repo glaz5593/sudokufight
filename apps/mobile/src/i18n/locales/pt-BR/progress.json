@@ -1,0 +1,212 @@
+{
+  "common": {
+    "provisional": "Rating provisório",
+    "provisionalNote_one": "Sua liga aparece depois de {{games}} partida ranqueada em um tipo de partida",
+    "provisionalNote_many": "Sua liga aparece depois de {{games}} de partidas ranqueadas em um tipo de partida",
+    "provisionalNote_other": "Sua liga aparece depois de {{games}} partidas ranqueadas em um tipo de partida",
+    "level": "Nível {{level}}",
+    "you": "Você",
+    "myCard": "Meu cartão de jogador",
+    "loading": "Carregando…",
+    "retry": "Tentar de novo",
+    "offlineNote": "Sem conexão com o servidor: mostrando o que foi carregado antes.",
+    "errorNote": "Não foi possível atualizar: mostrando o que foi carregado antes.",
+    "offlineTitle": "Sem conexão com o servidor",
+    "offlineBody": "O ranking é atualizado quando a conexão voltar.",
+    "errorTitle": "Algo deu errado",
+    "errorBody": "O servidor não conseguiu responder agora. Tente de novo daqui a pouco.",
+    "signedOut": "Entre na sua conta para ver isto",
+    "players_one": "{{count}} jogador",
+    "players_many": "{{count}} de jogadores",
+    "players_other": "{{count}} jogadores",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}, a caminho do nível {{level}}"
+  },
+  "leaderboard": {
+    "title": "Ranking",
+    "tabs": {
+      "label": "Tipo de rating",
+      "general": "Geral",
+      "fast": "Rápido",
+      "normal": "Normal",
+      "hard": "Difícil",
+      "friends": "Amigos"
+    },
+    "caption": {
+      "general": "Geral · o maior rating de cada jogador",
+      "type": "Rating {{type}} · mundial",
+      "typePlayers": "Rating {{type}} · {{players}} · mundial",
+      "friends": "Seus adversários recentes"
+    },
+    "players": "Número de jogadores",
+    "podium": "Os três primeiros",
+    "rankLabel": "{{rank}}º lugar",
+    "meName": "{{name}} (você)",
+    "openHint": "Abre o cartão do jogador",
+    "meNone": "Você ainda não tem rating nesta tabela",
+    "play": "Jogar",
+    "playHint": "Jogue uma partida ranqueada para entrar na tabela",
+    "climbHint": "Jogue para subir na tabela",
+    "emptyTitle": "Ainda não tem ninguém aqui",
+    "emptyBody": "Jogue uma partida ranqueada e apareça em primeiro na tabela."
+  },
+  "friends": {
+    "invite": "Convidar amigos",
+    "inviteMessage": "Venha jogar comigo no Sudoku Fight!",
+    "inviteNote": "Mais um amigo = mais um rival",
+    "emptyTitle": "Ainda sem adversários",
+    "emptyBody": "Jogue uma partida ranqueada e seus adversários vão aparecer aqui. Uma lista completa de amigos chega em breve."
+  },
+  "league": {
+    "title": "Liga",
+    "toNext": "{{points}} até {{league}}",
+    "top": "A liga mais alta",
+    "general": "Geral {{rating}} · {{next}}",
+    "generalTop": "Geral {{rating}} · a liga mais alta",
+    "ladder": "A escada de ligas",
+    "step": "Liga {{league}}, a partir do rating {{floor}}"
+  },
+  "card": {
+    "title": "Cartão de jogador",
+    "edit": "Editar perfil",
+    "notFound": "Jogador não encontrado",
+    "offlineBody": "O cartão carrega do servidor. Tente de novo quando a conexão voltar.",
+    "savedNote": "Sem conexão com o servidor: mostrando o cartão salvo.",
+    "meLabel": "{{name}}, meu cartão",
+    "ratingsTitle": "Rating por tipo de partida",
+    "ratingsNote_one": "{{n}} rating",
+    "ratingsNote_many": "{{n}} de ratings",
+    "ratingsNote_other": "{{n}} ratings",
+    "noRatings": "Ainda sem rating",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "subiu {{points}} nas últimas partidas",
+    "trendDown": "caiu {{points}} nas últimas partidas",
+    "trendFlat": "sem mudança nas últimas partidas",
+    "atPeak": "no auge",
+    "peak": "pico {{value}}",
+    "atPeakShort": "No auge!",
+    "peakShort": "Pico {{value}}",
+    "games_one": "{{count}} partida",
+    "games_many": "{{count}} de partidas",
+    "games_other": "{{count}} partidas",
+    "statsTitle": "Estatísticas de batalha",
+    "stats": {
+      "games": "Partidas",
+      "wins": "Vitórias",
+      "losses": "Derrotas",
+      "winRate": "Taxa de vitórias",
+      "streak": "Sequência de vitórias",
+      "bestStreak": "Melhor sequência",
+      "bestMove": "Melhor jogada",
+      "avgMistakes": "Erros por partida"
+    },
+    "recentTitleSection": "Resultados recentes",
+    "recentNote": "últimas {{n}}",
+    "recentEmpty": "Ainda sem partidas ranqueadas.",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "Vitória",
+      "loss": "Derrota",
+      "tie": "Empate"
+    },
+    "outcomeShort": {
+      "win": "V",
+      "loss": "D",
+      "tie": "E"
+    },
+    "place": "{{place}}º lugar",
+    "points": "{{score}} pts",
+    "ratingDelta": "{{delta}} de rating",
+    "formLabel": "Resultados recentes, do mais novo ao mais antigo: {{list}}",
+    "replayHint": "Abre o replay",
+    "openOf": "Cartão de jogador de {{name}}",
+    "achievementsTitle": "Principais conquistas",
+    "allAchievements": "Todas as conquistas",
+    "joinedSince": "Jogando desde {{date}}",
+    "favorite": {
+      "title": "Interferência favorita",
+      "uses_one": "vez",
+      "uses_many": "vezes",
+      "uses_other": "vezes",
+      "label_one": "Interferência favorita: {{kind}}, enviada {{count}} vez",
+      "label_many": "Interferência favorita: {{kind}}, enviada {{count}} de vezes",
+      "label_other": "Interferência favorita: {{kind}}, enviada {{count}} vezes"
+    }
+  },
+  "achievements": {
+    "title": "Conquistas",
+    "soon": "Em breve",
+    "soonBody": "12 conquistas a caminho: primeira vitória, sequências de vitórias, melhores jogadas e mais. Chegam aqui em breve.",
+    "soonShort": "As conquistas chegam em breve.",
+    "earned": "{{name}}, conquistada em {{date}}"
+  },
+  "progress": {
+    "title": "Conquistas e progresso",
+    "savedNote": "Sem conexão com o servidor: mostrando os números salvos.",
+    "pending_one": "{{count}} treino esperando sincronizar com o servidor",
+    "pending_many": "{{count}} de treinos esperando sincronizar com o servidor",
+    "pending_other": "{{count}} treinos esperando sincronizar com o servidor",
+    "offlineBody": "Seu nível e seu XP aparecem quando houver conexão com o servidor.",
+    "levelWord": "Nível",
+    "xpTitle": "Pontos de experiência",
+    "toGo": "{{xp}} para o nível {{level}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "Como ganhar XP",
+    "how": {
+      "win": "Primeiro lugar numa ranqueada, ou vitória contra um robô",
+      "played": "Qualquer outro resultado numa ranqueada ou contra um robô",
+      "solo": "Treino solo",
+      "perCorrect": "Cada jogada certa, em ranqueadas e contra robôs"
+    }
+  },
+  "interferences": {
+    "title": "Interferências",
+    "entry": "Coleção de interferências",
+    "entryNote": "Abertas: {{open}} · bloqueadas: {{locked}}",
+    "countLabel_one": "{{open}} de {{total}} interferência aberta",
+    "countLabel_many": "{{open}} de {{total}} de interferências abertas",
+    "countLabel_other": "{{open}} de {{total}} interferências abertas",
+    "opened": "aberta",
+    "facts": {
+      "seconds": "segundos cada",
+      "cost": "o custo dobra a cada lançamento",
+      "launch": "toques: “Interferir” no cartão de um adversário e depois a interferência",
+      "launchValue": "2"
+    },
+    "arsenal": "Seu arsenal",
+    "tapHint": "Toque para ver uma prévia",
+    "openLabel": "{{name}}, disponível. {{description}}",
+    "previewHint": "Mostra a prévia",
+    "available": "Disponível",
+    "previewing": "Em prévia",
+    "lockedTitle": "Bloqueadas",
+    "lockedNote": "Abrem conforme você sobe de nível",
+    "soon": "Em breve",
+    "atLevel": "Abre no nível {{level}}",
+    "lockedLabel": "{{name}}, bloqueada, {{when}}",
+    "howTo": "Numa partida: toque em “Interferir” no cartão de um adversário e escolha uma interferência.",
+    "future": {
+      "earthquake": "Terremoto",
+      "fog": "Neblina",
+      "bubbles": "Bolhas",
+      "torch": "Lanterna"
+    },
+    "description": {
+      "fireworks": "Uma salva colorida de fogos de artifício sobre a tela",
+      "cats": "Uma caravana de gatos correndo pela tela",
+      "warp": "A tela entorta e pisca",
+      "scramble": "Os números do tabuleiro se embaralham e trocam de lugar",
+      "ink": "Manchas de tinta que vão sumindo",
+      "keypad": "As teclas dos números trocam de lugar",
+      "earthquake": "A tela treme",
+      "fog": "Neblina que vai se dissipando devagar",
+      "bubbles": "Bolhas que você precisa estourar",
+      "torch": "O tabuleiro escurece, menos a luz de uma lanterna"
+    }
+  },
+  "home": {
+    "levelXp": "Nível {{level}} · {{xp}}"
+  }
+}

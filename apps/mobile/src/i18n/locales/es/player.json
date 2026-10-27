@@ -1,0 +1,122 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Jugador",
+  "temporaryName": "Jugador{{digits}}",
+  "bot": "Bot",
+  "vs": "VS",
+  "seconds_one": "1 segundo",
+  "seconds_many": "{{count}} de segundos",
+  "seconds_other": "{{count}} segundos",
+  "points_one": "{{score}} punto",
+  "points_many": "{{score}} de puntos",
+  "points_other": "{{score}} puntos",
+  "place": "Puesto {{place}}",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "En línea",
+    "online_female": "En línea",
+    "reconnecting": "Reconectando",
+    "reconnecting_female": "Reconectando",
+    "unstable": "Sin conexión",
+    "unstable_female": "Sin conexión",
+    "left": "Se fue",
+    "left_female": "Se fue"
+  },
+  "result": {
+    "winShort": "V",
+    "lossShort": "D",
+    "drawShort": "E"
+  },
+  "flag": {
+    "label": "País: {{country}}"
+  },
+  "rating": {
+    "label": "Puntuación {{value}}",
+    "labelWithKey": "Puntuación en {{key}}: {{value}}",
+    "provisional": "Provisional",
+    "provisionalLabel": "{{label}}, todavía provisional"
+  },
+  "league": {
+    "bronze": "Bronce",
+    "silver": "Plata",
+    "gold": "Oro",
+    "diamond": "Diamante",
+    "legend": "Leyenda",
+    "name": "Liga {{league}}",
+    "level": "Nivel {{level}}",
+    "levelAfter": "· Nivel {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "Sin errores",
+    "short_one": "{{count}} error",
+    "short_many": "{{count}} de errores",
+    "short_other": "{{count}} errores",
+    "long_zero": "Sin errores",
+    "long_one": "Un error",
+    "long_many": "{{count}} de errores",
+    "long_other": "{{count}} errores",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Eligiendo",
+    "locking_female": "Eligiendo",
+    "turn": "Su turno",
+    "turn_female": "Su turno",
+    "paused": "En pausa",
+    "thinking": "Pensando",
+    "thinking_female": "Pensando",
+    "reconnecting": "Reconectando",
+    "reconnecting_female": "Reconectando",
+    "left": "Se fue",
+    "left_female": "Se fue",
+    "surrendered": "Se rindió",
+    "surrendered_female": "Se rindió",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Bajo interferencia, {{time}}",
+    "target": "Objetivo",
+    "targetHint": "Objetivo de la interferencia"
+  },
+  "actions": {
+    "surrender": "Rendirse",
+    "endPractice": "Terminar práctica",
+    "reactions": "Reacciones"
+  },
+  "interfere": {
+    "button": "Interferir",
+    "label": "Lanzar una interferencia a {{name}} · cuesta {{cost}} pts.",
+    "labelMissing": "Lanzar una interferencia a {{name}} · faltan {{count}} pts.",
+    "labelBusy": "No se puede lanzar una interferencia a {{name}}: ya tiene una encima",
+    "labelNotRunning": "Ahora no se puede lanzar una interferencia a {{name}}",
+    "labelDisconnected": "No hay interferencias sin conexión",
+    "labelOut": "{{name}} está fuera de la partida",
+    "close": "Cerrar el selector de interferencias"
+  },
+  "lead": {
+    "tie": "Empate",
+    "label_one": "{{name}} va ganando por {{gap}} punto",
+    "label_many": "{{name}} va ganando por {{gap}} de puntos",
+    "label_other": "{{name}} va ganando por {{gap}} puntos",
+    "label_female_one": "{{name}} va ganando por {{gap}} punto",
+    "label_female_many": "{{name}} va ganando por {{gap}} de puntos",
+    "label_female_other": "{{name}} va ganando por {{gap}} puntos",
+    "tieLabel": "Hay empate"
+  },
+  "lock": {
+    "yourCell": "Tu casilla",
+    "paused": "En pausa",
+    "pick": "Elige una casilla",
+    "remaining_one": "Queda 1 segundo",
+    "remaining_many": "Quedan {{count}} de segundos",
+    "remaining_other": "Quedan {{count}} segundos",
+    "label": "Tu casilla {{cell}}, {{remaining}}",
+    "labelPaused": "Tu casilla {{cell}}, temporizador detenido",
+    "progress": "Tiempo restante para la casilla {{cell}}",
+    "released": "Casilla liberada"
+  }
+}

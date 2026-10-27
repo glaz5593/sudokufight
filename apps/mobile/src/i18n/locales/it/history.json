@@ -1,0 +1,112 @@
+{
+  "title": "Cronologia",
+  "summary": {
+    "games_one": "{{count}} partita",
+    "games_many": "{{count}} di partite",
+    "games_other": "{{count}} partite",
+    "winRate": "{{rate}} di vittorie",
+    "practices_one": "{{count}} allenamento",
+    "practices_many": "{{count}} di allenamenti",
+    "practices_other": "{{count}} allenamenti",
+    "streak": "Serie",
+    "streakLabel_one": "Serie di vittorie: {{count}} vittoria",
+    "streakLabel_many": "Serie di vittorie: {{count}} di vittorie",
+    "streakLabel_other": "Serie di vittorie: {{count}} vittorie"
+  },
+  "filters": {
+    "label": "Filtra le partite",
+    "all": "Tutte",
+    "ranked": "Classificate",
+    "practice": "Allenamento"
+  },
+  "loading": "Caricamento delle tue partite…",
+  "more": "Altre partite",
+  "empty": {
+    "title": "Ancora nessuna partita",
+    "body": "Ogni partita viene salvata qui per rivederla: mossa dopo mossa, con il perché di ogni numero.",
+    "action": "Gioca la tua prima partita"
+  },
+  "notes": {
+    "practice": "Le partite di allenamento non cambiano il tuo punteggio, ma puoi rivederle anche loro.",
+    "offline": "Nessuna connessione al server: vedi solo le partite di allenamento di questo telefono.",
+    "signedOut": "Le partite classificate compaiono qui dopo l’accesso.",
+    "rankedError": "Non siamo riusciti a caricare le tue partite classificate.",
+    "practiceUnavailable": "Non siamo riusciti a leggere le partite di allenamento salvate su questo telefono.",
+    "retry": "Riprova"
+  },
+  "states": {
+    "offlineTitle": "Nessuna connessione al server",
+    "offlineBody": "Le tue partite classificate si caricano quando torna la connessione. Le partite di allenamento di questo telefono compaiono qui anche offline.",
+    "errorTitle": "Non siamo riusciti a caricare le tue partite",
+    "errorBody": "Il server non ha risposto come doveva. Riprova tra un attimo.",
+    "practiceTitle": "Non siamo riusciti a leggere le tue partite di allenamento",
+    "practiceBody": "Le partite di allenamento salvate su questo telefono non si sono aperte. Riprova e, se succede ancora, riavvia l’app."
+  },
+  "card": {
+    "mode": {
+      "ranked": "Classificata",
+      "solo": "Allenamento in solitario",
+      "bot": "Allenamento contro il bot"
+    },
+    "outcome": {
+      "win": "Vittoria",
+      "loss": "Sconfitta",
+      "tie": "Pareggio",
+      "completed": "Griglia completata",
+      "ended": "Allenamento chiuso",
+      "interrupted": "Partita interrotta"
+    },
+    "place": "{{place}}° posto",
+    "against_one": "contro {{count}} avversario",
+    "against_many": "contro {{count}} di avversari",
+    "against_other": "contro {{count}} avversari",
+    "alone": "In solitario",
+    "points": "{{score}} pt",
+    "unrated": "Non classificata",
+    "rating": "Punteggio {{delta}}",
+    "today": "Oggi",
+    "yesterday": "Ieri",
+    "replay": "Rivedi",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Apre il replay"
+  },
+  "results": {
+    "replay": "Guarda il replay",
+    "replayHint": "La partita dall’inizio, passo dopo passo, con ogni mossa spiegata",
+    "rating": {
+      "title": "Variazione del punteggio · {{type}}",
+      "from": "da {{before}}",
+      "label": "Variazione del punteggio: {{delta}}, da {{before}} a {{after}}",
+      "provisional": "Punteggio provvisorio: nelle prime 10 partite le variazioni contano doppio",
+      "perOpponent": "Calcolato contro ogni avversario separatamente",
+      "pairLabel": "contro {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "contro {{name}}: nessun punteggio perso, hai lasciato prima della tua prima mossa",
+        "leftNotBehind": "contro {{name}}: nessun punteggio perso, quando hai lasciato non eri in svantaggio",
+        "opponentLeftBeforeMyMove": "contro {{name}}: nessun punteggio guadagnato, ha lasciato prima della tua prima mossa",
+        "opponentLeftAhead": "contro {{name}}: nessun punteggio guadagnato, quando ha lasciato eri in svantaggio"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_one": "{{name}} · {{score}} punto · {{mistakes}} · punteggio {{delta}}",
+    "opponentLabel_many": "{{name}} · {{score}} di punti · {{mistakes}} · punteggio {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} punti · {{mistakes}} · punteggio {{delta}}",
+    "ranking": {
+      "title": "Classifica finale",
+      "left": "Ha lasciato la partita",
+      "label_one": "{{place}}° posto: {{name}} · {{score}} punto · {{mistakes}}",
+      "label_many": "{{place}}° posto: {{name}} · {{score}} di punti · {{mistakes}}",
+      "label_other": "{{place}}° posto: {{name}} · {{score}} punti · {{mistakes}}",
+      "labelRating_one": "{{place}}° posto: {{name}} · {{score}} punto · {{mistakes}} · punteggio {{delta}}",
+      "labelRating_many": "{{place}}° posto: {{name}} · {{score}} di punti · {{mistakes}} · punteggio {{delta}}",
+      "labelRating_other": "{{place}}° posto: {{name}} · {{score}} punti · {{mistakes}} · punteggio {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "Più punti con una sola mossa",
+      "fewestMistakes": "Meno errori. In caso di parità, più punti",
+      "fastest": "Il tempo medio di riflessione più basso per mossa giusta (almeno 5 mosse)",
+      "comeback": "Una vittoria in rimonta, da uno svantaggio di 15 punti o più",
+      "mostPoints": "Più punti dalle mosse giuste, prima delle penalità"
+    }
+  }
+}

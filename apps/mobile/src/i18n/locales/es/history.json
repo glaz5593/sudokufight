@@ -1,0 +1,112 @@
+{
+  "title": "Historial",
+  "summary": {
+    "games_one": "1 partida",
+    "games_many": "{{count}} de partidas",
+    "games_other": "{{count}} partidas",
+    "winRate": "{{rate}} de victorias",
+    "practices_one": "1 práctica",
+    "practices_many": "{{count}} de prácticas",
+    "practices_other": "{{count}} prácticas",
+    "streak": "Racha",
+    "streakLabel_one": "Racha de victorias: 1 victoria",
+    "streakLabel_many": "Racha de victorias: {{count}} de victorias",
+    "streakLabel_other": "Racha de victorias: {{count}} victorias"
+  },
+  "filters": {
+    "label": "Filtrar las partidas",
+    "all": "Todas",
+    "ranked": "Clasificatorias",
+    "practice": "Práctica"
+  },
+  "loading": "Cargando tus partidas…",
+  "more": "Más partidas",
+  "empty": {
+    "title": "Todavía no hay partidas aquí",
+    "body": "Cada partida se guarda aquí para volver a verla: jugada a jugada, con el porqué de cada número.",
+    "action": "Juega tu primera partida"
+  },
+  "notes": {
+    "practice": "Las partidas de práctica no cambian tu puntuación, pero también puedes volver a verlas.",
+    "offline": "Sin conexión con el servidor: solo se muestran las partidas de práctica de este teléfono.",
+    "signedOut": "Las partidas clasificatorias aparecen aquí cuando inicias sesión.",
+    "rankedError": "No pudimos cargar tus partidas clasificatorias.",
+    "practiceUnavailable": "No pudimos leer las partidas de práctica guardadas en este teléfono.",
+    "retry": "Reintentar"
+  },
+  "states": {
+    "offlineTitle": "Sin conexión con el servidor",
+    "offlineBody": "Tus partidas clasificatorias se cargan cuando vuelva la conexión. Las partidas de práctica de este teléfono se ven aquí incluso sin conexión.",
+    "errorTitle": "No pudimos cargar tus partidas",
+    "errorBody": "El servidor no respondió bien. Vuelve a intentarlo en un momento.",
+    "practiceTitle": "No pudimos leer tus partidas de práctica",
+    "practiceBody": "Las partidas de práctica guardadas en este teléfono no se abrieron. Vuelve a intentarlo y, si sigue pasando, reinicia la app."
+  },
+  "card": {
+    "mode": {
+      "ranked": "Clasificatoria",
+      "solo": "Práctica en solitario",
+      "bot": "Práctica contra bot"
+    },
+    "outcome": {
+      "win": "Victoria",
+      "loss": "Derrota",
+      "tie": "Empate",
+      "completed": "Tablero completo",
+      "ended": "Práctica terminada",
+      "interrupted": "Partida interrumpida"
+    },
+    "place": "Puesto {{place}}",
+    "against_one": "contra 1 rival",
+    "against_many": "contra {{count}} de rivales",
+    "against_other": "contra {{count}} rivales",
+    "alone": "A solas",
+    "points": "{{score}} pts.",
+    "unrated": "Sin puntuación",
+    "rating": "Puntuación {{delta}}",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "replay": "Repetición",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Abre la repetición"
+  },
+  "results": {
+    "replay": "Repetición",
+    "replayHint": "La partida desde el principio, paso a paso, con cada jugada explicada",
+    "rating": {
+      "title": "Cambio de puntuación · {{type}}",
+      "from": "desde {{before}}",
+      "label": "Cambio de puntuación: {{delta}}, de {{before}} a {{after}}",
+      "provisional": "Puntuación provisional: los cambios cuentan el doble en tus primeras 10 partidas",
+      "perOpponent": "Se calcula contra cada rival por separado",
+      "pairLabel": "contra {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "contra {{name}}: no pierdes puntuación, te fuiste antes de tu primera jugada",
+        "leftNotBehind": "contra {{name}}: no pierdes puntuación, no ibas perdiendo cuando te fuiste",
+        "opponentLeftBeforeMyMove": "contra {{name}}: no ganas puntuación, se fue antes de tu primera jugada",
+        "opponentLeftAhead": "contra {{name}}: no ganas puntuación, ibas perdiendo cuando se fue"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_one": "{{name}} · {{score}} punto · {{mistakes}} · puntuación {{delta}}",
+    "opponentLabel_many": "{{name}} · {{score}} de puntos · {{mistakes}} · puntuación {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} puntos · {{mistakes}} · puntuación {{delta}}",
+    "ranking": {
+      "title": "Clasificación final",
+      "left": "Abandonó la partida",
+      "label_one": "Puesto {{place}}: {{name}} · {{score}} punto · {{mistakes}}",
+      "label_many": "Puesto {{place}}: {{name}} · {{score}} de puntos · {{mistakes}}",
+      "label_other": "Puesto {{place}}: {{name}} · {{score}} puntos · {{mistakes}}",
+      "labelRating_one": "Puesto {{place}}: {{name}} · {{score}} punto · {{mistakes}} · puntuación {{delta}}",
+      "labelRating_many": "Puesto {{place}}: {{name}} · {{score}} de puntos · {{mistakes}} · puntuación {{delta}}",
+      "labelRating_other": "Puesto {{place}}: {{name}} · {{score}} puntos · {{mistakes}} · puntuación {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "La mayor cantidad de puntos en una sola jugada",
+      "fewestMistakes": "La menor cantidad de errores. En caso de empate, gana quien tenga más puntos",
+      "fastest": "El menor tiempo medio de reflexión por jugada correcta (al menos 5 jugadas)",
+      "comeback": "Una victoria tras ir 15 puntos o más por detrás",
+      "mostPoints": "La mayor cantidad de puntos por jugadas correctas, antes de penalizaciones"
+    }
+  }
+}

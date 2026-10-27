@@ -1,0 +1,256 @@
+{
+  "devMode": {
+    "badge": "Mode développement",
+    "label": "Mode développement : comptes locaux sur ce téléphone uniquement, sans Firebase",
+    "noEmail": "Le mode développement n’envoie aucun e-mail."
+  },
+  "fields": {
+    "email": "E-mail",
+    "emailPlaceholder": "name@example.com",
+    "password": "Mot de passe",
+    "newPassword": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "displayName": "Nom affiché",
+    "displayNamePlaceholder": "Ton nom dans l’arène",
+    "avatar": "Ton avatar",
+    "country": "Pays",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "change": "Modifier"
+  },
+  "validation": {
+    "emailRequired": "Saisis ton e-mail",
+    "emailInvalid": "Cette adresse e-mail ne semble pas correcte",
+    "passwordRequired": "Saisis ton mot de passe",
+    "passwordRules": "Le mot de passe doit contenir au moins 8 caractères",
+    "confirmMismatch": "Les mots de passe ne correspondent pas",
+    "countryRequired": "Choisis un pays"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "Mot de passe incorrect. Réessaie, ou réinitialise-le.",
+      "userNotFound": "Aucun compte avec cet e-mail. Créer un compte ?",
+      "invalidCredentials": "E-mail ou mot de passe incorrect.",
+      "tooManyRequests": "Trop de tentatives. Attends quelques minutes et réessaie, ou réinitialise ton mot de passe.",
+      "network": "Pas de connexion Internet. Vérifie-la et réessaie.",
+      "emailInUse": "Cet e-mail a déjà un compte. Connecte-toi avec.",
+      "invalidEmail": "Cette adresse e-mail ne semble pas correcte.",
+      "weakPassword": "Ce mot de passe est trop faible. Choisis-en un plus long.",
+      "requiresRecentLogin": "Reconnecte-toi pour faire ça.",
+      "userDisabled": "Ce compte a été désactivé. Contacte l’assistance.",
+      "noUser": "Aucune session ouverte. Reconnecte-toi.",
+      "unknown": "Un problème est survenu. Réessaie.",
+      "cancelled": "La connexion avec Google a été annulée.",
+      "inProgress": "La connexion avec Google est déjà ouverte. Termine-la, ou ferme-la et réessaie.",
+      "playServices": "La connexion avec Google nécessite les services Google Play. Mets-les à jour et réessaie.",
+      "googleConfig": "La connexion avec Google n’est pas disponible pour l’instant dans cette version de l’app (DEVELOPER_ERROR). En attendant, utilise ton e-mail et ton mot de passe.",
+      "accountExistsWithPassword": "Cet e-mail a déjà un compte avec mot de passe. Connecte-toi avec ton e-mail et ton mot de passe.",
+      "userMismatch": "C’est un autre compte Google. Choisis celui que tu as utilisé pour te connecter."
+    },
+    "api": {
+      "badRequest": "Cette requête n’était pas valide. Réessaie.",
+      "invalidName": "Ce nom ne respecte pas les règles.",
+      "unauthorized": "Ta session avec le serveur a expiré. Reconnecte-toi.",
+      "reauthRequired": "Pour supprimer le compte, il faut te reconnecter. Saisis à nouveau ton mot de passe et réessaie.",
+      "suspended": "Ton compte est suspendu : il ne peut pas être modifié pour l’instant.",
+      "notRegistered": "Ce compte n’a pas encore de combattant. Finissons l’inscription.",
+      "notFound": "Le serveur ne connaît pas cette requête. Mets l’app à jour.",
+      "alreadyRegistered": "Ce compte a déjà un combattant.",
+      "taken": "Ce nom est déjà pris. Choisis-en un autre.",
+      "renameTooSoon": "Tu ne peux changer de nom qu’une fois tous les 30 jours.",
+      "tooLarge": "Cette requête est trop volumineuse.",
+      "blocked": "Ce nom ne convient pas à l’arène. Choisis-en un autre.",
+      "tooManyRequests": "Trop de requêtes. Attends un instant et réessaie.",
+      "internal": "Erreur du serveur. Réessaie dans un instant.",
+      "disabled": "Les comptes sont désactivés sur ce serveur pour l’instant.",
+      "unavailable": "Le serveur n’est pas disponible pour l’instant. Réessaie dans un instant.",
+      "network": "Impossible de joindre le serveur. Vérifie ta connexion Internet et réessaie.",
+      "timeout": "Le serveur n’a pas répondu à temps. Réessaie.",
+      "signedOut": "Aucune session ouverte. Reconnecte-toi.",
+      "unexpected": "Le serveur a envoyé une réponse inattendue. Réessaie, ou mets l’app à jour."
+    }
+  },
+  "splash": {
+    "tagline": "Une grille. Tout le monde la résout. Un seul gagne.",
+    "loading": "Chargement de l’arène…",
+    "tipLabel": "Astuce",
+    "tips": {
+      "lock_one": "Une case que tu choisis n’est verrouillée que pour toi : {{seconds}} seconde en mode {{type}}.",
+      "lock_many": "Une case que tu choisis n’est verrouillée que pour toi : {{seconds}} de secondes en mode {{type}}.",
+      "lock_other": "Une case que tu choisis n’est verrouillée que pour toi : {{seconds}} secondes en mode {{type}}.",
+      "hard": "Un coup plus difficile rapporte plus de points.",
+      "mistake": "Une erreur coûte exactement les points que le bon chiffre aurait rapportés. Mieux vaut réfléchir un instant de plus.",
+      "interfere": "Envoie une perturbation en deux gestes : « Perturber » sur la carte de ton adversaire, puis celle de ton choix."
+    },
+    "errorTitle": "Impossible de charger ton combattant",
+    "retry": "Réessayer",
+    "signOut": "Se déconnecter"
+  },
+  "login": {
+    "title": "De retour dans l’<accent>arène</accent>",
+    "titleLabel": "De retour dans l’arène",
+    "subtitle": "Ton classement, ta série et tes rivaux t’attendent.",
+    "forgot": "Mot de passe oublié",
+    "submit": "Se connecter",
+    "noAccount": "Pas encore de compte ?",
+    "register": "Créer un compte",
+    "arenaSpot": "Ta place"
+  },
+  "google": {
+    "continue": "Continuer avec Google",
+    "orEmail": "ou avec ton e-mail",
+    "orEmailPassword": "ou avec e-mail et mot de passe",
+    "existing": "Ce compte Google a déjà un combattant, {{name}}. Connexion réussie.",
+    "passwordHint": "Compte créé avec Google ? Utilise « Continuer avec Google ».",
+    "emailInUseHint": "Si ton compte a été créé avec Google, utilise « Continuer avec Google ».",
+    "termsTitle": "Conditions et confidentialité",
+    "termsBody": "Pour continuer avec Google, accepte les conditions d’utilisation et la politique de confidentialité.",
+    "termsAccept": "Accepter et continuer"
+  },
+  "forgot": {
+    "title": "Mot de passe oublié",
+    "body": "Saisis l’e-mail de ton inscription : nous y enverrons un lien pour choisir un nouveau mot de passe.",
+    "submit": "Envoyer le lien",
+    "sentTitle": "Vérifie tes e-mails",
+    "sentBody": "Si {{email}} a un compte, nous y avons envoyé un lien pour réinitialiser le mot de passe. Tu ne le trouves pas ? Regarde dans tes spams.",
+    "backToLogin": "Retour à la connexion"
+  },
+  "register": {
+    "step": "Étape {{step}} sur {{total}}",
+    "backToLogin": "Retour à la connexion",
+    "backToFighter": "Retour à ton combattant"
+  },
+  "fighter": {
+    "title": "Crée ton <accent>combattant</accent>",
+    "titleLabel": "Crée ton combattant",
+    "resumeNote": "Ton compte est prêt. Il ne reste qu’à choisir ton combattant.",
+    "chooseAvatar": "Choisis un avatar",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}, disponible au niveau {{level}}",
+    "selectedAvatar": "Avatar choisi : {{name}}",
+    "yourPick": "Ton choix : {{name}}",
+    "previewTitle": "Voici comment l’arène te voit",
+    "previewLabel": "Aperçu de ta carte en partie : {{name}}",
+    "previewNew": "Recrue",
+    "continue": "Continuer",
+    "enterArena": "Entrer dans l’arène",
+    "signOut": "Se déconnecter",
+    "googleNote": "Connexion avec Google réussie. Il ne reste qu’à choisir ton combattant."
+  },
+  "name": {
+    "rules": "3 à 16 caractères : lettres hébraïques ou anglaises, chiffres, tiret bas et point.",
+    "status": {
+      "checking": "Vérification…",
+      "available": "Disponible",
+      "taken": "Déjà pris",
+      "invalid": "Non valide",
+      "blocked": "Non autorisé",
+      "error": "Non vérifié",
+      "current": "Ton nom"
+    },
+    "problem": {
+      "invalidChars": "Caractères interdits : {{chars}}",
+      "tooShort": "Au moins 3 caractères",
+      "tooLong": "16 caractères maximum"
+    },
+    "charSpace": " ",
+    "takenHint": "Quelqu’un a déjà pris ce nom. Essaie-en un autre.",
+    "blockedHint": "Ce nom ne convient pas à l’arène. Essaie-en un autre.",
+    "errorHint": "Impossible de vérifier le nom. Nous vérifierons à nouveau à l’enregistrement."
+  },
+  "country": {
+    "label": "Pays : {{country}}",
+    "choose": "Choisir un pays",
+    "sheetTitle": "Choisis un pays",
+    "search": "Rechercher un pays",
+    "searchPlaceholder": "Rechercher",
+    "none": "Aucun pays trouvé",
+    "hint": "Détecté d’après les réglages de ton téléphone. Tu peux le changer à tout moment."
+  },
+  "account": {
+    "title": "Encore un pas vers l’<accent>arène</accent>",
+    "titleLabel": "Encore un pas vers l’arène",
+    "subtitle": "Ton e-mail et ton mot de passe protègent ton classement et ta progression.",
+    "fighterReady": "Combattant prêt",
+    "edit": "Modifier",
+    "editLabel": "Modifier ton combattant",
+    "submit": "Créer le compte",
+    "profileFailed": "Ton compte a été créé, mais ton combattant n’est pas encore enregistré. Réessaie.",
+    "nameTakenNow": "Le nom {{name}} a été pris entre-temps. Choisis-en un autre : ton compte t’attend."
+  },
+  "password": {
+    "rules": {
+      "length": "Au moins 8 caractères"
+    },
+    "ruleMet": "{{rule}} : validé",
+    "ruleMissing": "{{rule}} : manquant",
+    "strengthLabel": "Robustesse du mot de passe",
+    "strength": {
+      "weak": "Mot de passe faible",
+      "fair": "Mot de passe moyen",
+      "good": "Bon mot de passe",
+      "strong": "Mot de passe robuste"
+    },
+    "match": "Identiques",
+    "mismatch": "Différents"
+  },
+  "terms": {
+    "accept": "J’accepte les conditions d’utilisation et la politique de confidentialité",
+    "termsLink": "Conditions d’utilisation",
+    "privacyLink": "Politique de confidentialité",
+    "linkHint": "S’ouvre dans le navigateur",
+    "required": "Pour entrer dans l’arène, accepte les conditions"
+  },
+  "verify": {
+    "bannerTitle": "Ton e-mail n’est pas encore vérifié",
+    "bannerAction": "Vérifier",
+    "bannerLabel": "Ton e-mail n’est pas encore vérifié. Vérifier ton e-mail",
+    "title": "Vérifie ton e-mail",
+    "body": "Nous avons envoyé un lien de vérification à {{email}}. Ouvre-le, puis reviens ici.",
+    "why": "L’entraînement fonctionne sans. Les parties classées exigeront un e-mail vérifié.",
+    "resend": "Renvoyer",
+    "sent": "Nouveau lien envoyé",
+    "check": "J’ai vérifié",
+    "notYet": "Pas encore vérifié. As-tu ouvert le lien ?",
+    "done": "E-mail vérifié. Merci !",
+    "devNote": "Le mode développement n’envoie aucun e-mail : « J’ai vérifié » marque l’e-mail comme vérifié."
+  },
+  "edit": {
+    "title": "Modifier le profil",
+    "save": "Enregistrer",
+    "saved": "Profil enregistré",
+    "nameRule": "Tu peux changer de nom une fois tous les 30 jours.",
+    "nameLocked": "Tu peux changer de nom une fois tous les 30 jours. Prochain changement : {{date}}.",
+    "offline": "Impossible de joindre le serveur. Tu pourras modifier ton profil une fois de retour en ligne."
+  },
+  "home": {
+    "provisional": "Classement provisoire : tes 10 premières parties"
+  },
+  "settings": {
+    "section": "Compte",
+    "signedInAs": "Session ouverte avec {{email}}",
+    "editProfile": "Modifier le profil",
+    "signOut": "Se déconnecter",
+    "signOutTitle": "Se déconnecter ?",
+    "signOutBody": "Les entraînements sur ce téléphone restent. Tu devras te reconnecter pour jouer à nouveau.",
+    "deleteAccount": "Supprimer le compte",
+    "deleteTitle": "Supprimer ton compte ?",
+    "deleteBody": "Ton e-mail, ton combattant et ton nom seront supprimés, et c’est irréversible. Les parties et les classements restent, sans lien avec toi, pour que les parties des autres joueurs restent complètes. Ton nom redevient disponible pour les autres joueurs.",
+    "deleteContinue": "Continuer",
+    "deletePasswordTitle": "Confirme avec ton mot de passe",
+    "deletePasswordBody": "Pour supprimer le compte, saisis le mot de passe de {{email}}.",
+    "deleteSubmit": "Supprimer définitivement mon compte",
+    "deleted": "Ton compte a été supprimé",
+    "deletedPartly": "Ton compte a été supprimé, mais pas tes identifiants de connexion : t’en servir lance une nouvelle inscription.",
+    "method": {
+      "password": "Connexion par e-mail et mot de passe",
+      "google": "Connexion avec Google",
+      "both": "Connexion avec Google, ou par e-mail et mot de passe"
+    },
+    "deleteGoogleTitle": "Confirme avec Google",
+    "deleteGoogleBody": "Pour supprimer le compte, choisis à nouveau le compte Google {{email}}.",
+    "deleteGoogleSubmit": "Confirmer avec Google et supprimer",
+    "deleteGoogleAgain": "Pour supprimer le compte, une nouvelle confirmation est nécessaire. Réessaie et choisis ton compte Google.",
+    "deleteWithPassword": "Confirmer plutôt avec ton mot de passe"
+  }
+}

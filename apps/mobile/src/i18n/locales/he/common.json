@@ -28,5 +28,15 @@
     "version": "גרסה {{version}}",
     "build": "build {{build}}",
     "engine": "מנוע {{engine}}"
+  },
+  "number": {
+    "decimal": ".",
+    "percent": "{{value}}%"
+  },
+  "text": {
+    "labelValue": "{{label}}: {{value}}",
+    "parenthetical": "{{text}} ({{note}})",
+    "sentence": "{{text}}.",
+    "wordSpace": " "
   }
 }

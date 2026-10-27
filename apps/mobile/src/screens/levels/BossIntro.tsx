@@ -1,7 +1,7 @@
 import { type AppLevel, botLevel, type BotLevelId, bossTraits, levelNumber } from '@sudoku-fight/engine';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   type SharedValue,
@@ -16,7 +16,9 @@ import { normalizeAvatarId } from '../../avatars';
 import { AVATAR_REACTIONS, reactionOf } from '../../avatars/reactions';
 import { Icon } from '../../components/Icon';
 import { Avatar, SeatGlyph } from '../../components/player';
+import { Text } from '../../components/ui/Text';
 import { LEVEL_MOTION } from '../../config/levels';
+import { closeSentence, spaceSentences } from '../../i18n/compose';
 import { color, radius, space, text, tokens } from '../../theme';
 import { motion, reduceMotionFlag } from '../../theme/motion';
 import { ScaleCells } from './LevelPanel';
@@ -58,11 +60,11 @@ export function bossIntroLabel(level: AppLevel, t: LevelsT): string {
       .map((trait) => bossTraitText(trait, t)),
   ]
     .filter((s): s is string => !!s)
-    .map((s) => `${s}.`);
+    .map((s) => closeSentence(s, t));
   return t('boss.intro.label', {
     n: levelNumber(level.id),
     kind: kindName(level, t),
-    details: [...details, goalText(level, t)].join(' '),
+    details: spaceSentences([...details, goalText(level, t)], t),
   });
 }
 

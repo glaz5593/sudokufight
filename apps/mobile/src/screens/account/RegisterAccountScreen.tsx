@@ -2,7 +2,7 @@ import { type CreateUserRequest, validateDisplayName } from '@sudoku-fight/proto
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, StyleSheet, Text, type TextInput, View } from 'react-native';
+import { Linking, StyleSheet, type TextInput, View } from 'react-native';
 
 import { isAccountApiError } from '../../api/accountApi';
 import { registerWithGoogle, signUpAndRegister, useAuth } from '../../auth/authStore';
@@ -13,7 +13,9 @@ import { useRegistrationDraft } from '../../auth/registrationDraft';
 import { Icon } from '../../components/Icon';
 import { ltr } from '../../components/player';
 import { Button, useToast } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { legalUrl } from '../../config/legal';
+import { spaceSentences } from '../../i18n/compose';
 import { track } from '../../services/analytics';
 import { cue } from '../../services/feedback';
 import { color, size, space, text } from '../../theme';
@@ -107,7 +109,7 @@ export function RegisterAccountScreen() {
     const message =
       isAccountApiError(error) && error.code === 'taken'
         ? t('account.nameTakenNow', { name: ltr(name) })
-        : `${t('account.profileFailed')} ${errorMessage(t, error)}`;
+        : spaceSentences([t('account.profileFailed'), errorMessage(t, error)], t);
     useToast.getState().show({ variant: 'error', message });
   };
 

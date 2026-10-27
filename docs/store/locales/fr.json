@@ -1,0 +1,29 @@
+{
+  "googlePlay": {
+    "locales": ["fr-FR"],
+    "title": "Sudoku Fight : PvP en direct",
+    "shortDescription": "Défie jusqu’à 3 adversaires sur le même sudoku, en direct. Classé et équitable.",
+    "fullDescription": "Sudoku Fight transforme le sudoku en compétition en direct. Jusqu’à 4 joueurs résolvent la même grille au même moment : chaque chiffre correct que tu places est à toi, et chaque point compte.\n\nUNE GRILLE, TOUT LE MONDE LA RÉSOUT\n• Tous les joueurs travaillent sur la même grille en même temps. Place un chiffre correct et la case prend ta couleur.\n• Les coups difficiles rapportent plus : un chiffre qui demande une déduction astucieuse vaut plus qu’un chiffre facile.\n• Un chiffre faux coûte exactement ce que le bon aurait rapporté. La vitesse seule ne suffit pas pour gagner.\n• Verrouille une case pendant que tu réfléchis, mais seulement quelques secondes.\n\nPERTURBATIONS ET RÉACTIONS\n• Dépense des points pour frapper un adversaire avec des feux d’artifice, des chats ou une distorsion d’écran pendant 5 secondes.\n• Réagis avec 😂 😱 😎 🤦 🔥 👀.\n\nPARTIES CLASSÉES\n• Des parties classées à 2, 3 ou 4 joueurs, dans trois types de partie : rapide, classique et difficile.\n• La recherche d’adversaires trouve des joueurs de ton niveau et évite ceux que tu viens d’affronter.\n• Un classement pour chaque type de partie, des ligues, des tableaux de classement et des cartes de joueur avec tes statistiques.\n• Aucun adversaire en ligne ? Entraîne-toi contre un bot en attendant.\n\nAPPRENDS DE CHAQUE PARTIE\n• Revois en replay n’importe quelle partie classée, coup par coup, avec une explication logique de chaque coup.\n• Tout ton historique de parties et ta progression, avec XP et niveaux.\n\nENTRAÎNE-TOI QUAND TU VEUX\n• Entraîne-toi en solo ou contre des bots de différents niveaux, même hors ligne.\n\nFAIR-PLAY\n• Le serveur vérifie chaque coup, et les grilles des parties classées ne sont jamais incluses dans l’application.\n• Pas de publicité. Tu peux supprimer ton compte à tout moment depuis les Réglages.\n\nDisponible en 19 langues. La grille se lit toujours de gauche à droite.",
+    "whatsNew": "Première version."
+  },
+  "appStore": {
+    "locales": ["fr-FR"],
+    "name": "Sudoku Fight",
+    "subtitle": "Duels multijoueurs en direct",
+    "promotionalText": "Une grille. Tout le monde la résout. Un seul gagne. Défie jusqu’à 3 adversaires sur le même sudoku en direct, envoie des perturbations et grimpe dans les ligues classées.",
+    "description": "Sudoku Fight transforme le sudoku en compétition en direct. Jusqu’à 4 joueurs résolvent la même grille au même moment : chaque chiffre correct que tu places est à toi, et chaque point compte.\n\nUNE GRILLE, TOUT LE MONDE LA RÉSOUT\n• Tous les joueurs travaillent sur la même grille en même temps. Place un chiffre correct et la case prend ta couleur.\n• Les coups difficiles rapportent plus : un chiffre qui demande une déduction astucieuse vaut plus qu’un chiffre facile.\n• Un chiffre faux coûte exactement ce que le bon aurait rapporté. La vitesse seule ne suffit pas pour gagner.\n• Verrouille une case pendant que tu réfléchis, mais seulement quelques secondes.\n\nPERTURBATIONS ET RÉACTIONS\n• Dépense des points pour frapper un adversaire avec des feux d’artifice, des chats ou une distorsion d’écran pendant 5 secondes.\n• Réagis avec 😂 😱 😎 🤦 🔥 👀.\n\nPARTIES CLASSÉES\n• Des parties classées à 2, 3 ou 4 joueurs, dans trois types de partie : rapide, classique et difficile.\n• La recherche d’adversaires trouve des joueurs de ton niveau et évite ceux que tu viens d’affronter.\n• Un classement pour chaque type de partie, des ligues, des tableaux de classement et des cartes de joueur avec tes statistiques.\n• Aucun adversaire en ligne ? Entraîne-toi contre un bot en attendant.\n\nAPPRENDS DE CHAQUE PARTIE\n• Revois en replay n’importe quelle partie classée, coup par coup, avec une explication logique de chaque coup.\n• Tout ton historique de parties et ta progression, avec XP et niveaux.\n\nENTRAÎNE-TOI QUAND TU VEUX\n• Entraîne-toi en solo ou contre des bots de différents niveaux, même hors ligne.\n\nFAIR-PLAY\n• Le serveur vérifie chaque coup, et les grilles des parties classées ne sont jamais incluses dans l’application.\n• Pas de publicité. Tu peux supprimer ton compte à tout moment depuis les Réglages.\n\nDisponible en 19 langues. La grille se lit toujours de gauche à droite.",
+    "keywords": "casse-tête,puzzle,chiffres,logique,réflexion,jeu,ligne,amis,pvp,défi,grille,cerveau,compétition",
+    "whatsNew": "Première version."
+  },
+  "screenshotCaptions": [
+    "Une grille. Tout le monde la résout. Un seul gagne.",
+    "Jusqu’à 4 joueurs sur la même grille",
+    "Envoie des perturbations à tes adversaires",
+    "Un adversaire de ton niveau, sur la même grille",
+    "Les coups difficiles rapportent plus",
+    "Chaque coup en replay, avec explications",
+    "Ligues et classements",
+    "Entraîne-toi contre un bot, même hors ligne"
+  ],
+  "variants": {}
+}

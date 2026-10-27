@@ -35,8 +35,10 @@ describe('English says "Stage", not "Level", for a stage', () => {
   });
 
   it('no string says "level" or "levels", but a bot’s level', () => {
+    // A nested plural, $t(levels:hud.secondsAdded, …), names its namespace; the nested key's own words are read.
+    const shown = (v: string) => v.replace(/\$t\([^)]*\)/g, '');
     const offending = strings
-      .filter(([k, v]) => LEVEL_WORD.test(v) && !ALLOWED.has(k))
+      .filter(([k, v]) => LEVEL_WORD.test(shown(v)) && !ALLOWED.has(k))
       .map(([k, v]) => `${k}: ${v}`);
     expect(offending).toEqual([]);
   });

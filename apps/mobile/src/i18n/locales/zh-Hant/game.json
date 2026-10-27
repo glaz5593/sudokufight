@@ -1,0 +1,434 @@
+{
+  "title": "單人練習",
+  "titleBot": "機器人練習",
+  "titleRanked": "排位對局",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "我",
+  "opponent": "對手",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "等級{{level}}，{{title}}"
+  },
+  "listSep": "、",
+  "type": {
+    "fast": "快速",
+    "normal": "一般",
+    "hard": "困難"
+  },
+  "hud": {
+    "time": "時間",
+    "best": "最佳一步",
+    "none": "—",
+    "timeLabel": "時間{{time}}",
+    "bestLabel_other": "最佳一步：{{cell}}得{{points}}分",
+    "noBestLabel": "還沒有最佳一步"
+  },
+  "progress": {
+    "label": "盤面進度",
+    "value": "{{filled}}/{{total}}",
+    "a11y_other": "已填{{filled}}/{{total}}格"
+  },
+  "end": {
+    "button": "結束練習",
+    "title": "要結束練習嗎？",
+    "body": "你的成績會儲存在這支手機上，積分不會改變。",
+    "confirm": "確定結束",
+    "footnote": "對局會在背景繼續",
+    "dialog": "確認結束練習"
+  },
+  "out": {
+    "surrendered": "你已認輸 · 第{{place}}名",
+    "abandoned": "你已出局 · 第{{place}}名",
+    "goesOn": "對局會繼續進行到最後",
+    "label": "{{title}}。{{goesOn}}",
+    "home": "首頁",
+    "homeHint": "對局會在你離開後繼續。你的名次已經確定"
+  },
+  "connection": {
+    "sep": "。",
+    "scoreLabel": "{{me}}：{{myScore}}，{{name}}：{{theirScore}}",
+    "lead": {
+      "mine": "你領先",
+      "theirs": "{{name}}領先",
+      "theirs_female": "{{name}}領先",
+      "tie": "同分"
+    },
+    "frozen": {
+      "title": "對局凍結",
+      "timers": "所有計時器已停止",
+      "label": "對局凍結，所有計時器已停止"
+    },
+    "opponent": {
+      "lost": "{{name}}斷線了",
+      "lost_female": "{{name}}斷線了",
+      "title": "對手重新連線中…",
+      "timeUp": "時間到",
+      "notBack": "{{name}}沒有回來",
+      "notBack_female": "{{name}}沒有回來",
+      "seconds": "秒",
+      "ring": "重新連線中…{{seconds}}",
+      "saved": "對局已儲存在伺服器上",
+      "savedSub": "盤面和比分都會保留",
+      "winLabel": "對手棄局，你獲勝",
+      "hint": "如果{{name}}沒有及時回來，你就會因對手棄局獲勝",
+      "hint_female": "如果{{name}}沒有及時回來，你就會因對手棄局獲勝",
+      "checking": "正在向伺服器確認…",
+      "timeLeft": "回來的剩餘時間：{{time}}",
+      "announce": "{{name}}斷線了。對局凍結，直到對方回來",
+      "announce_female": "{{name}}斷線了。對局凍結，直到對方回來",
+      "announceExpired": "時間到。正在向伺服器確認"
+    },
+    "self": {
+      "lostTitle": "你斷線了",
+      "lostSub": "重新連線中…",
+      "attempt": "嘗試",
+      "attemptLabel": "第{{attempt}}次嘗試",
+      "backTitle": "你回到對局了",
+      "syncingSub": "同步中…",
+      "syncedSub": "已全部同步 · 對局繼續",
+      "lockedTitle": "你回來之前，盤面會鎖定",
+      "lockedSub": "連線恢復後，我們會同步：",
+      "syncingTitle": "同步中…",
+      "syncedTitle": "已全部同步",
+      "savedSub": "對局已儲存在伺服器上，會從同一處繼續",
+      "item": {
+        "board": "盤面",
+        "score": "比分",
+        "locks": "鎖定",
+        "turn": "回合",
+        "timers": "計時器"
+      },
+      "timeLeft_other": "你有{{seconds}}秒可以回來",
+      "timeSub": "超過時間就算棄局",
+      "backInTime": "及時回來了",
+      "backInTimeSub": "計時器從同一秒繼續",
+      "announceLost": "你斷線了。重新連線中",
+      "announceAttempt": "你斷線了。重新連線中，第{{attempt}}次嘗試",
+      "announceHurry_other": "再過{{seconds}}秒就算棄局",
+      "announceSyncing": "你回到對局了。同步中",
+      "announceSynced": "你回到對局了。盤面和比分已同步"
+    },
+    "offline": {
+      "announce": "沒有連線。繼續玩吧，連線恢復後會送出你的走步"
+    },
+    "left": {
+      "timeUp_other": "時間到 · {{seconds}}秒沒有連線",
+      "title": "{{name}}離開了對局",
+      "title_female": "{{name}}離開了對局",
+      "win": "對手棄局，你獲勝",
+      "rating": "積分",
+      "ratingLabel": "積分變化：{{delta}}，{{type}}",
+      "ratingUnchanged": {
+        "opponentLeftBeforeMyMove": "積分不變：對方在你走第一步前就離開了",
+        "opponentLeftAhead": "積分不變：對方離開時你處於落後"
+      },
+      "toResults": "查看結果",
+      "home": "首頁"
+    },
+    "error": {
+      "title": "連線錯誤",
+      "offlineTitle": "沒有網路連線",
+      "body": {
+        "offline": "你的手機目前沒有網路。請連上網路後再試一次。",
+        "unreachable": "無法連上對局伺服器。請檢查連線後再試一次。",
+        "lost": "與對局伺服器的連線中斷，而且無法恢復。",
+        "refused": "伺服器不讓我們進入房間。"
+      },
+      "refusal": {
+        "notFound": "沒有這個代碼的房間。請檢查代碼後再試一次。",
+        "full": "這個房間已經滿了。",
+        "gameStarted": "這個房間的對局已經開始了。",
+        "alreadyInRoom": "你已經在另一台裝置上進入這個房間。",
+        "unauthenticated": "登入帳號才能和其他人對戰。",
+        "suspended": "你的帳號已被停權，目前無法進行排位對局。單人練習和機器人練習仍可使用。",
+        "codeTaken": "這個代碼的房間已經存在。請試試其他代碼。",
+        "badOptions": "房間設定無效。",
+        "kicked": "房主已將你移出房間。",
+        "roomClosed": "房間已關閉。"
+      },
+      "code": "錯誤代碼：{{code}}",
+      "attemptFailed": "第{{attempt}}次嘗試失敗",
+      "retry": "再試一次",
+      "practice": "前往練習",
+      "practiceNote": "單人練習和機器人練習不需要連線",
+      "home": "首頁"
+    },
+    "surrender": {
+      "chip": "認輸",
+      "title": "確定要認輸嗎？",
+      "body": "這場對局會算作失敗",
+      "bodyRating": "這場對局會算作失敗 · 預估積分變化{{delta}}",
+      "bodyNoLoss": {
+        "leftBeforeMoving": "這場對局會算作失敗 · 你的積分不會下降：你還沒走任何一步",
+        "leftNotBehind": "這場對局會算作失敗 · 你的積分不會下降：你並沒有落後"
+      },
+      "bodyMany": "你會離開對局，你解出的格子會保留你的顏色。",
+      "bodyManyNoLoss": "你會離開對局，你解出的格子會保留你的顏色。對仍在對局中的玩家，你的積分不會下降。",
+      "confirm": "確定認輸",
+      "cancel": "取消",
+      "footnote": "對局會在背景繼續",
+      "dialog": "確認認輸"
+    },
+    "lobby": {
+      "title": "私人房間",
+      "subtitle_other": "{{type}} · {{players}}名玩家",
+      "codeTitle": "房間代碼",
+      "codeLabel": "房間代碼：{{spelled}}",
+      "codeHint": "把代碼傳給要和你一起玩的人",
+      "share": "分享代碼",
+      "copy": "複製",
+      "copied": "已複製代碼",
+      "shareMessage": "來和我一起玩 Sudoku Fight！房間代碼：{{code}}",
+      "playersTitle": "房間裡的玩家",
+      "you": "我",
+      "emptySeat": "等待玩家…",
+      "seatMeLabel": "{{name}}，我",
+      "seatEmptyLabel": "空位，等待玩家",
+      "waiting_other": "還在等{{count}}名玩家",
+      "starting": "大家都到齊了！對局即將開始…",
+      "hint": "所有玩家都進入房間後，對局就會開始",
+      "leave": "離開房間",
+      "joined": "{{name}}進入了房間"
+    },
+    "connecting": {
+      "title": "進入對局",
+      "board": "正在載入盤面…",
+      "step": {
+        "server": "正在連線到對局伺服器…",
+        "room": "正在進入房間…",
+        "sync": "正在同步比分和計時器…"
+      },
+      "label": "正在載入對局，第{{step}}/{{total}}步",
+      "cancel": "取消",
+      "tag": "排位 · {{type}}",
+      "rating": "積分{{rating}}",
+      "ready": "準備好了！",
+      "joining": "連線中…",
+      "tipTitle": "小提示",
+      "tips": {
+        "score_other": "橫列、直行和宮越空，這一步就越值錢：每格最多{{max}}分。",
+        "lastCell_other": "盤面上最後一格永遠只值{{points}}分：周圍都已經填滿了。",
+        "mistakes": "犯錯會扣掉正確數字在那一格原本的分數。越值錢的格子，填錯的代價越高。",
+        "interference": "每次干擾的費用都是上一次的兩倍。留到關鍵時刻再用。"
+      }
+    }
+  },
+  "live": {
+    "correct": "正確：{{cell}}填{{digit}}，{{points}}",
+    "wrong": "錯誤：{{digit}}不能填在{{cell}}，{{penalty}}",
+    "taken": "{{cell}}已被佔用",
+    "cooldown": "稍等一下就能再選{{cell}}",
+    "expired": "時間到，已放開{{cell}}",
+    "complete": "盤面完成！",
+    "oppCorrect": "{{name}}解出{{cell}}：{{digit}}，{{points}}",
+    "oppWrong": "{{name}}填錯了：{{digit}}不能填在{{cell}}，{{penalty}}",
+    "leadMine_other": "你領先{{gap}}分",
+    "leadTheirs_other": "{{name}}領先{{gap}}分",
+    "leadTie": "目前同分",
+    "reaction": "{{name}}傳了表情{{emoji}}",
+    "oppSurrendered": "{{name}}認輸出局，第{{place}}名",
+    "oppAbandoned": "{{name}}沒有及時回來，已出局，第{{place}}名",
+    "hitOther": "{{from}}對{{name}}發動了{{kind}}",
+    "outMine": "你以第{{place}}名出局。對局會繼續進行到最後",
+    "queued": "{{cell}}：{{digit}}等待連線",
+    "offlineLostTaken": "你離線時{{cell}}被別人佔用了 · 不扣分",
+    "offlineLost": "你在{{cell}}的走步沒有計入 · 不扣分"
+  },
+  "interference": {
+    "fireworks": "煙火",
+    "cats": "貓咪",
+    "warp": "扭曲",
+    "scramble": "數字錯亂",
+    "ink": "墨水",
+    "keypad": "鍵盤錯亂"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}}對你放了煙火！",
+      "cats": "{{name}}對你放出了貓咪！",
+      "warp": "{{name}}扭曲了你的螢幕！",
+      "scramble": "{{name}}打亂了你的數字！",
+      "ink": "{{name}}對你潑了墨水！",
+      "keypad": "{{name}}打亂了你的鍵盤！",
+      "generic": "{{name}}對你發動了干擾！"
+    },
+    "cost": "對方花了{{cost}}分 · 對局繼續",
+    "goesOn": "對局繼續 · 你的計時已暫停",
+    "seconds_other": "剩{{count}}秒",
+    "banner": "{{title}}{{subtitle}}，{{time}}",
+    "started": "{{title}}你的盤面變暗了，{{time}}。你的計時已暫停",
+    "withNote": "{{line}}。{{note}}",
+    "note": {
+      "scramble": "跑來跑去的數字不是真的",
+      "keypad": "按鍵會換位置，每個鍵輸入的是鍵上顯示的數字"
+    },
+    "ended": "干擾結束了，你的計時恢復",
+    "meow": "喵！",
+    "mew": "喵嗚！"
+  },
+  "arsenal": {
+    "title": "選擇干擾",
+    "target": "目標：",
+    "targetLabel": "目標：{{name}}",
+    "me": "我",
+    "routeLabel": "從我對{{name}}發動干擾",
+    "scrim": "關閉並回到盤面",
+    "price": "價格",
+    "priceValue": "{{cost}}分",
+    "nextPrice": "· 下次：{{cost}}",
+    "unit": "分",
+    "score": "你的分數",
+    "costLabel_other": "這個干擾需要{{cost}}分。你的分數是{{score}}，發動後為{{after}}。下一次需要{{next}}",
+    "costLabelShort": "這個干擾需要$t(game:arsenal.costPoints, {\"count\": {{cost}} })。你的分數是{{score}}，$t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })",
+    "costPoints_other": "{{count}}分",
+    "shortPoints_other": "還差{{missing}}分",
+    "info_other": "每次干擾持續{{seconds}}秒 · 點一下發動",
+    "cost": "{{cost}}分",
+    "missing": "還差{{count}}分",
+    "locked": "未解鎖",
+    "level": "等級{{level}}",
+    "busy": "受干擾中",
+    "unavailable": "無法使用",
+    "routeArrow": "→",
+    "sent": "{{kind}} → {{name}}",
+    "notEnough": "分數不夠發動下一次干擾（{{cost}}分）",
+    "busyToast_other": "{{name}}已經在受干擾中。{{count}}秒後再試",
+    "notNow": "你現在無法干擾",
+    "refused": "干擾沒有送出，也沒有扣分",
+    "label": "{{kind}} · {{cost}}分 · 點一下對{{name}}發動",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kindGeneric": "干擾",
+    "kind": {
+      "fireworks": "煙火",
+      "cats": "貓咪",
+      "warp": "扭曲",
+      "scramble": "數字錯亂",
+      "ink": "墨水",
+      "keypad": "鍵盤錯亂"
+    },
+    "reason": {
+      "points": "還差{{count}}分才能發動這個干擾",
+      "busy": "{{name}}已經在受干擾中，請稍後再試",
+      "notRunning": "你現在無法發動干擾",
+      "locked": "這個干擾還沒解鎖",
+      "level": "等級{{level}}解鎖",
+      "out": "{{name}}已出局",
+      "disconnected": "{{name}}目前沒有連線"
+    },
+    "live": {
+      "launched": "你對{{name}}發動了{{kind}}"
+    }
+  },
+  "reactions": {
+    "picker": "表情",
+    "item": "表情：{{name}}",
+    "itemOther": "表情{{emoji}}",
+    "name": {
+      "laugh": "大笑",
+      "scream": "尖叫",
+      "cool": "酷",
+      "facepalm": "扶額",
+      "fire": "火熱",
+      "eyes": "盯著看"
+    },
+    "coolingDown": "稍等一下就能再傳表情",
+    "close": "關閉表情",
+    "menu": {
+      "open": "{{name}}的卡片選單",
+      "openHint": "可以在這裡將{{name}}的表情設為靜音",
+      "openHintMuted": "{{name}}的表情已靜音。可以在這裡取消靜音",
+      "label": "{{name}}的選單",
+      "mute": "表情靜音",
+      "unmute": "取消表情靜音",
+      "muteLabel": "將{{name}}的表情靜音",
+      "unmuteLabel": "取消{{name}}的表情靜音",
+      "muted": "已將{{name}}的表情靜音",
+      "unmuted": "{{name}}的表情恢復了",
+      "close": "關閉選單"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "盤面完成！",
+      "ended": "練習結束",
+      "interrupted": "練習中斷",
+      "surrendered": "你認輸了",
+      "abandoned": "你離開了對局",
+      "opponentSurrendered": "你的對手認輸了",
+      "opponentLeft": "你的對手離開了"
+    },
+    "outcome": {
+      "win": "勝利！",
+      "loss": "失敗",
+      "tie": "平手"
+    },
+    "abandonWin": "對手棄局，你獲勝",
+    "placeTitle": "第{{place}}名！",
+    "placeOf": "{{total}}人中第{{place}}名",
+    "outOf": "共{{players}}",
+    "header": "{{title}} · {{type}} · {{players}}",
+    "end": {
+      "label": "結束方式",
+      "completed": "你填滿了整個盤面",
+      "full": "盤面填滿了",
+      "ended": "你在盤面填滿前結束了練習",
+      "interrupted": "練習中途停止，例如應用程式被關閉時",
+      "line": "{{label}}：{{reason}}",
+      "surrendered": "你在盤面填滿前認輸了",
+      "abandoned": "你沒有及時回來",
+      "opponentSurrendered": "你的對手在盤面填滿前認輸了",
+      "opponentLeft": "你的對手斷線，而且沒有及時回來"
+    },
+    "score": "最終得分",
+    "points": "分",
+    "scoreLabel_other": "最終得分：{{score}}分",
+    "opponents": {
+      "title": "對手",
+      "label_other": "{{name}} · {{score}}分 · {{mistakes}}",
+      "left": "離開了對局"
+    },
+    "best": {
+      "title": "本局最佳一步",
+      "move": "{{cell}} → {{digit}}",
+      "label_other": "本局最佳一步：{{points}}分，{{cell}}填{{digit}}",
+      "formula": "得分方式",
+      "formulaLabel": "得分方式：{{line}}",
+      "none": "這次練習沒有答對的一步"
+    },
+    "stats": {
+      "time": "對局時間",
+      "mistakes": "錯誤",
+      "correct": "答對步數",
+      "think": "平均思考時間",
+      "seconds": "{{value}}秒",
+      "none": "—",
+      "label": "{{label}}：{{value}}"
+    },
+    "awards": {
+      "title": "對局獎項",
+      "bestMove": "最佳一步",
+      "fewestMistakes": "最少錯誤",
+      "fastest": "最快",
+      "comeback": "逆轉",
+      "mostPoints": "最高得分",
+      "label": "{{title}}：{{who}}，{{value}}",
+      "value": {
+        "bestMove": "{{value}}分",
+        "fewestMistakes": "錯誤：{{value}}",
+        "fastest": "每步{{value}}秒",
+        "comeback": "從落後{{value}}分逆轉",
+        "mostPoints": "{{value}}分"
+      }
+    },
+    "unrated": "練習：你的積分不會改變",
+    "ratingSoon": "私人房間：目前不會改變積分",
+    "actions": {
+      "home": "首頁",
+      "newGame": "新對局"
+    },
+    "loading": "正在載入結果…",
+    "missing": "找不到這次練習",
+    "unavailable": "無法讀取已儲存的練習",
+    "notSaved": "這次練習沒有儲存在手機上"
+  }
+}

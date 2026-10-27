@@ -1,11 +1,13 @@
 import type { InterferenceKind } from '@sudoku-fight/engine';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '../../components/Icon';
 import { ltr } from '../../components/player';
+import { Text } from '../../components/ui/Text';
+import { spaceWords } from '../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { useReduceMotion } from '../../theme/motion';
 import { TokenArt } from '../game/arsenal/TokenArt';
@@ -61,6 +63,7 @@ export function InterferencesScreen({ level, onBack, testID = 'interferences' }:
           style={styles.summary}
           accessible
           accessibilityLabel={t('interferences.countLabel', {
+            count: collection.total,
             open: collection.open.length,
             total: collection.total,
           })}
@@ -74,7 +77,11 @@ export function InterferencesScreen({ level, onBack, testID = 'interferences' }:
 
         <View style={styles.facts}>
           <Fact icon="history" value={String(facts.seconds)} label={t('interferences.facts.seconds')} />
-          <Fact icon="bolt" value={ltr(`${facts.costs.join('·')}…`)} label={t('interferences.facts.cost')} />
+          <Fact
+            icon="bolt"
+            value={ltr(`${facts.costs.join('·')}${t('player:ellipsis')}`)}
+            label={t('interferences.facts.cost')}
+          />
           <Fact
             icon="target"
             value={t('interferences.facts.launchValue')}
@@ -162,8 +169,9 @@ export function InterferencesScreen({ level, onBack, testID = 'interferences' }:
 }
 
 function Fact({ icon, value, label }: { icon: 'history' | 'bolt' | 'target'; value: string; label: string }) {
+  const { t } = useTranslation('progress');
   return (
-    <View style={styles.fact} accessible accessibilityLabel={`${value} ${label}`}>
+    <View style={styles.fact} accessible accessibilityLabel={spaceWords([value, label], t)}>
       <View style={styles.factHead}>
         <Icon name={icon} size={size.icon.inline} color={color.textMuted} />
         <Text style={[text('rowTitle'), styles.strong]}>{value}</Text>

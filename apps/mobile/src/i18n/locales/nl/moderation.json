@@ -1,0 +1,110 @@
+{
+  "actions": {
+    "report": "Speler melden",
+    "block": "Speler blokkeren",
+    "unblock": "Deblokkeren",
+    "reportLabel": "{{name}} melden",
+    "blockLabel": "{{name}} blokkeren",
+    "unblockLabel": "{{name}} deblokkeren",
+    "blockedNote": "Je hebt deze speler geblokkeerd: jullie worden niet samen ingedeeld in ranked spellen."
+  },
+  "report": {
+    "title": "{{name}} melden",
+    "question": "Wat is er mis?",
+    "reasons": {
+      "offensiveName": "Beledigende naam",
+      "cheating": "Valsspelen",
+      "other": "Iets anders"
+    },
+    "reasonHints": {
+      "offensiveName": "De naam is grof, beledigend of ongepast",
+      "cheating": "Lijkt op hulp van buitenaf, of misbruik van een bug",
+      "other": "Iets anders dat niet in de arena thuishoort"
+    },
+    "privacy_one": "De speler weet niet wie de melding deed. Elke melding wordt binnen {{hours}} uur bekeken.",
+    "privacy_other": "De speler weet niet wie de melding deed. Elke melding wordt binnen {{hours}} uur bekeken.",
+    "send": "Melding versturen",
+    "pickFirst": "Kies een reden en verstuur dan.",
+    "thanks_one": "Bedankt. We bekijken de melding binnen {{hours}} uur.",
+    "thanks_other": "Bedankt. We bekijken de melding binnen {{hours}} uur.",
+    "done": "Sluiten",
+    "errors": {
+      "rateLimited_one": "Je hebt het afgelopen uur veel meldingen verstuurd. Over een minuut kun je er weer een versturen.",
+      "rateLimited_other": "Je hebt het afgelopen uur veel meldingen verstuurd. Over {{count}} minuten kun je er weer een versturen.",
+      "busy": "Te veel verzoeken. Wacht even en probeer het opnieuw.",
+      "suspended": "Je account is geschorst, dus je kunt nu geen meldingen versturen.",
+      "self": "Je kunt jezelf niet melden.",
+      "notFound": "Deze speler is niet meer in het spel.",
+      "offline": "Geen verbinding met de server: de melding is niet verstuurd. Probeer het opnieuw.",
+      "failed": "We konden de melding niet versturen. Probeer het opnieuw."
+    }
+  },
+  "block": {
+    "title": "{{name}} blokkeren?",
+    "body": "Jullie worden niet samen ingedeeld in ranked spellen, en de reacties van {{name}} bereiken je niet meer. Niemand krijgt bericht van een blokkering. Je kunt die altijd opheffen: Instellingen → Geblokkeerde spelers.",
+    "confirm": "Blokkeren",
+    "done": "{{name}} is geblokkeerd.",
+    "unblockTitle": "{{name}} deblokkeren?",
+    "unblockBody": "Jullie kunnen elkaar weer tegenkomen in ranked spellen, en de reacties van {{name}} bereiken je weer.",
+    "unblockConfirm": "Deblokkeren",
+    "unblocked": "{{name}} is gedeblokkeerd.",
+    "errors": {
+      "limitReached_one": "Je kunt maximaal {{max}} speler blokkeren. Deblokkeer iemand (Instellingen → Geblokkeerde spelers) en probeer het opnieuw.",
+      "limitReached_other": "Je kunt maximaal {{max}} spelers blokkeren. Deblokkeer iemand (Instellingen → Geblokkeerde spelers) en probeer het opnieuw.",
+      "self": "Je kunt jezelf niet blokkeren.",
+      "notFound": "Deze speler is niet meer in het spel.",
+      "busy": "Te veel verzoeken. Wacht even en probeer het opnieuw.",
+      "offline": "Geen verbinding met de server: de blokkering is niet opgeslagen. Probeer het opnieuw.",
+      "unblockOffline": "Geen verbinding met de server: de blokkering is niet opgeheven. Probeer het opnieuw.",
+      "failed": "We konden de blokkering niet opslaan. Probeer het opnieuw.",
+      "unblockFailed": "We konden de blokkering niet opheffen. Probeer het opnieuw."
+    }
+  },
+  "blocked": {
+    "title": "Geblokkeerde spelers",
+    "settingsRow": "Geblokkeerde spelers",
+    "note": "Jullie worden niet samen ingedeeld in ranked spellen, en hun reacties bereiken je niet. Niemand krijgt bericht van een blokkering.",
+    "count": "{{count}} van {{max}}",
+    "since": "Geblokkeerd sinds {{date}}",
+    "rowLabel": "{{name}}, geblokkeerd sinds {{date}}",
+    "emptyTitle": "Geen geblokkeerde spelers",
+    "emptyBody": "Je kunt een speler blokkeren via de spelerskaart, of via het menu van de kaart in een ranked spel.",
+    "loading": "Geblokkeerde spelers laden…",
+    "offlineTitle": "Geen verbinding met de server",
+    "offlineBody": "De lijst staat op de server. Probeer het opnieuw als je online bent.",
+    "errorTitle": "We konden de lijst niet laden",
+    "errorBody": "Probeer het zo opnieuw.",
+    "retry": "Opnieuw proberen",
+    "signedOut": "Log in om de lijst te zien."
+  },
+  "chooseName": {
+    "title": "Kies een nieuwe naam",
+    "body": "Je vorige naam is vervangen door een tijdelijke, {{name}}, omdat hij de naamregels overtrad. Kies een nieuwe naam om verder te gaan.",
+    "rule": "Deze keer geen wachttijd van 30 dagen: je kunt nu een naam kiezen.",
+    "save": "Opslaan en verder",
+    "saved": "Je nieuwe naam is opgeslagen.",
+    "same": "Dat is de tijdelijke naam. Kies je eigen naam.",
+    "offline": "Geen verbinding met de server: de naam is niet opgeslagen. Probeer het opnieuw als je online bent.",
+    "practice": "Intussen oefenen",
+    "settings": "Instellingen",
+    "signOut": "Uitloggen"
+  },
+  "suspended": {
+    "banner": "Account geschorst: geen ranked spellen",
+    "bannerAction": "Meer info",
+    "bannerLabel": "Account geschorst, geen ranked spellen. Meer info",
+    "title": "Account geschorst",
+    "body": "Na een melding is je account geschorst. Zolang dat zo is, zijn er geen ranked spellen en kan het profiel niet worden gewijzigd.",
+    "can": "Je kunt nog steeds alleen of tegen een bot oefenen, spelers blokkeren en het account verwijderen.",
+    "contactTitle": "Is dit een vergissing?",
+    "contact": "Schrijf ons en we kijken er nog eens naar. De contactgegevens staan in de gebruiksvoorwaarden.",
+    "contactEmail": "Je kunt ons schrijven: {{email}}",
+    "openContact": "Contactgegevens",
+    "opensInBrowser": "Opent in de browser",
+    "practice": "Oefenen",
+    "chip": "Account geschorst",
+    "chipLabel": "Niet beschikbaar: account geschorst",
+    "ranked": "Je account is geschorst, dus voorlopig geen ranked spellen.",
+    "editProfile": "Account geschorst: het profiel kan niet worden gewijzigd"
+  }
+}

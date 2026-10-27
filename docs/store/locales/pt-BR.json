@@ -1,0 +1,29 @@
+{
+  "googlePlay": {
+    "locales": ["pt-BR"],
+    "title": "Sudoku Fight: PvP ao vivo",
+    "shortDescription": "Enfrente até 3 adversários no mesmo sudoku em tempo real. Ranqueado e justo.",
+    "fullDescription": "O Sudoku Fight transforma o sudoku em uma competição ao vivo. Até 4 jogadores resolvem o mesmo tabuleiro no mesmo instante: cada número correto que você coloca é seu, e cada ponto conta.\n\nUM TABULEIRO, TODOS RESOLVEM\n• Todos os jogadores jogam no mesmo tabuleiro ao mesmo tempo. Coloque um número correto e a célula fica com a sua cor.\n• Jogadas mais difíceis valem mais pontos: um número que exige uma dedução esperta vale mais do que um fácil.\n• Um número errado custa exatamente o que o certo teria rendido. Só velocidade não basta para vencer.\n• Trave uma célula enquanto pensa, mas só por alguns segundos.\n\nINTERFERÊNCIAS E REAÇÕES\n• Gaste pontos para atingir um adversário com fogos de artifício, gatos ou uma distorção de tela por 5 segundos.\n• Reaja com 😂 😱 😎 🤦 🔥 👀.\n\nPARTIDAS RANQUEADAS\n• Partidas ranqueadas para 2, 3 ou 4 jogadores, em três tipos de partida: rápido, normal e difícil.\n• O pareamento procura adversários do seu nível e evita os que você acabou de enfrentar.\n• Um rating para cada tipo de partida, ligas, rankings e cartões de jogador com as suas estatísticas.\n• Nenhum adversário online? Treine contra um robô enquanto espera.\n\nAPRENDA COM CADA PARTIDA\n• Veja o replay de qualquer partida ranqueada, jogada por jogada, com uma explicação lógica de cada jogada.\n• Todo o seu histórico de partidas e o seu progresso, com XP e níveis.\n\nTREINE QUANDO QUISER\n• Treine por conta própria ou contra robôs de vários níveis, mesmo offline.\n\nJOGO LIMPO\n• O servidor verifica cada jogada, e os tabuleiros das partidas ranqueadas nunca vêm dentro do app.\n• Sem anúncios. Você pode excluir sua conta a qualquer momento em Configurações.\n\nDisponível em 19 idiomas. O tabuleiro é sempre lido da esquerda para a direita.",
+    "whatsNew": "Primeira versão."
+  },
+  "appStore": {
+    "locales": ["pt-BR"],
+    "name": "Sudoku Fight",
+    "subtitle": "Duelos multijogador ao vivo",
+    "promotionalText": "Um tabuleiro. Todos resolvem. Só um vence. Dispute em tempo real com até 3 adversários no mesmo sudoku, envie interferências e suba nas ligas ranqueadas.",
+    "description": "O Sudoku Fight transforma o sudoku em uma competição ao vivo. Até 4 jogadores resolvem o mesmo tabuleiro no mesmo instante: cada número correto que você coloca é seu, e cada ponto conta.\n\nUM TABULEIRO, TODOS RESOLVEM\n• Todos os jogadores jogam no mesmo tabuleiro ao mesmo tempo. Coloque um número correto e a célula fica com a sua cor.\n• Jogadas mais difíceis valem mais pontos: um número que exige uma dedução esperta vale mais do que um fácil.\n• Um número errado custa exatamente o que o certo teria rendido. Só velocidade não basta para vencer.\n• Trave uma célula enquanto pensa, mas só por alguns segundos.\n\nINTERFERÊNCIAS E REAÇÕES\n• Gaste pontos para atingir um adversário com fogos de artifício, gatos ou uma distorção de tela por 5 segundos.\n• Reaja com 😂 😱 😎 🤦 🔥 👀.\n\nPARTIDAS RANQUEADAS\n• Partidas ranqueadas para 2, 3 ou 4 jogadores, em três tipos de partida: rápido, normal e difícil.\n• O pareamento procura adversários do seu nível e evita os que você acabou de enfrentar.\n• Um rating para cada tipo de partida, ligas, rankings e cartões de jogador com as suas estatísticas.\n• Nenhum adversário online? Treine contra um robô enquanto espera.\n\nAPRENDA COM CADA PARTIDA\n• Veja o replay de qualquer partida ranqueada, jogada por jogada, com uma explicação lógica de cada jogada.\n• Todo o seu histórico de partidas e o seu progresso, com XP e níveis.\n\nTREINE QUANDO QUISER\n• Treine por conta própria ou contra robôs de vários níveis, mesmo offline.\n\nJOGO LIMPO\n• O servidor verifica cada jogada, e os tabuleiros das partidas ranqueadas nunca vêm dentro do app.\n• Sem anúncios. Você pode excluir sua conta a qualquer momento em Configurações.\n\nDisponível em 19 idiomas. O tabuleiro é sempre lido da esquerda para a direita.",
+    "keywords": "quebra-cabeça,puzzle,números,lógica,jogo,online,amigos,multiplayer,pvp,raciocínio,desafio,x1",
+    "whatsNew": "Primeira versão."
+  },
+  "screenshotCaptions": [
+    "Um tabuleiro. Todos resolvem. Só um vence.",
+    "Até 4 jogadores no mesmo tabuleiro",
+    "Envie interferências aos seus adversários",
+    "Um adversário do seu nível, no mesmo tabuleiro",
+    "Jogadas mais difíceis valem mais pontos",
+    "Veja o replay de cada jogada, com explicações",
+    "Ligas e rankings",
+    "Treine contra um robô, mesmo offline"
+  ],
+  "variants": {}
+}

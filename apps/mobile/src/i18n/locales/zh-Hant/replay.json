@@ -1,0 +1,92 @@
+{
+  "title": "重播",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "單人練習",
+    "bot": "機器人練習",
+    "ranked": "排位"
+  },
+  "back": "返回",
+  "loading": "正在載入對局…",
+  "load": {
+    "missing": "找不到這場對局",
+    "notFinished": "伺服器還在儲存這場對局，請稍後再試",
+    "offline": "沒有連上伺服器。排位對局要從伺服器載入",
+    "signedOut": "登入後才能觀看排位對局",
+    "unavailable": "無法讀取這場對局",
+    "retry": "再試一次",
+    "partial": "這場對局中途中斷：重播只到最後儲存的一步"
+  },
+  "step": {
+    "counter": "第{{number}}/{{total}}步",
+    "clockLabel": "對局時間：{{clock}}"
+  },
+  "nav": {
+    "prev": "上一步",
+    "next": "下一步",
+    "timeline": "步驟時間軸",
+    "timelineValue": "第{{number}}/{{total}}步，{{clock}}",
+    "timelineHint": "上下滑動可切換步驟"
+  },
+  "narration": {
+    "start": "對局開始",
+    "select": "{{name}} · 選擇{{cell}}",
+    "correct": "{{name}} · {{cell}}答對 · {{delta}}",
+    "wrong": "{{name}} · {{cell}}答錯 · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · 放開{{cell}}",
+      "timeout": "{{name}} · {{cell}}時間到"
+    },
+    "interference": "{{name}} · 干擾{{target}} · {{delta}}",
+    "disconnect": "{{name}} · 斷線",
+    "reconnect": "{{name}} · 回到對局",
+    "offline": "{{name}} · 連線中斷",
+    "surrender": "{{name}} · 認輸",
+    "endPractice": "{{name}} · 結束練習",
+    "abandon": "{{name}} · 離開對局",
+    "over": "對局結束",
+    "paused": "對局凍結",
+    "offlineSuffix": "恢復連線後送出"
+  },
+  "explain": {
+    "title": "每位玩家的解說",
+    "none": "{{name}}還沒有走任何一步",
+    "noneMe": "我還沒有走任何一步",
+    "noneBody": "走出第一步後就會出現解說",
+    "status": {
+      "choosing": "選擇中",
+      "released": "已放開",
+      "correct": "正確",
+      "wrong": "錯誤"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "填了{{digit}}，正解是{{answer}}",
+    "why": "為什麼{{digit}}不行：{{text}}",
+    "noLogic": "答案：{{cell}} → {{digit}}",
+    "scoreLine": "得分",
+    "penaltyLine": "扣分：正確數字原本的分數",
+    "released": {
+      "cancel": "已取消選擇",
+      "timeout": "時間到",
+      "switch": "換到另一格",
+      "mistake": "犯錯之後",
+      "surrender": "離開對局",
+      "disconnect": "斷線",
+      "abandon": "放棄對局"
+    },
+    "label": "{{name}}：{{status}}，{{move}}。{{technique}}。{{text}}",
+    "labelNone": "{{name}}：{{text}}",
+    "chip": "{{status}}{{points}}"
+  },
+  "moments": {
+    "title": "關鍵時刻",
+    "bestMove": "最佳一步",
+    "mistakes": "錯誤 · {{count}}",
+    "interferences": "干擾 · {{count}}",
+    "turningPoint": "轉捩點",
+    "hint": "跳到那一步"
+  },
+  "board": "第{{number}}步的盤面",
+  "me": "我",
+  "unknown": "玩家"
+}

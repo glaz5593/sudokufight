@@ -1,10 +1,11 @@
 import type { AvatarId, CountryCode } from '@sudoku-fight/protocol';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import type { AvatarReaction } from '../../avatars';
 import { Avatar, countryName, Flag, SeatGlyph } from '../../components/player';
+import { Text } from '../../components/ui/Text';
 import { color, radius, space, text, tokens } from '../../theme';
 
 /** The seat glyph before my name (● in P1), as on the game's cards, and the gap after it. */

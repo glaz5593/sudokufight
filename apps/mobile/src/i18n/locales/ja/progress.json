@@ -1,0 +1,196 @@
+{
+  "common": {
+    "provisional": "暫定レーティング",
+    "provisionalNote_other": "1つの対戦タイプでランク戦を{{games}}回プレイすると、リーグが表示されます",
+    "level": "レベル{{level}}",
+    "you": "あなた",
+    "myCard": "自分のプレイヤーカード",
+    "loading": "読み込み中…",
+    "retry": "再試行",
+    "offlineNote": "サーバーに接続できません：前回読み込んだ内容を表示しています。",
+    "errorNote": "更新できませんでした：前回読み込んだ内容を表示しています。",
+    "offlineTitle": "サーバーに接続できません",
+    "offlineBody": "接続が戻るとランキングが更新されます。",
+    "errorTitle": "問題が発生しました",
+    "errorBody": "サーバーが応答できませんでした。少し待ってから、もう一度お試しください。",
+    "signedOut": "表示するにはログインしてください",
+    "players_other": "{{count}}人",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}、次はレベル{{level}}"
+  },
+  "leaderboard": {
+    "title": "ランキング",
+    "tabs": {
+      "label": "レーティングの種類",
+      "general": "総合",
+      "fast": "スピード",
+      "normal": "ノーマル",
+      "hard": "ハード",
+      "friends": "フレンド"
+    },
+    "caption": {
+      "general": "総合 · 各プレイヤーの最高レーティング",
+      "type": "{{type}}のレーティング · 全世界",
+      "typePlayers": "{{type}}のレーティング · {{players}} · 全世界",
+      "friends": "最近の対戦相手"
+    },
+    "players": "プレイヤー数",
+    "podium": "トップ3",
+    "rankLabel": "{{rank}}位",
+    "meName": "{{name}}（あなた）",
+    "openHint": "プレイヤーカードを開きます",
+    "meNone": "このランキングにはまだあなたのレーティングがありません",
+    "play": "プレイ",
+    "playHint": "ランク戦をプレイしてランキングに参加しましょう",
+    "climbHint": "プレイしてランキングを上げましょう",
+    "emptyTitle": "まだ誰もいません",
+    "emptyBody": "ランク戦をプレイして、最初にランキングに載りましょう。"
+  },
+  "friends": {
+    "invite": "フレンドを招待",
+    "inviteMessage": "Sudoku Fightで対戦しましょう！",
+    "inviteNote": "フレンドが1人増えれば、ライバルも1人増えます",
+    "emptyTitle": "対戦相手はまだいません",
+    "emptyBody": "ランク戦をプレイすると、対戦相手がここに表示されます。フレンドリストは近日公開予定です。"
+  },
+  "league": {
+    "title": "リーグ",
+    "toNext": "{{league}}まであと{{points}}",
+    "top": "最高リーグ",
+    "general": "総合{{rating}} · {{next}}",
+    "generalTop": "総合{{rating}} · 最高リーグ",
+    "ladder": "リーグ一覧",
+    "step": "{{league}}リーグ、レーティング{{floor}}から"
+  },
+  "card": {
+    "title": "プレイヤーカード",
+    "edit": "プロフィールを編集",
+    "notFound": "プレイヤーが見つかりません",
+    "offlineBody": "カードはサーバーから読み込まれます。接続が戻ったら、もう一度お試しください。",
+    "savedNote": "サーバーに接続できません：保存されたカードを表示しています。",
+    "meLabel": "{{name}}、自分のカード",
+    "ratingsTitle": "対戦タイプ別のレーティング",
+    "ratingsNote_other": "レーティング{{n}}件",
+    "noRatings": "まだレーティングなし",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "直近の対戦で{{points}}上昇",
+    "trendDown": "直近の対戦で{{points}}下降",
+    "trendFlat": "直近の対戦で変動なし",
+    "atPeak": "自己最高を記録中",
+    "peak": "最高{{value}}",
+    "atPeakShort": "自己最高！",
+    "peakShort": "最高{{value}}",
+    "games_other": "{{count}}戦",
+    "statsTitle": "対戦成績",
+    "stats": {
+      "games": "対戦数",
+      "wins": "勝利",
+      "losses": "敗北",
+      "winRate": "勝率",
+      "streak": "連勝",
+      "bestStreak": "最多連勝",
+      "bestMove": "最高の一手",
+      "avgMistakes": "1戦あたりのミス"
+    },
+    "recentTitleSection": "最近の結果",
+    "recentNote": "直近{{n}}戦",
+    "recentEmpty": "ランク戦はまだありません。",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "勝ち",
+      "loss": "負け",
+      "tie": "引き分け"
+    },
+    "outcomeShort": {
+      "win": "勝",
+      "loss": "敗",
+      "tie": "分"
+    },
+    "place": "{{place}}位",
+    "points": "{{score}}点",
+    "ratingDelta": "レーティング{{delta}}",
+    "formLabel": "最近の結果（新しい順）：{{list}}",
+    "replayHint": "リプレイを開きます",
+    "openOf": "{{name}}のプレイヤーカード",
+    "achievementsTitle": "主な実績",
+    "allAchievements": "すべての実績",
+    "joinedSince": "{{date}}からプレイ中",
+    "favorite": {
+      "title": "お気に入りの妨害",
+      "uses_other": "回",
+      "label_other": "お気に入りの妨害：{{kind}}、{{count}}回送信"
+    }
+  },
+  "achievements": {
+    "title": "実績",
+    "soon": "近日公開",
+    "soonBody": "初勝利、連勝、最高の一手など、12の実績を準備中です。まもなくここに登場します。",
+    "soonShort": "実績は近日公開です。",
+    "earned": "{{name}}、{{date}}に獲得"
+  },
+  "progress": {
+    "title": "実績と進捗",
+    "savedNote": "サーバーに接続できません：保存された数値を表示しています。",
+    "pending_other": "サーバーとの同期待ちの練習：{{count}}件",
+    "offlineBody": "レベルとXPは、サーバーに接続すると表示されます。",
+    "levelWord": "レベル",
+    "xpTitle": "経験値",
+    "toGo": "レベル{{level}}まであと{{xp}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "XPの獲得方法",
+    "how": {
+      "win": "ランク戦で1位、またはボットに勝利",
+      "played": "ランク戦またはボット戦でのその他の結果",
+      "solo": "ソロ練習",
+      "perCorrect": "正解の手ごと（ランク戦とボット戦）"
+    }
+  },
+  "interferences": {
+    "title": "妨害",
+    "entry": "妨害コレクション",
+    "entryNote": "解放済み{{open}} · 未解放{{locked}}",
+    "countLabel_other": "妨害{{total}}個中{{open}}個が解放済み",
+    "opened": "解放済み",
+    "facts": {
+      "seconds": "秒ずつ",
+      "cost": "発動するたびにコストが2倍に",
+      "launch": "回のタップ：対戦相手のカードの「妨害」、次に妨害を選択",
+      "launchValue": "2"
+    },
+    "arsenal": "あなたの武器庫",
+    "tapHint": "タップしてプレビュー",
+    "openLabel": "{{name}}、使用可能。{{description}}",
+    "previewHint": "プレビューを表示します",
+    "available": "使用可能",
+    "previewing": "プレビュー中",
+    "lockedTitle": "未解放",
+    "lockedNote": "レベルが上がると解放されます",
+    "soon": "近日公開",
+    "atLevel": "レベル{{level}}で解放",
+    "lockedLabel": "{{name}}、未解放、{{when}}",
+    "howTo": "対戦中に、対戦相手のカードの「妨害」をタップして、妨害を選びます。",
+    "future": {
+      "earthquake": "地震",
+      "fog": "霧",
+      "bubbles": "泡",
+      "torch": "たいまつ"
+    },
+    "description": {
+      "fireworks": "画面いっぱいに打ち上がるカラフルな花火",
+      "cats": "画面を駆け抜けるネコの行列",
+      "warp": "画面がゆがんでちらつきます",
+      "scramble": "盤面の数字がシャッフルされて入れ替わります",
+      "ink": "だんだん消えていくインクのしみ",
+      "keypad": "数字キーの位置が入れ替わります",
+      "earthquake": "画面が揺れます",
+      "fog": "ゆっくり晴れていく霧",
+      "bubbles": "割らなければならない泡",
+      "torch": "たいまつの明かり以外、盤面が暗くなります"
+    }
+  },
+  "home": {
+    "levelXp": "レベル{{level}} · {{xp}}"
+  }
+}

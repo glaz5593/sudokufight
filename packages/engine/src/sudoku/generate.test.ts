@@ -1,9 +1,9 @@
 import { createRng } from '../util/random';
 import { agreesWith, isSolvedGrid } from './board';
 import { explain } from './explain';
-import { formatExplanation } from './explainText';
 import { generatePuzzle, generateSolvedGrid } from './generate';
 import { gradePuzzle } from './grade';
+import { isPlacement } from './logic';
 import { hasUniqueSolution } from './solver';
 
 describe('generator (§20, option 2)', () => {
@@ -35,17 +35,18 @@ describe('generator (§20, option 2)', () => {
 
   it('explains a hard puzzle with chains of 2 steps or more, including box-line or pair steps', () => {
     const p = generatePuzzle(createRng(11), 'hard', { attempts: 40 })!;
-    const texts: string[] = [];
     let longest = 0;
+    let reductions = 0;
     for (let cell = 0; cell < 81; cell++) {
       if (p.givens[cell]) continue;
       const e = explain(p.givens, cell, p.solution);
       expect(e.digit).toBe(p.solution[cell]);
       if (e.technique === 'chain') longest = Math.max(longest, e.steps.length);
-      if (e.resolved) texts.push(formatExplanation(e, 'he'));
+      reductions += e.steps.filter((s) => !isPlacement(s)).length;
     }
     expect(longest).toBeGreaterThanOrEqual(2);
-    expect(texts.some((t) => /נמחק/.test(t))).toBe(true);
+    // Candidates removed by a box-line reduction or a pair (worded in the app: apps/mobile/src/i18n/explain.ts).
+    expect(reductions).toBeGreaterThan(0);
   });
 
   it('returns null when the target cannot be reached', () => {

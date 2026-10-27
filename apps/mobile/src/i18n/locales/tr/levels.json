@@ -1,0 +1,674 @@
+{
+  "title": "Aşamalı antrenman",
+  "stage": "Aşama {{n}}",
+  "chapter": "Bölüm {{n}}",
+  "units": {
+    "seconds": "sn"
+  },
+  "stars": {
+    "of3": {
+      "0": "yıldız yok",
+      "1": "üç yıldızdan biri",
+      "2": "üç yıldızdan ikisi",
+      "3": "üç yıldızdan üçü"
+    },
+    "count_one": "1 yıldız",
+    "count_other": "{{count}} yıldız"
+  },
+  "kinds": {
+    "find": {
+      "name": "Nokta atışı",
+      "label": "Nokta atışı"
+    },
+    "findDuel": {
+      "name": "Botla yarış",
+      "label": "Botla yarış"
+    },
+    "fillBox": {
+      "name": "Kutuyu doldur",
+      "label": "Kutuyu doldur"
+    },
+    "duel": {
+      "name": "{{target}} puanlık düello",
+      "label": "{{target}} puanlık düello"
+    },
+    "spotError": {
+      "name": "Hatayı bul",
+      "label": "Hatayı bul"
+    },
+    "pointHunter": {
+      "name": "Puan avcısı",
+      "label": "Puan avcısı"
+    },
+    "chain": {
+      "name": "Zincir",
+      "label": "Zincir"
+    },
+    "fillRow": {
+      "name": "Satırı doldur",
+      "label": "Satırı doldur"
+    },
+    "fillCol": {
+      "name": "Sütunu doldur",
+      "label": "Sütunu doldur"
+    },
+    "puzzle": {
+      "name": "Yapboz",
+      "label": "Yapboz"
+    }
+  },
+  "boss": {
+    "chip": "Boss",
+    "name": "Boss aşaması",
+    "label": "boss aşaması, {{kind}}",
+    "versus": "Boss: {{bot}}",
+    "band": "Boss · Bölüm {{chapter}}",
+    "botLabel": "{{name}}, boss",
+    "intro": {
+      "title": "Boss aşaması!",
+      "sub": "Aşama {{n}} · {{kind}}",
+      "harder": "Daha zor olan",
+      "label": "Boss aşaması! Aşama {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "İlk botun: {{bot}}",
+      "faster": "{{bot}} {{percent}} daha hızlı",
+      "overlord": "Overlord",
+      "moreCells_one": "{{usual}} yerine 1 eksik hücre",
+      "moreCells_other": "{{usual}} yerine {{cells}} eksik hücre"
+    },
+    "result": {
+      "won": "Boss'u yendin!",
+      "lost": "Bu sefer boss kazandı",
+      "gateOpen": "Bölüm {{n}} kapısı: {{stars}} · açık!",
+      "gateClosed": "Bölüm {{n}} kapısı: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Kutu {{n}}",
+    "row": "Satır {{row}}",
+    "col": "Sütun {{n}}",
+    "mapLabel": "Tablo haritası: {{region}}"
+  },
+  "goals": {
+    "find": "Bir rakamın tam yerini bul. Süre en fazla {{s}} sn.",
+    "findDuel_one": "{{bot}} karşısında 1 hedef, en fazla {{s}} sn. Hedefi ilk bulan alır.",
+    "findDuel_other": "{{bot}} karşısında {{spots}} hedef, en fazla {{s}} sn. Her hedefi ilk bulan alır.",
+    "fillBox_one": "Bir kutunun 1 eksik hücresini doldur, en fazla {{s}} sn.",
+    "fillBox_other": "Bir kutunun {{cells}} eksik hücresini doldur, en fazla {{s}} sn.",
+    "fillRow_one": "Bir satırın 1 eksik hücresini doldur, en fazla {{s}} sn.",
+    "fillRow_other": "Bir satırın {{cells}} eksik hücresini doldur, en fazla {{s}} sn.",
+    "fillCol_one": "Bir sütunun 1 eksik hücresini doldur, en fazla {{s}} sn.",
+    "fillCol_other": "Bir sütunun {{cells}} eksik hücresini doldur, en fazla {{s}} sn.",
+    "puzzle": "Kutuları sıraya koy. Yanlış bir değiştirme {{penalty}} sn ekler. En fazla {{s}} sn.",
+    "duel_one": "{{bot}} karşısında: 1 puana kadar ya da en fazla {{s}} sn. Yıldızlar öndeki farkına göre.",
+    "duel_other": "{{bot}} karşısında: {{target}} puana kadar ya da en fazla {{s}} sn. Yıldızlar öndeki farkına göre.",
+    "spotError_one": "Rakamlarının arasında bir yanlış rakam saklı. En fazla {{s}} sn.",
+    "spotError_other": "Rakamlarının arasında {{count}} yanlış rakam saklı. En fazla {{s}} sn.",
+    "pointHunter_one": "1 hamle, en fazla {{s}} sn. Olabildiğince çok puan topla.",
+    "pointHunter_other": "{{moves}} hamle, en fazla {{s}} sn. Olabildiğince çok puan topla.",
+    "chain_one": "1 adımlık zincir, en fazla {{s}} sn. Aynı anda yalnızca bir hücre çözülebilir.",
+    "chain_other": "{{steps}} adımlık zincir, en fazla {{s}} sn. Aynı anda yalnızca bir hücre çözülebilir."
+  },
+  "scale": {
+    "label": "Kazanabileceğin yıldızlar",
+    "row": "{{stars}}: {{text}}",
+    "time": "en fazla {{s}} sn",
+    "spots_one": "1 hedef",
+    "spots_other": "{{count}} hedef",
+    "spotsRange_one": "{{range}} hedef",
+    "spotsRange_other": "{{range}} hedef",
+    "gap": "{{gap}}+ fark",
+    "lead": "sonda önde",
+    "points": "{{points}}+ puan",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "Aşama haritası",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_one": "{{max}} yıldızdan 1 yıldız, bir bölüme atla",
+    "totalLabel_other": "{{max}} yıldızdan {{stars}} yıldız, bir bölüme atla",
+    "lockedToast": "Önce {{n}}. aşamayı oyna",
+    "gateToast_one": "Bölüm {{chapter}}, bölüm {{prev}} içinde 1 yıldızla açılır",
+    "gateToast_other": "Bölüm {{chapter}}, bölüm {{prev}} içinde {{need}} yıldızla açılır",
+    "loading": "Harita yükleniyor…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_one": "{{max}} yıldızdan 1",
+    "label_other": "{{max}} yıldızdan {{stars}}"
+  },
+  "node": {
+    "played": "Aşama {{n}}, {{kind}}, {{stars}}",
+    "current": "Aşama {{n}}, {{kind}}, sıradaki",
+    "open": "Aşama {{n}}, {{kind}}, henüz oynanmadı",
+    "locked": "Aşama {{n}}, kilitli"
+  },
+  "gate": {
+    "need_one": "1 yıldızla açılır",
+    "need_other": "{{need}} yıldızla açılır",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Açmak için boss aşamasını oyna",
+    "open": "Bölüm {{n}} açık",
+    "lockedLabel_one": "Bölüm {{n}} kilitli, bölüm {{prev}} içinde 1 yıldızdan {{stars}}",
+    "lockedLabel_other": "Bölüm {{n}} kilitli, bölüm {{prev}} içinde {{need}} yıldızdan {{stars}}",
+    "bossLabel_one": "Bölüm {{n}} kilitli, bölüm {{prev}} içinde 1 yıldızdan {{stars}}. Açmak için boss aşamasını oyna",
+    "bossLabel_other": "Bölüm {{n}} kilitli, bölüm {{prev}} içinde {{need}} yıldızdan {{stars}}. Açmak için boss aşamasını oyna",
+    "openLabel_one": "Bölüm {{n}} açık, bölüm {{prev}} içinde 1 yıldızla açıldı",
+    "openLabel_other": "Bölüm {{n}} açık, bölüm {{prev}} içinde {{need}} yıldızla açıldı"
+  },
+  "jump": {
+    "title": "Bir bölüme atla",
+    "row": "Bölüm {{n}} · {{name}}",
+    "rowLabel_one": "Bölüm {{n}}, {{name}}, {{max}} yıldızdan 1, {{state}}",
+    "rowLabel_other": "Bölüm {{n}}, {{name}}, {{max}} yıldızdan {{stars}}, {{state}}",
+    "open": "açık",
+    "locked": "kilitli"
+  },
+  "gateSheet": {
+    "title": "Bölüm {{n}} kilitli",
+    "missing_one": "Bölüm {{prev}} içinde 1 yıldız gerekiyor. Sende {{stars}} var, {{missing}} eksik.",
+    "missing_other": "Bölüm {{prev}} içinde {{need}} yıldız gerekiyor. Sende {{stars}} var, {{missing}} eksik.",
+    "bossOnly": "Yeterli yıldızın var. Açmak için {{boss}}. aşamayı (boss) oyna",
+    "progress": "Kapı için bölüm {{prev}} yıldızları: {{need}} yıldızdan {{stars}}",
+    "rowsTitle": "Geliştirebileceğin aşamalar",
+    "rowsNote_one": "Bunlarda en fazla 1 yıldız daha",
+    "rowsNote_other": "Bunlarda en fazla {{count}} yıldız daha",
+    "row": "Aşama {{n}} · {{kind}}",
+    "rowLabel": "{{n}}. aşamayı yeniden oyna, {{kind}}, {{stars}}",
+    "rowNewLabel": "{{n}}. aşamayı oyna, {{kind}}, henüz oynanmadı",
+    "rowPlay": "Oyna",
+    "primary": "{{n}}. aşamayı oyna",
+    "footnote": "Çoğu aşama en fazla 30 sn sürer; doldurma ve yapboz aşamaları en fazla 60. En iyi yıldızların saklanır."
+  },
+  "panel": {
+    "label": "Seçilen aşama",
+    "title": "Aşama {{n}} · {{kind}}",
+    "sub": "Bölüm {{chapter}} · {{name}}",
+    "subBot": "Bölüm {{chapter}} · rakip: {{bot}}",
+    "subBoss": "Bölüm {{chapter}} · boss: {{bot}}",
+    "next": "Sıradaki",
+    "best": "En iyi: {{metric}}",
+    "bestLabel": "En iyin: {{stars}}, {{metric}}",
+    "bestStars": "En iyin: {{stars}}",
+    "bot": "{{name}} · Seviye {{level}} · {{title}}",
+    "continue": "Devam · aşama {{n}}",
+    "play": "Oyna",
+    "lockedTitle": "Aşama {{n}} · kilitli",
+    "lockedSub": "Bölüm {{chapter}} · {{kind}}",
+    "lockedPrev": "Önce {{n}}. aşamayı oyna.",
+    "lockedGate_one": "Bölüm {{chapter}} kilitli: bölüm {{prev}} içinde 1 yıldız gerekiyor. Sende {{stars}} var.",
+    "lockedGate_other": "Bölüm {{chapter}} kilitli: bölüm {{prev}} içinde {{need}} yıldız gerekiyor. Sende {{stars}} var.",
+    "gateTitleOpen": "Bölüm {{n}} açık",
+    "gateTitleClosed": "Bölüm {{n}} kilitli",
+    "gateSub": "{{name}} · aşamalar {{range}}",
+    "gateOpenBody_one": "Açık: bölüm {{prev}} içinde 1 yıldız kazandın, kapı {{need}} istiyor.",
+    "gateOpenBody_other": "Açık: bölüm {{prev}} içinde {{stars}} yıldız kazandın, kapı {{need}} istiyor.",
+    "gateBar": "Kapı için yıldızlar: {{need}} yıldızdan {{stars}}"
+  },
+  "ready": {
+    "title": "Hazır mısın?",
+    "label": "Hazır mısın? Aşama {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "{{digit}} nerede?",
+    "raceSpots_one": "1 hedef, {{bot}} ile yarış",
+    "raceSpots_other": "{{count}} hedef, {{bot}} ile yarış"
+  },
+  "tutorial": {
+    "title": "Nasıl oynanır",
+    "got": "Anladım",
+    "skip": "Geç",
+    "panel": "Resim {{n}}, toplam {{total}}: {{text}}",
+    "alsoBoss": "Bu aynı zamanda bir boss: her bölümün onuncu aşaması.",
+    "find": {
+      "1": "Bir soru, örneğin “{{digit}} nerede?”, ve tabloda işaretli bir alan: bir kutu, bir satır, bir sütun ya da tüm tablo.",
+      "2": "Rakamın girmesi gereken tek hücreyi bul ve ona dokun.",
+      "3": "Yanlış bir dokunuş 5 saniye ekler. İki yanlış dokunuş aşamayı bitirir."
+    },
+    "findDuel": {
+      "1": "Art arda beş hedef. Bot da seninle birlikte arar.",
+      "2": "Doğru hücreye ilk dokunan hedefi alır.",
+      "3": "Yanlış dokunuş: bot aramaya devam ederken 3 saniye dokunamazsın."
+    },
+    "fillBox": {
+      "1": "Altın çerçeveli, eksik hücreleri olan bir kutu.",
+      "2": "Kutuda bir hücre seç ve bir rakam yaz. Dışındaki hücreler seçilemez.",
+      "3": "Yanlış rakam 5 saniye ekler. Ne kadar hızlı bitirirsen o kadar çok yıldız."
+    },
+    "duel": {
+      "1": "Sen ve bot aynı tabloda, maçtaki gibi.",
+      "2": "30 puana ilk ulaşan ya da 30 saniye sonunda önde olan kazanır.",
+      "3": "Yıldızlar sondaki farkına göre: iki yıldız için 8 puan, üç yıldız için 15."
+    },
+    "spotError": {
+      "1": "Koyu rakamlar tablonundur ve her zaman doğrudur.",
+      "2": "Yanlış rakamlar seninkilerin arasında saklı. Onlara dokun.",
+      "3": "Doğru bir rakama dokunmak 5 saniye ekler."
+    },
+    "pointHunter": {
+      "1": "Yalnızca üç hamlen var.",
+      "2": "Boş bir bölgedeki hücre daha çok puan eder.",
+      "3": "Yıldızlar, tablonun en iyisine ne kadar yaklaştığına göre."
+    },
+    "chain": {
+      "1": "Her an tabloda yalnızca bir hücre çözülebilir.",
+      "2": "Onu doldur, bir sonrakini açsın.",
+      "3": "Henüz bilinemeyen bir hücreye rakam yazmak 5 saniyeye mal olur ve rakam yerleşmez."
+    },
+    "boss": {
+      "1": "Her bölümün onuncu aşaması bir boss: bir bota karşı, önceki aşamalardan daha zor tek bir mücadele.",
+      "2": "Başlamadan önce neyin daha zor olduğunu görürsün. Genellikle bot daha hızlıdır.",
+      "3": "Boss'u oynadıktan ve bölümde 20 yıldız topladıktan sonra sonraki bölüm açılır."
+    },
+    "fillRow": {
+      "1": "Altın çerçeveli, eksik hücreleri olan bir satır.",
+      "2": "Satırda bir hücre seç ve bir rakam yaz. Dışındaki hücreler seçilemez.",
+      "3": "Yanlış rakam 5 saniye ekler. Ne kadar hızlı bitirirsen o kadar çok yıldız."
+    },
+    "fillCol": {
+      "1": "Altın çerçeveli, eksik hücreleri olan bir sütun.",
+      "2": "Sütunda bir hücre seç ve bir rakam yaz. Dışındaki hücreler seçilemez.",
+      "3": "Yanlış rakam 5 saniye ekler. Ne kadar hızlı bitirirsen o kadar çok yıldız."
+    },
+    "puzzle": {
+      "1": "Yanlış sırada dokuz dolu kutu.",
+      "2": "Bir kutuyu diğerinin üstüne sürükle, yer değiştirsinler. Kilit simgeli kutu sabittir. İki kutudan hiçbirini yerine koymayan bir değiştirme 5 saniye ekler.",
+      "3": "Her satır ve sütun doğru olunca aşama biter. Ne kadar hızlı bitirirsen o kadar çok yıldız."
+    }
+  },
+  "result": {
+    "completed": "Aşama {{n}} tamamlandı",
+    "ended": "Aşama {{n}}",
+    "reasons": {
+      "timeUp": "Süre doldu",
+      "failed": "İki yanlış dokunuş",
+      "quit": "Aşamadan çıktın",
+      "botWon": "{{bot}} önce ulaştı"
+    },
+    "metric": {
+      "spotsOf_one": "/ 1 hedef",
+      "spotsOf_other": "/ {{total}} hedef",
+      "gap": "Fark",
+      "points": "puan",
+      "found": "Bulunan",
+      "foundOf": "/ {{total}}"
+    },
+    "newBest": "Yeni rekor!",
+    "yourBest": "En iyin:",
+    "yourBestLabel": "En iyin: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, tahmini: sunucu onaylar",
+    "chapterLabel": "Bu bölüm",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "kapı {{need}} istiyor",
+    "chapterOpen": "kapı açık",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_one": "Bu bölüm: {{max}} yıldızdan 1. {{gate}}",
+    "chapterLine_other": "Bu bölüm: {{max}} yıldızdan {{stars}}. {{gate}}",
+    "mistakes_one": "1 hata",
+    "mistakes_other": "{{count}} hata",
+    "noMistakes": "Hata yok",
+    "swaps_one": "1 değiştirme · en az: {{min}}",
+    "swaps_other": "{{count}} değiştirme · en az: {{min}}",
+    "time": "Süre: {{s}} sn",
+    "youWon": "Kazandın",
+    "botWon": "{{bot}} kazandı",
+    "tie": "Berabere",
+    "bossTie": "Berabere: boss direniyor",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_one": "1 hedef",
+    "opponentSpots_other": "{{count}} hedef",
+    "opponentScore_one": "{{score}} puan",
+    "opponentScore_other": "{{score}} puan",
+    "bestMove_one": "En iyi hamle: {{cell}} hücresinde {{digit}} · {{points}} puan",
+    "bestMove_other": "En iyi hamle: {{cell}} hücresinde {{digit}} · {{points}} puan",
+    "why": "Neden?",
+    "next": "Sonraki aşama",
+    "again": "Tekrar",
+    "toMap": "Haritaya",
+    "last": "Bu son aşamaydı. Aferin!",
+    "nextLocked": "Sonraki aşama hâlâ kilitli"
+  },
+  "unlocked": {
+    "heading": "Yeni bir bölüm açıldı!",
+    "title": "Bölüm {{n}} · {{name}}",
+    "news": "Yenilikler: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Devam",
+    "label": "Yeni bir bölüm açıldı: bölüm {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: “Daha yeni başlıyorum ama göründüğümden hızlıyım.”",
+      "2": "Biscuit: “Rahatım ama kaçmana izin vermem.”",
+      "3": "Mr. Hoot: “Her hücreyi görüyorum. Dikkatli ol.”",
+      "4": "Maestro: “Hızlı, kusursuz ve şık.”",
+      "5": "Overlord: “Buraya kadar geldin. Burada bitiyor.”"
+    }
+  },
+  "exit": {
+    "button": "Aşamadan çık",
+    "title": "Aşamadan çıkılsın mı?",
+    "body": "0 yıldız alırsın ve sonraki aşama açılır.",
+    "confirm": "Çık",
+    "cancel": "Oynamaya devam et"
+  },
+  "card": {
+    "line": "Aşamalar: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_one": "Aşamalar: {{played}}, 1 yıldız",
+    "label_other": "Aşamalar: {{played}}, {{count}} yıldız"
+  },
+  "chapters": {
+    "1": {
+      "name": "İlk adımlar",
+      "news": "Nokta atışı, kutuyu doldur, yapboz ve satırı doldur"
+    },
+    "2": {
+      "name": "Pip'in meydan okuması",
+      "news": "Sütunu doldur ve botla yarış"
+    },
+    "3": {
+      "name": "İlk düello",
+      "news": "30 puanlık düello ve hatayı bul"
+    },
+    "4": {
+      "name": "Dedektif",
+      "news": "3 adımlık zincir ve 4 hareketli kutulu yapboz"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "Yeni bir bot: Biscuit; puan avcısı ve her rakamın en az bir kez eksik olduğu doldurmalar"
+    },
+    "6": {
+      "name": "Satırlar ve sütunlar",
+      "news": "Standart bir tablo ve bir satırda ya da sütunda hedefler"
+    },
+    "7": {
+      "name": "Puan avcısı",
+      "news": "5 hareketli kutulu yapboz"
+    },
+    "8": {
+      "name": "İki hata",
+      "news": "Tabloda iki hata ve standart tabloda düello"
+    },
+    "9": {
+      "name": "Zincir",
+      "news": "Her tür yeniden, bir adım daha zor"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "Yeni bir bot: Mr. Hoot; doldurmalarda 7 eksik hücre"
+    },
+    "11": {
+      "name": "Tüm tablo",
+      "news": "Tablonun her yerinde hedefler"
+    },
+    "12": {
+      "name": "Daha hızlı",
+      "news": "Standart tabloda 25 saniyede puan avcısı"
+    },
+    "13": {
+      "name": "Sessiz hatalar",
+      "news": "Görünür çakışması olmayan hatalar"
+    },
+    "14": {
+      "name": "Uzun zincir",
+      "news": "4 adımlık zincir ve doldurmalarda 9 eksik hücre"
+    },
+    "15": {
+      "name": "Yarı yol",
+      "news": "Her tür yeniden"
+    },
+    "16": {
+      "name": "Zor tablolar",
+      "news": "Zor bir tablo ve 6 hareketli kutulu yapboz"
+    },
+    "17": {
+      "name": "Elemeler",
+      "news": "Ancak bir elemeden sonra görünen hedefler"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "Yeni bir bot: Maestro"
+    },
+    "19": {
+      "name": "Tuzaklar",
+      "news": "Tabloda üç hata"
+    },
+    "20": {
+      "name": "Zorlu kapı",
+      "news": "Eleme gerektiren boş bir kutu"
+    },
+    "21": {
+      "name": "İkililer",
+      "news": "İkililer ve 20 saniyede puan avcısı"
+    },
+    "22": {
+      "name": "Beşli zincir",
+      "news": "5 adımlık zincir"
+    },
+    "23": {
+      "name": "İpucu yok",
+      "news": "Çok az rakamlı tablolar"
+    },
+    "24": {
+      "name": "Yarış",
+      "news": "Zor tablolarda düellolar"
+    },
+    "25": {
+      "name": "Uzmanlar",
+      "news": "Her şey yeniden, hızlı tempoda"
+    },
+    "26": {
+      "name": "Şampiyona",
+      "news": "Üç yıldız yalnızca en hızlılara"
+    },
+    "27": {
+      "name": "Şampiyona II",
+      "news": "Puan avcısı: üç yıldız yalnızca en iyiye yaklaşanlara"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "Boss: Overlord, bir yarışta"
+    },
+    "29": {
+      "name": "Final",
+      "news": "Hızlı bir zincir ve düelloda boss olarak Overlord"
+    },
+    "30": {
+      "name": "Şampiyon",
+      "news": "Her şey bir arada, en zor hâliyle"
+    }
+  },
+  "hud": {
+    "secondsAdded_one": "{{count}} saniye eklendi",
+    "secondsAdded_other": "{{count}} saniye eklendi",
+    "sub": "{{kind}} · Bölüm {{chapter}}",
+    "subFind": "{{digit}} nerede? · Bölüm {{chapter}}",
+    "subRace_one": "{{kind}} · 1 hedef · Bölüm {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} hedef · Bölüm {{chapter}}",
+    "clockLabel_one": "1 saniye kaldı, toplam {{limit}}",
+    "clockLabel_other": "{{s}} saniye kaldı, toplam {{limit}}",
+    "penalty": "{{s}} sn",
+    "me": "Ben",
+    "find": {
+      "tap": "{{digit}} rakamının gideceği yere dokun",
+      "where": "<scope>{{scope}}</scope> · tuş takımı yok, sadece dokun",
+      "elapsed": "sn geçti",
+      "targetLabel": "Hedef: {{digit}} rakamı, {{scope}}. {{left}}",
+      "ringLabel_one": "Aşamada 1 saniye kaldı",
+      "ringLabel_other": "Aşamada {{s}} saniye kaldı",
+      "one": "Aşamada tek bir bulma",
+      "wrongRule": "Yanlış dokunuş: {{penalty}} sn",
+      "twoWrongRule": "İki yanlış dokunuş: aşama biter",
+      "found": "Bulundu: {{digit}} rakamı {{cell}} hücresinde",
+      "missed": "{{cell}} hücresinde değil. {{penalty}} sn",
+      "answer": "Cevap: {{cell}}"
+    },
+    "scope": {
+      "box": "{{n}}. kutuda",
+      "row": "{{row}} satırında",
+      "col": "{{n}}. sütunda",
+      "board": "tablonun herhangi bir yerinde"
+    },
+    "race": {
+      "task": "Hedef {{n}} / {{total}} · {{scope}} {{digit}} rakamını bul",
+      "left": "{{s}} sn kaldı",
+      "searching": "Aranıyor…",
+      "spots_one": "1 hedef",
+      "spots_other": "{{count}} hedef",
+      "frozen_one": "Donduruldu, 1 saniye",
+      "frozen_other": "Donduruldu, {{count}} saniye",
+      "out": "Sonraki hedefe kadar oyun dışı",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, bot, seviye {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} arıyor",
+      "mine": "Hedef {{n}}: sen aldın",
+      "theirs": "Hedef {{n}}: {{name}} aldı",
+      "void": "Hedef {{n}}: kimse almadı",
+      "next": "Hedef {{n}}: {{scope}} {{digit}} rakamı"
+    },
+    "box": {
+      "task": "{{n}}. kutuyu doldur",
+      "cells_one": "{{done}}/{{total}} hücre",
+      "cells_other": "{{done}}/{{total}} hücre",
+      "cellsLabel_one": "1 eksik hücreden {{done}} tanesini doldurdun",
+      "cellsLabel_other": "{{total}} eksik hücreden {{done}} tanesini doldurdun",
+      "mistakes_one": "Hata {{penalty}} sn",
+      "mistakes_other": "{{count}} hata {{penalty}} sn",
+      "mistakesLabel_one": "Bir hata, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_other": "{{count}} hata, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "Hata 5 saniye ekler ve o rakam o hücreye artık yazılamaz",
+      "timeLabel_one": "Süre: 1 saniye, toplam {{limit}}",
+      "timeLabel_other": "Süre: {{s}} saniye, toplam {{limit}}",
+      "boardLabel_one": "Tablo · yalnızca {{n}}. kutunun 1 eksik hücresini doldur",
+      "boardLabel_other": "Tablo · yalnızca {{n}}. kutunun {{count}} eksik hücresini doldur"
+    },
+    "line": {
+      "taskRow": "{{row}} satırını doldur",
+      "taskCol": "{{n}}. sütunu doldur",
+      "boardLabelRow_one": "Tablo · yalnızca {{row}} satırının 1 eksik hücresini doldur",
+      "boardLabelRow_other": "Tablo · yalnızca {{row}} satırının {{count}} eksik hücresini doldur",
+      "boardLabelCol_one": "Tablo · yalnızca {{n}}. sütunun 1 eksik hücresini doldur",
+      "boardLabelCol_other": "Tablo · yalnızca {{n}}. sütunun {{count}} eksik hücresini doldur"
+    },
+    "puzzle": {
+      "task": "Kutuları sıraya koy",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_one": "1 kutu hareketli",
+      "moving_other": "{{count}} kutu hareketli",
+      "fixed_one": "1 kutu sabit",
+      "fixed_other": "{{count}} kutu sabit",
+      "allMove": "Tüm kutular hareketli",
+      "swaps": "Değiştirme: {{count}}",
+      "wrong_one": "Yanlış değiştirme {{penalty}} sn",
+      "wrong_other": "{{count}} yanlış değiştirme {{penalty}} sn",
+      "wrongLabel_one": "Bir yanlış değiştirme, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_other": "{{count}} yanlış değiştirme, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "Yer değiştirmek için bir kutuyu diğerinin üstüne sürükle",
+      "tapHint": "Ya da: bir kutuya, sonra diğerine dokun",
+      "slotLabel": "Kutu {{n}}, {{state}}: {{rows}}",
+      "state": {
+        "movable": "hareketli",
+        "fixed": "sabit",
+        "selected": "seçili"
+      },
+      "slotHint": "Seçmek için dokun, sonra başka bir kutuya dokun",
+      "swapped": "{{a}} ve {{b}} kutuları yer değiştirdi",
+      "swappedPenalty_one": "{{a}} ve {{b}} kutuları yer değiştirdi. Artı 1 saniye",
+      "swappedPenalty_other": "{{a}} ve {{b}} kutuları yer değiştirdi. Artı {{s}} saniye",
+      "fixedTap": "Bu kutu sabit",
+      "solved": "Her satır ve her sütun doğru",
+      "boardLabel": "Yapboz · {{counts}}"
+    },
+    "duel": {
+      "gap": "Fark {{gap}}",
+      "gapLabel": "Fark: {{gap}}. Sonda öndeysen bir yıldız, {{two}} farkla 2 yıldız, {{three}} farkla 3 yıldız",
+      "lead": "Önde",
+      "of": "/{{target}}",
+      "meLabel_one": "{{name}}, 1 puandan {{score}}",
+      "meLabel_other": "{{name}}, {{target}} puandan {{score}}",
+      "botLabel_one": "{{name}}, bot, seviye {{n}}, 1 puandan {{score}}",
+      "botLabel_other": "{{name}}, bot, seviye {{n}}, {{target}} puandan {{score}}",
+      "finishLabel": "Biri $t(levels:hud.duel.reachPoints, {\"count\": {{target}} }) yaptığında ya da $t(levels:hud.duel.atSeconds, {\"count\": {{s}} }) dolduğunda aşama biter",
+      "reachPoints_one": "{{count}} puan",
+      "reachPoints_other": "{{count}} puan",
+      "atSeconds_one": "{{count}} saniye",
+      "atSeconds_other": "{{count}} saniye",
+      "raceLabel": "{{target}} puana yarış: {{me}}, {{bot}}"
+    },
+    "reactions": "Tepkiler",
+    "boardLabel": "Aşamanın tablosu · {{scope}}",
+    "spotError": {
+      "goal_one": "Tabloda bir yanlış rakam saklı. Ona dokun.",
+      "goal_other": "Tabloda {{count}} yanlış rakam saklı. Onlara dokun.",
+      "note": "Koyu rakamlar tablonundur ve her zaman doğrudur.",
+      "found": "Bulunan",
+      "foundLabel": "{{total}} hatadan {{found}} tanesi bulundu",
+      "time": "Süre",
+      "timeLabel_one": "Süre: 1 saniye, toplam {{limit}}",
+      "timeLabel_other": "Süre: {{s}} saniye, toplam {{limit}}",
+      "tipTitle": "Taktik",
+      "tip": "Aynı satırda, sütunda ya da kutuda iki kez görünen bir rakam ara.",
+      "tipClose": "Taktiği kapat",
+      "foundCell": "{{cell}} hücresinde bir hata buldun: {{wrong}} değil, {{right}}",
+      "rightTap": "{{cell}} hücresindeki rakam doğru. {{penalty}} sn",
+      "missed": "Bulunamayan hatalar: {{cells}}",
+      "boardLabel": "Aşamanın tablosu · yanlış bir rakama dokun"
+    },
+    "hunt": {
+      "goal": "$t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }) içinde $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) topla.",
+      "goalPoints_one": "{{points}} puan",
+      "goalPoints_other": "{{points}} puan",
+      "goalMoves_one": "{{count}} hamle",
+      "goalMoves_other": "{{count}} hamle",
+      "note": "Boş bir bölgedeki hücre daha değerlidir.",
+      "points": "puan",
+      "scoreLabel_one": "{{score}} puan",
+      "scoreLabel_other": "{{score}} puan",
+      "scoreWorthLabel_one": "{{score}} puan. Seçtiğin hücrenin değeri {{worth}}",
+      "scoreWorthLabel_other": "{{score}} puan. Seçtiğin hücrenin değeri {{worth}}",
+      "lost": "Yanlış rakam {{points}} kaybettirdi",
+      "move": "Hamle {{n}} / {{max}}",
+      "burnt": "Hamle {{n}} yandı",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_one": "Bir hamle yandı",
+      "burntCount_other": "{{count}} hamle yandı",
+      "left": "kaldı · toplam {{limit}}",
+      "timeLabel_one": "1 saniye kaldı, toplam {{limit}}",
+      "timeLabel_other": "{{s}} saniye kaldı, toplam {{limit}}",
+      "max": "Tablonun en iyisi: {{max}}",
+      "worth": "Değeri {{points}}"
+    },
+    "chain": {
+      "goal": "Tabloda aynı anda yalnızca bir hücre çözülebilir. Onu bul ve doldur, bir sonrakini açsın.",
+      "notePenalty": "Henüz bilinemeyen bir hücreye rakam: {{penalty}} sn.",
+      "noteAccept": "Yanlış rakam: {{penalty}} sn.",
+      "step": "Adım {{n}} / {{total}}",
+      "stepLabel": "Zincir: adım {{n}}, toplam {{total}}",
+      "time": "Süre",
+      "timeLabel_one": "Süre: 1 saniye, toplam {{limit}}",
+      "timeLabel_other": "Süre: {{s}} saniye, toplam {{limit}}",
+      "notYet": "{{text}} · {{penalty}} sn",
+      "tipTitle": "Taktik",
+      "tip": "Her adımda tam olarak bir hücre kanıtlanabilir. Bir rakamdan eminsen, hücre odur.",
+      "tipClose": "Taktiği kapat"
+    }
+  },
+  "explain": {
+    "spot": "Hedef {{n}}: {{text}}",
+    "mistake": "Hatan: {{cell}} hücresinde {{digit}}. {{reason}}",
+    "best": "En iyi hamlen, {{cell}} hücresinde {{digit}}: {{text}}",
+    "errorFound": "{{cell}}, bulundu: {{reason}}",
+    "errorMissed": "{{cell}}, bulunamadı: {{reason}}",
+    "rightTap": "{{cell}} hücresindeki {{digit}} doğru: ona dokunmak {{penalty}} sn kaybettirdi.",
+    "points_one": "{{max}} puandan {{points}} puan topladın, tablonun en iyisine göre {{percent}}.",
+    "points_other": "{{max}} puandan {{points}} puan topladın, tablonun en iyisine göre {{percent}}.",
+    "line": "En iyi sıra: {{moves}}.",
+    "move": "{{cell}}: {{digit}} {{points}}",
+    "step": "Adım {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "{{place}}. yere yalnızca {{from}}. yerden başlayan kutu uyar: başka herhangi biri bir satırda ya da sütunda bir rakamı tekrar ederdi.",
+      "onlyPlaceForBox": "{{from}}. yerden başlayan kutu yalnızca {{place}}. yere uyar: başka her yerde bir satırda ya da sütunda bir rakamı tekrar ederdi."
+    }
+  }
+}

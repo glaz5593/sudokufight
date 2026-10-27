@@ -1,0 +1,806 @@
+{
+  "title": "Trening w etapach",
+  "stage": "Etap {{n}}",
+  "chapter": "Rozdział {{n}}",
+  "units": {
+    "seconds": "sek."
+  },
+  "stars": {
+    "of3": {
+      "0": "bez gwiazdek",
+      "1": "jedna gwiazdka z trzech",
+      "2": "dwie gwiazdki z trzech",
+      "3": "trzy gwiazdki z trzech"
+    },
+    "count_one": "1 gwiazdka",
+    "count_few": "{{count}} gwiazdki",
+    "count_many": "{{count}} gwiazdek",
+    "count_other": "{{count}} gwiazdki"
+  },
+  "kinds": {
+    "find": {
+      "name": "Dokładne miejsce",
+      "label": "Dokładne miejsce"
+    },
+    "findDuel": {
+      "name": "Wyścig z botem",
+      "label": "Wyścig z botem"
+    },
+    "fillBox": {
+      "name": "Wypełnij kwadrat",
+      "label": "Wypełnij kwadrat"
+    },
+    "duel": {
+      "name": "Pojedynek do {{target}}",
+      "label": "Pojedynek do {{target}}"
+    },
+    "spotError": {
+      "name": "Znajdź błąd",
+      "label": "Znajdź błąd"
+    },
+    "pointHunter": {
+      "name": "Łowca punktów",
+      "label": "Łowca punktów"
+    },
+    "chain": {
+      "name": "Łańcuch",
+      "label": "Łańcuch"
+    },
+    "fillRow": {
+      "name": "Wypełnij wiersz",
+      "label": "Wypełnij wiersz"
+    },
+    "fillCol": {
+      "name": "Wypełnij kolumnę",
+      "label": "Wypełnij kolumnę"
+    },
+    "puzzle": {
+      "name": "Układanka",
+      "label": "Układanka"
+    }
+  },
+  "boss": {
+    "chip": "Boss",
+    "name": "Etap z bossem",
+    "label": "walka z bossem, {{kind}}",
+    "versus": "Boss: {{bot}}",
+    "band": "Boss · Rozdział {{chapter}}",
+    "botLabel": "{{name}}, boss",
+    "intro": {
+      "title": "Etap z bossem!",
+      "sub": "Etap {{n}} · {{kind}}",
+      "harder": "Co jest trudniejsze",
+      "label": "Etap z bossem! Etap {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "Twój pierwszy bot: {{bot}}",
+      "faster": "{{bot}} gra o {{percent}} szybciej",
+      "overlord": "Overlord",
+      "moreCells_one": "1 brakujące pole zamiast {{usual}}",
+      "moreCells_few": "{{cells}} brakujące pola zamiast {{usual}}",
+      "moreCells_many": "{{cells}} brakujących pól zamiast {{usual}}",
+      "moreCells_other": "{{cells}} brakującego pola zamiast {{usual}}"
+    },
+    "result": {
+      "won": "Boss pokonany!",
+      "lost": "Tym razem wygrywa boss",
+      "gateOpen": "Brama do rozdziału {{n}}: {{stars}} · otwarta!",
+      "gateClosed": "Brama do rozdziału {{n}}: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Kwadrat {{n}}",
+    "row": "Wiersz {{row}}",
+    "col": "Kolumna {{n}}",
+    "mapLabel": "Mapa planszy: {{region}}"
+  },
+  "goals": {
+    "find": "Znajdź dokładne miejsce jednej cyfry. Etap kończy się po {{s}} sek.",
+    "findDuel_one": "1 runda z botem {{bot}}, najwyżej {{s}} sek. Kto pierwszy znajdzie, ten wygrywa rundę.",
+    "findDuel_few": "{{spots}} rundy z botem {{bot}}, najwyżej {{s}} sek. Kto pierwszy znajdzie, ten wygrywa rundę.",
+    "findDuel_many": "{{spots}} rund z botem {{bot}}, najwyżej {{s}} sek. Kto pierwszy znajdzie, ten wygrywa rundę.",
+    "findDuel_other": "{{spots}} rundy z botem {{bot}}, najwyżej {{s}} sek. Kto pierwszy znajdzie, ten wygrywa rundę.",
+    "fillBox_one": "Wypełnij 1 brakujące pole w jednym kwadracie, najwyżej {{s}} sek.",
+    "fillBox_few": "Wypełnij {{cells}} brakujące pola w jednym kwadracie, najwyżej {{s}} sek.",
+    "fillBox_many": "Wypełnij {{cells}} brakujących pól w jednym kwadracie, najwyżej {{s}} sek.",
+    "fillBox_other": "Wypełnij {{cells}} brakującego pola w jednym kwadracie, najwyżej {{s}} sek.",
+    "fillRow_one": "Wypełnij 1 brakujące pole w jednym wierszu, najwyżej {{s}} sek.",
+    "fillRow_few": "Wypełnij {{cells}} brakujące pola w jednym wierszu, najwyżej {{s}} sek.",
+    "fillRow_many": "Wypełnij {{cells}} brakujących pól w jednym wierszu, najwyżej {{s}} sek.",
+    "fillRow_other": "Wypełnij {{cells}} brakującego pola w jednym wierszu, najwyżej {{s}} sek.",
+    "fillCol_one": "Wypełnij 1 brakujące pole w jednej kolumnie, najwyżej {{s}} sek.",
+    "fillCol_few": "Wypełnij {{cells}} brakujące pola w jednej kolumnie, najwyżej {{s}} sek.",
+    "fillCol_many": "Wypełnij {{cells}} brakujących pól w jednej kolumnie, najwyżej {{s}} sek.",
+    "fillCol_other": "Wypełnij {{cells}} brakującego pola w jednej kolumnie, najwyżej {{s}} sek.",
+    "puzzle": "Uporządkuj kwadraty. Zła zamiana dodaje {{penalty}} sek. Najwyżej {{s}} sek.",
+    "duel_one": "Z botem {{bot}}, do 1 punktu lub {{s}} sek. Gwiazdki za przewagę.",
+    "duel_few": "Z botem {{bot}}, do {{target}} punktów lub {{s}} sek. Gwiazdki za przewagę.",
+    "duel_many": "Z botem {{bot}}, do {{target}} punktów lub {{s}} sek. Gwiazdki za przewagę.",
+    "duel_other": "Z botem {{bot}}, do {{target}} punktu lub {{s}} sek. Gwiazdki za przewagę.",
+    "spotError_one": "Wśród twoich cyfr kryje się jedna błędna. Najwyżej {{s}} sek.",
+    "spotError_few": "Wśród twoich cyfr kryją się {{count}} błędne. Najwyżej {{s}} sek.",
+    "spotError_many": "Wśród twoich cyfr kryje się {{count}} błędnych. Najwyżej {{s}} sek.",
+    "spotError_other": "Wśród twoich cyfr kryje się {{count}} błędnej cyfry. Najwyżej {{s}} sek.",
+    "pointHunter_one": "1 ruch, najwyżej {{s}} sek. Zdobądź jak najwięcej punktów.",
+    "pointHunter_few": "{{moves}} ruchy, najwyżej {{s}} sek. Zdobądź jak najwięcej punktów.",
+    "pointHunter_many": "{{moves}} ruchów, najwyżej {{s}} sek. Zdobądź jak najwięcej punktów.",
+    "pointHunter_other": "{{moves}} ruchu, najwyżej {{s}} sek. Zdobądź jak najwięcej punktów.",
+    "chain_one": "Łańcuch z 1 kroku, najwyżej {{s}} sek. Naraz da się rozwiązać tylko jedno pole.",
+    "chain_few": "Łańcuch z {{steps}} kroków, najwyżej {{s}} sek. Naraz da się rozwiązać tylko jedno pole.",
+    "chain_many": "Łańcuch z {{steps}} kroków, najwyżej {{s}} sek. Naraz da się rozwiązać tylko jedno pole.",
+    "chain_other": "Łańcuch z {{steps}} kroku, najwyżej {{s}} sek. Naraz da się rozwiązać tylko jedno pole."
+  },
+  "scale": {
+    "label": "Gwiazdki do zdobycia",
+    "row": "{{stars}}: {{text}}",
+    "time": "do {{s}} sek.",
+    "spots_one": "1 runda",
+    "spots_few": "{{count}} rundy",
+    "spots_many": "{{count}} rund",
+    "spots_other": "{{count}} rundy",
+    "spotsRange_one": "{{range}} runda",
+    "spotsRange_few": "{{range}} rundy",
+    "spotsRange_many": "{{range}} rund",
+    "spotsRange_other": "{{range}} rundy",
+    "gap": "przewaga {{gap}}+",
+    "lead": "prowadzenie na koniec",
+    "points": "{{points}}+ pkt",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "Mapa etapów",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_one": "1 gwiazdka z {{max}}, przejdź do rozdziału",
+    "totalLabel_few": "{{stars}} gwiazdki z {{max}}, przejdź do rozdziału",
+    "totalLabel_many": "{{stars}} gwiazdek z {{max}}, przejdź do rozdziału",
+    "totalLabel_other": "{{stars}} gwiazdki z {{max}}, przejdź do rozdziału",
+    "lockedToast": "Najpierw zagraj etap {{n}}",
+    "gateToast_one": "Rozdział {{chapter}} otworzy się przy 1 gwiazdce w rozdziale {{prev}}",
+    "gateToast_few": "Rozdział {{chapter}} otworzy się przy {{need}} gwiazdkach w rozdziale {{prev}}",
+    "gateToast_many": "Rozdział {{chapter}} otworzy się przy {{need}} gwiazdkach w rozdziale {{prev}}",
+    "gateToast_other": "Rozdział {{chapter}} otworzy się przy {{need}} gwiazdki w rozdziale {{prev}}",
+    "loading": "Wczytywanie mapy…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_one": "1 gwiazdka z {{max}}",
+    "label_few": "{{stars}} gwiazdki z {{max}}",
+    "label_many": "{{stars}} gwiazdek z {{max}}",
+    "label_other": "{{stars}} gwiazdki z {{max}}"
+  },
+  "node": {
+    "played": "Etap {{n}}, {{kind}}, {{stars}}",
+    "current": "Etap {{n}}, {{kind}}, następny",
+    "open": "Etap {{n}}, {{kind}}, jeszcze nierozegrany",
+    "locked": "Etap {{n}}, zablokowany"
+  },
+  "gate": {
+    "need_one": "Wymaga 1 gwiazdki",
+    "need_few": "Wymaga {{need}} gwiazdek",
+    "need_many": "Wymaga {{need}} gwiazdek",
+    "need_other": "Wymaga {{need}} gwiazdki",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Zagraj etap z bossem, aby go otworzyć",
+    "open": "Rozdział {{n}} otwarty",
+    "lockedLabel_one": "Rozdział {{n}} zablokowany, {{stars}} z 1 gwiazdki w rozdziale {{prev}}",
+    "lockedLabel_few": "Rozdział {{n}} zablokowany, {{stars}} z {{need}} gwiazdek w rozdziale {{prev}}",
+    "lockedLabel_many": "Rozdział {{n}} zablokowany, {{stars}} z {{need}} gwiazdek w rozdziale {{prev}}",
+    "lockedLabel_other": "Rozdział {{n}} zablokowany, {{stars}} z {{need}} gwiazdki w rozdziale {{prev}}",
+    "bossLabel_one": "Rozdział {{n}} zablokowany, {{stars}} z 1 gwiazdki w rozdziale {{prev}}. Zagraj etap z bossem, aby go otworzyć",
+    "bossLabel_few": "Rozdział {{n}} zablokowany, {{stars}} z {{need}} gwiazdek w rozdziale {{prev}}. Zagraj etap z bossem, aby go otworzyć",
+    "bossLabel_many": "Rozdział {{n}} zablokowany, {{stars}} z {{need}} gwiazdek w rozdziale {{prev}}. Zagraj etap z bossem, aby go otworzyć",
+    "bossLabel_other": "Rozdział {{n}} zablokowany, {{stars}} z {{need}} gwiazdki w rozdziale {{prev}}. Zagraj etap z bossem, aby go otworzyć",
+    "openLabel_one": "Rozdział {{n}} otwarty: wymagał 1 gwiazdki z rozdziału {{prev}}",
+    "openLabel_few": "Rozdział {{n}} otwarty: wymagał {{need}} gwiazdek z rozdziału {{prev}}",
+    "openLabel_many": "Rozdział {{n}} otwarty: wymagał {{need}} gwiazdek z rozdziału {{prev}}",
+    "openLabel_other": "Rozdział {{n}} otwarty: wymagał {{need}} gwiazdki z rozdziału {{prev}}"
+  },
+  "jump": {
+    "title": "Przejdź do rozdziału",
+    "row": "Rozdział {{n}} · {{name}}",
+    "rowLabel_one": "Rozdział {{n}}, {{name}}, 1 gwiazdka z {{max}}, {{state}}",
+    "rowLabel_few": "Rozdział {{n}}, {{name}}, {{stars}} gwiazdki z {{max}}, {{state}}",
+    "rowLabel_many": "Rozdział {{n}}, {{name}}, {{stars}} gwiazdek z {{max}}, {{state}}",
+    "rowLabel_other": "Rozdział {{n}}, {{name}}, {{stars}} gwiazdki z {{max}}, {{state}}",
+    "open": "otwarty",
+    "locked": "zablokowany"
+  },
+  "gateSheet": {
+    "title": "Rozdział {{n}} zamknięty",
+    "missing_one": "Potrzebujesz 1 gwiazdki w rozdziale {{prev}}. Masz {{stars}}, brakuje {{missing}}.",
+    "missing_few": "Potrzebujesz {{need}} gwiazdek w rozdziale {{prev}}. Masz {{stars}}, brakuje {{missing}}.",
+    "missing_many": "Potrzebujesz {{need}} gwiazdek w rozdziale {{prev}}. Masz {{stars}}, brakuje {{missing}}.",
+    "missing_other": "Potrzebujesz {{need}} gwiazdki w rozdziale {{prev}}. Masz {{stars}}, brakuje {{missing}}.",
+    "bossOnly": "Masz dość gwiazdek. Zagraj etap {{boss}} (boss), aby go otworzyć",
+    "progress": "Gwiazdki z rozdziału {{prev}} do bramy: {{stars}} z {{need}}",
+    "rowsTitle": "Etapy do poprawienia",
+    "rowsNote_one": "Najwyżej 1 gwiazdka więcej",
+    "rowsNote_few": "Najwyżej {{count}} gwiazdki więcej",
+    "rowsNote_many": "Najwyżej {{count}} gwiazdek więcej",
+    "rowsNote_other": "Najwyżej {{count}} gwiazdki więcej",
+    "row": "Etap {{n}} · {{kind}}",
+    "rowLabel": "Zagraj ponownie etap {{n}}, {{kind}}, {{stars}}",
+    "rowNewLabel": "Zagraj etap {{n}}, {{kind}}, jeszcze nierozegrany",
+    "rowPlay": "Graj",
+    "primary": "Zagraj etap {{n}}",
+    "footnote": "Większość etapów trwa do 30 sek.; etapy z wypełnianiem i układanki do 60. Twoje najlepsze gwiazdki zostają."
+  },
+  "panel": {
+    "label": "Wybrany etap",
+    "title": "Etap {{n}} · {{kind}}",
+    "sub": "Rozdział {{chapter}} · {{name}}",
+    "subBot": "Rozdział {{chapter}} · z botem {{bot}}",
+    "subBoss": "Rozdział {{chapter}} · boss: {{bot}}",
+    "next": "Następny",
+    "best": "Rekord: {{metric}}",
+    "bestLabel": "Twój rekord: {{stars}}, {{metric}}",
+    "bestStars": "Twój rekord: {{stars}}",
+    "bot": "{{name}} · Poziom {{level}} · {{title}}",
+    "continue": "Dalej · etap {{n}}",
+    "play": "Graj",
+    "lockedTitle": "Etap {{n}} · zablokowany",
+    "lockedSub": "Rozdział {{chapter}} · {{kind}}",
+    "lockedPrev": "Najpierw zagraj etap {{n}}.",
+    "lockedGate_one": "Rozdział {{chapter}} jest zablokowany: wymaga 1 gwiazdki w rozdziale {{prev}}. Masz {{stars}}.",
+    "lockedGate_few": "Rozdział {{chapter}} jest zablokowany: wymaga {{need}} gwiazdek w rozdziale {{prev}}. Masz {{stars}}.",
+    "lockedGate_many": "Rozdział {{chapter}} jest zablokowany: wymaga {{need}} gwiazdek w rozdziale {{prev}}. Masz {{stars}}.",
+    "lockedGate_other": "Rozdział {{chapter}} jest zablokowany: wymaga {{need}} gwiazdki w rozdziale {{prev}}. Masz {{stars}}.",
+    "gateTitleOpen": "Rozdział {{n}} otwarty",
+    "gateTitleClosed": "Rozdział {{n}} zablokowany",
+    "gateSub": "{{name}} · etapy {{range}}",
+    "gateOpenBody_one": "Otwarty: masz 1 gwiazdkę z rozdziału {{prev}}, a brama wymaga {{need}}.",
+    "gateOpenBody_few": "Otwarty: masz {{stars}} gwiazdki z rozdziału {{prev}}, a brama wymaga {{need}}.",
+    "gateOpenBody_many": "Otwarty: masz {{stars}} gwiazdek z rozdziału {{prev}}, a brama wymaga {{need}}.",
+    "gateOpenBody_other": "Otwarty: masz {{stars}} gwiazdki z rozdziału {{prev}}, a brama wymaga {{need}}.",
+    "gateBar": "Gwiazdki do bramy: {{stars}} z {{need}}"
+  },
+  "ready": {
+    "title": "Zaczynamy?",
+    "label": "Zaczynamy? Etap {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "Gdzie jest {{digit}}?",
+    "raceSpots_one": "1 runda, wyścig z botem {{bot}}",
+    "raceSpots_few": "{{count}} rundy, wyścig z botem {{bot}}",
+    "raceSpots_many": "{{count}} rund, wyścig z botem {{bot}}",
+    "raceSpots_other": "{{count}} rundy, wyścig z botem {{bot}}"
+  },
+  "tutorial": {
+    "title": "Jak grać",
+    "got": "Rozumiem",
+    "skip": "Pomiń",
+    "panel": "Obrazek {{n}} z {{total}}: {{text}}",
+    "alsoBoss": "To jest też boss: dziesiąty etap każdego rozdziału.",
+    "find": {
+      "1": "Jedno pytanie, na przykład „Gdzie jest {{digit}}?”, i obszar zaznaczony na planszy: kwadrat, wiersz, kolumna albo cała plansza.",
+      "2": "Znajdź jedyne pole, w którym musi być ta cyfra, i dotknij go.",
+      "3": "Błędne dotknięcie dodaje 5 sekund. Dwa kończą etap."
+    },
+    "findDuel": {
+      "1": "Pięć rund, jedna po drugiej. Bot szuka razem z tobą.",
+      "2": "Kto pierwszy dotknie właściwego pola, ten wygrywa rundę.",
+      "3": "Błędne dotknięcie: 3 sekundy bez dotykania, a bot szuka dalej."
+    },
+    "fillBox": {
+      "1": "Jeden kwadrat z brakującymi polami, w złotej ramce.",
+      "2": "Wybierz pole w kwadracie i wpisz cyfrę. Pól poza nim nie da się wybrać.",
+      "3": "Błędna cyfra dodaje 5 sekund. Im szybciej skończysz, tym więcej gwiazdek."
+    },
+    "duel": {
+      "1": "Ty i bot na tej samej planszy, jak w partii.",
+      "2": "Wygrywa ten, kto pierwszy zdobędzie 30 punktów, albo ten, kto prowadzi po 30 sekundach.",
+      "3": "Gwiazdki za przewagę na koniec: 8 punktów to dwie gwiazdki, 15 to trzy."
+    },
+    "spotError": {
+      "1": "Ciemne cyfry należą do planszy i zawsze są poprawne.",
+      "2": "Wśród twoich cyfr kryją się błędne. Dotknij ich.",
+      "3": "Dotknięcie poprawnej cyfry dodaje 5 sekund."
+    },
+    "pointHunter": {
+      "1": "Masz tylko trzy ruchy.",
+      "2": "Pole w pustym obszarze jest warte więcej punktów.",
+      "3": "Gwiazdki za to, jak blisko jesteś najlepszego wyniku planszy."
+    },
+    "chain": {
+      "1": "W każdej chwili da się rozwiązać tylko jedno pole na planszy.",
+      "2": "Wypełnij je, a otworzy następne.",
+      "3": "Cyfra w polu, którego jeszcze nie da się ustalić, kosztuje 5 sekund i nie zostaje wpisana."
+    },
+    "boss": {
+      "1": "Dziesiąty etap każdego rozdziału to boss: jedna walka z botem, trudniejsza niż poprzednie etapy.",
+      "2": "Przed startem widzisz, co jest trudniejsze. Zwykle: bot jest szybszy.",
+      "3": "Gdy etap z bossem jest już rozegrany, a w rozdziale masz 20 gwiazdek, otwiera się następny rozdział."
+    },
+    "fillRow": {
+      "1": "Jeden wiersz z brakującymi polami, w złotej ramce.",
+      "2": "Wybierz pole w wierszu i wpisz cyfrę. Pól poza nim nie da się wybrać.",
+      "3": "Błędna cyfra dodaje 5 sekund. Im szybciej skończysz, tym więcej gwiazdek."
+    },
+    "fillCol": {
+      "1": "Jedna kolumna z brakującymi polami, w złotej ramce.",
+      "2": "Wybierz pole w kolumnie i wpisz cyfrę. Pól poza nią nie da się wybrać.",
+      "3": "Błędna cyfra dodaje 5 sekund. Im szybciej skończysz, tym więcej gwiazdek."
+    },
+    "puzzle": {
+      "1": "Dziewięć pełnych kwadratów w złej kolejności.",
+      "2": "Przeciągnij kwadrat na inny, a zamienią się miejscami. Kwadrat z kłódką stoi w miejscu. Zamiana, po której żaden z dwóch kwadratów nie trafia na swoje miejsce, dodaje 5 sekund.",
+      "3": "Gdy każdy wiersz i każda kolumna są poprawne, etap się kończy. Im szybciej skończysz, tym więcej gwiazdek."
+    }
+  },
+  "result": {
+    "completed": "Etap {{n}} ukończony",
+    "ended": "Etap {{n}}",
+    "reasons": {
+      "timeUp": "Czas minął",
+      "failed": "Dwa błędne dotknięcia",
+      "quit": "Wyjście z etapu",
+      "botWon": "{{bot}} wygrywa wyścig"
+    },
+    "metric": {
+      "spotsOf_one": "z 1 rundy",
+      "spotsOf_few": "z {{total}} rund",
+      "spotsOf_many": "z {{total}} rund",
+      "spotsOf_other": "z {{total}} rundy",
+      "gap": "Przewaga",
+      "points": "pkt",
+      "found": "Znalezione",
+      "foundOf": "z {{total}}"
+    },
+    "newBest": "Nowy rekord!",
+    "yourBest": "Twój rekord:",
+    "yourBestLabel": "Twój rekord: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, wstępnie: serwer to potwierdzi",
+    "chapterLabel": "Ten rozdział",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "brama wymaga {{need}}",
+    "chapterOpen": "brama jest otwarta",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_one": "Ten rozdział: 1 gwiazdka z {{max}}. {{gate}}",
+    "chapterLine_few": "Ten rozdział: {{stars}} gwiazdki z {{max}}. {{gate}}",
+    "chapterLine_many": "Ten rozdział: {{stars}} gwiazdek z {{max}}. {{gate}}",
+    "chapterLine_other": "Ten rozdział: {{stars}} gwiazdki z {{max}}. {{gate}}",
+    "mistakes_one": "1 błąd",
+    "mistakes_few": "{{count}} błędy",
+    "mistakes_many": "{{count}} błędów",
+    "mistakes_other": "{{count}} błędu",
+    "noMistakes": "Bez błędów",
+    "swaps_one": "1 zamiana · najmniej: {{min}}",
+    "swaps_few": "{{count}} zamiany · najmniej: {{min}}",
+    "swaps_many": "{{count}} zamian · najmniej: {{min}}",
+    "swaps_other": "{{count}} zamiany · najmniej: {{min}}",
+    "time": "Czas: {{s}} sek.",
+    "youWon": "Wygrywasz",
+    "botWon": "{{bot}} wygrywa",
+    "tie": "Remis",
+    "bossTie": "Remis: boss się broni",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_one": "1 runda",
+    "opponentSpots_few": "{{count}} rundy",
+    "opponentSpots_many": "{{count}} rund",
+    "opponentSpots_other": "{{count}} rundy",
+    "opponentScore_one": "{{score}} punkt",
+    "opponentScore_few": "{{score}} punkty",
+    "opponentScore_many": "{{score}} punktów",
+    "opponentScore_other": "{{score}} punktu",
+    "bestMove_one": "Najlepszy ruch: {{digit}} w {{cell}} · {{points}} punkt",
+    "bestMove_few": "Najlepszy ruch: {{digit}} w {{cell}} · {{points}} punkty",
+    "bestMove_many": "Najlepszy ruch: {{digit}} w {{cell}} · {{points}} punktów",
+    "bestMove_other": "Najlepszy ruch: {{digit}} w {{cell}} · {{points}} punktu",
+    "why": "Dlaczego?",
+    "next": "Następny etap",
+    "again": "Jeszcze raz",
+    "toMap": "Do mapy",
+    "last": "To był ostatni etap. Brawo!",
+    "nextLocked": "Następny etap jest jeszcze zablokowany"
+  },
+  "unlocked": {
+    "heading": "Nowy rozdział otwarty!",
+    "title": "Rozdział {{n}} · {{name}}",
+    "news": "Co nowego: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Dalej",
+    "label": "Nowy rozdział otwarty: rozdział {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: „Dopiero zaczynam, ale jestem szybszy, niż wyglądam”.",
+      "2": "Biscuit: „Gram na luzie, ale nie dam ci uciec”.",
+      "3": "Mr. Hoot: „Widzę każde pole. Uważaj”.",
+      "4": "Maestro: „Szybko, precyzyjnie i z klasą”.",
+      "5": "Overlord: „Długa droga za tobą. Tutaj się kończy”."
+    }
+  },
+  "exit": {
+    "button": "Opuść etap",
+    "title": "Opuścić etap?",
+    "body": "Dostaniesz 0 gwiazdek, a następny etap się otworzy.",
+    "confirm": "Wyjdź",
+    "cancel": "Graj dalej"
+  },
+  "card": {
+    "line": "Etapy: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_one": "Etapy: {{played}}, 1 gwiazdka",
+    "label_few": "Etapy: {{played}}, {{count}} gwiazdki",
+    "label_many": "Etapy: {{played}}, {{count}} gwiazdek",
+    "label_other": "Etapy: {{played}}, {{count}} gwiazdki"
+  },
+  "chapters": {
+    "1": {
+      "name": "Pierwsze kroki",
+      "news": "Dokładne miejsce, wypełnianie kwadratu, układanka i wypełnianie wiersza"
+    },
+    "2": {
+      "name": "Pip rzuca wyzwanie",
+      "news": "Wypełnianie kolumny i wyścig z botem"
+    },
+    "3": {
+      "name": "Pierwszy pojedynek",
+      "news": "Pojedynek do 30 i szukanie błędu"
+    },
+    "4": {
+      "name": "Detektyw",
+      "news": "Łańcuch z 3 kroków i układanka z 4 ruchomymi kwadratami"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "Nowy bot: Biscuit, łowca punktów i wypełnianie, w którym każdej cyfry brakuje co najmniej raz"
+    },
+    "6": {
+      "name": "Wiersze i kolumny",
+      "news": "Zwykła plansza i cele w wierszu lub kolumnie"
+    },
+    "7": {
+      "name": "Łowca punktów",
+      "news": "Układanka z 5 ruchomymi kwadratami"
+    },
+    "8": {
+      "name": "Dwa błędy",
+      "news": "Dwa błędy na planszy i pojedynek na zwykłej planszy"
+    },
+    "9": {
+      "name": "Łańcuch",
+      "news": "Wszystkie rodzaje jeszcze raz, o stopień trudniej"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "Nowy bot: Mr. Hoot i 7 brakujących pól w wypełnianiu"
+    },
+    "11": {
+      "name": "Cała plansza",
+      "news": "Cele w dowolnym miejscu planszy"
+    },
+    "12": {
+      "name": "Szybciej",
+      "news": "Łowca punktów w 25 sekund, na zwykłej planszy"
+    },
+    "13": {
+      "name": "Ciche błędy",
+      "news": "Błędy bez widocznej kolizji"
+    },
+    "14": {
+      "name": "Długi łańcuch",
+      "news": "Łańcuch z 4 kroków i 9 brakujących pól w wypełnianiu"
+    },
+    "15": {
+      "name": "Półmetek",
+      "news": "Wszystkie rodzaje jeszcze raz"
+    },
+    "16": {
+      "name": "Trudne plansze",
+      "news": "Trudna plansza i układanka z 6 ruchomymi kwadratami"
+    },
+    "17": {
+      "name": "Eliminacje",
+      "news": "Cele widoczne dopiero po eliminacji"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "Nowy bot: Maestro"
+    },
+    "19": {
+      "name": "Pułapki",
+      "news": "Trzy błędy na planszy"
+    },
+    "20": {
+      "name": "Trudna brama",
+      "news": "Pusty kwadrat, który wymaga eliminacji"
+    },
+    "21": {
+      "name": "Pary",
+      "news": "Pary i łowca punktów w 20 sekund"
+    },
+    "22": {
+      "name": "Łańcuch z 5",
+      "news": "Łańcuch z 5 kroków"
+    },
+    "23": {
+      "name": "Bez podpowiedzi",
+      "news": "Plansze z bardzo małą liczbą cyfr"
+    },
+    "24": {
+      "name": "Wyścig",
+      "news": "Pojedynki na trudnych planszach"
+    },
+    "25": {
+      "name": "Eksperci",
+      "news": "Wszystko jeszcze raz, w szybkim tempie"
+    },
+    "26": {
+      "name": "Mistrzostwa",
+      "news": "Trzy gwiazdki tylko dla najszybszych graczy"
+    },
+    "27": {
+      "name": "Mistrzostwa II",
+      "news": "Łowca punktów: trzy gwiazdki tylko blisko najlepszego wyniku"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "Boss: Overlord, w wyścigu"
+    },
+    "29": {
+      "name": "Finał",
+      "news": "Szybki łańcuch i Overlord jako boss w pojedynku"
+    },
+    "30": {
+      "name": "Korona",
+      "news": "Wszystko razem, w najtrudniejszej wersji"
+    }
+  },
+  "hud": {
+    "secondsAdded_one": "dodano {{count}} sekundę",
+    "secondsAdded_few": "dodano {{count}} sekundy",
+    "secondsAdded_many": "dodano {{count}} sekund",
+    "secondsAdded_other": "dodano {{count}} sekundy",
+    "sub": "{{kind}} · Rozdział {{chapter}}",
+    "subFind": "Gdzie jest {{digit}}? · Rozdział {{chapter}}",
+    "subRace_one": "{{kind}} · 1 runda · Rozdział {{chapter}}",
+    "subRace_few": "{{kind}} · {{spots}} rundy · Rozdział {{chapter}}",
+    "subRace_many": "{{kind}} · {{spots}} rund · Rozdział {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} rundy · Rozdział {{chapter}}",
+    "clockLabel_one": "Została 1 sekunda z {{limit}}",
+    "clockLabel_few": "Zostały {{s}} sekundy z {{limit}}",
+    "clockLabel_many": "Zostało {{s}} sekund z {{limit}}",
+    "clockLabel_other": "Zostało {{s}} sekundy z {{limit}}",
+    "penalty": "{{s}} sek.",
+    "me": "Ja",
+    "find": {
+      "tap": "Dotknij miejsca, w którym musi być {{digit}}",
+      "where": "<scope>{{scope}}</scope> · bez klawiatury, wystarczy dotknięcie",
+      "elapsed": "sek. minęło",
+      "targetLabel": "Cel: {{digit}} {{scope}}. {{left}}",
+      "ringLabel_one": "Do końca etapu została 1 sekunda",
+      "ringLabel_few": "Do końca etapu zostały {{s}} sekundy",
+      "ringLabel_many": "Do końca etapu zostało {{s}} sekund",
+      "ringLabel_other": "Do końca etapu zostało {{s}} sekundy",
+      "one": "Jedno pole do znalezienia",
+      "wrongRule": "Błędne dotknięcie: {{penalty}} sek.",
+      "twoWrongRule": "Dwa błędne dotknięcia: koniec etapu",
+      "found": "Znalezione: {{digit}} w {{cell}}",
+      "missed": "Nie w {{cell}}. {{penalty}} sek.",
+      "answer": "Odpowiedź: {{cell}}"
+    },
+    "scope": {
+      "box": "w kwadracie {{n}}",
+      "row": "w wierszu {{row}}",
+      "col": "w kolumnie {{n}}",
+      "board": "w dowolnym miejscu planszy"
+    },
+    "race": {
+      "task": "Runda {{n}} z {{total}} · znajdź {{digit}} {{scope}}",
+      "left": "Zostało {{s}} sek.",
+      "searching": "Szukanie…",
+      "spots_one": "1 runda",
+      "spots_few": "{{count}} rundy",
+      "spots_many": "{{count}} rund",
+      "spots_other": "{{count}} rundy",
+      "frozen_one": "Zamrożenie, 1 sekunda",
+      "frozen_few": "Zamrożenie, {{count}} sekundy",
+      "frozen_many": "Zamrożenie, {{count}} sekund",
+      "frozen_other": "Zamrożenie, {{count}} sekundy",
+      "out": "Poza grą do następnej rundy",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, bot, poziom {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} szuka",
+      "mine": "Wygrywasz rundę {{n}}",
+      "theirs": "{{name}} wygrywa rundę {{n}}",
+      "void": "Runda {{n}} nierozstrzygnięta",
+      "next": "Runda {{n}}: {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "Wypełnij kwadrat {{n}}",
+      "cells_one": "Pola: {{done}}/{{total}}",
+      "cells_few": "Pola: {{done}}/{{total}}",
+      "cells_many": "Pola: {{done}}/{{total}}",
+      "cells_other": "Pola: {{done}}/{{total}}",
+      "cellsLabel_one": "Wypełnione: {{done}} z 1 brakującego pola",
+      "cellsLabel_few": "Wypełnione: {{done}} z {{total}} brakujących pól",
+      "cellsLabel_many": "Wypełnione: {{done}} z {{total}} brakujących pól",
+      "cellsLabel_other": "Wypełnione: {{done}} z {{total}} brakującego pola",
+      "mistakes_one": "Błąd {{penalty}} sek.",
+      "mistakes_few": "{{count}} błędy {{penalty}} sek.",
+      "mistakes_many": "{{count}} błędów {{penalty}} sek.",
+      "mistakes_other": "{{count}} błędu {{penalty}} sek.",
+      "mistakesLabel_one": "Jeden błąd, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_few": "{{count}} błędy, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_many": "{{count}} błędów, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_other": "{{count}} błędu, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "Błąd dodaje 5 sekund, a ta cyfra zostaje zablokowana w tym polu",
+      "timeLabel_one": "Czas: 1 sekunda z {{limit}}",
+      "timeLabel_few": "Czas: {{s}} sekundy z {{limit}}",
+      "timeLabel_many": "Czas: {{s}} sekund z {{limit}}",
+      "timeLabel_other": "Czas: {{s}} sekundy z {{limit}}",
+      "boardLabel_one": "Plansza · wypełnij tylko 1 brakujące pole w kwadracie {{n}}",
+      "boardLabel_few": "Plansza · wypełnij tylko {{count}} brakujące pola w kwadracie {{n}}",
+      "boardLabel_many": "Plansza · wypełnij tylko {{count}} brakujących pól w kwadracie {{n}}",
+      "boardLabel_other": "Plansza · wypełnij tylko {{count}} brakującego pola w kwadracie {{n}}"
+    },
+    "line": {
+      "taskRow": "Wypełnij wiersz {{row}}",
+      "taskCol": "Wypełnij kolumnę {{n}}",
+      "boardLabelRow_one": "Plansza · wypełnij tylko 1 brakujące pole w wierszu {{row}}",
+      "boardLabelRow_few": "Plansza · wypełnij tylko {{count}} brakujące pola w wierszu {{row}}",
+      "boardLabelRow_many": "Plansza · wypełnij tylko {{count}} brakujących pól w wierszu {{row}}",
+      "boardLabelRow_other": "Plansza · wypełnij tylko {{count}} brakującego pola w wierszu {{row}}",
+      "boardLabelCol_one": "Plansza · wypełnij tylko 1 brakujące pole w kolumnie {{n}}",
+      "boardLabelCol_few": "Plansza · wypełnij tylko {{count}} brakujące pola w kolumnie {{n}}",
+      "boardLabelCol_many": "Plansza · wypełnij tylko {{count}} brakujących pól w kolumnie {{n}}",
+      "boardLabelCol_other": "Plansza · wypełnij tylko {{count}} brakującego pola w kolumnie {{n}}"
+    },
+    "puzzle": {
+      "task": "Uporządkuj kwadraty",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_one": "1 kwadrat się rusza",
+      "moving_few": "{{count}} kwadraty się ruszają",
+      "moving_many": "{{count}} kwadratów się rusza",
+      "moving_other": "{{count}} kwadratu się rusza",
+      "fixed_one": "1 kwadrat stoi w miejscu",
+      "fixed_few": "{{count}} kwadraty stoją w miejscu",
+      "fixed_many": "{{count}} kwadratów stoi w miejscu",
+      "fixed_other": "{{count}} kwadratu stoi w miejscu",
+      "allMove": "Każdy kwadrat się rusza",
+      "swaps": "Zamiany: {{count}}",
+      "wrong_one": "Zła zamiana {{penalty}} sek.",
+      "wrong_few": "{{count}} złe zamiany {{penalty}} sek.",
+      "wrong_many": "{{count}} złych zamian {{penalty}} sek.",
+      "wrong_other": "{{count}} złej zamiany {{penalty}} sek.",
+      "wrongLabel_one": "Jedna zła zamiana, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_few": "{{count}} złe zamiany, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_many": "{{count}} złych zamian, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_other": "{{count}} złej zamiany, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "Przeciągnij kwadrat na inny, aby je zamienić",
+      "tapHint": "Albo: dotknij kwadratu, a potem innego",
+      "slotLabel": "Kwadrat {{n}}, {{state}}: {{rows}}",
+      "state": {
+        "movable": "ruchomy",
+        "fixed": "nieruchomy",
+        "selected": "wybrany"
+      },
+      "slotHint": "Dotknij, aby wybrać, a potem dotknij innego kwadratu",
+      "swapped": "Kwadraty {{a}} i {{b}} zamienione",
+      "swappedPenalty_one": "Kwadraty {{a}} i {{b}} zamienione. Plus 1 sekunda",
+      "swappedPenalty_few": "Kwadraty {{a}} i {{b}} zamienione. Plus {{s}} sekundy",
+      "swappedPenalty_many": "Kwadraty {{a}} i {{b}} zamienione. Plus {{s}} sekund",
+      "swappedPenalty_other": "Kwadraty {{a}} i {{b}} zamienione. Plus {{s}} sekundy",
+      "fixedTap": "Ten kwadrat stoi w miejscu",
+      "solved": "Każdy wiersz i każda kolumna są poprawne",
+      "boardLabel": "Układanka · {{counts}}"
+    },
+    "duel": {
+      "gap": "Przewaga {{gap}}",
+      "gapLabel": "Przewaga: {{gap}}. Jedna gwiazdka za prowadzenie na koniec, 2 gwiazdki przy {{two}}, 3 gwiazdki przy {{three}}",
+      "lead": "Prowadzisz",
+      "of": "/{{target}}",
+      "meLabel_one": "{{name}}, {{score}} z 1 punktu",
+      "meLabel_few": "{{name}}, {{score}} z {{target}} punktów",
+      "meLabel_many": "{{name}}, {{score}} z {{target}} punktów",
+      "meLabel_other": "{{name}}, {{score}} z {{target}} punktu",
+      "botLabel_one": "{{name}}, bot, poziom {{n}}, {{score}} z 1 punktu",
+      "botLabel_few": "{{name}}, bot, poziom {{n}}, {{score}} z {{target}} punktów",
+      "botLabel_many": "{{name}}, bot, poziom {{n}}, {{score}} z {{target}} punktów",
+      "botLabel_other": "{{name}}, bot, poziom {{n}}, {{score}} z {{target}} punktu",
+      "finishLabel": "Etap kończy się, gdy ktoś zdobędzie $t(levels:hud.duel.reachPoints, {\"count\": {{target}} }), albo po $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })",
+      "reachPoints_one": "{{count}} punkt",
+      "reachPoints_few": "{{count}} punkty",
+      "reachPoints_many": "{{count}} punktów",
+      "reachPoints_other": "{{count}} punktu",
+      "atSeconds_one": "{{count}} sekundzie",
+      "atSeconds_few": "{{count}} sekundach",
+      "atSeconds_many": "{{count}} sekundach",
+      "atSeconds_other": "{{count}} sekundy",
+      "raceLabel": "Wyścig do {{target}}: {{me}}, {{bot}}"
+    },
+    "reactions": "Reakcje",
+    "boardLabel": "Plansza etapu · {{scope}}",
+    "spotError": {
+      "goal_one": "Na planszy kryje się jedna błędna cyfra. Dotknij jej.",
+      "goal_few": "Na planszy kryją się {{count}} błędne cyfry. Dotknij ich.",
+      "goal_many": "Na planszy kryje się {{count}} błędnych cyfr. Dotknij ich.",
+      "goal_other": "Na planszy kryje się {{count}} błędnej cyfry. Dotknij ich.",
+      "note": "Ciemne cyfry należą do planszy i zawsze są poprawne.",
+      "found": "Znalezione",
+      "foundLabel": "Znalezione: {{found}} z {{total}}",
+      "time": "Czas",
+      "timeLabel_one": "Czas: 1 sekunda z {{limit}}",
+      "timeLabel_few": "Czas: {{s}} sekundy z {{limit}}",
+      "timeLabel_many": "Czas: {{s}} sekund z {{limit}}",
+      "timeLabel_other": "Czas: {{s}} sekundy z {{limit}}",
+      "tipTitle": "Wskazówka",
+      "tip": "Szukaj cyfry, która występuje dwa razy w tym samym wierszu, kolumnie lub kwadracie.",
+      "tipClose": "Zamknij wskazówkę",
+      "foundCell": "Błąd znaleziony w {{cell}}: nie {{wrong}}, tylko {{right}}",
+      "rightTap": "Cyfra w {{cell}} jest poprawna. {{penalty}} sek.",
+      "missed": "Nieznalezione błędy: {{cells}}",
+      "boardLabel": "Plansza etapu · dotknij błędnej cyfry"
+    },
+    "hunt": {
+      "goal": "Zdobądź $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) w $t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }).",
+      "goalPoints_one": "{{points}} punkt",
+      "goalPoints_few": "{{points}} punkty",
+      "goalPoints_many": "{{points}} punktów",
+      "goalPoints_other": "{{points}} punktu",
+      "goalMoves_one": "{{count}} ruchu",
+      "goalMoves_few": "{{count}} ruchach",
+      "goalMoves_many": "{{count}} ruchach",
+      "goalMoves_other": "{{count}} ruchu",
+      "note": "Pole w pustym obszarze jest warte więcej.",
+      "points": "pkt",
+      "scoreLabel_one": "{{score}} punkt",
+      "scoreLabel_few": "{{score}} punkty",
+      "scoreLabel_many": "{{score}} punktów",
+      "scoreLabel_other": "{{score}} punktu",
+      "scoreWorthLabel_one": "{{score}} punkt. Wybrane pole jest warte {{worth}}",
+      "scoreWorthLabel_few": "{{score}} punkty. Wybrane pole jest warte {{worth}}",
+      "scoreWorthLabel_many": "{{score}} punktów. Wybrane pole jest warte {{worth}}",
+      "scoreWorthLabel_other": "{{score}} punktu. Wybrane pole jest warte {{worth}}",
+      "lost": "Błędna cyfra kosztowała {{points}}",
+      "move": "Ruch {{n}} z {{max}}",
+      "burnt": "Ruch {{n}} spalony",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_one": "Jeden ruch spalony",
+      "burntCount_few": "{{count}} ruchy spalone",
+      "burntCount_many": "{{count}} ruchów spalonych",
+      "burntCount_other": "{{count}} ruchu spalonego",
+      "left": "zostało · z {{limit}}",
+      "timeLabel_one": "Została 1 sekunda z {{limit}}",
+      "timeLabel_few": "Zostały {{s}} sekundy z {{limit}}",
+      "timeLabel_many": "Zostało {{s}} sekund z {{limit}}",
+      "timeLabel_other": "Zostało {{s}} sekundy z {{limit}}",
+      "max": "Najlepszy wynik planszy: {{max}}",
+      "worth": "Warte {{points}}"
+    },
+    "chain": {
+      "goal": "Naraz da się rozwiązać tylko jedno pole na planszy. Znajdź je i wypełnij, a otworzy następne.",
+      "notePenalty": "Cyfra w polu, którego jeszcze nie da się ustalić: {{penalty}} sek.",
+      "noteAccept": "Błędna cyfra: {{penalty}} sek.",
+      "step": "Krok {{n}} z {{total}}",
+      "stepLabel": "Łańcuch: krok {{n}} z {{total}}",
+      "time": "Czas",
+      "timeLabel_one": "Czas: 1 sekunda z {{limit}}",
+      "timeLabel_few": "Czas: {{s}} sekundy z {{limit}}",
+      "timeLabel_many": "Czas: {{s}} sekund z {{limit}}",
+      "timeLabel_other": "Czas: {{s}} sekundy z {{limit}}",
+      "notYet": "{{text}} · {{penalty}} sek.",
+      "tipTitle": "Wskazówka",
+      "tip": "Na każdym kroku da się udowodnić dokładnie jedno pole. Jeśli masz pewność co do cyfry, to jest właśnie to pole.",
+      "tipClose": "Zamknij wskazówkę"
+    }
+  },
+  "explain": {
+    "spot": "Runda {{n}}: {{text}}",
+    "mistake": "Twój błąd: {{digit}} w {{cell}}. {{reason}}",
+    "best": "Twój najlepszy ruch, {{digit}} w {{cell}}: {{text}}",
+    "errorFound": "{{cell}}, znaleziono: {{reason}}",
+    "errorMissed": "{{cell}}, nie znaleziono: {{reason}}",
+    "rightTap": "Cyfra {{digit}} w {{cell}} jest poprawna: jej dotknięcie kosztowało {{penalty}} sek.",
+    "points_one": "Zdobyte punkty: {{points}} z {{max}}, czyli {{percent}} najlepszego wyniku planszy.",
+    "points_few": "Zdobyte punkty: {{points}} z {{max}}, czyli {{percent}} najlepszego wyniku planszy.",
+    "points_many": "Zdobyte punkty: {{points}} z {{max}}, czyli {{percent}} najlepszego wyniku planszy.",
+    "points_other": "Zdobyte punkty: {{points}} z {{max}}, czyli {{percent}} najlepszego wyniku planszy.",
+    "line": "Najlepsza sekwencja: {{moves}}.",
+    "move": "{{digit}} w {{cell}} {{points}}",
+    "step": "Krok {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "Na miejsce {{place}} pasuje tylko kwadrat, który zaczynał na miejscu {{from}}: każdy inny powtórzyłby cyfrę w wierszu lub kolumnie.",
+      "onlyPlaceForBox": "Kwadrat, który zaczynał na miejscu {{from}}, pasuje tylko na miejsce {{place}}: gdzie indziej powtórzyłby cyfrę w wierszu lub kolumnie."
+    }
+  }
+}

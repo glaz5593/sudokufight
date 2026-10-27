@@ -1,0 +1,108 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "ผู้เล่น",
+  "temporaryName": "ผู้เล่น{{digits}}",
+  "bot": "บอท",
+  "vs": "VS",
+  "seconds_other": "{{count}} วินาที",
+  "points_other": "{{score}} คะแนน",
+  "place": "อันดับ {{place}}",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "ออนไลน์",
+    "online_female": "ออนไลน์",
+    "reconnecting": "กำลังเชื่อมต่อใหม่",
+    "reconnecting_female": "กำลังเชื่อมต่อใหม่",
+    "unstable": "ไม่มีการเชื่อมต่อ",
+    "unstable_female": "ไม่มีการเชื่อมต่อ",
+    "left": "ออกแล้ว",
+    "left_female": "ออกแล้ว"
+  },
+  "result": {
+    "winShort": "ช",
+    "lossShort": "พ",
+    "drawShort": "ส"
+  },
+  "flag": {
+    "label": "ประเทศ: {{country}}"
+  },
+  "rating": {
+    "label": "เรตติ้ง {{value}}",
+    "labelWithKey": "เรตติ้ง {{key}} {{value}}",
+    "provisional": "ชั่วคราว",
+    "provisionalLabel": "{{label}} ชั่วคราว"
+  },
+  "league": {
+    "bronze": "ทองแดง",
+    "silver": "เงิน",
+    "gold": "ทอง",
+    "diamond": "เพชร",
+    "legend": "ตำนาน",
+    "name": "ลีก {{league}}",
+    "level": "เลเวล {{level}}",
+    "levelAfter": "· เลเวล {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "ไม่มีข้อผิดพลาด",
+    "short_other": "ผิด {{count}} ครั้ง",
+    "long_zero": "ไม่มีข้อผิดพลาด",
+    "long_other": "ข้อผิดพลาด {{count}} ครั้ง",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "กำลังเลือก",
+    "locking_female": "กำลังเลือก",
+    "turn": "ตาของเขา",
+    "turn_female": "ตาของเขา",
+    "paused": "หยุดพัก",
+    "thinking": "กำลังคิด",
+    "thinking_female": "กำลังคิด",
+    "reconnecting": "กำลังเชื่อมต่อใหม่",
+    "reconnecting_female": "กำลังเชื่อมต่อใหม่",
+    "left": "ออกแล้ว",
+    "left_female": "ออกแล้ว",
+    "surrendered": "ยอมแพ้แล้ว",
+    "surrendered_female": "ยอมแพ้แล้ว",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}} {{time}}"
+  },
+  "card": {
+    "hit": "ถูกก่อกวน {{time}}",
+    "target": "เป้าหมาย",
+    "targetHint": "เป้าหมายการก่อกวน"
+  },
+  "actions": {
+    "surrender": "ยอมแพ้",
+    "endPractice": "จบการฝึกซ้อม",
+    "reactions": "รีแอคชัน"
+  },
+  "interfere": {
+    "button": "ก่อกวน",
+    "label": "ก่อกวน {{name}} · ใช้ {{cost}} คะแนน",
+    "labelMissing": "ก่อกวน {{name}} · ขาดอีก {{count}} คะแนน",
+    "labelBusy": "ก่อกวน {{name}} ไม่ได้ เพราะกำลังถูกก่อกวนอยู่",
+    "labelNotRunning": "ตอนนี้ก่อกวน {{name}} ไม่ได้",
+    "labelDisconnected": "ก่อกวนไม่ได้ระหว่างที่ไม่ได้เชื่อมต่อ",
+    "labelOut": "{{name}} ออกจากเกมแล้ว",
+    "close": "ปิดตัวเลือกการก่อกวน"
+  },
+  "lead": {
+    "tie": "เท่ากัน",
+    "label_other": "{{name}} นำอยู่ {{gap}} คะแนน",
+    "label_female_other": "{{name}} นำอยู่ {{gap}} คะแนน",
+    "tieLabel": "คะแนนเท่ากัน"
+  },
+  "lock": {
+    "yourCell": "ช่องของคุณ",
+    "paused": "หยุดพัก",
+    "pick": "เลือกช่อง",
+    "remaining_other": "เหลือ {{count}} วินาที",
+    "label": "ช่อง {{cell}} ของคุณ {{remaining}}",
+    "labelPaused": "ช่อง {{cell}} ของคุณ ตัวจับเวลาหยุดแล้ว",
+    "progress": "เวลาที่เหลือของช่อง {{cell}}",
+    "released": "ปล่อยช่องแล้ว"
+  }
+}

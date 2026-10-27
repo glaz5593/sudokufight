@@ -1,0 +1,263 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "設定",
+    "back": "戻る"
+  },
+  "profile": {
+    "defaultName": "プレイヤー",
+    "label": "自分のプレイヤーカード：{{name}}",
+    "noRating": "まだレーティングなし",
+    "ratingTitle": "レーティング",
+    "none": "—",
+    "games_other": "{{count}}戦",
+    "gamesLabel_other": "対戦",
+    "winsLabel": "勝利",
+    "streakLabel": "連勝",
+    "winRate": "勝率{{percent}}%",
+    "streak_zero": "連勝なし",
+    "streak_other": "{{count}}連勝中"
+  },
+  "play": "プレイ",
+  "playHint": "ゲームモードを選んでください",
+  "again": {
+    "title": "もう一戦",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "対戦を開始できません。もう一度どうぞ"
+  },
+  "recent": {
+    "heading": "最近の対戦",
+    "all": "すべて",
+    "unavailable": "この端末に保存された対戦を読み込めませんでした。",
+    "emptyTitle": "まだ対戦がありません",
+    "emptyBody": "練習はすべてここに保存されます。アプリを閉じても消えません。",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "盤面完成",
+      "ended": "練習終了",
+      "interrupted": "中断",
+      "playing": "プレイ中",
+      "win": "勝ち",
+      "loss": "負け",
+      "tie": "引き分け"
+    },
+    "openHint": "結果を開きます",
+    "versus": "{{name}}戦：{{outcome}}"
+  },
+  "modes": {
+    "title": "新しい対戦",
+    "footnote": "ランク戦にはインターネット接続が必要です · 練習はいつでもできます",
+    "soon": "近日公開",
+    "groups": {
+      "ranked": {
+        "title": "ランク戦",
+        "note": "本物の相手と、リアルタイムで"
+      },
+      "friends": {
+        "title": "フレンドと",
+        "titleMoshe": "本物のフレンドと、リアルタイムで",
+        "note": "プライベートルーム · 最大4人 · レーティングなし"
+      },
+      "practice": {
+        "title": "練習",
+        "note": "プレッシャーなし、レーティングなし"
+      }
+    },
+    "chips": {
+      "rated": "レーティングあり",
+      "unrated": "レーティングなし",
+      "offline": "オフライン対応"
+    },
+    "ranked": {
+      "name": "ランク戦"
+    },
+    "ranked2": {
+      "title": "2人対戦",
+      "tagline": "1対1 · 同じ盤面",
+      "label": "ランク戦 · 2人対戦"
+    },
+    "ranked3": {
+      "title": "3人対戦",
+      "tagline": "全員がライバル",
+      "label": "ランク戦 · 3人対戦"
+    },
+    "ranked4": {
+      "title": "4人対戦",
+      "tagline": "全員がライバル",
+      "label": "ランク戦 · 4人対戦"
+    },
+    "friends": {
+      "create": "新しいルーム",
+      "createHint": "フレンドに送るコード付きの待機ルームを開きます",
+      "join": "コードで参加",
+      "joinHint": "受け取った6桁の数字を入力してください"
+    },
+    "solo": {
+      "name": "ソロ練習",
+      "title": "ソロ · 盤面全体",
+      "tagline": "自分のペースで",
+      "label": "ソロ · 盤面全体"
+    },
+    "levels": {
+      "name": "ステージ練習",
+      "title": "ステージ練習",
+      "tagline": "短いステージ · 星は最大3つ",
+      "taglineNew_other": "短いステージ{{total}}個 · 星0〜3",
+      "chip": "ステージ{{stage}} ·",
+      "offline": "通信不要",
+      "chipLabel_other": "ステージ{{stage}} · 星{{count}}個",
+      "label": "ステージ練習"
+    },
+    "bot": {
+      "name": "ボットと練習",
+      "title": "ボットと練習",
+      "tagline": "5つのレベル",
+      "label": "ボットと練習"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "スピード",
+      "difficulty": "やさしい",
+      "technique": "ネイキッドシングルだけで解けます"
+    },
+    "normal": {
+      "name": "ノーマル",
+      "difficulty": "ふつう",
+      "technique": "ヒドゥンシングルが必要です"
+    },
+    "hard": {
+      "name": "ハード",
+      "difficulty": "むずかしい",
+      "technique": "ペアや候補の消去が必要です"
+    }
+  },
+  "gameType": {
+    "title": "対戦タイプ",
+    "note": {
+      "solo": "レーティングなし。盤面はこの端末の問題から、最近プレイしたものを除いて選ばれます。",
+      "bot": "レーティングなし。盤面はこの端末の問題から、最近プレイしたものを除いて選ばれます。次に対戦相手を選びます。",
+      "ranked": "レーティングあり。レーティングの近い相手と、サーバーの問題からまだプレイしていない盤面で対戦します。2人とも同じ盤面です。",
+      "rankedGroup": "レーティングあり。レーティングの近い相手と、サーバーの問題からまだプレイしていない盤面で対戦します。全員が同じ盤面です。全員がそろうと対戦が始まります。"
+    },
+    "start": {
+      "solo": "練習を開始",
+      "bot": "対戦相手を選ぶ",
+      "ranked": "対戦相手を探す",
+      "rankedGroup": "対戦相手を探す"
+    },
+    "startHint": "{{type}}の練習を開始します",
+    "rankedHint": "{{type}}のランク戦の対戦相手を探します",
+    "rankedGroupHint": "{{type}}のランク戦の対戦相手を探します",
+    "lockTime": "1マスの時間",
+    "board": "盤面",
+    "duration": "目安時間",
+    "seconds": "{{seconds}}秒",
+    "minutes": "{{range}}分",
+    "yourRating": "あなたのレーティング",
+    "cardLabel_other": "{{name}}。{{technique}}。1マス{{seconds}}、盤面は{{difficulty}}、約{{from}}〜{{to}}分",
+    "botHint": "{{type}}の対戦相手のボットを選びます"
+  },
+  "settings": {
+    "title": "設定",
+    "feedback": "サウンドと振動",
+    "sound": "サウンド",
+    "soundHint": "手や操作の効果音",
+    "haptics": "振動",
+    "hapticsHint": "手を打ったときの短い振動",
+    "motion": "動きを減らす",
+    "motionHint": "アニメーションを減らします。得点はすぐに最終値になり、妨害は同じ時間だけ静止したカバーで表示されます。",
+    "reduceMotion": {
+      "system": "端末の設定に従う",
+      "on": "オン",
+      "off": "オフ"
+    },
+    "language": "言語",
+    "languageHint": "言語を変更するとアプリが再起動します。",
+    "languageConfirm": {
+      "title": "言語を{{language}}に切り替えますか？",
+      "body": "アプリが再起動し、すべての画面が新しい言語の向きで表示されます。",
+      "confirm": "切り替えて再起動",
+      "titleDevice": "端末の言語に切り替えますか？"
+    },
+    "languageDevice": "端末の言語",
+    "languageSheetTitle": "言語を選択",
+    "languageField": "言語：{{language}}",
+    "languageFieldDevice": "言語：端末の言語（{{language}}）",
+    "about": "アプリ情報と規約",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "licenses": "ライセンス",
+    "opensInBrowser": "ブラウザで開きます"
+  },
+  "placeholder": {
+    "soon": "近日公開",
+    "leaderboard": {
+      "title": "ランキング",
+      "body": "ランキングはランク戦と同時に公開されます。"
+    },
+    "history": {
+      "title": "履歴",
+      "body": "すべての対戦が、リプレイと各手の解説付きでここに表示されます。それまでは、最近の練習をホーム画面で見られます。"
+    },
+    "achievements": {
+      "title": "実績",
+      "body": "実績、レベル、XPは準備中です。"
+    }
+  },
+  "botSelect": {
+    "title": "ボットを選ぶ",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "1手の思考時間",
+    "thinkValue": "{{range}}秒",
+    "mistakes": "ミス",
+    "note": "これは通常の一手にかかる時間です。難しい論理が必要なマスではボットはもっと長く考え、行・列・ブロックの最後の空きマスでは少し短くなります。ボットは同じ盤面をリアルタイムでプレイします。",
+    "start": "はじめる",
+    "startHint": "{{name}}を相手に{{type}}の練習を開始します",
+    "cardLabel_other": "レベル{{level}}、{{title}}：{{name}}。{{behavior}}。1手に{{from}}〜{{to}}秒考えます。ミス率{{mistakes}}%",
+    "levels": {
+      "1": {
+        "title": "初心者",
+        "behavior": "ゆっくりで、ミスもそこそこ多く、学ぶ余裕をくれます"
+      },
+      "2": {
+        "title": "アマチュア",
+        "behavior": "のんびりしていて、ときどきミスをし、たまに😂を送ってきます"
+      },
+      "3": {
+        "title": "上級者",
+        "behavior": "安定していて思慮深く、追い抜くのは大変です"
+      },
+      "4": {
+        "title": "マスター",
+        "behavior": "速くてほとんど間違えず、少し得意げです😎"
+      },
+      "5": {
+        "title": "グランドマスター",
+        "behavior": "速く、正確で、容赦がありません"
+      }
+    }
+  },
+  "licenses": {
+    "title": "ライセンス",
+    "intro": "Sudoku Fightはオープンフォントとオープンソースソフトウェアで作られています。作者の皆さんに感謝します。各ライセンスと著作権表示は以下のとおりです。",
+    "fonts": "フォント",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_other": "オープンソースパッケージ{{count}}個",
+    "packageLabel": "{{name}}、バージョン{{version}}、ライセンス{{license}}",
+    "texts": "ライセンス本文",
+    "textsHint": "各ライセンスの全文を原文のまま掲載しています。",
+    "show": "{{license}}ライセンスを表示",
+    "hide": "{{license}}ライセンスを隠す"
+  }
+}

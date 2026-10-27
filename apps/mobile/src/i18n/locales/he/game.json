@@ -20,13 +20,17 @@
     "best": "מהלך שיא",
     "none": "—",
     "timeLabel": "זמן {{time}}",
-    "bestLabel": "מהלך שיא: {{points}} נקודות ב־{{cell}}",
+    "bestLabel_one": "מהלך שיא: {{points}} נקודה ב־{{cell}}",
+    "bestLabel_two": "מהלך שיא: {{points}} נקודות ב־{{cell}}",
+    "bestLabel_other": "מהלך שיא: {{points}} נקודות ב־{{cell}}",
     "noBestLabel": "עדיין אין מהלך שיא"
   },
   "progress": {
     "label": "התקדמות הלוח",
     "value": "{{filled}}/{{total}}",
-    "a11y": "{{filled}} מתוך {{total}} משבצות מלאות"
+    "a11y_one": "{{filled}} מתוך משבצת אחת מלאה",
+    "a11y_two": "{{filled}} מתוך {{total}} משבצות מלאות",
+    "a11y_other": "{{filled}} מתוך {{total}} משבצות מלאות"
   },
   "end": {
     "button": "סיום אימון",
@@ -107,7 +111,9 @@
       "backInTimeSub": "הטיימרים ממשיכים מאותה שנייה",
       "announceLost": "החיבור שלך אבד. מתחבר מחדש",
       "announceAttempt": "החיבור שלך אבד. מתחבר מחדש, ניסיון {{attempt}}",
-      "announceHurry": "עוד {{seconds}} שניות המשחק ייחשב כנטישה",
+      "announceHurry_one": "עוד שנייה אחת המשחק ייחשב כנטישה",
+      "announceHurry_two": "עוד {{seconds}} שניות המשחק ייחשב כנטישה",
+      "announceHurry_other": "עוד {{seconds}} שניות המשחק ייחשב כנטישה",
       "announceSyncing": "חזרת למשחק. מסנכרן",
       "announceSynced": "חזרת למשחק. הלוח והניקוד סונכרנו"
     },
@@ -115,7 +121,9 @@
       "announce": "אין חיבור. אפשר להמשיך לשחק, והמהלכים יישלחו כשהחיבור יחזור"
     },
     "left": {
-      "timeUp": "הזמן נגמר · {{seconds}} שניות בלי חיבור",
+      "timeUp_one": "הזמן נגמר · שנייה אחת בלי חיבור",
+      "timeUp_two": "הזמן נגמר · {{seconds}} שניות בלי חיבור",
+      "timeUp_other": "הזמן נגמר · {{seconds}} שניות בלי חיבור",
       "title": "{{name}} עזב את המשחק",
       "title_female": "{{name}} עזבה את המשחק",
       "win": "ניצחת בנטישה",
@@ -174,7 +182,9 @@
     },
     "lobby": {
       "title": "חדר פרטי",
-      "subtitle": "{{type}} · {{players}} שחקנים",
+      "subtitle_one": "{{type}} · שחקן אחד",
+      "subtitle_two": "{{type}} · {{players}} שחקנים",
+      "subtitle_other": "{{type}} · {{players}} שחקנים",
       "codeTitle": "קוד החדר",
       "codeLabel": "קוד החדר: {{spelled}}",
       "codeHint": "שלח את הקוד למי שמשחק איתך",
@@ -212,8 +222,12 @@
       "joining": "מתחבר…",
       "tipTitle": "טיפ",
       "tips": {
-        "score": "ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד {{max}} נק׳ למשבצת.",
-        "lastCell": "המשבצת האחרונה בלוח שווה תמיד {{points}} נק׳ בלבד: מסביבה כבר הכל מלא.",
+        "score_one": "ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד {{max}} נק׳ למשבצת.",
+        "score_two": "ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד {{max}} נק׳ למשבצת.",
+        "score_other": "ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד {{max}} נק׳ למשבצת.",
+        "lastCell_one": "המשבצת האחרונה בלוח שווה תמיד {{points}} נק׳ בלבד: מסביבה כבר הכל מלא.",
+        "lastCell_two": "המשבצת האחרונה בלוח שווה תמיד {{points}} נק׳ בלבד: מסביבה כבר הכל מלא.",
+        "lastCell_other": "המשבצת האחרונה בלוח שווה תמיד {{points}} נק׳ בלבד: מסביבה כבר הכל מלא.",
         "mistakes": "טעות מורידה בדיוק את מה שהספרה הנכונה הייתה שווה באותה משבצת. משבצת ששווה הרבה עולה הרבה כשטועים בה.",
         "interference": "כל הפרעה עולה כפליים מהקודמת. שמור אותה לרגע הנכון."
       }
@@ -293,9 +307,19 @@
     "nextPrice": "· הבאה: {{cost}}",
     "unit": "נק׳",
     "score": "הניקוד שלך",
-    "costLabel": "מחיר ההפרעה {{cost}} נקודות. הניקוד שלך {{score}}, ואחרי שיגור {{after}}. ההפרעה שאחריה תעלה {{next}}",
-    "costLabelShort": "מחיר ההפרעה {{cost}} נקודות. הניקוד שלך {{score}}, חסרות {{missing}} נקודות",
-    "info": "כל הפרעה נמשכת {{seconds}} שניות · הקשה משגרת",
+    "costLabel_one": "מחיר ההפרעה נקודה אחת. הניקוד שלך {{score}}, ואחרי שיגור {{after}}. ההפרעה שאחריה תעלה {{next}}",
+    "costLabel_two": "מחיר ההפרעה {{cost}} נקודות. הניקוד שלך {{score}}, ואחרי שיגור {{after}}. ההפרעה שאחריה תעלה {{next}}",
+    "costLabel_other": "מחיר ההפרעה {{cost}} נקודות. הניקוד שלך {{score}}, ואחרי שיגור {{after}}. ההפרעה שאחריה תעלה {{next}}",
+    "costLabelShort": "מחיר ההפרעה $t(game:arsenal.costPoints, {\"count\": {{cost}} }). הניקוד שלך {{score}}, $t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })",
+    "costPoints_one": "נקודה אחת",
+    "costPoints_two": "{{count}} נקודות",
+    "costPoints_other": "{{count}} נקודות",
+    "shortPoints_one": "חסרה {{missing}} נקודה",
+    "shortPoints_two": "חסרות {{missing}} נקודות",
+    "shortPoints_other": "חסרות {{missing}} נקודות",
+    "info_one": "כל הפרעה נמשכת שנייה אחת · הקשה משגרת",
+    "info_two": "כל הפרעה נמשכת {{seconds}} שניות · הקשה משגרת",
+    "info_other": "כל הפרעה נמשכת {{seconds}} שניות · הקשה משגרת",
     "cost": "{{cost}} נק׳",
     "missing": "חסרות {{count}} נק׳",
     "locked": "נעול",
@@ -397,16 +421,22 @@
     },
     "score": "ניקוד סופי",
     "points": "נק׳",
-    "scoreLabel": "ניקוד סופי: {{score}} נקודות",
+    "scoreLabel_one": "ניקוד סופי: {{score}} נקודה",
+    "scoreLabel_two": "ניקוד סופי: {{score}} נקודות",
+    "scoreLabel_other": "ניקוד סופי: {{score}} נקודות",
     "opponents": {
       "title": "יריב",
-      "label": "{{name}} · {{score}} נקודות · {{mistakes}}",
+      "label_one": "{{name}} · {{score}} נקודה · {{mistakes}}",
+      "label_two": "{{name}} · {{score}} נקודות · {{mistakes}}",
+      "label_other": "{{name}} · {{score}} נקודות · {{mistakes}}",
       "left": "יצא מהמשחק"
     },
     "best": {
       "title": "מהלך המשחק",
       "move": "{{cell}} → {{digit}}",
-      "label": "מהלך המשחק: {{points}} נקודות, {{digit}} ב־{{cell}}",
+      "label_one": "מהלך המשחק: {{points}} נקודה, {{digit}} ב־{{cell}}",
+      "label_two": "מהלך המשחק: {{points}} נקודות, {{digit}} ב־{{cell}}",
+      "label_other": "מהלך המשחק: {{points}} נקודות, {{digit}} ב־{{cell}}",
       "formula": "החישוב",
       "formulaLabel": "החישוב: {{line}}",
       "none": "לא היה מהלך נכון באימון הזה"

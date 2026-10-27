@@ -1,0 +1,92 @@
+{
+  "title": "Replay della partita",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Allenamento in solitario",
+    "bot": "Allenamento contro il bot",
+    "ranked": "Classificata"
+  },
+  "back": "Indietro",
+  "loading": "Caricamento della partita…",
+  "load": {
+    "missing": "Non abbiamo trovato questa partita",
+    "notFinished": "La partita è ancora in salvataggio sul server. Riprova tra un attimo",
+    "offline": "Nessuna connessione al server. Le partite classificate si caricano dal server",
+    "signedOut": "Accedi per guardare una partita classificata",
+    "unavailable": "Non siamo riusciti a leggere questa partita",
+    "retry": "Riprova",
+    "partial": "Questa partita si è interrotta: il replay arriva fino all’ultima mossa salvata"
+  },
+  "step": {
+    "counter": "Passo {{number}} di {{total}}",
+    "clockLabel": "Orologio della partita: {{clock}}"
+  },
+  "nav": {
+    "prev": "Passo precedente",
+    "next": "Passo successivo",
+    "timeline": "Linea dei passi",
+    "timelineValue": "Passo {{number}} di {{total}}, {{clock}}",
+    "timelineHint": "Scorri in su o in giù per cambiare passo"
+  },
+  "narration": {
+    "start": "La partita comincia",
+    "select": "{{name}} · sceglie {{cell}}",
+    "correct": "{{name}} · giusto in {{cell}} · {{delta}}",
+    "wrong": "{{name}} · sbagliato in {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · lascia {{cell}}",
+      "timeout": "{{name}} · tempo scaduto in {{cell}}"
+    },
+    "interference": "{{name}} · disturba {{target}} · {{delta}}",
+    "disconnect": "{{name}} · disconnessione",
+    "reconnect": "{{name}} · di nuovo in partita",
+    "offline": "{{name}} · connessione persa",
+    "surrender": "{{name}} · resa",
+    "endPractice": "{{name}} · ha chiuso l’allenamento",
+    "abandon": "{{name}} · ha lasciato la partita",
+    "over": "La partita è finita",
+    "paused": "La partita è congelata",
+    "offlineSuffix": "inviata al ritorno online"
+  },
+  "explain": {
+    "title": "Una spiegazione per ogni giocatore",
+    "none": "Ancora nessuna mossa di {{name}}",
+    "noneMe": "Ancora nessuna mia mossa",
+    "noneBody": "La spiegazione compare dopo la prima mossa",
+    "status": {
+      "choosing": "Sceglie",
+      "released": "Lasciata",
+      "correct": "Giusta",
+      "wrong": "Sbagliata"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} invece di {{answer}}",
+    "why": "Perché {{digit}} non va bene: {{text}}",
+    "noLogic": "La risposta: {{cell}} → {{digit}}",
+    "scoreLine": "I punti",
+    "penaltyLine": "La penalità: quanto valeva il numero giusto",
+    "released": {
+      "cancel": "Scelta annullata",
+      "timeout": "Tempo scaduto",
+      "switch": "Passaggio a un’altra casella",
+      "mistake": "Dopo un errore",
+      "surrender": "Ha lasciato la partita",
+      "disconnect": "Disconnessione",
+      "abandon": "Abbandono"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "Momenti chiave",
+    "bestMove": "Mossa migliore",
+    "mistakes": "Errori · {{count}}",
+    "interferences": "Disturbi · {{count}}",
+    "turningPoint": "Svolta",
+    "hint": "Salta a quel passo"
+  },
+  "board": "La griglia al passo {{number}}",
+  "me": "Io",
+  "unknown": "Giocatore"
+}

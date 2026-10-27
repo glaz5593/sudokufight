@@ -1,0 +1,112 @@
+{
+  "header": "{{mode}} · {{players}} · {{type}}",
+  "ranked": "Xếp hạng",
+  "players_other": "{{count}} người chơi",
+  "me": "Bạn",
+  "sep": ". ",
+  "sentenceSpace": " ",
+  "search": {
+    "title_other": "Đang tìm đối thủ…",
+    "connecting": "Đang vào hàng chờ…",
+    "elapsedLabel": "Đã tìm {{time}}",
+    "myRating": "Điểm xếp hạng của bạn: {{rating}}",
+    "rangeTitle": "Khoảng điểm xếp hạng",
+    "rangeLabel": "Khoảng điểm xếp hạng từ {{low}} đến {{high}}",
+    "widening": "Khoảng điểm sẽ nới rộng dần trong lúc tìm",
+    "noCap": "Không giới hạn khoảng điểm: khoảng điểm tiếp tục nới rộng",
+    "opponents": "Đối thủ",
+    "slot": "Đang tìm…",
+    "slotMark": "?",
+    "slotLabel": "Chỗ trống: đang tìm đối thủ",
+    "avoidRecent": "Tránh các đối thủ bạn vừa gặp gần đây",
+    "requeued_other": "Một người chơi không kết nối kịp. Bạn được đưa trở lại đầu hàng chờ.",
+    "cancel": "Hủy tìm kiếm",
+    "cancelHint": "Rời hàng chờ và quay lại",
+    "announce_other": "Đang tìm đối thủ có điểm xếp hạng từ {{low}} đến {{high}}",
+    "alone": {
+      "title_other": "Hiện chưa đủ người chơi đang tìm trận này",
+      "body_other": "Chúng tôi sẽ tiếp tục tìm: ngay khi có đủ người chơi tìm trận này, bạn sẽ được ghép cặp tại đây. Trong lúc chờ, bạn cũng có thể đấu với máy.",
+      "bot": "Đấu với máy trong lúc chờ"
+    }
+  },
+  "found": {
+    "title_other": "Đã tìm thấy đối thủ!",
+    "ready": "Sẵn sàng",
+    "connecting": "Đang kết nối…",
+    "allReady": "Mọi người đã sẵn sàng · trận đấu đang bắt đầu",
+    "waiting": "Đang chờ mọi người kết nối…",
+    "readyCount": "Sẵn sàng",
+    "readyCountLabel": "{{ready}}/{{total}} đã sẵn sàng",
+    "fresh": "Gần đây các bạn chưa đấu với nhau",
+    "rematch": "Gần đây các bạn đã đấu với nhau",
+    "noCancel": "Không thể hủy từ đây: rời đi sẽ bị tính là bỏ trận",
+    "seatLabel": "{{name}}, {{rating}}, {{state}}",
+    "announce_other": "Đã tìm thấy đối thủ: {{names}}"
+  },
+  "countdown": {
+    "getReady": "Chuẩn bị…",
+    "reveal_other": "Bảng sẽ hiện ra cùng lúc cho tất cả mọi người",
+    "go": "GO!",
+    "goLabel": "Bắt đầu!",
+    "starting": "Đang chuẩn bị bảng…",
+    "stepLabel": "Trận đấu bắt đầu sau {{time}}",
+    "boardLabel": "Bảng, được ẩn cho đến khi trận đấu bắt đầu"
+  },
+  "timeout": {
+    "title_other": "Chưa đủ đối thủ cùng trình độ với bạn",
+    "body": "Chúng tôi đã tìm trong {{time}} những người chơi đang rảnh có điểm xếp hạng {{range}}, bỏ qua các đối thủ bạn vừa gặp gần đây. Bạn có thể tiếp tục tìm mà không giới hạn khoảng điểm, hoặc luyện tập với máy trong lúc chờ.",
+    "aloneTitle_other": "Vẫn chưa đủ người chơi đang tìm trận này",
+    "aloneBody_other": "Chúng tôi đã tìm trong {{time}} nhưng chưa đủ người chơi tìm trận này. Bạn có thể tiếp tục chờ, hoặc luyện tập với máy trong lúc chờ.",
+    "minutes_other": "{{count}} phút",
+    "keep": "Tiếp tục tìm",
+    "keepNote": "Không giới hạn",
+    "keepHint": "Tiếp tục tìm mà không giới hạn khoảng điểm xếp hạng",
+    "bot": "Đấu với máy trong lúc chờ",
+    "home": "Về trang chủ"
+  },
+  "error": {
+    "title": "Đã dừng tìm kiếm",
+    "offlineTitle": "Không kết nối được máy chủ",
+    "body": {
+      "network": "Không kết nối được máy chủ trò chơi. Hãy kiểm tra kết nối rồi thử lại.",
+      "lost": "Mất kết nối với máy chủ trò chơi trong lúc tìm kiếm.",
+      "noShow": "Không kết nối kịp vào trận đấu, nên trận đã bị hủy.",
+      "alreadyQueued": "Bạn đang có một lượt tìm hoặc một trận xếp hạng khác, có thể trên thiết bị khác.",
+      "queueClosed": "Hàng chờ này chưa mở.",
+      "badQueue": "Hàng chờ này không tồn tại.",
+      "unauthenticated": "Đăng nhập vào tài khoản để chơi xếp hạng.",
+      "emailNotVerified": "Trận xếp hạng cần email đã xác minh, và email của bạn chưa được xác minh với chúng tôi. Nếu bạn đã mở liên kết xác minh, hãy chạm “Tôi đã xác minh” ở màn hình tiếp theo.",
+      "suspended": "Tài khoản của bạn đang bị đình chỉ, nên tạm thời không có trận xếp hạng. Bạn vẫn có thể luyện tập một mình hoặc với máy.",
+      "signedOut": "Đăng nhập vào tài khoản để chơi xếp hạng.",
+      "unknown": "Đã có lỗi xảy ra khi tìm kiếm."
+    },
+    "code": "Mã lỗi: {{code}}",
+    "retry": "Tìm lại",
+    "verify": "Xác minh email",
+    "practice": "Đi luyện tập",
+    "practiceNote": "Luyện tập một mình hoặc với máy vẫn chơi được khi không có mạng.",
+    "home": "Về trang chủ"
+  },
+  "verify": {
+    "required": "Hãy xác minh địa chỉ email để chơi xếp hạng."
+  },
+  "offline": {
+    "title": "Không có kết nối Internet",
+    "body": "Trận xếp hạng không khả dụng",
+    "checking": "Đang kiểm tra…",
+    "practice": "Đi luyện tập",
+    "retry": "Kiểm tra lại",
+    "retrying": "Đang kiểm tra kết nối…",
+    "stillOffline": "Vẫn chưa có kết nối · lần thử {{count}}",
+    "rankedNote": "Khả dụng khi có mạng",
+    "needsConnection": "Cần kết nối",
+    "needsConnectionLabel": "Cần kết nối Internet",
+    "practiceNote": "Dùng được khi không có Internet",
+    "availableOffline": "Không cần mạng",
+    "back": "Bạn đã có mạng trở lại. Trận xếp hạng đã khả dụng."
+  },
+  "modes": {
+    "rating": "Điểm xếp hạng {{rating}}",
+    "ratingLabel": "Điểm xếp hạng {{type}} của bạn là {{rating}}"
+  }
+}

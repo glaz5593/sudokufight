@@ -1,0 +1,118 @@
+{
+  "actions": {
+    "report": "Zgłoś gracza",
+    "block": "Zablokuj gracza",
+    "unblock": "Odblokuj",
+    "reportLabel": "Zgłoś gracza {{name}}",
+    "blockLabel": "Zablokuj gracza {{name}}",
+    "unblockLabel": "Odblokuj gracza {{name}}",
+    "blockedNote": "Ten gracz jest zablokowany: nie traficie na siebie w partiach rankingowych."
+  },
+  "report": {
+    "title": "Zgłoś gracza {{name}}",
+    "question": "Co jest nie tak?",
+    "reasons": {
+      "offensiveName": "Obraźliwa nazwa",
+      "cheating": "Oszukiwanie",
+      "other": "Inne"
+    },
+    "reasonHints": {
+      "offensiveName": "Nazwa jest wulgarna, obraźliwa lub niestosowna",
+      "cheating": "Wygląda na pomoc z zewnątrz albo wykorzystywanie błędu",
+      "other": "Coś innego, czemu nie ma miejsca na arenie"
+    },
+    "privacy_one": "Gracz nie dowie się, kto go zgłosił. Każde zgłoszenie sprawdzamy w ciągu godziny.",
+    "privacy_few": "Gracz nie dowie się, kto go zgłosił. Każde zgłoszenie sprawdzamy w ciągu {{hours}} godzin.",
+    "privacy_many": "Gracz nie dowie się, kto go zgłosił. Każde zgłoszenie sprawdzamy w ciągu {{hours}} godzin.",
+    "privacy_other": "Gracz nie dowie się, kto go zgłosił. Każde zgłoszenie sprawdzamy w ciągu {{hours}} godziny.",
+    "send": "Wyślij zgłoszenie",
+    "pickFirst": "Wybierz powód, a potem wyślij.",
+    "thanks_one": "Dziękujemy. Sprawdzimy zgłoszenie w ciągu godziny.",
+    "thanks_few": "Dziękujemy. Sprawdzimy zgłoszenie w ciągu {{hours}} godzin.",
+    "thanks_many": "Dziękujemy. Sprawdzimy zgłoszenie w ciągu {{hours}} godzin.",
+    "thanks_other": "Dziękujemy. Sprawdzimy zgłoszenie w ciągu {{hours}} godziny.",
+    "done": "Zamknij",
+    "errors": {
+      "rateLimited_one": "Za dużo zgłoszeń w ostatniej godzinie. Kolejne możesz wysłać za minutę.",
+      "rateLimited_few": "Za dużo zgłoszeń w ostatniej godzinie. Kolejne możesz wysłać za {{count}} minuty.",
+      "rateLimited_many": "Za dużo zgłoszeń w ostatniej godzinie. Kolejne możesz wysłać za {{count}} minut.",
+      "rateLimited_other": "Za dużo zgłoszeń w ostatniej godzinie. Kolejne możesz wysłać za {{count}} minuty.",
+      "busy": "Za dużo żądań. Odczekaj chwilę i spróbuj ponownie.",
+      "suspended": "Twoje konto jest zawieszone, więc na razie nie możesz wysyłać zgłoszeń.",
+      "self": "Nie możesz zgłosić siebie.",
+      "notFound": "Tego gracza nie ma już w partii.",
+      "offline": "Brak połączenia z serwerem: zgłoszenie nie zostało wysłane. Spróbuj ponownie.",
+      "failed": "Nie udało się wysłać zgłoszenia. Spróbuj ponownie."
+    }
+  },
+  "block": {
+    "title": "Zablokować gracza {{name}}?",
+    "body": "Nie traficie na siebie w partiach rankingowych, a reakcje gracza {{name}} nie będą do ciebie docierać. Nikt nie dostaje powiadomienia o blokadzie. Możesz ją zdjąć w każdej chwili: Ustawienia → Zablokowani gracze.",
+    "confirm": "Zablokuj",
+    "done": "Gracz {{name}} jest zablokowany.",
+    "unblockTitle": "Odblokować gracza {{name}}?",
+    "unblockBody": "Możecie znowu trafić na siebie w partiach rankingowych, a reakcje gracza {{name}} będą do ciebie docierać.",
+    "unblockConfirm": "Odblokuj",
+    "unblocked": "Gracz {{name}} jest odblokowany.",
+    "errors": {
+      "limitReached_one": "Możesz zablokować najwyżej jednego gracza. Odblokuj kogoś (Ustawienia → Zablokowani gracze) i spróbuj ponownie.",
+      "limitReached_few": "Możesz zablokować najwyżej {{max}} graczy. Odblokuj kogoś (Ustawienia → Zablokowani gracze) i spróbuj ponownie.",
+      "limitReached_many": "Możesz zablokować najwyżej {{max}} graczy. Odblokuj kogoś (Ustawienia → Zablokowani gracze) i spróbuj ponownie.",
+      "limitReached_other": "Możesz zablokować najwyżej {{max}} graczy. Odblokuj kogoś (Ustawienia → Zablokowani gracze) i spróbuj ponownie.",
+      "self": "Nie możesz zablokować siebie.",
+      "notFound": "Tego gracza nie ma już w partii.",
+      "busy": "Za dużo żądań. Odczekaj chwilę i spróbuj ponownie.",
+      "offline": "Brak połączenia z serwerem: blokada nie została zapisana. Spróbuj ponownie.",
+      "unblockOffline": "Brak połączenia z serwerem: blokada nie została zdjęta. Spróbuj ponownie.",
+      "failed": "Nie udało się zapisać blokady. Spróbuj ponownie.",
+      "unblockFailed": "Nie udało się zdjąć blokady. Spróbuj ponownie."
+    }
+  },
+  "blocked": {
+    "title": "Zablokowani gracze",
+    "settingsRow": "Zablokowani gracze",
+    "note": "Nie traficie na siebie w partiach rankingowych, a ich reakcje nie będą do ciebie docierać. Nikt nie dostaje powiadomienia o blokadzie.",
+    "count": "{{count}} z {{max}}",
+    "since": "Blokada od {{date}}",
+    "rowLabel": "{{name}}, blokada od {{date}}",
+    "emptyTitle": "Brak zablokowanych graczy",
+    "emptyBody": "Gracza możesz zablokować z jego karty albo z menu jego karty w partii rankingowej.",
+    "loading": "Wczytywanie zablokowanych graczy…",
+    "offlineTitle": "Brak połączenia z serwerem",
+    "offlineBody": "Lista jest przechowywana na serwerze. Spróbuj ponownie, gdy połączenie wróci.",
+    "errorTitle": "Nie udało się wczytać listy",
+    "errorBody": "Spróbuj ponownie za chwilę.",
+    "retry": "Spróbuj ponownie",
+    "signedOut": "Zaloguj się, aby zobaczyć listę."
+  },
+  "chooseName": {
+    "title": "Wybierz nową nazwę",
+    "body": "Twoja poprzednia nazwa łamała zasady, więc zastąpiliśmy ją tymczasową: {{name}}. Wybierz nową nazwę, aby kontynuować.",
+    "rule": "Tym razem bez czekania 30 dni: możesz wybrać nazwę od razu.",
+    "save": "Zapisz i kontynuuj",
+    "saved": "Nowa nazwa została zapisana.",
+    "same": "To nazwa tymczasowa. Wybierz własną.",
+    "offline": "Brak połączenia z serwerem: nazwa nie została zapisana. Spróbuj ponownie, gdy połączenie wróci.",
+    "practice": "Na razie potrenuj",
+    "settings": "Ustawienia",
+    "signOut": "Wyloguj się"
+  },
+  "suspended": {
+    "banner": "Konto zawieszone: bez partii rankingowych",
+    "bannerAction": "Szczegóły",
+    "bannerLabel": "Konto zawieszone, bez partii rankingowych. Szczegóły",
+    "title": "Konto zawieszone",
+    "body": "Po zgłoszeniu twoje konto zostało zawieszone. Dopóki zawieszenie trwa, nie ma partii rankingowych, a profilu nie można zmieniać.",
+    "can": "Nadal możesz trenować w pojedynkę lub z botem, blokować graczy i usunąć konto.",
+    "contactTitle": "Uważasz, że to pomyłka?",
+    "contact": "Napisz do nas, a sprawdzimy to jeszcze raz. Dane kontaktowe znajdziesz w warunkach korzystania.",
+    "contactEmail": "Możesz do nas napisać: {{email}}",
+    "openContact": "Dane kontaktowe",
+    "opensInBrowser": "Otwiera się w przeglądarce",
+    "practice": "Trening",
+    "chip": "Konto zawieszone",
+    "chipLabel": "Niedostępne: konto zawieszone",
+    "ranked": "Twoje konto jest zawieszone, więc na razie nie ma partii rankingowych.",
+    "editProfile": "Konto zawieszone: profilu nie można zmieniać"
+  }
+}

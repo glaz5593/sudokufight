@@ -1,0 +1,251 @@
+{
+  "fields": {
+    "email": "E-mail",
+    "emailPlaceholder": "nome@exemplo.com",
+    "password": "Senha",
+    "newPassword": "Senha",
+    "confirmPassword": "Confirmar senha",
+    "displayName": "Nome de exibição",
+    "displayNamePlaceholder": "Seu nome na arena",
+    "avatar": "Avatar",
+    "country": "País",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
+    "change": "Alterar"
+  },
+  "validation": {
+    "emailRequired": "Digite seu e-mail",
+    "emailInvalid": "Esse endereço de e-mail não parece certo",
+    "passwordRequired": "Digite sua senha",
+    "passwordRules": "A senha precisa ter pelo menos 8 caracteres",
+    "confirmMismatch": "As senhas não coincidem",
+    "countryRequired": "Escolha um país"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "Senha errada. Tente de novo ou redefina a senha.",
+      "userNotFound": "Não há conta com este e-mail. Quer se cadastrar?",
+      "invalidCredentials": "E-mail ou senha errados.",
+      "tooManyRequests": "Tentativas demais. Espere alguns minutos e tente de novo, ou redefina sua senha.",
+      "network": "Sem conexão com a internet. Confira e tente de novo.",
+      "emailInUse": "Este e-mail já tem uma conta. Entre com ele.",
+      "invalidEmail": "Esse endereço de e-mail não parece certo.",
+      "weakPassword": "Essa senha é fraca demais. Escolha uma mais longa.",
+      "requiresRecentLogin": "Entre de novo na sua conta para fazer isso.",
+      "userDisabled": "Esta conta foi desativada. Fale com o suporte.",
+      "noUser": "Sua sessão não está ativa. Entre de novo.",
+      "unknown": "Algo deu errado. Tente de novo.",
+      "cancelled": "O login com o Google foi cancelado.",
+      "inProgress": "O login com o Google já está aberto. Termine-o, ou feche e tente de novo.",
+      "playServices": "Entrar com o Google exige o Google Play Services. Atualize-o e tente de novo.",
+      "googleConfig": "O login com o Google não está disponível nesta versão do app agora (DEVELOPER_ERROR). Use seu e-mail e senha enquanto isso.",
+      "accountExistsWithPassword": "Este e-mail já tem uma conta com senha. Entre com seu e-mail e senha.",
+      "userMismatch": "Essa é outra conta do Google. Escolha a conta com que você entrou."
+    },
+    "api": {
+      "badRequest": "Essa solicitação não era válida. Tente de novo.",
+      "invalidName": "Esse nome viola as regras.",
+      "unauthorized": "Sua sessão com o servidor expirou. Entre de novo.",
+      "reauthRequired": "Para excluir a conta, é preciso entrar de novo. Digite sua senha outra vez e tente novamente.",
+      "suspended": "Sua conta está suspensa, então ela não pode ser alterada agora.",
+      "notRegistered": "Esta conta ainda não tem personagem. Vamos terminar o cadastro.",
+      "notFound": "O servidor não reconhece esta solicitação. Atualize o app.",
+      "alreadyRegistered": "Esta conta já tem um personagem.",
+      "taken": "Esse nome já está em uso. Escolha outro.",
+      "renameTooSoon": "Você só pode mudar seu nome uma vez a cada 30 dias.",
+      "tooLarge": "Essa solicitação é grande demais.",
+      "blocked": "Esse nome não combina com a arena. Escolha outro.",
+      "tooManyRequests": "Solicitações demais. Espere um pouco e tente de novo.",
+      "internal": "Erro no servidor. Tente de novo daqui a pouco.",
+      "disabled": "As contas estão desativadas neste servidor agora.",
+      "unavailable": "O servidor não está disponível agora. Tente de novo daqui a pouco.",
+      "network": "Não foi possível acessar o servidor. Confira sua internet e tente de novo.",
+      "timeout": "O servidor não respondeu a tempo. Tente de novo.",
+      "signedOut": "Sua sessão não está ativa. Entre de novo.",
+      "unexpected": "O servidor enviou uma resposta inesperada. Tente de novo ou atualize o app."
+    }
+  },
+  "splash": {
+    "tagline": "Um tabuleiro. Todos resolvem. Só um vence.",
+    "loading": "Carregando a arena…",
+    "tipLabel": "Dica",
+    "tips": {
+      "lock_one": "A célula que você escolhe fica travada só para você: {{seconds}} segundo numa partida no modo {{type}}.",
+      "lock_many": "A célula que você escolhe fica travada só para você: {{seconds}} de segundos numa partida no modo {{type}}.",
+      "lock_other": "A célula que você escolhe fica travada só para você: {{seconds}} segundos numa partida no modo {{type}}.",
+      "hard": "Uma jogada mais difícil vale mais pontos.",
+      "mistake": "Um erro custa exatamente os pontos que o número certo teria rendido. Melhor pensar um pouco mais.",
+      "interfere": "Mande uma interferência em dois toques: “Interferir” no cartão do adversário e depois a que você escolher."
+    },
+    "errorTitle": "Não conseguimos carregar seu personagem",
+    "retry": "Tentar de novo",
+    "signOut": "Sair"
+  },
+  "login": {
+    "title": "De volta à <accent>arena</accent>",
+    "titleLabel": "De volta à arena",
+    "subtitle": "Seu rating, sua sequência e seus rivais estão esperando.",
+    "forgot": "Esqueci a senha",
+    "submit": "Entrar",
+    "noAccount": "Ainda não tem conta?",
+    "register": "Cadastre-se",
+    "arenaSpot": "Seu lugar"
+  },
+  "google": {
+    "continue": "Continuar com o Google",
+    "orEmail": "ou com e-mail",
+    "orEmailPassword": "ou com e-mail e senha",
+    "existing": "Esta conta do Google já tem um personagem, {{name}}. Você entrou com ele.",
+    "passwordHint": "Cadastrou-se com o Google? Use “Continuar com o Google”.",
+    "emailInUseHint": "Se você se cadastrou com o Google, use “Continuar com o Google”.",
+    "termsTitle": "Termos e privacidade",
+    "termsBody": "Para continuar com o Google, aceite os termos de uso e a política de privacidade.",
+    "termsAccept": "Aceitar e continuar"
+  },
+  "forgot": {
+    "title": "Esqueci a senha",
+    "body": "Digite o e-mail do seu cadastro, e vamos enviar para ele um link para escolher uma nova senha.",
+    "submit": "Enviar link de redefinição",
+    "sentTitle": "Confira seu e-mail",
+    "sentBody": "Se {{email}} tiver uma conta, enviamos para ele um link para redefinir a senha. Não encontrou? Confira a pasta de spam.",
+    "backToLogin": "Voltar para o login"
+  },
+  "register": {
+    "step": "Etapa {{step}} de {{total}}",
+    "backToLogin": "Voltar para o login",
+    "backToFighter": "Voltar ao personagem"
+  },
+  "fighter": {
+    "title": "Crie seu <accent>personagem</accent>",
+    "titleLabel": "Crie seu personagem",
+    "resumeNote": "Sua conta está pronta. Só falta escolher seu personagem.",
+    "chooseAvatar": "Escolha um avatar",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}, abre no nível {{level}}",
+    "selectedAvatar": "Avatar selecionado: {{name}}",
+    "yourPick": "Sua escolha: {{name}}",
+    "previewTitle": "É assim que a arena vê você",
+    "previewLabel": "Prévia do seu cartão numa partida: {{name}}",
+    "previewNew": "Novo",
+    "continue": "Continuar",
+    "enterArena": "Entrar na arena",
+    "signOut": "Sair",
+    "googleNote": "Você entrou com o Google. Só falta escolher seu personagem."
+  },
+  "name": {
+    "rules": "3–16 caracteres: letras do hebraico ou do inglês (sem acento), números, sublinhado e ponto.",
+    "status": {
+      "checking": "Verificando…",
+      "available": "Disponível",
+      "taken": "Em uso",
+      "invalid": "Inválido",
+      "blocked": "Não permitido",
+      "error": "Não verificado",
+      "current": "Seu nome"
+    },
+    "problem": {
+      "invalidChars": "Não é possível usar: {{chars}}",
+      "tooShort": "Pelo menos 3 caracteres",
+      "tooLong": "No máximo 16 caracteres"
+    },
+    "charSpace": " ",
+    "takenHint": "Alguém já escolheu este nome. Tente outro.",
+    "blockedHint": "Esse nome não combina com a arena. Tente outro.",
+    "errorHint": "Não conseguimos verificar o nome. Vamos verificar de novo quando você salvar."
+  },
+  "country": {
+    "label": "País: {{country}}",
+    "choose": "Escolha um país",
+    "sheetTitle": "Escolha um país",
+    "search": "Buscar um país",
+    "searchPlaceholder": "Buscar",
+    "none": "Nenhum país encontrado",
+    "hint": "Detectado pelas configurações do seu celular. Você pode mudar quando quiser."
+  },
+  "account": {
+    "title": "Mais um passo até a <accent>arena</accent>",
+    "titleLabel": "Mais um passo até a arena",
+    "subtitle": "Seu e-mail e sua senha mantêm seu rating e seu progresso seguros.",
+    "fighterReady": "Personagem pronto",
+    "edit": "Editar",
+    "editLabel": "Editar seu personagem",
+    "submit": "Criar conta",
+    "profileFailed": "Sua conta foi criada, mas seu personagem ainda não foi salvo. Tente de novo.",
+    "nameTakenNow": "O nome {{name}} foi escolhido por outra pessoa enquanto isso. Escolha outro: sua conta está esperando."
+  },
+  "password": {
+    "rules": {
+      "length": "Pelo menos 8 caracteres"
+    },
+    "ruleMet": "{{rule}}: cumprido",
+    "ruleMissing": "{{rule}}: falta",
+    "strengthLabel": "Força da senha",
+    "strength": {
+      "weak": "Senha fraca",
+      "fair": "Senha razoável",
+      "good": "Senha boa",
+      "strong": "Senha forte"
+    },
+    "match": "Coincidem",
+    "mismatch": "Não coincidem"
+  },
+  "terms": {
+    "accept": "Aceito os termos de uso e a política de privacidade",
+    "termsLink": "Termos de uso",
+    "privacyLink": "Política de privacidade",
+    "linkHint": "Abre no navegador",
+    "required": "Para entrar na arena, aceite os termos"
+  },
+  "verify": {
+    "bannerTitle": "Seu e-mail ainda não foi verificado",
+    "bannerAction": "Verificar",
+    "bannerLabel": "Seu e-mail ainda não foi verificado. Verificar seu e-mail",
+    "title": "Verifique seu e-mail",
+    "body": "Enviamos um link de verificação para {{email}}. Abra-o e depois volte aqui.",
+    "why": "O treino funciona sem isso. As partidas ranqueadas vão exigir um e-mail verificado.",
+    "resend": "Enviar de novo",
+    "sent": "Enviamos um novo link",
+    "check": "Já verifiquei",
+    "notYet": "Ainda não verificado. Você abriu o link?",
+    "done": "E-mail verificado. Tudo certo!",
+    "devNote": "O modo de desenvolvimento não envia e-mail: “Já verifiquei” marca o e-mail como verificado."
+  },
+  "edit": {
+    "title": "Editar perfil",
+    "save": "Salvar",
+    "saved": "Perfil salvo",
+    "nameRule": "Você pode mudar seu nome uma vez a cada 30 dias.",
+    "nameLocked": "Você pode mudar seu nome uma vez a cada 30 dias. Próxima mudança: {{date}}.",
+    "offline": "Sem acesso ao servidor. Você pode editar quando estiver on-line de novo."
+  },
+  "home": {
+    "provisional": "Rating provisório: suas 10 primeiras partidas"
+  },
+  "settings": {
+    "section": "Conta",
+    "signedInAs": "Você entrou como {{email}}",
+    "editProfile": "Editar perfil",
+    "signOut": "Sair",
+    "signOutTitle": "Sair da conta?",
+    "signOutBody": "Os treinos neste celular continuam aqui. Você vai precisar entrar de novo para jogar.",
+    "deleteAccount": "Excluir conta",
+    "deleteTitle": "Excluir sua conta?",
+    "deleteBody": "Seu e-mail, seu personagem e seu nome serão excluídos, e isso não pode ser desfeito. As partidas e os ratings ficam, sem ligação com você, para que as partidas dos outros jogadores continuem inteiras. Seu nome fica livre para outros jogadores.",
+    "deleteContinue": "Continuar",
+    "deletePasswordTitle": "Confirme com sua senha",
+    "deletePasswordBody": "Para excluir a conta, digite a senha de {{email}}.",
+    "deleteSubmit": "Excluir minha conta para sempre",
+    "deleted": "Sua conta foi excluída",
+    "deletedPartly": "Sua conta foi excluída. Não conseguimos excluir seus dados de login: entrar com eles inicia um novo cadastro.",
+    "method": {
+      "password": "Entra com e-mail e senha",
+      "google": "Entra com o Google",
+      "both": "Entra com o Google, ou com e-mail e senha"
+    },
+    "deleteGoogleTitle": "Confirme com o Google",
+    "deleteGoogleBody": "Para excluir a conta, escolha de novo a conta do Google {{email}}.",
+    "deleteGoogleSubmit": "Confirmar com o Google e excluir",
+    "deleteGoogleAgain": "Excluir a conta exige uma nova confirmação. Tente de novo e escolha sua conta do Google.",
+    "deleteWithPassword": "Confirmar com a senha, em vez disso"
+  }
+}

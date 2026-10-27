@@ -1,10 +1,12 @@
 import type { AppLevel, GameView, LevelPuzzleView } from '@sudoku-fight/engine';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { Icon } from '../../../components/Icon';
 import { StarsBar } from '../../../components/levels/StarsBar';
 import { secondsOf, signedText } from '../../../components/player/format';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator } from '../../../i18n/compose';
 import { color, radius, size, space, text } from '../../../theme';
 import type { LevelsT } from '../levelWording';
 import { clockText } from './BoxHud';
@@ -57,6 +59,7 @@ export function PuzzleHud({ level, view, now, penalty = null, onExit, style }: P
         style={styles.clock}
         accessibilityRole="timer"
         accessibilityLabel={t('hud.box.timeLabel', {
+          count: secondsOf(elapsed),
           s: secondsOf(elapsed),
           limit: secondsOf(lv?.limitMs ?? 0),
         })}
@@ -89,7 +92,10 @@ export function PuzzleHud({ level, view, now, penalty = null, onExit, style }: P
             accessibilityLabel={t('hud.puzzle.wrongLabel', { count: mistakes, s: penaltySeconds })}
             testID="puzzle-mistakes"
           >
-            {t('hud.puzzle.wrong', { count: mistakes, penalty: signedText(penaltySeconds) })}
+            {t('hud.puzzle.wrong', {
+              count: mistakes,
+              penalty: signedText(penaltySeconds, decimalSeparator(t)),
+            })}
           </Text>
         ) : null}
       </View>

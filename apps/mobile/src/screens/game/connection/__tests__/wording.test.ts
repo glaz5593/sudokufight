@@ -1,6 +1,9 @@
 import i18n from '../../../../i18n';
 import { about, MARK, myNameOf, nameOf, sentences, spellCode, splitMarked } from '../wording';
 
+// Both languages' strings, whatever language the tests start in (a language loads when it is first used).
+beforeAll(() => i18n.loadLanguages(['he', 'en']));
+
 const t = i18n.getFixedT('he', 'game');
 const tEn = i18n.getFixedT('en', 'game');
 

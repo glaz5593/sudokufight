@@ -1,0 +1,92 @@
+{
+  "title": "Replay da partida",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Treino solo",
+    "bot": "Treino contra robô",
+    "ranked": "Ranqueada"
+  },
+  "back": "Voltar",
+  "loading": "Carregando a partida…",
+  "load": {
+    "missing": "Não encontramos esta partida",
+    "notFinished": "A partida ainda está sendo salva no servidor. Tente de novo daqui a pouco",
+    "offline": "Sem conexão com o servidor. As partidas ranqueadas carregam do servidor",
+    "signedOut": "Entre na sua conta para assistir a uma partida ranqueada",
+    "unavailable": "Não conseguimos ler esta partida",
+    "retry": "Tentar de novo",
+    "partial": "Esta partida foi interrompida: o replay vai até a última jogada salva"
+  },
+  "step": {
+    "counter": "Passo {{number}} de {{total}}",
+    "clockLabel": "Relógio da partida: {{clock}}"
+  },
+  "nav": {
+    "prev": "Passo anterior",
+    "next": "Próximo passo",
+    "timeline": "Linha do tempo dos passos",
+    "timelineValue": "Passo {{number}} de {{total}}, {{clock}}",
+    "timelineHint": "Deslize para cima ou para baixo para mudar de passo"
+  },
+  "narration": {
+    "start": "A partida começa",
+    "select": "{{name}} · escolhe {{cell}}",
+    "correct": "{{name}} · acerta em {{cell}} · {{delta}}",
+    "wrong": "{{name}} · erra em {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · solta {{cell}}",
+      "timeout": "{{name}} · o tempo acabou em {{cell}}"
+    },
+    "interference": "{{name}} · interfere em {{target}} · {{delta}}",
+    "disconnect": "{{name}} · perdeu a conexão",
+    "reconnect": "{{name}} · voltou para a partida",
+    "offline": "{{name}} · conexão perdida",
+    "surrender": "{{name}} · desistiu",
+    "endPractice": "{{name}} · encerrou o treino",
+    "abandon": "{{name}} · saiu da partida",
+    "over": "A partida acabou",
+    "paused": "A partida está congelada",
+    "offlineSuffix": "jogada enviada quando a conexão voltou"
+  },
+  "explain": {
+    "title": "Uma explicação para cada jogador",
+    "none": "Nenhuma jogada de {{name}} ainda",
+    "noneMe": "Nenhuma jogada minha ainda",
+    "noneBody": "A explicação aparece depois da primeira jogada",
+    "status": {
+      "choosing": "Escolhendo",
+      "released": "Soltou",
+      "correct": "Certo",
+      "wrong": "Errado"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} em vez de {{answer}}",
+    "why": "Por que o {{digit}} não cabe: {{text}}",
+    "noLogic": "A resposta: {{cell}} → {{digit}}",
+    "scoreLine": "A pontuação",
+    "penaltyLine": "A penalidade: o que o número certo valia",
+    "released": {
+      "cancel": "Escolha cancelada",
+      "timeout": "O tempo acabou",
+      "switch": "Mudou para outra célula",
+      "mistake": "Depois de um erro",
+      "surrender": "Saiu da partida",
+      "disconnect": "Perdeu a conexão",
+      "abandon": "Abandonou"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "Momentos-chave",
+    "bestMove": "Melhor jogada",
+    "mistakes": "Erros · {{count}}",
+    "interferences": "Interferências · {{count}}",
+    "turningPoint": "Ponto de virada",
+    "hint": "Pula para esse passo"
+  },
+  "board": "O tabuleiro no passo {{number}}",
+  "me": "Eu",
+  "unknown": "Jogador"
+}

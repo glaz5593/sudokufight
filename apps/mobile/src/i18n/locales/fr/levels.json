@@ -1,0 +1,740 @@
+{
+  "title": "Entraînement par étapes",
+  "stage": "Étape {{n}}",
+  "chapter": "Chapitre {{n}}",
+  "units": {
+    "seconds": "s"
+  },
+  "stars": {
+    "of3": {
+      "0": "aucune étoile",
+      "1": "une étoile sur trois",
+      "2": "deux étoiles sur trois",
+      "3": "trois étoiles sur trois"
+    },
+    "count_one": "{{count}} étoile",
+    "count_many": "{{count}} d’étoiles",
+    "count_other": "{{count}} étoiles"
+  },
+  "kinds": {
+    "find": {
+      "name": "Position exacte",
+      "label": "Position exacte"
+    },
+    "findDuel": {
+      "name": "Course contre le bot",
+      "label": "Course contre le bot"
+    },
+    "fillBox": {
+      "name": "Remplis le carré",
+      "label": "Remplis le carré"
+    },
+    "duel": {
+      "name": "Duel à {{target}}",
+      "label": "Duel à {{target}}"
+    },
+    "spotError": {
+      "name": "Trouve l’erreur",
+      "label": "Trouve l’erreur"
+    },
+    "pointHunter": {
+      "name": "Chasseur de points",
+      "label": "Chasseur de points"
+    },
+    "chain": {
+      "name": "Chaîne",
+      "label": "Chaîne"
+    },
+    "fillRow": {
+      "name": "Remplis la ligne",
+      "label": "Remplis la ligne"
+    },
+    "fillCol": {
+      "name": "Remplis la colonne",
+      "label": "Remplis la colonne"
+    },
+    "puzzle": {
+      "name": "Casse-tête",
+      "label": "Casse-tête"
+    }
+  },
+  "boss": {
+    "chip": "Boss",
+    "name": "Étape du boss",
+    "label": "boss, {{kind}}",
+    "versus": "Le boss : {{bot}}",
+    "band": "Boss · Chapitre {{chapter}}",
+    "botLabel": "{{name}}, le boss",
+    "intro": {
+      "title": "Étape du boss !",
+      "sub": "Étape {{n}} · {{kind}}",
+      "harder": "Ce qui est plus dur",
+      "label": "Étape du boss ! Étape {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "Ton premier bot : {{bot}}",
+      "faster": "{{bot}} est plus rapide de {{percent}}",
+      "overlord": "Overlord",
+      "moreCells_one": "{{cells}} case manquante au lieu de {{usual}}",
+      "moreCells_many": "{{cells}} de cases manquantes au lieu de {{usual}}",
+      "moreCells_other": "{{cells}} cases manquantes au lieu de {{usual}}"
+    },
+    "result": {
+      "won": "Tu as battu le boss !",
+      "lost": "Le boss a gagné cette fois",
+      "gateOpen": "Porte du chapitre {{n}} : {{stars}} · ouverte !",
+      "gateClosed": "Porte du chapitre {{n}} : {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Carré {{n}}",
+    "row": "Ligne {{row}}",
+    "col": "Colonne {{n}}",
+    "mapLabel": "Carte de la grille : {{region}}"
+  },
+  "goals": {
+    "find": "Trouve la position exacte d’un chiffre. L’étape se termine à {{s}} s.",
+    "findDuel_one": "{{spots}} cible contre {{bot}}, jusqu’à {{s}} s. Qui trouve une cible en premier la remporte.",
+    "findDuel_many": "{{spots}} de cibles contre {{bot}}, jusqu’à {{s}} s. Qui trouve une cible en premier la remporte.",
+    "findDuel_other": "{{spots}} cibles contre {{bot}}, jusqu’à {{s}} s. Qui trouve une cible en premier la remporte.",
+    "fillBox_one": "Remplis {{cells}} case manquante d’un carré, jusqu’à {{s}} s.",
+    "fillBox_many": "Remplis les {{cells}} de cases manquantes d’un carré, jusqu’à {{s}} s.",
+    "fillBox_other": "Remplis les {{cells}} cases manquantes d’un carré, jusqu’à {{s}} s.",
+    "fillRow_one": "Remplis {{cells}} case manquante d’une ligne, jusqu’à {{s}} s.",
+    "fillRow_many": "Remplis les {{cells}} de cases manquantes d’une ligne, jusqu’à {{s}} s.",
+    "fillRow_other": "Remplis les {{cells}} cases manquantes d’une ligne, jusqu’à {{s}} s.",
+    "fillCol_one": "Remplis {{cells}} case manquante d’une colonne, jusqu’à {{s}} s.",
+    "fillCol_many": "Remplis les {{cells}} de cases manquantes d’une colonne, jusqu’à {{s}} s.",
+    "fillCol_other": "Remplis les {{cells}} cases manquantes d’une colonne, jusqu’à {{s}} s.",
+    "puzzle": "Remets les carrés dans l’ordre. Un mauvais échange ajoute {{penalty}} s. Jusqu’à {{s}} s.",
+    "duel_one": "Contre {{bot}}, en {{target}} point ou {{s}} s. Étoiles selon ton avance.",
+    "duel_many": "Contre {{bot}}, en {{target}} de points ou {{s}} s. Étoiles selon ton avance.",
+    "duel_other": "Contre {{bot}}, en {{target}} points ou {{s}} s. Étoiles selon ton avance.",
+    "spotError_one": "{{count}} chiffre faux se cache parmi les tiens. Jusqu’à {{s}} s.",
+    "spotError_many": "{{count}} de chiffres faux se cachent parmi les tiens. Jusqu’à {{s}} s.",
+    "spotError_other": "{{count}} chiffres faux se cachent parmi les tiens. Jusqu’à {{s}} s.",
+    "pointHunter_one": "{{moves}} coup, jusqu’à {{s}} s. Marque le plus de points possible.",
+    "pointHunter_many": "{{moves}} de coups, jusqu’à {{s}} s. Marque le plus de points possible.",
+    "pointHunter_other": "{{moves}} coups, jusqu’à {{s}} s. Marque le plus de points possible.",
+    "chain_one": "Une chaîne de {{steps}} maillon, jusqu’à {{s}} s. Une seule case peut être résolue à la fois.",
+    "chain_many": "Une chaîne de {{steps}} de maillons, jusqu’à {{s}} s. Une seule case peut être résolue à la fois.",
+    "chain_other": "Une chaîne de {{steps}} maillons, jusqu’à {{s}} s. Une seule case peut être résolue à la fois."
+  },
+  "scale": {
+    "label": "Étoiles à gagner",
+    "row": "{{stars}} : {{text}}",
+    "time": "jusqu’à {{s}} s",
+    "spots_one": "{{count}} cible",
+    "spots_many": "{{count}} de cibles",
+    "spots_other": "{{count}} cibles",
+    "spotsRange_one": "{{range}} cible",
+    "spotsRange_many": "{{range}} de cibles",
+    "spotsRange_other": "{{range}} cibles",
+    "gap": "avance de {{gap}}+",
+    "lead": "en tête à la fin",
+    "points": "{{points}}+ points",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "La carte des étapes",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_one": "{{stars}} étoile sur {{max}}, aller à un chapitre",
+    "totalLabel_many": "{{stars}} d’étoiles sur {{max}}, aller à un chapitre",
+    "totalLabel_other": "{{stars}} étoiles sur {{max}}, aller à un chapitre",
+    "lockedToast": "Joue d’abord l’étape {{n}}",
+    "gateToast_one": "Chapitre {{chapter}} : {{need}} étoile requise au chapitre {{prev}}",
+    "gateToast_many": "Chapitre {{chapter}} : {{need}} d’étoiles requises au chapitre {{prev}}",
+    "gateToast_other": "Chapitre {{chapter}} : {{need}} étoiles requises au chapitre {{prev}}",
+    "loading": "Chargement de la carte…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_one": "{{stars}} étoile sur {{max}}",
+    "label_many": "{{stars}} d’étoiles sur {{max}}",
+    "label_other": "{{stars}} étoiles sur {{max}}"
+  },
+  "node": {
+    "played": "Étape {{n}}, {{kind}}, {{stars}}",
+    "current": "Étape {{n}}, {{kind}}, la prochaine",
+    "open": "Étape {{n}}, {{kind}}, pas encore jouée",
+    "locked": "Étape {{n}}, verrouillée"
+  },
+  "gate": {
+    "need_one": "S’ouvre à {{need}} étoile",
+    "need_many": "S’ouvre à {{need}} d’étoiles",
+    "need_other": "S’ouvre à {{need}} étoiles",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Joue l’étape du boss pour l’ouvrir",
+    "open": "Chapitre {{n}} ouvert",
+    "lockedLabel_one": "Chapitre {{n}} verrouillé, {{stars}} sur {{need}} étoile dans le chapitre {{prev}}",
+    "lockedLabel_many": "Chapitre {{n}} verrouillé, {{stars}} sur {{need}} d’étoiles dans le chapitre {{prev}}",
+    "lockedLabel_other": "Chapitre {{n}} verrouillé, {{stars}} sur {{need}} étoiles dans le chapitre {{prev}}",
+    "bossLabel_one": "Chapitre {{n}} verrouillé, {{stars}} sur {{need}} étoile dans le chapitre {{prev}}. Joue l’étape du boss pour l’ouvrir",
+    "bossLabel_many": "Chapitre {{n}} verrouillé, {{stars}} sur {{need}} d’étoiles dans le chapitre {{prev}}. Joue l’étape du boss pour l’ouvrir",
+    "bossLabel_other": "Chapitre {{n}} verrouillé, {{stars}} sur {{need}} étoiles dans le chapitre {{prev}}. Joue l’étape du boss pour l’ouvrir",
+    "openLabel_one": "Chapitre {{n}} ouvert, grâce à {{need}} étoile du chapitre {{prev}}",
+    "openLabel_many": "Chapitre {{n}} ouvert, grâce à {{need}} d’étoiles du chapitre {{prev}}",
+    "openLabel_other": "Chapitre {{n}} ouvert, grâce à {{need}} étoiles du chapitre {{prev}}"
+  },
+  "jump": {
+    "title": "Aller à un chapitre",
+    "row": "Chapitre {{n}} · {{name}}",
+    "rowLabel_one": "Chapitre {{n}}, {{name}}, {{stars}} étoile sur {{max}}, {{state}}",
+    "rowLabel_many": "Chapitre {{n}}, {{name}}, {{stars}} d’étoiles sur {{max}}, {{state}}",
+    "rowLabel_other": "Chapitre {{n}}, {{name}}, {{stars}} étoiles sur {{max}}, {{state}}",
+    "open": "ouvert",
+    "locked": "verrouillé"
+  },
+  "gateSheet": {
+    "title": "Chapitre {{n}} verrouillé",
+    "missing_one": "Il te faut {{need}} étoile dans le chapitre {{prev}}. Tu en as {{stars}}, encore {{missing}}.",
+    "missing_many": "Il te faut {{need}} d’étoiles dans le chapitre {{prev}}. Tu en as {{stars}}, encore {{missing}}.",
+    "missing_other": "Il te faut {{need}} étoiles dans le chapitre {{prev}}. Tu en as {{stars}}, encore {{missing}}.",
+    "bossOnly": "Tu as assez d’étoiles. Joue l’étape {{boss}} (le boss) pour l’ouvrir",
+    "progress": "Étoiles du chapitre {{prev}} pour la porte : {{stars}} sur {{need}}",
+    "rowsTitle": "Étapes à améliorer",
+    "rowsNote_one": "Jusqu’à {{count}} étoile de plus",
+    "rowsNote_many": "Jusqu’à {{count}} d’étoiles de plus",
+    "rowsNote_other": "Jusqu’à {{count}} étoiles de plus",
+    "row": "Étape {{n}} · {{kind}}",
+    "rowLabel": "Rejouer l’étape {{n}}, {{kind}}, {{stars}}",
+    "rowNewLabel": "Jouer l’étape {{n}}, {{kind}}, pas encore jouée",
+    "rowPlay": "Jouer",
+    "primary": "Jouer l’étape {{n}}",
+    "footnote": "La plupart des étapes durent jusqu’à 30 s ; les étapes de remplissage et de casse-tête, jusqu’à 60. Tes meilleures étoiles sont conservées."
+  },
+  "panel": {
+    "label": "L’étape choisie",
+    "title": "Étape {{n}} · {{kind}}",
+    "sub": "Chapitre {{chapter}} · {{name}}",
+    "subBot": "Chapitre {{chapter}} · contre {{bot}}",
+    "subBoss": "Chapitre {{chapter}} · le boss : {{bot}}",
+    "next": "À suivre",
+    "best": "Record : {{metric}}",
+    "bestLabel": "Ton record : {{stars}}, {{metric}}",
+    "bestStars": "Ton record : {{stars}}",
+    "bot": "{{name}} · Niveau {{level}} · {{title}}",
+    "continue": "Continuer · étape {{n}}",
+    "play": "Jouer",
+    "lockedTitle": "Étape {{n}} · verrouillée",
+    "lockedSub": "Chapitre {{chapter}} · {{kind}}",
+    "lockedPrev": "Joue d’abord l’étape {{n}}.",
+    "lockedGate_one": "Le chapitre {{chapter}} est verrouillé : il faut {{need}} étoile dans le chapitre {{prev}}. Tu en as {{stars}}.",
+    "lockedGate_many": "Le chapitre {{chapter}} est verrouillé : il faut {{need}} d’étoiles dans le chapitre {{prev}}. Tu en as {{stars}}.",
+    "lockedGate_other": "Le chapitre {{chapter}} est verrouillé : il faut {{need}} étoiles dans le chapitre {{prev}}. Tu en as {{stars}}.",
+    "gateTitleOpen": "Chapitre {{n}} ouvert",
+    "gateTitleClosed": "Chapitre {{n}} verrouillé",
+    "gateSub": "{{name}} · étapes {{range}}",
+    "gateOpenBody_one": "Ouvert : tu as gagné {{stars}} étoile dans le chapitre {{prev}}, et la porte en demande {{need}}.",
+    "gateOpenBody_many": "Ouvert : tu as gagné {{stars}} d’étoiles dans le chapitre {{prev}}, et la porte en demande {{need}}.",
+    "gateOpenBody_other": "Ouvert : tu as gagné {{stars}} étoiles dans le chapitre {{prev}}, et la porte en demande {{need}}.",
+    "gateBar": "Étoiles pour la porte : {{stars}} sur {{need}}"
+  },
+  "ready": {
+    "title": "Tout est prêt ?",
+    "label": "Tout est prêt ? Étape {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "Où est le {{digit}} ?",
+    "raceSpots_one": "{{count}} cible, une course contre {{bot}}",
+    "raceSpots_many": "{{count}} de cibles, une course contre {{bot}}",
+    "raceSpots_other": "{{count}} cibles, une course contre {{bot}}"
+  },
+  "tutorial": {
+    "title": "Comment jouer",
+    "got": "Compris",
+    "skip": "Passer",
+    "panel": "Image {{n}} sur {{total}} : {{text}}",
+    "alsoBoss": "C’est aussi un boss : la dixième étape de chaque chapitre.",
+    "find": {
+      "1": "Une question, comme « Où est le {{digit}} ? », et une zone marquée sur la grille : un carré, une ligne, une colonne ou toute la grille.",
+      "2": "Trouve la seule case où le chiffre doit aller, et touche-la.",
+      "3": "Une mauvaise touche ajoute 5 secondes. Deux mettent fin à l’étape."
+    },
+    "findDuel": {
+      "1": "Cinq cibles, l’une après l’autre. Le bot cherche en même temps que toi.",
+      "2": "Qui touche la bonne case en premier remporte la cible.",
+      "3": "Une mauvaise touche : 3 secondes sans pouvoir toucher, pendant que le bot continue de chercher."
+    },
+    "fillBox": {
+      "1": "Un carré avec des cases manquantes, dans un cadre doré.",
+      "2": "Choisis une case du carré et tape un chiffre. Les cases en dehors ne peuvent pas être choisies.",
+      "3": "Un mauvais chiffre ajoute 5 secondes. Plus tu finis vite, plus tu gagnes d’étoiles."
+    },
+    "duel": {
+      "1": "Toi et le bot sur la même grille, comme dans une partie.",
+      "2": "Le premier à 30 points gagne, sinon celui qui mène après 30 secondes.",
+      "3": "Étoiles selon ton avance à la fin : 8 points pour deux étoiles, 15 pour trois."
+    },
+    "spotError": {
+      "1": "Les chiffres foncés sont ceux de la grille, et ils sont toujours justes.",
+      "2": "Des chiffres faux se cachent parmi les tiens. Touche-les.",
+      "3": "Toucher un chiffre juste ajoute 5 secondes."
+    },
+    "pointHunter": {
+      "1": "Tu n’as que trois coups.",
+      "2": "Une case dans une zone vide rapporte plus de points.",
+      "3": "Étoiles selon ta proximité avec le meilleur score possible de la grille."
+    },
+    "chain": {
+      "1": "À tout moment, une seule case de la grille peut être résolue.",
+      "2": "Remplis-la, et elle ouvre la suivante.",
+      "3": "Un chiffre dans une case qu’on ne peut pas encore déduire coûte 5 secondes, et n’est pas placé."
+    },
+    "boss": {
+      "1": "La dixième étape de chaque chapitre est un boss : un combat contre un bot, plus dur que les étapes précédentes.",
+      "2": "Avant le début, tu vois ce qui est plus dur. En général : le bot est plus rapide.",
+      "3": "Une fois le boss joué et 20 étoiles gagnées dans le chapitre, le chapitre suivant s’ouvre."
+    },
+    "fillRow": {
+      "1": "Une ligne avec des cases manquantes, dans un cadre doré.",
+      "2": "Choisis une case de la ligne et tape un chiffre. Les cases en dehors ne peuvent pas être choisies.",
+      "3": "Un mauvais chiffre ajoute 5 secondes. Plus tu finis vite, plus tu gagnes d’étoiles."
+    },
+    "fillCol": {
+      "1": "Une colonne avec des cases manquantes, dans un cadre doré.",
+      "2": "Choisis une case de la colonne et tape un chiffre. Les cases en dehors ne peuvent pas être choisies.",
+      "3": "Un mauvais chiffre ajoute 5 secondes. Plus tu finis vite, plus tu gagnes d’étoiles."
+    },
+    "puzzle": {
+      "1": "Neuf carrés complets, dans le désordre.",
+      "2": "Fais glisser un carré sur un autre pour les échanger. Un carré avec un cadenas est fixe. Un échange qui ne met aucun des deux carrés à sa place ajoute 5 secondes.",
+      "3": "Quand chaque ligne et chaque colonne est juste, l’étape se termine. Plus tu finis vite, plus tu gagnes d’étoiles."
+    }
+  },
+  "result": {
+    "completed": "Étape {{n}} terminée",
+    "ended": "Étape {{n}}",
+    "reasons": {
+      "timeUp": "Temps écoulé",
+      "failed": "Deux erreurs",
+      "quit": "Tu as quitté l’étape",
+      "botWon": "{{bot}} a été plus rapide"
+    },
+    "metric": {
+      "spotsOf_one": "sur {{total}} cible",
+      "spotsOf_many": "sur {{total}} de cibles",
+      "spotsOf_other": "sur {{total}} cibles",
+      "gap": "Avance",
+      "points": "points",
+      "found": "Trouvées",
+      "foundOf": "sur {{total}}"
+    },
+    "newBest": "Nouveau record !",
+    "yourBest": "Ton record :",
+    "yourBestLabel": "Ton record : {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, une estimation : le serveur la confirme",
+    "chapterLabel": "Ce chapitre",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "la porte en demande {{need}}",
+    "chapterOpen": "la porte est ouverte",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_one": "Ce chapitre : {{stars}} étoile sur {{max}}. {{gate}}",
+    "chapterLine_many": "Ce chapitre : {{stars}} d’étoiles sur {{max}}. {{gate}}",
+    "chapterLine_other": "Ce chapitre : {{stars}} étoiles sur {{max}}. {{gate}}",
+    "mistakes_one": "{{count}} erreur",
+    "mistakes_many": "{{count}} d’erreurs",
+    "mistakes_other": "{{count}} erreurs",
+    "noMistakes": "Aucune erreur",
+    "swaps_one": "{{count}} échange · le minimum : {{min}}",
+    "swaps_many": "{{count}} d’échanges · le minimum : {{min}}",
+    "swaps_other": "{{count}} échanges · le minimum : {{min}}",
+    "time": "Temps : {{s}} s",
+    "youWon": "Tu as gagné",
+    "botWon": "{{bot}} a gagné",
+    "tie": "Match nul",
+    "bossTie": "Match nul : le boss tient bon",
+    "opponentLabel": "{{bot}} : {{value}}. {{verdict}}",
+    "opponentSpots_one": "{{count}} cible",
+    "opponentSpots_many": "{{count}} de cibles",
+    "opponentSpots_other": "{{count}} cibles",
+    "opponentScore_one": "{{score}} point",
+    "opponentScore_many": "{{score}} de points",
+    "opponentScore_other": "{{score}} points",
+    "bestMove_one": "Le meilleur coup : {{digit}} en {{cell}} · {{points}} point",
+    "bestMove_many": "Le meilleur coup : {{digit}} en {{cell}} · {{points}} de points",
+    "bestMove_other": "Le meilleur coup : {{digit}} en {{cell}} · {{points}} points",
+    "why": "Pourquoi ?",
+    "next": "Étape suivante",
+    "again": "Rejouer",
+    "toMap": "Vers la carte",
+    "last": "C’était la dernière étape. Bravo !",
+    "nextLocked": "L’étape suivante est encore verrouillée"
+  },
+  "unlocked": {
+    "heading": "Un nouveau chapitre est ouvert !",
+    "title": "Chapitre {{n}} · {{name}}",
+    "news": "Nouveautés : {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Continuer",
+    "label": "Un nouveau chapitre est ouvert : chapitre {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip : « Je débute, mais je suis plus rapide que j’en ai l’air. »",
+      "2": "Biscuit : « Je suis détendu, mais je ne te lâcherai pas. »",
+      "3": "Mr. Hoot : « Je vois chaque case. Prudence. »",
+      "4": "Maestro : « Rapide, précis, et avec style. »",
+      "5": "Overlord : « Tu as fait du chemin. C’est ici que tout s’arrête. »"
+    }
+  },
+  "exit": {
+    "button": "Quitter l’étape",
+    "title": "Quitter l’étape ?",
+    "body": "Tu auras 0 étoile, et l’étape suivante s’ouvrira.",
+    "confirm": "Quitter",
+    "cancel": "Continuer à jouer"
+  },
+  "card": {
+    "line": "Étapes : {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_one": "Étapes : {{played}}, {{count}} étoile",
+    "label_many": "Étapes : {{played}}, {{count}} d’étoiles",
+    "label_other": "Étapes : {{played}}, {{count}} étoiles"
+  },
+  "chapters": {
+    "1": {
+      "name": "Premiers pas",
+      "news": "Position exacte, remplis le carré, le casse-tête et remplis la ligne"
+    },
+    "2": {
+      "name": "Le défi de Pip",
+      "news": "Remplis la colonne, et la course contre le bot"
+    },
+    "3": {
+      "name": "Premier duel",
+      "news": "Duel en 30, et trouve l’erreur"
+    },
+    "4": {
+      "name": "Détective",
+      "news": "Une chaîne de 3 maillons, et un casse-tête avec 4 carrés mobiles"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "Un nouveau bot : Biscuit, le chasseur de points, et des remplissages où chaque chiffre manque au moins une fois"
+    },
+    "6": {
+      "name": "Lignes et colonnes",
+      "news": "Une grille moyenne, et des cibles dans une ligne ou une colonne"
+    },
+    "7": {
+      "name": "Chasseur de points",
+      "news": "Un casse-tête avec 5 carrés mobiles"
+    },
+    "8": {
+      "name": "Deux erreurs",
+      "news": "Deux erreurs sur la grille, et un duel sur une grille moyenne"
+    },
+    "9": {
+      "name": "Chaîne",
+      "news": "Tous les types à nouveau, un cran plus dur"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "Un nouveau bot : Mr. Hoot, et 7 cases manquantes dans les remplissages"
+    },
+    "11": {
+      "name": "Toute la grille",
+      "news": "Des cibles partout sur la grille"
+    },
+    "12": {
+      "name": "Plus vite",
+      "news": "Chasseur de points en 25 secondes, sur une grille moyenne"
+    },
+    "13": {
+      "name": "Erreurs silencieuses",
+      "news": "Des erreurs sans conflit visible"
+    },
+    "14": {
+      "name": "Longue chaîne",
+      "news": "Une chaîne de 4 maillons, et 9 cases manquantes dans les remplissages"
+    },
+    "15": {
+      "name": "Mi-parcours",
+      "news": "Tous les types à nouveau"
+    },
+    "16": {
+      "name": "Grilles difficiles",
+      "news": "Une grille difficile, et un casse-tête avec 6 carrés mobiles"
+    },
+    "17": {
+      "name": "Éliminations",
+      "news": "Des cibles qui n’apparaissent qu’après une élimination"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "Un nouveau bot : Maestro"
+    },
+    "19": {
+      "name": "Pièges",
+      "news": "Trois erreurs sur la grille"
+    },
+    "20": {
+      "name": "La porte difficile",
+      "news": "Un carré vide qui demande une élimination"
+    },
+    "21": {
+      "name": "Paires",
+      "news": "Des paires, et le chasseur de points en 20 secondes"
+    },
+    "22": {
+      "name": "Chaîne de 5",
+      "news": "Une chaîne de 5 maillons"
+    },
+    "23": {
+      "name": "Presque sans indices",
+      "news": "Des grilles avec très peu de chiffres"
+    },
+    "24": {
+      "name": "Course",
+      "news": "Duels sur grilles difficiles"
+    },
+    "25": {
+      "name": "Les experts",
+      "news": "Tout à nouveau, à un rythme rapide"
+    },
+    "26": {
+      "name": "Championnat",
+      "news": "Trois étoiles seulement pour les plus rapides"
+    },
+    "27": {
+      "name": "Championnat II",
+      "news": "Chasseur de points : trois étoiles seulement près du meilleur score"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "Le boss : Overlord, dans une course"
+    },
+    "29": {
+      "name": "La finale",
+      "news": "Une chaîne rapide, et Overlord en boss dans un duel"
+    },
+    "30": {
+      "name": "Le sacre",
+      "news": "Tout à la fois, au plus difficile"
+    }
+  },
+  "hud": {
+    "secondsAdded_one": "{{count}} seconde ajoutée",
+    "secondsAdded_many": "{{count}} de secondes ajoutées",
+    "secondsAdded_other": "{{count}} secondes ajoutées",
+    "sub": "{{kind}} · Chapitre {{chapter}}",
+    "subFind": "Où est le {{digit}} ? · Chapitre {{chapter}}",
+    "subRace_one": "{{kind}} · {{spots}} cible · Chapitre {{chapter}}",
+    "subRace_many": "{{kind}} · {{spots}} de cibles · Chapitre {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} cibles · Chapitre {{chapter}}",
+    "clockLabel_one": "{{s}} seconde restante sur {{limit}}",
+    "clockLabel_many": "{{s}} de secondes restantes sur {{limit}}",
+    "clockLabel_other": "{{s}} secondes restantes sur {{limit}}",
+    "penalty": "{{s}} s",
+    "me": "Moi",
+    "find": {
+      "tap": "Touche l’endroit où va le {{digit}}",
+      "where": "<scope>{{scope}}</scope> · pas de clavier, juste une touche",
+      "elapsed": "s écoulées",
+      "targetLabel": "La cible : le {{digit}} {{scope}}. {{left}}",
+      "ringLabel_one": "{{s}} seconde restante dans l’étape",
+      "ringLabel_many": "{{s}} de secondes restantes dans l’étape",
+      "ringLabel_other": "{{s}} secondes restantes dans l’étape",
+      "one": "Une seule recherche dans l’étape",
+      "wrongRule": "Mauvaise touche : {{penalty}} s",
+      "twoWrongRule": "Deux mauvaises touches : l’étape se termine",
+      "found": "Trouvé : le {{digit}} en {{cell}}",
+      "missed": "Pas en {{cell}}. {{penalty}} s",
+      "answer": "La réponse : {{cell}}"
+    },
+    "scope": {
+      "box": "dans le carré {{n}}",
+      "row": "dans la ligne {{row}}",
+      "col": "dans la colonne {{n}}",
+      "board": "n’importe où sur la grille"
+    },
+    "race": {
+      "task": "Cible {{n}} sur {{total}} · trouve le {{digit}} {{scope}}",
+      "left": "{{s}} s restantes",
+      "searching": "Recherche…",
+      "spots_one": "{{count}} cible",
+      "spots_many": "{{count}} de cibles",
+      "spots_other": "{{count}} cibles",
+      "frozen_one": "Pause forcée, {{count}} seconde",
+      "frozen_many": "Pause forcée, {{count}} de secondes",
+      "frozen_other": "Pause forcée, {{count}} secondes",
+      "out": "Hors course jusqu’à la prochaine cible",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, bot de niveau {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} cherche",
+      "mine": "Tu as remporté la cible {{n}}",
+      "theirs": "{{name}} a remporté la cible {{n}}",
+      "void": "Personne n’a remporté la cible {{n}}",
+      "next": "Cible {{n}} : le {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "Remplis le carré {{n}}",
+      "cells_one": "{{done}}/{{total}} case",
+      "cells_many": "{{done}}/{{total}} de cases",
+      "cells_other": "{{done}}/{{total}} cases",
+      "cellsLabel_one": "Tu as rempli {{done}} sur {{total}} case manquante",
+      "cellsLabel_many": "Tu as rempli {{done}} sur {{total}} de cases manquantes",
+      "cellsLabel_other": "Tu as rempli {{done}} sur {{total}} cases manquantes",
+      "mistakes_one": "{{count}} erreur {{penalty}} s",
+      "mistakes_many": "{{count}} d’erreurs {{penalty}} s",
+      "mistakes_other": "{{count}} erreurs {{penalty}} s",
+      "mistakesLabel_one": "{{count}} erreur, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_many": "{{count}} d’erreurs, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_other": "{{count}} erreurs, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "Une erreur ajoute 5 secondes, et le chiffre est exclu de cette case",
+      "timeLabel_one": "Temps : {{s}} seconde sur {{limit}}",
+      "timeLabel_many": "Temps : {{s}} de secondes sur {{limit}}",
+      "timeLabel_other": "Temps : {{s}} secondes sur {{limit}}",
+      "boardLabel_one": "La grille · remplis seulement {{count}} case manquante du carré {{n}}",
+      "boardLabel_many": "La grille · remplis seulement les {{count}} de cases manquantes du carré {{n}}",
+      "boardLabel_other": "La grille · remplis seulement les {{count}} cases manquantes du carré {{n}}"
+    },
+    "line": {
+      "taskRow": "Remplis la ligne {{row}}",
+      "taskCol": "Remplis la colonne {{n}}",
+      "boardLabelRow_one": "La grille · remplis seulement {{count}} case manquante de la ligne {{row}}",
+      "boardLabelRow_many": "La grille · remplis seulement les {{count}} de cases manquantes de la ligne {{row}}",
+      "boardLabelRow_other": "La grille · remplis seulement les {{count}} cases manquantes de la ligne {{row}}",
+      "boardLabelCol_one": "La grille · remplis seulement {{count}} case manquante de la colonne {{n}}",
+      "boardLabelCol_many": "La grille · remplis seulement les {{count}} de cases manquantes de la colonne {{n}}",
+      "boardLabelCol_other": "La grille · remplis seulement les {{count}} cases manquantes de la colonne {{n}}"
+    },
+    "puzzle": {
+      "task": "Remets les carrés dans l’ordre",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_one": "{{count}} carré mobile",
+      "moving_many": "{{count}} de carrés mobiles",
+      "moving_other": "{{count}} carrés mobiles",
+      "fixed_one": "{{count}} carré fixe",
+      "fixed_many": "{{count}} de carrés fixes",
+      "fixed_other": "{{count}} carrés fixes",
+      "allMove": "Tous les carrés bougent",
+      "swaps": "Échanges : {{count}}",
+      "wrong_one": "{{count}} mauvais échange {{penalty}} s",
+      "wrong_many": "{{count}} de mauvais échanges {{penalty}} s",
+      "wrong_other": "{{count}} mauvais échanges {{penalty}} s",
+      "wrongLabel_one": "{{count}} mauvais échange, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_many": "{{count}} de mauvais échanges, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_other": "{{count}} mauvais échanges, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "Fais glisser un carré sur un autre pour les échanger",
+      "tapHint": "Ou : touche un carré, puis un autre",
+      "slotLabel": "Carré {{n}}, {{state}} : {{rows}}",
+      "state": {
+        "movable": "mobile",
+        "fixed": "fixe",
+        "selected": "sélectionné"
+      },
+      "slotHint": "Touche pour choisir, puis touche un autre carré",
+      "swapped": "Carrés {{a}} et {{b}} échangés",
+      "swappedPenalty_one": "Carrés {{a}} et {{b}} échangés. {{s}} seconde de plus",
+      "swappedPenalty_many": "Carrés {{a}} et {{b}} échangés. {{s}} de secondes de plus",
+      "swappedPenalty_other": "Carrés {{a}} et {{b}} échangés. {{s}} secondes de plus",
+      "fixedTap": "Ce carré est fixe",
+      "solved": "Chaque ligne et chaque colonne est juste",
+      "boardLabel": "Le casse-tête · {{counts}}"
+    },
+    "duel": {
+      "gap": "Avance {{gap}}",
+      "gapLabel": "L’avance : {{gap}}. Une étoile si tu mènes à la fin, 2 étoiles à {{two}}, 3 étoiles à {{three}}",
+      "lead": "En tête",
+      "of": "/{{target}}",
+      "meLabel_one": "{{name}}, {{score}} sur {{target}} point",
+      "meLabel_many": "{{name}}, {{score}} sur {{target}} de points",
+      "meLabel_other": "{{name}}, {{score}} sur {{target}} points",
+      "botLabel_one": "{{name}}, bot de niveau {{n}}, {{score}} sur {{target}} point",
+      "botLabel_many": "{{name}}, bot de niveau {{n}}, {{score}} sur {{target}} de points",
+      "botLabel_other": "{{name}}, bot de niveau {{n}}, {{score}} sur {{target}} points",
+      "finishLabel": "L’étape se termine quand quelqu’un atteint $t(levels:hud.duel.reachPoints, {\"count\": {{target}} }), ou à $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })",
+      "reachPoints_one": "{{count}} point",
+      "reachPoints_many": "{{count}} de points",
+      "reachPoints_other": "{{count}} points",
+      "atSeconds_one": "{{count}} seconde",
+      "atSeconds_many": "{{count}} de secondes",
+      "atSeconds_other": "{{count}} secondes",
+      "raceLabel": "Course à {{target}} : {{me}}, {{bot}}"
+    },
+    "reactions": "Réactions",
+    "boardLabel": "La grille de l’étape · {{scope}}",
+    "spotError": {
+      "goal_one": "{{count}} chiffre faux se cache sur la grille. Touche-le.",
+      "goal_many": "{{count}} de chiffres faux se cachent sur la grille. Touche-les.",
+      "goal_other": "{{count}} chiffres faux se cachent sur la grille. Touche-les.",
+      "note": "Les chiffres foncés sont ceux de la grille, et ils sont toujours justes.",
+      "found": "Trouvées",
+      "foundLabel": "Trouvées : {{found}} sur {{total}}",
+      "time": "Temps",
+      "timeLabel_one": "Temps : {{s}} seconde sur {{limit}}",
+      "timeLabel_many": "Temps : {{s}} de secondes sur {{limit}}",
+      "timeLabel_other": "Temps : {{s}} secondes sur {{limit}}",
+      "tipTitle": "Astuce",
+      "tip": "Cherche un chiffre qui apparaît deux fois dans la même ligne, la même colonne ou le même carré.",
+      "tipClose": "Fermer l’astuce",
+      "foundCell": "Tu as trouvé une erreur en {{cell}} : pas {{wrong}} mais {{right}}",
+      "rightTap": "Le chiffre en {{cell}} est juste. {{penalty}} s",
+      "missed": "Erreurs non trouvées : {{cells}}",
+      "boardLabel": "La grille de l’étape · touche un chiffre faux"
+    },
+    "hunt": {
+      "goal": "Marque $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) en $t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }).",
+      "goalPoints_one": "{{points}} point",
+      "goalPoints_many": "{{points}} de points",
+      "goalPoints_other": "{{points}} points",
+      "goalMoves_one": "{{count}} coup",
+      "goalMoves_many": "{{count}} de coups",
+      "goalMoves_other": "{{count}} coups",
+      "note": "Une case dans une zone vide rapporte plus.",
+      "points": "points",
+      "scoreLabel_one": "{{score}} point",
+      "scoreLabel_many": "{{score}} de points",
+      "scoreLabel_other": "{{score}} points",
+      "scoreWorthLabel_one": "{{score}} point. La case choisie vaut {{worth}}",
+      "scoreWorthLabel_many": "{{score}} de points. La case choisie vaut {{worth}}",
+      "scoreWorthLabel_other": "{{score}} points. La case choisie vaut {{worth}}",
+      "lost": "Le mauvais chiffre a coûté {{points}}",
+      "move": "Coup {{n}} sur {{max}}",
+      "burnt": "Coup {{n}} perdu",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_one": "{{count}} coup perdu",
+      "burntCount_many": "{{count}} de coups perdus",
+      "burntCount_other": "{{count}} coups perdus",
+      "left": "restantes · sur {{limit}}",
+      "timeLabel_one": "{{s}} seconde restante sur {{limit}}",
+      "timeLabel_many": "{{s}} de secondes restantes sur {{limit}}",
+      "timeLabel_other": "{{s}} secondes restantes sur {{limit}}",
+      "max": "Le meilleur score de la grille : {{max}}",
+      "worth": "Vaut {{points}}"
+    },
+    "chain": {
+      "goal": "Une seule case de la grille peut être résolue à la fois. Trouve-la et remplis-la : elle ouvre la suivante.",
+      "notePenalty": "Un chiffre dans une case qu’on ne peut pas encore déduire : {{penalty}} s.",
+      "noteAccept": "Un mauvais chiffre : {{penalty}} s.",
+      "step": "Maillon {{n}} sur {{total}}",
+      "stepLabel": "Chaîne : maillon {{n}} sur {{total}}",
+      "time": "Temps",
+      "timeLabel_one": "Temps : {{s}} seconde sur {{limit}}",
+      "timeLabel_many": "Temps : {{s}} de secondes sur {{limit}}",
+      "timeLabel_other": "Temps : {{s}} secondes sur {{limit}}",
+      "notYet": "{{text}} · {{penalty}} s",
+      "tipTitle": "Astuce",
+      "tip": "À chaque maillon, exactement une case peut être prouvée. Si un chiffre est certain, c’est la bonne case.",
+      "tipClose": "Fermer l’astuce"
+    }
+  },
+  "explain": {
+    "spot": "Cible {{n}} : {{text}}",
+    "mistake": "Ton erreur : {{digit}} en {{cell}}. {{reason}}",
+    "best": "Ton meilleur coup, {{digit}} en {{cell}} : {{text}}",
+    "errorFound": "{{cell}}, trouvée : {{reason}}",
+    "errorMissed": "{{cell}}, non trouvée : {{reason}}",
+    "rightTap": "Le {{digit}} en {{cell}} est juste : le toucher a coûté {{penalty}} s.",
+    "points_one": "Tu as marqué {{points}} sur {{max}} point, soit {{percent}} du meilleur score de la grille.",
+    "points_many": "Tu as marqué {{points}} sur {{max}} de points, soit {{percent}} du meilleur score de la grille.",
+    "points_other": "Tu as marqué {{points}} sur {{max}} points, soit {{percent}} du meilleur score de la grille.",
+    "line": "La meilleure suite de coups : {{moves}}.",
+    "move": "{{digit}} en {{cell}} {{points}}",
+    "step": "Maillon {{n}} : {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "Seul le carré parti de la place {{from}} convient à la place {{place}} : tout autre répéterait un chiffre dans une ligne ou une colonne.",
+      "onlyPlaceForBox": "Le carré parti de la place {{from}} ne convient qu’à la place {{place}} : ailleurs, il répéterait un chiffre dans une ligne ou une colonne."
+    }
+  }
+}

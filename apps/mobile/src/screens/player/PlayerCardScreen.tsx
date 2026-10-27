@@ -1,7 +1,7 @@
 import type { MyProgress, PlayerCard, RecentResult } from '@sudoku-fight/protocol';
 import { Fragment, type ReactNode, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { isProgressApiError, isProgressOffline } from '../../api/progressApi';
@@ -17,6 +17,7 @@ import {
   SeatGlyph,
   signedText,
 } from '../../components/player';
+import { shownName } from '../../components/player/temporaryName';
 import {
   Button,
   IconButton,
@@ -26,6 +27,7 @@ import {
   StateView,
   supportCodeOf,
 } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { LEVEL_UI } from '../../config/levels';
 import type { LevelsSummary } from '../../levels/levelsRepo';
 import { color, radius, size, space, text, tokens } from '../../theme';
@@ -233,8 +235,9 @@ export function PlayerCardScreen({
       ? null
       : t('card.joinedSince', { date: monthYearText(card.joinedAt, i18n.language) });
   const favorite = card.favoriteInterference;
+  const name = shownName(card.displayName, t);
   const identityLabel = [
-    mine ? t('card.meLabel', { name: card.displayName }) : card.displayName,
+    mine ? t('card.meLabel', { name }) : name,
     country,
     joined,
     leagueWords,
@@ -266,7 +269,7 @@ export function PlayerCardScreen({
               <View style={styles.nameRow}>
                 {mine ? <SeatGlyph colorIndex={0} size={space[6]} /> : null}
                 <Text style={[text('h1'), mine ? styles.me : styles.strong, styles.shrink]} numberOfLines={1}>
-                  {card.displayName}
+                  {name}
                 </Text>
               </View>
               {card.country ? (
@@ -312,7 +315,7 @@ export function PlayerCardScreen({
 
         <SectionLabel
           title={t('card.ratingsTitle')}
-          note={t('card.ratingsNote', { n: card.ratings.length })}
+          note={t('card.ratingsNote', { count: card.ratings.length, n: card.ratings.length })}
         />
         {card.ratings.length === 0 ? (
           <Text style={[text('body'), styles.muted]}>{t('card.noRatings')}</Text>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -18,6 +18,7 @@ import { paletteAt } from '../../components/player/metrics';
 import { SeatGlyph } from '../../components/player/SeatGlyph';
 import { Icon } from '../../components/Icon';
 import { Button } from '../../components/ui/Button';
+import { Text } from '../../components/ui/Text';
 import { color, radius, space, text, tokens } from '../../theme';
 import { motion } from '../../theme/motion';
 import { Announcer } from '../game/connection/Announcer';

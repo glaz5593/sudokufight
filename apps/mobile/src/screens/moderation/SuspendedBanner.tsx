@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, type StyleProp, StyleSheet, Text, type ViewStyle } from 'react-native';
+import { Pressable, type StyleProp, StyleSheet, type ViewStyle } from 'react-native';
 
 import { isSuspended } from '../../api/me';
 import { useAuth } from '../../auth/authStore';
 import { Icon } from '../../components/Icon';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 
 /** The suspension's screen (app/account-suspended.tsx). */

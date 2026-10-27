@@ -1,10 +1,12 @@
 import { type AppLevel, fillRegionOf, type GameView } from '@sudoku-fight/engine';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { MiniRegion } from '../../../components/levels/MiniRegion';
 import { StarsBar } from '../../../components/levels/StarsBar';
 import { secondsOf, signedText } from '../../../components/player/format';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator } from '../../../i18n/compose';
 import { color, radius, space, text } from '../../../theme';
 import { fillTaskText } from '../levelWording';
 import { levelClock, StageHeader } from './FindHud';
@@ -49,6 +51,7 @@ export function BoxHud({ level, view, now, onExit, style }: BoxHudProps) {
       style={styles.clock}
       accessibilityRole="timer"
       accessibilityLabel={t('hud.box.timeLabel', {
+        count: secondsOf(elapsed),
         s: secondsOf(elapsed),
         limit: secondsOf(lv?.limitMs ?? 0),
       })}
@@ -69,10 +72,14 @@ export function BoxHud({ level, view, now, onExit, style }: BoxHudProps) {
         {progress ? (
           <Text
             style={styles.cells}
-            accessibilityLabel={t('hud.box.cellsLabel', { done: progress.done, total: progress.total })}
+            accessibilityLabel={t('hud.box.cellsLabel', {
+              count: progress.total,
+              done: progress.done,
+              total: progress.total,
+            })}
             testID="box-cells"
           >
-            {t('hud.box.cells', { done: progress.done, total: progress.total })}
+            {t('hud.box.cells', { count: progress.total, done: progress.done, total: progress.total })}
           </Text>
         ) : null}
         {mistakes > 0 ? (
@@ -81,7 +88,10 @@ export function BoxHud({ level, view, now, onExit, style }: BoxHudProps) {
             accessibilityLabel={t('hud.box.mistakesLabel', { count: mistakes, s: penaltySeconds })}
             testID="box-mistakes"
           >
-            {t('hud.box.mistakes', { count: mistakes, penalty: signedText(penaltySeconds) })}
+            {t('hud.box.mistakes', {
+              count: mistakes,
+              penalty: signedText(penaltySeconds, decimalSeparator(t)),
+            })}
           </Text>
         ) : null}
       </View>

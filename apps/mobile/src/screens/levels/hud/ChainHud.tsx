@@ -1,13 +1,7 @@
-import {
-  type AppLevel,
-  type CellIndex,
-  formatNotYet,
-  type GameView,
-  LEVEL_PENALTY_MS,
-} from '@sudoku-fight/engine';
+import { type AppLevel, type CellIndex, type GameView, LEVEL_PENALTY_MS } from '@sudoku-fight/engine';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 
 import { boardGeometry, cellRect } from '../../../components/board/geometry';
@@ -15,7 +9,10 @@ import { Icon } from '../../../components/Icon';
 import { StarsBar } from '../../../components/levels/StarsBar';
 import { secondsOf, signedText } from '../../../components/player/format';
 import { timing } from '../../../components/ui/motion';
+import { Text } from '../../../components/ui/Text';
 import { useToast } from '../../../components/ui/toastStore';
+import { decimalSeparator } from '../../../i18n/compose';
+import { formatNotYet } from '../../../i18n/explain';
 import { color, space, text, tokens } from '../../../theme';
 import { motion, useReduceMotion } from '../../../theme/motion';
 import { secondsText } from '../../home/homeModel';
@@ -37,7 +34,7 @@ import { FLASH_CHIP_SLOT, FlashPenaltyChip, kindTipShown, TipCard } from './Spot
  * A right digit off the chain [D64, waiting for Moshe]: with LEVEL_RULES.chainNotYet 'accept' (the original
  * §14, the default) the engine places it with its points, as in a game, and nothing more is said. With 'penalty' it costs
  * 5 s and is not placed: the cell flashes red (ChainOverlay, over the board), the "‎+5 ש׳" chip shows, and a
- * toast says "עוד אי אפשר לדעת מה נכנס ב־A9" (the engine's formatNotYet, the cell an LTR isolate). The game
+ * toast says "עוד אי אפשר לדעת מה נכנס ב־A9" (i18n/explain.ts formatNotYet, the cell an LTR isolate). The game
  * screen hears no event of it: the HUD reads it off two views (my time penalty grew, my mistakes did not), and
  * hands the flash to the overlay through the stage's store.
  *
@@ -111,7 +108,7 @@ export interface ChainHudProps {
 
 export function ChainHud({ level, view, now, notYet, tip, onExit, style }: ChainHudProps) {
   const { t, i18n } = useTranslation('levels');
-  const lang = i18n.language === 'en' ? 'en' : 'he';
+  const lang = i18n.language;
   // The tip card, until the player closes it.
   const [tipOpen, setTipOpen] = useState(() => tip ?? kindTipShown('chain', level));
   const useMarks = chainStore(level);
@@ -122,7 +119,7 @@ export function ChainHud({ level, view, now, notYet, tip, onExit, style }: Chain
       variant: 'error',
       message: t('hud.chain.notYet', {
         text: formatNotYet(p.cell, [], lang),
-        penalty: signedText(p.ms / 1000),
+        penalty: signedText(p.ms / 1000, decimalSeparator(t)),
       }),
     });
   });
@@ -135,7 +132,8 @@ export function ChainHud({ level, view, now, notYet, tip, onExit, style }: Chain
   const step = Math.min(done + 1, total);
   const { elapsedMs } = lv ? levelClock(lv, now) : { elapsedMs: 0 };
   const limit = lv?.limitMs ?? 0;
-  const cost = signedText(LEVEL_PENALTY_MS / 1000);
+  const decimal = decimalSeparator(t);
+  const cost = signedText(LEVEL_PENALTY_MS / 1000, decimal);
   return (
     <View style={[styles.hud, style]} testID="chain-hud">
       <StageHeader level={level} onExit={onExit} />
@@ -178,6 +176,7 @@ export function ChainHud({ level, view, now, notYet, tip, onExit, style }: Chain
             accessible
             accessibilityRole="timer"
             accessibilityLabel={t('hud.chain.timeLabel', {
+              count: secondsOf(elapsedMs),
               s: secondsOf(elapsedMs),
               limit: secondsOf(limit),
             })}
@@ -185,7 +184,7 @@ export function ChainHud({ level, view, now, notYet, tip, onExit, style }: Chain
           >
             <Text style={styles.clockWord}>{t('hud.chain.time')}</Text>
             <Text style={styles.clockValue} testID="chain-clock-value">
-              {secondsText(elapsedMs)}
+              {secondsText(elapsedMs, decimal)}
             </Text>
             <Text style={styles.clockWord}>{t('units.seconds')}</Text>
           </View>

@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "Hallo van de spelmotor · vakje {{cell}}",
+    "versions": "spelmotor {{engine}} · protocol {{protocol}}",
+    "taps": "Tikken: {{count}}",
+    "server": {
+      "connecting": "Server: verbinden…",
+      "connected": "Server: verbonden",
+      "rtt": "Server: responstijd {{ms}} ms",
+      "error": "Serverfout: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "Er ging iets mis",
+    "body": "Er ging iets mis op dit scherm. We hebben het gemeld, en je kunt het opnieuw proberen.",
+    "retry": "Opnieuw proberen"
+  },
+  "fallback": {
+    "loading": "Even geduld…",
+    "title": "Dit scherm is niet geladen",
+    "body": "Je kunt verder naar de uitslag of naar het startscherm.",
+    "bodyHome": "Je kunt naar het startscherm gaan en daar verdergaan.",
+    "results": "Naar de uitslag",
+    "home": "Naar start"
+  },
+  "appVersion": {
+    "version": "Versie {{version}}",
+    "build": "buildnummer {{build}}",
+    "engine": "spelmotor {{engine}}"
+  },
+  "number": {
+    "decimal": ",",
+    "percent": "{{value}}%"
+  },
+  "text": {
+    "labelValue": "{{label}}: {{value}}",
+    "parenthetical": "{{text}} ({{note}})",
+    "sentence": "{{text}}.",
+    "wordSpace": " "
+  }
+}

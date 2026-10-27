@@ -1,0 +1,279 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "Configurações",
+    "back": "Voltar"
+  },
+  "profile": {
+    "defaultName": "Jogador",
+    "label": "Meu cartão de jogador: {{name}}",
+    "noRating": "Ainda sem rating",
+    "ratingTitle": "Rating",
+    "none": "—",
+    "games_one": "Partidas: {{count}}",
+    "games_many": "{{count}} de partidas",
+    "games_other": "{{count}} partidas",
+    "gamesLabel_one": "partidas",
+    "gamesLabel_many": "partidas",
+    "gamesLabel_other": "partidas",
+    "winsLabel": "vitórias",
+    "streakLabel": "sequência",
+    "winRate": "{{percent}}% de vitórias",
+    "streak_zero": "Sem sequência de vitórias",
+    "streak_one": "Sequência de {{count}} vitória",
+    "streak_many": "Sequência de {{count}} de vitórias",
+    "streak_other": "Sequência de {{count}} vitórias"
+  },
+  "play": "Jogar",
+  "playHint": "Escolha um modo de jogo",
+  "again": {
+    "title": "Mais uma rodada",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "A partida não começou. Tente de novo."
+  },
+  "recent": {
+    "heading": "Partidas recentes",
+    "all": "Todas",
+    "unavailable": "Não foi possível ler as partidas salvas neste celular.",
+    "emptyTitle": "Ainda não há partidas aqui",
+    "emptyBody": "Cada treino fica salvo aqui, mesmo depois que você fecha o app.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "Concluído",
+      "ended": "Encerrado",
+      "interrupted": "Interrompido",
+      "playing": "Em andamento",
+      "win": "Vitória",
+      "loss": "Derrota",
+      "tie": "Empate"
+    },
+    "openHint": "Abre os resultados",
+    "versus": "{{outcome}} contra {{name}}"
+  },
+  "modes": {
+    "title": "Nova partida",
+    "footnote": "A ranqueada precisa de conexão com a internet · O treino está sempre disponível",
+    "soon": "Em breve",
+    "groups": {
+      "ranked": {
+        "title": "Ranqueada",
+        "note": "Adversários reais, em tempo real"
+      },
+      "friends": {
+        "title": "Com amigos",
+        "titleMoshe": "Amigos de verdade, em tempo real",
+        "note": "Sala privada · até 4 · sem rating"
+      },
+      "practice": {
+        "title": "Treino",
+        "note": "Sem pressão, sem rating"
+      }
+    },
+    "chips": {
+      "rated": "Com rating",
+      "unrated": "Sem rating",
+      "offline": "Funciona off-line"
+    },
+    "ranked": {
+      "name": "Ranqueada"
+    },
+    "ranked2": {
+      "title": "2 jogadores",
+      "tagline": "Um contra um · mesmo tabuleiro",
+      "label": "Ranqueada · 2 jogadores"
+    },
+    "ranked3": {
+      "title": "3 jogadores",
+      "tagline": "Todos contra todos",
+      "label": "Ranqueada · 3 jogadores"
+    },
+    "ranked4": {
+      "title": "4 jogadores",
+      "tagline": "Todos contra todos",
+      "label": "Ranqueada · 4 jogadores"
+    },
+    "friends": {
+      "create": "Nova sala",
+      "createHint": "Abre uma sala de espera com um código para enviar aos amigos",
+      "join": "Usar código",
+      "joinHint": "Digite os 6 dígitos que você recebeu"
+    },
+    "solo": {
+      "name": "Treino solo",
+      "title": "Solo · tabuleiro inteiro",
+      "tagline": "No seu ritmo",
+      "label": "Solo · tabuleiro inteiro"
+    },
+    "levels": {
+      "name": "Treino em fases",
+      "title": "Treino em fases",
+      "tagline": "Fases curtas · até 3 estrelas",
+      "taglineNew_one": "{{total}} fase curta · 0–3 estrelas",
+      "taglineNew_many": "{{total}} de fases curtas · 0–3 estrelas",
+      "taglineNew_other": "{{total}} fases curtas · 0–3 estrelas",
+      "chip": "Fase {{stage}} ·",
+      "offline": "Off-line",
+      "chipLabel_one": "Fase {{stage}} · estrelas: {{count}}",
+      "chipLabel_many": "Fase {{stage}} · {{count}} de estrelas",
+      "chipLabel_other": "Fase {{stage}} · {{count}} estrelas",
+      "label": "Treino em fases"
+    },
+    "bot": {
+      "name": "Treino contra robô",
+      "title": "Treino contra robô",
+      "tagline": "5 níveis",
+      "label": "Treino contra robô"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "Rápido",
+      "difficulty": "Fácil",
+      "technique": "Resolvido só com candidatos únicos"
+    },
+    "normal": {
+      "name": "Normal",
+      "difficulty": "Médio",
+      "technique": "Exige únicos ocultos"
+    },
+    "hard": {
+      "name": "Difícil",
+      "difficulty": "Difícil",
+      "technique": "Exige pares ou eliminações"
+    }
+  },
+  "gameType": {
+    "title": "Tipo de partida",
+    "note": {
+      "solo": "Sem rating. O tabuleiro vem dos sudokus guardados neste celular, sem repetir um que você jogou há pouco.",
+      "bot": "Sem rating. O tabuleiro vem dos sudokus guardados neste celular, sem repetir um que você jogou há pouco. Em seguida, você escolhe seu adversário.",
+      "ranked": "Com rating. Um adversário com rating próximo do seu, um tabuleiro do servidor que você ainda não jogou, e o mesmo tabuleiro para os dois.",
+      "rankedGroup": "Com rating. Adversários com rating próximo do seu, um tabuleiro do servidor que você ainda não jogou, e o mesmo tabuleiro para todos. A partida começa quando a mesa estiver completa."
+    },
+    "start": {
+      "solo": "Começar treino",
+      "bot": "Escolher adversário",
+      "ranked": "Buscar adversário",
+      "rankedGroup": "Buscar adversários"
+    },
+    "startHint": "Começa um treino no modo {{type}}",
+    "rankedHint": "Busca um adversário para uma partida ranqueada no modo {{type}}",
+    "rankedGroupHint": "Busca adversários para uma partida ranqueada no modo {{type}}",
+    "lockTime": "Tempo por célula",
+    "board": "Tabuleiro",
+    "duration": "Duração aprox.",
+    "seconds": "{{seconds}} s",
+    "minutes": "{{range}} min",
+    "yourRating": "Seu rating",
+    "cardLabel_one": "{{name}}. {{technique}}. {{seconds}} por célula, tabuleiro {{difficulty}}, cerca de {{from}} a {{to}} minuto",
+    "cardLabel_many": "{{name}}. {{technique}}. {{seconds}} por célula, tabuleiro {{difficulty}}, cerca de {{from}} a {{to}} de minutos",
+    "cardLabel_other": "{{name}}. {{technique}}. {{seconds}} por célula, tabuleiro {{difficulty}}, cerca de {{from}} a {{to}} minutos",
+    "botHint": "Escolha um robô para uma partida no modo {{type}}"
+  },
+  "settings": {
+    "title": "Configurações",
+    "feedback": "Som e vibração",
+    "sound": "Som",
+    "soundHint": "Sons para jogadas e ações",
+    "haptics": "Vibração",
+    "hapticsHint": "Vibrações curtas como resposta às jogadas",
+    "motion": "Reduzir movimento",
+    "motionHint": "Menos animações: as pontuações pulam direto para o resultado, e uma interferência aparece como uma cobertura estática pelo mesmo tempo.",
+    "reduceMotion": {
+      "system": "Como no aparelho",
+      "on": "Ativado",
+      "off": "Desativado"
+    },
+    "language": "Idioma",
+    "languageHint": "Mudar o idioma reinicia o app.",
+    "languageConfirm": {
+      "title": "Mudar o idioma para {{language}}?",
+      "body": "O app reinicia para que todas as telas apareçam na direção do novo idioma.",
+      "confirm": "Mudar e reiniciar",
+      "titleDevice": "Usar o idioma do aparelho?"
+    },
+    "languageDevice": "Idioma do aparelho",
+    "languageSheetTitle": "Escolha um idioma",
+    "languageField": "Idioma: {{language}}",
+    "languageFieldDevice": "Idioma: do aparelho, {{language}}",
+    "about": "Sobre e termos legais",
+    "privacy": "Política de privacidade",
+    "terms": "Termos de uso",
+    "licenses": "Licenças",
+    "opensInBrowser": "Abre no navegador"
+  },
+  "placeholder": {
+    "soon": "Em breve",
+    "leaderboard": {
+      "title": "Ranking",
+      "body": "O ranking abre junto com as partidas ranqueadas."
+    },
+    "history": {
+      "title": "Histórico",
+      "body": "Todas as suas partidas vão aparecer aqui, com replays e uma explicação para cada jogada. Enquanto isso, seus últimos treinos estão na tela inicial."
+    },
+    "achievements": {
+      "title": "Conquistas",
+      "body": "Conquistas, níveis e XP estão a caminho."
+    }
+  },
+  "botSelect": {
+    "title": "Escolha um robô",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "Tempo por jogada",
+    "thinkValue": "{{range}} s",
+    "mistakes": "Erros",
+    "note": "Esse é o tempo de uma jogada comum. Numa célula que exige uma lógica mais difícil, o robô demora mais, e na última lacuna de uma linha, coluna ou quadrado, um pouco menos. O robô joga o mesmo tabuleiro, em tempo real.",
+    "start": "Vamos jogar",
+    "startHint": "Começa um treino no modo {{type}} contra {{name}}",
+    "cardLabel_one": "Nível {{level}}, {{title}}: {{name}}. {{behavior}}. Pensa de {{from}} a {{to}} segundo por jogada, {{mistakes}}% de erros",
+    "cardLabel_many": "Nível {{level}}, {{title}}: {{name}}. {{behavior}}. Pensa de {{from}} a {{to}} de segundos por jogada, {{mistakes}}% de erros",
+    "cardLabel_other": "Nível {{level}}, {{title}}: {{name}}. {{behavior}}. Pensa de {{from}} a {{to}} segundos por jogada, {{mistakes}}% de erros",
+    "levels": {
+      "1": {
+        "title": "Novato",
+        "behavior": "Lento, erra bastante e deixa você aprender"
+      },
+      "2": {
+        "title": "Amador",
+        "behavior": "Tranquilo, vacila aqui e ali, e às vezes manda um 😂"
+      },
+      "3": {
+        "title": "Avançado",
+        "behavior": "Firme, cuidadoso e difícil de ultrapassar"
+      },
+      "4": {
+        "title": "Mestre",
+        "behavior": "Rápido, quase nunca erra e é meio convencido 😎"
+      },
+      "5": {
+        "title": "Grão-mestre",
+        "behavior": "Rápido, preciso e impiedoso"
+      }
+    }
+  },
+  "licenses": {
+    "title": "Licenças",
+    "intro": "O Sudoku Fight é feito com fontes abertas e software de código aberto. Agradecemos aos autores. Aqui estão as licenças e os avisos de direitos autorais.",
+    "fonts": "Fontes",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_one": "{{count}} pacote de código aberto",
+    "packages_many": "{{count}} de pacotes de código aberto",
+    "packages_other": "{{count}} pacotes de código aberto",
+    "packageLabel": "{{name}}, versão {{version}}, licença {{license}}",
+    "texts": "Textos das licenças",
+    "textsHint": "O texto completo de cada licença, como foi escrito.",
+    "show": "Mostrar a licença {{license}}",
+    "hide": "Ocultar a licença {{license}}"
+  }
+}

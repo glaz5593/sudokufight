@@ -1,0 +1,108 @@
+{
+  "technique": {
+    "nakedSingle": "네이키드 싱글",
+    "hiddenSingle": "히든 싱글",
+    "pointing": "박스-줄 소거",
+    "claiming": "박스-줄 소거",
+    "nakedPair": "네이키드 페어",
+    "hiddenPair": "히든 페어",
+    "chain": "고급 기법",
+    "beyond": "엔진이 모르는 기법"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}}, {{last}}",
+    "lastOr": "{{head}} 또는 {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}}, {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "{{label}}행에서 빠진 숫자는 {{digit}} 하나뿐이에요.",
+      "col": "{{label}}열에서 빠진 숫자는 {{digit}} 하나뿐이에요.",
+      "box": "{{label}}번 박스에서 빠진 숫자는 {{digit}} 하나뿐이에요."
+    },
+    "missing": {
+      "row": "{{label}}행에서 빠진 숫자는 {{digits}}뿐이에요.",
+      "col": "{{label}}열에서 빠진 숫자는 {{digits}}뿐이에요.",
+      "box": "{{label}}번 박스에서 빠진 숫자는 {{digits}}뿐이에요."
+    },
+    "seen": {
+      "row": "{{label}}행에서는 {{digits}}의 자리가 이미 정해져 있어요.",
+      "col": "{{label}}열에서는 {{digits}}의 자리가 이미 정해져 있어요.",
+      "box": "{{label}}번 박스에서는 {{digits}}의 자리가 이미 정해져 있어요."
+    },
+    "eliminated": "{{cell}}의 {{digit}} 후보는 {{step}}단계에서 제외됐어요.",
+    "only": "그러니 {{digit}}만 남아요."
+  },
+  "hidden": {
+    "alone": {
+      "row": "{{label}}행에는 {{digit}}의 자리가 꼭 있어야 하는데, 빈칸은 {{cell}} 하나뿐이에요. 그러니 {{result}}.",
+      "col": "{{label}}열에는 {{digit}}의 자리가 꼭 있어야 하는데, 빈칸은 {{cell}} 하나뿐이에요. 그러니 {{result}}.",
+      "box": "{{label}}번 박스에는 {{digit}}의 자리가 꼭 있어야 하는데, 빈칸은 {{cell}} 하나뿐이에요. 그러니 {{result}}."
+    },
+    "blocked": {
+      "row": "{{label}}행에는 {{digit}}의 자리가 꼭 있어야 해요. 다른 빈칸은 모두 막혀 있어요: {{clauses}}. 그러니 {{result}}.",
+      "col": "{{label}}열에는 {{digit}}의 자리가 꼭 있어야 해요. 다른 빈칸은 모두 막혀 있어요: {{clauses}}. 그러니 {{result}}.",
+      "box": "{{label}}번 박스에는 {{digit}}의 자리가 꼭 있어야 해요. 다른 빈칸은 모두 막혀 있어요: {{clauses}}. 그러니 {{result}}."
+    },
+    "clause": {
+      "step": "{{step}}단계에서 {{digit}} 후보가 지워진 {{cell}}",
+      "unit": {
+        "row": "{{label}}행의 {{digit}} 때문에 막힌 {{cell}}",
+        "col": "{{label}}열의 {{digit}} 때문에 막힌 {{cell}}",
+        "box": "{{label}}번 박스의 {{digit}} 때문에 막힌 {{cell}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "{{box}}번 박스에서 {{digit}}의 자리는 {{line}}행뿐이라서, 그 행의 나머지 칸에서 {{digit}} 후보를 지워요: {{cells}}.",
+    "col": "{{box}}번 박스에서 {{digit}}의 자리는 {{line}}열뿐이라서, 그 열의 나머지 칸에서 {{digit}} 후보를 지워요: {{cells}}."
+  },
+  "claiming": {
+    "row": "{{line}}행에서 {{digit}}의 자리는 {{box}}번 박스뿐이라서, 그 박스의 나머지 칸에서 {{digit}} 후보를 지워요: {{cells}}.",
+    "col": "{{line}}열에서 {{digit}}의 자리는 {{box}}번 박스뿐이라서, 그 박스의 나머지 칸에서 {{digit}} 후보를 지워요: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "{{a}}, {{b}} 두 칸에는 {{digits}}만 들어갈 수 있어서, {{label}}행의 나머지 칸에서 {{digits}} 후보를 지워요: {{cells}}.",
+    "col": "{{a}}, {{b}} 두 칸에는 {{digits}}만 들어갈 수 있어서, {{label}}열의 나머지 칸에서 {{digits}} 후보를 지워요: {{cells}}.",
+    "box": "{{a}}, {{b}} 두 칸에는 {{digits}}만 들어갈 수 있어서, {{label}}번 박스의 나머지 칸에서 {{digits}} 후보를 지워요: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "{{label}}행에서 {{digits}}의 자리는 {{a}}, {{b}} 두 칸뿐이라서, 두 칸의 다른 후보를 지워요.",
+    "col": "{{label}}열에서 {{digits}}의 자리는 {{a}}, {{b}} 두 칸뿐이라서, 두 칸의 다른 후보를 지워요.",
+    "box": "{{label}}번 박스에서 {{digits}}의 자리는 {{a}}, {{b}} 두 칸뿐이라서, 두 칸의 다른 후보를 지워요."
+  },
+  "beyond": "엔진이 아직 설명하지 못하는 고급 기법이 필요해요. 정답: {{formula}}.",
+  "chain": {
+    "head_other": "이 칸은 아직 한 번에 정할 수 없어요. {{count}}단계가 필요해요:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "{{label}}행의 {{cell}}에 이미 같은 숫자({{digit}})가 있어요.",
+      "col": "{{label}}열의 {{cell}}에 이미 같은 숫자({{digit}})가 있어요.",
+      "box": "{{label}}번 박스의 {{cell}}에 이미 같은 숫자({{digit}})가 있어요."
+    },
+    "notSolution": "여기에 {{digit}}도 들어갈 수는 있지만, 정답대로라면 {{answer}}의 자리예요."
+  },
+  "block": {
+    "step": "{{cell}} 칸은 {{digit}}의 자리가 아니에요: {{step}}단계에서 제외됐어요",
+    "unit": {
+      "row": "{{cell}} 칸은 {{digit}}의 자리가 아니에요: {{label}}행에 이미 같은 숫자가 있어요",
+      "col": "{{cell}} 칸은 {{digit}}의 자리가 아니에요: {{label}}열에 이미 같은 숫자가 있어요",
+      "box": "{{cell}} 칸은 {{digit}}의 자리가 아니에요: {{label}}번 박스에 이미 같은 숫자가 있어요"
+    }
+  },
+  "notYet": {
+    "cell": "{{cell}}에 무엇이 들어갈지 아직 알 수 없어요",
+    "options": "{{cell}}에 무엇이 들어갈지 아직 알 수 없어요 ({{options}})"
+  }
+}

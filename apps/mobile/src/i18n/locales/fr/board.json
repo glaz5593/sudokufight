@@ -1,0 +1,50 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Grille de jeu",
+    "myLock": "ta case {{cell}}",
+    "otherLock": "{{cell}} verrouillée par {{name}}",
+    "tapLabel": "La grille de l’étape"
+  },
+  "cell": {
+    "empty": "vide",
+    "given": "indice",
+    "solvedByMe": "résolue par toi",
+    "solvedBy": "résolue par {{name}}",
+    "lockedByMe": "verrouillée par toi",
+    "lockedBy": "verrouillée par {{name}}",
+    "pending": "en attente du verrouillage",
+    "queued": "{{digit}}, en attente de la connexion",
+    "timerStopped": "minuteur arrêté",
+    "seconds_one": "{{count}} seconde",
+    "seconds_many": "{{count}} de secondes",
+    "seconds_other": "{{count}} secondes",
+    "wrong": "chiffres erronés : {{digits}}",
+    "hintMyLock": "Choisis un chiffre sur le clavier",
+    "player": "Joueur {{n}}",
+    "corrected": "erreur trouvée : {{wrong}}, le bon chiffre est {{right}}",
+    "mine": "à toi",
+    "outside": "hors de la zone",
+    "hintTap": "Toucher la case, c’est jouer le coup"
+  },
+  "keypad": {
+    "armed": "Chiffre {{digit}} · reste {{left}}",
+    "idle": "Chiffre {{digit}}, reste {{left}}, choisis d’abord une case",
+    "complete": "Chiffre {{digit}}, reste {{left}}",
+    "tried": "Chiffre {{digit}} · déjà essayé dans cette case"
+  },
+  "cancel": {
+    "label": "Annuler la sélection",
+    "withCell": "Annuler la sélection, {{cell}}"
+  },
+  "resume": {
+    "title": "Reprise dans",
+    "paused": "La partie est en pause",
+    "label_one": "Reprise dans {{count}} seconde",
+    "label_many": "Reprise dans {{count}} de secondes",
+    "label_other": "Reprise dans {{count}} secondes"
+  }
+}

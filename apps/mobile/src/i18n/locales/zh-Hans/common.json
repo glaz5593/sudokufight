@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "来自引擎的问候 · 格{{cell}}",
+    "versions": "引擎{{engine}} · 协议{{protocol}}",
+    "taps": "点击次数：{{count}}",
+    "server": {
+      "connecting": "服务器：连接中…",
+      "connected": "服务器：已连接",
+      "rtt": "服务器：往返延迟{{ms}}毫秒",
+      "error": "服务器：{{message}}"
+    }
+  },
+  "crash": {
+    "title": "出错了",
+    "body": "这个页面出现了错误。我们已经上报，你可以再试一次。",
+    "retry": "再试一次"
+  },
+  "fallback": {
+    "loading": "请稍候…",
+    "title": "这个页面没有加载出来",
+    "body": "你可以继续查看结果，或返回首页。",
+    "bodyHome": "你可以返回首页，从那里继续。",
+    "results": "查看结果",
+    "home": "首页"
+  },
+  "appVersion": {
+    "version": "版本{{version}}",
+    "build": "构建{{build}}",
+    "engine": "引擎{{engine}}"
+  },
+  "number": {
+    "decimal": ".",
+    "percent": "{{value}}%"
+  },
+  "text": {
+    "labelValue": "{{label}}：{{value}}",
+    "parenthetical": "{{text}}（{{note}}）",
+    "sentence": "{{text}}。",
+    "wordSpace": ""
+  }
+}

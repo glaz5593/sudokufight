@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AVATAR_REACTIONS } from '../../avatars/reactions';
@@ -9,6 +9,7 @@ import { countryName } from '../../components/player/countryFlag';
 import { Flag } from '../../components/player/Flag';
 import { SeatGlyph } from '../../components/player/SeatGlyph';
 import { IconButton } from '../../components/ui/IconButton';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { usePulse } from '../game/connection/motion';
 import { metrics } from '../game/connection/metrics';

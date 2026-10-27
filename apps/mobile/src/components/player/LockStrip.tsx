@@ -4,7 +4,6 @@ import {
   AccessibilityInfo,
   I18nManager,
   StyleSheet,
-  Text,
   View,
   type StyleProp,
   type ViewStyle,
@@ -14,6 +13,7 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { color, radius, size, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { Icon } from '../Icon';
+import { Text } from '../ui/Text';
 import { useBlink, useShake } from './anim';
 import { type LockStripModel, sameCountdown } from './cardModel';
 import { metrics, paletteAt } from './metrics';

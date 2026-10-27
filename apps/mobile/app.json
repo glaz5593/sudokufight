@@ -3,7 +3,7 @@
     "name": "Sudoku Fight",
     "slug": "sudoku-fight",
     "owner": "mosh-gl-dev",
-    "version": "1.0.4",
+    "version": "1.1.0",
     "orientation": "portrait",
     "scheme": "sudokufight",
     "userInterfaceStyle": "dark",
@@ -39,7 +39,13 @@
       [
         "expo-localization",
         {
-          "supportsRTL": true
+          "allowDynamicLocaleChangesAndroid": true
+        }
+      ],
+      [
+        "./plugins/withAppLocales.js",
+        {
+          "languagesFile": "./src/i18n/enabled-languages.json"
         }
       ],
       [
@@ -70,7 +76,6 @@
     },
     "backgroundColor": "#0f1218",
     "extra": {
-      "supportsRTL": true,
       "eas": {
         "projectId": "b192b4d2-c768-4ec2-b2f3-96740b137d74"
       }

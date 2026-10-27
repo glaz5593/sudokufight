@@ -1,0 +1,196 @@
+{
+  "common": {
+    "provisional": "Rating sementara",
+    "provisionalNote_other": "Ligamu muncul setelah {{games}} pertandingan ranked dalam satu jenis permainan",
+    "level": "Lv. {{level}}",
+    "you": "Kamu",
+    "myCard": "Kartu pemainku",
+    "loading": "Memuat…",
+    "retry": "Coba lagi",
+    "offlineNote": "Tidak ada koneksi ke server: menampilkan data yang dimuat sebelumnya.",
+    "errorNote": "Gagal memperbarui: menampilkan data yang dimuat sebelumnya.",
+    "offlineTitle": "Tidak ada koneksi ke server",
+    "offlineBody": "Papan peringkat diperbarui saat koneksi kembali.",
+    "errorTitle": "Terjadi kesalahan",
+    "errorBody": "Server tidak bisa menjawab barusan. Coba lagi sebentar lagi.",
+    "signedOut": "Masuk untuk melihat ini",
+    "players_other": "{{count}} pemain",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}, menuju level {{level}}"
+  },
+  "leaderboard": {
+    "title": "Peringkat",
+    "tabs": {
+      "label": "Jenis rating",
+      "general": "Umum",
+      "fast": "Cepat",
+      "normal": "Biasa",
+      "hard": "Sulit",
+      "friends": "Teman"
+    },
+    "caption": {
+      "general": "Umum · rating tertinggi setiap pemain",
+      "type": "Rating {{type}} · seluruh dunia",
+      "typePlayers": "Rating {{type}} · {{players}} · seluruh dunia",
+      "friends": "Lawan terbarumu"
+    },
+    "players": "Jumlah pemain",
+    "podium": "Tiga teratas",
+    "rankLabel": "Posisi {{rank}}",
+    "meName": "{{name}} (kamu)",
+    "openHint": "Membuka kartu pemain",
+    "meNone": "Kamu belum punya rating di tabel ini",
+    "play": "Main",
+    "playHint": "Mainkan pertandingan ranked untuk masuk ke tabel",
+    "climbHint": "Main untuk naik di tabel",
+    "emptyTitle": "Belum ada siapa pun di sini",
+    "emptyBody": "Mainkan pertandingan ranked dan jadilah yang pertama di papan peringkat."
+  },
+  "friends": {
+    "invite": "Undang teman",
+    "inviteMessage": "Ayo lawan aku di Sudoku Fight!",
+    "inviteNote": "Satu teman lagi = satu rival lagi",
+    "emptyTitle": "Belum ada lawan",
+    "emptyBody": "Mainkan pertandingan ranked dan lawan-lawanmu akan muncul di sini. Daftar teman lengkap segera hadir."
+  },
+  "league": {
+    "title": "Liga",
+    "toNext": "{{points}} lagi ke {{league}}",
+    "top": "Liga tertinggi",
+    "general": "Umum {{rating}} · {{next}}",
+    "generalTop": "Umum {{rating}} · liga tertinggi",
+    "ladder": "Tangga liga",
+    "step": "Liga {{league}}, mulai rating {{floor}}"
+  },
+  "card": {
+    "title": "Kartu pemain",
+    "edit": "Ubah profil",
+    "notFound": "Pemain tidak ditemukan",
+    "offlineBody": "Kartu dimuat dari server. Coba lagi saat koneksi kembali.",
+    "savedNote": "Tidak ada koneksi ke server: menampilkan kartu yang tersimpan.",
+    "meLabel": "{{name}}, kartuku",
+    "ratingsTitle": "Rating per jenis permainan",
+    "ratingsNote_other": "{{n}} rating",
+    "noRatings": "Belum ada rating",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "naik {{points}} dalam pertandingan terakhir",
+    "trendDown": "turun {{points}} dalam pertandingan terakhir",
+    "trendFlat": "tidak berubah dalam pertandingan terakhir",
+    "atPeak": "di puncaknya",
+    "peak": "puncak {{value}}",
+    "atPeakShort": "Puncak!",
+    "peakShort": "Puncak {{value}}",
+    "games_other": "{{count}} pertandingan",
+    "statsTitle": "Statistik tanding",
+    "stats": {
+      "games": "Pertandingan",
+      "wins": "Menang",
+      "losses": "Kalah",
+      "winRate": "Rasio menang",
+      "streak": "Rentetan menang",
+      "bestStreak": "Rentetan terbaik",
+      "bestMove": "Langkah terbaik",
+      "avgMistakes": "Kesalahan per pertandingan"
+    },
+    "recentTitleSection": "Hasil terbaru",
+    "recentNote": "{{n}} terakhir",
+    "recentEmpty": "Belum ada pertandingan ranked.",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "Menang",
+      "loss": "Kalah",
+      "tie": "Seri"
+    },
+    "outcomeShort": {
+      "win": "M",
+      "loss": "K",
+      "tie": "S"
+    },
+    "place": "Posisi {{place}}",
+    "points": "{{score}} poin",
+    "ratingDelta": "rating: {{delta}}",
+    "formLabel": "Hasil terbaru, mulai dari yang paling baru: {{list}}",
+    "replayHint": "Membuka replay",
+    "openOf": "Kartu pemain {{name}}",
+    "achievementsTitle": "Pencapaian teratas",
+    "allAchievements": "Semua pencapaian",
+    "joinedSince": "Bermain sejak {{date}}",
+    "favorite": {
+      "title": "Gangguan favorit",
+      "uses_other": "kali",
+      "label_other": "Gangguan favorit: {{kind}}, dikirim {{count}} kali"
+    }
+  },
+  "achievements": {
+    "title": "Pencapaian",
+    "soon": "Segera hadir",
+    "soonBody": "12 pencapaian sedang disiapkan: kemenangan pertama, rentetan kemenangan, langkah top, dan lainnya. Segera hadir di sini.",
+    "soonShort": "Pencapaian segera hadir.",
+    "earned": "{{name}}, diraih pada {{date}}"
+  },
+  "progress": {
+    "title": "Pencapaian & progres",
+    "savedNote": "Tidak ada koneksi ke server: menampilkan angka yang tersimpan.",
+    "pending_other": "{{count}} latihan menunggu sinkronisasi dengan server",
+    "offlineBody": "Level dan XP milikmu muncul setelah ada koneksi ke server.",
+    "levelWord": "Levelmu",
+    "xpTitle": "Poin pengalaman",
+    "toGo": "{{xp}} lagi ke level {{level}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "Cara mendapatkan XP",
+    "how": {
+      "win": "Juara pertama di pertandingan ranked, atau menang melawan bot",
+      "played": "Hasil lain apa pun di pertandingan ranked atau melawan bot",
+      "solo": "Latihan solo",
+      "perCorrect": "Setiap langkah benar, di pertandingan ranked dan melawan bot"
+    }
+  },
+  "interferences": {
+    "title": "Gangguan",
+    "entry": "Koleksi gangguan",
+    "entryNote": "{{open}} terbuka · {{locked}} terkunci",
+    "countLabel_other": "{{open}} dari {{total}} gangguan terbuka",
+    "opened": "terbuka",
+    "facts": {
+      "seconds": "detik per gangguan",
+      "cost": "harganya naik dua kali lipat setiap kali diluncurkan",
+      "launch": "ketukan: “Ganggu” di kartu lawan, lalu gangguannya",
+      "launchValue": "2"
+    },
+    "arsenal": "Arsenalmu",
+    "tapHint": "Ketuk untuk pratinjau",
+    "openLabel": "{{name}}, tersedia. {{description}}",
+    "previewHint": "Menampilkan pratinjau",
+    "available": "Tersedia",
+    "previewing": "Pratinjau",
+    "lockedTitle": "Terkunci",
+    "lockedNote": "Terbuka seiring levelmu naik",
+    "soon": "Segera hadir",
+    "atLevel": "Terbuka di level {{level}}",
+    "lockedLabel": "{{name}}, terkunci, {{when}}",
+    "howTo": "Dalam pertandingan: ketuk “Ganggu” di kartu lawan, lalu pilih gangguan.",
+    "future": {
+      "earthquake": "Gempa",
+      "fog": "Kabut",
+      "bubbles": "Gelembung",
+      "torch": "Obor"
+    },
+    "description": {
+      "fireworks": "Rentetan kembang api warna-warni di atas layar",
+      "cats": "Rombongan kucing berlarian melintasi layar",
+      "warp": "Layar membengkok dan berkedip",
+      "scramble": "Angka di papan teracak dan bertukar tempat",
+      "ink": "Noda tinta yang perlahan memudar",
+      "keypad": "Tombol angka bertukar tempat",
+      "earthquake": "Layar berguncang",
+      "fog": "Kabut yang perlahan menghilang",
+      "bubbles": "Gelembung yang harus kamu pecahkan",
+      "torch": "Papan menjadi gelap kecuali cahaya obor"
+    }
+  },
+  "home": {
+    "levelXp": "Lv. {{level}} · {{xp}}"
+  }
+}

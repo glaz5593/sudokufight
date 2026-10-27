@@ -11,7 +11,7 @@ import {
 import { metrics as playerMetrics } from '../../../components/player/metrics';
 import type { Rect } from '../geometry';
 import { ARSENAL_CONFIG } from './config';
-import { arsenalMetrics as m } from './metrics';
+import { type ArsenalMetrics, arsenalMetrics } from './metrics';
 
 /**
  * The interference picker as a pure view model (spec §7.2, §7.3; components.md §13), read from the engine's
@@ -207,7 +207,8 @@ export interface PickerLayout {
 
 /**
  * The picker's size for a window (pure, so it is tested for the small phones): the sheet's padding, handle,
- * header, price row, a grid of `count` buttons in `columns` columns, and the info line.
+ * header, price row, a grid of `count` buttons in `columns` columns, and the info line. `metrics`: the app's
+ * language's dimensions, or another language's (arsenalMetricsFor) for its layout test.
  */
 export function pickerLayout({
   width,
@@ -215,12 +216,14 @@ export function pickerLayout({
   bottomInset = 0,
   count,
   columns = ARSENAL_CONFIG.columns,
+  metrics: m = arsenalMetrics,
 }: {
   width: number;
   height: number;
   bottomInset?: number;
   count: number;
   columns?: number;
+  metrics?: ArsenalMetrics;
 }): PickerLayout {
   const rows = Math.ceil(count / columns);
   const inner = width - 2 * m.sheet.paddingX;

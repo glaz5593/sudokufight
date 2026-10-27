@@ -105,7 +105,10 @@ describe('the bots to choose from (spec §9)', () => {
   });
 
   it('seconds read with one decimal, none for whole ones', () => {
-    expect([5360, 8000, 16500, 2680, 49, 0].map(secondsText)).toEqual(['5.4', '8', '16.5', '2.7', '0', '0']);
+    const ms = [5360, 8000, 16500, 2680, 49, 0];
+    expect(ms.map((m) => secondsText(m))).toEqual(['5.4', '8', '16.5', '2.7', '0', '0']);
+    // D108: the language's separator (common:number.decimal), "." in Hebrew and English.
+    expect(ms.map((m) => secondsText(m, ','))).toEqual(['5,4', '8', '16,5', '2,7', '0', '0']);
   });
 });
 
@@ -224,6 +227,11 @@ describe('a saved practice in the recent list', () => {
       }).format(at),
     );
     expect(playedAtText(at, 'he')).toMatch(/\d/);
+    // D108: Western digits in every language (-u-nu-latn); Hebrew and English as plain Intl gives them.
+    const options = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' } as const;
+    expect(playedAtText(at, 'he')).toBe(new Intl.DateTimeFormat('he', options).format(at));
+    expect(playedAtText(at, 'ar-SA')).not.toMatch(/[٠-٩]/);
+    expect(playedAtText(at, 'ar-SA')).toBe(new Intl.DateTimeFormat('ar-SA-u-nu-latn', options).format(at));
   });
 });
 

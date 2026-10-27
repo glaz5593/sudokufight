@@ -1,13 +1,15 @@
 import type { AppLevel, CellIndex, GameView, PlayerView } from '@sudoku-fight/engine';
 import { useEffectEvent, useLayoutEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
 
 import { Icon } from '../../../components/Icon';
 import { type CellChip, CellChipsLayer } from '../../../components/levels/CellChipsLayer';
 import { StarsBar } from '../../../components/levels/StarsBar';
 import { formatScore, ltr, scoreText, secondsOf, signedText } from '../../../components/player/format';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator, stopSentences } from '../../../i18n/compose';
 import { color, radius, space, text, tokens } from '../../../theme';
 import { clockText } from './BoxHud';
 import { levelClock, StageHeader } from './FindHud';
@@ -183,6 +185,7 @@ export interface PointHunterHudProps {
 
 export function PointHunterHud({ level, view, now, onExit, style }: PointHunterHudProps) {
   const { t } = useTranslation('levels');
+  const decimal = decimalSeparator(t);
   const useMarks = huntStore(level);
   useViewChanges(view, (prev, next) => record(useMarks, prev, next));
   const moves = useMarks((s) => (s.gameId === view.gameId ? s.moves : NO_MOVES));
@@ -213,14 +216,18 @@ export function PointHunterHud({ level, view, now, onExit, style }: PointHunterH
   const limit = lv?.limitMs ?? 0;
   const left = lv ? levelClock(lv, now).remainingMs : 0;
   const scoreLabel = worth
-    ? t('hud.hunt.scoreWorthLabel', { score: formatScore(score), worth: formatScore(worth.points) })
-    : t('hud.hunt.scoreLabel', { score: formatScore(score) });
+    ? t('hud.hunt.scoreWorthLabel', {
+        count: score,
+        score: formatScore(score, decimal),
+        worth: formatScore(worth.points, decimal),
+      })
+    : t('hud.hunt.scoreLabel', { count: score, score: formatScore(score, decimal) });
   return (
     <View style={[styles.hud, style]} testID="hunt-hud">
       <StageHeader level={level} onExit={onExit} />
       <View style={styles.goal}>
         <Text style={styles.goalText} testID="hunt-goal">
-          {t('hud.hunt.goal', { points: ltr(formatScore(three)), moves: max })}
+          {t('hud.hunt.goal', { points: ltr(formatScore(three, decimal)), pointsCount: three, moves: max })}
         </Text>
         <Text style={styles.note}>{t('hud.hunt.note')}</Text>
       </View>
@@ -230,19 +237,22 @@ export function PointHunterHud({ level, view, now, onExit, style }: PointHunterH
           accessible
           accessibilityLabel={
             burnt
-              ? `${scoreLabel}. ${t('hud.hunt.lost', { points: formatScore(burnt.penalty) })}`
+              ? stopSentences(
+                  [scoreLabel, t('hud.hunt.lost', { points: formatScore(burnt.penalty, decimal) })],
+                  t,
+                )
               : scoreLabel
           }
           testID="hunt-score"
         >
           <Text style={styles.scoreValue} testID="hunt-score-value">
-            {scoreText(score)}
+            {scoreText(score, decimal)}
           </Text>
           <Text style={styles.scoreUnit}>{t('hud.hunt.points')}</Text>
           {burnt ? (
             <View style={styles.lost} testID="hunt-lost">
               <Text style={styles.lostText} testID="hunt-lost-text">
-                {signedText(-burnt.penalty)}
+                {signedText(-burnt.penalty, decimal)}
               </Text>
             </View>
           ) : null}
@@ -273,7 +283,11 @@ export function PointHunterHud({ level, view, now, onExit, style }: PointHunterH
           style={styles.clock}
           accessible
           accessibilityRole="timer"
-          accessibilityLabel={t('hud.hunt.timeLabel', { s: secondsOf(left), limit: secondsOf(limit) })}
+          accessibilityLabel={t('hud.hunt.timeLabel', {
+            count: secondsOf(left),
+            s: secondsOf(left),
+            limit: secondsOf(limit),
+          })}
           testID="hunt-clock"
         >
           <Text style={styles.clockValue} testID="hunt-clock-value">
@@ -284,7 +298,7 @@ export function PointHunterHud({ level, view, now, onExit, style }: PointHunterH
       </View>
       <View style={styles.bar}>
         <Text style={styles.max} testID="hunt-max">
-          {t('hud.hunt.max', { max: ltr(formatScore(best)) })}
+          {t('hud.hunt.max', { max: ltr(formatScore(best, decimal)) })}
         </Text>
         <StarsBar rule={rule} value={Math.max(0, score)} testID="hunt-bar" />
       </View>
@@ -312,24 +326,25 @@ export interface PointHunterOverlayProps {
 /** Over the board: "‎+6.5" on each of my right moves, and "שווה 6" over my locked cell (when the engine says). */
 export function PointHunterOverlay({ level, width }: PointHunterOverlayProps) {
   const { t } = useTranslation('levels');
+  const decimal = decimalSeparator(t);
   const useMarks = huntStore(level);
   const moves = useMarks((s) => s.moves);
   const worth = useMarks((s) => s.worth);
   const chips = useMemo<CellChip[]>(() => {
     const out: CellChip[] = moves.flatMap((m) =>
       m.kind === 'right' && m.points !== null
-        ? [{ id: m.id, cell: m.cell, text: signedText(m.points), tone: 'gain' as const }]
+        ? [{ id: m.id, cell: m.cell, text: signedText(m.points, decimal), tone: 'gain' as const }]
         : [],
     );
     if (worth)
       out.push({
         id: `worth-${worth.cell}`,
         cell: worth.cell,
-        text: t('hud.hunt.worth', { points: formatScore(worth.points) }),
+        text: t('hud.hunt.worth', { points: formatScore(worth.points, decimal) }),
         tone: 'info',
       });
     return out;
-  }, [moves, worth, t]);
+  }, [moves, worth, t, decimal]);
   return <CellChipsLayer chips={chips} width={width} testID="hunt-chips" />;
 }
 

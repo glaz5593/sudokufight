@@ -1,0 +1,98 @@
+{
+  "title": "历史",
+  "summary": {
+    "games_other": "{{count}}场对局",
+    "winRate": "胜率{{rate}}",
+    "practices_other": "{{count}}次练习",
+    "streak": "连胜",
+    "streakLabel_other": "连胜：{{count}}场"
+  },
+  "filters": {
+    "label": "筛选对局",
+    "all": "全部",
+    "ranked": "排位",
+    "practice": "练习"
+  },
+  "loading": "正在加载你的对局…",
+  "more": "更多对局",
+  "empty": {
+    "title": "这里还没有对局",
+    "body": "每场对局都会保存在这里，随时可以回看：一步接一步，还会讲解每个数字为什么填在那里。",
+    "action": "开始你的第一场对局"
+  },
+  "notes": {
+    "practice": "练习对局不影响你的积分，但同样可以回看。",
+    "offline": "无法连接服务器：只显示这部手机上的练习对局。",
+    "signedOut": "登录后，排位对局会显示在这里。",
+    "rankedError": "无法加载你的排位对局。",
+    "practiceUnavailable": "无法读取这部手机上保存的练习对局。",
+    "retry": "再试一次"
+  },
+  "states": {
+    "offlineTitle": "无法连接服务器",
+    "offlineBody": "连接恢复后会加载你的排位对局。即使离线，这部手机上的练习对局也会显示在这里。",
+    "errorTitle": "无法加载你的对局",
+    "errorBody": "服务器没有正常响应。请稍后再试。",
+    "practiceTitle": "无法读取你的练习对局",
+    "practiceBody": "这部手机上保存的练习对局无法打开。请再试一次，如果问题持续，请重启应用。"
+  },
+  "card": {
+    "mode": {
+      "ranked": "排位赛",
+      "solo": "单人练习",
+      "bot": "人机练习"
+    },
+    "outcome": {
+      "win": "胜",
+      "loss": "负",
+      "tie": "平局",
+      "completed": "盘面完成",
+      "ended": "练习结束",
+      "interrupted": "对局中断"
+    },
+    "place": "第{{place}}名",
+    "against_other": "对阵{{count}}名对手",
+    "alone": "单人",
+    "points": "{{score}}分",
+    "unrated": "不计积分",
+    "rating": "积分{{delta}}",
+    "today": "今天",
+    "yesterday": "昨天",
+    "replay": "回放",
+    "label": "{{outcome}}，{{who}}。{{mode}} · {{type}}。{{score}}。{{rating}}。{{date}}",
+    "hint": "打开回放"
+  },
+  "results": {
+    "replay": "回放",
+    "replayHint": "从头逐步回看这场对局，每一步都有讲解",
+    "rating": {
+      "title": "积分变化 · {{type}}",
+      "from": "原为{{before}}",
+      "label": "积分变化：{{delta}}，从{{before}}到{{after}}",
+      "provisional": "定级积分：前10场对局的积分变化按双倍计算",
+      "perOpponent": "与每位对手分别计算",
+      "pairLabel": "对阵{{name}}：{{delta}}",
+      "guard": {
+        "leftBeforeMoving": "对阵{{name}}：没有扣积分，你在走第一步之前就离开了",
+        "leftNotBehind": "对阵{{name}}：没有扣积分，你离开时并未落后",
+        "opponentLeftBeforeMyMove": "对阵{{name}}：没有加积分，对方在你走第一步之前就离开了",
+        "opponentLeftAhead": "对阵{{name}}：没有加积分，对方离开时你处于落后"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_other": "{{name}} · {{score}}分 · {{mistakes}} · 积分{{delta}}",
+    "ranking": {
+      "title": "最终排名",
+      "left": "已离开对局",
+      "label_other": "第{{place}}名：{{name}} · {{score}}分 · {{mistakes}}",
+      "labelRating_other": "第{{place}}名：{{name}} · {{score}}分 · {{mistakes}} · 积分{{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "单步得分最高",
+      "fewestMistakes": "错误最少。若相同，则得分高者胜出",
+      "fastest": "每个正确步骤的平均思考时间最短（至少5步）",
+      "comeback": "落后15分或以上之后反败为胜",
+      "mostPoints": "扣除罚分前，正确步骤的得分最多"
+    }
+  }
+}

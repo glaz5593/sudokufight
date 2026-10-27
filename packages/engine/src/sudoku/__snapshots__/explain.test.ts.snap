@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`explain: the spec examples (§13.2) hidden single, in Hebrew, exactly as in the spec 1`] = `"הספרה 7 חייבת להופיע בריבוע 5. כל שאר המשבצות הריקות בו חסומות: ב־⁦D4⁩ יש 7 בעמודה 4, וב־⁦E6⁩ יש 7 בשורה E. לכן ⁦D5 = 7⁩."`;
-
-exports[`explain: the spec examples (§13.2) naked single, in Hebrew, exactly as in the spec 1`] = `"⁦D5 → 7⁩. בשורה D חסרים 3, 7 ו־9. בעמודה 5 כבר יש 3 ו־9. לכן רק 7."`;
-
-exports[`level sentences formatBlock: "E6 לא יכול להכיל 7: בשורה E יש 7", with the cell name isolated 1`] = `"⁦E6⁩ לא יכול להכיל 7: בשורה E יש 7"`;
-
-exports[`level sentences formatNotYet: "עוד אי אפשר לדעת מה נכנס ב־A9 (2 או 5)", with the cell name isolated 1`] = `"עוד אי אפשר לדעת מה נכנס ב־⁦A9⁩ (2 או 5)"`;

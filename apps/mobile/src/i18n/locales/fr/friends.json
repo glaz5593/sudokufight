@@ -1,0 +1,182 @@
+{
+  "title": "Salon entre amis",
+  "subtitle": "{{type}} · {{count}} sur {{max}}",
+  "label": "Partie entre amis · non classée",
+  "mode": "Entre amis",
+  "modeLong": "Partie entre amis",
+  "unrated": "Non classée",
+  "code": {
+    "title": "Code du salon",
+    "label": "Code du salon : {{spelled}}",
+    "hint": "Envoie le code ou le lien"
+  },
+  "share": {
+    "button": "Partager le lien",
+    "hint": "Ouvre le menu de partage de ton téléphone, avec le code et le lien",
+    "message": "Rejoins-moi sur Sudoku Fight ! Code du salon : {{code}}\n{{link}}",
+    "failed": "Partage impossible"
+  },
+  "copy": {
+    "button": "Copier le code",
+    "done": "Code copié",
+    "failed": "Impossible de copier le code"
+  },
+  "gameType": {
+    "title": "Type de partie",
+    "hostPicks": "Seul l’hôte peut le changer",
+    "guestSees": "L’hôte choisit",
+    "changed": "Nouveau type de partie : {{type}}"
+  },
+  "players": {
+    "title": "Joueurs · {{count}} sur {{max}}"
+  },
+  "seat": {
+    "me": "Moi",
+    "host": "Hôte",
+    "away": "Pas dans le salon pour l’instant",
+    "empty": "En attente d’un joueur…",
+    "emptyLabel": "Place libre, en attente d’un joueur",
+    "rating": "Classement {{rating}}"
+  },
+  "kick": {
+    "label": "Retirer {{name}} du salon",
+    "title": "Retirer {{name}} du salon ?",
+    "body": "Cette personne ne pourra pas revenir dans ce salon.",
+    "confirm": "Retirer"
+  },
+  "start": {
+    "button_one": "Lancer la partie · {{count}} joueur",
+    "button_many": "Lancer la partie · {{count}} de joueurs",
+    "button_other": "Lancer la partie · {{count}} joueurs",
+    "needMore": "Il faut au moins 2 joueurs connectés pour lancer la partie",
+    "waitingForHost": "En attente du lancement par {{name}}",
+    "hostAway": "L’hôte n’est pas dans le salon pour l’instant",
+    "starting": "La partie commence…"
+  },
+  "startWithout": {
+    "title": "Lancer sans {{names}} ?",
+    "body": "Pas dans le salon pour l’instant : {{names}}. Qui n’est pas dans le salon reste dehors.",
+    "confirm": "Oui, lancer",
+    "cancel": "Non, attendons"
+  },
+  "leave": "Quitter le salon",
+  "reconnecting": "Connexion perdue. Reconnexion…",
+  "announce": {
+    "joined": "{{name}} a rejoint le salon",
+    "left": "{{name}} a quitté le salon",
+    "away": "{{name}} n’est pas dans le salon pour l’instant",
+    "back": "{{name}} est de retour dans le salon",
+    "host": "{{name}} est maintenant l’hôte",
+    "meHost": "Tu es maintenant l’hôte"
+  },
+  "opening": {
+    "create": "Ouverture d’un salon…",
+    "join": "Connexion au salon…"
+  },
+  "replace": {
+    "title": "Fermer ton autre salon ?",
+    "body": "Tu as déjà un salon ouvert, {{code}}. Ferme-le et ouvres-en un nouveau, ou retournes-y.",
+    "confirm": "Fermer et en ouvrir un",
+    "cancel": "Retour à ce salon"
+  },
+  "errors": {
+    "notFound": "Aucun salon trouvé avec le code {{code}}. Vérifie les chiffres.",
+    "notFoundThis": "Aucun salon trouvé avec ce code.",
+    "roomFull": "Le salon est complet ({{max}} sur {{max}}).",
+    "gameStarted": "La partie de ce salon a déjà commencé.",
+    "roomClosed": "Le salon a été fermé.",
+    "kicked": "L’hôte t’a retiré du salon.",
+    "cantJoin": "Tu as bloqué un joueur qui est dans ce salon.",
+    "suspended": "Ton compte est suspendu : tu ne peux pas jouer entre amis pour l’instant.",
+    "network": "Pas de connexion Internet.",
+    "tooManyRequests": "Trop de tentatives. Réessaie dans {{wait}}.",
+    "notAvailable": "Cette option n’est pas encore disponible.",
+    "badRequest": "Le code a 6 chiffres.",
+    "unauthorized": "Reconnecte-toi à ton compte.",
+    "notRegistered": "Termine ton inscription pour jouer entre amis.",
+    "tooManyRooms": "Tu as déjà un salon ouvert.",
+    "tooLarge": "Un problème est survenu. Réessaie.",
+    "internal": "Un problème est survenu sur le serveur. Réessaie dans un instant.",
+    "disabled": "Le jeu entre amis n’est pas disponible sur ce serveur.",
+    "unavailable": "Le serveur n’est pas disponible pour l’instant. Réessaie dans un instant."
+  },
+  "wait": {
+    "seconds_one": "{{count}} seconde",
+    "seconds_many": "{{count}} de secondes",
+    "seconds_other": "{{count}} secondes",
+    "minutes_one": "{{count}} minute",
+    "minutes_many": "{{count}} de minutes",
+    "minutes_other": "{{count}} minutes"
+  },
+  "closed": {
+    "kicked": "L’hôte t’a retiré du salon.",
+    "removed": "Tu as quitté le salon.",
+    "otherDevice": "Le salon a été ouvert sur un autre appareil.",
+    "serverRestart": "Le salon a été fermé.",
+    "closed": "Le salon a été fermé."
+  },
+  "lobbyErrors": {
+    "notHost": "Seul l’hôte peut faire ça.",
+    "notEnoughPlayers": "Il faut au moins 2 joueurs connectés pour lancer la partie.",
+    "playersAway": "Pas dans le salon pour l’instant : {{names}}.",
+    "gameStarted": "La partie a déjà commencé.",
+    "badCommand": "Ça n’a pas marché. Réessaie.",
+    "tooManyRequests": "Doucement, tu vas trop vite. Réessaie dans un instant."
+  },
+  "startedWithout": "La partie a commencé sans toi.",
+  "actions": {
+    "retry": "Réessayer",
+    "createRoom": "Créer un salon",
+    "joinWithCode": "Rejoindre avec un code",
+    "home": "Accueil"
+  },
+  "join": {
+    "title": "Rejoindre avec un code",
+    "prompt": "Tape les 6 chiffres que tu as reçus",
+    "codeLabel": "Code du salon, 6 chiffres",
+    "digitLabel": "Chiffre {{n}} sur {{total}}",
+    "paste": "Coller",
+    "pasteHint": "Tu peux coller tout le message WhatsApp",
+    "pasteNone": "Aucun code à 6 chiffres dans le texte copié",
+    "joining": "Connexion au salon…",
+    "submit": "Rejoindre"
+  },
+  "link": {
+    "notFound": {
+      "title": "Ce lien nous est inconnu",
+      "body": "Il est peut-être ancien, ou ne vient pas de Sudoku Fight. Tu peux continuer depuis l’accueil.",
+      "home": "Aller à l’accueil"
+    },
+    "badCode": "Lien non valide"
+  },
+  "invite": {
+    "pending": "Invitation au salon {{code}}",
+    "afterSignIn": "Après la connexion, direction le salon {{code}}",
+    "join": "Rejoindre",
+    "later": "Pas maintenant",
+    "expired": "L’invitation au salon {{code}} a expiré"
+  },
+  "busy": {
+    "practice": {
+      "title": "Quitter l’entraînement et rejoindre le salon ?",
+      "body": "L’entraînement est enregistré, comme quand tu le quittes.",
+      "confirm": "Rejoindre le salon"
+    },
+    "search": {
+      "title": "Arrêter la recherche et rejoindre ?",
+      "body": "La recherche d’un adversaire s’arrête.",
+      "confirm": "Rejoindre le salon"
+    },
+    "room": {
+      "title": "Passer au salon {{code}} ?",
+      "body": "Tu quitteras le salon où tu es maintenant.",
+      "confirm": "Changer de salon"
+    },
+    "game": {
+      "title": "Tu es en pleine partie",
+      "body": "Tu pourras rejoindre le salon après. L’invitation au salon {{code}} t’attendra.",
+      "back": "Retour à la partie"
+    },
+    "stay": "Rester"
+  }
+}

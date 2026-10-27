@@ -1,0 +1,282 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "Einstellungen",
+    "back": "Zurück"
+  },
+  "profile": {
+    "defaultName": "Spieler",
+    "label": "Meine Spielerkarte: {{name}}",
+    "noRating": "Noch keine Wertung",
+    "ratingTitle": "Wertung",
+    "none": "—",
+    "games_one": "1 Spiel",
+    "games_other": "{{count}} Spiele",
+    "gamesLabel_one": "Spiel",
+    "gamesLabel_other": "Spiele",
+    "winsLabel": "Siege",
+    "streakLabel": "Serie",
+    "winRate": "{{percent}} % Siege",
+    "streak_zero": "Keine Siegesserie",
+    "streak_one": "1 Sieg in Folge",
+    "streak_other": "{{count}} Siege in Folge"
+  },
+  "play": "Spielen",
+  "playHint": "Wähle einen Spielmodus",
+  "again": {
+    "title": "Noch eine Runde",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "Spiel konnte nicht starten. Nochmal?"
+  },
+  "recent": {
+    "heading": "Letzte Spiele",
+    "all": "Alle",
+    "unavailable": "Die auf diesem Handy gespeicherten Spiele konnten nicht gelesen werden.",
+    "emptyTitle": "Noch keine Spiele",
+    "emptyBody": "Jedes Training wird hier gespeichert, auch nachdem du die App schließt.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "Abgeschlossen",
+      "ended": "Beendet",
+      "interrupted": "Unterbrochen",
+      "playing": "Läuft",
+      "win": "Gewonnen",
+      "loss": "Verloren",
+      "tie": "Unentschieden"
+    },
+    "openHint": "Öffnet die Ergebnisse",
+    "versus": "{{outcome}} gegen {{name}}"
+  },
+  "modes": {
+    "title": "Neues Spiel",
+    "footnote": "Rangliste braucht eine Internetverbindung · Training geht immer",
+    "soon": "Bald",
+    "groups": {
+      "ranked": {
+        "title": "Rangliste",
+        "note": "Echte Gegner, in Echtzeit"
+      },
+      "friends": {
+        "title": "Mit Freunden",
+        "titleMoshe": "Echte Freunde, in Echtzeit",
+        "note": "Privater Raum · bis zu 4 · ungewertet"
+      },
+      "practice": {
+        "title": "Training",
+        "note": "Kein Druck, keine Wertung"
+      }
+    },
+    "chips": {
+      "rated": "Gewertet",
+      "unrated": "Ungewertet",
+      "offline": "Auch offline"
+    },
+    "ranked": {
+      "name": "Rangliste"
+    },
+    "ranked2": {
+      "title": "2 Spieler",
+      "tagline": "1 gegen 1 · gleiches Spielfeld",
+      "label": "Rangliste · 2 Spieler"
+    },
+    "ranked3": {
+      "title": "3 Spieler",
+      "tagline": "Jeder gegen jeden",
+      "label": "Rangliste · 3 Spieler"
+    },
+    "ranked4": {
+      "title": "4 Spieler",
+      "tagline": "Jeder gegen jeden",
+      "label": "Rangliste · 4 Spieler"
+    },
+    "friends": {
+      "create": "Neuer Raum",
+      "createHint": "Öffnet einen Warteraum mit einem Code für deine Freunde",
+      "join": "Code eingeben",
+      "joinHint": "Gib den 6-stelligen Code ein"
+    },
+    "solo": {
+      "name": "Solotraining",
+      "title": "Solo · ganzes Spielfeld",
+      "tagline": "In deinem Tempo",
+      "label": "Solo · ganzes Spielfeld"
+    },
+    "levels": {
+      "name": "Etappentraining",
+      "title": "Etappentraining",
+      "tagline": "Kurze Etappen · bis zu 3 Sterne",
+      "taglineNew_one": "1 kurze Etappe · 0–3 Sterne",
+      "taglineNew_other": "{{total}} kurze Etappen · 0–3 Sterne",
+      "chip": "Etappe {{stage}} ·",
+      "offline": "Offline",
+      "chipLabel_one": "Etappe {{stage}} · 1 Stern",
+      "chipLabel_other": "Etappe {{stage}} · {{count}} Sterne",
+      "label": "Etappentraining"
+    },
+    "bot": {
+      "name": "Training gegen Bot",
+      "title": "Training gegen Bot",
+      "tagline": "5 Level",
+      "label": "Training gegen Bot"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "Schnell",
+      "difficulty": "Leicht",
+      "technique": "Nur mit nackten Einern lösbar"
+    },
+    "normal": {
+      "name": "Standard",
+      "difficulty": "Mittel",
+      "technique": "Braucht versteckte Einer"
+    },
+    "hard": {
+      "name": "Schwer",
+      "difficulty": "Schwer",
+      "technique": "Braucht Paare oder Ausschlüsse"
+    }
+  },
+  "gameType": {
+    "title": "Spieltyp",
+    "note": {
+      "solo": "Ungewertet. Das Spielfeld stammt aus den Rätseln auf diesem Handy, ohne eines zu wiederholen, das du kürzlich gespielt hast.",
+      "bot": "Ungewertet. Das Spielfeld stammt aus den Rätseln auf diesem Handy, ohne eines zu wiederholen, das du kürzlich gespielt hast. Danach wählst du deinen Gegner.",
+      "ranked": "Gewertet. Ein Gegner nahe deiner Wertung, ein Spielfeld aus dem Pool des Servers, das du noch nicht gespielt hast, und dasselbe Spielfeld für euch beide.",
+      "rankedGroup": "Gewertet. Gegner nahe deiner Wertung, ein Spielfeld aus dem Pool des Servers, das du noch nicht gespielt hast, und dasselbe Spielfeld für alle. Das Spiel beginnt, sobald der Tisch voll ist."
+    },
+    "start": {
+      "solo": "Training starten",
+      "bot": "Gegner wählen",
+      "ranked": "Gegner finden",
+      "rankedGroup": "Gegner suchen"
+    },
+    "startHint": "Startet ein {{type}}-Training",
+    "rankedHint": "Sucht einen Gegner für ein {{type}}-Ranglistenspiel",
+    "rankedGroupHint": "Sucht Gegner für ein {{type}}-Ranglistenspiel",
+    "lockTime": "Zeit pro Feld",
+    "board": "Spielfeld",
+    "duration": "Dauer (ca.)",
+    "seconds": "{{seconds}} Sek.",
+    "minutes": "{{range}} Min.",
+    "yourRating": "Deine Wertung",
+    "cardLabel_one": "{{name}}. {{technique}}. {{seconds}} pro Feld, Schwierigkeit {{difficulty}}, etwa {{from}} bis 1 Minute",
+    "cardLabel_other": "{{name}}. {{technique}}. {{seconds}} pro Feld, Schwierigkeit {{difficulty}}, etwa {{from}} bis {{to}} Minuten",
+    "botHint": "Wähle einen Bot für ein {{type}}-Spiel"
+  },
+  "dev": {
+    "title": "Entwicklung",
+    "designSystem": "Designsystem",
+    "hello": "Verbindungstest"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "feedback": "Ton und Vibration",
+    "sound": "Ton",
+    "soundHint": "Töne für Züge und Aktionen",
+    "haptics": "Vibration",
+    "hapticsHint": "Kurze Vibrationen als Rückmeldung zu Zügen",
+    "motion": "Bewegung reduzieren",
+    "motionHint": "Weniger Animationen: Punkte springen direkt auf das Ergebnis, und eine Störung erscheint für dieselbe Zeit als unbewegte Abdeckung.",
+    "reduceMotion": {
+      "system": "Wie das Gerät",
+      "on": "An",
+      "off": "Aus"
+    },
+    "language": "Sprache",
+    "languageHint": "Beim Wechsel der Sprache startet die App neu.",
+    "testing": "Tests",
+    "testingHint": "Nur in Test-Builds (Staging). Die Store-Version hat das nicht.",
+    "chainPenalty": "Kette: Raten kostet 5 Sek.",
+    "chainPenaltyHint": "Ab der nächsten Ketten-Etappe: Eine Ziffer in einem Feld, das sich noch nicht bestimmen lässt, kostet 5 Sekunden und wird nicht gesetzt.",
+    "unlockAll": "Alle Etappen freischalten (Test)",
+    "unlockAllHint": "Jede Etappe ist auf der Karte offen. Sterne und XP zählen wie üblich.",
+    "languageConfirm": {
+      "title": "Sprache auf {{language}} umstellen?",
+      "body": "Die App startet neu, damit jeder Bildschirm in der Leserichtung der neuen Sprache erscheint.",
+      "confirm": "Umstellen und neu starten",
+      "titleDevice": "Auf die Gerätesprache umstellen?"
+    },
+    "languageDevice": "Gerätesprache",
+    "languageSheetTitle": "Sprache wählen",
+    "languageField": "Sprache: {{language}}",
+    "languageFieldDevice": "Sprache: Gerätesprache, {{language}}",
+    "about": "Info und Rechtliches",
+    "privacy": "Datenschutzerklärung",
+    "terms": "Nutzungsbedingungen",
+    "licenses": "Lizenzen",
+    "opensInBrowser": "Öffnet sich im Browser"
+  },
+  "placeholder": {
+    "soon": "Demnächst",
+    "leaderboard": {
+      "title": "Bestenliste",
+      "body": "Die Bestenliste startet zusammen mit den Ranglistenspielen."
+    },
+    "history": {
+      "title": "Verlauf",
+      "body": "Hier erscheinen alle deine Spiele, mit Wiederholungen und einer Erklärung zu jedem Zug. Bis dahin findest du deine letzten Trainings auf dem Startbildschirm."
+    },
+    "achievements": {
+      "title": "Erfolge",
+      "body": "Erfolge, Level und XP sind unterwegs."
+    }
+  },
+  "botSelect": {
+    "title": "Wähle einen Bot",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "Denkzeit pro Zug",
+    "thinkValue": "{{range}} Sek.",
+    "mistakes": "Fehler",
+    "note": "Das ist die Zeit für einen gewöhnlichen Zug. Für ein Feld mit schwierigerer Logik braucht der Bot länger, für die letzte Lücke einer Zeile, Spalte oder eines Blocks etwas weniger. Der Bot spielt dasselbe Spielfeld, in Echtzeit.",
+    "start": "Los geht’s",
+    "startHint": "Startet ein {{type}}-Training gegen {{name}}",
+    "cardLabel_one": "Level {{level}}, {{title}}: {{name}}. {{behavior}}. Denkt {{from}} bis {{to}} Sekunde pro Zug, {{mistakes}} % Fehler",
+    "cardLabel_other": "Level {{level}}, {{title}}: {{name}}. {{behavior}}. Denkt {{from}} bis {{to}} Sekunden pro Zug, {{mistakes}} % Fehler",
+    "levels": {
+      "1": {
+        "title": "Anfänger",
+        "behavior": "Langsam, macht so einige Fehler und lässt dich lernen"
+      },
+      "2": {
+        "title": "Hobbyspieler",
+        "behavior": "Entspannt, patzt hier und da und schickt manchmal ein 😂"
+      },
+      "3": {
+        "title": "Fortgeschritten",
+        "behavior": "Beständig und überlegt, schwer zu überholen"
+      },
+      "4": {
+        "title": "Meister",
+        "behavior": "Schnell, fast nie falsch und ein bisschen selbstgefällig 😎"
+      },
+      "5": {
+        "title": "Großmeister",
+        "behavior": "Schnell, präzise und gnadenlos"
+      }
+    }
+  },
+  "licenses": {
+    "title": "Lizenzen",
+    "intro": "Sudoku Fight basiert auf offenen Schriften und Open-Source-Software. Danke an ihre Urheber. Hier sind ihre Lizenzen und Urheberrechtshinweise.",
+    "fonts": "Schriften",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_one": "1 Open-Source-Paket",
+    "packages_other": "{{count}} Open-Source-Pakete",
+    "packageLabel": "{{name}}, Version {{version}}, Lizenz {{license}}",
+    "texts": "Lizenztexte",
+    "textsHint": "Der vollständige Text jeder Lizenz, im Wortlaut.",
+    "show": "Lizenz {{license}} anzeigen",
+    "hide": "Lizenz {{license}} ausblenden"
+  }
+}

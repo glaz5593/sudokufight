@@ -1,0 +1,133 @@
+{
+  "title": "السجل",
+  "summary": {
+    "games_zero": "لا مباريات",
+    "games_one": "مباراة واحدة",
+    "games_two": "مباراتان",
+    "games_few": "{{count}} مباريات",
+    "games_many": "{{count}} مباراة",
+    "games_other": "{{count}} مباراة",
+    "winRate": "فوز بنسبة {{rate}}",
+    "practices_zero": "لا تدريبات",
+    "practices_one": "تدريب واحد",
+    "practices_two": "تدريبان",
+    "practices_few": "{{count}} تدريبات",
+    "practices_many": "{{count}} تدريبًا",
+    "practices_other": "{{count}} تدريب",
+    "streak": "السلسلة",
+    "streakLabel_zero": "سلسلة الفوز: بلا انتصارات",
+    "streakLabel_one": "سلسلة الفوز: فوز واحد",
+    "streakLabel_two": "سلسلة الفوز: فوزان",
+    "streakLabel_few": "سلسلة الفوز: {{count}} انتصارات",
+    "streakLabel_many": "سلسلة الفوز: {{count}} فوزًا",
+    "streakLabel_other": "سلسلة الفوز: {{count}} فوز"
+  },
+  "filters": {
+    "label": "تصفية المباريات",
+    "all": "الكل",
+    "ranked": "مصنفة",
+    "practice": "تدريب"
+  },
+  "loading": "جارٍ تحميل مبارياتك…",
+  "more": "مزيد من المباريات",
+  "empty": {
+    "title": "لا مباريات هنا بعد",
+    "body": "تُحفظ كل مباراة هنا لمشاهدتها مجددًا: حركة بعد حركة، مع شرح سبب وضع كل رقم في مكانه.",
+    "action": "بدء أول مباراة"
+  },
+  "notes": {
+    "practice": "مباريات التدريب لا تغيّر تصنيفك، لكن يمكنك مشاهدتها مجددًا أيضًا.",
+    "offline": "لا اتصال بالخادم: تُعرض مباريات التدريب الموجودة على هذا الهاتف فقط.",
+    "signedOut": "تظهر المباريات المصنفة هنا بعد تسجيل الدخول.",
+    "rankedError": "تعذّر تحميل مبارياتك المصنفة.",
+    "practiceUnavailable": "تعذّرت قراءة مباريات التدريب المحفوظة على هذا الهاتف.",
+    "retry": "إعادة المحاولة"
+  },
+  "states": {
+    "offlineTitle": "لا اتصال بالخادم",
+    "offlineBody": "تُحمَّل مبارياتك المصنفة عند عودة الاتصال. مباريات التدريب على هذا الهاتف تظهر هنا حتى دون اتصال.",
+    "errorTitle": "تعذّر تحميل مبارياتك",
+    "errorBody": "لم يستجب الخادم كما ينبغي. يمكنك المحاولة مجددًا بعد لحظة.",
+    "practiceTitle": "تعذّرت قراءة مباريات التدريب",
+    "practiceBody": "لم تُفتح مباريات التدريب المحفوظة على هذا الهاتف. يمكنك المحاولة مجددًا، وإن تكرر ذلك، يمكنك إعادة تشغيل التطبيق."
+  },
+  "card": {
+    "mode": {
+      "ranked": "مصنفة",
+      "solo": "تدريب فردي",
+      "bot": "تدريب ضد بوت"
+    },
+    "outcome": {
+      "win": "فوز",
+      "loss": "خسارة",
+      "tie": "تعادل",
+      "completed": "اكتملت اللوحة",
+      "ended": "انتهى التدريب",
+      "interrupted": "انقطعت المباراة"
+    },
+    "place": "المركز {{place}}",
+    "against_zero": "دون خصوم",
+    "against_one": "ضد خصم واحد",
+    "against_two": "ضد خصمين",
+    "against_few": "ضد {{count}} خصوم",
+    "against_many": "ضد {{count}} خصمًا",
+    "against_other": "ضد {{count}} خصم",
+    "alone": "فردي",
+    "points": "{{score}} نقطة",
+    "unrated": "دون تصنيف",
+    "rating": "التصنيف {{delta}}",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "replay": "إعادة العرض",
+    "label": "{{outcome}}، {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "يفتح إعادة العرض"
+  },
+  "results": {
+    "replay": "إعادة العرض",
+    "replayHint": "المباراة من البداية، خطوة بخطوة، مع شرح لكل حركة",
+    "rating": {
+      "title": "تغيّر التصنيف · {{type}}",
+      "from": "من {{before}}",
+      "label": "تغيّر التصنيف: {{delta}}، من {{before}} إلى {{after}}",
+      "provisional": "تصنيف مؤقت: التغييرات مضاعفة في أول 10 مباريات لك",
+      "perOpponent": "يُحسب أمام كل خصم على حدة",
+      "pairLabel": "ضد {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "ضد {{name}}: لم يُخصم من تصنيفك، فقد خرجت قبل حركتك الأولى",
+        "leftNotBehind": "ضد {{name}}: لم يُخصم من تصنيفك، فلم تكن في المؤخرة عند خروجك",
+        "opponentLeftBeforeMyMove": "ضد {{name}}: لا زيادة في التصنيف، فقد كان الخروج قبل حركتك الأولى",
+        "opponentLeftAhead": "ضد {{name}}: لا زيادة في التصنيف، فقد كنت في المؤخرة لحظة الخروج"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_zero": "{{name}} · {{score}} نقطة · {{mistakes}} · التصنيف {{delta}}",
+    "opponentLabel_one": "{{name}} · {{score}} نقطة · {{mistakes}} · التصنيف {{delta}}",
+    "opponentLabel_two": "{{name}} · {{score}} نقطة · {{mistakes}} · التصنيف {{delta}}",
+    "opponentLabel_few": "{{name}} · {{score}} نقاط · {{mistakes}} · التصنيف {{delta}}",
+    "opponentLabel_many": "{{name}} · {{score}} نقطة · {{mistakes}} · التصنيف {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} نقطة · {{mistakes}} · التصنيف {{delta}}",
+    "ranking": {
+      "title": "الترتيب النهائي",
+      "left": "خارج المباراة",
+      "label_zero": "المركز {{place}}: {{name}} · {{score}} نقطة · {{mistakes}}",
+      "label_one": "المركز {{place}}: {{name}} · {{score}} نقطة · {{mistakes}}",
+      "label_two": "المركز {{place}}: {{name}} · {{score}} نقطة · {{mistakes}}",
+      "label_few": "المركز {{place}}: {{name}} · {{score}} نقاط · {{mistakes}}",
+      "label_many": "المركز {{place}}: {{name}} · {{score}} نقطة · {{mistakes}}",
+      "label_other": "المركز {{place}}: {{name}} · {{score}} نقطة · {{mistakes}}",
+      "labelRating_zero": "المركز {{place}}: {{name}} · {{score}} نقطة · {{mistakes}} · التصنيف {{delta}}",
+      "labelRating_one": "المركز {{place}}: {{name}} · {{score}} نقطة · {{mistakes}} · التصنيف {{delta}}",
+      "labelRating_two": "المركز {{place}}: {{name}} · {{score}} نقطة · {{mistakes}} · التصنيف {{delta}}",
+      "labelRating_few": "المركز {{place}}: {{name}} · {{score}} نقاط · {{mistakes}} · التصنيف {{delta}}",
+      "labelRating_many": "المركز {{place}}: {{name}} · {{score}} نقطة · {{mistakes}} · التصنيف {{delta}}",
+      "labelRating_other": "المركز {{place}}: {{name}} · {{score}} نقطة · {{mistakes}} · التصنيف {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "أعلى نقاط في حركة واحدة",
+      "fewestMistakes": "أقل عدد من الأخطاء. عند التعادل، النقاط الأعلى",
+      "fastest": "أقل متوسط لوقت التفكير لكل حركة صحيحة (5 حركات على الأقل)",
+      "comeback": "فوز بعد التأخر بفارق 15 نقطة أو أكثر",
+      "mostPoints": "أكبر مجموع نقاط من الحركات الصحيحة، قبل الغرامات"
+    }
+  }
+}

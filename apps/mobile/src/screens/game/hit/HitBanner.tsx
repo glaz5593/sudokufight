@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   ReduceMotion,
   type SharedValue,
@@ -15,6 +15,7 @@ import { AVATAR_REACTIONS, type AvatarIdOrNone } from '../../../avatars';
 import { HIT_FADE_OUT_MS } from '../../../components/interference/config';
 import { hitAlpha } from '../../../components/interference/hitClock';
 import { Avatar } from '../../../components/player';
+import { Text } from '../../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { motion } from '../../../theme/motion';
 
@@ -171,7 +172,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: tokens.layout.gutterGame,
     right: tokens.layout.gutterGame,
-    height: size.buttonMd,
+    // The least: a taller script may need more, never cut (localization plan 0ט).
+    minHeight: size.buttonMd,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space[5],

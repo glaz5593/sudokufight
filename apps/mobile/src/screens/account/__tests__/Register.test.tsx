@@ -11,7 +11,14 @@ import { avatarIdsIn } from '../../../avatars/testing/avatarTesting';
 import { ltr } from '../../../components/player';
 import { useToast } from '../../../components/ui';
 import { LARGE_TEXT_SCALE } from '../../../components/ui/Button';
-import { directionProblems, PHONE, setWindow } from '../../../components/ui/testing/layout';
+import {
+  directionProblems,
+  fixedT,
+  layoutLanguages,
+  PHONE,
+  setWindow,
+  widthIn,
+} from '../../../components/ui/testing/layout';
 import i18n from '../../../i18n';
 import { track } from '../../../services/analytics';
 import { useSettings } from '../../../state/settings';
@@ -373,11 +380,12 @@ describe('Register step 2: the account (spec §3.2)', () => {
       // The phone's width (360 dp, the S22's), less the screen's gutters and the button's own padding; the
       // words measured in the font the app ships.
       const room = PHONE.width - 2 * GUTTER.screen - 2 * space[10];
-      for (const lng of ['he', 'en'] as const) {
-        const words = i18n.getFixedT(lng, 'account')('account.submit');
+      // In every layout language the app has strings for (localization plan 0טו).
+      for (const lng of layoutLanguages()) {
+        const words = (await fixedT(lng, 'account'))('account.submit');
         // Up to the text scale where the label may take a second line (LARGE_TEXT_SCALE).
         for (const fontScale of [1, 1.1]) {
-          const fits = measuredWidth(words, fontFamily, fontSize, { fontScale }) <= room;
+          const fits = widthIn(lng, words, { fontFamily, fontSize }, { fontScale }) <= room;
           expect([lng, fontScale, fits]).toEqual([lng, fontScale, true]);
         }
       }

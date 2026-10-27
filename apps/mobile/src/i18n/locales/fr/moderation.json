@@ -1,0 +1,114 @@
+{
+  "actions": {
+    "report": "Signaler le joueur",
+    "block": "Bloquer le joueur",
+    "unblock": "Débloquer",
+    "reportLabel": "Signaler {{name}}",
+    "blockLabel": "Bloquer {{name}}",
+    "unblockLabel": "Débloquer {{name}}",
+    "blockedNote": "Tu as bloqué ce joueur : vous ne vous affronterez pas en parties classées."
+  },
+  "report": {
+    "title": "Signaler {{name}}",
+    "question": "Quel est le problème ?",
+    "reasons": {
+      "offensiveName": "Nom offensant",
+      "cheating": "Triche",
+      "other": "Autre"
+    },
+    "reasonHints": {
+      "offensiveName": "Le nom est grossier, insultant ou déplacé",
+      "cheating": "Semble utiliser une aide extérieure, ou exploiter un bug",
+      "other": "Autre chose qui n’a pas sa place dans l’arène"
+    },
+    "privacy_one": "Ce joueur ne saura pas qui a fait le signalement. Chaque signalement est examiné sous {{hours}} heure.",
+    "privacy_many": "Ce joueur ne saura pas qui a fait le signalement. Chaque signalement est examiné sous {{hours}} d’heures.",
+    "privacy_other": "Ce joueur ne saura pas qui a fait le signalement. Chaque signalement est examiné sous {{hours}} heures.",
+    "send": "Envoyer le signalement",
+    "pickFirst": "Choisis une raison, puis envoie.",
+    "thanks_one": "Merci. Nous examinerons le signalement sous {{hours}} heure.",
+    "thanks_many": "Merci. Nous examinerons le signalement sous {{hours}} d’heures.",
+    "thanks_other": "Merci. Nous examinerons le signalement sous {{hours}} heures.",
+    "done": "Fermer",
+    "errors": {
+      "rateLimited_one": "Tu as envoyé beaucoup de signalements dans la dernière heure. Tu pourras en envoyer un autre dans {{count}} minute.",
+      "rateLimited_many": "Tu as envoyé beaucoup de signalements dans la dernière heure. Tu pourras en envoyer un autre dans {{count}} de minutes.",
+      "rateLimited_other": "Tu as envoyé beaucoup de signalements dans la dernière heure. Tu pourras en envoyer un autre dans {{count}} minutes.",
+      "busy": "Trop de requêtes. Attends un instant et réessaie.",
+      "suspended": "Ton compte est suspendu : tu ne peux pas envoyer de signalements pour l’instant.",
+      "self": "Tu ne peux pas te signaler toi-même.",
+      "notFound": "Ce joueur n’est plus dans la partie.",
+      "offline": "Pas de connexion au serveur : le signalement n’a pas été envoyé. Réessaie.",
+      "failed": "Impossible d’envoyer le signalement. Réessaie."
+    }
+  },
+  "block": {
+    "title": "Bloquer {{name}} ?",
+    "body": "Vous ne vous affronterez plus en parties classées, et les réactions envoyées par {{name}} ne t’atteindront plus. Personne n’est prévenu d’un blocage. Tu peux le lever à tout moment : Réglages → Joueurs bloqués.",
+    "confirm": "Bloquer",
+    "done": "Blocage effectué : {{name}}.",
+    "unblockTitle": "Débloquer {{name}} ?",
+    "unblockBody": "Vous pourrez à nouveau vous affronter en parties classées, et les réactions envoyées par {{name}} t’atteindront.",
+    "unblockConfirm": "Débloquer",
+    "unblocked": "Blocage levé : {{name}}.",
+    "errors": {
+      "limitReached_one": "Tu peux bloquer jusqu’à {{max}} joueur. Débloque quelqu’un (Réglages → Joueurs bloqués) et réessaie.",
+      "limitReached_many": "Tu peux bloquer jusqu’à {{max}} de joueurs. Débloque quelqu’un (Réglages → Joueurs bloqués) et réessaie.",
+      "limitReached_other": "Tu peux bloquer jusqu’à {{max}} joueurs. Débloque quelqu’un (Réglages → Joueurs bloqués) et réessaie.",
+      "self": "Tu ne peux pas te bloquer toi-même.",
+      "notFound": "Ce joueur n’est plus dans la partie.",
+      "busy": "Trop de requêtes. Attends un instant et réessaie.",
+      "offline": "Pas de connexion au serveur : le blocage n’a pas été enregistré. Réessaie.",
+      "unblockOffline": "Pas de connexion au serveur : le blocage n’a pas été levé. Réessaie.",
+      "failed": "Impossible d’enregistrer le blocage. Réessaie.",
+      "unblockFailed": "Impossible de lever le blocage. Réessaie."
+    }
+  },
+  "blocked": {
+    "title": "Joueurs bloqués",
+    "settingsRow": "Joueurs bloqués",
+    "note": "Tu n’affronteras pas ces joueurs en parties classées, et leurs réactions ne t’atteindront pas. Personne n’est prévenu d’un blocage.",
+    "count": "{{count}} sur {{max}}",
+    "since": "Blocage depuis le {{date}}",
+    "rowLabel": "{{name}}, blocage depuis le {{date}}",
+    "emptyTitle": "Aucun joueur bloqué",
+    "emptyBody": "Tu peux bloquer un joueur depuis sa carte, ou depuis le menu de sa carte en partie classée.",
+    "loading": "Chargement des joueurs bloqués…",
+    "offlineTitle": "Pas de connexion au serveur",
+    "offlineBody": "La liste est conservée sur le serveur. Réessaie une fois en ligne.",
+    "errorTitle": "Impossible de charger la liste",
+    "errorBody": "Réessaie dans un instant.",
+    "retry": "Réessayer",
+    "signedOut": "Connecte-toi pour voir la liste."
+  },
+  "chooseName": {
+    "title": "Choisis un nouveau nom",
+    "body": "Ton ancien nom a été remplacé par un nom temporaire, {{name}}, car il ne respectait pas les règles des noms. Choisis un nouveau nom pour continuer.",
+    "rule": "Pas d’attente de 30 jours cette fois : tu peux choisir un nom maintenant.",
+    "save": "Enregistrer et continuer",
+    "saved": "Nouveau nom enregistré.",
+    "same": "C’est le nom temporaire. Choisis le tien.",
+    "offline": "Pas de connexion au serveur : le nom n’a pas été enregistré. Réessaie une fois en ligne.",
+    "practice": "S’entraîner en attendant",
+    "settings": "Réglages",
+    "signOut": "Se déconnecter"
+  },
+  "suspended": {
+    "banner": "Compte suspendu : pas de parties classées",
+    "bannerAction": "Détails",
+    "bannerLabel": "Compte suspendu, pas de parties classées. Détails",
+    "title": "Compte suspendu",
+    "body": "À la suite d’un signalement, ton compte est suspendu. Pendant la suspension, pas de parties classées, et le profil ne peut pas être modifié.",
+    "can": "Tu peux toujours t’entraîner en solo ou contre un bot, bloquer des joueurs et supprimer le compte.",
+    "contactTitle": "Tu penses que c’est une erreur ?",
+    "contact": "Écris-nous et nous réexaminerons ton cas. Les coordonnées sont dans les conditions d’utilisation.",
+    "contactEmail": "Tu peux nous écrire : {{email}}",
+    "openContact": "Coordonnées",
+    "opensInBrowser": "S’ouvre dans le navigateur",
+    "practice": "S’entraîner",
+    "chip": "Compte suspendu",
+    "chipLabel": "Indisponible : compte suspendu",
+    "ranked": "Ton compte est suspendu : pas de parties classées pour l’instant.",
+    "editProfile": "Compte suspendu : le profil ne peut pas être modifié"
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "devMode": {
+    "badge": "Modalità sviluppo",
+    "label": "Modalità sviluppo: account locali solo su questo telefono, senza Firebase",
+    "noEmail": "In modalità sviluppo non si inviano email."
+  },
+  "fields": {
+    "email": "Indirizzo email",
+    "emailPlaceholder": "name@example.com",
+    "password": "Password",
+    "newPassword": "Scegli una password",
+    "confirmPassword": "Conferma la password",
+    "displayName": "Nome visualizzato",
+    "displayNamePlaceholder": "Il tuo nome nell’arena",
+    "avatar": "Avatar",
+    "country": "Paese",
+    "showPassword": "Mostra la password",
+    "hidePassword": "Nascondi la password",
+    "change": "Cambia"
+  },
+  "validation": {
+    "emailRequired": "Inserisci la tua email",
+    "emailInvalid": "Questo indirizzo email non sembra corretto",
+    "passwordRequired": "Inserisci la tua password",
+    "passwordRules": "La password deve avere almeno 8 caratteri",
+    "confirmMismatch": "Le password non coincidono",
+    "countryRequired": "Scegli un paese"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "Password sbagliata. Riprova o reimpostala.",
+      "userNotFound": "Nessun account con questa email. Vuoi registrarti?",
+      "invalidCredentials": "Email o password non corrette.",
+      "tooManyRequests": "Troppi tentativi. Aspetta qualche minuto e riprova, o reimposta la password.",
+      "network": "Nessuna connessione a internet. Controllala e riprova.",
+      "emailInUse": "Questa email ha già un account. Accedi con quella.",
+      "invalidEmail": "Questo indirizzo email non sembra corretto.",
+      "weakPassword": "Questa password è troppo debole. Scegline una più lunga.",
+      "requiresRecentLogin": "Per farlo, accedi di nuovo.",
+      "userDisabled": "Questo account è stato disattivato. Contatta l’assistenza.",
+      "noUser": "Non hai effettuato l’accesso. Accedi di nuovo.",
+      "unknown": "Qualcosa è andato storto. Riprova.",
+      "cancelled": "L’accesso con Google è stato annullato.",
+      "inProgress": "L’accesso con Google è già aperto. Completalo, o chiudilo e riprova.",
+      "playServices": "Per accedere con Google servono i Google Play Services. Aggiornali e riprova.",
+      "googleConfig": "L’accesso con Google al momento non è disponibile in questa versione dell’app (DEVELOPER_ERROR). Nel frattempo usa email e password.",
+      "accountExistsWithPassword": "Questa email ha già un account con password. Accedi con email e password.",
+      "userMismatch": "Questo è un altro account Google. Scegli quello con cui hai effettuato l’accesso."
+    },
+    "api": {
+      "badRequest": "Richiesta non valida. Riprova.",
+      "invalidName": "Questo nome viola le regole.",
+      "unauthorized": "La tua sessione con il server è scaduta. Accedi di nuovo.",
+      "reauthRequired": "Per eliminare l’account serve un nuovo accesso. Inserisci di nuovo la password e riprova.",
+      "suspended": "Il tuo account è sospeso, quindi per ora non si può modificare.",
+      "notRegistered": "Questo account non ha ancora un combattente. Completiamo la registrazione.",
+      "notFound": "Il server non conosce questa richiesta. Aggiorna l’app.",
+      "alreadyRegistered": "Questo account ha già un combattente.",
+      "taken": "Questo nome è già preso. Scegline un altro.",
+      "renameTooSoon": "Puoi cambiare nome solo una volta ogni 30 giorni.",
+      "tooLarge": "Questa richiesta è troppo grande.",
+      "blocked": "Questo nome non è adatto all’arena. Scegline un altro.",
+      "tooManyRequests": "Troppe richieste. Aspetta un attimo e riprova.",
+      "internal": "Errore del server. Riprova tra un attimo.",
+      "disabled": "Al momento gli account sono disattivati su questo server.",
+      "unavailable": "Al momento il server non è disponibile. Riprova tra un attimo.",
+      "network": "Impossibile raggiungere il server. Controlla la connessione a internet e riprova.",
+      "timeout": "Il server non ha risposto in tempo. Riprova.",
+      "signedOut": "Non hai effettuato l’accesso. Accedi di nuovo.",
+      "unexpected": "Il server ha inviato una risposta inattesa. Riprova, o aggiorna l’app."
+    }
+  },
+  "splash": {
+    "tagline": "Una griglia. Tutti risolvono. Vince uno solo.",
+    "loading": "Caricamento dell’arena…",
+    "tipLabel": "Consiglio",
+    "tips": {
+      "lock_one": "La casella che scegli è bloccata solo per te: {{seconds}} secondo in una partita {{type}}.",
+      "lock_many": "La casella che scegli è bloccata solo per te: {{seconds}} di secondi in una partita {{type}}.",
+      "lock_other": "La casella che scegli è bloccata solo per te: {{seconds}} secondi in una partita {{type}}.",
+      "hard": "Una mossa più difficile vale più punti.",
+      "mistake": "Un errore costa esattamente i punti che avrebbe fatto guadagnare il numero giusto. Meglio pensarci un attimo in più.",
+      "interfere": "Lancia un disturbo con due tocchi: «Disturba» sulla scheda del tuo avversario, poi quello che scegli."
+    },
+    "errorTitle": "Non siamo riusciti a caricare il tuo combattente",
+    "retry": "Riprova",
+    "signOut": "Esci"
+  },
+  "login": {
+    "title": "Torna nell’<accent>arena</accent>",
+    "titleLabel": "Torna nell’arena",
+    "subtitle": "Il tuo punteggio, la tua serie e i tuoi rivali ti aspettano.",
+    "forgot": "Password dimenticata",
+    "submit": "Accedi",
+    "noAccount": "Non hai ancora un account?",
+    "register": "Registrati",
+    "arenaSpot": "Il tuo posto"
+  },
+  "google": {
+    "continue": "Continua con Google",
+    "orEmail": "o con l’email",
+    "orEmailPassword": "o con email e password",
+    "existing": "Questo account Google ha già un combattente, {{name}}. Hai effettuato l’accesso con quello.",
+    "passwordHint": "Hai fatto la registrazione con Google? Usa «Continua con Google».",
+    "emailInUseHint": "Se per la registrazione hai usato Google, usa «Continua con Google».",
+    "termsTitle": "Termini e privacy",
+    "termsBody": "Per continuare con Google, accetta i termini d’uso e l’informativa sulla privacy.",
+    "termsAccept": "Accetta e continua"
+  },
+  "forgot": {
+    "title": "Password dimenticata",
+    "body": "Inserisci l’email usata per la registrazione e ti invieremo un link per scegliere una nuova password.",
+    "submit": "Invia il link",
+    "sentTitle": "Controlla la posta",
+    "sentBody": "Se {{email}} ha un account, abbiamo inviato a quell’indirizzo un link per reimpostare la password. Non lo trovi? Controlla la cartella spam.",
+    "backToLogin": "Torna all’accesso"
+  },
+  "register": {
+    "step": "Passo {{step}} di {{total}}",
+    "backToLogin": "Torna all’accesso",
+    "backToFighter": "Torna al tuo combattente"
+  },
+  "fighter": {
+    "title": "Crea il tuo <accent>combattente</accent>",
+    "titleLabel": "Crea il tuo combattente",
+    "resumeNote": "Il tuo account è pronto. Scegli solo il tuo combattente.",
+    "chooseAvatar": "Scegli un avatar",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}, si sblocca al livello {{level}}",
+    "selectedAvatar": "Avatar scelto: {{name}}",
+    "yourPick": "La tua scelta: {{name}}",
+    "previewTitle": "Ecco come ti vede l’arena",
+    "previewLabel": "Anteprima della tua scheda in partita: {{name}}",
+    "previewNew": "Nuovo",
+    "continue": "Continua",
+    "enterArena": "Entra nell’arena",
+    "signOut": "Esci",
+    "googleNote": "Hai effettuato l’accesso con Google. Scegli solo il tuo combattente."
+  },
+  "name": {
+    "rules": "3–16 caratteri: lettere ebraiche o inglesi, cifre, trattino basso e punto.",
+    "status": {
+      "checking": "Verifica…",
+      "available": "Disponibile",
+      "taken": "Già preso",
+      "invalid": "Non valido",
+      "blocked": "Non consentito",
+      "error": "Non verificato",
+      "current": "Il tuo nome"
+    },
+    "problem": {
+      "invalidChars": "Non si possono usare: {{chars}}",
+      "tooShort": "Almeno 3 caratteri",
+      "tooLong": "Massimo 16 caratteri"
+    },
+    "charSpace": " ",
+    "takenHint": "Qualcuno ha già scelto questo nome. Provane un altro.",
+    "blockedHint": "Questo nome non è adatto all’arena. Provane un altro.",
+    "errorHint": "Non siamo riusciti a verificare il nome. Lo verificheremo di nuovo quando salvi."
+  },
+  "country": {
+    "label": "Paese: {{country}}",
+    "choose": "Scegli un paese",
+    "sheetTitle": "Scegli un paese",
+    "search": "Cerca un paese",
+    "searchPlaceholder": "Cerca",
+    "none": "Nessun paese trovato",
+    "hint": "Rilevato dalle impostazioni del telefono. Puoi cambiarlo quando vuoi."
+  },
+  "account": {
+    "title": "Ancora un passo verso l’<accent>arena</accent>",
+    "titleLabel": "Ancora un passo verso l’arena",
+    "subtitle": "La tua email e la password tengono al sicuro il tuo punteggio e i tuoi progressi.",
+    "fighterReady": "Combattente pronto",
+    "edit": "Modifica",
+    "editLabel": "Modifica il tuo combattente",
+    "submit": "Crea account",
+    "profileFailed": "Il tuo account è stato creato, ma il tuo combattente non è ancora stato salvato. Riprova.",
+    "nameTakenNow": "Nel frattempo qualcuno ha preso il nome {{name}}. Scegline un altro: il tuo account ti aspetta."
+  },
+  "password": {
+    "rules": {
+      "length": "Almeno 8 caratteri"
+    },
+    "ruleMet": "{{rule}}: fatto",
+    "ruleMissing": "{{rule}}: manca",
+    "strengthLabel": "Sicurezza della password",
+    "strength": {
+      "weak": "Password debole",
+      "fair": "Password discreta",
+      "good": "Password buona",
+      "strong": "Password forte"
+    },
+    "match": "Coincidono",
+    "mismatch": "Non coincidono"
+  },
+  "terms": {
+    "accept": "Accetto i termini d’uso e l’informativa sulla privacy",
+    "termsLink": "Termini d’uso",
+    "privacyLink": "Informativa sulla privacy",
+    "linkHint": "Si apre nel browser",
+    "required": "Per entrare nell’arena, accetta i termini"
+  },
+  "verify": {
+    "bannerTitle": "La tua email non è ancora verificata",
+    "bannerAction": "Verifica",
+    "bannerLabel": "La tua email non è ancora verificata. Verifica la tua email",
+    "title": "Verifica la tua email",
+    "body": "Abbiamo inviato un link di verifica a {{email}}. Aprilo, poi torna qui.",
+    "why": "L’allenamento funziona anche senza. Le partite classificate richiederanno un’email verificata.",
+    "resend": "Invia di nuovo",
+    "sent": "Nuovo link inviato",
+    "check": "Ho verificato",
+    "notYet": "Non ancora verificata. Hai aperto il link?",
+    "done": "Email verificata. Grazie!",
+    "devNote": "In modalità sviluppo non si inviano email: «Ho verificato» segna l’email come verificata."
+  },
+  "edit": {
+    "title": "Modifica profilo",
+    "save": "Salva",
+    "saved": "Profilo salvato",
+    "nameRule": "Puoi cambiare nome una volta ogni 30 giorni.",
+    "nameLocked": "Puoi cambiare nome una volta ogni 30 giorni. Prossimo cambio: {{date}}.",
+    "offline": "Impossibile raggiungere il server. Potrai modificare quando torni online."
+  },
+  "home": {
+    "provisional": "Punteggio provvisorio: le tue prime 10 partite"
+  },
+  "settings": {
+    "section": "Il tuo account",
+    "signedInAs": "Accesso effettuato come {{email}}",
+    "editProfile": "Modifica profilo",
+    "signOut": "Esci",
+    "signOutTitle": "Uscire dall’account?",
+    "signOutBody": "Gli allenamenti su questo telefono restano. Per giocare di nuovo dovrai accedere.",
+    "deleteAccount": "Elimina account",
+    "deleteTitle": "Eliminare il tuo account?",
+    "deleteBody": "La tua email, il tuo combattente e il tuo nome verranno eliminati per sempre: non si può tornare indietro. Partite e punteggi restano, non più collegati a te, così le partite degli altri giocatori restano intere. Il tuo nome tornerà libero per altri giocatori.",
+    "deleteContinue": "Continua",
+    "deletePasswordTitle": "Conferma con la password",
+    "deletePasswordBody": "Per eliminare l’account, inserisci la password di {{email}}.",
+    "deleteSubmit": "Elimina per sempre il mio account",
+    "deleted": "Il tuo account è stato eliminato",
+    "deletedPartly": "Il tuo account è stato eliminato. Non siamo riusciti a eliminare i tuoi dati di accesso: se li usi per accedere, inizierà una nuova registrazione.",
+    "method": {
+      "password": "Accesso con email e password",
+      "google": "Accesso con Google",
+      "both": "Accesso con Google, o con email e password"
+    },
+    "deleteGoogleTitle": "Conferma con Google",
+    "deleteGoogleBody": "Per eliminare l’account, scegli di nuovo l’account Google {{email}}.",
+    "deleteGoogleSubmit": "Conferma con Google ed elimina",
+    "deleteGoogleAgain": "Per eliminare l’account serve una nuova conferma. Riprova e scegli il tuo account Google.",
+    "deleteWithPassword": "Conferma invece con la password"
+  }
+}

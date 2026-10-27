@@ -1,0 +1,274 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "Pengaturan",
+    "back": "Kembali"
+  },
+  "profile": {
+    "defaultName": "Pemain",
+    "label": "Kartu pemainku: {{name}}",
+    "noRating": "Belum ada rating",
+    "ratingTitle": "Ratingmu",
+    "none": "—",
+    "games_other": "{{count}} pertandingan",
+    "gamesLabel_other": "pertandingan",
+    "winsLabel": "menang",
+    "streakLabel": "rentetan",
+    "winRate": "{{percent}}% menang",
+    "streak_zero": "Belum ada rentetan kemenangan",
+    "streak_other": "Rentetan {{count}} kemenangan"
+  },
+  "play": "Main",
+  "playHint": "Pilih mode permainan",
+  "again": {
+    "title": "Satu ronde lagi",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "Pertandingan gagal dimulai. Coba lagi."
+  },
+  "recent": {
+    "heading": "Pertandingan terbaru",
+    "all": "Semua",
+    "unavailable": "Tidak bisa membaca pertandingan yang tersimpan di ponsel ini.",
+    "emptyTitle": "Belum ada pertandingan di sini",
+    "emptyBody": "Setiap latihan disimpan di sini, bahkan setelah kamu menutup aplikasi.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "Selesai",
+      "ended": "Diakhiri",
+      "interrupted": "Terputus",
+      "playing": "Berlangsung",
+      "win": "Menang",
+      "loss": "Kalah",
+      "tie": "Seri"
+    },
+    "openHint": "Membuka hasil",
+    "versus": "{{outcome}} lawan {{name}}"
+  },
+  "modes": {
+    "title": "Pertandingan baru",
+    "footnote": "Mode ranked perlu koneksi internet · Latihan selalu tersedia",
+    "soon": "Segera",
+    "groups": {
+      "ranked": {
+        "title": "Mode ranked",
+        "note": "Lawan sungguhan, secara langsung"
+      },
+      "friends": {
+        "title": "Bersama teman",
+        "titleMoshe": "Teman sungguhan, secara langsung",
+        "note": "Room privat · hingga 4 · tanpa rating"
+      },
+      "practice": {
+        "title": "Latihan",
+        "note": "Tanpa tekanan, tanpa rating"
+      }
+    },
+    "chips": {
+      "rated": "Dengan rating",
+      "unrated": "Tanpa rating",
+      "offline": "Bisa offline"
+    },
+    "ranked": {
+      "name": "Mode ranked"
+    },
+    "ranked2": {
+      "title": "2 pemain",
+      "tagline": "1 lawan 1 · papan sama",
+      "label": "Mode ranked · 2 pemain"
+    },
+    "ranked3": {
+      "title": "3 pemain",
+      "tagline": "Semua lawan semua",
+      "label": "Mode ranked · 3 pemain"
+    },
+    "ranked4": {
+      "title": "4 pemain",
+      "tagline": "Semua lawan semua",
+      "label": "Mode ranked · 4 pemain"
+    },
+    "friends": {
+      "create": "Room baru",
+      "createHint": "Membuka ruang tunggu dengan kode untuk dikirim ke teman-temanmu",
+      "join": "Masukkan kode",
+      "joinHint": "Ketik 6 angka yang kamu terima"
+    },
+    "solo": {
+      "name": "Latihan solo",
+      "title": "Solo · papan penuh",
+      "tagline": "Sesuai ritmemu",
+      "label": "Solo · papan penuh"
+    },
+    "levels": {
+      "name": "Latihan bertahap",
+      "title": "Latihan bertahap",
+      "tagline": "Tahap singkat · hingga 3 bintang",
+      "taglineNew_other": "{{total}} tahap singkat · 0–3 bintang",
+      "chip": "Tahap {{stage}} ·",
+      "offline": "Offline",
+      "chipLabel_other": "Tahap {{stage}} · {{count}} bintang",
+      "label": "Latihan bertahap"
+    },
+    "bot": {
+      "name": "Latihan lawan bot",
+      "title": "Latihan lawan bot",
+      "tagline": "5 level",
+      "label": "Latihan lawan bot"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "Cepat",
+      "difficulty": "Mudah",
+      "technique": "Cukup dengan tunggal terbuka"
+    },
+    "normal": {
+      "name": "Biasa",
+      "difficulty": "Sedang",
+      "technique": "Perlu tunggal tersembunyi"
+    },
+    "hard": {
+      "name": "Sulit",
+      "difficulty": "Sulit",
+      "technique": "Perlu pasangan atau eliminasi"
+    }
+  },
+  "gameType": {
+    "title": "Jenis permainan",
+    "note": {
+      "solo": "Tanpa rating. Papannya diambil dari kumpulan puzzle di ponsel ini, tanpa mengulang papan yang baru saja kamu mainkan.",
+      "bot": "Tanpa rating. Papannya diambil dari kumpulan puzzle di ponsel ini, tanpa mengulang papan yang baru saja kamu mainkan. Selanjutnya, kamu memilih lawanmu.",
+      "ranked": "Dengan rating. Lawan dengan rating yang dekat denganmu, papan dari kumpulan server yang belum pernah kamu mainkan, dan papan yang sama untuk kalian berdua.",
+      "rankedGroup": "Dengan rating. Lawan dengan rating yang dekat denganmu, papan dari kumpulan server yang belum pernah kamu mainkan, dan papan yang sama untuk semua. Pertandingan dimulai saat meja penuh."
+    },
+    "start": {
+      "solo": "Mulai latihan",
+      "bot": "Pilih lawan",
+      "ranked": "Cari lawan",
+      "rankedGroup": "Cari lawan"
+    },
+    "startHint": "Memulai latihan {{type}}",
+    "rankedHint": "Mencari lawan untuk pertandingan ranked {{type}}",
+    "rankedGroupHint": "Mencari lawan-lawan untuk pertandingan ranked {{type}}",
+    "lockTime": "Waktu per sel",
+    "board": "Papan",
+    "duration": "Kisaran durasi",
+    "seconds": "{{seconds}} dtk",
+    "minutes": "{{range}} mnt",
+    "yourRating": "Ratingmu",
+    "cardLabel_other": "{{name}}. {{technique}}. {{seconds}} per sel, papan {{difficulty}}, sekitar {{from}} sampai {{to}} menit",
+    "botHint": "Pilih bot untuk pertandingan {{type}}"
+  },
+  "dev": {
+    "title": "Pengembangan",
+    "designSystem": "Sistem desain",
+    "hello": "Cek koneksi"
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "feedback": "Suara dan getaran",
+    "sound": "Suara",
+    "soundHint": "Suara untuk langkah dan aksi",
+    "haptics": "Getaran",
+    "hapticsHint": "Getaran singkat sebagai respons untuk langkah",
+    "motion": "Kurangi gerakan",
+    "motionHint": "Lebih sedikit animasi: skor langsung melompat ke hasil, dan gangguan tampil sebagai penutup diam selama waktu yang sama.",
+    "reduceMotion": {
+      "system": "Ikuti perangkat",
+      "on": "Aktif",
+      "off": "Nonaktif"
+    },
+    "language": "Bahasa",
+    "languageHint": "Mengganti bahasa akan memulai ulang aplikasi.",
+    "testing": "Pengujian",
+    "testingHint": "Hanya untuk build uji (staging). Versi di toko tidak memilikinya.",
+    "chainPenalty": "Rantai: tebakan memakan 5 dtk",
+    "chainPenaltyHint": "Mulai tahap rantai berikutnya: angka di sel yang belum bisa dipastikan memakan 5 detik dan tidak ditempatkan.",
+    "unlockAll": "Buka semua tahap (pengujian)",
+    "unlockAllHint": "Semua tahap terbuka di peta. Bintang dan XP dihitung seperti biasa.",
+    "languageConfirm": {
+      "title": "Ganti bahasa ke {{language}}?",
+      "body": "Aplikasi akan dimulai ulang, agar setiap layar tampil sesuai arah bahasa yang baru.",
+      "confirm": "Ganti dan mulai ulang",
+      "titleDevice": "Ganti ke bahasa perangkat?"
+    },
+    "languageDevice": "Bahasa perangkat",
+    "languageSheetTitle": "Pilih bahasa",
+    "languageField": "Bahasa: {{language}}",
+    "languageFieldDevice": "Bahasa: bahasa perangkat, {{language}}",
+    "about": "Tentang dan info hukum",
+    "privacy": "Kebijakan privasi",
+    "terms": "Ketentuan penggunaan",
+    "licenses": "Lisensi",
+    "opensInBrowser": "Dibuka di browser"
+  },
+  "placeholder": {
+    "soon": "Segera hadir",
+    "leaderboard": {
+      "title": "Peringkat",
+      "body": "Papan peringkat dibuka bersamaan dengan pertandingan ranked."
+    },
+    "history": {
+      "title": "Riwayat",
+      "body": "Semua pertandinganmu akan ada di sini, dengan replay dan penjelasan untuk setiap langkah. Sementara itu, latihan terbarumu ada di layar beranda."
+    },
+    "achievements": {
+      "title": "Pencapaian",
+      "body": "Pencapaian, level, dan XP akan segera hadir."
+    }
+  },
+  "botSelect": {
+    "title": "Pilih bot",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "Waktu pikir per langkah",
+    "thinkValue": "{{range}} dtk",
+    "mistakes": "Kesalahan",
+    "note": "Itu waktu untuk langkah biasa. Sel yang butuh logika lebih sulit membuat bot berpikir lebih lama, dan celah terakhir di baris, kolom, atau kotak sedikit lebih cepat. Bot memainkan papan yang sama, secara langsung.",
+    "start": "Ayo main",
+    "startHint": "Memulai latihan {{type}} melawan {{name}}",
+    "cardLabel_other": "Level {{level}}, {{title}}: {{name}}. {{behavior}}. Berpikir {{from}} sampai {{to}} detik per langkah, {{mistakes}}% kesalahan",
+    "levels": {
+      "1": {
+        "title": "Pemula",
+        "behavior": "Lambat, cukup sering salah, dan memberimu kesempatan belajar"
+      },
+      "2": {
+        "title": "Amatir",
+        "behavior": "Santai, kadang meleset, dan sesekali mengirim 😂"
+      },
+      "3": {
+        "title": "Mahir",
+        "behavior": "Stabil dan teliti, dan sulit disalip"
+      },
+      "4": {
+        "title": "Ahli",
+        "behavior": "Cepat, hampir tidak pernah salah, dan sedikit sombong 😎"
+      },
+      "5": {
+        "title": "Grand Master",
+        "behavior": "Cepat, tepat, dan tanpa ampun"
+      }
+    }
+  },
+  "licenses": {
+    "title": "Lisensi",
+    "intro": "Sudoku Fight dibuat dengan font terbuka dan perangkat lunak sumber terbuka. Terima kasih kepada para pembuatnya. Berikut lisensi dan pemberitahuan hak ciptanya.",
+    "fonts": "Font",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_other": "{{count}} paket sumber terbuka",
+    "packageLabel": "{{name}}, versi {{version}}, lisensi {{license}}",
+    "texts": "Teks lisensi",
+    "textsHint": "Teks lengkap setiap lisensi, sesuai aslinya.",
+    "show": "Tampilkan lisensi {{license}}",
+    "hide": "Sembunyikan lisensi {{license}}"
+  }
+}

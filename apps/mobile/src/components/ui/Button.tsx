@@ -5,7 +5,6 @@ import {
   Pressable,
   type StyleProp,
   StyleSheet,
-  Text,
   type TextStyle,
   useWindowDimensions,
   View,
@@ -19,6 +18,7 @@ import { Icon, type IconName } from '../Icon';
 import { curve } from './motion';
 import { Spinner } from './Spinner';
 
+import { Text } from './Text';
 /** components.md §1: primary (skewed gold), secondary (outline), ghost (text) and danger (outline, red). */
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 /** Heights: hero 96 · lg 60 · md 52 · modal 48 (`size.ctaHero`, `buttonLg`, `buttonMd`, `buttonModal`). Ghost is always 44. */
@@ -83,6 +83,11 @@ const ICON_SIZE: Record<ButtonSize, number> = {
 const SKEW = `${tokens.effects.skewXDeg}deg`;
 const UNSKEW = `${-tokens.effects.skewXDeg}deg`;
 const CTA = tokens.elevation.cta;
+/**
+ * A one-line label too long for its button in a long language (German "Neuer Raum" on the A16, localization D124)
+ * shrinks, down to 70%, instead of ending in "…". Hebrew and English labels fit, so they never shrink.
+ */
+const FIT_LABEL = { adjustsFontSizeToFit: true, minimumFontScale: 0.7 } as const;
 
 /**
  * The app's button. One gold primary per screen (components.md §0.6). The primary is skewed −8° in both
@@ -161,6 +166,7 @@ export function Button({
             <Text
               style={[PRIMARY_LABEL[sizeName], styles.primaryLabel, twoLines && styles.labelWrap]}
               numberOfLines={twoLines ? 2 : 1}
+              {...(twoLines ? null : FIT_LABEL)}
               testID={testID && `${testID}-label`}
             >
               {label}
@@ -221,7 +227,11 @@ export function Button({
     >
       <View style={[styles.content, loading && styles.hidden]}>
         {icon ? <Icon name={icon} size={danger ? size.icon.inline : size.icon.card} color={tint} /> : null}
-        <Text style={[text(danger ? 'sheetTitle' : 'button'), { color: tint }]} numberOfLines={1}>
+        <Text
+          style={[text(danger ? 'sheetTitle' : 'button'), { color: tint }]}
+          numberOfLines={1}
+          {...FIT_LABEL}
+        >
           {label}
         </Text>
       </View>

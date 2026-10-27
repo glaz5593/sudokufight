@@ -1,6 +1,6 @@
 import type { GameType } from '@sudoku-fight/engine';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useReadyFace } from '../../../avatars/useFaces';
@@ -11,6 +11,8 @@ import { formatScore, ltr } from '../../../components/player/format';
 import { SeatGlyph } from '../../../components/player/SeatGlyph';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator, labelValue, percent } from '../../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { useReduceMotion } from '../../../theme/motion';
 import { isolateName } from '../hit/hitModel';
@@ -103,7 +105,7 @@ export function ConnectingView({
               </Animated.Text>
               {match ? (
                 <Text style={styles.percent} testID={`${testID}-percent`}>
-                  {ltr(`${match.percent}%`)}
+                  {ltr(percent(match.percent, t))}
                 </Text>
               ) : null}
             </View>
@@ -220,17 +222,25 @@ function MiniBoard({ testID }: { testID: string }) {
 /** The tip; its best move is the one of this game's type (the boards differ in their givens). */
 function TipCard({ tip, gameType, testID }: { tip: LoadingTip; gameType: GameType; testID: string }) {
   const { t } = useTranslation('game');
-  const body = t(`connection.connecting.tips.${tip}`, {
-    max: formatScore(TOP_MOVE_POINTS[gameType]),
-    points: formatScore(LAST_CELL_POINTS),
-  });
+  const decimal = decimalSeparator(t);
+  // The two tips with a number are plurals: each gets its own count.
+  const top = TOP_MOVE_POINTS[gameType];
+  const body =
+    tip === 'score'
+      ? t('connection.connecting.tips.score', { count: top, max: formatScore(top, decimal) })
+      : tip === 'lastCell'
+        ? t('connection.connecting.tips.lastCell', {
+            count: LAST_CELL_POINTS,
+            points: formatScore(LAST_CELL_POINTS, decimal),
+          })
+        : t(`connection.connecting.tips.${tip}`);
   const title = t('connection.connecting.tipTitle');
   return (
     <View
       style={styles.tip}
       accessible
       accessibilityRole="text"
-      accessibilityLabel={`${title}: ${body}`}
+      accessibilityLabel={labelValue(title, body, t)}
       testID={testID}
     >
       <View style={styles.tipHead}>

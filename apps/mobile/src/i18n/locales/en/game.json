@@ -20,13 +20,15 @@
     "best": "Best move",
     "none": "—",
     "timeLabel": "Time {{time}}",
-    "bestLabel": "Best move: {{points}} points in {{cell}}",
+    "bestLabel_one": "Best move: {{points}} point in {{cell}}",
+    "bestLabel_other": "Best move: {{points}} points in {{cell}}",
     "noBestLabel": "No best move yet"
   },
   "progress": {
     "label": "Board progress",
     "value": "{{filled}}/{{total}}",
-    "a11y": "{{filled}} of {{total}} cells filled"
+    "a11y_one": "{{filled}} of 1 cell filled",
+    "a11y_other": "{{filled}} of {{total}} cells filled"
   },
   "end": {
     "button": "End practice",
@@ -107,7 +109,8 @@
       "backInTimeSub": "The timers go on from the same second",
       "announceLost": "You lost your connection. Reconnecting",
       "announceAttempt": "You lost your connection. Reconnecting, try {{attempt}}",
-      "announceHurry": "In {{seconds}} seconds it counts as abandonment",
+      "announceHurry_one": "In 1 second it counts as abandonment",
+      "announceHurry_other": "In {{seconds}} seconds it counts as abandonment",
       "announceSyncing": "You're back in the game. Syncing",
       "announceSynced": "You're back in the game. The board and the scores are synced"
     },
@@ -115,7 +118,8 @@
       "announce": "No connection. Keep playing; your moves are sent when it's back"
     },
     "left": {
-      "timeUp": "Time's up · {{seconds}} seconds without a connection",
+      "timeUp_one": "Time's up · 1 second without a connection",
+      "timeUp_other": "Time's up · {{seconds}} seconds without a connection",
       "title": "{{name}} left the game",
       "title_female": "{{name}} left the game",
       "win": "You win by abandonment",
@@ -174,7 +178,8 @@
     },
     "lobby": {
       "title": "Private room",
-      "subtitle": "{{type}} · {{players}} players",
+      "subtitle_one": "{{type}} · 1 player",
+      "subtitle_other": "{{type}} · {{players}} players",
       "codeTitle": "Room code",
       "codeLabel": "Room code: {{spelled}}",
       "codeHint": "Send the code to whoever is playing with you",
@@ -212,8 +217,10 @@
       "joining": "Connecting…",
       "tipTitle": "Tip",
       "tips": {
-        "score": "The emptier the row, column and box, the more a move is worth: up to {{max}} points a cell.",
-        "lastCell": "The last cell on the board is always worth just {{points}} points: everything around it is full.",
+        "score_one": "The emptier the row, column and box, the more a move is worth: up to {{max}} point a cell.",
+        "score_other": "The emptier the row, column and box, the more a move is worth: up to {{max}} points a cell.",
+        "lastCell_one": "The last cell on the board is always worth just {{points}} point: everything around it is full.",
+        "lastCell_other": "The last cell on the board is always worth just {{points}} points: everything around it is full.",
         "mistakes": "A mistake takes away exactly what the right digit was worth in that cell. A cell worth a lot costs a lot to get wrong.",
         "interference": "Each interference costs twice the one before. Save it for the right moment."
       }
@@ -293,9 +300,15 @@
     "nextPrice": "· Next: {{cost}}",
     "unit": "pts",
     "score": "Your score",
-    "costLabel": "This interference costs {{cost}} points. Your score is {{score}}, {{after}} after launch. The next one costs {{next}}",
-    "costLabelShort": "This interference costs {{cost}} points. Your score is {{score}}, {{missing}} points short",
-    "info": "Each interference lasts {{seconds}} seconds · tap to launch",
+    "costLabel_one": "This interference costs 1 point. Your score is {{score}}, {{after}} after launch. The next one costs {{next}}",
+    "costLabel_other": "This interference costs {{cost}} points. Your score is {{score}}, {{after}} after launch. The next one costs {{next}}",
+    "costLabelShort": "This interference costs $t(game:arsenal.costPoints, {\"count\": {{cost}} }). Your score is {{score}}, $t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })",
+    "costPoints_one": "{{count}} point",
+    "costPoints_other": "{{count}} points",
+    "shortPoints_one": "{{missing}} point short",
+    "shortPoints_other": "{{missing}} points short",
+    "info_one": "Each interference lasts 1 second · tap to launch",
+    "info_other": "Each interference lasts {{seconds}} seconds · tap to launch",
     "cost": "{{cost}} pts",
     "missing": "{{count}} pts short",
     "locked": "Locked",
@@ -397,16 +410,19 @@
     },
     "score": "Final score",
     "points": "pts",
-    "scoreLabel": "Final score: {{score}} points",
+    "scoreLabel_one": "Final score: {{score}} point",
+    "scoreLabel_other": "Final score: {{score}} points",
     "opponents": {
       "title": "Opponent",
-      "label": "{{name}} · {{score}} points · {{mistakes}}",
+      "label_one": "{{name}} · {{score}} point · {{mistakes}}",
+      "label_other": "{{name}} · {{score}} points · {{mistakes}}",
       "left": "Left the game"
     },
     "best": {
       "title": "Move of the game",
       "move": "{{cell}} → {{digit}}",
-      "label": "Move of the game: {{points}} points, {{digit}} in {{cell}}",
+      "label_one": "Move of the game: {{points}} point, {{digit}} in {{cell}}",
+      "label_other": "Move of the game: {{points}} points, {{digit}} in {{cell}}",
       "formula": "How it scored",
       "formulaLabel": "How it scored: {{line}}",
       "none": "No correct move in this practice"

@@ -1,0 +1,9 @@
+{
+  "language": "de",
+  "common": {
+    "number": {
+      "decimal": ",",
+      "percent": "{{value}} %"
+    }
+  }
+}

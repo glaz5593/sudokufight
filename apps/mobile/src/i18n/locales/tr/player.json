@@ -1,0 +1,115 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Oyuncu",
+  "temporaryName": "Oyuncu{{digits}}",
+  "bot": "Bot",
+  "vs": "VS",
+  "seconds_one": "1 saniye",
+  "seconds_other": "{{count}} saniye",
+  "points_one": "{{score}} puan",
+  "points_other": "{{score}} puan",
+  "place": "{{place}}. sıra",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "Çevrimiçi",
+    "online_female": "Çevrimiçi",
+    "reconnecting": "Yeniden bağlanıyor",
+    "reconnecting_female": "Yeniden bağlanıyor",
+    "unstable": "Bağlantı yok",
+    "unstable_female": "Bağlantı yok",
+    "left": "Ayrıldı",
+    "left_female": "Ayrıldı"
+  },
+  "result": {
+    "winShort": "G",
+    "lossShort": "M",
+    "drawShort": "B"
+  },
+  "flag": {
+    "label": "Ülke: {{country}}"
+  },
+  "rating": {
+    "label": "Derece {{value}}",
+    "labelWithKey": "{{key}}: derece {{value}}",
+    "provisional": "Geçici",
+    "provisionalLabel": "{{label}}, geçici"
+  },
+  "league": {
+    "bronze": "Bronz",
+    "silver": "Gümüş",
+    "gold": "Altın",
+    "diamond": "Elmas",
+    "legend": "Efsane",
+    "name": "{{league}} ligi",
+    "level": "Seviye {{level}}",
+    "levelAfter": "· Seviye {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "Hata yok",
+    "short_one": "{{count}} hata",
+    "short_other": "{{count}} hata",
+    "long_zero": "Hata yok",
+    "long_one": "Bir hata",
+    "long_other": "{{count}} hata",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Seçiyor",
+    "locking_female": "Seçiyor",
+    "turn": "Sıra onda",
+    "turn_female": "Sıra onda",
+    "paused": "Duraklatıldı",
+    "thinking": "Düşünüyor",
+    "thinking_female": "Düşünüyor",
+    "reconnecting": "Yeniden bağlanıyor",
+    "reconnecting_female": "Yeniden bağlanıyor",
+    "left": "Ayrıldı",
+    "left_female": "Ayrıldı",
+    "surrendered": "Pes etti",
+    "surrendered_female": "Pes etti",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Sabotaj altında, {{time}}",
+    "target": "Hedef",
+    "targetHint": "Sabotaj hedefi"
+  },
+  "actions": {
+    "surrender": "Pes et",
+    "endPractice": "Antrenmanı bitir",
+    "reactions": "Tepkiler"
+  },
+  "interfere": {
+    "button": "Sabote et",
+    "label": "{{name}} adlı oyuncuyu sabote et · bedeli {{cost}} puan",
+    "labelMissing": "{{name}} adlı oyuncuyu sabote et · {{count}} puan eksik",
+    "labelBusy": "{{name}} adlı oyuncu şu an sabote edilemez, zaten sabotaj altında",
+    "labelNotRunning": "{{name}} adlı oyuncu şu an sabote edilemez",
+    "labelDisconnected": "Bağlantın yokken sabotaj yapamazsın",
+    "labelOut": "{{name}} artık maçta değil",
+    "close": "Sabotaj seçimini kapat"
+  },
+  "lead": {
+    "tie": "Eşitlik",
+    "label_one": "{{name}} önde, fark {{gap}} puan",
+    "label_other": "{{name}} önde, fark {{gap}} puan",
+    "label_female_one": "{{name}} önde, fark {{gap}} puan",
+    "label_female_other": "{{name}} önde, fark {{gap}} puan",
+    "tieLabel": "Puanlar eşit"
+  },
+  "lock": {
+    "yourCell": "Senin hücren",
+    "paused": "Duraklatıldı",
+    "pick": "Bir hücre seç",
+    "remaining_one": "1 saniye kaldı",
+    "remaining_other": "{{count}} saniye kaldı",
+    "label": "Senin hücren {{cell}}, {{remaining}}",
+    "labelPaused": "Senin hücren {{cell}}, süre durdu",
+    "progress": "{{cell}} hücresi için kalan süre",
+    "released": "Hücre bırakıldı"
+  }
+}

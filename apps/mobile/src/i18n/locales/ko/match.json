@@ -1,0 +1,112 @@
+{
+  "header": "{{mode}} · {{players}} · {{type}}",
+  "ranked": "랭크",
+  "players_other": "{{count}}명",
+  "me": "나",
+  "sep": ". ",
+  "sentenceSpace": " ",
+  "search": {
+    "title_other": "상대를 찾는 중…",
+    "connecting": "대기열에 들어가는 중…",
+    "elapsedLabel": "{{time}} 동안 찾는 중",
+    "myRating": "내 레이팅 {{rating}}",
+    "rangeTitle": "레이팅 범위",
+    "rangeLabel": "레이팅 범위 {{low}}~{{high}}",
+    "widening": "찾는 시간이 길어질수록 범위가 넓어져요",
+    "noCap": "범위 제한 없음: 범위가 계속 넓어져요",
+    "opponents": "상대",
+    "slot": "찾는 중…",
+    "slotMark": "?",
+    "slotLabel": "빈자리: 상대를 찾는 중",
+    "avoidRecent": "최근에 만난 상대는 피하는 중",
+    "requeued_other": "한 플레이어가 제때 연결하지 않았어요. 대기열 맨 앞으로 돌아왔어요.",
+    "cancel": "찾기 취소",
+    "cancelHint": "대기열에서 나가 이전 화면으로 돌아가요",
+    "announce_other": "레이팅 {{low}}~{{high}} 범위에서 상대를 찾는 중",
+    "alone": {
+      "title_other": "지금은 이 게임을 찾는 플레이어가 충분하지 않아요",
+      "body_other": "계속 찾을게요. 이 게임을 찾는 플레이어가 충분히 모이면 바로 여기서 매칭돼요. 그동안 봇과 플레이할 수도 있어요.",
+      "bot": "그동안 봇과 플레이"
+    }
+  },
+  "found": {
+    "title_other": "상대를 찾았어요!",
+    "ready": "준비 완료",
+    "connecting": "연결하는 중…",
+    "allReady": "모두 준비 완료 · 게임을 시작해요",
+    "waiting": "모두 연결되기를 기다리는 중…",
+    "readyCount": "준비",
+    "readyCountLabel": "{{total}}명 중 {{ready}}명 준비 완료",
+    "fresh": "최근에 만난 적 없는 상대예요",
+    "rematch": "최근에 만난 적 있는 상대예요",
+    "noCancel": "여기서는 취소할 수 없어요. 나가면 이탈로 처리돼요",
+    "seatLabel": "{{name}}, {{rating}}, {{state}}",
+    "announce_other": "상대를 찾았어요: {{names}}"
+  },
+  "countdown": {
+    "getReady": "준비하세요…",
+    "reveal_other": "모두에게 같은 순간에 판이 나타나요",
+    "go": "GO!",
+    "goLabel": "시작!",
+    "starting": "판을 준비하는 중…",
+    "stepLabel": "{{time}} 후에 게임이 시작돼요",
+    "boardLabel": "게임이 시작될 때까지 가려진 판"
+  },
+  "timeout": {
+    "title_other": "아직 내 수준의 상대를 찾지 못했어요",
+    "body": "최근에 만난 상대를 빼고, 레이팅 {{range}} 범위에서 대기 중인 플레이어를 {{time}} 동안 찾았어요. 범위 제한 없이 계속 찾거나, 그동안 봇과 연습할 수 있어요.",
+    "aloneTitle_other": "아직도 이 게임을 찾는 플레이어가 충분하지 않아요",
+    "aloneBody_other": "{{time}} 동안 찾았지만 이 게임을 찾는 플레이어가 충분하지 않았어요. 계속 기다리거나, 그동안 봇과 연습할 수 있어요.",
+    "minutes_other": "{{count}}분",
+    "keep": "계속 찾기",
+    "keepNote": "범위 제한 없음",
+    "keepHint": "레이팅 범위 제한 없이 계속 찾아요",
+    "bot": "그동안 봇과 플레이",
+    "home": "홈으로"
+  },
+  "error": {
+    "title": "찾기가 멈췄어요",
+    "offlineTitle": "서버에 연결할 수 없어요",
+    "body": {
+      "network": "게임 서버에 연결하지 못했어요. 연결을 확인하고 다시 시도하세요.",
+      "lost": "찾는 동안 게임 서버와의 연결이 끊겼어요.",
+      "noShow": "제때 게임에 연결하지 못해서 게임이 취소됐어요.",
+      "alreadyQueued": "이미 진행 중인 랭크 찾기나 게임이 있어요. 다른 기기에서일 수도 있어요.",
+      "queueClosed": "이 대기열은 아직 열리지 않았어요.",
+      "badQueue": "이 대기열은 없어요.",
+      "unauthenticated": "랭크 게임을 하려면 계정에 로그인하세요.",
+      "emailNotVerified": "랭크 게임에는 인증된 이메일이 필요한데, 아직 이메일 인증이 확인되지 않았어요. 인증 링크를 이미 열었다면 다음 화면에서 “인증했어요”를 누르세요.",
+      "suspended": "계정이 정지되어 당분간 랭크 게임을 할 수 없어요. 혼자 또는 봇과 하는 연습은 계속할 수 있어요.",
+      "signedOut": "랭크 게임을 하려면 계정에 로그인하세요.",
+      "unknown": "찾는 중에 문제가 생겼어요."
+    },
+    "code": "오류 코드: {{code}}",
+    "retry": "다시 찾기",
+    "verify": "이메일 인증",
+    "practice": "연습하러 가기",
+    "practiceNote": "혼자 또는 봇과 하는 연습은 오프라인에서도 할 수 있어요.",
+    "home": "홈으로"
+  },
+  "verify": {
+    "required": "랭크 게임을 하려면 이메일 주소를 인증하세요."
+  },
+  "offline": {
+    "title": "인터넷 연결 없음",
+    "body": "랭크 게임을 할 수 없어요",
+    "checking": "확인 중…",
+    "practice": "연습하러 가기",
+    "retry": "다시 확인",
+    "retrying": "연결을 확인하는 중…",
+    "stillOffline": "아직 연결 없음 · {{count}}번째 시도",
+    "rankedNote": "온라인에서 가능",
+    "needsConnection": "연결 필요",
+    "needsConnectionLabel": "인터넷 연결이 필요해요",
+    "practiceNote": "인터넷 없이 가능",
+    "availableOffline": "오프라인 가능",
+    "back": "다시 온라인이에요. 랭크 게임을 할 수 있어요."
+  },
+  "modes": {
+    "rating": "레이팅 {{rating}}",
+    "ratingLabel": "내 {{type}} 레이팅: {{rating}}"
+  }
+}

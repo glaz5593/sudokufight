@@ -21,10 +21,12 @@
       "cheating": "Looks like outside help, or abusing a bug",
       "other": "Something else that doesn't belong in the arena"
     },
-    "privacy": "The player won't know who reported them. Every report is reviewed within {{hours}} hours.",
+    "privacy_one": "The player won't know who reported them. Every report is reviewed within 1 hour.",
+    "privacy_other": "The player won't know who reported them. Every report is reviewed within {{hours}} hours.",
     "send": "Send report",
     "pickFirst": "Pick a reason, then send.",
-    "thanks": "Thanks. We'll review the report within {{hours}} hours.",
+    "thanks_one": "Thanks. We'll review the report within 1 hour.",
+    "thanks_other": "Thanks. We'll review the report within {{hours}} hours.",
     "done": "Close",
     "errors": {
       "rateLimited_one": "You sent many reports in the last hour. You can send another in a minute.",
@@ -48,7 +50,8 @@
     "unblockConfirm": "Unblock",
     "unblocked": "{{name}} is unblocked.",
     "errors": {
-      "limitReached": "You can block up to {{max}} players. Unblock someone (Settings → Blocked players) and try again.",
+      "limitReached_one": "You can block up to 1 player. Unblock someone (Settings → Blocked players) and try again.",
+      "limitReached_other": "You can block up to {{max}} players. Unblock someone (Settings → Blocked players) and try again.",
       "self": "You can't block yourself.",
       "notFound": "This player is no longer in the game.",
       "busy": "Too many requests. Wait a moment and try again.",

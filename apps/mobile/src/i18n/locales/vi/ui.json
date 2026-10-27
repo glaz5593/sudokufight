@@ -1,0 +1,31 @@
+{
+  "button": {
+    "loading": "{{label}}, đang tải"
+  },
+  "nav": {
+    "label": "Điều hướng chính",
+    "tabs": {
+      "home": "Trang chủ",
+      "leaderboard": "Bảng xếp hạng",
+      "history": "Lịch sử",
+      "achievements": "Thành tích"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "Hủy"
+  },
+  "sheet": {
+    "close": "Đóng"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_other": "Còn {{count}} giây"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "Mã lỗi: {{code}}"
+  }
+}

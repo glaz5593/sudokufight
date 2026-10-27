@@ -9,6 +9,7 @@ import type {
 import type { TFunction } from 'i18next';
 
 import { formatScore, ltr, signedText } from '../../components/player';
+import { dateFormat, decimalSeparator, percent as percentOf } from '../../i18n/compose';
 
 /**
  * The player card as a pure view model (spec §14.3; Profile.dc.html): the ratings grouped by game type (3
@@ -139,22 +140,28 @@ export interface StatCell {
 /** The stats grid (spec §14.3): games, wins, losses, win %, the streaks [D28], best move, mistakes per game. */
 export function statCells(stats: PlayerStats, t: ProgressT): StatCell[] {
   const none = t('common.none');
+  const decimal = decimalSeparator(t);
   const percent = winPercent(stats.winRate);
   return [
     { key: 'games', value: String(stats.games), label: t('card.stats.games') },
     { key: 'wins', value: String(stats.wins), label: t('card.stats.wins') },
     { key: 'losses', value: String(stats.losses), label: t('card.stats.losses') },
-    { key: 'winRate', value: percent === null ? none : ltr(`${percent}%`), label: t('card.stats.winRate') },
+    {
+      key: 'winRate',
+      value: percent === null ? none : ltr(percentOf(percent, t)),
+      label: t('card.stats.winRate'),
+    },
     { key: 'streak', value: String(stats.streak), label: t('card.stats.streak') },
     { key: 'bestStreak', value: String(stats.bestStreak), label: t('card.stats.bestStreak') },
     {
       key: 'bestMove',
-      value: stats.bestMove ? signedText(stats.bestMove.points) : none,
+      value: stats.bestMove ? signedText(stats.bestMove.points, decimal) : none,
       label: t('card.stats.bestMove'),
     },
     {
       key: 'avgMistakes',
-      value: stats.avgMistakes === null ? none : formatScore(Math.round(stats.avgMistakes * 10) / 10),
+      value:
+        stats.avgMistakes === null ? none : formatScore(Math.round(stats.avgMistakes * 10) / 10, decimal),
       label: t('card.stats.avgMistakes'),
     },
   ];
@@ -185,7 +192,7 @@ export function recentWords(r: RecentResult, t: ProgressT, date: string): string
       players: t('common.players', { count: r.players }),
     }),
     t('card.place', { place: r.place }),
-    t('card.points', { score: formatScore(r.score) }),
+    t('card.points', { score: formatScore(r.score, decimalSeparator(t)) }),
     r.ratingDelta === null ? null : t('card.ratingDelta', { delta: signedText(Math.round(r.ratingDelta)) }),
     date,
   ]
@@ -230,7 +237,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 /** "במשחק מאז": the month and year an account was made, "אפריל 2026" / "April 2026". */
 export function monthYearText(at: number, language: string): string {
   try {
-    return new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(at);
+    return dateFormat(language, { month: 'long', year: 'numeric' }).format(at);
   } catch {
     return new Date(at).toISOString().slice(0, 7);
   }
@@ -239,7 +246,7 @@ export function monthYearText(at: number, language: string): string {
 /** A result's day: "3 באוק׳" / "Oct 3". */
 export function dateText(at: number, language: string): string {
   try {
-    return new Intl.DateTimeFormat(language, { day: 'numeric', month: 'short' }).format(at);
+    return dateFormat(language, { day: 'numeric', month: 'short' }).format(at);
   } catch {
     return new Date(at).toISOString().slice(0, 10);
   }

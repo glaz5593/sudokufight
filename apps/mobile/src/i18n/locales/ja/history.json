@@ -1,0 +1,98 @@
+{
+  "title": "履歴",
+  "summary": {
+    "games_other": "{{count}}戦",
+    "winRate": "勝率{{rate}}",
+    "practices_other": "練習{{count}}回",
+    "streak": "連勝",
+    "streakLabel_other": "{{count}}連勝中"
+  },
+  "filters": {
+    "label": "対戦を絞り込む",
+    "all": "すべて",
+    "ranked": "ランク戦",
+    "practice": "練習"
+  },
+  "loading": "対戦を読み込み中…",
+  "more": "さらに表示",
+  "empty": {
+    "title": "まだ対戦がありません",
+    "body": "すべての対戦はここに保存され、あとから見返せます。一手ずつ、それぞれの数字がなぜそこに入ったのかの説明付きです。",
+    "action": "最初の対戦をプレイ"
+  },
+  "notes": {
+    "practice": "練習の対戦はレーティングに影響しませんが、こちらも見返せます。",
+    "offline": "サーバーに接続できません。この端末の練習の対戦だけを表示しています。",
+    "signedOut": "ログインすると、ランク戦がここに表示されます。",
+    "rankedError": "ランク戦を読み込めませんでした。",
+    "practiceUnavailable": "この端末に保存された練習の対戦を読み込めませんでした。",
+    "retry": "再試行"
+  },
+  "states": {
+    "offlineTitle": "サーバーに接続できません",
+    "offlineBody": "ランク戦は接続が戻ると読み込まれます。この端末の練習の対戦は、オフラインでもここに表示されます。",
+    "errorTitle": "対戦を読み込めませんでした",
+    "errorBody": "サーバーから正しい応答がありませんでした。少し待ってから、もう一度お試しください。",
+    "practiceTitle": "練習の対戦を読み込めませんでした",
+    "practiceBody": "この端末に保存された練習の対戦を開けませんでした。もう一度お試しください。それでも続く場合は、アプリを再起動してください。"
+  },
+  "card": {
+    "mode": {
+      "ranked": "ランク戦",
+      "solo": "ソロ練習",
+      "bot": "ボットと練習"
+    },
+    "outcome": {
+      "win": "勝ち",
+      "loss": "負け",
+      "tie": "引き分け",
+      "completed": "盤面完成",
+      "ended": "練習終了",
+      "interrupted": "途中で中断"
+    },
+    "place": "{{place}}位",
+    "against_other": "対戦相手{{count}}人",
+    "alone": "ひとりで",
+    "points": "{{score}}点",
+    "unrated": "レーティングなし",
+    "rating": "レーティング{{delta}}",
+    "today": "今日",
+    "yesterday": "昨日",
+    "replay": "リプレイ",
+    "label": "{{outcome}}、{{who}}。{{mode}} · {{type}}。{{score}}。{{rating}}。{{date}}",
+    "hint": "リプレイを開きます"
+  },
+  "results": {
+    "replay": "リプレイ",
+    "replayHint": "対戦を最初から一手ずつ、すべての手の解説付きで見られます",
+    "rating": {
+      "title": "レーティングの変動 · {{type}}",
+      "from": "{{before}}から",
+      "label": "レーティングの変動：{{delta}}、{{before}}から{{after}}へ",
+      "provisional": "暫定レーティング：最初の10戦は変動が2倍になります",
+      "perOpponent": "対戦相手ごとに個別に計算されます",
+      "pairLabel": "{{name}}戦：{{delta}}",
+      "guard": {
+        "leftBeforeMoving": "{{name}}戦：最初の手の前に退出したため、レーティングは下がりません",
+        "leftNotBehind": "{{name}}戦：退出時にリードされていなかったため、レーティングは下がりません",
+        "opponentLeftBeforeMyMove": "{{name}}戦：あなたの最初の手の前に相手が退出したため、レーティングは上がりません",
+        "opponentLeftAhead": "{{name}}戦：相手の退出時にあなたがリードされていたため、レーティングは上がりません"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_other": "{{name}} · {{score}}点 · {{mistakes}} · レーティング{{delta}}",
+    "ranking": {
+      "title": "最終順位",
+      "left": "対戦から退出",
+      "label_other": "{{place}}位：{{name}} · {{score}}点 · {{mistakes}}",
+      "labelRating_other": "{{place}}位：{{name}} · {{score}}点 · {{mistakes}} · レーティング{{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "1手で得た点数が最も多い",
+      "fewestMistakes": "ミスが最も少ない。同数の場合は得点が高いほう",
+      "fastest": "正解1手あたりの平均思考時間が最も短い（5手以上）",
+      "comeback": "15点以上リードされてからの勝利",
+      "mostPoints": "ペナルティを引く前の、正解の手による得点が最も多い"
+    }
+  }
+}

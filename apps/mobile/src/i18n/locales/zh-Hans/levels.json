@@ -1,0 +1,608 @@
+{
+  "title": "关卡练习",
+  "stage": "第{{n}}关",
+  "chapter": "第{{n}}章",
+  "units": {
+    "seconds": "秒"
+  },
+  "stars": {
+    "of3": {
+      "0": "没有星",
+      "1": "1星（共3星）",
+      "2": "2星（共3星）",
+      "3": "3星（共3星）"
+    },
+    "count_other": "{{count}}星"
+  },
+  "kinds": {
+    "find": {
+      "name": "精准定位",
+      "label": "精准定位"
+    },
+    "findDuel": {
+      "name": "人机竞速",
+      "label": "人机竞速"
+    },
+    "fillBox": {
+      "name": "填满一宫",
+      "label": "填满一宫"
+    },
+    "duel": {
+      "name": "{{target}}分对决",
+      "label": "{{target}}分对决"
+    },
+    "spotError": {
+      "name": "找出错误",
+      "label": "找出错误"
+    },
+    "pointHunter": {
+      "name": "得分猎手",
+      "label": "得分猎手"
+    },
+    "chain": {
+      "name": "推理链",
+      "label": "推理链"
+    },
+    "fillRow": {
+      "name": "填满一行",
+      "label": "填满一行"
+    },
+    "fillCol": {
+      "name": "填满一列",
+      "label": "填满一列"
+    },
+    "puzzle": {
+      "name": "拼图",
+      "label": "拼图"
+    }
+  },
+  "boss": {
+    "chip": "首领",
+    "name": "首领关",
+    "label": "首领，{{kind}}",
+    "versus": "首领：{{bot}}",
+    "band": "首领 · 第{{chapter}}章",
+    "botLabel": "{{name}}，首领",
+    "intro": {
+      "title": "首领关！",
+      "sub": "第{{n}}关 · {{kind}}",
+      "harder": "难在哪里",
+      "label": "首领关！第{{n}}关，{{kind}}。{{details}}"
+    },
+    "traits": {
+      "firstBot": "首个机器人：{{bot}}",
+      "faster": "{{bot}}提速{{percent}}",
+      "overlord": "Overlord",
+      "moreCells_other": "{{cells}}个空格，平时{{usual}}个"
+    },
+    "result": {
+      "won": "你打败了首领！",
+      "lost": "这次首领赢了",
+      "gateOpen": "第{{n}}章：{{stars}} · 已解锁！",
+      "gateClosed": "第{{n}}章解锁进度：{{stars}}"
+    }
+  },
+  "region": {
+    "box": "第{{n}}宫",
+    "row": "{{row}}行",
+    "col": "第{{n}}列",
+    "mapLabel": "盘面示意：{{region}}"
+  },
+  "goals": {
+    "find": "找出一个数字的准确位置。关卡在{{s}}秒时结束。",
+    "findDuel_other": "和{{bot}}抢{{spots}}处位置，限时{{s}}秒。每一处谁先找到就归谁。",
+    "fillBox_other": "填好一宫中缺少的{{cells}}格，限时{{s}}秒。",
+    "fillRow_other": "填好一行中缺少的{{cells}}格，限时{{s}}秒。",
+    "fillCol_other": "填好一列中缺少的{{cells}}格，限时{{s}}秒。",
+    "puzzle": "把各宫排到正确位置。错误交换加{{penalty}}秒。限时{{s}}秒。",
+    "duel_other": "对战{{bot}}，先到{{target}}分或满{{s}}秒时结束。星数看你的领先分。",
+    "spotError_other": "你填的数字中藏着{{count}}个错误数字。限时{{s}}秒。",
+    "pointHunter_other": "{{moves}}步，限时{{s}}秒。尽可能多得分。",
+    "chain_other": "{{steps}}步推理链，限时{{s}}秒。每次只有一格可以解出。"
+  },
+  "scale": {
+    "label": "可得星数",
+    "row": "{{stars}}：{{text}}",
+    "time": "{{s}}秒内",
+    "spots_other": "{{count}}处",
+    "spotsRange_other": "{{range}}处",
+    "gap": "领先{{gap}}分以上",
+    "lead": "结束时领先",
+    "points": "{{points}}分以上",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "关卡地图",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_other": "已获{{stars}}星，共{{max}}星，跳转到章节",
+    "lockedToast": "请先玩第{{n}}关",
+    "gateToast_other": "在第{{prev}}章获得{{need}}星即可解锁第{{chapter}}章",
+    "loading": "正在加载地图…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_other": "已获{{stars}}星，共{{max}}星"
+  },
+  "node": {
+    "played": "第{{n}}关，{{kind}}，{{stars}}",
+    "current": "第{{n}}关，{{kind}}，接下来玩",
+    "open": "第{{n}}关，{{kind}}，还没玩过",
+    "locked": "第{{n}}关，未解锁"
+  },
+  "gate": {
+    "need_other": "{{need}}星解锁",
+    "count": "{{stars}}/{{need}}",
+    "boss": "打过首领关即可解锁",
+    "open": "第{{n}}章已解锁",
+    "lockedLabel_other": "第{{n}}章未解锁，第{{prev}}章已获{{stars}}星，共需{{need}}星",
+    "bossLabel_other": "第{{n}}章未解锁，第{{prev}}章已获{{stars}}星，共需{{need}}星。打过首领关即可解锁",
+    "openLabel_other": "第{{n}}章已解锁：在第{{prev}}章获得{{need}}星后开启"
+  },
+  "jump": {
+    "title": "跳转到章节",
+    "row": "第{{n}}章 · {{name}}",
+    "rowLabel_other": "第{{n}}章，{{name}}，已获{{stars}}星，共{{max}}星，{{state}}",
+    "open": "已解锁",
+    "locked": "未解锁"
+  },
+  "gateSheet": {
+    "title": "第{{n}}章未解锁",
+    "missing_other": "需要在第{{prev}}章获得{{need}}星。你已有{{stars}}星，还差{{missing}}星。",
+    "bossOnly": "星数已经够了。打过第{{boss}}关（首领关）即可解锁",
+    "progress": "解锁进度：第{{prev}}章{{stars}}/{{need}}星",
+    "rowsTitle": "可提升的关卡",
+    "rowsNote_other": "这些关卡最多还能多拿{{count}}星",
+    "row": "第{{n}}关 · {{kind}}",
+    "rowLabel": "再玩第{{n}}关，{{kind}}，{{stars}}",
+    "rowNewLabel": "玩第{{n}}关，{{kind}}，还没玩过",
+    "rowPlay": "开始",
+    "primary": "开始第{{n}}关",
+    "footnote": "大多数关卡最长30秒；填满类和拼图关卡最长60秒。你的最好星数会保留。"
+  },
+  "panel": {
+    "label": "所选关卡",
+    "title": "第{{n}}关 · {{kind}}",
+    "sub": "第{{chapter}}章 · {{name}}",
+    "subBot": "第{{chapter}}章 · 对战{{bot}}",
+    "subBoss": "第{{chapter}}章 · 首领：{{bot}}",
+    "next": "接下来",
+    "best": "最佳：{{metric}}",
+    "bestLabel": "你的最佳：{{stars}}，{{metric}}",
+    "bestStars": "你的最佳：{{stars}}",
+    "bot": "{{name}} · 等级{{level}} · {{title}}",
+    "continue": "继续 · 第{{n}}关",
+    "play": "开始",
+    "lockedTitle": "第{{n}}关 · 未解锁",
+    "lockedSub": "第{{chapter}}章 · {{kind}}",
+    "lockedPrev": "请先玩第{{n}}关。",
+    "lockedGate_other": "第{{chapter}}章未解锁：需要在第{{prev}}章获得{{need}}星。你已有{{stars}}星。",
+    "gateTitleOpen": "第{{n}}章已解锁",
+    "gateTitleClosed": "第{{n}}章未解锁",
+    "gateSub": "{{name}} · 第{{range}}关",
+    "gateOpenBody_other": "已解锁：你在第{{prev}}章获得了{{stars}}星，解锁需要{{need}}星。",
+    "gateBar": "解锁进度：{{stars}}/{{need}}星"
+  },
+  "ready": {
+    "title": "准备好了吗？",
+    "label": "准备好了吗？第{{n}}关，{{kind}}。{{goal}}",
+    "findPrompt": "{{digit}}在哪里？",
+    "raceSpots_other": "{{count}}处，与{{bot}}竞速"
+  },
+  "tutorial": {
+    "title": "玩法",
+    "got": "知道了",
+    "skip": "跳过",
+    "panel": "第{{n}}张图，共{{total}}张：{{text}}",
+    "alsoBoss": "这也是首领关：每章的第10关。",
+    "find": {
+      "1": "一个问题，例如“{{digit}}在哪里？”，并在盘面上标出一个区域：一宫、一行、一列或整个盘面。",
+      "2": "找到这个数字唯一能填的那一格，点击它。",
+      "3": "点错一次加5秒。点错两次，关卡结束。"
+    },
+    "findDuel": {
+      "1": "共5处，一处接一处。机器人和你同时寻找。",
+      "2": "谁先点中正确的格，这一处就归谁。",
+      "3": "点错一次：3秒内不能点击，而机器人会继续寻找。"
+    },
+    "fillBox": {
+      "1": "金框里是一个有空格的宫。",
+      "2": "在这个宫里选一格并输入数字。宫外的格不能选。",
+      "3": "填错一个数字加5秒。完成得越快，星越多。"
+    },
+    "duel": {
+      "1": "你和机器人在同一盘面上，就像一场对局。",
+      "2": "先得30分者获胜，否则30秒后领先者获胜。",
+      "3": "星数看结束时的领先分：领先8分得2星，领先15分得3星。"
+    },
+    "spotError": {
+      "1": "深色数字是盘面自带的提示数，永远正确。",
+      "2": "错误数字藏在你填的数字中。把它们点出来。",
+      "3": "点了正确的数字会加5秒。"
+    },
+    "pointHunter": {
+      "1": "你只有3步。",
+      "2": "空旷区域里的格分值更高。",
+      "3": "星数看你离本盘面最高分有多近。"
+    },
+    "chain": {
+      "1": "任何时刻，盘面上只有一格可以解出。",
+      "2": "填好它，就会解开下一格。",
+      "3": "在还无法确定的格里填数字会加5秒，且不会填入。"
+    },
+    "boss": {
+      "1": "每章的第10关是首领关：与机器人的一场对决，比之前的关卡更难。",
+      "2": "开始前会告诉你难在哪里。通常是：机器人更快。",
+      "3": "打过首领关、并在本章获得20星后，下一章就会解锁。"
+    },
+    "fillRow": {
+      "1": "金框里是一个有空格的行。",
+      "2": "在这一行里选一格并输入数字。行外的格不能选。",
+      "3": "填错一个数字加5秒。完成得越快，星越多。"
+    },
+    "fillCol": {
+      "1": "金框里是一个有空格的列。",
+      "2": "在这一列里选一格并输入数字。列外的格不能选。",
+      "3": "填错一个数字加5秒。完成得越快，星越多。"
+    },
+    "puzzle": {
+      "1": "九个填满的宫，顺序是乱的。",
+      "2": "把一个宫拖到另一个宫上，两者就会交换。带锁的宫是固定的。如果交换后两个宫都不在正确位置，加5秒。",
+      "3": "所有行和列都正确时，关卡结束。完成得越快，星越多。"
+    }
+  },
+  "result": {
+    "completed": "第{{n}}关完成",
+    "ended": "第{{n}}关",
+    "reasons": {
+      "timeUp": "时间到",
+      "failed": "点错两次",
+      "quit": "你离开了关卡",
+      "botWon": "{{bot}}抢先一步"
+    },
+    "metric": {
+      "spotsOf_other": "/{{total}}处",
+      "gap": "领先",
+      "points": "分",
+      "found": "找到",
+      "foundOf": "/{{total}}"
+    },
+    "newBest": "新纪录！",
+    "yourBest": "你的最佳：",
+    "yourBestLabel": "你的最佳：{{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP，预估值：以服务器确认为准",
+    "chapterLabel": "本章",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "解锁下一章需{{need}}星",
+    "chapterOpen": "下一章已解锁",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_other": "本章：已获{{stars}}星，共{{max}}星。{{gate}}",
+    "mistakes_other": "{{count}}次错误",
+    "noMistakes": "没有错误",
+    "swaps_other": "交换{{count}}次 · 最少：{{min}}次",
+    "time": "用时：{{s}}秒",
+    "youWon": "你赢了",
+    "botWon": "{{bot}}赢了",
+    "tie": "平局",
+    "bossTie": "平局：首领守住了",
+    "opponentLabel": "{{bot}}：{{value}}。{{verdict}}",
+    "opponentSpots_other": "{{count}}处",
+    "opponentScore_other": "{{score}}分",
+    "bestMove_other": "最佳一步：在{{cell}}填{{digit}} · {{points}}分",
+    "why": "为什么？",
+    "next": "下一关",
+    "again": "再来一次",
+    "toMap": "返回地图",
+    "last": "这是最后一关。干得漂亮！",
+    "nextLocked": "下一关还未解锁"
+  },
+  "unlocked": {
+    "heading": "新章节已解锁！",
+    "title": "第{{n}}章 · {{name}}",
+    "news": "新内容：{{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "继续",
+    "label": "新章节已解锁：第{{n}}章，{{name}}。{{news}}",
+    "bots": {
+      "1": "Pip：“我才刚起步，但比看上去快多了。”",
+      "2": "Biscuit：“我很悠闲，但不会让你溜走。”",
+      "3": "Mr. Hoot：“每一格我都看得见。小心点。”",
+      "4": "Maestro：“快速、精准，还很有格调。”",
+      "5": "Overlord：“你走了很远。到此为止了。”"
+    }
+  },
+  "exit": {
+    "button": "离开关卡",
+    "title": "离开关卡？",
+    "body": "你将获得0星，下一关会解锁。",
+    "confirm": "离开",
+    "cancel": "继续玩"
+  },
+  "card": {
+    "line": "已玩{{played}}关 · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_other": "已玩{{played}}关，共{{count}}星"
+  },
+  "chapters": {
+    "1": {
+      "name": "初出茅庐",
+      "news": "精准定位、填满一宫、拼图和填满一行"
+    },
+    "2": {
+      "name": "Pip 的挑战",
+      "news": "填满一列，以及人机竞速"
+    },
+    "3": {
+      "name": "首次对决",
+      "news": "30分对决，以及找出错误"
+    },
+    "4": {
+      "name": "侦探",
+      "news": "3步推理链，以及有4个可移动宫的拼图"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "新机器人 Biscuit、得分猎手，以及每个数字至少缺一次的填满关卡"
+    },
+    "6": {
+      "name": "行与列",
+      "news": "普通盘面，以及位于一行或一列中的目标"
+    },
+    "7": {
+      "name": "得分猎手",
+      "news": "有5个可移动宫的拼图"
+    },
+    "8": {
+      "name": "两处错误",
+      "news": "盘面上有两处错误，以及普通盘面上的对决"
+    },
+    "9": {
+      "name": "推理链",
+      "news": "所有类型再来一遍，难度更进一步"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "新机器人 Mr. Hoot，以及填满关卡中的7个空格"
+    },
+    "11": {
+      "name": "整个盘面",
+      "news": "目标可能在盘面上任何位置"
+    },
+    "12": {
+      "name": "更快",
+      "news": "普通盘面上的25秒得分猎手"
+    },
+    "13": {
+      "name": "隐蔽的错误",
+      "news": "没有明显冲突的错误"
+    },
+    "14": {
+      "name": "长推理链",
+      "news": "4步推理链，以及填满关卡中的9个空格"
+    },
+    "15": {
+      "name": "半程",
+      "news": "所有类型再来一遍"
+    },
+    "16": {
+      "name": "困难盘面",
+      "news": "困难盘面，以及有6个可移动宫的拼图"
+    },
+    "17": {
+      "name": "区块排除",
+      "news": "要先用区块排除才能找出的目标"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "新机器人：Maestro"
+    },
+    "19": {
+      "name": "陷阱",
+      "news": "盘面上有三处错误"
+    },
+    "20": {
+      "name": "难关",
+      "news": "需要用区块排除的空宫"
+    },
+    "21": {
+      "name": "数对",
+      "news": "数对，以及20秒得分猎手"
+    },
+    "22": {
+      "name": "五步推理链",
+      "news": "5步推理链"
+    },
+    "23": {
+      "name": "极少提示数",
+      "news": "提示数极少的盘面"
+    },
+    "24": {
+      "name": "竞速",
+      "news": "困难盘面上的对决"
+    },
+    "25": {
+      "name": "高手",
+      "news": "所有内容再来一遍，节奏更快"
+    },
+    "26": {
+      "name": "锦标赛",
+      "news": "只有最快的玩家才能拿到3星"
+    },
+    "27": {
+      "name": "锦标赛Ⅱ",
+      "news": "得分猎手：接近最高分才能拿到3星"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "首领：Overlord，竞速对决"
+    },
+    "29": {
+      "name": "决赛",
+      "news": "快速推理链，以及首领 Overlord 的对决"
+    },
+    "30": {
+      "name": "冠军",
+      "news": "所有内容汇聚一堂，难度最高"
+    }
+  },
+  "hud": {
+    "secondsAdded_other": "增加{{count}}秒",
+    "sub": "{{kind}} · 第{{chapter}}章",
+    "subFind": "{{digit}}在哪里？ · 第{{chapter}}章",
+    "subRace_other": "{{kind}} · {{spots}}处 · 第{{chapter}}章",
+    "clockLabel_other": "剩余{{s}}秒，共{{limit}}秒",
+    "penalty": "{{s}}秒",
+    "me": "我",
+    "find": {
+      "tap": "点击{{digit}}应在的位置",
+      "where": "<scope>{{scope}}</scope> · 无需键盘，点一下即可",
+      "elapsed": "秒已过",
+      "targetLabel": "目标：{{scope}}的{{digit}}。{{left}}",
+      "ringLabel_other": "关卡还剩{{s}}秒",
+      "one": "本关只需找一次",
+      "wrongRule": "点错：{{penalty}}秒",
+      "twoWrongRule": "点错两次：关卡结束",
+      "found": "找到了：{{digit}}在{{cell}}",
+      "missed": "不在{{cell}}。{{penalty}}秒",
+      "answer": "答案：{{cell}}"
+    },
+    "scope": {
+      "box": "第{{n}}宫",
+      "row": "{{row}}行",
+      "col": "第{{n}}列",
+      "board": "整个盘面"
+    },
+    "race": {
+      "task": "第{{n}}/{{total}}处 · 在{{scope}}找{{digit}}",
+      "left": "剩{{s}}秒",
+      "searching": "寻找中…",
+      "spots_other": "{{count}}处",
+      "frozen_other": "冻结{{count}}秒",
+      "out": "本处出局，等下一处",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}，{{spots}}",
+      "botLabel": "{{name}}，机器人等级{{n}}，{{title}}，{{spots}}",
+      "botSearching": "{{name}}正在寻找",
+      "mine": "你拿下了第{{n}}处",
+      "theirs": "{{name}}拿下了第{{n}}处",
+      "void": "第{{n}}处无人拿下",
+      "next": "第{{n}}处：{{scope}}的{{digit}}"
+    },
+    "box": {
+      "task": "填满第{{n}}宫",
+      "cells_other": "{{done}}/{{total}}格",
+      "cellsLabel_other": "缺少的{{total}}格中，你已填{{done}}格",
+      "mistakes_other": "错误{{count}}次（{{penalty}}秒）",
+      "mistakesLabel_other": "错误{{count}}次，$t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "填错一次加5秒，且该格不能再填这个数字",
+      "timeLabel_other": "用时：{{s}}秒，共{{limit}}秒",
+      "boardLabel_other": "盘面 · 只填第{{n}}宫缺少的{{count}}格"
+    },
+    "line": {
+      "taskRow": "填满{{row}}行",
+      "taskCol": "填满第{{n}}列",
+      "boardLabelRow_other": "盘面 · 只填{{row}}行缺少的{{count}}格",
+      "boardLabelCol_other": "盘面 · 只填第{{n}}列缺少的{{count}}格"
+    },
+    "puzzle": {
+      "task": "把各宫排到正确位置",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_other": "{{count}}个宫可移动",
+      "fixed_other": "{{count}}个宫固定",
+      "allMove": "所有宫都可移动",
+      "swaps": "交换：{{count}}",
+      "wrong_other": "错误交换{{count}}次（{{penalty}}秒）",
+      "wrongLabel_other": "错误交换{{count}}次，$t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "把一个宫拖到另一个宫上即可交换",
+      "tapHint": "或者：先点一个宫，再点另一个",
+      "slotLabel": "第{{n}}宫，{{state}}：{{rows}}",
+      "state": {
+        "movable": "可移动",
+        "fixed": "固定",
+        "selected": "已选中"
+      },
+      "slotHint": "点击选中，再点另一个宫",
+      "swapped": "第{{a}}宫与第{{b}}宫已交换",
+      "swappedPenalty_other": "第{{a}}宫与第{{b}}宫已交换。加{{s}}秒",
+      "fixedTap": "这个宫是固定的",
+      "solved": "每一行和每一列都正确",
+      "boardLabel": "拼图 · {{counts}}"
+    },
+    "duel": {
+      "gap": "领先{{gap}}",
+      "gapLabel": "领先分：{{gap}}。结束时领先得1星，领先{{two}}分得2星，领先{{three}}分得3星",
+      "lead": "领先",
+      "of": "/{{target}}",
+      "meLabel_other": "{{name}}，{{score}}分，目标{{target}}分",
+      "botLabel_other": "{{name}}，机器人等级{{n}}，{{score}}分，目标{{target}}分",
+      "finishLabel": "有人达到$t(levels:hud.duel.reachPoints, {\"count\": {{target}} })或时间满$t(levels:hud.duel.atSeconds, {\"count\": {{s}} })时，关卡结束",
+      "reachPoints_other": "{{count}}分",
+      "atSeconds_other": "{{count}}秒",
+      "raceLabel": "抢先到{{target}}分：{{me}}，{{bot}}"
+    },
+    "reactions": "表情",
+    "boardLabel": "关卡盘面 · {{scope}}",
+    "spotError": {
+      "goal_other": "盘面上藏着{{count}}个错误数字。把它们点出来。",
+      "note": "深色数字是盘面自带的提示数，永远正确。",
+      "found": "已找到",
+      "foundLabel": "已找到{{found}}个，共{{total}}个",
+      "time": "用时",
+      "timeLabel_other": "用时：{{s}}秒，共{{limit}}秒",
+      "tipTitle": "小贴士",
+      "tip": "找一找在同一行、列或宫中出现两次的数字。",
+      "tipClose": "关闭小贴士",
+      "foundCell": "你在{{cell}}找到一个错误：不是{{wrong}}，而是{{right}}",
+      "rightTap": "{{cell}}的数字是正确的。{{penalty}}秒",
+      "missed": "未找到的错误：{{cells}}",
+      "boardLabel": "关卡盘面 · 点击错误的数字"
+    },
+    "hunt": {
+      "goal": "用$t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} })拿到$t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} })。",
+      "goalPoints_other": "{{points}}分",
+      "goalMoves_other": "{{count}}步",
+      "note": "空旷区域里的格分值更高。",
+      "points": "分",
+      "scoreLabel_other": "{{score}}分",
+      "scoreWorthLabel_other": "{{score}}分。你选的格值{{worth}}分",
+      "lost": "填错的数字让你失去{{points}}分",
+      "move": "第{{n}}/{{max}}步",
+      "burnt": "第{{n}}步作废",
+      "movesLabel": "{{moves}}。{{burnt}}",
+      "burntCount_other": "{{count}}步作废",
+      "left": "剩余 · 共{{limit}}",
+      "timeLabel_other": "剩余{{s}}秒，共{{limit}}秒",
+      "max": "本盘面最高分：{{max}}",
+      "worth": "值{{points}}分"
+    },
+    "chain": {
+      "goal": "盘面上每次只有一格可以解出。找到并填好它，就会解开下一格。",
+      "notePenalty": "在还无法确定的格里填数字：{{penalty}}秒。",
+      "noteAccept": "填错数字：{{penalty}}秒。",
+      "step": "第{{n}}/{{total}}步",
+      "stepLabel": "推理链：第{{n}}步，共{{total}}步",
+      "time": "用时",
+      "timeLabel_other": "用时：{{s}}秒，共{{limit}}秒",
+      "notYet": "{{text}} · {{penalty}}秒",
+      "tipTitle": "小贴士",
+      "tip": "每一步都恰好有一格可以被证明。如果你确定某个数字，那就是这一格。",
+      "tipClose": "关闭小贴士"
+    }
+  },
+  "explain": {
+    "spot": "第{{n}}处：{{text}}",
+    "mistake": "你的错误：在{{cell}}填了{{digit}}。{{reason}}",
+    "best": "你的最佳一步，在{{cell}}填{{digit}}：{{text}}",
+    "errorFound": "{{cell}}，已找到：{{reason}}",
+    "errorMissed": "{{cell}}，未找到：{{reason}}",
+    "rightTap": "{{cell}}的{{digit}}是正确的：点它耗时{{penalty}}秒。",
+    "points_other": "你得了{{points}}分（本盘面最高{{max}}分），达到最高分的{{percent}}。",
+    "line": "最佳走法：{{moves}}。",
+    "move": "{{cell}}填{{digit}}（{{points}}）",
+    "step": "第{{n}}步：{{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "只有起始于位置{{from}}的宫能放在位置{{place}}：换成其他任何宫，都会让某行或某列出现重复数字。",
+      "onlyPlaceForBox": "起始于位置{{from}}的宫只能放在位置{{place}}：放在其他地方，都会让某行或某列出现重复数字。"
+    }
+  }
+}

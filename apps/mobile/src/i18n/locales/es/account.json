@@ -1,0 +1,251 @@
+{
+  "fields": {
+    "email": "Correo electrónico",
+    "emailPlaceholder": "nombre@example.com",
+    "password": "Contraseña",
+    "newPassword": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "displayName": "Nombre visible",
+    "displayNamePlaceholder": "Tu nombre en la arena",
+    "avatar": "Avatar",
+    "country": "País",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "change": "Cambiar"
+  },
+  "validation": {
+    "emailRequired": "Escribe tu correo",
+    "emailInvalid": "Esa dirección de correo no parece correcta",
+    "passwordRequired": "Escribe tu contraseña",
+    "passwordRules": "La contraseña necesita al menos 8 caracteres",
+    "confirmMismatch": "Las contraseñas no coinciden",
+    "countryRequired": "Elige un país"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "Contraseña incorrecta. Vuelve a intentarlo o restablécela.",
+      "userNotFound": "No hay ninguna cuenta con este correo. ¿Quieres registrarte?",
+      "invalidCredentials": "Correo o contraseña incorrectos.",
+      "tooManyRequests": "Demasiados intentos. Espera unos minutos y vuelve a intentarlo, o restablece tu contraseña.",
+      "network": "No hay conexión a internet. Revísala y vuelve a intentarlo.",
+      "emailInUse": "Este correo ya tiene una cuenta. Inicia sesión con él.",
+      "invalidEmail": "Esa dirección de correo no parece correcta.",
+      "weakPassword": "Esa contraseña es demasiado débil. Elige una más larga.",
+      "requiresRecentLogin": "Para hacer eso, vuelve a iniciar sesión.",
+      "userDisabled": "Esta cuenta fue desactivada. Contacta con soporte.",
+      "noUser": "No has iniciado sesión. Vuelve a iniciarla.",
+      "unknown": "Algo salió mal. Vuelve a intentarlo.",
+      "cancelled": "Se canceló el inicio de sesión con Google.",
+      "inProgress": "El inicio de sesión con Google ya está abierto. Termínalo, o ciérralo y vuelve a intentarlo.",
+      "playServices": "Para iniciar sesión con Google se necesitan los Google Play Services. Actualízalos y vuelve a intentarlo.",
+      "googleConfig": "El inicio de sesión con Google no está disponible ahora en esta versión de la app (DEVELOPER_ERROR). Mientras tanto, usa tu correo y contraseña.",
+      "accountExistsWithPassword": "Este correo ya tiene una cuenta con contraseña. Inicia sesión con tu correo y contraseña.",
+      "userMismatch": "Esa es otra cuenta de Google. Elige la cuenta con la que iniciaste sesión."
+    },
+    "api": {
+      "badRequest": "Esa solicitud no era válida. Vuelve a intentarlo.",
+      "invalidName": "Ese nombre no cumple las reglas.",
+      "unauthorized": "Tu sesión con el servidor caducó. Vuelve a iniciar sesión.",
+      "reauthRequired": "Para eliminar la cuenta hay que volver a iniciar sesión. Escribe de nuevo tu contraseña y vuelve a intentarlo.",
+      "suspended": "Tu cuenta está suspendida, así que ahora no se puede modificar.",
+      "notRegistered": "Esta cuenta todavía no tiene luchador. Terminemos el registro.",
+      "notFound": "El servidor no reconoce esta solicitud. Actualiza la app.",
+      "alreadyRegistered": "Esta cuenta ya tiene un luchador.",
+      "taken": "Ese nombre ya está en uso. Elige otro.",
+      "renameTooSoon": "Solo puedes cambiar tu nombre una vez cada 30 días.",
+      "tooLarge": "Esa solicitud es demasiado grande.",
+      "blocked": "Ese nombre no encaja en la arena. Elige otro.",
+      "tooManyRequests": "Demasiadas solicitudes. Espera un momento y vuelve a intentarlo.",
+      "internal": "Error del servidor. Vuelve a intentarlo en un momento.",
+      "disabled": "Las cuentas están desactivadas en este servidor por ahora.",
+      "unavailable": "El servidor no está disponible ahora. Vuelve a intentarlo en un momento.",
+      "network": "No se puede conectar con el servidor. Revisa tu internet y vuelve a intentarlo.",
+      "timeout": "El servidor no respondió a tiempo. Vuelve a intentarlo.",
+      "signedOut": "No has iniciado sesión. Vuelve a iniciarla.",
+      "unexpected": "El servidor envió una respuesta inesperada. Vuelve a intentarlo o actualiza la app."
+    }
+  },
+  "splash": {
+    "tagline": "Un tablero. Todos resuelven. Solo uno gana.",
+    "loading": "Cargando la arena…",
+    "tipLabel": "Consejo",
+    "tips": {
+      "lock_one": "La casilla que eliges queda bloqueada solo para ti: 1 segundo en una partida de tipo {{type}}.",
+      "lock_many": "La casilla que eliges queda bloqueada solo para ti: {{seconds}} de segundos en una partida de tipo {{type}}.",
+      "lock_other": "La casilla que eliges queda bloqueada solo para ti: {{seconds}} segundos en una partida de tipo {{type}}.",
+      "hard": "Una jugada más difícil vale más puntos.",
+      "mistake": "Un error cuesta exactamente los puntos que habría ganado el número correcto. Mejor piénsalo un momento más.",
+      "interfere": "Envía una interferencia con dos toques: “Interferir” en la tarjeta de tu rival y luego la que elijas."
+    },
+    "errorTitle": "No pudimos cargar tu luchador",
+    "retry": "Reintentar",
+    "signOut": "Cerrar sesión"
+  },
+  "login": {
+    "title": "De vuelta a la <accent>arena</accent>",
+    "titleLabel": "De vuelta a la arena",
+    "subtitle": "Tu puntuación, tu racha y tus rivales te esperan.",
+    "forgot": "Olvidé mi contraseña",
+    "submit": "Iniciar sesión",
+    "noAccount": "¿Todavía no tienes cuenta?",
+    "register": "Registrarse",
+    "arenaSpot": "Tu lugar"
+  },
+  "google": {
+    "continue": "Continuar con Google",
+    "orEmail": "o con tu correo",
+    "orEmailPassword": "o con correo y contraseña",
+    "existing": "Esta cuenta de Google ya tiene un luchador, {{name}}. Ya iniciaste sesión con ella.",
+    "passwordHint": "¿Te registraste con Google? Usa “Continuar con Google”.",
+    "emailInUseHint": "Si te registraste con Google, usa “Continuar con Google”.",
+    "termsTitle": "Términos y privacidad",
+    "termsBody": "Para continuar con Google, acepta los términos de uso y la política de privacidad.",
+    "termsAccept": "Aceptar y continuar"
+  },
+  "forgot": {
+    "title": "Olvidé mi contraseña",
+    "body": "Escribe el correo con el que te registraste y te enviaremos un enlace para elegir una contraseña nueva.",
+    "submit": "Enviar enlace",
+    "sentTitle": "Revisa tu correo",
+    "sentBody": "Si {{email}} tiene una cuenta, le enviamos un enlace para restablecer la contraseña. ¿No lo encuentras? Revisa la carpeta de spam.",
+    "backToLogin": "Volver a iniciar sesión"
+  },
+  "register": {
+    "step": "Paso {{step}} de {{total}}",
+    "backToLogin": "Volver a iniciar sesión",
+    "backToFighter": "Volver a tu luchador"
+  },
+  "fighter": {
+    "title": "Crea tu <accent>luchador</accent>",
+    "titleLabel": "Crea tu luchador",
+    "resumeNote": "Tu cuenta está lista. Solo falta elegir tu luchador.",
+    "chooseAvatar": "Elige un avatar",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}, se desbloquea en el nivel {{level}}",
+    "selectedAvatar": "Avatar elegido: {{name}}",
+    "yourPick": "Tu elección: {{name}}",
+    "previewTitle": "Así te verán en la arena",
+    "previewLabel": "Vista previa de tu tarjeta en una partida: {{name}}",
+    "previewNew": "Nuevo",
+    "continue": "Continuar",
+    "enterArena": "Entrar a la arena",
+    "signOut": "Cerrar sesión",
+    "googleNote": "Iniciaste sesión con Google. Solo falta elegir tu luchador."
+  },
+  "name": {
+    "rules": "De 3 a 16 caracteres: letras hebreas o inglesas, números, guion bajo y punto.",
+    "status": {
+      "checking": "Comprobando…",
+      "available": "Disponible",
+      "taken": "En uso",
+      "invalid": "No válido",
+      "blocked": "No permitido",
+      "error": "Sin comprobar",
+      "current": "Tu nombre"
+    },
+    "problem": {
+      "invalidChars": "No se pueden usar: {{chars}}",
+      "tooShort": "Al menos 3 caracteres",
+      "tooLong": "Hasta 16 caracteres"
+    },
+    "charSpace": " ",
+    "takenHint": "Alguien ya eligió este nombre. Prueba con otro.",
+    "blockedHint": "Ese nombre no encaja en la arena. Prueba con otro.",
+    "errorHint": "No pudimos comprobar el nombre. Lo comprobaremos de nuevo cuando guardes."
+  },
+  "country": {
+    "label": "País: {{country}}",
+    "choose": "Elige un país",
+    "sheetTitle": "Elige un país",
+    "search": "Buscar un país",
+    "searchPlaceholder": "Buscar",
+    "none": "No se encontró ningún país",
+    "hint": "Lo detectamos en la configuración de tu teléfono. Puedes cambiarlo cuando quieras."
+  },
+  "account": {
+    "title": "Un paso más para entrar a la <accent>arena</accent>",
+    "titleLabel": "Un paso más para entrar a la arena",
+    "subtitle": "Tu correo y tu contraseña protegen tu puntuación y tu progreso.",
+    "fighterReady": "Luchador listo",
+    "edit": "Editar",
+    "editLabel": "Editar tu luchador",
+    "submit": "Crear cuenta",
+    "profileFailed": "Tu cuenta se creó, pero tu luchador todavía no se guardó. Vuelve a intentarlo.",
+    "nameTakenNow": "Mientras tanto, alguien tomó el nombre {{name}}. Elige otro: tu cuenta te espera."
+  },
+  "password": {
+    "rules": {
+      "length": "Al menos 8 caracteres"
+    },
+    "ruleMet": "{{rule}}: cumplido",
+    "ruleMissing": "{{rule}}: falta",
+    "strengthLabel": "Seguridad de la contraseña",
+    "strength": {
+      "weak": "Contraseña débil",
+      "fair": "Contraseña aceptable",
+      "good": "Contraseña buena",
+      "strong": "Contraseña fuerte"
+    },
+    "match": "Coinciden",
+    "mismatch": "No coinciden"
+  },
+  "terms": {
+    "accept": "Acepto los términos de uso y la política de privacidad",
+    "termsLink": "Términos de uso",
+    "privacyLink": "Política de privacidad",
+    "linkHint": "Se abre en el navegador",
+    "required": "Para entrar a la arena, acepta los términos"
+  },
+  "verify": {
+    "bannerTitle": "Tu correo todavía no está verificado",
+    "bannerAction": "Verificar",
+    "bannerLabel": "Tu correo todavía no está verificado. Verificar tu correo",
+    "title": "Verifica tu correo",
+    "body": "Enviamos un enlace de verificación a {{email}}. Ábrelo y luego vuelve aquí.",
+    "why": "La práctica funciona sin verificar. Las partidas clasificatorias necesitarán un correo verificado.",
+    "resend": "Enviar de nuevo",
+    "sent": "Enviamos un enlace nuevo",
+    "check": "Ya lo verifiqué",
+    "notYet": "Todavía no está verificado. ¿Abriste el enlace?",
+    "done": "Correo verificado. ¡Gracias!",
+    "devNote": "En el modo de desarrollo no se envían correos: “Ya lo verifiqué” marca el correo como verificado."
+  },
+  "edit": {
+    "title": "Editar perfil",
+    "save": "Guardar",
+    "saved": "Perfil guardado",
+    "nameRule": "Puedes cambiar tu nombre una vez cada 30 días.",
+    "nameLocked": "Puedes cambiar tu nombre una vez cada 30 días. Próximo cambio: {{date}}.",
+    "offline": "No se puede conectar con el servidor. Podrás editar cuando vuelvas a estar en línea."
+  },
+  "home": {
+    "provisional": "Puntuación provisional: tus primeras 10 partidas"
+  },
+  "settings": {
+    "section": "Cuenta",
+    "signedInAs": "Sesión iniciada como {{email}}",
+    "editProfile": "Editar perfil",
+    "signOut": "Cerrar sesión",
+    "signOutTitle": "¿Cerrar sesión?",
+    "signOutBody": "Las prácticas de este teléfono se quedan. Para volver a jugar tendrás que iniciar sesión.",
+    "deleteAccount": "Eliminar cuenta",
+    "deleteTitle": "¿Eliminar tu cuenta?",
+    "deleteBody": "Se eliminarán tu correo, tu luchador y tu nombre, y no se puede deshacer. Las partidas y las puntuaciones se quedan, ya sin vínculo contigo, para que las partidas de los demás jugadores sigan completas. Tu nombre quedará libre para otros jugadores.",
+    "deleteContinue": "Continuar",
+    "deletePasswordTitle": "Confirma con tu contraseña",
+    "deletePasswordBody": "Para eliminar la cuenta, escribe la contraseña de {{email}}.",
+    "deleteSubmit": "Eliminar mi cuenta para siempre",
+    "deleted": "Tu cuenta se eliminó",
+    "deletedPartly": "Tu cuenta se eliminó. No pudimos eliminar tus datos de inicio de sesión: si inicias sesión con ellos, empezará un registro nuevo.",
+    "method": {
+      "password": "Inicia sesión con correo y contraseña",
+      "google": "Inicia sesión con Google",
+      "both": "Inicia sesión con Google, o con correo y contraseña"
+    },
+    "deleteGoogleTitle": "Confirmar con Google",
+    "deleteGoogleBody": "Para eliminar la cuenta, vuelve a elegir la cuenta de Google {{email}}.",
+    "deleteGoogleSubmit": "Confirmar con Google y eliminar",
+    "deleteGoogleAgain": "Para eliminar la cuenta hace falta una confirmación nueva. Vuelve a intentarlo y elige tu cuenta de Google.",
+    "deleteWithPassword": "Prefiero confirmar con mi contraseña"
+  }
+}

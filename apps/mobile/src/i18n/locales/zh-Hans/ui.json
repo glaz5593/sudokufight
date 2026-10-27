@@ -1,0 +1,31 @@
+{
+  "button": {
+    "loading": "{{label}}，加载中"
+  },
+  "nav": {
+    "label": "主导航",
+    "tabs": {
+      "home": "首页",
+      "leaderboard": "排行榜",
+      "history": "历史",
+      "achievements": "成就"
+    }
+  },
+  "row": {
+    "label": "{{title}}，{{subtitle}}"
+  },
+  "modal": {
+    "cancel": "取消"
+  },
+  "sheet": {
+    "close": "关闭"
+  },
+  "toast": {
+    "withCountdown": "{{message}}，{{time}}",
+    "secondsLeft_other": "还剩{{count}}秒"
+  },
+  "state": {
+    "line": "{{title}}。{{body}}",
+    "code": "错误代码：{{code}}"
+  }
+}

@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { StatusBar } from 'expo-status-bar';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -15,6 +15,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../components/ui';
+import { Text } from '../components/ui/Text';
 import { serverEndpoint } from '../config/server';
 import { type EchoStatus, useEchoRtt } from '../net/useEchoRtt';
 import { useHelloStore } from '../state/helloStore';

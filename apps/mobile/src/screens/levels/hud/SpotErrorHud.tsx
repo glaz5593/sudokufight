@@ -1,7 +1,7 @@
 import { type AppLevel, levelNumber, type LevelView } from '@sudoku-fight/engine';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -15,7 +15,9 @@ import { StarsBar } from '../../../components/levels/StarsBar';
 import { ltr, secondsOf } from '../../../components/player/format';
 import { IconButton } from '../../../components/ui';
 import { timing } from '../../../components/ui/motion';
+import { Text } from '../../../components/ui/Text';
 import { LEVEL_UI, type LevelUiSettings } from '../../../config/levels';
+import { decimalSeparator } from '../../../i18n/compose';
 import { allLevels } from '../../../levels/levelsData';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { motion, useReduceMotion } from '../../../theme/motion';
@@ -88,6 +90,7 @@ export function SpotErrorHud({ level, view, now, penalty = null, onExit, style }
             accessible
             accessibilityRole="timer"
             accessibilityLabel={t('hud.spotError.timeLabel', {
+              count: secondsOf(elapsedMs),
               s: secondsOf(elapsedMs),
               limit: secondsOf(limit),
             })}
@@ -95,7 +98,7 @@ export function SpotErrorHud({ level, view, now, penalty = null, onExit, style }
           >
             <Text style={styles.clockWord}>{t('hud.spotError.time')}</Text>
             <Text style={styles.clockValue} testID="spot-clock-value">
-              {secondsText(elapsedMs)}
+              {secondsText(elapsedMs, decimalSeparator(t))}
             </Text>
             <Text style={styles.clockWord}>{t('units.seconds')}</Text>
           </View>

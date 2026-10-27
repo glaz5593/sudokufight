@@ -65,12 +65,24 @@ describe('DesignSystemScreen (/dev/design-system)', () => {
     await i18n.changeLanguage('he');
     await render(<DesignSystemScreen />);
     await fireEvent(screen.getByTestId('switch-language'), 'valueChange', true);
-    expect(useSettings.getState().language).toBe('en');
+    // Through the language picker's path (i18n/languageSync.ts chooseLanguage): the player's own choice.
+    expect(useSettings.getState()).toMatchObject({ language: 'en', languageSource: 'app' });
     await fireEvent(screen.getByTestId('switch-reduce-motion'), 'valueChange', true);
     expect(useSettings.getState().reduceMotion).toBe('on');
     expect(screen.getByTestId('switch-reduce-motion').props.value).toBe(true);
     await fireEvent(screen.getByTestId('switch-reduce-motion'), 'valueChange', false);
     expect(useSettings.getState().reduceMotion).toBe('off');
+  });
+
+  it('shows the running language on the switch, also on "שפת המכשיר"', async () => {
+    useSettings.setState({ language: 'system' });
+    await i18n.changeLanguage('en');
+    const view = await render(<DesignSystemScreen />);
+    expect(screen.getByTestId('switch-language').props.value).toBe(true);
+    await view.unmount();
+    await i18n.changeLanguage('he');
+    await render(<DesignSystemScreen />);
+    expect(screen.getByTestId('switch-language').props.value).toBe(false);
   });
 
   it('closes through the route, and only offers close when it can', async () => {

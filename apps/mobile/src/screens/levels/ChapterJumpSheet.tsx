@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Icon } from '../../components/Icon';
 import { Star, STAR_SIZES } from '../../components/levels/StarRow';
 import { ltr } from '../../components/player/format';
 import { Sheet } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { chapterName } from './levelWording';
 
@@ -50,6 +51,7 @@ export function ChapterJumpSheet({ visible, chapters, onClose, onJump, onExited 
               accessibilityLabel={t('jump.rowLabel', {
                 n: c.chapter,
                 name,
+                count: c.stars,
                 stars: c.stars,
                 max: c.max,
                 state: t(c.open ? 'jump.open' : 'jump.locked'),

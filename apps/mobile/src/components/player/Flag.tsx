@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { Text, type StyleProp, type TextStyle } from 'react-native';
+import { type StyleProp, type TextStyle } from 'react-native';
 
 import { size } from '../../theme';
+import { Text } from '../ui/Text';
 import { countryName, flagEmoji } from './countryFlag';
 import { metrics } from './metrics';
 

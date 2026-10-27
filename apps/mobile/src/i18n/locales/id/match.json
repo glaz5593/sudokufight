@@ -1,0 +1,112 @@
+{
+  "header": "{{mode}} · {{players}} · {{type}}",
+  "ranked": "Mode ranked",
+  "players_other": "{{count}} pemain",
+  "me": "Kamu",
+  "sep": ". ",
+  "sentenceSpace": " ",
+  "search": {
+    "title_other": "Mencari lawan…",
+    "connecting": "Masuk ke antrean…",
+    "elapsedLabel": "Sudah mencari selama {{time}}",
+    "myRating": "Ratingku {{rating}}",
+    "rangeTitle": "Rentang rating",
+    "rangeLabel": "Rentang rating {{low}} sampai {{high}}",
+    "widening": "Rentangnya melebar seiring pencarian berjalan",
+    "noCap": "Tanpa batas rentang: rentangnya terus melebar",
+    "opponents": "Lawan",
+    "slot": "Mencari…",
+    "slotMark": "?",
+    "slotLabel": "Kursi kosong: mencari lawan",
+    "avoidRecent": "Menghindari lawan yang baru saja kamu hadapi",
+    "requeued_other": "Seorang pemain tidak terhubung tepat waktu. Kamu kembali ke urutan terdepan antrean.",
+    "cancel": "Batalkan pencarian",
+    "cancelHint": "Keluar dari antrean dan kembali",
+    "announce_other": "Mencari lawan dengan rating {{low}} sampai {{high}}",
+    "alone": {
+      "title_other": "Belum cukup pemain yang mencari pertandingan ini sekarang",
+      "body_other": "Kami akan terus mencari: begitu ada cukup pemain yang mencari pertandingan ini, kamu akan dipertemukan di sini. Sambil menunggu, kamu juga bisa melawan bot.",
+      "bot": "Lawan bot sambil menunggu"
+    }
+  },
+  "found": {
+    "title_other": "Lawan ditemukan!",
+    "ready": "Siap",
+    "connecting": "Menghubungkan…",
+    "allReady": "Semua siap · pertandingan dimulai",
+    "waiting": "Menunggu semua pemain terhubung…",
+    "readyCount": "Siap",
+    "readyCountLabel": "{{ready}} dari {{total}} siap",
+    "fresh": "Kalian belum bertemu akhir-akhir ini",
+    "rematch": "Kalian baru saja bertanding",
+    "noCancel": "Tidak bisa dibatalkan dari sini: keluar dianggap meninggalkan pertandingan",
+    "seatLabel": "{{name}}, {{rating}}, {{state}}",
+    "announce_other": "Lawan ditemukan: {{names}}"
+  },
+  "countdown": {
+    "getReady": "Bersiaplah…",
+    "reveal_other": "Papan muncul untuk semua pemain pada saat yang sama",
+    "go": "GO!",
+    "goLabel": "Mulai!",
+    "starting": "Menyiapkan papan…",
+    "stepLabel": "Pertandingan dimulai dalam {{time}}",
+    "boardLabel": "Papan, tersembunyi sampai pertandingan dimulai"
+  },
+  "timeout": {
+    "title_other": "Belum ada cukup lawan selevel denganmu",
+    "body": "Selama {{time}} kami sudah mencari pemain yang tersedia dengan rating {{range}}, tanpa menyertakan lawan yang baru saja kamu hadapi. Kamu bisa terus mencari tanpa batas rentang, atau berlatih melawan bot sambil menunggu.",
+    "aloneTitle_other": "Masih belum cukup pemain yang mencari pertandingan ini",
+    "aloneBody_other": "Kami sudah mencari selama {{time}} dan belum cukup pemain yang mencari pertandingan ini. Kamu bisa terus menunggu, atau berlatih melawan bot sambil menunggu.",
+    "minutes_other": "{{count}} menit",
+    "keep": "Terus mencari",
+    "keepNote": "Tanpa batas rentang",
+    "keepHint": "Melanjutkan pencarian tanpa batas rentang rating",
+    "bot": "Lawan bot sambil menunggu",
+    "home": "Kembali ke beranda"
+  },
+  "error": {
+    "title": "Pencarian berhenti",
+    "offlineTitle": "Tidak bisa terhubung ke server",
+    "body": {
+      "network": "Kami tidak bisa menghubungi server permainan. Periksa koneksimu lalu coba lagi.",
+      "lost": "Koneksi ke server permainan terputus saat pencarian.",
+      "noShow": "Kami tidak bisa terhubung ke pertandingan tepat waktu, jadi pertandingannya dibatalkan.",
+      "alreadyQueued": "Kamu sudah punya pencarian atau pertandingan ranked yang sedang berjalan, mungkin di perangkat lain.",
+      "queueClosed": "Antrean ini belum dibuka.",
+      "badQueue": "Antrean ini tidak ada.",
+      "unauthenticated": "Masuk ke akunmu untuk bermain ranked.",
+      "emailNotVerified": "Pertandingan ranked memerlukan email terverifikasi, dan emailmu belum terverifikasi di sistem kami. Jika kamu sudah membuka tautan verifikasi, ketuk “Aku sudah verifikasi” di layar berikutnya.",
+      "suspended": "Akunmu sedang ditangguhkan, jadi untuk sementara tidak ada pertandingan ranked. Latihan solo atau melawan bot tetap bisa.",
+      "signedOut": "Masuk ke akunmu untuk bermain ranked.",
+      "unknown": "Terjadi kesalahan pada pencarian."
+    },
+    "code": "Kode kesalahan: {{code}}",
+    "retry": "Cari lagi",
+    "verify": "Verifikasi email",
+    "practice": "Ke latihan",
+    "practiceNote": "Latihan solo atau melawan bot juga bisa dimainkan offline.",
+    "home": "Kembali ke beranda"
+  },
+  "verify": {
+    "required": "Verifikasi emailmu untuk bermain ranked."
+  },
+  "offline": {
+    "title": "Tanpa koneksi internet",
+    "body": "Mode ranked tidak tersedia",
+    "checking": "Memeriksa…",
+    "practice": "Ke latihan",
+    "retry": "Periksa lagi",
+    "retrying": "Memeriksa koneksi…",
+    "stillOffline": "Masih tidak ada koneksi · percobaan {{count}}",
+    "rankedNote": "Tersedia saat online",
+    "needsConnection": "Perlu koneksi",
+    "needsConnectionLabel": "Perlu koneksi internet",
+    "practiceNote": "Tersedia tanpa internet",
+    "availableOffline": "Bisa offline",
+    "back": "Kamu kembali online. Pertandingan ranked tersedia."
+  },
+  "modes": {
+    "rating": "Rating: {{rating}}",
+    "ratingLabel": "Rating {{type}} milikmu adalah {{rating}}"
+  }
+}

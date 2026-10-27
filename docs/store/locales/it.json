@@ -1,0 +1,29 @@
+{
+  "googlePlay": {
+    "locales": ["it-IT"],
+    "title": "Sudoku Fight: sudoku PvP live",
+    "shortDescription": "Sfida fino a 3 rivali sullo stesso sudoku, live. Partite classificate e leali.",
+    "fullDescription": "Sudoku Fight trasforma il sudoku in una sfida in tempo reale. Fino a 4 giocatori risolvono la stessa griglia nello stesso momento: ogni numero corretto che inserisci è tuo, e ogni punto conta.\n\nUNA GRIGLIA, TUTTI RISOLVONO\n• Tutti i giocatori lavorano sulla stessa griglia contemporaneamente. Inserisci un numero corretto e la casella prende il tuo colore.\n• Le mosse difficili valgono di più: un numero che richiede una deduzione astuta vale più di uno facile.\n• Un numero sbagliato costa esattamente quanto avrebbe fatto guadagnare quello giusto. La sola velocità non basta per vincere.\n• Blocca una casella mentre ci pensi, ma solo per pochi secondi.\n\nDISTURBI E REAZIONI\n• Spendi punti per colpire un avversario con fuochi d’artificio, gatti o una distorsione dello schermo per 5 secondi.\n• Reagisci con 😂 😱 😎 🤦 🔥 👀.\n\nPARTITE CLASSIFICATE\n• Partite classificate per 2, 3 o 4 giocatori, in tre tipi di partita: veloce, normale e difficile.\n• Il matchmaking cerca avversari del tuo livello ed evita quelli che hai appena affrontato.\n• Un punteggio per ogni tipo di partita, leghe, classifiche e schede giocatore con le tue statistiche.\n• Nessun avversario online? Allenati contro un bot mentre aspetti.\n\nIMPARA DA OGNI PARTITA\n• Rivedi in replay qualsiasi partita classificata, mossa per mossa, con una spiegazione logica di ogni mossa.\n• Tutta la cronologia delle tue partite e i tuoi progressi, con XP e livelli.\n\nALLENATI QUANDO VUOI\n• Allenati in solitario o contro bot di diversa forza, anche offline.\n\nFAIR PLAY\n• Il server controlla ogni mossa, e le griglie delle partite classificate non sono mai incluse nell’app.\n• Niente pubblicità. Puoi eliminare il tuo account in qualsiasi momento dalle Impostazioni.\n\nDisponibile in 19 lingue. La griglia si legge sempre da sinistra a destra.",
+    "whatsNew": "Prima versione."
+  },
+  "appStore": {
+    "locales": ["it"],
+    "name": "Sudoku Fight",
+    "subtitle": "Duelli sudoku in tempo reale",
+    "promotionalText": "Una griglia. Tutti risolvono. Vince uno solo. Sfida fino a 3 avversari sullo stesso sudoku in tempo reale, invia disturbi e scala le leghe classificate.",
+    "description": "Sudoku Fight trasforma il sudoku in una sfida in tempo reale. Fino a 4 giocatori risolvono la stessa griglia nello stesso momento: ogni numero corretto che inserisci è tuo, e ogni punto conta.\n\nUNA GRIGLIA, TUTTI RISOLVONO\n• Tutti i giocatori lavorano sulla stessa griglia contemporaneamente. Inserisci un numero corretto e la casella prende il tuo colore.\n• Le mosse difficili valgono di più: un numero che richiede una deduzione astuta vale più di uno facile.\n• Un numero sbagliato costa esattamente quanto avrebbe fatto guadagnare quello giusto. La sola velocità non basta per vincere.\n• Blocca una casella mentre ci pensi, ma solo per pochi secondi.\n\nDISTURBI E REAZIONI\n• Spendi punti per colpire un avversario con fuochi d’artificio, gatti o una distorsione dello schermo per 5 secondi.\n• Reagisci con 😂 😱 😎 🤦 🔥 👀.\n\nPARTITE CLASSIFICATE\n• Partite classificate per 2, 3 o 4 giocatori, in tre tipi di partita: veloce, normale e difficile.\n• Il matchmaking cerca avversari del tuo livello ed evita quelli che hai appena affrontato.\n• Un punteggio per ogni tipo di partita, leghe, classifiche e schede giocatore con le tue statistiche.\n• Nessun avversario online? Allenati contro un bot mentre aspetti.\n\nIMPARA DA OGNI PARTITA\n• Rivedi in replay qualsiasi partita classificata, mossa per mossa, con una spiegazione logica di ogni mossa.\n• Tutta la cronologia delle tue partite e i tuoi progressi, con XP e livelli.\n\nALLENATI QUANDO VUOI\n• Allenati in solitario o contro bot di diversa forza, anche offline.\n\nFAIR PLAY\n• Il server controlla ogni mossa, e le griglie delle partite classificate non sono mai incluse nell’app.\n• Niente pubblicità. Puoi eliminare il tuo account in qualsiasi momento dalle Impostazioni.\n\nDisponibile in 19 lingue. La griglia si legge sempre da sinistra a destra.",
+    "keywords": "multiplayer,online,amici,sfida,rompicapo,enigmistica,puzzle,numeri,logica,giochi,pvp,classifica,gara",
+    "whatsNew": "Prima versione."
+  },
+  "screenshotCaptions": [
+    "Una griglia. Tutti risolvono. Vince uno solo.",
+    "Fino a 4 giocatori sulla stessa griglia",
+    "Invia disturbi ai tuoi avversari",
+    "Un avversario del tuo livello, sulla stessa griglia",
+    "Le mosse difficili valgono di più",
+    "Ogni mossa in replay, con spiegazioni",
+    "Leghe e classifiche",
+    "Allenati contro un bot, anche offline"
+  ],
+  "variants": {}
+}

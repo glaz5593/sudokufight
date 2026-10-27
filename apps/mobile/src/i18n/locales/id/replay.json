@@ -1,0 +1,92 @@
+{
+  "title": "Replay pertandingan",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "Latihan solo",
+    "bot": "Latihan lawan bot",
+    "ranked": "Mode ranked"
+  },
+  "back": "Kembali",
+  "loading": "Memuat pertandingan…",
+  "load": {
+    "missing": "Kami tidak menemukan pertandingan ini",
+    "notFinished": "Pertandingan ini masih disimpan di server. Coba lagi sebentar lagi",
+    "offline": "Tidak ada koneksi ke server. Pertandingan ranked dimuat dari server",
+    "signedOut": "Masuk untuk menonton pertandingan ranked",
+    "unavailable": "Kami tidak bisa membaca pertandingan ini",
+    "retry": "Coba lagi",
+    "partial": "Pertandingan ini terpotong: replay berjalan sampai langkah terakhir yang tersimpan"
+  },
+  "step": {
+    "counter": "Langkah {{number}} dari {{total}}",
+    "clockLabel": "Jam pertandingan: {{clock}}"
+  },
+  "nav": {
+    "prev": "Sebelumnya",
+    "next": "Berikutnya",
+    "timeline": "Linimasa langkah",
+    "timelineValue": "Langkah {{number}} dari {{total}}, {{clock}}",
+    "timelineHint": "Geser ke atas atau ke bawah untuk mengganti langkah"
+  },
+  "narration": {
+    "start": "Pertandingan dimulai",
+    "select": "{{name}} · memilih {{cell}}",
+    "correct": "{{name}} · benar di {{cell}} · {{delta}}",
+    "wrong": "{{name}} · salah di {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · melepas {{cell}}",
+      "timeout": "{{name}} · waktu habis di {{cell}}"
+    },
+    "interference": "{{name}} · mengganggu {{target}} · {{delta}}",
+    "disconnect": "{{name}} · terputus",
+    "reconnect": "{{name}} · kembali ke pertandingan",
+    "offline": "{{name}} · koneksi terputus",
+    "surrender": "{{name}} · menyerah",
+    "endPractice": "{{name}} · mengakhiri latihan",
+    "abandon": "{{name}} · keluar dari pertandingan",
+    "over": "Pertandingan selesai",
+    "paused": "Pertandingan dibekukan",
+    "offlineSuffix": "dikirim saat kembali online"
+  },
+  "explain": {
+    "title": "Penjelasan untuk setiap pemain",
+    "none": "Belum ada langkah dari {{name}}",
+    "noneMe": "Belum ada langkahku",
+    "noneBody": "Penjelasan muncul setelah langkah pertama",
+    "status": {
+      "choosing": "Memilih",
+      "released": "Dilepas",
+      "correct": "Benar",
+      "wrong": "Salah"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}}, bukan {{answer}}",
+    "why": "Kenapa {{digit}} tidak cocok: {{text}}",
+    "noLogic": "Jawabannya: {{cell}} → {{digit}}",
+    "scoreLine": "Skornya",
+    "penaltyLine": "Penaltinya: nilai angka yang benar",
+    "released": {
+      "cancel": "Pilihan dibatalkan",
+      "timeout": "Waktu habis",
+      "switch": "Pindah ke sel lain",
+      "mistake": "Setelah kesalahan",
+      "surrender": "Keluar dari pertandingan",
+      "disconnect": "Terputus",
+      "abandon": "Ditinggalkan"
+    },
+    "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "Momen penting",
+    "bestMove": "Langkah terbaik",
+    "mistakes": "Kesalahan · {{count}}",
+    "interferences": "Gangguan · {{count}}",
+    "turningPoint": "Titik balik",
+    "hint": "Lompat ke langkah itu"
+  },
+  "board": "Papan di langkah {{number}}",
+  "me": "Kamu",
+  "unknown": "Pemain"
+}

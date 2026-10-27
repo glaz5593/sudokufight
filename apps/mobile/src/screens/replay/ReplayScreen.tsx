@@ -1,8 +1,8 @@
-import { type CellIndex, cellName, type Lang, type PlayerId } from '@sudoku-fight/engine';
+import { type CellIndex, cellName, type PlayerId } from '@sudoku-fight/engine';
 import type { TFunction } from 'i18next';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Board, type BoardFlash, boardModel } from '../../components/board';
@@ -15,6 +15,8 @@ import {
   signedText,
 } from '../../components/player';
 import { Button, Spinner, StateView } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
+import { decimalSeparator } from '../../i18n/compose';
 import { color, size, space, text, tokens } from '../../theme';
 import { formatClock } from '../game/model';
 import { ScreenHeader } from '../home/parts';
@@ -134,7 +136,7 @@ function ReplayBody({
   const { t: th } = useTranslation('history');
   const who = useWho();
   const { width } = useWindowDimensions();
-  const lang: Lang = i18n.language === 'en' ? 'en' : 'he';
+  const lang = i18n.language;
   const [index, setIndex] = useState(0);
   const total = replay.steps.length;
   const go = useCallback((k: number) => setIndex(Math.max(0, Math.min(total - 1, k))), [total]);
@@ -292,12 +294,17 @@ function flashesOf(step: ReplayStep): BoardFlash[] {
 
 type ReplayT = TFunction<'replay'>;
 
-/** What happened at this step, in a line: "Moshe · נכון ב־D5 · +6". */
+/**
+ * What happened at this step, in a line: "Moshe · נכון ב־D5 · +6". A note after it (sent when back online, the
+ * game is over, frozen) follows the language's separator (player:sep, " · ").
+ */
 function narration(sv: StepView, replay: Replay, who: ReturnType<typeof useWho>, t: ReplayT): string {
   const s = sv.step;
+  const then = (line: string, note: string) => [line, note].join(t('player:sep'));
   const player = replay.players.find((p) => p.id === s.playerId);
   const name = who(player);
   const cell = s.cell === null ? '' : ltr(cellName(s.cell));
+  const decimal = decimalSeparator(t);
   let line: string;
   switch (s.kind) {
     case 'start':
@@ -307,13 +314,13 @@ function narration(sv: StepView, replay: Replay, who: ReturnType<typeof useWho>,
       line = t('narration.select', { name, cell });
       break;
     case 'correct':
-      line = t('narration.correct', { name, cell, delta: signedText(s.points ?? 0) });
+      line = t('narration.correct', { name, cell, delta: signedText(s.points ?? 0, decimal) });
       // Entered offline and sent on the return [D42].
-      if (s.offline) line = `${line} · ${t('narration.offlineSuffix')}`;
+      if (s.offline) line = then(line, t('narration.offlineSuffix'));
       break;
     case 'wrong':
-      line = t('narration.wrong', { name, cell, delta: signedText(-(s.penalty ?? 0)) });
-      if (s.offline) line = `${line} · ${t('narration.offlineSuffix')}`;
+      line = t('narration.wrong', { name, cell, delta: signedText(-(s.penalty ?? 0), decimal) });
+      if (s.offline) line = then(line, t('narration.offlineSuffix'));
       break;
     case 'release':
       line =
@@ -325,7 +332,7 @@ function narration(sv: StepView, replay: Replay, who: ReturnType<typeof useWho>,
       line = t('narration.interference', {
         name,
         target: who(replay.players.find((p) => p.id === s.targetId)),
-        delta: signedText(-(s.cost ?? 0)),
+        delta: signedText(-(s.cost ?? 0), decimal),
       });
       break;
     case 'surrender':
@@ -335,8 +342,8 @@ function narration(sv: StepView, replay: Replay, who: ReturnType<typeof useWho>,
     default:
       line = t(`narration.${s.kind}`, { name });
   }
-  if (s.ends) return `${line} · ${t('narration.over')}`;
-  if (sv.state.status === 'paused') return `${line} · ${t('narration.paused')}`;
+  if (s.ends) return then(line, t('narration.over'));
+  if (sv.state.status === 'paused') return then(line, t('narration.paused'));
   return line;
 }
 

@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { Icon } from '../../components/Icon';
 import { Button } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { color, size, text, tokens } from '../../theme';
 import type { OutOfGame } from './model';
 

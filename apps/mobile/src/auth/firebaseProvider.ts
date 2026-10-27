@@ -1,3 +1,6 @@
+import i18next from 'i18next';
+
+import { LANGUAGES, PSEUDO_LANGUAGES } from '../i18n/languages';
 import { toAuthError, toGoogleAuthError } from './errors';
 import type { GoogleSignInConfig } from './googleConfig';
 import { AuthError, type AuthProvider, type AuthUser, type GoogleAuth, type SignInMethod } from './types';
@@ -25,6 +28,10 @@ import { AuthError, type AuthProvider, type AuthUser, type GoogleAuth, type Sign
  * One Google step at a time: a second call while Google's chooser is open fails with 'inProgress' here, before it
  * reaches the library (which would cancel the first one and open a second chooser nobody waits for).
  *
+ * The emails Firebase sends (address verification, password reset) are in the app's language (localization plan
+ * 0יב, D113): setLanguageCode just before each. The sender's name and the templates themselves are set in the
+ * Firebase console (Authentication → Templates; the name "Sudoku Fight" is Moshe's task there).
+ *
  * Every failure comes out as an AuthError (errors.ts maps Firebase's and Google's codes).
  */
 
@@ -43,6 +50,29 @@ const loadFirebaseAuth = (): FirebaseAuthModule =>
 const loadGoogleSignIn = (): GoogleSignInModule =>
   require('@react-native-google-signin/google-signin') as GoogleSignInModule;
 /* eslint-enable @typescript-eslint/no-require-imports */
+
+/** Chinese as Firebase names its email languages (by region), and a pseudo language by the language it imitates. */
+const FIREBASE_LANGUAGE_CODES: Readonly<Record<string, string>> = {
+  'zh-Hans': 'zh-CN',
+  'zh-Hant': 'zh-TW',
+  'en-XA': 'en',
+  'ar-XB': 'ar',
+};
+
+/**
+ * The language code Firebase gets for its emails (D113): the app's language, as Firebase names it; null for
+ * anything else (none yet, a test's), and Firebase keeps the template's own language.
+ */
+export function firebaseLanguageCode(language: string | null | undefined): string | null {
+  if (!language) return null;
+  const known =
+    (LANGUAGES as readonly string[]).includes(language) ||
+    (PSEUDO_LANGUAGES as readonly string[]).includes(language);
+  return known ? (FIREBASE_LANGUAGE_CODES[language] ?? language) : null;
+}
+
+/** The app's language as i18next has it now. */
+const appLanguage = (): string | null => i18next.language ?? null;
 
 /** Google sign-in for this provider: the web client id, and (tests) a stand-in for the library. */
 export interface FirebaseGoogleOptions extends GoogleSignInConfig {
@@ -76,6 +106,7 @@ async function wrap<T>(run: () => Promise<T>): Promise<T> {
 export function createFirebaseAuthProvider(
   load: () => FirebaseAuthModule = loadFirebaseAuth,
   google: FirebaseGoogleOptions | null = null,
+  emailLanguage: () => string | null = appLanguage,
 ): AuthProvider {
   let mod: FirebaseAuthModule | null = null;
   const fb = () => (mod ??= load());
@@ -85,6 +116,21 @@ export function createFirebaseAuthProvider(
     if (!user) throw new AuthError('noUser');
     return user;
   };
+
+  /**
+   * The next email in the app's language (D113). Never fails the email: without it, Firebase writes in the
+   * template's own language, as before 1.1.0.
+   */
+  async function emailsInAppLanguage(): Promise<void> {
+    const code = firebaseLanguageCode(emailLanguage());
+    const { setLanguageCode } = fb();
+    if (code === null || typeof setLanguageCode !== 'function') return;
+    try {
+      await setLanguageCode(auth(), code);
+    } catch {
+      // The template's own language.
+    }
+  }
 
   // ---- Google ------------------------------------------------------------------------------------------------
 
@@ -223,7 +269,12 @@ export function createFirebaseAuthProvider(
         return userOf(credential.user);
       }),
 
-    sendEmailVerification: () => wrap(() => fb().sendEmailVerification(signedIn())),
+    sendEmailVerification: () =>
+      wrap(async () => {
+        const user = signedIn();
+        await emailsInAppLanguage();
+        await fb().sendEmailVerification(user);
+      }),
 
     reloadUser: () =>
       wrap(async () => {
@@ -232,7 +283,11 @@ export function createFirebaseAuthProvider(
         return userOf(signedIn());
       }),
 
-    sendPasswordReset: (email) => wrap(() => fb().sendPasswordResetEmail(auth(), email.trim())),
+    sendPasswordReset: (email) =>
+      wrap(async () => {
+        await emailsInAppLanguage();
+        await fb().sendPasswordResetEmail(auth(), email.trim());
+      }),
 
     reauthenticate: (password) =>
       wrap(async () => {

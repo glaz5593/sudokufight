@@ -1,0 +1,31 @@
+{
+  "button": {
+    "loading": "{{label}}, 불러오는 중"
+  },
+  "nav": {
+    "label": "주 메뉴",
+    "tabs": {
+      "home": "홈",
+      "leaderboard": "순위표",
+      "history": "기록",
+      "achievements": "업적"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "취소"
+  },
+  "sheet": {
+    "close": "닫기"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_other": "{{count}}초 남음"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "오류 코드: {{code}}"
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "header": "{{mode}} · {{players}} · {{type}}",
+  "ranked": "ランク戦",
+  "players_other": "{{count}}人",
+  "me": "自分",
+  "sep": "。",
+  "sentenceSpace": "",
+  "search": {
+    "title_other": "対戦相手を探しています…",
+    "connecting": "キューに参加中…",
+    "elapsedLabel": "検索開始から{{time}}",
+    "myRating": "自分のレーティング{{rating}}",
+    "rangeTitle": "レーティングの範囲",
+    "rangeLabel": "レーティングの範囲：{{low}}〜{{high}}",
+    "widening": "検索が続くと範囲が広がります",
+    "noCap": "範囲の上限なし：範囲は広がり続けます",
+    "opponents": "対戦相手",
+    "slot": "検索中…",
+    "slotMark": "？",
+    "slotLabel": "空席：対戦相手を探しています",
+    "avoidRecent": "最近対戦した相手は除外しています",
+    "requeued_other": "時間内に接続しなかったプレイヤーがいました。キューの先頭に戻りました。",
+    "cancel": "検索をキャンセル",
+    "cancelHint": "キューから抜けて戻ります",
+    "announce_other": "レーティング{{low}}〜{{high}}の対戦相手を探しています",
+    "alone": {
+      "title_other": "今はこの対戦を探しているプレイヤーが足りません",
+      "body_other": "検索は続けます。この対戦を探すプレイヤーがそろいしだい、ここでマッチングします。その間にボットと対戦することもできます。",
+      "bot": "その間にボットと対戦"
+    }
+  },
+  "found": {
+    "title_other": "マッチング成立！",
+    "ready": "準備完了",
+    "connecting": "接続中…",
+    "allReady": "全員準備完了 · 対戦が始まります",
+    "waiting": "全員の接続を待っています…",
+    "readyCount": "準備完了",
+    "readyCountLabel": "{{total}}人中{{ready}}人が準備完了",
+    "fresh": "最近は対戦していない相手です",
+    "rematch": "最近対戦した相手です",
+    "noCancel": "ここからはキャンセルできません：退出すると放棄とみなされます",
+    "seatLabel": "{{name}}、{{rating}}、{{state}}",
+    "announce_other": "対戦相手が見つかりました：{{names}}"
+  },
+  "countdown": {
+    "getReady": "まもなく開始…",
+    "reveal_other": "盤面は全員に同時に表示されます",
+    "go": "GO!",
+    "goLabel": "スタート！",
+    "starting": "盤面を準備中…",
+    "stepLabel": "{{time}}後に対戦が始まります",
+    "boardLabel": "盤面。対戦開始まで隠れています"
+  },
+  "timeout": {
+    "title_other": "実力の近い対戦相手がまだ見つかりません",
+    "body": "最近対戦した相手を除き、レーティング{{range}}の対戦可能なプレイヤーを{{time}}探しました。範囲の上限なしで検索を続けるか、その間にボットと練習できます。",
+    "aloneTitle_other": "まだこの対戦を探しているプレイヤーが足りません",
+    "aloneBody_other": "{{time}}探しましたが、この対戦を探しているプレイヤーが足りませんでした。このまま待つか、その間にボットと練習できます。",
+    "minutes_other": "{{count}}分間",
+    "keep": "検索を続ける",
+    "keepNote": "範囲の上限なし",
+    "keepHint": "レーティングの範囲に上限を設けずに検索を続けます",
+    "bot": "その間にボットと対戦",
+    "home": "ホームに戻る"
+  },
+  "error": {
+    "title": "検索が停止しました",
+    "offlineTitle": "サーバーに接続できません",
+    "body": {
+      "network": "ゲームサーバーに接続できませんでした。接続を確認して、もう一度お試しください。",
+      "lost": "検索中にゲームサーバーとの接続が切れました。",
+      "noShow": "時間内に対戦に接続できなかったため、対戦は中止されました。",
+      "alreadyQueued": "ランク戦の検索または対戦がすでに進行中です。別の端末で進行中かもしれません。",
+      "queueClosed": "このキューはまだ開いていません。",
+      "badQueue": "このキューは存在しません。",
+      "unauthenticated": "ランク戦をプレイするには、アカウントにログインしてください。",
+      "emailNotVerified": "ランク戦には確認済みのメールアドレスが必要ですが、あなたのメールアドレスはまだ確認されていません。確認用のリンクをすでに開いた場合は、次の画面で「確認しました」をタップしてください。",
+      "suspended": "アカウントが停止中のため、現在ランク戦はプレイできません。ソロ練習とボットとの練習は引き続き利用できます。",
+      "signedOut": "ランク戦をプレイするには、アカウントにログインしてください。",
+      "unknown": "検索中に問題が発生しました。"
+    },
+    "code": "エラーコード：{{code}}",
+    "retry": "もう一度検索",
+    "verify": "メールアドレスを確認",
+    "practice": "練習へ",
+    "practiceNote": "ソロ練習とボットとの練習はオフラインでも遊べます。",
+    "home": "ホームに戻る"
+  },
+  "verify": {
+    "required": "ランク戦をプレイするには、メールアドレスを確認してください。"
+  },
+  "offline": {
+    "title": "インターネットに接続されていません",
+    "body": "ランク戦は利用できません",
+    "checking": "確認中…",
+    "practice": "練習へ",
+    "retry": "再確認",
+    "retrying": "接続を確認中…",
+    "stillOffline": "まだ接続がありません · 試行{{count}}回目",
+    "rankedNote": "オンライン時に利用可能",
+    "needsConnection": "接続が必要",
+    "needsConnectionLabel": "インターネット接続が必要です",
+    "practiceNote": "インターネットなしで利用可能",
+    "availableOffline": "オフライン対応",
+    "back": "オンラインに戻りました。ランク戦をプレイできます。"
+  },
+  "modes": {
+    "rating": "レーティング{{rating}}",
+    "ratingLabel": "あなたの{{type}}のレーティングは{{rating}}です"
+  }
+}

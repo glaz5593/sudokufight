@@ -1,0 +1,608 @@
+{
+  "title": "Luyện tập theo màn",
+  "stage": "Màn {{n}}",
+  "chapter": "Chương {{n}}",
+  "units": {
+    "seconds": "giây"
+  },
+  "stars": {
+    "of3": {
+      "0": "không có sao",
+      "1": "một trên ba sao",
+      "2": "hai trên ba sao",
+      "3": "ba trên ba sao"
+    },
+    "count_other": "{{count}} sao"
+  },
+  "kinds": {
+    "find": {
+      "name": "Vị trí chính xác",
+      "label": "Vị trí chính xác"
+    },
+    "findDuel": {
+      "name": "Đua với máy",
+      "label": "Đua với máy"
+    },
+    "fillBox": {
+      "name": "Điền khối",
+      "label": "Điền khối"
+    },
+    "duel": {
+      "name": "Đấu đến {{target}}",
+      "label": "Đấu đến {{target}}"
+    },
+    "spotError": {
+      "name": "Tìm lỗi sai",
+      "label": "Tìm lỗi sai"
+    },
+    "pointHunter": {
+      "name": "Săn điểm",
+      "label": "Săn điểm"
+    },
+    "chain": {
+      "name": "Chuỗi",
+      "label": "Chuỗi"
+    },
+    "fillRow": {
+      "name": "Điền hàng",
+      "label": "Điền hàng"
+    },
+    "fillCol": {
+      "name": "Điền cột",
+      "label": "Điền cột"
+    },
+    "puzzle": {
+      "name": "Xếp hình",
+      "label": "Xếp hình"
+    }
+  },
+  "boss": {
+    "chip": "Trùm",
+    "name": "Màn trùm",
+    "label": "trùm, {{kind}}",
+    "versus": "Trùm: {{bot}}",
+    "band": "Trùm · Chương {{chapter}}",
+    "botLabel": "{{name}}, trùm",
+    "intro": {
+      "title": "Màn trùm!",
+      "sub": "Màn {{n}} · {{kind}}",
+      "harder": "Điều gì khó hơn",
+      "label": "Màn trùm! Màn {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "Đối thủ máy đầu tiên của bạn: {{bot}}",
+      "faster": "{{bot}} nhanh hơn {{percent}}",
+      "overlord": "Overlord",
+      "moreCells_other": "{{cells}} ô trống thay vì {{usual}}"
+    },
+    "result": {
+      "won": "Bạn đã hạ trùm!",
+      "lost": "Lần này trùm đã thắng",
+      "gateOpen": "Cổng vào chương {{n}}: {{stars}} · đã mở!",
+      "gateClosed": "Cổng vào chương {{n}}: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Khối {{n}}",
+    "row": "Hàng {{row}}",
+    "col": "Cột {{n}}",
+    "mapLabel": "Bản đồ bảng: {{region}}"
+  },
+  "goals": {
+    "find": "Tìm đúng vị trí của một số. Màn kết thúc sau {{s}} giây.",
+    "findDuel_other": "{{spots}} mục tiêu với {{bot}}, tối đa {{s}} giây. Ai tìm ra trước sẽ giành mục tiêu đó.",
+    "fillBox_other": "Điền {{cells}} ô còn trống của một khối, tối đa {{s}} giây.",
+    "fillRow_other": "Điền {{cells}} ô còn trống của một hàng, tối đa {{s}} giây.",
+    "fillCol_other": "Điền {{cells}} ô còn trống của một cột, tối đa {{s}} giây.",
+    "puzzle": "Xếp các khối theo đúng thứ tự. Mỗi lượt đổi sai bị cộng {{penalty}} giây. Tối đa {{s}} giây.",
+    "duel_other": "Đấu với {{bot}}, đến {{target}} điểm hoặc {{s}} giây. Sao tính theo cách biệt dẫn điểm.",
+    "spotError_other": "{{count}} số sai đang ẩn giữa các số của bạn. Tối đa {{s}} giây.",
+    "pointHunter_other": "{{moves}} nước đi, tối đa {{s}} giây. Ghi càng nhiều điểm càng tốt.",
+    "chain_other": "Một chuỗi {{steps}} bước, tối đa {{s}} giây. Mỗi lúc chỉ giải được một ô."
+  },
+  "scale": {
+    "label": "Số sao có thể đạt",
+    "row": "{{stars}}: {{text}}",
+    "time": "tối đa {{s}} giây",
+    "spots_other": "{{count}} mục tiêu",
+    "spotsRange_other": "{{range}} mục tiêu",
+    "gap": "dẫn {{gap}}+ điểm",
+    "lead": "dẫn trước khi kết thúc",
+    "points": "{{points}}+ điểm",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "Bản đồ các màn",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_other": "{{stars}}/{{max}} sao, nhảy tới một chương",
+    "lockedToast": "Hãy chơi màn {{n}} trước",
+    "gateToast_other": "Chương {{chapter}} mở khi đạt {{need}} sao ở chương {{prev}}",
+    "loading": "Đang tải bản đồ…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_other": "{{stars}}/{{max}} sao"
+  },
+  "node": {
+    "played": "Màn {{n}}, {{kind}}, {{stars}}",
+    "current": "Màn {{n}}, {{kind}}, màn tiếp theo",
+    "open": "Màn {{n}}, {{kind}}, chưa chơi",
+    "locked": "Màn {{n}}, chưa mở"
+  },
+  "gate": {
+    "need_other": "Mở khi đạt {{need}} sao",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Chơi màn trùm để mở",
+    "open": "Chương {{n}} đã mở",
+    "lockedLabel_other": "Chương {{n}} chưa mở, {{stars}}/{{need}} sao ở chương {{prev}}",
+    "bossLabel_other": "Chương {{n}} chưa mở, {{stars}}/{{need}} sao ở chương {{prev}}. Chơi màn trùm để mở",
+    "openLabel_other": "Chương {{n}} đã mở, mở khi đạt {{need}} sao từ chương {{prev}}"
+  },
+  "jump": {
+    "title": "Nhảy tới chương",
+    "row": "Chương {{n}} · {{name}}",
+    "rowLabel_other": "Chương {{n}}, {{name}}, {{stars}}/{{max}} sao, {{state}}",
+    "open": "đã mở",
+    "locked": "chưa mở"
+  },
+  "gateSheet": {
+    "title": "Chương {{n}} chưa mở",
+    "missing_other": "Bạn cần {{need}} sao ở chương {{prev}}. Bạn có {{stars}}, còn thiếu {{missing}}.",
+    "bossOnly": "Bạn đã đủ sao. Hãy chơi màn {{boss}} (trùm) để mở",
+    "progress": "Sao ở chương {{prev}} cho cổng: {{stars}}/{{need}}",
+    "rowsTitle": "Các màn có thể cải thiện",
+    "rowsNote_other": "Thêm tối đa {{count}} sao ở các màn này",
+    "row": "Màn {{n}} · {{kind}}",
+    "rowLabel": "Chơi lại màn {{n}}, {{kind}}, {{stars}}",
+    "rowNewLabel": "Chơi màn {{n}}, {{kind}}, chưa chơi",
+    "rowPlay": "Chơi",
+    "primary": "Chơi màn {{n}}",
+    "footnote": "Phần lớn các màn kéo dài tối đa 30 giây; màn điền và xếp hình tối đa 60 giây. Số sao tốt nhất của bạn được giữ lại."
+  },
+  "panel": {
+    "label": "Màn đã chọn",
+    "title": "Màn {{n}} · {{kind}}",
+    "sub": "Chương {{chapter}} · {{name}}",
+    "subBot": "Chương {{chapter}} · đấu với {{bot}}",
+    "subBoss": "Chương {{chapter}} · trùm: {{bot}}",
+    "next": "Tiếp theo",
+    "best": "Tốt nhất {{metric}}",
+    "bestLabel": "Thành tích tốt nhất: {{stars}}, {{metric}}",
+    "bestStars": "Thành tích tốt nhất: {{stars}}",
+    "bot": "{{name}} · Cấp độ {{level}} · {{title}}",
+    "continue": "Tiếp tục · màn {{n}}",
+    "play": "Chơi",
+    "lockedTitle": "Màn {{n}} · chưa mở",
+    "lockedSub": "Chương {{chapter}} · {{kind}}",
+    "lockedPrev": "Hãy chơi màn {{n}} trước.",
+    "lockedGate_other": "Chương {{chapter}} chưa mở: cần {{need}} sao ở chương {{prev}}. Bạn có {{stars}}.",
+    "gateTitleOpen": "Chương {{n}} đã mở",
+    "gateTitleClosed": "Chương {{n}} chưa mở",
+    "gateSub": "{{name}} · màn {{range}}",
+    "gateOpenBody_other": "Đã mở: bạn đạt {{stars}} sao ở chương {{prev}}, và cổng cần {{need}}.",
+    "gateBar": "Sao cho cổng: {{stars}}/{{need}}"
+  },
+  "ready": {
+    "title": "Sẵn sàng?",
+    "label": "Sẵn sàng? Màn {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "Số {{digit}} ở đâu?",
+    "raceSpots_other": "{{count}} mục tiêu, đua với {{bot}}"
+  },
+  "tutorial": {
+    "title": "Cách chơi",
+    "got": "Đã hiểu",
+    "skip": "Bỏ qua",
+    "panel": "Hình {{n}}/{{total}}: {{text}}",
+    "alsoBoss": "Đây cũng là màn trùm: màn thứ mười của mỗi chương.",
+    "find": {
+      "1": "Một câu hỏi, như “Số {{digit}} ở đâu?”, và một vùng được đánh dấu trên bảng: một khối, một hàng, một cột hoặc cả bảng.",
+      "2": "Tìm ô duy nhất mà số đó phải nằm, rồi chạm vào ô đó.",
+      "3": "Chạm sai bị cộng 5 giây. Sai hai lần là kết thúc màn."
+    },
+    "findDuel": {
+      "1": "Năm mục tiêu, lần lượt từng cái. Máy tìm cùng lúc với bạn.",
+      "2": "Ai chạm đúng ô trước sẽ giành mục tiêu đó.",
+      "3": "Chạm sai: 3 giây không được chạm, trong khi máy vẫn tiếp tục tìm."
+    },
+    "fillBox": {
+      "1": "Một khối có ô trống, trong khung vàng.",
+      "2": "Chọn một ô trong khối và nhập số. Không thể chọn ô bên ngoài khối.",
+      "3": "Nhập sai bị cộng 5 giây. Xong càng nhanh, càng nhiều sao."
+    },
+    "duel": {
+      "1": "Bạn và máy trên cùng một bảng, như trong một trận đấu.",
+      "2": "Ai đạt 30 điểm trước sẽ thắng, hoặc ai dẫn trước sau 30 giây.",
+      "3": "Sao tính theo cách biệt dẫn điểm khi kết thúc: dẫn 8 điểm được hai sao, 15 điểm được ba sao."
+    },
+    "spotError": {
+      "1": "Các số màu đậm là của bảng, và chúng luôn đúng.",
+      "2": "Các số sai đang ẩn giữa các số của bạn. Hãy chạm vào chúng.",
+      "3": "Chạm nhầm vào số đúng sẽ bị cộng 5 giây."
+    },
+    "pointHunter": {
+      "1": "Bạn chỉ có ba nước đi.",
+      "2": "Ô ở vùng càng trống càng nhiều điểm.",
+      "3": "Sao tính theo mức bạn tiến gần điểm tốt nhất của bảng."
+    },
+    "chain": {
+      "1": "Ở mỗi thời điểm, chỉ có một ô trên bảng giải được.",
+      "2": "Điền ô đó, và ô tiếp theo sẽ mở ra.",
+      "3": "Nhập số vào ô chưa thể xác định sẽ mất 5 giây, và số đó không được đặt."
+    },
+    "boss": {
+      "1": "Màn thứ mười của mỗi chương là màn trùm: một trận đấu với máy, khó hơn các màn trước.",
+      "2": "Trước khi bắt đầu, bạn sẽ thấy điều gì khó hơn. Thường là: máy nhanh hơn.",
+      "3": "Khi bạn đã chơi màn trùm và có 20 sao trong chương, chương tiếp theo sẽ mở."
+    },
+    "fillRow": {
+      "1": "Một hàng có ô trống, trong khung vàng.",
+      "2": "Chọn một ô trong hàng và nhập số. Không thể chọn ô bên ngoài hàng.",
+      "3": "Nhập sai bị cộng 5 giây. Xong càng nhanh, càng nhiều sao."
+    },
+    "fillCol": {
+      "1": "Một cột có ô trống, trong khung vàng.",
+      "2": "Chọn một ô trong cột và nhập số. Không thể chọn ô bên ngoài cột.",
+      "3": "Nhập sai bị cộng 5 giây. Xong càng nhanh, càng nhiều sao."
+    },
+    "puzzle": {
+      "1": "Chín khối đầy đủ, nhưng sai thứ tự.",
+      "2": "Kéo một khối lên khối khác để đổi chỗ. Khối có ổ khóa thì cố định. Lượt đổi không đưa khối nào về đúng chỗ sẽ bị cộng 5 giây.",
+      "3": "Khi mọi hàng và cột đều đúng, màn kết thúc. Xong càng nhanh, càng nhiều sao."
+    }
+  },
+  "result": {
+    "completed": "Hoàn thành màn {{n}}",
+    "ended": "Màn {{n}}",
+    "reasons": {
+      "timeUp": "Hết giờ",
+      "failed": "Hai lần chạm sai",
+      "quit": "Bạn đã rời màn",
+      "botWon": "{{bot}} đã tới trước"
+    },
+    "metric": {
+      "spotsOf_other": "trên {{total}} mục tiêu",
+      "gap": "Cách biệt",
+      "points": "điểm",
+      "found": "Đã tìm",
+      "foundOf": "trên {{total}}"
+    },
+    "newBest": "Kỷ lục mới!",
+    "yourBest": "Tốt nhất của bạn:",
+    "yourBestLabel": "Tốt nhất của bạn: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, ước tính: máy chủ sẽ xác nhận",
+    "chapterLabel": "Chương này",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "cổng cần {{need}}",
+    "chapterOpen": "cổng đã mở",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_other": "Chương này: {{stars}}/{{max}} sao. {{gate}}",
+    "mistakes_other": "{{count}} lỗi",
+    "noMistakes": "Không có lỗi",
+    "swaps_other": "{{count}} lượt đổi · ít nhất: {{min}}",
+    "time": "Thời gian: {{s}} giây",
+    "youWon": "Bạn thắng",
+    "botWon": "{{bot}} thắng",
+    "tie": "Hòa",
+    "bossTie": "Hòa: trùm vẫn trụ vững",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_other": "{{count}} mục tiêu",
+    "opponentScore_other": "{{score}} điểm",
+    "bestMove_other": "Nước đi hay nhất: {{digit}} ở ô {{cell}} · {{points}} điểm",
+    "why": "Vì sao?",
+    "next": "Màn tiếp theo",
+    "again": "Chơi lại",
+    "toMap": "Về bản đồ",
+    "last": "Đó là màn cuối cùng. Giỏi lắm!",
+    "nextLocked": "Màn tiếp theo vẫn chưa mở"
+  },
+  "unlocked": {
+    "heading": "Một chương mới đã mở!",
+    "title": "Chương {{n}} · {{name}}",
+    "news": "Có gì mới: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Tiếp tục",
+    "label": "Một chương mới đã mở: chương {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: “Mình mới bắt đầu thôi, nhưng nhanh hơn bạn tưởng đấy.”",
+      "2": "Biscuit: “Mình thong thả thôi, nhưng sẽ không để bạn thoát đâu.”",
+      "3": "Mr. Hoot: “Mình thấy mọi ô. Cẩn thận nhé.”",
+      "4": "Maestro: “Nhanh, chính xác, và đầy phong cách.”",
+      "5": "Overlord: “Bạn đã đi rất xa. Mọi thứ kết thúc tại đây.”"
+    }
+  },
+  "exit": {
+    "button": "Rời màn",
+    "title": "Rời màn?",
+    "body": "Bạn sẽ nhận 0 sao, và màn tiếp theo sẽ mở.",
+    "confirm": "Rời đi",
+    "cancel": "Chơi tiếp"
+  },
+  "card": {
+    "line": "Màn: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_other": "Màn: {{played}}, {{count}} sao"
+  },
+  "chapters": {
+    "1": {
+      "name": "Những bước đầu tiên",
+      "news": "Vị trí chính xác, điền khối, xếp hình và điền hàng"
+    },
+    "2": {
+      "name": "Thử thách của Pip",
+      "news": "Điền cột, và đua với máy"
+    },
+    "3": {
+      "name": "Trận đấu đầu tiên",
+      "news": "Đấu đến 30, và tìm lỗi sai"
+    },
+    "4": {
+      "name": "Thám tử",
+      "news": "Chuỗi 3 bước, và xếp hình với 4 khối di chuyển"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "Đối thủ máy mới: Biscuit, săn điểm, và màn điền mà số nào cũng thiếu ít nhất một lần"
+    },
+    "6": {
+      "name": "Hàng và cột",
+      "news": "Bảng Thường, và mục tiêu trong một hàng hoặc một cột"
+    },
+    "7": {
+      "name": "Săn điểm",
+      "news": "Xếp hình với 5 khối di chuyển"
+    },
+    "8": {
+      "name": "Hai lỗi sai",
+      "news": "Hai lỗi sai trên bảng, và đấu trên bảng Thường"
+    },
+    "9": {
+      "name": "Chuỗi",
+      "news": "Mọi thể loại trở lại, khó hơn một bậc"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "Đối thủ máy mới: Mr. Hoot, và 7 ô trống trong các màn điền"
+    },
+    "11": {
+      "name": "Cả bảng",
+      "news": "Mục tiêu ở bất kỳ đâu trên bảng"
+    },
+    "12": {
+      "name": "Nhanh hơn",
+      "news": "Săn điểm trong 25 giây, trên bảng Thường"
+    },
+    "13": {
+      "name": "Lỗi thầm lặng",
+      "news": "Lỗi sai không có xung đột nhìn thấy được"
+    },
+    "14": {
+      "name": "Chuỗi dài",
+      "news": "Chuỗi 4 bước, và 9 ô trống trong các màn điền"
+    },
+    "15": {
+      "name": "Nửa chặng đường",
+      "news": "Mọi thể loại trở lại"
+    },
+    "16": {
+      "name": "Bảng khó",
+      "news": "Bảng Khó, và xếp hình với 6 khối di chuyển"
+    },
+    "17": {
+      "name": "Phép loại trừ",
+      "news": "Mục tiêu chỉ lộ ra sau một phép loại trừ"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "Đối thủ máy mới: Maestro"
+    },
+    "19": {
+      "name": "Cạm bẫy",
+      "news": "Ba lỗi sai trên bảng"
+    },
+    "20": {
+      "name": "Cổng khó",
+      "news": "Một khối trống cần một phép loại trừ"
+    },
+    "21": {
+      "name": "Cặp số",
+      "news": "Cặp số, và săn điểm trong 20 giây"
+    },
+    "22": {
+      "name": "Chuỗi 5",
+      "news": "Chuỗi 5 bước"
+    },
+    "23": {
+      "name": "Không số cho sẵn",
+      "news": "Bảng có rất ít số cho sẵn"
+    },
+    "24": {
+      "name": "Đường đua",
+      "news": "Đấu trên bảng Khó"
+    },
+    "25": {
+      "name": "Chuyên gia",
+      "news": "Mọi thứ trở lại, với nhịp độ nhanh"
+    },
+    "26": {
+      "name": "Giải vô địch",
+      "news": "Ba sao chỉ dành cho người chơi nhanh nhất"
+    },
+    "27": {
+      "name": "Giải vô địch II",
+      "news": "Săn điểm: ba sao chỉ khi gần điểm tốt nhất"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "Trùm: Overlord, trong một cuộc đua"
+    },
+    "29": {
+      "name": "Chung kết",
+      "news": "Chuỗi tốc độ, và Overlord làm trùm trong một trận đấu tay đôi"
+    },
+    "30": {
+      "name": "Nhà vô địch",
+      "news": "Tất cả cùng lúc, ở mức khó nhất"
+    }
+  },
+  "hud": {
+    "secondsAdded_other": "cộng thêm {{count}} giây",
+    "sub": "{{kind}} · Chương {{chapter}}",
+    "subFind": "Số {{digit}} ở đâu? · Chương {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} mục tiêu · Chương {{chapter}}",
+    "clockLabel_other": "Còn {{s}} giây trên {{limit}}",
+    "penalty": "{{s}} giây",
+    "me": "Bạn",
+    "find": {
+      "tap": "Chạm vào chỗ số {{digit}} phải nằm",
+      "where": "<scope>{{scope}}</scope> · không cần bàn phím, chỉ cần chạm",
+      "elapsed": "giây đã qua",
+      "targetLabel": "Mục tiêu: số {{digit}} {{scope}}. {{left}}",
+      "ringLabel_other": "Màn còn {{s}} giây",
+      "one": "Một lần tìm trong màn",
+      "wrongRule": "Chạm sai: {{penalty}} giây",
+      "twoWrongRule": "Hai lần chạm sai: màn kết thúc",
+      "found": "Đã tìm thấy: số {{digit}} ở ô {{cell}}",
+      "missed": "Không phải ô {{cell}}. {{penalty}} giây",
+      "answer": "Đáp án: ô {{cell}}"
+    },
+    "scope": {
+      "box": "trong khối {{n}}",
+      "row": "trong hàng {{row}}",
+      "col": "trong cột {{n}}",
+      "board": "ở bất kỳ đâu trên bảng"
+    },
+    "race": {
+      "task": "Mục tiêu {{n}}/{{total}} · tìm số {{digit}} {{scope}}",
+      "left": "Còn {{s}} giây",
+      "searching": "Đang tìm…",
+      "spots_other": "{{count}} mục tiêu",
+      "frozen_other": "Bị đóng băng, {{count}} giây",
+      "out": "Bị loại đến mục tiêu tiếp theo",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, máy cấp độ {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} đang tìm",
+      "mine": "Bạn đã giành mục tiêu {{n}}",
+      "theirs": "{{name}} đã giành mục tiêu {{n}}",
+      "void": "Không ai giành được mục tiêu {{n}}",
+      "next": "Mục tiêu {{n}}: số {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "Điền khối {{n}}",
+      "cells_other": "{{done}}/{{total}} ô",
+      "cellsLabel_other": "Bạn đã điền {{done}}/{{total}} ô còn trống",
+      "mistakes_other": "{{count}} lỗi {{penalty}} giây",
+      "mistakesLabel_other": "{{count}} lỗi, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "Mỗi lỗi bị cộng 5 giây, và số đó bị loại khỏi ô ấy",
+      "timeLabel_other": "Thời gian: {{s}} giây trên {{limit}}",
+      "boardLabel_other": "Bảng · chỉ điền {{count}} ô còn trống của khối {{n}}"
+    },
+    "line": {
+      "taskRow": "Điền hàng {{row}}",
+      "taskCol": "Điền cột {{n}}",
+      "boardLabelRow_other": "Bảng · chỉ điền {{count}} ô còn trống của hàng {{row}}",
+      "boardLabelCol_other": "Bảng · chỉ điền {{count}} ô còn trống của cột {{n}}"
+    },
+    "puzzle": {
+      "task": "Xếp các khối đúng thứ tự",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_other": "{{count}} khối di chuyển",
+      "fixed_other": "{{count}} khối cố định",
+      "allMove": "Mọi khối đều di chuyển",
+      "swaps": "Lượt đổi: {{count}}",
+      "wrong_other": "{{count}} lượt đổi sai {{penalty}} giây",
+      "wrongLabel_other": "{{count}} lượt đổi sai, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "Kéo một khối lên khối khác để đổi chỗ",
+      "tapHint": "Hoặc: chạm một khối, rồi chạm khối khác",
+      "slotLabel": "Khối {{n}}, {{state}}: {{rows}}",
+      "state": {
+        "movable": "di chuyển được",
+        "fixed": "cố định",
+        "selected": "đã chọn"
+      },
+      "slotHint": "Chạm để chọn, rồi chạm khối khác",
+      "swapped": "Đã đổi chỗ khối {{a}} và {{b}}",
+      "swappedPenalty_other": "Đã đổi chỗ khối {{a}} và {{b}}. Cộng {{s}} giây",
+      "fixedTap": "Khối này cố định",
+      "solved": "Mọi hàng và mọi cột đều đúng",
+      "boardLabel": "Xếp hình · {{counts}}"
+    },
+    "duel": {
+      "gap": "Dẫn {{gap}}",
+      "gapLabel": "Cách biệt: {{gap}}. Một sao nếu bạn dẫn trước khi kết thúc, 2 sao khi dẫn {{two}}, 3 sao khi dẫn {{three}}",
+      "lead": "Dẫn trước",
+      "of": "/{{target}}",
+      "meLabel_other": "{{name}}, {{score}}/{{target}} điểm",
+      "botLabel_other": "{{name}}, máy cấp độ {{n}}, {{score}}/{{target}} điểm",
+      "finishLabel": "Màn kết thúc khi có người đạt $t(levels:hud.duel.reachPoints, {\"count\": {{target}} }), hoặc sau $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })",
+      "reachPoints_other": "{{count}} điểm",
+      "atSeconds_other": "{{count}} giây",
+      "raceLabel": "Đua đến {{target}}: {{me}}, {{bot}}"
+    },
+    "reactions": "Biểu cảm",
+    "boardLabel": "Bảng của màn · {{scope}}",
+    "spotError": {
+      "goal_other": "{{count}} số sai đang ẩn trên bảng. Hãy chạm vào chúng.",
+      "note": "Các số màu đậm là của bảng, và chúng luôn đúng.",
+      "found": "Đã tìm",
+      "foundLabel": "Đã tìm {{found}}/{{total}}",
+      "time": "Thời gian",
+      "timeLabel_other": "Thời gian: {{s}} giây trên {{limit}}",
+      "tipTitle": "Mẹo",
+      "tip": "Hãy tìm số xuất hiện hai lần trong cùng một hàng, cột hoặc khối.",
+      "tipClose": "Đóng mẹo",
+      "foundCell": "Bạn đã tìm thấy lỗi ở ô {{cell}}: không phải {{wrong}} mà là {{right}}",
+      "rightTap": "Số ở ô {{cell}} là đúng. {{penalty}} giây",
+      "missed": "Lỗi chưa tìm thấy: {{cells}}",
+      "boardLabel": "Bảng của màn · chạm vào số sai"
+    },
+    "hunt": {
+      "goal": "Ghi $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) trong $t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }).",
+      "goalPoints_other": "{{points}} điểm",
+      "goalMoves_other": "{{count}} nước đi",
+      "note": "Ô ở vùng càng trống càng nhiều điểm.",
+      "points": "điểm",
+      "scoreLabel_other": "{{score}} điểm",
+      "scoreWorthLabel_other": "{{score}} điểm. Ô bạn chọn đáng {{worth}}",
+      "lost": "Số sai đã làm mất {{points}}",
+      "move": "Nước {{n}}/{{max}}",
+      "burnt": "Nước {{n}} bị mất",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_other": "{{count}} nước đi bị mất",
+      "left": "còn lại · trên {{limit}}",
+      "timeLabel_other": "Còn {{s}} giây trên {{limit}}",
+      "max": "Tốt nhất của bảng: {{max}}",
+      "worth": "Đáng {{points}}"
+    },
+    "chain": {
+      "goal": "Mỗi lúc chỉ có một ô trên bảng giải được. Hãy tìm và điền ô đó, rồi ô tiếp theo sẽ mở ra.",
+      "notePenalty": "Nhập số vào ô chưa thể xác định: {{penalty}} giây.",
+      "noteAccept": "Nhập sai số: {{penalty}} giây.",
+      "step": "Bước {{n}}/{{total}}",
+      "stepLabel": "Chuỗi: bước {{n}}/{{total}}",
+      "time": "Thời gian",
+      "timeLabel_other": "Thời gian: {{s}} giây trên {{limit}}",
+      "notYet": "{{text}} · {{penalty}} giây",
+      "tipTitle": "Mẹo",
+      "tip": "Ở mỗi bước có đúng một ô chứng minh được. Nếu bạn chắc chắn về một số, đó chính là ô cần tìm.",
+      "tipClose": "Đóng mẹo"
+    }
+  },
+  "explain": {
+    "spot": "Mục tiêu {{n}}: {{text}}",
+    "mistake": "Lỗi của bạn: {{digit}} ở ô {{cell}}. {{reason}}",
+    "best": "Nước đi hay nhất của bạn, {{digit}} ở ô {{cell}}: {{text}}",
+    "errorFound": "Ô {{cell}}, đã tìm thấy: {{reason}}",
+    "errorMissed": "Ô {{cell}}, chưa tìm thấy: {{reason}}",
+    "rightTap": "Số {{digit}} ở ô {{cell}} là đúng: chạm vào nó mất {{penalty}} giây.",
+    "points_other": "Bạn ghi được {{points}}/{{max}} điểm, bằng {{percent}} điểm tốt nhất của bảng.",
+    "line": "Chuỗi nước đi tốt nhất: {{moves}}.",
+    "move": "{{digit}} ở ô {{cell}} {{points}}",
+    "step": "Bước {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "Chỉ có khối ban đầu ở vị trí {{from}} hợp với vị trí {{place}}: khối khác sẽ làm lặp một số trong hàng hoặc cột.",
+      "onlyPlaceForBox": "Khối ban đầu ở vị trí {{from}} chỉ hợp với vị trí {{place}}: ở chỗ khác nó sẽ làm lặp một số trong hàng hoặc cột."
+    }
+  }
+}

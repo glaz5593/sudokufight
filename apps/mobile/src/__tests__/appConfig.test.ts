@@ -5,7 +5,7 @@ import type { ExpoConfig } from 'expo/config';
 
 import { FRIENDS_APP_SCHEME, roomLinkPath } from '@sudoku-fight/protocol';
 
-import { resolveServer, serverEnv } from '../../scripts/lib/build-apk.mjs';
+import { appJsonFiles, resolveServer, serverEnv } from '../../scripts/lib/build-apk.mjs';
 import appConfig, {
   AD_ID_PERMISSION,
   allowsCleartext,
@@ -33,7 +33,7 @@ import appConfig, {
  * whether apps/mobile/config/firebase/ has them on this machine.
  */
 
-const BASE: ExpoConfig = { name: 'Sudoku Fight', slug: 'sudoku-fight', extra: { supportsRTL: true } };
+const BASE: ExpoConfig = { name: 'Sudoku Fight', slug: 'sudoku-fight', extra: { eas: { projectId: 'p' } } };
 const NO_ENV: AppConfigEnv = {
   googleServicesJson: undefined,
   googleServiceInfoPlist: undefined,
@@ -52,7 +52,7 @@ describe('app.config.ts and Firebase', () => {
   it('without the files: no Firebase plugins, extra.firebase says so', () => {
     const config = resolve();
     expect(config.extra).toEqual({
-      supportsRTL: true,
+      eas: { projectId: 'p' },
       firebase: { android: false, ios: false },
       googleSignIn: { android: false, ios: false, webClientId: null },
     });
@@ -490,6 +490,53 @@ describe('app.json for the stores (stage 14)', () => {
     // ITSAppUsesNonExemptEncryption = NO (docs/store/LISTING-APPLE.md §6). Adding encryption of our own (not
     // the system's TLS) would make this false, and the answer in App Store Connect with it.
     expect(app.expo.ios?.config?.usesNonExemptEncryption).toBe(false);
+  });
+});
+
+describe('languages in the native projects (localization plan 0יא; D103, D118)', () => {
+  const APP_JSON = readFileSync(join(__dirname, '..', '..', 'app.json'), 'utf8');
+  const app = JSON.parse(APP_JSON) as { expo: ExpoConfig };
+  const LOCALES_PLUGIN = './plugins/withAppLocales.js';
+  const LANGUAGES_FILE = './src/i18n/enabled-languages.json';
+  type Plugin = NonNullable<ExpoConfig['plugins']>[number];
+  const entry = (plugins: ExpoConfig['plugins'], name: string): Plugin | undefined =>
+    (plugins ?? []).find((p) => (Array.isArray(p) ? p[0] : p) === name);
+  const optionsOf = (plugin: Plugin | undefined): unknown =>
+    Array.isArray(plugin) ? (plugin[1] as unknown) : undefined;
+
+  it("our plugin writes the system's list of languages from the app's one list (enabled-languages.json)", () => {
+    expect(optionsOf(entry(app.expo.plugins, LOCALES_PLUGIN))).toEqual({ languagesFile: LANGUAGES_FILE });
+    expect(existsSync(join(__dirname, '..', '..', LOCALES_PLUGIN))).toBe(true);
+    expect(existsSync(join(__dirname, '..', '..', LANGUAGES_FILE))).toBe(true);
+  });
+
+  it('adding a language regenerates the android folder: `npm run apk` hashes the list (appJsonFiles)', () => {
+    expect(appJsonFiles(APP_JSON)).toEqual(expect.arrayContaining([LOCALES_PLUGIN, LANGUAGES_FILE]));
+  });
+
+  it('expo-localization filters no resources and sets no direction: no supportedLocales, no supportsRTL', () => {
+    // supportedLocales would add resourceConfigurations to build.gradle, which may drop the libraries'
+    // values-iw, values-zh-rCN, values-pt… (plan 0יא). supportsRTL makes its iOS module force the device's
+    // direction at every launch, against applyDirection: a restart loop when the app's language runs the
+    // other way (plan 0יא, risk 6). The plugin reads `extra` too, so neither may be there either.
+    expect(optionsOf(entry(app.expo.plugins, 'expo-localization'))).toEqual({
+      allowDynamicLocaleChangesAndroid: true,
+    });
+    for (const key of ['supportsRTL', 'forcesRTL', 'supportedLocales'])
+      expect({ key, inExtra: key in (app.expo.extra ?? {}) }).toEqual({ key, inExtra: false });
+  });
+
+  it('every build gets the plugin: EAS builds and builds on this PC, with or without Firebase', () => {
+    const builds: Partial<AppConfigEnv>[] = [
+      {},
+      { googleServicesJson: ANDROID_FILE },
+      { easBuild: 'true', profile: 'preview', platform: 'android' },
+      { easBuild: 'true', profile: 'preview', platform: 'android', googleServicesJson: ANDROID_FILE },
+    ];
+    for (const env of builds) {
+      const config = resolveAppConfig(app.expo, { ...NO_ENV, ...env }, easFilesOnly);
+      expect(optionsOf(entry(config.plugins, LOCALES_PLUGIN))).toEqual({ languagesFile: LANGUAGES_FILE });
+    }
   });
 });
 

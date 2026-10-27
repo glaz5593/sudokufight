@@ -1,0 +1,33 @@
+{
+  "googlePlay": {
+    "locales": [
+      "pl-PL"
+    ],
+    "title": "Sudoku Fight: PvP na żywo",
+    "shortDescription": "Ścigaj się z maks. 3 rywalami na jednym sudoku. Rankingowo, na żywo, uczciwie.",
+    "fullDescription": "Sudoku Fight zmienia sudoku w rywalizację na żywo. Nawet 4 graczy rozwiązuje tę samą planszę w tym samym momencie: każda poprawna cyfra, którą wpiszesz, należy do ciebie, a każdy punkt się liczy.\n\nJEDNA PLANSZA, WSZYSCY ROZWIĄZUJĄ\n• Wszyscy gracze grają jednocześnie na tej samej planszy. Wpisz poprawną cyfrę, a pole przyjmie twój kolor.\n• Trudniejsze ruchy dają więcej punktów: cyfra, która wymaga sprytnej dedukcji, jest warta więcej niż łatwa.\n• Błędna cyfra kosztuje dokładnie tyle, ile przyniosłaby poprawna. Sama szybkość nie wystarczy do wygranej.\n• Zablokuj pole na czas namysłu, ale tylko na kilka sekund.\n\nZAKŁÓCENIA I REAKCJE\n• Wydaj punkty, by na 5 sekund przeszkodzić rywalowi fajerwerkami, kotami lub zniekształceniem ekranu.\n• Reaguj emoji 😂 😱 😎 🤦 🔥 👀.\n\nPARTIE RANKINGOWE\n• Partie rankingowe dla 2, 3 lub 4 graczy, w trzech typach partii: szybkiej, zwykłej i trudnej.\n• System dobierania szuka przeciwników na twoim poziomie i pomija rywali z twoich ostatnich partii.\n• Ranking dla każdego typu partii, ligi, tabele wyników i karty graczy z twoimi statystykami.\n• Brak przeciwników online? Potrenuj z botem w trakcie oczekiwania.\n\nUCZ SIĘ Z KAŻDEJ PARTII\n• Obejrzyj powtórkę dowolnej partii rankingowej ruch po ruchu, z logicznym wyjaśnieniem każdego ruchu.\n• Pełna historia twoich partii i postępy, z XP i poziomami.\n\nTRENING, KIEDY CHCESZ\n• Trenuj solo lub z botami o różnej sile, także offline.\n\nUCZCIWA GRA\n• Serwer sprawdza każdy ruch, a plansze partii rankingowych nigdy nie są dołączane do aplikacji.\n• Bez reklam. Konto możesz w każdej chwili usunąć w Ustawieniach.\n\nGra dostępna w 19 językach. Planszę zawsze czyta się od lewej do prawej.",
+    "whatsNew": "Pierwsza wersja."
+  },
+  "appStore": {
+    "locales": [
+      "pl"
+    ],
+    "name": "Sudoku Fight",
+    "subtitle": "Pojedynki sudoku na żywo",
+    "promotionalText": "Jedna plansza. Wszyscy rozwiązują. Tylko jedna wygrana. Ścigaj się na żywo z maks. 3 rywalami na tym samym sudoku, wysyłaj zakłócenia i awansuj w ligach rankingowych.",
+    "description": "Sudoku Fight zmienia sudoku w rywalizację na żywo. Nawet 4 graczy rozwiązuje tę samą planszę w tym samym momencie: każda poprawna cyfra, którą wpiszesz, należy do ciebie, a każdy punkt się liczy.\n\nJEDNA PLANSZA, WSZYSCY ROZWIĄZUJĄ\n• Wszyscy gracze grają jednocześnie na tej samej planszy. Wpisz poprawną cyfrę, a pole przyjmie twój kolor.\n• Trudniejsze ruchy dają więcej punktów: cyfra, która wymaga sprytnej dedukcji, jest warta więcej niż łatwa.\n• Błędna cyfra kosztuje dokładnie tyle, ile przyniosłaby poprawna. Sama szybkość nie wystarczy do wygranej.\n• Zablokuj pole na czas namysłu, ale tylko na kilka sekund.\n\nZAKŁÓCENIA I REAKCJE\n• Wydaj punkty, by na 5 sekund przeszkodzić rywalowi fajerwerkami, kotami lub zniekształceniem ekranu.\n• Reaguj emoji 😂 😱 😎 🤦 🔥 👀.\n\nPARTIE RANKINGOWE\n• Partie rankingowe dla 2, 3 lub 4 graczy, w trzech typach partii: szybkiej, zwykłej i trudnej.\n• System dobierania szuka przeciwników na twoim poziomie i pomija rywali z twoich ostatnich partii.\n• Ranking dla każdego typu partii, ligi, tabele wyników i karty graczy z twoimi statystykami.\n• Brak przeciwników online? Potrenuj z botem w trakcie oczekiwania.\n\nUCZ SIĘ Z KAŻDEJ PARTII\n• Obejrzyj powtórkę dowolnej partii rankingowej ruch po ruchu, z logicznym wyjaśnieniem każdego ruchu.\n• Pełna historia twoich partii i postępy, z XP i poziomami.\n\nTRENING, KIEDY CHCESZ\n• Trenuj solo lub z botami o różnej sile, także offline.\n\nUCZCIWA GRA\n• Serwer sprawdza każdy ruch, a plansze partii rankingowych nigdy nie są dołączane do aplikacji.\n• Bez reklam. Konto możesz w każdej chwili usunąć w Ustawieniach.\n\nGra dostępna w 19 językach. Planszę zawsze czyta się od lewej do prawej.",
+    "keywords": "łamigłówki,zagadki,logiczne,gry,liczby,cyfry,online,znajomi,przyjaciele,multiplayer,pvp,ranking",
+    "whatsNew": "Pierwsza wersja."
+  },
+  "screenshotCaptions": [
+    "Jedna plansza. Wszyscy rozwiązują. Tylko jedna wygrana.",
+    "Do 4 graczy na tej samej planszy",
+    "Wysyłaj zakłócenia rywalom",
+    "Przeciwnik na twoim poziomie, na tej samej planszy",
+    "Trudniejsze ruchy dają więcej punktów",
+    "Powtórka każdego ruchu, z wyjaśnieniami",
+    "Ligi i rankingi",
+    "Trenuj z botem, także offline"
+  ],
+  "variants": {}
+}

@@ -17,6 +17,7 @@ import {
   useHitClock,
 } from '../../../components/interference';
 import { formatScore } from '../../../components/player';
+import { decimalSeparator } from '../../../i18n/compose';
 import { space } from '../../../theme';
 import { useReduceMotion } from '../../../theme/motion';
 import type { Rect } from '../geometry';
@@ -97,7 +98,7 @@ export function HitLayer({
   const subtitle =
     shown?.cost === undefined || shown.cost === null
       ? t('hit.goesOn')
-      : t('hit.cost', { cost: formatScore(shown.cost) });
+      : t('hit.cost', { cost: formatScore(shown.cost, decimalSeparator(t)) });
   const time = t('hit.seconds', { count: seconds });
   // Said once, as the hit starts: what happened, that the board is dimmed, and for how long.
   const startLine = shown ? startLineOf(shown.kind, t('hit.started', { title, time }), t) : '';

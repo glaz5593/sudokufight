@@ -1,0 +1,179 @@
+{
+  "title": "Arkadaşlarla oda",
+  "subtitle": "{{type}} · {{count}} / {{max}}",
+  "label": "Arkadaşlarla maç · derecesiz",
+  "mode": "Arkadaşlarla",
+  "modeLong": "Arkadaşlarla maç",
+  "unrated": "Derecesiz",
+  "code": {
+    "title": "Oda kodu",
+    "label": "Oda kodu: {{spelled}}",
+    "hint": "Kodu ya da bağlantıyı gönder"
+  },
+  "share": {
+    "button": "Bağlantıyı paylaş",
+    "hint": "Telefonunun paylaşım menüsünü kod ve bağlantıyla açar",
+    "message": "Sudoku Fight oyununda bana katıl! Oda kodu: {{code}}\n{{link}}",
+    "failed": "Paylaşım açılamadı"
+  },
+  "copy": {
+    "button": "Kodu kopyala",
+    "done": "Kod kopyalandı",
+    "failed": "Kod kopyalanamadı"
+  },
+  "gameType": {
+    "title": "Maç türü",
+    "hostPicks": "Yalnızca oda sahibi değiştirebilir",
+    "guestSees": "Oda sahibi seçer",
+    "changed": "Maç türü artık: {{type}}"
+  },
+  "players": {
+    "title": "Oyuncular · {{count}} / {{max}}"
+  },
+  "seat": {
+    "me": "Ben",
+    "host": "Oda sahibi",
+    "away": "Şu an odada değil",
+    "empty": "Oyuncu bekleniyor…",
+    "emptyLabel": "Boş yer, oyuncu bekleniyor",
+    "rating": "Derece {{rating}}"
+  },
+  "kick": {
+    "label": "{{name}} adlı oyuncuyu odadan çıkar",
+    "title": "{{name}} adlı oyuncu odadan çıkarılsın mı?",
+    "body": "Bu odaya geri dönemeyecek.",
+    "confirm": "Çıkar"
+  },
+  "start": {
+    "button_one": "Maçı başlat",
+    "button_other": "Maçı başlat · {{count}} oyuncu",
+    "needMore": "Başlamak için en az 2 bağlı oyuncu gerekiyor",
+    "waitingForHost": "{{name}} adlı oyuncunun maçı başlatması bekleniyor",
+    "hostAway": "Oda sahibi şu an odada değil",
+    "starting": "Maç başlıyor…"
+  },
+  "startWithout": {
+    "title": "{{names}} olmadan başlansın mı?",
+    "body": "{{names}} şu an odada değil. Odada olmayanlar maçın dışında kalır.",
+    "confirm": "Evet, başlat",
+    "cancel": "Hayır, bekleyelim"
+  },
+  "leave": "Odadan çık",
+  "reconnecting": "Bağlantı koptu. Yeniden bağlanıyor…",
+  "announce": {
+    "joined": "{{name}} katıldı",
+    "left": "{{name}} odadan çıktı",
+    "away": "{{name}} şu an odada değil",
+    "back": "{{name}} odaya geri döndü",
+    "host": "Oda sahibi artık {{name}}",
+    "meHost": "Oda sahibi artık sensin"
+  },
+  "opening": {
+    "create": "Oda açılıyor…",
+    "join": "Odaya katılınıyor…"
+  },
+  "replace": {
+    "title": "Diğer odan kapatılsın mı?",
+    "body": "Zaten açık bir odan var: {{code}}. Onu kapatıp yenisini açabilir ya da ona geri dönebilirsin.",
+    "confirm": "Kapat ve yenisini aç",
+    "cancel": "O odaya dön"
+  },
+  "errors": {
+    "notFound": "{{code}} koduyla bir oda bulamadık. Rakamları kontrol et.",
+    "notFoundThis": "Bu koda sahip bir oda bulamadık.",
+    "roomFull": "Oda dolu ({{max}} / {{max}}).",
+    "gameStarted": "Bu odadaki maç çoktan başladı.",
+    "roomClosed": "Oda kapandı.",
+    "kicked": "Oda sahibi seni odadan çıkardı.",
+    "cantJoin": "Bu odadaki bir oyuncuyu engellemişsin.",
+    "suspended": "Hesabın askıda, bu yüzden şu an arkadaşlarla oynayamazsın.",
+    "network": "İnternet bağlantısı yok.",
+    "tooManyRequests": "Çok fazla deneme. {{wait}} sonra tekrar dene.",
+    "notAvailable": "Bu seçenek henüz kullanılamıyor.",
+    "badRequest": "Kod 6 haneli.",
+    "unauthorized": "Lütfen hesabına yeniden giriş yap.",
+    "notRegistered": "Arkadaşlarla oynamak için kaydını tamamla.",
+    "tooManyRooms": "Zaten açık bir odan var.",
+    "tooLarge": "Bir şeyler ters gitti. Tekrar dene.",
+    "internal": "Sunucuda bir şeyler ters gitti. Birazdan tekrar dene.",
+    "disabled": "Bu sunucuda arkadaşlarla oynanamıyor.",
+    "unavailable": "Sunucu şu an kullanılamıyor. Birazdan tekrar dene."
+  },
+  "wait": {
+    "seconds_one": "bir saniye",
+    "seconds_other": "{{count}} saniye",
+    "minutes_one": "bir dakika",
+    "minutes_other": "{{count}} dakika"
+  },
+  "closed": {
+    "kicked": "Oda sahibi seni odadan çıkardı.",
+    "removed": "Odadan çıktın.",
+    "otherDevice": "Oda başka bir cihazda açıldı.",
+    "serverRestart": "Oda kapandı.",
+    "closed": "Oda kapandı."
+  },
+  "lobbyErrors": {
+    "notHost": "Bunu yalnızca oda sahibi yapabilir.",
+    "notEnoughPlayers": "Başlamak için en az 2 bağlı oyuncu gerekiyor.",
+    "playersAway": "{{names}} şu an odada değil.",
+    "gameStarted": "Maç çoktan başladı.",
+    "badCommand": "Olmadı. Tekrar dene.",
+    "tooManyRequests": "Yavaş ol, çok fazla dokundun. Birazdan tekrar dene."
+  },
+  "startedWithout": "Maç sensiz başladı.",
+  "actions": {
+    "retry": "Tekrar dene",
+    "createRoom": "Oda kur",
+    "joinWithCode": "Kodla katıl",
+    "home": "Ana sayfa"
+  },
+  "join": {
+    "title": "Kodla katıl",
+    "prompt": "Aldığın 6 haneli kodu yaz",
+    "codeLabel": "Oda kodu, 6 hane",
+    "digitLabel": "Hane {{n}}, toplam {{total}}",
+    "paste": "Yapıştır",
+    "pasteHint": "WhatsApp mesajının tamamını yapıştırabilirsin",
+    "pasteNone": "Kopyalanan metinde 6 haneli bir kod bulamadık",
+    "joining": "Odaya katılınıyor…",
+    "submit": "Katıl"
+  },
+  "link": {
+    "notFound": {
+      "title": "Bu bağlantıyı tanımıyoruz",
+      "body": "Eski olabilir ya da Sudoku Fight bağlantısı olmayabilir. Ana sayfadan devam edebilirsin.",
+      "home": "Ana sayfaya git"
+    },
+    "badCode": "Bu bağlantı geçerli değil"
+  },
+  "invite": {
+    "pending": "{{code}} kodlu odaya davet edildin",
+    "afterSignIn": "Giriş yaptıktan sonra seni doğrudan {{code}} kodlu odaya götüreceğiz",
+    "join": "Katıl",
+    "later": "Şimdi değil",
+    "expired": "{{code}} kodlu odanın davetinin süresi doldu"
+  },
+  "busy": {
+    "practice": {
+      "title": "Antrenmandan çıkıp odaya katılmak istiyor musun?",
+      "body": "Antrenman, çıktığında olduğu gibi kaydedilir.",
+      "confirm": "Odaya katıl"
+    },
+    "search": {
+      "title": "Aramayı durdurup katılmak istiyor musun?",
+      "body": "Rakip araması durur.",
+      "confirm": "Odaya katıl"
+    },
+    "room": {
+      "title": "{{code}} kodlu odaya geçilsin mi?",
+      "body": "Şu an bulunduğun odadan çıkacaksın.",
+      "confirm": "Oda değiştir"
+    },
+    "game": {
+      "title": "Bir maçın ortasındasın",
+      "body": "Maç bitince katılabilirsin. {{code}} kodlu odanın daveti seni bekleyecek.",
+      "back": "Maça dön"
+    },
+    "stay": "Kal"
+  }
+}

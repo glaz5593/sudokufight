@@ -1,38 +1,40 @@
 import { ENGINE_VERSION } from '@sudoku-fight/engine';
-import { type ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ConfirmModal } from '../../components/ui';
 import { VersionInfo } from '../../components/VersionInfo';
+import { Text } from '../../components/ui/Text';
 import { type AppVersionInfo, appVersionInfo } from '../../config/appVersion';
 import { type TestingBuildSources, testingSwitchesAllowed, thisBuild } from '../../config/testing';
-import type { Language } from '../../i18n';
 import { cue } from '../../services/feedback';
 import { type ReduceMotionSetting, useSettings } from '../../state/settings';
 import { useTestingSwitches } from '../../state/testingSwitches';
 import { AccountSettings } from '../account/AccountSettings';
 import { LegalSettings } from '../legal/LegalSettings';
 import { color, radius, space, text, tokens } from '../../theme';
+import { LanguagePicker } from './LanguagePicker';
 import { goBack } from './navigation';
 import { GUTTER, ScreenHeader, SectionLabel } from './parts';
+import { PseudoLanguageSettings } from './PseudoLanguageSettings';
 import { Choice, SwitchRow } from './SettingControls';
 
 const REDUCE_MOTION: readonly ReduceMotionSetting[] = ['system', 'on', 'off'];
-const LANGUAGES: readonly Language[] = ['he', 'en'];
 
 /**
  * "הגדרות" (spec §4.1; no board yet, built in direction C with the design-system pieces): sound, haptics,
- * reduced motion and language, kept in the persisted settings store. A language that flips the layout direction
- * restarts the app (the root layout does it), so the switch asks first (work plan stage 13). Stage 8 adds the
+ * reduced motion and language, kept in the persisted settings store. The language is a picker ("שפת המכשיר" and
+ * every language this build offers, LanguagePicker; localization plan 0י), and a change restarts the app (the
+ * root layout does it, D104), so the picker asks first (work plan stage 13). Stage 8 adds the
  * account: edit profile, sign out, and delete the account (spec §3.3, §23: deletion inside the app). Stage 14
  * adds "מידע ומשפטי": the privacy policy, the terms of use and the licenses (screens/legal). At the bottom, the
  * version (Moshe, 14.10.2026): the installed app's, its build and its server (components/VersionInfo).
  *
  * 1.0.2: a staging build (and a development build not on production) adds "בדיקה" before the version, so
  * Moshe can try staged practice before he decides (config/testing.ts): "שרשרת: ניחוש עולה 5 ש׳" [D64] and
- * "פתח את כל השלבים (בדיקה)". A production build never shows it.
+ * "פתח את כל השלבים (בדיקה)". A production build never shows it. 1.1.0 adds the pseudo languages and the plural
+ * check screen there (PseudoLanguageSettings; localization plan 0יג).
  */
 export interface SettingsScreenProps {
   /**
@@ -50,12 +52,9 @@ export function SettingsScreen({ version = appVersionInfo(), build = thisBuild()
   const sound = useSettings((s) => s.sound);
   const haptics = useSettings((s) => s.haptics);
   const reduceMotion = useSettings((s) => s.reduceMotion);
-  const language = useSettings((s) => s.language);
   const testing = testingSwitchesAllowed(build);
   const chainPenalty = useTestingSwitches((s) => s.chainPenalty);
   const unlockAllLevels = useTestingSwitches((s) => s.unlockAllLevels);
-  // The language the player tapped, until they confirm the restart (kept while the dialog closes).
-  const [switchTo, setSwitchTo] = useState<{ language: Language; asking: boolean } | null>(null);
 
   // The cue comes after the change, so it follows the new setting: turning sound on is heard, turning it off is not.
   const changed =
@@ -100,13 +99,7 @@ export function SettingsScreen({ version = appVersionInfo(), build = thisBuild()
         </Section>
 
         <Section title={t('settings.language')} hint={t('settings.languageHint')}>
-          <Choice
-            label={t('settings.language')}
-            options={LANGUAGES.map((value) => ({ value, label: t(`settings.languages.${value}`) }))}
-            value={language}
-            onChange={(value) => setSwitchTo({ language: value, asking: true })}
-            testID="setting-language"
-          />
+          <LanguagePicker testID="setting-language" />
         </Section>
 
         <AccountSettings />
@@ -132,29 +125,12 @@ export function SettingsScreen({ version = appVersionInfo(), build = thisBuild()
                 testID="setting-unlock-all"
               />
             </View>
+            <PseudoLanguageSettings />
           </Section>
         ) : null}
 
         <VersionInfo info={version} engine={ENGINE_VERSION} />
       </ScrollView>
-
-      {/* The new direction needs a restart (the root layout does it once the setting changes). */}
-      <ConfirmModal
-        visible={switchTo?.asking ?? false}
-        placement="center"
-        icon="refresh"
-        title={t('settings.languageConfirm.title', {
-          language: switchTo ? t(`settings.languages.${switchTo.language}`) : '',
-        })}
-        body={t('settings.languageConfirm.body')}
-        confirmLabel={t('settings.languageConfirm.confirm')}
-        onConfirm={() => {
-          if (switchTo) changed(useSettings.getState().setLanguage)(switchTo.language);
-          setSwitchTo((s) => s && { ...s, asking: false });
-        }}
-        onCancel={() => setSwitchTo((s) => s && { ...s, asking: false })}
-        testID="language-confirm"
-      />
     </View>
   );
 }

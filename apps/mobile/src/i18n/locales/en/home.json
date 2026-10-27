@@ -120,7 +120,8 @@
       "name": "Staged practice",
       "title": "Staged practice",
       "tagline": "Short stages · up to 3 stars",
-      "taglineNew": "{{total}} short stages · 0–3 stars",
+      "taglineNew_one": "1 short stage · 0–3 stars",
+      "taglineNew_other": "{{total}} short stages · 0–3 stars",
       "chip": "Stage {{stage}} ·",
       "offline": "Offline too",
       "chipLabel_one": "Stage {{stage}} · 1 star",
@@ -176,7 +177,8 @@
     "seconds": "{{seconds}} s",
     "minutes": "{{range}} min",
     "yourRating": "Your rating",
-    "cardLabel": "{{name}}. {{technique}}. {{seconds}} per cell, {{difficulty}} board, about {{from}} to {{to}} minutes",
+    "cardLabel_one": "{{name}}. {{technique}}. {{seconds}} per cell, {{difficulty}} board, about {{from}} to 1 minute",
+    "cardLabel_other": "{{name}}. {{technique}}. {{seconds}} per cell, {{difficulty}} board, about {{from}} to {{to}} minutes",
     "botHint": "Choose a bot for a {{type}} game"
   },
   "dev": {
@@ -209,12 +211,13 @@
     "languageConfirm": {
       "title": "Switch the language to {{language}}?",
       "body": "The app restarts, so every screen shows in the new language's direction.",
-      "confirm": "Switch and restart"
+      "confirm": "Switch and restart",
+      "titleDevice": "Switch to the device language?"
     },
-    "languages": {
-      "he": "עברית",
-      "en": "English"
-    },
+    "languageDevice": "Device language",
+    "languageSheetTitle": "Choose a language",
+    "languageField": "Language: {{language}}",
+    "languageFieldDevice": "Language: device language, {{language}}",
     "about": "About and legal",
     "privacy": "Privacy policy",
     "terms": "Terms of use",
@@ -246,7 +249,8 @@
     "note": "That's the time for an ordinary move. A cell that takes harder logic takes the bot longer, and the last gap of a row, column or box a little less. The bot plays the same board, in real time.",
     "start": "Let's play",
     "startHint": "Starts a {{type}} practice against {{name}}",
-    "cardLabel": "Level {{level}}, {{title}}: {{name}}. {{behavior}}. Thinks {{from}} to {{to}} seconds a move, {{mistakes}}% mistakes",
+    "cardLabel_one": "Level {{level}}, {{title}}: {{name}}. {{behavior}}. Thinks {{from}} to {{to}} second a move, {{mistakes}}% mistakes",
+    "cardLabel_other": "Level {{level}}, {{title}}: {{name}}. {{behavior}}. Thinks {{from}} to {{to}} seconds a move, {{mistakes}}% mistakes",
     "levels": {
       "1": {
         "title": "Novice",

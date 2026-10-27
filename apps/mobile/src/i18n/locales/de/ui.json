@@ -1,0 +1,32 @@
+{
+  "button": {
+    "loading": "{{label}}, wird geladen"
+  },
+  "nav": {
+    "label": "Hauptnavigation",
+    "tabs": {
+      "home": "Start",
+      "leaderboard": "Bestenliste",
+      "history": "Verlauf",
+      "achievements": "Erfolge"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "Abbrechen"
+  },
+  "sheet": {
+    "close": "Schließen"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_one": "Noch 1 Sekunde",
+    "secondsLeft_other": "Noch {{count}} Sekunden"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "Fehlercode: {{code}}"
+  }
+}

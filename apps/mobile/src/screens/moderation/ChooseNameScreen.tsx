@@ -2,12 +2,14 @@ import type { Me } from '@sudoku-fight/protocol';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { isAccountApiError, isOfflineError } from '../../api/accountApi';
 import { signOut, updateProfile, useAuth } from '../../auth/authStore';
 import { Icon } from '../../components/Icon';
+import { shownName } from '../../components/player/temporaryName';
 import { Button, ConfirmModal, useToast } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { cue } from '../../services/feedback';
 import { color, radius, size, space, text } from '../../theme';
 import { errorMessage } from '../account/messages';
@@ -123,7 +125,9 @@ function ChooseNameForm({ me }: { me: Me }) {
         <Text style={styles.title} accessibilityRole="header">
           {t('chooseName.title')}
         </Text>
-        <Text style={styles.body}>{t('chooseName.body', { name: isolateName(me.displayName) })}</Text>
+        <Text style={styles.body}>
+          {t('chooseName.body', { name: isolateName(shownName(me.displayName, t)) })}
+        </Text>
       </View>
       <FormAlert message={formError} testID="choose-name-alert" />
       <NameField

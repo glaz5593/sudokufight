@@ -1,6 +1,6 @@
 import { type ReactNode, type Ref, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, TextInput, type TextInputProps, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, type TextInputProps, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,6 +9,8 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Icon, type IconName } from '../../components/Icon';
+import { Text } from '../../components/ui/Text';
+import { listOf } from '../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, reduceMotionFlag, useReduceMotion } from '../../theme/motion';
 
@@ -73,6 +75,7 @@ export function Field({
   testID,
   ...input
 }: FieldProps) {
+  const { t } = useTranslation('account');
   const reduce = useReduceMotion();
   const [focused, setFocused] = useState(false);
   const x = useSharedValue(0);
@@ -85,7 +88,7 @@ export function Field({
   }, [shake, reduce, x]);
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: x.get() }] }));
 
-  const spokenLabel = [label, accessibilityStatus, error].filter(Boolean).join(', ');
+  const spokenLabel = listOf([label, accessibilityStatus, error], t);
   return (
     <View style={styles.field}>
       <Text style={[styles.label, focused && styles.labelFocused]} importantForAccessibility="no">

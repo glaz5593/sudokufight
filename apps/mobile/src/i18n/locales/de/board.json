@@ -1,0 +1,48 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Spielfeld",
+    "myLock": "dein Feld {{cell}}",
+    "otherLock": "{{cell}} gesperrt von {{name}}",
+    "tapLabel": "Das Spielfeld der Etappe"
+  },
+  "cell": {
+    "empty": "leer",
+    "given": "Vorgabe",
+    "solvedByMe": "von dir gelöst",
+    "solvedBy": "gelöst von {{name}}",
+    "lockedByMe": "von dir gesperrt",
+    "lockedBy": "gesperrt von {{name}}",
+    "pending": "wartet auf die Sperre",
+    "queued": "{{digit}}, wartet auf die Verbindung",
+    "timerStopped": "Timer gestoppt",
+    "seconds_one": "1 Sekunde",
+    "seconds_other": "{{count}} Sekunden",
+    "wrong": "falsche Ziffern: {{digits}}",
+    "hintMyLock": "Wähle eine Ziffer auf dem Tastenfeld",
+    "player": "Spieler {{n}}",
+    "corrected": "Fehler gefunden: {{wrong}}, richtig ist {{right}}",
+    "mine": "deins",
+    "outside": "außerhalb des Bereichs",
+    "hintTap": "Antippen des Feldes zählt als Zug"
+  },
+  "keypad": {
+    "armed": "Ziffer {{digit}} · {{left}} übrig",
+    "idle": "Ziffer {{digit}}, {{left}} übrig, wähle zuerst ein Feld",
+    "complete": "Ziffer {{digit}}, {{left}} übrig",
+    "tried": "Ziffer {{digit}} · in diesem Feld schon versucht"
+  },
+  "cancel": {
+    "label": "Auswahl aufheben",
+    "withCell": "Auswahl aufheben, {{cell}}"
+  },
+  "resume": {
+    "title": "Weiter in",
+    "paused": "Das Spiel ist pausiert",
+    "label_one": "Weiter in 1 Sekunde",
+    "label_other": "Weiter in {{count}} Sekunden"
+  }
+}

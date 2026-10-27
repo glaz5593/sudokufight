@@ -5,9 +5,7 @@ import {
   evolve,
   explain,
   type Explanation,
-  formatExplanation,
   formatScoreLine,
-  formatWrong,
   type GameEvent,
   type GameMode,
   type GameResult,
@@ -16,7 +14,6 @@ import {
   type GameView,
   type Grid,
   type InterferenceKind,
-  type Lang,
   missedPoints,
   type MoveScore,
   parseGrid,
@@ -27,13 +24,13 @@ import {
   replay as replayStates,
   type ScoreY,
   type Technique,
-  techniqueName,
   toView,
   whyWrong,
 } from '@sudoku-fight/engine';
 
 import { type AvatarIdOrNone } from '../../avatars';
 import { colorIndexFor } from '../../components/player';
+import { formatExplanation, formatWrong, techniqueName } from '../../i18n/explain';
 import { playerIdentity } from '../game/identity';
 
 /**
@@ -203,7 +200,7 @@ export interface PlayerExplanation {
   played: Digit | null;
   technique: Technique | 'chain' | 'beyond' | null;
   techniqueName: string | null;
-  /** The logical explanation, in `lang` (cells and formulas isolated LTR in Hebrew). */
+  /** The logical explanation, in `lang` (i18n/explain.ts: cells and formulas LTR isolates in an RTL language). */
   text: string | null;
   /** A wrong move: why that digit could not go there. */
   wrongText: string | null;
@@ -566,7 +563,7 @@ function explanationFor(replay: Replay, s: ReplayStep): Explanation | null {
   return found;
 }
 
-function explanationOf(replay: Replay, k: number, seat: number, lang: Lang): PlayerExplanation {
+function explanationOf(replay: Replay, k: number, seat: number, lang: string): PlayerExplanation {
   const player = replay.players[seat]!;
   const subject = replay.subjects[k]?.[seat] ?? null;
   const live = replay.steps[k]?.playerId === player.id;
@@ -647,7 +644,7 @@ function explanationOf(replay: Replay, k: number, seat: number, lang: Lang): Pla
 }
 
 /** Everything to draw at step `k` (0-based, clamped to the replay). */
-export function stepView(replay: Replay, k: number, lang: Lang): StepView {
+export function stepView(replay: Replay, k: number, lang: string): StepView {
   const index = Math.max(0, Math.min(replay.steps.length - 1, Math.floor(k)));
   const step = replay.steps[index]!;
   const state = replay.states[step.to]!;

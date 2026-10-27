@@ -1,0 +1,50 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Tablero de juego",
+    "myLock": "tu casilla {{cell}}",
+    "otherLock": "{{cell}} bloqueada por {{name}}",
+    "tapLabel": "El tablero de la fase"
+  },
+  "cell": {
+    "empty": "vacía",
+    "given": "pista",
+    "solvedByMe": "resuelta por ti",
+    "solvedBy": "resuelta por {{name}}",
+    "lockedByMe": "bloqueada por ti",
+    "lockedBy": "bloqueada por {{name}}",
+    "pending": "esperando el bloqueo",
+    "queued": "{{digit}}, esperando la conexión",
+    "timerStopped": "temporizador detenido",
+    "seconds_one": "1 segundo",
+    "seconds_many": "{{count}} de segundos",
+    "seconds_other": "{{count}} segundos",
+    "wrong": "números incorrectos: {{digits}}",
+    "hintMyLock": "Elige un número en el teclado",
+    "player": "Jugador {{n}}",
+    "corrected": "error encontrado: {{wrong}}, el número correcto es {{right}}",
+    "mine": "tuya",
+    "outside": "fuera del área",
+    "hintTap": "La jugada es tocar la casilla"
+  },
+  "keypad": {
+    "armed": "Número {{digit}} · quedan {{left}}",
+    "idle": "Número {{digit}}, quedan {{left}}, primero elige una casilla",
+    "complete": "Número {{digit}}, quedan {{left}}",
+    "tried": "Número {{digit}} · ya lo probaste en esta casilla"
+  },
+  "cancel": {
+    "label": "Cancelar selección",
+    "withCell": "Cancelar selección, {{cell}}"
+  },
+  "resume": {
+    "title": "Seguimos en",
+    "paused": "La partida está en pausa",
+    "label_one": "Seguimos en 1 segundo",
+    "label_many": "Seguimos en {{count}} de segundos",
+    "label_other": "Seguimos en {{count}} segundos"
+  }
+}

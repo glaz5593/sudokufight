@@ -2,11 +2,12 @@ import { GAME_TYPES, type GameType } from '@sudoku-fight/engine';
 import { normalizeRoomCode } from '@sudoku-fight/protocol';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ltr } from '../../../components/player/format';
 import { Button } from '../../../components/ui';
+import { Text } from '../../../components/ui/Text';
 import type { NetIdentity } from '../../../net/onlineClient';
 import type { OnlineInfo } from '../../../net/remoteGameHost';
 import { color, radius, size, space, text, tokens } from '../../../theme';

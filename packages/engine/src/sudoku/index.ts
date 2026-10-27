@@ -3,7 +3,6 @@ export * from './solver';
 export * from './logic';
 export * from './grade';
 export * from './explain';
-export * from './explainText';
 export * from './scoring';
 export * from './givens';
 export * from './bank';

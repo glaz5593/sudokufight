@@ -2,13 +2,14 @@ import { THINK_TIME_MS } from '@sudoku-fight/engine';
 import type { TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { retryLoad, signOut, useAuth } from '../../auth/authStore';
 import { Button, Spinner } from '../../components/ui';
 import { usePresence } from '../../components/ui/motion';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { errorMessage } from './messages';
@@ -25,11 +26,10 @@ export const TIP_MS = 4_000;
  * digit would have scored there (spec §6.5).
  */
 export function splashTip(t: TFunction<'account'>, tip: (typeof TIPS)[number]): string {
-  if (tip === 'lock')
-    return t('splash.tips.lock', {
-      seconds: THINK_TIME_MS.normal / 1000,
-      type: t('home:gameTypes.normal.name'),
-    });
+  if (tip === 'lock') {
+    const seconds = THINK_TIME_MS.normal / 1000;
+    return t('splash.tips.lock', { count: seconds, seconds, type: t('home:gameTypes.normal.name') });
+  }
   return t(`splash.tips.${tip}`);
 }
 

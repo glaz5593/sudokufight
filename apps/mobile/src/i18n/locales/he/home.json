@@ -120,7 +120,9 @@
       "name": "אימון בשלבים",
       "title": "אימון בשלבים",
       "tagline": "שלבים קצרים · עד 3 כוכבים",
-      "taglineNew": "{{total}} שלבים קצרים · ⁦0–3⁩ כוכבים",
+      "taglineNew_one": "שלב קצר אחד · ⁦0–3⁩ כוכבים",
+      "taglineNew_two": "{{total}} שלבים קצרים · ⁦0–3⁩ כוכבים",
+      "taglineNew_other": "{{total}} שלבים קצרים · ⁦0–3⁩ כוכבים",
       "chip": "שלב {{stage}} ·",
       "offline": "גם אופליין",
       "chipLabel_one": "שלב {{stage}} · כוכב אחד",
@@ -176,7 +178,9 @@
     "seconds": "{{seconds}} ש׳",
     "minutes": "{{range}} דק׳",
     "yourRating": "הדירוג שלך",
-    "cardLabel": "{{name}}. {{technique}}. זמן למשבצת {{seconds}}, לוח {{difficulty}}, משך משוער {{from}} עד {{to}} דקות",
+    "cardLabel_one": "{{name}}. {{technique}}. זמן למשבצת {{seconds}}, לוח {{difficulty}}, משך משוער {{from}} עד דקה אחת",
+    "cardLabel_two": "{{name}}. {{technique}}. זמן למשבצת {{seconds}}, לוח {{difficulty}}, משך משוער {{from}} עד {{to}} דקות",
+    "cardLabel_other": "{{name}}. {{technique}}. זמן למשבצת {{seconds}}, לוח {{difficulty}}, משך משוער {{from}} עד {{to}} דקות",
     "botHint": "בחירת בוט למשחק {{type}}"
   },
   "dev": {
@@ -209,12 +213,13 @@
     "languageConfirm": {
       "title": "להחליף את השפה ל־{{language}}?",
       "body": "האפליקציה תופעל מחדש, כדי שכל המסכים יוצגו בכיוון של השפה החדשה.",
-      "confirm": "החלפה והפעלה מחדש"
+      "confirm": "החלפה והפעלה מחדש",
+      "titleDevice": "לעבור לשפת המכשיר?"
     },
-    "languages": {
-      "he": "עברית",
-      "en": "English"
-    },
+    "languageDevice": "שפת המכשיר",
+    "languageSheetTitle": "בחירת שפה",
+    "languageField": "שפה: {{language}}",
+    "languageFieldDevice": "שפה: שפת המכשיר, {{language}}",
     "about": "מידע ומשפטי",
     "privacy": "מדיניות פרטיות",
     "terms": "תנאי שימוש",
@@ -246,7 +251,9 @@
     "note": "זה הזמן של מהלך רגיל. משבצת שדורשת היגיון קשה יותר לוקחת לבוט יותר זמן, והמשבצת האחרונה בשורה, בעמודה או בריבוע קצת פחות. הבוט משחק על אותו לוח, בזמן אמת.",
     "start": "יאללה, למשחק",
     "startHint": "מתחיל אימון {{type}} מול {{name}}",
-    "cardLabel": "רמה {{level}}, {{title}}: {{name}}. {{behavior}}. זמן חשיבה {{from}} עד {{to}} שניות למהלך, {{mistakes}}% טעויות",
+    "cardLabel_one": "רמה {{level}}, {{title}}: {{name}}. {{behavior}}. זמן חשיבה {{from}} עד {{to}} שנייה למהלך, {{mistakes}}% טעויות",
+    "cardLabel_two": "רמה {{level}}, {{title}}: {{name}}. {{behavior}}. זמן חשיבה {{from}} עד {{to}} שניות למהלך, {{mistakes}}% טעויות",
+    "cardLabel_other": "רמה {{level}}, {{title}}: {{name}}. {{behavior}}. זמן חשיבה {{from}} עד {{to}} שניות למהלך, {{mistakes}}% טעויות",
     "levels": {
       "1": {
         "title": "טירון",

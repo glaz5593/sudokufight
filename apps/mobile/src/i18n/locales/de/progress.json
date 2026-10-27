@@ -1,0 +1,204 @@
+{
+  "common": {
+    "provisional": "Vorläufige Wertung",
+    "provisionalNote_one": "Deine Liga erscheint nach 1 Ranglistenspiel in einem Spieltyp",
+    "provisionalNote_other": "Deine Liga erscheint nach {{games}} Ranglistenspielen in einem Spieltyp",
+    "level": "Level {{level}}",
+    "you": "Du",
+    "myCard": "Meine Spielerkarte",
+    "loading": "Wird geladen…",
+    "retry": "Erneut versuchen",
+    "offlineNote": "Keine Verbindung zum Server: Es wird angezeigt, was vorher geladen wurde.",
+    "errorNote": "Aktualisierung fehlgeschlagen: Es wird angezeigt, was vorher geladen wurde.",
+    "offlineTitle": "Keine Verbindung zum Server",
+    "offlineBody": "Die Bestenliste wird aktualisiert, sobald die Verbindung zurück ist.",
+    "errorTitle": "Etwas ist schiefgelaufen",
+    "errorBody": "Der Server konnte gerade nicht antworten. Versuch es gleich noch mal.",
+    "signedOut": "Melde dich an, um das zu sehen",
+    "players_one": "1 Spieler",
+    "players_other": "{{count}} Spieler",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}, auf dem Weg zu Level {{level}}"
+  },
+  "leaderboard": {
+    "title": "Bestenliste",
+    "tabs": {
+      "label": "Wertungstyp",
+      "general": "Gesamt",
+      "fast": "Schnell",
+      "normal": "Standard",
+      "hard": "Schwer",
+      "friends": "Freunde"
+    },
+    "caption": {
+      "general": "Gesamt · die höchste Wertung jedes Spielers",
+      "type": "Wertung {{type}} · weltweit",
+      "typePlayers": "Wertung {{type}} · {{players}} · weltweit",
+      "friends": "Deine letzten Gegner"
+    },
+    "players": "Anzahl der Spieler",
+    "podium": "Die ersten drei",
+    "rankLabel": "Platz {{rank}}",
+    "meName": "{{name}} (du)",
+    "openHint": "Öffnet die Spielerkarte",
+    "meNone": "Du hast in dieser Tabelle noch keine Wertung",
+    "play": "Spielen",
+    "playHint": "Spiel ein Ranglistenspiel, um in die Tabelle zu kommen",
+    "climbHint": "Spiel, um in der Tabelle aufzusteigen",
+    "emptyTitle": "Noch niemand hier",
+    "emptyBody": "Spiel ein Ranglistenspiel und hol dir den ersten Platz."
+  },
+  "friends": {
+    "invite": "Freunde einladen",
+    "inviteMessage": "Tritt bei Sudoku Fight gegen mich an!",
+    "inviteNote": "Ein Freund mehr = ein Rivale mehr",
+    "emptyTitle": "Noch keine Gegner",
+    "emptyBody": "Spiel ein Ranglistenspiel, dann erscheinen deine Gegner hier. Eine vollständige Freundesliste kommt bald."
+  },
+  "league": {
+    "title": "Liga",
+    "toNext": "Noch {{points}} bis {{league}}",
+    "top": "Die höchste Liga",
+    "general": "Gesamt {{rating}} · {{next}}",
+    "generalTop": "Gesamt {{rating}} · die höchste Liga",
+    "ladder": "Die Ligen",
+    "step": "{{league}}-Liga, ab Wertung {{floor}}"
+  },
+  "card": {
+    "title": "Spielerkarte",
+    "edit": "Profil bearbeiten",
+    "notFound": "Spieler nicht gefunden",
+    "offlineBody": "Die Karte wird vom Server geladen. Versuch es noch mal, wenn die Verbindung zurück ist.",
+    "savedNote": "Keine Verbindung zum Server: Die gespeicherte Karte wird angezeigt.",
+    "meLabel": "{{name}}, meine Karte",
+    "ratingsTitle": "Wertung nach Spieltyp",
+    "ratingsNote_one": "1 Wertung",
+    "ratingsNote_other": "{{n}} Wertungen",
+    "noRatings": "Noch keine Wertung",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "plus {{points}} in den letzten Spielen",
+    "trendDown": "minus {{points}} in den letzten Spielen",
+    "trendFlat": "keine Änderung in den letzten Spielen",
+    "atPeak": "auf dem Höchstwert",
+    "peak": "Höchstwert {{value}}",
+    "atPeakShort": "Spitze!",
+    "peakShort": "Max. {{value}}",
+    "games_one": "1 Spiel",
+    "games_other": "{{count}} Spiele",
+    "statsTitle": "Kampfstatistik",
+    "stats": {
+      "games": "Spiele",
+      "wins": "Siege",
+      "losses": "Niederlagen",
+      "winRate": "Siegquote",
+      "streak": "Siegesserie",
+      "bestStreak": "Beste Serie",
+      "bestMove": "Bester Zug",
+      "avgMistakes": "Fehler pro Spiel"
+    },
+    "recentTitleSection": "Letzte Ergebnisse",
+    "recentNote": "letzte {{n}}",
+    "recentEmpty": "Noch keine Ranglistenspiele.",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "Sieg",
+      "loss": "Niederlage",
+      "tie": "Unentschieden"
+    },
+    "outcomeShort": {
+      "win": "S",
+      "loss": "N",
+      "tie": "U"
+    },
+    "place": "Platz {{place}}",
+    "points": "{{score}} Pkt.",
+    "ratingDelta": "Wertung {{delta}}",
+    "formLabel": "Letzte Ergebnisse, neueste zuerst: {{list}}",
+    "replayHint": "Öffnet die Wiederholung",
+    "openOf": "Spielerkarte von {{name}}",
+    "achievementsTitle": "Top-Erfolge",
+    "allAchievements": "Alle Erfolge",
+    "joinedSince": "Spielt seit {{date}}",
+    "favorite": {
+      "title": "Lieblingsstörung",
+      "uses_one": "Mal",
+      "uses_other": "Mal",
+      "label_one": "Lieblingsstörung: {{kind}}, einmal gesendet",
+      "label_other": "Lieblingsstörung: {{kind}}, {{count}}-mal gesendet"
+    }
+  },
+  "achievements": {
+    "title": "Erfolge",
+    "soon": "Demnächst",
+    "soonBody": "12 Erfolge sind unterwegs: erster Sieg, Siegesserien, Top-Züge und mehr. Bald hier.",
+    "soonShort": "Erfolge kommen bald.",
+    "earned": "{{name}}, erreicht am {{date}}"
+  },
+  "progress": {
+    "title": "Erfolge & Fortschritt",
+    "savedNote": "Keine Verbindung zum Server: Die gespeicherten Zahlen werden angezeigt.",
+    "pending_one": "1 Training wartet auf den Abgleich mit dem Server",
+    "pending_other": "{{count}} Trainings warten auf den Abgleich mit dem Server",
+    "offlineBody": "Dein Level und deine XP erscheinen, sobald eine Verbindung zum Server besteht.",
+    "levelWord": "Level",
+    "xpTitle": "Erfahrungspunkte",
+    "toGo": "{{xp}} bis Level {{level}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "So bekommst du XP",
+    "how": {
+      "win": "Erster Platz in der Rangliste oder ein Sieg gegen einen Bot",
+      "played": "Jedes andere Ergebnis in der Rangliste oder gegen einen Bot",
+      "solo": "Solotraining",
+      "perCorrect": "Jeder richtige Zug, in der Rangliste und gegen einen Bot"
+    }
+  },
+  "interferences": {
+    "title": "Störungen",
+    "entry": "Störungssammlung",
+    "entryNote": "{{open}} offen · {{locked}} gesperrt",
+    "countLabel_one": "{{open}} von 1 Störung offen",
+    "countLabel_other": "{{open}} von {{total}} Störungen offen",
+    "opened": "offen",
+    "facts": {
+      "seconds": "Sekunden pro Störung",
+      "cost": "der Preis verdoppelt sich mit jedem Einsatz",
+      "launch": "Mal tippen: „Stören“ auf der Karte eines Gegners, dann die Störung",
+      "launchValue": "2"
+    },
+    "arsenal": "Dein Arsenal",
+    "tapHint": "Tippen für die Vorschau",
+    "openLabel": "{{name}}, verfügbar. {{description}}",
+    "previewHint": "Zeigt die Vorschau",
+    "available": "Verfügbar",
+    "previewing": "Vorschau läuft",
+    "lockedTitle": "Gesperrt",
+    "lockedNote": "Werden mit steigendem Level frei",
+    "soon": "Demnächst",
+    "atLevel": "Ab Level {{level}}",
+    "lockedLabel": "{{name}}, gesperrt, {{when}}",
+    "howTo": "Im Spiel: Tippe auf der Karte eines Gegners auf „Stören“ und wähle dann eine Störung.",
+    "future": {
+      "earthquake": "Erdbeben",
+      "fog": "Nebel",
+      "bubbles": "Blasen",
+      "torch": "Taschenlampe"
+    },
+    "description": {
+      "fireworks": "Eine bunte Salve Feuerwerk über dem Bildschirm",
+      "cats": "Eine Karawane Katzen rast über den Bildschirm",
+      "warp": "Der Bildschirm verbiegt sich und flackert",
+      "scramble": "Die Ziffern auf dem Spielfeld mischen sich und tauschen die Plätze",
+      "ink": "Tintenkleckse, die langsam verblassen",
+      "keypad": "Die Zifferntasten tauschen die Plätze",
+      "earthquake": "Der Bildschirm bebt",
+      "fog": "Nebel, der sich langsam lichtet",
+      "bubbles": "Blasen, die du zerplatzen lassen musst",
+      "torch": "Das Spielfeld wird dunkel, bis auf den Schein einer Taschenlampe"
+    }
+  },
+  "home": {
+    "levelXp": "Level {{level}} · {{xp}}"
+  }
+}

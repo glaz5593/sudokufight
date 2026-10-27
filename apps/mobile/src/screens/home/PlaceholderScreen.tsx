@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '../../components/Icon';
 import { BottomNav, type NavTab } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { goToTab } from './navigation';
 import { Chip, GUTTER } from './parts';

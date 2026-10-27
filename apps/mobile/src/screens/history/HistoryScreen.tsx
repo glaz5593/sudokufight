@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AvatarIdOrNone } from '../../avatars';
 import { Icon } from '../../components/Icon';
 import { BottomNav, Button, type NavTab, SkeletonGroup, SkeletonRows, StateView } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { HistoryCard } from './HistoryCard';
 import { type HistoryDeps, HistoryLoader, type HistorySnapshot } from './historyLoader';

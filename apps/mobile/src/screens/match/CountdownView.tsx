@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -9,6 +9,7 @@ import { Avatar } from '../../components/player/Avatar';
 import { easing, NEVER_REDUCE } from '../../components/player/anim';
 import { paletteAt } from '../../components/player/metrics';
 import { SeatGlyph } from '../../components/player/SeatGlyph';
+import { Text } from '../../components/ui/Text';
 import { color, radius, space, text, tokens } from '../../theme';
 import { motion } from '../../theme/motion';
 import { Announcer } from '../game/connection/Announcer';

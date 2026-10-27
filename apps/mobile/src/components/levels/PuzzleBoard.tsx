@@ -11,7 +11,7 @@ import {
   useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type AccessibilityActionEvent, StyleSheet, Text, View } from 'react-native';
+import { type AccessibilityActionEvent, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   type SharedValue,
@@ -29,6 +29,7 @@ import { motion, useReduceMotion } from '../../theme/motion';
 import { shake } from '../board/animation';
 import { Icon } from '../Icon';
 import { timing } from '../ui/motion';
+import { Text } from '../ui/Text';
 import { GoldFrame, MeFrame, puzzleMarkStyles } from './PuzzleMarks';
 import {
   boxCellsAt,

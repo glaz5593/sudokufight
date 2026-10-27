@@ -7,8 +7,13 @@
  * - FinalizationRegistry, WeakRef: the app installs stand-ins (hermesPolyfills.ts, first in app/_layout.tsx).
  * - structuredClone: not in Hermes.
  * - Intl: Hermes on Android has Collator, DateTimeFormat and NumberFormat (and getCanonicalLocales); the rest is
- *   taken away, PluralRules (i18next's plurals fall back to one/other) and DisplayNames (country names) included.
+ *   taken away, PluralRules and DisplayNames (country names) included.
+ * - Intl.PluralRules: the phone always runs on the app's own (services/pluralRules.ts, which hermesPolyfills.ts
+ *   installs before anything else, even over an engine's own), so after taking Node's away this puts the app's in
+ *   its place, the way the phone has it. `{ appPluralRules: false }` leaves none, as before the app had its own:
+ *   i18next then falls back to one/other (Hebrew's "two" never showed; localization plan 0ג).
  */
+import { installPluralRules } from '../services/pluralRules';
 
 export const HERMES_MISSING_GLOBALS = ['FinalizationRegistry', 'WeakRef', 'structuredClone'] as const;
 
@@ -29,8 +34,15 @@ export interface WithoutNodeGlobals {
   nodeGlobalsLeft(): string[];
 }
 
+export interface HermesOptions {
+  /** The app's own Intl.PluralRules in place of Node's, as on the phone (default true). */
+  appPluralRules?: boolean;
+}
+
 /** Takes the globals Hermes lacks away from this test's environment. */
-export function takeAwayHermesMissingGlobals(): WithoutNodeGlobals {
+export function takeAwayHermesMissingGlobals({
+  appPluralRules = true,
+}: HermesOptions = {}): WithoutNodeGlobals {
   const saved: {
     owner: object;
     key: string;
@@ -46,6 +58,7 @@ export function takeAwayHermesMissingGlobals(): WithoutNodeGlobals {
   };
   for (const key of HERMES_MISSING_GLOBALS) remove(globalThis, key, key);
   if (typeof Intl !== 'undefined') for (const key of HERMES_MISSING_INTL) remove(Intl, key, `Intl.${key}`);
+  if (appPluralRules) installPluralRules(globalThis);
   return {
     restore() {
       for (const { owner, key, descriptor } of [...saved].reverse())

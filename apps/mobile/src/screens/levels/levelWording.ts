@@ -15,6 +15,7 @@ import {
 import type { TFunction } from 'i18next';
 
 import { formatScore, ltr } from '../../components/player/format';
+import { decimalSeparator, listOf, percent, spaceWords } from '../../i18n/compose';
 import { secondsText } from '../home/homeModel';
 
 /**
@@ -34,7 +35,8 @@ import { secondsText } from '../home/homeModel';
  * regionName, from fillRegionOf of the attempt's level).
  *
  * Times, scores and "18/30" are Latin and LTR inside Hebrew (ltr()); a range ("4–5") is an LTR isolate, or its
- * dash would turn it around in a right-to-left line.
+ * dash would turn it around in a right-to-left line. A decimal ("7.6") takes the language's separator and a per
+ * cent its pattern (i18n/compose.ts, D108); words, lists and sentences are joined by keys too (plan 0ה).
  */
 
 export type LevelsT = TFunction<'levels'>;
@@ -162,7 +164,11 @@ export function puzzleSlotLabel(
   digits: readonly number[],
   t: LevelsT,
 ): string {
-  const rows = [0, 3, 6].map((r) => digits.slice(r, r + 3).join(' ')).join(', ');
+  // A row's digits apart, each said alone (digits, not words: a space in every language); the rows as a list.
+  const rows = listOf(
+    [0, 3, 6].map((r) => digits.slice(r, r + 3).join(' ')),
+    t,
+  );
   return t('hud.puzzle.slotLabel', { n: place + 1, state: t(`hud.puzzle.state.${state}`), rows });
 }
 
@@ -170,7 +176,7 @@ export function puzzleSlotLabel(
 export function puzzleSwapAnnouncement(from: number, to: number, penaltyMs: number, t: LevelsT): string {
   const values = { a: from + 1, b: to + 1 };
   return penaltyMs > 0
-    ? t('hud.puzzle.swappedPenalty', { ...values, s: secondsText(penaltyMs) })
+    ? t('hud.puzzle.swappedPenalty', { ...values, count: penaltyMs / 1000, s: seconds(penaltyMs, t) })
     : t('hud.puzzle.swapped', values);
 }
 
@@ -190,11 +196,11 @@ export function bossTraitText(trait: BossTrait, t: LevelsT): string {
     case 'firstBot':
       return t('boss.traits.firstBot', { bot: trait.bot });
     case 'faster':
-      return t('boss.traits.faster', { bot: trait.bot, percent: ltr(`${trait.pct}%`) });
+      return t('boss.traits.faster', { bot: trait.bot, percent: ltr(percent(trait.pct, t)) });
     case 'overlord':
       return t('boss.traits.overlord');
     case 'moreCells':
-      return t('boss.traits.moreCells', { cells: trait.to, usual: trait.from });
+      return t('boss.traits.moreCells', { count: trait.to, cells: trait.to, usual: trait.from });
   }
 }
 
@@ -229,35 +235,44 @@ export const chapterName = (chapter: number, t: LevelsT): string => t(`chapters.
 /** What is new in a chapter ("מצא את הטעות"). */
 export const chapterNews = (chapter: number, t: LevelsT): string => t(`chapters.${chapter}.news`);
 
-/** Whole seconds, or one decimal: "20", "7.6". */
-const seconds = (ms: number): string => secondsText(ms);
+/** Whole seconds, or one decimal in the language's separator: "20", "7.6". */
+const seconds = (ms: number, t: LevelsT): string => secondsText(ms, decimalSeparator(t));
 
 /**
  * The goal in one sentence (the panel, "מוכן?", the result): "מצא את המקום המדויק של ספרה אחת. השלב נגמר
  * ב־20 ש׳." A fill stage's goal names no box, row or column: "שוב" moves them (levels-ui.md §5).
  */
 export function goalText(level: AppLevel, t: LevelsT): string {
-  const s = seconds(level.timeLimitMs);
+  const s = seconds(level.timeLimitMs, t);
   const bot = botNameOf(level) ?? '';
   switch (level.kind) {
     case 'find':
       return t('goals.find', { s });
     case 'findDuel':
-      return t('goals.findDuel', { s, bot, spots: level.targets.spots.length });
+      return t('goals.findDuel', {
+        s,
+        bot,
+        count: level.targets.spots.length,
+        spots: level.targets.spots.length,
+      });
     case 'fillBox':
     case 'fillRow':
     case 'fillCol':
-      return t(`goals.${level.kind}`, { s, cells: level.targets.cells.length });
+      return t(`goals.${level.kind}`, {
+        s,
+        count: level.targets.cells.length,
+        cells: level.targets.cells.length,
+      });
     case 'puzzle':
-      return t('goals.puzzle', { s, penalty: seconds(LEVEL_RULES.puzzleSwapPenaltyMs) });
+      return t('goals.puzzle', { s, penalty: seconds(LEVEL_RULES.puzzleSwapPenaltyMs, t) });
     case 'duel':
-      return t('goals.duel', { s, bot, target: level.targets.endAtScore });
+      return t('goals.duel', { s, bot, count: level.targets.endAtScore, target: level.targets.endAtScore });
     case 'spotError':
       return t('goals.spotError', { s, count: level.targets.errors.length });
     case 'pointHunter':
-      return t('goals.pointHunter', { s, moves: level.targets.maxMoves });
+      return t('goals.pointHunter', { s, count: level.targets.maxMoves, moves: level.targets.maxMoves });
     case 'chain':
-      return t('goals.chain', { s, steps: level.targets.cells.length });
+      return t('goals.chain', { s, count: level.targets.cells.length, steps: level.targets.cells.length });
   }
 }
 
@@ -278,15 +293,17 @@ export function scaleRows(rule: StarRule, t: LevelsT, total?: number): ScaleRow[
     const threshold = stars === 3 ? rule.three : stars === 2 ? rule.two : 'one' in rule ? rule.one : 0;
     switch (rule.by) {
       case 'timeMs':
-        return t('scale.time', { s: seconds(threshold) });
+        return t('scale.time', { s: seconds(threshold, t) });
       case 'spots':
         return stars === 3 && total !== undefined && total > threshold
-          ? t('scale.spotsRange', { range: ltr(`${threshold}–${total}`) })
+          ? t('scale.spotsRange', { count: total, range: ltr(`${threshold}–${total}`) })
           : t('scale.spots', { count: threshold });
       case 'gap':
-        return stars === 1 ? t('scale.lead') : t('scale.gap', { gap: formatScore(threshold) });
+        return stars === 1
+          ? t('scale.lead')
+          : t('scale.gap', { gap: formatScore(threshold, decimalSeparator(t)) });
       case 'points':
-        return t('scale.points', { points: formatScore(threshold) });
+        return t('scale.points', { points: formatScore(threshold, decimalSeparator(t)) });
     }
   };
   return ([3, 2, 1] as const).map((stars) => {
@@ -334,22 +351,24 @@ export function metricParts(
   value: number,
   t: LevelsT,
 ): MetricParts {
-  const join = (parts: (string | null)[]) => parts.filter(Boolean).join(' ');
+  const decimal = decimalSeparator(t);
   const out = (before: string | null, number: string, after: string | null): MetricParts => ({
     before,
     value: number,
     after,
-    text: join([before, ltr(number), after]),
+    text: spaceWords([before, ltr(number), after], t),
   });
   switch (measure) {
     case 'timeMs':
-      return out(null, seconds(value), t('units.seconds'));
-    case 'spots':
-      return out(null, String(value), t('result.metric.spotsOf', { total: spotsOf(level) ?? 5 }));
+      return out(null, seconds(value, t), t('units.seconds'));
+    case 'spots': {
+      const total = spotsOf(level) ?? 5;
+      return out(null, String(value), t('result.metric.spotsOf', { count: total, total }));
+    }
     case 'gap':
-      return out(t('result.metric.gap'), formatScore(value), null);
+      return out(t('result.metric.gap'), formatScore(value, decimal), null);
     case 'points':
-      return out(null, formatScore(value), t('result.metric.points'));
+      return out(null, formatScore(value, decimal), t('result.metric.points'));
     case 'found': {
       const total = level.kind === 'spotError' ? level.targets.errors.length : value;
       return out(t('result.metric.found'), String(value), t('result.metric.foundOf', { total }));

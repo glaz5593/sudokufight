@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import type { AvatarIdOrNone } from '../../../avatars';
 import { Avatar } from '../../../components/player/Avatar';
@@ -9,6 +9,8 @@ import { formatScore, scoreText, signedText } from '../../../components/player/f
 import { paletteAt } from '../../../components/player/metrics';
 import { SeatGlyph } from '../../../components/player/SeatGlyph';
 import type { Gender } from '../../../components/player/wording';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator } from '../../../i18n/compose';
 import { color, radius, space, text } from '../../../theme';
 import { about, myNameOf, nameOf } from './wording';
 
@@ -65,6 +67,7 @@ export function ScoreLine({
   testID,
 }: ScoreLineProps) {
   const { t } = useTranslation('game');
+  const decimal = decimalSeparator(t);
   const me = myNameOf(myName, t);
   const them = nameOf(opponentName, t);
   const [myShare = 0.5, theirShare = 0.5] = showLead ? barShares([myScore, opponentScore]) : [];
@@ -73,9 +76,9 @@ export function ScoreLine({
       accessible
       accessibilityLabel={t('connection.scoreLabel', {
         me,
-        myScore: scoreText(myScore),
+        myScore: scoreText(myScore, decimal),
         name: them,
-        theirScore: scoreText(opponentScore),
+        theirScore: scoreText(opponentScore, decimal),
       })}
       style={[styles.box, style]}
       testID={testID}
@@ -96,7 +99,7 @@ export function ScoreLine({
               style={[styles.score, { color: paletteAt(0).ring }]}
               testID={testID && `${testID}-my-score`}
             >
-              {scoreText(myScore)}
+              {scoreText(myScore, decimal)}
             </Text>
           </View>
         </View>
@@ -123,7 +126,7 @@ export function ScoreLine({
               style={[styles.score, { color: paletteAt(opponentColorIndex).ring }]}
               testID={testID && `${testID}-their-score`}
             >
-              {scoreText(opponentScore)}
+              {scoreText(opponentScore, decimal)}
             </Text>
           </View>
           <Avatar
@@ -160,6 +163,7 @@ function Lead({
   testID?: string;
 }) {
   const { t } = useTranslation('game');
+  const decimal = decimalSeparator(t);
   const label =
     gap > 0
       ? t('connection.lead.mine')
@@ -173,7 +177,7 @@ function Lead({
         {label}
       </Text>
       <Text style={[styles.leadGap, { color: tint }]} testID={testID && `${testID}-gap`}>
-        {gap === 0 ? formatScore(0) : signedText(Math.abs(gap))}
+        {gap === 0 ? formatScore(0, decimal) : signedText(Math.abs(gap), decimal)}
       </Text>
     </View>
   );

@@ -29,6 +29,7 @@ import { memoryDb, type SqlJsDb } from '../game/testing/sqlJsDb';
 import i18n from '../i18n';
 import { PRACTICE_QUEUE_KEY } from '../progress/practiceQueue';
 import { track } from '../services/analytics';
+import { PluralRules } from '../services/pluralRules';
 import { useProfile } from '../state/profile';
 import { useSettings } from '../state/settings';
 
@@ -155,7 +156,8 @@ beforeEach(async () => {
 
 it('runs without the globals Hermes lacks (the app’s own stand-ins only)', () => {
   expect(onHermes.nodeGlobalsLeft()).toEqual([]);
-  expect(Intl.PluralRules).toBeUndefined();
+  // Not Node's: the app's own, which the phone always runs on (services/pluralRules.ts).
+  expect(Intl.PluralRules).toBe(PluralRules);
   expect((Intl as { DisplayNames?: unknown }).DisplayNames).toBeUndefined();
   expect((globalThis as { structuredClone?: unknown }).structuredClone).toBeUndefined();
   // services/hermesPolyfills.ts, first in app/_layout.tsx.

@@ -8,12 +8,13 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 
 import { Icon } from '../../components/Icon';
-import { displayName, ltr, paletteAt, SeatGlyph, signedText } from '../../components/player';
+import { displayName, ltr, paletteAt, SeatGlyph, signedText, withDecimal } from '../../components/player';
+import { Text } from '../../components/ui/Text';
+import { decimalSeparator, labelValue, spaceSentences } from '../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import type { KeyMoments, PlayerExplanation, ReplayPlayer, TimelineDot } from './replayModel';
 
@@ -76,16 +77,20 @@ export function ExplanationCard({
     x.status === 'released' && x.releaseReason
       ? t(`explain.released.${x.releaseReason}`)
       : t(`explain.status.${x.status}`);
+  const decimal = decimalSeparator(t);
   const chip =
     x.status === 'correct' && x.points !== null
-      ? `${statusWord} ${signedText(x.points)}`
+      ? t('explain.chip', { status: statusWord, points: signedText(x.points, decimal) })
       : x.status === 'wrong' && x.penalty !== null
-        ? `${statusWord} ${signedText(-x.penalty)}`
+        ? t('explain.chip', { status: statusWord, points: signedText(-x.penalty, decimal) })
         : statusWord;
   const move = ltr(t('explain.move', { cell: x.cellName, digit: x.answer ?? '?' }));
   const body = x.text ?? t('explain.noLogic', { cell: x.cellName, digit: x.answer ?? '?' });
   const why = x.wrongText ? t('explain.why', { digit: x.played, text: x.wrongText }) : null;
-  const label = [
+  const scoreLine = x.scoreLine ? ltr(withDecimal(x.scoreLine, decimal)) : null;
+  const penaltyLine = x.penaltyLine ? ltr(withDecimal(x.penaltyLine, decimal)) : null;
+  // The card's sentences as one label (the space after each from match:sentenceSpace: none in Japanese).
+  const parts = [
     t('explain.label', {
       name: who,
       status: chip,
@@ -95,11 +100,10 @@ export function ExplanationCard({
     }),
     x.status === 'wrong' ? t('explain.played', { digit: x.played, answer: x.answer }) : null,
     why,
-    x.scoreLine ? `${t('explain.scoreLine')}: ${ltr(x.scoreLine)}` : null,
-    x.penaltyLine ? `${t('explain.penaltyLine')}: ${ltr(x.penaltyLine)}` : null,
-  ]
-    .filter(Boolean)
-    .join(' ');
+    scoreLine ? labelValue(t('explain.scoreLine'), scoreLine, t) : null,
+    penaltyLine ? labelValue(t('explain.penaltyLine'), penaltyLine, t) : null,
+  ];
+  const label = spaceSentences(parts, t);
 
   return (
     <View
@@ -142,19 +146,19 @@ export function ExplanationCard({
         {body}
       </Text>
       {why ? <Text style={[text('caption'), styles.muted]}>{why}</Text> : null}
-      {x.scoreLine ? (
+      {scoreLine ? (
         <View style={styles.formula}>
           <Text style={[text('micro'), styles.muted]}>{t('explain.scoreLine')}</Text>
           <Text style={[text('label'), styles.strong, styles.ltr]} testID={testID && `${testID}-score`}>
-            {ltr(x.scoreLine)}
+            {scoreLine}
           </Text>
         </View>
       ) : null}
-      {x.penaltyLine ? (
+      {penaltyLine ? (
         <View style={styles.formula}>
           <Text style={[text('micro'), styles.muted]}>{t('explain.penaltyLine')}</Text>
           <Text style={[text('label'), styles.strong, styles.ltr]} testID={testID && `${testID}-penalty`}>
-            {ltr(x.penaltyLine)}
+            {penaltyLine}
           </Text>
         </View>
       ) : null}

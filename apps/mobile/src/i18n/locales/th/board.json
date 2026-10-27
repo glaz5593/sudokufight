@@ -1,0 +1,46 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "กระดานเกม",
+    "myLock": "ช่อง {{cell}} ของคุณ",
+    "otherLock": "{{cell}} ถูกล็อกโดย {{name}}",
+    "tapLabel": "กระดานของด่าน"
+  },
+  "cell": {
+    "empty": "ว่าง",
+    "given": "ตัวเลขโจทย์",
+    "solvedByMe": "คุณไขได้แล้ว",
+    "solvedBy": "{{name}} ไขได้แล้ว",
+    "lockedByMe": "คุณล็อกไว้",
+    "lockedBy": "{{name}} ล็อกไว้",
+    "pending": "รอการล็อก",
+    "queued": "{{digit}} รอการเชื่อมต่อ",
+    "timerStopped": "ตัวจับเวลาหยุดแล้ว",
+    "seconds_other": "{{count}} วินาที",
+    "wrong": "ตัวเลขที่ผิด: {{digits}}",
+    "hintMyLock": "เลือกตัวเลขจากแป้นตัวเลข",
+    "player": "ผู้เล่น {{n}}",
+    "corrected": "พบข้อผิดพลาด: {{wrong}} ตัวเลขที่ถูกคือ {{right}}",
+    "mine": "ของคุณ",
+    "outside": "นอกพื้นที่",
+    "hintTap": "การแตะช่องคือการเดิน"
+  },
+  "keypad": {
+    "armed": "เลข {{digit}} · เหลือ {{left}}",
+    "idle": "เลข {{digit}} เหลือ {{left}} เลือกช่องก่อน",
+    "complete": "เลข {{digit}} เหลือ {{left}}",
+    "tried": "เลข {{digit}} · ลองในช่องนี้แล้ว"
+  },
+  "cancel": {
+    "label": "ยกเลิกการเลือก",
+    "withCell": "ยกเลิกการเลือก {{cell}}"
+  },
+  "resume": {
+    "title": "เล่นต่อใน",
+    "paused": "เกมหยุดชั่วคราว",
+    "label_other": "เล่นต่อใน {{count}} วินาที"
+  }
+}

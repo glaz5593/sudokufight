@@ -1,0 +1,182 @@
+{
+  "title": "Stanza con amici",
+  "subtitle": "{{type}} · {{count}} su {{max}}",
+  "label": "Partita con amici · non classificata",
+  "mode": "Con amici",
+  "modeLong": "Partita con amici",
+  "unrated": "Non classificata",
+  "code": {
+    "title": "Codice stanza",
+    "label": "Codice stanza: {{spelled}}",
+    "hint": "Invia il codice o il link"
+  },
+  "share": {
+    "button": "Condividi link",
+    "hint": "Apre la condivisione del telefono, con il codice e il link",
+    "message": "Gioca con me su Sudoku Fight! Codice stanza: {{code}}\n{{link}}",
+    "failed": "Impossibile aprire la condivisione"
+  },
+  "copy": {
+    "button": "Copia codice",
+    "done": "Codice copiato",
+    "failed": "Impossibile copiare il codice"
+  },
+  "gameType": {
+    "title": "Tipo di partita",
+    "hostPicks": "Solo l’host può cambiarlo",
+    "guestSees": "Sceglie l’host",
+    "changed": "Ora il tipo di partita è {{type}}"
+  },
+  "players": {
+    "title": "Giocatori · {{count}} su {{max}}"
+  },
+  "seat": {
+    "me": "Io",
+    "host": "Host",
+    "away": "Al momento non è nella stanza",
+    "empty": "In attesa di un giocatore…",
+    "emptyLabel": "Posto libero, in attesa di un giocatore",
+    "rating": "Punteggio {{rating}}"
+  },
+  "kick": {
+    "label": "Rimuovi {{name}} dalla stanza",
+    "title": "Rimuovere {{name}} dalla stanza?",
+    "body": "Non potrà più tornare in questa stanza.",
+    "confirm": "Rimuovi"
+  },
+  "start": {
+    "button_one": "Inizia la partita",
+    "button_many": "Inizia la partita · {{count}} di giocatori",
+    "button_other": "Inizia la partita · {{count}} giocatori",
+    "needMore": "Per iniziare servono almeno 2 giocatori connessi",
+    "waitingForHost": "In attesa che {{name}} avvii la partita",
+    "hostAway": "Al momento l’host non è nella stanza",
+    "starting": "La partita sta per iniziare…"
+  },
+  "startWithout": {
+    "title": "Iniziare senza {{names}}?",
+    "body": "Al momento {{names}} non è nella stanza. Chi non è nella stanza resta fuori.",
+    "confirm": "Sì, inizia",
+    "cancel": "No, aspettiamo"
+  },
+  "leave": "Esci dalla stanza",
+  "reconnecting": "Connessione persa. Riconnessione…",
+  "announce": {
+    "joined": "{{name}} ha raggiunto la stanza",
+    "left": "{{name}} ha lasciato la stanza",
+    "away": "Al momento {{name}} non è nella stanza",
+    "back": "{{name}} è di nuovo nella stanza",
+    "host": "Ora l’host è {{name}}",
+    "meHost": "Ora l’host sei tu"
+  },
+  "opening": {
+    "create": "Apertura della stanza…",
+    "join": "Ingresso nella stanza…"
+  },
+  "replace": {
+    "title": "Chiudere l’altra stanza?",
+    "body": "Hai già una stanza aperta, {{code}}. Chiudila e aprine una nuova, oppure torna lì.",
+    "confirm": "Chiudi e apri nuova",
+    "cancel": "Torna a quella stanza"
+  },
+  "errors": {
+    "notFound": "Non abbiamo trovato una stanza con il codice {{code}}. Controlla le cifre.",
+    "notFoundThis": "Non abbiamo trovato una stanza con questo codice.",
+    "roomFull": "La stanza è piena ({{max}} su {{max}}).",
+    "gameStarted": "La partita in questa stanza è già iniziata.",
+    "roomClosed": "La stanza è stata chiusa.",
+    "kicked": "L’host ti ha rimosso dalla stanza.",
+    "cantJoin": "Hai bloccato un giocatore che è in questa stanza.",
+    "suspended": "Il tuo account è sospeso, quindi per ora non puoi giocare con gli amici.",
+    "network": "Nessuna connessione a internet.",
+    "tooManyRequests": "Troppi tentativi. Riprova tra {{wait}}.",
+    "notAvailable": "Questa opzione non è ancora disponibile.",
+    "badRequest": "Il codice ha 6 cifre.",
+    "unauthorized": "Accedi di nuovo al tuo account.",
+    "notRegistered": "Completa la registrazione per giocare con gli amici.",
+    "tooManyRooms": "Hai già una stanza aperta.",
+    "tooLarge": "Qualcosa è andato storto. Riprova.",
+    "internal": "Qualcosa è andato storto sul server. Riprova tra un attimo.",
+    "disabled": "Su questo server non si può giocare con gli amici.",
+    "unavailable": "Al momento il server non è disponibile. Riprova tra un attimo."
+  },
+  "wait": {
+    "seconds_one": "{{count}} secondo",
+    "seconds_many": "{{count}} di secondi",
+    "seconds_other": "{{count}} secondi",
+    "minutes_one": "{{count}} minuto",
+    "minutes_many": "{{count}} di minuti",
+    "minutes_other": "{{count}} minuti"
+  },
+  "closed": {
+    "kicked": "L’host ti ha rimosso dalla stanza.",
+    "removed": "Hai lasciato la stanza.",
+    "otherDevice": "La stanza è stata aperta su un altro dispositivo.",
+    "serverRestart": "La stanza è stata chiusa.",
+    "closed": "La stanza è stata chiusa."
+  },
+  "lobbyErrors": {
+    "notHost": "Solo l’host può farlo.",
+    "notEnoughPlayers": "Per iniziare servono almeno 2 giocatori connessi.",
+    "playersAway": "Al momento {{names}} non è nella stanza.",
+    "gameStarted": "La partita è già iniziata.",
+    "badCommand": "Non ha funzionato. Riprova.",
+    "tooManyRequests": "Piano, troppi tocchi. Riprova tra un attimo."
+  },
+  "startedWithout": "La partita è iniziata senza di te.",
+  "actions": {
+    "retry": "Riprova",
+    "createRoom": "Crea stanza",
+    "joinWithCode": "Entra con codice",
+    "home": "Alla home"
+  },
+  "join": {
+    "title": "Entra con codice",
+    "prompt": "Scrivi le 6 cifre che hai ricevuto",
+    "codeLabel": "Codice stanza, 6 cifre",
+    "digitLabel": "Cifra {{n}} di {{total}}",
+    "paste": "Incolla",
+    "pasteHint": "Puoi incollare tutto il messaggio di WhatsApp",
+    "pasteNone": "Nel testo copiato non c’è nessun codice di 6 cifre",
+    "joining": "Ingresso nella stanza…",
+    "submit": "Entra"
+  },
+  "link": {
+    "notFound": {
+      "title": "Non conosciamo questo link",
+      "body": "Forse è vecchio o non è di Sudoku Fight. Puoi continuare dalla home.",
+      "home": "Vai alla home"
+    },
+    "badCode": "Questo link non è valido"
+  },
+  "invite": {
+    "pending": "Hai un invito per la stanza {{code}}",
+    "afterSignIn": "Dopo l’accesso ti portiamo dritto nella stanza {{code}}",
+    "join": "Entra",
+    "later": "Non ora",
+    "expired": "L’invito per la stanza {{code}} è scaduto"
+  },
+  "busy": {
+    "practice": {
+      "title": "Lasciare l’allenamento ed entrare nella stanza?",
+      "body": "L’allenamento viene salvato, come quando lo lasci.",
+      "confirm": "Entra nella stanza"
+    },
+    "search": {
+      "title": "Interrompere la ricerca ed entrare?",
+      "body": "La ricerca di un avversario si ferma.",
+      "confirm": "Entra nella stanza"
+    },
+    "room": {
+      "title": "Passare alla stanza {{code}}?",
+      "body": "Lascerai la stanza in cui sei ora.",
+      "confirm": "Cambia stanza"
+    },
+    "game": {
+      "title": "Hai una partita in corso",
+      "body": "Potrai entrare dopo. L’invito per la stanza {{code}} ti aspetta.",
+      "back": "Torna alla partita"
+    },
+    "stay": "Resta"
+  }
+}

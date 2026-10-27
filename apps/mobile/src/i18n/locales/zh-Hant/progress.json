@@ -1,0 +1,196 @@
+{
+  "common": {
+    "provisional": "暫定積分",
+    "provisionalNote_other": "在同一種對局類型完成{{games}}場排位對局後，就會顯示你的段位",
+    "level": "等級{{level}}",
+    "you": "你",
+    "myCard": "我的玩家卡",
+    "loading": "載入中…",
+    "retry": "再試一次",
+    "offlineNote": "沒有連上伺服器：顯示先前載入的內容。",
+    "errorNote": "無法更新：顯示先前載入的內容。",
+    "offlineTitle": "沒有連上伺服器",
+    "offlineBody": "連線恢復後，排行榜就會更新。",
+    "errorTitle": "出了點問題",
+    "errorBody": "伺服器暫時無法回應。請稍後再試。",
+    "signedOut": "登入後才能查看",
+    "players_other": "{{count}}名玩家",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}，邁向等級{{level}}"
+  },
+  "leaderboard": {
+    "title": "排行榜",
+    "tabs": {
+      "label": "積分類型",
+      "general": "綜合",
+      "fast": "快速",
+      "normal": "一般",
+      "hard": "困難",
+      "friends": "好友"
+    },
+    "caption": {
+      "general": "綜合 · 每位玩家的最高積分",
+      "type": "{{type}}積分 · 全球",
+      "typePlayers": "{{type}}積分 · {{players}} · 全球",
+      "friends": "你最近的對手"
+    },
+    "players": "玩家人數",
+    "podium": "前三名",
+    "rankLabel": "第{{rank}}名",
+    "meName": "{{name}}（你）",
+    "openHint": "開啟玩家卡",
+    "meNone": "你在這個榜上還沒有積分",
+    "play": "去玩",
+    "playHint": "進行一場排位對局就能上榜",
+    "climbHint": "多玩幾場，往上爬",
+    "emptyTitle": "這裡還沒有人",
+    "emptyBody": "進行一場排位對局，成為榜上第一人。"
+  },
+  "friends": {
+    "invite": "邀請好友",
+    "inviteMessage": "來 Sudoku Fight 和我對戰吧！",
+    "inviteNote": "多一個朋友，就多一個對手",
+    "emptyTitle": "還沒有對手",
+    "emptyBody": "進行一場排位對局，你的對手就會出現在這裡。完整的好友名單即將推出。"
+  },
+  "league": {
+    "title": "段位",
+    "toNext": "距離{{league}}還差{{points}}",
+    "top": "最高段位",
+    "general": "綜合{{rating}} · {{next}}",
+    "generalTop": "綜合{{rating}} · 最高段位",
+    "ladder": "段位階梯",
+    "step": "{{league}}段位，積分{{floor}}起"
+  },
+  "card": {
+    "title": "玩家卡",
+    "edit": "編輯個人資料",
+    "notFound": "找不到玩家",
+    "offlineBody": "玩家卡要從伺服器載入。連線恢復後再試一次。",
+    "savedNote": "沒有連上伺服器：顯示已儲存的玩家卡。",
+    "meLabel": "{{name}}，我的玩家卡",
+    "ratingsTitle": "各對局類型積分",
+    "ratingsNote_other": "{{n}}項積分",
+    "noRatings": "還沒有積分",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "最近幾場上升{{points}}",
+    "trendDown": "最近幾場下降{{points}}",
+    "trendFlat": "最近幾場沒有變化",
+    "atPeak": "正處於最高點",
+    "peak": "最高{{value}}",
+    "atPeakShort": "最高點！",
+    "peakShort": "最高{{value}}",
+    "games_other": "{{count}}場對局",
+    "statsTitle": "對戰數據",
+    "stats": {
+      "games": "對局",
+      "wins": "勝場",
+      "losses": "敗場",
+      "winRate": "勝率",
+      "streak": "連勝",
+      "bestStreak": "最長連勝",
+      "bestMove": "最佳一步",
+      "avgMistakes": "每局錯誤"
+    },
+    "recentTitleSection": "最近戰績",
+    "recentNote": "最近{{n}}場",
+    "recentEmpty": "還沒有排位對局。",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "勝利",
+      "loss": "失敗",
+      "tie": "平手"
+    },
+    "outcomeShort": {
+      "win": "勝",
+      "loss": "敗",
+      "tie": "平"
+    },
+    "place": "第{{place}}名",
+    "points": "{{score}}分",
+    "ratingDelta": "積分{{delta}}",
+    "formLabel": "最近戰績，由新到舊：{{list}}",
+    "replayHint": "開啟重播",
+    "openOf": "{{name}}的玩家卡",
+    "achievementsTitle": "精選成就",
+    "allAchievements": "所有成就",
+    "joinedSince": "從{{date}}開始玩",
+    "favorite": {
+      "title": "最愛的干擾",
+      "uses_other": "次",
+      "label_other": "最愛的干擾：{{kind}}，發動了{{count}}次"
+    }
+  },
+  "achievements": {
+    "title": "成就",
+    "soon": "即將推出",
+    "soonBody": "12項成就即將登場：首勝、連勝、頂尖一步等等。很快就會出現在這裡。",
+    "soonShort": "成就即將推出。",
+    "earned": "{{name}}，於{{date}}獲得"
+  },
+  "progress": {
+    "title": "成就與進度",
+    "savedNote": "沒有連上伺服器：顯示已儲存的數字。",
+    "pending_other": "{{count}}次練習等待與伺服器同步",
+    "offlineBody": "連上伺服器後，就會顯示你的等級和 XP。",
+    "levelWord": "等級",
+    "xpTitle": "經驗值",
+    "toGo": "距離等級{{level}}還差{{xp}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "如何獲得 XP",
+    "how": {
+      "win": "排位對局第一名，或戰勝機器人",
+      "played": "排位對局或機器人對戰的其他結果",
+      "solo": "單人練習",
+      "perCorrect": "排位對局和機器人對戰中，每答對一步"
+    }
+  },
+  "interferences": {
+    "title": "干擾",
+    "entry": "干擾收藏",
+    "entryNote": "{{open}}種已開放 · {{locked}}種未解鎖",
+    "countLabel_other": "已開放{{open}}/{{total}}種干擾",
+    "opened": "已開放",
+    "facts": {
+      "seconds": "每次干擾的秒數",
+      "cost": "每次發動，費用加倍",
+      "launch": "次點擊：對手卡片上的「干擾」，再選干擾",
+      "launchValue": "2"
+    },
+    "arsenal": "你的武器庫",
+    "tapHint": "點一下預覽",
+    "openLabel": "{{name}}，可使用。{{description}}",
+    "previewHint": "顯示預覽",
+    "available": "可使用",
+    "previewing": "預覽中",
+    "lockedTitle": "未解鎖",
+    "lockedNote": "隨等級提升解鎖",
+    "soon": "即將推出",
+    "atLevel": "等級{{level}}解鎖",
+    "lockedLabel": "{{name}}，未解鎖，{{when}}",
+    "howTo": "在對局中：點對手卡片上的「干擾」，再選擇一種干擾。",
+    "future": {
+      "earthquake": "地震",
+      "fog": "濃霧",
+      "bubbles": "泡泡",
+      "torch": "手電筒"
+    },
+    "description": {
+      "fireworks": "螢幕上綻放一陣繽紛煙火",
+      "cats": "一隊貓咪衝過螢幕",
+      "warp": "螢幕彎曲又閃爍",
+      "scramble": "盤面上的數字被打亂互換",
+      "ink": "慢慢消失的墨漬",
+      "keypad": "數字鍵互換位置",
+      "earthquake": "螢幕搖晃",
+      "fog": "慢慢散去的濃霧",
+      "bubbles": "要一個個戳破的泡泡",
+      "torch": "盤面變暗，只剩手電筒的光"
+    }
+  },
+  "home": {
+    "levelXp": "等級{{level}} · {{xp}}"
+  }
+}

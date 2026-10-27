@@ -1,0 +1,105 @@
+{
+  "title": "Verlauf",
+  "summary": {
+    "games_one": "1 Spiel",
+    "games_other": "{{count}} Spiele",
+    "winRate": "{{rate}} Siege",
+    "practices_one": "1 Training",
+    "practices_other": "{{count}} Trainings",
+    "streak": "Serie",
+    "streakLabel_one": "Siegesserie: 1 Sieg",
+    "streakLabel_other": "Siegesserie: {{count}} Siege"
+  },
+  "filters": {
+    "label": "Spiele filtern",
+    "all": "Alle",
+    "ranked": "Rangliste",
+    "practice": "Training"
+  },
+  "loading": "Deine Spiele werden geladen…",
+  "more": "Mehr Spiele",
+  "empty": {
+    "title": "Noch keine Spiele",
+    "body": "Jedes Spiel wird hier gespeichert, damit du es dir noch mal ansehen kannst: Zug für Zug, und warum jede Zahl dort gelandet ist.",
+    "action": "Erstes Spiel starten"
+  },
+  "notes": {
+    "practice": "Trainingsspiele ändern deine Wertung nicht, aber du kannst sie dir auch noch mal ansehen.",
+    "offline": "Keine Verbindung zum Server: Es werden nur die Trainingsspiele auf diesem Handy angezeigt.",
+    "signedOut": "Ranglistenspiele erscheinen hier, sobald du dich anmeldest.",
+    "rankedError": "Wir konnten deine Ranglistenspiele nicht laden.",
+    "practiceUnavailable": "Wir konnten die auf diesem Handy gespeicherten Trainingsspiele nicht lesen.",
+    "retry": "Erneut versuchen"
+  },
+  "states": {
+    "offlineTitle": "Keine Verbindung zum Server",
+    "offlineBody": "Deine Ranglistenspiele werden geladen, sobald die Verbindung zurück ist. Trainingsspiele auf diesem Handy erscheinen hier auch offline.",
+    "errorTitle": "Wir konnten deine Spiele nicht laden",
+    "errorBody": "Der Server hat nicht richtig geantwortet. Versuch es gleich noch mal.",
+    "practiceTitle": "Wir konnten deine Trainingsspiele nicht lesen",
+    "practiceBody": "Die auf diesem Handy gespeicherten Trainingsspiele ließen sich nicht öffnen. Versuch es noch mal, und wenn es wieder passiert, starte die App neu."
+  },
+  "card": {
+    "mode": {
+      "ranked": "Rangliste",
+      "solo": "Solotraining",
+      "bot": "Training gegen Bot"
+    },
+    "outcome": {
+      "win": "Sieg",
+      "loss": "Niederlage",
+      "tie": "Unentschieden",
+      "completed": "Spielfeld komplett",
+      "ended": "Training beendet",
+      "interrupted": "Spiel abgebrochen"
+    },
+    "place": "Platz {{place}}",
+    "against_one": "gegen 1 Gegner",
+    "against_other": "gegen {{count}} Gegner",
+    "alone": "Allein",
+    "points": "{{score}} Pkt.",
+    "unrated": "Ungewertet",
+    "rating": "Wertung {{delta}}",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "replay": "Wiederholung",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Öffnet die Wiederholung"
+  },
+  "results": {
+    "replay": "Wiederholung",
+    "replayHint": "Das Spiel von Anfang an, Schritt für Schritt, mit einer Erklärung zu jedem Zug",
+    "rating": {
+      "title": "Wertungsänderung · {{type}}",
+      "from": "von {{before}}",
+      "label": "Wertungsänderung: {{delta}}, von {{before}} auf {{after}}",
+      "provisional": "Vorläufige Wertung: In deinen ersten 10 Spielen zählen Änderungen doppelt",
+      "perOpponent": "Gegen jeden Gegner einzeln berechnet",
+      "pairLabel": "gegen {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "gegen {{name}}: keine Wertung verloren, du bist vor deinem ersten Zug gegangen",
+        "leftNotBehind": "gegen {{name}}: keine Wertung verloren, du lagst beim Verlassen nicht hinten",
+        "opponentLeftBeforeMyMove": "gegen {{name}}: keine Wertung gewonnen, {{name}} ist vor deinem ersten Zug gegangen",
+        "opponentLeftAhead": "gegen {{name}}: keine Wertung gewonnen, du lagst hinten, als {{name}} gegangen ist"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_one": "{{name}} · {{score}} Punkt · {{mistakes}} · Wertung {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} Punkte · {{mistakes}} · Wertung {{delta}}",
+    "ranking": {
+      "title": "Endstand",
+      "left": "Ausgestiegen",
+      "label_one": "Platz {{place}}: {{name}} · {{score}} Punkt · {{mistakes}}",
+      "label_other": "Platz {{place}}: {{name}} · {{score}} Punkte · {{mistakes}}",
+      "labelRating_one": "Platz {{place}}: {{name}} · {{score}} Punkt · {{mistakes}} · Wertung {{delta}}",
+      "labelRating_other": "Platz {{place}}: {{name}} · {{score}} Punkte · {{mistakes}} · Wertung {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "Die meisten Punkte für einen einzigen Zug",
+      "fewestMistakes": "Die wenigsten Fehler. Bei Gleichstand die höhere Punktzahl",
+      "fastest": "Die kürzeste durchschnittliche Denkzeit pro richtigem Zug (mindestens 5 Züge)",
+      "comeback": "Ein Sieg nach einem Rückstand von 15 Punkten oder mehr",
+      "mostPoints": "Die meisten Punkte aus richtigen Zügen, vor Abzügen"
+    }
+  }
+}

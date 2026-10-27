@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "エンジンからこんにちは · マス{{cell}}",
+    "versions": "エンジン{{engine}} · プロトコル{{protocol}}",
+    "taps": "タップ数：{{count}}",
+    "server": {
+      "connecting": "サーバー：接続中…",
+      "connected": "サーバー：接続済み",
+      "rtt": "サーバー：応答時間{{ms}}ミリ秒",
+      "error": "サーバー：{{message}}"
+    }
+  },
+  "crash": {
+    "title": "問題が発生しました",
+    "body": "この画面でエラーが起きました。エラーは報告済みです。もう一度お試しください。",
+    "retry": "再試行"
+  },
+  "fallback": {
+    "loading": "少々お待ちください…",
+    "title": "この画面を読み込めませんでした",
+    "body": "結果に進むか、ホームに戻れます。",
+    "bodyHome": "ホームに戻って、そこから続けられます。",
+    "results": "結果へ",
+    "home": "ホーム"
+  },
+  "appVersion": {
+    "version": "バージョン{{version}}",
+    "build": "ビルド{{build}}",
+    "engine": "エンジン{{engine}}"
+  },
+  "number": {
+    "decimal": ".",
+    "percent": "{{value}}%"
+  },
+  "text": {
+    "labelValue": "{{label}}：{{value}}",
+    "parenthetical": "{{text}}（{{note}}）",
+    "sentence": "{{text}}。",
+    "wordSpace": ""
+  }
+}

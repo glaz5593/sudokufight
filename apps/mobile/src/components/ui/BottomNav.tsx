@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { color, size, space, text, tokens } from '../../theme';
 import { Icon, type IconName } from '../Icon';
 
+import { Text } from './Text';
 export type NavTab = 'home' | 'leaderboard' | 'history' | 'achievements';
 
 /** Start → end: "בית" · "טבלת מובילים" · "היסטוריה" · "הישגים" (Dir-C-Home). In Hebrew "בית" is rightmost. */

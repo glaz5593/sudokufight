@@ -1,7 +1,7 @@
 import type { GateState } from '@sudoku-fight/engine';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 
 import { Icon } from '../../components/Icon';
@@ -9,6 +9,7 @@ import { MiniBar } from '../../components/levels/MiniBar';
 import { Star, STAR_SIZES } from '../../components/levels/StarRow';
 import { ltr } from '../../components/player/format';
 import { curve } from '../../components/ui/motion';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, reduceMotionFlag, useReduceMotion } from '../../theme/motion';
 import type { LevelsT } from './levelWording';
@@ -42,7 +43,8 @@ export interface GatePlateProps {
 
 /** The plate's label: "פרק 5 נעול, 17 מתוך 20 כוכבים בפרק 4". */
 export function gatePlateLabel(chapter: number, gate: GateState, state: PlateState, t: LevelsT): string {
-  const values = { n: chapter, prev: chapter - 1, stars: gate.stars, need: gate.need };
+  // Plurals of the stars the gate needs.
+  const values = { n: chapter, prev: chapter - 1, stars: gate.stars, need: gate.need, count: gate.need };
   if (state === 'open') return t('gate.openLabel', values);
   return t(state === 'bossMissing' ? 'gate.bossLabel' : 'gate.lockedLabel', values);
 }
@@ -91,7 +93,7 @@ export function GatePlate({
       <Icon name="lock" size={size.icon.inline} color={color.textMuted} />
       <View style={styles.middle}>
         <Text style={styles.need} numberOfLines={1} testID={`${testID}-line`}>
-          {state === 'bossMissing' ? t('gate.boss') : t('gate.need', { need: gate.need })}
+          {state === 'bossMissing' ? t('gate.boss') : t('gate.need', { count: gate.need, need: gate.need })}
         </Text>
         <MiniBar share={gate.stars / gate.need} testID={`${testID}-bar`} />
       </View>
@@ -165,7 +167,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space[3],
-    height: OPEN_PILL,
+    // The least: a taller script may need more, never cut (localization plan 0ט).
+    minHeight: OPEN_PILL,
     paddingHorizontal: space[6],
     borderRadius: radius.pill,
     borderWidth: tokens.border.hairline,

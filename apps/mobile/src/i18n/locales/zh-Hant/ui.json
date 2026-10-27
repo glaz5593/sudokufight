@@ -1,0 +1,31 @@
+{
+  "button": {
+    "loading": "{{label}}，載入中"
+  },
+  "nav": {
+    "label": "主選單",
+    "tabs": {
+      "home": "首頁",
+      "leaderboard": "排行榜",
+      "history": "紀錄",
+      "achievements": "成就"
+    }
+  },
+  "row": {
+    "label": "{{title}}，{{subtitle}}"
+  },
+  "modal": {
+    "cancel": "取消"
+  },
+  "sheet": {
+    "close": "關閉"
+  },
+  "toast": {
+    "withCountdown": "{{message}}，{{time}}",
+    "secondsLeft_other": "剩{{count}}秒"
+  },
+  "state": {
+    "line": "{{title}}。{{body}}",
+    "code": "錯誤代碼：{{code}}"
+  }
+}

@@ -9,13 +9,14 @@ import {
   type Stars,
 } from '@sudoku-fight/engine';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { LevelTile } from '../../components/levels/LevelTile';
 import { MiniBar } from '../../components/levels/MiniBar';
 import { Star, StarRow, STAR_SIZES } from '../../components/levels/StarRow';
 import { ltr } from '../../components/player/format';
 import { Button, Sheet } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { kindName, type LevelsT, starsOf3 } from './levelWording';
 
@@ -79,6 +80,7 @@ export function GateSheet({
             {model.bossOnly
               ? t('gateSheet.bossOnly', { boss: levelNumber(model.boss) })
               : t('gateSheet.missing', {
+                  count: gate.need,
                   need: gate.need,
                   prev: model.prev,
                   stars: gate.stars,

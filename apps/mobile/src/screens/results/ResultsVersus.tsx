@@ -2,7 +2,7 @@ import type { GameType } from '@sudoku-fight/engine';
 import type { TFunction } from 'i18next';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { AVATAR_STAGES, type AvatarIdOrNone, endFaceOf, placeCue, useAfter } from '../../avatars';
 import { Icon, type IconName } from '../../components/Icon';
@@ -18,6 +18,9 @@ import {
   SeatGlyph,
   signedText,
 } from '../../components/player';
+import { shownName } from '../../components/player/temporaryName';
+import { Text } from '../../components/ui/Text';
+import { decimalSeparator, labelValue, stopSentences } from '../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { formatSeconds } from '../game/model';
@@ -108,6 +111,7 @@ export function OpponentsSection({
   const { t } = useTranslation('game');
   const { t: tp } = useTranslation('player');
   const { t: th } = useTranslation('history');
+  const decimal = decimalSeparator(t);
   const play = useEndReactions();
   return (
     <Card
@@ -123,11 +127,17 @@ export function OpponentsSection({
         const label = o.rating
           ? th('results.opponentLabel', {
               name,
-              score: scoreText(o.score),
+              count: o.score,
+              score: scoreText(o.score, decimal),
               mistakes,
-              delta: signedText(o.rating.delta),
+              delta: signedText(o.rating.delta, decimal),
             })
-          : t('results.opponents.label', { name, score: scoreText(o.score), mistakes });
+          : t('results.opponents.label', {
+              name,
+              count: o.score,
+              score: scoreText(o.score, decimal),
+              mistakes,
+            });
         return (
           <PlayerRow
             key={o.playerId}
@@ -163,19 +173,22 @@ export function OpponentsSection({
                 style={[text('rating'), styles.score, { color: paletteAt(o.colorIndex).ring }]}
                 testID={`results-opponent-${o.playerId}-score`}
               >
-                {scoreText(o.score)}
+                {scoreText(o.score, decimal)}
               </Text>
               {o.rating ? (
                 <Text
                   style={[text('caption'), styles.muted]}
                   testID={`results-opponent-${o.playerId}-rating`}
                 >
-                  {`${signedText(o.rating.delta)} · ${ltr(
-                    th('results.ratingOf', {
-                      before: Math.round(o.rating.before),
-                      after: Math.round(o.rating.after),
-                    }),
-                  )}`}
+                  {[
+                    signedText(o.rating.delta, decimal),
+                    ltr(
+                      th('results.ratingOf', {
+                        before: Math.round(o.rating.before),
+                        after: Math.round(o.rating.after),
+                      }),
+                    ),
+                  ].join(tp('sep'))}
                 </Text>
               ) : null}
             </View>
@@ -209,14 +222,21 @@ export function RankingSection({
   const { t } = useTranslation('history');
   const { t: tg } = useTranslation('game');
   const { t: tp } = useTranslation('player');
+  const decimal = decimalSeparator(t);
   const podium = ranking.slice(0, 3);
   const rest = ranking.slice(3);
   const nameOf = (r: RankingRow) => (r.isMe ? tg('me') : displayName(r, tp));
   const detailOf = (r: RankingRow) => (r.left ? t('results.ranking.left') : mistakesShort(r.mistakes, tp));
   const labelOf = (r: RankingRow) => {
-    const base = { place: r.place, name: nameOf(r), score: scoreText(r.score), mistakes: detailOf(r) };
+    const base = {
+      place: r.place,
+      name: nameOf(r),
+      count: r.score,
+      score: scoreText(r.score, decimal),
+      mistakes: detailOf(r),
+    };
     return r.rating
-      ? t('results.ranking.labelRating', { ...base, delta: signedText(r.rating.delta) })
+      ? t('results.ranking.labelRating', { ...base, delta: signedText(r.rating.delta, decimal) })
       : t('results.ranking.label', base);
   };
   const avatarOf = (r: RankingRow) => (r.isMe ? myAvatar : r.avatar);
@@ -231,7 +251,7 @@ export function RankingSection({
         style={[text('caption'), deltaStyle(r.rating.delta, styles.success)]}
         testID={`results-ranking-${r.playerId}-delta`}
       >
-        {signedText(r.rating.delta)}
+        {signedText(r.rating.delta, decimal)}
       </Text>
     ) : null;
 
@@ -269,7 +289,7 @@ export function RankingSection({
                   {nameOf(r)}
                 </Text>
               </View>
-              <Text style={[text('rating'), { color: palette.ring }]}>{scoreText(r.score)}</Text>
+              <Text style={[text('rating'), { color: palette.ring }]}>{scoreText(r.score, decimal)}</Text>
               {delta(r)}
               <View
                 style={[
@@ -314,7 +334,7 @@ export function RankingSection({
           </View>
           <View style={styles.numbers}>
             <Text style={[text('rating'), { color: paletteAt(r.colorIndex).ring }]}>
-              {scoreText(r.score)}
+              {scoreText(r.score, decimal)}
             </Text>
             {delta(r)}
           </View>
@@ -363,6 +383,7 @@ export function RatingSection({
   const { t } = useTranslation('history');
   const { t: tg } = useTranslation('game');
   const { t: tp } = useTranslation('player');
+  const decimal = decimalSeparator(t);
   const reduce = useReduceMotion();
   const before = Math.round(rating.before);
   const after = Math.round(rating.after);
@@ -373,19 +394,22 @@ export function RatingSection({
     return () => clearTimeout(id);
   }, [reduce]);
   const target = reduce || started ? after : before;
-  const delta = signedText(rating.delta);
+  const delta = signedText(rating.delta, decimal);
   const pairLabels = pairs.map((p) =>
-    t('results.rating.pairLabel', { name: displayName(p, tp), delta: signedText(p.delta) }),
+    t('results.rating.pairLabel', { name: displayName(p, tp), delta: signedText(p.delta, decimal) }),
   );
   const captions = guards.map((g) => ({
     playerId: g.playerId,
     line: t(`results.rating.guard.${g.reason}`, { name: displayName(g, tp) }),
   }));
-  const label = [
-    t('results.rating.label', { delta, before, after }),
-    ...(pairs.length ? [`${t('results.rating.perOpponent')}: ${pairLabels.join(tg('listSep'))}`] : []),
-    ...captions.map((c) => c.line),
-  ].join('. ');
+  const label = stopSentences(
+    [
+      t('results.rating.label', { delta, before, after }),
+      pairs.length ? labelValue(t('results.rating.perOpponent'), pairLabels.join(tg('listSep')), t) : null,
+      ...captions.map((c) => c.line),
+    ],
+    t,
+  );
   return (
     <View
       style={styles.card}
@@ -436,7 +460,7 @@ export function RatingSection({
                   style={[text('label'), deltaStyle(p.delta, styles.accent)]}
                   testID={`results-rating-pair-${p.playerId}-delta`}
                 >
-                  {signedText(p.delta)}
+                  {signedText(p.delta, decimal)}
                 </Text>
               </View>
             </View>
@@ -473,11 +497,11 @@ function awardValue(a: AwardResult, t: GameT): string {
     case 'bestMove':
     case 'comeback':
     case 'mostPoints':
-      return t(`results.awards.value.${a.kind}`, { value: ltr(formatScore(a.value)) });
+      return t(`results.awards.value.${a.kind}`, { value: ltr(formatScore(a.value, decimalSeparator(t))) });
     case 'fewestMistakes':
       return t('results.awards.value.fewestMistakes', { value: a.value });
     case 'fastest':
-      return t('results.awards.value.fastest', { value: formatSeconds(a.value) });
+      return t('results.awards.value.fastest', { value: formatSeconds(a.value, decimalSeparator(t)) });
   }
 }
 
@@ -490,7 +514,7 @@ export function AwardsSection({ awards }: { awards: readonly AwardResult[] }) {
       {awards.map((a) => {
         const title = t(`results.awards.${a.kind}`);
         const who = a.winners
-          .map((w) => (w.mine ? t('me') : (w.name ?? tp('unknownName'))))
+          .map((w) => (w.mine ? t('me') : w.name === null ? tp('unknownName') : shownName(w.name, tp)))
           .join(t('listSep'));
         const value = awardValue(a, t);
         const definition = th(`results.awardDefinitions.${a.kind}`);
@@ -501,7 +525,10 @@ export function AwardsSection({ awards }: { awards: readonly AwardResult[] }) {
             style={styles.row}
             accessible
             accessibilityRole="text"
-            accessibilityLabel={`${t('results.awards.label', { title, who, value })}. ${definition}`}
+            accessibilityLabel={stopSentences(
+              [t('results.awards.label', { title, who, value }), definition],
+              t,
+            )}
             testID={`results-award-${a.kind}`}
           >
             <View style={[styles.badge, mine ? styles.badgeMine : null]}>

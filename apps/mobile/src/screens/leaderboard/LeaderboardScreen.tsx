@@ -2,7 +2,7 @@ import type { League } from '@sudoku-fight/engine';
 import type { LeaderboardEntry } from '@sudoku-fight/protocol';
 import { type ReactElement, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, Platform, Pressable, RefreshControl, Share, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Platform, Pressable, RefreshControl, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { ProgressApi } from '../../api/progressApi';
@@ -19,6 +19,7 @@ import {
   Spinner,
   StateView,
 } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { Note, ProgressBar, Segmented } from '../progress/parts';
 import { provisionalGames } from '../progress/progressModel';
@@ -337,7 +338,7 @@ function MyLeagueCard({ myLeague }: { myLeague: LeaderboardScreenProps['myLeague
       <View style={styles.league} testID="leaderboard-league-provisional">
         <Text style={[text('rowTitle'), styles.strong]}>{t('common.provisional')}</Text>
         <Text style={[text('caption'), styles.muted]}>
-          {t('common.provisionalNote', { games: provisionalGames() })}
+          {t('common.provisionalNote', { count: provisionalGames(), games: provisionalGames() })}
         </Text>
       </View>
     );

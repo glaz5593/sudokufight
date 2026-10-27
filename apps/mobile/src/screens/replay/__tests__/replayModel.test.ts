@@ -6,10 +6,10 @@ import {
   type GameState,
   missedPoints,
   type Rules,
-  stripIsolates,
   TECHNIQUES,
 } from '@sudoku-fight/engine';
 
+import { stripIsolates } from '../../../i18n/explain';
 import { buildReplay, nextMoment, type Replay, stepAtFraction, stepView } from '../replayModel';
 import { botGame, configOf, fourPlayerGame, softDropDuel, soloGame, Table } from '../testing/games';
 

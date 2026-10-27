@@ -1,0 +1,1113 @@
+{
+  "note": "Localization plan 0ה, rule 21: the strings with a counted number that became plurals. \"keys\": each one's values before the change (en and he, by its flat key), and how a call passes its numbers (\"shows\": the placeholder that shows the count; \"numbers\": a sentence with two, n and m). \"changes\": what differs from before, all of it deliberate: the singular forms (for 1 only: Hebrew 0.5 stays plural, as the phone always showed it, services/pluralRules.ts), rendered with the placeholders as <name>. apps/mobile/src/__tests__/numberPlurals.test.ts.",
+  "keys": {
+    "account:splash.tips.lock": {
+      "before": {
+        "en": {
+          "splash.tips.lock": "A cell you pick is locked to you alone: {{seconds}} seconds in a {{type}} game."
+        },
+        "he": {
+          "splash.tips.lock": "משבצת שבחרת ננעלת רק לך: {{seconds}} שניות במשחק {{type}}."
+        }
+      },
+      "shows": "seconds"
+    },
+    "game:hud.bestLabel": {
+      "before": {
+        "en": {
+          "hud.bestLabel": "Best move: {{points}} points in {{cell}}"
+        },
+        "he": {
+          "hud.bestLabel": "מהלך שיא: {{points}} נקודות ב־{{cell}}"
+        }
+      },
+      "fractional": true,
+      "shows": "points"
+    },
+    "game:progress.a11y": {
+      "before": {
+        "en": {
+          "progress.a11y": "{{filled}} of {{total}} cells filled"
+        },
+        "he": {
+          "progress.a11y": "{{filled}} מתוך {{total}} משבצות מלאות"
+        }
+      },
+      "shows": "total"
+    },
+    "game:connection.self.announceHurry": {
+      "before": {
+        "en": {
+          "connection.self.announceHurry": "In {{seconds}} seconds it counts as abandonment"
+        },
+        "he": {
+          "connection.self.announceHurry": "עוד {{seconds}} שניות המשחק ייחשב כנטישה"
+        }
+      },
+      "shows": "seconds"
+    },
+    "game:connection.left.timeUp": {
+      "before": {
+        "en": {
+          "connection.left.timeUp": "Time's up · {{seconds}} seconds without a connection"
+        },
+        "he": {
+          "connection.left.timeUp": "הזמן נגמר · {{seconds}} שניות בלי חיבור"
+        }
+      },
+      "shows": "seconds"
+    },
+    "game:connection.lobby.subtitle": {
+      "before": {
+        "en": {
+          "connection.lobby.subtitle": "{{type}} · {{players}} players"
+        },
+        "he": {
+          "connection.lobby.subtitle": "{{type}} · {{players}} שחקנים"
+        }
+      },
+      "shows": "players"
+    },
+    "game:connection.connecting.tips.score": {
+      "before": {
+        "en": {
+          "connection.connecting.tips.score": "The emptier the row, column and box, the more a move is worth: up to {{max}} points a cell."
+        },
+        "he": {
+          "connection.connecting.tips.score": "ככל שהשורה, הטור והריבוע ריקים יותר, המהלך שווה יותר: עד {{max}} נק׳ למשבצת."
+        }
+      },
+      "fractional": true,
+      "shows": "max"
+    },
+    "game:connection.connecting.tips.lastCell": {
+      "before": {
+        "en": {
+          "connection.connecting.tips.lastCell": "The last cell on the board is always worth just {{points}} points: everything around it is full."
+        },
+        "he": {
+          "connection.connecting.tips.lastCell": "המשבצת האחרונה בלוח שווה תמיד {{points}} נק׳ בלבד: מסביבה כבר הכל מלא."
+        }
+      },
+      "fractional": true,
+      "shows": "points"
+    },
+    "game:arsenal.costLabel": {
+      "before": {
+        "en": {
+          "arsenal.costLabel": "This interference costs {{cost}} points. Your score is {{score}}, {{after}} after launch. The next one costs {{next}}"
+        },
+        "he": {
+          "arsenal.costLabel": "מחיר ההפרעה {{cost}} נקודות. הניקוד שלך {{score}}, ואחרי שיגור {{after}}. ההפרעה שאחריה תעלה {{next}}"
+        }
+      },
+      "shows": "cost"
+    },
+    "game:arsenal.info": {
+      "before": {
+        "en": {
+          "arsenal.info": "Each interference lasts {{seconds}} seconds · tap to launch"
+        },
+        "he": {
+          "arsenal.info": "כל הפרעה נמשכת {{seconds}} שניות · הקשה משגרת"
+        }
+      },
+      "shows": "seconds"
+    },
+    "game:results.scoreLabel": {
+      "before": {
+        "en": {
+          "results.scoreLabel": "Final score: {{score}} points"
+        },
+        "he": {
+          "results.scoreLabel": "ניקוד סופי: {{score}} נקודות"
+        }
+      },
+      "fractional": true,
+      "shows": "score"
+    },
+    "game:results.opponents.label": {
+      "before": {
+        "en": {
+          "results.opponents.label": "{{name}} · {{score}} points · {{mistakes}}"
+        },
+        "he": {
+          "results.opponents.label": "{{name}} · {{score}} נקודות · {{mistakes}}"
+        }
+      },
+      "fractional": true,
+      "shows": "score"
+    },
+    "game:results.best.label": {
+      "before": {
+        "en": {
+          "results.best.label": "Move of the game: {{points}} points, {{digit}} in {{cell}}"
+        },
+        "he": {
+          "results.best.label": "מהלך המשחק: {{points}} נקודות, {{digit}} ב־{{cell}}"
+        }
+      },
+      "fractional": true,
+      "shows": "points"
+    },
+    "history:card.against": {
+      "before": {
+        "en": {
+          "card.against": "vs {{count}} opponents"
+        },
+        "he": {
+          "card.against": "מול {{count}} יריבים"
+        }
+      },
+      "shows": "count"
+    },
+    "history:results.opponentLabel": {
+      "before": {
+        "en": {
+          "results.opponentLabel": "{{name}} · {{score}} points · {{mistakes}} · rating {{delta}}"
+        },
+        "he": {
+          "results.opponentLabel": "{{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}"
+        }
+      },
+      "fractional": true,
+      "shows": "score"
+    },
+    "history:results.ranking.label": {
+      "before": {
+        "en": {
+          "results.ranking.label": "Place {{place}}: {{name}} · {{score}} points · {{mistakes}}"
+        },
+        "he": {
+          "results.ranking.label": "מקום {{place}}: {{name}} · {{score}} נקודות · {{mistakes}}"
+        }
+      },
+      "fractional": true,
+      "shows": "score"
+    },
+    "history:results.ranking.labelRating": {
+      "before": {
+        "en": {
+          "results.ranking.labelRating": "Place {{place}}: {{name}} · {{score}} points · {{mistakes}} · rating {{delta}}"
+        },
+        "he": {
+          "results.ranking.labelRating": "מקום {{place}}: {{name}} · {{score}} נקודות · {{mistakes}} · דירוג {{delta}}"
+        }
+      },
+      "fractional": true,
+      "shows": "score"
+    },
+    "home:modes.levels.taglineNew": {
+      "before": {
+        "en": {
+          "modes.levels.taglineNew": "{{total}} short stages · 0–3 stars"
+        },
+        "he": {
+          "modes.levels.taglineNew": "{{total}} שלבים קצרים · ⁦0–3⁩ כוכבים"
+        }
+      },
+      "shows": "total"
+    },
+    "home:gameType.cardLabel": {
+      "before": {
+        "en": {
+          "gameType.cardLabel": "{{name}}. {{technique}}. {{seconds}} per cell, {{difficulty}} board, about {{from}} to {{to}} minutes"
+        },
+        "he": {
+          "gameType.cardLabel": "{{name}}. {{technique}}. זמן למשבצת {{seconds}}, לוח {{difficulty}}, משך משוער {{from}} עד {{to}} דקות"
+        }
+      },
+      "shows": "to"
+    },
+    "home:botSelect.cardLabel": {
+      "before": {
+        "en": {
+          "botSelect.cardLabel": "Level {{level}}, {{title}}: {{name}}. {{behavior}}. Thinks {{from}} to {{to}} seconds a move, {{mistakes}}% mistakes"
+        },
+        "he": {
+          "botSelect.cardLabel": "רמה {{level}}, {{title}}: {{name}}. {{behavior}}. זמן חשיבה {{from}} עד {{to}} שניות למהלך, {{mistakes}}% טעויות"
+        }
+      },
+      "fractional": true,
+      "shows": "to"
+    },
+    "levels:boss.traits.moreCells": {
+      "before": {
+        "en": {
+          "boss.traits.moreCells": "{{cells}} missing cells instead of {{usual}}"
+        },
+        "he": {
+          "boss.traits.moreCells": "{{cells}} משבצות חסרות במקום {{usual}}"
+        }
+      },
+      "shows": "cells"
+    },
+    "levels:goals.findDuel": {
+      "before": {
+        "en": {
+          "goals.findDuel": "{{spots}} spots against {{bot}}, up to {{s}} s. First to find one takes it."
+        },
+        "he": {
+          "goals.findDuel": "{{spots}} מקומות מול {{bot}}, עד {{s}} ש׳. מי שמוצא ראשון לוקח."
+        }
+      },
+      "shows": "spots"
+    },
+    "levels:goals.fillBox": {
+      "before": {
+        "en": {
+          "goals.fillBox": "Fill the {{cells}} missing cells of one box, up to {{s}} s."
+        },
+        "he": {
+          "goals.fillBox": "מלא את {{cells}} המשבצות החסרות בריבוע אחד, עד {{s}} ש׳."
+        }
+      },
+      "shows": "cells"
+    },
+    "levels:goals.fillRow": {
+      "before": {
+        "en": {
+          "goals.fillRow": "Fill the {{cells}} missing cells of one row, up to {{s}} s."
+        },
+        "he": {
+          "goals.fillRow": "מלא את {{cells}} המשבצות החסרות בשורה אחת, עד {{s}} ש׳."
+        }
+      },
+      "shows": "cells"
+    },
+    "levels:goals.fillCol": {
+      "before": {
+        "en": {
+          "goals.fillCol": "Fill the {{cells}} missing cells of one column, up to {{s}} s."
+        },
+        "he": {
+          "goals.fillCol": "מלא את {{cells}} המשבצות החסרות בעמודה אחת, עד {{s}} ש׳."
+        }
+      },
+      "shows": "cells"
+    },
+    "levels:goals.duel": {
+      "before": {
+        "en": {
+          "goals.duel": "Against {{bot}}, to {{target}} points or {{s}} s. Stars by your lead."
+        },
+        "he": {
+          "goals.duel": "מול {{bot}}, עד {{target}} נקודות או {{s}} ש׳. הכוכבים לפי הפער."
+        }
+      },
+      "shows": "target"
+    },
+    "levels:goals.pointHunter": {
+      "before": {
+        "en": {
+          "goals.pointHunter": "{{moves}} moves, up to {{s}} s. Score as many points as you can."
+        },
+        "he": {
+          "goals.pointHunter": "{{moves}} מהלכים, עד {{s}} ש׳. אסוף כמה שיותר נקודות."
+        }
+      },
+      "shows": "moves"
+    },
+    "levels:goals.chain": {
+      "before": {
+        "en": {
+          "goals.chain": "A chain of {{steps}} steps, up to {{s}} s. Only one cell can be solved at a time."
+        },
+        "he": {
+          "goals.chain": "שרשרת של {{steps}} צעדים, עד {{s}} ש׳. בכל רגע רק משבצת אחת פתירה."
+        }
+      },
+      "shows": "steps"
+    },
+    "levels:scale.spotsRange": {
+      "before": {
+        "en": {
+          "scale.spotsRange": "{{range}} spots"
+        },
+        "he": {
+          "scale.spotsRange": "{{range}} מקומות"
+        }
+      },
+      "as": "0–{n}",
+      "shows": "range"
+    },
+    "levels:map.totalLabel": {
+      "before": {
+        "en": {
+          "map.totalLabel": "{{stars}} stars of {{max}}, jump to a chapter"
+        },
+        "he": {
+          "map.totalLabel": "{{stars}} כוכבים מתוך {{max}}, מעבר לפרק"
+        }
+      },
+      "shows": "stars"
+    },
+    "levels:map.gateToast": {
+      "before": {
+        "en": {
+          "map.gateToast": "Chapter {{chapter}} opens at {{need}} stars in chapter {{prev}}"
+        },
+        "he": {
+          "map.gateToast": "פרק {{chapter}} נפתח ב־{{need}} כוכבים בפרק {{prev}}"
+        }
+      },
+      "shows": "need"
+    },
+    "levels:chapterHeader.label": {
+      "before": {
+        "en": {
+          "chapterHeader.label": "{{stars}} stars of {{max}}"
+        },
+        "he": {
+          "chapterHeader.label": "{{stars}} כוכבים מתוך {{max}}"
+        }
+      },
+      "shows": "stars"
+    },
+    "levels:gate.need": {
+      "before": {
+        "en": {
+          "gate.need": "Opens at {{need}} stars"
+        },
+        "he": {
+          "gate.need": "נפתח ב־{{need}} כוכבים"
+        }
+      },
+      "shows": "need"
+    },
+    "levels:gate.lockedLabel": {
+      "before": {
+        "en": {
+          "gate.lockedLabel": "Chapter {{n}} locked, {{stars}} of {{need}} stars in chapter {{prev}}"
+        },
+        "he": {
+          "gate.lockedLabel": "פרק {{n}} נעול, {{stars}} מתוך {{need}} כוכבים בפרק {{prev}}"
+        }
+      },
+      "shows": "need"
+    },
+    "levels:gate.bossLabel": {
+      "before": {
+        "en": {
+          "gate.bossLabel": "Chapter {{n}} locked, {{stars}} of {{need}} stars in chapter {{prev}}. Play the boss stage to open it"
+        },
+        "he": {
+          "gate.bossLabel": "פרק {{n}} נעול, {{stars}} מתוך {{need}} כוכבים בפרק {{prev}}. שחק את שלב הבוס כדי לפתוח"
+        }
+      },
+      "shows": "need"
+    },
+    "levels:gate.openLabel": {
+      "before": {
+        "en": {
+          "gate.openLabel": "Chapter {{n}} open, opened at {{need}} stars from chapter {{prev}}"
+        },
+        "he": {
+          "gate.openLabel": "פרק {{n}} פתוח, נפתח ב־{{need}} כוכבים מפרק {{prev}}"
+        }
+      },
+      "shows": "need"
+    },
+    "levels:jump.rowLabel": {
+      "before": {
+        "en": {
+          "jump.rowLabel": "Chapter {{n}}, {{name}}, {{stars}} stars of {{max}}, {{state}}"
+        },
+        "he": {
+          "jump.rowLabel": "פרק {{n}}, {{name}}, {{stars}} כוכבים מתוך {{max}}, {{state}}"
+        }
+      },
+      "shows": "stars"
+    },
+    "levels:gateSheet.missing": {
+      "before": {
+        "en": {
+          "gateSheet.missing": "You need {{need}} stars in chapter {{prev}}. You have {{stars}}, {{missing}} to go."
+        },
+        "he": {
+          "gateSheet.missing": "צריך {{need}} כוכבים בפרק {{prev}}. יש לך {{stars}}, חסרים {{missing}}."
+        }
+      },
+      "shows": "need"
+    },
+    "levels:panel.lockedGate": {
+      "before": {
+        "en": {
+          "panel.lockedGate": "Chapter {{chapter}} is locked: it needs {{need}} stars in chapter {{prev}}. You have {{stars}}."
+        },
+        "he": {
+          "panel.lockedGate": "פרק {{chapter}} נעול: צריך {{need}} כוכבים בפרק {{prev}}. יש לך {{stars}}."
+        }
+      },
+      "shows": "need"
+    },
+    "levels:panel.gateOpenBody": {
+      "before": {
+        "en": {
+          "panel.gateOpenBody": "Open: you earned {{stars}} stars in chapter {{prev}}, and the gate needs {{need}}."
+        },
+        "he": {
+          "panel.gateOpenBody": "נפתח: צברת {{stars}} כוכבים בפרק {{prev}}, והשער דורש {{need}}."
+        }
+      },
+      "shows": "stars"
+    },
+    "levels:result.metric.spotsOf": {
+      "before": {
+        "en": {
+          "result.metric.spotsOf": "of {{total}} spots"
+        },
+        "he": {
+          "result.metric.spotsOf": "מתוך {{total}} מקומות"
+        }
+      },
+      "shows": "total"
+    },
+    "levels:result.chapterLine": {
+      "before": {
+        "en": {
+          "result.chapterLine": "This chapter: {{stars}} stars of {{max}}. {{gate}}"
+        },
+        "he": {
+          "result.chapterLine": "בפרק הזה: {{stars}} כוכבים מתוך {{max}}. {{gate}}"
+        }
+      },
+      "shows": "stars"
+    },
+    "levels:result.opponentSpots": {
+      "before": {
+        "en": {
+          "result.opponentSpots": "{{count}} spots"
+        },
+        "he": {
+          "result.opponentSpots": "{{count}} מקומות"
+        }
+      },
+      "shows": "count"
+    },
+    "levels:result.opponentScore": {
+      "before": {
+        "en": {
+          "result.opponentScore": "{{score}} points"
+        },
+        "he": {
+          "result.opponentScore": "{{score}} נקודות"
+        }
+      },
+      "fractional": true,
+      "shows": "score"
+    },
+    "levels:result.bestMove": {
+      "before": {
+        "en": {
+          "result.bestMove": "The best move: {{digit}} in {{cell}} · {{points}} points"
+        },
+        "he": {
+          "result.bestMove": "המהלך הכי שווה: {{digit}} ב־{{cell}} · {{points}} נקודות"
+        }
+      },
+      "fractional": true,
+      "shows": "points"
+    },
+    "levels:hud.subRace": {
+      "before": {
+        "en": {
+          "hud.subRace": "{{kind}} · {{spots}} spots · Chapter {{chapter}}"
+        },
+        "he": {
+          "hud.subRace": "{{kind}} · {{spots}} מקומות · פרק {{chapter}}"
+        }
+      },
+      "shows": "spots"
+    },
+    "levels:hud.clockLabel": {
+      "before": {
+        "en": {
+          "hud.clockLabel": "{{s}} seconds left of {{limit}}"
+        },
+        "he": {
+          "hud.clockLabel": "נשארו {{s}} שניות מתוך {{limit}}"
+        }
+      },
+      "shows": "s"
+    },
+    "levels:hud.find.ringLabel": {
+      "before": {
+        "en": {
+          "hud.find.ringLabel": "{{s}} seconds left in the stage"
+        },
+        "he": {
+          "hud.find.ringLabel": "נשארו {{s}} שניות לשלב"
+        }
+      },
+      "shows": "s"
+    },
+    "levels:hud.box.cells": {
+      "before": {
+        "en": {
+          "hud.box.cells": "{{done}}/{{total}} cells"
+        },
+        "he": {
+          "hud.box.cells": "{{done}}/{{total}} משבצות"
+        }
+      },
+      "shows": "total"
+    },
+    "levels:hud.box.cellsLabel": {
+      "before": {
+        "en": {
+          "hud.box.cellsLabel": "You filled {{done}} of the {{total}} missing cells"
+        },
+        "he": {
+          "hud.box.cellsLabel": "מילאת {{done}} מתוך {{total}} המשבצות החסרות"
+        }
+      },
+      "shows": "total"
+    },
+    "levels:hud.box.timeLabel": {
+      "before": {
+        "en": {
+          "hud.box.timeLabel": "Time: {{s}} seconds of {{limit}}"
+        },
+        "he": {
+          "hud.box.timeLabel": "זמן: {{s}} שניות מתוך {{limit}}"
+        }
+      },
+      "shows": "s"
+    },
+    "levels:hud.box.boardLabel": {
+      "before": {
+        "en": {
+          "hud.box.boardLabel": "The board · fill only the {{count}} missing cells of box {{n}}"
+        },
+        "he": {
+          "hud.box.boardLabel": "הלוח · ממלאים רק את {{count}} המשבצות החסרות בריבוע {{n}}"
+        }
+      },
+      "shows": "count"
+    },
+    "levels:hud.line.boardLabelRow": {
+      "before": {
+        "en": {
+          "hud.line.boardLabelRow": "The board · fill only the {{count}} missing cells of row {{row}}"
+        },
+        "he": {
+          "hud.line.boardLabelRow": "הלוח · ממלאים רק את {{count}} המשבצות החסרות בשורה {{row}}"
+        }
+      },
+      "shows": "count"
+    },
+    "levels:hud.line.boardLabelCol": {
+      "before": {
+        "en": {
+          "hud.line.boardLabelCol": "The board · fill only the {{count}} missing cells of column {{n}}"
+        },
+        "he": {
+          "hud.line.boardLabelCol": "הלוח · ממלאים רק את {{count}} המשבצות החסרות בעמודה {{n}}"
+        }
+      },
+      "shows": "count"
+    },
+    "levels:hud.puzzle.swappedPenalty": {
+      "before": {
+        "en": {
+          "hud.puzzle.swappedPenalty": "Boxes {{a}} and {{b}} swapped. Plus {{s}} seconds"
+        },
+        "he": {
+          "hud.puzzle.swappedPenalty": "ריבוע {{a}} וריבוע {{b}} התחלפו. עוד {{s}} שניות"
+        }
+      },
+      "shows": "s"
+    },
+    "levels:hud.duel.meLabel": {
+      "before": {
+        "en": {
+          "hud.duel.meLabel": "{{name}}, {{score}} of {{target}} points"
+        },
+        "he": {
+          "hud.duel.meLabel": "{{name}}, {{score}} מתוך {{target}} נקודות"
+        }
+      },
+      "shows": "target"
+    },
+    "levels:hud.duel.botLabel": {
+      "before": {
+        "en": {
+          "hud.duel.botLabel": "{{name}}, bot {{n}}, {{score}} of {{target}} points"
+        },
+        "he": {
+          "hud.duel.botLabel": "{{name}}, בוט רמה {{n}}, {{score}} מתוך {{target}} נקודות"
+        }
+      },
+      "shows": "target"
+    },
+    "levels:hud.spotError.timeLabel": {
+      "before": {
+        "en": {
+          "hud.spotError.timeLabel": "Time: {{s}} seconds of {{limit}}"
+        },
+        "he": {
+          "hud.spotError.timeLabel": "זמן: {{s}} שניות מתוך {{limit}}"
+        }
+      },
+      "shows": "s"
+    },
+    "levels:hud.hunt.scoreLabel": {
+      "before": {
+        "en": {
+          "hud.hunt.scoreLabel": "{{score}} points"
+        },
+        "he": {
+          "hud.hunt.scoreLabel": "{{score}} נקודות"
+        }
+      },
+      "fractional": true,
+      "shows": "score"
+    },
+    "levels:hud.hunt.scoreWorthLabel": {
+      "before": {
+        "en": {
+          "hud.hunt.scoreWorthLabel": "{{score}} points. The cell you chose is worth {{worth}}"
+        },
+        "he": {
+          "hud.hunt.scoreWorthLabel": "{{score}} נקודות. המשבצת שבחרת שווה {{worth}}"
+        }
+      },
+      "fractional": true,
+      "shows": "score"
+    },
+    "levels:hud.hunt.timeLabel": {
+      "before": {
+        "en": {
+          "hud.hunt.timeLabel": "{{s}} seconds left of {{limit}}"
+        },
+        "he": {
+          "hud.hunt.timeLabel": "נותרו {{s}} שניות מתוך {{limit}}"
+        }
+      },
+      "shows": "s"
+    },
+    "levels:hud.chain.timeLabel": {
+      "before": {
+        "en": {
+          "hud.chain.timeLabel": "Time: {{s}} seconds of {{limit}}"
+        },
+        "he": {
+          "hud.chain.timeLabel": "זמן: {{s}} שניות מתוך {{limit}}"
+        }
+      },
+      "shows": "s"
+    },
+    "levels:explain.points": {
+      "before": {
+        "en": {
+          "explain.points": "You scored {{points}} of {{max}} points, {{percent}} of the board’s best."
+        },
+        "he": {
+          "explain.points": "צברת {{points}} מתוך {{max}} נקודות, {{percent}} מהמקסימום של הלוח."
+        }
+      },
+      "fractional": true,
+      "shows": "max"
+    },
+    "moderation:report.privacy": {
+      "before": {
+        "en": {
+          "report.privacy": "The player won't know who reported them. Every report is reviewed within {{hours}} hours."
+        },
+        "he": {
+          "report.privacy": "השחקן לא יידע מי דיווח עליו. כל דיווח נבדק תוך {{hours}} שעות."
+        }
+      },
+      "shows": "hours"
+    },
+    "moderation:report.thanks": {
+      "before": {
+        "en": {
+          "report.thanks": "Thanks. We'll review the report within {{hours}} hours."
+        },
+        "he": {
+          "report.thanks": "תודה. נבדוק את הדיווח תוך {{hours}} שעות."
+        }
+      },
+      "shows": "hours"
+    },
+    "moderation:block.errors.limitReached": {
+      "before": {
+        "en": {
+          "block.errors.limitReached": "You can block up to {{max}} players. Unblock someone (Settings → Blocked players) and try again."
+        },
+        "he": {
+          "block.errors.limitReached": "אפשר לחסום עד {{max}} שחקנים. בטל חסימה אחרת (הגדרות ← שחקנים חסומים), ונסה שוב."
+        }
+      },
+      "shows": "max"
+    },
+    "player:lead.label": {
+      "before": {
+        "en": {
+          "lead.label": "{{name}} leads by {{gap}} points"
+        },
+        "he": {
+          "lead.label": "{{name}} מוביל ב־{{gap}} נקודות"
+        }
+      },
+      "fractional": true,
+      "shows": "gap"
+    },
+    "player:lead.label_female": {
+      "before": {
+        "en": {
+          "lead.label_female": "{{name}} leads by {{gap}} points"
+        },
+        "he": {
+          "lead.label_female": "{{name}} מובילה ב־{{gap}} נקודות"
+        }
+      },
+      "fractional": true,
+      "key": "player:lead.label",
+      "context": "female",
+      "shows": "gap"
+    },
+    "progress:common.provisionalNote": {
+      "before": {
+        "en": {
+          "common.provisionalNote": "Your league shows after {{games}} ranked games in one game type"
+        },
+        "he": {
+          "common.provisionalNote": "הליגה תופיע אחרי {{games}} משחקים מדורגים באחד מסוגי המשחק"
+        }
+      },
+      "shows": "games"
+    },
+    "progress:card.ratingsNote": {
+      "before": {
+        "en": {
+          "card.ratingsNote": "{{n}} ratings"
+        },
+        "he": {
+          "card.ratingsNote": "{{n}} דירוגים"
+        }
+      },
+      "shows": "n"
+    },
+    "progress:interferences.countLabel": {
+      "before": {
+        "en": {
+          "interferences.countLabel": "{{open}} of {{total}} interferences open"
+        },
+        "he": {
+          "interferences.countLabel": "{{open}} מתוך {{total}} הפרעות פתוחות"
+        }
+      },
+      "shows": "total"
+    },
+    "game:arsenal.costLabelShort": {
+      "before": {
+        "en": {
+          "arsenal.costLabelShort": "This interference costs {{cost}} points. Your score is {{score}}, {{missing}} points short"
+        },
+        "he": {
+          "arsenal.costLabelShort": "מחיר ההפרעה {{cost}} נקודות. הניקוד שלך {{score}}, חסרות {{missing}} נקודות"
+        }
+      },
+      "numbers": {
+        "count": "n",
+        "cost": "n",
+        "missing": "m",
+        "missingCount": "m"
+      },
+      "fractional": "m"
+    },
+    "levels:hud.duel.finishLabel": {
+      "before": {
+        "en": {
+          "hud.duel.finishLabel": "The stage ends when someone reaches {{target}} points, or at {{s}} seconds"
+        },
+        "he": {
+          "hud.duel.finishLabel": "השלב נגמר כשמישהו מגיע ל־{{target}} נקודות, או ב־{{s}} שניות"
+        }
+      },
+      "numbers": {
+        "target": "n",
+        "s": "m"
+      }
+    },
+    "levels:hud.hunt.goal": {
+      "before": {
+        "en": {
+          "hud.hunt.goal": "Score {{points}} points in {{moves}} moves."
+        },
+        "he": {
+          "hud.hunt.goal": "אסוף {{points}} נקודות ב־{{moves}} מהלכים."
+        }
+      },
+      "numbers": {
+        "points": "n",
+        "pointsCount": "n",
+        "moves": "m"
+      },
+      "fractional": "n"
+    },
+    "levels:hud.box.mistakesLabel": {
+      "before": {
+        "en": {
+          "hud.box.mistakesLabel_one": "One mistake, {{s}} seconds added",
+          "hud.box.mistakesLabel_two": "{{count}} mistakes, {{s}} seconds added",
+          "hud.box.mistakesLabel_many": "{{count}} mistakes, {{s}} seconds added",
+          "hud.box.mistakesLabel_other": "{{count}} mistakes, {{s}} seconds added"
+        },
+        "he": {
+          "hud.box.mistakesLabel_one": "טעות אחת, נוספו {{s}} שניות",
+          "hud.box.mistakesLabel_two": "{{count}} טעויות, נוספו {{s}} שניות",
+          "hud.box.mistakesLabel_many": "{{count}} טעויות, נוספו {{s}} שניות",
+          "hud.box.mistakesLabel_other": "{{count}} טעויות, נוספו {{s}} שניות"
+        }
+      },
+      "numbers": {
+        "count": "n",
+        "s": "m"
+      }
+    },
+    "levels:hud.puzzle.wrongLabel": {
+      "before": {
+        "en": {
+          "hud.puzzle.wrongLabel_one": "One wrong swap, {{s}} seconds added",
+          "hud.puzzle.wrongLabel_two": "{{count}} wrong swaps, {{s}} seconds added",
+          "hud.puzzle.wrongLabel_many": "{{count}} wrong swaps, {{s}} seconds added",
+          "hud.puzzle.wrongLabel_other": "{{count}} wrong swaps, {{s}} seconds added"
+        },
+        "he": {
+          "hud.puzzle.wrongLabel_one": "החלפה שגויה אחת, נוספו {{s}} שניות",
+          "hud.puzzle.wrongLabel_two": "{{count}} החלפות שגויות, נוספו {{s}} שניות",
+          "hud.puzzle.wrongLabel_many": "{{count}} החלפות שגויות, נוספו {{s}} שניות",
+          "hud.puzzle.wrongLabel_other": "{{count}} החלפות שגויות, נוספו {{s}} שניות"
+        }
+      },
+      "numbers": {
+        "count": "n",
+        "s": "m"
+      }
+    }
+  },
+  "changes": {
+    "en account:splash.tips.lock 1": "A cell you pick is locked to you alone: 1 second in a <type> game.",
+    "he account:splash.tips.lock 1": "משבצת שבחרת ננעלת רק לך: שנייה אחת במשחק <type>.",
+    "en game:hud.bestLabel 1": "Best move: 1 point in <cell>",
+    "he game:hud.bestLabel 1": "מהלך שיא: 1 נקודה ב־<cell>",
+    "en game:progress.a11y 1": "<filled> of 1 cell filled",
+    "he game:progress.a11y 1": "<filled> מתוך משבצת אחת מלאה",
+    "en game:connection.self.announceHurry 1": "In 1 second it counts as abandonment",
+    "he game:connection.self.announceHurry 1": "עוד שנייה אחת המשחק ייחשב כנטישה",
+    "en game:connection.left.timeUp 1": "Time's up · 1 second without a connection",
+    "he game:connection.left.timeUp 1": "הזמן נגמר · שנייה אחת בלי חיבור",
+    "en game:connection.lobby.subtitle 1": "<type> · 1 player",
+    "he game:connection.lobby.subtitle 1": "<type> · שחקן אחד",
+    "en game:connection.connecting.tips.score 1": "The emptier the row, column and box, the more a move is worth: up to 1 point a cell.",
+    "en game:connection.connecting.tips.lastCell 1": "The last cell on the board is always worth just 1 point: everything around it is full.",
+    "en game:arsenal.costLabel 1": "This interference costs 1 point. Your score is <score>, <after> after launch. The next one costs <next>",
+    "he game:arsenal.costLabel 1": "מחיר ההפרעה נקודה אחת. הניקוד שלך <score>, ואחרי שיגור <after>. ההפרעה שאחריה תעלה <next>",
+    "en game:arsenal.info 1": "Each interference lasts 1 second · tap to launch",
+    "he game:arsenal.info 1": "כל הפרעה נמשכת שנייה אחת · הקשה משגרת",
+    "en game:results.scoreLabel 1": "Final score: 1 point",
+    "he game:results.scoreLabel 1": "ניקוד סופי: 1 נקודה",
+    "en game:results.opponents.label 1": "<name> · 1 point · <mistakes>",
+    "he game:results.opponents.label 1": "<name> · 1 נקודה · <mistakes>",
+    "en game:results.best.label 1": "Move of the game: 1 point, <digit> in <cell>",
+    "he game:results.best.label 1": "מהלך המשחק: 1 נקודה, <digit> ב־<cell>",
+    "en history:card.against 1": "vs 1 opponent",
+    "he history:card.against 1": "מול יריב אחד",
+    "en history:results.opponentLabel 1": "<name> · 1 point · <mistakes> · rating <delta>",
+    "he history:results.opponentLabel 1": "<name> · 1 נקודה · <mistakes> · דירוג <delta>",
+    "en history:results.ranking.label 1": "Place <place>: <name> · 1 point · <mistakes>",
+    "he history:results.ranking.label 1": "מקום <place>: <name> · 1 נקודה · <mistakes>",
+    "en history:results.ranking.labelRating 1": "Place <place>: <name> · 1 point · <mistakes> · rating <delta>",
+    "he history:results.ranking.labelRating 1": "מקום <place>: <name> · 1 נקודה · <mistakes> · דירוג <delta>",
+    "en home:modes.levels.taglineNew 1": "1 short stage · 0–3 stars",
+    "he home:modes.levels.taglineNew 1": "שלב קצר אחד · ⁦0–3⁩ כוכבים",
+    "en home:gameType.cardLabel 1": "<name>. <technique>. <seconds> per cell, <difficulty> board, about <from> to 1 minute",
+    "he home:gameType.cardLabel 1": "<name>. <technique>. זמן למשבצת <seconds>, לוח <difficulty>, משך משוער <from> עד דקה אחת",
+    "en home:botSelect.cardLabel 1": "Level <level>, <title>: <name>. <behavior>. Thinks <from> to 1 second a move, <mistakes>% mistakes",
+    "he home:botSelect.cardLabel 1": "רמה <level>, <title>: <name>. <behavior>. זמן חשיבה <from> עד 1 שנייה למהלך, <mistakes>% טעויות",
+    "en levels:boss.traits.moreCells 1": "1 missing cell instead of <usual>",
+    "he levels:boss.traits.moreCells 1": "משבצת חסרה אחת במקום <usual>",
+    "en levels:goals.findDuel 1": "1 spot against <bot>, up to <s> s. First to find one takes it.",
+    "he levels:goals.findDuel 1": "מקום אחד מול <bot>, עד <s> ש׳. מי שמוצא ראשון לוקח.",
+    "en levels:goals.fillBox 1": "Fill the 1 missing cell of one box, up to <s> s.",
+    "he levels:goals.fillBox 1": "מלא את המשבצת החסרה בריבוע אחד, עד <s> ש׳.",
+    "en levels:goals.fillRow 1": "Fill the 1 missing cell of one row, up to <s> s.",
+    "he levels:goals.fillRow 1": "מלא את המשבצת החסרה בשורה אחת, עד <s> ש׳.",
+    "en levels:goals.fillCol 1": "Fill the 1 missing cell of one column, up to <s> s.",
+    "he levels:goals.fillCol 1": "מלא את המשבצת החסרה בעמודה אחת, עד <s> ש׳.",
+    "en levels:goals.duel 1": "Against <bot>, to 1 point or <s> s. Stars by your lead.",
+    "he levels:goals.duel 1": "מול <bot>, עד נקודה אחת או <s> ש׳. הכוכבים לפי הפער.",
+    "en levels:goals.pointHunter 1": "1 move, up to <s> s. Score as many points as you can.",
+    "he levels:goals.pointHunter 1": "מהלך אחד, עד <s> ש׳. אסוף כמה שיותר נקודות.",
+    "en levels:goals.chain 1": "A chain of 1 step, up to <s> s. Only one cell can be solved at a time.",
+    "he levels:goals.chain 1": "שרשרת של צעד אחד, עד <s> ש׳. בכל רגע רק משבצת אחת פתירה.",
+    "en levels:scale.spotsRange 1": "0–1 spot",
+    "he levels:scale.spotsRange 1": "0–1 מקום",
+    "en levels:map.totalLabel 1": "1 star of <max>, jump to a chapter",
+    "he levels:map.totalLabel 1": "כוכב אחד מתוך <max>, מעבר לפרק",
+    "en levels:map.gateToast 1": "Chapter <chapter> opens at 1 star in chapter <prev>",
+    "he levels:map.gateToast 1": "פרק <chapter> נפתח בכוכב אחד בפרק <prev>",
+    "en levels:chapterHeader.label 1": "1 star of <max>",
+    "he levels:chapterHeader.label 1": "כוכב אחד מתוך <max>",
+    "en levels:gate.need 1": "Opens at 1 star",
+    "he levels:gate.need 1": "נפתח בכוכב אחד",
+    "en levels:gate.lockedLabel 1": "Chapter <n> locked, <stars> of 1 star in chapter <prev>",
+    "he levels:gate.lockedLabel 1": "פרק <n> נעול, <stars> מתוך כוכב אחד בפרק <prev>",
+    "en levels:gate.bossLabel 1": "Chapter <n> locked, <stars> of 1 star in chapter <prev>. Play the boss stage to open it",
+    "he levels:gate.bossLabel 1": "פרק <n> נעול, <stars> מתוך כוכב אחד בפרק <prev>. שחק את שלב הבוס כדי לפתוח",
+    "en levels:gate.openLabel 1": "Chapter <n> open, opened at 1 star from chapter <prev>",
+    "he levels:gate.openLabel 1": "פרק <n> פתוח, נפתח בכוכב אחד מפרק <prev>",
+    "en levels:jump.rowLabel 1": "Chapter <n>, <name>, 1 star of <max>, <state>",
+    "he levels:jump.rowLabel 1": "פרק <n>, <name>, כוכב אחד מתוך <max>, <state>",
+    "en levels:gateSheet.missing 1": "You need 1 star in chapter <prev>. You have <stars>, <missing> to go.",
+    "he levels:gateSheet.missing 1": "צריך כוכב אחד בפרק <prev>. יש לך <stars>, חסרים <missing>.",
+    "en levels:panel.lockedGate 1": "Chapter <chapter> is locked: it needs 1 star in chapter <prev>. You have <stars>.",
+    "he levels:panel.lockedGate 1": "פרק <chapter> נעול: צריך כוכב אחד בפרק <prev>. יש לך <stars>.",
+    "en levels:panel.gateOpenBody 1": "Open: you earned 1 star in chapter <prev>, and the gate needs <need>.",
+    "he levels:panel.gateOpenBody 1": "נפתח: צברת כוכב אחד בפרק <prev>, והשער דורש <need>.",
+    "en levels:result.metric.spotsOf 1": "of 1 spot",
+    "he levels:result.metric.spotsOf 1": "מתוך מקום אחד",
+    "en levels:result.chapterLine 1": "This chapter: 1 star of <max>. <gate>",
+    "he levels:result.chapterLine 1": "בפרק הזה: כוכב אחד מתוך <max>. <gate>",
+    "en levels:result.opponentSpots 1": "1 spot",
+    "he levels:result.opponentSpots 1": "מקום אחד",
+    "en levels:result.opponentScore 1": "1 point",
+    "he levels:result.opponentScore 1": "1 נקודה",
+    "en levels:result.bestMove 1": "The best move: <digit> in <cell> · 1 point",
+    "he levels:result.bestMove 1": "המהלך הכי שווה: <digit> ב־<cell> · 1 נקודה",
+    "en levels:hud.subRace 1": "<kind> · 1 spot · Chapter <chapter>",
+    "he levels:hud.subRace 1": "<kind> · מקום אחד · פרק <chapter>",
+    "en levels:hud.clockLabel 1": "1 second left of <limit>",
+    "he levels:hud.clockLabel 1": "נשארה שנייה אחת מתוך <limit>",
+    "en levels:hud.find.ringLabel 1": "1 second left in the stage",
+    "he levels:hud.find.ringLabel 1": "נשארה שנייה אחת לשלב",
+    "en levels:hud.box.cells 1": "<done>/1 cell",
+    "he levels:hud.box.cells 1": "<done>/1 משבצת",
+    "en levels:hud.box.cellsLabel 1": "You filled <done> of the 1 missing cell",
+    "he levels:hud.box.cellsLabel 1": "מילאת <done> מתוך המשבצת החסרה",
+    "en levels:hud.box.timeLabel 1": "Time: 1 second of <limit>",
+    "he levels:hud.box.timeLabel 1": "זמן: שנייה אחת מתוך <limit>",
+    "en levels:hud.box.boardLabel 1": "The board · fill only the 1 missing cell of box <n>",
+    "he levels:hud.box.boardLabel 1": "הלוח · ממלאים רק את המשבצת החסרה בריבוע <n>",
+    "en levels:hud.line.boardLabelRow 1": "The board · fill only the 1 missing cell of row <row>",
+    "he levels:hud.line.boardLabelRow 1": "הלוח · ממלאים רק את המשבצת החסרה בשורה <row>",
+    "en levels:hud.line.boardLabelCol 1": "The board · fill only the 1 missing cell of column <n>",
+    "he levels:hud.line.boardLabelCol 1": "הלוח · ממלאים רק את המשבצת החסרה בעמודה <n>",
+    "en levels:hud.puzzle.swappedPenalty 1": "Boxes <a> and <b> swapped. Plus 1 second",
+    "he levels:hud.puzzle.swappedPenalty 1": "ריבוע <a> וריבוע <b> התחלפו. עוד שנייה אחת",
+    "en levels:hud.duel.meLabel 1": "<name>, <score> of 1 point",
+    "he levels:hud.duel.meLabel 1": "<name>, <score> מתוך נקודה אחת",
+    "en levels:hud.duel.botLabel 1": "<name>, bot <n>, <score> of 1 point",
+    "he levels:hud.duel.botLabel 1": "<name>, בוט רמה <n>, <score> מתוך נקודה אחת",
+    "en levels:hud.spotError.timeLabel 1": "Time: 1 second of <limit>",
+    "he levels:hud.spotError.timeLabel 1": "זמן: שנייה אחת מתוך <limit>",
+    "en levels:hud.hunt.scoreLabel 1": "1 point",
+    "he levels:hud.hunt.scoreLabel 1": "1 נקודה",
+    "en levels:hud.hunt.scoreWorthLabel 1": "1 point. The cell you chose is worth <worth>",
+    "he levels:hud.hunt.scoreWorthLabel 1": "1 נקודה. המשבצת שבחרת שווה <worth>",
+    "en levels:hud.hunt.timeLabel 1": "1 second left of <limit>",
+    "he levels:hud.hunt.timeLabel 1": "נותרה שנייה אחת מתוך <limit>",
+    "en levels:hud.chain.timeLabel 1": "Time: 1 second of <limit>",
+    "he levels:hud.chain.timeLabel 1": "זמן: שנייה אחת מתוך <limit>",
+    "en levels:explain.points 1": "You scored <points> of 1 point, <percent> of the board’s best.",
+    "he levels:explain.points 1": "צברת <points> מתוך 1 נקודה, <percent> מהמקסימום של הלוח.",
+    "en moderation:report.privacy 1": "The player won't know who reported them. Every report is reviewed within 1 hour.",
+    "he moderation:report.privacy 1": "השחקן לא יידע מי דיווח עליו. כל דיווח נבדק תוך שעה אחת.",
+    "en moderation:report.thanks 1": "Thanks. We'll review the report within 1 hour.",
+    "he moderation:report.thanks 1": "תודה. נבדוק את הדיווח תוך שעה אחת.",
+    "en moderation:block.errors.limitReached 1": "You can block up to 1 player. Unblock someone (Settings → Blocked players) and try again.",
+    "he moderation:block.errors.limitReached 1": "אפשר לחסום עד שחקן אחד. בטל חסימה אחרת (הגדרות ← שחקנים חסומים), ונסה שוב.",
+    "en player:lead.label 1": "<name> leads by 1 point",
+    "he player:lead.label 1": "<name> מוביל ב־1 נקודה",
+    "en player:lead.label_female 1": "<name> leads by 1 point",
+    "he player:lead.label_female 1": "<name> מובילה ב־1 נקודה",
+    "en progress:common.provisionalNote 1": "Your league shows after 1 ranked game in one game type",
+    "he progress:common.provisionalNote 1": "הליגה תופיע אחרי משחק מדורג אחד באחד מסוגי המשחק",
+    "en progress:card.ratingsNote 1": "1 rating",
+    "he progress:card.ratingsNote 1": "דירוג אחד",
+    "en progress:interferences.countLabel 1": "<open> of 1 interference open",
+    "he progress:interferences.countLabel 1": "<open> מתוך הפרעה אחת פתוחה",
+    "en game:arsenal.costLabelShort 0,1": "This interference costs 0 points. Your score is <score>, 1 point short",
+    "en game:arsenal.costLabelShort 1,0": "This interference costs 1 point. Your score is <score>, 0 points short",
+    "en game:arsenal.costLabelShort 1,1": "This interference costs 1 point. Your score is <score>, 1 point short",
+    "en game:arsenal.costLabelShort 1,2": "This interference costs 1 point. Your score is <score>, 2 points short",
+    "en game:arsenal.costLabelShort 1,5": "This interference costs 1 point. Your score is <score>, 5 points short",
+    "en game:arsenal.costLabelShort 1,21": "This interference costs 1 point. Your score is <score>, 21 points short",
+    "en game:arsenal.costLabelShort 1,0.5": "This interference costs 1 point. Your score is <score>, 0.5 points short",
+    "en game:arsenal.costLabelShort 2,1": "This interference costs 2 points. Your score is <score>, 1 point short",
+    "en game:arsenal.costLabelShort 5,1": "This interference costs 5 points. Your score is <score>, 1 point short",
+    "en game:arsenal.costLabelShort 21,1": "This interference costs 21 points. Your score is <score>, 1 point short",
+    "he game:arsenal.costLabelShort 0,1": "מחיר ההפרעה 0 נקודות. הניקוד שלך <score>, חסרה 1 נקודה",
+    "he game:arsenal.costLabelShort 1,0": "מחיר ההפרעה נקודה אחת. הניקוד שלך <score>, חסרות 0 נקודות",
+    "he game:arsenal.costLabelShort 1,1": "מחיר ההפרעה נקודה אחת. הניקוד שלך <score>, חסרה 1 נקודה",
+    "he game:arsenal.costLabelShort 1,2": "מחיר ההפרעה נקודה אחת. הניקוד שלך <score>, חסרות 2 נקודות",
+    "he game:arsenal.costLabelShort 1,5": "מחיר ההפרעה נקודה אחת. הניקוד שלך <score>, חסרות 5 נקודות",
+    "he game:arsenal.costLabelShort 1,21": "מחיר ההפרעה נקודה אחת. הניקוד שלך <score>, חסרות 21 נקודות",
+    "he game:arsenal.costLabelShort 1,0.5": "מחיר ההפרעה נקודה אחת. הניקוד שלך <score>, חסרות 0.5 נקודות",
+    "he game:arsenal.costLabelShort 2,1": "מחיר ההפרעה 2 נקודות. הניקוד שלך <score>, חסרה 1 נקודה",
+    "he game:arsenal.costLabelShort 5,1": "מחיר ההפרעה 5 נקודות. הניקוד שלך <score>, חסרה 1 נקודה",
+    "he game:arsenal.costLabelShort 21,1": "מחיר ההפרעה 21 נקודות. הניקוד שלך <score>, חסרה 1 נקודה",
+    "en levels:hud.duel.finishLabel 0,1": "The stage ends when someone reaches 0 points, or at 1 second",
+    "en levels:hud.duel.finishLabel 1,0": "The stage ends when someone reaches 1 point, or at 0 seconds",
+    "en levels:hud.duel.finishLabel 1,1": "The stage ends when someone reaches 1 point, or at 1 second",
+    "en levels:hud.duel.finishLabel 1,2": "The stage ends when someone reaches 1 point, or at 2 seconds",
+    "en levels:hud.duel.finishLabel 1,5": "The stage ends when someone reaches 1 point, or at 5 seconds",
+    "en levels:hud.duel.finishLabel 1,21": "The stage ends when someone reaches 1 point, or at 21 seconds",
+    "en levels:hud.duel.finishLabel 2,1": "The stage ends when someone reaches 2 points, or at 1 second",
+    "en levels:hud.duel.finishLabel 5,1": "The stage ends when someone reaches 5 points, or at 1 second",
+    "en levels:hud.duel.finishLabel 21,1": "The stage ends when someone reaches 21 points, or at 1 second",
+    "he levels:hud.duel.finishLabel 0,1": "השלב נגמר כשמישהו מגיע ל־0 נקודות, או בשנייה אחת",
+    "he levels:hud.duel.finishLabel 1,0": "השלב נגמר כשמישהו מגיע לנקודה אחת, או ב־0 שניות",
+    "he levels:hud.duel.finishLabel 1,1": "השלב נגמר כשמישהו מגיע לנקודה אחת, או בשנייה אחת",
+    "he levels:hud.duel.finishLabel 1,2": "השלב נגמר כשמישהו מגיע לנקודה אחת, או ב־2 שניות",
+    "he levels:hud.duel.finishLabel 1,5": "השלב נגמר כשמישהו מגיע לנקודה אחת, או ב־5 שניות",
+    "he levels:hud.duel.finishLabel 1,21": "השלב נגמר כשמישהו מגיע לנקודה אחת, או ב־21 שניות",
+    "he levels:hud.duel.finishLabel 2,1": "השלב נגמר כשמישהו מגיע ל־2 נקודות, או בשנייה אחת",
+    "he levels:hud.duel.finishLabel 5,1": "השלב נגמר כשמישהו מגיע ל־5 נקודות, או בשנייה אחת",
+    "he levels:hud.duel.finishLabel 21,1": "השלב נגמר כשמישהו מגיע ל־21 נקודות, או בשנייה אחת",
+    "en levels:hud.hunt.goal 0,1": "Score 0 points in 1 move.",
+    "en levels:hud.hunt.goal 1,0": "Score 1 point in 0 moves.",
+    "en levels:hud.hunt.goal 1,1": "Score 1 point in 1 move.",
+    "en levels:hud.hunt.goal 1,2": "Score 1 point in 2 moves.",
+    "en levels:hud.hunt.goal 1,5": "Score 1 point in 5 moves.",
+    "en levels:hud.hunt.goal 1,21": "Score 1 point in 21 moves.",
+    "en levels:hud.hunt.goal 2,1": "Score 2 points in 1 move.",
+    "en levels:hud.hunt.goal 5,1": "Score 5 points in 1 move.",
+    "en levels:hud.hunt.goal 21,1": "Score 21 points in 1 move.",
+    "en levels:hud.hunt.goal 0.5,1": "Score 0.5 points in 1 move.",
+    "he levels:hud.hunt.goal 0,1": "אסוף 0 נקודות במהלך אחד.",
+    "he levels:hud.hunt.goal 1,0": "אסוף 1 נקודה ב־0 מהלכים.",
+    "he levels:hud.hunt.goal 1,1": "אסוף 1 נקודה במהלך אחד.",
+    "he levels:hud.hunt.goal 1,2": "אסוף 1 נקודה ב־2 מהלכים.",
+    "he levels:hud.hunt.goal 1,5": "אסוף 1 נקודה ב־5 מהלכים.",
+    "he levels:hud.hunt.goal 1,21": "אסוף 1 נקודה ב־21 מהלכים.",
+    "he levels:hud.hunt.goal 2,1": "אסוף 2 נקודות במהלך אחד.",
+    "he levels:hud.hunt.goal 5,1": "אסוף 5 נקודות במהלך אחד.",
+    "he levels:hud.hunt.goal 21,1": "אסוף 21 נקודות במהלך אחד.",
+    "he levels:hud.hunt.goal 0.5,1": "אסוף 0.5 נקודות במהלך אחד.",
+    "en levels:hud.box.mistakesLabel 0,1": "0 mistakes, 1 second added",
+    "en levels:hud.box.mistakesLabel 1,1": "One mistake, 1 second added",
+    "en levels:hud.box.mistakesLabel 2,1": "2 mistakes, 1 second added",
+    "en levels:hud.box.mistakesLabel 5,1": "5 mistakes, 1 second added",
+    "en levels:hud.box.mistakesLabel 21,1": "21 mistakes, 1 second added",
+    "he levels:hud.box.mistakesLabel 0,1": "0 טעויות, נוספה שנייה אחת",
+    "he levels:hud.box.mistakesLabel 1,1": "טעות אחת, נוספה שנייה אחת",
+    "he levels:hud.box.mistakesLabel 2,1": "2 טעויות, נוספה שנייה אחת",
+    "he levels:hud.box.mistakesLabel 5,1": "5 טעויות, נוספה שנייה אחת",
+    "he levels:hud.box.mistakesLabel 21,1": "21 טעויות, נוספה שנייה אחת",
+    "en levels:hud.puzzle.wrongLabel 0,1": "0 wrong swaps, 1 second added",
+    "en levels:hud.puzzle.wrongLabel 1,1": "One wrong swap, 1 second added",
+    "en levels:hud.puzzle.wrongLabel 2,1": "2 wrong swaps, 1 second added",
+    "en levels:hud.puzzle.wrongLabel 5,1": "5 wrong swaps, 1 second added",
+    "en levels:hud.puzzle.wrongLabel 21,1": "21 wrong swaps, 1 second added",
+    "he levels:hud.puzzle.wrongLabel 0,1": "0 החלפות שגויות, נוספה שנייה אחת",
+    "he levels:hud.puzzle.wrongLabel 1,1": "החלפה שגויה אחת, נוספה שנייה אחת",
+    "he levels:hud.puzzle.wrongLabel 2,1": "2 החלפות שגויות, נוספה שנייה אחת",
+    "he levels:hud.puzzle.wrongLabel 5,1": "5 החלפות שגויות, נוספה שנייה אחת",
+    "he levels:hud.puzzle.wrongLabel 21,1": "21 החלפות שגויות, נוספה שנייה אחת"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "technique": {
+    "nakedSingle": "Singolo nudo",
+    "hiddenSingle": "Singolo nascosto",
+    "pointing": "Riduzione riquadro-linea",
+    "claiming": "Riduzione riquadro-linea",
+    "nakedPair": "Coppia nuda",
+    "hiddenPair": "Coppia nascosta",
+    "chain": "Tecnica avanzata",
+    "beyond": "Oltre le tecniche del motore"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} e {{last}}",
+    "lastOr": "{{head}} o {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} e {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "Alla riga {{label}} manca solo il numero {{digit}}.",
+      "col": "Alla colonna {{label}} manca solo il numero {{digit}}.",
+      "box": "Al riquadro {{label}} manca solo il numero {{digit}}."
+    },
+    "missing": {
+      "row": "Numeri che mancano alla riga {{label}}: {{digits}}.",
+      "col": "Numeri che mancano alla colonna {{label}}: {{digits}}.",
+      "box": "Numeri che mancano al riquadro {{label}}: {{digits}}."
+    },
+    "seen": {
+      "row": "La riga {{label}} contiene già {{digits}}.",
+      "col": "La colonna {{label}} contiene già {{digits}}.",
+      "box": "Il riquadro {{label}} contiene già {{digits}}."
+    },
+    "eliminated": "Il numero {{digit}} è stato escluso da {{cell}} al passo {{step}}.",
+    "only": "Quindi può essere solo {{digit}}."
+  },
+  "hidden": {
+    "alone": {
+      "row": "Il numero {{digit}} deve comparire nella riga {{label}}, e {{cell}} è la sua unica casella vuota. Quindi {{result}}.",
+      "col": "Il numero {{digit}} deve comparire nella colonna {{label}}, e {{cell}} è la sua unica casella vuota. Quindi {{result}}.",
+      "box": "Il numero {{digit}} deve comparire nel riquadro {{label}}, e {{cell}} è la sua unica casella vuota. Quindi {{result}}."
+    },
+    "blocked": {
+      "row": "Il numero {{digit}} deve comparire nella riga {{label}}. Tutte le altre caselle vuote della riga sono escluse: {{clauses}}. Quindi {{result}}.",
+      "col": "Il numero {{digit}} deve comparire nella colonna {{label}}. Tutte le altre caselle vuote della colonna sono escluse: {{clauses}}. Quindi {{result}}.",
+      "box": "Il numero {{digit}} deve comparire nel riquadro {{label}}. Tutte le altre caselle vuote del riquadro sono escluse: {{clauses}}. Quindi {{result}}."
+    },
+    "clause": {
+      "step": "{{cell}} ha perso il candidato {{digit}} al passo {{step}}",
+      "unit": {
+        "row": "{{cell}} vede un {{digit}} nella riga {{label}}",
+        "col": "{{cell}} vede un {{digit}} nella colonna {{label}}",
+        "box": "{{cell}} vede un {{digit}} nel riquadro {{label}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "Nel riquadro {{box}} il numero {{digit}} può stare solo nella riga {{line}}, quindi va tolto dal resto della riga: {{cells}}.",
+    "col": "Nel riquadro {{box}} il numero {{digit}} può stare solo nella colonna {{line}}, quindi va tolto dal resto della colonna: {{cells}}."
+  },
+  "claiming": {
+    "row": "Nella riga {{line}} il numero {{digit}} può stare solo nel riquadro {{box}}, quindi va tolto dal resto del riquadro: {{cells}}.",
+    "col": "Nella colonna {{line}} il numero {{digit}} può stare solo nel riquadro {{box}}, quindi va tolto dal resto del riquadro: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "{{a}} e {{b}} possono contenere solo {{digits}}, quindi {{digits}} vanno tolti dal resto della riga {{label}}: {{cells}}.",
+    "col": "{{a}} e {{b}} possono contenere solo {{digits}}, quindi {{digits}} vanno tolti dal resto della colonna {{label}}: {{cells}}.",
+    "box": "{{a}} e {{b}} possono contenere solo {{digits}}, quindi {{digits}} vanno tolti dal resto del riquadro {{label}}: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "Nella riga {{label}} i numeri {{digits}} possono stare solo in {{a}} e {{b}}, quindi gli altri candidati di queste due caselle vanno tolti.",
+    "col": "Nella colonna {{label}} i numeri {{digits}} possono stare solo in {{a}} e {{b}}, quindi gli altri candidati di queste due caselle vanno tolti.",
+    "box": "Nel riquadro {{label}} i numeri {{digits}} possono stare solo in {{a}} e {{b}}, quindi gli altri candidati di queste due caselle vanno tolti."
+  },
+  "beyond": "Qui serve una tecnica avanzata che il motore non sa ancora spiegare. La risposta: {{formula}}.",
+  "chain": {
+    "head_one": "Questa casella non si può ancora decidere in un solo passo. Serve {{count}} passo:",
+    "head_many": "Questa casella non si può ancora decidere in un solo passo. Servono {{count}} di passi:",
+    "head_other": "Questa casella non si può ancora decidere in un solo passo. Servono {{count}} passi:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "Il numero {{digit}} è già nella riga {{label}} ({{cell}}).",
+      "col": "Il numero {{digit}} è già nella colonna {{label}} ({{cell}}).",
+      "box": "Il numero {{digit}} è già nel riquadro {{label}} ({{cell}})."
+    },
+    "notSolution": "Il numero {{digit}} qui ci starebbe ancora, ma la soluzione è {{answer}}."
+  },
+  "block": {
+    "step": "{{cell}} non può contenere un {{digit}}: è stato escluso al passo {{step}}",
+    "unit": {
+      "row": "{{cell}} non può contenere un {{digit}}: la riga {{label}} ha già un {{digit}}",
+      "col": "{{cell}} non può contenere un {{digit}}: la colonna {{label}} ha già un {{digit}}",
+      "box": "{{cell}} non può contenere un {{digit}}: il riquadro {{label}} ha già un {{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "Non puoi ancora sapere cosa va in {{cell}}",
+    "options": "Non puoi ancora sapere cosa va in {{cell}} ({{options}})"
+  }
+}

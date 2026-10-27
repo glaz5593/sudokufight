@@ -9,7 +9,6 @@ import {
   type Digit,
   explain,
   type Explanation,
-  formatExplanation,
   type GameEvent,
   type GameState,
   gradePuzzle,
@@ -49,6 +48,7 @@ import { freeCellFor } from '../game/testing/botPractice';
 import { answerIn, emptyCellsOf } from '../game/testing/practice';
 import { memoryDb, type SqlJsDb } from '../game/testing/sqlJsDb';
 import i18n from '../i18n';
+import { formatExplanation } from '../i18n/explain';
 import { elapse, FakeTable, ME, OPP } from '../net/testing/fakeServer';
 import type { HistoryApi } from '../screens/history/historyApi';
 import { track } from '../services/analytics';

@@ -1,0 +1,105 @@
+{
+  "title": "Geschiedenis",
+  "summary": {
+    "games_one": "{{count}} spel",
+    "games_other": "{{count}} spellen",
+    "winRate": "{{rate}} gewonnen",
+    "practices_one": "{{count}} oefenspel",
+    "practices_other": "{{count}} oefenspellen",
+    "streak": "Reeks",
+    "streakLabel_one": "Winstreeks: {{count}} overwinning",
+    "streakLabel_other": "Winstreeks: {{count}} overwinningen"
+  },
+  "filters": {
+    "label": "Spellen filteren",
+    "all": "Alle",
+    "ranked": "Ranked spel",
+    "practice": "Oefenen"
+  },
+  "loading": "Je spellen laden…",
+  "more": "Meer spellen",
+  "empty": {
+    "title": "Nog geen spellen",
+    "body": "Elk spel wordt hier bewaard om terug te kijken: zet voor zet, met waarom elk cijfer kwam waar het kwam.",
+    "action": "Speel je eerste spel"
+  },
+  "notes": {
+    "practice": "Oefenspellen veranderen je rating niet, maar je kunt ze ook terugkijken.",
+    "offline": "Geen verbinding met de server: je ziet alleen de oefenspellen op deze telefoon.",
+    "signedOut": "Ranked spellen verschijnen hier zodra je inlogt.",
+    "rankedError": "We konden je ranked spellen niet laden.",
+    "practiceUnavailable": "We konden de oefenspellen op deze telefoon niet lezen.",
+    "retry": "Opnieuw proberen"
+  },
+  "states": {
+    "offlineTitle": "Geen verbinding met de server",
+    "offlineBody": "Je ranked spellen laden zodra de verbinding terug is. Oefenspellen op deze telefoon staan hier ook offline.",
+    "errorTitle": "We konden je spellen niet laden",
+    "errorBody": "De server gaf geen goed antwoord. Probeer het zo opnieuw.",
+    "practiceTitle": "We konden je oefenspellen niet lezen",
+    "practiceBody": "De oefenspellen op deze telefoon gingen niet open. Probeer het opnieuw, en start de app opnieuw als het blijft gebeuren."
+  },
+  "card": {
+    "mode": {
+      "ranked": "Ranked spel",
+      "solo": "Solo oefenen",
+      "bot": "Oefenen tegen bot"
+    },
+    "outcome": {
+      "win": "Winst",
+      "loss": "Verlies",
+      "tie": "Gelijkspel",
+      "completed": "Bord voltooid",
+      "ended": "Oefenen gestopt",
+      "interrupted": "Spel afgebroken"
+    },
+    "place": "Plaats {{place}}",
+    "against_one": "tegen {{count}} tegenstander",
+    "against_other": "tegen {{count}} tegenstanders",
+    "alone": "Alleen",
+    "points": "{{score}} ptn",
+    "unrated": "Zonder rating",
+    "rating": "Rating: {{delta}}",
+    "today": "Vandaag",
+    "yesterday": "Gisteren",
+    "replay": "Herhaling",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Opent de herhaling"
+  },
+  "results": {
+    "replay": "Herhaling",
+    "replayHint": "Het spel vanaf het begin, stap voor stap, met uitleg bij elke zet",
+    "rating": {
+      "title": "Ratingwijziging · {{type}}",
+      "from": "van {{before}}",
+      "label": "Ratingwijziging: {{delta}}, van {{before}} naar {{after}}",
+      "provisional": "Voorlopige rating: wijzigingen tellen dubbel in je eerste 10 spellen",
+      "perOpponent": "Per tegenstander apart berekend",
+      "pairLabel": "tegen {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "tegen {{name}}: geen rating verloren, je vertrok voor je eerste zet",
+        "leftNotBehind": "tegen {{name}}: geen rating verloren, je stond niet achter toen je vertrok",
+        "opponentLeftBeforeMyMove": "tegen {{name}}: geen rating gewonnen, de tegenstander vertrok voor je eerste zet",
+        "opponentLeftAhead": "tegen {{name}}: geen rating gewonnen, je stond achter toen de tegenstander vertrok"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_one": "{{name}} · {{score}} punt · {{mistakes}} · rating {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} punten · {{mistakes}} · rating {{delta}}",
+    "ranking": {
+      "title": "Eindstand",
+      "left": "Vertrokken",
+      "label_one": "Plaats {{place}}: {{name}} · {{score}} punt · {{mistakes}}",
+      "label_other": "Plaats {{place}}: {{name}} · {{score}} punten · {{mistakes}}",
+      "labelRating_one": "Plaats {{place}}: {{name}} · {{score}} punt · {{mistakes}} · rating {{delta}}",
+      "labelRating_other": "Plaats {{place}}: {{name}} · {{score}} punten · {{mistakes}} · rating {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "De meeste punten voor één zet",
+      "fewestMistakes": "De minste fouten. Bij gelijke stand telt de hoogste score",
+      "fastest": "De kortste gemiddelde denktijd per goede zet (minstens 5 zetten)",
+      "comeback": "Een overwinning na een achterstand van 15 punten of meer",
+      "mostPoints": "De meeste punten uit goede zetten, vóór aftrek van straffen"
+    }
+  }
+}

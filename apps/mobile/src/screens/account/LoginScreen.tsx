@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, type TextInput, View } from 'react-native';
+import { StyleSheet, type TextInput, View } from 'react-native';
 
 import { isAccountApiError } from '../../api/accountApi';
 import { signIn, signInWithGoogle, useAuth } from '../../auth/authStore';
@@ -10,6 +10,7 @@ import { emailOk } from '../../auth/password';
 import { ROUTES } from '../../auth/redirect';
 import { Button } from '../../components/ui';
 import { VersionInfo } from '../../components/VersionInfo';
+import { Text } from '../../components/ui/Text';
 import { type AppVersionInfo, appVersionInfo } from '../../config/appVersion';
 import { cue } from '../../services/feedback';
 import { color, space, text } from '../../theme';

@@ -1,11 +1,12 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { color, radius, space, text } from '../../theme';
 import { secondsOf } from '../player/format';
 import { TimerRing } from '../player/TimerRing';
 
+import { Text } from '../ui/Text';
 /**
  * The race's freeze over the board (components.md §19.7, plan §2.2): after my wrong tap, 3 s with no taps. The
  * board dims under a scrim, and a ring in the middle drains the 3 s (the engine's frozenUntil, in the stage's

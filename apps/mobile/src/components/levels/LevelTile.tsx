@@ -1,9 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { Icon } from '../Icon';
 import { SeatGlyph } from '../player/SeatGlyph';
 import { paletteAt } from '../player/metrics';
+import { Text } from '../ui/Text';
 import { BossFrame } from './BossFrame';
 
 /**

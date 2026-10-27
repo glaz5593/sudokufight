@@ -1,6 +1,6 @@
 import { type ComponentRef, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,6 +13,8 @@ import { signedText } from '../../../components/player/format';
 import { metrics as playerMetrics } from '../../../components/player/metrics';
 import type { Gender } from '../../../components/player/wording';
 import { Button } from '../../../components/ui/Button';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator } from '../../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { useReduceMotion } from '../../../theme/motion';
 import { Announcer } from './Announcer';
@@ -71,6 +73,7 @@ export function OpponentLeft({
   const win = t('connection.left.win');
   const type = t(`type.${m.gameType}`);
   const unchanged = m.ratingGuard ? t(`connection.left.ratingUnchanged.${m.ratingGuard}`) : null;
+  const delta = m.ratingDelta === null ? null : signedText(m.ratingDelta, decimalSeparator(t));
 
   // The game's end already sounds (the game screen's gameOver cue, then the results' fanfare): no cue here.
   useEffect(() => {
@@ -115,7 +118,9 @@ export function OpponentLeft({
             </View>
           ) : null}
         </View>
-        <Text style={styles.timeUp}>{t('connection.left.timeUp', { seconds: m.graceSeconds })}</Text>
+        <Text style={styles.timeUp}>
+          {t('connection.left.timeUp', { count: m.graceSeconds, seconds: m.graceSeconds })}
+        </Text>
         <Text style={styles.title} accessibilityRole="header" testID={`${testID}-title`}>
           {title}
         </Text>
@@ -125,10 +130,7 @@ export function OpponentLeft({
         {m.ratingDelta === null ? null : (
           <View
             accessible
-            accessibilityLabel={sentences(
-              [t('connection.left.ratingLabel', { delta: signedText(m.ratingDelta), type }), unchanged],
-              t,
-            )}
+            accessibilityLabel={sentences([t('connection.left.ratingLabel', { delta, type }), unchanged], t)}
             style={styles.rating}
             testID={`${testID}-rating`}
           >
@@ -137,7 +139,7 @@ export function OpponentLeft({
               style={[styles.ratingDelta, m.ratingDelta === 0 && styles.ratingZero]}
               testID={`${testID}-rating-delta`}
             >
-              {signedText(m.ratingDelta)}
+              {delta}
             </Text>
             <Text style={styles.ratingWord}>{t('connection.left.rating')}</Text>
             <View style={styles.dot} />

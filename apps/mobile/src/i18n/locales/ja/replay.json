@@ -1,0 +1,92 @@
+{
+  "title": "リプレイ",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "ソロ練習",
+    "bot": "ボットと練習",
+    "ranked": "ランク戦"
+  },
+  "back": "戻る",
+  "loading": "対戦を読み込み中…",
+  "load": {
+    "missing": "この対戦が見つかりませんでした",
+    "notFinished": "対戦はまだサーバーに保存中です。少し待ってからもう一度お試しください",
+    "offline": "サーバーに接続できません。ランク戦はサーバーから読み込みます",
+    "signedOut": "ランク戦を見るにはログインしてください",
+    "unavailable": "この対戦を読み込めませんでした",
+    "retry": "再試行",
+    "partial": "この対戦は途中で中断されました。リプレイは最後に保存された手までです"
+  },
+  "step": {
+    "counter": "ステップ{{number}}/{{total}}",
+    "clockLabel": "対戦時間：{{clock}}"
+  },
+  "nav": {
+    "prev": "前のステップ",
+    "next": "次のステップ",
+    "timeline": "ステップのタイムライン",
+    "timelineValue": "ステップ{{number}}/{{total}}、{{clock}}",
+    "timelineHint": "上下にスワイプしてステップを変更"
+  },
+  "narration": {
+    "start": "対戦開始",
+    "select": "{{name}} · {{cell}}を選択",
+    "correct": "{{name}} · {{cell}}で正解 · {{delta}}",
+    "wrong": "{{name}} · {{cell}}でミス · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · {{cell}}を解除",
+      "timeout": "{{name}} · {{cell}}で時間切れ"
+    },
+    "interference": "{{name}} · {{target}}を妨害 · {{delta}}",
+    "disconnect": "{{name}} · 切断",
+    "reconnect": "{{name}} · 対戦に復帰",
+    "offline": "{{name}} · 接続切れ",
+    "surrender": "{{name}} · 降参",
+    "endPractice": "{{name}} · 練習を終了",
+    "abandon": "{{name}} · 対戦から退出",
+    "over": "対戦終了",
+    "paused": "対戦が凍結されました",
+    "offlineSuffix": "オンライン復帰時に送信"
+  },
+  "explain": {
+    "title": "プレイヤーごとの解説",
+    "none": "{{name}}の手はまだありません",
+    "noneMe": "自分の手はまだありません",
+    "noneBody": "最初の手のあとに解説が表示されます",
+    "status": {
+      "choosing": "選択中",
+      "released": "解除",
+      "correct": "正解",
+      "wrong": "ミス"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{answer}}ではなく{{digit}}",
+    "why": "{{digit}}が入らない理由：{{text}}",
+    "noLogic": "答え：{{cell}} → {{digit}}",
+    "scoreLine": "得点",
+    "penaltyLine": "ペナルティ：正しい数字の点数",
+    "released": {
+      "cancel": "選択を取り消し",
+      "timeout": "時間切れ",
+      "switch": "別のマスへ移動",
+      "mistake": "ミスのあと",
+      "surrender": "対戦から退出",
+      "disconnect": "切断",
+      "abandon": "放棄"
+    },
+    "label": "{{name}}：{{status}}、{{move}}。{{technique}}。{{text}}",
+    "labelNone": "{{name}}：{{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "注目の場面",
+    "bestMove": "最高の一手",
+    "mistakes": "ミス · {{count}}",
+    "interferences": "妨害 · {{count}}",
+    "turningPoint": "流れが変わった場面",
+    "hint": "そのステップへ移動"
+  },
+  "board": "ステップ{{number}}の盤面",
+  "me": "自分",
+  "unknown": "プレイヤー"
+}

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -12,6 +12,7 @@ import Animated, {
   type WithTimingConfig,
 } from 'react-native-reanimated';
 
+import { Text } from '../../components/ui/Text';
 import { color, radius, space, text } from '../../theme';
 import { motion } from '../../theme/motion';
 import type { Point } from './geometry';

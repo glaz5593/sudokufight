@@ -1,0 +1,33 @@
+{
+  "googlePlay": {
+    "locales": [
+      "nl-NL"
+    ],
+    "title": "Sudoku Fight: Live PvP-sudoku",
+    "shortDescription": "Neem het live op tegen tot 3 rivalen op hetzelfde sudokubord. Ranked en eerlijk.",
+    "fullDescription": "Sudoku Fight maakt van sudoku een live wedstrijd. Tot 4 spelers lossen op hetzelfde moment hetzelfde bord op: elk juist cijfer dat jij plaatst, is van jou, en elk punt telt.\n\nÉÉN BORD, IEDEREEN LOST OP\n• Alle spelers werken tegelijk op hetzelfde bord. Plaats een juist cijfer en het vakje krijgt jouw kleur.\n• Moeilijkere zetten leveren meer punten op: een cijfer waarvoor een slimme redenering nodig is, is meer waard dan een makkelijk cijfer.\n• Een fout cijfer kost precies wat het juiste cijfer zou hebben opgeleverd. Met snelheid alleen win je niet.\n• Vergrendel een vakje terwijl je nadenkt, maar alleen voor een paar seconden.\n\nVERSTORINGEN EN REACTIES\n• Besteed punten om een tegenstander 5 seconden lang te bestoken met vuurwerk, katten of een vervorming.\n• Reageer met 😂 😱 😎 🤦 🔥 👀.\n\nRANKED SPELEN\n• Ranked spellen voor 2, 3 of 4 spelers, in drie speltypen: snel, normaal en moeilijk.\n• Matchmaking zoekt tegenstanders van jouw kaliber en vermijdt tegenstanders tegen wie je net hebt gespeeld.\n• Een rating per speltype, divisies, ranglijsten en spelerskaarten met je statistieken.\n• Geen tegenstanders online? Oefen tegen een bot terwijl je wacht.\n\nLEER VAN ELK SPEL\n• Bekijk elk ranked spel terug als herhaling, zet voor zet, met een logische uitleg bij elke zet.\n• Je volledige spelgeschiedenis en voortgang, met XP en niveaus.\n\nOEFENEN WANNEER JE WILT\n• Oefen alleen of tegen bots van verschillende sterkte, ook offline.\n\nEERLIJK SPEL\n• De server controleert elke zet, en de puzzels van ranked spellen zitten nooit in de app.\n• Geen advertenties. Je kunt je account op elk moment verwijderen via Instellingen.\n\nBeschikbaar in 19 talen. Het bord lees je altijd van links naar rechts.",
+    "whatsNew": "Eerste versie."
+  },
+  "appStore": {
+    "locales": [
+      "nl-NL"
+    ],
+    "name": "Sudoku Fight",
+    "subtitle": "Live multiplayer-sudokuduels",
+    "promotionalText": "Eén bord. Iedereen lost op. Maar één wint. Neem het live op tegen tot 3 rivalen op dezelfde sudoku, stuur verstoringen en klim op in de ranked divisies.",
+    "description": "Sudoku Fight maakt van sudoku een live wedstrijd. Tot 4 spelers lossen op hetzelfde moment hetzelfde bord op: elk juist cijfer dat jij plaatst, is van jou, en elk punt telt.\n\nÉÉN BORD, IEDEREEN LOST OP\n• Alle spelers werken tegelijk op hetzelfde bord. Plaats een juist cijfer en het vakje krijgt jouw kleur.\n• Moeilijkere zetten leveren meer punten op: een cijfer waarvoor een slimme redenering nodig is, is meer waard dan een makkelijk cijfer.\n• Een fout cijfer kost precies wat het juiste cijfer zou hebben opgeleverd. Met snelheid alleen win je niet.\n• Vergrendel een vakje terwijl je nadenkt, maar alleen voor een paar seconden.\n\nVERSTORINGEN EN REACTIES\n• Besteed punten om een tegenstander 5 seconden lang te bestoken met vuurwerk, katten of een vervorming.\n• Reageer met 😂 😱 😎 🤦 🔥 👀.\n\nRANKED SPELEN\n• Ranked spellen voor 2, 3 of 4 spelers, in drie speltypen: snel, normaal en moeilijk.\n• Matchmaking zoekt tegenstanders van jouw kaliber en vermijdt tegenstanders tegen wie je net hebt gespeeld.\n• Een rating per speltype, divisies, ranglijsten en spelerskaarten met je statistieken.\n• Geen tegenstanders online? Oefen tegen een bot terwijl je wacht.\n\nLEER VAN ELK SPEL\n• Bekijk elk ranked spel terug als herhaling, zet voor zet, met een logische uitleg bij elke zet.\n• Je volledige spelgeschiedenis en voortgang, met XP en niveaus.\n\nOEFENEN WANNEER JE WILT\n• Oefen alleen of tegen bots van verschillende sterkte, ook offline.\n\nEERLIJK SPEL\n• De server controleert elke zet, en de puzzels van ranked spellen zitten nooit in de app.\n• Geen advertenties. Je kunt je account op elk moment verwijderen via Instellingen.\n\nBeschikbaar in 19 talen. Het bord lees je altijd van links naar rechts.",
+    "keywords": "puzzel,cijferpuzzel,logica,cijfers,denkspel,breinbreker,hersentraining,online,spel,vrienden,pvp,duel",
+    "whatsNew": "Eerste versie."
+  },
+  "screenshotCaptions": [
+    "Eén bord. Iedereen lost op. Maar één wint.",
+    "Tot 4 spelers op hetzelfde bord",
+    "Stuur verstoringen naar je tegenstanders",
+    "Een tegenstander van jouw kaliber, op hetzelfde bord",
+    "Moeilijkere zetten leveren meer punten op",
+    "Elke zet als herhaling, met uitleg",
+    "Divisies en ranglijsten",
+    "Oefen tegen een bot, ook offline"
+  ],
+  "variants": {}
+}

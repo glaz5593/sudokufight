@@ -1,0 +1,112 @@
+{
+  "header": "{{mode}} · {{players}} · {{type}}",
+  "ranked": "排位赛",
+  "players_other": "{{count}}名玩家",
+  "me": "我",
+  "sep": "。",
+  "sentenceSpace": "",
+  "search": {
+    "title_other": "正在寻找对手…",
+    "connecting": "正在加入队列…",
+    "elapsedLabel": "已搜索{{time}}",
+    "myRating": "我的积分{{rating}}",
+    "rangeTitle": "积分范围",
+    "rangeLabel": "积分范围{{low}}到{{high}}",
+    "widening": "搜索时间越长，范围越宽",
+    "noCap": "不限范围：范围会持续扩大",
+    "opponents": "对手",
+    "slot": "搜索中…",
+    "slotMark": "?",
+    "slotLabel": "空位：正在寻找对手",
+    "avoidRecent": "避开你最近交过手的对手",
+    "requeued_other": "有玩家没有及时连接。你已回到队列最前面。",
+    "cancel": "取消搜索",
+    "cancelHint": "退出队列并返回",
+    "announce_other": "正在寻找积分在{{low}}到{{high}}之间的对手",
+    "alone": {
+      "title_other": "目前寻找这种对局的玩家不足",
+      "body_other": "我们会继续搜索：一旦有足够的玩家寻找这种对局，你就会在这里被匹配。你也可以先和机器人对战。",
+      "bot": "先和机器人对战"
+    }
+  },
+  "found": {
+    "title_other": "找到对手了！",
+    "ready": "已就绪",
+    "connecting": "连接中…",
+    "allReady": "全员就绪 · 对局即将开始",
+    "waiting": "等待所有人连接…",
+    "readyCount": "已就绪",
+    "readyCountLabel": "{{ready}}/{{total}}已就绪",
+    "fresh": "你们最近没有交过手",
+    "rematch": "你们最近交过手",
+    "noCancel": "此时无法取消：离开会被视为弃赛",
+    "seatLabel": "{{name}}，{{rating}}，{{state}}",
+    "announce_other": "找到对手：{{names}}"
+  },
+  "countdown": {
+    "getReady": "准备…",
+    "reveal_other": "盘面会同时向所有人显示",
+    "go": "GO!",
+    "goLabel": "开始！",
+    "starting": "正在准备盘面…",
+    "stepLabel": "对局将在{{time}}后开始",
+    "boardLabel": "盘面，对局开始前隐藏"
+  },
+  "timeout": {
+    "title_other": "暂时没有足够的同水平对手",
+    "body": "我们花了{{time}}寻找积分在{{range}}之间的可用玩家，并排除了你最近交过手的对手。你可以不限范围继续搜索，或者先和机器人练习。",
+    "aloneTitle_other": "仍然没有足够的玩家在寻找这种对局",
+    "aloneBody_other": "我们搜索了{{time}}，但寻找这种对局的玩家不够。你可以继续等待，或者先和机器人练习。",
+    "minutes_other": "{{count}}分钟",
+    "keep": "继续搜索",
+    "keepNote": "不限范围",
+    "keepHint": "继续搜索，积分范围不设上限",
+    "bot": "先和机器人对战",
+    "home": "返回首页"
+  },
+  "error": {
+    "title": "搜索已停止",
+    "offlineTitle": "无法连接服务器",
+    "body": {
+      "network": "无法连接游戏服务器。请检查网络后再试。",
+      "lost": "搜索期间与游戏服务器的连接中断了。",
+      "noShow": "未能及时连接到对局，所以对局已取消。",
+      "alreadyQueued": "你已经有一个排位搜索或对局在进行中，可能在另一台设备上。",
+      "queueClosed": "这个队列尚未开放。",
+      "badQueue": "这个队列不存在。",
+      "unauthenticated": "登录你的账号即可进行排位赛。",
+      "emailNotVerified": "排位对局需要已验证的邮箱，而你的邮箱还没有在我们这里通过验证。如果你已经打开了验证链接，请在下一个页面点击“我已验证”。",
+      "suspended": "你的账号已被停用，暂时无法进行排位对局。单人练习和与机器人练习仍然可用。",
+      "signedOut": "登录你的账号即可进行排位赛。",
+      "unknown": "搜索出了问题。"
+    },
+    "code": "错误代码：{{code}}",
+    "retry": "重新搜索",
+    "verify": "验证邮箱",
+    "practice": "去练习",
+    "practiceNote": "单人练习和与机器人练习离线也能玩。",
+    "home": "返回首页"
+  },
+  "verify": {
+    "required": "验证你的邮箱地址即可进行排位赛。"
+  },
+  "offline": {
+    "title": "没有网络连接",
+    "body": "排位对局暂不可用",
+    "checking": "正在检查…",
+    "practice": "去练习",
+    "retry": "再次检查",
+    "retrying": "正在检查连接…",
+    "stillOffline": "仍然没有连接 · 第{{count}}次尝试",
+    "rankedNote": "联网后可用",
+    "needsConnection": "需要联网",
+    "needsConnectionLabel": "需要网络连接",
+    "practiceNote": "无需联网即可使用",
+    "availableOffline": "离线可玩",
+    "back": "你已恢复联网。排位对局可用了。"
+  },
+  "modes": {
+    "rating": "积分{{rating}}",
+    "ratingLabel": "你的{{type}}积分是{{rating}}"
+  }
+}

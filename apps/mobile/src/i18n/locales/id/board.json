@@ -1,0 +1,46 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Papan permainan",
+    "myLock": "selmu {{cell}}",
+    "otherLock": "{{cell}} dikunci oleh {{name}}",
+    "tapLabel": "Papan tahap ini"
+  },
+  "cell": {
+    "empty": "kosong",
+    "given": "petunjuk",
+    "solvedByMe": "diisi olehmu",
+    "solvedBy": "diisi oleh {{name}}",
+    "lockedByMe": "dikunci olehmu",
+    "lockedBy": "dikunci oleh {{name}}",
+    "pending": "menunggu kunci",
+    "queued": "{{digit}}, menunggu koneksi",
+    "timerStopped": "timer berhenti",
+    "seconds_other": "{{count}} detik",
+    "wrong": "angka salah: {{digits}}",
+    "hintMyLock": "Pilih angka di keypad",
+    "player": "Pemain {{n}}",
+    "corrected": "kesalahan ditemukan: {{wrong}}, angka yang benar {{right}}",
+    "mine": "milikmu",
+    "outside": "di luar area",
+    "hintTap": "Mengetuk sel adalah langkahmu"
+  },
+  "keypad": {
+    "armed": "Angka {{digit}} · sisa {{left}}",
+    "idle": "Angka {{digit}}, sisa {{left}}, pilih sel dulu",
+    "complete": "Angka {{digit}}, sisa {{left}}",
+    "tried": "Angka {{digit}} · sudah dicoba di sel ini"
+  },
+  "cancel": {
+    "label": "Batalkan pilihan",
+    "withCell": "Batalkan pilihan, {{cell}}"
+  },
+  "resume": {
+    "title": "Lanjut dalam",
+    "paused": "Pertandingan dijeda",
+    "label_other": "Lanjut dalam {{count}} detik"
+  }
+}

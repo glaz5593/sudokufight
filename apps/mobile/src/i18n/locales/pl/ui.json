@@ -1,0 +1,34 @@
+{
+  "button": {
+    "loading": "{{label}}, wczytywanie"
+  },
+  "nav": {
+    "label": "Nawigacja główna",
+    "tabs": {
+      "home": "Start",
+      "leaderboard": "Liderzy",
+      "history": "Historia",
+      "achievements": "Osiągnięcia"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "Anuluj"
+  },
+  "sheet": {
+    "close": "Zamknij"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_one": "Została {{count}} sekunda",
+    "secondsLeft_few": "Zostały {{count}} sekundy",
+    "secondsLeft_many": "Zostało {{count}} sekund",
+    "secondsLeft_other": "Zostało {{count}} sekundy"
+  },
+  "state": {
+    "line": "{{title}}. {{body}}",
+    "code": "Kod błędu: {{code}}"
+  }
+}

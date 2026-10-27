@@ -1,7 +1,7 @@
 import type { CellIndex, Digit } from '@sudoku-fight/engine';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type Insets, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type Insets, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
   cancelAnimation,
   type SharedValue,
@@ -19,6 +19,7 @@ import { AvatarArt } from '../../avatars';
 import { color, type PlayerPalette, radius, size, text, tokens } from '../../theme';
 import { Icon } from '../Icon';
 import { motion, useReduceMotion } from '../../theme/motion';
+import { Text } from '../ui/Text';
 import {
   PENDING_RING_OPACITY,
   POP_FROM,

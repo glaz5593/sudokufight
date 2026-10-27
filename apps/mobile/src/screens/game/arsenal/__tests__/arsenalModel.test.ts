@@ -24,6 +24,9 @@ import {
   tokenLabel,
 } from '../wording';
 
+// Both languages' strings, whatever language the tests start in (a language loads when it is first used).
+beforeAll(() => i18n.loadLanguages(['he', 'en']));
+
 const t = i18n.getFixedT('he', 'game');
 const en = i18n.getFixedT('en', 'game');
 

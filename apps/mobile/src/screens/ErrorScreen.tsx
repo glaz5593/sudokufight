@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Icon } from '../components/Icon';
 import { Button } from '../components/ui';
+import { Text } from '../components/ui/Text';
 import { crashReporter } from '../services/crashlytics';
 import { color, radius, size, space, text, tokens } from '../theme';
 

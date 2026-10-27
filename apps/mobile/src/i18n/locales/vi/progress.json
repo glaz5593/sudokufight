@@ -1,0 +1,196 @@
+{
+  "common": {
+    "provisional": "Xếp hạng tạm tính",
+    "provisionalNote_other": "Hạng của bạn sẽ hiện sau {{games}} trận xếp hạng trong cùng một loại trận",
+    "level": "Cấp độ {{level}}",
+    "you": "Bạn",
+    "myCard": "Thẻ người chơi của bạn",
+    "loading": "Đang tải…",
+    "retry": "Thử lại",
+    "offlineNote": "Không có kết nối với máy chủ: đang hiện dữ liệu đã tải trước đó.",
+    "errorNote": "Không cập nhật được: đang hiện dữ liệu đã tải trước đó.",
+    "offlineTitle": "Không có kết nối với máy chủ",
+    "offlineBody": "Bảng xếp hạng sẽ cập nhật khi có kết nối trở lại.",
+    "errorTitle": "Đã có lỗi xảy ra",
+    "errorBody": "Máy chủ chưa phản hồi được. Hãy thử lại sau giây lát.",
+    "signedOut": "Đăng nhập để xem mục này",
+    "players_other": "{{count}} người chơi",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}, đang tiến tới cấp độ {{level}}"
+  },
+  "leaderboard": {
+    "title": "Bảng xếp hạng",
+    "tabs": {
+      "label": "Loại điểm xếp hạng",
+      "general": "Tổng hợp",
+      "fast": "Nhanh",
+      "normal": "Thường",
+      "hard": "Khó",
+      "friends": "Bạn bè"
+    },
+    "caption": {
+      "general": "Tổng hợp · điểm xếp hạng cao nhất của mỗi người chơi",
+      "type": "Điểm xếp hạng {{type}} · toàn cầu",
+      "typePlayers": "Điểm xếp hạng {{type}} · {{players}} · toàn cầu",
+      "friends": "Các đối thủ gần đây của bạn"
+    },
+    "players": "Số người chơi",
+    "podium": "Top ba",
+    "rankLabel": "Hạng {{rank}}",
+    "meName": "{{name}} (bạn)",
+    "openHint": "Mở thẻ người chơi",
+    "meNone": "Bạn chưa có điểm xếp hạng trong bảng này",
+    "play": "Chơi",
+    "playHint": "Chơi một trận xếp hạng để vào bảng",
+    "climbHint": "Chơi để leo bảng",
+    "emptyTitle": "Chưa có ai ở đây",
+    "emptyBody": "Chơi một trận xếp hạng và trở thành người đầu tiên trên bảng."
+  },
+  "friends": {
+    "invite": "Mời bạn bè",
+    "inviteMessage": "Vào Sudoku Fight đấu với mình nhé!",
+    "inviteNote": "Thêm một người bạn = thêm một đối thủ",
+    "emptyTitle": "Chưa có đối thủ nào",
+    "emptyBody": "Chơi một trận xếp hạng và đối thủ của bạn sẽ hiện ở đây. Danh sách bạn bè đầy đủ sắp ra mắt."
+  },
+  "league": {
+    "title": "Hạng",
+    "toNext": "Còn {{points}} lên {{league}}",
+    "top": "Hạng cao nhất",
+    "general": "Tổng hợp {{rating}} · {{next}}",
+    "generalTop": "Tổng hợp {{rating}} · hạng cao nhất",
+    "ladder": "Các bậc hạng",
+    "step": "Hạng {{league}}, từ điểm xếp hạng {{floor}}"
+  },
+  "card": {
+    "title": "Thẻ người chơi",
+    "edit": "Sửa hồ sơ",
+    "notFound": "Không tìm thấy người chơi",
+    "offlineBody": "Thẻ được tải từ máy chủ. Hãy thử lại khi có kết nối trở lại.",
+    "savedNote": "Không có kết nối với máy chủ: đang hiện thẻ đã lưu.",
+    "meLabel": "{{name}}, thẻ của bạn",
+    "ratingsTitle": "Điểm xếp hạng theo loại trận",
+    "ratingsNote_other": "{{n}} điểm xếp hạng",
+    "noRatings": "Chưa có điểm xếp hạng",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "tăng {{points}} trong các trận gần đây",
+    "trendDown": "giảm {{points}} trong các trận gần đây",
+    "trendFlat": "không đổi trong các trận gần đây",
+    "atPeak": "đang ở mức cao nhất",
+    "peak": "cao nhất {{value}}",
+    "atPeakShort": "Đỉnh cao!",
+    "peakShort": "Đỉnh {{value}}",
+    "games_other": "{{count}} trận",
+    "statsTitle": "Thống kê thi đấu",
+    "stats": {
+      "games": "Trận",
+      "wins": "Thắng",
+      "losses": "Thua",
+      "winRate": "Tỉ lệ thắng",
+      "streak": "Chuỗi thắng",
+      "bestStreak": "Chuỗi dài nhất",
+      "bestMove": "Nước đi hay nhất",
+      "avgMistakes": "Lỗi mỗi trận"
+    },
+    "recentTitleSection": "Kết quả gần đây",
+    "recentNote": "{{n}} trận gần nhất",
+    "recentEmpty": "Chưa có trận xếp hạng nào.",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "Thắng",
+      "loss": "Thua",
+      "tie": "Hòa"
+    },
+    "outcomeShort": {
+      "win": "T",
+      "loss": "B",
+      "tie": "H"
+    },
+    "place": "Hạng {{place}}",
+    "points": "{{score}} điểm",
+    "ratingDelta": "điểm xếp hạng {{delta}}",
+    "formLabel": "Kết quả gần đây, mới nhất trước: {{list}}",
+    "replayHint": "Mở phần xem lại",
+    "openOf": "Thẻ người chơi của {{name}}",
+    "achievementsTitle": "Thành tích nổi bật",
+    "allAchievements": "Tất cả thành tích",
+    "joinedSince": "Chơi từ {{date}}",
+    "favorite": {
+      "title": "Đòn phá rối yêu thích",
+      "uses_other": "lần",
+      "label_other": "Đòn phá rối yêu thích: {{kind}}, đã gửi {{count}} lần"
+    }
+  },
+  "achievements": {
+    "title": "Thành tích",
+    "soon": "Sắp ra mắt",
+    "soonBody": "12 thành tích đang đến: chiến thắng đầu tiên, chuỗi thắng, nước đi hay nhất và nhiều hơn nữa. Sắp có ở đây.",
+    "soonShort": "Thành tích sắp ra mắt.",
+    "earned": "{{name}}, đạt được ngày {{date}}"
+  },
+  "progress": {
+    "title": "Thành tích và tiến độ",
+    "savedNote": "Không có kết nối với máy chủ: đang hiện số liệu đã lưu.",
+    "pending_other": "{{count}} lượt luyện tập đang chờ đồng bộ với máy chủ",
+    "offlineBody": "Cấp độ và XP của bạn sẽ hiện khi có kết nối với máy chủ.",
+    "levelWord": "Cấp độ",
+    "xpTitle": "Điểm kinh nghiệm",
+    "toGo": "Còn {{xp}} để lên cấp độ {{level}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "Cách nhận XP",
+    "how": {
+      "win": "Hạng nhất trong trận xếp hạng, hoặc thắng máy",
+      "played": "Mọi kết quả khác trong trận xếp hạng hoặc khi đấu với máy",
+      "solo": "Tự luyện tập",
+      "perCorrect": "Mỗi nước đi đúng, trong trận xếp hạng và khi đấu với máy"
+    }
+  },
+  "interferences": {
+    "title": "Đòn phá rối",
+    "entry": "Bộ sưu tập đòn phá rối",
+    "entryNote": "{{open}} đã mở · {{locked}} chưa mở",
+    "countLabel_other": "Đã mở {{open}}/{{total}} đòn phá rối",
+    "opened": "đã mở",
+    "facts": {
+      "seconds": "giây mỗi đòn",
+      "cost": "chi phí tăng gấp đôi sau mỗi lần dùng",
+      "launch": "lần chạm: “Phá rối” trên thẻ của đối thủ, rồi chọn đòn",
+      "launchValue": "2"
+    },
+    "arsenal": "Kho vũ khí của bạn",
+    "tapHint": "Chạm để xem trước",
+    "openLabel": "{{name}}, có sẵn. {{description}}",
+    "previewHint": "Hiện bản xem trước",
+    "available": "Có sẵn",
+    "previewing": "Đang xem trước",
+    "lockedTitle": "Chưa mở",
+    "lockedNote": "Mở dần khi bạn lên cấp",
+    "soon": "Sắp ra mắt",
+    "atLevel": "Mở ở cấp độ {{level}}",
+    "lockedLabel": "{{name}}, chưa mở, {{when}}",
+    "howTo": "Trong trận đấu: chạm “Phá rối” trên thẻ của đối thủ, rồi chọn một đòn phá rối.",
+    "future": {
+      "earthquake": "Động đất",
+      "fog": "Sương mù",
+      "bubbles": "Bong bóng",
+      "torch": "Ngọn đuốc"
+    },
+    "description": {
+      "fireworks": "Một loạt pháo hoa rực rỡ phủ khắp màn hình",
+      "cats": "Một đoàn mèo chạy ngang qua màn hình",
+      "warp": "Màn hình cong vênh và nhấp nháy",
+      "scramble": "Các số trên bảng bị xáo trộn và đổi chỗ",
+      "ink": "Những vết mực mờ dần",
+      "keypad": "Các phím số đổi chỗ cho nhau",
+      "earthquake": "Màn hình rung lắc",
+      "fog": "Sương mù tan dần",
+      "bubbles": "Bong bóng mà bạn phải chọc vỡ",
+      "torch": "Bảng tối đen, chỉ còn ánh đuốc"
+    }
+  },
+  "home": {
+    "levelXp": "Cấp độ {{level}} · {{xp}}"
+  }
+}

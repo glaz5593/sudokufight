@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { ltr } from '../../../components/player/format';
+import { Text } from '../../../components/ui/Text';
 import type { ClockSync } from '../../../net/clockSync';
 import type { NetMetrics } from '../../../net/metrics';
 import { color, radius, space, text, tokens } from '../../../theme';

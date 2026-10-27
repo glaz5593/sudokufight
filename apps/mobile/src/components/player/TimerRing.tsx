@@ -1,5 +1,5 @@
 import { memo, useEffect, useEffectEvent } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedProps,
@@ -9,6 +9,7 @@ import Animated, {
 import Svg, { Circle } from 'react-native-svg';
 
 import { color } from '../../theme';
+import { Text } from '../ui/Text';
 import { easing, NEVER_REDUCE } from './anim';
 import { sameCountdown } from './cardModel';
 import { metrics } from './metrics';

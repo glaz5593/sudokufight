@@ -1,6 +1,6 @@
 import type { AppLevel, GameView } from '@sudoku-fight/engine';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import type { AvatarIdOrNone } from '../../../avatars';
 import { BossCrown } from '../../../components/levels/BossBadge';
@@ -8,6 +8,8 @@ import { StarsBar } from '../../../components/levels/StarsBar';
 import { Avatar, formatScore, SeatGlyph, signedText } from '../../../components/player';
 import { secondsOf } from '../../../components/player/format';
 import { IconButton } from '../../../components/ui';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator } from '../../../i18n/compose';
 import { color, radius, space, text, tokens } from '../../../theme';
 import { identityOf } from '../../game/identity';
 import { clockText } from './BoxHud';
@@ -39,6 +41,7 @@ export interface DuelLevelHudProps {
 
 export function DuelLevelHud({ level, view, now, myAvatar, onExit, onReactions, style }: DuelLevelHudProps) {
   const { t } = useTranslation('levels');
+  const decimal = decimalSeparator(t);
   const lv = view.level;
   const me = view.players.find((p) => p.id === view.me) ?? null;
   const bot = view.players.find((p) => p.id !== view.me) ?? null;
@@ -78,7 +81,12 @@ export function DuelLevelHud({ level, view, now, myAvatar, onExit, onReactions, 
           colorIndex={0}
           score={mine}
           target={target}
-          label={t('hud.duel.meLabel', { name: myName, score: formatScore(mine), target })}
+          label={t('hud.duel.meLabel', {
+            name: myName,
+            score: formatScore(mine, decimal),
+            target,
+            count: target,
+          })}
           testID="duel-me"
         />
         <View style={styles.middle}>
@@ -102,8 +110,9 @@ export function DuelLevelHud({ level, view, now, myAvatar, onExit, onReactions, 
           label={t('hud.duel.botLabel', {
             name: botLabelName,
             n: who?.botLevel ?? '',
-            score: formatScore(theirs),
+            score: formatScore(theirs, decimal),
             target,
+            count: target,
           })}
           testID="duel-bot"
         />
@@ -119,11 +128,11 @@ export function DuelLevelHud({ level, view, now, myAvatar, onExit, onReactions, 
       <View
         style={styles.gap}
         accessible
-        accessibilityLabel={t('hud.duel.gapLabel', { gap: signedText(gap), two, three })}
+        accessibilityLabel={t('hud.duel.gapLabel', { gap: signedText(gap, decimal), two, three })}
         testID="duel-gap"
       >
         <Text style={styles.gapText} testID="duel-gap-text">
-          {`${t('hud.duel.gap')} ${signedText(gap)}`}
+          {t('hud.duel.gap', { gap: signedText(gap, decimal) })}
         </Text>
         <View style={styles.gapBar}>
           <StarsBar rule={marks} value={Math.max(0, gap)} testID="duel-gap-bar" />
@@ -157,6 +166,7 @@ function ScoreCard({
 }) {
   const { t } = useTranslation('levels');
   const p = color.players[colorIndex]!;
+  const decimal = decimalSeparator(t);
   return (
     <View
       style={[styles.card, { borderColor: p.ring }]}
@@ -177,7 +187,7 @@ function ScoreCard({
         </View>
         <View style={styles.scoreRow}>
           <Text style={styles.score} testID={`${testID}-score`}>
-            {formatScore(score)}
+            {formatScore(score, decimal)}
           </Text>
           <Text style={styles.of}>{t('hud.duel.of', { target })}</Text>
         </View>

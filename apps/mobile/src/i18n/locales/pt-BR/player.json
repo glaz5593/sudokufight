@@ -1,0 +1,122 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Jogador",
+  "temporaryName": "Jogador{{digits}}",
+  "bot": "Robô",
+  "vs": "VS",
+  "seconds_one": "{{count}} segundo",
+  "seconds_many": "{{count}} de segundos",
+  "seconds_other": "{{count}} segundos",
+  "points_one": "{{score}} ponto",
+  "points_many": "{{score}} de pontos",
+  "points_other": "{{score}} pontos",
+  "place": "{{place}}º lugar",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "On-line",
+    "online_female": "On-line",
+    "reconnecting": "Reconectando",
+    "reconnecting_female": "Reconectando",
+    "unstable": "Sem conexão",
+    "unstable_female": "Sem conexão",
+    "left": "Saiu",
+    "left_female": "Saiu"
+  },
+  "result": {
+    "winShort": "V",
+    "lossShort": "D",
+    "drawShort": "E"
+  },
+  "flag": {
+    "label": "País: {{country}}"
+  },
+  "rating": {
+    "label": "Rating: {{value}}",
+    "labelWithKey": "Rating {{key}}: {{value}}",
+    "provisional": "Provisório",
+    "provisionalLabel": "{{label}}, provisório"
+  },
+  "league": {
+    "bronze": "Bronze",
+    "silver": "Prata",
+    "gold": "Ouro",
+    "diamond": "Diamante",
+    "legend": "Lenda",
+    "name": "Liga {{league}}",
+    "level": "Nível {{level}}",
+    "levelAfter": "· Nível {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "Nenhum erro",
+    "short_one": "{{count}} erro",
+    "short_many": "{{count}} de erros",
+    "short_other": "{{count}} erros",
+    "long_zero": "Nenhum erro",
+    "long_one": "{{count}} erro",
+    "long_many": "{{count}} de erros",
+    "long_other": "{{count}} erros",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Escolhendo",
+    "locking_female": "Escolhendo",
+    "turn": "Vez de jogar",
+    "turn_female": "Vez de jogar",
+    "paused": "Em pausa",
+    "thinking": "Pensando",
+    "thinking_female": "Pensando",
+    "reconnecting": "Reconectando",
+    "reconnecting_female": "Reconectando",
+    "left": "Saiu",
+    "left_female": "Saiu",
+    "surrendered": "Desistiu",
+    "surrendered_female": "Desistiu",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Sob interferência, {{time}}",
+    "target": "Alvo",
+    "targetHint": "Alvo da interferência"
+  },
+  "actions": {
+    "surrender": "Desistir",
+    "endPractice": "Encerrar treino",
+    "reactions": "Reações"
+  },
+  "interfere": {
+    "button": "Interferir",
+    "label": "Interferir em {{name}} · custa {{cost}} pts",
+    "labelMissing": "Interferir em {{name}} · faltando {{count}} pts",
+    "labelBusy": "Não dá para interferir em {{name}}: já está sob interferência",
+    "labelNotRunning": "Não dá para interferir em {{name}} agora",
+    "labelDisconnected": "Sem interferências enquanto você está sem conexão",
+    "labelOut": "{{name}} está fora da partida",
+    "close": "Fechar a escolha de interferência"
+  },
+  "lead": {
+    "tie": "Empate",
+    "label_one": "{{name}} está na frente por {{gap}} ponto",
+    "label_many": "{{name}} está na frente por {{gap}} de pontos",
+    "label_other": "{{name}} está na frente por {{gap}} pontos",
+    "label_female_one": "{{name}} está na frente por {{gap}} ponto",
+    "label_female_many": "{{name}} está na frente por {{gap}} de pontos",
+    "label_female_other": "{{name}} está na frente por {{gap}} pontos",
+    "tieLabel": "Pontuações empatadas"
+  },
+  "lock": {
+    "yourCell": "Sua célula",
+    "paused": "Em pausa",
+    "pick": "Escolha uma célula",
+    "remaining_one": "{{count}} segundo restante",
+    "remaining_many": "{{count}} de segundos restantes",
+    "remaining_other": "{{count}} segundos restantes",
+    "label": "Sua célula {{cell}}, {{remaining}}",
+    "labelPaused": "Sua célula {{cell}}, cronômetro parado",
+    "progress": "Tempo restante da célula {{cell}}",
+    "released": "Célula liberada"
+  }
+}

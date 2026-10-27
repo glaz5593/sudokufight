@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "title": "Sudoku Fight",
+    "engineLine": "مرحبًا من المحرك · الخانة {{cell}}",
+    "versions": "المحرك {{engine}} · البروتوكول {{protocol}}",
+    "taps": "النقرات: {{count}}",
+    "server": {
+      "connecting": "الخادم: جارٍ الاتصال…",
+      "connected": "الخادم: متصل",
+      "rtt": "الخادم: زمن الاستجابة {{ms}} ميلي ثانية",
+      "error": "الخادم: {{message}}"
+    }
+  },
+  "crash": {
+    "title": "حدث خطأ ما",
+    "body": "واجهت هذه الشاشة خطأً. أبلغنا عنه، ويمكنك المحاولة مجددًا.",
+    "retry": "إعادة المحاولة"
+  },
+  "fallback": {
+    "loading": "لحظة…",
+    "title": "تعذّر تحميل هذه الشاشة",
+    "body": "يمكنك الانتقال إلى النتائج أو العودة إلى الرئيسية.",
+    "bodyHome": "يمكنك العودة إلى الرئيسية والمتابعة من هناك.",
+    "results": "إلى النتائج",
+    "home": "الرئيسية"
+  },
+  "appVersion": {
+    "version": "الإصدار {{version}}",
+    "build": "البناء {{build}}",
+    "engine": "المحرك {{engine}}"
+  },
+  "number": {
+    "decimal": ".",
+    "percent": "{{value}}%"
+  },
+  "text": {
+    "labelValue": "{{label}}: {{value}}",
+    "parenthetical": "{{text}} ({{note}})",
+    "sentence": "{{text}}.",
+    "wordSpace": " "
+  }
+}

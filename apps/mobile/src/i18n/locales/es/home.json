@@ -1,0 +1,279 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "Configuración",
+    "back": "Atrás"
+  },
+  "profile": {
+    "defaultName": "Jugador",
+    "label": "Mi tarjeta de jugador: {{name}}",
+    "noRating": "Todavía sin puntuación",
+    "ratingTitle": "Puntuación",
+    "none": "—",
+    "games_one": "1 partida",
+    "games_many": "{{count}} de partidas",
+    "games_other": "{{count}} partidas",
+    "gamesLabel_one": "partida",
+    "gamesLabel_many": "partidas",
+    "gamesLabel_other": "partidas",
+    "winsLabel": "victorias",
+    "streakLabel": "racha",
+    "winRate": "{{percent}} % de victorias",
+    "streak_zero": "Sin racha de victorias",
+    "streak_one": "Racha de 1 victoria",
+    "streak_many": "Racha de {{count}} de victorias",
+    "streak_other": "Racha de {{count}} victorias"
+  },
+  "play": "Jugar",
+  "playHint": "Elige un modo de juego",
+  "again": {
+    "title": "Otra ronda",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "La partida no empezó. Reinténtalo."
+  },
+  "recent": {
+    "heading": "Partidas recientes",
+    "all": "Todas",
+    "unavailable": "No se pudieron leer las partidas guardadas en este teléfono.",
+    "emptyTitle": "Todavía no hay partidas aquí",
+    "emptyBody": "Cada práctica se guarda aquí, incluso después de cerrar la app.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "Completada",
+      "ended": "Terminada",
+      "interrupted": "Interrumpida",
+      "playing": "En curso",
+      "win": "Ganada",
+      "loss": "Perdida",
+      "tie": "Empatada"
+    },
+    "openHint": "Abre los resultados",
+    "versus": "{{outcome}} contra {{name}}"
+  },
+  "modes": {
+    "title": "Nueva partida",
+    "footnote": "Las clasificatorias necesitan conexión a internet · La práctica siempre está disponible",
+    "soon": "Pronto",
+    "groups": {
+      "ranked": {
+        "title": "Clasificatorias",
+        "note": "Rivales reales, en tiempo real"
+      },
+      "friends": {
+        "title": "Con amigos",
+        "titleMoshe": "Amigos reales, en tiempo real",
+        "note": "Sala privada · hasta 4 · sin puntuación"
+      },
+      "practice": {
+        "title": "Práctica",
+        "note": "Sin presión, sin puntuación"
+      }
+    },
+    "chips": {
+      "rated": "Con puntuación",
+      "unrated": "Sin puntuación",
+      "offline": "Funciona sin conexión"
+    },
+    "ranked": {
+      "name": "Clasificatoria"
+    },
+    "ranked2": {
+      "title": "2 jugadores",
+      "tagline": "Uno contra uno · mismo tablero",
+      "label": "Clasificatoria · 2 jugadores"
+    },
+    "ranked3": {
+      "title": "3 jugadores",
+      "tagline": "Todos contra todos",
+      "label": "Clasificatoria · 3 jugadores"
+    },
+    "ranked4": {
+      "title": "4 jugadores",
+      "tagline": "Todos contra todos",
+      "label": "Clasificatoria · 4 jugadores"
+    },
+    "friends": {
+      "create": "Nueva sala",
+      "createHint": "Abre una sala de espera con un código para enviar a tus amigos",
+      "join": "Usar código",
+      "joinHint": "Escribe los 6 números que recibiste"
+    },
+    "solo": {
+      "name": "Práctica en solitario",
+      "title": "Solo · tablero completo",
+      "tagline": "A tu ritmo",
+      "label": "Solo · tablero completo"
+    },
+    "levels": {
+      "name": "Práctica por fases",
+      "title": "Práctica por fases",
+      "tagline": "Fases cortas · hasta 3 estrellas",
+      "taglineNew_one": "1 fase corta · 0–3 estrellas",
+      "taglineNew_many": "{{total}} de fases cortas · 0–3 estrellas",
+      "taglineNew_other": "{{total}} fases cortas · 0–3 estrellas",
+      "chip": "Fase {{stage}} ·",
+      "offline": "Sin red",
+      "chipLabel_one": "Fase {{stage}} · 1 estrella",
+      "chipLabel_many": "Fase {{stage}} · {{count}} de estrellas",
+      "chipLabel_other": "Fase {{stage}} · {{count}} estrellas",
+      "label": "Práctica por fases"
+    },
+    "bot": {
+      "name": "Práctica contra bot",
+      "title": "Práctica contra bot",
+      "tagline": "5 niveles",
+      "label": "Práctica contra bot"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "Rápido",
+      "difficulty": "Fácil",
+      "technique": "Se resuelve solo con solitarios desnudos"
+    },
+    "normal": {
+      "name": "Normal",
+      "difficulty": "Media",
+      "technique": "Requiere solitarios ocultos"
+    },
+    "hard": {
+      "name": "Difícil",
+      "difficulty": "Difícil",
+      "technique": "Requiere pares o eliminaciones"
+    }
+  },
+  "gameType": {
+    "title": "Tipo de partida",
+    "note": {
+      "solo": "Sin puntuación. El tablero sale de los sudokus de este teléfono, sin repetir uno que hayas jugado hace poco.",
+      "bot": "Sin puntuación. El tablero sale de los sudokus de este teléfono, sin repetir uno que hayas jugado hace poco. A continuación, eliges a tu rival.",
+      "ranked": "Con puntuación. Un rival cerca de tu puntuación, un tablero del servidor que no hayas jugado y el mismo tablero para los dos.",
+      "rankedGroup": "Con puntuación. Rivales cerca de tu puntuación, un tablero del servidor que no hayas jugado y el mismo tablero para todos. La partida empieza cuando la mesa está completa."
+    },
+    "start": {
+      "solo": "Empezar práctica",
+      "bot": "Elegir rival",
+      "ranked": "Buscar rival",
+      "rankedGroup": "Buscar rivales"
+    },
+    "startHint": "Inicia una práctica de tipo {{type}}",
+    "rankedHint": "Busca un rival para una partida clasificatoria de tipo {{type}}",
+    "rankedGroupHint": "Busca rivales para una partida clasificatoria de tipo {{type}}",
+    "lockTime": "Tiempo por casilla",
+    "board": "Tablero",
+    "duration": "Duración aprox.",
+    "seconds": "{{seconds}} s",
+    "minutes": "{{range}} min",
+    "yourRating": "Tu puntuación",
+    "cardLabel_one": "{{name}}. {{technique}}. {{seconds}} por casilla, dificultad {{difficulty}}, de {{from}} a 1 minuto aproximadamente",
+    "cardLabel_many": "{{name}}. {{technique}}. {{seconds}} por casilla, dificultad {{difficulty}}, de {{from}} a {{to}} de minutos aproximadamente",
+    "cardLabel_other": "{{name}}. {{technique}}. {{seconds}} por casilla, dificultad {{difficulty}}, de {{from}} a {{to}} minutos aproximadamente",
+    "botHint": "Elige un bot para una partida de tipo {{type}}"
+  },
+  "settings": {
+    "title": "Configuración",
+    "feedback": "Sonido y vibración",
+    "sound": "Sonido",
+    "soundHint": "Sonidos para jugadas y acciones",
+    "haptics": "Vibración",
+    "hapticsHint": "Vibraciones cortas como respuesta a tus jugadas",
+    "motion": "Reducir movimiento",
+    "motionHint": "Menos animaciones: los puntos saltan directo al resultado, y una interferencia se muestra como una capa fija durante el mismo tiempo.",
+    "reduceMotion": {
+      "system": "Automático",
+      "on": "Sí",
+      "off": "No"
+    },
+    "language": "Idioma",
+    "languageHint": "Cambiar el idioma reinicia la app.",
+    "languageConfirm": {
+      "title": "¿Cambiar el idioma a {{language}}?",
+      "body": "La app se reinicia para que cada pantalla se muestre en la dirección del nuevo idioma.",
+      "confirm": "Cambiar y reiniciar",
+      "titleDevice": "¿Cambiar al idioma del dispositivo?"
+    },
+    "languageDevice": "Idioma del dispositivo",
+    "languageSheetTitle": "Elige un idioma",
+    "languageField": "Idioma: {{language}}",
+    "languageFieldDevice": "Idioma: idioma del dispositivo, {{language}}",
+    "about": "Información y aspectos legales",
+    "privacy": "Política de privacidad",
+    "terms": "Términos de uso",
+    "licenses": "Licencias",
+    "opensInBrowser": "Se abre en el navegador"
+  },
+  "placeholder": {
+    "soon": "Muy pronto",
+    "leaderboard": {
+      "title": "Clasificación",
+      "body": "La clasificación se abre junto con las partidas clasificatorias."
+    },
+    "history": {
+      "title": "Historial",
+      "body": "Aquí estarán todas tus partidas, con repeticiones y una explicación de cada jugada. Mientras tanto, tus últimas prácticas están en la pantalla de inicio."
+    },
+    "achievements": {
+      "title": "Logros",
+      "body": "Los logros, los niveles y los XP ya vienen en camino."
+    }
+  },
+  "botSelect": {
+    "title": "Elige un bot",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "Tiempo por jugada",
+    "thinkValue": "{{range}} s",
+    "mistakes": "Errores",
+    "note": "Ese es el tiempo de una jugada común. Una casilla que requiere una lógica más difícil le lleva más tiempo al bot, y el último hueco de una fila, columna o cuadro, un poco menos. El bot juega el mismo tablero, en tiempo real.",
+    "start": "¡A jugar!",
+    "startHint": "Inicia una práctica de tipo {{type}} contra {{name}}",
+    "cardLabel_one": "Nivel {{level}}, {{title}}: {{name}}. {{behavior}}. Piensa de {{from}} a {{to}} segundo por jugada, {{mistakes}} % de errores",
+    "cardLabel_many": "Nivel {{level}}, {{title}}: {{name}}. {{behavior}}. Piensa de {{from}} a {{to}} de segundos por jugada, {{mistakes}} % de errores",
+    "cardLabel_other": "Nivel {{level}}, {{title}}: {{name}}. {{behavior}}. Piensa de {{from}} a {{to}} segundos por jugada, {{mistakes}} % de errores",
+    "levels": {
+      "1": {
+        "title": "Principiante",
+        "behavior": "Lento, comete bastantes errores y te deja aprender"
+      },
+      "2": {
+        "title": "Aficionado",
+        "behavior": "Relajado, se equivoca de vez en cuando y a veces envía un 😂"
+      },
+      "3": {
+        "title": "Avanzado",
+        "behavior": "Constante y reflexivo, y difícil de superar"
+      },
+      "4": {
+        "title": "Experto",
+        "behavior": "Rápido, casi nunca se equivoca y es un poco engreído 😎"
+      },
+      "5": {
+        "title": "Gran maestro",
+        "behavior": "Rápido, preciso y despiadado"
+      }
+    }
+  },
+  "licenses": {
+    "title": "Licencias",
+    "intro": "Sudoku Fight está hecho con fuentes abiertas y software de código abierto. Gracias a sus autores. Aquí están sus licencias y sus avisos de derechos de autor.",
+    "fonts": "Fuentes",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_one": "1 paquete de código abierto",
+    "packages_many": "{{count}} de paquetes de código abierto",
+    "packages_other": "{{count}} paquetes de código abierto",
+    "packageLabel": "{{name}}, versión {{version}}, licencia {{license}}",
+    "texts": "Textos de las licencias",
+    "textsHint": "El texto completo de cada licencia, tal como está escrito.",
+    "show": "Mostrar la licencia {{license}}",
+    "hide": "Ocultar la licencia {{license}}"
+  }
+}

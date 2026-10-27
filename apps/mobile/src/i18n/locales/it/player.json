@@ -1,0 +1,122 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Giocatore",
+  "temporaryName": "Giocatore{{digits}}",
+  "bot": "Bot",
+  "vs": "VS",
+  "seconds_one": "{{count}} secondo",
+  "seconds_many": "{{count}} di secondi",
+  "seconds_other": "{{count}} secondi",
+  "points_one": "{{score}} punto",
+  "points_many": "{{score}} di punti",
+  "points_other": "{{score}} punti",
+  "place": "{{place}}° posto",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "In linea",
+    "online_female": "In linea",
+    "reconnecting": "Riconnessione",
+    "reconnecting_female": "Riconnessione",
+    "unstable": "Senza rete",
+    "unstable_female": "Senza rete",
+    "left": "Fuori",
+    "left_female": "Fuori"
+  },
+  "result": {
+    "winShort": "V",
+    "lossShort": "S",
+    "drawShort": "P"
+  },
+  "flag": {
+    "label": "Paese: {{country}}"
+  },
+  "rating": {
+    "label": "Punteggio {{value}}",
+    "labelWithKey": "Punteggio {{key}} {{value}}",
+    "provisional": "Provvisorio",
+    "provisionalLabel": "{{label}}, provvisorio"
+  },
+  "league": {
+    "bronze": "Bronzo",
+    "silver": "Argento",
+    "gold": "Oro",
+    "diamond": "Diamante",
+    "legend": "Leggenda",
+    "name": "Lega {{league}}",
+    "level": "Livello {{level}}",
+    "levelAfter": "· Livello {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "Nessun errore",
+    "short_one": "{{count}} errore",
+    "short_many": "{{count}} di errori",
+    "short_other": "{{count}} errori",
+    "long_zero": "Nessun errore",
+    "long_one": "Un errore",
+    "long_many": "{{count}} di errori",
+    "long_other": "{{count}} errori",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Sceglie",
+    "locking_female": "Sceglie",
+    "turn": "Il suo turno",
+    "turn_female": "Il suo turno",
+    "paused": "In pausa",
+    "thinking": "Riflette",
+    "thinking_female": "Riflette",
+    "reconnecting": "Riconnessione",
+    "reconnecting_female": "Riconnessione",
+    "left": "Fuori",
+    "left_female": "Fuori",
+    "surrendered": "Resa",
+    "surrendered_female": "Resa",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Disturbo in corso, {{time}}",
+    "target": "Bersaglio",
+    "targetHint": "Bersaglio del disturbo"
+  },
+  "actions": {
+    "surrender": "Arrenditi",
+    "endPractice": "Chiudi allenamento",
+    "reactions": "Reazioni"
+  },
+  "interfere": {
+    "button": "Disturba",
+    "label": "Disturba {{name}} · costa {{cost}} pt",
+    "labelMissing": "Disturba {{name}} · mancano {{count}} pt",
+    "labelBusy": "Non puoi disturbare {{name}}: ha già un disturbo in corso",
+    "labelNotRunning": "Al momento non puoi disturbare {{name}}",
+    "labelDisconnected": "Niente disturbi senza connessione",
+    "labelOut": "{{name}} è fuori dalla partita",
+    "close": "Chiudi la scelta del disturbo"
+  },
+  "lead": {
+    "tie": "Parità",
+    "label_one": "{{name}} è avanti di {{gap}} punto",
+    "label_many": "{{name}} è avanti di {{gap}} di punti",
+    "label_other": "{{name}} è avanti di {{gap}} punti",
+    "label_female_one": "{{name}} è avanti di {{gap}} punto",
+    "label_female_many": "{{name}} è avanti di {{gap}} di punti",
+    "label_female_other": "{{name}} è avanti di {{gap}} punti",
+    "tieLabel": "Punti in parità"
+  },
+  "lock": {
+    "yourCell": "La tua casella",
+    "paused": "In pausa",
+    "pick": "Scegli una casella",
+    "remaining_one": "{{count}} secondo rimasto",
+    "remaining_many": "{{count}} di secondi rimasti",
+    "remaining_other": "{{count}} secondi rimasti",
+    "label": "La tua casella {{cell}}, {{remaining}}",
+    "labelPaused": "La tua casella {{cell}}, timer fermo",
+    "progress": "Tempo rimasto per la casella {{cell}}",
+    "released": "Casella liberata"
+  }
+}

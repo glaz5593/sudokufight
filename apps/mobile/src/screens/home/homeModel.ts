@@ -10,6 +10,8 @@ import {
 import type { QueuePlayerCount, RatingEntry } from '@sudoku-fight/protocol';
 
 import { type AvatarIdOrNone, normalizeAvatarId } from '../../avatars';
+import { DEFAULT_DECIMAL } from '../../components/player/format';
+import { dateFormat } from '../../i18n/compose';
 import type { Outcome } from '../../game/outcome';
 import type { PracticeGameRecord } from '../../game/practiceRepo';
 import type { LastPlay } from '../../state/profile';
@@ -182,10 +184,13 @@ export function botOptions(gameType: GameType): BotOption[] {
   }));
 }
 
-/** Seconds with one decimal, none for whole ones: 5360 → "5.4", 8000 → "8", 16500 → "16.5". */
-export function secondsText(ms: number): string {
+/**
+ * Seconds with one decimal, none for whole ones: 5360 → "5.4", 8000 → "8", 16500 → "16.5". `decimal` is the
+ * language's separator (i18n/compose.ts decimalSeparator, D108: "5,4" in German).
+ */
+export function secondsText(ms: number, decimal: string = DEFAULT_DECIMAL): string {
   const tenths = Math.round(ms / 100);
-  return tenths % 10 === 0 ? String(tenths / 10) : (tenths / 10).toFixed(1);
+  return tenths % 10 === 0 ? String(tenths / 10) : (tenths / 10).toFixed(1).replace('.', decimal);
 }
 
 /** A share as a whole percentage: 0.15 → 15. */
@@ -249,10 +254,10 @@ export function lastPlayOf(
 const levelOf = (level: BotLevelId | null): { botLevel?: BotLevelId } =>
   level === null ? {} : { botLevel: level };
 
-/** When a game was played, in the app language: "9 באוק׳, 14:32". */
+/** When a game was played, in the app language with Western digits (D108): "9 באוק׳, 14:32". */
 export function playedAtText(at: number, language: string): string {
   try {
-    return new Intl.DateTimeFormat(language, {
+    return dateFormat(language, {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',

@@ -1,0 +1,740 @@
+{
+  "title": "Práctica por fases",
+  "stage": "Fase {{n}}",
+  "chapter": "Capítulo {{n}}",
+  "units": {
+    "seconds": "s"
+  },
+  "stars": {
+    "of3": {
+      "0": "sin estrellas",
+      "1": "una estrella de tres",
+      "2": "dos estrellas de tres",
+      "3": "tres estrellas de tres"
+    },
+    "count_one": "1 estrella",
+    "count_many": "{{count}} de estrellas",
+    "count_other": "{{count}} estrellas"
+  },
+  "kinds": {
+    "find": {
+      "name": "Lugar exacto",
+      "label": "Lugar exacto"
+    },
+    "findDuel": {
+      "name": "Carrera contra el bot",
+      "label": "Carrera contra el bot"
+    },
+    "fillBox": {
+      "name": "Completa el cuadro",
+      "label": "Completa el cuadro"
+    },
+    "duel": {
+      "name": "Duelo a {{target}}",
+      "label": "Duelo a {{target}}"
+    },
+    "spotError": {
+      "name": "Encuentra el error",
+      "label": "Encuentra el error"
+    },
+    "pointHunter": {
+      "name": "Cazapuntos",
+      "label": "Cazapuntos"
+    },
+    "chain": {
+      "name": "Cadena",
+      "label": "Cadena"
+    },
+    "fillRow": {
+      "name": "Completa la fila",
+      "label": "Completa la fila"
+    },
+    "fillCol": {
+      "name": "Completa la columna",
+      "label": "Completa la columna"
+    },
+    "puzzle": {
+      "name": "Rompecabezas",
+      "label": "Rompecabezas"
+    }
+  },
+  "boss": {
+    "chip": "Jefe",
+    "name": "Fase del jefe",
+    "label": "jefe, {{kind}}",
+    "versus": "El jefe: {{bot}}",
+    "band": "Jefe · Capítulo {{chapter}}",
+    "botLabel": "{{name}}, el jefe",
+    "intro": {
+      "title": "¡Fase del jefe!",
+      "sub": "Fase {{n}} · {{kind}}",
+      "harder": "Qué es más difícil",
+      "label": "¡Fase del jefe! Fase {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "Tu primer bot: {{bot}}",
+      "faster": "{{bot}} es un {{percent}} más rápido",
+      "overlord": "Overlord",
+      "moreCells_one": "1 casilla por llenar en lugar de {{usual}}",
+      "moreCells_many": "{{cells}} de casillas por llenar en lugar de {{usual}}",
+      "moreCells_other": "{{cells}} casillas por llenar en lugar de {{usual}}"
+    },
+    "result": {
+      "won": "¡Venciste al jefe!",
+      "lost": "Esta vez ganó el jefe",
+      "gateOpen": "Puerta al capítulo {{n}}: {{stars}} · ¡abierta!",
+      "gateClosed": "Puerta al capítulo {{n}}: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Cuadro {{n}}",
+    "row": "Fila {{row}}",
+    "col": "Columna {{n}}",
+    "mapLabel": "Mapa del tablero: {{region}}"
+  },
+  "goals": {
+    "find": "Encuentra el lugar exacto de un número. La fase termina a los {{s}} s.",
+    "findDuel_one": "1 ronda contra {{bot}}, hasta {{s}} s. En cada ronda gana quien encuentre primero el lugar.",
+    "findDuel_many": "{{spots}} de rondas contra {{bot}}, hasta {{s}} s. En cada ronda gana quien encuentre primero el lugar.",
+    "findDuel_other": "{{spots}} rondas contra {{bot}}, hasta {{s}} s. En cada ronda gana quien encuentre primero el lugar.",
+    "fillBox_one": "Llena la casilla que falta en un cuadro, hasta {{s}} s.",
+    "fillBox_many": "Llena las {{cells}} de casillas que faltan en un cuadro, hasta {{s}} s.",
+    "fillBox_other": "Llena las {{cells}} casillas que faltan en un cuadro, hasta {{s}} s.",
+    "fillRow_one": "Llena la casilla que falta en una fila, hasta {{s}} s.",
+    "fillRow_many": "Llena las {{cells}} de casillas que faltan en una fila, hasta {{s}} s.",
+    "fillRow_other": "Llena las {{cells}} casillas que faltan en una fila, hasta {{s}} s.",
+    "fillCol_one": "Llena la casilla que falta en una columna, hasta {{s}} s.",
+    "fillCol_many": "Llena las {{cells}} de casillas que faltan en una columna, hasta {{s}} s.",
+    "fillCol_other": "Llena las {{cells}} casillas que faltan en una columna, hasta {{s}} s.",
+    "puzzle": "Ordena los cuadros. Cada intercambio incorrecto suma {{penalty}} s. Hasta {{s}} s.",
+    "duel_one": "Contra {{bot}}, a 1 punto o {{s}} s. Las estrellas dependen de tu ventaja.",
+    "duel_many": "Contra {{bot}}, a {{target}} de puntos o {{s}} s. Las estrellas dependen de tu ventaja.",
+    "duel_other": "Contra {{bot}}, a {{target}} puntos o {{s}} s. Las estrellas dependen de tu ventaja.",
+    "spotError_one": "Un número incorrecto se esconde entre los tuyos. Hasta {{s}} s.",
+    "spotError_many": "{{count}} de números incorrectos se esconden entre los tuyos. Hasta {{s}} s.",
+    "spotError_other": "{{count}} números incorrectos se esconden entre los tuyos. Hasta {{s}} s.",
+    "pointHunter_one": "1 jugada, hasta {{s}} s. Consigue todos los puntos que puedas.",
+    "pointHunter_many": "{{moves}} de jugadas, hasta {{s}} s. Consigue todos los puntos que puedas.",
+    "pointHunter_other": "{{moves}} jugadas, hasta {{s}} s. Consigue todos los puntos que puedas.",
+    "chain_one": "Una cadena de 1 paso, hasta {{s}} s. Solo se puede resolver una casilla a la vez.",
+    "chain_many": "Una cadena de {{steps}} de pasos, hasta {{s}} s. Solo se puede resolver una casilla a la vez.",
+    "chain_other": "Una cadena de {{steps}} pasos, hasta {{s}} s. Solo se puede resolver una casilla a la vez."
+  },
+  "scale": {
+    "label": "Estrellas que puedes ganar",
+    "row": "{{stars}}: {{text}}",
+    "time": "hasta {{s}} s",
+    "spots_one": "1 ronda",
+    "spots_many": "{{count}} de rondas",
+    "spots_other": "{{count}} rondas",
+    "spotsRange_one": "{{range}} ronda",
+    "spotsRange_many": "{{range}} de rondas",
+    "spotsRange_other": "{{range}} rondas",
+    "gap": "ventaja de {{gap}}+",
+    "lead": "ir ganando al final",
+    "points": "{{points}}+ puntos",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "El mapa de fases",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_one": "1 estrella de {{max}}, saltar a un capítulo",
+    "totalLabel_many": "{{stars}} de estrellas de {{max}}, saltar a un capítulo",
+    "totalLabel_other": "{{stars}} estrellas de {{max}}, saltar a un capítulo",
+    "lockedToast": "Primero juega la fase {{n}}",
+    "gateToast_one": "El capítulo {{chapter}} se abre con 1 estrella en el {{prev}}",
+    "gateToast_many": "El capítulo {{chapter}} se abre con {{need}} de estrellas en el {{prev}}",
+    "gateToast_other": "El capítulo {{chapter}} se abre con {{need}} estrellas en el {{prev}}",
+    "loading": "Cargando el mapa…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_one": "1 estrella de {{max}}",
+    "label_many": "{{stars}} de estrellas de {{max}}",
+    "label_other": "{{stars}} estrellas de {{max}}"
+  },
+  "node": {
+    "played": "Fase {{n}}, {{kind}}, {{stars}}",
+    "current": "Fase {{n}}, {{kind}}, la próxima",
+    "open": "Fase {{n}}, {{kind}}, sin jugar todavía",
+    "locked": "Fase {{n}}, bloqueada"
+  },
+  "gate": {
+    "need_one": "Se abre con 1 estrella",
+    "need_many": "Se abre con {{need}} de estrellas",
+    "need_other": "Se abre con {{need}} estrellas",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Juega la fase del jefe para abrirlo",
+    "open": "Capítulo {{n}} abierto",
+    "lockedLabel_one": "Capítulo {{n}} bloqueado, {{stars}} de 1 estrella en el capítulo {{prev}}",
+    "lockedLabel_many": "Capítulo {{n}} bloqueado, {{stars}} de {{need}} de estrellas en el capítulo {{prev}}",
+    "lockedLabel_other": "Capítulo {{n}} bloqueado, {{stars}} de {{need}} estrellas en el capítulo {{prev}}",
+    "bossLabel_one": "Capítulo {{n}} bloqueado, {{stars}} de 1 estrella en el capítulo {{prev}}. Juega la fase del jefe para abrirlo",
+    "bossLabel_many": "Capítulo {{n}} bloqueado, {{stars}} de {{need}} de estrellas en el capítulo {{prev}}. Juega la fase del jefe para abrirlo",
+    "bossLabel_other": "Capítulo {{n}} bloqueado, {{stars}} de {{need}} estrellas en el capítulo {{prev}}. Juega la fase del jefe para abrirlo",
+    "openLabel_one": "Capítulo {{n}} abierto, se abrió con 1 estrella del capítulo {{prev}}",
+    "openLabel_many": "Capítulo {{n}} abierto, se abrió con {{need}} de estrellas del capítulo {{prev}}",
+    "openLabel_other": "Capítulo {{n}} abierto, se abrió con {{need}} estrellas del capítulo {{prev}}"
+  },
+  "jump": {
+    "title": "Saltar a un capítulo",
+    "row": "Capítulo {{n}} · {{name}}",
+    "rowLabel_one": "Capítulo {{n}}, {{name}}, 1 estrella de {{max}}, {{state}}",
+    "rowLabel_many": "Capítulo {{n}}, {{name}}, {{stars}} de estrellas de {{max}}, {{state}}",
+    "rowLabel_other": "Capítulo {{n}}, {{name}}, {{stars}} estrellas de {{max}}, {{state}}",
+    "open": "abierto",
+    "locked": "bloqueado"
+  },
+  "gateSheet": {
+    "title": "Capítulo {{n}} bloqueado",
+    "missing_one": "Necesitas 1 estrella en el capítulo {{prev}}. Tienes {{stars}}. Por conseguir: {{missing}}.",
+    "missing_many": "Necesitas {{need}} de estrellas en el capítulo {{prev}}. Tienes {{stars}}. Por conseguir: {{missing}}.",
+    "missing_other": "Necesitas {{need}} estrellas en el capítulo {{prev}}. Tienes {{stars}}. Por conseguir: {{missing}}.",
+    "bossOnly": "Ya tienes suficientes estrellas. Juega la fase {{boss}} (el jefe) para abrirlo",
+    "progress": "Estrellas del capítulo {{prev}} para la puerta: {{stars}} de {{need}}",
+    "rowsTitle": "Fases para mejorar",
+    "rowsNote_one": "Hasta 1 estrella más en ellas",
+    "rowsNote_many": "Hasta {{count}} de estrellas más en ellas",
+    "rowsNote_other": "Hasta {{count}} estrellas más en ellas",
+    "row": "Fase {{n}} · {{kind}}",
+    "rowLabel": "Volver a jugar la fase {{n}}, {{kind}}, {{stars}}",
+    "rowNewLabel": "Jugar la fase {{n}}, {{kind}}, sin jugar todavía",
+    "rowPlay": "Jugar",
+    "primary": "Jugar la fase {{n}}",
+    "footnote": "La mayoría de las fases duran hasta 30 s; las de completar y los rompecabezas, hasta 60. Se guardan tus mejores estrellas."
+  },
+  "panel": {
+    "label": "La fase elegida",
+    "title": "Fase {{n}} · {{kind}}",
+    "sub": "Capítulo {{chapter}} · {{name}}",
+    "subBot": "Capítulo {{chapter}} · contra {{bot}}",
+    "subBoss": "Capítulo {{chapter}} · el jefe: {{bot}}",
+    "next": "La próxima",
+    "best": "Mejor: {{metric}}",
+    "bestLabel": "Tu mejor resultado: {{stars}}, {{metric}}",
+    "bestStars": "Tu mejor resultado: {{stars}}",
+    "bot": "{{name}} · Nivel {{level}} · {{title}}",
+    "continue": "Continuar · fase {{n}}",
+    "play": "Jugar",
+    "lockedTitle": "Fase {{n}} · bloqueada",
+    "lockedSub": "Capítulo {{chapter}} · {{kind}}",
+    "lockedPrev": "Primero juega la fase {{n}}.",
+    "lockedGate_one": "El capítulo {{chapter}} está bloqueado: necesita 1 estrella en el capítulo {{prev}}. Tienes {{stars}}.",
+    "lockedGate_many": "El capítulo {{chapter}} está bloqueado: necesita {{need}} de estrellas en el capítulo {{prev}}. Tienes {{stars}}.",
+    "lockedGate_other": "El capítulo {{chapter}} está bloqueado: necesita {{need}} estrellas en el capítulo {{prev}}. Tienes {{stars}}.",
+    "gateTitleOpen": "Capítulo {{n}} abierto",
+    "gateTitleClosed": "Capítulo {{n}} bloqueado",
+    "gateSub": "{{name}} · fases {{range}}",
+    "gateOpenBody_one": "Abierto: conseguiste 1 estrella en el capítulo {{prev}}, y la puerta necesita {{need}}.",
+    "gateOpenBody_many": "Abierto: conseguiste {{stars}} de estrellas en el capítulo {{prev}}, y la puerta necesita {{need}}.",
+    "gateOpenBody_other": "Abierto: conseguiste {{stars}} estrellas en el capítulo {{prev}}, y la puerta necesita {{need}}.",
+    "gateBar": "Estrellas para la puerta: {{stars}} de {{need}}"
+  },
+  "ready": {
+    "title": "¿Todo listo?",
+    "label": "¿Todo listo? Fase {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "¿Dónde está el {{digit}}?",
+    "raceSpots_one": "1 ronda, una carrera contra {{bot}}",
+    "raceSpots_many": "{{count}} de rondas, una carrera contra {{bot}}",
+    "raceSpots_other": "{{count}} rondas, una carrera contra {{bot}}"
+  },
+  "tutorial": {
+    "title": "Cómo se juega",
+    "got": "Entendido",
+    "skip": "Omitir",
+    "panel": "Imagen {{n}} de {{total}}: {{text}}",
+    "alsoBoss": "Además, es un jefe: la décima fase de cada capítulo.",
+    "find": {
+      "1": "Una pregunta, como “¿Dónde está el {{digit}}?”, y un área marcada en el tablero: un cuadro, una fila, una columna o todo el tablero.",
+      "2": "Encuentra la única casilla donde debe ir el número, y tócala.",
+      "3": "Un toque incorrecto suma 5 segundos. Con dos, termina la fase."
+    },
+    "findDuel": {
+      "1": "Cinco rondas, una tras otra. El bot busca contigo.",
+      "2": "Quien toque primero la casilla correcta gana la ronda.",
+      "3": "Un toque incorrecto: 3 segundos sin poder tocar, mientras el bot sigue buscando."
+    },
+    "fillBox": {
+      "1": "Un cuadro con casillas vacías, en un marco dorado.",
+      "2": "Elige una casilla del cuadro y escribe un número. Las casillas de fuera no se pueden elegir.",
+      "3": "Un número incorrecto suma 5 segundos. Cuanto más rápido termines, más estrellas."
+    },
+    "duel": {
+      "1": "Tú y el bot en el mismo tablero, como en una partida.",
+      "2": "Gana quien llegue primero a 30 puntos, o quien vaya ganando a los 30 segundos.",
+      "3": "Las estrellas dependen de tu ventaja al final: 8 puntos para dos estrellas, 15 para tres."
+    },
+    "spotError": {
+      "1": "Los números oscuros son del tablero, y siempre son correctos.",
+      "2": "Entre los tuyos se esconden números incorrectos. Tócalos.",
+      "3": "Tocar un número correcto suma 5 segundos."
+    },
+    "pointHunter": {
+      "1": "Solo tienes tres jugadas.",
+      "2": "Una casilla en una zona vacía vale más puntos.",
+      "3": "Las estrellas dependen de cuánto te acerques al mejor resultado posible del tablero."
+    },
+    "chain": {
+      "1": "En cada momento, solo se puede resolver una casilla del tablero.",
+      "2": "Llénala, y se abrirá la siguiente.",
+      "3": "Un número en una casilla que todavía no se puede deducir cuesta 5 segundos, y no se coloca."
+    },
+    "boss": {
+      "1": "La décima fase de cada capítulo es un jefe: un enfrentamiento contra un bot, más difícil que las fases anteriores.",
+      "2": "Antes de empezar, ves qué es más difícil. Normalmente, que el bot es más rápido.",
+      "3": "Cuando hayas jugado contra el jefe y tengas 20 estrellas en el capítulo, se abre el siguiente capítulo."
+    },
+    "fillRow": {
+      "1": "Una fila con casillas vacías, en un marco dorado.",
+      "2": "Elige una casilla de la fila y escribe un número. Las casillas de fuera no se pueden elegir.",
+      "3": "Un número incorrecto suma 5 segundos. Cuanto más rápido termines, más estrellas."
+    },
+    "fillCol": {
+      "1": "Una columna con casillas vacías, en un marco dorado.",
+      "2": "Elige una casilla de la columna y escribe un número. Las casillas de fuera no se pueden elegir.",
+      "3": "Un número incorrecto suma 5 segundos. Cuanto más rápido termines, más estrellas."
+    },
+    "puzzle": {
+      "1": "Nueve cuadros completos, en el orden equivocado.",
+      "2": "Arrastra un cuadro sobre otro y se intercambian. Un cuadro con candado está fijo. Un intercambio que no deja ningún cuadro en su lugar suma 5 segundos.",
+      "3": "Cuando todas las filas y columnas estén bien, termina la fase. Cuanto más rápido termines, más estrellas."
+    }
+  },
+  "result": {
+    "completed": "Fase {{n}} completada",
+    "ended": "Fase {{n}}",
+    "reasons": {
+      "timeUp": "Se acabó el tiempo",
+      "failed": "Dos toques incorrectos",
+      "quit": "Saliste de la fase",
+      "botWon": "{{bot}} llegó primero"
+    },
+    "metric": {
+      "spotsOf_one": "de 1 ronda",
+      "spotsOf_many": "de {{total}} de rondas",
+      "spotsOf_other": "de {{total}} rondas",
+      "gap": "Ventaja",
+      "points": "puntos",
+      "found": "Encontrados",
+      "foundOf": "de {{total}}"
+    },
+    "newBest": "¡Nuevo récord!",
+    "yourBest": "Tu mejor resultado:",
+    "yourBestLabel": "Tu mejor resultado: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, una estimación: el servidor la confirma",
+    "chapterLabel": "Este capítulo",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "la puerta necesita {{need}}",
+    "chapterOpen": "la puerta está abierta",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_one": "Este capítulo: 1 estrella de {{max}}. {{gate}}",
+    "chapterLine_many": "Este capítulo: {{stars}} de estrellas de {{max}}. {{gate}}",
+    "chapterLine_other": "Este capítulo: {{stars}} estrellas de {{max}}. {{gate}}",
+    "mistakes_one": "1 error",
+    "mistakes_many": "{{count}} de errores",
+    "mistakes_other": "{{count}} errores",
+    "noMistakes": "Sin errores",
+    "swaps_one": "1 intercambio · el mínimo: {{min}}",
+    "swaps_many": "{{count}} de intercambios · el mínimo: {{min}}",
+    "swaps_other": "{{count}} intercambios · el mínimo: {{min}}",
+    "time": "Tiempo: {{s}} s",
+    "youWon": "Ganaste",
+    "botWon": "Ganó {{bot}}",
+    "tie": "Empate",
+    "bossTie": "Empate: el jefe resiste",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_one": "1 ronda",
+    "opponentSpots_many": "{{count}} de rondas",
+    "opponentSpots_other": "{{count}} rondas",
+    "opponentScore_one": "{{score}} punto",
+    "opponentScore_many": "{{score}} de puntos",
+    "opponentScore_other": "{{score}} puntos",
+    "bestMove_one": "La mejor jugada: {{digit}} en {{cell}} · {{points}} punto",
+    "bestMove_many": "La mejor jugada: {{digit}} en {{cell}} · {{points}} de puntos",
+    "bestMove_other": "La mejor jugada: {{digit}} en {{cell}} · {{points}} puntos",
+    "why": "¿Por qué?",
+    "next": "Siguiente fase",
+    "again": "Otra vez",
+    "toMap": "Al mapa",
+    "last": "Esa era la última fase. ¡Bien hecho!",
+    "nextLocked": "La siguiente fase todavía está bloqueada"
+  },
+  "unlocked": {
+    "heading": "¡Se abrió un capítulo nuevo!",
+    "title": "Capítulo {{n}} · {{name}}",
+    "news": "Novedades: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Continuar",
+    "label": "Se abrió un capítulo nuevo: capítulo {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: “Acabo de empezar, pero soy más rápido de lo que parezco.”",
+      "2": "Biscuit: “Tranquilo, pero no te dejaré escapar.”",
+      "3": "Mr. Hoot: “Veo cada casilla. Cuidado.”",
+      "4": "Maestro: “Rápido, preciso y con estilo.”",
+      "5": "Overlord: “Llegaste lejos. Aquí se acaba todo.”"
+    }
+  },
+  "exit": {
+    "button": "Salir de la fase",
+    "title": "¿Salir de la fase?",
+    "body": "Obtendrás 0 estrellas, y se abrirá la siguiente fase.",
+    "confirm": "Salir",
+    "cancel": "Seguir jugando"
+  },
+  "card": {
+    "line": "Fases: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_one": "Fases: {{played}}, 1 estrella",
+    "label_many": "Fases: {{played}}, {{count}} de estrellas",
+    "label_other": "Fases: {{played}}, {{count}} estrellas"
+  },
+  "chapters": {
+    "1": {
+      "name": "Primeros pasos",
+      "news": "Lugar exacto, completa el cuadro, el rompecabezas y completa la fila"
+    },
+    "2": {
+      "name": "El desafío de Pip",
+      "news": "Completa la columna y carrera contra el bot"
+    },
+    "3": {
+      "name": "Primer duelo",
+      "news": "Duelo a 30 y encuentra el error"
+    },
+    "4": {
+      "name": "Olfato de detective",
+      "news": "Una cadena de 3 pasos y un rompecabezas con 4 cuadros móviles"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "Un bot nuevo (Biscuit), el cazapuntos y fases de completar donde cada número falta al menos una vez"
+    },
+    "6": {
+      "name": "Filas y columnas",
+      "news": "Un tablero de tipo Normal, y objetivos en una fila o una columna"
+    },
+    "7": {
+      "name": "Cazapuntos",
+      "news": "Un rompecabezas con 5 cuadros móviles"
+    },
+    "8": {
+      "name": "Dos errores",
+      "news": "Dos errores en el tablero y un duelo en un tablero de tipo Normal"
+    },
+    "9": {
+      "name": "Cadena",
+      "news": "Todos los tipos otra vez, un poco más difíciles"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "Un bot nuevo: Mr. Hoot, y 7 casillas vacías en las fases de completar"
+    },
+    "11": {
+      "name": "Todo el tablero",
+      "news": "Objetivos en cualquier parte del tablero"
+    },
+    "12": {
+      "name": "Más rápido",
+      "news": "Cazapuntos en 25 segundos, en un tablero de tipo Normal"
+    },
+    "13": {
+      "name": "Errores silenciosos",
+      "news": "Errores sin ningún choque visible"
+    },
+    "14": {
+      "name": "Cadena larga",
+      "news": "Una cadena de 4 pasos y 9 casillas vacías en las fases de completar"
+    },
+    "15": {
+      "name": "A mitad de camino",
+      "news": "Todos los tipos otra vez"
+    },
+    "16": {
+      "name": "Tableros difíciles",
+      "news": "Un tablero difícil y un rompecabezas con 6 cuadros móviles"
+    },
+    "17": {
+      "name": "Eliminaciones",
+      "news": "Objetivos que solo aparecen tras una eliminación"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "Un bot nuevo: Maestro"
+    },
+    "19": {
+      "name": "Trampas",
+      "news": "Tres errores en el tablero"
+    },
+    "20": {
+      "name": "La puerta difícil",
+      "news": "Un cuadro vacío que requiere una eliminación"
+    },
+    "21": {
+      "name": "Pares",
+      "news": "Pares, y cazapuntos en 20 segundos"
+    },
+    "22": {
+      "name": "Cadena de 5",
+      "news": "Una cadena de 5 pasos"
+    },
+    "23": {
+      "name": "Sin pistas",
+      "news": "Tableros con muy pocos números"
+    },
+    "24": {
+      "name": "Carrera",
+      "news": "Duelos en tableros difíciles"
+    },
+    "25": {
+      "name": "Expertos",
+      "news": "Todo otra vez, a un ritmo rápido"
+    },
+    "26": {
+      "name": "Campeonato",
+      "news": "Tres estrellas solo con los mejores tiempos"
+    },
+    "27": {
+      "name": "Campeonato II",
+      "news": "Cazapuntos: tres estrellas solo cerca del mejor resultado"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "El jefe: Overlord, en una carrera"
+    },
+    "29": {
+      "name": "La final",
+      "news": "Una cadena rápida, y Overlord como jefe en un duelo"
+    },
+    "30": {
+      "name": "La corona",
+      "news": "Todo junto, en su máxima dificultad"
+    }
+  },
+  "hud": {
+    "secondsAdded_one": "se sumó {{count}} segundo",
+    "secondsAdded_many": "se sumaron {{count}} de segundos",
+    "secondsAdded_other": "se sumaron {{count}} segundos",
+    "sub": "{{kind}} · Capítulo {{chapter}}",
+    "subFind": "¿Dónde está el {{digit}}? · Capítulo {{chapter}}",
+    "subRace_one": "{{kind}} · 1 ronda · Capítulo {{chapter}}",
+    "subRace_many": "{{kind}} · {{spots}} de rondas · Capítulo {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} rondas · Capítulo {{chapter}}",
+    "clockLabel_one": "Queda 1 segundo de {{limit}}",
+    "clockLabel_many": "Quedan {{s}} de segundos de {{limit}}",
+    "clockLabel_other": "Quedan {{s}} segundos de {{limit}}",
+    "penalty": "{{s}} s",
+    "me": "Yo",
+    "find": {
+      "tap": "Toca donde debe ir el {{digit}}",
+      "where": "<scope>{{scope}}</scope> · sin teclado, solo un toque",
+      "elapsed": "s hasta ahora",
+      "targetLabel": "El objetivo: el {{digit}} {{scope}}. {{left}}",
+      "ringLabel_one": "Queda 1 segundo de fase",
+      "ringLabel_many": "Quedan {{s}} de segundos de fase",
+      "ringLabel_other": "Quedan {{s}} segundos de fase",
+      "one": "Una sola búsqueda en la fase",
+      "wrongRule": "Toque incorrecto: {{penalty}} s",
+      "twoWrongRule": "Dos toques incorrectos: la fase termina",
+      "found": "Encontrado: el {{digit}} en {{cell}}",
+      "missed": "No está en {{cell}}. {{penalty}} s",
+      "answer": "La respuesta: {{cell}}"
+    },
+    "scope": {
+      "box": "en el cuadro {{n}}",
+      "row": "en la fila {{row}}",
+      "col": "en la columna {{n}}",
+      "board": "en cualquier parte del tablero"
+    },
+    "race": {
+      "task": "Ronda {{n}} de {{total}} · encuentra el {{digit}} {{scope}}",
+      "left": "Quedan {{s}} s",
+      "searching": "Buscando…",
+      "spots_one": "1 ronda",
+      "spots_many": "{{count}} de rondas",
+      "spots_other": "{{count}} rondas",
+      "frozen_one": "En pausa, 1 segundo",
+      "frozen_many": "En pausa, {{count}} de segundos",
+      "frozen_other": "En pausa, {{count}} segundos",
+      "out": "Fuera hasta la siguiente ronda",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, bot de nivel {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} está buscando",
+      "mine": "Ganaste la ronda {{n}}",
+      "theirs": "{{name}} ganó la ronda {{n}}",
+      "void": "Nadie ganó la ronda {{n}}",
+      "next": "Ronda {{n}}: el {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "Llena el cuadro {{n}}",
+      "cells_one": "{{done}}/{{total}} casilla",
+      "cells_many": "{{done}}/{{total}} de casillas",
+      "cells_other": "{{done}}/{{total}} casillas",
+      "cellsLabel_one": "Llenaste {{done}} de 1 casilla por llenar",
+      "cellsLabel_many": "Llenaste {{done}} de {{total}} de casillas por llenar",
+      "cellsLabel_other": "Llenaste {{done}} de {{total}} casillas por llenar",
+      "mistakes_one": "Error {{penalty}} s",
+      "mistakes_many": "{{count}} de errores {{penalty}} s",
+      "mistakes_other": "{{count}} errores {{penalty}} s",
+      "mistakesLabel_one": "Un error, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_many": "{{count}} de errores, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_other": "{{count}} errores, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "Un error suma 5 segundos, y ese número queda descartado en esa casilla",
+      "timeLabel_one": "Tiempo: 1 segundo de {{limit}}",
+      "timeLabel_many": "Tiempo: {{s}} de segundos de {{limit}}",
+      "timeLabel_other": "Tiempo: {{s}} segundos de {{limit}}",
+      "boardLabel_one": "El tablero · llena solo la casilla que falta en el cuadro {{n}}",
+      "boardLabel_many": "El tablero · llena solo las {{count}} de casillas que faltan en el cuadro {{n}}",
+      "boardLabel_other": "El tablero · llena solo las {{count}} casillas que faltan en el cuadro {{n}}"
+    },
+    "line": {
+      "taskRow": "Llena la fila {{row}}",
+      "taskCol": "Llena la columna {{n}}",
+      "boardLabelRow_one": "El tablero · llena solo la casilla que falta en la fila {{row}}",
+      "boardLabelRow_many": "El tablero · llena solo las {{count}} de casillas que faltan en la fila {{row}}",
+      "boardLabelRow_other": "El tablero · llena solo las {{count}} casillas que faltan en la fila {{row}}",
+      "boardLabelCol_one": "El tablero · llena solo la casilla que falta en la columna {{n}}",
+      "boardLabelCol_many": "El tablero · llena solo las {{count}} de casillas que faltan en la columna {{n}}",
+      "boardLabelCol_other": "El tablero · llena solo las {{count}} casillas que faltan en la columna {{n}}"
+    },
+    "puzzle": {
+      "task": "Ordena los cuadros",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_one": "1 cuadro se mueve",
+      "moving_many": "{{count}} de cuadros se mueven",
+      "moving_other": "{{count}} cuadros se mueven",
+      "fixed_one": "1 cuadro está fijo",
+      "fixed_many": "{{count}} de cuadros están fijos",
+      "fixed_other": "{{count}} cuadros están fijos",
+      "allMove": "Todos los cuadros se mueven",
+      "swaps": "Intercambios: {{count}}",
+      "wrong_one": "Intercambio incorrecto {{penalty}} s",
+      "wrong_many": "{{count}} de intercambios incorrectos {{penalty}} s",
+      "wrong_other": "{{count}} intercambios incorrectos {{penalty}} s",
+      "wrongLabel_one": "Un intercambio incorrecto, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_many": "{{count}} de intercambios incorrectos, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_other": "{{count}} intercambios incorrectos, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "Arrastra un cuadro sobre otro para intercambiarlos",
+      "tapHint": "O toca un cuadro y luego otro",
+      "slotLabel": "Cuadro {{n}}, {{state}}: {{rows}}",
+      "state": {
+        "movable": "se puede mover",
+        "fixed": "fijo",
+        "selected": "seleccionado"
+      },
+      "slotHint": "Toca para elegirlo y luego toca otro cuadro",
+      "swapped": "Se intercambiaron los cuadros {{a}} y {{b}}",
+      "swappedPenalty_one": "Se intercambiaron los cuadros {{a}} y {{b}}. Más 1 segundo",
+      "swappedPenalty_many": "Se intercambiaron los cuadros {{a}} y {{b}}. Más {{s}} de segundos",
+      "swappedPenalty_other": "Se intercambiaron los cuadros {{a}} y {{b}}. Más {{s}} segundos",
+      "fixedTap": "Este cuadro está fijo",
+      "solved": "Todas las filas y todas las columnas están bien",
+      "boardLabel": "El rompecabezas · {{counts}}"
+    },
+    "duel": {
+      "gap": "Ventaja {{gap}}",
+      "gapLabel": "La ventaja: {{gap}}. Una estrella si vas ganando al final, 2 estrellas con {{two}}, 3 estrellas con {{three}}",
+      "lead": "Por delante",
+      "of": "/{{target}}",
+      "meLabel_one": "{{name}}, {{score}} de 1 punto",
+      "meLabel_many": "{{name}}, {{score}} de {{target}} de puntos",
+      "meLabel_other": "{{name}}, {{score}} de {{target}} puntos",
+      "botLabel_one": "{{name}}, bot de nivel {{n}}, {{score}} de 1 punto",
+      "botLabel_many": "{{name}}, bot de nivel {{n}}, {{score}} de {{target}} de puntos",
+      "botLabel_other": "{{name}}, bot de nivel {{n}}, {{score}} de {{target}} puntos",
+      "finishLabel": "La fase termina cuando alguien llega a $t(levels:hud.duel.reachPoints, {\"count\": {{target}} }) o a los $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })",
+      "reachPoints_one": "{{count}} punto",
+      "reachPoints_many": "{{count}} de puntos",
+      "reachPoints_other": "{{count}} puntos",
+      "atSeconds_one": "{{count}} segundo",
+      "atSeconds_many": "{{count}} de segundos",
+      "atSeconds_other": "{{count}} segundos",
+      "raceLabel": "Carrera a {{target}}: {{me}}, {{bot}}"
+    },
+    "reactions": "Reacciones",
+    "boardLabel": "El tablero de la fase · {{scope}}",
+    "spotError": {
+      "goal_one": "Un número incorrecto se esconde en el tablero. Tócalo.",
+      "goal_many": "{{count}} de números incorrectos se esconden en el tablero. Tócalos.",
+      "goal_other": "{{count}} números incorrectos se esconden en el tablero. Tócalos.",
+      "note": "Los números oscuros son del tablero, y siempre son correctos.",
+      "found": "Encontrados",
+      "foundLabel": "Encontrados: {{found}} de {{total}}",
+      "time": "Tiempo",
+      "timeLabel_one": "Tiempo: 1 segundo de {{limit}}",
+      "timeLabel_many": "Tiempo: {{s}} de segundos de {{limit}}",
+      "timeLabel_other": "Tiempo: {{s}} segundos de {{limit}}",
+      "tipTitle": "Consejo",
+      "tip": "Busca un número que aparezca dos veces en la misma fila, columna o cuadro.",
+      "tipClose": "Cerrar el consejo",
+      "foundCell": "Encontraste un error en {{cell}}: no es {{wrong}}, sino {{right}}",
+      "rightTap": "El número en {{cell}} es correcto. {{penalty}} s",
+      "missed": "Errores no encontrados: {{cells}}",
+      "boardLabel": "El tablero de la fase · toca un número incorrecto"
+    },
+    "hunt": {
+      "goal": "Consigue $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) en $t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }).",
+      "goalPoints_one": "{{points}} punto",
+      "goalPoints_many": "{{points}} de puntos",
+      "goalPoints_other": "{{points}} puntos",
+      "goalMoves_one": "{{count}} jugada",
+      "goalMoves_many": "{{count}} de jugadas",
+      "goalMoves_other": "{{count}} jugadas",
+      "note": "Una casilla en una zona vacía vale más.",
+      "points": "puntos",
+      "scoreLabel_one": "{{score}} punto",
+      "scoreLabel_many": "{{score}} de puntos",
+      "scoreLabel_other": "{{score}} puntos",
+      "scoreWorthLabel_one": "{{score}} punto. La casilla que elegiste vale {{worth}}",
+      "scoreWorthLabel_many": "{{score}} de puntos. La casilla que elegiste vale {{worth}}",
+      "scoreWorthLabel_other": "{{score}} puntos. La casilla que elegiste vale {{worth}}",
+      "lost": "El número incorrecto costó {{points}}",
+      "move": "Jugada {{n}} de {{max}}",
+      "burnt": "Jugada {{n}} perdida",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_one": "Una jugada perdida",
+      "burntCount_many": "{{count}} de jugadas perdidas",
+      "burntCount_other": "{{count}} jugadas perdidas",
+      "left": "restantes · de {{limit}}",
+      "timeLabel_one": "Queda 1 segundo de {{limit}}",
+      "timeLabel_many": "Quedan {{s}} de segundos de {{limit}}",
+      "timeLabel_other": "Quedan {{s}} segundos de {{limit}}",
+      "max": "Lo mejor del tablero: {{max}}",
+      "worth": "Vale {{points}}"
+    },
+    "chain": {
+      "goal": "Solo se puede resolver una casilla del tablero a la vez. Encuéntrala y llénala, y se abrirá la siguiente.",
+      "notePenalty": "Un número en una casilla que todavía no se puede deducir: {{penalty}} s.",
+      "noteAccept": "Un número incorrecto: {{penalty}} s.",
+      "step": "Paso {{n}} de {{total}}",
+      "stepLabel": "Cadena: paso {{n}} de {{total}}",
+      "time": "Tiempo",
+      "timeLabel_one": "Tiempo: 1 segundo de {{limit}}",
+      "timeLabel_many": "Tiempo: {{s}} de segundos de {{limit}}",
+      "timeLabel_other": "Tiempo: {{s}} segundos de {{limit}}",
+      "notYet": "{{text}} · {{penalty}} s",
+      "tipTitle": "Consejo",
+      "tip": "En cada paso hay exactamente una casilla que se puede demostrar. Si sabes con certeza un número, esa es la casilla.",
+      "tipClose": "Cerrar el consejo"
+    }
+  },
+  "explain": {
+    "spot": "Ronda {{n}}: {{text}}",
+    "mistake": "Tu error: {{digit}} en {{cell}}. {{reason}}",
+    "best": "Tu mejor jugada, {{digit}} en {{cell}}: {{text}}",
+    "errorFound": "{{cell}}, encontrado: {{reason}}",
+    "errorMissed": "{{cell}}, no encontrado: {{reason}}",
+    "rightTap": "El {{digit}} en {{cell}} es correcto: tocarlo te costó {{penalty}} s.",
+    "points_one": "Conseguiste {{points}} de {{max}} punto, el {{percent}} del mejor resultado del tablero.",
+    "points_many": "Conseguiste {{points}} de {{max}} de puntos, el {{percent}} del mejor resultado del tablero.",
+    "points_other": "Conseguiste {{points}} de {{max}} puntos, el {{percent}} del mejor resultado del tablero.",
+    "line": "La mejor secuencia: {{moves}}.",
+    "move": "{{digit}} en {{cell}} {{points}}",
+    "step": "Paso {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "Solo el cuadro que empezó en la posición {{from}} encaja en la posición {{place}}: cualquier otro repetiría un número en una fila o una columna.",
+      "onlyPlaceForBox": "El cuadro que empezó en la posición {{from}} solo encaja en la posición {{place}}: en cualquier otra repetiría un número en una fila o una columna."
+    }
+  }
+}

@@ -1,12 +1,14 @@
 import type { BlockedPlayer } from '@sudoku-fight/protocol';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '../../auth/authStore';
 import { Avatar, Flag } from '../../components/player';
 import { Button, SkeletonGroup, SkeletonRows, StateView } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
+import { dateFormat } from '../../i18n/compose';
 import { blocksOf, loadBlocks, useBlocks } from '../../moderation/moderation';
 import { color, radius, size, space, text } from '../../theme';
 import { isolateName } from '../game/hit/hitModel';
@@ -14,10 +16,10 @@ import { goBack } from '../home/navigation';
 import { GUTTER, ScreenHeader } from '../home/parts';
 import { useModerationFlow } from './useModerationFlow';
 
-/** "14 באוק׳ 2026" in the app's language. */
+/** "14 באוק׳ 2026" in the app's language, with Western digits (D108). */
 export function blockedSince(at: number, language: string): string {
   try {
-    return new Intl.DateTimeFormat(language, { day: 'numeric', month: 'short', year: 'numeric' }).format(at);
+    return dateFormat(language, { day: 'numeric', month: 'short', year: 'numeric' }).format(at);
   } catch {
     return new Date(at).toISOString().slice(0, 10);
   }

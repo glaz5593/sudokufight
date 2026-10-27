@@ -13,12 +13,13 @@ import {
 } from '@sudoku-fight/engine';
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { type FlatList, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Star, STAR_SIZES } from '../../components/levels/StarRow';
 import { ltr } from '../../components/player/format';
 import { useToast } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { LEVEL_UI } from '../../config/levels';
 import { useUnlockAllLevels } from '../../config/testing';
 import { bestMetricAt } from '../../levels/levelsRepo';
@@ -182,7 +183,7 @@ export function LevelMapScreen({
     const chapter = chapterOf(info.n);
     if (chapter > 1 && !chapterOpen(chapter, records, openedChapters)) {
       const gate = gateOf(chapter);
-      toast(t('map.gateToast', { chapter, need: gate.need, prev: chapter - 1 }));
+      toast(t('map.gateToast', { chapter, count: gate.need, need: gate.need, prev: chapter - 1 }));
     } else toast(t('map.lockedToast', { n: current }));
   };
 
@@ -226,7 +227,11 @@ export function LevelMapScreen({
         end={
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('map.totalLabel', total)}
+            accessibilityLabel={t('map.totalLabel', {
+              count: total.stars,
+              stars: total.stars,
+              max: total.max,
+            })}
             onPress={() => setJumpOpen(true)}
             style={styles.totalButton}
             testID="level-map-total"

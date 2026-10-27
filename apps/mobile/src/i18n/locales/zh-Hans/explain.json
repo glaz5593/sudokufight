@@ -1,0 +1,108 @@
+{
+  "technique": {
+    "nakedSingle": "显性唯一数",
+    "hiddenSingle": "隐性唯一数",
+    "pointing": "区块排除",
+    "claiming": "区块排除",
+    "nakedPair": "显性数对",
+    "hiddenPair": "隐性数对",
+    "chain": "高级技巧",
+    "beyond": "超出引擎的技巧范围"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": "、",
+    "last": "{{head}}和{{last}}",
+    "lastOr": "{{head}}或{{last}}"
+  },
+  "clauses": {
+    "sep": "；",
+    "last": "{{head}}；{{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}。",
+    "onlyMissing": {
+      "row": "{{label}}行只缺{{digit}}。",
+      "col": "第{{label}}列只缺{{digit}}。",
+      "box": "第{{label}}宫只缺{{digit}}。"
+    },
+    "missing": {
+      "row": "{{label}}行缺{{digits}}。",
+      "col": "第{{label}}列缺{{digits}}。",
+      "box": "第{{label}}宫缺{{digits}}。"
+    },
+    "seen": {
+      "row": "{{label}}行已有{{digits}}。",
+      "col": "第{{label}}列已有{{digits}}。",
+      "box": "第{{label}}宫已有{{digits}}。"
+    },
+    "eliminated": "{{digit}}在第{{step}}步已从{{cell}}中排除。",
+    "only": "所以只能是{{digit}}。"
+  },
+  "hidden": {
+    "alone": {
+      "row": "{{label}}行必须有{{digit}}，而{{cell}}是该行唯一的空格。所以{{result}}。",
+      "col": "第{{label}}列必须有{{digit}}，而{{cell}}是该列唯一的空格。所以{{result}}。",
+      "box": "第{{label}}宫必须有{{digit}}，而{{cell}}是该宫唯一的空格。所以{{result}}。"
+    },
+    "blocked": {
+      "row": "{{label}}行必须有{{digit}}。该行其他空格都不能填{{digit}}：{{clauses}}。所以{{result}}。",
+      "col": "第{{label}}列必须有{{digit}}。该列其他空格都不能填{{digit}}：{{clauses}}。所以{{result}}。",
+      "box": "第{{label}}宫必须有{{digit}}。该宫其他空格都不能填{{digit}}：{{clauses}}。所以{{result}}。"
+    },
+    "clause": {
+      "step": "{{cell}}在第{{step}}步排除了{{digit}}",
+      "unit": {
+        "row": "{{cell}}所在的{{label}}行已有{{digit}}",
+        "col": "{{cell}}所在的第{{label}}列已有{{digit}}",
+        "box": "{{cell}}所在的第{{label}}宫已有{{digit}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "在第{{box}}宫中，{{digit}}只能在{{line}}行，所以从该行其余的格中删去{{digit}}：{{cells}}。",
+    "col": "在第{{box}}宫中，{{digit}}只能在第{{line}}列，所以从该列其余的格中删去{{digit}}：{{cells}}。"
+  },
+  "claiming": {
+    "row": "在{{line}}行中，{{digit}}只能在第{{box}}宫，所以从该宫其余的格中删去{{digit}}：{{cells}}。",
+    "col": "在第{{line}}列中，{{digit}}只能在第{{box}}宫，所以从该宫其余的格中删去{{digit}}：{{cells}}。"
+  },
+  "nakedPair": {
+    "row": "{{a}}和{{b}}只能填{{digits}}，所以从{{label}}行其余的格中删去{{digits}}：{{cells}}。",
+    "col": "{{a}}和{{b}}只能填{{digits}}，所以从第{{label}}列其余的格中删去{{digits}}：{{cells}}。",
+    "box": "{{a}}和{{b}}只能填{{digits}}，所以从第{{label}}宫其余的格中删去{{digits}}：{{cells}}。"
+  },
+  "hiddenPair": {
+    "row": "在{{label}}行中，{{digits}}只能填在{{a}}和{{b}}，所以删去这两格的其他候选数。",
+    "col": "在第{{label}}列中，{{digits}}只能填在{{a}}和{{b}}，所以删去这两格的其他候选数。",
+    "box": "在第{{label}}宫中，{{digits}}只能填在{{a}}和{{b}}，所以删去这两格的其他候选数。"
+  },
+  "beyond": "这里需要一种引擎暂时还无法讲解的高级技巧。答案：{{formula}}。",
+  "chain": {
+    "head_other": "这一格还无法一步确定，需要{{count}}步：",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "{{label}}行已经有{{digit}}了（{{cell}}）。",
+      "col": "第{{label}}列已经有{{digit}}了（{{cell}}）。",
+      "box": "第{{label}}宫已经有{{digit}}了（{{cell}}）。"
+    },
+    "notSolution": "{{digit}}在这里仍然可以填，但答案是{{answer}}。"
+  },
+  "block": {
+    "step": "{{cell}}不能填{{digit}}：它在第{{step}}步已被排除",
+    "unit": {
+      "row": "{{cell}}不能填{{digit}}：{{label}}行已有{{digit}}",
+      "col": "{{cell}}不能填{{digit}}：第{{label}}列已有{{digit}}",
+      "box": "{{cell}}不能填{{digit}}：第{{label}}宫已有{{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "暂时还无法确定{{cell}}该填什么",
+    "options": "暂时还无法确定{{cell}}该填什么（{{options}}）"
+  }
+}

@@ -2,13 +2,14 @@ import type { AppLevel } from '@sudoku-fight/engine';
 import type { LevelTutorialKind } from '@sudoku-fight/protocol';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { Icon } from '../../components/Icon';
 import { Button } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { LEVEL_UI } from '../../config/levels';
 import { levelTutorialProps } from '../../levels/analyticsProps';
 import { track } from '../../services/analytics';

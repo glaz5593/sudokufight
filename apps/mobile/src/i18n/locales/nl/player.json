@@ -1,0 +1,115 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Speler",
+  "temporaryName": "Speler{{digits}}",
+  "bot": "Bot",
+  "vs": "VS",
+  "seconds_one": "{{count}} seconde",
+  "seconds_other": "{{count}} seconden",
+  "points_one": "{{score}} punt",
+  "points_other": "{{score}} punten",
+  "place": "Plaats {{place}}",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "Verbonden",
+    "online_female": "Verbonden",
+    "reconnecting": "Verbindt opnieuw",
+    "reconnecting_female": "Verbindt opnieuw",
+    "unstable": "Geen verbinding",
+    "unstable_female": "Geen verbinding",
+    "left": "Vertrokken",
+    "left_female": "Vertrokken"
+  },
+  "result": {
+    "winShort": "W",
+    "lossShort": "V",
+    "drawShort": "G"
+  },
+  "flag": {
+    "label": "Land: {{country}}"
+  },
+  "rating": {
+    "label": "Rating: {{value}}",
+    "labelWithKey": "Rating voor {{key}}: {{value}}",
+    "provisional": "Voorlopig",
+    "provisionalLabel": "{{label}}, voorlopig"
+  },
+  "league": {
+    "bronze": "Brons",
+    "silver": "Zilver",
+    "gold": "Goud",
+    "diamond": "Diamant",
+    "legend": "Legende",
+    "name": "Divisie {{league}}",
+    "level": "Niveau {{level}}",
+    "levelAfter": "· Niveau {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "Geen fouten",
+    "short_one": "{{count}} fout",
+    "short_other": "{{count}} fouten",
+    "long_zero": "Geen fouten",
+    "long_one": "Eén fout",
+    "long_other": "{{count}} fouten",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Kiest",
+    "locking_female": "Kiest",
+    "turn": "Aan de beurt",
+    "turn_female": "Aan de beurt",
+    "paused": "Gepauzeerd",
+    "thinking": "Denkt na",
+    "thinking_female": "Denkt na",
+    "reconnecting": "Verbindt opnieuw",
+    "reconnecting_female": "Verbindt opnieuw",
+    "left": "Vertrokken",
+    "left_female": "Vertrokken",
+    "surrendered": "Opgegeven",
+    "surrendered_female": "Opgegeven",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Wordt verstoord, {{time}}",
+    "target": "Doelwit",
+    "targetHint": "Doelwit van de verstoring"
+  },
+  "actions": {
+    "surrender": "Opgeven",
+    "endPractice": "Oefenen stoppen",
+    "reactions": "Reacties"
+  },
+  "interfere": {
+    "button": "Verstoren",
+    "label": "{{name}} verstoren · kost {{cost}} ptn",
+    "labelMissing": "{{name}} verstoren · {{count}} ptn tekort",
+    "labelBusy": "{{name}} verstoren kan niet, wordt al verstoord",
+    "labelNotRunning": "{{name}} verstoren kan nu niet",
+    "labelDisconnected": "Geen verstoringen zonder verbinding",
+    "labelOut": "{{name}} is uit het spel",
+    "close": "Keuze van verstoringen sluiten"
+  },
+  "lead": {
+    "tie": "Gelijke stand",
+    "label_one": "{{name}} staat {{gap}} punt voor",
+    "label_other": "{{name}} staat {{gap}} punten voor",
+    "label_female_one": "{{name}} staat {{gap}} punt voor",
+    "label_female_other": "{{name}} staat {{gap}} punten voor",
+    "tieLabel": "De scores staan gelijk"
+  },
+  "lock": {
+    "yourCell": "Jouw vakje",
+    "paused": "Gepauzeerd",
+    "pick": "Kies een vakje",
+    "remaining_one": "Nog {{count}} seconde",
+    "remaining_other": "Nog {{count}} seconden",
+    "label": "Jouw vakje {{cell}}, {{remaining}}",
+    "labelPaused": "Jouw vakje {{cell}}, timer gestopt",
+    "progress": "Resterende tijd voor vakje {{cell}}",
+    "released": "Vakje vrijgegeven"
+  }
+}

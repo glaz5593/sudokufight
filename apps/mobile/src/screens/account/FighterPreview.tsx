@@ -1,10 +1,11 @@
 import type { AvatarId, CountryCode } from '@sudoku-fight/protocol';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AVATAR_STAGES } from '../../avatars';
 import { Icon } from '../../components/Icon';
+import { Text } from '../../components/ui/Text';
 import { color, size, space, text } from '../../theme';
 import { FighterCard } from './FighterCard';
 

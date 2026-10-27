@@ -9,7 +9,7 @@ import {
 import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { BossBand } from '../../../components/levels/BossBadge';
 import { LevelTile } from '../../../components/levels/LevelTile';
@@ -17,6 +17,8 @@ import { StarsBar } from '../../../components/levels/StarsBar';
 import { secondsOf, signedText } from '../../../components/player/format';
 import { TimerRing } from '../../../components/player/TimerRing';
 import { IconButton } from '../../../components/ui';
+import { Text } from '../../../components/ui/Text';
+import { decimalSeparator } from '../../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { secondsText } from '../../home/homeModel';
 import { findSub, kindName, type LevelsT } from '../levelWording';
@@ -158,7 +160,7 @@ export function FindTargetPanel({ view, now, penaltyMs, penalty = null, style }:
   const scope = find?.scope ? scopeText(find.scope, t) : '';
   const limit = view.limitMs ?? 0;
   const { elapsedMs, remainingMs: left } = levelClock(view, now);
-  const ringLabel = t('hud.find.ringLabel', { s: secondsOf(left) });
+  const ringLabel = t('hud.find.ringLabel', { count: secondsOf(left), s: secondsOf(left) });
   return (
     <View style={[styles.panelWrap, style]}>
       <View
@@ -198,14 +200,16 @@ export function FindTargetPanel({ view, now, penaltyMs, penalty = null, style }:
         </View>
         <View style={styles.elapsed}>
           <Text style={styles.elapsedValue} testID="find-elapsed">
-            {secondsText(elapsedMs)}
+            {secondsText(elapsedMs, decimalSeparator(t))}
           </Text>
           <Text style={styles.elapsedUnit}>{t('hud.find.elapsed')}</Text>
         </View>
         {penalty ? <PenaltyChip key={penalty.id} ms={penalty.ms} t={t} style={styles.penalty} /> : null}
       </View>
       <View style={styles.rules}>
-        <Text style={styles.rule}>{t('hud.find.wrongRule', { penalty: signedText(penaltyMs / 1000) })}</Text>
+        <Text style={styles.rule}>
+          {t('hud.find.wrongRule', { penalty: signedText(penaltyMs / 1000, decimalSeparator(t)) })}
+        </Text>
         <Text style={styles.rule}>{t('hud.find.twoWrongRule')}</Text>
       </View>
     </View>
@@ -227,7 +231,7 @@ export function PenaltyChip({
   return (
     <View style={[styles.chip, style]} accessibilityElementsHidden importantForAccessibility="no">
       <Text style={styles.chipText} testID={testID}>
-        {t('hud.penalty', { s: signedText(ms / 1000) })}
+        {t('hud.penalty', { s: signedText(ms / 1000, decimalSeparator(t)) })}
       </Text>
     </View>
   );

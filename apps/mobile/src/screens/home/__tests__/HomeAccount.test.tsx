@@ -10,7 +10,16 @@ import { initAuth, setAuthDeps, useAuth } from '../../../auth/authStore';
 import { installSignedInPlayer, type TestAuth } from '../../../auth/testing/testAuth';
 import { metrics } from '../../../components/player/metrics';
 import { accountConfig } from '../../../config/account';
-import { directionProblems, PHONE, setWindow, textWidth } from '../../../components/ui/testing/layout';
+import {
+  directionProblems,
+  expectRoom,
+  fixedT,
+  layoutLanguages,
+  PHONE,
+  setWindow,
+  textWidth,
+  widthIn,
+} from '../../../components/ui/testing/layout';
 import { openPracticeRepo } from '../../../game/practiceRepo';
 import { practiceStorageOrNull } from '../../../game/storage';
 import { memoryDb } from '../../../game/testing/sqlJsDb';
@@ -163,6 +172,17 @@ describe('Home with an account (stage 8)', () => {
       expect(number).toBeLessThanOrEqual(column);
       expect(chip).toBeLessThanOrEqual(column);
       expect(number + space[2] + chip).toBeGreaterThan(column);
+      // The chip's word fits its column in every layout language the app has (localization plan 0טו).
+      const font = {
+        fontFamily: text('plateNameCompact').fontFamily!,
+        fontSize: text('plateNameCompact').fontSize!,
+      };
+      for (const lang of layoutLanguages()) {
+        const word = (await fixedT(lang, 'player'))('rating.provisional');
+        const width =
+          widthIn(lang, word, font) + 2 * metrics.rating.provisionalPaddingX + 2 * tokens.border.hairline;
+        expectRoom(lang, `player:rating.provisional "${word}"`, width, column);
+      }
     } finally {
       await restore();
     }

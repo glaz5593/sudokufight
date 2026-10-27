@@ -414,10 +414,26 @@ const CASES: Case[] = [
     live: 'match-search-live',
   },
   // ---- overlays and dialogs
+  // The language picker (localization plan 0י): its sheet, and the prompt once a language is chosen in it.
+  {
+    name: 'settings: the language sheet',
+    url: '/settings',
+    drive: async () => {
+      await tap('setting-language');
+      await settle(1000);
+    },
+    ready: 'setting-language',
+    shows: 'setting-language-system',
+  },
   {
     name: 'settings: the language prompt',
     url: '/settings',
-    drive: () => tap(`setting-language-${useSettings.getState().language === 'he' ? 'en' : 'he'}`),
+    drive: async () => {
+      await tap('setting-language');
+      await settle(1000);
+      await tap(`setting-language-${useSettings.getState().language === 'he' ? 'en' : 'he'}`);
+      await settle(1000);
+    },
     ready: 'setting-language',
     shows: 'language-confirm-confirm',
   },

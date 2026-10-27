@@ -8,7 +8,9 @@ import type {
   LockStripModel,
   Presence,
 } from './cardModel';
+import { decimalSeparator } from '../../i18n/compose';
 import { formatScore, scoreText } from './format';
+import { shownName } from './temporaryName';
 
 /**
  * The words of the player components (namespace "player"), as pure functions of a view model and t(), so the
@@ -20,11 +22,12 @@ import { formatScore, scoreText } from './format';
 export type PlayerT = TFunction<'player'>;
 export type Gender = 'female' | 'male';
 
-/** A number with a sign keeps its order inside Hebrew text. */
-const signed = scoreText;
+/** A number with a sign keeps its order inside Hebrew text; its decimal separator is the language's. */
+const signed = (n: number, t: PlayerT): string => scoreText(n, decimalSeparator(t));
 
+/** A player's name as the viewer reads it (a reset name's temporary "שחקן12345" in the viewer's language). */
 export const displayName = (m: { name: string | null; isBot: boolean }, t: PlayerT): string =>
-  m.name ?? (m.isBot ? t('bot') : t('unknownName'));
+  m.name === null || m.name === undefined ? (m.isBot ? t('bot') : t('unknownName')) : shownName(m.name, t);
 
 /** "1 טעות", "אין טעויות". */
 export const mistakesShort = (count: number, t: PlayerT): string => t('mistakes.short', { count });
@@ -32,7 +35,7 @@ export const mistakesShort = (count: number, t: PlayerT): string => t('mistakes.
 export const mistakesLong = (count: number, t: PlayerT): string => t('mistakes.long', { count });
 /** "55 נקודות", "‎−2 נקודות". */
 export const pointsText = (score: number, t: PlayerT): string =>
-  t('points', { count: score, score: signed(score) });
+  t('points', { count: score, score: signed(score, t) });
 export const secondsText = (seconds: number, t: PlayerT): string => t('seconds', { count: seconds });
 
 export const presenceText = (p: Presence, t: PlayerT, gender?: Gender): string =>
@@ -141,6 +144,7 @@ export function lockStripLabel(m: LockStripModel, t: PlayerT): string {
 /** The lead bar's label (components.md §9): "MosheG מוביל ב־15.5 נקודות", or the tie. */
 export function leadLabel(m: LeadModel, t: PlayerT, gender?: Gender): string {
   if (!m.leader) return t('lead.tieLabel');
-  const name = m.leader.name ?? t('unknownName');
-  return t('lead.label', { name, gap: formatScore(m.leader.gap), context: gender });
+  const name = m.leader.name === null ? t('unknownName') : shownName(m.leader.name, t);
+  const gap = formatScore(m.leader.gap, decimalSeparator(t));
+  return t('lead.label', { name, count: m.leader.gap, gap, context: gender });
 }

@@ -1,19 +1,12 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  AccessibilityInfo,
-  Platform,
-  type StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { AccessibilityInfo, Platform, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { Icon, type IconName } from '../Icon';
 import { Button, type ButtonVariant } from './Button';
 
+import { Text } from './Text';
 /**
  * A whole-screen or whole-list state (spec §4.1 "מצבים ריקים" and "מצבי שגיאה", §16.3; Connection-Error and
  * History-Empty in direction C): an icon, a title, a plain explanation, the small error code for support

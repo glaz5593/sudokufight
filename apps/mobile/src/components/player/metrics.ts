@@ -1,6 +1,14 @@
 import type { TextStyle } from 'react-native';
 
-import { size, tokens, type PlayerPalette } from '../../theme';
+import {
+  appTypeface,
+  lineHeightIn,
+  size,
+  tokens,
+  type PlayerPalette,
+  type Typeface,
+  uiFont,
+} from '../../theme';
 
 /**
  * Dimensions of the player components from docs/design/components.md (§2–§10) that tokens.json does not name
@@ -28,12 +36,19 @@ export function tekoStyle(px: number, weight: TekoWeight = '600'): TextStyle {
   };
 }
 
-/** A Rubik style at a size the type tokens do not have. */
-export function rubikStyle(px: number, weight: RubikWeight = '500'): TextStyle {
+/**
+ * A Rubik style at a size the type tokens do not have, in the app's typeface (theme/typeface.ts): another font
+ * and a taller least line height where the language needs them, Rubik at 1.2 in Hebrew and English.
+ */
+export function rubikStyle(
+  px: number,
+  weight: RubikWeight = '500',
+  typeface: Typeface = appTypeface(),
+): TextStyle {
   return {
-    fontFamily: tokens.font.load.Rubik[weight],
+    ...uiFont(typeface, weight),
     fontSize: px,
-    lineHeight: Math.round(px * RUBIK_LINE),
+    lineHeight: lineHeightIn(typeface, px, Math.round(px * RUBIK_LINE)),
     includeFontPadding: false,
   };
 }

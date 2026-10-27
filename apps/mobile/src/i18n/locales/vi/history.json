@@ -1,0 +1,98 @@
+{
+  "title": "Lịch sử",
+  "summary": {
+    "games_other": "{{count}} trận",
+    "winRate": "{{rate}} thắng",
+    "practices_other": "{{count}} lượt luyện tập",
+    "streak": "Chuỗi thắng",
+    "streakLabel_other": "Chuỗi thắng: {{count}} trận"
+  },
+  "filters": {
+    "label": "Lọc trận đấu",
+    "all": "Tất cả",
+    "ranked": "Xếp hạng",
+    "practice": "Luyện tập"
+  },
+  "loading": "Đang tải các trận của bạn…",
+  "more": "Thêm trận đấu",
+  "empty": {
+    "title": "Chưa có trận đấu nào",
+    "body": "Mọi trận đấu đều được lưu ở đây để xem lại: từng nước đi một, kèm lý do vì sao mỗi số được đặt vào chỗ của nó.",
+    "action": "Chơi trận đầu tiên"
+  },
+  "notes": {
+    "practice": "Trận luyện tập không làm thay đổi điểm xếp hạng, nhưng bạn vẫn có thể xem lại.",
+    "offline": "Không có kết nối với máy chủ: chỉ hiện các trận luyện tập trên điện thoại này.",
+    "signedOut": "Trận xếp hạng sẽ hiện ở đây khi bạn đăng nhập.",
+    "rankedError": "Không tải được các trận xếp hạng của bạn.",
+    "practiceUnavailable": "Không đọc được các trận luyện tập đã lưu trên điện thoại này.",
+    "retry": "Thử lại"
+  },
+  "states": {
+    "offlineTitle": "Không có kết nối với máy chủ",
+    "offlineBody": "Các trận xếp hạng sẽ tải khi có kết nối trở lại. Trận luyện tập trên điện thoại này vẫn hiện ở đây kể cả khi không có mạng.",
+    "errorTitle": "Không tải được các trận của bạn",
+    "errorBody": "Máy chủ không phản hồi đúng cách. Hãy thử lại sau giây lát.",
+    "practiceTitle": "Không đọc được các trận luyện tập",
+    "practiceBody": "Không mở được các trận luyện tập đã lưu trên điện thoại này. Hãy thử lại, và nếu vẫn bị, hãy khởi động lại ứng dụng."
+  },
+  "card": {
+    "mode": {
+      "ranked": "Xếp hạng",
+      "solo": "Tự luyện tập",
+      "bot": "Luyện tập với máy"
+    },
+    "outcome": {
+      "win": "Thắng",
+      "loss": "Thua",
+      "tie": "Hòa",
+      "completed": "Hoàn thành bảng",
+      "ended": "Đã kết thúc",
+      "interrupted": "Bị gián đoạn"
+    },
+    "place": "Hạng {{place}}",
+    "against_other": "với {{count}} đối thủ",
+    "alone": "Một mình",
+    "points": "{{score}} điểm",
+    "unrated": "Không xếp hạng",
+    "rating": "Điểm xếp hạng {{delta}}",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "replay": "Xem lại",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Mở phần xem lại"
+  },
+  "results": {
+    "replay": "Xem lại",
+    "replayHint": "Trận đấu từ đầu, từng bước một, có giải thích mọi nước đi",
+    "rating": {
+      "title": "Thay đổi điểm xếp hạng · {{type}}",
+      "from": "từ {{before}}",
+      "label": "Thay đổi điểm xếp hạng: {{delta}}, từ {{before}} thành {{after}}",
+      "provisional": "Điểm xếp hạng tạm tính: mức thay đổi được nhân đôi trong 10 trận đầu tiên",
+      "perOpponent": "Tính riêng với từng đối thủ",
+      "pairLabel": "với {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "với {{name}}: không mất điểm xếp hạng, bạn rời đi trước nước đi đầu tiên",
+        "leftNotBehind": "với {{name}}: không mất điểm xếp hạng, bạn không bị dẫn điểm khi rời đi",
+        "opponentLeftBeforeMyMove": "với {{name}}: không được cộng điểm xếp hạng, đối thủ rời đi trước nước đi đầu tiên của bạn",
+        "opponentLeftAhead": "với {{name}}: không được cộng điểm xếp hạng, bạn đang bị dẫn điểm khi đối thủ rời đi"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_other": "{{name}} · {{score}} điểm · {{mistakes}} · điểm xếp hạng {{delta}}",
+    "ranking": {
+      "title": "Thứ hạng chung cuộc",
+      "left": "Đã rời trận",
+      "label_other": "Hạng {{place}}: {{name}} · {{score}} điểm · {{mistakes}}",
+      "labelRating_other": "Hạng {{place}}: {{name}} · {{score}} điểm · {{mistakes}} · điểm xếp hạng {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "Nhiều điểm nhất cho một nước đi",
+      "fewestMistakes": "Ít lỗi nhất. Nếu bằng nhau, xét điểm cao hơn",
+      "fastest": "Thời gian suy nghĩ trung bình ngắn nhất cho mỗi nước đi đúng (ít nhất 5 nước đi)",
+      "comeback": "Thắng sau khi bị dẫn từ 15 điểm trở lên",
+      "mostPoints": "Nhiều điểm nhất từ các nước đi đúng, trước khi trừ điểm phạt"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import type { Digit } from '@sudoku-fight/engine';
 import { memo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type GestureResponderEvent, Pressable, StyleSheet, Text } from 'react-native';
+import { type GestureResponderEvent, Pressable, StyleSheet } from 'react-native';
 import Animated, {
   ReduceMotion,
   useAnimatedStyle,
@@ -14,6 +14,7 @@ import Animated, {
 
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion } from '../../theme/motion';
+import { Text } from '../ui/Text';
 import { springs, timing } from './animation';
 import type { KeyModel, KeypadModel } from './boardModel';
 import { keyLabel } from './labels';

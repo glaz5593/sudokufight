@@ -1,11 +1,12 @@
 import type { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { Icon, type IconName } from '../Icon';
 import { Spinner } from './Spinner';
 
+import { Text } from './Text';
 export interface RowButtonProps {
   icon: IconName;
   title: string;
@@ -89,7 +90,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space[7],
-    height: size.listRow,
+    // The least: a taller script (Thai, Arabic) may need more, never cut (localization plan 0ט).
+    minHeight: size.listRow,
     paddingHorizontal: space[8],
     borderRadius: radius.button,
     borderWidth: tokens.border.hairline,

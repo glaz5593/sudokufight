@@ -1,9 +1,10 @@
 import type { Expression } from '@sudoku-fight/avatars';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AVATAR_REACTIONS, type AvatarIdOrNone } from '../../../avatars';
 import { Avatar, Flag, paletteAt, SeatGlyph } from '../../../components/player';
+import { Text } from '../../../components/ui/Text';
 import { color, text } from '../../../theme';
 import { arsenalMetrics as m } from './metrics';
 import { isolate } from './wording';

@@ -1,0 +1,98 @@
+{
+  "title": "Riwayat",
+  "summary": {
+    "games_other": "{{count}} pertandingan",
+    "winRate": "{{rate}} menang",
+    "practices_other": "{{count}} latihan",
+    "streak": "Rentetan",
+    "streakLabel_other": "Rentetan kemenangan: {{count}} kali menang"
+  },
+  "filters": {
+    "label": "Saring pertandingan",
+    "all": "Semua",
+    "ranked": "Mode ranked",
+    "practice": "Latihan"
+  },
+  "loading": "Memuat pertandinganmu…",
+  "more": "Pertandingan lainnya",
+  "empty": {
+    "title": "Belum ada pertandingan di sini",
+    "body": "Setiap pertandingan disimpan di sini untuk ditonton lagi: langkah demi langkah, beserta alasan setiap angka ditempatkan di sana.",
+    "action": "Mainkan pertandingan pertamamu"
+  },
+  "notes": {
+    "practice": "Pertandingan latihan tidak mengubah ratingmu, tapi kamu juga bisa menontonnya lagi.",
+    "offline": "Tidak ada koneksi ke server: hanya menampilkan pertandingan latihan di ponsel ini.",
+    "signedOut": "Pertandingan ranked muncul di sini setelah kamu masuk.",
+    "rankedError": "Kami tidak bisa memuat pertandingan ranked milikmu.",
+    "practiceUnavailable": "Kami tidak bisa membaca pertandingan latihan yang tersimpan di ponsel ini.",
+    "retry": "Coba lagi"
+  },
+  "states": {
+    "offlineTitle": "Tidak ada koneksi ke server",
+    "offlineBody": "Pertandingan ranked milikmu dimuat saat koneksi kembali. Pertandingan latihan di ponsel ini tetap muncul di sini meski offline.",
+    "errorTitle": "Kami tidak bisa memuat pertandinganmu",
+    "errorBody": "Server tidak menjawab dengan benar. Coba lagi sebentar lagi.",
+    "practiceTitle": "Kami tidak bisa membaca pertandingan latihanmu",
+    "practiceBody": "Pertandingan latihan yang tersimpan di ponsel ini tidak bisa dibuka. Coba lagi, dan jika masih terjadi, mulai ulang aplikasinya."
+  },
+  "card": {
+    "mode": {
+      "ranked": "Mode ranked",
+      "solo": "Latihan solo",
+      "bot": "Latihan lawan bot"
+    },
+    "outcome": {
+      "win": "Menang",
+      "loss": "Kalah",
+      "tie": "Seri",
+      "completed": "Papan selesai",
+      "ended": "Latihan diakhiri",
+      "interrupted": "Terhenti"
+    },
+    "place": "Posisi {{place}}",
+    "against_other": "vs {{count}} lawan",
+    "alone": "Sendiri",
+    "points": "{{score}} poin",
+    "unrated": "Tanpa rating",
+    "rating": "Rating: {{delta}}",
+    "today": "Hari ini",
+    "yesterday": "Kemarin",
+    "replay": "Tonton replay",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Membuka replay"
+  },
+  "results": {
+    "replay": "Tonton replay",
+    "replayHint": "Pertandingan dari awal, langkah demi langkah, dengan penjelasan setiap langkah",
+    "rating": {
+      "title": "Perubahan rating · {{type}}",
+      "from": "dari {{before}}",
+      "label": "Perubahan rating: {{delta}}, dari {{before}} ke {{after}}",
+      "provisional": "Rating sementara: perubahan dihitung dua kali lipat di 10 pertandingan pertamamu",
+      "perOpponent": "Dihitung terhadap setiap lawan secara terpisah",
+      "pairLabel": "Lawan {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "Lawan {{name}}: rating tidak berkurang, kamu keluar sebelum langkah pertamamu",
+        "leftNotBehind": "Lawan {{name}}: rating tidak berkurang, kamu tidak tertinggal saat keluar",
+        "opponentLeftBeforeMyMove": "Lawan {{name}}: rating tidak bertambah, dia keluar sebelum langkah pertamamu",
+        "opponentLeftAhead": "Lawan {{name}}: rating tidak bertambah, kamu tertinggal saat dia keluar"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_other": "{{name}} · {{score}} poin · {{mistakes}} · rating {{delta}}",
+    "ranking": {
+      "title": "Klasemen akhir",
+      "left": "Sudah keluar",
+      "label_other": "Posisi {{place}}: {{name}} · {{score}} poin · {{mistakes}}",
+      "labelRating_other": "Posisi {{place}}: {{name}} · {{score}} poin · {{mistakes}} · rating {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "Poin terbanyak dari satu langkah",
+      "fewestMistakes": "Kesalahan paling sedikit. Jika sama, skor yang lebih tinggi",
+      "fastest": "Rata-rata waktu pikir terendah per langkah benar (minimal 5 langkah)",
+      "comeback": "Menang setelah tertinggal 15 poin atau lebih",
+      "mostPoints": "Poin terbanyak dari langkah benar, sebelum penalti"
+    }
+  }
+}

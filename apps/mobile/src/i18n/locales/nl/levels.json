@@ -1,0 +1,674 @@
+{
+  "title": "Oefenen in etappes",
+  "stage": "Etappe {{n}}",
+  "chapter": "Hoofdstuk {{n}}",
+  "units": {
+    "seconds": "sec."
+  },
+  "stars": {
+    "of3": {
+      "0": "geen sterren",
+      "1": "één van de drie sterren",
+      "2": "twee van de drie sterren",
+      "3": "drie van de drie sterren"
+    },
+    "count_one": "{{count}} ster",
+    "count_other": "{{count}} sterren"
+  },
+  "kinds": {
+    "find": {
+      "name": "Precieze plek",
+      "label": "Precieze plek"
+    },
+    "findDuel": {
+      "name": "Race tegen de bot",
+      "label": "Race tegen de bot"
+    },
+    "fillBox": {
+      "name": "Vul het blok",
+      "label": "Vul het blok"
+    },
+    "duel": {
+      "name": "Duel tot {{target}}",
+      "label": "Duel tot {{target}}"
+    },
+    "spotError": {
+      "name": "Vind de fout",
+      "label": "Vind de fout"
+    },
+    "pointHunter": {
+      "name": "Puntenjager",
+      "label": "Puntenjager"
+    },
+    "chain": {
+      "name": "Keten",
+      "label": "Keten"
+    },
+    "fillRow": {
+      "name": "Vul de rij",
+      "label": "Vul de rij"
+    },
+    "fillCol": {
+      "name": "Vul de kolom",
+      "label": "Vul de kolom"
+    },
+    "puzzle": {
+      "name": "Puzzel",
+      "label": "Puzzel"
+    }
+  },
+  "boss": {
+    "chip": "Eindbaas",
+    "name": "Eindbaasetappe",
+    "label": "eindbaas, {{kind}}",
+    "versus": "De eindbaas: {{bot}}",
+    "band": "Eindbaas · Hoofdstuk {{chapter}}",
+    "botLabel": "{{name}}, de eindbaas",
+    "intro": {
+      "title": "Eindbaasetappe!",
+      "sub": "Etappe {{n}} · {{kind}}",
+      "harder": "Wat is moeilijker",
+      "label": "Eindbaasetappe! Etappe {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "Je eerste bot: {{bot}}",
+      "faster": "{{bot}} is {{percent}} sneller",
+      "overlord": "Overlord",
+      "moreCells_one": "{{cells}} ontbrekend vakje in plaats van {{usual}}",
+      "moreCells_other": "{{cells}} ontbrekende vakjes in plaats van {{usual}}"
+    },
+    "result": {
+      "won": "Eindbaas verslagen!",
+      "lost": "De eindbaas won deze keer",
+      "gateOpen": "Poort naar hoofdstuk {{n}}: {{stars}} · open!",
+      "gateClosed": "Poort naar hoofdstuk {{n}}: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Blok {{n}}",
+    "row": "Rij {{row}}",
+    "col": "Kolom {{n}}",
+    "mapLabel": "Kaart van het bord: {{region}}"
+  },
+  "goals": {
+    "find": "Vind de precieze plek van één cijfer. De etappe eindigt na {{s}} sec.",
+    "findDuel_one": "{{spots}} plek tegen {{bot}}, tot {{s}} sec. Wie hem als eerste vindt, krijgt hem.",
+    "findDuel_other": "{{spots}} plekken tegen {{bot}}, tot {{s}} sec. Wie een plek als eerste vindt, krijgt hem.",
+    "fillBox_one": "Vul het ene ontbrekende vakje van één blok, tot {{s}} sec.",
+    "fillBox_other": "Vul de {{cells}} ontbrekende vakjes van één blok, tot {{s}} sec.",
+    "fillRow_one": "Vul het ene ontbrekende vakje van één rij, tot {{s}} sec.",
+    "fillRow_other": "Vul de {{cells}} ontbrekende vakjes van één rij, tot {{s}} sec.",
+    "fillCol_one": "Vul het ene ontbrekende vakje van één kolom, tot {{s}} sec.",
+    "fillCol_other": "Vul de {{cells}} ontbrekende vakjes van één kolom, tot {{s}} sec.",
+    "puzzle": "Zet de blokken op hun plek. Een foute wissel kost {{penalty}} sec. extra. Tot {{s}} sec.",
+    "duel_one": "Tegen {{bot}}, tot {{target}} punt of {{s}} sec. Sterren naar je voorsprong.",
+    "duel_other": "Tegen {{bot}}, tot {{target}} punten of {{s}} sec. Sterren naar je voorsprong.",
+    "spotError_one": "Er zit één fout cijfer tussen de jouwe. Tot {{s}} sec.",
+    "spotError_other": "Er zitten {{count}} foute cijfers tussen de jouwe. Tot {{s}} sec.",
+    "pointHunter_one": "{{moves}} zet, tot {{s}} sec. Scoor zoveel mogelijk punten.",
+    "pointHunter_other": "{{moves}} zetten, tot {{s}} sec. Scoor zoveel mogelijk punten.",
+    "chain_one": "Een keten van {{steps}} stap, tot {{s}} sec. Er is steeds maar één vakje op te lossen.",
+    "chain_other": "Een keten van {{steps}} stappen, tot {{s}} sec. Er is steeds maar één vakje op te lossen."
+  },
+  "scale": {
+    "label": "Te verdienen sterren",
+    "row": "{{stars}}: {{text}}",
+    "time": "tot {{s}} sec.",
+    "spots_one": "{{count}} plek",
+    "spots_other": "{{count}} plekken",
+    "spotsRange_one": "{{range}} plek",
+    "spotsRange_other": "{{range}} plekken",
+    "gap": "voorsprong van {{gap}}+",
+    "lead": "voor aan het eind",
+    "points": "{{points}}+ punten",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "De etappekaart",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_one": "{{stars}} ster van {{max}}, spring naar een hoofdstuk",
+    "totalLabel_other": "{{stars}} sterren van {{max}}, spring naar een hoofdstuk",
+    "lockedToast": "Speel eerst etappe {{n}}",
+    "gateToast_one": "Hoofdstuk {{chapter}} gaat open bij {{need}} ster in hoofdstuk {{prev}}",
+    "gateToast_other": "Hoofdstuk {{chapter}} gaat open bij {{need}} sterren in hoofdstuk {{prev}}",
+    "loading": "De kaart laden…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_one": "{{stars}} ster van {{max}}",
+    "label_other": "{{stars}} sterren van {{max}}"
+  },
+  "node": {
+    "played": "Etappe {{n}}, {{kind}}, {{stars}}",
+    "current": "Etappe {{n}}, {{kind}}, de volgende",
+    "open": "Etappe {{n}}, {{kind}}, nog niet gespeeld",
+    "locked": "Etappe {{n}}, op slot"
+  },
+  "gate": {
+    "need_one": "Gaat open bij {{need}} ster",
+    "need_other": "Gaat open bij {{need}} sterren",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Speel de eindbaasetappe om het te openen",
+    "open": "Hoofdstuk {{n}} open",
+    "lockedLabel_one": "Hoofdstuk {{n}} op slot, {{stars}} van {{need}} ster in hoofdstuk {{prev}}",
+    "lockedLabel_other": "Hoofdstuk {{n}} op slot, {{stars}} van {{need}} sterren in hoofdstuk {{prev}}",
+    "bossLabel_one": "Hoofdstuk {{n}} op slot, {{stars}} van {{need}} ster in hoofdstuk {{prev}}. Speel de eindbaasetappe om het te openen",
+    "bossLabel_other": "Hoofdstuk {{n}} op slot, {{stars}} van {{need}} sterren in hoofdstuk {{prev}}. Speel de eindbaasetappe om het te openen",
+    "openLabel_one": "Hoofdstuk {{n}} open, geopend bij {{need}} ster uit hoofdstuk {{prev}}",
+    "openLabel_other": "Hoofdstuk {{n}} open, geopend bij {{need}} sterren uit hoofdstuk {{prev}}"
+  },
+  "jump": {
+    "title": "Kies een hoofdstuk",
+    "row": "Hoofdstuk {{n}} · {{name}}",
+    "rowLabel_one": "Hoofdstuk {{n}}, {{name}}, {{stars}} ster van {{max}}, {{state}}",
+    "rowLabel_other": "Hoofdstuk {{n}}, {{name}}, {{stars}} sterren van {{max}}, {{state}}",
+    "open": "vrijgespeeld",
+    "locked": "op slot"
+  },
+  "gateSheet": {
+    "title": "Hoofdstuk {{n}} op slot",
+    "missing_one": "Je hebt {{need}} ster nodig in hoofdstuk {{prev}}. Je hebt er {{stars}}, nog {{missing}} te gaan.",
+    "missing_other": "Je hebt {{need}} sterren nodig in hoofdstuk {{prev}}. Je hebt er {{stars}}, nog {{missing}} te gaan.",
+    "bossOnly": "Je hebt genoeg sterren. Speel etappe {{boss}} (de eindbaas) om het te openen",
+    "progress": "Sterren in hoofdstuk {{prev}} voor de poort: {{stars}} van {{need}}",
+    "rowsTitle": "Nog te verbeteren",
+    "rowsNote_one": "Daarin nog tot {{count}} ster extra",
+    "rowsNote_other": "Daarin nog tot {{count}} sterren extra",
+    "row": "Etappe {{n}} · {{kind}}",
+    "rowLabel": "Speel etappe {{n}} opnieuw, {{kind}}, {{stars}}",
+    "rowNewLabel": "Speel etappe {{n}}, {{kind}}, nog niet gespeeld",
+    "rowPlay": "Spelen",
+    "primary": "Speel etappe {{n}}",
+    "footnote": "De meeste etappes duren tot 30 sec.; vul- en puzzeletappes tot 60. Je beste sterren blijven bewaard."
+  },
+  "panel": {
+    "label": "De gekozen etappe",
+    "title": "Etappe {{n}} · {{kind}}",
+    "sub": "Hoofdstuk {{chapter}} · {{name}}",
+    "subBot": "Hoofdstuk {{chapter}} · tegen {{bot}}",
+    "subBoss": "Hoofdstuk {{chapter}} · de eindbaas: {{bot}}",
+    "next": "Volgende",
+    "best": "Beste {{metric}}",
+    "bestLabel": "Je beste: {{stars}}, {{metric}}",
+    "bestStars": "Je beste: {{stars}}",
+    "bot": "{{name}} · Niveau {{level}} · {{title}}",
+    "continue": "Verder · etappe {{n}}",
+    "play": "Spelen",
+    "lockedTitle": "Etappe {{n}} · op slot",
+    "lockedSub": "Hoofdstuk {{chapter}} · {{kind}}",
+    "lockedPrev": "Speel eerst etappe {{n}}.",
+    "lockedGate_one": "Hoofdstuk {{chapter}} zit op slot: je hebt {{need}} ster nodig in hoofdstuk {{prev}}. Je hebt er {{stars}}.",
+    "lockedGate_other": "Hoofdstuk {{chapter}} zit op slot: je hebt {{need}} sterren nodig in hoofdstuk {{prev}}. Je hebt er {{stars}}.",
+    "gateTitleOpen": "Hoofdstuk {{n}} open",
+    "gateTitleClosed": "Hoofdstuk {{n}} op slot",
+    "gateSub": "{{name}} · etappes {{range}}",
+    "gateOpenBody_one": "Open: je verdiende {{stars}} ster in hoofdstuk {{prev}}, en de poort vraagt er {{need}}.",
+    "gateOpenBody_other": "Open: je verdiende {{stars}} sterren in hoofdstuk {{prev}}, en de poort vraagt er {{need}}.",
+    "gateBar": "Sterren voor de poort: {{stars}} van {{need}}"
+  },
+  "ready": {
+    "title": "Klaar?",
+    "label": "Klaar? Etappe {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "Waar hoort de {{digit}}?",
+    "raceSpots_one": "{{count}} plek, een race tegen {{bot}}",
+    "raceSpots_other": "{{count}} plekken, een race tegen {{bot}}"
+  },
+  "tutorial": {
+    "title": "Zo speel je",
+    "got": "Begrepen",
+    "skip": "Overslaan",
+    "panel": "Afbeelding {{n}} van {{total}}: {{text}}",
+    "alsoBoss": "Dit is ook een eindbaas: de tiende etappe van elk hoofdstuk.",
+    "find": {
+      "1": "Eén vraag, zoals “Waar hoort de {{digit}}?”, en een gebied dat op het bord is gemarkeerd: een blok, een rij, een kolom of het hele bord.",
+      "2": "Vind het ene vakje waar het cijfer moet staan, en tik erop.",
+      "3": "Een foute tik kost 5 seconden extra. Na twee foute tikken is de etappe voorbij."
+    },
+    "findDuel": {
+      "1": "Vijf plekken, de een na de ander. De bot zoekt met je mee.",
+      "2": "Wie het eerst op het juiste vakje tikt, krijgt de plek.",
+      "3": "Een foute tik: 3 seconden niet tikken, terwijl de bot verder zoekt."
+    },
+    "fillBox": {
+      "1": "Eén blok met ontbrekende vakjes, in een gouden kader.",
+      "2": "Kies een vakje in het blok en typ een cijfer. Vakjes daarbuiten kun je niet kiezen.",
+      "3": "Een fout cijfer kost 5 seconden extra. Hoe sneller je klaar bent, hoe meer sterren."
+    },
+    "duel": {
+      "1": "Jij en de bot op hetzelfde bord, net als in een spel.",
+      "2": "Wie het eerst 30 punten heeft, wint, of wie na 30 seconden voorstaat.",
+      "3": "Sterren naar je voorsprong aan het eind: 8 punten voor twee sterren, 15 voor drie."
+    },
+    "spotError": {
+      "1": "De donkere cijfers zijn van het bord, en die kloppen altijd.",
+      "2": "Tussen de jouwe zitten foute cijfers. Tik erop.",
+      "3": "Tikken op een goed cijfer kost 5 seconden extra."
+    },
+    "pointHunter": {
+      "1": "Je hebt maar drie zetten.",
+      "2": "Een vakje in een leeg gebied is meer punten waard.",
+      "3": "Sterren naar hoe dicht je bij het beste van het bord komt."
+    },
+    "chain": {
+      "1": "Op elk moment is er maar één vakje op het bord op te lossen.",
+      "2": "Vul het in, en het volgende gaat open.",
+      "3": "Een cijfer in een vakje dat nog niet te weten is, kost 5 seconden en wordt niet geplaatst."
+    },
+    "boss": {
+      "1": "De tiende etappe van elk hoofdstuk is een eindbaas: één gevecht tegen een bot, moeilijker dan de etappes ervoor.",
+      "2": "Voordat het begint, zie je wat er moeilijker is. Meestal: de bot is sneller.",
+      "3": "Heb je de eindbaas gespeeld en 20 sterren in het hoofdstuk, dan gaat het volgende hoofdstuk open."
+    },
+    "fillRow": {
+      "1": "Eén rij met ontbrekende vakjes, in een gouden kader.",
+      "2": "Kies een vakje in de rij en typ een cijfer. Vakjes daarbuiten kun je niet kiezen.",
+      "3": "Een fout cijfer kost 5 seconden extra. Hoe sneller je klaar bent, hoe meer sterren."
+    },
+    "fillCol": {
+      "1": "Eén kolom met ontbrekende vakjes, in een gouden kader.",
+      "2": "Kies een vakje in de kolom en typ een cijfer. Vakjes daarbuiten kun je niet kiezen.",
+      "3": "Een fout cijfer kost 5 seconden extra. Hoe sneller je klaar bent, hoe meer sterren."
+    },
+    "puzzle": {
+      "1": "Negen volle blokken, in de verkeerde volgorde.",
+      "2": "Sleep een blok op een ander en ze wisselen van plek. Een blok met een slotje zit vast. Een wissel die geen van beide blokken op zijn plek zet, kost 5 seconden extra.",
+      "3": "Als elke rij en elke kolom klopt, is de etappe voorbij. Hoe sneller je klaar bent, hoe meer sterren."
+    }
+  },
+  "result": {
+    "completed": "Etappe {{n}} voltooid",
+    "ended": "Etappe {{n}}",
+    "reasons": {
+      "timeUp": "De tijd is om",
+      "failed": "Twee foute tikken",
+      "quit": "Etappe verlaten",
+      "botWon": "{{bot}} was je voor"
+    },
+    "metric": {
+      "spotsOf_one": "van {{total}} plek",
+      "spotsOf_other": "van {{total}} plekken",
+      "gap": "Voorsprong",
+      "points": "punten",
+      "found": "Gevonden",
+      "foundOf": "van {{total}}"
+    },
+    "newBest": "Nieuw record!",
+    "yourBest": "Je beste:",
+    "yourBestLabel": "Je beste: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, een schatting: de server bevestigt het",
+    "chapterLabel": "Dit hoofdstuk",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "de poort vraagt {{need}}",
+    "chapterOpen": "de poort is open",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_one": "Dit hoofdstuk: {{stars}} ster van {{max}}. {{gate}}",
+    "chapterLine_other": "Dit hoofdstuk: {{stars}} sterren van {{max}}. {{gate}}",
+    "mistakes_one": "{{count}} fout",
+    "mistakes_other": "{{count}} fouten",
+    "noMistakes": "Geen fouten",
+    "swaps_one": "{{count}} wissel · het minst: {{min}}",
+    "swaps_other": "{{count}} wissels · het minst: {{min}}",
+    "time": "Tijd: {{s}} sec.",
+    "youWon": "Jij wint",
+    "botWon": "{{bot}} wint",
+    "tie": "Gelijkspel",
+    "bossTie": "Gelijkspel: de eindbaas houdt stand",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_one": "{{count}} plek",
+    "opponentSpots_other": "{{count}} plekken",
+    "opponentScore_one": "{{score}} punt",
+    "opponentScore_other": "{{score}} punten",
+    "bestMove_one": "De beste zet: {{digit}} in {{cell}} · {{points}} punt",
+    "bestMove_other": "De beste zet: {{digit}} in {{cell}} · {{points}} punten",
+    "why": "Waarom?",
+    "next": "Volgende etappe",
+    "again": "Opnieuw",
+    "toMap": "Naar de kaart",
+    "last": "Dat was de laatste etappe. Goed gedaan!",
+    "nextLocked": "De volgende etappe zit nog op slot"
+  },
+  "unlocked": {
+    "heading": "Een nieuw hoofdstuk is open!",
+    "title": "Hoofdstuk {{n}} · {{name}}",
+    "news": "Nieuw: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Doorgaan",
+    "label": "Een nieuw hoofdstuk is open: hoofdstuk {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: “Ik begin pas, maar ik ben sneller dan ik eruitzie.”",
+      "2": "Biscuit: “Relaxed, maar ik laat je niet zomaar gaan.”",
+      "3": "Mr. Hoot: “Ik zie elk vakje. Pas op.”",
+      "4": "Maestro: “Snel, precies, en met stijl.”",
+      "5": "Overlord: “Je bent ver gekomen. Hier houdt het op.”"
+    }
+  },
+  "exit": {
+    "button": "Etappe verlaten",
+    "title": "Etappe verlaten?",
+    "body": "Je krijgt 0 sterren, en de volgende etappe gaat open.",
+    "confirm": "Verlaten",
+    "cancel": "Doorspelen"
+  },
+  "card": {
+    "line": "Etappes: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_one": "Etappes: {{played}}, {{count}} ster",
+    "label_other": "Etappes: {{played}}, {{count}} sterren"
+  },
+  "chapters": {
+    "1": {
+      "name": "Eerste stappen",
+      "news": "Precieze plek, vul het blok, de puzzel en vul de rij"
+    },
+    "2": {
+      "name": "De uitdaging van Pip",
+      "news": "Vul de kolom, en race tegen de bot"
+    },
+    "3": {
+      "name": "Eerste duel",
+      "news": "Duel tot 30, en vind de fout"
+    },
+    "4": {
+      "name": "Speurneus",
+      "news": "Een keten van 3 stappen, en een puzzel met 4 beweegbare blokken"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "Een nieuwe bot: Biscuit, de puntenjager, en vulopdrachten waarin elk cijfer minstens één keer ontbreekt"
+    },
+    "6": {
+      "name": "Rijen en kolommen",
+      "news": "Een normaal bord, en doelen in een rij of een kolom"
+    },
+    "7": {
+      "name": "Puntenjager",
+      "news": "Een puzzel met 5 beweegbare blokken"
+    },
+    "8": {
+      "name": "Twee fouten",
+      "news": "Twee fouten op het bord, en een duel op een normaal bord"
+    },
+    "9": {
+      "name": "Keten",
+      "news": "Elke soort opnieuw, een stapje moeilijker"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "Een nieuwe bot: Mr. Hoot, en 7 ontbrekende vakjes bij het vullen"
+    },
+    "11": {
+      "name": "Het hele bord",
+      "news": "Doelen overal op het bord"
+    },
+    "12": {
+      "name": "Sneller",
+      "news": "Puntenjager in 25 seconden, op een normaal bord"
+    },
+    "13": {
+      "name": "Stille fouten",
+      "news": "Fouten zonder zichtbare botsing"
+    },
+    "14": {
+      "name": "Lange keten",
+      "news": "Een keten van 4 stappen, en 9 ontbrekende vakjes bij het vullen"
+    },
+    "15": {
+      "name": "Halverwege",
+      "news": "Elke soort opnieuw"
+    },
+    "16": {
+      "name": "Moeilijke borden",
+      "news": "Een moeilijk bord, en een puzzel met 6 beweegbare blokken"
+    },
+    "17": {
+      "name": "Eliminaties",
+      "news": "Doelen die pas na een eliminatie zichtbaar worden"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "Een nieuwe bot: Maestro"
+    },
+    "19": {
+      "name": "Valkuilen",
+      "news": "Drie fouten op het bord"
+    },
+    "20": {
+      "name": "De zware poort",
+      "news": "Een leeg blok waarvoor een eliminatie nodig is"
+    },
+    "21": {
+      "name": "Paren",
+      "news": "Paren, en puntenjager in 20 seconden"
+    },
+    "22": {
+      "name": "Keten van 5",
+      "news": "Een keten van 5 stappen"
+    },
+    "23": {
+      "name": "Bijna leeg",
+      "news": "Borden met heel weinig cijfers"
+    },
+    "24": {
+      "name": "Wedloop",
+      "news": "Duels op moeilijke borden"
+    },
+    "25": {
+      "name": "Kenners",
+      "news": "Alles opnieuw, in een hoog tempo"
+    },
+    "26": {
+      "name": "Kampioenschap",
+      "news": "Drie sterren alleen voor de snelste spelers"
+    },
+    "27": {
+      "name": "Kampioenschap II",
+      "news": "Puntenjager: drie sterren alleen dicht bij het beste"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "De eindbaas: Overlord, in een race"
+    },
+    "29": {
+      "name": "De finale",
+      "news": "Een snelle keten, en Overlord als eindbaas in een duel"
+    },
+    "30": {
+      "name": "Kampioen",
+      "news": "Alles samen, op zijn moeilijkst"
+    }
+  },
+  "hud": {
+    "secondsAdded_one": "{{count}} seconde erbij",
+    "secondsAdded_other": "{{count}} seconden erbij",
+    "sub": "{{kind}} · Hoofdstuk {{chapter}}",
+    "subFind": "Waar hoort de {{digit}}? · Hoofdstuk {{chapter}}",
+    "subRace_one": "{{kind}} · {{spots}} plek · Hoofdstuk {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} plekken · Hoofdstuk {{chapter}}",
+    "clockLabel_one": "Nog {{s}} seconde van {{limit}}",
+    "clockLabel_other": "Nog {{s}} seconden van {{limit}}",
+    "penalty": "{{s}} sec.",
+    "me": "Ik",
+    "find": {
+      "tap": "Tik waar de {{digit}} moet staan",
+      "where": "<scope>{{scope}}</scope> · geen toetsen, alleen tikken",
+      "elapsed": "sec. tot nu toe",
+      "targetLabel": "Het doel: de {{digit}} {{scope}}. {{left}}",
+      "ringLabel_one": "Nog {{s}} seconde in de etappe",
+      "ringLabel_other": "Nog {{s}} seconden in de etappe",
+      "one": "Eén vondst in de etappe",
+      "wrongRule": "Foute tik: {{penalty}} sec.",
+      "twoWrongRule": "Twee foute tikken: de etappe eindigt",
+      "found": "Gevonden: de {{digit}} in {{cell}}",
+      "missed": "Niet in {{cell}}. {{penalty}} sec.",
+      "answer": "Het antwoord: {{cell}}"
+    },
+    "scope": {
+      "box": "in blok {{n}}",
+      "row": "in rij {{row}}",
+      "col": "in kolom {{n}}",
+      "board": "overal op het bord"
+    },
+    "race": {
+      "task": "Plek {{n}} van {{total}} · vind de {{digit}} {{scope}}",
+      "left": "Nog {{s}} sec.",
+      "searching": "Zoeken…",
+      "spots_one": "{{count}} plek",
+      "spots_other": "{{count}} plekken",
+      "frozen_one": "Bevroren, {{count}} seconde",
+      "frozen_other": "Bevroren, {{count}} seconden",
+      "out": "Uit tot de volgende plek",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, bot van niveau {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} zoekt",
+      "mine": "Jij pakte plek {{n}}",
+      "theirs": "{{name}} pakte plek {{n}}",
+      "void": "Niemand pakte plek {{n}}",
+      "next": "Plek {{n}}: de {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "Vul blok {{n}}",
+      "cells_one": "{{done}}/{{total}} vakje",
+      "cells_other": "{{done}}/{{total}} vakjes",
+      "cellsLabel_one": "Je hebt {{done}} van het ene ontbrekende vakje ingevuld",
+      "cellsLabel_other": "Je hebt {{done}} van de {{total}} ontbrekende vakjes ingevuld",
+      "mistakes_one": "Fout {{penalty}} sec.",
+      "mistakes_other": "{{count}} fouten {{penalty}} sec.",
+      "mistakesLabel_one": "Eén fout, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_other": "{{count}} fouten, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "Een fout kost 5 seconden extra, en dat cijfer kan daarna niet meer in dat vakje",
+      "timeLabel_one": "Tijd: {{s}} seconde van {{limit}}",
+      "timeLabel_other": "Tijd: {{s}} seconden van {{limit}}",
+      "boardLabel_one": "Het bord · vul alleen het ene ontbrekende vakje van blok {{n}}",
+      "boardLabel_other": "Het bord · vul alleen de {{count}} ontbrekende vakjes van blok {{n}}"
+    },
+    "line": {
+      "taskRow": "Vul rij {{row}}",
+      "taskCol": "Vul kolom {{n}}",
+      "boardLabelRow_one": "Het bord · vul alleen het ene ontbrekende vakje van rij {{row}}",
+      "boardLabelRow_other": "Het bord · vul alleen de {{count}} ontbrekende vakjes van rij {{row}}",
+      "boardLabelCol_one": "Het bord · vul alleen het ene ontbrekende vakje van kolom {{n}}",
+      "boardLabelCol_other": "Het bord · vul alleen de {{count}} ontbrekende vakjes van kolom {{n}}"
+    },
+    "puzzle": {
+      "task": "Zet de blokken op hun plek",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_one": "{{count}} blok beweegt",
+      "moving_other": "{{count}} blokken bewegen",
+      "fixed_one": "{{count}} blok zit vast",
+      "fixed_other": "{{count}} blokken zitten vast",
+      "allMove": "Alle blokken bewegen",
+      "swaps": "Wissels: {{count}}",
+      "wrong_one": "Foute wissel {{penalty}} sec.",
+      "wrong_other": "{{count}} foute wissels {{penalty}} sec.",
+      "wrongLabel_one": "Eén foute wissel, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_other": "{{count}} foute wissels, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "Sleep een blok op een ander om ze te wisselen",
+      "tapHint": "Of: tik op een blok, dan op een ander",
+      "slotLabel": "Blok {{n}}, {{state}}: {{rows}}",
+      "state": {
+        "movable": "beweegbaar",
+        "fixed": "vast",
+        "selected": "gekozen"
+      },
+      "slotHint": "Tik om te kiezen, en tik dan op een ander blok",
+      "swapped": "Blokken {{a}} en {{b}} gewisseld",
+      "swappedPenalty_one": "Blokken {{a}} en {{b}} gewisseld. Plus {{s}} seconde",
+      "swappedPenalty_other": "Blokken {{a}} en {{b}} gewisseld. Plus {{s}} seconden",
+      "fixedTap": "Dit blok zit vast",
+      "solved": "Elke rij en elke kolom klopt",
+      "boardLabel": "De puzzel · {{counts}}"
+    },
+    "duel": {
+      "gap": "Voorsprong {{gap}}",
+      "gapLabel": "De voorsprong: {{gap}}. Eén ster als je aan het eind voorstaat, 2 sterren bij {{two}}, 3 sterren bij {{three}}",
+      "lead": "Voor",
+      "of": "/{{target}}",
+      "meLabel_one": "{{name}}, {{score}} van {{target}} punt",
+      "meLabel_other": "{{name}}, {{score}} van {{target}} punten",
+      "botLabel_one": "{{name}}, bot van niveau {{n}}, {{score}} van {{target}} punt",
+      "botLabel_other": "{{name}}, bot van niveau {{n}}, {{score}} van {{target}} punten",
+      "finishLabel": "De etappe eindigt als iemand $t(levels:hud.duel.reachPoints, {\"count\": {{target}} }) haalt, of na $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })",
+      "reachPoints_one": "{{count}} punt",
+      "reachPoints_other": "{{count}} punten",
+      "atSeconds_one": "{{count}} seconde",
+      "atSeconds_other": "{{count}} seconden",
+      "raceLabel": "Race tot {{target}}: {{me}}, {{bot}}"
+    },
+    "reactions": "Reacties",
+    "boardLabel": "Het bord van de etappe · {{scope}}",
+    "spotError": {
+      "goal_one": "Er zit één fout cijfer op het bord. Tik erop.",
+      "goal_other": "Er zitten {{count}} foute cijfers op het bord. Tik erop.",
+      "note": "De donkere cijfers zijn van het bord, en die kloppen altijd.",
+      "found": "Gevonden",
+      "foundLabel": "{{found}} van {{total}} gevonden",
+      "time": "Tijd",
+      "timeLabel_one": "Tijd: {{s}} seconde van {{limit}}",
+      "timeLabel_other": "Tijd: {{s}} seconden van {{limit}}",
+      "tipTitle": "Tipje",
+      "tip": "Zoek een cijfer dat twee keer in dezelfde rij, kolom of blok staat.",
+      "tipClose": "Tip sluiten",
+      "foundCell": "Je vond een fout in {{cell}}: niet {{wrong}} maar {{right}}",
+      "rightTap": "Het cijfer in {{cell}} klopt. {{penalty}} sec.",
+      "missed": "Fouten die je niet vond: {{cells}}",
+      "boardLabel": "Het bord van de etappe · tik op een fout cijfer"
+    },
+    "hunt": {
+      "goal": "Scoor $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) in $t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }).",
+      "goalPoints_one": "{{points}} punt",
+      "goalPoints_other": "{{points}} punten",
+      "goalMoves_one": "{{count}} zet",
+      "goalMoves_other": "{{count}} zetten",
+      "note": "Een vakje in een leeg gebied is meer waard.",
+      "points": "punten",
+      "scoreLabel_one": "{{score}} punt",
+      "scoreLabel_other": "{{score}} punten",
+      "scoreWorthLabel_one": "{{score}} punt. Het vakje dat je koos is {{worth}} waard",
+      "scoreWorthLabel_other": "{{score}} punten. Het vakje dat je koos is {{worth}} waard",
+      "lost": "Het foute cijfer kostte {{points}}",
+      "move": "Zet {{n}} van {{max}}",
+      "burnt": "Zet {{n}} verspeeld",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_one": "Eén zet verspeeld",
+      "burntCount_other": "{{count}} zetten verspeeld",
+      "left": "over · van {{limit}}",
+      "timeLabel_one": "Nog {{s}} seconde van {{limit}}",
+      "timeLabel_other": "Nog {{s}} seconden van {{limit}}",
+      "max": "Het beste van het bord: {{max}}",
+      "worth": "Waard: {{points}}"
+    },
+    "chain": {
+      "goal": "Er is steeds maar één vakje op het bord op te lossen. Vind het en vul het in, dan gaat het volgende open.",
+      "notePenalty": "Een cijfer in een vakje dat nog niet te weten is: {{penalty}} sec.",
+      "noteAccept": "Een fout cijfer: {{penalty}} sec.",
+      "step": "Stap {{n}} van {{total}}",
+      "stepLabel": "Keten: stap {{n}} van {{total}}",
+      "time": "Tijd",
+      "timeLabel_one": "Tijd: {{s}} seconde van {{limit}}",
+      "timeLabel_other": "Tijd: {{s}} seconden van {{limit}}",
+      "notYet": "{{text}} · {{penalty}} sec.",
+      "tipTitle": "Tipje",
+      "tip": "Bij elke stap is precies één vakje te bewijzen. Weet je een cijfer zeker, dan is dat het vakje.",
+      "tipClose": "Tip sluiten"
+    }
+  },
+  "explain": {
+    "spot": "Plek {{n}}: {{text}}",
+    "mistake": "Je fout: {{digit}} in {{cell}}. {{reason}}",
+    "best": "Je beste zet, {{digit}} in {{cell}}: {{text}}",
+    "errorFound": "{{cell}}, gevonden: {{reason}}",
+    "errorMissed": "{{cell}}, niet gevonden: {{reason}}",
+    "rightTap": "De {{digit}} in {{cell}} klopt: erop tikken kostte {{penalty}} sec.",
+    "points_one": "Je scoorde {{points}} van {{max}} punt, {{percent}} van het beste van het bord.",
+    "points_other": "Je scoorde {{points}} van {{max}} punten, {{percent}} van het beste van het bord.",
+    "line": "De beste reeks zetten: {{moves}}.",
+    "move": "{{digit}} in {{cell}} ({{points}})",
+    "step": "Stap {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "Alleen het blok dat op plek {{from}} begon, past op plek {{place}}: elk ander blok zou een cijfer herhalen in een rij of een kolom.",
+      "onlyPlaceForBox": "Het blok dat op plek {{from}} begon, past alleen op plek {{place}}: overal elders zou het een cijfer herhalen in een rij of een kolom."
+    }
+  }
+}

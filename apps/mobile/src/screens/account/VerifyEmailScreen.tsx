@@ -1,13 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { checkEmailVerified, sendVerificationEmail, useAuth } from '../../auth/authStore';
 import { ROUTES } from '../../auth/redirect';
 import { Icon } from '../../components/Icon';
 import { ltr } from '../../components/player';
 import { Button, useToast } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { cue } from '../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { goBack } from '../home/navigation';

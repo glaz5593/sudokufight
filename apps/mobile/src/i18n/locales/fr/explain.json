@@ -1,0 +1,110 @@
+{
+  "technique": {
+    "nakedSingle": "Singleton nu",
+    "hiddenSingle": "Singleton caché",
+    "pointing": "Réduction carré-ligne",
+    "claiming": "Réduction carré-ligne",
+    "nakedPair": "Paire nue",
+    "hiddenPair": "Paire cachée",
+    "chain": "Technique avancée",
+    "beyond": "Au-delà des techniques du moteur"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} et {{last}}",
+    "lastOr": "{{head}} ou {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} et {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "Il ne manque que le {{digit}} dans la ligne {{label}}.",
+      "col": "Il ne manque que le {{digit}} dans la colonne {{label}}.",
+      "box": "Il ne manque que le {{digit}} dans le carré {{label}}."
+    },
+    "missing": {
+      "row": "Il manque {{digits}} dans la ligne {{label}}.",
+      "col": "Il manque {{digits}} dans la colonne {{label}}.",
+      "box": "Il manque {{digits}} dans le carré {{label}}."
+    },
+    "seen": {
+      "row": "La ligne {{label}} contient déjà {{digits}}.",
+      "col": "La colonne {{label}} contient déjà {{digits}}.",
+      "box": "Le carré {{label}} contient déjà {{digits}}."
+    },
+    "eliminated": "Le {{digit}} a été éliminé de {{cell}} à la déduction {{step}}.",
+    "only": "Il ne reste donc que le {{digit}}."
+  },
+  "hidden": {
+    "alone": {
+      "row": "Le {{digit}} doit figurer dans la ligne {{label}}, et {{cell}} y est la seule case vide. Donc {{result}}.",
+      "col": "Le {{digit}} doit figurer dans la colonne {{label}}, et {{cell}} y est la seule case vide. Donc {{result}}.",
+      "box": "Le {{digit}} doit figurer dans le carré {{label}}, et {{cell}} y est la seule case vide. Donc {{result}}."
+    },
+    "blocked": {
+      "row": "Le {{digit}} doit figurer dans la ligne {{label}}. Toutes les autres cases vides y sont exclues : {{clauses}}. Donc {{result}}.",
+      "col": "Le {{digit}} doit figurer dans la colonne {{label}}. Toutes les autres cases vides y sont exclues : {{clauses}}. Donc {{result}}.",
+      "box": "Le {{digit}} doit figurer dans le carré {{label}}. Toutes les autres cases vides y sont exclues : {{clauses}}. Donc {{result}}."
+    },
+    "clause": {
+      "step": "{{cell}} a perdu le {{digit}} à la déduction {{step}}",
+      "unit": {
+        "row": "{{cell}} voit un {{digit}} dans la ligne {{label}}",
+        "col": "{{cell}} voit un {{digit}} dans la colonne {{label}}",
+        "box": "{{cell}} voit un {{digit}} dans le carré {{label}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "Dans le carré {{box}}, le {{digit}} ne peut être que dans la ligne {{line}}, donc on le retire du reste de la ligne : {{cells}}.",
+    "col": "Dans le carré {{box}}, le {{digit}} ne peut être que dans la colonne {{line}}, donc on le retire du reste de la colonne : {{cells}}."
+  },
+  "claiming": {
+    "row": "Dans la ligne {{line}}, le {{digit}} ne peut être que dans le carré {{box}}, donc on le retire du reste du carré : {{cells}}.",
+    "col": "Dans la colonne {{line}}, le {{digit}} ne peut être que dans le carré {{box}}, donc on le retire du reste du carré : {{cells}}."
+  },
+  "nakedPair": {
+    "row": "{{a}} et {{b}} ne peuvent contenir que {{digits}}, donc on retire {{digits}} du reste de la ligne {{label}} : {{cells}}.",
+    "col": "{{a}} et {{b}} ne peuvent contenir que {{digits}}, donc on retire {{digits}} du reste de la colonne {{label}} : {{cells}}.",
+    "box": "{{a}} et {{b}} ne peuvent contenir que {{digits}}, donc on retire {{digits}} du reste du carré {{label}} : {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "Dans la ligne {{label}}, {{digits}} ne peuvent aller qu’en {{a}} et {{b}}, donc on retire leurs autres candidats.",
+    "col": "Dans la colonne {{label}}, {{digits}} ne peuvent aller qu’en {{a}} et {{b}}, donc on retire leurs autres candidats.",
+    "box": "Dans le carré {{label}}, {{digits}} ne peuvent aller qu’en {{a}} et {{b}}, donc on retire leurs autres candidats."
+  },
+  "beyond": "Il faut ici une technique avancée que le moteur ne sait pas encore expliquer. La réponse : {{formula}}.",
+  "chain": {
+    "head_one": "Cette case ne se déduit pas encore en une seule fois. Il faut {{count}} déduction :",
+    "head_many": "Cette case ne se déduit pas encore en une seule fois. Il faut {{count}} de déductions :",
+    "head_other": "Cette case ne se déduit pas encore en une seule fois. Il faut {{count}} déductions :",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "Le {{digit}} est déjà dans la ligne {{label}} ({{cell}}).",
+      "col": "Le {{digit}} est déjà dans la colonne {{label}} ({{cell}}).",
+      "box": "Le {{digit}} est déjà dans le carré {{label}} ({{cell}})."
+    },
+    "notSolution": "Le {{digit}} est encore possible ici, mais la solution est {{answer}}."
+  },
+  "block": {
+    "step": "{{cell}} ne peut pas contenir le {{digit}} : il a été éliminé à la déduction {{step}}",
+    "unit": {
+      "row": "{{cell}} ne peut pas contenir le {{digit}} : la ligne {{label}} a déjà un {{digit}}",
+      "col": "{{cell}} ne peut pas contenir le {{digit}} : la colonne {{label}} a déjà un {{digit}}",
+      "box": "{{cell}} ne peut pas contenir le {{digit}} : le carré {{label}} a déjà un {{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "On ne peut pas encore savoir ce qui va en {{cell}}",
+    "options": "On ne peut pas encore savoir ce qui va en {{cell}} ({{options}})"
+  }
+}

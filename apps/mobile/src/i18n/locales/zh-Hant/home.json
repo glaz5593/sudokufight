@@ -1,0 +1,274 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "設定",
+    "back": "返回"
+  },
+  "profile": {
+    "defaultName": "玩家",
+    "label": "我的玩家卡：{{name}}",
+    "noRating": "還沒有積分",
+    "ratingTitle": "積分",
+    "none": "—",
+    "games_other": "{{count}}場對局",
+    "gamesLabel_other": "對局",
+    "winsLabel": "勝率",
+    "streakLabel": "連勝",
+    "winRate": "勝率{{percent}}%",
+    "streak_zero": "沒有連勝",
+    "streak_other": "連勝{{count}}場"
+  },
+  "play": "開始",
+  "playHint": "選擇遊戲模式",
+  "again": {
+    "title": "再來一局",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "無法開始對局。請再試一次。"
+  },
+  "recent": {
+    "heading": "最近的對局",
+    "all": "全部",
+    "unavailable": "無法讀取這支手機上儲存的對局。",
+    "emptyTitle": "這裡還沒有對局",
+    "emptyBody": "每次練習都會儲存在這裡，即使關閉應用程式也一樣。",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "已完成",
+      "ended": "已結束",
+      "interrupted": "已中斷",
+      "playing": "進行中",
+      "win": "獲勝",
+      "loss": "落敗",
+      "tie": "平手"
+    },
+    "openHint": "開啟結果",
+    "versus": "對{{name}}{{outcome}}"
+  },
+  "modes": {
+    "title": "新對局",
+    "footnote": "排位需要網路連線 · 練習隨時都能玩",
+    "soon": "即將推出",
+    "groups": {
+      "ranked": {
+        "title": "排位",
+        "note": "真實對手，即時對戰"
+      },
+      "friends": {
+        "title": "和好友玩",
+        "titleMoshe": "真正的朋友，即時對戰",
+        "note": "私人房間 · 最多4人 · 不計積分"
+      },
+      "practice": {
+        "title": "練習",
+        "note": "沒有壓力，不計積分"
+      }
+    },
+    "chips": {
+      "rated": "計積分",
+      "unrated": "不計積分",
+      "offline": "離線可玩"
+    },
+    "ranked": {
+      "name": "排位"
+    },
+    "ranked2": {
+      "title": "2人",
+      "tagline": "一對一 · 同一個盤面",
+      "label": "排位 · 2人"
+    },
+    "ranked3": {
+      "title": "3人",
+      "tagline": "混戰",
+      "label": "排位 · 3人"
+    },
+    "ranked4": {
+      "title": "4人",
+      "tagline": "混戰",
+      "label": "排位 · 4人"
+    },
+    "friends": {
+      "create": "新房間",
+      "createHint": "開啟等待室，並取得代碼傳給朋友",
+      "join": "用代碼加入",
+      "joinHint": "輸入你收到的6位數字"
+    },
+    "solo": {
+      "name": "單人練習",
+      "title": "單人 · 完整盤面",
+      "tagline": "照自己的步調",
+      "label": "單人 · 完整盤面"
+    },
+    "levels": {
+      "name": "關卡練習",
+      "title": "關卡練習",
+      "tagline": "短關卡 · 最多3顆星",
+      "taglineNew_other": "{{total}}個短關卡 · 0–3顆星",
+      "chip": "第{{stage}}關 ·",
+      "offline": "離線也能玩",
+      "chipLabel_other": "第{{stage}}關 · {{count}}顆星",
+      "label": "關卡練習"
+    },
+    "bot": {
+      "name": "機器人練習",
+      "title": "機器人練習",
+      "tagline": "5個等級",
+      "label": "機器人練習"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "快速",
+      "difficulty": "簡單",
+      "technique": "只用顯性唯一數就能解"
+    },
+    "normal": {
+      "name": "一般",
+      "difficulty": "中等",
+      "technique": "需要隱性唯一數"
+    },
+    "hard": {
+      "name": "困難",
+      "difficulty": "困難",
+      "technique": "需要數對或排除技巧"
+    }
+  },
+  "gameType": {
+    "title": "對局類型",
+    "note": {
+      "solo": "不計積分。盤面來自這支手機上的題庫，不會重複你最近玩過的題目。",
+      "bot": "不計積分。盤面來自這支手機上的題庫，不會重複你最近玩過的題目。接著選擇你的對手。",
+      "ranked": "計積分。對手積分與你相近，盤面來自伺服器題庫中你沒玩過的題目，你們兩人用同一個盤面。",
+      "rankedGroup": "計積分。對手積分與你相近，盤面來自伺服器題庫中你沒玩過的題目，所有人用同一個盤面。人數到齊後，對局就會開始。"
+    },
+    "start": {
+      "solo": "開始練習",
+      "bot": "選擇對手",
+      "ranked": "尋找對手",
+      "rankedGroup": "尋找對手"
+    },
+    "startHint": "開始{{type}}練習",
+    "rankedHint": "為{{type}}排位對局尋找對手",
+    "rankedGroupHint": "為{{type}}排位對局尋找多位對手",
+    "lockTime": "每格時間",
+    "board": "盤面",
+    "duration": "預計時長",
+    "seconds": "{{seconds}}秒",
+    "minutes": "{{range}}分鐘",
+    "yourRating": "你的積分",
+    "cardLabel_other": "{{name}}。{{technique}}。每格{{seconds}}，{{difficulty}}盤面，大約{{from}}到{{to}}分鐘",
+    "botHint": "為{{type}}對局選擇機器人"
+  },
+  "dev": {
+    "title": "開發",
+    "designSystem": "設計系統",
+    "hello": "連線檢查"
+  },
+  "settings": {
+    "title": "設定",
+    "feedback": "音效與震動",
+    "sound": "音效",
+    "soundHint": "走步和操作的音效",
+    "haptics": "震動",
+    "hapticsHint": "走步時以短暫震動回饋",
+    "motion": "減少動態效果",
+    "motionHint": "減少動畫：分數直接跳到結果，干擾會以靜態遮罩顯示同樣的時間。",
+    "reduceMotion": {
+      "system": "跟隨裝置",
+      "on": "開啟",
+      "off": "關閉"
+    },
+    "language": "語言",
+    "languageHint": "變更語言會重新啟動應用程式。",
+    "testing": "測試",
+    "testingHint": "僅限測試版本，商店版本沒有這個選項。",
+    "chainPenalty": "連鎖：猜測罰5秒",
+    "chainPenaltyHint": "從下一個連鎖關卡起：在還無法確定的格子填數字會罰5秒，而且不會填入。",
+    "unlockAll": "解鎖所有關卡（測試）",
+    "unlockAllHint": "地圖上每個關卡都會開放。星星和 XP 照常計算。",
+    "languageConfirm": {
+      "title": "要將語言切換為{{language}}嗎？",
+      "body": "應用程式會重新啟動，讓每個畫面都依新語言的方向顯示。",
+      "confirm": "切換並重新啟動",
+      "titleDevice": "要切換為裝置語言嗎？"
+    },
+    "languageDevice": "裝置語言",
+    "languageSheetTitle": "選擇語言",
+    "languageField": "語言：{{language}}",
+    "languageFieldDevice": "語言：裝置語言，{{language}}",
+    "about": "關於與法律資訊",
+    "privacy": "隱私權政策",
+    "terms": "使用條款",
+    "licenses": "授權",
+    "opensInBrowser": "在瀏覽器中開啟"
+  },
+  "placeholder": {
+    "soon": "即將推出",
+    "leaderboard": {
+      "title": "排行榜",
+      "body": "排行榜會和排位對局一起開放。"
+    },
+    "history": {
+      "title": "紀錄",
+      "body": "你所有的對局都會在這裡，附有重播和每一步的說明。在那之前，你最近的練習會顯示在首頁。"
+    },
+    "achievements": {
+      "title": "成就",
+      "body": "成就、等級和 XP 即將登場。"
+    }
+  },
+  "botSelect": {
+    "title": "選擇機器人",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "每步思考時間",
+    "thinkValue": "{{range}}秒",
+    "mistakes": "錯誤率",
+    "note": "這是一般走步的時間。需要較難邏輯的格子，機器人會想得比較久；橫列、直行或宮的最後一個空格則快一點。機器人在同一個盤面上即時對戰。",
+    "start": "開始吧",
+    "startHint": "開始與{{name}}的{{type}}練習",
+    "cardLabel_other": "等級{{level}}，{{title}}：{{name}}。{{behavior}}。每步思考{{from}}到{{to}}秒，錯誤率{{mistakes}}%",
+    "levels": {
+      "1": {
+        "title": "新手",
+        "behavior": "慢吞吞，常常出錯，讓你邊玩邊學"
+      },
+      "2": {
+        "title": "業餘",
+        "behavior": "輕鬆隨意，偶爾失誤，有時還會傳個😂"
+      },
+      "3": {
+        "title": "進階",
+        "behavior": "穩健又細心，很難超越"
+      },
+      "4": {
+        "title": "大師",
+        "behavior": "快速、幾乎不出錯，還有點得意😎"
+      },
+      "5": {
+        "title": "宗師",
+        "behavior": "快速、精準，毫不留情"
+      }
+    }
+  },
+  "licenses": {
+    "title": "授權",
+    "intro": "Sudoku Fight 採用開放字型和開放原始碼軟體打造。感謝它們的作者。以下是它們的授權和版權聲明。",
+    "fonts": "字型",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_other": "{{count}}個開放原始碼套件",
+    "packageLabel": "{{name}}，版本{{version}}，授權{{license}}",
+    "texts": "授權條款全文",
+    "textsHint": "每份授權的完整原文。",
+    "show": "顯示{{license}}授權",
+    "hide": "隱藏{{license}}授權"
+  }
+}

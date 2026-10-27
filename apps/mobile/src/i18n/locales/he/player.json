@@ -4,6 +4,7 @@
   "listSep": ", ",
   "ellipsis": "…",
   "unknownName": "שחקן",
+  "temporaryName": "שחקן{{digits}}",
   "bot": "בוט",
   "vs": "VS",
   "seconds_one": "שנייה אחת",
@@ -102,8 +103,12 @@
   },
   "lead": {
     "tie": "שוויון",
-    "label": "{{name}} מוביל ב־{{gap}} נקודות",
-    "label_female": "{{name}} מובילה ב־{{gap}} נקודות",
+    "label_one": "{{name}} מוביל ב־{{gap}} נקודה",
+    "label_two": "{{name}} מוביל ב־{{gap}} נקודות",
+    "label_other": "{{name}} מוביל ב־{{gap}} נקודות",
+    "label_female_one": "{{name}} מובילה ב־{{gap}} נקודה",
+    "label_female_two": "{{name}} מובילה ב־{{gap}} נקודות",
+    "label_female_other": "{{name}} מובילה ב־{{gap}} נקודות",
     "tieLabel": "שוויון בניקוד"
   },
   "lock": {

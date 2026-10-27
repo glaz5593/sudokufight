@@ -75,7 +75,8 @@
       "abandon": "Abandoned"
     },
     "label": "{{name}}: {{status}}, {{move}}. {{technique}}. {{text}}",
-    "labelNone": "{{name}}: {{text}}"
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
   },
   "moments": {
     "title": "Key moments",

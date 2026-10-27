@@ -1,0 +1,109 @@
+{
+  "technique": {
+    "nakedSingle": "Naakte single",
+    "hiddenSingle": "Verborgen single",
+    "pointing": "Blok-lijnreductie",
+    "claiming": "Blok-lijnreductie",
+    "nakedPair": "Naakt paar",
+    "hiddenPair": "Verborgen paar",
+    "chain": "Geavanceerde techniek",
+    "beyond": "Buiten de technieken van de spelmotor"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} en {{last}}",
+    "lastOr": "{{head}} of {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} en {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "Rij {{label}} mist alleen nog {{digit}}.",
+      "col": "Kolom {{label}} mist alleen nog {{digit}}.",
+      "box": "Blok {{label}} mist alleen nog {{digit}}."
+    },
+    "missing": {
+      "row": "Rij {{label}} mist {{digits}}.",
+      "col": "Kolom {{label}} mist {{digits}}.",
+      "box": "Blok {{label}} mist {{digits}}."
+    },
+    "seen": {
+      "row": "Rij {{label}} heeft al {{digits}}.",
+      "col": "Kolom {{label}} heeft al {{digits}}.",
+      "box": "Blok {{label}} heeft al {{digits}}."
+    },
+    "eliminated": "{{digit}} is in stap {{step}} uitgesloten voor {{cell}}.",
+    "only": "Dus alleen {{digit}}."
+  },
+  "hidden": {
+    "alone": {
+      "row": "{{digit}} moet in rij {{label}} staan, en {{cell}} is daar het enige lege vakje. Dus {{result}}.",
+      "col": "{{digit}} moet in kolom {{label}} staan, en {{cell}} is daar het enige lege vakje. Dus {{result}}.",
+      "box": "{{digit}} moet in blok {{label}} staan, en {{cell}} is daar het enige lege vakje. Dus {{result}}."
+    },
+    "blocked": {
+      "row": "{{digit}} moet in rij {{label}} staan. Alle andere lege vakjes daarin vallen af: {{clauses}}. Dus {{result}}.",
+      "col": "{{digit}} moet in kolom {{label}} staan. Alle andere lege vakjes daarin vallen af: {{clauses}}. Dus {{result}}.",
+      "box": "{{digit}} moet in blok {{label}} staan. Alle andere lege vakjes daarin vallen af: {{clauses}}. Dus {{result}}."
+    },
+    "clause": {
+      "step": "{{cell}} verloor de {{digit}} in stap {{step}}",
+      "unit": {
+        "row": "{{cell}} ziet een {{digit}} in rij {{label}}",
+        "col": "{{cell}} ziet een {{digit}} in kolom {{label}}",
+        "box": "{{cell}} ziet een {{digit}} in blok {{label}}"
+      }
+    }
+  },
+  "pointing": {
+    "row": "In blok {{box}} kan {{digit}} alleen in rij {{line}} staan, dus wordt hij weggestreept in de rest van de rij: {{cells}}.",
+    "col": "In blok {{box}} kan {{digit}} alleen in kolom {{line}} staan, dus wordt hij weggestreept in de rest van de kolom: {{cells}}."
+  },
+  "claiming": {
+    "row": "In rij {{line}} kan {{digit}} alleen in blok {{box}} staan, dus wordt hij weggestreept in de rest van het blok: {{cells}}.",
+    "col": "In kolom {{line}} kan {{digit}} alleen in blok {{box}} staan, dus wordt hij weggestreept in de rest van het blok: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "In {{a}} en {{b}} passen alleen {{digits}}, dus worden {{digits}} weggestreept in de rest van rij {{label}}: {{cells}}.",
+    "col": "In {{a}} en {{b}} passen alleen {{digits}}, dus worden {{digits}} weggestreept in de rest van kolom {{label}}: {{cells}}.",
+    "box": "In {{a}} en {{b}} passen alleen {{digits}}, dus worden {{digits}} weggestreept in de rest van blok {{label}}: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "In rij {{label}} kunnen {{digits}} alleen in {{a}} en {{b}}, dus worden hun andere kandidaten weggestreept.",
+    "col": "In kolom {{label}} kunnen {{digits}} alleen in {{a}} en {{b}}, dus worden hun andere kandidaten weggestreept.",
+    "box": "In blok {{label}} kunnen {{digits}} alleen in {{a}} en {{b}}, dus worden hun andere kandidaten weggestreept."
+  },
+  "beyond": "Hiervoor is een geavanceerde techniek nodig die de spelmotor nog niet kan uitleggen. Het antwoord: {{formula}}.",
+  "chain": {
+    "head_one": "Dit vakje is nog niet in één stap te bepalen. Daar is {{count}} stap voor nodig:",
+    "head_other": "Dit vakje is nog niet in één stap te bepalen. Daar zijn {{count}} stappen voor nodig:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "{{digit}} staat al in rij {{label}} ({{cell}}).",
+      "col": "{{digit}} staat al in kolom {{label}} ({{cell}}).",
+      "box": "{{digit}} staat al in blok {{label}} ({{cell}})."
+    },
+    "notSolution": "{{digit}} past hier nog, maar de oplossing vraagt {{answer}}."
+  },
+  "block": {
+    "step": "In {{cell}} kan geen {{digit}}: die is in stap {{step}} uitgesloten",
+    "unit": {
+      "row": "In {{cell}} kan geen {{digit}}: rij {{label}} heeft al een {{digit}}",
+      "col": "In {{cell}} kan geen {{digit}}: kolom {{label}} heeft al een {{digit}}",
+      "box": "In {{cell}} kan geen {{digit}}: blok {{label}} heeft al een {{digit}}"
+    }
+  },
+  "notYet": {
+    "cell": "Je kunt nog niet weten wat er in {{cell}} hoort",
+    "options": "Je kunt nog niet weten wat er in {{cell}} hoort ({{options}})"
+  }
+}

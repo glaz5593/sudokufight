@@ -1,0 +1,106 @@
+{
+  "actions": {
+    "report": "檢舉玩家",
+    "block": "封鎖玩家",
+    "unblock": "解除封鎖",
+    "reportLabel": "檢舉{{name}}",
+    "blockLabel": "封鎖{{name}}",
+    "unblockLabel": "解除封鎖{{name}}",
+    "blockedNote": "你已封鎖這位玩家：排位對局不會再把你們配對在一起。"
+  },
+  "report": {
+    "title": "檢舉{{name}}",
+    "question": "發生了什麼問題？",
+    "reasons": {
+      "offensiveName": "冒犯性名稱",
+      "cheating": "作弊",
+      "other": "其他"
+    },
+    "reasonHints": {
+      "offensiveName": "名稱粗魯、帶有侮辱或不恰當",
+      "cheating": "疑似有外部協助，或利用程式錯誤",
+      "other": "其他不該出現在競技場的事"
+    },
+    "privacy_other": "對方不會知道是誰檢舉的。每則檢舉都會在{{hours}}小時內審查。",
+    "send": "送出檢舉",
+    "pickFirst": "先選擇原因，再送出。",
+    "thanks_other": "謝謝。我們會在{{hours}}小時內審查這則檢舉。",
+    "done": "關閉",
+    "errors": {
+      "rateLimited_other": "你在過去一小時內送出了很多檢舉。{{count}}分鐘後可以再送出。",
+      "busy": "請求太多了。請稍等一下再試。",
+      "suspended": "你的帳號已被停權，目前無法送出檢舉。",
+      "self": "你不能檢舉自己。",
+      "notFound": "這位玩家已不在對局中。",
+      "offline": "沒有連上伺服器：檢舉沒有送出。請再試一次。",
+      "failed": "無法送出檢舉。請再試一次。"
+    }
+  },
+  "block": {
+    "title": "要封鎖{{name}}嗎？",
+    "body": "排位對局不會再把你們配對在一起，{{name}}的表情也不會再傳給你。封鎖不會通知任何人。你隨時可以解除：設定 → 已封鎖的玩家。",
+    "confirm": "封鎖",
+    "done": "已封鎖{{name}}。",
+    "unblockTitle": "要解除封鎖{{name}}嗎？",
+    "unblockBody": "你們可能會再次在排位對局中相遇，{{name}}的表情也會再傳給你。",
+    "unblockConfirm": "解除封鎖",
+    "unblocked": "已解除封鎖{{name}}。",
+    "errors": {
+      "limitReached_other": "你最多只能封鎖{{max}}位玩家。請先解除封鎖某人（設定 → 已封鎖的玩家）再試一次。",
+      "self": "你不能封鎖自己。",
+      "notFound": "這位玩家已不在對局中。",
+      "busy": "請求太多了。請稍等一下再試。",
+      "offline": "沒有連上伺服器：封鎖沒有儲存。請再試一次。",
+      "unblockOffline": "沒有連上伺服器：封鎖沒有解除。請再試一次。",
+      "failed": "無法儲存封鎖。請再試一次。",
+      "unblockFailed": "無法解除封鎖。請再試一次。"
+    }
+  },
+  "blocked": {
+    "title": "已封鎖的玩家",
+    "settingsRow": "已封鎖的玩家",
+    "note": "排位對局不會把你們配對在一起，對方的表情也不會傳給你。封鎖不會通知任何人。",
+    "count": "{{count}}/{{max}}",
+    "since": "封鎖於{{date}}",
+    "rowLabel": "{{name}}，封鎖於{{date}}",
+    "emptyTitle": "沒有已封鎖的玩家",
+    "emptyBody": "你可以在玩家的卡片上封鎖對方，或在排位對局中從卡片選單封鎖。",
+    "loading": "正在載入已封鎖的玩家…",
+    "offlineTitle": "沒有連上伺服器",
+    "offlineBody": "這份名單存在伺服器上。連上網路後再試一次。",
+    "errorTitle": "無法載入名單",
+    "errorBody": "請稍後再試。",
+    "retry": "再試一次",
+    "signedOut": "登入後才能查看名單。"
+  },
+  "chooseName": {
+    "title": "選擇新名稱",
+    "body": "你原本的名稱違反了命名規則，已換成暫時名稱{{name}}。請選擇新名稱以繼續。",
+    "rule": "這次不必等30天：你現在就可以選擇名稱。",
+    "save": "儲存並繼續",
+    "saved": "已儲存你的新名稱。",
+    "same": "這是暫時名稱，請選擇你自己的名稱。",
+    "offline": "沒有連上伺服器：名稱沒有儲存。連上網路後再試一次。",
+    "practice": "先去練習",
+    "settings": "設定",
+    "signOut": "登出"
+  },
+  "suspended": {
+    "banner": "帳號已停權：無法進行排位對局",
+    "bannerAction": "詳細資訊",
+    "bannerLabel": "帳號已停權，無法進行排位對局。詳細資訊",
+    "title": "帳號已停權",
+    "body": "由於收到檢舉，你的帳號已被停權。停權期間無法進行排位對局，也無法修改個人資料。",
+    "can": "你仍然可以單人練習或和機器人練習、封鎖玩家，以及刪除帳號。",
+    "contactTitle": "覺得這是誤判嗎？",
+    "contact": "寫信給我們，我們會重新檢視。聯絡方式寫在使用條款中。",
+    "contactEmail": "你可以寫信給我們：{{email}}",
+    "openContact": "聯絡方式",
+    "opensInBrowser": "在瀏覽器中開啟",
+    "practice": "練習",
+    "chip": "帳號已停權",
+    "chipLabel": "無法使用：帳號已停權",
+    "ranked": "你的帳號已被停權，目前無法進行排位對局。",
+    "editProfile": "帳號已停權：無法修改個人資料"
+  }
+}

@@ -10,8 +10,6 @@ import {
   type Clock,
   createRng,
   explain,
-  formatBlock,
-  formatExplanation,
   type GameMode,
   type GameView,
   type HostUpdate,
@@ -42,6 +40,9 @@ import { levelRulesNow } from '../config/testing';
 import { type AppStateSource, BackgroundPause, type PauseState } from '../game/backgroundPause';
 import { guardedScheduler, systemClock, timeoutScheduler } from '../game/clock';
 import { botSeedOf, ME } from '../game/session';
+import i18n from '../i18n';
+import { closeSentence } from '../i18n/compose';
+import { formatBlock, formatExplanation } from '../i18n/explain';
 import { type AnalyticsEventName, type AnalyticsProps, track as defaultTrack } from '../services/analytics';
 import { crashReporter } from '../services/crashlytics';
 import { levelQuitProps, levelStartProps } from './analyticsProps';
@@ -488,10 +489,11 @@ class Session implements LevelSession {
 
 /**
  * A find stage's "למה?" (the result's, components.md §19.10): the engine's explanation of the target in its
- * scope ("ה־6 חייב להיות ב־E4 …"), and why my first wrong tap could not hold it, both in the engine's words (cell
- * names already isolated). Null for any other kind (the ideas' come with their screens) or when nothing explains.
+ * scope ("ה־6 חייב להיות ב־E4 …"), and why my first wrong tap could not hold it, both worded in `lang` by
+ * i18n/explain.ts (cell names already isolated in a right-to-left language). Null for any other kind (the ideas'
+ * come with their screens) or when nothing explains.
  */
-export function findWhy(played: AppLevel, wrongTaps: readonly CellIndex[], lang: 'he' | 'en'): string | null {
+export function findWhy(played: AppLevel, wrongTaps: readonly CellIndex[], lang: string): string | null {
   if (played.kind !== 'find') return null;
   const { target } = played.targets;
   const cell = target.cell ?? target.accept[0];
@@ -509,7 +511,7 @@ export function findWhy(played: AppLevel, wrongTaps: readonly CellIndex[], lang:
         ? last.blocked.find((b) => b.cell === tapped)
         : undefined;
     if (tapped !== undefined && blocked)
-      lines.push(`${formatBlock(tapped, blocked.block, target.digit, lang)}.`);
+      lines.push(closeSentence(formatBlock(tapped, blocked.block, target.digit, lang), i18n.getFixedT(lang)));
     return lines.join('\n');
   } catch {
     return null;

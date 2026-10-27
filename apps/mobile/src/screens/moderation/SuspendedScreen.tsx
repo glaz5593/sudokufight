@@ -1,13 +1,14 @@
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { refreshMe } from '../../auth/authStore';
 import { Icon } from '../../components/Icon';
 import { ltr } from '../../components/player';
 import { Button, RowButton } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { accountConfig } from '../../config/account';
 import { legalUrl } from '../../config/legal';
 import { color, radius, size, space, text, tokens } from '../../theme';

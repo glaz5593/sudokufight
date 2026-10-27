@@ -1,0 +1,255 @@
+{
+  "devMode": {
+    "badge": "Geliştirme modu",
+    "label": "Geliştirme modu: yalnızca bu telefonda yerel hesaplar, Firebase olmadan",
+    "noEmail": "Geliştirme modu e-posta göndermez."
+  },
+  "fields": {
+    "email": "E-posta",
+    "emailPlaceholder": "name@example.com",
+    "password": "Şifre",
+    "newPassword": "Şifre",
+    "confirmPassword": "Şifreyi onayla",
+    "displayName": "Görünen ad",
+    "displayNamePlaceholder": "Arenadaki adın",
+    "avatar": "Avatar",
+    "country": "Ülke",
+    "showPassword": "Şifreyi göster",
+    "hidePassword": "Şifreyi gizle",
+    "change": "Değiştir"
+  },
+  "validation": {
+    "emailRequired": "E-postanı gir",
+    "emailInvalid": "Bu e-posta adresi doğru görünmüyor",
+    "passwordRequired": "Şifreni gir",
+    "passwordRules": "Şifre en az 8 karakter olmalı",
+    "confirmMismatch": "Şifreler eşleşmiyor",
+    "countryRequired": "Bir ülke seç"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "Yanlış şifre. Tekrar dene ya da şifreni sıfırla.",
+      "userNotFound": "Bu e-postayla bir hesap yok. Kaydolmak ister misin?",
+      "invalidCredentials": "E-posta ya da şifre yanlış.",
+      "tooManyRequests": "Çok fazla deneme. Birkaç dakika bekleyip tekrar dene ya da şifreni sıfırla.",
+      "network": "İnternet bağlantısı yok. Kontrol edip tekrar dene.",
+      "emailInUse": "Bu e-postanın zaten bir hesabı var. Onunla giriş yap.",
+      "invalidEmail": "Bu e-posta adresi doğru görünmüyor.",
+      "weakPassword": "Bu şifre çok zayıf. Daha uzun bir şifre seç.",
+      "requiresRecentLogin": "Bunu yapmak için lütfen yeniden giriş yap.",
+      "userDisabled": "Bu hesap devre dışı bırakıldı. Destek ekibiyle iletişime geç.",
+      "noUser": "Giriş yapmamışsın. Yeniden giriş yap.",
+      "unknown": "Bir şeyler ters gitti. Tekrar dene.",
+      "cancelled": "Google ile giriş iptal edildi.",
+      "inProgress": "Google ile giriş zaten açık. Tamamla ya da kapatıp tekrar dene.",
+      "playServices": "Google ile giriş için Google Play Hizmetleri gerekiyor. Güncelleyip tekrar dene.",
+      "googleConfig": "Google ile giriş şu an uygulamanın bu sürümünde kullanılamıyor (DEVELOPER_ERROR). Bu arada e-posta ve şifrenle giriş yap.",
+      "accountExistsWithPassword": "Bu e-postanın şifreli bir hesabı zaten var. E-posta ve şifrenle giriş yap.",
+      "userMismatch": "Bu farklı bir Google hesabı. Giriş yaptığın hesabı seç."
+    },
+    "api": {
+      "badRequest": "Bu istek geçerli değildi. Tekrar dene.",
+      "invalidName": "Bu isim kurallara uymuyor.",
+      "unauthorized": "Sunucudaki oturumunun süresi doldu. Yeniden giriş yap.",
+      "reauthRequired": "Hesabı silmek için yeniden giriş gerekiyor. Şifreni tekrar girip yeniden dene.",
+      "suspended": "Hesabın askıda, bu yüzden şu an değiştirilemez.",
+      "notRegistered": "Bu hesabın henüz bir dövüşçüsü yok. Kaydı tamamlayalım.",
+      "notFound": "Sunucu bu isteği tanımıyor. Uygulamayı güncelle.",
+      "alreadyRegistered": "Bu hesabın zaten bir dövüşçüsü var.",
+      "taken": "Bu isim alınmış. Başka bir isim seç.",
+      "renameTooSoon": "İsmini 30 günde yalnızca bir kez değiştirebilirsin.",
+      "tooLarge": "Bu istek çok büyük.",
+      "blocked": "Bu isim arenaya uymuyor. Başka bir isim seç.",
+      "tooManyRequests": "Çok fazla istek var. Biraz bekleyip tekrar dene.",
+      "internal": "Sunucu hatası. Birazdan tekrar dene.",
+      "disabled": "Bu sunucuda hesaplar şu an kapalı.",
+      "unavailable": "Sunucu şu an kullanılamıyor. Birazdan tekrar dene.",
+      "network": "Sunucuya ulaşılamıyor. İnternetini kontrol edip tekrar dene.",
+      "timeout": "Sunucu zamanında yanıt vermedi. Tekrar dene.",
+      "signedOut": "Giriş yapmamışsın. Yeniden giriş yap.",
+      "unexpected": "Sunucu beklenmedik bir yanıt gönderdi. Tekrar dene ya da uygulamayı güncelle."
+    }
+  },
+  "splash": {
+    "tagline": "Tek tablo. Herkes çözer. Yalnızca biri kazanır.",
+    "loading": "Arena yükleniyor…",
+    "tipLabel": "Taktik",
+    "tips": {
+      "lock_one": "Seçtiğin hücre yalnızca sana kilitlenir: {{type}} türünde maçta 1 saniye.",
+      "lock_other": "Seçtiğin hücre yalnızca sana kilitlenir: {{type}} türünde maçta {{seconds}} saniye.",
+      "hard": "Daha zor bir hamle daha çok puan getirir.",
+      "mistake": "Bir hata, doğru rakamın kazandıracağı puan kadar kaybettirir. Bir an daha fazla düşünmek iyidir.",
+      "interfere": "İki dokunuşla sabotaj gönder: rakibinin kartında “Sabote et”, sonra seçtiğin sabotaj."
+    },
+    "errorTitle": "Dövüşçünü yükleyemedik",
+    "retry": "Tekrar dene",
+    "signOut": "Çıkış yap"
+  },
+  "login": {
+    "title": "<accent>Arenaya</accent> dönüş",
+    "titleLabel": "Arenaya dönüş",
+    "subtitle": "Derecen, serin ve rakiplerin seni bekliyor.",
+    "forgot": "Şifremi unuttum",
+    "submit": "Giriş yap",
+    "noAccount": "Henüz hesabın yok mu?",
+    "register": "Kaydol",
+    "arenaSpot": "Senin yerin"
+  },
+  "google": {
+    "continue": "Google ile devam et",
+    "orEmail": "ya da e-postayla",
+    "orEmailPassword": "ya da e-posta ve şifreyle",
+    "existing": "Bu Google hesabının zaten bir dövüşçüsü var: {{name}}. Bu hesapla giriş yaptın.",
+    "passwordHint": "Google ile mi kaydoldun? “Google ile devam et” seçeneğini kullan.",
+    "emailInUseHint": "Google ile kaydolduysan “Google ile devam et” seçeneğini kullan.",
+    "termsTitle": "Koşullar ve gizlilik",
+    "termsBody": "Google ile devam etmek için kullanım koşullarını ve gizlilik politikasını kabul et.",
+    "termsAccept": "Kabul et ve devam et"
+  },
+  "forgot": {
+    "title": "Şifremi unuttum",
+    "body": "Kaydolduğun e-postayı gir, yeni şifre seçmen için o adrese bir bağlantı gönderelim.",
+    "submit": "Sıfırlama bağlantısı gönder",
+    "sentTitle": "Gelen kutunu kontrol et",
+    "sentBody": "{{email}} adresine kayıtlı bir hesap varsa şifre sıfırlama bağlantısı gönderdik. Bulamıyor musun? Spam klasörüne bak.",
+    "backToLogin": "Girişe dön"
+  },
+  "register": {
+    "step": "Adım {{step}} / {{total}}",
+    "backToLogin": "Girişe dön",
+    "backToFighter": "Dövüşçüne dön"
+  },
+  "fighter": {
+    "title": "<accent>Dövüşçünü</accent> yarat",
+    "titleLabel": "Dövüşçünü yarat",
+    "resumeNote": "Hesabın hazır. Sadece dövüşçünü seç.",
+    "chooseAvatar": "Bir avatar seç",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}, seviye {{level}} olunca açılır",
+    "selectedAvatar": "Seçili avatar: {{name}}",
+    "yourPick": "Seçimin: {{name}}",
+    "previewTitle": "Arena seni böyle görüyor",
+    "previewLabel": "Maçtaki kartının önizlemesi: {{name}}",
+    "previewNew": "Yeni",
+    "continue": "Devam",
+    "enterArena": "Arenaya gir",
+    "signOut": "Çıkış yap",
+    "googleNote": "Google ile giriş yaptın. Sadece dövüşçünü seç."
+  },
+  "name": {
+    "rules": "3–16 karakter: İbranice ya da İngilizce harfler, rakamlar, alt çizgi ve nokta.",
+    "status": {
+      "checking": "Kontrol ediliyor…",
+      "available": "Uygun",
+      "taken": "Alınmış",
+      "invalid": "Geçersiz",
+      "blocked": "İzin verilmiyor",
+      "error": "Kontrol edilmedi",
+      "current": "Senin ismin"
+    },
+    "problem": {
+      "invalidChars": "Bunlar kullanılamaz: {{chars}}",
+      "tooShort": "En az 3 karakter",
+      "tooLong": "En fazla 16 karakter"
+    },
+    "charSpace": " ",
+    "takenHint": "Bu ismi biri zaten seçmiş. Başka bir tane dene.",
+    "blockedHint": "Bu isim arenaya uymuyor. Başka bir tane dene.",
+    "errorHint": "İsmi kontrol edemedik. Kaydettiğinde yeniden kontrol edeceğiz."
+  },
+  "country": {
+    "label": "Ülke: {{country}}",
+    "choose": "Bir ülke seç",
+    "sheetTitle": "Bir ülke seç",
+    "search": "Ülke ara",
+    "searchPlaceholder": "Ara",
+    "none": "Ülke bulunamadı",
+    "hint": "Telefonunun ayarlarından algılandı. İstediğin zaman değiştirebilirsin."
+  },
+  "account": {
+    "title": "<accent>Arenaya</accent> bir adım kaldı",
+    "titleLabel": "Arenaya bir adım kaldı",
+    "subtitle": "E-postan ve şifren, dereceni ve ilerlemeni güvende tutar.",
+    "fighterReady": "Dövüşçü hazır",
+    "edit": "Düzenle",
+    "editLabel": "Dövüşçünü düzenle",
+    "submit": "Hesap oluştur",
+    "profileFailed": "Hesabın oluşturuldu ama dövüşçün henüz kaydedilmedi. Tekrar dene.",
+    "nameTakenNow": "{{name}} ismi bu arada alındı. Başka bir isim seç: hesabın seni bekliyor."
+  },
+  "password": {
+    "rules": {
+      "length": "En az 8 karakter"
+    },
+    "ruleMet": "{{rule}}: tamam",
+    "ruleMissing": "{{rule}}: eksik",
+    "strengthLabel": "Şifre gücü",
+    "strength": {
+      "weak": "Zayıf şifre",
+      "fair": "Orta şifre",
+      "good": "İyi şifre",
+      "strong": "Güçlü şifre"
+    },
+    "match": "Eşleşiyor",
+    "mismatch": "Eşleşmiyor"
+  },
+  "terms": {
+    "accept": "Kullanım koşullarını ve gizlilik politikasını kabul ediyorum",
+    "termsLink": "Kullanım koşulları",
+    "privacyLink": "Gizlilik politikası",
+    "linkHint": "Tarayıcıda açılır",
+    "required": "Arenaya girmek için koşulları kabul et"
+  },
+  "verify": {
+    "bannerTitle": "E-postan henüz doğrulanmadı",
+    "bannerAction": "Doğrula",
+    "bannerLabel": "E-postan henüz doğrulanmadı. E-postanı doğrula",
+    "title": "E-postanı doğrula",
+    "body": "{{email}} adresine bir doğrulama bağlantısı gönderdik. Bağlantıyı aç, sonra buraya dön.",
+    "why": "Antrenman onsuz da çalışır. Dereceli maçlar için doğrulanmış e-posta gerekecek.",
+    "resend": "Yeniden gönder",
+    "sent": "Yeni bir bağlantı gönderdik",
+    "check": "Doğruladım",
+    "notYet": "Henüz doğrulanmadı. Bağlantıyı açtın mı?",
+    "done": "E-posta doğrulandı. Teşekkürler!",
+    "devNote": "Geliştirme modu e-posta göndermez: “Doğruladım” e-postayı doğrulanmış olarak işaretler."
+  },
+  "edit": {
+    "title": "Profili düzenle",
+    "save": "Kaydet",
+    "saved": "Profil kaydedildi",
+    "nameRule": "İsmini 30 günde bir değiştirebilirsin.",
+    "nameLocked": "İsmini 30 günde bir değiştirebilirsin. Sonraki değişiklik: {{date}}.",
+    "offline": "Sunucuya ulaşılamıyor. Yeniden çevrimiçi olunca düzenleyebilirsin."
+  },
+  "home": {
+    "provisional": "Geçici derece: ilk 10 maçın"
+  },
+  "settings": {
+    "section": "Hesap",
+    "signedInAs": "Giriş yapılan hesap: {{email}}",
+    "editProfile": "Profili düzenle",
+    "signOut": "Çıkış yap",
+    "signOutTitle": "Çıkış yapılsın mı?",
+    "signOutBody": "Bu telefondaki antrenmanlar kalır. Yeniden oynamak için giriş yapman gerekecek.",
+    "deleteAccount": "Hesabı sil",
+    "deleteTitle": "Hesabın silinsin mi?",
+    "deleteBody": "E-postan, dövüşçün ve ismin silinecek ve bu geri alınamaz. Maçlar ve dereceler kalır ama artık sana bağlı olmaz; böylece diğer oyuncuların maçları eksiksiz kalır. İsmin diğer oyuncular için serbest kalır.",
+    "deleteContinue": "Devam",
+    "deletePasswordTitle": "Şifrenle onayla",
+    "deletePasswordBody": "Hesabı silmek için {{email}} hesabının şifresini gir.",
+    "deleteSubmit": "Hesabımı kalıcı olarak sil",
+    "deleted": "Hesabın silindi",
+    "deletedPartly": "Hesabın silindi. Giriş bilgilerini silemedik: bu bilgilerle giriş yapmak yeni bir kayıt başlatır.",
+    "method": {
+      "password": "E-posta ve şifreyle giriş yapar",
+      "google": "Google ile giriş yapar",
+      "both": "Google ile ya da e-posta ve şifreyle giriş yapar"
+    },
+    "deleteGoogleTitle": "Google ile onayla",
+    "deleteGoogleBody": "Hesabı silmek için {{email}} Google hesabını yeniden seç.",
+    "deleteGoogleSubmit": "Google ile onayla ve sil",
+    "deleteGoogleAgain": "Hesabı silmek için yeni bir onay gerekiyor. Tekrar dene ve Google hesabını seç.",
+    "deleteWithPassword": "Bunun yerine şifrenle onayla"
+  }
+}

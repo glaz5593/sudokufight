@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, StyleSheet, Text, View } from 'react-native';
+import { BackHandler, StyleSheet, View } from 'react-native';
 
 import { Icon } from '../components/Icon';
 import { Button, Spinner } from '../components/ui';
+import { Text } from '../components/ui/Text';
 import { gameEndConfig } from '../config/gameEnd';
 import { crashReporter } from '../services/crashlytics';
 import { color, radius, size, space, text, tokens } from '../theme';

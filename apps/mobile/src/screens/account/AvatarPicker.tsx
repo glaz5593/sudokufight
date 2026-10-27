@@ -2,7 +2,7 @@ import type { AvatarKind } from '@sudoku-fight/avatars';
 import type { AvatarId } from '@sudoku-fight/protocol';
 import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, SectionList, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, SectionList, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import {
   AVATAR_GROUPS,
@@ -15,6 +15,7 @@ import {
 import { Icon } from '../../components/Icon';
 import { Avatar, AVATAR_SIZES } from '../../components/player';
 import { Sheet, SHEET_GUTTER } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { isUnlocked } from '../../progress/unlocks';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { PickerField } from './PickerField';

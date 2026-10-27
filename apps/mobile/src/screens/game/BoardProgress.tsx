@@ -1,6 +1,6 @@
 import { memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { I18nManager, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { I18nManager, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -11,6 +11,7 @@ import Animated, {
 
 import { ltr, paletteAt, sameProps, sameStyle } from '../../components/player';
 import { metrics } from '../../components/player/metrics';
+import { Text } from '../../components/ui/Text';
 import { color, radius, size, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 
@@ -67,7 +68,12 @@ export const BoardProgress = memo(function BoardProgress({
       accessible
       accessibilityRole="progressbar"
       accessibilityLabel={t('progress.label')}
-      accessibilityValue={{ min: 0, max: total, now: filled, text: t('progress.a11y', { filled, total }) }}
+      accessibilityValue={{
+        min: 0,
+        max: total,
+        now: filled,
+        text: t('progress.a11y', { count: total, filled, total }),
+      }}
       testID={testID}
     >
       <View style={styles.track}>

@@ -1,6 +1,6 @@
 import type { CellIndex } from '@sudoku-fight/engine';
 import { memo, useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { color, radius, space, text, tokens } from '../../theme';
@@ -8,6 +8,7 @@ import { motion, useReduceMotion } from '../../theme/motion';
 import { boardGeometry, cellRect } from '../board/geometry';
 import { timing } from '../ui/motion';
 
+import { Text } from '../ui/Text';
 /**
  * Small chips over cells (components.md §19.7): a move's points ("‎+6.5" in the point hunter), a wrong tap's
  * "‎+5 ש׳", "שווה 6" over my locked cell. Each sits on the top edge of its cell, in the board's own LTR

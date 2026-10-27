@@ -1,16 +1,19 @@
 import type { StarRule, Stars } from '@sudoku-fight/engine';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
+import { decimalSeparator } from '../../i18n/compose';
 import { color, radius, space, text, tokens } from '../../theme';
 import { motion, reduceMotionFlag, useReduceMotion } from '../../theme/motion';
 import { scaleLine } from '../../screens/levels/levelWording';
 import { secondsText } from '../../screens/home/homeModel';
+import { DEFAULT_DECIMAL } from '../player/format';
 import { SeatGlyph } from '../player/SeatGlyph';
 import { paletteAt } from '../player/metrics';
 import { curve } from '../ui/motion';
+import { Text } from '../ui/Text';
 import { Star, STAR_SIZES } from './StarRow';
 
 /**
@@ -52,8 +55,16 @@ export interface AxisMark {
   lit: boolean;
 }
 
-/** The bar's axis: its end, the fill's share and the marks (pure; exported for the tests). */
-export function axisOf(rule: StarRule, value: number, max?: number): { fill: number; marks: AxisMark[] } {
+/**
+ * The bar's axis: its end, the fill's share and the marks (pure; exported for the tests). `decimal` is the
+ * language's separator for the numbers under the marks (D108: "7,5" in German).
+ */
+export function axisOf(
+  rule: StarRule,
+  value: number,
+  max?: number,
+  decimal: string = DEFAULT_DECIMAL,
+): { fill: number; marks: AxisMark[] } {
   const clamp = (x: number) => Math.max(0, Math.min(1, x));
   switch (rule.by) {
     case 'timeMs': {
@@ -61,7 +72,7 @@ export function axisOf(rule: StarRule, value: number, max?: number): { fill: num
       const mark = (ms: number, stars: 1 | 2 | 3): AxisMark => ({
         share: clamp(ms / end),
         stars,
-        text: secondsText(ms),
+        text: secondsText(ms, decimal),
         lit: value <= ms,
       });
       return { fill: clamp(value / end), marks: [mark(rule.three, 3), mark(rule.two, 2), mark(rule.one, 1)] };
@@ -71,7 +82,7 @@ export function axisOf(rule: StarRule, value: number, max?: number): { fill: num
       const mark = (p: number, stars: 1 | 2 | 3): AxisMark => ({
         share: clamp(p / end),
         stars,
-        text: secondsless(p),
+        text: secondsless(p, decimal),
         lit: value >= p,
       });
       return { fill: clamp(value / end), marks: [mark(rule.one, 1), mark(rule.two, 2), mark(rule.three, 3)] };
@@ -82,7 +93,7 @@ export function axisOf(rule: StarRule, value: number, max?: number): { fill: num
       const mark = (g: number, stars: 2 | 3): AxisMark => ({
         share: clamp(g / end),
         stars,
-        text: secondsless(g),
+        text: secondsless(g, decimal),
         lit: value >= g,
       });
       return { fill: clamp(value / end), marks: [mark(rule.two, 2), mark(rule.three, 3)] };
@@ -100,8 +111,9 @@ export function axisOf(rule: StarRule, value: number, max?: number): { fill: num
   }
 }
 
-/** Points and leads as the scores show them (55, 17.5). */
-const secondsless = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+/** Points and leads as the scores show them (55, 17.5; "17,5" with the German separator). */
+const secondsless = (n: number, decimal: string): string =>
+  Number.isInteger(n) ? String(n) : n.toFixed(1).replace('.', decimal);
 
 export function StarsBar({ rule, value, max, spots, testID = 'stars-bar' }: StarsBarProps) {
   const { t } = useTranslation('levels');
@@ -118,8 +130,9 @@ function Axis({
   label,
   testID,
 }: Pick<StarsBarProps, 'rule' | 'value' | 'max'> & { label: string; testID: string }) {
+  const { t } = useTranslation('levels');
   const reduce = useReduceMotion();
-  const { fill, marks } = axisOf(rule, value, max);
+  const { fill, marks } = axisOf(rule, value, max, decimalSeparator(t));
   const share = useSharedValue(fill);
   useEffect(() => {
     share.set(

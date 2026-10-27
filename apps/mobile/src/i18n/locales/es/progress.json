@@ -1,0 +1,212 @@
+{
+  "common": {
+    "provisional": "Puntuación provisional",
+    "provisionalNote_one": "Tu liga aparece después de 1 partida clasificatoria en un mismo tipo de partida",
+    "provisionalNote_many": "Tu liga aparece después de {{games}} de partidas clasificatorias en un mismo tipo de partida",
+    "provisionalNote_other": "Tu liga aparece después de {{games}} partidas clasificatorias en un mismo tipo de partida",
+    "level": "Nivel {{level}}",
+    "you": "Tú",
+    "myCard": "Mi tarjeta de jugador",
+    "loading": "Cargando…",
+    "retry": "Reintentar",
+    "offlineNote": "Sin conexión con el servidor: se muestra lo que se cargó antes.",
+    "errorNote": "No se pudo actualizar: se muestra lo que se cargó antes.",
+    "offlineTitle": "Sin conexión con el servidor",
+    "offlineBody": "La clasificación se actualiza cuando vuelva la conexión.",
+    "errorTitle": "Algo salió mal",
+    "errorBody": "El servidor no pudo responder justo ahora. Vuelve a intentarlo en un momento.",
+    "signedOut": "Inicia sesión para ver esto",
+    "players_one": "1 jugador",
+    "players_many": "{{count}} de jugadores",
+    "players_other": "{{count}} jugadores",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}, camino al nivel {{level}}"
+  },
+  "leaderboard": {
+    "title": "Clasificación",
+    "tabs": {
+      "label": "Tipo de puntuación",
+      "general": "Global",
+      "fast": "Rápido",
+      "normal": "Normal",
+      "hard": "Difícil",
+      "friends": "Amigos"
+    },
+    "caption": {
+      "general": "Global · la puntuación más alta de cada jugador",
+      "type": "Puntuación en {{type}} · mundial",
+      "typePlayers": "Puntuación en {{type}} · {{players}} · mundial",
+      "friends": "Tus rivales recientes"
+    },
+    "players": "Número de jugadores",
+    "podium": "Los tres primeros",
+    "rankLabel": "Puesto {{rank}}",
+    "meName": "{{name}} (tú)",
+    "openHint": "Abre la tarjeta del jugador",
+    "meNone": "Todavía no tienes puntuación en esta tabla",
+    "play": "Jugar",
+    "playHint": "Juega una partida clasificatoria para entrar en la tabla",
+    "climbHint": "Juega para subir en la tabla",
+    "emptyTitle": "Todavía no hay nadie aquí",
+    "emptyBody": "Juega una partida clasificatoria y estrena la tabla."
+  },
+  "friends": {
+    "invite": "Invitar amigos",
+    "inviteMessage": "¡Ven a jugar conmigo en Sudoku Fight!",
+    "inviteNote": "Un amigo más = un rival más",
+    "emptyTitle": "Todavía no hay rivales",
+    "emptyBody": "Juega una partida clasificatoria y tus rivales aparecerán aquí. Pronto habrá una lista completa de amigos."
+  },
+  "league": {
+    "title": "Liga",
+    "toNext": "{{points}} para {{league}}",
+    "top": "La liga más alta",
+    "general": "Global {{rating}} · {{next}}",
+    "generalTop": "Global {{rating}} · la liga más alta",
+    "ladder": "La escalera de ligas",
+    "step": "Liga {{league}}, desde la puntuación {{floor}}"
+  },
+  "card": {
+    "title": "Tarjeta de jugador",
+    "edit": "Editar perfil",
+    "notFound": "No se encontró al jugador",
+    "offlineBody": "La tarjeta se carga desde el servidor. Vuelve a intentarlo cuando vuelva la conexión.",
+    "savedNote": "Sin conexión con el servidor: se muestra la tarjeta guardada.",
+    "meLabel": "{{name}}, mi tarjeta",
+    "ratingsTitle": "Puntuación por tipo de partida",
+    "ratingsNote_one": "1 puntuación",
+    "ratingsNote_many": "{{n}} de puntuaciones",
+    "ratingsNote_other": "{{n}} puntuaciones",
+    "noRatings": "Todavía sin puntuación",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "subió {{points}} en las últimas partidas",
+    "trendDown": "bajó {{points}} en las últimas partidas",
+    "trendFlat": "sin cambios en las últimas partidas",
+    "atPeak": "en su punto más alto",
+    "peak": "máximo {{value}}",
+    "atPeakShort": "¡Máximo!",
+    "peakShort": "Máx. {{value}}",
+    "games_one": "1 partida",
+    "games_many": "{{count}} de partidas",
+    "games_other": "{{count}} partidas",
+    "statsTitle": "Estadísticas de combate",
+    "stats": {
+      "games": "Partidas",
+      "wins": "Victorias",
+      "losses": "Derrotas",
+      "winRate": "% de victorias",
+      "streak": "Racha de victorias",
+      "bestStreak": "Mejor racha",
+      "bestMove": "Mejor jugada",
+      "avgMistakes": "Errores por partida"
+    },
+    "recentTitleSection": "Resultados recientes",
+    "recentNote": "últimos {{n}}",
+    "recentEmpty": "Todavía no hay partidas clasificatorias.",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "Victoria",
+      "loss": "Derrota",
+      "tie": "Empate"
+    },
+    "outcomeShort": {
+      "win": "V",
+      "loss": "D",
+      "tie": "E"
+    },
+    "place": "Puesto {{place}}",
+    "points": "{{score}} pts.",
+    "ratingDelta": "puntuación {{delta}}",
+    "formLabel": "Resultados recientes, del más nuevo al más antiguo: {{list}}",
+    "replayHint": "Abre la repetición",
+    "openOf": "Tarjeta de jugador de {{name}}",
+    "achievementsTitle": "Logros destacados",
+    "allAchievements": "Todos los logros",
+    "joinedSince": "Juega desde el {{date}}",
+    "favorite": {
+      "title": "Interferencia favorita",
+      "uses_one": "vez",
+      "uses_many": "veces",
+      "uses_other": "veces",
+      "label_one": "Interferencia favorita: {{kind}}, enviada una vez",
+      "label_many": "Interferencia favorita: {{kind}}, enviada {{count}} de veces",
+      "label_other": "Interferencia favorita: {{kind}}, enviada {{count}} veces"
+    }
+  },
+  "achievements": {
+    "title": "Logros",
+    "soon": "Muy pronto",
+    "soonBody": "12 logros en camino: primera victoria, rachas de victorias, mejores jugadas y más. Muy pronto aquí.",
+    "soonShort": "Los logros llegan muy pronto.",
+    "earned": "{{name}}, conseguido el {{date}}"
+  },
+  "progress": {
+    "title": "Logros y progreso",
+    "savedNote": "Sin conexión con el servidor: se muestran los números guardados.",
+    "pending_one": "1 práctica pendiente de sincronizar con el servidor",
+    "pending_many": "{{count}} de prácticas pendientes de sincronizar con el servidor",
+    "pending_other": "{{count}} prácticas pendientes de sincronizar con el servidor",
+    "offlineBody": "Tu nivel y tus XP aparecen cuando hay conexión con el servidor.",
+    "levelWord": "Nivel",
+    "xpTitle": "Puntos de experiencia",
+    "toGo": "{{xp}} para el nivel {{level}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "Cómo ganar XP",
+    "how": {
+      "win": "Primer puesto en una clasificatoria, o una victoria contra un bot",
+      "played": "Cualquier otro resultado en una clasificatoria o contra un bot",
+      "solo": "Práctica en solitario",
+      "perCorrect": "Cada jugada correcta, en clasificatorias y contra un bot"
+    }
+  },
+  "interferences": {
+    "title": "Interferencias",
+    "entry": "Colección de interferencias",
+    "entryNote": "{{open}} disponibles · {{locked}} bloqueadas",
+    "countLabel_one": "{{open}} de 1 interferencia disponible",
+    "countLabel_many": "{{open}} de {{total}} de interferencias disponibles",
+    "countLabel_other": "{{open}} de {{total}} interferencias disponibles",
+    "opened": "disponibles",
+    "facts": {
+      "seconds": "segundos cada una",
+      "cost": "el costo se duplica con cada lanzamiento",
+      "launch": "toques: “Interferir” en la tarjeta de un rival y luego la interferencia",
+      "launchValue": "2"
+    },
+    "arsenal": "Tu arsenal",
+    "tapHint": "Toca para previsualizar",
+    "openLabel": "{{name}}, disponible. {{description}}",
+    "previewHint": "Muestra la vista previa",
+    "available": "Disponible",
+    "previewing": "En vista previa",
+    "lockedTitle": "Bloqueadas",
+    "lockedNote": "Se desbloquean al subir de nivel",
+    "soon": "Muy pronto",
+    "atLevel": "Desde el nivel {{level}}",
+    "lockedLabel": "{{name}}, bloqueada, {{when}}",
+    "howTo": "En una partida: toca “Interferir” en la tarjeta de un rival y luego elige una interferencia.",
+    "future": {
+      "earthquake": "Terremoto",
+      "fog": "Niebla",
+      "bubbles": "Burbujas",
+      "torch": "Linterna"
+    },
+    "description": {
+      "fireworks": "Una ráfaga de fuegos artificiales de colores sobre la pantalla",
+      "cats": "Una caravana de gatos que cruza la pantalla a toda velocidad",
+      "warp": "La pantalla se dobla y parpadea",
+      "scramble": "Los números del tablero se mezclan y cambian de lugar",
+      "ink": "Manchas de tinta que se desvanecen",
+      "keypad": "Las teclas de los números cambian de lugar",
+      "earthquake": "La pantalla tiembla",
+      "fog": "Niebla que se disipa poco a poco",
+      "bubbles": "Burbujas que tienes que reventar",
+      "torch": "El tablero se oscurece, salvo la luz de una linterna"
+    }
+  },
+  "home": {
+    "levelXp": "Nivel {{level}} · {{xp}}"
+  }
+}

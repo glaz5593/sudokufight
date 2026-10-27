@@ -1,0 +1,176 @@
+{
+  "title": "Room bersama teman",
+  "subtitle": "{{type}} · {{count}} dari {{max}}",
+  "label": "Pertandingan bersama teman · tanpa rating",
+  "mode": "Bersama teman",
+  "modeLong": "Pertandingan bersama teman",
+  "unrated": "Tanpa rating",
+  "code": {
+    "title": "Kode room",
+    "label": "Kode room: {{spelled}}",
+    "hint": "Kirim kode atau tautannya"
+  },
+  "share": {
+    "button": "Bagikan tautan",
+    "hint": "Membuka menu berbagi di ponselmu, dengan kode dan tautannya",
+    "message": "Ayo main bersamaku di Sudoku Fight! Kode room: {{code}}\n{{link}}",
+    "failed": "Tidak bisa membuka menu berbagi"
+  },
+  "copy": {
+    "button": "Salin kode",
+    "done": "Kode disalin",
+    "failed": "Tidak bisa menyalin kode"
+  },
+  "gameType": {
+    "title": "Jenis permainan",
+    "hostPicks": "Hanya tuan rumah yang bisa mengubahnya",
+    "guestSees": "Tuan rumah yang memilih",
+    "changed": "Jenis permainan sekarang {{type}}"
+  },
+  "players": {
+    "title": "Pemain · {{count}} dari {{max}}"
+  },
+  "seat": {
+    "me": "Kamu",
+    "host": "Tuan rumah",
+    "away": "Sedang tidak di room",
+    "empty": "Menunggu pemain…",
+    "emptyLabel": "Kursi kosong, menunggu pemain",
+    "rating": "Rating: {{rating}}"
+  },
+  "kick": {
+    "label": "Keluarkan {{name}} dari room",
+    "title": "Keluarkan {{name}} dari room?",
+    "body": "Dia tidak akan bisa kembali ke room ini.",
+    "confirm": "Keluarkan"
+  },
+  "start": {
+    "button_other": "Mulai · {{count}} pemain",
+    "needMore": "Perlu minimal 2 pemain yang terhubung untuk mulai",
+    "waitingForHost": "Menunggu {{name}} memulai",
+    "hostAway": "Tuan rumah sedang tidak di room",
+    "starting": "Pertandingan dimulai…"
+  },
+  "startWithout": {
+    "title": "Mulai tanpa {{names}}?",
+    "body": "{{names}} sedang tidak di room. Siapa pun yang tidak di room tidak ikut bermain.",
+    "confirm": "Ya, mulai",
+    "cancel": "Tidak, tunggu dulu"
+  },
+  "leave": "Keluar dari room",
+  "reconnecting": "Koneksi terputus. Menghubungkan ulang…",
+  "announce": {
+    "joined": "{{name}} bergabung",
+    "left": "{{name}} keluar dari room",
+    "away": "{{name}} sedang tidak di room",
+    "back": "{{name}} kembali ke room",
+    "host": "{{name}} sekarang jadi tuan rumah",
+    "meHost": "Kamu sekarang jadi tuan rumah"
+  },
+  "opening": {
+    "create": "Membuka room…",
+    "join": "Bergabung ke room…"
+  },
+  "replace": {
+    "title": "Tutup room lain milikmu?",
+    "body": "Kamu sudah punya room yang terbuka, {{code}}. Tutup room itu dan buka yang baru, atau kembali ke sana.",
+    "confirm": "Tutup dan buka baru",
+    "cancel": "Kembali ke room itu"
+  },
+  "errors": {
+    "notFound": "Kami tidak menemukan room dengan kode {{code}}. Periksa angkanya.",
+    "notFoundThis": "Kami tidak menemukan room dengan kode ini.",
+    "roomFull": "Room sudah penuh ({{max}} dari {{max}}).",
+    "gameStarted": "Pertandingan di room ini sudah dimulai.",
+    "roomClosed": "Room sudah ditutup.",
+    "kicked": "Tuan rumah mengeluarkanmu dari room.",
+    "cantJoin": "Kamu memblokir pemain yang ada di room ini.",
+    "suspended": "Akunmu sedang ditangguhkan, jadi kamu belum bisa bermain dengan teman sekarang.",
+    "network": "Tidak ada koneksi internet.",
+    "tooManyRequests": "Terlalu banyak percobaan. Coba lagi dalam {{wait}}.",
+    "notAvailable": "Opsi ini belum tersedia.",
+    "badRequest": "Kodenya terdiri dari 6 angka.",
+    "unauthorized": "Masuk lagi ke akunmu.",
+    "notRegistered": "Selesaikan pendaftaran untuk bermain dengan teman.",
+    "tooManyRooms": "Kamu sudah punya room yang terbuka.",
+    "tooLarge": "Terjadi kesalahan. Coba lagi.",
+    "internal": "Terjadi kesalahan di server. Coba lagi sebentar lagi.",
+    "disabled": "Bermain dengan teman tidak tersedia di server ini.",
+    "unavailable": "Server sedang tidak tersedia. Coba lagi sebentar lagi."
+  },
+  "wait": {
+    "seconds_other": "{{count}} detik",
+    "minutes_other": "{{count}} menit"
+  },
+  "closed": {
+    "kicked": "Tuan rumah mengeluarkanmu dari room.",
+    "removed": "Kamu keluar dari room.",
+    "otherDevice": "Room ini dibuka di perangkat lain.",
+    "serverRestart": "Room sudah ditutup.",
+    "closed": "Room sudah ditutup."
+  },
+  "lobbyErrors": {
+    "notHost": "Hanya tuan rumah yang bisa melakukan itu.",
+    "notEnoughPlayers": "Perlu minimal 2 pemain yang terhubung untuk mulai.",
+    "playersAway": "{{names}} sedang tidak di room.",
+    "gameStarted": "Pertandingan sudah dimulai.",
+    "badCommand": "Itu tidak berhasil. Coba lagi.",
+    "tooManyRequests": "Pelan-pelan, terlalu banyak ketukan. Coba lagi sebentar lagi."
+  },
+  "startedWithout": "Pertandingan dimulai tanpamu.",
+  "actions": {
+    "retry": "Coba lagi",
+    "createRoom": "Buat room",
+    "joinWithCode": "Gabung dengan kode",
+    "home": "Beranda"
+  },
+  "join": {
+    "title": "Gabung dengan kode",
+    "prompt": "Ketik 6 angka yang kamu terima",
+    "codeLabel": "Kode room, 6 angka",
+    "digitLabel": "Angka {{n}} dari {{total}}",
+    "paste": "Tempel",
+    "pasteHint": "Kamu bisa menempelkan seluruh pesan WhatsApp",
+    "pasteNone": "Tidak ada kode 6 angka di teks yang disalin",
+    "joining": "Bergabung ke room…",
+    "submit": "Gabung"
+  },
+  "link": {
+    "notFound": {
+      "title": "Kami tidak mengenali tautan ini",
+      "body": "Mungkin tautannya sudah lama, atau bukan dari Sudoku Fight. Kamu bisa lanjut dari beranda.",
+      "home": "Ke beranda"
+    },
+    "badCode": "Tautan ini tidak valid"
+  },
+  "invite": {
+    "pending": "Kamu diundang ke room {{code}}",
+    "afterSignIn": "Setelah masuk, kamu langsung dibawa ke room {{code}}",
+    "join": "Gabung",
+    "later": "Nanti saja",
+    "expired": "Undangan ke room {{code}} sudah kedaluwarsa"
+  },
+  "busy": {
+    "practice": {
+      "title": "Tinggalkan latihan dan gabung ke room?",
+      "body": "Latihan tetap tersimpan, sama seperti saat kamu meninggalkannya.",
+      "confirm": "Gabung ke room"
+    },
+    "search": {
+      "title": "Berhenti mencari dan gabung?",
+      "body": "Pencarian lawan akan dihentikan.",
+      "confirm": "Gabung ke room"
+    },
+    "room": {
+      "title": "Pindah ke room {{code}}?",
+      "body": "Kamu akan keluar dari room tempatmu sekarang.",
+      "confirm": "Pindah room"
+    },
+    "game": {
+      "title": "Kamu sedang di tengah pertandingan",
+      "body": "Kamu bisa bergabung setelahnya. Undangan ke room {{code}} akan menunggumu.",
+      "back": "Kembali ke pertandingan"
+    },
+    "stay": "Tetap di sini"
+  }
+}

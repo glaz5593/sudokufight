@@ -1,0 +1,434 @@
+{
+  "title": "Latihan solo",
+  "titleBot": "Latihan lawan bot",
+  "titleRanked": "Pertandingan ranked",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "Kamu",
+  "opponent": "Lawan",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "Level bot {{level}}, {{title}}"
+  },
+  "listSep": ", ",
+  "type": {
+    "fast": "Cepat",
+    "normal": "Biasa",
+    "hard": "Sulit"
+  },
+  "hud": {
+    "time": "Waktu",
+    "best": "Terbaik",
+    "none": "—",
+    "timeLabel": "Waktu {{time}}",
+    "bestLabel_other": "Langkah terbaik: {{points}} poin di {{cell}}",
+    "noBestLabel": "Belum ada langkah terbaik"
+  },
+  "progress": {
+    "label": "Progres papan",
+    "value": "{{filled}}/{{total}}",
+    "a11y_other": "{{filled}} dari {{total}} sel terisi"
+  },
+  "end": {
+    "button": "Akhiri latihan",
+    "title": "Akhiri latihan?",
+    "body": "Hasilmu tersimpan di ponsel ini. Ratingmu tidak berubah.",
+    "confirm": "Ya, akhiri",
+    "footnote": "Pertandingan tetap berjalan di latar belakang",
+    "dialog": "Konfirmasi mengakhiri latihan"
+  },
+  "out": {
+    "surrendered": "Kamu menyerah · posisi {{place}}",
+    "abandoned": "Kamu keluar · posisi {{place}}",
+    "goesOn": "Pertandingan lanjut sampai akhir",
+    "label": "{{title}}. {{goesOn}}",
+    "home": "Beranda",
+    "homeHint": "Pertandingan berlanjut tanpamu. Posisimu sudah ditetapkan"
+  },
+  "connection": {
+    "sep": ". ",
+    "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "lead": {
+      "mine": "Kamu unggul",
+      "theirs": "{{name}} unggul",
+      "theirs_female": "{{name}} unggul",
+      "tie": "Imbang"
+    },
+    "frozen": {
+      "title": "Pertandingan dibekukan",
+      "timers": "Semua timer berhenti",
+      "label": "Pertandingan dibekukan, semua timer berhenti"
+    },
+    "opponent": {
+      "lost": "Koneksi {{name}} terputus",
+      "lost_female": "Koneksi {{name}} terputus",
+      "title": "Lawan mencoba terhubung lagi…",
+      "timeUp": "Waktu habis",
+      "notBack": "{{name}} tidak kembali",
+      "notBack_female": "{{name}} tidak kembali",
+      "seconds": "detik",
+      "ring": "Menghubungkan ulang… {{seconds}}",
+      "saved": "Pertandingan tersimpan di server",
+      "savedSub": "Papan dan skor tetap tersimpan",
+      "winLabel": "Menang karena lawan keluar",
+      "hint": "Jika {{name}} tidak kembali tepat waktu, kamu menang karena lawan keluar",
+      "hint_female": "Jika {{name}} tidak kembali tepat waktu, kamu menang karena lawan keluar",
+      "checking": "Memeriksa dengan server…",
+      "timeLeft": "Waktu untuk kembali: {{time}}",
+      "announce": "Koneksi {{name}} terputus. Pertandingan dibekukan sampai dia kembali",
+      "announce_female": "Koneksi {{name}} terputus. Pertandingan dibekukan sampai dia kembali",
+      "announceExpired": "Waktu habis. Memeriksa dengan server"
+    },
+    "self": {
+      "lostTitle": "Koneksimu terputus",
+      "lostSub": "Menghubungkan ulang…",
+      "attempt": "Percobaan",
+      "attemptLabel": "Percobaan {{attempt}}",
+      "backTitle": "Kamu kembali bermain",
+      "syncingSub": "Menyinkronkan…",
+      "syncedSub": "Semua tersinkron · main terus",
+      "lockedTitle": "Papan terkunci sampai kamu kembali",
+      "lockedSub": "Saat koneksi kembali, kami akan menyinkronkan:",
+      "syncingTitle": "Menyinkronkan…",
+      "syncedTitle": "Semua tersinkron",
+      "savedSub": "Pertandingan tersimpan di server dan berlanjut dari titik yang sama",
+      "item": {
+        "board": "Papan",
+        "score": "Skor",
+        "locks": "Kunci",
+        "turn": "Giliran",
+        "timers": "Timer"
+      },
+      "timeLeft_other": "Kamu punya {{seconds}} detik untuk kembali",
+      "timeSub": "Sebelum dianggap keluar",
+      "backInTime": "Tepat waktu",
+      "backInTimeSub": "Timer berlanjut dari detik yang sama",
+      "announceLost": "Koneksimu terputus. Menghubungkan ulang",
+      "announceAttempt": "Koneksimu terputus. Menghubungkan ulang, percobaan {{attempt}}",
+      "announceHurry_other": "Dalam {{seconds}} detik kamu dianggap keluar",
+      "announceSyncing": "Kamu kembali ke pertandingan. Menyinkronkan",
+      "announceSynced": "Kamu kembali ke pertandingan. Papan dan skor sudah tersinkron"
+    },
+    "offline": {
+      "announce": "Tidak ada koneksi. Terus bermain; langkahmu dikirim saat koneksi kembali"
+    },
+    "left": {
+      "timeUp_other": "Waktu habis · {{seconds}} detik tanpa koneksi",
+      "title": "{{name}} keluar dari pertandingan",
+      "title_female": "{{name}} keluar dari pertandingan",
+      "win": "Kamu menang karena lawan keluar",
+      "rating": "poin rating",
+      "ratingLabel": "Perubahan rating: {{delta}}, {{type}}",
+      "ratingUnchanged": {
+        "opponentLeftBeforeMyMove": "Rating tidak berubah: dia keluar sebelum langkah pertamamu",
+        "opponentLeftAhead": "Rating tidak berubah: kamu tertinggal saat dia keluar"
+      },
+      "toResults": "Lihat hasil",
+      "home": "Beranda"
+    },
+    "error": {
+      "title": "Kesalahan koneksi",
+      "offlineTitle": "Tidak ada koneksi internet",
+      "body": {
+        "offline": "Ponselmu sedang tidak terhubung ke jaringan. Sambungkan ke internet lalu coba lagi.",
+        "unreachable": "Kami tidak bisa menghubungi server permainan. Periksa koneksimu lalu coba lagi.",
+        "lost": "Koneksi ke server permainan terputus dan kami tidak bisa memulihkannya.",
+        "refused": "Server tidak mengizinkan kami masuk ke room."
+      },
+      "refusal": {
+        "notFound": "Tidak ada room dengan kode ini. Periksa kodenya lalu coba lagi.",
+        "full": "Room ini sudah penuh.",
+        "gameStarted": "Pertandingan di room ini sudah dimulai.",
+        "alreadyInRoom": "Kamu sudah ada di room ini, di perangkat lain.",
+        "unauthenticated": "Masuk ke akunmu untuk bermain melawan orang lain.",
+        "suspended": "Akunmu sedang ditangguhkan, jadi untuk sementara tidak ada pertandingan ranked. Latihan solo atau melawan bot tetap bisa.",
+        "codeTaken": "Room dengan kode ini sudah ada. Coba kode lain.",
+        "badOptions": "Pengaturan room tidak valid.",
+        "kicked": "Tuan rumah mengeluarkanmu dari room.",
+        "roomClosed": "Room sudah ditutup."
+      },
+      "code": "Kode kesalahan: {{code}}",
+      "attemptFailed": "Percobaan {{attempt}} gagal",
+      "retry": "Coba lagi",
+      "practice": "Ke latihan",
+      "practiceNote": "Latihan solo atau melawan bot bisa dimainkan tanpa koneksi",
+      "home": "Beranda"
+    },
+    "surrender": {
+      "chip": "Menyerah",
+      "title": "Yakin mau menyerah?",
+      "body": "Pertandingan dihitung kalah",
+      "bodyRating": "Pertandingan dihitung kalah · perkiraan perubahan rating {{delta}}",
+      "bodyNoLoss": {
+        "leftBeforeMoving": "Pertandingan dihitung kalah · ratingmu tidak turun: kamu belum melangkah",
+        "leftNotBehind": "Pertandingan dihitung kalah · ratingmu tidak turun: kamu tidak tertinggal"
+      },
+      "bodyMany": "Kamu keluar dari pertandingan, dan sel yang sudah kamu isi tetap berwarna milikmu.",
+      "bodyManyNoLoss": "Kamu keluar dari pertandingan, dan sel yang sudah kamu isi tetap berwarna milikmu. Ratingmu tidak turun terhadap pemain yang masih bertanding.",
+      "confirm": "Ya, menyerah",
+      "cancel": "Batal",
+      "footnote": "Pertandingan tetap berjalan di latar belakang",
+      "dialog": "Konfirmasi menyerah"
+    },
+    "lobby": {
+      "title": "Room privat",
+      "subtitle_other": "{{type}} · {{players}} pemain",
+      "codeTitle": "Kode room",
+      "codeLabel": "Kode room: {{spelled}}",
+      "codeHint": "Kirim kodenya ke teman yang bermain denganmu",
+      "share": "Bagikan kode",
+      "copy": "Salin",
+      "copied": "Kode disalin",
+      "shareMessage": "Ayo main Sudoku Fight bersamaku! Kode room: {{code}}",
+      "playersTitle": "Pemain di room",
+      "you": "Kamu",
+      "emptySeat": "Menunggu pemain…",
+      "seatMeLabel": "{{name}}, kamu",
+      "seatEmptyLabel": "Kursi kosong, menunggu pemain",
+      "waiting_other": "Menunggu {{count}} pemain lagi",
+      "starting": "Semua sudah hadir! Pertandingan dimulai…",
+      "hint": "Pertandingan dimulai begitu semua pemain ada di room",
+      "leave": "Keluar dari room",
+      "joined": "{{name}} masuk ke room"
+    },
+    "connecting": {
+      "title": "Masuk ke pertandingan",
+      "board": "Memuat papan…",
+      "step": {
+        "server": "Menghubungkan ke server permainan…",
+        "room": "Masuk ke room…",
+        "sync": "Menyinkronkan skor dan timer…"
+      },
+      "label": "Memuat pertandingan, langkah {{step}} dari {{total}}",
+      "cancel": "Batal",
+      "tag": "Mode ranked · {{type}}",
+      "rating": "Rating: {{rating}}",
+      "ready": "Siap!",
+      "joining": "Menghubungkan…",
+      "tipTitle": "Tips",
+      "tips": {
+        "score_other": "Makin kosong baris, kolom, dan kotaknya, makin besar nilai langkahnya: hingga {{max}} poin per sel.",
+        "lastCell_other": "Sel terakhir di papan selalu bernilai hanya {{points}} poin: semua di sekitarnya sudah penuh.",
+        "mistakes": "Kesalahan memotong poin tepat sebesar nilai angka yang benar di sel itu. Sel yang bernilai tinggi juga mahal kalau salah.",
+        "interference": "Setiap gangguan harganya dua kali lipat dari yang sebelumnya. Simpan untuk saat yang tepat."
+      }
+    }
+  },
+  "live": {
+    "correct": "Benar: {{digit}} di {{cell}}, {{points}}",
+    "wrong": "Salah: {{digit}} tidak cocok di {{cell}}, {{penalty}}",
+    "taken": "{{cell}} sudah diambil",
+    "cooldown": "Kamu bisa memilih {{cell}} lagi sebentar lagi",
+    "expired": "Waktu habis, {{cell}} dilepas",
+    "complete": "Papan selesai!",
+    "oppCorrect": "{{name}} mengisi {{cell}}: {{digit}}, {{points}}",
+    "oppWrong": "{{name}} meleset: {{digit}} tidak cocok di {{cell}}, {{penalty}}",
+    "leadMine_other": "Kamu unggul {{gap}} poin",
+    "leadTheirs_other": "{{name}} unggul {{gap}} poin",
+    "leadTie": "Skor imbang",
+    "reaction": "{{name}} bereaksi {{emoji}}",
+    "oppSurrendered": "{{name}} menyerah dan keluar, posisi {{place}}",
+    "oppAbandoned": "{{name}} tidak kembali tepat waktu dan keluar, posisi {{place}}",
+    "hitOther": "{{from}} mengirim {{kind}} ke {{name}}",
+    "outMine": "Kamu keluar di posisi {{place}}. Pertandingan berlanjut sampai selesai",
+    "queued": "{{cell}}: {{digit}} menunggu koneksi",
+    "offlineLostTaken": "{{cell}} diambil saat kamu offline · tanpa penalti",
+    "offlineLost": "Langkahmu di {{cell}} tidak dihitung · tanpa penalti"
+  },
+  "interference": {
+    "fireworks": "kembang api",
+    "cats": "kucing",
+    "warp": "distorsi",
+    "scramble": "angka acak",
+    "ink": "tinta",
+    "keypad": "keypad acak"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}} mengirimimu kembang api!",
+      "cats": "{{name}} mengirimimu kucing!",
+      "warp": "{{name}} membengkokkan layarmu!",
+      "scramble": "{{name}} mengacak angkamu!",
+      "ink": "{{name}} mencipratkan tinta ke layarmu!",
+      "keypad": "{{name}} mengacak keypad-mu!",
+      "generic": "{{name}} mengirimimu gangguan!"
+    },
+    "cost": "Harganya {{cost}} poin · main terus",
+    "goesOn": "Pertandingan berlanjut · timermu dijeda",
+    "seconds_other": "Sisa {{count}} detik",
+    "banner": "{{title}} {{subtitle}}, {{time}}",
+    "started": "{{title}} Papanmu diredupkan, {{time}}. Timermu dijeda",
+    "withNote": "{{line}}. {{note}}",
+    "note": {
+      "scramble": "Angka yang berpindah-pindah itu tidak asli",
+      "keypad": "Tombol-tombolnya bertukar tempat, dan setiap tombol memasukkan angka yang tertera di atasnya"
+    },
+    "ended": "Gangguan selesai, timermu berjalan lagi",
+    "meow": "Meong!",
+    "mew": "Miau!"
+  },
+  "arsenal": {
+    "title": "Pilih gangguan",
+    "target": "Sasaran:",
+    "targetLabel": "Sasaran: {{name}}",
+    "me": "Kamu",
+    "routeLabel": "Gangguan dariku ke {{name}}",
+    "scrim": "Tutup dan kembali ke papan",
+    "price": "Harga",
+    "priceValue": "{{cost}} poin",
+    "nextPrice": "· Lalu: {{cost}}",
+    "unit": "poin",
+    "score": "Skormu",
+    "costLabel_other": "Gangguan ini harganya {{cost}} poin. Skormu {{score}}, jadi {{after}} setelah diluncurkan. Yang berikutnya harganya {{next}}",
+    "costLabelShort": "Gangguan ini harganya $t(game:arsenal.costPoints, {\"count\": {{cost}} }). Skormu {{score}}, $t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })",
+    "costPoints_other": "{{count}} poin",
+    "shortPoints_other": "kurang {{missing}} poin",
+    "info_other": "Tiap gangguan {{seconds}} detik · ketuk untuk meluncurkan",
+    "cost": "{{cost}} poin",
+    "missing": "Kurang {{count}}",
+    "locked": "Terkunci",
+    "level": "Lv. {{level}}",
+    "busy": "Sedang diganggu",
+    "unavailable": "Belum bisa",
+    "routeArrow": "→",
+    "sent": "{{kind}} → {{name}}",
+    "notEnough": "Poin tidak cukup untuk gangguan berikutnya ({{cost}} poin)",
+    "busyToast_other": "{{name}} sedang diganggu. Coba lagi dalam {{count}} detik",
+    "notNow": "Belum bisa mengganggu sekarang",
+    "refused": "Gangguan tidak terkirim, dan tidak ada poin yang dipotong",
+    "label": "{{kind}} · {{cost}} poin · ketuk untuk meluncurkan ke {{name}}",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kindGeneric": "Gangguan",
+    "kind": {
+      "fireworks": "Kembang api",
+      "cats": "Kucing",
+      "warp": "Distorsi",
+      "scramble": "Angka acak",
+      "ink": "Tinta",
+      "keypad": "Keypad acak"
+    },
+    "reason": {
+      "points": "Kurang {{count}} poin untuk gangguan ini",
+      "busy": "{{name}} sedang diganggu, coba lagi sebentar lagi",
+      "notRunning": "Kamu tidak bisa meluncurkan gangguan sekarang",
+      "locked": "Gangguan ini masih terkunci",
+      "level": "Terbuka di level {{level}}",
+      "out": "{{name}} sudah keluar dari pertandingan",
+      "disconnected": "{{name}} sedang tidak terhubung"
+    },
+    "live": {
+      "launched": "Kamu meluncurkan {{kind}} ke {{name}}"
+    }
+  },
+  "reactions": {
+    "picker": "Reaksi",
+    "item": "Reaksi: {{name}}",
+    "itemOther": "Reaksi {{emoji}}",
+    "name": {
+      "laugh": "tertawa",
+      "scream": "menjerit",
+      "cool": "keren",
+      "facepalm": "tepuk jidat",
+      "fire": "api",
+      "eyes": "mata"
+    },
+    "coolingDown": "Kamu bisa mengirim reaksi lagi sebentar lagi",
+    "close": "Tutup reaksi",
+    "menu": {
+      "open": "Menu kartu {{name}}",
+      "openHint": "Di sana kamu bisa membisukan reaksi {{name}}",
+      "openHintMuted": "Reaksi {{name}} dibisukan. Di sana kamu bisa menyalakannya lagi",
+      "label": "Menu {{name}}",
+      "mute": "Bisukan reaksi",
+      "unmute": "Nyalakan reaksi",
+      "muteLabel": "Bisukan reaksi {{name}}",
+      "unmuteLabel": "Nyalakan reaksi {{name}}",
+      "muted": "Reaksi {{name}} dibisukan",
+      "unmuted": "Reaksi {{name}} aktif lagi",
+      "close": "Tutup menu"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "Papan selesai!",
+      "ended": "Latihan diakhiri",
+      "interrupted": "Latihan terputus",
+      "surrendered": "Kamu menyerah",
+      "abandoned": "Kamu keluar dari pertandingan",
+      "opponentSurrendered": "Lawanmu menyerah",
+      "opponentLeft": "Lawanmu keluar"
+    },
+    "outcome": {
+      "win": "Kemenangan!",
+      "loss": "Kekalahan",
+      "tie": "Seri"
+    },
+    "abandonWin": "Menang karena lawan keluar",
+    "placeTitle": "Posisi {{place}}!",
+    "placeOf": "Posisi {{place}} dari {{total}}",
+    "outOf": "dari {{players}}",
+    "header": "{{title}} · {{type}} · {{players}}",
+    "end": {
+      "label": "Cara berakhir",
+      "completed": "Kamu mengisi seluruh papan",
+      "full": "Papan sudah penuh",
+      "ended": "Kamu mengakhiri latihan sebelum papan penuh",
+      "interrupted": "Latihan berhenti di tengah jalan, misalnya saat aplikasi ditutup",
+      "line": "{{label}}: {{reason}}",
+      "surrendered": "Kamu menyerah sebelum papan penuh",
+      "abandoned": "Kamu tidak kembali tepat waktu",
+      "opponentSurrendered": "Lawanmu menyerah sebelum papan penuh",
+      "opponentLeft": "Koneksi lawanmu terputus dan dia tidak kembali tepat waktu"
+    },
+    "score": "Skor akhir",
+    "points": "poin",
+    "scoreLabel_other": "Skor akhir: {{score}} poin",
+    "opponents": {
+      "title": "Lawan",
+      "label_other": "{{name}} · {{score}} poin · {{mistakes}}",
+      "left": "Sudah keluar"
+    },
+    "best": {
+      "title": "Langkah terbaik",
+      "move": "{{cell}} → {{digit}}",
+      "label_other": "Langkah terbaik: {{points}} poin, {{digit}} di {{cell}}",
+      "formula": "Cara menghitungnya",
+      "formulaLabel": "Cara menghitungnya: {{line}}",
+      "none": "Tidak ada langkah benar di latihan ini"
+    },
+    "stats": {
+      "time": "Waktu main",
+      "mistakes": "Kesalahan",
+      "correct": "Langkah benar",
+      "think": "Rata-rata waktu pikir",
+      "seconds": "{{value}} dtk",
+      "none": "—",
+      "label": "{{label}}: {{value}}"
+    },
+    "awards": {
+      "title": "Penghargaan",
+      "bestMove": "Langkah terbaik",
+      "fewestMistakes": "Minim kesalahan",
+      "fastest": "Tercepat",
+      "comeback": "Bangkit",
+      "mostPoints": "Poin terbanyak",
+      "label": "{{title}}: {{who}}, {{value}}",
+      "value": {
+        "bestMove": "{{value}} poin",
+        "fewestMistakes": "Kesalahan: {{value}}",
+        "fastest": "{{value}} dtk per langkah",
+        "comeback": "setelah tertinggal {{value}} poin",
+        "mostPoints": "{{value}} poin"
+      }
+    },
+    "unrated": "Latihan: ratingmu tidak berubah",
+    "ratingSoon": "Room privat: untuk saat ini rating tidak berubah",
+    "actions": {
+      "home": "Beranda",
+      "newGame": "Pertandingan baru"
+    },
+    "loading": "Memuat hasil…",
+    "missing": "Kami tidak menemukan latihan ini",
+    "unavailable": "Kami tidak bisa membaca latihan yang tersimpan",
+    "notSaved": "Latihan ini tidak tersimpan di ponsel"
+  }
+}

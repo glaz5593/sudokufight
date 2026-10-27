@@ -1,0 +1,31 @@
+{
+  "button": {
+    "loading": "{{label}} กำลังโหลด"
+  },
+  "nav": {
+    "label": "เมนูหลัก",
+    "tabs": {
+      "home": "หน้าหลัก",
+      "leaderboard": "อันดับ",
+      "history": "ประวัติ",
+      "achievements": "ความสำเร็จ"
+    }
+  },
+  "row": {
+    "label": "{{title}}, {{subtitle}}"
+  },
+  "modal": {
+    "cancel": "ยกเลิก"
+  },
+  "sheet": {
+    "close": "ปิด"
+  },
+  "toast": {
+    "withCountdown": "{{message}}, {{time}}",
+    "secondsLeft_other": "เหลือ {{count}} วินาที"
+  },
+  "state": {
+    "line": "{{title}} {{body}}",
+    "code": "รหัสข้อผิดพลาด: {{code}}"
+  }
+}

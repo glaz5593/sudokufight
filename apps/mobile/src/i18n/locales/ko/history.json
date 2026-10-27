@@ -1,0 +1,98 @@
+{
+  "title": "기록",
+  "summary": {
+    "games_other": "{{count}}게임",
+    "winRate": "승률 {{rate}}",
+    "practices_other": "연습 {{count}}회",
+    "streak": "연승",
+    "streakLabel_other": "연승: {{count}}승"
+  },
+  "filters": {
+    "label": "게임 필터",
+    "all": "전체",
+    "ranked": "랭크",
+    "practice": "연습"
+  },
+  "loading": "게임을 불러오는 중…",
+  "more": "게임 더 보기",
+  "empty": {
+    "title": "아직 게임이 없어요",
+    "body": "모든 게임이 여기에 저장돼서 다시 볼 수 있어요. 수 하나하나를, 각 숫자가 왜 그 자리에 들어갔는지와 함께요.",
+    "action": "첫 게임 하기"
+  },
+  "notes": {
+    "practice": "연습 게임은 레이팅에 영향을 주지 않지만, 마찬가지로 다시 볼 수 있어요.",
+    "offline": "서버에 연결되지 않아서 이 휴대폰에 있는 연습 게임만 보여요.",
+    "signedOut": "로그인하면 랭크 게임이 여기에 표시돼요.",
+    "rankedError": "랭크 게임을 불러오지 못했어요.",
+    "practiceUnavailable": "이 휴대폰에 저장된 연습 게임을 읽지 못했어요.",
+    "retry": "다시 시도"
+  },
+  "states": {
+    "offlineTitle": "서버에 연결되지 않았어요",
+    "offlineBody": "연결되면 랭크 게임을 불러와요. 이 휴대폰의 연습 게임은 오프라인에서도 여기에 보여요.",
+    "errorTitle": "게임을 불러오지 못했어요",
+    "errorBody": "서버가 제대로 응답하지 않았어요. 잠시 후 다시 시도하세요.",
+    "practiceTitle": "연습 게임을 읽지 못했어요",
+    "practiceBody": "이 휴대폰에 저장된 연습 게임이 열리지 않았어요. 다시 시도해 보고, 계속 그러면 앱을 다시 시작하세요."
+  },
+  "card": {
+    "mode": {
+      "ranked": "랭크",
+      "solo": "혼자 연습",
+      "bot": "봇과 연습"
+    },
+    "outcome": {
+      "win": "승리",
+      "loss": "패배",
+      "tie": "무승부",
+      "completed": "판 완성",
+      "ended": "연습 종료",
+      "interrupted": "중간에 끝남"
+    },
+    "place": "{{place}}위",
+    "against_other": "{{count}}명과 대전",
+    "alone": "혼자",
+    "points": "{{score}}점",
+    "unrated": "레이팅 미반영",
+    "rating": "레이팅 {{delta}}",
+    "today": "오늘",
+    "yesterday": "어제",
+    "replay": "리플레이",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "리플레이 열기"
+  },
+  "results": {
+    "replay": "리플레이",
+    "replayHint": "처음부터 한 단계씩, 모든 수의 설명과 함께 다시 보기",
+    "rating": {
+      "title": "레이팅 변화 · {{type}}",
+      "from": "기존 {{before}}",
+      "label": "레이팅 변화: {{delta}}, {{before}} → {{after}}",
+      "provisional": "임시 레이팅: 처음 10게임 동안은 변화가 두 배로 반영돼요",
+      "perOpponent": "상대마다 따로 계산돼요",
+      "pairLabel": "{{name}} 님 상대: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "{{name}} 님 상대: 레이팅 손실 없음, 첫 수 전에 나갔어요",
+        "leftNotBehind": "{{name}} 님 상대: 레이팅 손실 없음, 나갈 때 뒤지고 있지 않았어요",
+        "opponentLeftBeforeMyMove": "{{name}} 님 상대: 레이팅 획득 없음, 내 첫 수 전에 상대가 떠났어요",
+        "opponentLeftAhead": "{{name}} 님 상대: 레이팅 획득 없음, 상대가 떠날 때 내가 뒤지고 있었어요"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_other": "{{name}} · {{score}}점 · {{mistakes}} · 레이팅 {{delta}}",
+    "ranking": {
+      "title": "최종 순위",
+      "left": "게임을 떠남",
+      "label_other": "{{place}}위: {{name}} · {{score}}점 · {{mistakes}}",
+      "labelRating_other": "{{place}}위: {{name}} · {{score}}점 · {{mistakes}} · 레이팅 {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "한 수로 얻은 가장 높은 점수",
+      "fewestMistakes": "가장 적은 실수. 같으면 점수가 높은 쪽",
+      "fastest": "맞힌 수 하나당 평균 생각 시간이 가장 짧은 사람(최소 5수)",
+      "comeback": "15점 이상 뒤지다가 거둔 승리",
+      "mostPoints": "벌점을 빼기 전, 맞힌 수로 얻은 가장 많은 점수"
+    }
+  }
+}

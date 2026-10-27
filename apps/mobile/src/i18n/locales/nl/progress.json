@@ -1,0 +1,204 @@
+{
+  "common": {
+    "provisional": "Voorlopige rating",
+    "provisionalNote_one": "Je divisie verschijnt na {{games}} ranked spel in één speltype",
+    "provisionalNote_other": "Je divisie verschijnt na {{games}} ranked spellen in één speltype",
+    "level": "Niveau {{level}}",
+    "you": "Jij",
+    "myCard": "Mijn spelerskaart",
+    "loading": "Laden…",
+    "retry": "Opnieuw proberen",
+    "offlineNote": "Geen verbinding met de server: je ziet wat eerder is geladen.",
+    "errorNote": "Bijwerken lukte niet: je ziet wat eerder is geladen.",
+    "offlineTitle": "Geen verbinding met de server",
+    "offlineBody": "De ranglijst wordt bijgewerkt zodra de verbinding terug is.",
+    "errorTitle": "Er ging iets mis",
+    "errorBody": "De server kon nu niet antwoorden. Probeer het zo opnieuw.",
+    "signedOut": "Log in om dit te zien",
+    "players_one": "{{count}} speler",
+    "players_other": "{{count}} spelers",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}, op weg naar niveau {{level}}"
+  },
+  "leaderboard": {
+    "title": "Ranglijst",
+    "tabs": {
+      "label": "Soort rating",
+      "general": "Algemeen",
+      "fast": "Snel",
+      "normal": "Normaal",
+      "hard": "Moeilijk",
+      "friends": "Vrienden"
+    },
+    "caption": {
+      "general": "Algemeen · de hoogste rating van elke speler",
+      "type": "Rating {{type}} · wereldwijd",
+      "typePlayers": "Rating {{type}} · {{players}} · wereldwijd",
+      "friends": "Je recente tegenstanders"
+    },
+    "players": "Aantal spelers",
+    "podium": "De top drie",
+    "rankLabel": "Plaats {{rank}}",
+    "meName": "{{name}} (jij)",
+    "openHint": "Opent de spelerskaart",
+    "meNone": "Je hebt nog geen rating in deze lijst",
+    "play": "Spelen",
+    "playHint": "Speel een ranked spel om in de lijst te komen",
+    "climbHint": "Speel om te stijgen",
+    "emptyTitle": "Nog niemand hier",
+    "emptyBody": "Speel een ranked spel en sta als eerste op de lijst."
+  },
+  "friends": {
+    "invite": "Vrienden uitnodigen",
+    "inviteMessage": "Kom tegen me spelen in Sudoku Fight!",
+    "inviteNote": "Eén vriend meer = één rivaal meer",
+    "emptyTitle": "Nog geen tegenstanders",
+    "emptyBody": "Speel een ranked spel en je tegenstanders verschijnen hier. Een volledige vriendenlijst komt binnenkort."
+  },
+  "league": {
+    "title": "Divisie",
+    "toNext": "{{points}} tot {{league}}",
+    "top": "De hoogste divisie",
+    "general": "Algemeen {{rating}} · {{next}}",
+    "generalTop": "Algemeen {{rating}} · de hoogste divisie",
+    "ladder": "De divisieladder",
+    "step": "Divisie {{league}}, vanaf rating {{floor}}"
+  },
+  "card": {
+    "title": "Spelerskaart",
+    "edit": "Profiel bewerken",
+    "notFound": "Speler niet gevonden",
+    "offlineBody": "De kaart laadt van de server. Probeer het opnieuw als de verbinding terug is.",
+    "savedNote": "Geen verbinding met de server: je ziet de opgeslagen kaart.",
+    "meLabel": "{{name}}, mijn kaart",
+    "ratingsTitle": "Rating per speltype",
+    "ratingsNote_one": "{{n}} speltype",
+    "ratingsNote_other": "{{n}} speltypen",
+    "noRatings": "Nog geen rating",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "{{points}} omhoog in de laatste spellen",
+    "trendDown": "{{points}} omlaag in de laatste spellen",
+    "trendFlat": "geen verandering in de laatste spellen",
+    "atPeak": "op zijn hoogst",
+    "peak": "piek {{value}}",
+    "atPeakShort": "Piek!",
+    "peakShort": "Piek {{value}}",
+    "games_one": "{{count}} spel",
+    "games_other": "{{count}} spellen",
+    "statsTitle": "Statistieken",
+    "stats": {
+      "games": "Spellen",
+      "wins": "Gewonnen",
+      "losses": "Verloren",
+      "winRate": "Winstpercentage",
+      "streak": "Winstreeks",
+      "bestStreak": "Beste reeks",
+      "bestMove": "Beste zet",
+      "avgMistakes": "Fouten per spel"
+    },
+    "recentTitleSection": "Recente uitslagen",
+    "recentNote": "laatste {{n}}",
+    "recentEmpty": "Nog geen ranked spellen.",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "Winst",
+      "loss": "Verlies",
+      "tie": "Gelijkspel"
+    },
+    "outcomeShort": {
+      "win": "W",
+      "loss": "V",
+      "tie": "G"
+    },
+    "place": "Plaats {{place}}",
+    "points": "{{score}} ptn",
+    "ratingDelta": "{{delta}} rating",
+    "formLabel": "Recente uitslagen, nieuwste eerst: {{list}}",
+    "replayHint": "Opent de herhaling",
+    "openOf": "Spelerskaart van {{name}}",
+    "achievementsTitle": "Topprestaties",
+    "allAchievements": "Alle prestaties",
+    "joinedSince": "Speelt sinds {{date}}",
+    "favorite": {
+      "title": "Favoriete verstoring",
+      "uses_one": "keer",
+      "uses_other": "keer",
+      "label_one": "Favoriete verstoring: {{kind}}, één keer verstuurd",
+      "label_other": "Favoriete verstoring: {{kind}}, {{count}} keer verstuurd"
+    }
+  },
+  "achievements": {
+    "title": "Prestaties",
+    "soon": "Binnenkort",
+    "soonBody": "12 prestaties op komst: eerste overwinning, winstreeksen, topzetten en meer. Binnenkort hier.",
+    "soonShort": "Prestaties komen binnenkort.",
+    "earned": "{{name}}, behaald op {{date}}"
+  },
+  "progress": {
+    "title": "Prestaties en voortgang",
+    "savedNote": "Geen verbinding met de server: je ziet de opgeslagen gegevens.",
+    "pending_one": "{{count}} oefenspel wacht op synchronisatie met de server",
+    "pending_other": "{{count}} oefenspellen wachten op synchronisatie met de server",
+    "offlineBody": "Je niveau en XP verschijnen zodra er verbinding is met de server.",
+    "levelWord": "Niveau",
+    "xpTitle": "Ervaringspunten",
+    "toGo": "{{xp}} tot niveau {{level}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "Zo verdien je XP",
+    "how": {
+      "win": "Eerste plaats in ranked, of winst tegen een bot",
+      "played": "Elke andere uitslag in ranked of tegen een bot",
+      "solo": "Solo oefenen",
+      "perCorrect": "Elke goede zet, in ranked en tegen een bot"
+    }
+  },
+  "interferences": {
+    "title": "Verstoringen",
+    "entry": "Verzameling verstoringen",
+    "entryNote": "{{open}} vrijgespeeld · {{locked}} op slot",
+    "countLabel_one": "{{open}} van {{total}} verstoring vrijgespeeld",
+    "countLabel_other": "{{open}} van {{total}} verstoringen vrijgespeeld",
+    "opened": "vrijgespeeld",
+    "facts": {
+      "seconds": "seconden per stuk",
+      "cost": "de prijs verdubbelt bij elke lancering",
+      "launch": "tikken: “Verstoren” op de kaart van een tegenstander, dan de verstoring",
+      "launchValue": "2"
+    },
+    "arsenal": "Je arsenaal",
+    "tapHint": "Tik voor een voorbeeld",
+    "openLabel": "{{name}}, beschikbaar. {{description}}",
+    "previewHint": "Toont het voorbeeld",
+    "available": "Beschikbaar",
+    "previewing": "Voorbeeld",
+    "lockedTitle": "Op slot",
+    "lockedNote": "Gaan open per niveau",
+    "soon": "Binnenkort",
+    "atLevel": "Gaat open op niveau {{level}}",
+    "lockedLabel": "{{name}}, op slot, {{when}}",
+    "howTo": "In een spel: tik op “Verstoren” op de kaart van een tegenstander en kies dan een verstoring.",
+    "future": {
+      "earthquake": "Aardbeving",
+      "fog": "Mist",
+      "bubbles": "Bellen",
+      "torch": "Zaklamp"
+    },
+    "description": {
+      "fireworks": "Een kleurrijk salvo vuurwerk over het scherm",
+      "cats": "Een karavaan katten die over het scherm rent",
+      "warp": "Het scherm buigt en flikkert",
+      "scramble": "De cijfers op het bord schudden en wisselen van plek",
+      "ink": "Inktvlekken die langzaam vervagen",
+      "keypad": "De cijfertoetsen wisselen van plek",
+      "earthquake": "Het scherm schudt",
+      "fog": "Mist die langzaam optrekt",
+      "bubbles": "Bellen die je moet laten knappen",
+      "torch": "Het bord wordt donker, op het licht van een zaklamp na"
+    }
+  },
+  "home": {
+    "levelXp": "Niveau {{level}} · {{xp}}"
+  }
+}

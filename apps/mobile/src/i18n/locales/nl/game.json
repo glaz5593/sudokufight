@@ -1,0 +1,454 @@
+{
+  "title": "Solo oefenen",
+  "titleBot": "Oefenen tegen bot",
+  "titleRanked": "Ranked spel",
+  "subtitle": "{{title}} · {{type}}",
+  "me": "Ik",
+  "opponent": "Tegenstander",
+  "botLevel": {
+    "tag": "{{level}} · {{title}}",
+    "label": "Niveau {{level}}, {{title}}"
+  },
+  "listSep": ", ",
+  "type": {
+    "fast": "Snel",
+    "normal": "Normaal",
+    "hard": "Moeilijk"
+  },
+  "hud": {
+    "time": "Tijd",
+    "best": "Beste zet",
+    "none": "—",
+    "timeLabel": "Tijd {{time}}",
+    "bestLabel_one": "Beste zet: {{points}} punt op {{cell}}",
+    "bestLabel_other": "Beste zet: {{points}} punten op {{cell}}",
+    "noBestLabel": "Nog geen beste zet"
+  },
+  "progress": {
+    "label": "Voortgang van het bord",
+    "value": "{{filled}}/{{total}}",
+    "a11y_one": "{{filled}} van {{total}} vakje ingevuld",
+    "a11y_other": "{{filled}} van {{total}} vakjes ingevuld"
+  },
+  "end": {
+    "button": "Oefenen stoppen",
+    "title": "Stoppen met oefenen?",
+    "body": "Je resultaat wordt op deze telefoon bewaard. Je rating verandert niet.",
+    "confirm": "Ja, stoppen",
+    "footnote": "Het spel loopt op de achtergrond door",
+    "dialog": "Bevestig dat je stopt met oefenen"
+  },
+  "out": {
+    "surrendered": "Je hebt opgegeven · plaats {{place}}",
+    "abandoned": "Je ligt eruit · plaats {{place}}",
+    "goesOn": "Het spel gaat door tot het einde",
+    "label": "{{title}}. {{goesOn}}",
+    "home": "Naar start",
+    "homeHint": "Het spel gaat zonder jou verder. Je plaats staat al vast"
+  },
+  "connection": {
+    "sep": ". ",
+    "scoreLabel": "{{me}}: {{myScore}}, {{name}}: {{theirScore}}",
+    "lead": {
+      "mine": "Jij staat voor",
+      "theirs": "{{name}} staat voor",
+      "theirs_female": "{{name}} staat voor",
+      "tie": "Gelijke stand"
+    },
+    "frozen": {
+      "title": "Spel bevroren",
+      "timers": "Alle timers gestopt",
+      "label": "Spel bevroren, alle timers gestopt"
+    },
+    "opponent": {
+      "lost": "{{name}} is de verbinding kwijt",
+      "lost_female": "{{name}} is de verbinding kwijt",
+      "title": "Tegenstander verbindt opnieuw…",
+      "timeUp": "De tijd is om",
+      "notBack": "{{name}} is niet teruggekomen",
+      "notBack_female": "{{name}} is niet teruggekomen",
+      "seconds": "seconden",
+      "ring": "Opnieuw verbinden… {{seconds}}",
+      "saved": "Het spel is op de server opgeslagen",
+      "savedSub": "Het bord en de stand blijven bewaard",
+      "winLabel": "Winst door vertrek",
+      "hint": "Als {{name}} niet op tijd terug is, win jij door vertrek",
+      "hint_female": "Als {{name}} niet op tijd terug is, win jij door vertrek",
+      "checking": "Controleren bij de server…",
+      "timeLeft": "Tijd om terug te komen: {{time}}",
+      "announce": "{{name}} is de verbinding kwijt. Het spel is bevroren tot {{name}} terug is",
+      "announce_female": "{{name}} is de verbinding kwijt. Het spel is bevroren tot ze terug is",
+      "announceExpired": "De tijd is om. Controleren bij de server"
+    },
+    "self": {
+      "lostTitle": "Je verbinding is verbroken",
+      "lostSub": "Opnieuw verbinden…",
+      "attempt": "Poging",
+      "attemptLabel": "Poging {{attempt}}",
+      "backTitle": "Je bent terug in het spel",
+      "syncingSub": "Bijwerken…",
+      "syncedSub": "Alles bijgewerkt · het spel gaat door",
+      "lockedTitle": "Het bord is vergrendeld tot je terug bent",
+      "lockedSub": "Als de verbinding terug is, werken we bij:",
+      "syncingTitle": "Bijwerken…",
+      "syncedTitle": "Alles bijgewerkt",
+      "savedSub": "Het spel is op de server opgeslagen en gaat verder vanaf hetzelfde punt",
+      "item": {
+        "board": "Bord",
+        "score": "Stand",
+        "locks": "Vergrendelingen",
+        "turn": "Beurt",
+        "timers": "Klokken"
+      },
+      "timeLeft_one": "Je hebt {{seconds}} seconde om terug te komen",
+      "timeLeft_other": "Je hebt {{seconds}} seconden om terug te komen",
+      "timeSub": "Daarna telt het als vertrek",
+      "backInTime": "Op tijd terug",
+      "backInTimeSub": "De timers lopen door vanaf dezelfde seconde",
+      "announceLost": "Je verbinding is verbroken. Opnieuw verbinden",
+      "announceAttempt": "Je verbinding is verbroken. Opnieuw verbinden, poging {{attempt}}",
+      "announceHurry_one": "Over {{seconds}} seconde telt het als vertrek",
+      "announceHurry_other": "Over {{seconds}} seconden telt het als vertrek",
+      "announceSyncing": "Je bent terug in het spel. Bijwerken",
+      "announceSynced": "Je bent terug in het spel. Het bord en de stand zijn bijgewerkt"
+    },
+    "offline": {
+      "announce": "Geen verbinding. Speel gewoon door; je zetten worden verstuurd zodra die terug is"
+    },
+    "left": {
+      "timeUp_one": "De tijd is om · {{seconds}} seconde zonder verbinding",
+      "timeUp_other": "De tijd is om · {{seconds}} seconden zonder verbinding",
+      "title": "{{name}} is vertrokken",
+      "title_female": "{{name}} is vertrokken",
+      "win": "Je wint door vertrek",
+      "rating": "ratingpunten",
+      "ratingLabel": "Ratingwijziging: {{delta}}, {{type}}",
+      "ratingUnchanged": {
+        "opponentLeftBeforeMyMove": "Rating ongewijzigd: de tegenstander vertrok voor je eerste zet",
+        "opponentLeftAhead": "Rating ongewijzigd: je stond achter toen de tegenstander vertrok"
+      },
+      "toResults": "Uitslag bekijken",
+      "home": "Naar start"
+    },
+    "error": {
+      "title": "Verbindingsfout",
+      "offlineTitle": "Geen internetverbinding",
+      "body": {
+        "offline": "Je telefoon heeft nu geen netwerk. Maak verbinding met internet en probeer het opnieuw.",
+        "unreachable": "We konden de spelserver niet bereiken. Controleer je verbinding en probeer het opnieuw.",
+        "lost": "De verbinding met de spelserver viel weg en we konden hem niet herstellen.",
+        "refused": "De server liet ons niet toe in de kamer."
+      },
+      "refusal": {
+        "notFound": "Er is geen kamer met deze code. Controleer de code en probeer het opnieuw.",
+        "full": "Deze kamer is al vol.",
+        "gameStarted": "Het spel in deze kamer is al begonnen.",
+        "alreadyInRoom": "Je zit al in deze kamer, op een ander apparaat.",
+        "unauthenticated": "Log in op je account om tegen anderen te spelen.",
+        "suspended": "Je account is geschorst, dus voorlopig geen ranked spellen. Alleen of tegen een bot oefenen kan nog wel.",
+        "codeTaken": "Er bestaat al een kamer met deze code. Probeer een andere code.",
+        "badOptions": "De instellingen van de kamer zijn niet geldig.",
+        "kicked": "De beheerder heeft je uit de kamer verwijderd.",
+        "roomClosed": "De kamer is gesloten."
+      },
+      "code": "Foutcode: {{code}}",
+      "attemptFailed": "Poging {{attempt}} mislukt",
+      "retry": "Opnieuw proberen",
+      "practice": "Naar oefenen",
+      "practiceNote": "Alleen of tegen een bot oefenen werkt zonder verbinding",
+      "home": "Naar start"
+    },
+    "surrender": {
+      "chip": "Opgeven",
+      "title": "Weet je zeker dat je wilt opgeven?",
+      "body": "Het spel telt als verlies",
+      "bodyRating": "Het spel telt als verlies · geschatte ratingwijziging {{delta}}",
+      "bodyNoLoss": {
+        "leftBeforeMoving": "Het spel telt als verlies · je rating daalt niet: je hebt nog geen zet gedaan",
+        "leftNotBehind": "Het spel telt als verlies · je rating daalt niet: je staat niet achter"
+      },
+      "bodyMany": "Je verlaat het spel, en de vakjes die je hebt opgelost houden jouw kleur.",
+      "bodyManyNoLoss": "Je verlaat het spel, en de vakjes die je hebt opgelost houden jouw kleur. Je rating daalt niet tegenover wie nog in het spel zit.",
+      "confirm": "Ja, opgeven",
+      "cancel": "Annuleren",
+      "footnote": "Het spel loopt op de achtergrond door",
+      "dialog": "Bevestig dat je opgeeft"
+    },
+    "lobby": {
+      "title": "Privékamer",
+      "subtitle_one": "{{type}} · {{players}} speler",
+      "subtitle_other": "{{type}} · {{players}} spelers",
+      "codeTitle": "Kamercode",
+      "codeLabel": "Kamercode: {{spelled}}",
+      "codeHint": "Stuur de code naar wie met je meespeelt",
+      "share": "Code delen",
+      "copy": "Kopiëren",
+      "copied": "Code gekopieerd",
+      "shareMessage": "Kom met me Sudoku Fight spelen! Kamercode: {{code}}",
+      "playersTitle": "Spelers in de kamer",
+      "you": "Ik",
+      "emptySeat": "Wacht op een speler…",
+      "seatMeLabel": "{{name}}, ik",
+      "seatEmptyLabel": "Lege plek, wacht op een speler",
+      "waiting_one": "Wacht op nog één speler",
+      "waiting_other": "Wacht op nog {{count}} spelers",
+      "starting": "Iedereen is er! Het spel begint…",
+      "hint": "Het spel begint zodra alle spelers in de kamer zijn",
+      "leave": "Kamer verlaten",
+      "joined": "{{name}} is in de kamer"
+    },
+    "connecting": {
+      "title": "Naar het spel",
+      "board": "Bord laden…",
+      "step": {
+        "server": "Verbinden met de spelserver…",
+        "room": "Naar de kamer…",
+        "sync": "Stand en timers bijwerken…"
+      },
+      "label": "Spel laden, stap {{step}} van {{total}}",
+      "cancel": "Annuleren",
+      "tag": "Ranked spel · {{type}}",
+      "rating": "Rating: {{rating}}",
+      "ready": "Klaar!",
+      "joining": "Verbinden…",
+      "tipTitle": "Tipje",
+      "tips": {
+        "score_one": "Hoe leger de rij, de kolom en het blok, hoe meer een zet waard is: tot {{max}} punt per vakje.",
+        "score_other": "Hoe leger de rij, de kolom en het blok, hoe meer een zet waard is: tot {{max}} punten per vakje.",
+        "lastCell_one": "Het laatste vakje op het bord is altijd maar {{points}} punt waard: alles eromheen is vol.",
+        "lastCell_other": "Het laatste vakje op het bord is altijd maar {{points}} punten waard: alles eromheen is vol.",
+        "mistakes": "Een fout kost precies wat het juiste cijfer in dat vakje waard was. Een vakje dat veel waard is, kost veel als je het fout hebt.",
+        "interference": "Elke verstoring kost twee keer zoveel als de vorige. Bewaar hem voor het juiste moment."
+      }
+    }
+  },
+  "live": {
+    "correct": "Goed: {{digit}} in {{cell}}, {{points}}",
+    "wrong": "Fout: {{digit}} past niet in {{cell}}, {{penalty}}",
+    "taken": "{{cell}} is bezet",
+    "cooldown": "Je kunt {{cell}} zo weer kiezen",
+    "expired": "De tijd is om, {{cell}} is vrijgegeven",
+    "complete": "Bord voltooid!",
+    "oppCorrect": "{{name}} loste {{cell}} op: {{digit}}, {{points}}",
+    "oppWrong": "{{name}} zat fout: {{digit}} past niet in {{cell}}, {{penalty}}",
+    "leadMine_one": "Je staat één punt voor",
+    "leadMine_other": "Je staat {{gap}} punten voor",
+    "leadTheirs_one": "{{name}} staat één punt voor",
+    "leadTheirs_other": "{{name}} staat {{gap}} punten voor",
+    "leadTie": "De scores staan gelijk",
+    "reaction": "{{name}} reageerde met {{emoji}}",
+    "oppSurrendered": "{{name}} heeft opgegeven en ligt eruit, plaats {{place}}",
+    "oppAbandoned": "{{name}} kwam niet op tijd terug en ligt eruit, plaats {{place}}",
+    "hitOther": "{{from}} stuurde {{kind}} naar {{name}}",
+    "outMine": "Je ligt eruit op plaats {{place}}. Het spel gaat door tot het einde",
+    "queued": "{{cell}}: {{digit}} wacht op de verbinding",
+    "offlineLostTaken": "{{cell}} werd bezet terwijl je offline was · geen straf",
+    "offlineLost": "Je zet op {{cell}} telde niet · geen straf"
+  },
+  "interference": {
+    "fireworks": "vuurwerk",
+    "cats": "katten",
+    "warp": "vervorming",
+    "scramble": "gehusselde cijfers",
+    "ink": "inkt",
+    "keypad": "een gehusseld toetsenblok"
+  },
+  "hit": {
+    "title": {
+      "fireworks": "{{name}} stuurt je vuurwerk!",
+      "cats": "{{name}} stuurt je katten!",
+      "warp": "{{name}} vervormt je scherm!",
+      "scramble": "{{name}} husselt je cijfers!",
+      "ink": "{{name}} spat inkt op je scherm!",
+      "keypad": "{{name}} husselt je toetsenblok!",
+      "generic": "{{name}} stuurt je een verstoring!"
+    },
+    "cost": "Dat kostte {{cost}} ptn · het spel gaat door",
+    "goesOn": "Het spel gaat door · je timer is gepauzeerd",
+    "seconds_one": "nog {{count}} seconde",
+    "seconds_other": "nog {{count}} seconden",
+    "banner": "{{title}} {{subtitle}}, {{time}}",
+    "started": "{{title}} Je bord is gedimd, {{time}}. Je timer is gepauzeerd",
+    "withNote": "{{line}}. {{note}}",
+    "note": {
+      "scramble": "De schuivende cijfers zijn niet echt",
+      "keypad": "De toetsen wisselen van plek, en elke toets vult het cijfer in dat erop staat"
+    },
+    "ended": "De verstoring is voorbij, je timer loopt weer",
+    "meow": "Miauw!",
+    "mew": "Miew!"
+  },
+  "arsenal": {
+    "title": "Kies een verstoring",
+    "target": "Doelwit:",
+    "targetLabel": "Doelwit: {{name}}",
+    "me": "Ik",
+    "routeLabel": "Verstoring van mij naar {{name}}",
+    "scrim": "Sluiten en terug naar het bord",
+    "price": "Prijs",
+    "priceValue": "{{cost}} ptn",
+    "nextPrice": "· Volgende: {{cost}}",
+    "unit": "ptn",
+    "score": "Je score",
+    "costLabel_one": "Deze verstoring kost {{cost}} punt. Je score is {{score}}, na de lancering {{after}}. De volgende kost {{next}}",
+    "costLabel_other": "Deze verstoring kost {{cost}} punten. Je score is {{score}}, na de lancering {{after}}. De volgende kost {{next}}",
+    "costLabelShort": "Deze verstoring kost $t(game:arsenal.costPoints, {\"count\": {{cost}} }). Je score is {{score}}, $t(game:arsenal.shortPoints, {\"count\": {{missingCount}} })",
+    "costPoints_one": "{{count}} punt",
+    "costPoints_other": "{{count}} punten",
+    "shortPoints_one": "{{missing}} punt tekort",
+    "shortPoints_other": "{{missing}} punten tekort",
+    "info_one": "Elke verstoring duurt {{seconds}} sec. · tik om te lanceren",
+    "info_other": "Elke verstoring duurt {{seconds}} sec. · tik om te lanceren",
+    "cost": "{{cost}} ptn",
+    "missing": "{{count}} tekort",
+    "locked": "Op slot",
+    "level": "Niv. {{level}}",
+    "busy": "Wordt verstoord",
+    "unavailable": "Niet nu",
+    "routeArrow": "→",
+    "sent": "{{kind}} → {{name}}",
+    "notEnough": "Niet genoeg punten voor de volgende verstoring ({{cost}} ptn)",
+    "busyToast_one": "{{name}} wordt al verstoord. Probeer het over {{count}} seconde opnieuw",
+    "busyToast_other": "{{name}} wordt al verstoord. Probeer het over {{count}} seconden opnieuw",
+    "notNow": "Je kunt nu niet verstoren",
+    "refused": "De verstoring is niet verstuurd, en er zijn geen punten afgetrokken",
+    "label": "{{kind}} · {{cost}} ptn · tik om op {{name}} af te vuren",
+    "labelBlocked": "{{kind}} · {{reason}}",
+    "kindGeneric": "Verstoring",
+    "kind": {
+      "fireworks": "Vuurwerk",
+      "cats": "Katten",
+      "warp": "Vervorming",
+      "scramble": "Gehusselde cijfers",
+      "ink": "Inkt",
+      "keypad": "Gehusseld toetsenblok"
+    },
+    "reason": {
+      "points": "{{count}} ptn tekort voor deze verstoring",
+      "busy": "{{name}} wordt al verstoord, probeer het zo opnieuw",
+      "notRunning": "Je kunt nu geen verstoring lanceren",
+      "locked": "Deze verstoring zit nog op slot",
+      "level": "Gaat open op niveau {{level}}",
+      "out": "{{name}} is uit het spel",
+      "disconnected": "{{name}} heeft nu geen verbinding"
+    },
+    "live": {
+      "launched": "Je hebt {{kind}} op {{name}} afgevuurd"
+    }
+  },
+  "reactions": {
+    "picker": "Reacties",
+    "item": "Reactie: {{name}}",
+    "itemOther": "Reactie {{emoji}}",
+    "name": {
+      "laugh": "lachen",
+      "scream": "schreeuwen",
+      "cool": "stoer",
+      "facepalm": "hand voor het hoofd",
+      "fire": "vuur",
+      "eyes": "ogen"
+    },
+    "coolingDown": "Je kunt zo weer een reactie sturen",
+    "close": "Reacties sluiten",
+    "menu": {
+      "open": "Menu van de kaart van {{name}}",
+      "openHint": "Daar kun je de reacties van {{name}} dempen",
+      "openHintMuted": "De reacties van {{name}} zijn gedempt. Daar kun je ze weer aanzetten",
+      "label": "Menu van {{name}}",
+      "mute": "Reacties dempen",
+      "unmute": "Reacties weer aanzetten",
+      "muteLabel": "Reacties van {{name}} dempen",
+      "unmuteLabel": "Reacties van {{name}} weer aanzetten",
+      "muted": "De reacties van {{name}} zijn gedempt",
+      "unmuted": "De reacties van {{name}} zijn terug",
+      "close": "Menu sluiten"
+    }
+  },
+  "results": {
+    "title": {
+      "completed": "Bord voltooid!",
+      "ended": "Oefenen gestopt",
+      "interrupted": "Oefenen onderbroken",
+      "surrendered": "Je hebt opgegeven",
+      "abandoned": "Je bent vertrokken",
+      "opponentSurrendered": "Je tegenstander gaf op",
+      "opponentLeft": "Je tegenstander is vertrokken"
+    },
+    "outcome": {
+      "win": "Overwinning!",
+      "loss": "Nederlaag",
+      "tie": "Gelijkspel"
+    },
+    "abandonWin": "Gewonnen door vertrek",
+    "placeTitle": "Plaats {{place}}!",
+    "placeOf": "Plaats {{place}} van {{total}}",
+    "outOf": "van {{players}}",
+    "header": "{{title}} · {{type}} · {{players}}",
+    "end": {
+      "label": "Hoe het eindigde",
+      "completed": "Je hebt het hele bord ingevuld",
+      "full": "Het bord raakte vol",
+      "ended": "Je stopte met oefenen voordat het bord vol was",
+      "interrupted": "Het oefenen stopte halverwege, bijvoorbeeld toen de app werd gesloten",
+      "line": "{{label}}: {{reason}}",
+      "surrendered": "Je gaf op voordat het bord vol was",
+      "abandoned": "Je kwam niet op tijd terug",
+      "opponentSurrendered": "Je tegenstander gaf op voordat het bord vol was",
+      "opponentLeft": "Je tegenstander verloor de verbinding en kwam niet op tijd terug"
+    },
+    "score": "Eindscore",
+    "points": "ptn",
+    "scoreLabel_one": "Eindscore: {{score}} punt",
+    "scoreLabel_other": "Eindscore: {{score}} punten",
+    "opponents": {
+      "title": "Tegenstander",
+      "label_one": "{{name}} · {{score}} punt · {{mistakes}}",
+      "label_other": "{{name}} · {{score}} punten · {{mistakes}}",
+      "left": "Vertrokken"
+    },
+    "best": {
+      "title": "Zet van het spel",
+      "move": "{{cell}} → {{digit}}",
+      "label_one": "Zet van het spel: {{points}} punt, {{digit}} in {{cell}}",
+      "label_other": "Zet van het spel: {{points}} punten, {{digit}} in {{cell}}",
+      "formula": "Zo scoorde hij",
+      "formulaLabel": "Zo scoorde hij: {{line}}",
+      "none": "Geen goede zet in dit oefenspel"
+    },
+    "stats": {
+      "time": "Speeltijd",
+      "mistakes": "Fouten",
+      "correct": "Goede zetten",
+      "think": "Gem. denktijd",
+      "seconds": "{{value}} sec.",
+      "none": "—",
+      "label": "{{label}}: {{value}}"
+    },
+    "awards": {
+      "title": "Spelprijzen",
+      "bestMove": "Beste zet",
+      "fewestMistakes": "Minste fouten",
+      "fastest": "Snelste",
+      "comeback": "Ommekeer",
+      "mostPoints": "Meeste punten",
+      "label": "{{title}}: {{who}}, {{value}}",
+      "value": {
+        "bestMove": "{{value}} ptn",
+        "fewestMistakes": "Fouten: {{value}}",
+        "fastest": "{{value}} sec. per zet",
+        "comeback": "na {{value}} ptn achterstand",
+        "mostPoints": "{{value}} ptn"
+      }
+    },
+    "unrated": "Oefenen: je rating verandert niet",
+    "ratingSoon": "Privékamer: ratings veranderen nog niet",
+    "actions": {
+      "home": "Naar start",
+      "newGame": "Nieuw spel"
+    },
+    "loading": "De uitslag laden…",
+    "missing": "We konden dit oefenspel niet vinden",
+    "unavailable": "We konden de opgeslagen oefenspellen niet lezen",
+    "notSaved": "Dit oefenspel is niet op de telefoon opgeslagen"
+  }
+}

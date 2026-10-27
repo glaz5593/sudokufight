@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { Icon } from '../../../components/Icon';
 import { paletteAt } from '../../../components/player/metrics';
 import { type Gender, secondsText } from '../../../components/player/wording';
 import { Spinner } from '../../../components/ui/Spinner';
+import { Text } from '../../../components/ui/Text';
 import { cue } from '../../../services/feedback';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { useReduceMotion } from '../../../theme/motion';

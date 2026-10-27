@@ -1,8 +1,9 @@
 import { AVATAR_IDS } from '@sudoku-fight/protocol';
 import { useTranslation } from 'react-i18next';
-import { I18nManager, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, StyleSheet, View } from 'react-native';
 
 import { Avatar, paletteAt } from '../../components/player';
+import { Text } from '../../components/ui/Text';
 import { radius, space, text } from '../../theme';
 
 /** Four rivals from the catalogue, around the empty seat (any four: the picture only says "they wait"). */

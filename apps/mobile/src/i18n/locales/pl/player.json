@@ -1,0 +1,129 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Gracz",
+  "temporaryName": "Gracz{{digits}}",
+  "bot": "Bot",
+  "vs": "VS",
+  "seconds_one": "{{count}} sekunda",
+  "seconds_few": "{{count}} sekundy",
+  "seconds_many": "{{count}} sekund",
+  "seconds_other": "{{count}} sekundy",
+  "points_one": "{{score}} punkt",
+  "points_few": "{{score}} punkty",
+  "points_many": "{{score}} punktów",
+  "points_other": "{{score}} punktu",
+  "place": "Miejsce {{place}}",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "W sieci",
+    "online_female": "W sieci",
+    "reconnecting": "Łączy się",
+    "reconnecting_female": "Łączy się",
+    "unstable": "Brak połączenia",
+    "unstable_female": "Brak połączenia",
+    "left": "Poza grą",
+    "left_female": "Wyszła"
+  },
+  "result": {
+    "winShort": "Z",
+    "lossShort": "P",
+    "drawShort": "R"
+  },
+  "flag": {
+    "label": "Kraj: {{country}}"
+  },
+  "rating": {
+    "label": "Ranking {{value}}",
+    "labelWithKey": "Ranking {{key}}: {{value}}",
+    "provisional": "Tymczasowy",
+    "provisionalLabel": "{{label}}, tymczasowy"
+  },
+  "league": {
+    "bronze": "Brąz",
+    "silver": "Srebro",
+    "gold": "Złoto",
+    "diamond": "Diament",
+    "legend": "Legenda",
+    "name": "Liga {{league}}",
+    "level": "Poziom {{level}}",
+    "levelAfter": "· Poziom {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "Bez błędów",
+    "short_one": "{{count}} błąd",
+    "short_few": "{{count}} błędy",
+    "short_many": "{{count}} błędów",
+    "short_other": "{{count}} błędu",
+    "long_zero": "Bez błędów",
+    "long_one": "Jeden błąd",
+    "long_few": "{{count}} błędy",
+    "long_many": "{{count}} błędów",
+    "long_other": "{{count}} błędu",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Wybiera",
+    "locking_female": "Wybiera",
+    "turn": "Ma ruch",
+    "turn_female": "Ma ruch",
+    "paused": "Pauza",
+    "thinking": "Myśli",
+    "thinking_female": "Myśli",
+    "reconnecting": "Łączy się",
+    "reconnecting_female": "Łączy się",
+    "left": "Poza grą",
+    "left_female": "Wyszła",
+    "surrendered": "Poddanie",
+    "surrendered_female": "Poddała się",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Trwa zakłócenie, {{time}}",
+    "target": "Cel",
+    "targetHint": "Cel zakłócenia"
+  },
+  "actions": {
+    "surrender": "Poddaj się",
+    "endPractice": "Zakończ trening",
+    "reactions": "Reakcje"
+  },
+  "interfere": {
+    "button": "Zakłóć",
+    "label": "Zakłóć grę gracza {{name}} · koszt: {{cost}} pkt",
+    "labelMissing": "Zakłóć grę gracza {{name}} · brakuje {{count}} pkt",
+    "labelBusy": "Nie można teraz zakłócić gracza {{name}}: zakłócenie już trwa",
+    "labelNotRunning": "Nie można teraz zakłócić gracza {{name}}",
+    "labelDisconnected": "Bez połączenia nie ma zakłóceń",
+    "labelOut": "Gracz {{name}} jest poza grą",
+    "close": "Zamknij wybór zakłócenia"
+  },
+  "lead": {
+    "tie": "Remis",
+    "label_one": "{{name}} prowadzi o {{gap}} punkt",
+    "label_few": "{{name}} prowadzi o {{gap}} punkty",
+    "label_many": "{{name}} prowadzi o {{gap}} punktów",
+    "label_other": "{{name}} prowadzi o {{gap}} punktu",
+    "label_female_one": "{{name}} prowadzi o {{gap}} punkt",
+    "label_female_few": "{{name}} prowadzi o {{gap}} punkty",
+    "label_female_many": "{{name}} prowadzi o {{gap}} punktów",
+    "label_female_other": "{{name}} prowadzi o {{gap}} punktu",
+    "tieLabel": "Wyniki są równe"
+  },
+  "lock": {
+    "yourCell": "Twoje pole",
+    "paused": "Pauza",
+    "pick": "Wybierz pole",
+    "remaining_one": "Została {{count}} sekunda",
+    "remaining_few": "Zostały {{count}} sekundy",
+    "remaining_many": "Zostało {{count}} sekund",
+    "remaining_other": "Zostało {{count}} sekundy",
+    "label": "Twoje pole {{cell}}, {{remaining}}",
+    "labelPaused": "Twoje pole {{cell}}, zegar zatrzymany",
+    "progress": "Pozostały czas na pole {{cell}}",
+    "released": "Pole zwolnione"
+  }
+}

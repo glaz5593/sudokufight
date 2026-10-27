@@ -7,7 +7,16 @@ import { StyleSheet, Text, type TextStyle, type ViewStyle } from 'react-native';
 
 import { useAuth } from '../../../auth/authStore';
 import { paletteAt } from '../../../components/player';
-import { directionProblems, PHONE, textWidth } from '../../../components/ui/testing/layout';
+import {
+  directionProblems,
+  expectRoom,
+  layoutLanguages,
+  lineHeightAs,
+  PHONE,
+  textWidth,
+  typefaceOf,
+  widthIn,
+} from '../../../components/ui/testing/layout';
 import { useToast } from '../../../components/ui';
 import { FRIENDS_UI } from '../../../config/friends';
 import { useGameStore } from '../../../game/gameStore';
@@ -15,7 +24,6 @@ import { openPracticeRepo, type PracticeRepo } from '../../../game/practiceRepo'
 import { practiceStorageOrNull } from '../../../game/storage';
 import { memoryDb } from '../../../game/testing/sqlJsDb';
 import i18n from '../../../i18n';
-import { measuredWidth } from '../../../testing/fontMetrics';
 import { type LevelsRepo, openLevelsRepo } from '../../../levels/levelsRepo';
 import { forgetLevels } from '../../../levels/levelsStore';
 import { cue } from '../../../services/feedback';
@@ -23,6 +31,7 @@ import { useProfile } from '../../../state/profile';
 import { color, contrast, size, tokens } from '../../../theme';
 import { hidden, styleOf } from '../../game/connection/testing/setup';
 import type { ModeKey } from '../homeModel';
+import { cardPaddingVertical } from '../ModesScreen';
 import { renderApp } from '../testing/homeTesting';
 
 type Mocks = typeof import('../testing/nativeMocks');
@@ -89,7 +98,7 @@ const LEVELS_STUB = { 'levels/index': () => <Text testID="stub-levels">levels</T
 /** What a row's tagline says: a new player sees staged practice's "300 שלבים קצרים · 0–3 כוכבים". */
 const taglineOf = (key: ModeKey, fresh = true): string =>
   key === 'levels' && fresh
-    ? i18n.t('home:modes.levels.taglineNew', { total: 300 })
+    ? i18n.t('home:modes.levels.taglineNew', { count: 300, total: 300 })
     : i18n.t(`home:modes.${key}.tagline`);
 
 describe('"משחק חדש" (spec §5.1)', () => {
@@ -488,8 +497,11 @@ interface Node {
   children: readonly (Node | string)[];
 }
 
-/** A row's height as laid out: its line heights, chips, padding and border, or its minimum. */
-function rowHeight(key: ModeKey): number {
+/**
+ * A row's height as laid out: its line heights, chips, padding and border, or its minimum. In `lang`'s line
+ * heights (a taller script's: layout.ts lineHeightAs; Hebrew and English are the tokens').
+ */
+function rowHeight(key: ModeKey, lang = 'he'): number {
   const card = screen.getByTestId(`mode-${key}`) as unknown as Node;
   const box = styleOf(card);
   const title = within(screen.getByTestId(`mode-${key}`)).getByText(
@@ -500,11 +512,14 @@ function rowHeight(key: ModeKey): number {
   // A ranked row has no chips since 1.0.4 [D80a]: two lines.
   const chip = chips ? (chips.children as Node[])[0]! : null;
   const stack =
-    num(textStyleOf(title).lineHeight) +
-    num(textStyleOf(tagline!).lineHeight) +
+    lineHeightAs(lang, textStyleOf(title)) +
+    lineHeightAs(lang, textStyleOf(tagline!)) +
     (chips && chip ? num(styleOf(chips).marginTop) + num(styleOf(chip).height) : 0) +
     (chips ? 2 : 1) * num(styleOf(texts).gap);
-  return Math.max(num(box.minHeight), stack + 2 * (num(box.paddingVertical) + num(box.borderWidth)));
+  // The padding as the app gives it in that language (the app runs in Hebrew here: its own, the design's 6).
+  expect(num(box.paddingVertical)).toBe(cardPaddingVertical(typefaceOf('he')));
+  const padding = cardPaddingVertical(typefaceOf(lang));
+  return Math.max(num(box.minHeight), stack + 2 * (padding + num(box.borderWidth)));
 }
 
 /** The friends footer as laid out [D100]: its rule, its padding and the row of buttons (their height). */
@@ -538,18 +553,25 @@ describe('the rows (Moshe’s device test, 15.10.2026)', () => {
     expect(directionProblems(screen.getByTestId('mode-bot'))).toEqual([]);
   });
 
-  it.each([
-    ['he', 'footer'],
-    ['en', 'footer'],
-    ['he', 'list'],
-    ['en', 'list'],
-  ] as const)(
+  // In every layout language the app has strings for (localization plan 0טו, D124: a language that doesn't fit
+  // shortens its words, then drops the bottom line), with that language's line heights and font.
+  it.each(
+    (['footer', 'list'] as const).flatMap((placement) =>
+      layoutLanguages().map((lang) => [lang, placement] as const),
+    ),
+  )(
     'on Moshe’s phone, the six rows and the friends buttons fit without scrolling (%s, %s)',
     async (lang, placement) => {
       FRIENDS_UI.modesPlacement = placement;
       await i18n.changeLanguage(lang);
       await renderApp('/modes');
-      const rows = Object.fromEntries(KEYS.map((k) => [k, rowHeight(k)]));
+      // The width of words in this language's font (Hebrew and English: as estimated or measured before).
+      const source = lang === 'he' || lang === 'en';
+      const wordsWidth = (words: string, fontSize: number, bold = false) =>
+        source
+          ? textWidth(words, fontSize, { bold })
+          : widthIn(lang, words, { fontFamily: bold ? 'Rubik_700Bold' : 'Rubik_500Medium', fontSize });
+      const rows = Object.fromEntries(KEYS.map((k) => [k, rowHeight(k, lang)]));
       // The header row (56), around "me" at its end.
       const header = num(styleOf((screen.getByTestId('modes-me') as unknown as Node).parent!).minHeight);
       const content = (StyleSheet.flatten(screen.getByTestId('modes-scroll').props.contentContainerStyle) ??
@@ -586,13 +608,14 @@ describe('the rows (Moshe’s device test, 15.10.2026)', () => {
         footer;
       const available = PHONE.height - STATUS_BAR - header - NAV_BAR_BUTTONS;
       // Ranked rows of two lines (64, the list row's minimum), the practices' 77; the friends' 72 in the list,
-      // or the footer's 77 (its rule, 12, the 48 buttons and 16) under it.
-      expect({ ranked: rows.ranked2, practice: rows.solo, groups, footer, needed }).toEqual(
-        placement === 'footer'
-          ? { ranked: 64, practice: 77, groups: [236, 275], footer: 77, needed: 628 }
-          : { ranked: 64, practice: 77, groups: [236, 72, 275], footer: 0, needed: 639 },
-      );
-      expect(needed).toBeLessThanOrEqual(available);
+      // or the footer's 77 (its rule, 12, the 48 buttons and 16) under it. A taller script's rows may grow.
+      if (source)
+        expect({ ranked: rows.ranked2, practice: rows.solo, groups, footer, needed }).toEqual(
+          placement === 'footer'
+            ? { ranked: 64, practice: 77, groups: [236, 275], footer: 77, needed: 628 }
+            : { ranked: 64, practice: 77, groups: [236, 72, 275], footer: 0, needed: 639 },
+        );
+      expectRoom(lang, `the ${placement}: the rows' height`, needed, available);
 
       if (placement === 'footer') {
         // Each button's words fit its half of the footer's row on one line, in the app's font (the primary's
@@ -613,16 +636,14 @@ describe('the rows (Moshe’s device test, 15.10.2026)', () => {
           join: half - 2 * num(outline.paddingHorizontal) - 2 * num(outline.borderWidth),
         };
         const words = {
-          create: measuredWidth(
-            i18n.t('home:modes.friends.create'),
-            tokens.type.sheetTitle.fontFamily,
-            tokens.type.sheetTitle.size,
-          ),
-          join: measuredWidth(
-            i18n.t('home:modes.friends.join'),
-            tokens.type.button.fontFamily,
-            tokens.type.button.size,
-          ),
+          create: widthIn(lang, i18n.t('home:modes.friends.create'), {
+            fontFamily: tokens.type.sheetTitle.fontFamily,
+            fontSize: tokens.type.sheetTitle.size,
+          }),
+          join: widthIn(lang, i18n.t('home:modes.friends.join'), {
+            fontFamily: tokens.type.button.fontFamily,
+            fontSize: tokens.type.button.size,
+          }),
         };
         expect(within(create).getByTestId('modes-friends-create-label')).toHaveStyle({
           fontFamily: tokens.type.sheetTitle.fontFamily,
@@ -632,8 +653,8 @@ describe('the rows (Moshe’s device test, 15.10.2026)', () => {
           fontFamily: tokens.type.button.fontFamily,
           fontSize: tokens.type.button.size,
         });
-        expect(words.create).toBeLessThanOrEqual(rooms.create);
-        expect(words.join).toBeLessThanOrEqual(rooms.join);
+        expectRoom(lang, 'home:modes.friends.create', words.create, rooms.create);
+        expectRoom(lang, 'home:modes.friends.join', words.join, rooms.join);
       } else {
         // The friends buttons' words fit their half of the row on one line (estimated wide).
         const button = styleOf(screen.getByTestId('modes-friends-join'));
@@ -642,7 +663,10 @@ describe('the rows (Moshe’s device test, 15.10.2026)', () => {
           2 * num(button.paddingHorizontal) -
           2 * num(button.borderWidth);
         for (const key of ['create', 'join'])
-          expect(textWidth(i18n.t(`home:modes.friends.${key}`), tokens.type.button.size)).toBeLessThanOrEqual(
+          expectRoom(
+            lang,
+            `home:modes.friends.${key}`,
+            wordsWidth(i18n.t(`home:modes.friends.${key}`), tokens.type.button.size),
             half,
           );
       }
@@ -658,15 +682,23 @@ describe('the rows (Moshe’s device test, 15.10.2026)', () => {
         size.icon.chevron;
       for (const key of KEYS) {
         const title = i18n.t(`home:modes.${key}.title`);
-        expect(textWidth(title, tokens.type.sheetTitle.size, { bold: true })).toBeLessThanOrEqual(column);
+        expectRoom(
+          lang,
+          `home:modes.${key}.title`,
+          wordsWidth(title, tokens.type.sheetTitle.size, true),
+          column,
+        );
         for (const tagline of new Set([taglineOf(key, true), taglineOf(key, false)])) {
           // Staged practice's English copy ("Short stages · up to 3 stars", since fill and puzzle stages
           // run up to 60 s, D68) is held to its real width in the app's font.
           const width =
             key === 'levels'
-              ? measuredWidth(tagline, tokens.type.caption.fontFamily, tokens.type.caption.size)
-              : textWidth(tagline, tokens.type.caption.size);
-          expect(width).toBeLessThanOrEqual(column);
+              ? widthIn(lang, tagline, {
+                  fontFamily: tokens.type.caption.fontFamily,
+                  fontSize: tokens.type.caption.size,
+                })
+              : wordsWidth(tagline, tokens.type.caption.size);
+          expectRoom(lang, `home:modes.${key} tagline`, width, column);
         }
       }
     },

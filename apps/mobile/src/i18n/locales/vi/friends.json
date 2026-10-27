@@ -1,0 +1,176 @@
+{
+  "title": "Phòng với bạn bè",
+  "subtitle": "{{type}} · {{count}}/{{max}}",
+  "label": "Chơi với bạn bè · không xếp hạng",
+  "mode": "Với bạn bè",
+  "modeLong": "Chơi với bạn bè",
+  "unrated": "Không xếp hạng",
+  "code": {
+    "title": "Mã phòng",
+    "label": "Mã phòng: {{spelled}}",
+    "hint": "Gửi mã hoặc liên kết"
+  },
+  "share": {
+    "button": "Chia sẻ liên kết",
+    "hint": "Mở bảng chia sẻ của điện thoại, kèm mã và liên kết",
+    "message": "Vào chơi Sudoku Fight với mình nhé! Mã phòng: {{code}}\n{{link}}",
+    "failed": "Không mở được chia sẻ"
+  },
+  "copy": {
+    "button": "Sao chép mã",
+    "done": "Đã sao chép mã",
+    "failed": "Không sao chép được mã"
+  },
+  "gameType": {
+    "title": "Loại trận đấu",
+    "hostPicks": "Chỉ chủ phòng mới đổi được",
+    "guestSees": "Chủ phòng chọn",
+    "changed": "Loại trận đấu giờ là {{type}}"
+  },
+  "players": {
+    "title": "Người chơi · {{count}}/{{max}}"
+  },
+  "seat": {
+    "me": "Bạn",
+    "host": "Chủ phòng",
+    "away": "Hiện không ở trong phòng",
+    "empty": "Đang chờ người chơi…",
+    "emptyLabel": "Chỗ trống, đang chờ người chơi",
+    "rating": "Điểm xếp hạng {{rating}}"
+  },
+  "kick": {
+    "label": "Mời {{name}} ra khỏi phòng",
+    "title": "Mời {{name}} ra khỏi phòng?",
+    "body": "Người này sẽ không thể quay lại phòng này.",
+    "confirm": "Mời ra"
+  },
+  "start": {
+    "button_other": "Bắt đầu · {{count}} người chơi",
+    "needMore": "Cần ít nhất 2 người chơi đang kết nối để bắt đầu",
+    "waitingForHost": "Đang chờ {{name}} bắt đầu",
+    "hostAway": "Chủ phòng hiện không ở trong phòng",
+    "starting": "Trận đấu đang bắt đầu…"
+  },
+  "startWithout": {
+    "title": "Bắt đầu mà không có {{names}}?",
+    "body": "{{names}} hiện không ở trong phòng. Ai không ở trong phòng sẽ không được tham gia.",
+    "confirm": "Có, bắt đầu",
+    "cancel": "Không, chờ thêm"
+  },
+  "leave": "Rời phòng",
+  "reconnecting": "Mất kết nối. Đang kết nối lại…",
+  "announce": {
+    "joined": "{{name}} đã vào phòng",
+    "left": "{{name}} đã rời phòng",
+    "away": "{{name}} hiện không ở trong phòng",
+    "back": "{{name}} đã trở lại phòng",
+    "host": "{{name}} giờ là chủ phòng",
+    "meHost": "Giờ bạn là chủ phòng"
+  },
+  "opening": {
+    "create": "Đang mở phòng…",
+    "join": "Đang vào phòng…"
+  },
+  "replace": {
+    "title": "Đóng phòng kia của bạn?",
+    "body": "Bạn đang có một phòng mở, {{code}}. Hãy đóng phòng đó và mở phòng mới, hoặc quay lại phòng đó.",
+    "confirm": "Đóng và mở mới",
+    "cancel": "Quay lại phòng đó"
+  },
+  "errors": {
+    "notFound": "Không tìm thấy phòng có mã {{code}}. Hãy kiểm tra lại các chữ số.",
+    "notFoundThis": "Không tìm thấy phòng có mã này.",
+    "roomFull": "Phòng đã đầy ({{max}}/{{max}}).",
+    "gameStarted": "Trận đấu trong phòng này đã bắt đầu.",
+    "roomClosed": "Phòng đã đóng.",
+    "kicked": "Chủ phòng đã mời bạn ra khỏi phòng.",
+    "cantJoin": "Bạn đã chặn một người chơi đang ở trong phòng này.",
+    "suspended": "Tài khoản của bạn đang bị đình chỉ, nên lúc này bạn không thể chơi với bạn bè.",
+    "network": "Không có kết nối Internet.",
+    "tooManyRequests": "Quá nhiều lần thử. Hãy thử lại sau {{wait}}.",
+    "notAvailable": "Tùy chọn này chưa khả dụng.",
+    "badRequest": "Mã gồm 6 chữ số.",
+    "unauthorized": "Vui lòng đăng nhập lại vào tài khoản.",
+    "notRegistered": "Hãy hoàn tất đăng ký để chơi với bạn bè.",
+    "tooManyRooms": "Bạn đang có một phòng mở.",
+    "tooLarge": "Đã có lỗi xảy ra. Hãy thử lại.",
+    "internal": "Máy chủ gặp lỗi. Hãy thử lại sau giây lát.",
+    "disabled": "Chơi với bạn bè không khả dụng trên máy chủ này.",
+    "unavailable": "Máy chủ hiện không khả dụng. Hãy thử lại sau giây lát."
+  },
+  "wait": {
+    "seconds_other": "{{count}} giây",
+    "minutes_other": "{{count}} phút"
+  },
+  "closed": {
+    "kicked": "Chủ phòng đã mời bạn ra khỏi phòng.",
+    "removed": "Bạn đã rời phòng.",
+    "otherDevice": "Phòng đã được mở trên thiết bị khác.",
+    "serverRestart": "Phòng đã đóng.",
+    "closed": "Phòng đã đóng."
+  },
+  "lobbyErrors": {
+    "notHost": "Chỉ chủ phòng mới làm được việc đó.",
+    "notEnoughPlayers": "Cần ít nhất 2 người chơi đang kết nối để bắt đầu.",
+    "playersAway": "{{names}} hiện không ở trong phòng.",
+    "gameStarted": "Trận đấu đã bắt đầu.",
+    "badCommand": "Thao tác không thành công. Hãy thử lại.",
+    "tooManyRequests": "Từ từ thôi, bạn chạm nhiều quá. Hãy thử lại sau giây lát."
+  },
+  "startedWithout": "Trận đấu đã bắt đầu mà không có bạn.",
+  "actions": {
+    "retry": "Thử lại",
+    "createRoom": "Tạo phòng",
+    "joinWithCode": "Vào bằng mã",
+    "home": "Trang chủ"
+  },
+  "join": {
+    "title": "Vào bằng mã",
+    "prompt": "Nhập 6 chữ số bạn nhận được",
+    "codeLabel": "Mã phòng, 6 chữ số",
+    "digitLabel": "Chữ số {{n}}/{{total}}",
+    "paste": "Dán",
+    "pasteHint": "Bạn có thể dán cả tin nhắn WhatsApp",
+    "pasteNone": "Không tìm thấy mã 6 chữ số trong văn bản đã sao chép",
+    "joining": "Đang vào phòng…",
+    "submit": "Vào phòng"
+  },
+  "link": {
+    "notFound": {
+      "title": "Không nhận ra liên kết này",
+      "body": "Có thể liên kết đã cũ, hoặc không phải của Sudoku Fight. Bạn có thể tiếp tục từ trang chủ.",
+      "home": "Về trang chủ"
+    },
+    "badCode": "Liên kết không hợp lệ"
+  },
+  "invite": {
+    "pending": "Bạn được mời vào phòng {{code}}",
+    "afterSignIn": "Đăng nhập xong, bạn sẽ vào thẳng phòng {{code}}",
+    "join": "Vào phòng",
+    "later": "Để sau",
+    "expired": "Lời mời vào phòng {{code}} đã hết hạn"
+  },
+  "busy": {
+    "practice": {
+      "title": "Rời buổi luyện tập và vào phòng?",
+      "body": "Buổi luyện tập được lưu lại, như khi bạn rời đi.",
+      "confirm": "Vào phòng"
+    },
+    "search": {
+      "title": "Dừng tìm kiếm và vào phòng?",
+      "body": "Việc tìm đối thủ sẽ dừng lại.",
+      "confirm": "Vào phòng"
+    },
+    "room": {
+      "title": "Chuyển sang phòng {{code}}?",
+      "body": "Bạn sẽ rời khỏi phòng hiện tại.",
+      "confirm": "Đổi phòng"
+    },
+    "game": {
+      "title": "Bạn đang giữa một trận đấu",
+      "body": "Bạn có thể vào sau khi trận kết thúc. Lời mời vào phòng {{code}} sẽ chờ bạn.",
+      "back": "Quay lại trận đấu"
+    },
+    "stay": "Ở lại"
+  }
+}

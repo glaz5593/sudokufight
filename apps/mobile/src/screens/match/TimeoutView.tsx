@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '../../components/Icon';
 import { Button } from '../../components/ui/Button';
+import { Text } from '../../components/ui/Text';
 import { color, radius, space, text, tokens } from '../../theme';
 import { Announcer } from '../game/connection/Announcer';
 import { useEnter } from '../game/connection/motion';

@@ -1,0 +1,119 @@
+{
+  "title": "История",
+  "summary": {
+    "games_one": "{{count}} партия",
+    "games_few": "{{count}} партии",
+    "games_many": "{{count}} партий",
+    "games_other": "{{count}} партии",
+    "winRate": "{{rate}} побед",
+    "practices_one": "{{count}} тренировка",
+    "practices_few": "{{count}} тренировки",
+    "practices_many": "{{count}} тренировок",
+    "practices_other": "{{count}} тренировки",
+    "streak": "Серия",
+    "streakLabel_one": "Серия побед: {{count}} победа",
+    "streakLabel_few": "Серия побед: {{count}} победы",
+    "streakLabel_many": "Серия побед: {{count}} побед",
+    "streakLabel_other": "Серия побед: {{count}} победы"
+  },
+  "filters": {
+    "label": "Фильтр партий",
+    "all": "Все",
+    "ranked": "Рейтинговые",
+    "practice": "Тренировки"
+  },
+  "loading": "Загружаем твои партии…",
+  "more": "Ещё партии",
+  "empty": {
+    "title": "Здесь пока нет партий",
+    "body": "Каждая партия сохраняется здесь, чтобы её можно было пересмотреть: ход за ходом, с объяснением, почему каждая цифра встала именно туда.",
+    "action": "Сыграть первую партию"
+  },
+  "notes": {
+    "practice": "Тренировки не меняют твой рейтинг, но их тоже можно пересмотреть.",
+    "offline": "Нет связи с сервером: показаны только тренировки с этого телефона.",
+    "signedOut": "Рейтинговые партии появятся здесь, когда ты войдёшь в аккаунт.",
+    "rankedError": "Не удалось загрузить твои рейтинговые партии.",
+    "practiceUnavailable": "Не удалось прочитать тренировки, сохранённые на этом телефоне.",
+    "retry": "Повторить"
+  },
+  "states": {
+    "offlineTitle": "Нет связи с сервером",
+    "offlineBody": "Рейтинговые партии загрузятся, когда связь вернётся. Тренировки с этого телефона видны здесь и без сети.",
+    "errorTitle": "Не удалось загрузить партии",
+    "errorBody": "Сервер ответил с ошибкой. Попробуй ещё раз чуть позже.",
+    "practiceTitle": "Не удалось прочитать тренировки",
+    "practiceBody": "Тренировки, сохранённые на этом телефоне, не открылись. Попробуй ещё раз, а если не поможет — перезапусти приложение."
+  },
+  "card": {
+    "mode": {
+      "ranked": "Рейтинговая",
+      "solo": "Одиночная тренировка",
+      "bot": "Тренировка с ботом"
+    },
+    "outcome": {
+      "win": "Победа",
+      "loss": "Поражение",
+      "tie": "Ничья",
+      "completed": "Поле решено",
+      "ended": "Тренировка окончена",
+      "interrupted": "Партия прервана"
+    },
+    "place": "{{place}}-е место",
+    "against_one": "против {{count}} соперника",
+    "against_few": "против {{count}} соперников",
+    "against_many": "против {{count}} соперников",
+    "against_other": "против {{count}} соперника",
+    "alone": "Соло",
+    "points": "{{score}} оч.",
+    "unrated": "Без рейтинга",
+    "rating": "Рейтинг {{delta}}",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "replay": "Повтор",
+    "label": "{{outcome}}, {{who}}. {{mode}} · {{type}}. {{score}}. {{rating}}. {{date}}",
+    "hint": "Открывает повтор"
+  },
+  "results": {
+    "replay": "Повтор",
+    "replayHint": "Партия с самого начала, шаг за шагом, с объяснением каждого хода",
+    "rating": {
+      "title": "Изменение рейтинга · {{type}}",
+      "from": "было {{before}}",
+      "label": "Изменение рейтинга: {{delta}}, с {{before}} до {{after}}",
+      "provisional": "Предварительный рейтинг: в первых 10 партиях изменения считаются вдвойне",
+      "perOpponent": "Считается отдельно против каждого соперника",
+      "pairLabel": "Против {{name}}: {{delta}}",
+      "guard": {
+        "leftBeforeMoving": "Против {{name}}: рейтинг не снят — выход был до твоего первого хода",
+        "leftNotBehind": "Против {{name}}: рейтинг не снят — в момент выхода у тебя не было отставания",
+        "opponentLeftBeforeMyMove": "Против {{name}}: рейтинг не начислен — соперник вышел до твоего первого хода",
+        "opponentLeftAhead": "Против {{name}}: рейтинг не начислен — в момент выхода соперника у тебя было отставание"
+      }
+    },
+    "ratingOf": "{{before}} → {{after}}",
+    "opponentLabel_one": "{{name}} · {{score}} очко · {{mistakes}} · рейтинг {{delta}}",
+    "opponentLabel_few": "{{name}} · {{score}} очка · {{mistakes}} · рейтинг {{delta}}",
+    "opponentLabel_many": "{{name}} · {{score}} очков · {{mistakes}} · рейтинг {{delta}}",
+    "opponentLabel_other": "{{name}} · {{score}} очка · {{mistakes}} · рейтинг {{delta}}",
+    "ranking": {
+      "title": "Итоговая таблица",
+      "left": "Выход из партии",
+      "label_one": "{{place}}-е место: {{name}} · {{score}} очко · {{mistakes}}",
+      "label_few": "{{place}}-е место: {{name}} · {{score}} очка · {{mistakes}}",
+      "label_many": "{{place}}-е место: {{name}} · {{score}} очков · {{mistakes}}",
+      "label_other": "{{place}}-е место: {{name}} · {{score}} очка · {{mistakes}}",
+      "labelRating_one": "{{place}}-е место: {{name}} · {{score}} очко · {{mistakes}} · рейтинг {{delta}}",
+      "labelRating_few": "{{place}}-е место: {{name}} · {{score}} очка · {{mistakes}} · рейтинг {{delta}}",
+      "labelRating_many": "{{place}}-е место: {{name}} · {{score}} очков · {{mistakes}} · рейтинг {{delta}}",
+      "labelRating_other": "{{place}}-е место: {{name}} · {{score}} очка · {{mistakes}} · рейтинг {{delta}}"
+    },
+    "awardDefinitions": {
+      "bestMove": "Больше всего очков за один ход",
+      "fewestMistakes": "Меньше всего ошибок. При равенстве — больше очков",
+      "fastest": "Самое короткое среднее время на верный ход (не меньше 5 ходов)",
+      "comeback": "Победа после отставания на 15 очков и больше",
+      "mostPoints": "Больше всего очков за верные ходы, без учёта штрафов"
+    }
+  }
+}

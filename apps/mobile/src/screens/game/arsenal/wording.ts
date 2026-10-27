@@ -2,6 +2,7 @@ import type { InterferenceKind } from '@sudoku-fight/engine';
 import type { TFunction } from 'i18next';
 
 import { signedText } from '../../../components/player/format';
+import { decimalSeparator } from '../../../i18n/compose';
 import type { ArsenalToken, TokenBlock } from './arsenalModel';
 
 /**
@@ -38,7 +39,7 @@ export const costText = (cost: number, t: GameT): string => t('arsenal.cost', { 
  * the number in Hebrew (CLAUDE.md).
  */
 export const priceText = (cost: number, t: GameT): string =>
-  t('arsenal.priceValue', { cost: signedText(-cost) });
+  t('arsenal.priceValue', { cost: signedText(-cost, decimalSeparator(t)) });
 
 /** The sender's confirmation (spec §7.4): "זיקוקים ← NinaVolt". */
 export const senderText = (kind: InterferenceKind, name: string, t: GameT): string =>

@@ -1,0 +1,608 @@
+{
+  "title": "Latihan bertahap",
+  "stage": "Tahap {{n}}",
+  "chapter": "Bab {{n}}",
+  "units": {
+    "seconds": "dtk"
+  },
+  "stars": {
+    "of3": {
+      "0": "tanpa bintang",
+      "1": "satu dari tiga bintang",
+      "2": "dua dari tiga bintang",
+      "3": "tiga dari tiga bintang"
+    },
+    "count_other": "{{count}} bintang"
+  },
+  "kinds": {
+    "find": {
+      "name": "Posisi tepat",
+      "label": "Posisi tepat"
+    },
+    "findDuel": {
+      "name": "Balapan lawan bot",
+      "label": "Balapan lawan bot"
+    },
+    "fillBox": {
+      "name": "Isi kotak",
+      "label": "Isi kotak"
+    },
+    "duel": {
+      "name": "Duel sampai {{target}}",
+      "label": "Duel sampai {{target}}"
+    },
+    "spotError": {
+      "name": "Temukan kesalahan",
+      "label": "Temukan kesalahan"
+    },
+    "pointHunter": {
+      "name": "Pemburu poin",
+      "label": "Pemburu poin"
+    },
+    "chain": {
+      "name": "Rantai",
+      "label": "Rantai"
+    },
+    "fillRow": {
+      "name": "Isi baris",
+      "label": "Isi baris"
+    },
+    "fillCol": {
+      "name": "Isi kolom",
+      "label": "Isi kolom"
+    },
+    "puzzle": {
+      "name": "Teka-teki",
+      "label": "Teka-teki"
+    }
+  },
+  "boss": {
+    "chip": "Bos",
+    "name": "Tahap bos",
+    "label": "bos, {{kind}}",
+    "versus": "Bosnya: {{bot}}",
+    "band": "Bos · Bab {{chapter}}",
+    "botLabel": "{{name}}, sang bos",
+    "intro": {
+      "title": "Tahap bos!",
+      "sub": "Tahap {{n}} · {{kind}}",
+      "harder": "Yang lebih sulit",
+      "label": "Tahap bos! Tahap {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "Bot pertamamu: {{bot}}",
+      "faster": "{{bot}} {{percent}} lebih cepat",
+      "overlord": "Overlord",
+      "moreCells_other": "{{cells}} sel kosong, bukan {{usual}}"
+    },
+    "result": {
+      "won": "Kamu mengalahkan bos!",
+      "lost": "Kali ini bos yang menang",
+      "gateOpen": "Gerbang ke bab {{n}}: {{stars}} · terbuka!",
+      "gateClosed": "Gerbang ke bab {{n}}: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Kotak {{n}}",
+    "row": "Baris {{row}}",
+    "col": "Kolom {{n}}",
+    "mapLabel": "Peta papan: {{region}}"
+  },
+  "goals": {
+    "find": "Temukan posisi tepat satu angka. Tahap berakhir di {{s}} dtk.",
+    "findDuel_other": "{{spots}} titik melawan {{bot}}, hingga {{s}} dtk. Siapa yang menemukan lebih dulu, dia yang dapat.",
+    "fillBox_other": "Isi {{cells}} sel kosong di satu kotak, hingga {{s}} dtk.",
+    "fillRow_other": "Isi {{cells}} sel kosong di satu baris, hingga {{s}} dtk.",
+    "fillCol_other": "Isi {{cells}} sel kosong di satu kolom, hingga {{s}} dtk.",
+    "puzzle": "Susun kotak-kotak dalam urutan yang benar. Tukar yang salah menambah {{penalty}} dtk. Hingga {{s}} dtk.",
+    "duel_other": "Melawan {{bot}}, sampai {{target}} poin atau {{s}} dtk. Bintang sesuai keunggulanmu.",
+    "spotError_other": "{{count}} angka salah bersembunyi di antara angkamu. Hingga {{s}} dtk.",
+    "pointHunter_other": "{{moves}} langkah, hingga {{s}} dtk. Kumpulkan poin sebanyak mungkin.",
+    "chain_other": "Rantai {{steps}} langkah, hingga {{s}} dtk. Setiap saat hanya satu sel yang bisa diisi."
+  },
+  "scale": {
+    "label": "Bintang yang bisa diraih",
+    "row": "{{stars}}: {{text}}",
+    "time": "hingga {{s}} dtk",
+    "spots_other": "{{count}} titik",
+    "spotsRange_other": "{{range}} titik",
+    "gap": "unggul {{gap}}+",
+    "lead": "unggul di akhir",
+    "points": "{{points}}+ poin",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "Peta tahap",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_other": "{{stars}} dari {{max}} bintang, lompat ke bab",
+    "lockedToast": "Mainkan tahap {{n}} dulu",
+    "gateToast_other": "Bab {{chapter}} terbuka dengan {{need}} bintang di bab {{prev}}",
+    "loading": "Memuat peta…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_other": "{{stars}} dari {{max}} bintang"
+  },
+  "node": {
+    "played": "Tahap {{n}}, {{kind}}, {{stars}}",
+    "current": "Tahap {{n}}, {{kind}}, berikutnya",
+    "open": "Tahap {{n}}, {{kind}}, belum dimainkan",
+    "locked": "Tahap {{n}}, terkunci"
+  },
+  "gate": {
+    "need_other": "Butuh {{need}} bintang",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Mainkan tahap bos untuk membukanya",
+    "open": "Bab {{n}} terbuka",
+    "lockedLabel_other": "Bab {{n}} terkunci, {{stars}} dari {{need}} bintang di bab {{prev}}",
+    "bossLabel_other": "Bab {{n}} terkunci, {{stars}} dari {{need}} bintang di bab {{prev}}. Mainkan tahap bos untuk membukanya",
+    "openLabel_other": "Bab {{n}} terbuka, dibuka dengan {{need}} bintang dari bab {{prev}}"
+  },
+  "jump": {
+    "title": "Lompat ke bab",
+    "row": "Bab {{n}} · {{name}}",
+    "rowLabel_other": "Bab {{n}}, {{name}}, {{stars}} dari {{max}} bintang, {{state}}",
+    "open": "terbuka",
+    "locked": "terkunci"
+  },
+  "gateSheet": {
+    "title": "Bab {{n}} terkunci",
+    "missing_other": "Kamu perlu {{need}} bintang di bab {{prev}}. Kamu punya {{stars}}, kurang {{missing}} lagi.",
+    "bossOnly": "Bintangmu sudah cukup. Mainkan tahap {{boss}} (bos) untuk membukanya",
+    "progress": "Bintang di bab {{prev}} untuk gerbang: {{stars}} dari {{need}}",
+    "rowsTitle": "Tahap yang bisa ditingkatkan",
+    "rowsNote_other": "Hingga {{count}} bintang lagi di sana",
+    "row": "Tahap {{n}} · {{kind}}",
+    "rowLabel": "Mainkan lagi tahap {{n}}, {{kind}}, {{stars}}",
+    "rowNewLabel": "Mainkan tahap {{n}}, {{kind}}, belum dimainkan",
+    "rowPlay": "Main",
+    "primary": "Mainkan tahap {{n}}",
+    "footnote": "Sebagian besar tahap berlangsung hingga 30 dtk; tahap isi dan teka-teki hingga 60. Bintang terbaikmu tetap tersimpan."
+  },
+  "panel": {
+    "label": "Tahap yang dipilih",
+    "title": "Tahap {{n}} · {{kind}}",
+    "sub": "Bab {{chapter}} · {{name}}",
+    "subBot": "Bab {{chapter}} · melawan {{bot}}",
+    "subBoss": "Bab {{chapter}} · bosnya: {{bot}}",
+    "next": "Berikutnya",
+    "best": "Terbaik {{metric}}",
+    "bestLabel": "Terbaikmu: {{stars}}, {{metric}}",
+    "bestStars": "Terbaikmu: {{stars}}",
+    "bot": "{{name}} · Lv. {{level}} · {{title}}",
+    "continue": "Lanjut · tahap {{n}}",
+    "play": "Main",
+    "lockedTitle": "Tahap {{n}} · terkunci",
+    "lockedSub": "Bab {{chapter}} · {{kind}}",
+    "lockedPrev": "Mainkan tahap {{n}} dulu.",
+    "lockedGate_other": "Bab {{chapter}} terkunci: perlu {{need}} bintang di bab {{prev}}. Kamu punya {{stars}}.",
+    "gateTitleOpen": "Bab {{n}} terbuka",
+    "gateTitleClosed": "Bab {{n}} terkunci",
+    "gateSub": "{{name}} · tahap {{range}}",
+    "gateOpenBody_other": "Terbuka: kamu meraih {{stars}} bintang di bab {{prev}}, dan gerbangnya perlu {{need}}.",
+    "gateBar": "Bintang untuk gerbang: {{stars}} dari {{need}}"
+  },
+  "ready": {
+    "title": "Siap?",
+    "label": "Siap? Tahap {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "Di mana {{digit}}?",
+    "raceSpots_other": "{{count}} titik, balapan melawan {{bot}}"
+  },
+  "tutorial": {
+    "title": "Cara bermain",
+    "got": "Mengerti",
+    "skip": "Lewati",
+    "panel": "Gambar {{n}} dari {{total}}: {{text}}",
+    "alsoBoss": "Ini juga bos: tahap kesepuluh di setiap bab.",
+    "find": {
+      "1": "Satu pertanyaan, seperti “Di mana {{digit}}?”, dan sebuah area yang ditandai di papan: kotak, baris, kolom, atau seluruh papan.",
+      "2": "Temukan satu-satunya sel tempat angka itu harus berada, lalu ketuk.",
+      "3": "Ketukan salah menambah 5 detik. Dua kali salah, tahap berakhir."
+    },
+    "findDuel": {
+      "1": "Lima titik, satu per satu. Bot ikut mencari bersamamu.",
+      "2": "Siapa yang lebih dulu mengetuk sel yang benar, dia yang dapat titiknya.",
+      "3": "Ketukan salah: 3 detik tanpa bisa mengetuk, sementara bot terus mencari."
+    },
+    "fillBox": {
+      "1": "Satu kotak dengan sel kosong, dalam bingkai emas.",
+      "2": "Pilih sel di kotak itu dan ketik angka. Sel di luarnya tidak bisa dipilih.",
+      "3": "Angka salah menambah 5 detik. Makin cepat kamu selesai, makin banyak bintangnya."
+    },
+    "duel": {
+      "1": "Kamu dan bot di papan yang sama, seperti dalam pertandingan.",
+      "2": "Yang pertama mencapai 30 poin menang, atau yang unggul setelah 30 detik.",
+      "3": "Bintang sesuai keunggulanmu di akhir: 8 poin untuk dua bintang, 15 untuk tiga."
+    },
+    "spotError": {
+      "1": "Angka gelap adalah milik papan, dan selalu benar.",
+      "2": "Angka salah bersembunyi di antara angkamu. Ketuk angka-angka itu.",
+      "3": "Mengetuk angka yang benar menambah 5 detik."
+    },
+    "pointHunter": {
+      "1": "Kamu hanya punya tiga langkah.",
+      "2": "Sel di area yang kosong bernilai lebih banyak poin.",
+      "3": "Bintang sesuai seberapa dekat kamu dengan skor terbaik papan ini."
+    },
+    "chain": {
+      "1": "Setiap saat hanya satu sel di papan yang bisa diisi.",
+      "2": "Isi sel itu, maka sel berikutnya terbuka.",
+      "3": "Angka di sel yang belum bisa dipastikan memakan 5 detik, dan tidak ditempatkan."
+    },
+    "boss": {
+      "1": "Tahap kesepuluh di setiap bab adalah bos: satu pertarungan melawan bot, lebih sulit dari tahap-tahap sebelumnya.",
+      "2": "Sebelum mulai, kamu melihat apa yang lebih sulit. Biasanya: botnya lebih cepat.",
+      "3": "Setelah kamu memainkan bos dan punya 20 bintang di bab itu, bab berikutnya terbuka."
+    },
+    "fillRow": {
+      "1": "Satu baris dengan sel kosong, dalam bingkai emas.",
+      "2": "Pilih sel di baris itu dan ketik angka. Sel di luarnya tidak bisa dipilih.",
+      "3": "Angka salah menambah 5 detik. Makin cepat kamu selesai, makin banyak bintangnya."
+    },
+    "fillCol": {
+      "1": "Satu kolom dengan sel kosong, dalam bingkai emas.",
+      "2": "Pilih sel di kolom itu dan ketik angka. Sel di luarnya tidak bisa dipilih.",
+      "3": "Angka salah menambah 5 detik. Makin cepat kamu selesai, makin banyak bintangnya."
+    },
+    "puzzle": {
+      "1": "Sembilan kotak penuh, dalam urutan yang salah.",
+      "2": "Seret satu kotak ke kotak lain untuk menukarnya. Kotak berikon kunci tidak bisa dipindah. Tukar yang tidak menempatkan satu pun kotak di tempatnya menambah 5 detik.",
+      "3": "Saat setiap baris dan kolom sudah benar, tahap berakhir. Makin cepat kamu selesai, makin banyak bintangnya."
+    }
+  },
+  "result": {
+    "completed": "Tahap {{n}} selesai",
+    "ended": "Tahap {{n}}",
+    "reasons": {
+      "timeUp": "Waktu habis",
+      "failed": "Dua ketukan salah",
+      "quit": "Kamu keluar dari tahap",
+      "botWon": "{{bot}} lebih dulu"
+    },
+    "metric": {
+      "spotsOf_other": "dari {{total}} titik",
+      "gap": "Keunggulan",
+      "points": "poin",
+      "found": "Ditemukan",
+      "foundOf": "dari {{total}}"
+    },
+    "newBest": "Rekor baru!",
+    "yourBest": "Terbaikmu:",
+    "yourBestLabel": "Terbaikmu: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, perkiraan: server yang memastikannya",
+    "chapterLabel": "Bab ini",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "gerbang perlu {{need}}",
+    "chapterOpen": "gerbang terbuka",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_other": "Bab ini: {{stars}} dari {{max}} bintang. {{gate}}",
+    "mistakes_other": "{{count}} kesalahan",
+    "noMistakes": "Tanpa kesalahan",
+    "swaps_other": "{{count}} kali tukar · minimal: {{min}}",
+    "time": "Waktu: {{s}} dtk",
+    "youWon": "Kamu menang",
+    "botWon": "{{bot}} menang",
+    "tie": "Seri",
+    "bossTie": "Seri: bos bertahan",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_other": "{{count}} titik",
+    "opponentScore_other": "{{score}} poin",
+    "bestMove_other": "Langkah terbaik: {{digit}} di {{cell}} · {{points}} poin",
+    "why": "Kenapa?",
+    "next": "Tahap berikutnya",
+    "again": "Ulangi",
+    "toMap": "Ke peta",
+    "last": "Itu tahap terakhir. Hebat!",
+    "nextLocked": "Tahap berikutnya masih terkunci"
+  },
+  "unlocked": {
+    "heading": "Bab baru terbuka!",
+    "title": "Bab {{n}} · {{name}}",
+    "news": "Yang baru: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Lanjut",
+    "label": "Bab baru terbuka: bab {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: “Aku baru mulai, tapi aku lebih cepat dari kelihatannya.”",
+      "2": "Biscuit: “Santai, tapi aku tidak akan membiarkanmu lolos.”",
+      "3": "Mr. Hoot: “Aku melihat setiap sel. Hati-hati.”",
+      "4": "Maestro: “Cepat, tepat, dan penuh gaya.”",
+      "5": "Overlord: “Kamu sudah datang jauh. Di sinilah semuanya berakhir.”"
+    }
+  },
+  "exit": {
+    "button": "Keluar dari tahap",
+    "title": "Keluar dari tahap?",
+    "body": "Kamu akan mendapat 0 bintang, dan tahap berikutnya akan terbuka.",
+    "confirm": "Keluar",
+    "cancel": "Lanjut main"
+  },
+  "card": {
+    "line": "Tahap: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_other": "Tahap: {{played}}, {{count}} bintang"
+  },
+  "chapters": {
+    "1": {
+      "name": "Langkah pertama",
+      "news": "Posisi tepat, isi kotak, teka-teki, dan isi baris"
+    },
+    "2": {
+      "name": "Tantangan Pip",
+      "news": "Isi kolom dan balapan lawan bot"
+    },
+    "3": {
+      "name": "Duel pertama",
+      "news": "Duel sampai 30 dan temukan kesalahan"
+    },
+    "4": {
+      "name": "Detektif",
+      "news": "Rantai 3 langkah dan teka-teki dengan 4 kotak yang bergerak"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "Bot baru: Biscuit, pemburu poin, dan tahap isi yang setiap angkanya hilang setidaknya sekali"
+    },
+    "6": {
+      "name": "Baris dan kolom",
+      "news": "Papan biasa dan target di baris atau kolom"
+    },
+    "7": {
+      "name": "Pemburu poin",
+      "news": "Teka-teki dengan 5 kotak yang bergerak"
+    },
+    "8": {
+      "name": "Dua kesalahan",
+      "news": "Dua kesalahan di papan dan duel di papan biasa"
+    },
+    "9": {
+      "name": "Rantai",
+      "news": "Semua jenis lagi, sedikit lebih sulit"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "Bot baru: Mr. Hoot, dan 7 sel kosong di tahap isi"
+    },
+    "11": {
+      "name": "Seluruh papan",
+      "news": "Target di mana saja di papan"
+    },
+    "12": {
+      "name": "Lebih cepat",
+      "news": "Pemburu poin dalam 25 detik, di papan biasa"
+    },
+    "13": {
+      "name": "Kesalahan senyap",
+      "news": "Kesalahan tanpa bentrokan yang terlihat"
+    },
+    "14": {
+      "name": "Rantai panjang",
+      "news": "Rantai 4 langkah dan 9 sel kosong di tahap isi"
+    },
+    "15": {
+      "name": "Setengah jalan",
+      "news": "Semua jenis lagi"
+    },
+    "16": {
+      "name": "Papan sulit",
+      "news": "Papan sulit dan teka-teki dengan 6 kotak yang bergerak"
+    },
+    "17": {
+      "name": "Eliminasi",
+      "news": "Target yang baru terlihat setelah eliminasi"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "Bot baru: Maestro"
+    },
+    "19": {
+      "name": "Jebakan",
+      "news": "Tiga kesalahan di papan"
+    },
+    "20": {
+      "name": "Gerbang sulit",
+      "news": "Kotak kosong yang memerlukan eliminasi"
+    },
+    "21": {
+      "name": "Pasangan",
+      "news": "Pasangan dan pemburu poin dalam 20 detik"
+    },
+    "22": {
+      "name": "Rantai 5",
+      "news": "Rantai 5 langkah"
+    },
+    "23": {
+      "name": "Tanpa petunjuk",
+      "news": "Papan dengan sangat sedikit angka"
+    },
+    "24": {
+      "name": "Balapan",
+      "news": "Duel di papan sulit"
+    },
+    "25": {
+      "name": "Para ahli",
+      "news": "Semuanya lagi, dengan tempo cepat"
+    },
+    "26": {
+      "name": "Kejuaraan",
+      "news": "Tiga bintang hanya untuk pemain tercepat"
+    },
+    "27": {
+      "name": "Kejuaraan II",
+      "news": "Pemburu poin: tiga bintang hanya jika mendekati skor terbaik"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "Bosnya: Overlord, dalam balapan"
+    },
+    "29": {
+      "name": "Babak final",
+      "news": "Rantai cepat dan Overlord sebagai bos dalam duel"
+    },
+    "30": {
+      "name": "Juara",
+      "news": "Semuanya sekaligus, di tingkat tersulit"
+    }
+  },
+  "hud": {
+    "secondsAdded_other": "{{count}} detik ditambahkan",
+    "sub": "{{kind}} · Bab {{chapter}}",
+    "subFind": "Di mana {{digit}}? · Bab {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} titik · Bab {{chapter}}",
+    "clockLabel_other": "Sisa {{s}} dari {{limit}} detik",
+    "penalty": "{{s}} dtk",
+    "me": "Kamu",
+    "find": {
+      "tap": "Ketuk tempat {{digit}} harus berada",
+      "where": "<scope>{{scope}}</scope> · tanpa keypad, cukup ketuk",
+      "elapsed": "dtk berlalu",
+      "targetLabel": "Targetnya: {{digit}} {{scope}}. {{left}}",
+      "ringLabel_other": "Sisa {{s}} detik di tahap ini",
+      "one": "Satu pencarian di tahap ini",
+      "wrongRule": "Ketukan salah: {{penalty}} dtk",
+      "twoWrongRule": "Dua ketukan salah: tahap berakhir",
+      "found": "Ketemu: {{digit}} di {{cell}}",
+      "missed": "Bukan di {{cell}}. {{penalty}} dtk",
+      "answer": "Jawabannya: {{cell}}"
+    },
+    "scope": {
+      "box": "di kotak {{n}}",
+      "row": "di baris {{row}}",
+      "col": "di kolom {{n}}",
+      "board": "di mana saja di papan"
+    },
+    "race": {
+      "task": "Titik {{n}} dari {{total}} · cari {{digit}} {{scope}}",
+      "left": "Sisa {{s}} dtk",
+      "searching": "Mencari…",
+      "spots_other": "{{count}} titik",
+      "frozen_other": "Dibekukan, {{count}} detik",
+      "out": "Keluar sampai titik berikutnya",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, bot level {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} sedang mencari",
+      "mine": "Kamu mengambil titik {{n}}",
+      "theirs": "{{name}} mengambil titik {{n}}",
+      "void": "Tidak ada yang mengambil titik {{n}}",
+      "next": "Titik {{n}}: {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "Isi kotak {{n}}",
+      "cells_other": "{{done}}/{{total}} sel",
+      "cellsLabel_other": "Kamu sudah mengisi {{done}} dari {{total}} sel kosong",
+      "mistakes_other": "{{count}} kesalahan {{penalty}} dtk",
+      "mistakesLabel_other": "{{count}} kesalahan, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "Kesalahan menambah 5 detik, dan angka itu tidak bisa dipakai lagi di sel tersebut",
+      "timeLabel_other": "Waktu: {{s}} dari {{limit}} detik",
+      "boardLabel_other": "Papan · isi hanya {{count}} sel kosong di kotak {{n}}"
+    },
+    "line": {
+      "taskRow": "Isi baris {{row}}",
+      "taskCol": "Isi kolom {{n}}",
+      "boardLabelRow_other": "Papan · isi hanya {{count}} sel kosong di baris {{row}}",
+      "boardLabelCol_other": "Papan · isi hanya {{count}} sel kosong di kolom {{n}}"
+    },
+    "puzzle": {
+      "task": "Urutkan kotaknya",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_other": "{{count}} kotak bergerak",
+      "fixed_other": "{{count}} kotak tetap",
+      "allMove": "Semua kotak bergerak",
+      "swaps": "Tukar: {{count}}",
+      "wrong_other": "{{count}} tukar salah {{penalty}} dtk",
+      "wrongLabel_other": "{{count}} tukar salah, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "Seret kotak ke kotak lain untuk menukarnya",
+      "tapHint": "Atau: ketuk satu kotak, lalu kotak lain",
+      "slotLabel": "Kotak {{n}}, {{state}}: {{rows}}",
+      "state": {
+        "movable": "bisa dipindah",
+        "fixed": "tetap",
+        "selected": "terpilih"
+      },
+      "slotHint": "Ketuk untuk memilih, lalu ketuk kotak lain",
+      "swapped": "Kotak {{a}} dan {{b}} ditukar",
+      "swappedPenalty_other": "Kotak {{a}} dan {{b}} ditukar. Tambah {{s}} detik",
+      "fixedTap": "Kotak ini tetap",
+      "solved": "Setiap baris dan kolom sudah benar",
+      "boardLabel": "Teka-teki · {{counts}}"
+    },
+    "duel": {
+      "gap": "Unggul {{gap}}",
+      "gapLabel": "Keunggulan: {{gap}}. Satu bintang jika kamu unggul di akhir, 2 bintang di {{two}}, 3 bintang di {{three}}",
+      "lead": "Unggul",
+      "of": "/{{target}}",
+      "meLabel_other": "{{name}}, {{score}} dari {{target}} poin",
+      "botLabel_other": "{{name}}, bot level {{n}}, {{score}} dari {{target}} poin",
+      "finishLabel": "Tahap berakhir saat seseorang mencapai $t(levels:hud.duel.reachPoints, {\"count\": {{target}} }), atau setelah $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })",
+      "reachPoints_other": "{{count}} poin",
+      "atSeconds_other": "{{count}} detik",
+      "raceLabel": "Balapan ke {{target}}: {{me}}, {{bot}}"
+    },
+    "reactions": "Reaksi",
+    "boardLabel": "Papan tahap ini · {{scope}}",
+    "spotError": {
+      "goal_other": "{{count}} angka salah bersembunyi di papan. Ketuk yang salah.",
+      "note": "Angka gelap adalah milik papan, dan selalu benar.",
+      "found": "Ditemukan",
+      "foundLabel": "Ditemukan {{found}} dari {{total}}",
+      "time": "Waktu",
+      "timeLabel_other": "Waktu: {{s}} dari {{limit}} detik",
+      "tipTitle": "Tips",
+      "tip": "Cari angka yang muncul dua kali di baris, kolom, atau kotak yang sama.",
+      "tipClose": "Tutup tips",
+      "foundCell": "Kamu menemukan kesalahan di {{cell}}: bukan {{wrong}} tapi {{right}}",
+      "rightTap": "Angka di {{cell}} benar. {{penalty}} dtk",
+      "missed": "Kesalahan yang tidak ditemukan: {{cells}}",
+      "boardLabel": "Papan tahap ini · ketuk angka yang salah"
+    },
+    "hunt": {
+      "goal": "Kumpulkan $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) dalam $t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }).",
+      "goalPoints_other": "{{points}} poin",
+      "goalMoves_other": "{{count}} langkah",
+      "note": "Sel di area yang kosong bernilai lebih tinggi.",
+      "points": "poin",
+      "scoreLabel_other": "{{score}} poin",
+      "scoreWorthLabel_other": "{{score}} poin. Sel yang kamu pilih bernilai {{worth}}",
+      "lost": "Angka yang salah memotong {{points}}",
+      "move": "Langkah {{n}} dari {{max}}",
+      "burnt": "Langkah {{n}} hangus",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_other": "{{count}} langkah hangus",
+      "left": "tersisa · dari {{limit}}",
+      "timeLabel_other": "Sisa {{s}} dari {{limit}} detik",
+      "max": "Skor terbaik papan: {{max}}",
+      "worth": "Bernilai {{points}}"
+    },
+    "chain": {
+      "goal": "Setiap saat hanya satu sel di papan yang bisa diisi. Temukan dan isi sel itu, maka sel berikutnya terbuka.",
+      "notePenalty": "Angka di sel yang belum bisa dipastikan: {{penalty}} dtk.",
+      "noteAccept": "Angka yang salah: {{penalty}} dtk.",
+      "step": "Langkah {{n}} dari {{total}}",
+      "stepLabel": "Rantai: langkah {{n}} dari {{total}}",
+      "time": "Waktu",
+      "timeLabel_other": "Waktu: {{s}} dari {{limit}} detik",
+      "notYet": "{{text}} · {{penalty}} dtk",
+      "tipTitle": "Tips",
+      "tip": "Di setiap langkah, tepat satu sel bisa dibuktikan. Jika kamu yakin dengan suatu angka, itulah selnya.",
+      "tipClose": "Tutup tips"
+    }
+  },
+  "explain": {
+    "spot": "Titik {{n}}: {{text}}",
+    "mistake": "Kesalahanmu: {{digit}} di {{cell}}. {{reason}}",
+    "best": "Langkah terbaikmu, {{digit}} di {{cell}}: {{text}}",
+    "errorFound": "{{cell}}, ditemukan: {{reason}}",
+    "errorMissed": "{{cell}}, tidak ditemukan: {{reason}}",
+    "rightTap": "{{digit}} di {{cell}} benar: mengetuknya memakan {{penalty}} dtk.",
+    "points_other": "Kamu meraih {{points}} dari {{max}} poin, {{percent}} dari skor terbaik papan ini.",
+    "line": "Urutan terbaik: {{moves}}.",
+    "move": "{{digit}} di {{cell}} {{points}}",
+    "step": "Langkah {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "Hanya kotak yang awalnya di posisi {{from}} yang cocok untuk posisi {{place}}: kotak lain akan mengulang angka di baris atau kolom.",
+      "onlyPlaceForBox": "Kotak yang awalnya di posisi {{from}} hanya cocok di posisi {{place}}: di tempat lain, kotak itu akan mengulang angka di baris atau kolom."
+    }
+  }
+}

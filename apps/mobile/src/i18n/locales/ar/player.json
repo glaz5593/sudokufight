@@ -1,0 +1,141 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": "، ",
+  "ellipsis": "…",
+  "unknownName": "لاعب",
+  "temporaryName": "لاعب{{digits}}",
+  "bot": "بوت",
+  "vs": "VS",
+  "seconds_zero": "{{count}} ثانية",
+  "seconds_one": "ثانية واحدة",
+  "seconds_two": "ثانيتان",
+  "seconds_few": "{{count}} ثوانٍ",
+  "seconds_many": "{{count}} ثانية",
+  "seconds_other": "{{count}} ثانية",
+  "points_zero": "{{score}} نقطة",
+  "points_one": "{{score}} نقطة",
+  "points_two": "{{score}} نقطة",
+  "points_few": "{{score}} نقاط",
+  "points_many": "{{score}} نقطة",
+  "points_other": "{{score}} نقطة",
+  "place": "المركز {{place}}",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "على الإنترنت",
+    "online_female": "متصلة",
+    "reconnecting": "إعادة الاتصال",
+    "reconnecting_female": "تعيد الاتصال",
+    "unstable": "بلا اتصال",
+    "unstable_female": "بلا اتصال",
+    "left": "خارج المباراة",
+    "left_female": "غادرت"
+  },
+  "result": {
+    "winShort": "ف",
+    "lossShort": "خ",
+    "drawShort": "ت"
+  },
+  "flag": {
+    "label": "الدولة: {{country}}"
+  },
+  "rating": {
+    "label": "التصنيف {{value}}",
+    "labelWithKey": "تصنيف {{key}} {{value}}",
+    "provisional": "مؤقت",
+    "provisionalLabel": "{{label}}، مؤقت"
+  },
+  "league": {
+    "bronze": "برونز",
+    "silver": "فضة",
+    "gold": "ذهب",
+    "diamond": "ماس",
+    "legend": "أسطورة",
+    "name": "دوري {{league}}",
+    "level": "مستوى {{level}}",
+    "levelAfter": "· مستوى {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "بلا أخطاء",
+    "short_one": "خطأ واحد",
+    "short_two": "خطآن",
+    "short_few": "{{count}} أخطاء",
+    "short_many": "{{count}} خطأ",
+    "short_other": "{{count}} خطأ",
+    "long_zero": "بلا أخطاء",
+    "long_one": "خطأ واحد",
+    "long_two": "خطآن",
+    "long_few": "{{count}} أخطاء",
+    "long_many": "{{count}} خطأ",
+    "long_other": "{{count}} خطأ",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "قيد الاختيار",
+    "locking_female": "تختار",
+    "turn": "دور اللاعب",
+    "turn_female": "دورها",
+    "paused": "إيقاف مؤقت",
+    "thinking": "تفكير",
+    "thinking_female": "تفكر",
+    "reconnecting": "إعادة الاتصال",
+    "reconnecting_female": "تعيد الاتصال",
+    "left": "خارج المباراة",
+    "left_female": "غادرت",
+    "surrendered": "استسلام",
+    "surrendered_female": "استسلمت",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}، {{time}}"
+  },
+  "card": {
+    "hit": "تحت التشويش، {{time}}",
+    "target": "الهدف",
+    "targetHint": "هدف التشويش"
+  },
+  "actions": {
+    "surrender": "استسلام",
+    "endPractice": "إنهاء التدريب",
+    "reactions": "التفاعلات"
+  },
+  "interfere": {
+    "button": "تشويش",
+    "label": "تشويش على {{name}} · التكلفة {{cost}} نقطة",
+    "labelMissing": "تشويش على {{name}} · تنقص {{count}} نقطة",
+    "labelBusy": "التشويش على {{name}} غير متاح: يوجد تشويش جارٍ بالفعل",
+    "labelNotRunning": "التشويش على {{name}} غير متاح الآن",
+    "labelDisconnected": "لا تشويش أثناء انقطاع الاتصال",
+    "labelOut": "{{name}} خارج المباراة",
+    "close": "إغلاق قائمة التشويش"
+  },
+  "lead": {
+    "tie": "تعادل",
+    "label_zero": "{{name}} في الصدارة بفارق {{gap}} نقطة",
+    "label_one": "{{name}} في الصدارة بفارق {{gap}} نقطة",
+    "label_two": "{{name}} في الصدارة بفارق {{gap}} نقطة",
+    "label_few": "{{name}} في الصدارة بفارق {{gap}} نقاط",
+    "label_many": "{{name}} في الصدارة بفارق {{gap}} نقطة",
+    "label_other": "{{name}} في الصدارة بفارق {{gap}} نقطة",
+    "label_female_zero": "{{name}} تتقدم بفارق {{gap}} نقطة",
+    "label_female_one": "{{name}} تتقدم بفارق {{gap}} نقطة",
+    "label_female_two": "{{name}} تتقدم بفارق {{gap}} نقطة",
+    "label_female_few": "{{name}} تتقدم بفارق {{gap}} نقاط",
+    "label_female_many": "{{name}} تتقدم بفارق {{gap}} نقطة",
+    "label_female_other": "{{name}} تتقدم بفارق {{gap}} نقطة",
+    "tieLabel": "تعادل في النقاط"
+  },
+  "lock": {
+    "yourCell": "خانتك",
+    "paused": "إيقاف مؤقت",
+    "pick": "اختيار خانة",
+    "remaining_zero": "انتهى الوقت",
+    "remaining_one": "بقيت ثانية واحدة",
+    "remaining_two": "بقيت ثانيتان",
+    "remaining_few": "بقيت {{count}} ثوانٍ",
+    "remaining_many": "بقيت {{count}} ثانية",
+    "remaining_other": "بقيت {{count}} ثانية",
+    "label": "خانتك {{cell}}، {{remaining}}",
+    "labelPaused": "خانتك {{cell}}، المؤقت متوقف",
+    "progress": "الوقت المتبقي للخانة {{cell}}",
+    "released": "حُرِّرت الخانة"
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "common": {
+    "provisional": "임시 레이팅",
+    "provisionalNote_other": "한 게임 유형에서 랭크 게임을 {{games}}게임 하면 리그가 표시돼요",
+    "level": "레벨 {{level}}",
+    "you": "나",
+    "myCard": "내 플레이어 카드",
+    "loading": "불러오는 중…",
+    "retry": "다시 시도",
+    "offlineNote": "서버에 연결되지 않아 이전에 불러온 내용을 보여 줘요.",
+    "errorNote": "업데이트하지 못해서 이전에 불러온 내용을 보여 줘요.",
+    "offlineTitle": "서버에 연결되지 않았어요",
+    "offlineBody": "연결되면 순위표가 업데이트돼요.",
+    "errorTitle": "문제가 생겼어요",
+    "errorBody": "지금은 서버가 응답하지 못했어요. 잠시 후 다시 시도하세요.",
+    "signedOut": "보려면 로그인하세요",
+    "players_other": "{{count}}명",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}, 레벨 {{level}}까지 가는 중"
+  },
+  "leaderboard": {
+    "title": "순위표",
+    "tabs": {
+      "label": "레이팅 종류",
+      "general": "종합",
+      "fast": "스피드",
+      "normal": "노멀",
+      "hard": "하드",
+      "friends": "친구"
+    },
+    "caption": {
+      "general": "종합 · 플레이어별 최고 레이팅",
+      "type": "{{type}} 레이팅 · 전 세계",
+      "typePlayers": "{{type}} 레이팅 · {{players}} · 전 세계",
+      "friends": "최근에 만난 상대"
+    },
+    "players": "플레이어 수",
+    "podium": "상위 3명",
+    "rankLabel": "{{rank}}위",
+    "meName": "{{name}} (나)",
+    "openHint": "플레이어 카드 열기",
+    "meNone": "이 순위표에는 아직 내 레이팅이 없어요",
+    "play": "플레이",
+    "playHint": "랭크 게임을 하면 순위표에 올라요",
+    "climbHint": "플레이해서 순위를 올려 보세요",
+    "emptyTitle": "아직 아무도 없어요",
+    "emptyBody": "랭크 게임을 해서 순위표의 첫 주인공이 되어 보세요."
+  },
+  "friends": {
+    "invite": "친구 초대하기",
+    "inviteMessage": "Sudoku Fight에서 나랑 한판 해요!",
+    "inviteNote": "친구 한 명 더 = 라이벌 한 명 더",
+    "emptyTitle": "아직 상대가 없어요",
+    "emptyBody": "랭크 게임을 하면 상대가 여기에 표시돼요. 전체 친구 목록은 곧 나와요."
+  },
+  "league": {
+    "title": "리그",
+    "toNext": "{{league}}까지 {{points}}",
+    "top": "최고 리그",
+    "general": "종합 {{rating}} · {{next}}",
+    "generalTop": "종합 {{rating}} · 최고 리그",
+    "ladder": "리그 단계",
+    "step": "{{league}} 리그, 레이팅 {{floor}}부터"
+  },
+  "card": {
+    "title": "플레이어 카드",
+    "edit": "프로필 수정",
+    "notFound": "플레이어를 찾을 수 없어요",
+    "offlineBody": "카드는 서버에서 불러와요. 연결되면 다시 시도하세요.",
+    "savedNote": "서버에 연결되지 않아 저장된 카드를 보여 줘요.",
+    "meLabel": "{{name}}, 내 카드",
+    "ratingsTitle": "게임 유형별 레이팅",
+    "ratingsNote_other": "레이팅 {{n}}개",
+    "noRatings": "아직 레이팅이 없어요",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "최근 게임에서 {{points}} 상승",
+    "trendDown": "최근 게임에서 {{points}} 하락",
+    "trendFlat": "최근 게임에서 변화 없음",
+    "atPeak": "최고 기록",
+    "peak": "최고 {{value}}",
+    "atPeakShort": "최고!",
+    "peakShort": "최고 {{value}}",
+    "games_other": "{{count}}게임",
+    "statsTitle": "전투 기록",
+    "stats": {
+      "games": "게임",
+      "wins": "승리",
+      "losses": "패배",
+      "winRate": "승률",
+      "streak": "연승",
+      "bestStreak": "최다 연승",
+      "bestMove": "최고의 수",
+      "avgMistakes": "게임당 실수"
+    },
+    "recentTitleSection": "최근 결과",
+    "recentNote": "최근 {{n}}게임",
+    "recentEmpty": "아직 랭크 게임이 없어요.",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "승리",
+      "loss": "패배",
+      "tie": "무승부"
+    },
+    "outcomeShort": {
+      "win": "승",
+      "loss": "패",
+      "tie": "무"
+    },
+    "place": "{{place}}위",
+    "points": "{{score}}점",
+    "ratingDelta": "레이팅 {{delta}}",
+    "formLabel": "최근 결과, 최신순: {{list}}",
+    "replayHint": "리플레이 열기",
+    "openOf": "{{name}} 님의 플레이어 카드",
+    "achievementsTitle": "대표 업적",
+    "allAchievements": "모든 업적",
+    "joinedSince": "{{date}}부터 플레이 중",
+    "favorite": {
+      "title": "자주 쓰는 방해",
+      "uses_other": "회",
+      "label_other": "자주 쓰는 방해: {{kind}}, {{count}}회 사용"
+    }
+  },
+  "achievements": {
+    "title": "업적",
+    "soon": "곧 출시",
+    "soonBody": "업적 12개가 준비 중이에요: 첫 승리, 연승, 최고의 수 등. 곧 여기에서 만나요.",
+    "soonShort": "업적은 곧 나와요.",
+    "earned": "{{name}}, {{date}} 달성"
+  },
+  "progress": {
+    "title": "업적과 진행 상황",
+    "savedNote": "서버에 연결되지 않아 저장된 수치를 보여 줘요.",
+    "pending_other": "연습 {{count}}회가 서버와 동기화를 기다리고 있어요",
+    "offlineBody": "서버에 연결되면 레벨과 XP가 표시돼요.",
+    "levelWord": "레벨",
+    "xpTitle": "경험치",
+    "toGo": "레벨 {{level}}까지 {{xp}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "XP 얻는 방법",
+    "how": {
+      "win": "랭크 게임 1위, 또는 봇 상대로 승리",
+      "played": "랭크 게임이나 봇 상대의 그 밖의 모든 결과",
+      "solo": "혼자 연습",
+      "perCorrect": "랭크 게임과 봇 상대에서 맞힌 수마다"
+    }
+  },
+  "interferences": {
+    "title": "방해",
+    "entry": "방해 컬렉션",
+    "entryNote": "{{open}}개 열림 · {{locked}}개 잠김",
+    "countLabel_other": "방해 {{total}}개 중 {{open}}개 열림",
+    "opened": "열림",
+    "facts": {
+      "seconds": "초씩 지속",
+      "cost": "쓸 때마다 비용이 두 배",
+      "launch": "탭: 상대 카드의 “방해하기”, 그다음 방해",
+      "launchValue": "2번"
+    },
+    "arsenal": "내 무기고",
+    "tapHint": "탭해서 미리 보기",
+    "openLabel": "{{name}}, 사용 가능. {{description}}",
+    "previewHint": "미리 보기를 보여 줘요",
+    "available": "사용 가능",
+    "previewing": "미리 보는 중",
+    "lockedTitle": "잠김",
+    "lockedNote": "레벨이 오르면 열려요",
+    "soon": "곧 출시",
+    "atLevel": "레벨 {{level}}에 열려요",
+    "lockedLabel": "{{name}}, 잠김, {{when}}",
+    "howTo": "게임 중에 상대 카드의 “방해하기”를 탭한 다음 방해를 고르세요.",
+    "future": {
+      "earthquake": "지진",
+      "fog": "안개",
+      "bubbles": "거품",
+      "torch": "손전등"
+    },
+    "description": {
+      "fireworks": "화면 위로 터지는 알록달록한 불꽃놀이",
+      "cats": "화면을 가로질러 달리는 고양이 행렬",
+      "warp": "화면이 휘어지고 깜빡여요",
+      "scramble": "판의 숫자들이 뒤섞이고 자리를 바꿔요",
+      "ink": "서서히 사라지는 잉크 얼룩",
+      "keypad": "숫자 키의 위치가 바뀌어요",
+      "earthquake": "화면이 흔들려요",
+      "fog": "천천히 걷히는 안개",
+      "bubbles": "터뜨려야 하는 거품",
+      "torch": "손전등 불빛만 빼고 판이 어두워져요"
+    }
+  },
+  "home": {
+    "levelXp": "레벨 {{level}} · {{xp}}"
+  }
+}

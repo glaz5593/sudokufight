@@ -1,7 +1,7 @@
 import type { PlayerId } from '@sudoku-fight/engine';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Share, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -10,6 +10,7 @@ import { AVATAR_REACTIONS } from '../../../avatars/reactions';
 import { Avatar } from '../../../components/player/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
+import { Text } from '../../../components/ui/Text';
 import { color, radius, size, space, text, tokens } from '../../../theme';
 import { useReduceMotion } from '../../../theme/motion';
 import { Announcer } from './Announcer';
@@ -101,7 +102,11 @@ export function LobbyView({
               {t('connection.lobby.title')}
             </Text>
             <Text style={styles.subtitle}>
-              {t('connection.lobby.subtitle', { type: t(`type.${m.gameType}`), players: m.playerCount })}
+              {t('connection.lobby.subtitle', {
+                type: t(`type.${m.gameType}`),
+                count: m.playerCount,
+                players: m.playerCount,
+              })}
             </Text>
           </View>
 

@@ -1,0 +1,108 @@
+{
+  "sep": " · ",
+  "dot": "·",
+  "listSep": ", ",
+  "ellipsis": "…",
+  "unknownName": "Pemain",
+  "temporaryName": "Pemain{{digits}}",
+  "bot": "Bot",
+  "vs": "VS",
+  "seconds_other": "{{count}} detik",
+  "points_other": "{{score}} poin",
+  "place": "Posisi {{place}}",
+  "rank": "#{{place}}",
+  "presence": {
+    "online": "Terhubung",
+    "online_female": "Terhubung",
+    "reconnecting": "Menyambung",
+    "reconnecting_female": "Menyambung",
+    "unstable": "Tanpa koneksi",
+    "unstable_female": "Tanpa koneksi",
+    "left": "Keluar",
+    "left_female": "Keluar"
+  },
+  "result": {
+    "winShort": "M",
+    "lossShort": "K",
+    "drawShort": "S"
+  },
+  "flag": {
+    "label": "Negara: {{country}}"
+  },
+  "rating": {
+    "label": "Rating: {{value}}",
+    "labelWithKey": "Rating {{key}}: {{value}}",
+    "provisional": "Sementara",
+    "provisionalLabel": "{{label}}, sementara"
+  },
+  "league": {
+    "bronze": "Perunggu",
+    "silver": "Perak",
+    "gold": "Emas",
+    "diamond": "Berlian",
+    "legend": "Legenda",
+    "name": "Liga {{league}}",
+    "level": "Lv. {{level}}",
+    "levelAfter": "· Lv. {{level}}"
+  },
+  "mistakes": {
+    "short_zero": "Tanpa kesalahan",
+    "short_other": "{{count}} kesalahan",
+    "long_zero": "Tanpa kesalahan",
+    "long_other": "{{count}} kesalahan",
+    "overflow": "×{{count}}"
+  },
+  "activity": {
+    "locking": "Memilih",
+    "locking_female": "Memilih",
+    "turn": "Gilirannya",
+    "turn_female": "Gilirannya",
+    "paused": "Dijeda",
+    "thinking": "Berpikir",
+    "thinking_female": "Berpikir",
+    "reconnecting": "Menyambung",
+    "reconnecting_female": "Menyambung",
+    "left": "Keluar",
+    "left_female": "Keluar",
+    "surrendered": "Menyerah",
+    "surrendered_female": "Menyerah",
+    "withCell": "{{word}} {{cell}}",
+    "withTime": "{{word}}, {{time}}"
+  },
+  "card": {
+    "hit": "Sedang diganggu, {{time}}",
+    "target": "Sasaran",
+    "targetHint": "Sasaran gangguan"
+  },
+  "actions": {
+    "surrender": "Menyerah",
+    "endPractice": "Akhiri latihan",
+    "reactions": "Reaksi"
+  },
+  "interfere": {
+    "button": "Ganggu",
+    "label": "Ganggu {{name}} · harga {{cost}} poin",
+    "labelMissing": "Ganggu {{name}} · kurang {{count}} poin",
+    "labelBusy": "Tidak bisa mengganggu {{name}}, sedang diganggu",
+    "labelNotRunning": "Tidak bisa mengganggu {{name}} sekarang",
+    "labelDisconnected": "Tidak bisa mengganggu saat terputus",
+    "labelOut": "{{name}} sudah keluar dari pertandingan",
+    "close": "Tutup pilihan gangguan"
+  },
+  "lead": {
+    "tie": "Imbang",
+    "label_other": "{{name}} unggul {{gap}} poin",
+    "label_female_other": "{{name}} unggul {{gap}} poin",
+    "tieLabel": "Skor imbang"
+  },
+  "lock": {
+    "yourCell": "Selmu",
+    "paused": "Dijeda",
+    "pick": "Pilih sel",
+    "remaining_other": "Sisa {{count}} detik",
+    "label": "Selmu {{cell}}, {{remaining}}",
+    "labelPaused": "Selmu {{cell}}, timer berhenti",
+    "progress": "Sisa waktu untuk sel {{cell}}",
+    "released": "Sel dilepas"
+  }
+}

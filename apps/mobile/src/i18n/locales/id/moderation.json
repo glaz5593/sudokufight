@@ -1,0 +1,106 @@
+{
+  "actions": {
+    "report": "Laporkan pemain",
+    "block": "Blokir pemain",
+    "unblock": "Buka blokir",
+    "reportLabel": "Laporkan {{name}}",
+    "blockLabel": "Blokir {{name}}",
+    "unblockLabel": "Buka blokir {{name}}",
+    "blockedNote": "Kamu memblokir pemain ini: kalian tidak akan dipertemukan di pertandingan ranked."
+  },
+  "report": {
+    "title": "Laporkan {{name}}",
+    "question": "Apa masalahnya?",
+    "reasons": {
+      "offensiveName": "Nama yang menyinggung",
+      "cheating": "Curang",
+      "other": "Lainnya"
+    },
+    "reasonHints": {
+      "offensiveName": "Namanya kasar, menghina, atau tidak pantas",
+      "cheating": "Sepertinya dibantu pihak luar, atau memanfaatkan bug",
+      "other": "Hal lain yang tidak pantas ada di arena"
+    },
+    "privacy_other": "Pemain itu tidak akan tahu siapa yang melaporkannya. Setiap laporan ditinjau dalam {{hours}} jam.",
+    "send": "Kirim laporan",
+    "pickFirst": "Pilih alasan, lalu kirim.",
+    "thanks_other": "Terima kasih. Kami akan meninjau laporan ini dalam {{hours}} jam.",
+    "done": "Tutup",
+    "errors": {
+      "rateLimited_other": "Kamu sudah mengirim banyak laporan dalam satu jam terakhir. Kamu bisa mengirim lagi dalam {{count}} menit.",
+      "busy": "Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.",
+      "suspended": "Akunmu sedang ditangguhkan, jadi kamu belum bisa mengirim laporan sekarang.",
+      "self": "Kamu tidak bisa melaporkan dirimu sendiri.",
+      "notFound": "Pemain ini sudah tidak ada di pertandingan.",
+      "offline": "Tidak ada koneksi ke server: laporan tidak terkirim. Coba lagi.",
+      "failed": "Kami tidak bisa mengirim laporan. Coba lagi."
+    }
+  },
+  "block": {
+    "title": "Blokir {{name}}?",
+    "body": "Kalian tidak akan dipertemukan di pertandingan ranked, dan reaksi {{name}} tidak akan sampai kepadamu. Tidak ada yang diberi tahu soal blokir. Kamu bisa membuka blokirnya kapan saja: Pengaturan → Pemain yang diblokir.",
+    "confirm": "Blokir",
+    "done": "{{name}} diblokir.",
+    "unblockTitle": "Buka blokir {{name}}?",
+    "unblockBody": "Kalian mungkin bertemu lagi di pertandingan ranked, dan reaksi {{name}} akan sampai kepadamu.",
+    "unblockConfirm": "Buka blokir",
+    "unblocked": "Blokir {{name}} sudah dibuka.",
+    "errors": {
+      "limitReached_other": "Kamu bisa memblokir hingga {{max}} pemain. Buka blokir seseorang (Pengaturan → Pemain yang diblokir) lalu coba lagi.",
+      "self": "Kamu tidak bisa memblokir dirimu sendiri.",
+      "notFound": "Pemain ini sudah tidak ada di pertandingan.",
+      "busy": "Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.",
+      "offline": "Tidak ada koneksi ke server: blokir tidak tersimpan. Coba lagi.",
+      "unblockOffline": "Tidak ada koneksi ke server: blokir tidak dibuka. Coba lagi.",
+      "failed": "Kami tidak bisa menyimpan blokir. Coba lagi.",
+      "unblockFailed": "Kami tidak bisa membuka blokir. Coba lagi."
+    }
+  },
+  "blocked": {
+    "title": "Pemain yang diblokir",
+    "settingsRow": "Pemain yang diblokir",
+    "note": "Kalian tidak akan dipertemukan di pertandingan ranked, dan reaksi mereka tidak akan sampai kepadamu. Tidak ada yang diberi tahu soal blokir.",
+    "count": "{{count}} dari {{max}}",
+    "since": "Diblokir sejak {{date}}",
+    "rowLabel": "{{name}}, diblokir sejak {{date}}",
+    "emptyTitle": "Tidak ada pemain yang diblokir",
+    "emptyBody": "Kamu bisa memblokir pemain dari kartunya, atau dari menu kartunya di pertandingan ranked.",
+    "loading": "Memuat pemain yang diblokir…",
+    "offlineTitle": "Tidak ada koneksi ke server",
+    "offlineBody": "Daftarnya disimpan di server. Coba lagi saat kamu online.",
+    "errorTitle": "Kami tidak bisa memuat daftarnya",
+    "errorBody": "Coba lagi sebentar lagi.",
+    "retry": "Coba lagi",
+    "signedOut": "Masuk untuk melihat daftarnya."
+  },
+  "chooseName": {
+    "title": "Pilih nama baru",
+    "body": "Nama sebelumnya diganti dengan nama sementara, {{name}}, karena melanggar aturan nama. Pilih nama baru untuk melanjutkan.",
+    "rule": "Kali ini tidak perlu menunggu 30 hari: kamu bisa memilih nama sekarang.",
+    "save": "Simpan dan lanjutkan",
+    "saved": "Nama barumu tersimpan.",
+    "same": "Itu nama sementara. Pilih namamu sendiri.",
+    "offline": "Tidak ada koneksi ke server: nama tidak tersimpan. Coba lagi saat kamu online.",
+    "practice": "Latihan dulu",
+    "settings": "Pengaturan",
+    "signOut": "Keluar"
+  },
+  "suspended": {
+    "banner": "Akun ditangguhkan: tidak ada pertandingan ranked",
+    "bannerAction": "Detail",
+    "bannerLabel": "Akun ditangguhkan, tidak ada pertandingan ranked. Detail",
+    "title": "Akun ditangguhkan",
+    "body": "Menyusul sebuah laporan, akunmu ditangguhkan. Selama ditangguhkan, tidak ada pertandingan ranked dan profil tidak bisa diubah.",
+    "can": "Kamu tetap bisa berlatih solo atau melawan bot, memblokir pemain, dan menghapus akun.",
+    "contactTitle": "Menurutmu ini keliru?",
+    "contact": "Tulis pesan kepada kami dan kami akan memeriksanya lagi. Detail kontak ada di ketentuan penggunaan.",
+    "contactEmail": "Kamu bisa menulis ke: {{email}}",
+    "openContact": "Detail kontak",
+    "opensInBrowser": "Dibuka di browser",
+    "practice": "Latihan",
+    "chip": "Akun ditangguhkan",
+    "chipLabel": "Tidak tersedia: akun ditangguhkan",
+    "ranked": "Akunmu ditangguhkan, jadi pertandingan ranked belum tersedia.",
+    "editProfile": "Akun ditangguhkan: profil tidak bisa diubah"
+  }
+}

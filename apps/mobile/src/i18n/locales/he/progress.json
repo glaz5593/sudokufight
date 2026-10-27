@@ -1,7 +1,9 @@
 {
   "common": {
     "provisional": "בדירוג זמני",
-    "provisionalNote": "הליגה תופיע אחרי {{games}} משחקים מדורגים באחד מסוגי המשחק",
+    "provisionalNote_one": "הליגה תופיע אחרי משחק מדורג אחד באחד מסוגי המשחק",
+    "provisionalNote_two": "הליגה תופיע אחרי {{games}} משחקים מדורגים באחד מסוגי המשחק",
+    "provisionalNote_other": "הליגה תופיע אחרי {{games}} משחקים מדורגים באחד מסוגי המשחק",
     "level": "רמה {{level}}",
     "you": "אתה",
     "myCard": "כרטיס השחקן שלי",
@@ -74,7 +76,9 @@
     "savedNote": "אין חיבור לשרת: מוצג הכרטיס השמור.",
     "meLabel": "{{name}}, הכרטיס שלי",
     "ratingsTitle": "דירוג לפי סוג משחק",
-    "ratingsNote": "{{n}} דירוגים",
+    "ratingsNote_one": "דירוג אחד",
+    "ratingsNote_two": "{{n}} דירוגים",
+    "ratingsNote_other": "{{n}} דירוגים",
     "noRatings": "עוד אין דירוג",
     "typePlayers": "{{type}} · {{players}}",
     "trendUp": "עלייה של {{points}} במשחקים האחרונים",
@@ -166,7 +170,9 @@
     "title": "הפרעות",
     "entry": "אוסף ההפרעות",
     "entryNote": "{{open}} פתוחות · {{locked}} נעולות",
-    "countLabel": "{{open}} מתוך {{total}} הפרעות פתוחות",
+    "countLabel_one": "{{open}} מתוך הפרעה אחת פתוחה",
+    "countLabel_two": "{{open}} מתוך {{total}} הפרעות פתוחות",
+    "countLabel_other": "{{open}} מתוך {{total}} הפרעות פתוחות",
     "opened": "נפתחו",
     "facts": {
       "seconds": "שניות לכל הפרעה",

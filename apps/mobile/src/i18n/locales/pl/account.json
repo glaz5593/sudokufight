@@ -1,0 +1,257 @@
+{
+  "devMode": {
+    "badge": "Tryb deweloperski",
+    "label": "Tryb deweloperski: lokalne konta tylko na tym telefonie, bez Firebase",
+    "noEmail": "Tryb deweloperski nie wysyła e-maili."
+  },
+  "fields": {
+    "email": "E-mail",
+    "emailPlaceholder": "name@example.com",
+    "password": "Hasło",
+    "newPassword": "Hasło",
+    "confirmPassword": "Powtórz hasło",
+    "displayName": "Nazwa gracza",
+    "displayNamePlaceholder": "Twoja nazwa na arenie",
+    "avatar": "Awatar",
+    "country": "Kraj",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło",
+    "change": "Zmień"
+  },
+  "validation": {
+    "emailRequired": "Wpisz swój e-mail",
+    "emailInvalid": "Ten adres e-mail wygląda na błędny",
+    "passwordRequired": "Wpisz hasło",
+    "passwordRules": "Hasło musi mieć co najmniej 8 znaków",
+    "confirmMismatch": "Hasła się nie zgadzają",
+    "countryRequired": "Wybierz kraj"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "Błędne hasło. Spróbuj ponownie albo je zresetuj.",
+      "userNotFound": "Nie ma konta z tym adresem e-mail. Zarejestrować się?",
+      "invalidCredentials": "Błędny e-mail lub hasło.",
+      "tooManyRequests": "Za dużo prób. Odczekaj kilka minut i spróbuj ponownie albo zresetuj hasło.",
+      "network": "Brak połączenia z internetem. Sprawdź je i spróbuj ponownie.",
+      "emailInUse": "Do tego adresu e-mail jest już przypisane konto. Zaloguj się nim.",
+      "invalidEmail": "Ten adres e-mail wygląda na błędny.",
+      "weakPassword": "To hasło jest za słabe. Wybierz dłuższe.",
+      "requiresRecentLogin": "Aby to zrobić, zaloguj się ponownie.",
+      "userDisabled": "To konto zostało wyłączone. Skontaktuj się z pomocą techniczną.",
+      "noUser": "Wylogowano cię. Zaloguj się ponownie.",
+      "unknown": "Coś poszło nie tak. Spróbuj ponownie.",
+      "cancelled": "Anulowano logowanie przez Google.",
+      "inProgress": "Logowanie przez Google jest już otwarte. Dokończ je albo zamknij i spróbuj ponownie.",
+      "playServices": "Logowanie przez Google wymaga Usług Google Play. Zaktualizuj je i spróbuj ponownie.",
+      "googleConfig": "Logowanie przez Google jest teraz niedostępne w tej wersji aplikacji (DEVELOPER_ERROR). W międzyczasie użyj e-maila i hasła.",
+      "accountExistsWithPassword": "Do tego adresu e-mail jest już przypisane konto z hasłem. Zaloguj się e-mailem i hasłem.",
+      "userMismatch": "To inne konto Google. Wybierz konto, którego używasz do logowania."
+    },
+    "api": {
+      "badRequest": "To żądanie było nieprawidłowe. Spróbuj ponownie.",
+      "invalidName": "Ta nazwa łamie zasady.",
+      "unauthorized": "Twoja sesja na serwerze wygasła. Zaloguj się ponownie.",
+      "reauthRequired": "Usunięcie konta wymaga ponownego zalogowania. Wpisz jeszcze raz hasło i spróbuj ponownie.",
+      "suspended": "Twoje konto jest zawieszone, więc na razie nie można go zmieniać.",
+      "notRegistered": "To konto nie ma jeszcze wojownika. Dokończmy rejestrację.",
+      "notFound": "Serwer nie zna tego żądania. Zaktualizuj aplikację.",
+      "alreadyRegistered": "To konto ma już wojownika.",
+      "taken": "Ta nazwa jest zajęta. Wybierz inną.",
+      "renameTooSoon": "Nazwę możesz zmieniać tylko raz na 30 dni.",
+      "tooLarge": "To żądanie jest za duże.",
+      "blocked": "Ta nazwa nie pasuje do areny. Wybierz inną.",
+      "tooManyRequests": "Za dużo żądań. Odczekaj chwilę i spróbuj ponownie.",
+      "internal": "Błąd serwera. Spróbuj ponownie za chwilę.",
+      "disabled": "Konta są teraz wyłączone na tym serwerze.",
+      "unavailable": "Serwer jest teraz niedostępny. Spróbuj ponownie za chwilę.",
+      "network": "Brak dostępu do serwera. Sprawdź internet i spróbuj ponownie.",
+      "timeout": "Serwer nie odpowiedział na czas. Spróbuj ponownie.",
+      "signedOut": "Wylogowano cię. Zaloguj się ponownie.",
+      "unexpected": "Serwer wysłał nieoczekiwaną odpowiedź. Spróbuj ponownie albo zaktualizuj aplikację."
+    }
+  },
+  "splash": {
+    "tagline": "Jedna plansza. Wszyscy rozwiązują. Wygrana jest jedna.",
+    "loading": "Wczytywanie areny…",
+    "tipLabel": "Wskazówka",
+    "tips": {
+      "lock_one": "Wybrane pole jest zablokowane tylko dla ciebie: przez sekundę w partii typu „{{type}}”.",
+      "lock_few": "Wybrane pole jest zablokowane tylko dla ciebie: przez {{seconds}} sekundy w partii typu „{{type}}”.",
+      "lock_many": "Wybrane pole jest zablokowane tylko dla ciebie: przez {{seconds}} sekund w partii typu „{{type}}”.",
+      "lock_other": "Wybrane pole jest zablokowane tylko dla ciebie: przez {{seconds}} sekundy w partii typu „{{type}}”.",
+      "hard": "Trudniejszy ruch jest wart więcej punktów.",
+      "mistake": "Błąd kosztuje dokładnie tyle punktów, ile dałaby właściwa cyfra. Lepiej pomyśleć chwilę dłużej.",
+      "interfere": "Zakłócenie wyślesz dwoma dotknięciami: „Zakłóć” na karcie przeciwnika, a potem wybrane zakłócenie."
+    },
+    "errorTitle": "Nie udało się wczytać twojego wojownika",
+    "retry": "Spróbuj ponownie",
+    "signOut": "Wyloguj się"
+  },
+  "login": {
+    "title": "Powrót na <accent>arenę</accent>",
+    "titleLabel": "Powrót na arenę",
+    "subtitle": "Czekają na ciebie ranking, seria i rywale.",
+    "forgot": "Zapomniane hasło",
+    "submit": "Zaloguj się",
+    "noAccount": "Nie masz jeszcze konta?",
+    "register": "Zarejestruj się",
+    "arenaSpot": "Twoje miejsce"
+  },
+  "google": {
+    "continue": "Kontynuuj z Google",
+    "orEmail": "lub przez e-mail",
+    "orEmailPassword": "lub przez e-mail i hasło",
+    "existing": "To konto Google ma już wojownika, {{name}}. Zalogowano cię na nie.",
+    "passwordHint": "Konto założone przez Google? Użyj „Kontynuuj z Google”.",
+    "emailInUseHint": "Jeśli konto zostało założone przez Google, użyj „Kontynuuj z Google”.",
+    "termsTitle": "Warunki i prywatność",
+    "termsBody": "Aby kontynuować z Google, zaakceptuj warunki korzystania i politykę prywatności.",
+    "termsAccept": "Zaakceptuj i kontynuuj"
+  },
+  "forgot": {
+    "title": "Zapomniane hasło",
+    "body": "Wpisz e-mail użyty przy rejestracji, a wyślemy na niego link do ustawienia nowego hasła.",
+    "submit": "Wyślij link do resetu",
+    "sentTitle": "Sprawdź skrzynkę",
+    "sentBody": "Jeśli {{email}} ma konto, wysłaliśmy na ten adres link do zresetowania hasła. Nie widzisz go? Sprawdź folder ze spamem.",
+    "backToLogin": "Wróć do logowania"
+  },
+  "register": {
+    "step": "Krok {{step}} z {{total}}",
+    "backToLogin": "Wróć do logowania",
+    "backToFighter": "Wróć do wojownika"
+  },
+  "fighter": {
+    "title": "Stwórz swojego <accent>wojownika</accent>",
+    "titleLabel": "Stwórz swojego wojownika",
+    "resumeNote": "Twoje konto jest gotowe. Wybierz jeszcze tylko wojownika.",
+    "chooseAvatar": "Wybierz awatar",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}, od poziomu {{level}}",
+    "selectedAvatar": "Wybrany awatar: {{name}}",
+    "yourPick": "Twój wybór: {{name}}",
+    "previewTitle": "Tak widzi cię arena",
+    "previewLabel": "Podgląd twojej karty w partii: {{name}}",
+    "previewNew": "Debiut",
+    "continue": "Dalej",
+    "enterArena": "Wejdź na arenę",
+    "signOut": "Wyloguj się",
+    "googleNote": "Logujesz się przez Google. Wybierz jeszcze tylko wojownika."
+  },
+  "name": {
+    "rules": "3–16 znaków: litery hebrajskie lub angielskie, cyfry, podkreślnik i kropka.",
+    "status": {
+      "checking": "Sprawdzanie…",
+      "available": "Dostępna",
+      "taken": "Zajęta",
+      "invalid": "Nieprawidłowa",
+      "blocked": "Niedozwolona",
+      "error": "Niesprawdzona",
+      "current": "Twoja nazwa"
+    },
+    "problem": {
+      "invalidChars": "Tych znaków nie można użyć: {{chars}}",
+      "tooShort": "Co najmniej 3 znaki",
+      "tooLong": "Najwyżej 16 znaków"
+    },
+    "charSpace": " ",
+    "takenHint": "Ktoś już wybrał tę nazwę. Spróbuj innej.",
+    "blockedHint": "Ta nazwa nie pasuje do areny. Spróbuj innej.",
+    "errorHint": "Nie udało się sprawdzić nazwy. Sprawdzimy ją ponownie przy zapisie."
+  },
+  "country": {
+    "label": "Kraj: {{country}}",
+    "choose": "Wybierz kraj",
+    "sheetTitle": "Wybierz kraj",
+    "search": "Szukaj kraju",
+    "searchPlaceholder": "Szukaj",
+    "none": "Nie znaleziono kraju",
+    "hint": "Wykryty z ustawień telefonu. Możesz go zmienić w każdej chwili."
+  },
+  "account": {
+    "title": "Jeszcze krok do <accent>areny</accent>",
+    "titleLabel": "Jeszcze krok do areny",
+    "subtitle": "E-mail i hasło chronią twój ranking i postępy.",
+    "fighterReady": "Wojownik gotowy",
+    "edit": "Edytuj",
+    "editLabel": "Edytuj wojownika",
+    "submit": "Utwórz konto",
+    "profileFailed": "Konto zostało utworzone, ale wojownik nie został jeszcze zapisany. Spróbuj ponownie.",
+    "nameTakenNow": "Nazwa {{name}} została w międzyczasie zajęta. Wybierz inną: twoje konto czeka."
+  },
+  "password": {
+    "rules": {
+      "length": "Co najmniej 8 znaków"
+    },
+    "ruleMet": "{{rule}}: spełnione",
+    "ruleMissing": "{{rule}}: brak",
+    "strengthLabel": "Siła hasła",
+    "strength": {
+      "weak": "Słabe hasło",
+      "fair": "Przeciętne hasło",
+      "good": "Dobre hasło",
+      "strong": "Silne hasło"
+    },
+    "match": "Zgadza się",
+    "mismatch": "Nie zgadza się"
+  },
+  "terms": {
+    "accept": "Akceptuję warunki korzystania i politykę prywatności",
+    "termsLink": "Warunki korzystania",
+    "privacyLink": "Polityka prywatności",
+    "linkHint": "Otwiera się w przeglądarce",
+    "required": "Aby wejść na arenę, zaakceptuj warunki"
+  },
+  "verify": {
+    "bannerTitle": "E-mail jeszcze niezweryfikowany",
+    "bannerAction": "Zweryfikuj",
+    "bannerLabel": "E-mail jeszcze niezweryfikowany. Zweryfikuj e-mail",
+    "title": "Zweryfikuj e-mail",
+    "body": "Wysłaliśmy link weryfikacyjny na adres {{email}}. Otwórz go i wróć tutaj.",
+    "why": "Trening działa i bez tego. Partie rankingowe będą wymagać zweryfikowanego e-maila.",
+    "resend": "Wyślij ponownie",
+    "sent": "Wysłaliśmy nowy link",
+    "check": "Już zweryfikowane",
+    "notYet": "Jeszcze bez weryfikacji. Czy link został otwarty?",
+    "done": "E-mail zweryfikowany. Dzięki!",
+    "devNote": "Tryb deweloperski nie wysyła e-maili: „Już zweryfikowane” oznacza e-mail jako zweryfikowany."
+  },
+  "edit": {
+    "title": "Edytuj profil",
+    "save": "Zapisz",
+    "saved": "Profil zapisany",
+    "nameRule": "Nazwę możesz zmieniać raz na 30 dni.",
+    "nameLocked": "Nazwę możesz zmieniać raz na 30 dni. Następna zmiana: {{date}}.",
+    "offline": "Brak dostępu do serwera. Edycja będzie możliwa po odzyskaniu połączenia."
+  },
+  "home": {
+    "provisional": "Ranking tymczasowy: twoje pierwsze 10 partii"
+  },
+  "settings": {
+    "section": "Konto",
+    "signedInAs": "Zalogowano jako {{email}}",
+    "editProfile": "Edytuj profil",
+    "signOut": "Wyloguj się",
+    "signOutTitle": "Wylogować się?",
+    "signOutBody": "Treningi na tym telefonie zostaną. Aby znowu grać, trzeba będzie się zalogować.",
+    "deleteAccount": "Usuń konto",
+    "deleteTitle": "Usunąć konto?",
+    "deleteBody": "Twój e-mail, wojownik i nazwa zostaną usunięte i nie da się tego cofnąć. Partie i rankingi zostaną, ale nie będą już powiązane z tobą, więc partie innych graczy pozostaną kompletne. Twoja nazwa stanie się dostępna dla innych graczy.",
+    "deleteContinue": "Dalej",
+    "deletePasswordTitle": "Potwierdź hasłem",
+    "deletePasswordBody": "Aby usunąć konto, wpisz hasło do konta {{email}}.",
+    "deleteSubmit": "Usuń moje konto na zawsze",
+    "deleted": "Twoje konto zostało usunięte",
+    "deletedPartly": "Twoje konto zostało usunięte. Nie udało się usunąć danych logowania: zalogowanie się nimi rozpocznie nową rejestrację.",
+    "method": {
+      "password": "Logowanie e-mailem i hasłem",
+      "google": "Logowanie przez Google",
+      "both": "Logowanie przez Google albo e-mailem i hasłem"
+    },
+    "deleteGoogleTitle": "Potwierdź przez Google",
+    "deleteGoogleBody": "Aby usunąć konto, wybierz ponownie konto Google {{email}}.",
+    "deleteGoogleSubmit": "Potwierdź przez Google i usuń",
+    "deleteGoogleAgain": "Usunięcie konta wymaga nowego potwierdzenia. Spróbuj ponownie i wybierz swoje konto Google.",
+    "deleteWithPassword": "Zamiast tego potwierdź hasłem"
+  }
+}

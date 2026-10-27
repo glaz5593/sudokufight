@@ -1,0 +1,740 @@
+{
+  "title": "Allenamento a fasi",
+  "stage": "Fase {{n}}",
+  "chapter": "Capitolo {{n}}",
+  "units": {
+    "seconds": "sec"
+  },
+  "stars": {
+    "of3": {
+      "0": "nessuna stella",
+      "1": "una stella su tre",
+      "2": "due stelle su tre",
+      "3": "tre stelle su tre"
+    },
+    "count_one": "{{count}} stella",
+    "count_many": "{{count}} di stelle",
+    "count_other": "{{count}} stelle"
+  },
+  "kinds": {
+    "find": {
+      "name": "Individua",
+      "label": "Individua"
+    },
+    "findDuel": {
+      "name": "Gara col bot",
+      "label": "Gara col bot"
+    },
+    "fillBox": {
+      "name": "Riempi il riquadro",
+      "label": "Riempi il riquadro"
+    },
+    "duel": {
+      "name": "Duello a {{target}}",
+      "label": "Duello a {{target}}"
+    },
+    "spotError": {
+      "name": "Trova l’errore",
+      "label": "Trova l’errore"
+    },
+    "pointHunter": {
+      "name": "Caccia ai punti",
+      "label": "Caccia ai punti"
+    },
+    "chain": {
+      "name": "Catena",
+      "label": "Catena"
+    },
+    "fillRow": {
+      "name": "Riempi la riga",
+      "label": "Riempi la riga"
+    },
+    "fillCol": {
+      "name": "Riempi la colonna",
+      "label": "Riempi la colonna"
+    },
+    "puzzle": {
+      "name": "Mosaico",
+      "label": "Mosaico"
+    }
+  },
+  "boss": {
+    "chip": "Boss",
+    "name": "Fase boss",
+    "label": "fase boss, {{kind}}",
+    "versus": "Il boss: {{bot}}",
+    "band": "Boss · Capitolo {{chapter}}",
+    "botLabel": "{{name}}, il boss",
+    "intro": {
+      "title": "Fase boss!",
+      "sub": "Fase {{n}} · {{kind}}",
+      "harder": "Cosa è più difficile",
+      "label": "Fase boss! Fase {{n}}, {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "Il tuo primo bot: {{bot}}",
+      "faster": "{{bot}} è più veloce del {{percent}}",
+      "overlord": "Overlord",
+      "moreCells_one": "{{cells}} casella mancante invece di {{usual}}",
+      "moreCells_many": "{{cells}} di caselle mancanti invece di {{usual}}",
+      "moreCells_other": "{{cells}} caselle mancanti invece di {{usual}}"
+    },
+    "result": {
+      "won": "Hai battuto il boss!",
+      "lost": "Questa volta ha vinto il boss",
+      "gateOpen": "Porta del capitolo {{n}}: {{stars}} · aperta!",
+      "gateClosed": "Porta del capitolo {{n}}: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "Riquadro {{n}}",
+    "row": "Riga {{row}}",
+    "col": "Colonna {{n}}",
+    "mapLabel": "Mappa della griglia: {{region}}"
+  },
+  "goals": {
+    "find": "Trova la posizione esatta di un numero. La fase finisce a {{s}} sec.",
+    "findDuel_one": "{{spots}} obiettivo contro {{bot}}, fino a {{s}} sec. Ogni obiettivo va a chi lo trova prima.",
+    "findDuel_many": "{{spots}} di obiettivi contro {{bot}}, fino a {{s}} sec. Ogni obiettivo va a chi lo trova prima.",
+    "findDuel_other": "{{spots}} obiettivi contro {{bot}}, fino a {{s}} sec. Ogni obiettivo va a chi lo trova prima.",
+    "fillBox_one": "Riempi {{cells}} casella mancante di un riquadro, fino a {{s}} sec.",
+    "fillBox_many": "Riempi {{cells}} di caselle mancanti di un riquadro, fino a {{s}} sec.",
+    "fillBox_other": "Riempi le {{cells}} caselle mancanti di un riquadro, fino a {{s}} sec.",
+    "fillRow_one": "Riempi {{cells}} casella mancante di una riga, fino a {{s}} sec.",
+    "fillRow_many": "Riempi {{cells}} di caselle mancanti di una riga, fino a {{s}} sec.",
+    "fillRow_other": "Riempi le {{cells}} caselle mancanti di una riga, fino a {{s}} sec.",
+    "fillCol_one": "Riempi {{cells}} casella mancante di una colonna, fino a {{s}} sec.",
+    "fillCol_many": "Riempi {{cells}} di caselle mancanti di una colonna, fino a {{s}} sec.",
+    "fillCol_other": "Riempi le {{cells}} caselle mancanti di una colonna, fino a {{s}} sec.",
+    "puzzle": "Rimetti in ordine i riquadri. Uno scambio sbagliato aggiunge {{penalty}} sec. Fino a {{s}} sec.",
+    "duel_one": "Contro {{bot}}, fino a {{target}} punto o {{s}} sec. Stelle in base al tuo vantaggio.",
+    "duel_many": "Contro {{bot}}, fino a {{target}} di punti o {{s}} sec. Stelle in base al tuo vantaggio.",
+    "duel_other": "Contro {{bot}}, fino a {{target}} punti o {{s}} sec. Stelle in base al tuo vantaggio.",
+    "spotError_one": "Un numero sbagliato si nasconde tra i tuoi. Fino a {{s}} sec.",
+    "spotError_many": "{{count}} di numeri sbagliati si nascondono tra i tuoi. Fino a {{s}} sec.",
+    "spotError_other": "{{count}} numeri sbagliati si nascondono tra i tuoi. Fino a {{s}} sec.",
+    "pointHunter_one": "{{moves}} mossa, fino a {{s}} sec. Fai più punti che puoi.",
+    "pointHunter_many": "{{moves}} di mosse, fino a {{s}} sec. Fai più punti che puoi.",
+    "pointHunter_other": "{{moves}} mosse, fino a {{s}} sec. Fai più punti che puoi.",
+    "chain_one": "Una catena di {{steps}} passo, fino a {{s}} sec. Si può risolvere solo una casella alla volta.",
+    "chain_many": "Una catena di {{steps}} di passi, fino a {{s}} sec. Si può risolvere solo una casella alla volta.",
+    "chain_other": "Una catena di {{steps}} passi, fino a {{s}} sec. Si può risolvere solo una casella alla volta."
+  },
+  "scale": {
+    "label": "Stelle che puoi ottenere",
+    "row": "{{stars}}: {{text}}",
+    "time": "fino a {{s}} sec",
+    "spots_one": "{{count}} obiettivo",
+    "spots_many": "{{count}} di obiettivi",
+    "spots_other": "{{count}} obiettivi",
+    "spotsRange_one": "{{range}} obiettivo",
+    "spotsRange_many": "{{range}} di obiettivi",
+    "spotsRange_other": "{{range}} obiettivi",
+    "gap": "vantaggio di {{gap}}+",
+    "lead": "in vantaggio alla fine",
+    "points": "{{points}}+ punti",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "La mappa delle fasi",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_one": "{{stars}} stella su {{max}}, salta a un capitolo",
+    "totalLabel_many": "{{stars}} di stelle su {{max}}, salta a un capitolo",
+    "totalLabel_other": "{{stars}} stelle su {{max}}, salta a un capitolo",
+    "lockedToast": "Prima gioca la fase {{n}}",
+    "gateToast_one": "Il capitolo {{chapter}} si apre con {{need}} stella nel capitolo {{prev}}",
+    "gateToast_many": "Il capitolo {{chapter}} si apre con {{need}} di stelle nel capitolo {{prev}}",
+    "gateToast_other": "Il capitolo {{chapter}} si apre con {{need}} stelle nel capitolo {{prev}}",
+    "loading": "Caricamento della mappa…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_one": "{{stars}} stella su {{max}}",
+    "label_many": "{{stars}} di stelle su {{max}}",
+    "label_other": "{{stars}} stelle su {{max}}"
+  },
+  "node": {
+    "played": "Fase {{n}}, {{kind}}, {{stars}}",
+    "current": "Fase {{n}}, {{kind}}, la prossima",
+    "open": "Fase {{n}}, {{kind}}, non ancora giocata",
+    "locked": "Fase {{n}}, bloccata"
+  },
+  "gate": {
+    "need_one": "Si apre con {{need}} stella",
+    "need_many": "Si apre con {{need}} di stelle",
+    "need_other": "Si apre con {{need}} stelle",
+    "count": "{{stars}}/{{need}}",
+    "boss": "Gioca la fase boss per aprirlo",
+    "open": "Capitolo {{n}} aperto",
+    "lockedLabel_one": "Capitolo {{n}} bloccato, {{stars}} su {{need}} stella nel capitolo {{prev}}",
+    "lockedLabel_many": "Capitolo {{n}} bloccato, {{stars}} su {{need}} di stelle nel capitolo {{prev}}",
+    "lockedLabel_other": "Capitolo {{n}} bloccato, {{stars}} su {{need}} stelle nel capitolo {{prev}}",
+    "bossLabel_one": "Capitolo {{n}} bloccato, {{stars}} su {{need}} stella nel capitolo {{prev}}. Gioca la fase boss per aprirlo",
+    "bossLabel_many": "Capitolo {{n}} bloccato, {{stars}} su {{need}} di stelle nel capitolo {{prev}}. Gioca la fase boss per aprirlo",
+    "bossLabel_other": "Capitolo {{n}} bloccato, {{stars}} su {{need}} stelle nel capitolo {{prev}}. Gioca la fase boss per aprirlo",
+    "openLabel_one": "Capitolo {{n}} aperto, sbloccato con {{need}} stella del capitolo {{prev}}",
+    "openLabel_many": "Capitolo {{n}} aperto, sbloccato con {{need}} di stelle del capitolo {{prev}}",
+    "openLabel_other": "Capitolo {{n}} aperto, sbloccato con {{need}} stelle del capitolo {{prev}}"
+  },
+  "jump": {
+    "title": "Salta a un capitolo",
+    "row": "Capitolo {{n}} · {{name}}",
+    "rowLabel_one": "Capitolo {{n}}, {{name}}, {{stars}} stella su {{max}}, {{state}}",
+    "rowLabel_many": "Capitolo {{n}}, {{name}}, {{stars}} di stelle su {{max}}, {{state}}",
+    "rowLabel_other": "Capitolo {{n}}, {{name}}, {{stars}} stelle su {{max}}, {{state}}",
+    "open": "aperto",
+    "locked": "bloccato"
+  },
+  "gateSheet": {
+    "title": "Capitolo {{n}} bloccato",
+    "missing_one": "Ti serve {{need}} stella nel capitolo {{prev}}. Ne hai {{stars}}: ancora {{missing}} da prendere.",
+    "missing_many": "Ti servono {{need}} di stelle nel capitolo {{prev}}. Ne hai {{stars}}: ancora {{missing}} da prendere.",
+    "missing_other": "Ti servono {{need}} stelle nel capitolo {{prev}}. Ne hai {{stars}}: ancora {{missing}} da prendere.",
+    "bossOnly": "Hai abbastanza stelle. Gioca la fase {{boss}} (il boss) per aprirlo",
+    "progress": "Stelle nel capitolo {{prev}} per la porta: {{stars}} su {{need}}",
+    "rowsTitle": "Fasi da migliorare",
+    "rowsNote_one": "Fino a {{count}} stella in più tra queste",
+    "rowsNote_many": "Fino a {{count}} di stelle in più tra queste",
+    "rowsNote_other": "Fino a {{count}} stelle in più tra queste",
+    "row": "Fase {{n}} · {{kind}}",
+    "rowLabel": "Gioca di nuovo la fase {{n}}, {{kind}}, {{stars}}",
+    "rowNewLabel": "Gioca la fase {{n}}, {{kind}}, non ancora giocata",
+    "rowPlay": "Gioca",
+    "primary": "Gioca la fase {{n}}",
+    "footnote": "La maggior parte delle fasi dura fino a 30 sec; le fasi di riempimento e i mosaici fino a 60. Le tue stelle migliori restano."
+  },
+  "panel": {
+    "label": "La fase scelta",
+    "title": "Fase {{n}} · {{kind}}",
+    "sub": "Capitolo {{chapter}} · {{name}}",
+    "subBot": "Capitolo {{chapter}} · contro {{bot}}",
+    "subBoss": "Capitolo {{chapter}} · il boss: {{bot}}",
+    "next": "La prossima",
+    "best": "Record {{metric}}",
+    "bestLabel": "Il tuo record: {{stars}}, {{metric}}",
+    "bestStars": "Il tuo record: {{stars}}",
+    "bot": "{{name}} · Livello {{level}} · {{title}}",
+    "continue": "Continua · fase {{n}}",
+    "play": "Gioca",
+    "lockedTitle": "Fase {{n}} · bloccata",
+    "lockedSub": "Capitolo {{chapter}} · {{kind}}",
+    "lockedPrev": "Prima gioca la fase {{n}}.",
+    "lockedGate_one": "Il capitolo {{chapter}} è bloccato: serve {{need}} stella nel capitolo {{prev}}. Ne hai {{stars}}.",
+    "lockedGate_many": "Il capitolo {{chapter}} è bloccato: servono {{need}} di stelle nel capitolo {{prev}}. Ne hai {{stars}}.",
+    "lockedGate_other": "Il capitolo {{chapter}} è bloccato: servono {{need}} stelle nel capitolo {{prev}}. Ne hai {{stars}}.",
+    "gateTitleOpen": "Capitolo {{n}} aperto",
+    "gateTitleClosed": "Capitolo {{n}} bloccato",
+    "gateSub": "{{name}} · fasi {{range}}",
+    "gateOpenBody_one": "Aperto: hai ottenuto {{stars}} stella nel capitolo {{prev}}, e la porta ne richiede {{need}}.",
+    "gateOpenBody_many": "Aperto: hai ottenuto {{stars}} di stelle nel capitolo {{prev}}, e la porta ne richiede {{need}}.",
+    "gateOpenBody_other": "Aperto: hai ottenuto {{stars}} stelle nel capitolo {{prev}}, e la porta ne richiede {{need}}.",
+    "gateBar": "Stelle per la porta: {{stars}} su {{need}}"
+  },
+  "ready": {
+    "title": "Tutto pronto?",
+    "label": "Tutto pronto? Fase {{n}}, {{kind}}. {{goal}}",
+    "findPrompt": "Dov’è il numero {{digit}}?",
+    "raceSpots_one": "{{count}} obiettivo, una gara contro {{bot}}",
+    "raceSpots_many": "{{count}} di obiettivi, una gara contro {{bot}}",
+    "raceSpots_other": "{{count}} obiettivi, una gara contro {{bot}}"
+  },
+  "tutorial": {
+    "title": "Come si gioca",
+    "got": "Ho capito",
+    "skip": "Salta",
+    "panel": "Immagine {{n}} di {{total}}: {{text}}",
+    "alsoBoss": "È anche un boss: la decima fase di ogni capitolo.",
+    "find": {
+      "1": "Una domanda, come «Dov’è il numero {{digit}}?», e un’area segnata sulla griglia: un riquadro, una riga, una colonna o tutta la griglia.",
+      "2": "Trova l’unica casella dove deve andare il numero, e toccala.",
+      "3": "Un tocco sbagliato aggiunge 5 secondi. Due chiudono la fase."
+    },
+    "findDuel": {
+      "1": "Cinque obiettivi, uno dopo l’altro. Il bot cerca insieme a te.",
+      "2": "L’obiettivo va a chi tocca prima la casella giusta.",
+      "3": "Un tocco sbagliato: 3 secondi senza tocchi, mentre il bot continua a cercare."
+    },
+    "fillBox": {
+      "1": "Un riquadro con caselle mancanti, in una cornice dorata.",
+      "2": "Scegli una casella nel riquadro e scrivi un numero. Le caselle fuori non si possono scegliere.",
+      "3": "Un numero sbagliato aggiunge 5 secondi. Più finisci in fretta, più stelle ottieni."
+    },
+    "duel": {
+      "1": "Tu e il bot sulla stessa griglia, come in una partita.",
+      "2": "Vince chi arriva prima a 30 punti, o chi è in vantaggio dopo 30 secondi.",
+      "3": "Stelle in base al vantaggio finale: 8 punti per due stelle, 15 per tre."
+    },
+    "spotError": {
+      "1": "I numeri scuri sono della griglia, e sono sempre giusti.",
+      "2": "Tra i tuoi si nascondono numeri sbagliati. Toccali.",
+      "3": "Toccare un numero giusto aggiunge 5 secondi."
+    },
+    "pointHunter": {
+      "1": "Hai solo tre mosse.",
+      "2": "Una casella in una zona vuota vale più punti.",
+      "3": "Stelle in base a quanto ti avvicini al massimo della griglia."
+    },
+    "chain": {
+      "1": "In ogni momento si può risolvere solo una casella della griglia.",
+      "2": "Riempila, e si apre la successiva.",
+      "3": "Un numero in una casella che non si può ancora dedurre costa 5 secondi, e non viene inserito."
+    },
+    "boss": {
+      "1": "La decima fase di ogni capitolo è un boss: una sfida contro un bot, più difficile delle fasi precedenti.",
+      "2": "Prima dell’inizio vedi cosa è più difficile. Di solito: il bot è più veloce.",
+      "3": "Quando hai giocato il boss e hai 20 stelle nel capitolo, si apre il capitolo successivo."
+    },
+    "fillRow": {
+      "1": "Una riga con caselle mancanti, in una cornice dorata.",
+      "2": "Scegli una casella nella riga e scrivi un numero. Le caselle fuori non si possono scegliere.",
+      "3": "Un numero sbagliato aggiunge 5 secondi. Più finisci in fretta, più stelle ottieni."
+    },
+    "fillCol": {
+      "1": "Una colonna con caselle mancanti, in una cornice dorata.",
+      "2": "Scegli una casella nella colonna e scrivi un numero. Le caselle fuori non si possono scegliere.",
+      "3": "Un numero sbagliato aggiunge 5 secondi. Più finisci in fretta, più stelle ottieni."
+    },
+    "puzzle": {
+      "1": "Nove riquadri completi, nell’ordine sbagliato.",
+      "2": "Trascina un riquadro su un altro e si scambiano. Un riquadro con il lucchetto è fisso. Uno scambio che non mette nessuno dei due riquadri al suo posto aggiunge 5 secondi.",
+      "3": "Quando ogni riga e colonna è giusta, la fase finisce. Più finisci in fretta, più stelle ottieni."
+    }
+  },
+  "result": {
+    "completed": "Fase {{n}} completata",
+    "ended": "Fase {{n}}",
+    "reasons": {
+      "timeUp": "Tempo scaduto",
+      "failed": "Due tocchi sbagliati",
+      "quit": "Hai lasciato la fase",
+      "botWon": "{{bot}} ha fatto prima"
+    },
+    "metric": {
+      "spotsOf_one": "su {{total}} obiettivo",
+      "spotsOf_many": "su {{total}} di obiettivi",
+      "spotsOf_other": "su {{total}} obiettivi",
+      "gap": "Vantaggio",
+      "points": "punti",
+      "found": "Trovati",
+      "foundOf": "su {{total}}"
+    },
+    "newBest": "Nuovo record!",
+    "yourBest": "Il tuo record:",
+    "yourBestLabel": "Il tuo record: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} XP, una stima: lo conferma il server",
+    "chapterLabel": "Questo capitolo",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "la porta ne richiede {{need}}",
+    "chapterOpen": "la porta è aperta",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_one": "Questo capitolo: {{stars}} stella su {{max}}. {{gate}}",
+    "chapterLine_many": "Questo capitolo: {{stars}} di stelle su {{max}}. {{gate}}",
+    "chapterLine_other": "Questo capitolo: {{stars}} stelle su {{max}}. {{gate}}",
+    "mistakes_one": "{{count}} errore",
+    "mistakes_many": "{{count}} di errori",
+    "mistakes_other": "{{count}} errori",
+    "noMistakes": "Nessun errore",
+    "swaps_one": "{{count}} scambio · il minimo: {{min}}",
+    "swaps_many": "{{count}} di scambi · il minimo: {{min}}",
+    "swaps_other": "{{count}} scambi · il minimo: {{min}}",
+    "time": "Tempo: {{s}} sec",
+    "youWon": "Hai vinto",
+    "botWon": "Ha vinto {{bot}}",
+    "tie": "Pareggio",
+    "bossTie": "Pareggio: il boss resiste",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_one": "{{count}} obiettivo",
+    "opponentSpots_many": "{{count}} di obiettivi",
+    "opponentSpots_other": "{{count}} obiettivi",
+    "opponentScore_one": "{{score}} punto",
+    "opponentScore_many": "{{score}} di punti",
+    "opponentScore_other": "{{score}} punti",
+    "bestMove_one": "La mossa migliore: {{digit}} in {{cell}} · {{points}} punto",
+    "bestMove_many": "La mossa migliore: {{digit}} in {{cell}} · {{points}} di punti",
+    "bestMove_other": "La mossa migliore: {{digit}} in {{cell}} · {{points}} punti",
+    "why": "Perché?",
+    "next": "Fase successiva",
+    "again": "Riprova",
+    "toMap": "Alla mappa",
+    "last": "Era l’ultima fase. Ottimo lavoro!",
+    "nextLocked": "La fase successiva è ancora bloccata"
+  },
+  "unlocked": {
+    "heading": "Si è aperto un nuovo capitolo!",
+    "title": "Capitolo {{n}} · {{name}}",
+    "news": "Novità: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "Continua",
+    "label": "Si è aperto un nuovo capitolo: capitolo {{n}}, {{name}}. {{news}}",
+    "bots": {
+      "1": "Pip: «Ho appena cominciato, ma sono più veloce di quel che sembra.»",
+      "2": "Biscuit: «Me la prendo comoda, ma non ti lascio scappare.»",
+      "3": "Mr. Hoot: «Vedo ogni casella. Fai attenzione.»",
+      "4": "Maestro: «Veloce, preciso, e con stile.»",
+      "5": "Overlord: «Hai fatto tanta strada. È qui che finisce.»"
+    }
+  },
+  "exit": {
+    "button": "Lascia la fase",
+    "title": "Lasciare la fase?",
+    "body": "Otterrai 0 stelle, e si aprirà la fase successiva.",
+    "confirm": "Lascia",
+    "cancel": "Continua a giocare"
+  },
+  "card": {
+    "line": "Fasi: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_one": "Fasi: {{played}}, {{count}} stella",
+    "label_many": "Fasi: {{played}}, {{count}} di stelle",
+    "label_other": "Fasi: {{played}}, {{count}} stelle"
+  },
+  "chapters": {
+    "1": {
+      "name": "Primi passi",
+      "news": "Individua, riempi il riquadro, il mosaico e riempi la riga"
+    },
+    "2": {
+      "name": "La sfida di Pip",
+      "news": "Riempi la colonna, e la gara col bot"
+    },
+    "3": {
+      "name": "Primo duello",
+      "news": "Duello a 30, e trova l’errore"
+    },
+    "4": {
+      "name": "Investigatore",
+      "news": "Una catena di 3 passi, e un mosaico con 4 riquadri mobili"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "Un nuovo bot: Biscuit, la caccia ai punti, e riempimenti in cui ogni numero manca almeno una volta"
+    },
+    "6": {
+      "name": "Righe e colonne",
+      "news": "Una griglia normale, e obiettivi in una riga o in una colonna"
+    },
+    "7": {
+      "name": "Caccia ai punti",
+      "news": "Un mosaico con 5 riquadri mobili"
+    },
+    "8": {
+      "name": "Due errori",
+      "news": "Due errori sulla griglia, e un duello su una griglia normale"
+    },
+    "9": {
+      "name": "Catena",
+      "news": "Di nuovo tutti i tipi, un gradino più difficili"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "Un nuovo bot: Mr. Hoot, e 7 caselle mancanti nei riempimenti"
+    },
+    "11": {
+      "name": "Tutta la griglia",
+      "news": "Obiettivi in qualsiasi punto della griglia"
+    },
+    "12": {
+      "name": "Più veloce",
+      "news": "Caccia ai punti in 25 secondi, su una griglia normale"
+    },
+    "13": {
+      "name": "Errori silenziosi",
+      "news": "Errori senza conflitti visibili"
+    },
+    "14": {
+      "name": "Catena lunga",
+      "news": "Una catena di 4 passi, e 9 caselle mancanti nei riempimenti"
+    },
+    "15": {
+      "name": "A metà strada",
+      "news": "Di nuovo tutti i tipi"
+    },
+    "16": {
+      "name": "Griglie difficili",
+      "news": "Una griglia difficile, e un mosaico con 6 riquadri mobili"
+    },
+    "17": {
+      "name": "Eliminazioni",
+      "news": "Obiettivi che si vedono solo dopo un’eliminazione"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "Un nuovo bot: Maestro"
+    },
+    "19": {
+      "name": "Trappole",
+      "news": "Tre errori sulla griglia"
+    },
+    "20": {
+      "name": "La porta difficile",
+      "news": "Un riquadro vuoto che richiede un’eliminazione"
+    },
+    "21": {
+      "name": "Coppie",
+      "news": "Coppie, e caccia ai punti in 20 secondi"
+    },
+    "22": {
+      "name": "Catena da 5",
+      "news": "Una catena di 5 passi"
+    },
+    "23": {
+      "name": "Senza indizi",
+      "news": "Griglie con pochissimi indizi"
+    },
+    "24": {
+      "name": "Gara",
+      "news": "Duelli su griglie difficili"
+    },
+    "25": {
+      "name": "Esperti",
+      "news": "Di nuovo tutto, a ritmo veloce"
+    },
+    "26": {
+      "name": "Campionato",
+      "news": "Tre stelle solo con i tempi migliori"
+    },
+    "27": {
+      "name": "Campionato II",
+      "news": "Caccia ai punti: tre stelle solo vicino al massimo"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "Il boss: Overlord, in una gara"
+    },
+    "29": {
+      "name": "La finale",
+      "news": "Una catena veloce, e Overlord come boss in un duello"
+    },
+    "30": {
+      "name": "Campioni",
+      "news": "Tutto insieme, al massimo della difficoltà"
+    }
+  },
+  "hud": {
+    "secondsAdded_one": "{{count}} secondo aggiunto",
+    "secondsAdded_many": "{{count}} di secondi aggiunti",
+    "secondsAdded_other": "{{count}} secondi aggiunti",
+    "sub": "{{kind}} · Capitolo {{chapter}}",
+    "subFind": "Dov’è il numero {{digit}}? · Capitolo {{chapter}}",
+    "subRace_one": "{{kind}} · {{spots}} obiettivo · Capitolo {{chapter}}",
+    "subRace_many": "{{kind}} · {{spots}} di obiettivi · Capitolo {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} obiettivi · Capitolo {{chapter}}",
+    "clockLabel_one": "Resta {{s}} secondo su {{limit}}",
+    "clockLabel_many": "Restano {{s}} di secondi su {{limit}}",
+    "clockLabel_other": "Restano {{s}} secondi su {{limit}}",
+    "penalty": "{{s}} sec",
+    "me": "Io",
+    "find": {
+      "tap": "Tocca dove deve andare il numero {{digit}}",
+      "where": "<scope>{{scope}}</scope> · niente tastierino, solo un tocco",
+      "elapsed": "sec finora",
+      "targetLabel": "L’obiettivo: il numero {{digit}} {{scope}}. {{left}}",
+      "ringLabel_one": "Resta {{s}} secondo nella fase",
+      "ringLabel_many": "Restano {{s}} di secondi nella fase",
+      "ringLabel_other": "Restano {{s}} secondi nella fase",
+      "one": "Una sola ricerca nella fase",
+      "wrongRule": "Tocco sbagliato: {{penalty}} sec",
+      "twoWrongRule": "Due tocchi sbagliati: la fase finisce",
+      "found": "Trovato: il numero {{digit}} in {{cell}}",
+      "missed": "Non in {{cell}}. {{penalty}} sec",
+      "answer": "La risposta: {{cell}}"
+    },
+    "scope": {
+      "box": "nel riquadro {{n}}",
+      "row": "nella riga {{row}}",
+      "col": "nella colonna {{n}}",
+      "board": "ovunque sulla griglia"
+    },
+    "race": {
+      "task": "Obiettivo {{n}} di {{total}} · trova il numero {{digit}} {{scope}}",
+      "left": "Restano {{s}} sec",
+      "searching": "Ricerca…",
+      "spots_one": "{{count}} obiettivo",
+      "spots_many": "{{count}} di obiettivi",
+      "spots_other": "{{count}} obiettivi",
+      "frozen_one": "Pausa forzata, {{count}} secondo",
+      "frozen_many": "Pausa forzata, {{count}} di secondi",
+      "frozen_other": "Pausa forzata, {{count}} secondi",
+      "out": "Fuori fino al prossimo obiettivo",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}, {{spots}}",
+      "botLabel": "{{name}}, bot di livello {{n}}, {{title}}, {{spots}}",
+      "botSearching": "{{name}} sta cercando",
+      "mine": "Hai preso l’obiettivo {{n}}",
+      "theirs": "{{name}} ha preso l’obiettivo {{n}}",
+      "void": "Nessuno ha preso l’obiettivo {{n}}",
+      "next": "Obiettivo {{n}}: il numero {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "Riempi il riquadro {{n}}",
+      "cells_one": "{{done}}/{{total}} casella",
+      "cells_many": "{{done}}/{{total}} di caselle",
+      "cells_other": "{{done}}/{{total}} caselle",
+      "cellsLabel_one": "Hai riempito {{done}} su {{total}} casella mancante",
+      "cellsLabel_many": "Hai riempito {{done}} su {{total}} di caselle mancanti",
+      "cellsLabel_other": "Hai riempito {{done}} delle {{total}} caselle mancanti",
+      "mistakes_one": "Errore {{penalty}} sec",
+      "mistakes_many": "{{count}} di errori {{penalty}} sec",
+      "mistakes_other": "{{count}} errori {{penalty}} sec",
+      "mistakesLabel_one": "Un errore, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_many": "{{count}} di errori, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_other": "{{count}} errori, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "Un errore aggiunge 5 secondi, e il numero viene escluso da quella casella",
+      "timeLabel_one": "Tempo: {{s}} secondo su {{limit}}",
+      "timeLabel_many": "Tempo: {{s}} di secondi su {{limit}}",
+      "timeLabel_other": "Tempo: {{s}} secondi su {{limit}}",
+      "boardLabel_one": "La griglia · riempi solo l’unica casella mancante del riquadro {{n}}",
+      "boardLabel_many": "La griglia · riempi solo {{count}} di caselle mancanti del riquadro {{n}}",
+      "boardLabel_other": "La griglia · riempi solo le {{count}} caselle mancanti del riquadro {{n}}"
+    },
+    "line": {
+      "taskRow": "Riempi la riga {{row}}",
+      "taskCol": "Riempi la colonna {{n}}",
+      "boardLabelRow_one": "La griglia · riempi solo l’unica casella mancante della riga {{row}}",
+      "boardLabelRow_many": "La griglia · riempi solo {{count}} di caselle mancanti della riga {{row}}",
+      "boardLabelRow_other": "La griglia · riempi solo le {{count}} caselle mancanti della riga {{row}}",
+      "boardLabelCol_one": "La griglia · riempi solo l’unica casella mancante della colonna {{n}}",
+      "boardLabelCol_many": "La griglia · riempi solo {{count}} di caselle mancanti della colonna {{n}}",
+      "boardLabelCol_other": "La griglia · riempi solo le {{count}} caselle mancanti della colonna {{n}}"
+    },
+    "puzzle": {
+      "task": "Rimetti in ordine i riquadri",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_one": "{{count}} riquadro si muove",
+      "moving_many": "{{count}} di riquadri si muovono",
+      "moving_other": "{{count}} riquadri si muovono",
+      "fixed_one": "{{count}} riquadro è fisso",
+      "fixed_many": "{{count}} di riquadri sono fissi",
+      "fixed_other": "{{count}} riquadri sono fissi",
+      "allMove": "Tutti i riquadri si muovono",
+      "swaps": "Scambi: {{count}}",
+      "wrong_one": "Scambio sbagliato {{penalty}} sec",
+      "wrong_many": "{{count}} di scambi sbagliati {{penalty}} sec",
+      "wrong_other": "{{count}} scambi sbagliati {{penalty}} sec",
+      "wrongLabel_one": "Uno scambio sbagliato, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_many": "{{count}} di scambi sbagliati, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_other": "{{count}} scambi sbagliati, $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "Trascina un riquadro su un altro per scambiarli",
+      "tapHint": "Oppure: tocca un riquadro, poi un altro",
+      "slotLabel": "Riquadro {{n}}, {{state}}: {{rows}}",
+      "state": {
+        "movable": "mobile",
+        "fixed": "fisso",
+        "selected": "selezionato"
+      },
+      "slotHint": "Tocca per sceglierlo, poi tocca un altro riquadro",
+      "swapped": "Riquadri {{a}} e {{b}} scambiati",
+      "swappedPenalty_one": "Riquadri {{a}} e {{b}} scambiati. Più {{s}} secondo",
+      "swappedPenalty_many": "Riquadri {{a}} e {{b}} scambiati. Più {{s}} di secondi",
+      "swappedPenalty_other": "Riquadri {{a}} e {{b}} scambiati. Più {{s}} secondi",
+      "fixedTap": "Questo riquadro è fisso",
+      "solved": "Ogni riga e ogni colonna è giusta",
+      "boardLabel": "Il mosaico · {{counts}}"
+    },
+    "duel": {
+      "gap": "Vantaggio {{gap}}",
+      "gapLabel": "Il vantaggio: {{gap}}. Una stella se sei in vantaggio alla fine, 2 stelle a {{two}}, 3 stelle a {{three}}",
+      "lead": "Avanti",
+      "of": "/{{target}}",
+      "meLabel_one": "{{name}}, {{score}} su {{target}} punto",
+      "meLabel_many": "{{name}}, {{score}} su {{target}} di punti",
+      "meLabel_other": "{{name}}, {{score}} su {{target}} punti",
+      "botLabel_one": "{{name}}, bot {{n}}, {{score}} su {{target}} punto",
+      "botLabel_many": "{{name}}, bot {{n}}, {{score}} su {{target}} di punti",
+      "botLabel_other": "{{name}}, bot {{n}}, {{score}} su {{target}} punti",
+      "finishLabel": "La fase finisce quando qualcuno arriva a $t(levels:hud.duel.reachPoints, {\"count\": {{target}} }), o a $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })",
+      "reachPoints_one": "{{count}} punto",
+      "reachPoints_many": "{{count}} di punti",
+      "reachPoints_other": "{{count}} punti",
+      "atSeconds_one": "{{count}} secondo",
+      "atSeconds_many": "{{count}} di secondi",
+      "atSeconds_other": "{{count}} secondi",
+      "raceLabel": "Gara a {{target}}: {{me}}, {{bot}}"
+    },
+    "reactions": "Reazioni",
+    "boardLabel": "La griglia della fase · {{scope}}",
+    "spotError": {
+      "goal_one": "Un numero sbagliato si nasconde sulla griglia. Toccalo.",
+      "goal_many": "{{count}} di numeri sbagliati si nascondono sulla griglia. Toccali.",
+      "goal_other": "{{count}} numeri sbagliati si nascondono sulla griglia. Toccali.",
+      "note": "I numeri scuri sono della griglia, e sono sempre giusti.",
+      "found": "Trovati",
+      "foundLabel": "Trovati {{found}} su {{total}}",
+      "time": "Tempo",
+      "timeLabel_one": "Tempo: {{s}} secondo su {{limit}}",
+      "timeLabel_many": "Tempo: {{s}} di secondi su {{limit}}",
+      "timeLabel_other": "Tempo: {{s}} secondi su {{limit}}",
+      "tipTitle": "Consiglio",
+      "tip": "Cerca un numero che compare due volte nella stessa riga, colonna o riquadro.",
+      "tipClose": "Chiudi il consiglio",
+      "foundCell": "Hai trovato un errore in {{cell}}: non {{wrong}} ma {{right}}",
+      "rightTap": "Il numero in {{cell}} è giusto. {{penalty}} sec",
+      "missed": "Errori non trovati: {{cells}}",
+      "boardLabel": "La griglia della fase · tocca un numero sbagliato"
+    },
+    "hunt": {
+      "goal": "Fai $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) in $t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }).",
+      "goalPoints_one": "{{points}} punto",
+      "goalPoints_many": "{{points}} di punti",
+      "goalPoints_other": "{{points}} punti",
+      "goalMoves_one": "{{count}} mossa",
+      "goalMoves_many": "{{count}} di mosse",
+      "goalMoves_other": "{{count}} mosse",
+      "note": "Una casella in una zona vuota vale di più.",
+      "points": "punti",
+      "scoreLabel_one": "{{score}} punto",
+      "scoreLabel_many": "{{score}} di punti",
+      "scoreLabel_other": "{{score}} punti",
+      "scoreWorthLabel_one": "{{score}} punto. La casella che hai scelto vale {{worth}}",
+      "scoreWorthLabel_many": "{{score}} di punti. La casella che hai scelto vale {{worth}}",
+      "scoreWorthLabel_other": "{{score}} punti. La casella che hai scelto vale {{worth}}",
+      "lost": "Il numero sbagliato è costato {{points}}",
+      "move": "Mossa {{n}} di {{max}}",
+      "burnt": "Mossa {{n}} bruciata",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_one": "Una mossa bruciata",
+      "burntCount_many": "{{count}} di mosse bruciate",
+      "burntCount_other": "{{count}} mosse bruciate",
+      "left": "rimasti · su {{limit}}",
+      "timeLabel_one": "Resta {{s}} secondo su {{limit}}",
+      "timeLabel_many": "Restano {{s}} di secondi su {{limit}}",
+      "timeLabel_other": "Restano {{s}} secondi su {{limit}}",
+      "max": "Il massimo della griglia: {{max}}",
+      "worth": "Vale {{points}}"
+    },
+    "chain": {
+      "goal": "Si può risolvere solo una casella della griglia alla volta. Trovala e riempila, e si apre la successiva.",
+      "notePenalty": "Un numero in una casella che non si può ancora dedurre: {{penalty}} sec.",
+      "noteAccept": "Un numero sbagliato: {{penalty}} sec.",
+      "step": "Passo {{n}} di {{total}}",
+      "stepLabel": "Catena: passo {{n}} di {{total}}",
+      "time": "Tempo",
+      "timeLabel_one": "Tempo: {{s}} secondo su {{limit}}",
+      "timeLabel_many": "Tempo: {{s}} di secondi su {{limit}}",
+      "timeLabel_other": "Tempo: {{s}} secondi su {{limit}}",
+      "notYet": "{{text}} · {{penalty}} sec",
+      "tipTitle": "Consiglio",
+      "tip": "A ogni passo si può dimostrare esattamente una casella. Se hai la certezza di un numero, è quella la casella.",
+      "tipClose": "Chiudi il consiglio"
+    }
+  },
+  "explain": {
+    "spot": "Obiettivo {{n}}: {{text}}",
+    "mistake": "Il tuo errore: {{digit}} in {{cell}}. {{reason}}",
+    "best": "La tua mossa migliore, {{digit}} in {{cell}}: {{text}}",
+    "errorFound": "{{cell}}, trovato: {{reason}}",
+    "errorMissed": "{{cell}}, non trovato: {{reason}}",
+    "rightTap": "Il numero {{digit}} in {{cell}} è giusto: toccarlo è costato {{penalty}} sec.",
+    "points_one": "Hai fatto {{points}} su {{max}} punto: {{percent}} del massimo della griglia.",
+    "points_many": "Hai fatto {{points}} su {{max}} di punti: {{percent}} del massimo della griglia.",
+    "points_other": "Hai fatto {{points}} su {{max}} punti: {{percent}} del massimo della griglia.",
+    "line": "La sequenza migliore: {{moves}}.",
+    "move": "{{digit}} in {{cell}} ({{points}})",
+    "step": "Passo {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "Solo il riquadro partito dalla posizione {{from}} va bene nella posizione {{place}}: qualsiasi altro ripeterebbe un numero in una riga o in una colonna.",
+      "onlyPlaceForBox": "Il riquadro partito dalla posizione {{from}} va bene solo nella posizione {{place}}: in qualsiasi altro punto ripeterebbe un numero in una riga o in una colonna."
+    }
+  }
+}

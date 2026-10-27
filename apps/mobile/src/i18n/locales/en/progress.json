@@ -1,7 +1,8 @@
 {
   "common": {
     "provisional": "Provisional rating",
-    "provisionalNote": "Your league shows after {{games}} ranked games in one game type",
+    "provisionalNote_one": "Your league shows after 1 ranked game in one game type",
+    "provisionalNote_other": "Your league shows after {{games}} ranked games in one game type",
     "level": "Level {{level}}",
     "you": "You",
     "myCard": "My player card",
@@ -74,7 +75,8 @@
     "savedNote": "No connection to the server: showing the saved card.",
     "meLabel": "{{name}}, my card",
     "ratingsTitle": "Rating by game type",
-    "ratingsNote": "{{n}} ratings",
+    "ratingsNote_one": "1 rating",
+    "ratingsNote_other": "{{n}} ratings",
     "noRatings": "No rating yet",
     "typePlayers": "{{type}} · {{players}}",
     "trendUp": "up {{points}} over the last games",
@@ -166,7 +168,8 @@
     "title": "Interferences",
     "entry": "Interference collection",
     "entryNote": "{{open}} open · {{locked}} locked",
-    "countLabel": "{{open}} of {{total}} interferences open",
+    "countLabel_one": "{{open}} of 1 interference open",
+    "countLabel_other": "{{open}} of {{total}} interferences open",
     "opened": "open",
     "facts": {
       "seconds": "seconds each",

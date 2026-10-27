@@ -4,6 +4,9 @@ import { blockErrorText, minutesUntil, type ModerationT, reportErrorText } from 
 
 /** What a failed report or block says (spec §3.5), each case, in Hebrew and English. */
 
+// Both languages' strings, whatever language the tests start in (a language loads when it is first used).
+beforeAll(() => i18n.loadLanguages(['he', 'en']));
+
 const NOW = 1_760_000_000_000;
 const t = (lng: 'he' | 'en') => i18n.getFixedT(lng, 'moderation') as ModerationT;
 const err = (

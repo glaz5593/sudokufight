@@ -1,13 +1,14 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { sendPasswordReset, useAuth } from '../../auth/authStore';
 import { toAuthError } from '../../auth/errors';
 import { emailOk } from '../../auth/password';
 import { ltr } from '../../components/player';
 import { Button } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { cue } from '../../services/feedback';
 import { color, space, text } from '../../theme';
 import { goBack } from '../home/navigation';

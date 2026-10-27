@@ -1,7 +1,7 @@
 import { type AppLevel, fillRegionOf, levelNumber } from '@sudoku-fight/engine';
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
@@ -13,7 +13,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '../../components/Icon';
 import { MiniRegion, type RegionShape, regionOfScope } from '../../components/levels/MiniRegion';
 import { timing } from '../../components/ui/motion';
+import { Text } from '../../components/ui/Text';
 import { LEVEL_UI } from '../../config/levels';
+import { closeSentence, spaceSentences } from '../../i18n/compose';
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { BossIntro, bossIntroLabel } from './BossIntro';
@@ -122,7 +124,7 @@ export function ReadyView({ level, played, onDone, durationMs, paused = false }:
   const where = LEVEL_UI.readyRegion && !level.boss ? readyWhere(level, board, t) : null;
   const label = level.boss
     ? bossIntroLabel(level, t)
-    : t('ready.label', { n, kind, goal: where?.spoken ? `${where.spoken} ${goal}` : goal });
+    : t('ready.label', { n, kind, goal: spaceSentences([where?.spoken, goal], t) });
 
   return (
     <View style={[styles.screen, { paddingTop: top + space[12] }]} testID="level-ready">
@@ -173,7 +175,9 @@ export interface ReadyWhere {
   pending: boolean;
 }
 
-const sentence = (...parts: (string | null)[]): string => `${parts.filter(Boolean).join(' ')}.`;
+/** The parts as one spoken sentence, closed with the language's full stop: "איפה ה־6? בריבוע 5." (plan 0ה). */
+const spokenSentence = (t: LevelsT, ...parts: (string | null)[]): string =>
+  closeSentence(spaceSentences(parts, t), t);
 
 /**
  * The "where" of a stage before it starts, per kind, from `board` (the attempt's level; null while it is read).
@@ -187,13 +191,13 @@ export function readyWhere(level: AppLevel, board: AppLevel | null, t: LevelsT):
       const { digit, scope } = board.targets.target;
       const prompt = findPrompt(digit, t);
       const caption = scopeText(scope, t);
-      if (scope.kind === 'board') return { ...none, prompt, spoken: sentence(prompt, caption) };
+      if (scope.kind === 'board') return { ...none, prompt, spoken: spokenSentence(t, prompt, caption) };
       return {
         ...none,
         prompt,
         region: regionOfScope(scope),
         caption,
-        spoken: sentence(prompt, caption),
+        spoken: spokenSentence(t, prompt, caption),
       };
     }
     case 'fillBox':
@@ -202,7 +206,12 @@ export function readyWhere(level: AppLevel, board: AppLevel | null, t: LevelsT):
       const fill = board ? fillRegionOf(board) : null;
       if (!fill) return { ...none, pending: true };
       const caption = regionName(fill, t);
-      return { ...none, region: { unit: fill.unit, index: fill.index }, caption, spoken: sentence(caption) };
+      return {
+        ...none,
+        region: { unit: fill.unit, index: fill.index },
+        caption,
+        spoken: spokenSentence(t, caption),
+      };
     }
     case 'findDuel':
       // The goal already says the spots and the bot: the line is for the eye only.
@@ -211,7 +220,7 @@ export function readyWhere(level: AppLevel, board: AppLevel | null, t: LevelsT):
       const counts = puzzleCountsOf(level);
       if (!counts) return null;
       const line = puzzleCountsText(counts.moving, counts.fixed, t);
-      return { ...none, line, spoken: sentence(line) };
+      return { ...none, line, spoken: spokenSentence(t, line) };
     }
     default:
       return null;

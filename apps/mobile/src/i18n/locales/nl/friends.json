@@ -1,0 +1,179 @@
+{
+  "title": "Kamer met vrienden",
+  "subtitle": "{{type}} · {{count}} van {{max}}",
+  "label": "Spel met vrienden · zonder rating",
+  "mode": "Met vrienden",
+  "modeLong": "Spel met vrienden",
+  "unrated": "Zonder rating",
+  "code": {
+    "title": "Kamercode",
+    "label": "Kamercode: {{spelled}}",
+    "hint": "Stuur de code of de link"
+  },
+  "share": {
+    "button": "Link delen",
+    "hint": "Opent het deelmenu van je telefoon, met de code en de link",
+    "message": "Speel met me mee in Sudoku Fight! Kamercode: {{code}}\n{{link}}",
+    "failed": "Delen lukte niet"
+  },
+  "copy": {
+    "button": "Code kopiëren",
+    "done": "Code gekopieerd",
+    "failed": "Kopiëren van de code lukte niet"
+  },
+  "gameType": {
+    "title": "Speltype",
+    "hostPicks": "Alleen de beheerder kan dit wijzigen",
+    "guestSees": "De beheerder kiest",
+    "changed": "Het speltype is nu {{type}}"
+  },
+  "players": {
+    "title": "Spelers · {{count}} van {{max}}"
+  },
+  "seat": {
+    "me": "Ik",
+    "host": "Beheerder",
+    "away": "Nu niet in de kamer",
+    "empty": "Wacht op een speler…",
+    "emptyLabel": "Lege plek, wacht op een speler",
+    "rating": "Rating: {{rating}}"
+  },
+  "kick": {
+    "label": "{{name}} uit de kamer verwijderen",
+    "title": "{{name}} uit de kamer verwijderen?",
+    "body": "Deze speler kan dan niet meer terug in deze kamer.",
+    "confirm": "Verwijderen"
+  },
+  "start": {
+    "button_one": "Spel starten",
+    "button_other": "Spel starten · {{count}} spelers",
+    "needMore": "Je hebt minstens 2 verbonden spelers nodig om te starten",
+    "waitingForHost": "Wachten tot {{name}} start",
+    "hostAway": "De beheerder is nu niet in de kamer",
+    "starting": "Het spel begint…"
+  },
+  "startWithout": {
+    "title": "Starten zonder {{names}}?",
+    "body": "{{names}} is nu niet in de kamer. Wie niet in de kamer is, doet niet mee.",
+    "confirm": "Ja, starten",
+    "cancel": "Nee, we wachten"
+  },
+  "leave": "Kamer verlaten",
+  "reconnecting": "Verbinding verbroken. Opnieuw verbinden…",
+  "announce": {
+    "joined": "{{name}} doet mee",
+    "left": "{{name}} verliet de kamer",
+    "away": "{{name}} is nu niet in de kamer",
+    "back": "{{name}} is terug in de kamer",
+    "host": "{{name}} is nu de beheerder",
+    "meHost": "Jij bent nu de beheerder"
+  },
+  "opening": {
+    "create": "Kamer openen…",
+    "join": "Naar de kamer…"
+  },
+  "replace": {
+    "title": "Je andere kamer sluiten?",
+    "body": "Je hebt al een open kamer, {{code}}. Sluit die en open een nieuwe, of ga ernaar terug.",
+    "confirm": "Sluiten en nieuwe openen",
+    "cancel": "Terug naar die kamer"
+  },
+  "errors": {
+    "notFound": "We vonden geen kamer met de code {{code}}. Controleer de cijfers.",
+    "notFoundThis": "We vonden geen kamer met deze code.",
+    "roomFull": "De kamer is vol ({{max}} van {{max}}).",
+    "gameStarted": "Het spel in deze kamer is al begonnen.",
+    "roomClosed": "De kamer is gesloten.",
+    "kicked": "De beheerder heeft je uit de kamer verwijderd.",
+    "cantJoin": "Je hebt een speler in deze kamer geblokkeerd.",
+    "suspended": "Je account is geschorst, dus je kunt nu niet met vrienden spelen.",
+    "network": "Geen internetverbinding.",
+    "tooManyRequests": "Te veel pogingen. Probeer het over {{wait}} opnieuw.",
+    "notAvailable": "Deze optie is nog niet beschikbaar.",
+    "badRequest": "De code heeft 6 cijfers.",
+    "unauthorized": "Log opnieuw in op je account.",
+    "notRegistered": "Rond je registratie af om met vrienden te spelen.",
+    "tooManyRooms": "Je hebt al een open kamer.",
+    "tooLarge": "Er ging iets mis. Probeer het opnieuw.",
+    "internal": "Er ging iets mis op de server. Probeer het zo opnieuw.",
+    "disabled": "Spelen met vrienden is niet beschikbaar op deze server.",
+    "unavailable": "De server is nu niet beschikbaar. Probeer het zo opnieuw."
+  },
+  "wait": {
+    "seconds_one": "een seconde",
+    "seconds_other": "{{count}} seconden",
+    "minutes_one": "een minuut",
+    "minutes_other": "{{count}} minuten"
+  },
+  "closed": {
+    "kicked": "De beheerder heeft je uit de kamer verwijderd.",
+    "removed": "Je hebt de kamer verlaten.",
+    "otherDevice": "De kamer is op een ander apparaat geopend.",
+    "serverRestart": "De kamer is gesloten.",
+    "closed": "De kamer is gesloten."
+  },
+  "lobbyErrors": {
+    "notHost": "Alleen de beheerder kan dat doen.",
+    "notEnoughPlayers": "Je hebt minstens 2 verbonden spelers nodig om te starten.",
+    "playersAway": "{{names}} is nu niet in de kamer.",
+    "gameStarted": "Het spel is al begonnen.",
+    "badCommand": "Dat lukte niet. Probeer het opnieuw.",
+    "tooManyRequests": "Rustig aan, te veel tikken. Probeer het zo opnieuw."
+  },
+  "startedWithout": "Het spel is zonder jou begonnen.",
+  "actions": {
+    "retry": "Opnieuw proberen",
+    "createRoom": "Kamer maken",
+    "joinWithCode": "Meedoen met code",
+    "home": "Naar start"
+  },
+  "join": {
+    "title": "Meedoen met code",
+    "prompt": "Typ de 6 cijfers die je kreeg",
+    "codeLabel": "Kamercode, 6 cijfers",
+    "digitLabel": "Cijfer {{n}} van {{total}}",
+    "paste": "Plakken",
+    "pasteHint": "Je kunt het hele WhatsApp-bericht plakken",
+    "pasteNone": "We vonden geen code van 6 cijfers in de gekopieerde tekst",
+    "joining": "Naar de kamer…",
+    "submit": "Meedoen"
+  },
+  "link": {
+    "notFound": {
+      "title": "We kennen deze link niet",
+      "body": "Hij is misschien oud, of niet van Sudoku Fight. Je kunt verder vanaf het startscherm.",
+      "home": "Naar start"
+    },
+    "badCode": "Deze link is niet geldig"
+  },
+  "invite": {
+    "pending": "Je bent uitgenodigd voor kamer {{code}}",
+    "afterSignIn": "Na het inloggen brengen we je meteen naar kamer {{code}}",
+    "join": "Meedoen",
+    "later": "Niet nu",
+    "expired": "De uitnodiging voor kamer {{code}} is verlopen"
+  },
+  "busy": {
+    "practice": {
+      "title": "Stoppen met oefenen en naar de kamer?",
+      "body": "Je oefenspel wordt bewaard, net als wanneer je het verlaat.",
+      "confirm": "Naar de kamer"
+    },
+    "search": {
+      "title": "Stoppen met zoeken en meedoen?",
+      "body": "Het zoeken naar een tegenstander stopt.",
+      "confirm": "Naar de kamer"
+    },
+    "room": {
+      "title": "Overstappen naar kamer {{code}}?",
+      "body": "Je verlaat de kamer waar je nu in zit.",
+      "confirm": "Overstappen"
+    },
+    "game": {
+      "title": "Je zit midden in een spel",
+      "body": "Je kunt daarna meedoen. De uitnodiging voor kamer {{code}} wacht op je.",
+      "back": "Terug naar het spel"
+    },
+    "stay": "Blijven"
+  }
+}

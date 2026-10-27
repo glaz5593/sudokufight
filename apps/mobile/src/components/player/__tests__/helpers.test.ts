@@ -18,6 +18,9 @@ import {
   type PlayerT,
 } from '../wording';
 
+// Both languages' strings, whatever language the tests start in (a language loads when it is first used).
+beforeAll(() => i18n.loadLanguages(['he', 'en']));
+
 const heT = i18n.getFixedT('he', 'player') as PlayerT;
 const enT = i18n.getFixedT('en', 'player') as PlayerT;
 
@@ -188,6 +191,11 @@ function keys(o: object, prefix = ''): string[] {
   );
 }
 
+/** A plural by its base: each language has the forms its own rules need (Hebrew's _two; i18nParity checks them). */
+const bases = (o: object) => [
+  ...new Set(keys(o).map((k) => k.replace(/_(zero|one|two|few|many|other)$/, ''))),
+];
+
 it('has the same keys in Hebrew and English', () => {
-  expect(keys(he).sort()).toEqual(keys(en).sort());
+  expect(bases(he).sort()).toEqual(bases(en).sort());
 });

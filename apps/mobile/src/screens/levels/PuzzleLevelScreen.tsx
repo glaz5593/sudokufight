@@ -1,12 +1,13 @@
 import type { PuzzleLevelOver } from '@sudoku-fight/engine';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ResumeCountdown } from '../../components/board/ResumeCountdown';
 import { PuzzleBoard, type PuzzleRefusal } from '../../components/levels/PuzzleBoard';
 import { ConfirmModal } from '../../components/ui';
+import { Text } from '../../components/ui/Text';
 import { gameEndConfig } from '../../config/gameEnd';
 import { LEVEL_UI, PUZZLE_UI } from '../../config/levels';
 import type { LevelEffect } from '../../levels/levelEffects';
@@ -83,7 +84,9 @@ export function PuzzleLevelScreen({
         const b = e.to + 1;
         if (e.penaltyMs > 0) {
           setPenalty({ id: e.seq, ms: e.penaltyMs });
-          announce(t('hud.puzzle.swappedPenalty', { a, b, s: e.penaltyMs / 1000 }));
+          announce(
+            t('hud.puzzle.swappedPenalty', { a, b, count: e.penaltyMs / 1000, s: e.penaltyMs / 1000 }),
+          );
         } else announce(t('hud.puzzle.swapped', { a, b }));
         return;
       }

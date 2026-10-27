@@ -1,0 +1,46 @@
+{
+  "separator": {
+    "list": "、",
+    "group": " · "
+  },
+  "board": {
+    "label": "遊戲盤面",
+    "myLock": "你的格子{{cell}}",
+    "otherLock": "{{cell}}已被{{name}}鎖定",
+    "tapLabel": "關卡的盤面"
+  },
+  "cell": {
+    "empty": "空格",
+    "given": "提示數",
+    "solvedByMe": "由你解出",
+    "solvedBy": "由{{name}}解出",
+    "lockedByMe": "由你鎖定",
+    "lockedBy": "由{{name}}鎖定",
+    "pending": "等待鎖定",
+    "queued": "{{digit}}，等待連線",
+    "timerStopped": "計時已停止",
+    "seconds_other": "{{count}}秒",
+    "wrong": "錯誤數字：{{digits}}",
+    "hintMyLock": "在數字鍵盤上選一個數字",
+    "player": "玩家{{n}}",
+    "corrected": "發現錯誤：{{wrong}}，正確的數字是{{right}}",
+    "mine": "你的",
+    "outside": "在範圍外",
+    "hintTap": "點這一格就是你的一步"
+  },
+  "keypad": {
+    "armed": "數字{{digit}} · 還剩{{left}}個",
+    "idle": "數字{{digit}}，還剩{{left}}個，請先選一格",
+    "complete": "數字{{digit}}，還剩{{left}}個",
+    "tried": "數字{{digit}} · 這一格已試過"
+  },
+  "cancel": {
+    "label": "取消選取",
+    "withCell": "取消選取，{{cell}}"
+  },
+  "resume": {
+    "title": "即將繼續",
+    "paused": "對局已暫停",
+    "label_other": "{{count}}秒後繼續"
+  }
+}

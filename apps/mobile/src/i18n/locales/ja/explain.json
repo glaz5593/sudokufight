@@ -1,0 +1,108 @@
+{
+  "technique": {
+    "nakedSingle": "ネイキッドシングル",
+    "hiddenSingle": "ヒドゥンシングル",
+    "pointing": "ブロック・ライン消去",
+    "claiming": "ブロック・ライン消去",
+    "nakedPair": "ネイキッドペア",
+    "hiddenPair": "ヒドゥンペア",
+    "chain": "上級テクニック",
+    "beyond": "エンジンの手法を超える解き方"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": "、",
+    "last": "{{head}}と{{last}}",
+    "lastOr": "{{head}}か{{last}}"
+  },
+  "clauses": {
+    "sep": "、",
+    "last": "{{head}}、{{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}。",
+    "onlyMissing": {
+      "row": "{{label}}行に足りないのは{{digit}}だけです。",
+      "col": "{{label}}列に足りないのは{{digit}}だけです。",
+      "box": "ブロック{{label}}に足りないのは{{digit}}だけです。"
+    },
+    "missing": {
+      "row": "{{label}}行に足りないのは{{digits}}です。",
+      "col": "{{label}}列に足りないのは{{digits}}です。",
+      "box": "ブロック{{label}}に足りないのは{{digits}}です。"
+    },
+    "seen": {
+      "row": "{{label}}行にはすでに{{digits}}があります。",
+      "col": "{{label}}列にはすでに{{digits}}があります。",
+      "box": "ブロック{{label}}にはすでに{{digits}}があります。"
+    },
+    "eliminated": "{{digit}}はステップ{{step}}で{{cell}}の候補から外れました。",
+    "only": "よって{{digit}}しかありません。"
+  },
+  "hidden": {
+    "alone": {
+      "row": "{{digit}}は{{label}}行のどこかに入る必要があり、この行の空きマスは{{cell}}だけです。よって{{result}}です。",
+      "col": "{{digit}}は{{label}}列のどこかに入る必要があり、この列の空きマスは{{cell}}だけです。よって{{result}}です。",
+      "box": "{{digit}}はブロック{{label}}のどこかに入る必要があり、このブロックの空きマスは{{cell}}だけです。よって{{result}}です。"
+    },
+    "blocked": {
+      "row": "{{digit}}は{{label}}行のどこかに入る必要があります。この行のほかの空きマスはすべてふさがっています：{{clauses}}。よって{{result}}です。",
+      "col": "{{digit}}は{{label}}列のどこかに入る必要があります。この列のほかの空きマスはすべてふさがっています：{{clauses}}。よって{{result}}です。",
+      "box": "{{digit}}はブロック{{label}}のどこかに入る必要があります。このブロックのほかの空きマスはすべてふさがっています：{{clauses}}。よって{{result}}です。"
+    },
+    "clause": {
+      "step": "{{cell}}はステップ{{step}}で{{digit}}が外れた",
+      "unit": {
+        "row": "{{cell}}は{{label}}行にすでに{{digit}}がある",
+        "col": "{{cell}}は{{label}}列にすでに{{digit}}がある",
+        "box": "{{cell}}はブロック{{label}}にすでに{{digit}}がある"
+      }
+    }
+  },
+  "pointing": {
+    "row": "ブロック{{box}}では、{{digit}}が入れるのは{{line}}行だけです。そのため、この行の残りのマスから{{digit}}を除外します：{{cells}}。",
+    "col": "ブロック{{box}}では、{{digit}}が入れるのは{{line}}列だけです。そのため、この列の残りのマスから{{digit}}を除外します：{{cells}}。"
+  },
+  "claiming": {
+    "row": "{{line}}行では、{{digit}}が入れるのはブロック{{box}}だけです。そのため、このブロックの残りのマスから{{digit}}を除外します：{{cells}}。",
+    "col": "{{line}}列では、{{digit}}が入れるのはブロック{{box}}だけです。そのため、このブロックの残りのマスから{{digit}}を除外します：{{cells}}。"
+  },
+  "nakedPair": {
+    "row": "{{a}}と{{b}}に入るのは{{digits}}だけです。そのため、{{label}}行の残りのマスから{{digits}}を除外します：{{cells}}。",
+    "col": "{{a}}と{{b}}に入るのは{{digits}}だけです。そのため、{{label}}列の残りのマスから{{digits}}を除外します：{{cells}}。",
+    "box": "{{a}}と{{b}}に入るのは{{digits}}だけです。そのため、ブロック{{label}}の残りのマスから{{digits}}を除外します：{{cells}}。"
+  },
+  "hiddenPair": {
+    "row": "{{label}}行では、{{digits}}が入れるのは{{a}}と{{b}}だけです。そのため、この2マスのほかの候補は除外します。",
+    "col": "{{label}}列では、{{digits}}が入れるのは{{a}}と{{b}}だけです。そのため、この2マスのほかの候補は除外します。",
+    "box": "ブロック{{label}}では、{{digits}}が入れるのは{{a}}と{{b}}だけです。そのため、この2マスのほかの候補は除外します。"
+  },
+  "beyond": "ここでは、エンジンがまだ説明できない上級テクニックが必要です。答え：{{formula}}。",
+  "chain": {
+    "head_other": "このマスはまだ1ステップでは決まりません。{{count}}ステップかかります：",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "{{digit}}はすでに{{label}}行にあります（{{cell}}）。",
+      "col": "{{digit}}はすでに{{label}}列にあります（{{cell}}）。",
+      "box": "{{digit}}はすでにブロック{{label}}にあります（{{cell}}）。"
+    },
+    "notSolution": "{{digit}}はここに入る余地がまだありますが、正解は{{answer}}です。"
+  },
+  "block": {
+    "step": "{{cell}}には{{digit}}が入りません：ステップ{{step}}で除外されました",
+    "unit": {
+      "row": "{{cell}}には{{digit}}が入りません：{{label}}行に{{digit}}があります",
+      "col": "{{cell}}には{{digit}}が入りません：{{label}}列に{{digit}}があります",
+      "box": "{{cell}}には{{digit}}が入りません：ブロック{{label}}に{{digit}}があります"
+    }
+  },
+  "notYet": {
+    "cell": "{{cell}}に入る数字はまだ決められません",
+    "options": "{{cell}}に入る数字はまだ決められません（{{options}}）"
+  }
+}

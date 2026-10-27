@@ -1,0 +1,176 @@
+{
+  "title": "친구와 함께하는 방",
+  "subtitle": "{{type}} · {{max}}명 중 {{count}}명",
+  "label": "친구와 게임 · 레이팅 미반영",
+  "mode": "친구와 함께",
+  "modeLong": "친구와 게임",
+  "unrated": "레이팅 미반영",
+  "code": {
+    "title": "방 코드",
+    "label": "방 코드: {{spelled}}",
+    "hint": "코드나 링크를 보내세요"
+  },
+  "share": {
+    "button": "링크 공유",
+    "hint": "휴대폰의 공유 창이 열리고, 코드와 링크가 함께 담겨요",
+    "message": "Sudoku Fight에서 같이 해요! 방 코드: {{code}}\n{{link}}",
+    "failed": "공유 창을 열지 못했어요"
+  },
+  "copy": {
+    "button": "코드 복사",
+    "done": "코드를 복사했어요",
+    "failed": "코드를 복사하지 못했어요"
+  },
+  "gameType": {
+    "title": "게임 유형",
+    "hostPicks": "방장만 바꿀 수 있어요",
+    "guestSees": "방장이 골라요",
+    "changed": "게임 유형 변경: {{type}}"
+  },
+  "players": {
+    "title": "플레이어 · {{max}}명 중 {{count}}명"
+  },
+  "seat": {
+    "me": "나",
+    "host": "방장",
+    "away": "지금 방에 없어요",
+    "empty": "플레이어를 기다리는 중…",
+    "emptyLabel": "빈자리, 플레이어를 기다리는 중",
+    "rating": "레이팅 {{rating}}"
+  },
+  "kick": {
+    "label": "{{name}} 님을 방에서 내보내기",
+    "title": "{{name}} 님을 방에서 내보낼까요?",
+    "body": "이 방에는 다시 들어올 수 없어요.",
+    "confirm": "내보내기"
+  },
+  "start": {
+    "button_other": "게임 시작 · {{count}}명",
+    "needMore": "시작하려면 연결된 플레이어가 2명 이상 필요해요",
+    "waitingForHost": "{{name}} 님이 시작하기를 기다리는 중",
+    "hostAway": "방장이 지금 방에 없어요",
+    "starting": "게임을 시작하는 중…"
+  },
+  "startWithout": {
+    "title": "{{names}} 없이 시작할까요?",
+    "body": "{{names}} 님은 지금 방에 없어요. 방에 없는 사람은 이번 게임에서 빠져요.",
+    "confirm": "네, 시작할게요",
+    "cancel": "아니요, 기다릴게요"
+  },
+  "leave": "방 나가기",
+  "reconnecting": "연결이 끊겼어요. 다시 연결하는 중…",
+  "announce": {
+    "joined": "{{name}} 님이 들어왔어요",
+    "left": "{{name}} 님이 방에서 나갔어요",
+    "away": "{{name}} 님은 지금 방에 없어요",
+    "back": "{{name}} 님이 방에 돌아왔어요",
+    "host": "이제 {{name}} 님이 방장이에요",
+    "meHost": "이제 내가 방장이에요"
+  },
+  "opening": {
+    "create": "방을 여는 중…",
+    "join": "방에 들어가는 중…"
+  },
+  "replace": {
+    "title": "다른 방을 닫을까요?",
+    "body": "이미 열어 둔 방({{code}})이 있어요. 그 방을 닫고 새 방을 열거나, 그 방으로 돌아갈 수 있어요.",
+    "confirm": "닫고 새로 열기",
+    "cancel": "그 방으로 돌아가기"
+  },
+  "errors": {
+    "notFound": "방 코드 {{code}}에 해당하는 방을 찾지 못했어요. 숫자를 확인하세요.",
+    "notFoundThis": "이 코드로 된 방을 찾지 못했어요.",
+    "roomFull": "방이 꽉 찼어요({{max}}/{{max}}).",
+    "gameStarted": "이 방의 게임은 이미 시작됐어요.",
+    "roomClosed": "방이 닫혔어요.",
+    "kicked": "방장이 나를 방에서 내보냈어요.",
+    "cantJoin": "이 방에 내가 차단한 플레이어가 있어요.",
+    "suspended": "계정이 정지되어 지금은 친구와 플레이할 수 없어요.",
+    "network": "인터넷에 연결되어 있지 않아요.",
+    "tooManyRequests": "시도가 너무 많아요. {{wait}} 후에 다시 시도하세요.",
+    "notAvailable": "이 기능은 아직 사용할 수 없어요.",
+    "badRequest": "코드는 6자리 숫자예요.",
+    "unauthorized": "계정에 다시 로그인하세요.",
+    "notRegistered": "친구와 플레이하려면 가입을 마치세요.",
+    "tooManyRooms": "이미 열어 둔 방이 있어요.",
+    "tooLarge": "문제가 생겼어요. 다시 시도하세요.",
+    "internal": "서버에 문제가 생겼어요. 잠시 후 다시 시도하세요.",
+    "disabled": "이 서버에서는 친구와 플레이할 수 없어요.",
+    "unavailable": "지금은 서버를 사용할 수 없어요. 잠시 후 다시 시도하세요."
+  },
+  "wait": {
+    "seconds_other": "{{count}}초",
+    "minutes_other": "{{count}}분"
+  },
+  "closed": {
+    "kicked": "방장이 나를 방에서 내보냈어요.",
+    "removed": "방에서 나왔어요.",
+    "otherDevice": "다른 기기에서 방이 열렸어요.",
+    "serverRestart": "방이 닫혔어요.",
+    "closed": "방이 닫혔어요."
+  },
+  "lobbyErrors": {
+    "notHost": "방장만 할 수 있어요.",
+    "notEnoughPlayers": "시작하려면 연결된 플레이어가 2명 이상 필요해요.",
+    "playersAway": "{{names}} 님은 지금 방에 없어요.",
+    "gameStarted": "게임이 이미 시작됐어요.",
+    "badCommand": "잘 안 됐어요. 다시 시도하세요.",
+    "tooManyRequests": "천천히요! 탭이 너무 많아요. 잠시 후 다시 시도하세요."
+  },
+  "startedWithout": "나 없이 게임이 시작됐어요.",
+  "actions": {
+    "retry": "다시 시도",
+    "createRoom": "방 만들기",
+    "joinWithCode": "코드로 참가",
+    "home": "홈"
+  },
+  "join": {
+    "title": "코드로 참가",
+    "prompt": "받은 6자리 숫자를 입력하세요",
+    "codeLabel": "방 코드, 6자리 숫자",
+    "digitLabel": "{{total}}자리 중 {{n}}번째 숫자",
+    "paste": "붙여넣기",
+    "pasteHint": "받은 메시지 전체를 붙여넣어도 돼요",
+    "pasteNone": "복사한 텍스트에서 6자리 코드를 찾지 못했어요",
+    "joining": "방에 들어가는 중…",
+    "submit": "참가"
+  },
+  "link": {
+    "notFound": {
+      "title": "알 수 없는 링크예요",
+      "body": "오래된 링크이거나 Sudoku Fight의 링크가 아닐 수 있어요. 홈에서 계속할 수 있어요.",
+      "home": "홈으로"
+    },
+    "badCode": "잘못된 링크예요"
+  },
+  "invite": {
+    "pending": "{{code}} 방에 초대받았어요",
+    "afterSignIn": "로그인하면 바로 {{code}} 방으로 안내할게요",
+    "join": "참가",
+    "later": "나중에",
+    "expired": "{{code}} 방 초대가 만료됐어요"
+  },
+  "busy": {
+    "practice": {
+      "title": "연습을 그만두고 방에 들어갈까요?",
+      "body": "연습은 직접 나갈 때처럼 저장돼요.",
+      "confirm": "방에 들어가기"
+    },
+    "search": {
+      "title": "상대 찾기를 멈추고 참가할까요?",
+      "body": "상대 찾기가 중단돼요.",
+      "confirm": "방에 들어가기"
+    },
+    "room": {
+      "title": "{{code}} 방으로 옮길까요?",
+      "body": "지금 있는 방에서는 나가게 돼요.",
+      "confirm": "방 옮기기"
+    },
+    "game": {
+      "title": "게임이 진행 중이에요",
+      "body": "게임이 끝난 뒤 참가할 수 있어요. {{code}} 방 초대는 그대로 기다리고 있을게요.",
+      "back": "게임으로 돌아가기"
+    },
+    "stay": "그대로 있기"
+  }
+}

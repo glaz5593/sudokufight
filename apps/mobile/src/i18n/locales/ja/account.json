@@ -1,0 +1,249 @@
+{
+  "fields": {
+    "email": "メールアドレス",
+    "emailPlaceholder": "name@example.com",
+    "password": "パスワード",
+    "newPassword": "パスワード",
+    "confirmPassword": "パスワード（確認）",
+    "displayName": "表示名",
+    "displayNamePlaceholder": "アリーナでの名前",
+    "avatar": "アバター",
+    "country": "国",
+    "showPassword": "パスワードを表示",
+    "hidePassword": "パスワードを隠す",
+    "change": "変更"
+  },
+  "validation": {
+    "emailRequired": "メールアドレスを入力してください",
+    "emailInvalid": "メールアドレスの形式が正しくないようです",
+    "passwordRequired": "パスワードを入力してください",
+    "passwordRules": "パスワードは8文字以上にしてください",
+    "confirmMismatch": "パスワードが一致しません",
+    "countryRequired": "国を選択してください"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "パスワードが違います。もう一度試すか、パスワードを再設定してください。",
+      "userNotFound": "このメールアドレスのアカウントはありません。新規登録しますか？",
+      "invalidCredentials": "メールアドレスまたはパスワードが違います。",
+      "tooManyRequests": "試行回数が多すぎます。数分待ってから再試行するか、パスワードを再設定してください。",
+      "network": "インターネットに接続されていません。接続を確認して、もう一度お試しください。",
+      "emailInUse": "このメールアドレスのアカウントはすでにあります。このアドレスでログインしてください。",
+      "invalidEmail": "メールアドレスの形式が正しくないようです。",
+      "weakPassword": "パスワードが弱すぎます。もっと長いパスワードにしてください。",
+      "requiresRecentLogin": "この操作には、もう一度ログインが必要です。",
+      "userDisabled": "このアカウントは無効になっています。サポートにお問い合わせください。",
+      "noUser": "ログインしていません。もう一度ログインしてください。",
+      "unknown": "問題が発生しました。もう一度お試しください。",
+      "cancelled": "Googleログインがキャンセルされました。",
+      "inProgress": "Googleログインがすでに開いています。完了するか、閉じてからもう一度お試しください。",
+      "playServices": "Googleでログインするには、Google Play開発者サービスが必要です。更新してから、もう一度お試しください。",
+      "googleConfig": "このバージョンのアプリでは、現在Googleログインを利用できません（DEVELOPER_ERROR）。しばらくはメールアドレスとパスワードでログインしてください。",
+      "accountExistsWithPassword": "このメールアドレスには、パスワード付きのアカウントがすでにあります。メールアドレスとパスワードでログインしてください。",
+      "userMismatch": "別のGoogleアカウントです。ログインに使ったアカウントを選んでください。"
+    },
+    "api": {
+      "badRequest": "リクエストが無効です。もう一度お試しください。",
+      "invalidName": "その名前はルールに違反しています。",
+      "unauthorized": "サーバーとのセッションが切れました。もう一度ログインしてください。",
+      "reauthRequired": "アカウントを削除するには、改めてログインが必要です。パスワードを再入力して、もう一度お試しください。",
+      "suspended": "アカウントが停止中のため、現在は変更できません。",
+      "notRegistered": "このアカウントにはまだファイターがいません。登録を完了しましょう。",
+      "notFound": "サーバーがこのリクエストに対応していません。アプリを更新してください。",
+      "alreadyRegistered": "このアカウントにはすでにファイターがいます。",
+      "taken": "その名前は使われています。別の名前を選んでください。",
+      "renameTooSoon": "名前の変更は30日に1回までです。",
+      "tooLarge": "リクエストが大きすぎます。",
+      "blocked": "その名前はアリーナにふさわしくありません。別の名前を選んでください。",
+      "tooManyRequests": "リクエストが多すぎます。少し待ってから、もう一度お試しください。",
+      "internal": "サーバーエラーです。少し待ってから、もう一度お試しください。",
+      "disabled": "現在、このサーバーではアカウント機能が無効です。",
+      "unavailable": "現在サーバーを利用できません。少し待ってから、もう一度お試しください。",
+      "network": "サーバーに接続できません。インターネット接続を確認して、もう一度お試しください。",
+      "timeout": "サーバーから時間内に応答がありませんでした。もう一度お試しください。",
+      "signedOut": "ログインしていません。もう一度ログインしてください。",
+      "unexpected": "サーバーから予期しない応答がありました。もう一度試すか、アプリを更新してください。"
+    }
+  },
+  "splash": {
+    "tagline": "盤面はひとつ。全員で解く。勝つのはひとり。",
+    "loading": "アリーナを読み込み中…",
+    "tipLabel": "コツ",
+    "tips": {
+      "lock_other": "選んだマスはあなた専用にロックされます。{{type}}の対戦では{{seconds}}秒です。",
+      "hard": "難しい手ほど点数が高くなります。",
+      "mistake": "ミスをすると、正しい数字で得られたはずの点数がそのまま引かれます。少し長めに考えるほうがお得です。",
+      "interfere": "妨害は2タップで送れます。相手のカードの「妨害」をタップして、使いたい妨害を選びます。"
+    },
+    "errorTitle": "ファイターを読み込めませんでした",
+    "retry": "再試行",
+    "signOut": "ログアウト"
+  },
+  "login": {
+    "title": "<accent>アリーナ</accent>へおかえりなさい",
+    "titleLabel": "アリーナへおかえりなさい",
+    "subtitle": "あなたのレーティング、連勝、ライバルが待っています。",
+    "forgot": "パスワードを忘れた場合",
+    "submit": "ログイン",
+    "noAccount": "アカウントがない場合",
+    "register": "新規登録",
+    "arenaSpot": "あなたの席"
+  },
+  "google": {
+    "continue": "Googleで続ける",
+    "orEmail": "またはメールアドレスで",
+    "orEmailPassword": "またはメールアドレスとパスワードで",
+    "existing": "このGoogleアカウントにはすでにファイター「{{name}}」がいます。そのファイターでログインしました。",
+    "passwordHint": "Googleで登録しましたか？「Googleで続ける」を使ってください。",
+    "emailInUseHint": "Googleで登録した場合は、「Googleで続ける」を使ってください。",
+    "termsTitle": "利用規約とプライバシー",
+    "termsBody": "Googleで続けるには、利用規約とプライバシーポリシーに同意してください。",
+    "termsAccept": "同意して続ける"
+  },
+  "forgot": {
+    "title": "パスワードの再設定",
+    "body": "登録したメールアドレスを入力してください。新しいパスワードを設定するためのリンクをお送りします。",
+    "submit": "再設定リンクを送信",
+    "sentTitle": "受信トレイを確認してください",
+    "sentBody": "{{email}}のアカウントがあれば、パスワード再設定用のリンクを送信しました。見つからない場合は、迷惑メールフォルダを確認してください。",
+    "backToLogin": "ログインに戻る"
+  },
+  "register": {
+    "step": "ステップ{{step}}/{{total}}",
+    "backToLogin": "ログインに戻る",
+    "backToFighter": "ファイターに戻る"
+  },
+  "fighter": {
+    "title": "<accent>ファイター</accent>を作成",
+    "titleLabel": "ファイターを作成",
+    "resumeNote": "アカウントの準備ができました。あとはファイターを選ぶだけです。",
+    "chooseAvatar": "アバターを選ぶ",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}、レベル{{level}}で解放",
+    "selectedAvatar": "選択中のアバター：{{name}}",
+    "yourPick": "選択中：{{name}}",
+    "previewTitle": "アリーナでの見え方",
+    "previewLabel": "対戦中のカードのプレビュー：{{name}}",
+    "previewNew": "新人",
+    "continue": "続ける",
+    "enterArena": "アリーナへ",
+    "signOut": "ログアウト",
+    "googleNote": "Googleでログインしています。あとはファイターを選ぶだけです。"
+  },
+  "name": {
+    "rules": "3〜16文字：ヘブライ文字または英字、数字、アンダースコア、ドット。",
+    "status": {
+      "checking": "確認中…",
+      "available": "使用可能",
+      "taken": "使用済み",
+      "invalid": "無効",
+      "blocked": "使用不可",
+      "error": "未確認",
+      "current": "現在の名前"
+    },
+    "problem": {
+      "invalidChars": "使用できない文字：{{chars}}",
+      "tooShort": "3文字以上",
+      "tooLong": "16文字まで"
+    },
+    "charSpace": " ",
+    "takenHint": "この名前はすでに使われています。別の名前をお試しください。",
+    "blockedHint": "その名前はアリーナにふさわしくありません。別の名前をお試しください。",
+    "errorHint": "名前を確認できませんでした。保存するときにもう一度確認します。"
+  },
+  "country": {
+    "label": "国：{{country}}",
+    "choose": "国を選ぶ",
+    "sheetTitle": "国を選ぶ",
+    "search": "国を検索",
+    "searchPlaceholder": "検索",
+    "none": "国が見つかりません",
+    "hint": "端末の設定から検出しました。いつでも変更できます。"
+  },
+  "account": {
+    "title": "<accent>アリーナ</accent>まであと一歩",
+    "titleLabel": "アリーナまであと一歩",
+    "subtitle": "メールアドレスとパスワードで、レーティングと進行状況を守ります。",
+    "fighterReady": "ファイター準備完了",
+    "edit": "編集",
+    "editLabel": "ファイターを編集",
+    "submit": "アカウントを作成",
+    "profileFailed": "アカウントは作成されましたが、ファイターはまだ保存されていません。もう一度お試しください。",
+    "nameTakenNow": "その間に{{name}}という名前が使われてしまいました。別の名前を選んでください。アカウントは作成済みです。"
+  },
+  "password": {
+    "rules": {
+      "length": "8文字以上"
+    },
+    "ruleMet": "{{rule}}：達成",
+    "ruleMissing": "{{rule}}：未達成",
+    "strengthLabel": "パスワードの強度",
+    "strength": {
+      "weak": "弱いパスワード",
+      "fair": "まあまあのパスワード",
+      "good": "良いパスワード",
+      "strong": "強いパスワード"
+    },
+    "match": "一致しています",
+    "mismatch": "一致しません"
+  },
+  "terms": {
+    "accept": "利用規約とプライバシーポリシーに同意します",
+    "termsLink": "利用規約",
+    "privacyLink": "プライバシーポリシー",
+    "linkHint": "ブラウザで開きます",
+    "required": "アリーナに入るには、規約に同意してください"
+  },
+  "verify": {
+    "bannerTitle": "メールアドレスがまだ確認されていません",
+    "bannerAction": "確認",
+    "bannerLabel": "メールアドレスがまだ確認されていません。メールアドレスを確認",
+    "title": "メールアドレスの確認",
+    "body": "確認用のリンクを{{email}}に送信しました。リンクを開いてから、ここに戻ってきてください。",
+    "why": "練習は確認なしでも遊べます。ランク戦には確認済みのメールアドレスが必要になります。",
+    "resend": "再送信",
+    "sent": "新しいリンクを送信しました",
+    "check": "確認しました",
+    "notYet": "まだ確認されていません。リンクを開きましたか？",
+    "done": "メール確認済み。ありがとうございます！",
+    "devNote": "開発モードではメールは送信されません。「確認しました」を押すと、メールアドレスが確認済みになります。"
+  },
+  "edit": {
+    "title": "プロフィールを編集",
+    "save": "保存",
+    "saved": "プロフィールを保存しました",
+    "nameRule": "名前の変更は30日に1回までです。",
+    "nameLocked": "名前の変更は30日に1回までです。次に変更できる日：{{date}}。",
+    "offline": "サーバーに接続できません。オンラインに戻ると編集できます。"
+  },
+  "home": {
+    "provisional": "暫定レーティング：最初の10戦"
+  },
+  "settings": {
+    "section": "アカウント",
+    "signedInAs": "{{email}}でログイン中",
+    "editProfile": "プロフィールを編集",
+    "signOut": "ログアウト",
+    "signOutTitle": "ログアウトしますか？",
+    "signOutBody": "この端末の練習記録は残ります。再びプレイするにはログインが必要です。",
+    "deleteAccount": "アカウントを削除",
+    "deleteTitle": "アカウントを削除しますか？",
+    "deleteBody": "メールアドレス、ファイター、名前が削除され、元に戻せません。対戦とレーティングは、あなたとのつながりを外して残ります。ほかのプレイヤーの対戦記録を欠けさせないためです。あなたの名前は、ほかのプレイヤーが使えるようになります。",
+    "deleteContinue": "続ける",
+    "deletePasswordTitle": "パスワードで確認",
+    "deletePasswordBody": "アカウントを削除するには、{{email}}のパスワードを入力してください。",
+    "deleteSubmit": "アカウントを完全に削除",
+    "deleted": "アカウントを削除しました",
+    "deletedPartly": "アカウントを削除しました。ログイン情報は削除できませんでした。その情報でログインすると、新規登録になります。",
+    "method": {
+      "password": "メールアドレスとパスワードでログイン",
+      "google": "Googleでログイン",
+      "both": "Google、またはメールアドレスとパスワードでログイン"
+    },
+    "deleteGoogleTitle": "Googleで確認",
+    "deleteGoogleBody": "アカウントを削除するには、Googleアカウント{{email}}をもう一度選んでください。",
+    "deleteGoogleSubmit": "Googleで確認して削除",
+    "deleteGoogleAgain": "アカウントの削除には改めて確認が必要です。もう一度試して、Googleアカウントを選んでください。",
+    "deleteWithPassword": "代わりにパスワードで確認"
+  }
+}

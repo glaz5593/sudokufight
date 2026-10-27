@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { color, radius, size, space, text, tokens } from '../../theme';
 import { Icon } from '../Icon';
 
+import { Text } from '../ui/Text';
 /**
  * The boss's marks (plan §3.3, components.md §19.6; 1.0.3: levels-ui.md §3.2, D77). Shape and word both, never
  * colour alone; all static (nothing to reduce under Reduced Motion).

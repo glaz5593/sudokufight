@@ -47,8 +47,10 @@ export function blockErrorText(t: ModerationT, error: unknown, unblock: boolean)
   const failed = unblock ? t('block.errors.unblockFailed') : t('block.errors.failed');
   if (!isModerationApiError(error)) return failed;
   switch (error.code) {
-    case 'limitReached':
-      return t('block.errors.limitReached', { max: error.body?.max ?? MAX_BLOCKS });
+    case 'limitReached': {
+      const max = error.body?.max ?? MAX_BLOCKS;
+      return t('block.errors.limitReached', { count: max, max });
+    }
     case 'self':
       return t('block.errors.self');
     case 'notFound':

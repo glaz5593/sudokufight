@@ -1,6 +1,6 @@
 import type { CellIndex, Digit } from '@sudoku-fight/engine';
 import { memo, useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -17,6 +17,7 @@ import { springs } from '../board/animation';
 import { boardGeometry, type CellRect, cellRect, fontPx, px } from '../board/geometry';
 import { timing } from '../ui/motion';
 
+import { Text } from '../ui/Text';
 /**
  * A stage's region on the board (levels-ui.md §2.2–2.3, D75; components.md §19.7), drawn over the board in its
  * own LTR coordinates (Board's children). Static and decorative: the board's label says the region.

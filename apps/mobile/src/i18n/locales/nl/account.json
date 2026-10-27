@@ -1,0 +1,255 @@
+{
+  "devMode": {
+    "badge": "Ontwikkelmodus",
+    "label": "Ontwikkelmodus: lokale accounts alleen op deze telefoon, zonder Firebase",
+    "noEmail": "In de ontwikkelmodus worden geen e-mails verstuurd."
+  },
+  "fields": {
+    "email": "E-mail",
+    "emailPlaceholder": "name@example.com",
+    "password": "Wachtwoord",
+    "newPassword": "Wachtwoord",
+    "confirmPassword": "Wachtwoord bevestigen",
+    "displayName": "Weergavenaam",
+    "displayNamePlaceholder": "Je arenanaam",
+    "avatar": "Je avatar",
+    "country": "Land",
+    "showPassword": "Wachtwoord tonen",
+    "hidePassword": "Wachtwoord verbergen",
+    "change": "Wijzigen"
+  },
+  "validation": {
+    "emailRequired": "Vul je e-mailadres in",
+    "emailInvalid": "Dat e-mailadres lijkt niet te kloppen",
+    "passwordRequired": "Vul je wachtwoord in",
+    "passwordRules": "Het wachtwoord moet minstens 8 tekens hebben",
+    "confirmMismatch": "De wachtwoorden komen niet overeen",
+    "countryRequired": "Kies een land"
+  },
+  "errors": {
+    "auth": {
+      "wrongPassword": "Verkeerd wachtwoord. Probeer het opnieuw, of stel een nieuw wachtwoord in.",
+      "userNotFound": "Geen account met dit e-mailadres. Wil je je registreren?",
+      "invalidCredentials": "Verkeerd e-mailadres of wachtwoord.",
+      "tooManyRequests": "Te veel pogingen. Wacht een paar minuten en probeer het opnieuw, of stel een nieuw wachtwoord in.",
+      "network": "Geen internetverbinding. Controleer je verbinding en probeer het opnieuw.",
+      "emailInUse": "Dit e-mailadres heeft al een account. Log daarmee in.",
+      "invalidEmail": "Dat e-mailadres lijkt niet te kloppen.",
+      "weakPassword": "Dat wachtwoord is te zwak. Kies een langer wachtwoord.",
+      "requiresRecentLogin": "Log opnieuw in om dat te doen.",
+      "userDisabled": "Dit account is uitgeschakeld. Neem contact met ons op.",
+      "noUser": "Je bent niet ingelogd. Log opnieuw in.",
+      "unknown": "Er ging iets mis. Probeer het opnieuw.",
+      "cancelled": "Inloggen met Google is geannuleerd.",
+      "inProgress": "Inloggen met Google staat al open. Rond het af, of sluit het en probeer het opnieuw.",
+      "playServices": "Inloggen met Google vereist Google Play-services. Werk ze bij en probeer het opnieuw.",
+      "googleConfig": "Inloggen met Google is nu niet beschikbaar in deze versie van de app (DEVELOPER_ERROR). Gebruik intussen je e-mailadres en wachtwoord.",
+      "accountExistsWithPassword": "Dit e-mailadres heeft al een account met een wachtwoord. Log in met je e-mailadres en wachtwoord.",
+      "userMismatch": "Dat is een ander Google-account. Kies het account waarmee je bent ingelogd."
+    },
+    "api": {
+      "badRequest": "Dat verzoek was niet geldig. Probeer het opnieuw.",
+      "invalidName": "Die naam overtreedt de regels.",
+      "unauthorized": "Je sessie bij de server is verlopen. Log opnieuw in.",
+      "reauthRequired": "Om het account te verwijderen moet je opnieuw inloggen. Vul je wachtwoord nog eens in en probeer het opnieuw.",
+      "suspended": "Je account is geschorst, dus het kan nu niet worden gewijzigd.",
+      "notRegistered": "Dit account heeft nog geen strijder. Laten we je registratie afronden.",
+      "notFound": "De server kent dit verzoek niet. Werk de app bij.",
+      "alreadyRegistered": "Dit account heeft al een strijder.",
+      "taken": "Die naam is al bezet. Kies een andere.",
+      "renameTooSoon": "Je kunt je naam maar één keer per 30 dagen wijzigen.",
+      "tooLarge": "Dat verzoek is te groot.",
+      "blocked": "Die naam past niet in de arena. Kies een andere.",
+      "tooManyRequests": "Te veel verzoeken. Wacht even en probeer het opnieuw.",
+      "internal": "Serverfout. Probeer het zo opnieuw.",
+      "disabled": "Accounts staan nu uit op deze server.",
+      "unavailable": "De server is nu niet beschikbaar. Probeer het zo opnieuw.",
+      "network": "Kan de server niet bereiken. Controleer je internet en probeer het opnieuw.",
+      "timeout": "De server antwoordde niet op tijd. Probeer het opnieuw.",
+      "signedOut": "Je bent niet ingelogd. Log opnieuw in.",
+      "unexpected": "De server stuurde een onverwacht antwoord. Probeer het opnieuw, of werk de app bij."
+    }
+  },
+  "splash": {
+    "tagline": "Eén bord. Iedereen lost op. Maar één wint.",
+    "loading": "De arena laden…",
+    "tipLabel": "Tipje",
+    "tips": {
+      "lock_one": "Een vakje dat je kiest, is alleen voor jou vergrendeld: {{seconds}} seconde in speltype {{type}}.",
+      "lock_other": "Een vakje dat je kiest, is alleen voor jou vergrendeld: {{seconds}} seconden in speltype {{type}}.",
+      "hard": "Een moeilijkere zet levert meer punten op.",
+      "mistake": "Een fout kost precies de punten die het juiste cijfer had opgeleverd. Denk liever even langer na.",
+      "interfere": "Stuur een verstoring in twee tikken: “Verstoren” op de kaart van je tegenstander, en dan de verstoring die je kiest."
+    },
+    "errorTitle": "We konden je strijder niet laden",
+    "retry": "Opnieuw proberen",
+    "signOut": "Uitloggen"
+  },
+  "login": {
+    "title": "Terug naar de <accent>arena</accent>",
+    "titleLabel": "Terug naar de arena",
+    "subtitle": "Je rating, je reeks en je rivalen wachten op je.",
+    "forgot": "Wachtwoord vergeten",
+    "submit": "Inloggen",
+    "noAccount": "Nog geen account?",
+    "register": "Registreren",
+    "arenaSpot": "Jouw plek"
+  },
+  "google": {
+    "continue": "Doorgaan met Google",
+    "orEmail": "of met e-mail",
+    "orEmailPassword": "of met e-mail en wachtwoord",
+    "existing": "Dit Google-account heeft al een strijder, {{name}}. Je bent daarmee ingelogd.",
+    "passwordHint": "Geregistreerd met Google? Gebruik “Doorgaan met Google”.",
+    "emailInUseHint": "Heb je je met Google geregistreerd? Gebruik dan “Doorgaan met Google”.",
+    "termsTitle": "Voorwaarden en privacy",
+    "termsBody": "Accepteer de gebruiksvoorwaarden en het privacybeleid om door te gaan met Google.",
+    "termsAccept": "Accepteren en doorgaan"
+  },
+  "forgot": {
+    "title": "Wachtwoord vergeten",
+    "body": "Vul het e-mailadres in waarmee je je hebt geregistreerd, dan sturen we daar een link naartoe om een nieuw wachtwoord te kiezen.",
+    "submit": "Resetlink versturen",
+    "sentTitle": "Kijk in je inbox",
+    "sentBody": "Als {{email}} een account heeft, hebben we daar een link naartoe gestuurd om het wachtwoord opnieuw in te stellen. Niet gevonden? Kijk in je spammap.",
+    "backToLogin": "Terug naar inloggen"
+  },
+  "register": {
+    "step": "Stap {{step}} van {{total}}",
+    "backToLogin": "Terug naar inloggen",
+    "backToFighter": "Terug naar je strijder"
+  },
+  "fighter": {
+    "title": "Maak je <accent>strijder</accent>",
+    "titleLabel": "Maak je strijder",
+    "resumeNote": "Je account is klaar. Kies alleen nog je strijder.",
+    "chooseAvatar": "Kies een avatar",
+    "avatar": "{{name}}",
+    "avatarLocked": "{{name}}, gaat open op niveau {{level}}",
+    "selectedAvatar": "Gekozen avatar: {{name}}",
+    "yourPick": "Jouw keuze: {{name}}",
+    "previewTitle": "Zo ziet de arena jou",
+    "previewLabel": "Voorbeeld van je kaart in een spel: {{name}}",
+    "previewNew": "Nieuw",
+    "continue": "Doorgaan",
+    "enterArena": "De arena in",
+    "signOut": "Uitloggen",
+    "googleNote": "Je bent ingelogd met Google. Kies alleen nog je strijder."
+  },
+  "name": {
+    "rules": "3–16 tekens: Hebreeuwse of Engelse letters, cijfers, liggend streepje en punt.",
+    "status": {
+      "checking": "Controleren…",
+      "available": "Beschikbaar",
+      "taken": "Bezet",
+      "invalid": "Ongeldig",
+      "blocked": "Niet toegestaan",
+      "error": "Niet gecheckt",
+      "current": "Je naam"
+    },
+    "problem": {
+      "invalidChars": "Deze tekens zijn niet toegestaan: {{chars}}",
+      "tooShort": "Minstens 3 tekens",
+      "tooLong": "Hoogstens 16 tekens"
+    },
+    "charSpace": " ",
+    "takenHint": "Iemand heeft deze naam al gekozen. Probeer een andere.",
+    "blockedHint": "Die naam past niet in de arena. Probeer een andere.",
+    "errorHint": "We konden de naam niet controleren. We controleren hem opnieuw als je opslaat."
+  },
+  "country": {
+    "label": "Land: {{country}}",
+    "choose": "Kies een land",
+    "sheetTitle": "Kies een land",
+    "search": "Zoek een land",
+    "searchPlaceholder": "Zoeken",
+    "none": "Geen land gevonden",
+    "hint": "Bepaald aan de hand van de instellingen van je telefoon. Je kunt het altijd wijzigen."
+  },
+  "account": {
+    "title": "Nog één stap naar de <accent>arena</accent>",
+    "titleLabel": "Nog één stap naar de arena",
+    "subtitle": "Met je e-mailadres en wachtwoord blijven je rating en voortgang veilig.",
+    "fighterReady": "Strijder klaar",
+    "edit": "Bewerken",
+    "editLabel": "Je strijder bewerken",
+    "submit": "Account aanmaken",
+    "profileFailed": "Je account is gemaakt, maar je strijder is nog niet opgeslagen. Probeer het opnieuw.",
+    "nameTakenNow": "De naam {{name}} is intussen bezet. Kies een andere: je account wacht op je."
+  },
+  "password": {
+    "rules": {
+      "length": "Minstens 8 tekens"
+    },
+    "ruleMet": "{{rule}}: in orde",
+    "ruleMissing": "{{rule}}: ontbreekt",
+    "strengthLabel": "Wachtwoordsterkte",
+    "strength": {
+      "weak": "Zwak wachtwoord",
+      "fair": "Redelijk wachtwoord",
+      "good": "Goed wachtwoord",
+      "strong": "Sterk wachtwoord"
+    },
+    "match": "Komt overeen",
+    "mismatch": "Komt niet overeen"
+  },
+  "terms": {
+    "accept": "Ik accepteer de gebruiksvoorwaarden en het privacybeleid",
+    "termsLink": "Gebruiksvoorwaarden",
+    "privacyLink": "Privacybeleid",
+    "linkHint": "Opent in de browser",
+    "required": "Accepteer de voorwaarden om de arena in te gaan"
+  },
+  "verify": {
+    "bannerTitle": "Je e-mail is nog niet geverifieerd",
+    "bannerAction": "Verifiëren",
+    "bannerLabel": "Je e-mail is nog niet geverifieerd. Verifieer je e-mail",
+    "title": "Verifieer je e-mail",
+    "body": "We hebben een verificatielink gestuurd naar {{email}}. Open hem en kom dan hier terug.",
+    "why": "Oefenen werkt ook zonder. Voor ranked spellen heb je een geverifieerd e-mailadres nodig.",
+    "resend": "Opnieuw versturen",
+    "sent": "Nieuwe link verstuurd",
+    "check": "Ik heb geverifieerd",
+    "notYet": "Nog niet geverifieerd. Heb je de link geopend?",
+    "done": "E-mail geverifieerd. Bedankt!",
+    "devNote": "De ontwikkelmodus verstuurt geen e-mail: “Ik heb geverifieerd” markeert het e-mailadres als geverifieerd."
+  },
+  "edit": {
+    "title": "Profiel bewerken",
+    "save": "Opslaan",
+    "saved": "Profiel opgeslagen",
+    "nameRule": "Je kunt je naam één keer per 30 dagen wijzigen.",
+    "nameLocked": "Je kunt je naam één keer per 30 dagen wijzigen. Volgende wijziging: {{date}}.",
+    "offline": "Kan de server niet bereiken. Je kunt bewerken zodra je weer online bent."
+  },
+  "home": {
+    "provisional": "Voorlopige rating: je eerste 10 spellen"
+  },
+  "settings": {
+    "section": "Je account",
+    "signedInAs": "Ingelogd als {{email}}",
+    "editProfile": "Profiel bewerken",
+    "signOut": "Uitloggen",
+    "signOutTitle": "Uitloggen?",
+    "signOutBody": "Oefenspellen op deze telefoon blijven bewaard. Je moet inloggen om weer te spelen.",
+    "deleteAccount": "Account verwijderen",
+    "deleteTitle": "Je account verwijderen?",
+    "deleteBody": "Je e-mailadres, strijder en naam worden verwijderd, en dat kan niet ongedaan worden gemaakt. Spellen en ratings blijven bestaan, niet meer aan jou gekoppeld, zodat de spellen van andere spelers compleet blijven. Je naam komt vrij voor andere spelers.",
+    "deleteContinue": "Doorgaan",
+    "deletePasswordTitle": "Bevestig met je wachtwoord",
+    "deletePasswordBody": "Vul het wachtwoord van {{email}} in om het account te verwijderen.",
+    "deleteSubmit": "Mijn account definitief verwijderen",
+    "deleted": "Je account is verwijderd",
+    "deletedPartly": "Je account is verwijderd. We konden je inloggegevens niet verwijderen: wie daarmee inlogt, begint een nieuwe registratie.",
+    "method": {
+      "password": "Logt in met e-mail en wachtwoord",
+      "google": "Logt in met Google",
+      "both": "Logt in met Google, of met e-mail en wachtwoord"
+    },
+    "deleteGoogleTitle": "Bevestig met Google",
+    "deleteGoogleBody": "Kies het Google-account {{email}} opnieuw om het account te verwijderen.",
+    "deleteGoogleSubmit": "Bevestigen met Google en verwijderen",
+    "deleteGoogleAgain": "Om het account te verwijderen is een nieuwe bevestiging nodig. Probeer het opnieuw en kies je Google-account.",
+    "deleteWithPassword": "Liever bevestigen met je wachtwoord"
+  }
+}

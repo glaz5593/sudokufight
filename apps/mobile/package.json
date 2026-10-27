@@ -18,6 +18,7 @@
     "icons": "node scripts/gen-icons.mjs",
     "avatars:strings": "tsx scripts/gen-avatar-strings.ts",
     "countries:names": "tsx scripts/gen-country-names.ts",
+    "i18n:gen": "node scripts/gen-i18n-loader.mjs",
     "perf:bundle": "node scripts/bundle-report.mjs",
     "routes:types": "cross-env CI=true expo customize tsconfig.json"
   },

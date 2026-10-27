@@ -1,26 +1,61 @@
 import { ReduceMotion } from 'react-native-reanimated';
 
-import en from '../../../i18n/locales/en/ui.json';
-import he from '../../../i18n/locales/he/ui.json';
+import {
+  BLANK_OK,
+  checkLanguage,
+  type Dictionary,
+  flatten,
+  SOURCE_LANGUAGES,
+} from '../../../../../../scripts/lib/i18n-locales.mjs';
+import {
+  APP_LOCALES,
+  appPluralRules,
+  dailyErrors,
+  dailyLocales,
+  dictionaries,
+  readLocales,
+} from '../../../testing/localeFiles';
 import { motion } from '../../../theme/motion';
 import { timing } from '../motion';
 
-/** Every key of a translation file, dotted. */
-function keys(o: object, prefix = ''): string[] {
-  return Object.entries(o).flatMap(([k, v]) =>
-    typeof v === 'object' && v !== null ? keys(v as object, `${prefix}${k}.`) : [`${prefix}${k}`],
-  );
-}
+/**
+ * The ui namespace (the design system's strings) of Hebrew, English and every enabled language, as the daily
+ * check holds them (D120: Hebrew and English to every rule; an enabled translated language may lag behind them, as
+ * English shows meanwhile; `npm run i18n:release` holds every folder to everything).
+ */
+const locales = dailyLocales(readLocales(APP_LOCALES));
+const ui: Record<string, Dictionary> = Object.fromEntries(
+  Object.entries(dictionaries(locales)).map(([lang, d]): [string, Dictionary] => [
+    lang,
+    d.ui ? { ui: d.ui } : {},
+  ]),
+);
 
 describe('ui translations', () => {
-  it('has the same keys in Hebrew and English (spec §22)', () => {
-    expect(keys(he).sort()).toEqual(keys(en).sort());
+  it('Hebrew and English have the ui file', () => {
+    for (const lang of SOURCE_LANGUAGES)
+      expect({ lang, ui: Boolean(locales[lang]?.ui) }).toEqual({ lang, ui: true });
+  });
+
+  // Spec §22 and localization plan 0ד: English's keys (by a plural's base, with the forms the language needs).
+  it.each(Object.keys(ui))('%s has English’s keys, plural forms and placeholders', (lang) => {
+    const result = checkLanguage({
+      lang,
+      dict: ui[lang]!,
+      en: ui.en!,
+      he: ui.he,
+      plural: appPluralRules(lang),
+    });
+    expect(dailyErrors(lang, result)).toEqual([]);
   });
 
   it('has no empty strings', () => {
-    const values = (o: object): unknown[] =>
-      Object.values(o).flatMap((v) => (typeof v === 'object' && v !== null ? values(v as object) : [v]));
-    for (const v of [...values(he), ...values(en)]) expect(v).toEqual(expect.stringMatching(/\S/));
+    for (const [lang, namespaces] of Object.entries(locales)) {
+      for (const [key, value] of flatten(namespaces.ui ?? {})) {
+        if (BLANK_OK.test(key)) continue;
+        expect({ lang, key, value }).toEqual({ lang, key, value: expect.stringMatching(/\S/) });
+      }
+    }
   });
 });
 

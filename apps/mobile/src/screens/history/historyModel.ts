@@ -4,6 +4,7 @@ import { HISTORY_PAGE_SIZE, type HistoryGame } from '@sudoku-fight/protocol';
 import { type AvatarIdOrNone, NO_AVATAR_ID } from '../../avatars';
 import { colorIndexFor } from '../../components/player';
 import type { PracticeGameRecord } from '../../game/practiceRepo';
+import { dateFormat } from '../../i18n/compose';
 import { playerIdentity } from '../game/identity';
 
 /**
@@ -172,7 +173,7 @@ export function dayOf(at: number, now: number): 'today' | 'yesterday' | null {
 
 export function shortDate(at: number, language: string): string {
   try {
-    return new Intl.DateTimeFormat(language, { day: 'numeric', month: 'short' }).format(at);
+    return dateFormat(language, { day: 'numeric', month: 'short' }).format(at);
   } catch {
     return new Date(at).toISOString().slice(0, 10);
   }

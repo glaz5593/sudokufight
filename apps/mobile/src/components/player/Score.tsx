@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { type StyleProp, type TextStyle } from 'react-native';
 import Animated, {
   interpolateColor,
@@ -10,11 +11,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { decimalSeparator } from '../../i18n/compose';
 import { color } from '../../theme';
 import { motion, useReduceMotion } from '../../theme/motion';
 import { easing, NEVER_REDUCE, springs } from './anim';
 import { CountUpText } from './CountUpText';
-import { scoreText, signedText } from './format';
+import { scoreFormat, signedText } from './format';
 import { metrics } from './metrics';
 
 /** The last change to a score, for the delta slot next to it (components.md §3.4). A new `id` replays it. */
@@ -44,6 +46,10 @@ export interface ScoreNumberProps {
  * renders in React. Screen readers hear the final score in the card's summary, never the count.
  */
 export function ScoreNumber({ score, tint, textStyle, delta = null, testID }: ScoreNumberProps) {
+  const { t } = useTranslation('player');
+  const decimal = decimalSeparator(t);
+  // The count's worklet, with the language's separator in it (made once: its animated props stay set up).
+  const format = useMemo(() => scoreFormat(decimal), [decimal]);
   const reduce = useReduceMotion();
   const red = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -83,7 +89,7 @@ export function ScoreNumber({ score, tint, textStyle, delta = null, testID }: Sc
     transform: [{ scale: scale.get() }],
   }));
 
-  return <CountUpText value={score} format={scoreText} style={[textStyle, anim]} testID={testID} />;
+  return <CountUpText value={score} format={format} style={[textStyle, anim]} testID={testID} />;
 }
 
 export interface DeltaLabelProps {
@@ -111,6 +117,7 @@ export function DeltaLabel({
   style,
   testID,
 }: DeltaLabelProps) {
+  const { t } = useTranslation('player');
   const reduce = useReduceMotion();
   const opacity = useSharedValue(persistent && delta ? 1 : 0);
   const y = useSharedValue(0);
@@ -162,7 +169,7 @@ export function DeltaLabel({
       importantForAccessibility="no-hide-descendants"
       testID={testID}
     >
-      {signedText(delta.value)}
+      {signedText(delta.value, decimalSeparator(t))}
     </Animated.Text>
   );
 }

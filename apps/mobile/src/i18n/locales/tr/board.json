@@ -1,0 +1,48 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "Oyun tablosu",
+    "myLock": "senin hücren {{cell}}",
+    "otherLock": "{{cell}} hücresi kilitli, kilitleyen: {{name}}",
+    "tapLabel": "Aşamanın tablosu"
+  },
+  "cell": {
+    "empty": "boş",
+    "given": "ipucu",
+    "solvedByMe": "sen çözdün",
+    "solvedBy": "çözen: {{name}}",
+    "lockedByMe": "sende kilitli",
+    "lockedBy": "kilitleyen: {{name}}",
+    "pending": "kilit bekleniyor",
+    "queued": "{{digit}}, bağlantı bekleniyor",
+    "timerStopped": "süre durdu",
+    "seconds_one": "1 saniye",
+    "seconds_other": "{{count}} saniye",
+    "wrong": "yanlış rakamlar: {{digits}}",
+    "hintMyLock": "Tuş takımından bir rakam seç",
+    "player": "Oyuncu {{n}}",
+    "corrected": "hata bulundu: {{wrong}}, doğru rakam {{right}}",
+    "mine": "senin",
+    "outside": "alanın dışında",
+    "hintTap": "Hücreye dokunmak hamle sayılır"
+  },
+  "keypad": {
+    "armed": "Rakam {{digit}} · {{left}} kaldı",
+    "idle": "Rakam {{digit}}, {{left}} kaldı, önce bir hücre seç",
+    "complete": "Rakam {{digit}}, {{left}} kaldı",
+    "tried": "Rakam {{digit}} · bu hücrede zaten denendi"
+  },
+  "cancel": {
+    "label": "Seçimi iptal et",
+    "withCell": "Seçimi iptal et, {{cell}}"
+  },
+  "resume": {
+    "title": "Geri sayım",
+    "paused": "Maç duraklatıldı",
+    "label_one": "1 saniye sonra devam",
+    "label_other": "{{count}} saniye sonra devam"
+  }
+}

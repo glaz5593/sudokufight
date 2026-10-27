@@ -1,0 +1,46 @@
+{
+  "separator": {
+    "list": ", ",
+    "group": " · "
+  },
+  "board": {
+    "label": "게임 판",
+    "myLock": "내 칸 {{cell}}",
+    "otherLock": "{{name}} 님이 잠근 칸 {{cell}}",
+    "tapLabel": "스테이지 판"
+  },
+  "cell": {
+    "empty": "빈칸",
+    "given": "힌트 숫자",
+    "solvedByMe": "내가 푼 칸",
+    "solvedBy": "{{name}} 님이 푼 칸",
+    "lockedByMe": "내가 잠금",
+    "lockedBy": "{{name}} 님이 잠금",
+    "pending": "잠금 대기 중",
+    "queued": "{{digit}}, 연결 대기 중",
+    "timerStopped": "타이머 멈춤",
+    "seconds_other": "{{count}}초",
+    "wrong": "틀린 숫자: {{digits}}",
+    "hintMyLock": "키패드에서 숫자를 고르세요",
+    "player": "플레이어 {{n}}",
+    "corrected": "오류 발견: {{wrong}}, 맞는 숫자: {{right}}",
+    "mine": "내 칸",
+    "outside": "영역 밖",
+    "hintTap": "칸을 탭하면 그게 바로 수예요"
+  },
+  "keypad": {
+    "armed": "숫자 {{digit}} · {{left}}개 남음",
+    "idle": "숫자 {{digit}}, {{left}}개 남음, 먼저 칸을 고르세요",
+    "complete": "숫자 {{digit}}, {{left}}개 남음",
+    "tried": "숫자 {{digit}} · 이 칸에서 이미 시도함"
+  },
+  "cancel": {
+    "label": "선택 취소",
+    "withCell": "선택 취소, {{cell}}"
+  },
+  "resume": {
+    "title": "재개까지",
+    "paused": "게임이 일시정지됐어요",
+    "label_other": "{{count}}초 후 재개"
+  }
+}

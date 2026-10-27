@@ -1,0 +1,110 @@
+{
+  "actions": {
+    "report": "Oyuncuyu şikayet et",
+    "block": "Oyuncuyu engelle",
+    "unblock": "Engeli kaldır",
+    "reportLabel": "{{name}} adlı oyuncuyu şikayet et",
+    "blockLabel": "{{name}} adlı oyuncuyu engelle",
+    "unblockLabel": "{{name}} adlı oyuncunun engelini kaldır",
+    "blockedNote": "Bu oyuncuyu engelledin: dereceli maçlarda eşleşmeyeceksiniz."
+  },
+  "report": {
+    "title": "Şikayet et: {{name}}",
+    "question": "Sorun ne?",
+    "reasons": {
+      "offensiveName": "Rahatsız edici isim",
+      "cheating": "Hile",
+      "other": "Diğer"
+    },
+    "reasonHints": {
+      "offensiveName": "İsim kaba, aşağılayıcı ya da uygunsuz",
+      "cheating": "Dışarıdan yardım ya da bir hatayı kötüye kullanma gibi görünüyor",
+      "other": "Arenaya yakışmayan başka bir şey"
+    },
+    "privacy_one": "Oyuncu, kimin şikayet ettiğini bilmeyecek. Her şikayet 1 saat içinde incelenir.",
+    "privacy_other": "Oyuncu, kimin şikayet ettiğini bilmeyecek. Her şikayet {{hours}} saat içinde incelenir.",
+    "send": "Şikayeti gönder",
+    "pickFirst": "Bir neden seç, sonra gönder.",
+    "thanks_one": "Teşekkürler. Şikayeti 1 saat içinde inceleyeceğiz.",
+    "thanks_other": "Teşekkürler. Şikayeti {{hours}} saat içinde inceleyeceğiz.",
+    "done": "Kapat",
+    "errors": {
+      "rateLimited_one": "Son bir saatte çok sayıda şikayet gönderdin. Bir dakika sonra yenisini gönderebilirsin.",
+      "rateLimited_other": "Son bir saatte çok sayıda şikayet gönderdin. {{count}} dakika sonra yenisini gönderebilirsin.",
+      "busy": "Çok fazla istek var. Biraz bekleyip tekrar dene.",
+      "suspended": "Hesabın askıya alındı, bu yüzden şu an şikayet gönderemezsin.",
+      "self": "Kendini şikayet edemezsin.",
+      "notFound": "Bu oyuncu artık maçta değil.",
+      "offline": "Sunucuyla bağlantı yok: şikayet gönderilmedi. Tekrar dene.",
+      "failed": "Şikayeti gönderemedik. Tekrar dene."
+    }
+  },
+  "block": {
+    "title": "{{name}} adlı oyuncu engellensin mi?",
+    "body": "Dereceli maçlarda eşleşmeyeceksiniz ve {{name}} adlı oyuncunun tepkileri sana ulaşmayacak. Engelleme kimseye bildirilmez. İstediğin zaman kaldırabilirsin: Ayarlar → Engellenen oyuncular.",
+    "confirm": "Engelle",
+    "done": "{{name}} engellendi.",
+    "unblockTitle": "{{name}} adlı oyuncunun engeli kaldırılsın mı?",
+    "unblockBody": "Dereceli maçlarda yeniden karşılaşabilirsiniz ve {{name}} adlı oyuncunun tepkileri sana ulaşacak.",
+    "unblockConfirm": "Engeli kaldır",
+    "unblocked": "Engel kaldırıldı: {{name}}",
+    "errors": {
+      "limitReached_one": "En fazla 1 oyuncu engelleyebilirsin. Birinin engelini kaldır (Ayarlar → Engellenen oyuncular) ve tekrar dene.",
+      "limitReached_other": "En fazla {{max}} oyuncu engelleyebilirsin. Birinin engelini kaldır (Ayarlar → Engellenen oyuncular) ve tekrar dene.",
+      "self": "Kendini engelleyemezsin.",
+      "notFound": "Bu oyuncu artık maçta değil.",
+      "busy": "Çok fazla istek var. Biraz bekleyip tekrar dene.",
+      "offline": "Sunucuyla bağlantı yok: engelleme kaydedilmedi. Tekrar dene.",
+      "unblockOffline": "Sunucuyla bağlantı yok: engel kaldırılmadı. Tekrar dene.",
+      "failed": "Engellemeyi kaydedemedik. Tekrar dene.",
+      "unblockFailed": "Engeli kaldıramadık. Tekrar dene."
+    }
+  },
+  "blocked": {
+    "title": "Engellenen oyuncular",
+    "settingsRow": "Engellenen oyuncular",
+    "note": "Dereceli maçlarda eşleşmezsiniz ve tepkileri sana ulaşmaz. Engelleme kimseye bildirilmez.",
+    "count": "{{count}} / {{max}}",
+    "since": "Engellenme: {{date}}",
+    "rowLabel": "{{name}}, engellenme tarihi: {{date}}",
+    "emptyTitle": "Engellenen oyuncu yok",
+    "emptyBody": "Bir oyuncuyu kartından ya da dereceli maçta kartının menüsünden engelleyebilirsin.",
+    "loading": "Engellenen oyuncular yükleniyor…",
+    "offlineTitle": "Sunucuyla bağlantı yok",
+    "offlineBody": "Liste sunucuda tutuluyor. Çevrimiçi olunca tekrar dene.",
+    "errorTitle": "Listeyi yükleyemedik",
+    "errorBody": "Birazdan tekrar dene.",
+    "retry": "Tekrar dene",
+    "signedOut": "Listeyi görmek için giriş yap."
+  },
+  "chooseName": {
+    "title": "Yeni bir isim seç",
+    "body": "Önceki ismin isim kurallarına uymadığı için geçici bir isimle değiştirildi: {{name}}. Devam etmek için yeni bir isim seç.",
+    "rule": "Bu sefer 30 gün beklemen gerekmiyor: hemen bir isim seçebilirsin.",
+    "save": "Kaydet ve devam et",
+    "saved": "Yeni ismin kaydedildi.",
+    "same": "Bu geçici isim. Kendi ismini seç.",
+    "offline": "Sunucuyla bağlantı yok: isim kaydedilmedi. Çevrimiçi olunca tekrar dene.",
+    "practice": "Bu arada antrenman yap",
+    "settings": "Ayarlar",
+    "signOut": "Çıkış yap"
+  },
+  "suspended": {
+    "banner": "Hesap askıda: dereceli maç yok",
+    "bannerAction": "Ayrıntılar",
+    "bannerLabel": "Hesap askıda, dereceli maç yok. Ayrıntılar",
+    "title": "Hesap askıya alındı",
+    "body": "Bir şikayetin ardından hesabın askıya alındı. Bu süre boyunca dereceli maç oynanamaz ve profil değiştirilemez.",
+    "can": "Yine de tek başına ya da bota karşı antrenman yapabilir, oyuncuları engelleyebilir ve hesabı silebilirsin.",
+    "contactTitle": "Bunun bir hata olduğunu mu düşünüyorsun?",
+    "contact": "Bize yaz, yeniden bakalım. İletişim bilgileri kullanım koşullarında.",
+    "contactEmail": "Bize yazabilirsin: {{email}}",
+    "openContact": "İletişim bilgileri",
+    "opensInBrowser": "Tarayıcıda açılır",
+    "practice": "Antrenman",
+    "chip": "Hesap askıda",
+    "chipLabel": "Kullanılamıyor: hesap askıda",
+    "ranked": "Hesabın askıda, bu yüzden şimdilik dereceli maç yok.",
+    "editProfile": "Hesap askıda: profil değiştirilemez"
+  }
+}

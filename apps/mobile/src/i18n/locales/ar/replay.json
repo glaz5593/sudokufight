@@ -1,0 +1,92 @@
+{
+  "title": "إعادة العرض",
+  "subtitle": "{{mode}} · {{type}} · {{date}}",
+  "mode": {
+    "solo": "تدريب فردي",
+    "bot": "تدريب ضد بوت",
+    "ranked": "مصنفة"
+  },
+  "back": "رجوع",
+  "loading": "جارٍ تحميل المباراة…",
+  "load": {
+    "missing": "لم نعثر على هذه المباراة",
+    "notFinished": "ما زالت المباراة تُحفظ على الخادم. يمكنك المحاولة مجددًا بعد لحظة",
+    "offline": "لا اتصال بالخادم. المباريات المصنفة تُحمَّل من الخادم",
+    "signedOut": "يجب تسجيل الدخول لمشاهدة مباراة مصنفة",
+    "unavailable": "تعذّرت قراءة هذه المباراة",
+    "retry": "إعادة المحاولة",
+    "partial": "انقطعت هذه المباراة: إعادة العرض تصل حتى آخر حركة محفوظة"
+  },
+  "step": {
+    "counter": "الخطوة {{number}} من {{total}}",
+    "clockLabel": "ساعة المباراة: {{clock}}"
+  },
+  "nav": {
+    "prev": "السابقة",
+    "next": "التالية",
+    "timeline": "شريط الخطوات",
+    "timelineValue": "الخطوة {{number}} من {{total}}، {{clock}}",
+    "timelineHint": "السحب للأعلى أو للأسفل يغيّر الخطوة"
+  },
+  "narration": {
+    "start": "بداية المباراة",
+    "select": "{{name}} · اختيار {{cell}}",
+    "correct": "{{name}} · صحيح في {{cell}} · {{delta}}",
+    "wrong": "{{name}} · خطأ في {{cell}} · {{delta}}",
+    "release": {
+      "cancel": "{{name}} · إلغاء اختيار {{cell}}",
+      "timeout": "{{name}} · انتهى الوقت في {{cell}}"
+    },
+    "interference": "{{name}} · تشويش على {{target}} · {{delta}}",
+    "disconnect": "{{name}} · انقطاع الاتصال",
+    "reconnect": "{{name}} · العودة إلى المباراة",
+    "offline": "{{name}} · فقدان الاتصال",
+    "surrender": "{{name}} · استسلام",
+    "endPractice": "{{name}} · إنهاء التدريب",
+    "abandon": "{{name}} · مغادرة المباراة",
+    "over": "انتهت المباراة",
+    "paused": "المباراة مجمّدة",
+    "offlineSuffix": "أُرسلت عند عودة الاتصال"
+  },
+  "explain": {
+    "title": "شرح لكل لاعب",
+    "none": "لا توجد حركة من {{name}} بعد",
+    "noneMe": "لا توجد حركة لي بعد",
+    "noneBody": "يظهر الشرح بعد الحركة الأولى",
+    "status": {
+      "choosing": "قيد الاختيار",
+      "released": "تراجع",
+      "correct": "صحيح",
+      "wrong": "خطأ"
+    },
+    "move": "{{cell}} → {{digit}}",
+    "played": "{{digit}} بدلًا من {{answer}}",
+    "why": "لماذا لا يصلح {{digit}}: {{text}}",
+    "noLogic": "الإجابة: {{cell}} → {{digit}}",
+    "scoreLine": "حساب النقاط",
+    "penaltyLine": "الغرامة: قيمة الرقم الصحيح",
+    "released": {
+      "cancel": "أُلغي الاختيار",
+      "timeout": "انتهى الوقت",
+      "switch": "الانتقال إلى خانة أخرى",
+      "mistake": "بعد خطأ",
+      "surrender": "مغادرة المباراة",
+      "disconnect": "انقطاع الاتصال",
+      "abandon": "انسحاب"
+    },
+    "label": "{{name}}: {{status}}، {{move}}. {{technique}}. {{text}}",
+    "labelNone": "{{name}}: {{text}}",
+    "chip": "{{status}} {{points}}"
+  },
+  "moments": {
+    "title": "لحظات حاسمة",
+    "bestMove": "أفضل حركة",
+    "mistakes": "الأخطاء · {{count}}",
+    "interferences": "التشويشات · {{count}}",
+    "turningPoint": "نقطة التحول",
+    "hint": "ينتقل إلى تلك الخطوة"
+  },
+  "board": "اللوحة في الخطوة {{number}}",
+  "me": "أنا",
+  "unknown": "لاعب"
+}

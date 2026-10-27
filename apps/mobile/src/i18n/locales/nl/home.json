@@ -1,0 +1,282 @@
+{
+  "brand": {
+    "name": "Sudoku Fight",
+    "wordStart": "SUDOKU",
+    "wordEnd": "FIGHT",
+    "sub": "Sudoku Fight"
+  },
+  "header": {
+    "settings": "Instellingen",
+    "back": "Terug"
+  },
+  "profile": {
+    "defaultName": "Speler",
+    "label": "Mijn spelerskaart: {{name}}",
+    "noRating": "Nog geen rating",
+    "ratingTitle": "Je rating",
+    "none": "—",
+    "games_one": "{{count}} spel",
+    "games_other": "{{count}} spellen",
+    "gamesLabel_one": "spel",
+    "gamesLabel_other": "spellen",
+    "winsLabel": "gewonnen",
+    "streakLabel": "reeks",
+    "winRate": "{{percent}}% gewonnen",
+    "streak_zero": "Geen winstreeks",
+    "streak_one": "Een reeks van {{count}} overwinning",
+    "streak_other": "Een reeks van {{count}} overwinningen"
+  },
+  "play": "Spelen",
+  "playHint": "Kies een spelmodus",
+  "again": {
+    "title": "Nog een ronde",
+    "subtitle": "{{mode}} · {{type}}",
+    "subtitleBot": "{{mode}} · {{type}} · {{bot}}",
+    "subtitleRanked": "{{mode}} · {{players}} · {{type}}"
+  },
+  "start": {
+    "failed": "Spel kon niet starten. Probeer opnieuw."
+  },
+  "recent": {
+    "heading": "Recente spellen",
+    "all": "Alle",
+    "unavailable": "De spellen op deze telefoon konden niet worden gelezen.",
+    "emptyTitle": "Nog geen spellen",
+    "emptyBody": "Elk oefenspel wordt hier bewaard, ook nadat je de app sluit.",
+    "title": "{{mode}} · {{type}}",
+    "outcome": {
+      "completed": "Voltooid",
+      "ended": "Gestopt",
+      "interrupted": "Onderbroken",
+      "playing": "Bezig",
+      "win": "Gewonnen",
+      "loss": "Verloren",
+      "tie": "Gelijkspel"
+    },
+    "openHint": "Opent de uitslag",
+    "versus": "{{outcome}} tegen {{name}}"
+  },
+  "modes": {
+    "title": "Nieuw spel",
+    "footnote": "Ranked vereist een internetverbinding · Oefenen kan altijd",
+    "soon": "Binnenkort",
+    "groups": {
+      "ranked": {
+        "title": "Ranked spelen",
+        "note": "Echte tegenstanders, in realtime"
+      },
+      "friends": {
+        "title": "Met vrienden",
+        "titleMoshe": "Echte vrienden, in realtime",
+        "note": "Privékamer · tot 4 · zonder rating"
+      },
+      "practice": {
+        "title": "Oefenen",
+        "note": "Geen druk, geen rating"
+      }
+    },
+    "chips": {
+      "rated": "Met rating",
+      "unrated": "Zonder rating",
+      "offline": "Werkt offline"
+    },
+    "ranked": {
+      "name": "Ranked spel"
+    },
+    "ranked2": {
+      "title": "2 spelers",
+      "tagline": "Eén tegen één · hetzelfde bord",
+      "label": "Ranked spel · 2 spelers"
+    },
+    "ranked3": {
+      "title": "3 spelers",
+      "tagline": "Ieder voor zich",
+      "label": "Ranked spel · 3 spelers"
+    },
+    "ranked4": {
+      "title": "4 spelers",
+      "tagline": "Ieder voor zich",
+      "label": "Ranked spel · 4 spelers"
+    },
+    "friends": {
+      "create": "Maak kamer",
+      "createHint": "Opent een wachtkamer met een code om naar je vrienden te sturen",
+      "join": "Code invoeren",
+      "joinHint": "Typ de 6 cijfers die je kreeg"
+    },
+    "solo": {
+      "name": "Solo oefenen",
+      "title": "Solo · volledig bord",
+      "tagline": "In je eigen tempo",
+      "label": "Solo · volledig bord"
+    },
+    "levels": {
+      "name": "Oefenen in etappes",
+      "title": "Oefenen in etappes",
+      "tagline": "Korte etappes · tot 3 sterren",
+      "taglineNew_one": "{{total}} korte etappe · 0–3 sterren",
+      "taglineNew_other": "{{total}} korte etappes · 0–3 sterren",
+      "chip": "Etappe {{stage}} ·",
+      "offline": "Offline",
+      "chipLabel_one": "Etappe {{stage}} · {{count}} ster",
+      "chipLabel_other": "Etappe {{stage}} · {{count}} sterren",
+      "label": "Oefenen in etappes"
+    },
+    "bot": {
+      "name": "Oefenen tegen bot",
+      "title": "Oefenen tegen bot",
+      "tagline": "5 niveaus",
+      "label": "Oefenen tegen bot"
+    }
+  },
+  "gameTypes": {
+    "fast": {
+      "name": "Snel",
+      "difficulty": "Makkelijk",
+      "technique": "Op te lossen met alleen naakte singles"
+    },
+    "normal": {
+      "name": "Normaal",
+      "difficulty": "Gemiddeld",
+      "technique": "Vereist verborgen singles"
+    },
+    "hard": {
+      "name": "Moeilijk",
+      "difficulty": "Moeilijk",
+      "technique": "Vereist paren of eliminaties"
+    }
+  },
+  "gameType": {
+    "title": "Speltype",
+    "note": {
+      "solo": "Zonder rating. Het bord komt uit de puzzels op deze telefoon, zonder een bord te herhalen dat je onlangs speelde.",
+      "bot": "Zonder rating. Het bord komt uit de puzzels op deze telefoon, zonder een bord te herhalen dat je onlangs speelde. Daarna kies je je tegenstander.",
+      "ranked": "Met rating. Een tegenstander met een rating dicht bij de jouwe, een bord uit de verzameling van de server dat je nog niet hebt gespeeld, en hetzelfde bord voor jullie allebei.",
+      "rankedGroup": "Met rating. Tegenstanders met een rating dicht bij de jouwe, een bord uit de verzameling van de server dat je nog niet hebt gespeeld, en hetzelfde bord voor iedereen. Het spel begint zodra de tafel vol is."
+    },
+    "start": {
+      "solo": "Oefenen starten",
+      "bot": "Tegenstander kiezen",
+      "ranked": "Tegenstander zoeken",
+      "rankedGroup": "Tegenstanders zoeken"
+    },
+    "startHint": "Start een oefenspel van het type {{type}}",
+    "rankedHint": "Zoekt een tegenstander voor een ranked spel van het type {{type}}",
+    "rankedGroupHint": "Zoekt tegenstanders voor een ranked spel van het type {{type}}",
+    "lockTime": "Tijd per vakje",
+    "board": "Bord",
+    "duration": "Geschatte duur",
+    "seconds": "{{seconds}} sec.",
+    "minutes": "{{range}} min.",
+    "yourRating": "Je rating",
+    "cardLabel_one": "{{name}}. {{technique}}. {{seconds}} per vakje, moeilijkheid {{difficulty}}, ongeveer {{from}} tot {{to}} minuut",
+    "cardLabel_other": "{{name}}. {{technique}}. {{seconds}} per vakje, moeilijkheid {{difficulty}}, ongeveer {{from}} tot {{to}} minuten",
+    "botHint": "Kies een bot voor een spel van het type {{type}}"
+  },
+  "dev": {
+    "title": "Ontwikkeling",
+    "designSystem": "Designsysteem",
+    "hello": "Verbindingstest"
+  },
+  "settings": {
+    "title": "Instellingen",
+    "feedback": "Geluid en trillen",
+    "sound": "Geluid",
+    "soundHint": "Geluiden bij zetten en acties",
+    "haptics": "Trillen",
+    "hapticsHint": "Korte trillingen als feedback bij zetten",
+    "motion": "Minder beweging",
+    "motionHint": "Minder animaties: scores springen meteen naar de uitkomst, en een verstoring verschijnt even lang als een stilstaande afdekking.",
+    "reduceMotion": {
+      "system": "Zoals het apparaat",
+      "on": "Aan",
+      "off": "Uit"
+    },
+    "language": "Taal",
+    "languageHint": "Als je de taal wijzigt, start de app opnieuw.",
+    "testing": "Testen",
+    "testingHint": "Alleen in testversies (staging). De versie in de winkel heeft dit niet.",
+    "chainPenalty": "Keten: gokken kost 5 sec.",
+    "chainPenaltyHint": "Vanaf de volgende ketenetappe: een cijfer in een vakje dat nog niet te weten is, kost 5 seconden en wordt niet geplaatst.",
+    "unlockAll": "Alle etappes vrijspelen (testen)",
+    "unlockAllHint": "Elke etappe staat open op de kaart. Sterren en XP tellen zoals gewoonlijk.",
+    "languageConfirm": {
+      "title": "Taal wijzigen naar {{language}}?",
+      "body": "De app start opnieuw, zodat elk scherm in de leesrichting van de nieuwe taal verschijnt.",
+      "confirm": "Wijzigen en herstarten",
+      "titleDevice": "Taal van het apparaat gebruiken?"
+    },
+    "languageDevice": "Taal van het apparaat",
+    "languageSheetTitle": "Kies een taal",
+    "languageField": "Taal: {{language}}",
+    "languageFieldDevice": "Taal: taal van het apparaat, {{language}}",
+    "about": "Info en juridisch",
+    "privacy": "Privacybeleid",
+    "terms": "Gebruiksvoorwaarden",
+    "licenses": "Licenties",
+    "opensInBrowser": "Opent in de browser"
+  },
+  "placeholder": {
+    "soon": "Binnenkort",
+    "leaderboard": {
+      "title": "Ranglijst",
+      "body": "De ranglijst opent tegelijk met de ranked spellen."
+    },
+    "history": {
+      "title": "Geschiedenis",
+      "body": "Al je spellen komen hier, met herhalingen en uitleg bij elke zet. Intussen staan je laatste oefenspellen op het startscherm."
+    },
+    "achievements": {
+      "title": "Prestaties",
+      "body": "Prestaties, niveaus en XP zijn onderweg."
+    }
+  },
+  "botSelect": {
+    "title": "Kies een bot",
+    "subtitle": "{{mode}} · {{type}}",
+    "levelTitle": "{{level}} · {{title}}",
+    "thinkTime": "Denktijd per zet",
+    "thinkValue": "{{range}} sec.",
+    "mistakes": "Fouten",
+    "note": "Dat is de tijd voor een gewone zet. Voor een vakje dat moeilijkere logica vraagt, heeft de bot meer tijd nodig, en voor het laatste gat in een rij, kolom of blok iets minder. De bot speelt hetzelfde bord, in realtime.",
+    "start": "Spelen maar",
+    "startHint": "Start een oefenspel ({{type}}) tegen {{name}}",
+    "cardLabel_one": "Niveau {{level}}, {{title}}: {{name}}. {{behavior}}. Denkt {{from}} tot {{to}} seconde per zet, {{mistakes}}% fouten",
+    "cardLabel_other": "Niveau {{level}}, {{title}}: {{name}}. {{behavior}}. Denkt {{from}} tot {{to}} seconden per zet, {{mistakes}}% fouten",
+    "levels": {
+      "1": {
+        "title": "Beginner",
+        "behavior": "Langzaam, maakt aardig wat fouten en laat je leren"
+      },
+      "2": {
+        "title": "Liefhebber",
+        "behavior": "Ontspannen, gaat hier en daar de mist in, en stuurt soms een 😂"
+      },
+      "3": {
+        "title": "Gevorderd",
+        "behavior": "Rustig en bedachtzaam, en moeilijk in te halen"
+      },
+      "4": {
+        "title": "Meester",
+        "behavior": "Snel, bijna nooit fout, en een tikje zelfvoldaan 😎"
+      },
+      "5": {
+        "title": "Grootmeester",
+        "behavior": "Snel, precies en genadeloos"
+      }
+    }
+  },
+  "licenses": {
+    "title": "Licenties",
+    "intro": "Sudoku Fight is gebouwd op open lettertypen en opensourcesoftware. Dank aan de makers. Hier zijn hun licenties en auteursrechtvermeldingen.",
+    "fonts": "Lettertypen",
+    "fontLicense": "SIL Open Font License 1.1",
+    "packages_one": "{{count}} opensourcepakket",
+    "packages_other": "{{count}} opensourcepakketten",
+    "packageLabel": "{{name}}, versie {{version}}, licentie {{license}}",
+    "texts": "Licentieteksten",
+    "textsHint": "De volledige tekst van elke licentie, zoals geschreven.",
+    "show": "Licentie {{license}} tonen",
+    "hide": "Licentie {{license}} verbergen"
+  }
+}

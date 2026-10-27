@@ -1,0 +1,196 @@
+{
+  "common": {
+    "provisional": "定级积分",
+    "provisionalNote_other": "在同一种对局类型中完成{{games}}场排位对局后，就会显示你的段位",
+    "level": "等级{{level}}",
+    "you": "你",
+    "myCard": "我的玩家卡片",
+    "loading": "加载中…",
+    "retry": "再试一次",
+    "offlineNote": "无法连接服务器：显示之前加载的内容。",
+    "errorNote": "无法更新：显示之前加载的内容。",
+    "offlineTitle": "无法连接服务器",
+    "offlineBody": "连接恢复后排行榜会更新。",
+    "errorTitle": "出错了",
+    "errorBody": "服务器暂时无法响应。请稍后再试。",
+    "signedOut": "登录后即可查看",
+    "players_other": "{{count}}名玩家",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}，正向等级{{level}}迈进"
+  },
+  "leaderboard": {
+    "title": "排行榜",
+    "tabs": {
+      "label": "积分类型",
+      "general": "综合",
+      "fast": "快速",
+      "normal": "普通",
+      "hard": "困难",
+      "friends": "好友"
+    },
+    "caption": {
+      "general": "综合 · 每位玩家的最高积分",
+      "type": "{{type}}积分 · 全球",
+      "typePlayers": "{{type}}积分 · {{players}} · 全球",
+      "friends": "你最近的对手"
+    },
+    "players": "玩家人数",
+    "podium": "前三名",
+    "rankLabel": "第{{rank}}名",
+    "meName": "{{name}}（你）",
+    "openHint": "打开玩家卡片",
+    "meNone": "你在这个榜单上还没有积分",
+    "play": "开始",
+    "playHint": "打一场排位对局即可上榜",
+    "climbHint": "多玩几局，冲上排行榜",
+    "emptyTitle": "这里还没有人",
+    "emptyBody": "打一场排位对局，成为榜上第一人。"
+  },
+  "friends": {
+    "invite": "邀请好友",
+    "inviteMessage": "来 Sudoku Fight 和我比一比！",
+    "inviteNote": "多一个好友 = 多一个对手",
+    "emptyTitle": "还没有对手",
+    "emptyBody": "打几场排位对局，你的对手就会出现在这里。完整的好友列表即将推出。"
+  },
+  "league": {
+    "title": "段位",
+    "toNext": "距{{league}}还差{{points}}",
+    "top": "最高段位",
+    "general": "综合{{rating}} · {{next}}",
+    "generalTop": "综合{{rating}} · 最高段位",
+    "ladder": "段位阶梯",
+    "step": "{{league}}段位，积分{{floor}}起"
+  },
+  "card": {
+    "title": "玩家卡片",
+    "edit": "编辑个人资料",
+    "notFound": "找不到这名玩家",
+    "offlineBody": "卡片需要从服务器加载。连接恢复后请再试一次。",
+    "savedNote": "无法连接服务器：显示已保存的卡片。",
+    "meLabel": "{{name}}，我的卡片",
+    "ratingsTitle": "各对局类型积分",
+    "ratingsNote_other": "{{n}}项积分",
+    "noRatings": "还没有积分",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "最近几局上升{{points}}",
+    "trendDown": "最近几局下降{{points}}",
+    "trendFlat": "最近几局没有变化",
+    "atPeak": "正处于巅峰",
+    "peak": "最高{{value}}",
+    "atPeakShort": "巅峰！",
+    "peakShort": "最高{{value}}",
+    "games_other": "{{count}}场对局",
+    "statsTitle": "战斗数据",
+    "stats": {
+      "games": "对局",
+      "wins": "胜场",
+      "losses": "负场",
+      "winRate": "胜率",
+      "streak": "连胜",
+      "bestStreak": "最长连胜",
+      "bestMove": "最佳一步",
+      "avgMistakes": "场均错误"
+    },
+    "recentTitleSection": "最近战绩",
+    "recentNote": "最近{{n}}场",
+    "recentEmpty": "还没有排位对局。",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "胜",
+      "loss": "负",
+      "tie": "平局"
+    },
+    "outcomeShort": {
+      "win": "胜",
+      "loss": "负",
+      "tie": "平"
+    },
+    "place": "第{{place}}名",
+    "points": "{{score}}分",
+    "ratingDelta": "积分{{delta}}",
+    "formLabel": "最近战绩，从新到旧：{{list}}",
+    "replayHint": "打开回放",
+    "openOf": "{{name}}的玩家卡片",
+    "achievementsTitle": "最佳成就",
+    "allAchievements": "全部成就",
+    "joinedSince": "自{{date}}起开始游戏",
+    "favorite": {
+      "title": "最爱的干扰",
+      "uses_other": "次",
+      "label_other": "最爱的干扰：{{kind}}，发送了{{count}}次"
+    }
+  },
+  "achievements": {
+    "title": "成就",
+    "soon": "即将推出",
+    "soonBody": "12项成就即将上线：首胜、连胜、最佳一步等等。很快就会出现在这里。",
+    "soonShort": "成就即将推出。",
+    "earned": "{{name}}，获得于{{date}}"
+  },
+  "progress": {
+    "title": "成就与进度",
+    "savedNote": "无法连接服务器：显示已保存的数据。",
+    "pending_other": "{{count}}次练习正在等待与服务器同步",
+    "offlineBody": "连接服务器后会显示你的等级和 XP。",
+    "levelWord": "等级",
+    "xpTitle": "经验值",
+    "toGo": "距等级{{level}}还差{{xp}}",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "如何获得 XP",
+    "how": {
+      "win": "排位赛获得第一名，或战胜机器人",
+      "played": "排位赛或人机对战中的其他结果",
+      "solo": "单人练习",
+      "perCorrect": "排位赛和人机对战中，每一步正确落子"
+    }
+  },
+  "interferences": {
+    "title": "干扰",
+    "entry": "干扰图鉴",
+    "entryNote": "{{open}}个已开放 · {{locked}}个未解锁",
+    "countLabel_other": "已开放{{open}}/{{total}}种干扰",
+    "opened": "已开放",
+    "facts": {
+      "seconds": "秒/次",
+      "cost": "每发动一次，费用翻倍",
+      "launch": "次点击：先点对手卡片上的“干扰”，再选干扰",
+      "launchValue": "2"
+    },
+    "arsenal": "你的武器库",
+    "tapHint": "点击预览",
+    "openLabel": "{{name}}，可用。{{description}}",
+    "previewHint": "显示预览",
+    "available": "可用",
+    "previewing": "预览中",
+    "lockedTitle": "未解锁",
+    "lockedNote": "随等级提升解锁",
+    "soon": "即将推出",
+    "atLevel": "等级{{level}}解锁",
+    "lockedLabel": "{{name}}，未解锁，{{when}}",
+    "howTo": "对局中：点击对手卡片上的“干扰”，然后选择一种干扰。",
+    "future": {
+      "earthquake": "地震",
+      "fog": "迷雾",
+      "bubbles": "泡泡",
+      "torch": "手电筒"
+    },
+    "description": {
+      "fireworks": "一阵五彩烟花在屏幕上绽放",
+      "cats": "一队猫咪飞奔穿过屏幕",
+      "warp": "屏幕扭曲闪烁",
+      "scramble": "盘面上的数字被打乱互换",
+      "ink": "慢慢褪去的墨渍",
+      "keypad": "数字键互换位置",
+      "earthquake": "屏幕剧烈摇晃",
+      "fog": "慢慢散去的迷雾",
+      "bubbles": "必须戳破的泡泡",
+      "torch": "盘面变暗，只剩手电筒的光"
+    }
+  },
+  "home": {
+    "levelXp": "等级{{level}} · {{xp}}"
+  }
+}

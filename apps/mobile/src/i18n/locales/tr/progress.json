@@ -1,0 +1,204 @@
+{
+  "common": {
+    "provisional": "Geçici derece",
+    "provisionalNote_one": "Ligin, bir maç türünde 1 dereceli maçtan sonra görünür",
+    "provisionalNote_other": "Ligin, bir maç türünde {{games}} dereceli maçtan sonra görünür",
+    "level": "Seviye {{level}}",
+    "you": "Sen",
+    "myCard": "Oyuncu kartım",
+    "loading": "Yükleniyor…",
+    "retry": "Tekrar dene",
+    "offlineNote": "Sunucuyla bağlantı yok: önceden yüklenenler gösteriliyor.",
+    "errorNote": "Güncellenemedi: önceden yüklenenler gösteriliyor.",
+    "offlineTitle": "Sunucuyla bağlantı yok",
+    "offlineBody": "Sıralama, bağlantı geri gelince güncellenir.",
+    "errorTitle": "Bir şeyler ters gitti",
+    "errorBody": "Sunucu şu an yanıt veremedi. Birazdan tekrar dene.",
+    "signedOut": "Bunu görmek için giriş yap",
+    "players_one": "1 oyuncu",
+    "players_other": "{{count}} oyuncu",
+    "none": "—",
+    "xpOf": "{{into}} / {{total}} XP",
+    "xpToNext": "{{xp}}, hedef: seviye {{level}}"
+  },
+  "leaderboard": {
+    "title": "Sıralama",
+    "tabs": {
+      "label": "Derece türü",
+      "general": "Genel",
+      "fast": "Hızlı",
+      "normal": "Standart",
+      "hard": "Zor",
+      "friends": "Arkadaşlar"
+    },
+    "caption": {
+      "general": "Genel · her oyuncunun en yüksek derecesi",
+      "type": "Derece: {{type}} · dünya geneli",
+      "typePlayers": "Derece: {{type}} · {{players}} · dünya geneli",
+      "friends": "Son rakiplerin"
+    },
+    "players": "Oyuncu sayısı",
+    "podium": "İlk üç",
+    "rankLabel": "{{rank}}. sıra",
+    "meName": "{{name}} (sen)",
+    "openHint": "Oyuncu kartını açar",
+    "meNone": "Bu tabloda henüz derecen yok",
+    "play": "Oyna",
+    "playHint": "Tabloya girmek için dereceli bir maç oyna",
+    "climbHint": "Tabloda yükselmek için oyna",
+    "emptyTitle": "Burada henüz kimse yok",
+    "emptyBody": "Dereceli bir maç oyna ve tablodaki ilk kişi sen ol."
+  },
+  "friends": {
+    "invite": "Arkadaşlarını davet et",
+    "inviteMessage": "Gel, Sudoku Fight oyununda benimle oyna!",
+    "inviteNote": "Bir arkadaş daha = bir rakip daha",
+    "emptyTitle": "Henüz rakip yok",
+    "emptyBody": "Dereceli bir maç oyna, rakiplerin burada görünsün. Tam bir arkadaş listesi yakında geliyor."
+  },
+  "league": {
+    "title": "Lig",
+    "toNext": "{{league}} ligine {{points}} kaldı",
+    "top": "En yüksek lig",
+    "general": "Genel {{rating}} · {{next}}",
+    "generalTop": "Genel {{rating}} · en yüksek lig",
+    "ladder": "Lig basamakları",
+    "step": "{{league}} ligi, {{floor}} dereceden itibaren"
+  },
+  "card": {
+    "title": "Oyuncu kartı",
+    "edit": "Profili düzenle",
+    "notFound": "Oyuncu bulunamadı",
+    "offlineBody": "Kart sunucudan yüklenir. Bağlantı geri gelince tekrar dene.",
+    "savedNote": "Sunucuyla bağlantı yok: kaydedilen kart gösteriliyor.",
+    "meLabel": "{{name}}, kartım",
+    "ratingsTitle": "Maç türüne göre derece",
+    "ratingsNote_one": "1 derece",
+    "ratingsNote_other": "{{n}} derece",
+    "noRatings": "Henüz derece yok",
+    "typePlayers": "{{type}} · {{players}}",
+    "trendUp": "son maçlarda {{points}} yükseldi",
+    "trendDown": "son maçlarda {{points}} düştü",
+    "trendFlat": "son maçlarda değişmedi",
+    "atPeak": "zirvede",
+    "peak": "zirve {{value}}",
+    "atPeakShort": "Zirvede!",
+    "peakShort": "Zirve {{value}}",
+    "games_one": "1 maç",
+    "games_other": "{{count}} maç",
+    "statsTitle": "Mücadele istatistikleri",
+    "stats": {
+      "games": "Maçlar",
+      "wins": "Galibiyetler",
+      "losses": "Mağlubiyetler",
+      "winRate": "Galibiyet oranı",
+      "streak": "Galibiyet serisi",
+      "bestStreak": "En iyi seri",
+      "bestMove": "En iyi hamle",
+      "avgMistakes": "Maç başına hata"
+    },
+    "recentTitleSection": "Son sonuçlar",
+    "recentNote": "son {{n}}",
+    "recentEmpty": "Henüz dereceli maç yok.",
+    "recentTitle": "{{type}} · {{players}}",
+    "outcome": {
+      "win": "Galibiyet",
+      "loss": "Mağlubiyet",
+      "tie": "Beraberlik"
+    },
+    "outcomeShort": {
+      "win": "G",
+      "loss": "M",
+      "tie": "B"
+    },
+    "place": "{{place}}. sıra",
+    "points": "{{score}} puan",
+    "ratingDelta": "derece {{delta}}",
+    "formLabel": "Son sonuçlar, en yenisi önce: {{list}}",
+    "replayHint": "Maç tekrarını açar",
+    "openOf": "{{name}} adlı oyuncunun kartı",
+    "achievementsTitle": "En iyi başarılar",
+    "allAchievements": "Tüm başarılar",
+    "joinedSince": "{{date}} tarihinden beri oynuyor",
+    "favorite": {
+      "title": "Favori sabotaj",
+      "uses_one": "kez",
+      "uses_other": "kez",
+      "label_one": "Favori sabotaj: {{kind}}, bir kez gönderildi",
+      "label_other": "Favori sabotaj: {{kind}}, {{count}} kez gönderildi"
+    }
+  },
+  "achievements": {
+    "title": "Başarılar",
+    "soon": "Yakında",
+    "soonBody": "12 başarı yolda: ilk galibiyet, galibiyet serileri, en iyi hamleler ve daha fazlası. Yakında burada.",
+    "soonShort": "Başarılar yakında geliyor.",
+    "earned": "{{name}}, kazanma tarihi: {{date}}"
+  },
+  "progress": {
+    "title": "Başarılar ve ilerleme",
+    "savedNote": "Sunucuyla bağlantı yok: kaydedilen sayılar gösteriliyor.",
+    "pending_one": "1 antrenman sunucuyla eşitlenmeyi bekliyor",
+    "pending_other": "{{count}} antrenman sunucuyla eşitlenmeyi bekliyor",
+    "offlineBody": "Seviye ve XP bilgin, sunucuya bağlanınca görünür.",
+    "levelWord": "Seviye",
+    "xpTitle": "Deneyim puanı",
+    "toGo": "Seviye {{level}} için {{xp}} kaldı",
+    "xpValue": "{{xp}} XP",
+    "xpPlus": "+{{xp}} XP",
+    "howTitle": "XP nasıl kazanılır",
+    "how": {
+      "win": "Dereceli maçta birincilik ya da bota karşı galibiyet",
+      "played": "Dereceli maçta ya da bota karşı diğer her sonuç",
+      "solo": "Tek başına antrenman",
+      "perCorrect": "Dereceli maçta ve bota karşı her doğru hamle"
+    }
+  },
+  "interferences": {
+    "title": "Sabotajlar",
+    "entry": "Sabotaj koleksiyonu",
+    "entryNote": "{{open}} açık · {{locked}} kilitli",
+    "countLabel_one": "1 sabotajdan {{open}} tanesi açık",
+    "countLabel_other": "{{total}} sabotajdan {{open}} tanesi açık",
+    "opened": "açık",
+    "facts": {
+      "seconds": "saniye, her sabotaj için",
+      "cost": "bedel her kullanımda iki katına çıkar",
+      "launch": "dokunuş: rakibin kartında “Sabote et”, sonra sabotaj",
+      "launchValue": "2"
+    },
+    "arsenal": "Cephaneliğin",
+    "tapHint": "Önizlemek için dokun",
+    "openLabel": "{{name}}, kullanılabilir. {{description}}",
+    "previewHint": "Önizlemeyi gösterir",
+    "available": "Kullanılabilir",
+    "previewing": "Önizleniyor",
+    "lockedTitle": "Kilitli",
+    "lockedNote": "Seviye atladıkça açılır",
+    "soon": "Yakında",
+    "atLevel": "Seviye {{level}} olunca açılır",
+    "lockedLabel": "{{name}}, kilitli, {{when}}",
+    "howTo": "Maçta: rakibin kartında “Sabote et” düğmesine dokun, sonra bir sabotaj seç.",
+    "future": {
+      "earthquake": "Deprem",
+      "fog": "Sis",
+      "bubbles": "Baloncuklar",
+      "torch": "Fener"
+    },
+    "description": {
+      "fireworks": "Ekranın üstünde rengârenk bir havai fişek gösterisi",
+      "cats": "Ekranda koşturan bir kedi kervanı",
+      "warp": "Ekran bükülür ve titrer",
+      "scramble": "Tablodaki rakamlar karışır ve yer değiştirir",
+      "ink": "Yavaş yavaş kaybolan mürekkep lekeleri",
+      "keypad": "Rakam tuşları yer değiştirir",
+      "earthquake": "Ekran sallanır",
+      "fog": "Yavaşça dağılan sis",
+      "bubbles": "Patlatman gereken baloncuklar",
+      "torch": "Bir fenerin ışığı dışında tablo kararır"
+    }
+  },
+  "home": {
+    "levelXp": "Seviye {{level}} · {{xp}}"
+  }
+}

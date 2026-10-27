@@ -42,6 +42,8 @@ const LATE_FILES: Record<string, string> = {
   'apps/mobile/src/screens/home/ModesScreen.tsx': 'the modes screen',
   'apps/mobile/src/screens/home/GameTypeScreen.tsx': 'the game-type screen',
   'apps/mobile/src/screens/home/BotSelectScreen.tsx': 'the bot selection',
+  'apps/mobile/src/i18n/locales/':
+    "every language's strings: i18n/locales.generated.ts reads one when i18next first needs it (localization plan 0ב, D119)",
 };
 
 describe('the start: what the first screen loads (spec §22)', () => {
@@ -57,6 +59,8 @@ describe('the start: what the first screen loads (spec §22)', () => {
   it('still loads what the first screen needs (the graph is followed at all)', () => {
     expect(STARTUP.files.has('apps/mobile/src/screens/home/HomeScreen.tsx')).toBe(true);
     expect(STARTUP.files.has('apps/mobile/src/i18n/index.ts')).toBe(true);
+    // The loader of the languages' strings is there, the strings are not (LATE_FILES): a function per language.
+    expect(STARTUP.files.has('apps/mobile/src/i18n/locales.generated.ts')).toBe(true);
     expect(STARTUP.packages.has('expo-router')).toBe(true);
     expect(STARTUP.packages.has('expo-font')).toBe(true);
     // …and what a later screen needs shows up from that screen.

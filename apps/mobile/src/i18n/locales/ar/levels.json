@@ -1,0 +1,938 @@
+{
+  "title": "تدريب المراحل",
+  "stage": "المرحلة {{n}}",
+  "chapter": "الفصل {{n}}",
+  "units": {
+    "seconds": "ث"
+  },
+  "stars": {
+    "of3": {
+      "0": "بلا نجوم",
+      "1": "نجمة واحدة من ثلاث",
+      "2": "نجمتان من ثلاث",
+      "3": "ثلاث نجوم من ثلاث"
+    },
+    "count_zero": "بلا نجوم",
+    "count_one": "نجمة واحدة",
+    "count_two": "نجمتان",
+    "count_few": "{{count}} نجوم",
+    "count_many": "{{count}} نجمة",
+    "count_other": "{{count}} نجمة"
+  },
+  "kinds": {
+    "find": {
+      "name": "الموقع الدقيق",
+      "label": "الموقع الدقيق"
+    },
+    "findDuel": {
+      "name": "سباق ضد البوت",
+      "label": "سباق ضد البوت"
+    },
+    "fillBox": {
+      "name": "ملء المربع",
+      "label": "ملء المربع"
+    },
+    "duel": {
+      "name": "مبارزة حتى {{target}}",
+      "label": "مبارزة حتى {{target}}"
+    },
+    "spotError": {
+      "name": "اكتشاف الخطأ",
+      "label": "اكتشاف الخطأ"
+    },
+    "pointHunter": {
+      "name": "صياد النقاط",
+      "label": "صياد النقاط"
+    },
+    "chain": {
+      "name": "التسلسل",
+      "label": "التسلسل"
+    },
+    "fillRow": {
+      "name": "ملء الصف",
+      "label": "ملء الصف"
+    },
+    "fillCol": {
+      "name": "ملء العمود",
+      "label": "ملء العمود"
+    },
+    "puzzle": {
+      "name": "الأحجية",
+      "label": "الأحجية"
+    }
+  },
+  "boss": {
+    "chip": "الزعيم",
+    "name": "مرحلة الزعيم",
+    "label": "الزعيم، {{kind}}",
+    "versus": "الزعيم: {{bot}}",
+    "band": "الزعيم · الفصل {{chapter}}",
+    "botLabel": "{{name}}، الزعيم",
+    "intro": {
+      "title": "مرحلة الزعيم!",
+      "sub": "المرحلة {{n}} · {{kind}}",
+      "harder": "ما الأصعب",
+      "label": "مرحلة الزعيم! المرحلة {{n}}، {{kind}}. {{details}}"
+    },
+    "traits": {
+      "firstBot": "أول بوت لك: {{bot}}",
+      "faster": "{{bot}} أسرع بنسبة {{percent}}",
+      "overlord": "Overlord",
+      "moreCells_zero": "خانات ناقصة أكثر من {{usual}}",
+      "moreCells_one": "خانة ناقصة واحدة بدلًا من {{usual}}",
+      "moreCells_two": "خانتان ناقصتان بدلًا من {{usual}}",
+      "moreCells_few": "{{cells}} خانات ناقصة بدلًا من {{usual}}",
+      "moreCells_many": "{{cells}} خانة ناقصة بدلًا من {{usual}}",
+      "moreCells_other": "{{cells}} خانة ناقصة بدلًا من {{usual}}"
+    },
+    "result": {
+      "won": "هزمت الزعيم!",
+      "lost": "فاز الزعيم هذه المرة",
+      "gateOpen": "بوابة الفصل {{n}}: {{stars}} · مفتوحة!",
+      "gateClosed": "بوابة الفصل {{n}}: {{stars}}"
+    }
+  },
+  "region": {
+    "box": "المربع {{n}}",
+    "row": "الصف {{row}}",
+    "col": "العمود {{n}}",
+    "mapLabel": "خريطة اللوحة: {{region}}"
+  },
+  "goals": {
+    "find": "المطلوب: إيجاد الموقع الدقيق لرقم واحد. تنتهي المرحلة عند {{s}} ث.",
+    "findDuel_zero": "مواقع ضد {{bot}}، حتى {{s}} ث. من يجد موقعًا أولًا يأخذه.",
+    "findDuel_one": "موقع واحد ضد {{bot}}، حتى {{s}} ث. من يجده أولًا يأخذه.",
+    "findDuel_two": "موقعان ضد {{bot}}، حتى {{s}} ث. من يجد موقعًا أولًا يأخذه.",
+    "findDuel_few": "{{spots}} مواقع ضد {{bot}}، حتى {{s}} ث. من يجد موقعًا أولًا يأخذه.",
+    "findDuel_many": "{{spots}} موقعًا ضد {{bot}}، حتى {{s}} ث. من يجد موقعًا أولًا يأخذه.",
+    "findDuel_other": "{{spots}} موقع ضد {{bot}}، حتى {{s}} ث. من يجد موقعًا أولًا يأخذه.",
+    "fillBox_zero": "ملء الخانات الناقصة في مربع واحد، حتى {{s}} ث.",
+    "fillBox_one": "ملء الخانة الناقصة في مربع واحد، حتى {{s}} ث.",
+    "fillBox_two": "ملء الخانتين الناقصتين في مربع واحد، حتى {{s}} ث.",
+    "fillBox_few": "ملء {{cells}} خانات ناقصة في مربع واحد، حتى {{s}} ث.",
+    "fillBox_many": "ملء {{cells}} خانة ناقصة في مربع واحد، حتى {{s}} ث.",
+    "fillBox_other": "ملء {{cells}} خانة ناقصة في مربع واحد، حتى {{s}} ث.",
+    "fillRow_zero": "ملء الخانات الناقصة في صف واحد، حتى {{s}} ث.",
+    "fillRow_one": "ملء الخانة الناقصة في صف واحد، حتى {{s}} ث.",
+    "fillRow_two": "ملء الخانتين الناقصتين في صف واحد، حتى {{s}} ث.",
+    "fillRow_few": "ملء {{cells}} خانات ناقصة في صف واحد، حتى {{s}} ث.",
+    "fillRow_many": "ملء {{cells}} خانة ناقصة في صف واحد، حتى {{s}} ث.",
+    "fillRow_other": "ملء {{cells}} خانة ناقصة في صف واحد، حتى {{s}} ث.",
+    "fillCol_zero": "ملء الخانات الناقصة في عمود واحد، حتى {{s}} ث.",
+    "fillCol_one": "ملء الخانة الناقصة في عمود واحد، حتى {{s}} ث.",
+    "fillCol_two": "ملء الخانتين الناقصتين في عمود واحد، حتى {{s}} ث.",
+    "fillCol_few": "ملء {{cells}} خانات ناقصة في عمود واحد، حتى {{s}} ث.",
+    "fillCol_many": "ملء {{cells}} خانة ناقصة في عمود واحد، حتى {{s}} ث.",
+    "fillCol_other": "ملء {{cells}} خانة ناقصة في عمود واحد، حتى {{s}} ث.",
+    "puzzle": "ترتيب المربعات. كل تبديل خاطئ يضيف {{penalty}} ث. حتى {{s}} ث.",
+    "duel_zero": "ضد {{bot}}، حتى {{target}} نقطة أو {{s}} ث. النجوم حسب فارق تقدمك.",
+    "duel_one": "ضد {{bot}}، حتى نقطة واحدة أو {{s}} ث. النجوم حسب فارق تقدمك.",
+    "duel_two": "ضد {{bot}}، حتى نقطتين أو {{s}} ث. النجوم حسب فارق تقدمك.",
+    "duel_few": "ضد {{bot}}، حتى {{target}} نقاط أو {{s}} ث. النجوم حسب فارق تقدمك.",
+    "duel_many": "ضد {{bot}}، حتى {{target}} نقطة أو {{s}} ث. النجوم حسب فارق تقدمك.",
+    "duel_other": "ضد {{bot}}، حتى {{target}} نقطة أو {{s}} ث. النجوم حسب فارق تقدمك.",
+    "spotError_zero": "أرقام خاطئة تختبئ بين أرقامك. حتى {{s}} ث.",
+    "spotError_one": "رقم خاطئ واحد يختبئ بين أرقامك. حتى {{s}} ث.",
+    "spotError_two": "رقمان خاطئان يختبئان بين أرقامك. حتى {{s}} ث.",
+    "spotError_few": "{{count}} أرقام خاطئة تختبئ بين أرقامك. حتى {{s}} ث.",
+    "spotError_many": "{{count}} رقمًا خاطئًا يختبئ بين أرقامك. حتى {{s}} ث.",
+    "spotError_other": "{{count}} رقم خاطئ يختبئ بين أرقامك. حتى {{s}} ث.",
+    "pointHunter_zero": "حتى {{s}} ث. الهدف: أكبر عدد ممكن من النقاط.",
+    "pointHunter_one": "حركة واحدة، حتى {{s}} ث. الهدف: أكبر عدد ممكن من النقاط.",
+    "pointHunter_two": "حركتان، حتى {{s}} ث. الهدف: أكبر عدد ممكن من النقاط.",
+    "pointHunter_few": "{{moves}} حركات، حتى {{s}} ث. الهدف: أكبر عدد ممكن من النقاط.",
+    "pointHunter_many": "{{moves}} حركة، حتى {{s}} ث. الهدف: أكبر عدد ممكن من النقاط.",
+    "pointHunter_other": "{{moves}} حركة، حتى {{s}} ث. الهدف: أكبر عدد ممكن من النقاط.",
+    "chain_zero": "تسلسل، حتى {{s}} ث. في كل لحظة خانة واحدة فقط قابلة للحل.",
+    "chain_one": "تسلسل من خطوة واحدة، حتى {{s}} ث. في كل لحظة خانة واحدة فقط قابلة للحل.",
+    "chain_two": "تسلسل من خطوتين، حتى {{s}} ث. في كل لحظة خانة واحدة فقط قابلة للحل.",
+    "chain_few": "تسلسل من {{steps}} خطوات، حتى {{s}} ث. في كل لحظة خانة واحدة فقط قابلة للحل.",
+    "chain_many": "تسلسل من {{steps}} خطوة، حتى {{s}} ث. في كل لحظة خانة واحدة فقط قابلة للحل.",
+    "chain_other": "تسلسل من {{steps}} خطوة، حتى {{s}} ث. في كل لحظة خانة واحدة فقط قابلة للحل."
+  },
+  "scale": {
+    "label": "النجوم الممكنة",
+    "row": "{{stars}}: {{text}}",
+    "time": "حتى {{s}} ث",
+    "spots_zero": "بلا مواقع",
+    "spots_one": "موقع واحد",
+    "spots_two": "موقعان",
+    "spots_few": "{{count}} مواقع",
+    "spots_many": "{{count}} موقعًا",
+    "spots_other": "{{count}} موقع",
+    "spotsRange_zero": "{{range}} موقع",
+    "spotsRange_one": "{{range}} موقع",
+    "spotsRange_two": "{{range}} موقع",
+    "spotsRange_few": "{{range}} مواقع",
+    "spotsRange_many": "{{range}} موقعًا",
+    "spotsRange_other": "{{range}} موقع",
+    "gap": "فارق {{gap}} أو أكثر",
+    "lead": "التقدم في النهاية",
+    "points": "{{points}} نقطة أو أكثر",
+    "line": "{{three}} · {{two}} · {{one}}"
+  },
+  "map": {
+    "label": "خريطة المراحل",
+    "total": "{{stars}}/{{max}}",
+    "totalLabel_zero": "لا نجوم من أصل {{max}}، الانتقال إلى فصل",
+    "totalLabel_one": "نجمة واحدة من {{max}}، الانتقال إلى فصل",
+    "totalLabel_two": "نجمتان من {{max}}، الانتقال إلى فصل",
+    "totalLabel_few": "{{stars}} نجوم من {{max}}، الانتقال إلى فصل",
+    "totalLabel_many": "{{stars}} نجمة من {{max}}، الانتقال إلى فصل",
+    "totalLabel_other": "{{stars}} نجمة من {{max}}، الانتقال إلى فصل",
+    "lockedToast": "يجب لعب المرحلة {{n}} أولًا",
+    "gateToast_zero": "يُفتح الفصل {{chapter}} بعد الفصل {{prev}}",
+    "gateToast_one": "يُفتح الفصل {{chapter}} بنجمة واحدة من الفصل {{prev}}",
+    "gateToast_two": "يُفتح الفصل {{chapter}} عند نجمتين في الفصل {{prev}}",
+    "gateToast_few": "يُفتح الفصل {{chapter}} عند {{need}} نجوم في الفصل {{prev}}",
+    "gateToast_many": "يُفتح الفصل {{chapter}} عند {{need}} نجمة في الفصل {{prev}}",
+    "gateToast_other": "يُفتح الفصل {{chapter}} عند {{need}} نجمة في الفصل {{prev}}",
+    "loading": "جارٍ تحميل الخريطة…"
+  },
+  "chapterHeader": {
+    "stars": "{{stars}}/{{max}}",
+    "label_zero": "لا نجوم من {{max}}",
+    "label_one": "نجمة واحدة من {{max}}",
+    "label_two": "نجمتان من {{max}}",
+    "label_few": "{{stars}} نجوم من {{max}}",
+    "label_many": "{{stars}} نجمة من {{max}}",
+    "label_other": "{{stars}} نجمة من {{max}}"
+  },
+  "node": {
+    "played": "المرحلة {{n}}، {{kind}}، {{stars}}",
+    "current": "المرحلة {{n}}، {{kind}}، التالية",
+    "open": "المرحلة {{n}}، {{kind}}، لم تُلعب بعد",
+    "locked": "المرحلة {{n}}، مقفلة"
+  },
+  "gate": {
+    "need_zero": "يُفتح دون نجوم",
+    "need_one": "يُفتح بنجمة واحدة",
+    "need_two": "يُفتح بنجمتين",
+    "need_few": "يُفتح عند {{need}} نجوم",
+    "need_many": "يُفتح عند {{need}} نجمة",
+    "need_other": "يُفتح عند {{need}} نجمة",
+    "count": "{{stars}}/{{need}}",
+    "boss": "يجب لعب مرحلة الزعيم لفتحه",
+    "open": "الفصل {{n}} مفتوح",
+    "lockedLabel_zero": "الفصل {{n}} مقفل، {{stars}} نجمة في الفصل {{prev}}",
+    "lockedLabel_one": "الفصل {{n}} مقفل، {{stars}} من نجمة واحدة في الفصل {{prev}}",
+    "lockedLabel_two": "الفصل {{n}} مقفل، {{stars}} من نجمتين في الفصل {{prev}}",
+    "lockedLabel_few": "الفصل {{n}} مقفل، {{stars}} من {{need}} نجوم في الفصل {{prev}}",
+    "lockedLabel_many": "الفصل {{n}} مقفل، {{stars}} من {{need}} نجمة في الفصل {{prev}}",
+    "lockedLabel_other": "الفصل {{n}} مقفل، {{stars}} من {{need}} نجمة في الفصل {{prev}}",
+    "bossLabel_zero": "الفصل {{n}} مقفل، {{stars}} نجمة في الفصل {{prev}}. يجب لعب مرحلة الزعيم لفتحه",
+    "bossLabel_one": "الفصل {{n}} مقفل، {{stars}} من نجمة واحدة في الفصل {{prev}}. يجب لعب مرحلة الزعيم لفتحه",
+    "bossLabel_two": "الفصل {{n}} مقفل، {{stars}} من نجمتين في الفصل {{prev}}. يجب لعب مرحلة الزعيم لفتحه",
+    "bossLabel_few": "الفصل {{n}} مقفل، {{stars}} من {{need}} نجوم في الفصل {{prev}}. يجب لعب مرحلة الزعيم لفتحه",
+    "bossLabel_many": "الفصل {{n}} مقفل، {{stars}} من {{need}} نجمة في الفصل {{prev}}. يجب لعب مرحلة الزعيم لفتحه",
+    "bossLabel_other": "الفصل {{n}} مقفل، {{stars}} من {{need}} نجمة في الفصل {{prev}}. يجب لعب مرحلة الزعيم لفتحه",
+    "openLabel_zero": "الفصل {{n}} مفتوح بعد الفصل {{prev}}",
+    "openLabel_one": "الفصل {{n}} مفتوح، فُتح عند نجمة واحدة من الفصل {{prev}}",
+    "openLabel_two": "الفصل {{n}} مفتوح، فُتح عند نجمتين من الفصل {{prev}}",
+    "openLabel_few": "الفصل {{n}} مفتوح، فُتح عند {{need}} نجوم من الفصل {{prev}}",
+    "openLabel_many": "الفصل {{n}} مفتوح، فُتح عند {{need}} نجمة من الفصل {{prev}}",
+    "openLabel_other": "الفصل {{n}} مفتوح، فُتح عند {{need}} نجمة من الفصل {{prev}}"
+  },
+  "jump": {
+    "title": "الانتقال إلى فصل",
+    "row": "الفصل {{n}} · {{name}}",
+    "rowLabel_zero": "الفصل {{n}}، {{name}}، لا نجوم من {{max}}، {{state}}",
+    "rowLabel_one": "الفصل {{n}}، {{name}}، نجمة واحدة من {{max}}، {{state}}",
+    "rowLabel_two": "الفصل {{n}}، {{name}}، نجمتان من {{max}}، {{state}}",
+    "rowLabel_few": "الفصل {{n}}، {{name}}، {{stars}} نجوم من {{max}}، {{state}}",
+    "rowLabel_many": "الفصل {{n}}، {{name}}، {{stars}} نجمة من {{max}}، {{state}}",
+    "rowLabel_other": "الفصل {{n}}، {{name}}، {{stars}} نجمة من {{max}}، {{state}}",
+    "open": "مفتوح",
+    "locked": "مقفل"
+  },
+  "gateSheet": {
+    "title": "الفصل {{n}} مقفل",
+    "missing_zero": "يلزم جمع نجوم في الفصل {{prev}}. لديك {{stars}}، ويتبقى {{missing}}.",
+    "missing_one": "تلزم نجمة واحدة في الفصل {{prev}}. لديك {{stars}}، ويتبقى {{missing}}.",
+    "missing_two": "تلزم نجمتان في الفصل {{prev}}. لديك {{stars}}، ويتبقى {{missing}}.",
+    "missing_few": "تلزم {{need}} نجوم في الفصل {{prev}}. لديك {{stars}}، ويتبقى {{missing}}.",
+    "missing_many": "تلزم {{need}} نجمة في الفصل {{prev}}. لديك {{stars}}، ويتبقى {{missing}}.",
+    "missing_other": "تلزم {{need}} نجمة في الفصل {{prev}}. لديك {{stars}}، ويتبقى {{missing}}.",
+    "bossOnly": "لديك نجوم كافية. يجب لعب المرحلة {{boss}} (الزعيم) لفتحه",
+    "progress": "نجوم الفصل {{prev}} للبوابة: {{stars}} من {{need}}",
+    "rowsTitle": "مراحل للتحسين",
+    "rowsNote_zero": "لا نجوم إضافية فيها",
+    "rowsNote_one": "حتى نجمة إضافية فيها",
+    "rowsNote_two": "حتى نجمتين إضافيتين فيها",
+    "rowsNote_few": "حتى {{count}} نجوم إضافية فيها",
+    "rowsNote_many": "حتى {{count}} نجمة إضافية فيها",
+    "rowsNote_other": "حتى {{count}} نجمة إضافية فيها",
+    "row": "المرحلة {{n}} · {{kind}}",
+    "rowLabel": "إعادة لعب المرحلة {{n}}، {{kind}}، {{stars}}",
+    "rowNewLabel": "لعب المرحلة {{n}}، {{kind}}، لم تُلعب بعد",
+    "rowPlay": "لعب",
+    "primary": "لعب المرحلة {{n}}",
+    "footnote": "معظم المراحل تستمر حتى 30 ث، ومراحل الملء والأحجية حتى 60. تُحفظ أفضل نجومك."
+  },
+  "panel": {
+    "label": "المرحلة المختارة",
+    "title": "المرحلة {{n}} · {{kind}}",
+    "sub": "الفصل {{chapter}} · {{name}}",
+    "subBot": "الفصل {{chapter}} · ضد {{bot}}",
+    "subBoss": "الفصل {{chapter}} · الزعيم: {{bot}}",
+    "next": "التالية",
+    "best": "الأفضل: {{metric}}",
+    "bestLabel": "أفضل نتيجة لك: {{stars}}، {{metric}}",
+    "bestStars": "أفضل نتيجة لك: {{stars}}",
+    "bot": "{{name}} · المستوى {{level}} · {{title}}",
+    "continue": "متابعة · المرحلة {{n}}",
+    "play": "هيا نلعب",
+    "lockedTitle": "المرحلة {{n}} · مقفلة",
+    "lockedSub": "الفصل {{chapter}} · {{kind}}",
+    "lockedPrev": "يجب لعب المرحلة {{n}} أولًا.",
+    "lockedGate_zero": "الفصل {{chapter}} مقفل: يلزم جمع نجوم في الفصل {{prev}}. لديك {{stars}}.",
+    "lockedGate_one": "الفصل {{chapter}} مقفل: تلزم نجمة واحدة في الفصل {{prev}}. لديك {{stars}}.",
+    "lockedGate_two": "الفصل {{chapter}} مقفل: تلزم نجمتان في الفصل {{prev}}. لديك {{stars}}.",
+    "lockedGate_few": "الفصل {{chapter}} مقفل: تلزم {{need}} نجوم في الفصل {{prev}}. لديك {{stars}}.",
+    "lockedGate_many": "الفصل {{chapter}} مقفل: تلزم {{need}} نجمة في الفصل {{prev}}. لديك {{stars}}.",
+    "lockedGate_other": "الفصل {{chapter}} مقفل: تلزم {{need}} نجمة في الفصل {{prev}}. لديك {{stars}}.",
+    "gateTitleOpen": "الفصل {{n}} مفتوح",
+    "gateTitleClosed": "الفصل {{n}} مقفل",
+    "gateSub": "{{name}} · المراحل {{range}}",
+    "gateOpenBody_zero": "مفتوح: بلا نجوم في الفصل {{prev}}، والبوابة تتطلب {{need}}.",
+    "gateOpenBody_one": "مفتوح: جمعت نجمة واحدة في الفصل {{prev}}، والبوابة تتطلب {{need}}.",
+    "gateOpenBody_two": "مفتوح: جمعت نجمتين في الفصل {{prev}}، والبوابة تتطلب {{need}}.",
+    "gateOpenBody_few": "مفتوح: جمعت {{stars}} نجوم في الفصل {{prev}}، والبوابة تتطلب {{need}}.",
+    "gateOpenBody_many": "مفتوح: جمعت {{stars}} نجمة في الفصل {{prev}}، والبوابة تتطلب {{need}}.",
+    "gateOpenBody_other": "مفتوح: جمعت {{stars}} نجمة في الفصل {{prev}}، والبوابة تتطلب {{need}}.",
+    "gateBar": "نجوم البوابة: {{stars}} من {{need}}"
+  },
+  "ready": {
+    "title": "نبدأ؟",
+    "label": "نبدأ؟ المرحلة {{n}}، {{kind}}. {{goal}}",
+    "findPrompt": "أين الرقم {{digit}}؟",
+    "raceSpots_zero": "سباق ضد {{bot}}",
+    "raceSpots_one": "موقع واحد، سباق ضد {{bot}}",
+    "raceSpots_two": "موقعان، سباق ضد {{bot}}",
+    "raceSpots_few": "{{count}} مواقع، سباق ضد {{bot}}",
+    "raceSpots_many": "{{count}} موقعًا، سباق ضد {{bot}}",
+    "raceSpots_other": "{{count}} موقع، سباق ضد {{bot}}"
+  },
+  "tutorial": {
+    "title": "طريقة اللعب",
+    "got": "فهمت",
+    "skip": "تخطي",
+    "panel": "الصورة {{n}} من {{total}}: {{text}}",
+    "alsoBoss": "هذه أيضًا مرحلة زعيم: المرحلة العاشرة في كل فصل.",
+    "find": {
+      "1": "سؤال واحد، مثل «أين الرقم {{digit}}؟»، ومنطقة محددة على اللوحة: مربع، أو صف، أو عمود، أو اللوحة كلها.",
+      "2": "المطلوب إيجاد الخانة الوحيدة التي يجب أن يكون فيها الرقم، والنقر عليها.",
+      "3": "النقرة الخاطئة تضيف 5 ثوانٍ. نقرتان خاطئتان تُنهيان المرحلة."
+    },
+    "findDuel": {
+      "1": "خمسة مواقع، واحدًا تلو الآخر. البوت يبحث معك.",
+      "2": "من ينقر الخانة الصحيحة أولًا يأخذ الموقع.",
+      "3": "نقرة خاطئة: 3 ثوانٍ دون نقر، بينما يواصل البوت البحث."
+    },
+    "fillBox": {
+      "1": "مربع واحد فيه خانات ناقصة، داخل إطار ذهبي.",
+      "2": "اختيار خانة في المربع وكتابة رقم. لا يمكن اختيار خانات خارجه.",
+      "3": "الرقم الخاطئ يضيف 5 ثوانٍ. كلما أنهيت أسرع، زادت النجوم."
+    },
+    "duel": {
+      "1": "أنت والبوت على اللوحة نفسها، كما في المباراة.",
+      "2": "أول من يصل إلى 30 نقطة يفوز، أو المتقدم بعد 30 ثانية.",
+      "3": "النجوم حسب فارق تقدمك في النهاية: 8 نقاط لنجمتين، و15 لثلاث."
+    },
+    "spotError": {
+      "1": "الأرقام الداكنة من اللوحة، وهي صحيحة دائمًا.",
+      "2": "أرقام خاطئة تختبئ بين أرقامك. المطلوب النقر عليها.",
+      "3": "النقر على رقم صحيح يضيف 5 ثوانٍ."
+    },
+    "pointHunter": {
+      "1": "لديك ثلاث حركات فقط.",
+      "2": "الخانة في منطقة فارغة تساوي نقاطًا أكثر.",
+      "3": "النجوم حسب قربك من أفضل نتيجة ممكنة في اللوحة."
+    },
+    "chain": {
+      "1": "في كل لحظة يمكن حل خانة واحدة فقط في اللوحة.",
+      "2": "ملؤها يفتح الخانة التالية.",
+      "3": "الرقم في خانة لا يمكن معرفتها بعد يكلّف 5 ثوانٍ، ولا يوضع."
+    },
+    "boss": {
+      "1": "المرحلة العاشرة في كل فصل هي مرحلة زعيم: مواجهة واحدة ضد بوت، أصعب من المراحل التي قبلها.",
+      "2": "قبل بدايتها يظهر ما الأصعب فيها. عادةً: البوت أسرع.",
+      "3": "بعد لعب مرحلة الزعيم وجمع 20 نجمة في الفصل، يُفتح الفصل التالي."
+    },
+    "fillRow": {
+      "1": "صف واحد فيه خانات ناقصة، داخل إطار ذهبي.",
+      "2": "اختيار خانة في الصف وكتابة رقم. لا يمكن اختيار خانات خارجه.",
+      "3": "الرقم الخاطئ يضيف 5 ثوانٍ. كلما أنهيت أسرع، زادت النجوم."
+    },
+    "fillCol": {
+      "1": "عمود واحد فيه خانات ناقصة، داخل إطار ذهبي.",
+      "2": "اختيار خانة في العمود وكتابة رقم. لا يمكن اختيار خانات خارجه.",
+      "3": "الرقم الخاطئ يضيف 5 ثوانٍ. كلما أنهيت أسرع، زادت النجوم."
+    },
+    "puzzle": {
+      "1": "تسعة مربعات ممتلئة، بترتيب خاطئ.",
+      "2": "سحب مربع إلى مربع آخر يبادل بينهما. المربع الذي عليه قفل ثابت. التبديل الذي لا يضع أيًّا من المربعين في مكانه يضيف 5 ثوانٍ.",
+      "3": "عندما يصبح كل صف وكل عمود صحيحًا، تنتهي المرحلة. كلما أنهيت أسرع، زادت النجوم."
+    }
+  },
+  "result": {
+    "completed": "اكتملت المرحلة {{n}}",
+    "ended": "المرحلة {{n}}",
+    "reasons": {
+      "timeUp": "انتهى الوقت",
+      "failed": "نقرتان خاطئتان",
+      "quit": "غادرت المرحلة",
+      "botWon": "{{bot}} وصل أولًا"
+    },
+    "metric": {
+      "spotsOf_zero": "من المواقع",
+      "spotsOf_one": "من موقع واحد",
+      "spotsOf_two": "من موقعين",
+      "spotsOf_few": "من {{total}} مواقع",
+      "spotsOf_many": "من {{total}} موقعًا",
+      "spotsOf_other": "من {{total}} موقع",
+      "gap": "الفارق",
+      "points": "نقطة",
+      "found": "المكتشَفة",
+      "foundOf": "من {{total}}"
+    },
+    "newBest": "رقم قياسي جديد!",
+    "yourBest": "أفضل نتيجة لك:",
+    "yourBestLabel": "أفضل نتيجة لك: {{stars}}",
+    "xpUnit": "XP",
+    "xpLabel": "{{xp}} ⁦XP⁩، تقدير: يؤكده الخادم",
+    "chapterLabel": "هذا الفصل",
+    "chapterStars": "{{stars}}/{{max}}",
+    "chapterNeed": "البوابة تتطلب {{need}}",
+    "chapterOpen": "البوابة مفتوحة",
+    "chapterGate": "· {{gate}}",
+    "chapterLine_zero": "هذا الفصل: لا نجوم من {{max}}. {{gate}}",
+    "chapterLine_one": "هذا الفصل: نجمة واحدة من {{max}}. {{gate}}",
+    "chapterLine_two": "هذا الفصل: نجمتان من {{max}}. {{gate}}",
+    "chapterLine_few": "هذا الفصل: {{stars}} نجوم من {{max}}. {{gate}}",
+    "chapterLine_many": "هذا الفصل: {{stars}} نجمة من {{max}}. {{gate}}",
+    "chapterLine_other": "هذا الفصل: {{stars}} نجمة من {{max}}. {{gate}}",
+    "mistakes_zero": "بلا أخطاء",
+    "mistakes_one": "خطأ واحد",
+    "mistakes_two": "خطآن",
+    "mistakes_few": "{{count}} أخطاء",
+    "mistakes_many": "{{count}} خطأ",
+    "mistakes_other": "{{count}} خطأ",
+    "noMistakes": "بلا أخطاء",
+    "swaps_zero": "بلا تبديلات · الأقل: {{min}}",
+    "swaps_one": "تبديل واحد · الأقل: {{min}}",
+    "swaps_two": "تبديلان · الأقل: {{min}}",
+    "swaps_few": "{{count}} تبديلات · الأقل: {{min}}",
+    "swaps_many": "{{count}} تبديلًا · الأقل: {{min}}",
+    "swaps_other": "{{count}} تبديل · الأقل: {{min}}",
+    "time": "الوقت: {{s}} ث",
+    "youWon": "فزت",
+    "botWon": "فاز {{bot}}",
+    "tie": "تعادل",
+    "bossTie": "تعادل: الزعيم صامد",
+    "opponentLabel": "{{bot}}: {{value}}. {{verdict}}",
+    "opponentSpots_zero": "بلا مواقع",
+    "opponentSpots_one": "موقع واحد",
+    "opponentSpots_two": "موقعان",
+    "opponentSpots_few": "{{count}} مواقع",
+    "opponentSpots_many": "{{count}} موقعًا",
+    "opponentSpots_other": "{{count}} موقع",
+    "opponentScore_zero": "{{score}} نقطة",
+    "opponentScore_one": "{{score}} نقطة",
+    "opponentScore_two": "{{score}} نقطة",
+    "opponentScore_few": "{{score}} نقاط",
+    "opponentScore_many": "{{score}} نقطة",
+    "opponentScore_other": "{{score}} نقطة",
+    "bestMove_zero": "أفضل حركة: {{digit}} في {{cell}} · {{points}} نقطة",
+    "bestMove_one": "أفضل حركة: {{digit}} في {{cell}} · {{points}} نقطة",
+    "bestMove_two": "أفضل حركة: {{digit}} في {{cell}} · {{points}} نقطة",
+    "bestMove_few": "أفضل حركة: {{digit}} في {{cell}} · {{points}} نقاط",
+    "bestMove_many": "أفضل حركة: {{digit}} في {{cell}} · {{points}} نقطة",
+    "bestMove_other": "أفضل حركة: {{digit}} في {{cell}} · {{points}} نقطة",
+    "why": "لماذا؟",
+    "next": "المرحلة التالية",
+    "again": "إعادة",
+    "toMap": "إلى الخريطة",
+    "last": "كانت هذه المرحلة الأخيرة. أحسنت!",
+    "nextLocked": "المرحلة التالية ما زالت مقفلة"
+  },
+  "unlocked": {
+    "heading": "فُتح فصل جديد!",
+    "title": "الفصل {{n}} · {{name}}",
+    "news": "الجديد: {{news}}",
+    "xp": "{{xp}} XP",
+    "continue": "متابعة",
+    "label": "فُتح فصل جديد: الفصل {{n}}، {{name}}. {{news}}",
+    "bots": {
+      "1": "⁦Pip⁩: «أنا في البداية فقط، لكنني أسرع مما أبدو.»",
+      "2": "⁦Biscuit⁩: «هادئ، لكنني لن أدعك تفلت.»",
+      "3": "⁦Mr. Hoot⁩: «أرى كل خانة. الحذر واجب.»",
+      "4": "⁦Maestro⁩: «سريع، ودقيق، وبأناقة.»",
+      "5": "⁦Overlord⁩: «وصلت بعيدًا. هنا تنتهي الرحلة.»"
+    }
+  },
+  "exit": {
+    "button": "مغادرة المرحلة",
+    "title": "مغادرة المرحلة؟",
+    "body": "النتيجة: بلا نجوم، وتُفتح المرحلة التالية.",
+    "confirm": "مغادرة",
+    "cancel": "مواصلة اللعب"
+  },
+  "card": {
+    "line": "المراحل: {{played}} · {{stars}}",
+    "stars": "★ {{n}}",
+    "label_zero": "المراحل: {{played}}، بلا نجوم",
+    "label_one": "المراحل: {{played}}، نجمة واحدة",
+    "label_two": "المراحل: {{played}}، نجمتان",
+    "label_few": "المراحل: {{played}}، {{count}} نجوم",
+    "label_many": "المراحل: {{played}}، {{count}} نجمة",
+    "label_other": "المراحل: {{played}}، {{count}} نجمة"
+  },
+  "chapters": {
+    "1": {
+      "name": "خطوات أولى",
+      "news": "الموقع الدقيق، وملء المربع، والأحجية، وملء الصف"
+    },
+    "2": {
+      "name": "تحدي ⁦Pip⁩",
+      "news": "ملء العمود، والسباق ضد البوت"
+    },
+    "3": {
+      "name": "أول مبارزة",
+      "news": "مبارزة حتى 30، واكتشاف الخطأ"
+    },
+    "4": {
+      "name": "المحقق",
+      "news": "تسلسل من 3 خطوات، وأحجية فيها 4 مربعات متحركة"
+    },
+    "5": {
+      "name": "Biscuit",
+      "news": "بوت جديد: ⁦Biscuit⁩، وصياد النقاط، ومراحل ملء ينقص فيها كل رقم مرة واحدة على الأقل"
+    },
+    "6": {
+      "name": "صفوف وأعمدة",
+      "news": "لوحة عادية، وأهداف في صف أو عمود"
+    },
+    "7": {
+      "name": "صياد النقاط",
+      "news": "أحجية فيها 5 مربعات متحركة"
+    },
+    "8": {
+      "name": "خطآن",
+      "news": "خطآن في اللوحة، ومبارزة على لوحة عادية"
+    },
+    "9": {
+      "name": "التسلسل",
+      "news": "كل الأنواع مجددًا، بصعوبة أعلى"
+    },
+    "10": {
+      "name": "Mr. Hoot",
+      "news": "بوت جديد: ⁦Mr. Hoot⁩، و7 خانات ناقصة في مراحل الملء"
+    },
+    "11": {
+      "name": "اللوحة كلها",
+      "news": "أهداف في أي مكان على اللوحة"
+    },
+    "12": {
+      "name": "أسرع",
+      "news": "صياد النقاط في 25 ثانية، على لوحة عادية"
+    },
+    "13": {
+      "name": "أخطاء صامتة",
+      "news": "أخطاء دون تعارض ظاهر"
+    },
+    "14": {
+      "name": "تسلسل طويل",
+      "news": "تسلسل من 4 خطوات، و9 خانات ناقصة في مراحل الملء"
+    },
+    "15": {
+      "name": "منتصف الطريق",
+      "news": "كل الأنواع مجددًا"
+    },
+    "16": {
+      "name": "لوحات صعبة",
+      "news": "لوحة صعبة، وأحجية فيها 6 مربعات متحركة"
+    },
+    "17": {
+      "name": "الاختزالات",
+      "news": "أهداف لا تظهر إلا بعد اختزال"
+    },
+    "18": {
+      "name": "Maestro",
+      "news": "بوت جديد: ⁦Maestro⁩"
+    },
+    "19": {
+      "name": "فخاخ",
+      "news": "ثلاثة أخطاء في اللوحة"
+    },
+    "20": {
+      "name": "بوابة الصعاب",
+      "news": "مربع فارغ يتطلب اختزالًا"
+    },
+    "21": {
+      "name": "أزواج",
+      "news": "أزواج، وصياد النقاط في 20 ثانية"
+    },
+    "22": {
+      "name": "تسلسل من 5",
+      "news": "تسلسل من 5 خطوات"
+    },
+    "23": {
+      "name": "أرقام معطاة قليلة",
+      "news": "لوحات فيها أرقام قليلة جدًا"
+    },
+    "24": {
+      "name": "سباق",
+      "news": "مبارزات على لوحات صعبة"
+    },
+    "25": {
+      "name": "خبراء",
+      "news": "كل شيء مجددًا، بإيقاع سريع"
+    },
+    "26": {
+      "name": "البطولة",
+      "news": "ثلاث نجوم للاعبين الأسرع فقط"
+    },
+    "27": {
+      "name": "البطولة الثانية",
+      "news": "صياد النقاط: ثلاث نجوم فقط قرب الحد الأقصى"
+    },
+    "28": {
+      "name": "Overlord",
+      "news": "الزعيم: ⁦Overlord⁩، في سباق"
+    },
+    "29": {
+      "name": "النهائي",
+      "news": "تسلسل سريع، و⁦Overlord⁩ زعيمًا في مبارزة"
+    },
+    "30": {
+      "name": "البطل",
+      "news": "كل شيء معًا، بأقصى صعوبة"
+    }
+  },
+  "hud": {
+    "secondsAdded_zero": "لم تُضف ثوانٍ",
+    "secondsAdded_one": "أُضيفت ثانية واحدة",
+    "secondsAdded_two": "أُضيفت ثانيتان",
+    "secondsAdded_few": "أُضيفت {{count}} ثوانٍ",
+    "secondsAdded_many": "أُضيفت {{count}} ثانية",
+    "secondsAdded_other": "أُضيفت {{count}} ثانية",
+    "sub": "{{kind}} · الفصل {{chapter}}",
+    "subFind": "أين الرقم {{digit}}؟ · الفصل {{chapter}}",
+    "subRace_zero": "{{kind}} · الفصل {{chapter}}",
+    "subRace_one": "{{kind}} · موقع واحد · الفصل {{chapter}}",
+    "subRace_two": "{{kind}} · موقعان · الفصل {{chapter}}",
+    "subRace_few": "{{kind}} · {{spots}} مواقع · الفصل {{chapter}}",
+    "subRace_many": "{{kind}} · {{spots}} موقعًا · الفصل {{chapter}}",
+    "subRace_other": "{{kind}} · {{spots}} موقع · الفصل {{chapter}}",
+    "clockLabel_zero": "لم يتبق شيء من {{limit}}",
+    "clockLabel_one": "بقيت ثانية واحدة من {{limit}}",
+    "clockLabel_two": "بقيت ثانيتان من {{limit}}",
+    "clockLabel_few": "بقيت {{s}} ثوانٍ من {{limit}}",
+    "clockLabel_many": "بقيت {{s}} ثانية من {{limit}}",
+    "clockLabel_other": "بقيت {{s}} ثانية من {{limit}}",
+    "penalty": "{{s}} ث",
+    "me": "أنا",
+    "find": {
+      "tap": "النقر حيث يجب أن يكون الرقم {{digit}}",
+      "where": "<scope>{{scope}}</scope> · دون لوحة أرقام، نقرة فقط",
+      "elapsed": "ث حتى الآن",
+      "targetLabel": "الهدف: الرقم {{digit}} {{scope}}. {{left}}",
+      "ringLabel_zero": "انتهى وقت المرحلة",
+      "ringLabel_one": "بقيت ثانية واحدة في المرحلة",
+      "ringLabel_two": "بقيت ثانيتان في المرحلة",
+      "ringLabel_few": "بقيت {{s}} ثوانٍ في المرحلة",
+      "ringLabel_many": "بقيت {{s}} ثانية في المرحلة",
+      "ringLabel_other": "بقيت {{s}} ثانية في المرحلة",
+      "one": "موقع واحد في المرحلة",
+      "wrongRule": "نقرة خاطئة: {{penalty}} ث",
+      "twoWrongRule": "نقرتان خاطئتان: تنتهي المرحلة",
+      "found": "وجدته: الرقم {{digit}} في {{cell}}",
+      "missed": "ليس في {{cell}}. {{penalty}} ث",
+      "answer": "الإجابة: {{cell}}"
+    },
+    "scope": {
+      "box": "في المربع {{n}}",
+      "row": "في الصف {{row}}",
+      "col": "في العمود {{n}}",
+      "board": "في أي مكان على اللوحة"
+    },
+    "race": {
+      "task": "الموقع {{n}} من {{total}} · إيجاد الرقم {{digit}} {{scope}}",
+      "left": "بقي {{s}} ث",
+      "searching": "جارٍ البحث…",
+      "spots_zero": "بلا مواقع",
+      "spots_one": "موقع واحد",
+      "spots_two": "موقعان",
+      "spots_few": "{{count}} مواقع",
+      "spots_many": "{{count}} موقعًا",
+      "spots_other": "{{count}} موقع",
+      "frozen_zero": "تجميد",
+      "frozen_one": "تجميد، ثانية واحدة",
+      "frozen_two": "تجميد، ثانيتان",
+      "frozen_few": "تجميد، {{count}} ثوانٍ",
+      "frozen_many": "تجميد، {{count}} ثانية",
+      "frozen_other": "تجميد، {{count}} ثانية",
+      "out": "خارج اللعب حتى الموقع التالي",
+      "botTag": "{{n}} · {{title}}",
+      "meLabel": "{{name}}، {{spots}}",
+      "botLabel": "{{name}}، بوت المستوى {{n}}، {{title}}، {{spots}}",
+      "botSearching": "{{name}} يبحث",
+      "mine": "أخذت الموقع {{n}}",
+      "theirs": "{{name}} أخذ الموقع {{n}}",
+      "void": "لم يأخذ أحد الموقع {{n}}",
+      "next": "الموقع {{n}}: الرقم {{digit}} {{scope}}"
+    },
+    "box": {
+      "task": "ملء المربع {{n}}",
+      "cells_zero": "{{done}}/{{total}} خانة",
+      "cells_one": "{{done}}/{{total}} خانة",
+      "cells_two": "{{done}}/{{total}} خانة",
+      "cells_few": "{{done}}/{{total}} خانات",
+      "cells_many": "{{done}}/{{total}} خانة",
+      "cells_other": "{{done}}/{{total}} خانة",
+      "cellsLabel_zero": "ملأت {{done}} من الخانات الناقصة",
+      "cellsLabel_one": "ملأت {{done}} من الخانة الناقصة",
+      "cellsLabel_two": "ملأت {{done}} من الخانتين الناقصتين",
+      "cellsLabel_few": "ملأت {{done}} من {{total}} خانات ناقصة",
+      "cellsLabel_many": "ملأت {{done}} من {{total}} خانة ناقصة",
+      "cellsLabel_other": "ملأت {{done}} من {{total}} خانة ناقصة",
+      "mistakes_zero": "الأخطاء {{penalty}} ث",
+      "mistakes_one": "خطأ {{penalty}} ث",
+      "mistakes_two": "خطآن {{penalty}} ث",
+      "mistakes_few": "{{count}} أخطاء {{penalty}} ث",
+      "mistakes_many": "{{count}} خطأ {{penalty}} ث",
+      "mistakes_other": "{{count}} خطأ {{penalty}} ث",
+      "mistakesLabel_zero": "بلا أخطاء، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_one": "خطأ واحد، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_two": "خطآن، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_few": "{{count}} أخطاء، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_many": "{{count}} خطأ، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "mistakesLabel_other": "{{count}} خطأ، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "rule": "الخطأ يضيف 5 ثوانٍ، ويُمنع الرقم في تلك الخانة",
+      "timeLabel_zero": "الوقت: {{s}} ثانية من {{limit}}",
+      "timeLabel_one": "الوقت: ثانية واحدة من {{limit}}",
+      "timeLabel_two": "الوقت: ثانيتان من {{limit}}",
+      "timeLabel_few": "الوقت: {{s}} ثوانٍ من {{limit}}",
+      "timeLabel_many": "الوقت: {{s}} ثانية من {{limit}}",
+      "timeLabel_other": "الوقت: {{s}} ثانية من {{limit}}",
+      "boardLabel_zero": "اللوحة · ملء الخانات الناقصة فقط في المربع {{n}}",
+      "boardLabel_one": "اللوحة · ملء الخانة الناقصة فقط في المربع {{n}}",
+      "boardLabel_two": "اللوحة · ملء الخانتين الناقصتين فقط في المربع {{n}}",
+      "boardLabel_few": "اللوحة · ملء {{count}} خانات ناقصة فقط في المربع {{n}}",
+      "boardLabel_many": "اللوحة · ملء {{count}} خانة ناقصة فقط في المربع {{n}}",
+      "boardLabel_other": "اللوحة · ملء {{count}} خانة ناقصة فقط في المربع {{n}}"
+    },
+    "line": {
+      "taskRow": "ملء الصف {{row}}",
+      "taskCol": "ملء العمود {{n}}",
+      "boardLabelRow_zero": "اللوحة · ملء الخانات الناقصة فقط في الصف {{row}}",
+      "boardLabelRow_one": "اللوحة · ملء الخانة الناقصة فقط في الصف {{row}}",
+      "boardLabelRow_two": "اللوحة · ملء الخانتين الناقصتين فقط في الصف {{row}}",
+      "boardLabelRow_few": "اللوحة · ملء {{count}} خانات ناقصة فقط في الصف {{row}}",
+      "boardLabelRow_many": "اللوحة · ملء {{count}} خانة ناقصة فقط في الصف {{row}}",
+      "boardLabelRow_other": "اللوحة · ملء {{count}} خانة ناقصة فقط في الصف {{row}}",
+      "boardLabelCol_zero": "اللوحة · ملء الخانات الناقصة فقط في العمود {{n}}",
+      "boardLabelCol_one": "اللوحة · ملء الخانة الناقصة فقط في العمود {{n}}",
+      "boardLabelCol_two": "اللوحة · ملء الخانتين الناقصتين فقط في العمود {{n}}",
+      "boardLabelCol_few": "اللوحة · ملء {{count}} خانات ناقصة فقط في العمود {{n}}",
+      "boardLabelCol_many": "اللوحة · ملء {{count}} خانة ناقصة فقط في العمود {{n}}",
+      "boardLabelCol_other": "اللوحة · ملء {{count}} خانة ناقصة فقط في العمود {{n}}"
+    },
+    "puzzle": {
+      "task": "ترتيب المربعات",
+      "counts": "{{moving}} · {{fixed}}",
+      "moving_zero": "لا مربعات تتحرك",
+      "moving_one": "مربع واحد يتحرك",
+      "moving_two": "مربعان يتحركان",
+      "moving_few": "{{count}} مربعات تتحرك",
+      "moving_many": "{{count}} مربعًا يتحرك",
+      "moving_other": "{{count}} مربع يتحرك",
+      "fixed_zero": "لا مربعات ثابتة",
+      "fixed_one": "مربع واحد ثابت",
+      "fixed_two": "مربعان ثابتان",
+      "fixed_few": "{{count}} مربعات ثابتة",
+      "fixed_many": "{{count}} مربعًا ثابتًا",
+      "fixed_other": "{{count}} مربع ثابت",
+      "allMove": "كل المربعات تتحرك",
+      "swaps": "التبديلات: {{count}}",
+      "wrong_zero": "التبديلات الخاطئة {{penalty}} ث",
+      "wrong_one": "تبديل خاطئ {{penalty}} ث",
+      "wrong_two": "تبديلان خاطئان {{penalty}} ث",
+      "wrong_few": "{{count}} تبديلات خاطئة {{penalty}} ث",
+      "wrong_many": "{{count}} تبديلًا خاطئًا {{penalty}} ث",
+      "wrong_other": "{{count}} تبديل خاطئ {{penalty}} ث",
+      "wrongLabel_zero": "بلا تبديلات خاطئة، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_one": "تبديل خاطئ واحد، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_two": "تبديلان خاطئان، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_few": "{{count}} تبديلات خاطئة، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_many": "{{count}} تبديلًا خاطئًا، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "wrongLabel_other": "{{count}} تبديل خاطئ، $t(levels:hud.secondsAdded, {\"count\": {{s}} })",
+      "dragHint": "سحب مربع إلى آخر يبادل بينهما",
+      "tapHint": "أو: النقر على مربع، ثم على آخر",
+      "slotLabel": "المربع {{n}}، {{state}}: {{rows}}",
+      "state": {
+        "movable": "قابل للتحريك",
+        "fixed": "ثابت",
+        "selected": "محدد"
+      },
+      "slotHint": "النقر للاختيار، ثم النقر على مربع آخر",
+      "swapped": "تبادل المربعان {{a}} و {{b}} مكانيهما",
+      "swappedPenalty_zero": "تبادل المربعان {{a}} و {{b}} مكانيهما.",
+      "swappedPenalty_one": "تبادل المربعان {{a}} و {{b}} مكانيهما. أُضيفت ثانية واحدة",
+      "swappedPenalty_two": "تبادل المربعان {{a}} و {{b}} مكانيهما. أُضيفت ثانيتان",
+      "swappedPenalty_few": "تبادل المربعان {{a}} و {{b}} مكانيهما. أُضيفت {{s}} ثوانٍ",
+      "swappedPenalty_many": "تبادل المربعان {{a}} و {{b}} مكانيهما. أُضيفت {{s}} ثانية",
+      "swappedPenalty_other": "تبادل المربعان {{a}} و {{b}} مكانيهما. أُضيفت {{s}} ثانية",
+      "fixedTap": "هذا المربع ثابت",
+      "solved": "كل صف وكل عمود صحيح",
+      "boardLabel": "الأحجية · {{counts}}"
+    },
+    "duel": {
+      "gap": "الفارق {{gap}}",
+      "gapLabel": "الفارق: {{gap}}. نجمة واحدة للتقدم في النهاية، ونجمتان عند فارق {{two}}، و3 نجوم عند فارق {{three}}",
+      "lead": "في المقدمة",
+      "of": "/{{target}}",
+      "meLabel_zero": "{{name}}، {{score}} من {{target}} نقطة",
+      "meLabel_one": "{{name}}، {{score}} من نقطة واحدة",
+      "meLabel_two": "{{name}}، {{score}} من نقطتين",
+      "meLabel_few": "{{name}}، {{score}} من {{target}} نقاط",
+      "meLabel_many": "{{name}}، {{score}} من {{target}} نقطة",
+      "meLabel_other": "{{name}}، {{score}} من {{target}} نقطة",
+      "botLabel_zero": "{{name}}، بوت المستوى {{n}}، {{score}} من {{target}} نقطة",
+      "botLabel_one": "{{name}}، بوت المستوى {{n}}، {{score}} من نقطة واحدة",
+      "botLabel_two": "{{name}}، بوت المستوى {{n}}، {{score}} من نقطتين",
+      "botLabel_few": "{{name}}، بوت المستوى {{n}}، {{score}} من {{target}} نقاط",
+      "botLabel_many": "{{name}}، بوت المستوى {{n}}، {{score}} من {{target}} نقطة",
+      "botLabel_other": "{{name}}، بوت المستوى {{n}}، {{score}} من {{target}} نقطة",
+      "finishLabel": "تنتهي المرحلة عندما يصل أحدهم إلى $t(levels:hud.duel.reachPoints, {\"count\": {{target}} })، أو بعد مرور $t(levels:hud.duel.atSeconds, {\"count\": {{s}} })",
+      "reachPoints_zero": "{{count}} نقطة",
+      "reachPoints_one": "نقطة واحدة",
+      "reachPoints_two": "نقطتين",
+      "reachPoints_few": "{{count}} نقاط",
+      "reachPoints_many": "{{count}} نقطة",
+      "reachPoints_other": "{{count}} نقطة",
+      "atSeconds_zero": "{{count}} ثانية",
+      "atSeconds_one": "ثانية واحدة",
+      "atSeconds_two": "ثانيتين",
+      "atSeconds_few": "{{count}} ثوانٍ",
+      "atSeconds_many": "{{count}} ثانية",
+      "atSeconds_other": "{{count}} ثانية",
+      "raceLabel": "سباق حتى {{target}}: {{me}}، {{bot}}"
+    },
+    "reactions": "التفاعلات",
+    "boardLabel": "لوحة المرحلة · {{scope}}",
+    "spotError": {
+      "goal_zero": "أرقام خاطئة تختبئ في اللوحة. المطلوب النقر عليها.",
+      "goal_one": "رقم خاطئ واحد يختبئ في اللوحة. المطلوب النقر عليه.",
+      "goal_two": "رقمان خاطئان يختبئان في اللوحة. المطلوب النقر عليهما.",
+      "goal_few": "{{count}} أرقام خاطئة تختبئ في اللوحة. المطلوب النقر عليها.",
+      "goal_many": "{{count}} رقمًا خاطئًا يختبئ في اللوحة. المطلوب النقر عليها.",
+      "goal_other": "{{count}} رقم خاطئ يختبئ في اللوحة. المطلوب النقر عليها.",
+      "note": "الأرقام الداكنة من اللوحة، وهي صحيحة دائمًا.",
+      "found": "المكتشَفة",
+      "foundLabel": "عُثر على {{found}} من {{total}}",
+      "time": "الوقت",
+      "timeLabel_zero": "الوقت: {{s}} ثانية من {{limit}}",
+      "timeLabel_one": "الوقت: ثانية واحدة من {{limit}}",
+      "timeLabel_two": "الوقت: ثانيتان من {{limit}}",
+      "timeLabel_few": "الوقت: {{s}} ثوانٍ من {{limit}}",
+      "timeLabel_many": "الوقت: {{s}} ثانية من {{limit}}",
+      "timeLabel_other": "الوقت: {{s}} ثانية من {{limit}}",
+      "tipTitle": "نصيحة",
+      "tip": "يُستحسن البحث عن رقم يظهر مرتين في الصف أو العمود أو المربع نفسه.",
+      "tipClose": "إغلاق النصيحة",
+      "foundCell": "وجدت خطأً في {{cell}}: ليس {{wrong}} بل {{right}}",
+      "rightTap": "الرقم في {{cell}} صحيح. {{penalty}} ث",
+      "missed": "أخطاء لم يُعثر عليها: {{cells}}",
+      "boardLabel": "لوحة المرحلة · النقر على رقم خاطئ"
+    },
+    "hunt": {
+      "goal": "الهدف: $t(levels:hud.hunt.goalPoints, {\"count\": {{pointsCount}} }) في $t(levels:hud.hunt.goalMoves, {\"count\": {{moves}} }).",
+      "goalPoints_zero": "{{points}} نقطة",
+      "goalPoints_one": "{{points}} نقطة",
+      "goalPoints_two": "{{points}} نقطة",
+      "goalPoints_few": "{{points}} نقاط",
+      "goalPoints_many": "{{points}} نقطة",
+      "goalPoints_other": "{{points}} نقطة",
+      "goalMoves_zero": "{{count}} حركة",
+      "goalMoves_one": "حركة واحدة",
+      "goalMoves_two": "حركتين",
+      "goalMoves_few": "{{count}} حركات",
+      "goalMoves_many": "{{count}} حركة",
+      "goalMoves_other": "{{count}} حركة",
+      "note": "الخانة في منطقة فارغة تساوي أكثر.",
+      "points": "نقطة",
+      "scoreLabel_zero": "{{score}} نقطة",
+      "scoreLabel_one": "{{score}} نقطة",
+      "scoreLabel_two": "{{score}} نقطة",
+      "scoreLabel_few": "{{score}} نقاط",
+      "scoreLabel_many": "{{score}} نقطة",
+      "scoreLabel_other": "{{score}} نقطة",
+      "scoreWorthLabel_zero": "{{score}} نقطة. الخانة المختارة تساوي {{worth}}",
+      "scoreWorthLabel_one": "{{score}} نقطة. الخانة المختارة تساوي {{worth}}",
+      "scoreWorthLabel_two": "{{score}} نقطة. الخانة المختارة تساوي {{worth}}",
+      "scoreWorthLabel_few": "{{score}} نقاط. الخانة المختارة تساوي {{worth}}",
+      "scoreWorthLabel_many": "{{score}} نقطة. الخانة المختارة تساوي {{worth}}",
+      "scoreWorthLabel_other": "{{score}} نقطة. الخانة المختارة تساوي {{worth}}",
+      "lost": "الرقم الخاطئ كلّف {{points}}",
+      "move": "الحركة {{n}} من {{max}}",
+      "burnt": "ضاعت الحركة {{n}}",
+      "movesLabel": "{{moves}}. {{burnt}}",
+      "burntCount_zero": "لا حركات ضائعة",
+      "burntCount_one": "ضاعت حركة واحدة",
+      "burntCount_two": "ضاعت حركتان",
+      "burntCount_few": "ضاعت {{count}} حركات",
+      "burntCount_many": "ضاعت {{count}} حركة",
+      "burntCount_other": "ضاعت {{count}} حركة",
+      "left": "المتبقي · من {{limit}}",
+      "timeLabel_zero": "لم يتبق شيء من {{limit}}",
+      "timeLabel_one": "بقيت ثانية واحدة من {{limit}}",
+      "timeLabel_two": "بقيت ثانيتان من {{limit}}",
+      "timeLabel_few": "بقيت {{s}} ثوانٍ من {{limit}}",
+      "timeLabel_many": "بقيت {{s}} ثانية من {{limit}}",
+      "timeLabel_other": "بقيت {{s}} ثانية من {{limit}}",
+      "max": "أفضل نتيجة في اللوحة: {{max}}",
+      "worth": "قيمتها {{points}}"
+    },
+    "chain": {
+      "goal": "في كل لحظة يمكن حل خانة واحدة فقط في اللوحة. إيجادها وملؤها يفتح الخانة التالية.",
+      "notePenalty": "رقم في خانة لا يمكن معرفتها بعد: {{penalty}} ث.",
+      "noteAccept": "رقم خاطئ: {{penalty}} ث.",
+      "step": "الخطوة {{n}} من {{total}}",
+      "stepLabel": "التسلسل: الخطوة {{n}} من {{total}}",
+      "time": "الوقت",
+      "timeLabel_zero": "الوقت: {{s}} ثانية من {{limit}}",
+      "timeLabel_one": "الوقت: ثانية واحدة من {{limit}}",
+      "timeLabel_two": "الوقت: ثانيتان من {{limit}}",
+      "timeLabel_few": "الوقت: {{s}} ثوانٍ من {{limit}}",
+      "timeLabel_many": "الوقت: {{s}} ثانية من {{limit}}",
+      "timeLabel_other": "الوقت: {{s}} ثانية من {{limit}}",
+      "notYet": "{{text}} · {{penalty}} ث",
+      "tipTitle": "نصيحة",
+      "tip": "في كل خطوة توجد خانة واحدة بالضبط يمكن إثباتها. حين يكون الرقم مؤكدًا، فتلك هي الخانة.",
+      "tipClose": "إغلاق النصيحة"
+    }
+  },
+  "explain": {
+    "spot": "الموقع {{n}}: {{text}}",
+    "mistake": "خطؤك: {{digit}} في {{cell}}. {{reason}}",
+    "best": "أفضل حركة لك، {{digit}} في {{cell}}: {{text}}",
+    "errorFound": "{{cell}}، اكتُشف: {{reason}}",
+    "errorMissed": "{{cell}}، لم يُكتشف: {{reason}}",
+    "rightTap": "الرقم {{digit}} في {{cell}} صحيح: النقر عليه كلّف {{penalty}} ث.",
+    "points_zero": "جمعت {{points}} من {{max}} نقطة، أي {{percent}} من أفضل نتيجة في اللوحة.",
+    "points_one": "جمعت {{points}} من {{max}} نقطة، أي {{percent}} من أفضل نتيجة في اللوحة.",
+    "points_two": "جمعت {{points}} من {{max}} نقطة، أي {{percent}} من أفضل نتيجة في اللوحة.",
+    "points_few": "جمعت {{points}} من {{max}} نقاط، أي {{percent}} من أفضل نتيجة في اللوحة.",
+    "points_many": "جمعت {{points}} من {{max}} نقطة، أي {{percent}} من أفضل نتيجة في اللوحة.",
+    "points_other": "جمعت {{points}} من {{max}} نقطة، أي {{percent}} من أفضل نتيجة في اللوحة.",
+    "line": "أفضل تسلسل: {{moves}}.",
+    "move": "{{digit}} في {{cell}} {{points}}",
+    "step": "الخطوة {{n}}: {{text}}",
+    "puzzle": {
+      "onlyBoxForPlace": "المكان {{place}} لا يناسبه إلا المربع الذي بدأ في المكان {{from}}: أي مربع آخر سيكرر رقمًا في صف أو عمود.",
+      "onlyPlaceForBox": "المربع الذي بدأ في المكان {{from}} لا يناسب إلا المكان {{place}}: في أي مكان آخر سيكرر رقمًا في صف أو عمود."
+    }
+  }
+}

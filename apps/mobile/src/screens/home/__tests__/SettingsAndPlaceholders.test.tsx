@@ -79,9 +79,12 @@ describe('settings (spec §4.1)', () => {
   it('changes the language once the restart is confirmed (the root layout then restarts the app)', async () => {
     await renderApp('/settings');
     expect(screen.getByText('החלפת שפה מפעילה מחדש את האפליקציה.')).toBeTruthy();
+    // The picker (localization plan 0י): a field, then a sheet with "שפת המכשיר" and this build's languages.
+    await fireEvent.press(screen.getByRole('button', { name: 'שפה: עברית' }));
+    expect((await screen.findAllByRole('radio', { name: /^(שפת המכשיר|עברית|English)$/ })).length).toBe(3);
     await fireEvent.press(screen.getByRole('radio', { name: 'English' }));
     expect(useSettings.getState().language).toBe('he');
-    expect(screen.getByText('להחליף את השפה ל־English?')).toBeTruthy();
+    expect(await screen.findByText('להחליף את השפה ל־English?')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'החלפה והפעלה מחדש' }));
     expect(useSettings.getState().language).toBe('en');
   });
@@ -169,7 +172,11 @@ describe('settings (spec §4.1)', () => {
     expect(screen.getByRole('switch', { name: 'Haptics' })).toBeTruthy();
     expect(screen.getByRole('radio', { name: 'Like the device' })).toBeTruthy();
     // Each language is named in itself.
+    await fireEvent.press(screen.getByRole('button', { name: 'Language: עברית' }));
+    expect(await screen.findByRole('radio', { name: 'Device language' })).toBeTruthy();
     expect(screen.getByRole('radio', { name: 'עברית' })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: 'English' })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Close' }));
     // A development build (not on production) has the testing switches too.
     expect(screen.getByRole('switch', { name: 'Chain: a guess costs 5 s' })).toBeTruthy();
     expect(screen.getByRole('switch', { name: 'Unlock all stages (testing)' })).toBeTruthy();

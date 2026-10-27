@@ -1,0 +1,33 @@
+{
+  "googlePlay": {
+    "locales": [
+      "vi"
+    ],
+    "title": "Sudoku Fight: PvP trực tiếp",
+    "shortDescription": "Đua với tối đa 3 đối thủ trên cùng bảng sudoku. Xếp hạng, trực tiếp, công bằng.",
+    "fullDescription": "Sudoku Fight biến sudoku thành một cuộc thi đấu trực tiếp. Tối đa 4 người chơi cùng giải một bảng vào cùng một thời điểm: mỗi số đúng bạn điền là của bạn, và mỗi điểm đều quan trọng.\n\nMỘT BẢNG, AI CŨNG GIẢI\n• Tất cả người chơi cùng chơi trên một bảng cùng lúc. Điền một số đúng và ô đó chuyển sang màu của bạn.\n• Nước đi càng khó càng được nhiều điểm: một số cần suy luận khéo léo có giá trị hơn một số dễ.\n• Một số sai bị trừ đúng bằng số điểm mà số đúng lẽ ra mang lại. Chỉ nhanh thôi thì không thắng được.\n• Khóa một ô trong lúc suy nghĩ, nhưng chỉ trong vài giây.\n\nĐÒN PHÁ RỐI VÀ BIỂU CẢM\n• Dùng điểm để tấn công đối thủ bằng pháo hoa, mèo hoặc làm méo màn hình trong 5 giây.\n• Gửi biểu cảm 😂 😱 😎 🤦 🔥 👀.\n\nCHƠI XẾP HẠNG\n• Trận đấu xếp hạng cho 2, 3 hoặc 4 người chơi, với ba loại trận đấu: nhanh, thường và khó.\n• Hệ thống ghép trận tìm đối thủ cùng trình độ với bạn và tránh những đối thủ bạn vừa đấu.\n• Điểm xếp hạng cho từng loại trận đấu, các hạng đấu, bảng xếp hạng và thẻ người chơi với thống kê của bạn.\n• Không có đối thủ trực tuyến? Luyện tập với máy trong lúc chờ.\n\nHỌC HỎI TỪ MỖI TRẬN ĐẤU\n• Xem lại bất kỳ trận đấu xếp hạng nào theo từng nước đi, với lời giải thích logic cho mỗi nước đi.\n• Toàn bộ lịch sử trận đấu và tiến trình của bạn, với XP và cấp độ.\n\nLUYỆN TẬP BẤT CỨ LÚC NÀO\n• Luyện tập một mình hoặc đấu với máy ở nhiều cấp độ khác nhau, kể cả khi không có mạng.\n\nCHƠI CÔNG BẰNG\n• Máy chủ kiểm tra mọi nước đi, và các câu đố xếp hạng không bao giờ được đóng gói trong ứng dụng.\n• Không có quảng cáo. Bạn có thể xóa tài khoản bất cứ lúc nào trong Cài đặt.\n\nHỗ trợ 19 ngôn ngữ. Bảng luôn được đọc từ trái sang phải.",
+    "whatsNew": "Phiên bản đầu tiên."
+  },
+  "appStore": {
+    "locales": [
+      "vi"
+    ],
+    "name": "Sudoku Fight",
+    "subtitle": "Đấu sudoku online nhiều người",
+    "promotionalText": "Một bảng. Ai cũng giải. Chỉ một người thắng. Đua trực tiếp với tối đa 3 đối thủ trên cùng một bảng sudoku, gửi đòn phá rối và leo hạng trong chế độ xếp hạng.",
+    "description": "Sudoku Fight biến sudoku thành một cuộc thi đấu trực tiếp. Tối đa 4 người chơi cùng giải một bảng vào cùng một thời điểm: mỗi số đúng bạn điền là của bạn, và mỗi điểm đều quan trọng.\n\nMỘT BẢNG, AI CŨNG GIẢI\n• Tất cả người chơi cùng chơi trên một bảng cùng lúc. Điền một số đúng và ô đó chuyển sang màu của bạn.\n• Nước đi càng khó càng được nhiều điểm: một số cần suy luận khéo léo có giá trị hơn một số dễ.\n• Một số sai bị trừ đúng bằng số điểm mà số đúng lẽ ra mang lại. Chỉ nhanh thôi thì không thắng được.\n• Khóa một ô trong lúc suy nghĩ, nhưng chỉ trong vài giây.\n\nĐÒN PHÁ RỐI VÀ BIỂU CẢM\n• Dùng điểm để tấn công đối thủ bằng pháo hoa, mèo hoặc làm méo màn hình trong 5 giây.\n• Gửi biểu cảm 😂 😱 😎 🤦 🔥 👀.\n\nCHƠI XẾP HẠNG\n• Trận đấu xếp hạng cho 2, 3 hoặc 4 người chơi, với ba loại trận đấu: nhanh, thường và khó.\n• Hệ thống ghép trận tìm đối thủ cùng trình độ với bạn và tránh những đối thủ bạn vừa đấu.\n• Điểm xếp hạng cho từng loại trận đấu, các hạng đấu, bảng xếp hạng và thẻ người chơi với thống kê của bạn.\n• Không có đối thủ trực tuyến? Luyện tập với máy trong lúc chờ.\n\nHỌC HỎI TỪ MỖI TRẬN ĐẤU\n• Xem lại bất kỳ trận đấu xếp hạng nào theo từng nước đi, với lời giải thích logic cho mỗi nước đi.\n• Toàn bộ lịch sử trận đấu và tiến trình của bạn, với XP và cấp độ.\n\nLUYỆN TẬP BẤT CỨ LÚC NÀO\n• Luyện tập một mình hoặc đấu với máy ở nhiều cấp độ khác nhau, kể cả khi không có mạng.\n\nCHƠI CÔNG BẰNG\n• Máy chủ kiểm tra mọi nước đi, và các câu đố xếp hạng không bao giờ được đóng gói trong ứng dụng.\n• Không có quảng cáo. Bạn có thể xóa tài khoản bất cứ lúc nào trong Cài đặt.\n\nHỗ trợ 19 ngôn ngữ. Bảng luôn được đọc từ trái sang phải.",
+    "keywords": "ô số,điền số,câu đố,giải đố,trò chơi,game,trí tuệ,logic,tư duy,bạn bè,trực tuyến,pvp,xếp hạng",
+    "whatsNew": "Phiên bản đầu tiên."
+  },
+  "screenshotCaptions": [
+    "Một bảng. Ai cũng giải. Chỉ một người thắng.",
+    "Tối đa 4 người chơi trên cùng một bảng",
+    "Gửi đòn phá rối đến đối thủ của bạn",
+    "Đối thủ cùng trình độ, trên cùng một bảng",
+    "Nước đi càng khó, càng nhiều điểm",
+    "Xem lại từng nước đi, kèm lời giải thích",
+    "Hạng đấu và bảng xếp hạng",
+    "Luyện tập với máy, kể cả khi không có mạng"
+  ],
+  "variants": {}
+}

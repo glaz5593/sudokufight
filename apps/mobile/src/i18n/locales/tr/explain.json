@@ -1,0 +1,109 @@
+{
+  "technique": {
+    "nakedSingle": "Açık tekli",
+    "hiddenSingle": "Gizli tekli",
+    "pointing": "Kutu-çizgi eleme",
+    "claiming": "Kutu-çizgi eleme",
+    "nakedPair": "Açık ikili",
+    "hiddenPair": "Gizli ikili",
+    "chain": "İleri teknik",
+    "beyond": "Motorun tekniklerinin ötesinde"
+  },
+  "formula": {
+    "assign": "{{cell}} → {{digit}}",
+    "equals": "{{cell}} = {{digit}}"
+  },
+  "list": {
+    "sep": ", ",
+    "last": "{{head}} ve {{last}}",
+    "lastOr": "{{head}} veya {{last}}"
+  },
+  "clauses": {
+    "sep": ", ",
+    "last": "{{head}} ve {{last}}"
+  },
+  "naked": {
+    "answer": "{{formula}}.",
+    "onlyMissing": {
+      "row": "{{label}} satırında yalnızca {{digit}} eksik.",
+      "col": "{{label}} sütununda yalnızca {{digit}} eksik.",
+      "box": "{{label}} kutusunda yalnızca {{digit}} eksik."
+    },
+    "missing": {
+      "row": "{{label}} satırında eksik olanlar: {{digits}}.",
+      "col": "{{label}} sütununda eksik olanlar: {{digits}}.",
+      "box": "{{label}} kutusunda eksik olanlar: {{digits}}."
+    },
+    "seen": {
+      "row": "{{label}} satırında zaten şunlar var: {{digits}}.",
+      "col": "{{label}} sütununda zaten şunlar var: {{digits}}.",
+      "box": "{{label}} kutusunda zaten şunlar var: {{digits}}."
+    },
+    "eliminated": "{{digit}} rakamı {{step}}. adımda {{cell}} hücresinden elendi.",
+    "only": "Yani geriye yalnızca {{digit}} kalıyor."
+  },
+  "hidden": {
+    "alone": {
+      "row": "{{digit}} rakamı {{label}} satırında bulunmalı ve satırdaki tek boş hücre {{cell}}. Yani {{result}}.",
+      "col": "{{digit}} rakamı {{label}} sütununda bulunmalı ve sütundaki tek boş hücre {{cell}}. Yani {{result}}.",
+      "box": "{{digit}} rakamı {{label}} kutusunda bulunmalı ve kutudaki tek boş hücre {{cell}}. Yani {{result}}."
+    },
+    "blocked": {
+      "row": "{{digit}} rakamı {{label}} satırında bulunmalı. Satırdaki diğer boş hücrelerin hiçbirine giremez: {{clauses}}. Yani {{result}}.",
+      "col": "{{digit}} rakamı {{label}} sütununda bulunmalı. Sütundaki diğer boş hücrelerin hiçbirine giremez: {{clauses}}. Yani {{result}}.",
+      "box": "{{digit}} rakamı {{label}} kutusunda bulunmalı. Kutudaki diğer boş hücrelerin hiçbirine giremez: {{clauses}}. Yani {{result}}."
+    },
+    "clause": {
+      "step": "{{cell}} hücresinden {{digit}} rakamı {{step}}. adımda elendi",
+      "unit": {
+        "row": "{{cell}} hücresi {{label}} satırındaki {{digit}} rakamını görüyor",
+        "col": "{{cell}} hücresi {{label}} sütunundaki {{digit}} rakamını görüyor",
+        "box": "{{cell}} hücresi {{label}} kutusundaki {{digit}} rakamını görüyor"
+      }
+    }
+  },
+  "pointing": {
+    "row": "{{box}} kutusunda {{digit}} rakamı yalnızca {{line}} satırında olabilir, bu yüzden satırın geri kalanından silinir: {{cells}}.",
+    "col": "{{box}} kutusunda {{digit}} rakamı yalnızca {{line}} sütununda olabilir, bu yüzden sütunun geri kalanından silinir: {{cells}}."
+  },
+  "claiming": {
+    "row": "{{line}} satırında {{digit}} rakamı yalnızca {{box}} kutusunda olabilir, bu yüzden kutunun geri kalanından silinir: {{cells}}.",
+    "col": "{{line}} sütununda {{digit}} rakamı yalnızca {{box}} kutusunda olabilir, bu yüzden kutunun geri kalanından silinir: {{cells}}."
+  },
+  "nakedPair": {
+    "row": "{{a}} ve {{b}} hücrelerine yalnızca {{digits}} girebilir, bu yüzden {{digits}} rakamları {{label}} satırının geri kalanından silinir: {{cells}}.",
+    "col": "{{a}} ve {{b}} hücrelerine yalnızca {{digits}} girebilir, bu yüzden {{digits}} rakamları {{label}} sütununun geri kalanından silinir: {{cells}}.",
+    "box": "{{a}} ve {{b}} hücrelerine yalnızca {{digits}} girebilir, bu yüzden {{digits}} rakamları {{label}} kutusunun geri kalanından silinir: {{cells}}."
+  },
+  "hiddenPair": {
+    "row": "{{label}} satırında {{digits}} rakamları yalnızca {{a}} ve {{b}} hücrelerine girebilir, bu yüzden bu iki hücrenin diğer adayları silinir.",
+    "col": "{{label}} sütununda {{digits}} rakamları yalnızca {{a}} ve {{b}} hücrelerine girebilir, bu yüzden bu iki hücrenin diğer adayları silinir.",
+    "box": "{{label}} kutusunda {{digits}} rakamları yalnızca {{a}} ve {{b}} hücrelerine girebilir, bu yüzden bu iki hücrenin diğer adayları silinir."
+  },
+  "beyond": "Bunun için motorun henüz açıklayamadığı ileri bir teknik gerekiyor. Cevap: {{formula}}.",
+  "chain": {
+    "head_one": "Bu hücre henüz tek adımda belirlenemiyor. {{count}} adım gerekiyor:",
+    "head_other": "Bu hücre henüz tek adımda belirlenemiyor. {{count}} adım gerekiyor:",
+    "line": "{{n}}. {{text}}"
+  },
+  "wrong": {
+    "conflict": {
+      "row": "{{digit}} rakamı {{label}} satırında zaten var ({{cell}}).",
+      "col": "{{digit}} rakamı {{label}} sütununda zaten var ({{cell}}).",
+      "box": "{{digit}} rakamı {{label}} kutusunda zaten var ({{cell}})."
+    },
+    "notSolution": "{{digit}} rakamı buraya hâlâ uyuyor, ama çözümde burada {{answer}} var."
+  },
+  "block": {
+    "step": "{{cell}} hücresine {{digit}} giremez: {{step}}. adımda elendi",
+    "unit": {
+      "row": "{{cell}} hücresine {{digit}} giremez: {{label}} satırında {{digit}} var",
+      "col": "{{cell}} hücresine {{digit}} giremez: {{label}} sütununda {{digit}} var",
+      "box": "{{cell}} hücresine {{digit}} giremez: {{label}} kutusunda {{digit}} var"
+    }
+  },
+  "notYet": {
+    "cell": "{{cell}} hücresine ne geleceği henüz belli değil",
+    "options": "{{cell}} hücresine ne geleceği henüz belli değil ({{options}})"
+  }
+}
